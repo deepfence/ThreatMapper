@@ -73,7 +73,6 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
   };
 
   const page = getPageFromSearchParams(searchParams);
-
   const result = await makeRequest({
     apiFunction: getSearchApiClient().searchVulnerabilities,
     apiArgs: [
@@ -82,16 +81,10 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
           node_filter: {
             filters: {
               contains_filter: {
-                filter_in: {
-                  exploitability_score: [1, 2, 3],
-                },
+                filter_in: {},
               },
               order_filter: {
-                order_fields: [
-                  'exploitability_score',
-                  'cve_severity',
-                  'vulnerability_score',
-                ],
+                order_fields: [],
               },
               match_filter: {
                 filter_in: {},
@@ -130,16 +123,10 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
           node_filter: {
             filters: {
               contains_filter: {
-                filter_in: {
-                  exploitability_score: [1, 2, 3],
-                },
+                filter_in: {},
               },
               order_filter: {
-                order_fields: [
-                  'exploitability_score',
-                  'cve_severity',
-                  'vulnerability_score',
-                ],
+                order_fields: [],
               },
               match_filter: {
                 filter_in: {},
@@ -169,6 +156,7 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
   if (ApiError.isApiError(countsResult)) {
     throw countsResult.value();
   }
+
   const allNodes = await makeRequest({
     apiFunction: getScanResultsApiClient().getAllNodesInScanResults,
     apiArgs: [
@@ -230,10 +218,6 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
   results.currentPage = page;
   results.totalRows = page * PAGE_SIZE + countsResult.count;
 
-  if (results.totalRows > 1000) {
-    results.totalRows = 1000;
-  }
-
   return results;
 }
 const loader = async ({
@@ -246,7 +230,7 @@ const loader = async ({
   });
 };
 
-const MostExploitableVulnerabilities = () => {
+const UniqueVulnerabilities = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigation = useNavigation();
   const columnHelper = createColumnHelper<CveType>();
@@ -397,7 +381,7 @@ const MostExploitableVulnerabilities = () => {
           </IconContext.Provider>
         </DFLink>
         <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-          MOST EXPLOITABLE VULNERABILITIES
+          UNIQUE VULNERABILITIES
         </span>
         <span className="ml-2 max-h-5 flex items-center">
           {navigation.state === 'loading' ? <CircleSpinner size="xs" /> : null}
@@ -448,5 +432,5 @@ const MostExploitableVulnerabilities = () => {
 
 export const module = {
   loader,
-  element: <MostExploitableVulnerabilities />,
+  element: <UniqueVulnerabilities />,
 };

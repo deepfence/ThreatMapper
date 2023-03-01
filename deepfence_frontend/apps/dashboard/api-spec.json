@@ -2452,11 +2452,18 @@
       }
     },
     "/deepfence/scan/nodes-in-result": {
-      "get": {
+      "post": {
         "tags": ["Scan Results"],
         "summary": "Get all nodes in given scan result ids",
         "description": "Get all nodes in given scan result ids",
         "operationId": "getAllNodesInScanResults",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelNodesInScanResultRequest" }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -2465,77 +2472,6 @@
                 "schema": {
                   "type": "array",
                   "items": { "$ref": "#/components/schemas/ModelScanResultBasicNode" }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
-              }
-            }
-          },
-          "401": { "description": "Unauthorized" },
-          "403": { "description": "Forbidden" },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          }
-        },
-        "security": [{ "bearer_token": [] }]
-      }
-    },
-    "/deepfence/scan/nodes/{scan_type}/{result_id}": {
-      "get": {
-        "tags": ["Scan Results"],
-        "summary": "Get all nodes in given scan result",
-        "description": "Get all nodes in given scan result",
-        "operationId": "getAllNodesInScanResult",
-        "parameters": [
-          {
-            "name": "result_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "scan_type",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "enum": [
-                "SecretScan",
-                "VulnerabilityScan",
-                "MalwareScan",
-                "ComplianceScan",
-                "CloudComplianceScan"
-              ],
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/ModelBasicNode" }
                 }
               }
             }
@@ -7451,6 +7387,27 @@
               "cloud_account",
               "cluster",
               "registry"
+            ],
+            "type": "string"
+          }
+        }
+      },
+      "ModelNodesInScanResultRequest": {
+        "required": ["result_ids", "scan_type"],
+        "type": "object",
+        "properties": {
+          "result_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "scan_type": {
+            "enum": [
+              "SecretScan",
+              "VulnerabilityScan",
+              "MalwareScan",
+              "ComplianceScan",
+              "CloudComplianceScan"
             ],
             "type": "string"
           }

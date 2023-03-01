@@ -36,6 +36,7 @@ import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/Vuln
 import { Registries } from '@/features/registries/pages/Registries';
 import { vulnerabilityApiLoader } from '@/features/vulnerabilities/api/apiLoader';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
+import { module as uniqueVulnerabilities } from '@/features/vulnerabilities/pages/UniqueVulnerabilities';
 import { module as vulnerability } from '@/features/vulnerabilities/pages/Vulnerability';
 import { module as vulnerabilityDetails } from '@/features/vulnerabilities/pages/VulnerabilityDetailModal';
 import { module as vulnerabilityScanResults } from '@/features/vulnerabilities/pages/VulnerabilityScanResults';
@@ -215,6 +216,25 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'vulnerability/most-exploitable',
         ...mostExploitableVulnerabilities,
         meta: { title: 'Most Exploitable Vulnerabilities' },
+        children: [
+          {
+            path: ':cveId',
+            ...vulnerabilityDetails,
+            meta: { title: 'Most Exploitable Vulnerability Details' },
+          },
+        ],
+      },
+      {
+        path: 'vulnerability/unique-vulnerabilities',
+        ...uniqueVulnerabilities,
+        meta: { title: 'Unique Vulnerabilities' },
+        children: [
+          {
+            path: ':cveId',
+            ...vulnerabilityDetails,
+            meta: { title: 'Unique Vulnerability Details' },
+          },
+        ],
       },
     ],
   },
