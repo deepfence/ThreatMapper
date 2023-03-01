@@ -12,6 +12,7 @@ var (
 
 type Cypherable interface {
 	NodeType() string
+	ExtendedField() string
 }
 
 type CypherableAndCategorizable interface {

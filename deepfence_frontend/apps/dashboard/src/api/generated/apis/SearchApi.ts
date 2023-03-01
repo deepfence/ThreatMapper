@@ -173,8 +173,8 @@ export interface SearchVulnerabilityScansRequest {
  */
 export interface SearchApiInterface {
     /**
-     * Search scan results
-     * @summary Search Vulnerability Scan results
+     * Count across all the data associated with cloud-compliance scans
+     * @summary Count Cloud Compliance Scan results
      * @param {SearchSearchScanReq} [searchSearchScanReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -183,14 +183,14 @@ export interface SearchApiInterface {
     countCloudComplianceScansRaw(requestParameters: CountCloudComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Count across all the data associated with cloud-compliance scans
+     * Count Cloud Compliance Scan results
      */
     countCloudComplianceScans(requestParameters: CountCloudComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
-     * List all the images present in the given registry
-     * @summary Search Cloud compliances
+     * Count across all the data ssociated with cloud compliances
+     * @summary Count Cloud compliances
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -199,14 +199,14 @@ export interface SearchApiInterface {
     countCloudCompliancesRaw(requestParameters: CountCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
 
     /**
-     * List all the images present in the given registry
-     * Search Cloud compliances
+     * Count across all the data ssociated with cloud compliances
+     * Count Cloud compliances
      */
     countCloudCompliances(requestParameters: CountCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
-     * Search scan results
-     * @summary Search Vulnerability Scan results
+     * Count across all the data associated with compliance scans
+     * @summary Count Compliance Scan results
      * @param {SearchSearchScanReq} [searchSearchScanReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -215,14 +215,14 @@ export interface SearchApiInterface {
     countComplianceScansRaw(requestParameters: CountComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Count across all the data associated with compliance scans
+     * Count Compliance Scan results
      */
     countComplianceScans(requestParameters: CountComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
-     * List all the images present in the given registry
-     * @summary Search Compliances
+     * Count across all the data associated with compliances
+     * @summary Count Compliances
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -231,14 +231,14 @@ export interface SearchApiInterface {
     countCompliancesRaw(requestParameters: CountCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
 
     /**
-     * List all the images present in the given registry
-     * Search Compliances
+     * Count across all the data associated with compliances
+     * Count Compliances
      */
     countCompliances(requestParameters: CountCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
-     * Retrieve all the data associated with processes
-     * @summary Search Container images
+     * Count across all the data associated with container images
+     * @summary Count Container images
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -247,14 +247,14 @@ export interface SearchApiInterface {
     countContainerImagesRaw(requestParameters: CountContainerImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
 
     /**
-     * Retrieve all the data associated with processes
-     * Search Container images
+     * Count across all the data associated with container images
+     * Count Container images
      */
     countContainerImages(requestParameters: CountContainerImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
-     * Retrieve all the data associated with containers
-     * @summary Search Containers data
+     * Count across all the data associated with containers
+     * @summary Count Containers data
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -263,14 +263,14 @@ export interface SearchApiInterface {
     countContainersRaw(requestParameters: CountContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
 
     /**
-     * Retrieve all the data associated with containers
-     * Search Containers data
+     * Count across all the data associated with containers
+     * Count Containers data
      */
     countContainers(requestParameters: CountContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
-     * Retrieve all the data associated with hosts
-     * @summary Search hosts
+     * Count across all the data associated with hosts
+     * @summary Count hosts
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -279,14 +279,14 @@ export interface SearchApiInterface {
     countHostsRaw(requestParameters: CountHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
 
     /**
-     * Retrieve all the data associated with hosts
-     * Search hosts
+     * Count across all the data associated with hosts
+     * Count hosts
      */
     countHosts(requestParameters: CountHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
-     * Search scan results
-     * @summary Search Vulnerability Scan results
+     * Count across all the data associated with malware scans
+     * @summary Count Malware Scan results
      * @param {SearchSearchScanReq} [searchSearchScanReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -295,14 +295,14 @@ export interface SearchApiInterface {
     countMalwareScansRaw(requestParameters: CountMalwareScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Count across all the data associated with malware scans
+     * Count Malware Scan results
      */
     countMalwareScans(requestParameters: CountMalwareScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
-     * List all the images present in the given registry
-     * @summary Search Malwares
+     * Count across all the data associated with malwares
+     * @summary Count Malwares
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -311,14 +311,14 @@ export interface SearchApiInterface {
     countMalwaresRaw(requestParameters: CountMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
 
     /**
-     * List all the images present in the given registry
-     * Search Malwares
+     * Count across all the data associated with malwares
+     * Count Malwares
      */
     countMalwares(requestParameters: CountMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
-     * Retrieve all the data associated with pods
-     * @summary Search Secrets
+     * Count across all the data associated with secrets
+     * @summary Count Secrets
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -327,14 +327,14 @@ export interface SearchApiInterface {
     countSecretsRaw(requestParameters: CountSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
 
     /**
-     * Retrieve all the data associated with pods
-     * Search Secrets
+     * Count across all the data associated with secrets
+     * Count Secrets
      */
     countSecrets(requestParameters: CountSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
-     * Search scan results
-     * @summary Search Vulnerability Scan results
+     * Count across all the data associated with secret scans
+     * @summary Count Secret Scan results
      * @param {SearchSearchScanReq} [searchSearchScanReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -343,14 +343,14 @@ export interface SearchApiInterface {
     countSecretsScansRaw(requestParameters: CountSecretsScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Count across all the data associated with secret scans
+     * Count Secret Scan results
      */
     countSecretsScans(requestParameters: CountSecretsScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
-     * Retrieve all the data associated with k8s clusters
-     * @summary Search Vulnerabilities
+     * Search across all the data associated with vulnerabilities
+     * @summary Count Vulnerabilities
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -359,14 +359,14 @@ export interface SearchApiInterface {
     countVulnerabilitiesRaw(requestParameters: CountVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
 
     /**
-     * Retrieve all the data associated with k8s clusters
-     * Search Vulnerabilities
+     * Search across all the data associated with vulnerabilities
+     * Count Vulnerabilities
      */
     countVulnerabilities(requestParameters: CountVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
-     * Search scan results
-     * @summary Search Vulnerability Scan results
+     * Count across all the data associated with vulnerability scans
+     * @summary Count Vulnerability Scan results
      * @param {SearchSearchScanReq} [searchSearchScanReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -375,14 +375,14 @@ export interface SearchApiInterface {
     countVulnerabilityScansRaw(requestParameters: CountVulnerabilityScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Count across all the data associated with vulnerability scans
+     * Count Vulnerability Scan results
      */
     countVulnerabilityScans(requestParameters: CountVulnerabilityScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
-     * Search scan results
-     * @summary Search Vulnerability Scan results
+     * Search across all the data associated with cloud-compliance scan
+     * @summary Search Cloud Compliance Scan results
      * @param {SearchSearchScanReq} [searchSearchScanReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -391,13 +391,13 @@ export interface SearchApiInterface {
     searchCloudComplianceScansRaw(requestParameters: SearchCloudComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelScanInfo>>>;
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Search across all the data associated with cloud-compliance scan
+     * Search Cloud Compliance Scan results
      */
     searchCloudComplianceScans(requestParameters: SearchCloudComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelScanInfo>>;
 
     /**
-     * List all the images present in the given registry
+     * Search across all the data associated with cloud-compliances
      * @summary Search Cloud compliances
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
@@ -407,14 +407,14 @@ export interface SearchApiInterface {
     searchCloudCompliancesRaw(requestParameters: SearchCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCloudCompliance>>>;
 
     /**
-     * List all the images present in the given registry
+     * Search across all the data associated with cloud-compliances
      * Search Cloud compliances
      */
     searchCloudCompliances(requestParameters: SearchCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudCompliance>>;
 
     /**
-     * Search scan results
-     * @summary Search Vulnerability Scan results
+     * Search across all the data associated with compliance scan
+     * @summary Search Compliance Scan results
      * @param {SearchSearchScanReq} [searchSearchScanReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -423,13 +423,13 @@ export interface SearchApiInterface {
     searchComplianceScansRaw(requestParameters: SearchComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelScanInfo>>>;
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Search across all the data associated with compliance scan
+     * Search Compliance Scan results
      */
     searchComplianceScans(requestParameters: SearchComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelScanInfo>>;
 
     /**
-     * List all the images present in the given registry
+     * Search across all the data associated with compliances
      * @summary Search Compliances
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
@@ -439,13 +439,13 @@ export interface SearchApiInterface {
     searchCompliancesRaw(requestParameters: SearchCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCompliance>>>;
 
     /**
-     * List all the images present in the given registry
+     * Search across all the data associated with compliances
      * Search Compliances
      */
     searchCompliances(requestParameters: SearchCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCompliance>>;
 
     /**
-     * Retrieve all the data associated with processes
+     * Search across all the data associated with container images
      * @summary Search Container images
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
@@ -455,13 +455,13 @@ export interface SearchApiInterface {
     searchContainerImagesRaw(requestParameters: SearchContainerImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainerImage>>>;
 
     /**
-     * Retrieve all the data associated with processes
+     * Search across all the data associated with container images
      * Search Container images
      */
     searchContainerImages(requestParameters: SearchContainerImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImage>>;
 
     /**
-     * Retrieve all the data associated with containers
+     * Search across all data associated with containers
      * @summary Search Containers data
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
@@ -471,13 +471,13 @@ export interface SearchApiInterface {
     searchContainersRaw(requestParameters: SearchContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainer>>>;
 
     /**
-     * Retrieve all the data associated with containers
+     * Search across all data associated with containers
      * Search Containers data
      */
     searchContainers(requestParameters: SearchContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainer>>;
 
     /**
-     * Retrieve all the data associated with hosts
+     * Search across all data associated with hosts
      * @summary Search hosts
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
@@ -487,14 +487,14 @@ export interface SearchApiInterface {
     searchHostsRaw(requestParameters: SearchHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelHost>>>;
 
     /**
-     * Retrieve all the data associated with hosts
+     * Search across all data associated with hosts
      * Search hosts
      */
     searchHosts(requestParameters: SearchHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelHost>>;
 
     /**
-     * Search scan results
-     * @summary Search Vulnerability Scan results
+     * Search across all the data associated with malwares scan
+     * @summary Search Malware Scan results
      * @param {SearchSearchScanReq} [searchSearchScanReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -503,13 +503,13 @@ export interface SearchApiInterface {
     searchMalwareScansRaw(requestParameters: SearchMalwareScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelScanInfo>>>;
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Search across all the data associated with malwares scan
+     * Search Malware Scan results
      */
     searchMalwareScans(requestParameters: SearchMalwareScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelScanInfo>>;
 
     /**
-     * List all the images present in the given registry
+     * Search across all the data associated with malwares
      * @summary Search Malwares
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
@@ -519,13 +519,13 @@ export interface SearchApiInterface {
     searchMalwaresRaw(requestParameters: SearchMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelMalware>>>;
 
     /**
-     * List all the images present in the given registry
+     * Search across all the data associated with malwares
      * Search Malwares
      */
     searchMalwares(requestParameters: SearchMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelMalware>>;
 
     /**
-     * Retrieve all the data associated with pods
+     * Search across all the data associated with secrets
      * @summary Search Secrets
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
@@ -535,14 +535,14 @@ export interface SearchApiInterface {
     searchSecretsRaw(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecret>>>;
 
     /**
-     * Retrieve all the data associated with pods
+     * Search across all the data associated with secrets
      * Search Secrets
      */
     searchSecrets(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecret>>;
 
     /**
-     * Search scan results
-     * @summary Search Vulnerability Scan results
+     * Search across all the data associated with secrets scan
+     * @summary Search Secrets Scan results
      * @param {SearchSearchScanReq} [searchSearchScanReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -551,13 +551,13 @@ export interface SearchApiInterface {
     searchSecretsScansRaw(requestParameters: SearchSecretsScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelScanInfo>>>;
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Search across all the data associated with secrets scan
+     * Search Secrets Scan results
      */
     searchSecretsScans(requestParameters: SearchSecretsScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelScanInfo>>;
 
     /**
-     * Retrieve all the data associated with k8s clusters
+     * Search across all the data associated with vulnerabilities
      * @summary Search Vulnerabilities
      * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
      * @param {*} [options] Override http request option.
@@ -567,13 +567,13 @@ export interface SearchApiInterface {
     searchVulnerabilitiesRaw(requestParameters: SearchVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelVulnerability>>>;
 
     /**
-     * Retrieve all the data associated with k8s clusters
+     * Search across all the data associated with vulnerabilities
      * Search Vulnerabilities
      */
     searchVulnerabilities(requestParameters: SearchVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerability>>;
 
     /**
-     * Search scan results
+     * Search across all the data associated with vulnerability scan
      * @summary Search Vulnerability Scan results
      * @param {SearchSearchScanReq} [searchSearchScanReq] 
      * @param {*} [options] Override http request option.
@@ -583,7 +583,7 @@ export interface SearchApiInterface {
     searchVulnerabilityScansRaw(requestParameters: SearchVulnerabilityScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelScanInfo>>>;
 
     /**
-     * Search scan results
+     * Search across all the data associated with vulnerability scan
      * Search Vulnerability Scan results
      */
     searchVulnerabilityScans(requestParameters: SearchVulnerabilityScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelScanInfo>>;
@@ -596,8 +596,8 @@ export interface SearchApiInterface {
 export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Count across all the data associated with cloud-compliance scans
+     * Count Cloud Compliance Scan results
      */
     async countCloudComplianceScansRaw(requestParameters: CountCloudComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
         const queryParameters: any = {};
@@ -626,8 +626,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Count across all the data associated with cloud-compliance scans
+     * Count Cloud Compliance Scan results
      */
     async countCloudComplianceScans(requestParameters: CountCloudComplianceScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countCloudComplianceScansRaw(requestParameters, initOverrides);
@@ -635,8 +635,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * List all the images present in the given registry
-     * Search Cloud compliances
+     * Count across all the data ssociated with cloud compliances
+     * Count Cloud compliances
      */
     async countCloudCompliancesRaw(requestParameters: CountCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
         const queryParameters: any = {};
@@ -665,8 +665,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * List all the images present in the given registry
-     * Search Cloud compliances
+     * Count across all the data ssociated with cloud compliances
+     * Count Cloud compliances
      */
     async countCloudCompliances(requestParameters: CountCloudCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countCloudCompliancesRaw(requestParameters, initOverrides);
@@ -674,8 +674,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Count across all the data associated with compliance scans
+     * Count Compliance Scan results
      */
     async countComplianceScansRaw(requestParameters: CountComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
         const queryParameters: any = {};
@@ -704,8 +704,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Count across all the data associated with compliance scans
+     * Count Compliance Scan results
      */
     async countComplianceScans(requestParameters: CountComplianceScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countComplianceScansRaw(requestParameters, initOverrides);
@@ -713,8 +713,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * List all the images present in the given registry
-     * Search Compliances
+     * Count across all the data associated with compliances
+     * Count Compliances
      */
     async countCompliancesRaw(requestParameters: CountCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
         const queryParameters: any = {};
@@ -743,8 +743,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * List all the images present in the given registry
-     * Search Compliances
+     * Count across all the data associated with compliances
+     * Count Compliances
      */
     async countCompliances(requestParameters: CountCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countCompliancesRaw(requestParameters, initOverrides);
@@ -752,8 +752,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with processes
-     * Search Container images
+     * Count across all the data associated with container images
+     * Count Container images
      */
     async countContainerImagesRaw(requestParameters: CountContainerImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
         const queryParameters: any = {};
@@ -782,8 +782,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with processes
-     * Search Container images
+     * Count across all the data associated with container images
+     * Count Container images
      */
     async countContainerImages(requestParameters: CountContainerImagesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countContainerImagesRaw(requestParameters, initOverrides);
@@ -791,8 +791,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with containers
-     * Search Containers data
+     * Count across all the data associated with containers
+     * Count Containers data
      */
     async countContainersRaw(requestParameters: CountContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
         const queryParameters: any = {};
@@ -821,8 +821,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with containers
-     * Search Containers data
+     * Count across all the data associated with containers
+     * Count Containers data
      */
     async countContainers(requestParameters: CountContainersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countContainersRaw(requestParameters, initOverrides);
@@ -830,8 +830,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with hosts
-     * Search hosts
+     * Count across all the data associated with hosts
+     * Count hosts
      */
     async countHostsRaw(requestParameters: CountHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
         const queryParameters: any = {};
@@ -860,8 +860,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with hosts
-     * Search hosts
+     * Count across all the data associated with hosts
+     * Count hosts
      */
     async countHosts(requestParameters: CountHostsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countHostsRaw(requestParameters, initOverrides);
@@ -869,8 +869,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Count across all the data associated with malware scans
+     * Count Malware Scan results
      */
     async countMalwareScansRaw(requestParameters: CountMalwareScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
         const queryParameters: any = {};
@@ -899,8 +899,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Count across all the data associated with malware scans
+     * Count Malware Scan results
      */
     async countMalwareScans(requestParameters: CountMalwareScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countMalwareScansRaw(requestParameters, initOverrides);
@@ -908,8 +908,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * List all the images present in the given registry
-     * Search Malwares
+     * Count across all the data associated with malwares
+     * Count Malwares
      */
     async countMalwaresRaw(requestParameters: CountMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
         const queryParameters: any = {};
@@ -938,8 +938,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * List all the images present in the given registry
-     * Search Malwares
+     * Count across all the data associated with malwares
+     * Count Malwares
      */
     async countMalwares(requestParameters: CountMalwaresRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countMalwaresRaw(requestParameters, initOverrides);
@@ -947,8 +947,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with pods
-     * Search Secrets
+     * Count across all the data associated with secrets
+     * Count Secrets
      */
     async countSecretsRaw(requestParameters: CountSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
         const queryParameters: any = {};
@@ -977,8 +977,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with pods
-     * Search Secrets
+     * Count across all the data associated with secrets
+     * Count Secrets
      */
     async countSecrets(requestParameters: CountSecretsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countSecretsRaw(requestParameters, initOverrides);
@@ -986,8 +986,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Count across all the data associated with secret scans
+     * Count Secret Scan results
      */
     async countSecretsScansRaw(requestParameters: CountSecretsScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
         const queryParameters: any = {};
@@ -1016,8 +1016,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Count across all the data associated with secret scans
+     * Count Secret Scan results
      */
     async countSecretsScans(requestParameters: CountSecretsScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countSecretsScansRaw(requestParameters, initOverrides);
@@ -1025,8 +1025,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with k8s clusters
-     * Search Vulnerabilities
+     * Search across all the data associated with vulnerabilities
+     * Count Vulnerabilities
      */
     async countVulnerabilitiesRaw(requestParameters: CountVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
         const queryParameters: any = {};
@@ -1055,8 +1055,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with k8s clusters
-     * Search Vulnerabilities
+     * Search across all the data associated with vulnerabilities
+     * Count Vulnerabilities
      */
     async countVulnerabilities(requestParameters: CountVulnerabilitiesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countVulnerabilitiesRaw(requestParameters, initOverrides);
@@ -1064,8 +1064,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Count across all the data associated with vulnerability scans
+     * Count Vulnerability Scan results
      */
     async countVulnerabilityScansRaw(requestParameters: CountVulnerabilityScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
         const queryParameters: any = {};
@@ -1094,8 +1094,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Count across all the data associated with vulnerability scans
+     * Count Vulnerability Scan results
      */
     async countVulnerabilityScans(requestParameters: CountVulnerabilityScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countVulnerabilityScansRaw(requestParameters, initOverrides);
@@ -1103,8 +1103,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Search across all the data associated with cloud-compliance scan
+     * Search Cloud Compliance Scan results
      */
     async searchCloudComplianceScansRaw(requestParameters: SearchCloudComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelScanInfo>>> {
         const queryParameters: any = {};
@@ -1133,8 +1133,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Search across all the data associated with cloud-compliance scan
+     * Search Cloud Compliance Scan results
      */
     async searchCloudComplianceScans(requestParameters: SearchCloudComplianceScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelScanInfo>> {
         const response = await this.searchCloudComplianceScansRaw(requestParameters, initOverrides);
@@ -1142,7 +1142,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * List all the images present in the given registry
+     * Search across all the data associated with cloud-compliances
      * Search Cloud compliances
      */
     async searchCloudCompliancesRaw(requestParameters: SearchCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCloudCompliance>>> {
@@ -1172,7 +1172,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * List all the images present in the given registry
+     * Search across all the data associated with cloud-compliances
      * Search Cloud compliances
      */
     async searchCloudCompliances(requestParameters: SearchCloudCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudCompliance>> {
@@ -1181,8 +1181,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Search across all the data associated with compliance scan
+     * Search Compliance Scan results
      */
     async searchComplianceScansRaw(requestParameters: SearchComplianceScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelScanInfo>>> {
         const queryParameters: any = {};
@@ -1211,8 +1211,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Search across all the data associated with compliance scan
+     * Search Compliance Scan results
      */
     async searchComplianceScans(requestParameters: SearchComplianceScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelScanInfo>> {
         const response = await this.searchComplianceScansRaw(requestParameters, initOverrides);
@@ -1220,7 +1220,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * List all the images present in the given registry
+     * Search across all the data associated with compliances
      * Search Compliances
      */
     async searchCompliancesRaw(requestParameters: SearchCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCompliance>>> {
@@ -1250,7 +1250,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * List all the images present in the given registry
+     * Search across all the data associated with compliances
      * Search Compliances
      */
     async searchCompliances(requestParameters: SearchCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCompliance>> {
@@ -1259,7 +1259,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with processes
+     * Search across all the data associated with container images
      * Search Container images
      */
     async searchContainerImagesRaw(requestParameters: SearchContainerImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainerImage>>> {
@@ -1289,7 +1289,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with processes
+     * Search across all the data associated with container images
      * Search Container images
      */
     async searchContainerImages(requestParameters: SearchContainerImagesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImage>> {
@@ -1298,7 +1298,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with containers
+     * Search across all data associated with containers
      * Search Containers data
      */
     async searchContainersRaw(requestParameters: SearchContainersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainer>>> {
@@ -1328,7 +1328,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with containers
+     * Search across all data associated with containers
      * Search Containers data
      */
     async searchContainers(requestParameters: SearchContainersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainer>> {
@@ -1337,7 +1337,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with hosts
+     * Search across all data associated with hosts
      * Search hosts
      */
     async searchHostsRaw(requestParameters: SearchHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelHost>>> {
@@ -1367,7 +1367,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with hosts
+     * Search across all data associated with hosts
      * Search hosts
      */
     async searchHosts(requestParameters: SearchHostsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelHost>> {
@@ -1376,8 +1376,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Search across all the data associated with malwares scan
+     * Search Malware Scan results
      */
     async searchMalwareScansRaw(requestParameters: SearchMalwareScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelScanInfo>>> {
         const queryParameters: any = {};
@@ -1406,8 +1406,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Search across all the data associated with malwares scan
+     * Search Malware Scan results
      */
     async searchMalwareScans(requestParameters: SearchMalwareScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelScanInfo>> {
         const response = await this.searchMalwareScansRaw(requestParameters, initOverrides);
@@ -1415,7 +1415,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * List all the images present in the given registry
+     * Search across all the data associated with malwares
      * Search Malwares
      */
     async searchMalwaresRaw(requestParameters: SearchMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelMalware>>> {
@@ -1445,7 +1445,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * List all the images present in the given registry
+     * Search across all the data associated with malwares
      * Search Malwares
      */
     async searchMalwares(requestParameters: SearchMalwaresRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelMalware>> {
@@ -1454,7 +1454,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with pods
+     * Search across all the data associated with secrets
      * Search Secrets
      */
     async searchSecretsRaw(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecret>>> {
@@ -1484,7 +1484,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with pods
+     * Search across all the data associated with secrets
      * Search Secrets
      */
     async searchSecrets(requestParameters: SearchSecretsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecret>> {
@@ -1493,8 +1493,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Search across all the data associated with secrets scan
+     * Search Secrets Scan results
      */
     async searchSecretsScansRaw(requestParameters: SearchSecretsScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelScanInfo>>> {
         const queryParameters: any = {};
@@ -1523,8 +1523,8 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
-     * Search Vulnerability Scan results
+     * Search across all the data associated with secrets scan
+     * Search Secrets Scan results
      */
     async searchSecretsScans(requestParameters: SearchSecretsScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelScanInfo>> {
         const response = await this.searchSecretsScansRaw(requestParameters, initOverrides);
@@ -1532,7 +1532,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with k8s clusters
+     * Search across all the data associated with vulnerabilities
      * Search Vulnerabilities
      */
     async searchVulnerabilitiesRaw(requestParameters: SearchVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelVulnerability>>> {
@@ -1562,7 +1562,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Retrieve all the data associated with k8s clusters
+     * Search across all the data associated with vulnerabilities
      * Search Vulnerabilities
      */
     async searchVulnerabilities(requestParameters: SearchVulnerabilitiesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerability>> {
@@ -1571,7 +1571,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
+     * Search across all the data associated with vulnerability scan
      * Search Vulnerability Scan results
      */
     async searchVulnerabilityScansRaw(requestParameters: SearchVulnerabilityScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelScanInfo>>> {
@@ -1601,7 +1601,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
-     * Search scan results
+     * Search across all the data associated with vulnerability scan
      * Search Vulnerability Scan results
      */
     async searchVulnerabilityScans(requestParameters: SearchVulnerabilityScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelScanInfo>> {

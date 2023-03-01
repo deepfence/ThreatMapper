@@ -75,22 +75,10 @@ export interface IngestersCloudCompliance {
     group?: string;
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof IngestersCloudCompliance
      */
-    masked?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersCloudCompliance
-     */
-    node_id?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersCloudCompliance
-     */
-    node_name?: string;
+    masked?: boolean;
     /**
      * 
      * @type {string}
@@ -176,8 +164,6 @@ export function IngestersCloudComplianceFromJSONTyped(json: any, ignoreDiscrimin
         'doc_id': !exists(json, 'doc_id') ? undefined : json['doc_id'],
         'group': !exists(json, 'group') ? undefined : json['group'],
         'masked': !exists(json, 'masked') ? undefined : json['masked'],
-        'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
-        'node_name': !exists(json, 'node_name') ? undefined : json['node_name'],
         'reason': !exists(json, 'reason') ? undefined : json['reason'],
         'region': !exists(json, 'region') ? undefined : json['region'],
         'resource': !exists(json, 'resource') ? undefined : json['resource'],
@@ -209,8 +195,6 @@ export function IngestersCloudComplianceToJSON(value?: IngestersCloudCompliance 
         'doc_id': value.doc_id,
         'group': value.group,
         'masked': value.masked,
-        'node_id': value.node_id,
-        'node_name': value.node_name,
         'reason': value.reason,
         'region': value.region,
         'resource': value.resource,

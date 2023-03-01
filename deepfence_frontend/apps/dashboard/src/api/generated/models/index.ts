@@ -79,6 +79,7 @@ export * from './ModelScanFilter';
 export * from './ModelScanInfo';
 export * from './ModelScanListReq';
 export * from './ModelScanListResp';
+export * from './ModelScanResultBasicNode';
 export * from './ModelScanResultsActionRequest';
 export * from './ModelScanResultsMaskRequest';
 export * from './ModelScanResultsReq';

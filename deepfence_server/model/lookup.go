@@ -30,6 +30,10 @@ func (KubernetesCluster) GetJsonCategory() string {
 	return ""
 }
 
+func (KubernetesCluster) ExtendedField() string {
+	return ""
+}
+
 type RegularScanStatus struct {
 	VulnerabilitiesCount    int    `json:"vulnerabilities_count"  required:"true"`
 	VulnerabilityScanStatus string `json:"vulnerability_scan_status" required:"true"`
@@ -46,6 +50,11 @@ type BasicNode struct {
 	Name     string `json:"name" required:"true"`
 	NodeType string `json:"node_type" required:"true"`
 	HostName string `json:"host_name" required:"true"`
+}
+
+type ScanResultBasicNode struct {
+	ResultID   string      `json:"result_id" required:"true"`
+	BasicNodes []BasicNode `json:"basic_nodes" required:"true"`
 }
 
 type Host struct {
@@ -70,6 +79,10 @@ func (RegistryAccount) NodeType() string {
 	return "RegistryAccount"
 }
 
+func (RegistryAccount) ExtendedField() string {
+	return ""
+}
+
 func (RegistryAccount) GetCategory() string {
 	return ""
 }
@@ -80,6 +93,10 @@ func (RegistryAccount) GetJsonCategory() string {
 
 func (Host) NodeType() string {
 	return "Node"
+}
+
+func (Host) ExtendedField() string {
+	return ""
 }
 
 func (Host) GetCategory() string {
@@ -116,6 +133,10 @@ func (Pod) NodeType() string {
 	return "Pod"
 }
 
+func (Pod) ExtendedField() string {
+	return ""
+}
+
 func (Pod) GetCategory() string {
 	return ""
 }
@@ -138,6 +159,10 @@ type Container struct {
 
 func (Container) NodeType() string {
 	return "Container"
+}
+
+func (Container) ExtendedField() string {
+	return ""
 }
 
 func (Container) GetCategory() string {
@@ -163,6 +188,10 @@ func (Process) NodeType() string {
 	return "Process"
 }
 
+func (Process) ExtendedField() string {
+	return ""
+}
+
 func (Process) GetCategory() string {
 	return ""
 }
@@ -183,6 +212,10 @@ type ContainerImage struct {
 
 func (ContainerImage) NodeType() string {
 	return "ContainerImage"
+}
+
+func (ContainerImage) ExtendedField() string {
+	return ""
 }
 
 func (ContainerImage) GetCategory() string {

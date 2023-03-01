@@ -51,10 +51,22 @@ export interface ModelSecret {
     relative_starting_index: number;
     /**
      * 
+     * @type {string}
+     * @memberof ModelSecret
+     */
+    rule_id: string;
+    /**
+     * 
      * @type {number}
      * @memberof ModelSecret
      */
     starting_index: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelSecret
+     */
+    updated_at: number;
 }
 
 /**
@@ -67,7 +79,9 @@ export function instanceOfModelSecret(value: object): boolean {
     isInstance = isInstance && "matched_content" in value;
     isInstance = isInstance && "relative_ending_index" in value;
     isInstance = isInstance && "relative_starting_index" in value;
+    isInstance = isInstance && "rule_id" in value;
     isInstance = isInstance && "starting_index" in value;
+    isInstance = isInstance && "updated_at" in value;
 
     return isInstance;
 }
@@ -87,7 +101,9 @@ export function ModelSecretFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'matched_content': json['matched_content'],
         'relative_ending_index': json['relative_ending_index'],
         'relative_starting_index': json['relative_starting_index'],
+        'rule_id': json['rule_id'],
         'starting_index': json['starting_index'],
+        'updated_at': json['updated_at'],
     };
 }
 
@@ -105,7 +121,9 @@ export function ModelSecretToJSON(value?: ModelSecret | null): any {
         'matched_content': value.matched_content,
         'relative_ending_index': value.relative_ending_index,
         'relative_starting_index': value.relative_starting_index,
+        'rule_id': value.rule_id,
         'starting_index': value.starting_index,
+        'updated_at': value.updated_at,
     };
 }
 

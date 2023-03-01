@@ -22,7 +22,7 @@ type MatchFilter struct {
 }
 
 type OrderFilter struct {
-	OrderField string `json:"order_field" required:"true"`
+	OrderFields []string `json:"order_fields" required:"true"`
 }
 
 type FieldsFilters struct {
@@ -48,18 +48,42 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 	return conditions
 }
 
+func prefixNode(format string, input []string) []string {
+	res := []string{}
+	if len(input) == 0 {
+		return res
+	}
+
+	for i := range input {
+		if len(input[i]) == 0 {
+			continue
+		}
+		res = append(res, fmt.Sprintf(format, input[i]))
+	}
+
+	return res
+}
+
 func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) string {
-	if len(filter.OrderField) == 0 {
+	if len(filter.OrderFields) == 0 {
 		return ""
 	}
-	return fmt.Sprintf(" ORDER BY %s.%s ", cypherNodeName, filter.OrderField)
+
+	list := prefixNode(cypherNodeName+".%s", filter.OrderFields)
+
+	if len(list) == 0 {
+		return ""
+	}
+
+	return fmt.Sprintf(" ORDER BY %s ", strings.Join(list, ","))
 }
 
 func orderFilter2CypherWhere(cypherNodeName string, filter OrderFilter) []string {
-	if filter.OrderField != "" {
-		return []string{fmt.Sprintf("%s.%s IS NOT NULL", cypherNodeName, filter.OrderField)}
+	if len(filter.OrderFields) == 0 {
+		return []string{}
 	}
-	return []string{}
+
+	return prefixNode(cypherNodeName+".%s IS NOT NULL", filter.OrderFields)
 }
 
 func ParseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.Option[FieldsFilters], starts_where_clause bool) string {
