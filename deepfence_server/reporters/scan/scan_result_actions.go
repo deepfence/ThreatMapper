@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -58,12 +59,12 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 
 	if req.MaskAcrossHostsAndImages {
 		_, err = tx.Run(`
-		MATCH (m:`+string(req.ScanType)+`) -[r:DETECTED]-> (n)
-		WHERE n.node_id IN $node_ids AND m.node_id = $scan_id
-		SET r.masked = $value`, map[string]interface{}{"node_ids": req.ResultIDs, "value": value, "scan_id": req.ScanID})
+		MATCH (n:`+reporters.ScanResultMaskNode[utils.Neo4jScanType(req.ScanType)]+`)
+		WHERE n.node_id IN $node_ids
+		SET n.masked = $value`, map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
 	} else {
 		_, err = tx.Run(`
-		MATCH (m:`+string(req.ScanType)+`) -[:DETECTED]-> (n)
+		MATCH (m:`+string(req.ScanType)+`) -[:DETECTED] -> (n)
 		WHERE n.node_id IN $node_ids
 		SET n.masked = $value`, map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
 	}
@@ -106,11 +107,21 @@ func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 		if err != nil {
 			return err
 		}
-		// Delete results which are not part of any scans now
-		_, err = tx.Run(`
+	}
+	// Delete results which are not part of any scans now
+	_, err = tx.Run(`
 		MATCH (n:`+utils.ScanTypeDetectedNode[scanType]+`) 
 		WHERE not (n)<-[:DETECTED]-(:`+string(scanType)+`)
-		DELETE (n)`, map[string]interface{}{})
+		DETACH DELETE (n)`, map[string]interface{}{})
+	if err != nil {
+		return err
+	}
+	if scanType == utils.NEO4J_VULNERABILITY_SCAN {
+		// Delete results which are not part of any scans now
+		_, err = tx.Run(`
+			MATCH (n:`+reporters.ScanResultMaskNode[scanType]+`) 
+			WHERE not (n)<-[:IS]-(:`+string(scanType)+`)
+			DELETE (n)`, map[string]interface{}{})
 		if err != nil {
 			return err
 		}

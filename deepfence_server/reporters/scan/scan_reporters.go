@@ -649,10 +649,11 @@ func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, re
 	}
 	defer tx.Close()
 
+	resultIdKey := "collect(distinct d." + reporters.ScanResultIDField[scanType] + ")"
 	nres, err := tx.Run(`
 		MATCH (node) <- [s:SCANNED] - (m:`+string(scanType)+`) - [r:DETECTED] -> (d:`+utils.ScanTypeDetectedNode[scanType]+`)
-		WHERE r.masked = false AND d.node_id IN $result_ids
-		RETURN d.node_id,node.host_name,node.node_id,node.node_type,node.docker_container_name,node.docker_image_name,node.docker_image_tag`,
+		WHERE r.masked = false AND d.`+reporters.ScanResultIDField[scanType]+` IN $result_ids
+		RETURN `+resultIdKey+`,node.host_name,node.node_id,node.node_type,node.docker_container_name,node.docker_image_name,node.docker_image_tag`,
 		map[string]interface{}{"result_ids": resultIds})
 	if err != nil {
 		return res, err
@@ -684,8 +685,10 @@ func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, re
 			HostName: hostName,
 		}
 
-		resultID := reporters.Neo4jGetStringRecord(rec, "d.node_id", "")
-		tempRes[resultID] = append(tempRes[resultID], node)
+		resultIDs := reporters.Neo4jGetSliceRecord(rec, resultIdKey, []interface{}{})
+		for _, resultID := range resultIDs {
+			tempRes[resultID.(string)] = append(tempRes[resultID.(string)], node)
+		}
 	}
 	for resultID, basicNodes := range tempRes {
 		res = append(res, model.ScanResultBasicNode{
