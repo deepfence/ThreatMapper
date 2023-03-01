@@ -108,25 +108,46 @@ func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 			return err
 		}
 	}
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	tx2, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx2.Close()
 	// Delete results which are not part of any scans now
-	_, err = tx.Run(`
+	_, err = tx2.Run(`
 		MATCH (n:`+utils.ScanTypeDetectedNode[scanType]+`) 
 		WHERE not (n)<-[:DETECTED]-(:`+string(scanType)+`)
 		DETACH DELETE (n)`, map[string]interface{}{})
 	if err != nil {
 		return err
 	}
+	err = tx2.Commit()
+	if err != nil {
+		return err
+	}
 	if scanType == utils.NEO4J_VULNERABILITY_SCAN {
-		// Delete results which are not part of any scans now
-		_, err = tx.Run(`
+		tx3, err := session.BeginTransaction()
+		if err != nil {
+			return err
+		}
+		defer tx3.Close()
+		_, err = tx3.Run(`
 			MATCH (n:`+reporters.ScanResultMaskNode[scanType]+`) 
 			WHERE not (n)<-[:IS]-(:`+string(scanType)+`)
-			DELETE (n)`, map[string]interface{}{})
+			DETACH DELETE (n)`, map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		err = tx3.Commit()
 		if err != nil {
 			return err
 		}
 	}
-	return tx.Commit()
+	return nil
 }
 
 func NotifyScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId string, scanIDs []string) error {
