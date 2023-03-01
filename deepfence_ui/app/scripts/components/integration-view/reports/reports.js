@@ -89,6 +89,10 @@ const complianceProviders = [
     label: 'Linux',
     value: 'linux',
   },
+  {
+    label: 'Kubernetes',
+    value: 'kubernetes',
+  },
 ];
 const awsCheckTypes = [
   {
@@ -305,7 +309,15 @@ const Reports = props => {
   useEffect(() => {
     if (resource_type?.value === 'compliance') {
       if (!compliance_provider) return;
-      // debugger;
+      if (compliance_provider?.value === 'kubernetes') {
+        const resourceTypeText = resource_type.value;
+        props.enumerateFiltersAction({
+        resource_type: resourceTypeText,
+        filters:
+          'kubernetes_cluster_name,kubernetes_namespace,masked',
+      });
+      };
+      if (compliance_provider?.value !== 'kubernetes') {
       const resourceTypeText = resource_type.value;
       props.enumerateFiltersAction({
         resource_type: resourceTypeText,
@@ -313,6 +325,8 @@ const Reports = props => {
         filters:
           'host_name,container_name,image_name_with_tag,os,kubernetes_cluster_name,kubernetes_namespace,masked',
       });
+    };
+      // eslint-disable-next-line no-useless-return
     } else if (resource_type && node_type) {
       const resourceTypeText = resource_type.value;
       const nodeTypeText = node_type.value;
@@ -434,10 +448,9 @@ const Reports = props => {
       checkTypesDropdownList = linuxCheckType;
     } else if (provider.value === 'gcp') {
       checkTypesDropdownList = gcpCheckType;
+    } else if (provider.value === 'kubernetes') {
+      return;
     }
-    // } else if (provider.value === 'k8s') {
-    //   checkTypesDropdownList = ''
-    // }
     return (
       <div
         className="nodes-filter-item"
@@ -594,7 +607,19 @@ const Reports = props => {
       if (
         resourceTypeText &&
         resourceTypeText.includes('compliance') &&
-        compliance_checktype
+        compliance_provider?.value === 'kubernetes'
+      ) {
+        resourceData.push({
+          type: 'compliance',
+          filter: {
+            masked: maskedFilter,
+          },
+        });
+      }
+      if (
+        resourceTypeText &&
+        resourceTypeText.includes('compliance') &&
+        compliance_checktype.length !== 0
       ) {
         resourceData.push({
           type: 'compliance',
@@ -604,26 +629,37 @@ const Reports = props => {
           },
         });
       }
-      if (
-        resourceTypeText &&
-        resourceTypeText.includes('compliance') &&
-        !compliance_checktype
-      ) {
-        resourceData.push({
-          type: 'compliance',
-          filter: {
-            masked: maskedFilter,
-          },
-        });
-      }
+
       let globalFilter;
       const durationValues = duration && duration.value;
       const downloadTypeOption = download_type && download_type.value;
-      if (resource_type.value === 'compliance' && node_type.value === 'host') {
+      if (resource_type.value === 'compliance') {
+        if (compliance_provider?.value === 'kubernetes') {
+          const accountId = account_id && account_id.map(v => v.value);
+          const k8sClusterName =
+            kubernetes_cluster_name && kubernetes_cluster_name.map(v => v.value);
+          globalFilter = {
+            type: [compliance_provider.value],
+            kubernetes_cluster_name: k8sClusterName,
+            node_id: accountId,
+          };
+        }
+        if (compliance_provider?.value !== 'kubernetes' && node_type.value === 'host') {
+          const accountId = account_id && account_id.map(v => v.value);
+          const hostName = host_name && host_name.map(v => v.value);
+          globalFilter = {
+            type: [compliance_provider.value],
+            node_name: hostName,
+            node_id: accountId,
+          };
+        }
         const accountId = account_id && account_id.map(v => v.value);
         const hostName = host_name && host_name.map(v => v.value);
+        const k8sClusterName =
+          kubernetes_cluster_name && kubernetes_cluster_name.map(v => v.value);
         globalFilter = {
           type: [compliance_provider.value],
+          kubernetes_cluster_name: k8sClusterName,
           node_name: hostName,
           node_id: accountId,
         };
