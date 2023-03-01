@@ -84,8 +84,6 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 		return err
 	}
 
-	return tx.Commit()
-
 	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_vpc_security_group_rule'})  MATCH (m:SecurityGroup{node_id: n.group_id}) -[:SECURED]-> (z:CloudResource{resource_type:'aws_ec2_instance'}) WHERE n.is_egress <> true   MERGE (k:Node {node_id:'in-the-internet'})  MERGE (k)-[:PUBLIC]->(z)", map[string]interface{}{}); err != nil {
 		return err
 	}
