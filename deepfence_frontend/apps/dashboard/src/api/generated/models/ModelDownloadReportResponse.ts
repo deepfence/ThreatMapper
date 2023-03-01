@@ -13,52 +13,44 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelKeyValues } from './ModelKeyValues';
-import {
-    ModelKeyValuesFromJSON,
-    ModelKeyValuesFromJSONTyped,
-    ModelKeyValuesToJSON,
-} from './ModelKeyValues';
-
 /**
  * 
  * @export
- * @interface ModelFieldsFilter
+ * @interface ModelDownloadReportResponse
  */
-export interface ModelFieldsFilter {
+export interface ModelDownloadReportResponse {
     /**
      * 
-     * @type {Array<ModelKeyValues>}
-     * @memberof ModelFieldsFilter
+     * @type {string}
+     * @memberof ModelDownloadReportResponse
      */
-    fields_values: Array<ModelKeyValues> | null;
+    url_link?: string;
 }
 
 /**
- * Check if a given object implements the ModelFieldsFilter interface.
+ * Check if a given object implements the ModelDownloadReportResponse interface.
  */
-export function instanceOfModelFieldsFilter(value: object): boolean {
+export function instanceOfModelDownloadReportResponse(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "fields_values" in value;
 
     return isInstance;
 }
 
-export function ModelFieldsFilterFromJSON(json: any): ModelFieldsFilter {
-    return ModelFieldsFilterFromJSONTyped(json, false);
+export function ModelDownloadReportResponseFromJSON(json: any): ModelDownloadReportResponse {
+    return ModelDownloadReportResponseFromJSONTyped(json, false);
 }
 
-export function ModelFieldsFilterFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelFieldsFilter {
+export function ModelDownloadReportResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelDownloadReportResponse {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'fields_values': (json['fields_values'] === null ? null : (json['fields_values'] as Array<any>).map(ModelKeyValuesFromJSON)),
+        'url_link': !exists(json, 'url_link') ? undefined : json['url_link'],
     };
 }
 
-export function ModelFieldsFilterToJSON(value?: ModelFieldsFilter | null): any {
+export function ModelDownloadReportResponseToJSON(value?: ModelDownloadReportResponse | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -67,7 +59,7 @@ export function ModelFieldsFilterToJSON(value?: ModelFieldsFilter | null): any {
     }
     return {
         
-        'fields_values': (value.fields_values === null ? null : (value.fields_values as Array<any>).map(ModelKeyValuesToJSON)),
+        'url_link': value.url_link,
     };
 }
 

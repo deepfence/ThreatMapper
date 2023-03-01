@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelFieldsFilter } from './ModelFieldsFilter';
+import type { ReportersContainsFilter } from './ReportersContainsFilter';
 import {
-    ModelFieldsFilterFromJSON,
-    ModelFieldsFilterFromJSONTyped,
-    ModelFieldsFilterToJSON,
-} from './ModelFieldsFilter';
+    ReportersContainsFilterFromJSON,
+    ReportersContainsFilterFromJSONTyped,
+    ReportersContainsFilterToJSON,
+} from './ReportersContainsFilter';
 
 /**
  * 
@@ -28,34 +28,34 @@ import {
 export interface ModelScanFilter {
     /**
      * 
-     * @type {ModelFieldsFilter}
+     * @type {ReportersContainsFilter}
      * @memberof ModelScanFilter
      */
-    cloud_account_scan_filter: ModelFieldsFilter;
+    cloud_account_scan_filter: ReportersContainsFilter;
     /**
      * 
-     * @type {ModelFieldsFilter}
+     * @type {ReportersContainsFilter}
      * @memberof ModelScanFilter
      */
-    container_scan_filter: ModelFieldsFilter;
+    container_scan_filter: ReportersContainsFilter;
     /**
      * 
-     * @type {ModelFieldsFilter}
+     * @type {ReportersContainsFilter}
      * @memberof ModelScanFilter
      */
-    host_scan_filter: ModelFieldsFilter;
+    host_scan_filter: ReportersContainsFilter;
     /**
      * 
-     * @type {ModelFieldsFilter}
+     * @type {ReportersContainsFilter}
      * @memberof ModelScanFilter
      */
-    image_scan_filter: ModelFieldsFilter;
+    image_scan_filter: ReportersContainsFilter;
     /**
      * 
-     * @type {ModelFieldsFilter}
+     * @type {ReportersContainsFilter}
      * @memberof ModelScanFilter
      */
-    kubernetes_cluster_scan_filter: ModelFieldsFilter;
+    kubernetes_cluster_scan_filter: ReportersContainsFilter;
 }
 
 /**
@@ -82,11 +82,11 @@ export function ModelScanFilterFromJSONTyped(json: any, ignoreDiscriminator: boo
     }
     return {
         
-        'cloud_account_scan_filter': ModelFieldsFilterFromJSON(json['cloud_account_scan_filter']),
-        'container_scan_filter': ModelFieldsFilterFromJSON(json['container_scan_filter']),
-        'host_scan_filter': ModelFieldsFilterFromJSON(json['host_scan_filter']),
-        'image_scan_filter': ModelFieldsFilterFromJSON(json['image_scan_filter']),
-        'kubernetes_cluster_scan_filter': ModelFieldsFilterFromJSON(json['kubernetes_cluster_scan_filter']),
+        'cloud_account_scan_filter': ReportersContainsFilterFromJSON(json['cloud_account_scan_filter']),
+        'container_scan_filter': ReportersContainsFilterFromJSON(json['container_scan_filter']),
+        'host_scan_filter': ReportersContainsFilterFromJSON(json['host_scan_filter']),
+        'image_scan_filter': ReportersContainsFilterFromJSON(json['image_scan_filter']),
+        'kubernetes_cluster_scan_filter': ReportersContainsFilterFromJSON(json['kubernetes_cluster_scan_filter']),
     };
 }
 
@@ -99,11 +99,11 @@ export function ModelScanFilterToJSON(value?: ModelScanFilter | null): any {
     }
     return {
         
-        'cloud_account_scan_filter': ModelFieldsFilterToJSON(value.cloud_account_scan_filter),
-        'container_scan_filter': ModelFieldsFilterToJSON(value.container_scan_filter),
-        'host_scan_filter': ModelFieldsFilterToJSON(value.host_scan_filter),
-        'image_scan_filter': ModelFieldsFilterToJSON(value.image_scan_filter),
-        'kubernetes_cluster_scan_filter': ModelFieldsFilterToJSON(value.kubernetes_cluster_scan_filter),
+        'cloud_account_scan_filter': ReportersContainsFilterToJSON(value.cloud_account_scan_filter),
+        'container_scan_filter': ReportersContainsFilterToJSON(value.container_scan_filter),
+        'host_scan_filter': ReportersContainsFilterToJSON(value.host_scan_filter),
+        'image_scan_filter': ReportersContainsFilterToJSON(value.image_scan_filter),
+        'kubernetes_cluster_scan_filter': ReportersContainsFilterToJSON(value.kubernetes_cluster_scan_filter),
     };
 }
 

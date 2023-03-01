@@ -67,7 +67,7 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 	res, err := tx.Run(fmt.Sprintf(`
 		MATCH (m:%s) -[:SCANNED]-> (n)
 		WHERE m.node_id IN $scan_ids
-		RETURN m.node_id, m.status, n.node_id, n.node_type, m.updated_at`, scan_type),
+		RETURN m.node_id, m.status, n.node_id, labels(n) as node_type, m.updated_at`, scan_type),
 		map[string]interface{}{"scan_ids": scan_ids})
 	if err != nil {
 		return model.ScanStatusResp{}, err
@@ -84,7 +84,7 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 			ScanId:    rec.Values[0].(string),
 			Status:    rec.Values[1].(string),
 			NodeId:    rec.Values[2].(string),
-			NodeType:  rec.Values[3].(string),
+			NodeType:  Labels2NodeType(rec.Values[3].([]interface{})),
 			UpdatedAt: rec.Values[4].(int64),
 		}
 		statuses[rec.Values[0].(string)] = info
@@ -380,14 +380,13 @@ func nodeType2Neo4jType(node_type string) string {
 		return "ContainerImage"
 	case "host":
 		return "Node"
+	case "cluster":
+		return "KubernetesCluster"
 	}
 	return "unknown"
 }
 
-func GetScansList(ctx context.Context,
-	scan_type utils.Neo4jScanType,
-	node_ids []model.NodeIdentifier,
-	fw model.FetchWindow) (model.ScanListResp, error) {
+func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_ids []model.NodeIdentifier, fw model.FetchWindow, scanStatus []string) (model.ScanListResp, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return model.ScanListResp{}, err
@@ -405,16 +404,21 @@ func GetScansList(ctx context.Context,
 	}
 	defer tx.Close()
 
+	var statusQuery string
+	if len(scanStatus) > 0 {
+		statusQuery = "WHERE m.status IN $scan_status"
+	}
+
 	scans_info := []model.ScanInfo{}
 	for i := range node_ids {
 		query := `
 			MATCH (m:` + string(scan_type) + `) -[:SCANNED]-> (n:` + nodeType2Neo4jType(node_ids[i].NodeType) + `{node_id: $node_id})
-			WHERE m.status = 'COMPLETE'
-			RETURN m.node_id, m.status, m.updated_at, n.node_id, n.node_type
+			` + statusQuery + `
+			RETURN m.node_id, m.status, m.updated_at, n.node_id, labels(n) as node_type
 			ORDER BY m.updated_at ` + fw.FetchWindow2CypherQuery()
 		fmt.Printf("list query %v\n", query)
 		res, err := tx.Run(query,
-			map[string]interface{}{"node_id": node_ids[i].NodeId})
+			map[string]interface{}{"node_id": node_ids[i].NodeId, "scan_status": scanStatus})
 		if err != nil {
 			return model.ScanListResp{}, err
 		}
@@ -430,7 +434,7 @@ func GetScansList(ctx context.Context,
 				Status:    rec.Values[1].(string),
 				UpdatedAt: rec.Values[2].(int64),
 				NodeId:    rec.Values[3].(string),
-				NodeType:  rec.Values[4].(string),
+				NodeType:  Labels2NodeType(rec.Values[4].([]interface{})),
 			}
 			scans_info = append(scans_info, tmp)
 		}
@@ -532,7 +536,8 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 	}
 
 	query = `
-		MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[:DETECTED]-> (d)` +
+		MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
+		WITH d{.*, masked: r.masked} as d` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
 		` RETURN d ` + fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("query: %v", query)
@@ -549,7 +554,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 
 	for _, rec := range recs {
 		var tmp T
-		utils.FromMap(rec.Values[0].(neo4j.Node).Props, &tmp)
+		utils.FromMap(rec.Values[0].(map[string]interface{}), &tmp)
 		res = append(res, tmp)
 	}
 
@@ -579,12 +584,14 @@ func type2sev_field(scan_type utils.Neo4jScanType) string {
 		return "level"
 	case utils.NEO4J_MALWARE_SCAN:
 		return "file_severity"
+	case utils.NEO4J_COMPLIANCE_SCAN:
+		return "status"
 	}
 	return "error_sev_field_unknown"
 }
 
-func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string) (map[string]int, error) {
-	res := map[string]int{}
+func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id string) (map[string]int32, error) {
+	res := map[string]int32{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return res, err
@@ -603,7 +610,8 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	defer tx.Close()
 
 	nres, err := tx.Run(`
-		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[:DETECTED]-> (d)
+		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[r:DETECTED]-> (d)
+		WHERE r.masked = false
 		RETURN d.`+type2sev_field(scan_type),
 		map[string]interface{}{"scan_id": scan_id})
 	if err != nil {
@@ -622,8 +630,132 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	return res, nil
 }
 
+func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, resultIds []string) ([]model.ScanResultBasicNode, error) {
+	var res []model.ScanResultBasicNode
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	nres, err := tx.Run(`
+		MATCH (node) <- [s:SCANNED] - (m:`+string(scanType)+`) - [r:DETECTED] -> (d:`+utils.ScanTypeDetectedNode[scanType]+`)
+		WHERE r.masked = false AND d.node_id IN $result_ids
+		RETURN d.node_id,node.host_name,node.node_id,node.node_type,node.docker_container_name,node.docker_image_name,node.docker_image_tag`,
+		map[string]interface{}{"result_ids": resultIds})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := nres.Collect()
+	if err != nil {
+		return res, err
+	}
+	tempRes := make(map[string][]model.BasicNode)
+	for _, rec := range recs {
+		hostName := reporters.Neo4jGetStringRecord(rec, "node.host_name", "")
+		containerName := reporters.Neo4jGetStringRecord(rec, "node.docker_container_name", "")
+		imageName := reporters.Neo4jGetStringRecord(rec, "node.docker_image_name", "")
+		imageTag := reporters.Neo4jGetStringRecord(rec, "node.docker_image_tag", "")
+		var name string
+		nodeType := reporters.Neo4jGetStringRecord(rec, "node.node_type", "")
+		if nodeType == "container_image" {
+			name = imageName + ":" + imageTag
+		} else if nodeType == "container" {
+			name = containerName
+		} else {
+			name = hostName
+		}
+		node := model.BasicNode{
+			NodeId:   reporters.Neo4jGetStringRecord(rec, "node.node_id", ""),
+			Name:     name,
+			NodeType: nodeType,
+			HostName: hostName,
+		}
+
+		resultID := reporters.Neo4jGetStringRecord(rec, "d.node_id", "")
+		tempRes[resultID] = append(tempRes[resultID], node)
+	}
+	for resultID, basicNodes := range tempRes {
+		res = append(res, model.ScanResultBasicNode{
+			ResultID:   resultID,
+			BasicNodes: basicNodes,
+		})
+	}
+	return res, nil
+}
+
+func GetScanResultNodes(ctx context.Context, scanType utils.Neo4jScanType, docId string) ([]model.BasicNode, error) {
+	var res []model.BasicNode
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	nres, err := tx.Run(`
+		MATCH (node) <- [s:SCANNED] - (m:`+string(scanType)+`) - [r:DETECTED] -> (d:`+utils.ScanTypeDetectedNode[scanType]+`{node_id: $node_id})
+		WHERE r.masked = false
+		RETURN node.host_name,node.node_id,node.node_type,node.docker_container_name,node.docker_image_name,node.docker_image_tag`,
+		map[string]interface{}{"node_id": docId})
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := nres.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for _, rec := range recs {
+		hostName := reporters.Neo4jGetStringRecord(rec, "node.host_name", "")
+		containerName := reporters.Neo4jGetStringRecord(rec, "node.docker_container_name", "")
+		imageName := reporters.Neo4jGetStringRecord(rec, "node.docker_image_name", "")
+		imageTag := reporters.Neo4jGetStringRecord(rec, "node.docker_image_tag", "")
+		var name string
+		nodeType := reporters.Neo4jGetStringRecord(rec, "node.node_type", "")
+		if nodeType == "container_image" {
+			name = imageName + ":" + imageTag
+		} else if nodeType == "container" {
+			name = containerName
+		} else {
+			name = hostName
+		}
+		node := model.BasicNode{
+			NodeId:   reporters.Neo4jGetStringRecord(rec, "node.node_id", ""),
+			Name:     name,
+			NodeType: nodeType,
+			HostName: hostName,
+		}
+		res = append(res, node)
+	}
+	return res, nil
+}
+
 func GetCloudComplianceStats(ctx context.Context, scanId string) (model.ComplianceAdditionalInfo, error) {
-	res := map[string]int{}
+	res := map[string]int32{}
 	additionalInfo := model.ComplianceAdditionalInfo{StatusCounts: res, CompliancePercentage: 0.0}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -671,11 +803,11 @@ func GetCloudComplianceStats(ctx context.Context, scanId string) (model.Complian
 		return additionalInfo, err
 	}
 
-	var positiveStatusCount int
-	var totalStatusCount int
+	var positiveStatusCount int32
+	var totalStatusCount int32
 	for i := range recs {
 		status := recs[i].Values[0].(string)
-		statusCount := int(recs[i].Values[1].(int64))
+		statusCount := int32(recs[i].Values[1].(int64))
 		res[status] = statusCount
 		if status == "info" || status == "ok" {
 			positiveStatusCount += statusCount

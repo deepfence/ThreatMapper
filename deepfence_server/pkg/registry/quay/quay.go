@@ -42,6 +42,10 @@ func (d *RegistryQuay) IsValidCredential() bool {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		log.Error().Msgf("failed to authenticate, response: %+v", resp)
+	}
+
 	return resp.StatusCode == http.StatusOK
 }
 

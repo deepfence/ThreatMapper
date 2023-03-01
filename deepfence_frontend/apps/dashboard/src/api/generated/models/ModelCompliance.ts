@@ -39,6 +39,12 @@ export interface ModelCompliance {
     description: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelCompliance
+     */
+    masked: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof ModelCompliance
      */
@@ -97,6 +103,12 @@ export interface ModelCompliance {
      * @memberof ModelCompliance
      */
     test_severity: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelCompliance
+     */
+    updated_at: number;
 }
 
 /**
@@ -107,6 +119,7 @@ export function instanceOfModelCompliance(value: object): boolean {
     isInstance = isInstance && "compliance_check_type" in value;
     isInstance = isInstance && "compliance_node_type" in value;
     isInstance = isInstance && "description" in value;
+    isInstance = isInstance && "masked" in value;
     isInstance = isInstance && "remediation_ansible" in value;
     isInstance = isInstance && "remediation_puppet" in value;
     isInstance = isInstance && "remediation_script" in value;
@@ -117,6 +130,7 @@ export function instanceOfModelCompliance(value: object): boolean {
     isInstance = isInstance && "test_number" in value;
     isInstance = isInstance && "test_rationale" in value;
     isInstance = isInstance && "test_severity" in value;
+    isInstance = isInstance && "updated_at" in value;
 
     return isInstance;
 }
@@ -134,6 +148,7 @@ export function ModelComplianceFromJSONTyped(json: any, ignoreDiscriminator: boo
         'compliance_check_type': json['compliance_check_type'],
         'compliance_node_type': json['compliance_node_type'],
         'description': json['description'],
+        'masked': json['masked'],
         'remediation_ansible': json['remediation_ansible'],
         'remediation_puppet': json['remediation_puppet'],
         'remediation_script': json['remediation_script'],
@@ -144,6 +159,7 @@ export function ModelComplianceFromJSONTyped(json: any, ignoreDiscriminator: boo
         'test_number': json['test_number'],
         'test_rationale': json['test_rationale'],
         'test_severity': json['test_severity'],
+        'updated_at': json['updated_at'],
     };
 }
 
@@ -159,6 +175,7 @@ export function ModelComplianceToJSON(value?: ModelCompliance | null): any {
         'compliance_check_type': value.compliance_check_type,
         'compliance_node_type': value.compliance_node_type,
         'description': value.description,
+        'masked': value.masked,
         'remediation_ansible': value.remediation_ansible,
         'remediation_puppet': value.remediation_puppet,
         'remediation_script': value.remediation_script,
@@ -169,6 +186,7 @@ export function ModelComplianceToJSON(value?: ModelCompliance | null): any {
         'test_number': value.test_number,
         'test_rationale': value.test_rationale,
         'test_severity': value.test_severity,
+        'updated_at': value.updated_at,
     };
 }
 

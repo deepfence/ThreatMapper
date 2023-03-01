@@ -1,5 +1,9 @@
 package dockerprivate
 
+import (
+	"time"
+)
+
 type RegistryDockerPrivate struct {
 	Name         string    `json:"name"`
 	NonSecret    NonSecret `json:"non_secret"`
@@ -21,36 +25,77 @@ type ReposResp struct {
 }
 
 type RepoTagsResp struct {
-	Child    []interface{}       `json:"child"`
-	Manifest map[string]Manifest `json:"manifest"`
-	Name     string              `json:"name"`
-	Tags     []string            `json:"tags"`
+	Name string   `json:"name"`
+	Tags []string `json:"tags"`
 }
 
 type Manifest struct {
-	MediaType      string   `json:"mediaType"`
-	Tag            []string `json:"tag"`
-	TimeUploadedMs string   `json:"timeUploadedMs"`
-	TimeCreatedMs  string   `json:"timeCreatedMs"`
-	ImageSizeBytes string   `json:"imageSizeBytes"`
+	SchemaVersion int          `json:"schemaVersion"`
+	Name          string       `json:"name"`
+	Tag           string       `json:"tag"`
+	Architecture  string       `json:"architecture"`
+	FsLayers      []FsLayers   `json:"fsLayers"`
+	History       []History    `json:"history"`
+	Signatures    []Signatures `json:"signatures"`
+}
+type FsLayers struct {
+	BlobSum string `json:"blobSum"`
+}
+type History struct {
+	V1Compatibility string `json:"v1Compatibility"`
+}
+type Jwk struct {
+	Crv string `json:"crv"`
+	Kid string `json:"kid"`
+	Kty string `json:"kty"`
+	X   string `json:"x"`
+	Y   string `json:"y"`
+}
+type Header struct {
+	Jwk Jwk    `json:"jwk"`
+	Alg string `json:"alg"`
+}
+type Signatures struct {
+	Header    Header `json:"header"`
+	Signature string `json:"signature"`
+	Protected string `json:"protected"`
 }
 
-type ManifestsResp struct {
-	SchemaVersion int         `json:"schemaVersion"`
-	MediaType     string      `json:"mediaType"`
-	Manifests     []Manifests `json:"manifests"`
+type HistoryV1Compatibility struct {
+	Architecture    string          `json:"architecture"`
+	Config          ContainerConfig `json:"config"`
+	Container       string          `json:"container"`
+	ContainerConfig ContainerConfig `json:"container_config"`
+	Created         time.Time       `json:"created"`
+	DockerVersion   string          `json:"docker_version"`
+	ID              string          `json:"id"`
+	Os              string          `json:"os"`
+	Parent          string          `json:"parent"`
+	Throwaway       bool            `json:"throwaway"`
 }
 
-type Platform struct {
-	Architecture string   `json:"architecture"`
-	Os           string   `json:"os"`
-	Variant      string   `json:"variant"`
-	Features     []string `json:"features"`
+type Labels struct {
+	Maintainer string `json:"maintainer"`
 }
 
-type Manifests struct {
-	MediaType string   `json:"mediaType"`
-	Size      int      `json:"size"`
-	Digest    string   `json:"digest"`
-	Platform  Platform `json:"platform,omitempty"`
+type ContainerConfig struct {
+	Hostname     string                 `json:"Hostname"`
+	Domainname   string                 `json:"Domainname"`
+	User         string                 `json:"User"`
+	AttachStdin  bool                   `json:"AttachStdin"`
+	AttachStdout bool                   `json:"AttachStdout"`
+	AttachStderr bool                   `json:"AttachStderr"`
+	ExposedPorts map[string]interface{} `json:"ExposedPorts"`
+	Tty          bool                   `json:"Tty"`
+	OpenStdin    bool                   `json:"OpenStdin"`
+	StdinOnce    bool                   `json:"StdinOnce"`
+	Env          []string               `json:"Env"`
+	Cmd          []string               `json:"Cmd"`
+	Image        string                 `json:"Image"`
+	Volumes      interface{}            `json:"Volumes"`
+	WorkingDir   string                 `json:"WorkingDir"`
+	Entrypoint   []string               `json:"Entrypoint"`
+	OnBuild      interface{}            `json:"OnBuild"`
+	Labels       Labels                 `json:"Labels"`
+	StopSignal   string                 `json:"StopSignal"`
 }

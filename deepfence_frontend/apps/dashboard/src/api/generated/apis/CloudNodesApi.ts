@@ -129,7 +129,7 @@ export class CloudNodesApi extends runtime.BaseAPI implements CloudNodesApiInter
             }
         }
         const response = await this.request({
-            path: `/deepfence/cloud-node/accounts/list`,
+            path: `/deepfence/cloud-node/list/accounts`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -166,7 +166,7 @@ export class CloudNodesApi extends runtime.BaseAPI implements CloudNodesApiInter
             }
         }
         const response = await this.request({
-            path: `/deepfence/cloud-node/providers/list`,
+            path: `/deepfence/cloud-node/list/providers`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,

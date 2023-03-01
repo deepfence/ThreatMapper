@@ -41,3 +41,5 @@ openapi.yaml
 
 deepfence_ctl/deepfencectl
 deepfence_ctl/vendor
+
+.pnpm-store

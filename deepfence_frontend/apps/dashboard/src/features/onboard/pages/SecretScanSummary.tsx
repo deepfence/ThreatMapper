@@ -61,6 +61,17 @@ async function getScanSummary(scanIds: string[]): Promise<ScanData[]> {
       apiArgs: [
         {
           modelScanResultsReq: {
+            fields_filter: {
+              contains_filter: {
+                filter_in: {},
+              },
+              order_filter: {
+                order_fields: [],
+              },
+              match_filter: {
+                filter_in: {},
+              },
+            },
             scan_id: scanId,
             window: {
               offset: 0,
@@ -140,8 +151,10 @@ async function getScanStatus(bulkScanId: string): Promise<Array<ModelScanInfo>> 
     apiFunction: statusScanApiFunctionMap['secret'],
     apiArgs: [
       {
-        scanIds: [],
-        bulkScanId,
+        modelScanStatusReq: {
+          scan_ids: [],
+          bulk_scan_id: bulkScanId,
+        },
       },
     ],
     errorHandler: async (r) => {

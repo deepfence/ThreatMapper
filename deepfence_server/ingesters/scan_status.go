@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
+	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -153,15 +153,22 @@ func AddNewScan(tx WriteDBTransaction,
 }
 
 func AddNewCloudComplianceScan(tx WriteDBTransaction,
-	scan_id string,
-	benchmark_type string,
-	node_id string) error {
+	scanId string,
+	benchmarkType string,
+	nodeId string,
+	nodeType string) error {
 
-	res, err := tx.Run(`
-		OPTIONAL MATCH (n:Node{node_id:$node_id})
-		RETURN n IS NOT NULL AS Exists`,
+	neo4jNodeType := "Node"
+	scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
+	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
+		neo4jNodeType = "KubernetesCluster"
+		scanType = utils.NEO4J_COMPLIANCE_SCAN
+	}
+	res, err := tx.Run(fmt.Sprintf(`
+		OPTIONAL MATCH (n:%s{node_id:$node_id})
+		RETURN n IS NOT NULL AS Exists`, neo4jNodeType),
 		map[string]interface{}{
-			"node_id": node_id,
+			"node_id": nodeId,
 		})
 	if err != nil {
 		return err
@@ -174,21 +181,21 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 
 	if !rec.Values[0].(bool) {
 		return &NodeNotFoundError{
-			NodeId: node_id,
+			NodeId: nodeId,
 		}
 	}
 
 	res, err = tx.Run(fmt.Sprintf(`
-		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:Node{node_id:$node_id})
+		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:%s{node_id:$node_id})
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
 		AND n.benchmark_type = $benchmark_type
-		RETURN n.node_id`, utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
+		RETURN n.node_id`, scanType, neo4jNodeType),
 		map[string]interface{}{
-			"node_id":        node_id,
+			"node_id":        nodeId,
 			"complete":       utils.SCAN_STATUS_SUCCESS,
 			"failed":         utils.SCAN_STATUS_FAILED,
-			"benchmark_type": benchmark_type,
+			"benchmark_type": benchmarkType,
 		})
 	if err != nil {
 		return err
@@ -202,31 +209,40 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	if rec.Values[0] != nil {
 		return &AlreadyRunningScanError{
 			ScanId:   rec.Values[0].(string),
-			NodeId:   node_id,
-			ScanType: string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
+			NodeId:   nodeId,
+			ScanType: string(scanType),
 		}
 	}
-
+	internalReq, _ := json.Marshal(ctl.StartComplianceScanRequest{
+		NodeId:   nodeId,
+		NodeType: ctl.KubernetesCluster,
+		BinArgs:  map[string]string{"scan_id": scanId},
+	})
+	action, _ := json.Marshal("{}")
+	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
+		action, _ = json.Marshal(ctl.Action{ID: ctl.StartComplianceScan, RequestPayload: string(internalReq)})
+	}
 	if _, err = tx.Run(fmt.Sprintf(`
-		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, updated_at: TIMESTAMP(), benchmark_type: $benchmark_type})
-		MERGE (m:Node{node_id:$node_id})
-		MERGE (n)-[:SCANNED]->(m)`, utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
+		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, updated_at: TIMESTAMP(), benchmark_type: $benchmark_type, trigger_action: $action})
+		MERGE (m:%s{node_id:$node_id})
+		MERGE (n)-[:SCANNED]->(m)`, scanType, neo4jNodeType),
 		map[string]interface{}{
-			"scan_id":        scan_id,
+			"scan_id":        scanId,
 			"status":         utils.SCAN_STATUS_STARTING,
-			"node_id":        node_id,
-			"benchmark_type": benchmark_type,
+			"node_id":        nodeId,
+			"benchmark_type": benchmarkType,
+			"action":         string(action),
 		}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s{node_id: $scan_id})
-		MATCH (m:Node{node_id:$node_id})
-		MERGE (n)-[:SCHEDULED]->(m)`, utils.NEO4J_CLOUD_COMPLIANCE_SCAN),
+		MATCH (m:%s{node_id:$node_id})
+		MERGE (n)-[:SCHEDULED]->(m)`, scanType, neo4jNodeType),
 		map[string]interface{}{
-			"scan_id": scan_id,
-			"node_id": node_id,
+			"scan_id": scanId,
+			"node_id": nodeId,
 		}); err != nil {
 		return err
 	}

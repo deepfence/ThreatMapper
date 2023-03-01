@@ -11,35 +11,20 @@ import (
 )
 
 type VulnerabilityScanStatus struct {
-	Timestamp             time.Time `json:"@timestamp"`
-	ContainerName         string    `json:"container_name"`
-	HostName              string    `json:"host_name"`
-	KubernetesClusterName string    `json:"kubernetes_cluster_name"`
-	Masked                string    `json:"masked"`
-	NodeID                string    `json:"node_id"`
-	NodeName              string    `json:"node_name"`
-	NodeType              string    `json:"node_type"`
-	ScanID                string    `json:"scan_id"`
-	ScanStatus            string    `json:"scan_status"`
+	Timestamp   time.Time `json:"@timestamp"`
+	ScanID      string    `json:"scan_id"`
+	ScanStatus  string    `json:"scan_status"`
+	ScanMessage string    `json:"scan_message"`
 }
 
 type Vulnerability struct {
 	Count                      int      `json:"count"`
 	Timestamp                  string   `json:"@timestamp"`
-	CveTuple                   string   `json:"cve_id_cve_severity_cve_container_image"`
-	DocId                      string   `json:"doc_id"`
-	Masked                     string   `json:"masked"`
+	Masked                     bool     `json:"masked"`
 	Type                       string   `json:"type"`
-	Host                       string   `json:"host"`
-	HostName                   string   `json:"host_name"`
-	KubernetesClusterName      string   `json:"kubernetes_cluster_name"`
-	NodeType                   string   `json:"node_type"`
 	Scan_id                    string   `json:"scan_id"`
 	Cve_id                     string   `json:"cve_id"`
 	Cve_type                   string   `json:"cve_type"`
-	Cve_container_image        string   `json:"cve_container_image"`
-	Cve_container_image_id     string   `json:"cve_container_image_id"`
-	Cve_container_name         string   `json:"cve_container_name"`
 	Cve_severity               string   `json:"cve_severity"`
 	Cve_caused_by_package      string   `json:"cve_caused_by_package"`
 	Cve_caused_by_package_path string   `json:"cve_caused_by_package_path"`
@@ -79,7 +64,8 @@ func CommitFuncVulnerabilities(ns string, data []Vulnerability) error {
 		SET n+= row
 		WITH n, row.scan_id as scan_id
 		MATCH (m:VulnerabilityScan{node_id: scan_id})
-		MERGE (m) -[:DETECTED]-> (n)`,
+		MERGE (m) -[r:DETECTED]-> (n)
+		SET r.masked = false`,
 		map[string]interface{}{"batch": CVEsToMaps(data)}); err != nil {
 		log.Error().Msgf(err.Error())
 		return err

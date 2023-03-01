@@ -42,6 +42,10 @@ func (d *RegistryDockerPrivate) IsValidCredential() bool {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		log.Error().Msgf("failed to authenticate, response: %+v", resp)
+	}
+
 	return resp.StatusCode == http.StatusOK
 }
 
@@ -66,8 +70,7 @@ func (d *RegistryDockerPrivate) DecryptExtras(aes encryption.AES) error {
 }
 
 func (d *RegistryDockerPrivate) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
-	return listImagesRegistryV2(d.NonSecret.DockerRegistryURL, d.NonSecret.DockerUsername,
-		d.NonSecret.DockerUsername, d.Secret.DockerPassword)
+	return listImagesRegistryV2(d.NonSecret.DockerRegistryURL, d.NonSecret.DockerUsername, d.Secret.DockerPassword)
 }
 
 // getters

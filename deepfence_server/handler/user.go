@@ -105,6 +105,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		Role:                role.Name,
 		RoleID:              role.ID,
 		PasswordInvalidated: registerRequest.IsTemporaryPassword,
+		CompanyNamespace:    c.Namespace,
 	}
 	user.Groups, err = c.GetDefaultUserGroupMap(ctx, pgClient)
 	if err != nil {
@@ -333,9 +334,13 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetUserByUserID(w http.ResponseWriter, r *http.Request) {
-	user, _, _, err := h.GetUserByID(chi.URLParam(r, "id"))
+	userId, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		respondError(err, w)
+		respondError(&BadDecoding{err}, w)
+	}
+	user, statusCode, _, _, err := model.GetUserByID(userId)
+	if err != nil {
+		respondWithErrorCode(err, w, statusCode)
 		return
 	}
 	httpext.JSON(w, http.StatusOK, user)
@@ -343,7 +348,7 @@ func (h *Handler) GetUserByUserID(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx context.Context, pgClient *postgresql_db.Queries, user *model.User) {
 	defer r.Body.Close()
-	var req model.EditUserRequest
+	var req model.UpdateUserRequest
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		respondError(err, w)
@@ -384,12 +389,52 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdateUserByUserID(w http.ResponseWriter, r *http.Request) {
-	user, ctx, pgClient, err := h.GetUserByID(chi.URLParam(r, "id"))
+	userId, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		respondError(&BadDecoding{err}, w)
+	}
+	user, statusCode, ctx, pgClient, err := model.GetUserByID(userId)
+	if err != nil {
+		respondWithErrorCode(err, w, statusCode)
+		return
+	}
+	h.updateUserHandler(w, r, ctx, pgClient, user)
+}
+
+func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.UpdateUserPasswordRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		respondError(err, w)
 		return
 	}
-	h.updateUserHandler(w, r, ctx, pgClient, user)
+	err = h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	if err != nil {
+		respondWithErrorCode(err, w, statusCode)
+		return
+	}
+	passwordValid, err := user.CompareHashAndPassword(ctx, pgClient, req.OldPassword)
+	if err != nil || !passwordValid {
+		respondWithErrorCode(errors.New("password is incorrect"), w, http.StatusBadRequest)
+		return
+	}
+	err = user.SetPassword(req.NewPassword)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	err = user.UpdatePassword(ctx, pgClient)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
@@ -483,13 +528,12 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 		respondError(err, w)
 		return
 	}
-	_, err = user.Update(ctx, pgClient)
+	err = user.UpdatePassword(ctx, pgClient)
 	if err != nil {
 		respondError(err, w)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) GetApiTokens(w http.ResponseWriter, r *http.Request) {
@@ -549,24 +593,6 @@ func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	httpext.JSON(w, http.StatusOK, apiTokens)
-}
-
-func (h *Handler) GetUserByID(userID string) (*model.User, context.Context, *postgresql_db.Queries, error) {
-	uID, err := strconv.ParseInt(userID, 10, 64)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	ctx := directory.NewGlobalContext()
-	pgClient, err := directory.PostgresClient(ctx)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	user := model.User{ID: uID}
-	err = user.LoadFromDbByID(ctx, pgClient)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	return &user, ctx, pgClient, nil
 }
 
 func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, int, context.Context, *postgresql_db.Queries, error) {

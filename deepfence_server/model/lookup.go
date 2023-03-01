@@ -3,10 +3,6 @@ package model
 // "nested_json" fields are string json maps
 // that can be unmarshalled on the fly
 
-type Cypherable interface {
-	NodeType() string
-}
-
 type PresentationContext struct {
 	MetadataOrder map[string]int    `json:"metadata_order" required:"true"`
 	IDToLabels    map[string]string `json:"id_to_labels" required:"true"`
@@ -26,6 +22,18 @@ func (KubernetesCluster) NodeType() string {
 	return "KubernetesCluster"
 }
 
+func (KubernetesCluster) GetCategory() string {
+	return ""
+}
+
+func (KubernetesCluster) GetJsonCategory() string {
+	return ""
+}
+
+func (KubernetesCluster) ExtendedField() string {
+	return ""
+}
+
 type RegularScanStatus struct {
 	VulnerabilitiesCount    int    `json:"vulnerabilities_count"  required:"true"`
 	VulnerabilityScanStatus string `json:"vulnerability_scan_status" required:"true"`
@@ -35,6 +43,18 @@ type RegularScanStatus struct {
 	MalwareScanStatus       string `json:"malware_scan_status" required:"true"`
 	CompliancesCount        int    `json:"compliances_count" required:"true"`
 	ComplianceScanStatus    string `json:"compliance_scan_status" required:"true"`
+}
+
+type BasicNode struct {
+	NodeId   string `json:"node_id" required:"true"`
+	Name     string `json:"name" required:"true"`
+	NodeType string `json:"node_type" required:"true"`
+	HostName string `json:"host_name" required:"true"`
+}
+
+type ScanResultBasicNode struct {
+	ResultID   string      `json:"result_id" required:"true"`
+	BasicNodes []BasicNode `json:"basic_nodes" required:"true"`
 }
 
 type Host struct {
@@ -59,8 +79,32 @@ func (RegistryAccount) NodeType() string {
 	return "RegistryAccount"
 }
 
+func (RegistryAccount) ExtendedField() string {
+	return ""
+}
+
+func (RegistryAccount) GetCategory() string {
+	return ""
+}
+
+func (RegistryAccount) GetJsonCategory() string {
+	return ""
+}
+
 func (Host) NodeType() string {
 	return "Node"
+}
+
+func (Host) ExtendedField() string {
+	return ""
+}
+
+func (Host) GetCategory() string {
+	return ""
+}
+
+func (Host) GetJsonCategory() string {
+	return ""
 }
 
 type EndpointID struct {
@@ -89,6 +133,18 @@ func (Pod) NodeType() string {
 	return "Pod"
 }
 
+func (Pod) ExtendedField() string {
+	return ""
+}
+
+func (Pod) GetCategory() string {
+	return ""
+}
+
+func (Pod) GetJsonCategory() string {
+	return ""
+}
+
 type Container struct {
 	ID             string         `json:"node_id" required:"true"`
 	Name           string         `json:"docker_container_name" required:"true"`
@@ -103,6 +159,18 @@ type Container struct {
 
 func (Container) NodeType() string {
 	return "Container"
+}
+
+func (Container) ExtendedField() string {
+	return ""
+}
+
+func (Container) GetCategory() string {
+	return ""
+}
+
+func (Container) GetJsonCategory() string {
+	return ""
 }
 
 type Process struct {
@@ -120,6 +188,18 @@ func (Process) NodeType() string {
 	return "Process"
 }
 
+func (Process) ExtendedField() string {
+	return ""
+}
+
+func (Process) GetCategory() string {
+	return ""
+}
+
+func (Process) GetJsonCategory() string {
+	return ""
+}
+
 type ContainerImage struct {
 	ID       string         `json:"node_id" required:"true"`
 	Name     string         `json:"docker_image_name" required:"true"`
@@ -132,6 +212,18 @@ type ContainerImage struct {
 
 func (ContainerImage) NodeType() string {
 	return "ContainerImage"
+}
+
+func (ContainerImage) ExtendedField() string {
+	return ""
+}
+
+func (ContainerImage) GetCategory() string {
+	return ""
+}
+
+func (ContainerImage) GetJsonCategory() string {
+	return ""
 }
 
 type ComputeMetrics struct {

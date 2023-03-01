@@ -38,9 +38,8 @@ func UpdateScanResultNodeFields(ctx context.Context, scanType utils.Neo4jScanTyp
 	return tx.Commit()
 }
 
-func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskRequest, value string) error {
+func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskRequest, value bool) error {
 	// (m:VulnerabilityScan) - [r:DETECTED] -> (n:Cve)
-	// update fields of "DETECTED" edges
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -57,21 +56,24 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 	}
 	defer tx.Close()
 
-	_, err = tx.Run(`
+	if req.MaskAcrossHostsAndImages {
+		_, err = tx.Run(`
 		MATCH (m:`+string(req.ScanType)+`) -[r:DETECTED]-> (n)
 		WHERE n.node_id IN $node_ids AND m.node_id = $scan_id
-		SET r.masked = $value`, map[string]interface{}{"node_ids": req.NodeIds, "value": value, "scan_id": req.ScanID})
+		SET r.masked = $value`, map[string]interface{}{"node_ids": req.ResultIDs, "value": value, "scan_id": req.ScanID})
+	} else {
+		_, err = tx.Run(`
+		MATCH (m:`+string(req.ScanType)+`) -[:DETECTED]-> (n)
+		WHERE n.node_id IN $node_ids
+		SET n.masked = $value`, map[string]interface{}{"node_ids": req.ResultIDs, "value": value})
+	}
 	if err != nil {
 		return err
-	}
-
-	if req.MaskAcrossHostsAndImages {
-		
 	}
 	return tx.Commit()
 }
 
-func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId string, nodeIds []string) error {
+func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId string, docIds []string) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -88,19 +90,27 @@ func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 	}
 	defer tx.Close()
 
-	if len(nodeIds) > 0 {
+	if len(docIds) > 0 {
 		_, err = tx.Run(`
 		MATCH (m:`+string(scanType)+`) -[r:DETECTED]-> (n)
 		WHERE n.node_id IN $node_ids AND m.node_id = $scan_id
-		DELETE r`, map[string]interface{}{"node_ids": nodeIds, "scan_id": scanId})
+		DELETE r`, map[string]interface{}{"node_ids": docIds, "scan_id": scanId})
 		if err != nil {
 			return err
 		}
 	} else {
 		_, err = tx.Run(`
-		MATCH (m:`+string(scanType)+`) -[r:DETECTED]-> (n)
-		WHERE m.node_id = $scan_id
+		MATCH (m:`+string(scanType)+`{node_id: $scan_id})
+		OPTIONAL MATCH (m)-[r:DETECTED]-> (n:`+utils.ScanTypeDetectedNode[scanType]+`)
 		DETACH DELETE m,r`, map[string]interface{}{"scan_id": scanId})
+		if err != nil {
+			return err
+		}
+		// Delete results which are not part of any scans now
+		_, err = tx.Run(`
+		MATCH (n:`+utils.ScanTypeDetectedNode[scanType]+`) 
+		WHERE not (n)<-[:DETECTED]-(:`+string(scanType)+`)
+		DELETE (n)`, map[string]interface{}{})
 		if err != nil {
 			return err
 		}

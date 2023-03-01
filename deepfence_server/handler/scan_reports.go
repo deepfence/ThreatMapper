@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"path"
 	"strings"
 	"time"
@@ -18,6 +19,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
+	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -259,7 +261,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	var scanIds []string
 	var bulkId string
-	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) {
+	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) || scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
 		scanIds, bulkId, err = startMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
 	} else {
 		scanIds, bulkId, err = startMultiComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
@@ -485,6 +487,11 @@ func (h *Handler) IngestComplianceReportHandler(w http.ResponseWriter, r *http.R
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
 }
 
+func (h *Handler) IngestComplianceScanStatusHandler(w http.ResponseWriter, r *http.Request) {
+	ingester := ingesters.NewComplianceScanStatusIngester()
+	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
+}
+
 func (h *Handler) IngestCloudComplianceReportHandler(w http.ResponseWriter, r *http.Request) {
 	ingester := ingesters.NewCloudComplianceIngester()
 	ingest_scan_report_kafka(w, r, ingester, h.IngestChan)
@@ -518,6 +525,7 @@ func ingest_scan_report_kafka[T any](
 	}
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error reading request body", http.StatusInternalServerError)
 		return
 	}
@@ -527,11 +535,13 @@ func ingest_scan_report_kafka[T any](
 	var data T
 	err = json.Unmarshal(body, &data)
 	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}
 	err = ingester.Ingest(ctx, data, ingestChan)
 	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}
@@ -554,7 +564,7 @@ func (h *Handler) StatusSecretScanHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (h *Handler) StatusComplianceScanHandler(w http.ResponseWriter, r *http.Request) {
-	complianceStatusScanHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
+	statusScanHandler(w, r, utils.NEO4J_COMPLIANCE_SCAN)
 }
 
 func (h *Handler) StatusMalwareScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -647,14 +657,23 @@ func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Ne
 		return
 	}
 
-	infos, err := reporters_scan.GetScansList(r.Context(), scan_type, req.NodeIds, req.Window)
+	infos, err := reporters_scan.GetScansList(r.Context(), scan_type, req.NodeIds, req.Window, req.ScanStatus)
 	if err == reporters.NotFoundErr {
 		err = &NotFoundError{err}
 	}
+
 	if err != nil {
 		log.Error().Msgf("%v, req=%v", err, req)
 		respondError(err, w)
 		return
+	}
+
+	for i := range infos.ScansInfo {
+		counts, err := reporters_scan.GetSevCounts(r.Context(), scan_type, infos.ScansInfo[i].ScanId)
+		infos.ScansInfo[i].SeverityCounts = counts
+		if err != nil {
+			log.Error().Err(err).Msg("Counts computation issue")
+		}
 	}
 
 	httpext.JSON(w, http.StatusOK, infos)
@@ -732,6 +751,66 @@ func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r
 		ComplianceAdditionalInfo: additionalInfo})
 }
 
+func (h *Handler) CountVulnerabilityScanResultsHandler(w http.ResponseWriter, r *http.Request) {
+	entries, _, err := listScanResultsHandler[model.Vulnerability](w, r, utils.NEO4J_VULNERABILITY_SCAN)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
+		Count: len(entries),
+	})
+}
+
+func (h *Handler) CountSecretScanResultsHandler(w http.ResponseWriter, r *http.Request) {
+	entries, _, err := listScanResultsHandler[model.Secret](w, r, utils.NEO4J_SECRET_SCAN)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
+		Count: len(entries),
+	})
+}
+
+func (h *Handler) CountComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
+	entries, _, err := listScanResultsHandler[model.Compliance](w, r, utils.NEO4J_COMPLIANCE_SCAN)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
+		Count: len(entries),
+	})
+}
+
+func (h *Handler) CountMalwareScanResultsHandler(w http.ResponseWriter, r *http.Request) {
+	entries, _, err := listScanResultsHandler[model.Malware](w, r, utils.NEO4J_MALWARE_SCAN)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
+		Count: len(entries),
+	})
+}
+
+func (h *Handler) CountCloudComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
+	entries, _, err := listScanResultsHandler[model.CloudCompliance](w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
+		Count: len(entries),
+	})
+}
+
 func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) ([]T, model.ScanResultsCommon, error) {
 	defer r.Body.Close()
 	var req model.ScanResultsReq
@@ -796,9 +875,9 @@ func (h *Handler) scanResultMaskHandler(w http.ResponseWriter, r *http.Request, 
 	}
 	switch action {
 	case "mask":
-		err = reporters_scan.UpdateScanResultMasked(r.Context(), &req, "true")
+		err = reporters_scan.UpdateScanResultMasked(r.Context(), &req, true)
 	case "unmask":
-		err = reporters_scan.UpdateScanResultMasked(r.Context(), &req, "false")
+		err = reporters_scan.UpdateScanResultMasked(r.Context(), &req, false)
 	}
 	if err != nil {
 		respondError(err, w)
@@ -822,9 +901,9 @@ func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request
 	}
 	switch action {
 	case "delete":
-		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds)
+		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
 	case "notify":
-		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.NodeIds)
+		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
 	}
 	if err != nil {
 		respondError(err, w)
@@ -865,6 +944,10 @@ func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, ac
 		httpext.JSON(w, http.StatusOK, resp)
 	case "delete":
 		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{})
+		if err != nil {
+			respondError(err, w)
+			return
+		}
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
@@ -877,26 +960,93 @@ func (h *Handler) ScanDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	h.scanIdActionHandler(w, r, "delete")
 }
 
-func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action string) {
+func (h *Handler) GetAllNodesInScanResultHandler(w http.ResponseWriter, r *http.Request) {
+	req := model.ScanResultFoundNodesRequest{
+		ResultID: chi.URLParam(r, "result_id"),
+		ScanType: chi.URLParam(r, "scan_type"),
+	}
+	err := h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+	resp, err := reporters_scan.GetScanResultNodes(r.Context(), utils.Neo4jScanType(req.ScanType), req.ResultID)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, resp)
+}
+
+func (h *Handler) GetAllNodesInScanResultBulkHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req model.SbomRequest
+	var req model.NodesInScanResultRequest
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		respondError(err, w)
 		return
 	}
-	if req.ScanID == "" {
-		if req.NodeType == "" || req.NodeID == "" {
-			respondError(&BadDecoding{errors.New("scan_id is required or node_id and node_type are required")}, w)
-			return
-		}
+	err = h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
 	}
+	resp, err := reporters_scan.GetNodesInScanResults(r.Context(), utils.Neo4jScanType(req.ScanType), req.ResultIDs)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, resp)
+}
+
+func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action string) {
+	defer r.Body.Close()
+	var req model.SbomRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		respondError(err, w)
+		return
+	}
+
+	if req.ScanID == "" {
+		respondError(&BadDecoding{errors.New("scan_id is required")}, w)
+		return
+	}
+
+	mc, err := directory.MinioClient(r.Context())
+	if err != nil {
+		log.Error().Msg(err.Error())
+		respondError(err, w)
+		return
+	}
+
 	switch action {
 	case "get":
 		var sbom []model.SbomResponse
+		runtimeSbom := path.Join("sbom", "runtime-"+utils.ScanIdReplacer.Replace(req.ScanID)+".json")
+		buff, err := mc.DownloadFileContexts(r.Context(), runtimeSbom, minio.GetObjectOptions{})
+		if err != nil {
+			log.Error().Msg(err.Error())
+			respondError(err, w)
+			return
+		}
+		if err := json.Unmarshal(buff, &sbom); err != nil {
+			log.Error().Msg(err.Error())
+			respondError(err, w)
+			return
+		}
 		httpext.JSON(w, http.StatusOK, sbom)
 	case "download":
 		resp := model.DownloadReportResponse{}
+		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(req.ScanID)+".json")
+		url, err := mc.ExposeFile(r.Context(), sbomFile, 5*time.Minute, url.Values{})
+		if err != nil {
+			log.Error().Msg(err.Error())
+			respondError(err, w)
+			return
+		}
+		resp.UrlLink = url
 		httpext.JSON(w, http.StatusOK, resp)
 	}
 }
@@ -1165,10 +1315,11 @@ func startMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 			err = ingesters.AddNewCloudComplianceScan(ingesters.WriteDBTransaction{Tx: tx},
 				scanId,
 				benchmarkType,
-				req.NodeId)
+				req.NodeId,
+				reqs[0].NodeType)
 
 			if err != nil {
-				log.Error().Err(err)
+				log.Error().Msgf("%v", err)
 				return nil, "", err
 			}
 			scanIds = append(scanIds, scanId)
@@ -1182,7 +1333,11 @@ func startMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 	var bulkId string
 
 	bulkId = bulkScanId()
-	err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, bulkId, scanIds)
+	scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
+	if reqs[0].NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
+		scanType = utils.NEO4J_COMPLIANCE_SCAN
+	}
+	err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, scanType, bulkId, scanIds)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		return nil, "", err
@@ -1196,7 +1351,8 @@ func startMultiComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, 
 	bulkId := bulkScanId()
 	for _, req := range reqs {
 		for _, benchmarkType := range benchmarkTypes {
-			scanIds = append(scanIds, cloudComplianceScanId(req.NodeId, benchmarkType))
+			scanId := cloudComplianceScanId(req.NodeId, benchmarkType)
+			scanIds = append(scanIds, scanId)
 		}
 	}
 	return scanIds, bulkId, nil

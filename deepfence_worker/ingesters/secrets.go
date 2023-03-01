@@ -10,16 +10,10 @@ import (
 )
 
 type SecretScanStatus struct {
-	Timestamp             time.Time `json:"@timestamp"`
-	ContainerName         string    `json:"container_name"`
-	HostName              string    `json:"host_name"`
-	KubernetesClusterName string    `json:"kubernetes_cluster_name"`
-	Masked                string    `json:"masked"`
-	NodeID                string    `json:"node_id"`
-	NodeName              string    `json:"node_name"`
-	NodeType              string    `json:"node_type"`
-	ScanID                string    `json:"scan_id"`
-	ScanStatus            string    `json:"scan_status"`
+	Timestamp   time.Time `json:"@timestamp"`
+	ScanID      string    `json:"scan_id"`
+	ScanStatus  string    `json:"scan_status"`
+	ScanMessage string    `json:"scan_message"`
 }
 
 type Secret struct {
@@ -42,14 +36,8 @@ type Secret struct {
 		Level string  `json:"level"`
 		Score float64 `json:"score"`
 	} `json:"Severity"`
-	ContainerName         string `json:"container_name"`
-	HostName              string `json:"host_name"`
-	KubernetesClusterName string `json:"kubernetes_cluster_name"`
-	Masked                string `json:"masked"`
-	NodeID                string `json:"node_id"`
-	NodeName              string `json:"node_name"`
-	NodeType              string `json:"node_type"`
-	ScanID                string `json:"scan_id"`
+	Masked bool   `json:"masked"`
+	ScanID string `json:"scan_id"`
 }
 
 func CommitFuncSecrets(ns string, data []Secret) error {
@@ -81,7 +69,8 @@ func CommitFuncSecrets(ns string, data []Secret) error {
 		MERGE (n)-[:IS]->(r)
 		MERGE (m:SecretScan{node_id: row.scan_id})
 		WITH n, m
-		MERGE (m) -[:DETECTED]-> (n)`,
+		MERGE (m) -[r:DETECTED]-> (n)
+		SET r.masked = false`,
 		map[string]interface{}{"batch": secretsToMaps(data)}); err != nil {
 		return err
 	}
@@ -90,7 +79,7 @@ func CommitFuncSecrets(ns string, data []Secret) error {
 }
 
 func secretsToMaps(data []Secret) []map[string]map[string]interface{} {
-	secrets := []map[string]map[string]interface{}{}
+	var secrets []map[string]map[string]interface{}
 	for _, i := range data {
 		secret := utils.ToMap(i)
 		delete(secret, "Severity")
@@ -104,7 +93,7 @@ func secretsToMaps(data []Secret) []map[string]map[string]interface{} {
 		for k, v := range utils.ToMap(i.Match) {
 			secret[k] = v
 		}
-		secret["node_id"] = fmt.Sprintf("%v:%v:%v", i.Rule.ID, i.HostName, i.Match.FullFilename)
+		secret["node_id"] = fmt.Sprintf("%v:%v", i.Rule.ID, i.Match.FullFilename)
 		secrets = append(secrets, map[string]map[string]interface{}{
 			"Rule":   utils.ToMap(i.Rule),
 			"Secret": secret,

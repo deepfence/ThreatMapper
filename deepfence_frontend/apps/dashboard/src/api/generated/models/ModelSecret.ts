@@ -27,6 +27,12 @@ export interface ModelSecret {
     full_filename: string;
     /**
      * 
+     * @type {boolean}
+     * @memberof ModelSecret
+     */
+    masked: boolean;
+    /**
+     * 
      * @type {string}
      * @memberof ModelSecret
      */
@@ -45,10 +51,22 @@ export interface ModelSecret {
     relative_starting_index: number;
     /**
      * 
+     * @type {string}
+     * @memberof ModelSecret
+     */
+    rule_id: string;
+    /**
+     * 
      * @type {number}
      * @memberof ModelSecret
      */
     starting_index: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelSecret
+     */
+    updated_at: number;
 }
 
 /**
@@ -57,10 +75,13 @@ export interface ModelSecret {
 export function instanceOfModelSecret(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "full_filename" in value;
+    isInstance = isInstance && "masked" in value;
     isInstance = isInstance && "matched_content" in value;
     isInstance = isInstance && "relative_ending_index" in value;
     isInstance = isInstance && "relative_starting_index" in value;
+    isInstance = isInstance && "rule_id" in value;
     isInstance = isInstance && "starting_index" in value;
+    isInstance = isInstance && "updated_at" in value;
 
     return isInstance;
 }
@@ -76,10 +97,13 @@ export function ModelSecretFromJSONTyped(json: any, ignoreDiscriminator: boolean
     return {
         
         'full_filename': json['full_filename'],
+        'masked': json['masked'],
         'matched_content': json['matched_content'],
         'relative_ending_index': json['relative_ending_index'],
         'relative_starting_index': json['relative_starting_index'],
+        'rule_id': json['rule_id'],
         'starting_index': json['starting_index'],
+        'updated_at': json['updated_at'],
     };
 }
 
@@ -93,10 +117,13 @@ export function ModelSecretToJSON(value?: ModelSecret | null): any {
     return {
         
         'full_filename': value.full_filename,
+        'masked': value.masked,
         'matched_content': value.matched_content,
         'relative_ending_index': value.relative_ending_index,
         'relative_starting_index': value.relative_starting_index,
+        'rule_id': value.rule_id,
         'starting_index': value.starting_index,
+        'updated_at': value.updated_at,
     };
 }
 

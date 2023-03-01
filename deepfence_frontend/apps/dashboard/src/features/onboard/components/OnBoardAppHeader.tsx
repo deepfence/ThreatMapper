@@ -37,7 +37,7 @@ export const OnboardAppHeader = () => {
             className="m-auto"
           />
           <Link
-            to="/"
+            to="/dashboard"
             className={cx(
               `${Typography.size.sm} `,
               'underline underline-offset-2 ml-6 bg-transparent text-blue-600 dark:text-blue-500',

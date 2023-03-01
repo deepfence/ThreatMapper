@@ -160,7 +160,7 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
             }
         }
         const response = await this.request({
-            path: `/deepfence/registryaccount/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            path: `/deepfence/registryaccount/{id}/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
             method: 'DELETE',
             headers: headerParameters,
             query: queryParameters,

@@ -69,10 +69,10 @@ export interface ModelCloudCompliance {
     group: string;
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof ModelCloudCompliance
      */
-    masked: string;
+    masked: boolean;
     /**
      * 
      * @type {string}
@@ -139,6 +139,12 @@ export interface ModelCloudCompliance {
      * @memberof ModelCloudCompliance
      */
     type: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelCloudCompliance
+     */
+    updated_at: number;
 }
 
 /**
@@ -166,6 +172,7 @@ export function instanceOfModelCloudCompliance(value: object): boolean {
     isInstance = isInstance && "status" in value;
     isInstance = isInstance && "title" in value;
     isInstance = isInstance && "type" in value;
+    isInstance = isInstance && "updated_at" in value;
 
     return isInstance;
 }
@@ -200,6 +207,7 @@ export function ModelCloudComplianceFromJSONTyped(json: any, ignoreDiscriminator
         'status': json['status'],
         'title': json['title'],
         'type': json['type'],
+        'updated_at': json['updated_at'],
     };
 }
 
@@ -232,6 +240,7 @@ export function ModelCloudComplianceToJSON(value?: ModelCloudCompliance | null):
         'status': value.status,
         'title': value.title,
         'type': value.type,
+        'updated_at': value.updated_at,
     };
 }
 

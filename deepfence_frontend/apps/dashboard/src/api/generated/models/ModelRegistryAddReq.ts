@@ -21,6 +21,12 @@ import { exists, mapValues } from '../runtime';
 export interface ModelRegistryAddReq {
     /**
      * 
+     * @type {{ [key: string]: any; }}
+     * @memberof ModelRegistryAddReq
+     */
+    extras?: { [key: string]: any; } | null;
+    /**
+     * 
      * @type {string}
      * @memberof ModelRegistryAddReq
      */
@@ -64,6 +70,7 @@ export function ModelRegistryAddReqFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
+        'extras': !exists(json, 'extras') ? undefined : json['extras'],
         'name': !exists(json, 'name') ? undefined : json['name'],
         'non_secret': !exists(json, 'non_secret') ? undefined : json['non_secret'],
         'registry_type': !exists(json, 'registry_type') ? undefined : json['registry_type'],
@@ -80,6 +87,7 @@ export function ModelRegistryAddReqToJSON(value?: ModelRegistryAddReq | null): a
     }
     return {
         
+        'extras': value.extras,
         'name': value.name,
         'non_secret': value.non_secret,
         'registry_type': value.registry_type,

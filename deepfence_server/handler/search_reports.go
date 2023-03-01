@@ -4,25 +4,36 @@ import (
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
-func SearchCountHandler[T model.Cypherable](w http.ResponseWriter, r *http.Request) {
+func SearchCountHandler[T reporters.CypherableAndCategorizable](w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var req reporters_search.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters_search.SearchReport[T](r.Context(), req.NodeFilter, req.Window)
+	// Optimize query for counting
+	var dummy T
+	dummy_ff := reporters_search.SearchFilter{
+		InFieldFilter: []string{dummy.GetJsonCategory()},
+		Filters:       req.NodeFilter.Filters,
+	}
+
+	entries, err := reporters_search.SearchReport[T](r.Context(), dummy_ff, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
 	}
 
+	counts := reporters.GetCategoryCounts(entries)
+
 	err = httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
-		Count: len(hosts),
+		Count:      len(entries),
+		Categories: counts,
 	})
 
 	if err != nil {
@@ -30,18 +41,18 @@ func SearchCountHandler[T model.Cypherable](w http.ResponseWriter, r *http.Reque
 	}
 }
 
-func SearchHandler[T model.Cypherable](w http.ResponseWriter, r *http.Request) {
+func SearchHandler[T reporters.Cypherable](w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var req reporters_search.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters_search.SearchReport[T](r.Context(), req.NodeFilter, req.Window)
+	entries, err := reporters_search.SearchReport[T](r.Context(), req.NodeFilter, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
 	}
 
-	err = httpext.JSON(w, http.StatusOK, hosts)
+	err = httpext.JSON(w, http.StatusOK, entries)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -100,35 +111,35 @@ func (h *Handler) SearchCloudComplianceScans(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *Handler) SearchHostsCount(w http.ResponseWriter, r *http.Request) {
-	SearchHandler[model.Host](w, r)
+	SearchCountHandler[model.Host](w, r)
 }
 
 func (h *Handler) SearchContainersCount(w http.ResponseWriter, r *http.Request) {
-	SearchHandler[model.Container](w, r)
+	SearchCountHandler[model.Container](w, r)
 }
 
 func (h *Handler) SearchContainerImagesCount(w http.ResponseWriter, r *http.Request) {
-	SearchHandler[model.ContainerImage](w, r)
+	SearchCountHandler[model.ContainerImage](w, r)
 }
 
 func (h *Handler) SearchVulnerabilitiesCount(w http.ResponseWriter, r *http.Request) {
-	SearchHandler[model.Vulnerability](w, r)
+	SearchCountHandler[model.Vulnerability](w, r)
 }
 
 func (h *Handler) SearchSecretsCount(w http.ResponseWriter, r *http.Request) {
-	SearchHandler[model.Secret](w, r)
+	SearchCountHandler[model.Secret](w, r)
 }
 
 func (h *Handler) SearchMalwaresCount(w http.ResponseWriter, r *http.Request) {
-	SearchHandler[model.Malware](w, r)
+	SearchCountHandler[model.Malware](w, r)
 }
 
 func (h *Handler) SearchCloudCompliancesCount(w http.ResponseWriter, r *http.Request) {
-	SearchHandler[model.CloudCompliance](w, r)
+	SearchCountHandler[model.CloudCompliance](w, r)
 }
 
 func (h *Handler) SearchCompliancesCount(w http.ResponseWriter, r *http.Request) {
-	SearchHandler[model.Compliance](w, r)
+	SearchCountHandler[model.Compliance](w, r)
 }
 
 func (h *Handler) SearchVulnerabilityScansCount(w http.ResponseWriter, r *http.Request) {

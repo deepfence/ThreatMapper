@@ -34,10 +34,11 @@ type SearchScanReq struct {
 }
 
 type SearchCountResp struct {
-	Count int `json:"count" required:"true"`
+	Count      int              `json:"count" required:"true"`
+	Categories map[string]int32 `json:"categories" required:"true"`
 }
 
-func searchGenericDirectNodeReport[T model.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
+func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
 	res := []T{}
 	var dummy T
 
@@ -59,9 +60,10 @@ func searchGenericDirectNodeReport[T model.Cypherable](ctx context.Context, filt
 	defer tx.Close()
 
 	query := `
-		MATCH (n:` + dummy.NodeType() + `) ` +
+		MATCH (n:` + dummy.NodeType() + `)
+	    OPTIONAL MATCH (n) -[:IS]-> (e)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-		` RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + ` ` +
+		` RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e ` +
 		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) + fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
@@ -97,7 +99,11 @@ func searchGenericDirectNodeReport[T model.Cypherable](ctx context.Context, filt
 				node_map[filter.InFieldFilter[i]] = rec.Values[i]
 			}
 		}
+		is_node, _ := rec.Get("e")
 		var node T
+		if is_node != nil {
+			node_map[node.ExtendedField()] = is_node.(dbtype.Node).Props["node_id"]
+		}
 		utils.FromMap(node_map, &node)
 		res = append(res, node)
 	}
@@ -130,7 +136,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(scan_filter.Filters), true) +
 		`MATCH (n) -[:SCANNED]- (m)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(resource_filter.Filters), true) +
-		` RETURN n.node_id as scan_id, n.status, n.updated_at, m.node_id, m.node_type, m.node_name` +
+		` RETURN n.node_id as scan_id, n.status, n.updated_at, m.node_id, labels(m) as node_type, m.node_name` +
 		reporters.OrderFilter2CypherCondition("n", scan_filter.Filters.OrderFilter) +
 		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
@@ -153,10 +159,6 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 		if err != nil {
 			log.Error().Msgf("%v", err)
 		}
-		node_type := ""
-		if rec.Values[4] != nil {
-			node_type = rec.Values[4].(string)
-		}
 		node_name := ""
 		if rec.Values[5] != nil {
 			node_name = rec.Values[5].(string)
@@ -166,7 +168,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 			Status:         rec.Values[1].(string),
 			UpdatedAt:      rec.Values[2].(int64),
 			NodeId:         rec.Values[3].(string),
-			NodeType:       node_type,
+			NodeType:       reporters_scan.Labels2NodeType(rec.Values[4].([]interface{})),
 			NodeName:       node_name,
 			SeverityCounts: counts,
 		})
@@ -175,7 +177,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 	return res, nil
 }
 
-func SearchReport[T model.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
+func SearchReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
 	hosts, err := searchGenericDirectNodeReport[T](ctx, filter, fw)
 	if err != nil {
 		return nil, err

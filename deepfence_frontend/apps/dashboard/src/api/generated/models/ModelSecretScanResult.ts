@@ -104,6 +104,12 @@ export interface ModelSecretScanResult {
      * @memberof ModelSecretScanResult
      */
     severity_counts: { [key: string]: number; } | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelSecretScanResult
+     */
+    updated_at: number;
 }
 
 /**
@@ -123,6 +129,7 @@ export function instanceOfModelSecretScanResult(value: object): boolean {
     isInstance = isInstance && "scan_id" in value;
     isInstance = isInstance && "secrets" in value;
     isInstance = isInstance && "severity_counts" in value;
+    isInstance = isInstance && "updated_at" in value;
 
     return isInstance;
 }
@@ -149,6 +156,7 @@ export function ModelSecretScanResultFromJSONTyped(json: any, ignoreDiscriminato
         'scan_id': json['scan_id'],
         'secrets': (json['secrets'] === null ? null : (json['secrets'] as Array<any>).map(ModelSecretFromJSON)),
         'severity_counts': json['severity_counts'],
+        'updated_at': json['updated_at'],
     };
 }
 
@@ -173,6 +181,7 @@ export function ModelSecretScanResultToJSON(value?: ModelSecretScanResult | null
         'scan_id': value.scan_id,
         'secrets': (value.secrets === null ? null : (value.secrets as Array<any>).map(ModelSecretToJSON)),
         'severity_counts': value.severity_counts,
+        'updated_at': value.updated_at,
     };
 }
 

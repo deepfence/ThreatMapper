@@ -2,15 +2,17 @@ package main
 
 import (
 	"errors"
+	"github.com/armon/go-metrics"
+	"github.com/weaveworks/go-checkpoint"
 	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/armon/go-metrics"
 	metrics_prom "github.com/armon/go-metrics/prometheus"
 	dfUtils "github.com/deepfence/df-utils"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
@@ -21,7 +23,6 @@ import (
 	"github.com/weaveworks/common/sanitize"
 	"github.com/weaveworks/common/signals"
 	"github.com/weaveworks/common/tracing"
-	"github.com/weaveworks/go-checkpoint"
 	"github.com/weaveworks/scope/common/hostname"
 	"github.com/weaveworks/scope/common/weave"
 	"github.com/weaveworks/scope/probe"
@@ -116,6 +117,12 @@ func setClusterAgentControls() {
 		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)
+	}
+	_, err = exec.Command("/bin/sh", "/home/deepfence/token.sh").CombinedOutput()
+	if err != nil {
+		log.Errorf("generate token: %v", err)
+	} else {
+		log.Debug("Token generated successfully")
 	}
 	err = controls.RegisterControl(ctl.StartAgentUpgrade,
 		func(req ctl.StartAgentUpgradeRequest) error {

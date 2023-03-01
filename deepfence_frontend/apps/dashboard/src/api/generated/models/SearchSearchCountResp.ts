@@ -16,50 +16,50 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ReportersLookupFilter
+ * @interface SearchSearchCountResp
  */
-export interface ReportersLookupFilter {
+export interface SearchSearchCountResp {
     /**
      * 
-     * @type {Array<string>}
-     * @memberof ReportersLookupFilter
+     * @type {{ [key: string]: number; }}
+     * @memberof SearchSearchCountResp
      */
-    in_field_filter: Array<string> | null;
+    categories: { [key: string]: number; } | null;
     /**
      * 
-     * @type {Array<string>}
-     * @memberof ReportersLookupFilter
+     * @type {number}
+     * @memberof SearchSearchCountResp
      */
-    node_ids: Array<string> | null;
+    count: number;
 }
 
 /**
- * Check if a given object implements the ReportersLookupFilter interface.
+ * Check if a given object implements the SearchSearchCountResp interface.
  */
-export function instanceOfReportersLookupFilter(value: object): boolean {
+export function instanceOfSearchSearchCountResp(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "in_field_filter" in value;
-    isInstance = isInstance && "node_ids" in value;
+    isInstance = isInstance && "categories" in value;
+    isInstance = isInstance && "count" in value;
 
     return isInstance;
 }
 
-export function ReportersLookupFilterFromJSON(json: any): ReportersLookupFilter {
-    return ReportersLookupFilterFromJSONTyped(json, false);
+export function SearchSearchCountRespFromJSON(json: any): SearchSearchCountResp {
+    return SearchSearchCountRespFromJSONTyped(json, false);
 }
 
-export function ReportersLookupFilterFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersLookupFilter {
+export function SearchSearchCountRespFromJSONTyped(json: any, ignoreDiscriminator: boolean): SearchSearchCountResp {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'in_field_filter': json['in_field_filter'],
-        'node_ids': json['node_ids'],
+        'categories': json['categories'],
+        'count': json['count'],
     };
 }
 
-export function ReportersLookupFilterToJSON(value?: ReportersLookupFilter | null): any {
+export function SearchSearchCountRespToJSON(value?: SearchSearchCountResp | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -68,8 +68,8 @@ export function ReportersLookupFilterToJSON(value?: ReportersLookupFilter | null
     }
     return {
         
-        'in_field_filter': value.in_field_filter,
-        'node_ids': value.node_ids,
+        'categories': value.categories,
+        'count': value.count,
     };
 }
 
