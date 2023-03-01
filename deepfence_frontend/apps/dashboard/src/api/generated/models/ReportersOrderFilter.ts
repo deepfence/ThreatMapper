@@ -21,10 +21,10 @@ import { exists, mapValues } from '../runtime';
 export interface ReportersOrderFilter {
     /**
      * 
-     * @type {string}
+     * @type {Array<string>}
      * @memberof ReportersOrderFilter
      */
-    order_field: string;
+    order_fields: Array<string> | null;
 }
 
 /**
@@ -32,7 +32,7 @@ export interface ReportersOrderFilter {
  */
 export function instanceOfReportersOrderFilter(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "order_field" in value;
+    isInstance = isInstance && "order_fields" in value;
 
     return isInstance;
 }
@@ -47,7 +47,7 @@ export function ReportersOrderFilterFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
         
-        'order_field': json['order_field'],
+        'order_fields': json['order_fields'],
     };
 }
 
@@ -60,7 +60,7 @@ export function ReportersOrderFilterToJSON(value?: ReportersOrderFilter | null):
     }
     return {
         
-        'order_field': value.order_field,
+        'order_fields': value.order_fields,
     };
 }
 

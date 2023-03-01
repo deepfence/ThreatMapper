@@ -62,7 +62,7 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
                 filter_in: {},
               },
               order_filter: {
-                order_field: '',
+                order_fields: [],
               },
               match_filter: {
                 filter_in: {},
@@ -172,7 +172,7 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
                 filter_in: {},
               },
               order_filter: {
-                order_field: '',
+                order_fields: [],
               },
               match_filter: {
                 filter_in: {},

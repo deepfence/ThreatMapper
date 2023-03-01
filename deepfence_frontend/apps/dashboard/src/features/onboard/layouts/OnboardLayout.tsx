@@ -14,7 +14,7 @@ export const rootOnboardLoader: LoaderFunction = async ({ request }) => {
 
 export const OnboardLayout = () => {
   return (
-    <div>
+    <div className="bg-white dark:bg-gray-900">
       <div className="mx-16 pt-[64px] pb-8 min-h-screen">
         <Outlet />
       </div>
