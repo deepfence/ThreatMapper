@@ -86,16 +86,10 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
           node_filter: {
             filters: {
               contains_filter: {
-                filter_in: {
-                  exploitability_score: [1, 2, 3],
-                },
+                filter_in: {},
               },
               order_filter: {
-                order_fields: [
-                  'exploitability_score',
-                  'cve_severity',
-                  'vulnerability_score',
-                ],
+                order_fields: [],
               },
               match_filter: {
                 filter_in: {},
@@ -232,7 +226,7 @@ const loader = async ({
   });
 };
 
-const MostExploitableVulnerabilities = () => {
+const UniqueVulnerabilities = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigation = useNavigation();
   const columnHelper = createColumnHelper<CveType>();
@@ -434,5 +428,5 @@ const MostExploitableVulnerabilities = () => {
 
 export const module = {
   loader,
-  element: <MostExploitableVulnerabilities />,
+  element: <UniqueVulnerabilities />,
 };

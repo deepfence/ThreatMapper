@@ -142,5 +142,7 @@ export function getScanResultsApiClient() {
     notifyScanResult: scanResultsApi.notifyScanResult.bind(scanResultsApi),
     maskScanResult: scanResultsApi.maskScanResult.bind(scanResultsApi),
     unmaskScanResult: scanResultsApi.unmaskScanResult.bind(scanResultsApi),
+    getAllNodesInScanResults:
+      scanResultsApi.getAllNodesInScanResults.bind(scanResultsApi),
   };
 }
