@@ -7,7 +7,7 @@ from utils.common import get_rounding_time_unit
 from utils.constants import ES_TERMS_AGGR_SIZE, CVE_INDEX, COMPLIANCE_INDEX, NODE_TYPE_HOST, \
     NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, NODE_TYPE_POD, DEEPFENCE_SUPPORT_EMAIL, TIME_UNIT_MAPPING, \
     ES_MAX_CLAUSE, CVE_ES_TYPE, SECRET_SCAN_INDEX, MALWARE_SCAN_INDEX, SECRET_SCAN_ES_TYPE, MALWARE_SCAN_ES_TYPE, COMPLIANCE_ES_TYPE, \
-    NODE_TYPE_LINUX,CLOUD_AWS,CLOUD_GCP,CLOUD_AZURE,CLOUD_COMPLIANCE_ES_TYPE
+    NODE_TYPE_LINUX,CLOUD_AWS,CLOUD_GCP,CLOUD_AZURE,CLOUD_COMPLIANCE_ES_TYPE, COMPLIANCE_KUBERNETES_HOST
 from utils.esconn import ESConn
 from utils.helper import modify_es_index
 from utils.resource import get_nodes_list, get_default_params
@@ -210,6 +210,8 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             if node_type == NODE_TYPE_CONTAINER and filters.get("container_name"):
                 proceed = True
             if node_type == NODE_TYPE_CONTAINER_IMAGE and filters.get("image_name_with_tag"):
+                proceed = True
+            if node_type == COMPLIANCE_KUBERNETES_HOST and filters.get("kubernetes_cluster_name"):
                 proceed = True
             if not proceed:
                 continue
@@ -501,7 +503,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, resource_type)
         elif node_type == NODE_TYPE_CONTAINER and resource_type == COMPLIANCE_ES_TYPE:
             get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, resource_type)
-        elif node_type == NODE_TYPE_LINUX and resource_type == COMPLIANCE_ES_TYPE:
+        elif (node_type == NODE_TYPE_LINUX or node_type == COMPLIANCE_KUBERNETES_HOST) and resource_type == COMPLIANCE_ES_TYPE:
             and_terms.append({"term": {"compliance_node_type.keyword": node_type}})
             get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, resource_type)
         elif node_type in [CLOUD_AWS,CLOUD_GCP,CLOUD_AZURE] and resource_type == COMPLIANCE_ES_TYPE:

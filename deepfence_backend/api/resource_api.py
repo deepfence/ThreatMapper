@@ -1190,6 +1190,7 @@ def enumerate_node_filters():
             filters_host_name = []
             filters_container_name = []
             filters_image_name = []
+            filters_kubernetes_name = []
             for container_bkt in aggs_responses[0].get("aggregations", {}).get(
                     "cve_container_name", {}).get("buckets", []):
                 if container_bkt["key"] and container_bkt["key"] not in filters_container_name:
@@ -1202,6 +1203,10 @@ def enumerate_node_filters():
                     elif node_type_bkt["key"] == constants.NODE_TYPE_CONTAINER_IMAGE:
                         if node_id_bkt["key"] and node_id_bkt["key"] not in filters_image_name:
                             filters_image_name.append(node_id_bkt["key"])
+                    elif node_type_bkt["key"] == constants.COMPLIANCE_KUBERNETES_HOST:
+                        for image_bkt in node_type_bkt.get("node_name", {}).get("buckets", []):
+                            if image_bkt["key"] and image_bkt["key"] not in filters_image_name:
+                                filters_kubernetes_name.append(image_bkt["key"])
                 for scan_action_bkt in node_type_bkt.get("node_status", {}).get("buckets", []):
                     if scan_action_bkt["key"] and scan_action_bkt["key"] not in filters_actions:
                         filters_actions.append(scan_action_bkt["key"])
@@ -1212,7 +1217,14 @@ def enumerate_node_filters():
                         resource_filters.append(details)
                 else:
                     resource_filters.append(details)
-            
+            if filters_kubernetes_name:
+                details = {"label": "Kubernetes Cluster Name", "name": "kubernetes_cluster_name",
+                           "options": filters_kubernetes_name, "type": "string"}
+                if node_types:
+                    if constants.COMPLIANCE_KUBERNETES_HOST in node_types:
+                        resource_filters.append(details)
+                else:
+                    resource_filters.append(details)
             if filters_image_name:
                 details = {"label": "Image Name", "name": "image_name_with_tag", "options": filters_image_name,
                            "type": "string"}
@@ -1908,9 +1920,6 @@ def node_action():
             kwargs={"action": action, "node_action_details": node_action_details, "task_type": "node_task"})
     elif action in [constants.NODE_ACTION_DOWNLOAD_REPORT]:
         from tasks.task_scheduler import run_node_task
-        # translates to kubernetes hosts, added for UI requests consistency
-        if node_type == COMPLIANCE_KUBERNETES_HOST:
-            node_action_details["node_type"] = NODE_TYPE_HOST
         return run_node_task(action, node_action_details)
     elif action in [constants.NODE_ACTION_SCHEDULE_CVE_SCAN, constants.NODE_ACTION_SCHEDULE_SEND_REPORT, constants.NODE_ACTION_SCHEDULE_COMPLIANCE_SCAN]:
         if not action_args.get("cron"):
