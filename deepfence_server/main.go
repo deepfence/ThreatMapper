@@ -31,6 +31,13 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
 var (
@@ -96,6 +103,11 @@ func main() {
 	// if err != nil {
 	// 	log.Fatal().Msg(err.Error())
 	// }
+
+	err = initializeTelemetry()
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
 
 	log.Info().Msg("starting deepfence-server")
 
@@ -358,5 +370,24 @@ func initializeKafka() error {
 
 	log.Info().Msg("connection to kafka brokers successful")
 
+	return nil
+}
+
+func initializeTelemetry() error {
+	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint("http://deepfence-telemetry:14268/api/traces")))
+	if err != nil {
+		return err
+	}
+	tp := tracesdk.NewTracerProvider(
+		tracesdk.WithBatcher(exp),
+		tracesdk.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String("deepfence-server"),
+			attribute.String("environment", "dev"),
+		)),
+	)
+
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 	return nil
 }

@@ -16,6 +16,9 @@ import (
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"github.com/urfave/negroni"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 const (
@@ -42,6 +45,16 @@ const (
 	ResourceCloudNode   = "cloud-node"
 	ResourceRegistry    = "container-registry"
 )
+
+func telemteryInjector(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, span := otel.Tracer("router").Start(r.Context(), r.URL.Path)
+		defer span.End()
+		lrw := negroni.NewResponseWriter(w)
+		next.ServeHTTP(lrw, r)
+		span.SetAttributes(attribute.Int("status_code", lrw.Status()))
+	})
+}
 
 func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool,
 	ingestC chan *kgo.Record, taskPublisher *kafka.Publisher, openApiDocs *apiDocs.OpenApiDocs) error {
@@ -78,6 +91,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 	}
 
 	r.Route("/deepfence", func(r chi.Router) {
+		r.Use(telemteryInjector)
+
 		r.Get("/ping", dfHandler.Ping)
 
 		// public apis
@@ -297,6 +312,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			})
 		})
 	})
+
 	return nil
 }
 

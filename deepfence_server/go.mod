@@ -45,9 +45,11 @@ require (
 	github.com/swaggest/openapi-go v0.2.28
 	github.com/twmb/franz-go v1.12.1
 	github.com/ugorji/go/codec v1.2.10
+	github.com/urfave/negroni v1.0.0
 	github.com/weaveworks/scope v1.13.2
 	go.opentelemetry.io/otel v1.14.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.14.0
+	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.14.0
 	go.opentelemetry.io/otel/sdk v1.14.0
 	golang.org/x/crypto v0.6.0
 	gotest.tools v2.2.0+incompatible

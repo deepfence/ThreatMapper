@@ -290,6 +290,20 @@ services:
       options:
         max-size: "1g"
 
+  deepfence-telemetry:
+    image: jaegertracing/all-in-one:1.42
+    hostname: deepfence-telemetry
+    container_name: deepfence-telemetry
+    ports:
+      - "127.0.0.1:14267:14267"
+      - "127.0.0.1:14268:14268"
+      - "127.0.0.1:9411:9411"
+      - "127.0.0.1:14269:14269"
+      - "0.0.0.0:16686:16686"
+    networks:
+      - deepfence_net
+
+
 volumes:
   deepfence_data:
     driver: local
