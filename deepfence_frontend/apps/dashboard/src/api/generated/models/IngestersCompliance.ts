@@ -45,46 +45,10 @@ export interface IngestersCompliance {
     description?: string;
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof IngestersCompliance
      */
-    doc_id?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersCompliance
-     */
-    kubernetes_cluster_id?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersCompliance
-     */
-    kubernetes_cluster_name?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersCompliance
-     */
-    masked?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersCompliance
-     */
-    node_id?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersCompliance
-     */
-    node_name?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersCompliance
-     */
-    node_type?: string;
+    masked?: boolean;
     /**
      * 
      * @type {string}
@@ -153,12 +117,6 @@ export interface IngestersCompliance {
     test_severity?: string;
     /**
      * 
-     * @type {number}
-     * @memberof IngestersCompliance
-     */
-    time_stamp?: number;
-    /**
-     * 
      * @type {string}
      * @memberof IngestersCompliance
      */
@@ -188,13 +146,7 @@ export function IngestersComplianceFromJSONTyped(json: any, ignoreDiscriminator:
         'compliance_check_type': !exists(json, 'compliance_check_type') ? undefined : json['compliance_check_type'],
         'compliance_node_type': !exists(json, 'compliance_node_type') ? undefined : json['compliance_node_type'],
         'description': !exists(json, 'description') ? undefined : json['description'],
-        'doc_id': !exists(json, 'doc_id') ? undefined : json['doc_id'],
-        'kubernetes_cluster_id': !exists(json, 'kubernetes_cluster_id') ? undefined : json['kubernetes_cluster_id'],
-        'kubernetes_cluster_name': !exists(json, 'kubernetes_cluster_name') ? undefined : json['kubernetes_cluster_name'],
         'masked': !exists(json, 'masked') ? undefined : json['masked'],
-        'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
-        'node_name': !exists(json, 'node_name') ? undefined : json['node_name'],
-        'node_type': !exists(json, 'node_type') ? undefined : json['node_type'],
         'remediation_ansible': !exists(json, 'remediation_ansible') ? undefined : json['remediation_ansible'],
         'remediation_puppet': !exists(json, 'remediation_puppet') ? undefined : json['remediation_puppet'],
         'remediation_script': !exists(json, 'remediation_script') ? undefined : json['remediation_script'],
@@ -206,7 +158,6 @@ export function IngestersComplianceFromJSONTyped(json: any, ignoreDiscriminator:
         'test_number': !exists(json, 'test_number') ? undefined : json['test_number'],
         'test_rationale': !exists(json, 'test_rationale') ? undefined : json['test_rationale'],
         'test_severity': !exists(json, 'test_severity') ? undefined : json['test_severity'],
-        'time_stamp': !exists(json, 'time_stamp') ? undefined : json['time_stamp'],
         'type': !exists(json, 'type') ? undefined : json['type'],
     };
 }
@@ -224,13 +175,7 @@ export function IngestersComplianceToJSON(value?: IngestersCompliance | null): a
         'compliance_check_type': value.compliance_check_type,
         'compliance_node_type': value.compliance_node_type,
         'description': value.description,
-        'doc_id': value.doc_id,
-        'kubernetes_cluster_id': value.kubernetes_cluster_id,
-        'kubernetes_cluster_name': value.kubernetes_cluster_name,
         'masked': value.masked,
-        'node_id': value.node_id,
-        'node_name': value.node_name,
-        'node_type': value.node_type,
         'remediation_ansible': value.remediation_ansible,
         'remediation_puppet': value.remediation_puppet,
         'remediation_script': value.remediation_script,
@@ -242,7 +187,6 @@ export function IngestersComplianceToJSON(value?: IngestersCompliance | null): a
         'test_number': value.test_number,
         'test_rationale': value.test_rationale,
         'test_severity': value.test_severity,
-        'time_stamp': value.time_stamp,
         'type': value.type,
     };
 }

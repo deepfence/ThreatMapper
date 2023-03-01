@@ -30,13 +30,13 @@ export interface ModelSbomResponse {
      * @type {Array<string>}
      * @memberof ModelSbomResponse
      */
-    licenses?: Array<string> | null;
+    licenses?: Array<string>;
     /**
      * 
      * @type {Array<string>}
      * @memberof ModelSbomResponse
      */
-    locations?: Array<string> | null;
+    locations?: Array<string>;
     /**
      * 
      * @type {string}

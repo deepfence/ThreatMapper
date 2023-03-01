@@ -98,6 +98,7 @@ models/ModelScanFilter.ts
 models/ModelScanInfo.ts
 models/ModelScanListReq.ts
 models/ModelScanListResp.ts
+models/ModelScanResultBasicNode.ts
 models/ModelScanResultsActionRequest.ts
 models/ModelScanResultsMaskRequest.ts
 models/ModelScanResultsReq.ts
