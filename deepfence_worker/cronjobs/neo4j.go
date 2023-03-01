@@ -14,7 +14,7 @@ import (
 
 const (
 	dbReportCleanUpTimeout   = time.Minute * 2
-	dbRegistryCleanUpTimeout = time.Hour * 48
+	dbRegistryCleanUpTimeout = time.Minute * 30
 	dbScanTimeout            = time.Minute * 2
 	dbUpgradeTimeout         = time.Minute * 5
 )
@@ -188,6 +188,7 @@ func ApplyGraphDBStartup(msg *message.Message) error {
 	session.Run("CREATE CONSTRAINT ON (n:Secret) ASSERT n.rule_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Malware) ASSERT n.malware_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Vulnerability) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:VulnerabilityStub) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:SecurityGroup) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:CloudResource) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:RegistryAccount) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
