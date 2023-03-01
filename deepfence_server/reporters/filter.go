@@ -22,11 +22,7 @@ type MatchFilter struct {
 }
 
 type OrderFilter struct {
-	OrderField []string `json:"order_fields" required:"true"`
-}
-
-type CmdFilter struct {
-	OrderField string `json:"order_fields" required:"true"`
+	OrderFields []string `json:"order_fields" required:"true"`
 }
 
 type FieldsFilters struct {
@@ -69,11 +65,11 @@ func prefixNode(format string, input []string) []string {
 }
 
 func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) string {
-	if len(filter.OrderField) == 0 {
+	if len(filter.OrderFields) == 0 {
 		return ""
 	}
 
-	list := prefixNode(cypherNodeName+".%s", filter.OrderField)
+	list := prefixNode(cypherNodeName+".%s", filter.OrderFields)
 
 	if len(list) == 0 {
 		return ""
@@ -83,11 +79,11 @@ func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) stri
 }
 
 func orderFilter2CypherWhere(cypherNodeName string, filter OrderFilter) []string {
-	if len(filter.OrderField) == 0 {
+	if len(filter.OrderFields) == 0 {
 		return []string{}
 	}
 
-	return prefixNode(cypherNodeName+".%s IS NOT NULL", filter.OrderField)
+	return prefixNode(cypherNodeName+".%s IS NOT NULL", filter.OrderFields)
 }
 
 func ParseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.Option[FieldsFilters], starts_where_clause bool) string {
