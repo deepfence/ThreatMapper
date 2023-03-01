@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	dbCleanUpTimeout = time.Minute * 2
-	dbScanTimeout    = time.Minute * 2
-	dbUpgradeTimeout = time.Minute * 5
+	dbReportCleanUpTimeout   = time.Minute * 2
+	dbRegistryCleanUpTimeout = time.Day * 2
+	dbScanTimeout            = time.Minute * 2
+	dbUpgradeTimeout         = time.Minute * 5
 )
 
 func CleanUpDB(msg *message.Message) error {
@@ -34,19 +35,43 @@ func CleanUpDB(msg *message.Message) error {
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("MATCH (n:Node) WHERE n.updated_at < TIMESTAMP()-$time_ms SET n.agent_running=false", map[string]interface{}{"time_ms": dbCleanUpTimeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run(`
+		MATCH (n:Node)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		SET n.agent_running=false`,
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:Container) WHERE n.updated_at < TIMESTAMP()-$time_ms DETACH DELETE n", map[string]interface{}{"time_ms": dbCleanUpTimeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run(`
+		MATCH (n:ContainerImage)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		DETACH DELETE n`,
+		map[string]interface{}{"time_ms": dbRegistryCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:Pod) WHERE n.updated_at < TIMESTAMP()-$time_ms DETACH DELETE n", map[string]interface{}{"time_ms": dbCleanUpTimeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run(`
+		MATCH (n:Container)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		DETACH DELETE n`,
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:Process) WHERE n.updated_at < TIMESTAMP()-$time_ms DETACH DELETE n", map[string]interface{}{"time_ms": dbCleanUpTimeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run(`
+		MATCH (n:Pod)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		DETACH DELETE n`,
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run(`
+		MATCH (n:Process)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		DETACH DELETE n`,
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
