@@ -75,7 +75,7 @@ func (h *Handler) SearchVulnerabilities(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *Handler) SearchSecrets(w http.ResponseWriter, r *http.Request) {
-	SearchHandler[model.Secret](w, r)
+	SearchHandler[model.SecretRule](w, r)
 }
 
 func (h *Handler) SearchMalwares(w http.ResponseWriter, r *http.Request) {

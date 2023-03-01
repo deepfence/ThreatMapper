@@ -227,7 +227,11 @@ type Secret struct {
 	MatchedContent        string `json:"matched_content" required:"true"`
 	Masked                bool   `json:"masked" required:"true"`
 	UpdatedAt             int64  `json:"updated_at" required:"true"`
-	RuleId                string `json:"rule_id" required:"true"`
+}
+
+type SecretRule struct {
+	Secret
+	Rule
 }
 
 func (Secret) NodeType() string {
