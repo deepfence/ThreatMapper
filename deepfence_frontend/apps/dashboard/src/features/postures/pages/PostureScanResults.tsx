@@ -83,17 +83,18 @@ enum ActionEnumType {
   UNMASK = 'unmask',
   DELETE = 'delete',
   DOWNLOAD = 'download',
+  NOTIFY = 'notify',
 }
 type TableType = {
   status: string;
-  resource: string;
+  service: string;
   nodeName: string;
   description: string;
   action?: null;
 };
 type ScanResult = {
   status: string;
-  resource: string;
+  service: string;
   nodeName: string;
   description: string;
   tableData: TableType[];
@@ -113,7 +114,7 @@ const PAGE_SIZE = 15;
 const page = 1;
 const emptyData = {
   status: '',
-  resource: '',
+  service: '',
   nodeName: '',
   description: '',
   timestamp: 0,
@@ -252,42 +253,42 @@ async function getScans(
     (result as unknown as ModelComplianceScanResult).compliances = [
       {
         status: 'COMPLETED',
-        resource: 'S3',
+        service: 'S3',
         nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
         description:
           'IAM policies are the means by which privileges are granted to users, groups',
       },
       {
         status: 'COMPLETED',
-        resource: 'S3',
+        service: 'S3',
         nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
         description:
           'IAM policies are the means by which privileges are granted to users, groups',
       },
       {
         status: 'COMPLETED',
-        resource: 'S3',
+        service: 'S3',
         nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
         description:
           'IAM policies are the means by which privileges are granted to users, groups',
       },
       {
         status: 'COMPLETED',
-        resource: 'S3',
+        service: 'S3',
         nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
         description:
           'IAM policies are the means by which privileges are granted to users, groups',
       },
       {
         status: 'COMPLETED',
-        resource: 'S3',
+        service: 'S3',
         nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
         description:
           'IAM policies are the means by which privileges are granted to users, groups',
       },
       {
         status: 'COMPLETED',
-        resource: 'S3',
+        service: 'S3',
         nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
         description:
           'IAM policies are the means by which privileges are granted to users, groups',
@@ -666,6 +667,19 @@ const ActionDropdown = ({
             </DropdownSubMenu>
             <DropdownItem
               className="text-sm"
+              onClick={() => onTableAction(ActionEnumType.NOTIFY)}
+            >
+              <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
+                <IconContext.Provider
+                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
+                >
+                  <HiBell />
+                </IconContext.Provider>
+                Notify
+              </span>
+            </DropdownItem>
+            <DropdownItem
+              className="text-sm"
               onClick={() => {
                 setShowDeleteDialog(true);
               }}
@@ -733,11 +747,11 @@ const CVETable = () => {
         size: 110,
         maxSize: 110,
       }),
-      columnHelper.accessor('resource', {
+      columnHelper.accessor('service', {
         enableSorting: false,
         enableResizing: false,
         cell: (info) => info.getValue(),
-        header: () => 'Resource',
+        header: () => 'Service',
         minSize: 80,
         size: 80,
         maxSize: 80,
@@ -749,7 +763,7 @@ const CVETable = () => {
         cell: (info) => {
           return info.getValue() ?? 'No Description Available';
         },
-        header: () => 'Node Name',
+        header: () => 'Resource',
         minSize: 80,
         size: 150,
         maxSize: 160,

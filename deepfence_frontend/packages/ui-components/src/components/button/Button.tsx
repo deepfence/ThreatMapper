@@ -267,7 +267,7 @@ const iconCva = cva('', {
     {
       size: ['xxs'],
       withStartIcon: true,
-      className: 'mr-[8px]',
+      className: 'mr-[4px]',
     },
     {
       size: ['xs', 'sm'],
@@ -287,7 +287,7 @@ const iconCva = cva('', {
     {
       size: ['xxs'],
       withLoader: true,
-      className: 'mr-[8px]',
+      className: 'mr-[4px]',
     },
     {
       size: ['xs', 'sm'],
@@ -307,7 +307,7 @@ const iconCva = cva('', {
     {
       size: ['xxs'],
       withEndIcon: true,
-      className: 'ml-[8px]',
+      className: 'ml-[4px]',
     },
     {
       size: ['xs', 'sm'],

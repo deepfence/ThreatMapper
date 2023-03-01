@@ -676,9 +676,9 @@ const CVETable = () => {
           <DFLink to={`/posture/scan-results/${12345}/scanId`}>{info.getValue()}</DFLink>
         ),
         header: () => 'Compliance Type',
-        minSize: 60,
-        size: 60,
-        maxSize: 60,
+        minSize: 100,
+        size: 100,
+        maxSize: 120,
       }),
       columnHelper.accessor('timestamp', {
         enableSorting: false,
@@ -843,6 +843,9 @@ const CVETable = () => {
                       >
                         Delete
                       </Button>
+                      <Button size="xxs" color="normal" startIcon={<HiDownload />}>
+                        Download
+                      </Button>
                     </div>
                   </>
                 )}
@@ -937,22 +940,6 @@ const HeaderComponent = ({
         </Await>
       </Suspense>
       <div className="ml-auto flex items-center gap-x-4">
-        <div className="flex flex-col">
-          <span className="text-xs text-gray-500 dark:text-gray-200">
-            <Suspense fallback={<CircleSpinner size="xs" />}>
-              <Await resolve={loaderData.data ?? []}>
-                {(resolvedData: LoaderDataType['data']) => {
-                  const { timestamp } = resolvedData;
-                  return formatMilliseconds(timestamp);
-                }}
-              </Await>
-            </Suspense>
-          </span>
-          <span className="text-gray-400 text-[10px]">Last scan</span>
-        </div>
-
-        <HistoryDropdown />
-
         <div className="relative">
           {isFilterApplied && (
             <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>

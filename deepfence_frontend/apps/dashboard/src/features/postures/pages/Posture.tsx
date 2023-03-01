@@ -5,6 +5,7 @@ import { IconContext } from 'react-icons';
 import { FaCopyright, FaEye, FaPlay, FaSlack, FaVoteYea } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import {
+  HiArrowSmRight,
   HiChevronDown,
   HiChevronRight,
   HiDotsVertical,
@@ -34,6 +35,7 @@ import {
   RowSelectionState,
   Select,
   SelectItem,
+  Separator,
   SlidingModal,
   Table,
 } from 'ui-components';
@@ -460,7 +462,7 @@ const PostureTable = ({ data = [] }: LoaderDataType) => {
       columnHelper.accessor('accountType', {
         cell: (cell) => {
           if (!cell.row.original.count) {
-            return cell.getValue();
+            return <DFLink to={`/posture/scans/12345`}>{cell.getValue()}</DFLink>;
           }
           let nodeText = '';
           switch (cell.row.original.id) {
@@ -498,12 +500,12 @@ const PostureTable = ({ data = [] }: LoaderDataType) => {
         },
         header: () => 'Account Type',
         minSize: 100,
-        size: 150,
-        maxSize: 150,
+        size: 100,
+        maxSize: 120,
       }),
       columnHelper.accessor('compliancePercentage', {
-        minSize: 100,
-        size: 100,
+        minSize: 80,
+        size: 80,
         maxSize: 100,
         header: () => 'Compliance %',
         cell: (cell) => {
@@ -625,6 +627,14 @@ const AccountSummary = () => {
           compliancePercentage: 13,
         },
         {
+          id: 'aws',
+          name: 'AWS ORG ID',
+          totalAccounts: 200,
+          totalResources: 0,
+          totalScans: 0,
+          compliancePercentage: 0,
+        },
+        {
           id: 'azure',
           name: 'AZURE',
           totalAccounts: 4,
@@ -667,13 +677,30 @@ const AccountSummary = () => {
         } = cloud;
         const account = logoMap(id, mode);
         return (
-          <Card key={id} className="p-4 flex flex-col gap-y-1">
-            <div className="flex items-center gap-x-6">
-              <div className="flex flex-col items-center justify-center basis-full gap-y-4">
+          <Card key={name} className="p-4 flex flex-col gap-y-1">
+            <div className="flex items-center justify-between w-full">
+              <h4 className="text-gray-900 text-md dark:text-white mr-4">{name}</h4>
+              <div className="ml-auto">
+                <DFLink to={'/'} className="flex items-center hover:no-underline">
+                  <span className="text-xs text-blue-600 dark:text-blue-500">
+                    Go to details
+                  </span>
+                  <IconContext.Provider
+                    value={{
+                      className: 'text-blue-600 dark:text-blue-500 ',
+                    }}
+                  >
+                    <HiArrowSmRight />
+                  </IconContext.Provider>
+                </DFLink>
+              </div>
+            </div>
+            <div className="mt-2 flex items-center gap-x-6">
+              <div className="pr-2 flex flex-col gap-y-2 border-r border-gray-200 dark:border-gray-700">
                 <img src={account.icon} alt="logo" width={40} height={40} />
-                <div className="flex flex-col items-center justify-center gap-x-4">
+                <div className="flex flex-col gap-x-4">
                   <span
-                    className={cx('text-md rounded-lg px-1 font-medium', {
+                    className={cx('text-md rounded-lg px-1 font-medium w-fit', {
                       'bg-[#de425b]/30 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
                         compliancePercentage > 60 && compliancePercentage < 100,
                       'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
@@ -689,7 +716,7 @@ const AccountSummary = () => {
                   </span>
                 </div>
               </div>
-              <div className="flex flex-col basis-full ">
+              <div className="flex flex-col">
                 <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
                   {totalAccounts}
                 </span>
@@ -697,7 +724,7 @@ const AccountSummary = () => {
                   {id === 'host' ? 'Hosts' : 'Accounts'}
                 </span>
               </div>
-              <div className="flex flex-col basis-full ">
+              <div className="flex flex-col">
                 <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
                   {totalResources}
                 </span>
@@ -706,7 +733,7 @@ const AccountSummary = () => {
                 </span>
               </div>
 
-              <div className="flex flex-col basis-full ">
+              <div className="flex flex-col">
                 <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
                   {totalScans}
                 </span>
@@ -764,12 +791,12 @@ const Posture = () => {
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-[350px_1fr] p-2 gap-x-2">
-        <div className="grid gap-2">
-          <AccountSummary />
-        </div>
-        <PostureTable data={loaderData.data ?? []} />
+      <div className="p-4 flex flex-row flex-wrap gap-4">
+        <AccountSummary />
       </div>
+      {/* <div className="grid grid-cols-[350px_1fr] p-2 gap-x-2">
+        <PostureTable data={loaderData.data ?? []} />
+      </div> */}
     </div>
   );
 };
