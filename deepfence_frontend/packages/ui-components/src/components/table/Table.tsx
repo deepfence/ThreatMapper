@@ -17,6 +17,7 @@ import {
   Row,
   RowData,
   RowModel,
+  RowSelectionOptions,
   RowSelectionState,
   SortingState,
   Table,
@@ -64,7 +65,8 @@ export interface TableProps<TData extends RowData> {
   manualSorting?: boolean;
   sortingState?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
-  enableRowSelection?: boolean;
+  enableRowSelection?: RowSelectionOptions<TData>['enableRowSelection'];
+  enableSubRowSelection?: RowSelectionOptions<TData>['enableSubRowSelection'];
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
   rowSelectionState?: RowSelectionState;
   getRowId?: TableOptions<TData>['getRowId'];
@@ -112,6 +114,7 @@ const CustomTable = <TData extends RowData>(
     sortingState,
     onSortingChange,
     enableRowSelection = false,
+    enableSubRowSelection,
     onRowSelectionChange,
     rowSelectionState,
     getRowId,
@@ -152,6 +155,7 @@ const CustomTable = <TData extends RowData>(
     enableSorting,
     getSubRows,
     enableRowSelection,
+    enableSubRowSelection,
     ...(enablePagination ? { getPaginationRowModel: getPaginationRowModel() } : {}),
     state: {
       ...(enablePagination && manualPagination

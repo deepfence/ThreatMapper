@@ -13,7 +13,18 @@ const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 function Topology() {
-  return <Outlet />;
+  return (
+    <div>
+      <div className="flex flex-col p-2 w-full shadow bg-white dark:bg-gray-800">
+        <span className="text-md font-medium text-gray-700 dark:text-gray-200 uppercase">
+          Topology
+        </span>
+      </div>
+      <div className="m-2">
+        <Outlet />
+      </div>
+    </div>
+  );
 }
 
 export const module = {
