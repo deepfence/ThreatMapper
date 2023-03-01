@@ -142,10 +142,9 @@ type NodesInScanResultRequest struct {
 	ScanType  string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 }
 
-type ScanResultFoundNodesRequest struct {
-	ResultID string `path:"result_id" validate:"required" required:"true"`
-	ScanType string `path:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
-	//utils.Neo4jScanType
+type ScanResultBasicNode struct {
+	ResultID   string      `json:"result_id" required:"true"`
+	BasicNodes []BasicNode `json:"basic_nodes" required:"true"`
 }
 
 type SbomRequest struct {

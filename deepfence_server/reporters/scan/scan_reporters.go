@@ -696,64 +696,6 @@ func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, re
 	return res, nil
 }
 
-func GetScanResultNodes(ctx context.Context, scanType utils.Neo4jScanType, docId string) ([]model.BasicNode, error) {
-	var res []model.BasicNode
-	driver, err := directory.Neo4jClient(ctx)
-	if err != nil {
-		return res, err
-	}
-
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	if err != nil {
-		return res, err
-	}
-	defer session.Close()
-
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return res, err
-	}
-	defer tx.Close()
-
-	nres, err := tx.Run(`
-		MATCH (node) <- [s:SCANNED] - (m:`+string(scanType)+`) - [r:DETECTED] -> (d:`+utils.ScanTypeDetectedNode[scanType]+`{node_id: $node_id})
-		WHERE r.masked = false
-		RETURN node.host_name,node.node_id,node.node_type,node.docker_container_name,node.docker_image_name,node.docker_image_tag`,
-		map[string]interface{}{"node_id": docId})
-	if err != nil {
-		return res, err
-	}
-
-	recs, err := nres.Collect()
-	if err != nil {
-		return res, err
-	}
-
-	for _, rec := range recs {
-		hostName := reporters.Neo4jGetStringRecord(rec, "node.host_name", "")
-		containerName := reporters.Neo4jGetStringRecord(rec, "node.docker_container_name", "")
-		imageName := reporters.Neo4jGetStringRecord(rec, "node.docker_image_name", "")
-		imageTag := reporters.Neo4jGetStringRecord(rec, "node.docker_image_tag", "")
-		var name string
-		nodeType := reporters.Neo4jGetStringRecord(rec, "node.node_type", "")
-		if nodeType == "container_image" {
-			name = imageName + ":" + imageTag
-		} else if nodeType == "container" {
-			name = containerName
-		} else {
-			name = hostName
-		}
-		node := model.BasicNode{
-			NodeId:   reporters.Neo4jGetStringRecord(rec, "node.node_id", ""),
-			Name:     name,
-			NodeType: nodeType,
-			HostName: hostName,
-		}
-		res = append(res, node)
-	}
-	return res, nil
-}
-
 func GetCloudComplianceStats(ctx context.Context, scanId string) (model.ComplianceAdditionalInfo, error) {
 	res := map[string]int32{}
 	additionalInfo := model.ComplianceAdditionalInfo{StatusCounts: res, CompliancePercentage: 0.0}

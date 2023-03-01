@@ -960,24 +960,6 @@ func (h *Handler) ScanDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	h.scanIdActionHandler(w, r, "delete")
 }
 
-func (h *Handler) GetAllNodesInScanResultHandler(w http.ResponseWriter, r *http.Request) {
-	req := model.ScanResultFoundNodesRequest{
-		ResultID: chi.URLParam(r, "result_id"),
-		ScanType: chi.URLParam(r, "scan_type"),
-	}
-	err := h.Validator.Struct(req)
-	if err != nil {
-		respondError(&ValidatorError{err}, w)
-		return
-	}
-	resp, err := reporters_scan.GetScanResultNodes(r.Context(), utils.Neo4jScanType(req.ScanType), req.ResultID)
-	if err != nil {
-		respondError(err, w)
-		return
-	}
-	httpext.JSON(w, http.StatusOK, resp)
-}
-
 func (h *Handler) GetAllNodesInScanResultBulkHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var req model.NodesInScanResultRequest
