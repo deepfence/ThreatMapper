@@ -14,7 +14,7 @@ import (
 
 const (
 	dbReportCleanUpTimeout   = time.Minute * 2
-	dbRegistryCleanUpTimeout = time.Day * 2
+	dbRegistryCleanUpTimeout = time.Hour * 48
 	dbScanTimeout            = time.Minute * 2
 	dbUpgradeTimeout         = time.Minute * 5
 )
