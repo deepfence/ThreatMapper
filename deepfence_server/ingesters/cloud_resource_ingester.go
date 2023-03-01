@@ -41,6 +41,9 @@ type CloudResource struct {
 	CidrIpv4                       string           `json:"cidr_ipv4,omitempty"`
 	PublicNetworkAccess            string           `json:"public_network_access,omitempty"`
 	StorageAccountName             string           `json:"storage_account_name,omitempty"`
+	IamInstanceProfileArn          string           `json:"iam_instance_profile_arn,omitempty"`
+	IamInstanceProfileId           string           `json:"iam_instance_profile_id,omitempty"`
+	PublicIpAddresss               string           `json:"public_ip_addresss"`
 	PolicyStd                      *json.RawMessage `json:"policy_std,omitempty"`
 	TaskDefinition                 *json.RawMessage `json:"task_definition,omitempty"`
 	VpcOptions                     *json.RawMessage `json:"vpc_options,omitempty"`
@@ -56,6 +59,16 @@ type CloudResource struct {
 	EventNotificationConfiguration *json.RawMessage `json:"event_notification_configuration,omitempty"`
 	ResourcesVpcConfig             *json.RawMessage `json:"resource_vpc_config,omitempty"`
 	NetworkConfiguration           *json.RawMessage `json:"network_configuration,omitempty"`
+	AttachedPolicyArns             *json.RawMessage `json:"attached_policy_arns"`
+	CreateDate                     string           `json:"create_date,omitempty"`
+	Groups                         *json.RawMessage `json:"groups"`
+	InlinePolicies                 *json.RawMessage `json:"inline_policies"`
+	Path                           string           `json:"path"`
+	UserId                         string           `json:"user_id"`
+	AccessLevel                    string           `json:"access_level"`
+	Action                         string           `json:"action"`
+	Description                    string           `json:"description"`
+	Privilege                      string           `json:"privilege"`
 }
 
 func NewCloudResourceIngester() Ingester[[]CloudResource] {
@@ -80,6 +93,11 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 	fmt.Println("reached here")
 
 	if _, err = tx.Run("UNWIND $batch as row MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id}) SET m+=row WITH row UNWIND apoc.convert.fromJsonList(row.security_groups) as group WITH group, row WHERE group IS NOT NULL AND  row.resource_id = 'aws_ec2_instance' AND group.GroupId IS NOT NULL MERGE (n:SecurityGroup{node_id:group.GroupId, name:group.GroupName}) MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id}) MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
+		fmt.Println("reached here err", err)
+		return err
+	}
+
+	if _, err = tx.Run("UNWIND $batch as row MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id}) SET m+=row WITH row UNWIND apoc.convert.fromJsonList(row.vpc_security_group_ids) as group WITH group, row WHERE group IS NOT NULL AND  row.resource_id = 'aws_lambda_function'  MERGE (n:SecurityGroup{node_id:group}) MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id}) MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
 		fmt.Println("reached here err", err)
 		return err
 	}
@@ -158,9 +176,15 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 	bb = convertStructFieldToJSONString(bb, "resource_vpc_config")
 	bb = convertStructFieldToJSONString(bb, "network_configuration")
 	bb = convertStructFieldToJSONString(bb, "policy_std")
+	bb = convertStructFieldToJSONString(bb, "attached_policy_arns")
+	bb = convertStructFieldToJSONString(bb, "groups")
+	bb = convertStructFieldToJSONString(bb, "inline_policies")
 
 	if bb["resource_id"] == "aws_ecs_service" {
 		bb["arn"] = bb["service_name"]
+	}
+	if bb["resource_id"] == "aws_iam_access_key" {
+		bb["arn"] = bb["access_key_id"]
 	}
 	if strings.Contains("azure", bb["resource_id"].(string)) {
 		bb["arn"] = bb["name"]

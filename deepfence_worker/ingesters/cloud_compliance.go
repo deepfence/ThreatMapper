@@ -98,11 +98,23 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_vpc_security_group_rule'}) MATCH (m:SecurityGroup{node_id: n.group_id})-[:SECURED]-> (z:CloudResource{resource_type:'aws_ec2_instance'}) WHERE n.is_egress = true   MERGE (k:Node {node_id:'out-the-internet'})  MERGE (z)-[:PUBLIC]->(k)", map[string]interface{}{}); err != nil {
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_vpc_security_group_rule'}) MATCH (t:SecurityGroup{})-[:SECURED]-> (b:CloudResource{resource_type:'aws_ec2_instance'}) MATCH (m:SecurityGroup{node_id: n.group_id})-[:SECURED]-> (z:CloudResource{resource_type:'aws_ec2_instance'}) WHERE n.cidr_ipv4 = t.node_id    MERGE (z)-[:COMMUNICATES]->(b)", map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_vpc_security_group_rule'}) MATCH (t:SecurityGroup{})-[:SECURED]-> (b:CloudResource{resource_type:'aws_ec2_instance'}) MATCH (m:SecurityGroup{node_id: n.group_id})-[:SECURED]-> (z:CloudResource{resource_type:'aws_ec2_instance'}) WHERE n.cidr_ipv4 = t.node_id    MERGE (z)-[:COMMUNICATES]->(b)", map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_vpc_security_group_rule'}) MATCH (b:CloudResource{resource_type:'aws_ec2_instance'}) MATCH (m:SecurityGroup{node_id: n.group_id})-[:SECURED]-> (z:CloudResource{resource_type:'aws_ec2_instance'}) WHERE n.cidr_ipv4 = b.public_ip_address    MERGE (z)-[:COMMUNICATES]->(b)", map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run("MATCH (m:CloudResource{resource_type:'aws_ecs_service'})  MATCH (k:CloudResource{resource_type:'aws_ecs_task'}) MATCH (n:CloudResource{resource_type:'aws_ecs_task_definition',node_id:substring(m.task_definition,1,size(m.task_definition)-2)}) WITH apoc.convert.fromJsonMap(m.network_configuration) as map,m,n,k WHERE n.node_id=k.task_definition_arn AND map is not null AND  map.AwsvpcConfiguration.AssignPublicIp = 'ENABLED' MERGE (p:Node {node_id:'in-the-internet'})  MERGE (p) -[:PUBLIC]-> (k)", map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("MATCH (m:CloudResource{resource_type:'aws_ecs_service'})  MATCH (k:CloudResource{resource_type:'aws_ecs_task'}) MATCH (n:CloudResource{resource_type:'aws_ecs_task_definition',node_id:substring(m.task_definition,1,size(m.task_definition)-2)}) WITH apoc.convert.fromJsonMap(m.network_configuration) as map,m,n,k UNWIND  map.AwsvpcConfiguration.SecurityGroups as secgroup  MERGE (p:Node {node_id:'in-the-internet'})  MERGE (p) -[:PUBLIC]-> (k)", map[string]interface{}{}); err != nil {
 		return err
 	}
 
@@ -151,6 +163,42 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 	}
 
 	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_ec2_application_load_balancer', scheme : 'internet_facing' }) MATCH (p:Node {node_id:'in-the-internet'})   MERGE (p) -[:PUBLIC]-> (n) ", map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_vpc_security_group_rule'})  MATCH (m:SecurityGroup{node_id: n.group_id}) -[:SECURED]-> (z:CloudResource{resource_type:'aws_ec2_instance'})   MERGE (k:Node {node_id:'in-the-internet'})  MERGE (k)-[:PUBLIC]->(z)", map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_iam_role' }) MATCH (p:CloudResource{resource_type:'aws_ec2_instance'})   WITH apoc.convert.fromJsonList(n.instance_profile_arns) as instance_profile_arns,p,n  WHERE p.iam_instance_profile_arn IN instance_profile_arns MERGE (n) -[:MANAGES]-> (p) ", map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_iam_role' }) MATCH (p:CloudResource{resource_type:'aws_iam_policy'})   WITH apoc.convert.fromJsonList(n.attached_policy_arns) as attached_policy_arns,p,n  WHERE p.arn IN attached_policy_arns MERGE (n) -[:attaches]-> (p) ", map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_iam_role' }) MATCH (p:CloudResource{resource_type:'aws_iam_policy'})   WITH apoc.convert.fromJsonList(n.inline_policies_std) as inline_policies_std,p,n   UNWIND inline_policies_std as policy MERGE (p:CloudResource{resource_type:'inline_policy', policy: policy.PolicyName , arn: apoc.text.random(10, \"A-Z0-9.$\") })  MERGE (n) -[:inline]-> (p) ", map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_iam_group' })   WITH apoc.convert.fromJsonList(n.users) as users,n   UNWIND users as user MERGE (k:CloudResource{resource_type:'aws_iam_user', user_id: user.UserId  })  MERGE (n) -[:groups]-> (k) ", map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_iam_user' })  MATCH (o:CloudResource{resource_type:'aws_iam_policy' })   WITH apoc.convert.fromJsonList(n.user_groups) as groups,n,o,p   UNWIND groups as group MERGE (k:CloudResource{resource_type:'aws_iam_group', arn: group.Arn  }) WITH apoc.convert.fromJsonList(k.attached_policy_arns) as attached_policy_arns,n,o,p,k  WHERE o.arn IN attached_policy_arns MERGE (n) -[:attaches]-> (o) ", map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_iam_user' })  MATCH (o:CloudResource{resource_type:'aws_iam_policy' })   WITH apoc.convert.fromJsonList(n.user_groups) as groups,n,o,p   UNWIND groups as group MERGE (k:CloudResource{resource_type:'aws_iam_group', arn: group.Arn  }) WITH apoc.convert.fromJsonList(k.inline_policies_std) as inline,n  UNWIND inline as policy MERGE (k:CloudResource{resource_type:'inline_policy', policy: policy.PolicyName , arn: apoc.text.random(10, \"A-Z0-9.$\") })  MERGE (n) -[:inline]-> (k)  ", map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_iam_user' })  MATCH (o:CloudResource{resource_type:'aws_iam_policy' })   WITH apoc.convert.fromJsonList(n.attached_policy_arns) as attached_policy_arns,n,o WHERE o.arn IN attached_policy_arns MERGE (n) -[:attaches]-> (o) ", map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_iam_user' })  MATCH (o:CloudResource{resource_type:'aws_iam_policy' })   WITH apoc.convert.fromJsonList(n.inline_policies_std) as inline,n  UNWIND inline as policy MERGE (k:CloudResource{resource_type:'inline_policy', policy: policy.PolicyName , arn: apoc.text.random(10, \"A-Z0-9.$\") })  MERGE (n) -[:inline]-> (k) ", map[string]interface{}{}); err != nil {
 		return err
 	}
 
