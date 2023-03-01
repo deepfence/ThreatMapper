@@ -23,6 +23,7 @@ type MatchFilter struct {
 
 type OrderFilter struct {
 	OrderFields []string `json:"order_fields" required:"true"`
+	OrderBy     string   `json:"order_by" required:"true" enum:"ASC,DESC"`
 }
 
 type FieldsFilters struct {
@@ -64,12 +65,28 @@ func prefixNode(format string, input []string) []string {
 	return res
 }
 
+func prefixNodeWithOrder(format string, input []string, orderBy string) []string {
+	res := []string{}
+	if len(input) == 0 {
+		return res
+	}
+
+	for i := range input {
+		if len(input[i]) == 0 {
+			continue
+		}
+		res = append(res, fmt.Sprintf(format, input[i], orderBy))
+	}
+
+	return res
+}
+
 func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) string {
 	if len(filter.OrderFields) == 0 {
 		return ""
 	}
 
-	list := prefixNode(cypherNodeName+".%s", filter.OrderFields)
+	list := prefixNodeWithOrder(cypherNodeName+".%s %s", filter.OrderFields, filter.OrderBy)
 
 	if len(list) == 0 {
 		return ""
