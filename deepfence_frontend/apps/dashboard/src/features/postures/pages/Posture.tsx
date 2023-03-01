@@ -53,7 +53,7 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 
 enum ActionEnumType {
   START_SCAN = 'start_scan',
-  VIEW_SCAN_RESULT = 'view_scan_result',
+  VIEW_SCAN = 'view_scan',
   VIEW_INVENTORY = 'view_inventory',
   REFRESH_DATA = 'refresh_data',
 }
@@ -215,7 +215,7 @@ async function getAccountsData(searchParams: URLSearchParams): Promise<LoaderDat
           multiAccounts?.map((result) => ({
             id: `aws-${result.node_id}`,
             urlId: result.node_id ?? '',
-            accountType: 'AWS ORG',
+            accountType: '12345',
             urlType: 'aws_org',
             accountId: result.node_name ?? '-',
             active: !!result.active,
@@ -241,7 +241,7 @@ async function getAccountsData(searchParams: URLSearchParams): Promise<LoaderDat
           nonMultiAccounts.map((result) => ({
             id: `aws-${result.node_id}`,
             urlId: result.node_id ?? '',
-            accountType: 'AWS',
+            accountType: '789345',
             urlType: 'aws',
             accountId: result.node_name ?? '-',
             active: !!result.active,
@@ -365,9 +365,10 @@ const ActionDropdown = ({
 }) => {
   const { navigate } = usePageNavigation();
   const onTableAction = (action: string) => () => {
+    const id = 12345;
     switch (action) {
-      case ActionEnumType.VIEW_SCAN_RESULT:
-        navigate(`/posture/scan-results/${id}`);
+      case ActionEnumType.VIEW_SCAN:
+        navigate(`/posture/scans/${id}`);
         break;
     }
   };
@@ -380,7 +381,7 @@ const ActionDropdown = ({
           <>
             <DropdownItem
               className="text-sm"
-              onClick={onTableAction(ActionEnumType.VIEW_SCAN_RESULT)}
+              onClick={onTableAction(ActionEnumType.VIEW_SCAN)}
             >
               <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
                 <IconContext.Provider
@@ -388,7 +389,7 @@ const ActionDropdown = ({
                 >
                   <HiOutlineEye />
                 </IconContext.Provider>
-                View scan results
+                View scan
               </span>
             </DropdownItem>
             <DropdownItem className="text-sm">
@@ -500,13 +501,6 @@ const PostureTable = ({ data = [] }: LoaderDataType) => {
         size: 150,
         maxSize: 150,
       }),
-      columnHelper.accessor('accountId', {
-        minSize: 150,
-        size: 150,
-        maxSize: 150,
-        cell: (cell) => cell.getValue(),
-        header: () => 'Account Id',
-      }),
       columnHelper.accessor('compliancePercentage', {
         minSize: 100,
         size: 100,
@@ -539,74 +533,6 @@ const PostureTable = ({ data = [] }: LoaderDataType) => {
           const value = info.getValue();
           return value ? 'Yes' : 'No';
         },
-      }),
-      columnHelper.accessor('alarm', {
-        minSize: 60,
-        size: 60,
-        maxSize: 60,
-        header: () => <div className="flex justify-end">Alarm</div>,
-        cell: (cell) => (
-          <div className="flex items-center justify-end gap-x-2 tabular-nums">
-            <span className="truncate">{cell.getValue()}</span>
-            <div
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{
-                backgroundColor: POSTURE_SEVERITY_COLORS['alarm'],
-              }}
-            ></div>
-          </div>
-        ),
-      }),
-      columnHelper.accessor('info', {
-        minSize: 60,
-        size: 60,
-        maxSize: 60,
-        header: () => <div className="flex justify-end">Info</div>,
-        cell: (cell) => (
-          <div className="flex items-center justify-end gap-x-2 tabular-nums">
-            <span className="truncate">{cell.getValue()}</span>
-            <div
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{
-                backgroundColor: POSTURE_SEVERITY_COLORS['info'],
-              }}
-            ></div>
-          </div>
-        ),
-      }),
-      columnHelper.accessor('ok', {
-        minSize: 60,
-        size: 60,
-        maxSize: 60,
-        header: () => <div className="flex justify-end">Ok</div>,
-        cell: (cell) => (
-          <div className="flex items-center justify-end gap-x-2 tabular-nums">
-            <span className="truncate">{cell.getValue()}</span>
-            <div
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{
-                backgroundColor: POSTURE_SEVERITY_COLORS['ok'],
-              }}
-            ></div>
-          </div>
-        ),
-      }),
-      columnHelper.accessor('skip', {
-        minSize: 60,
-        size: 60,
-        maxSize: 60,
-        header: () => <div className="flex justify-end">Skip</div>,
-        cell: (cell) => (
-          <div className="flex items-center justify-end gap-x-2 tabular-nums">
-            <span className="truncate">{cell.getValue()}</span>
-            <div
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{
-                backgroundColor: POSTURE_SEVERITY_COLORS['skip'],
-              }}
-            ></div>
-          </div>
-        ),
       }),
       columnHelper.accessor('startScan', {
         enableSorting: false,
@@ -767,7 +693,9 @@ const AccountSummary = () => {
                 <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
                   {totalAccounts}
                 </span>
-                <span className="text-xs text-gray-400 dark:text-gray-500">Accounts</span>
+                <span className="text-xs text-gray-400 dark:text-gray-500">
+                  {id === 'host' ? 'Hosts' : 'Accounts'}
+                </span>
               </div>
               <div className="flex flex-col basis-full ">
                 <span className="text-lg text-gray-900 dark:text-gray-200 font-light">

@@ -34,7 +34,8 @@ import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanS
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { module as posture } from '@/features/postures/pages/Posture';
-import { module as postureResult } from '@/features/postures/pages/PostureResults';
+import { module as postureScanResults } from '@/features/postures/pages/PostureScanResults';
+import { module as postureScan } from '@/features/postures/pages/PostureScans';
 import { Registries } from '@/features/registries/pages/Registries';
 import { vulnerabilityApiLoader } from '@/features/vulnerabilities/api/apiLoader';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
@@ -224,9 +225,14 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Posture' },
       },
       {
-        path: 'posture/scan-results/:accountId/:scanType/:scanId',
-        ...postureResult,
-        meta: { title: 'Posture Results' },
+        path: 'posture/scans/:accountId',
+        ...postureScan,
+        meta: { title: 'Posture Scans' },
+      },
+      {
+        path: 'posture/scan-results/:accountId/:scanId',
+        ...postureScanResults,
+        meta: { title: 'Posture Scans Results' },
       },
     ],
   },

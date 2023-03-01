@@ -79,24 +79,23 @@ export interface FocusableElement {
   focus(options?: FocusOptions): void;
 }
 enum ActionEnumType {
+  MASK = 'mask',
+  UNMASK = 'unmask',
   DELETE = 'delete',
   DOWNLOAD = 'download',
 }
 type TableType = {
   status: string;
-  compliancePercentage: number;
-  timestamp: number;
-  alarm: string;
-  info: string;
-  ok: string;
-  skip: string;
-  masked: boolean;
+  resource: string;
+  nodeName: string;
+  description: string;
   action?: null;
 };
 type ScanResult = {
-  totalCompliance: number;
-  complianceCounts: { [key: string]: number };
-  timestamp: number;
+  status: string;
+  resource: string;
+  nodeName: string;
+  description: string;
   tableData: TableType[];
   pagination: {
     currentPage: number;
@@ -113,9 +112,10 @@ export type LoaderDataType = {
 const PAGE_SIZE = 15;
 const page = 1;
 const emptyData = {
-  totalCompliance: 0,
-  complianceCounts: {},
   status: '',
+  resource: '',
+  nodeName: '',
+  description: '',
   timestamp: 0,
   tableData: [],
   pagination: {
@@ -251,52 +251,46 @@ async function getScans(
     (result as unknown as ModelComplianceScanResult).compliance_percentage = 7;
     (result as unknown as ModelComplianceScanResult).compliances = [
       {
-        status_counts: {
-          alarm: 5,
-          info: 4,
-          ok: 3,
-          skip: 2,
-        },
+        status: 'COMPLETED',
+        resource: 'S3',
+        nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
+        description:
+          'IAM policies are the means by which privileges are granted to users, groups',
       },
       {
-        status_counts: {
-          alarm: 5,
-          info: 4,
-          ok: 3,
-          skip: 2,
-        },
+        status: 'COMPLETED',
+        resource: 'S3',
+        nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
+        description:
+          'IAM policies are the means by which privileges are granted to users, groups',
       },
       {
-        status_counts: {
-          alarm: 5,
-          info: 4,
-          ok: 3,
-          skip: 2,
-        },
+        status: 'COMPLETED',
+        resource: 'S3',
+        nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
+        description:
+          'IAM policies are the means by which privileges are granted to users, groups',
       },
       {
-        status_counts: {
-          alarm: 5,
-          info: 4,
-          ok: 3,
-          skip: 2,
-        },
+        status: 'COMPLETED',
+        resource: 'S3',
+        nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
+        description:
+          'IAM policies are the means by which privileges are granted to users, groups',
       },
       {
-        status_counts: {
-          alarm: 5,
-          info: 4,
-          ok: 3,
-          skip: 2,
-        },
+        status: 'COMPLETED',
+        resource: 'S3',
+        nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
+        description:
+          'IAM policies are the means by which privileges are granted to users, groups',
       },
       {
-        status_counts: {
-          alarm: 5,
-          info: 4,
-          ok: 3,
-          skip: 2,
-        },
+        status: 'COMPLETED',
+        resource: 'S3',
+        nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
+        description:
+          'IAM policies are the means by which privileges are granted to users, groups',
       },
     ];
   }
@@ -308,18 +302,7 @@ async function getScans(
     0,
   );
 
-  const compliances =
-    result?.compliances?.map((res) => {
-      return {
-        timestamp: 1620928000,
-        status: 'COMPLETED',
-        compliancePercentage: 10,
-        alarm: 10,
-        info: 9,
-        ok: 8,
-        skip: 7,
-      };
-    }) ?? [];
+  const compliances = result.compliances;
 
   if (ApiError.isApiError(resultCounts)) {
     throw resultCounts.value();
@@ -328,10 +311,10 @@ async function getScans(
   return {
     totalCompliance,
     complianceCounts: {
-      alarm: result.status_counts?.['alarm'] ?? 0,
-      info: result.status_counts?.['info'] ?? 0,
-      ok: result.status_counts?.['ok'] ?? 0,
-      skip: result.status_counts?.['skip'] ?? 0,
+      alarm: 0,
+      info: 0,
+      ok: 0,
+      skip: 0,
     },
     tableData: compliances,
     pagination: {
@@ -365,32 +348,6 @@ const FilterHeader = () => {
         <span className="font-medium text-lg">Filters</span>
       </div>
     </ModalHeader>
-  );
-};
-
-const ControlsDropdown = () => {
-  return (
-    <Dropdown
-      triggerAsChild={true}
-      content={
-        <>
-          <DropdownItem className="text-xs">CIS</DropdownItem>
-          <DropdownItem className="text-xs">NIST</DropdownItem>
-          <DropdownItem className="text-xs">PCI</DropdownItem>
-          <DropdownItem className="text-xs">HIPPA</DropdownItem>
-          <DropdownItem className="text-xs">SOC2</DropdownItem>
-          <DropdownItem className="text-xs">GDPR</DropdownItem>
-        </>
-      }
-    >
-      <Button
-        color="primary"
-        size="xxs"
-        className="bg-blue-100 text-blue-500 dark:text-blue-600 dark:bg-blue-400 hover:bg-blue-200 dark:hover:bg-blue-300"
-      >
-        HIPPA
-      </Button>
-    </Dropdown>
   );
 };
 
@@ -631,17 +588,82 @@ const ActionDropdown = ({
         align="end"
         content={
           <>
-            <DropdownItem
-              className="text-sm"
-              onClick={(e) => {
-                e.preventDefault();
-              }}
+            <DropdownSubMenu
+              triggerAsChild
+              content={
+                <>
+                  <DropdownItem onClick={() => onTableAction(ActionEnumType.MASK, '')}>
+                    <IconContext.Provider
+                      value={{ className: 'text-gray-700 dark:text-gray-400' }}
+                    >
+                      <HiEyeOff />
+                    </IconContext.Provider>
+                    Mask vulnerability
+                  </DropdownItem>
+                  <DropdownItem
+                    onClick={() =>
+                      onTableAction(ActionEnumType.MASK, 'maskHostAndImages')
+                    }
+                  >
+                    <IconContext.Provider
+                      value={{ className: 'text-gray-700 dark:text-gray-400' }}
+                    >
+                      <HiEyeOff />
+                    </IconContext.Provider>
+                    Mask vulnerability across hosts and images
+                  </DropdownItem>
+                </>
+              }
             >
-              <span className="flex items-center gap-x-2">
-                <HiDownload />
-                Download
-              </span>
-            </DropdownItem>
+              <DropdownItem>
+                <IconContext.Provider
+                  value={{
+                    className: 'w-4 h-4',
+                  }}
+                >
+                  <HiChevronLeft />
+                </IconContext.Provider>
+                <span className="text-gray-700 dark:text-gray-400">Mask</span>
+              </DropdownItem>
+            </DropdownSubMenu>
+            <DropdownSubMenu
+              triggerAsChild
+              content={
+                <>
+                  <DropdownItem onClick={() => onTableAction(ActionEnumType.UNMASK, '')}>
+                    <IconContext.Provider
+                      value={{ className: 'text-gray-700 dark:text-gray-400' }}
+                    >
+                      <HiEye />
+                    </IconContext.Provider>
+                    Un mask vulnerability
+                  </DropdownItem>
+                  <DropdownItem
+                    onClick={() =>
+                      onTableAction(ActionEnumType.UNMASK, 'maskHostAndImages')
+                    }
+                  >
+                    <IconContext.Provider
+                      value={{ className: 'text-gray-700 dark:text-gray-400' }}
+                    >
+                      <HiEye />
+                    </IconContext.Provider>
+                    Un mask vulnerability across hosts and images
+                  </DropdownItem>
+                </>
+              }
+            >
+              <DropdownItem>
+                <IconContext.Provider
+                  value={{
+                    className: 'w-4 h-4',
+                  }}
+                >
+                  <HiChevronLeft />
+                </IconContext.Provider>
+                <span className="text-gray-700 dark:text-gray-400">Un mask</span>
+              </DropdownItem>
+            </DropdownSubMenu>
             <DropdownItem
               className="text-sm"
               onClick={() => {
@@ -685,15 +707,6 @@ const CVETable = () => {
         minSize: 30,
         maxSize: 50,
       }),
-      columnHelper.accessor('timestamp', {
-        enableSorting: false,
-        enableResizing: false,
-        cell: (info) => formatMilliseconds(info.getValue()),
-        header: () => 'Timestamp',
-        minSize: 80,
-        size: 150,
-        maxSize: 160,
-      }),
       columnHelper.accessor('status', {
         enableSorting: false,
         enableResizing: false,
@@ -716,92 +729,39 @@ const CVETable = () => {
           );
         },
         header: () => 'Status',
-        minSize: 70,
-        size: 100,
-        maxSize: 120,
+        minSize: 80,
+        size: 110,
+        maxSize: 110,
       }),
-      columnHelper.accessor('compliancePercentage', {
+      columnHelper.accessor('resource', {
+        enableSorting: false,
+        enableResizing: false,
+        cell: (info) => info.getValue(),
+        header: () => 'Resource',
+        minSize: 80,
+        size: 80,
+        maxSize: 80,
+      }),
+
+      columnHelper.accessor('nodeName', {
         enableSorting: false,
         enableResizing: false,
         cell: (info) => {
           return info.getValue() ?? 'No Description Available';
         },
-        header: () => 'Compliance %',
-        minSize: 70,
-        size: 90,
-        maxSize: 120,
+        header: () => 'Node Name',
+        minSize: 80,
+        size: 150,
+        maxSize: 160,
       }),
-      columnHelper.accessor('alarm', {
+      columnHelper.accessor('description', {
         enableResizing: false,
-        minSize: 70,
-        size: 70,
-        maxSize: 70,
-        header: () => <div className="flex justify-end">Alarm</div>,
-        cell: (cell) => (
-          <div className="flex items-center justify-end gap-x-2 tabular-nums">
-            <span className="truncate">{cell.getValue()}</span>
-            <div
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{
-                backgroundColor: POSTURE_SEVERITY_COLORS['alarm'],
-              }}
-            ></div>
-          </div>
-        ),
-      }),
-      columnHelper.accessor('info', {
-        enableResizing: false,
-        minSize: 70,
-        size: 70,
-        maxSize: 70,
-        header: () => <div className="flex justify-end">Info</div>,
-        cell: (cell) => (
-          <div className="flex items-center justify-end gap-x-2 tabular-nums">
-            <span className="truncate">{cell.getValue()}</span>
-            <div
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{
-                backgroundColor: POSTURE_SEVERITY_COLORS['info'],
-              }}
-            ></div>
-          </div>
-        ),
-      }),
-      columnHelper.accessor('ok', {
-        enableResizing: false,
-        minSize: 70,
-        size: 70,
-        maxSize: 70,
-        header: () => <div className="flex justify-end">Ok</div>,
-        cell: (cell) => (
-          <div className="flex items-center justify-end gap-x-2 tabular-nums">
-            <span className="truncate">{cell.getValue()}</span>
-            <div
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{
-                backgroundColor: POSTURE_SEVERITY_COLORS['ok'],
-              }}
-            ></div>
-          </div>
-        ),
-      }),
-      columnHelper.accessor('skip', {
-        enableResizing: false,
-        minSize: 70,
-        size: 70,
-        maxSize: 70,
-        header: () => <div className="flex justify-end">Skip</div>,
-        cell: (cell) => (
-          <div className="flex items-center justify-end gap-x-2 tabular-nums">
-            <span className="truncate">{cell.getValue()}</span>
-            <div
-              className="w-2 h-2 rounded-full shrink-0"
-              style={{
-                backgroundColor: POSTURE_SEVERITY_COLORS['skip'],
-              }}
-            ></div>
-          </div>
-        ),
+        enableSorting: false,
+        minSize: 100,
+        size: 200,
+        maxSize: 210,
+        header: () => 'Description',
+        cell: (cell) => cell.getValue(),
       }),
       columnHelper.accessor('action', {
         id: 'actions',
@@ -848,6 +808,8 @@ const CVETable = () => {
                       >
                         Delete
                       </Button>
+                      <MaskDropdown ids={Object.keys(rowSelectionState)} />
+                      <UnMaskDropdown ids={Object.keys(rowSelectionState)} />
                     </div>
                   </>
                 )}
@@ -934,11 +896,8 @@ const HeaderComponent = ({
                   </IconContext.Provider>
                 </DFLink>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  COMPLIANCE SCAN RESULTS - AWS / Account12345
+                  POSTURE SCAN RESULT - Account-12345 HIPPA
                 </span>
-                <div className="pl-4">
-                  <ControlsDropdown />
-                </div>
               </>
             );
           }}
@@ -980,6 +939,114 @@ const HeaderComponent = ({
     </div>
   );
 };
+const MaskDropdown = ({ ids }: { ids: string[] }) => {
+  const fetcher = useFetcher();
+
+  const onMaskAction = useCallback(
+    (maskHostAndImages: string) => {
+      const formData = new FormData();
+      formData.append('actionType', ActionEnumType.MASK);
+      formData.append('maskHostAndImages', maskHostAndImages);
+      ids.forEach((item) => formData.append('cveIds[]', item));
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    },
+    [ids, fetcher],
+  );
+
+  return (
+    <Dropdown
+      triggerAsChild={true}
+      content={
+        <>
+          <DropdownItem className="text-sm" onClick={() => onMaskAction('')}>
+            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
+              <IconContext.Provider
+                value={{ className: 'text-gray-700 dark:text-gray-400' }}
+              >
+                <HiEyeOff />
+              </IconContext.Provider>
+              Mask {ids.length > 1 ? 'vulnerabilities' : 'vulnerability'}
+            </span>
+          </DropdownItem>
+          <DropdownItem
+            className="text-sm"
+            onClick={() => onMaskAction('maskHostAndImages')}
+          >
+            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
+              <IconContext.Provider
+                value={{ className: 'text-gray-700 dark:text-gray-400' }}
+              >
+                <HiEyeOff />
+              </IconContext.Provider>
+              Mask {ids.length > 1 ? 'vulnerabilities' : 'vulnerability'} across hosts and
+              images
+            </span>
+          </DropdownItem>
+        </>
+      }
+    >
+      <Button size="xs" color="default" outline startIcon={<HiEyeOff />} type="button">
+        Mask
+      </Button>
+    </Dropdown>
+  );
+};
+const UnMaskDropdown = ({ ids }: { ids: string[] }) => {
+  const fetcher = useFetcher();
+
+  const onUnMaskAction = useCallback(
+    (unMaskHostAndImages: string) => {
+      const formData = new FormData();
+      formData.append('actionType', ActionEnumType.UNMASK);
+      formData.append('maskHostAndImages', unMaskHostAndImages);
+      ids.forEach((item) => formData.append('cveIds[]', item));
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    },
+    [ids],
+  );
+
+  return (
+    <Dropdown
+      triggerAsChild={true}
+      content={
+        <>
+          <DropdownItem className="text-sm" onClick={() => onUnMaskAction('')}>
+            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
+              <IconContext.Provider
+                value={{ className: 'text-gray-700 dark:text-gray-400' }}
+              >
+                <HiEye />
+              </IconContext.Provider>
+              Unmask {ids.length > 1 ? 'vulnerabilities' : 'vulnerability'}
+            </span>
+          </DropdownItem>
+          <DropdownItem
+            className="text-sm"
+            onClick={() => onUnMaskAction('maskHostAndImages')}
+          >
+            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
+              <IconContext.Provider
+                value={{ className: 'text-gray-700 dark:text-gray-400' }}
+              >
+                <HiEye />
+              </IconContext.Provider>
+              Unmask {ids.length > 1 ? 'vulnerabilities' : 'vulnerability'} across hosts
+              and images
+            </span>
+          </DropdownItem>
+        </>
+      }
+    >
+      <Button size="xs" color="default" outline startIcon={<HiEye />} type="button">
+        Un mask
+      </Button>
+    </Dropdown>
+  );
+};
 const StatusCountComponent = ({ theme }: { theme: Mode }) => {
   const loaderData = useLoaderData() as LoaderDataType;
   return (
@@ -1004,7 +1071,7 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                   </div>
                   <div>
                     <h4 className="text-md font-semibold text-gray-900 dark:text-gray-200 tracking-wider">
-                      Total Compliances
+                      Total CIS Compliances
                     </h4>
                     <div className="mt-2">
                       <span className="text-2xl text-gray-900 dark:text-gray-200">
