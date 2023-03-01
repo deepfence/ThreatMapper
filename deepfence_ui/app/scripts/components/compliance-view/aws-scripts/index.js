@@ -104,18 +104,17 @@ export const AwsTerraFormScript = withRouter(props => {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Deploy on one AWS account--&gt;{' '}
+                    Deploy single AWS account--&gt;{' '}
                   </a>
                   <br/>
                   <a
-                    href={`https://${regionValue}.console.aws.amazon.com/cloudformation/home?region=${regionValue}#/stacksets/create`}
+                    href={`https://${regionValue}.console.aws.amazon.com/cloudformation/home?region=${regionValue}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner-Org`}
                     disabled={regionValue === undefined}
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Deploy on multiple AWS accounts--&gt;{' '}
+                    Deploy all AWS organization accounts--&gt;{' '}
                   </a>
-                  <p>(Template URL: https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template)</p>
                 </div>
               )}
             </div>
