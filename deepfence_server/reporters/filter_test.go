@@ -26,7 +26,7 @@ func TestParseFieldFilters2CypherWhereConditions(t *testing.T) {
 			FieldsValues: map[string][]interface{}{},
 		},
 		OrderFilter: OrderFilter{
-			OrderField: "",
+			OrderField: []string{},
 		},
 	}
 	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
@@ -37,7 +37,7 @@ func TestParseFieldFilters2CypherWhereConditions(t *testing.T) {
 			FieldsValues: map[string][]interface{}{"toto": {"foo", "bar"}},
 		},
 		OrderFilter: OrderFilter{
-			OrderField: "",
+			OrderField: []string{},
 		},
 	}
 	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
@@ -48,7 +48,7 @@ func TestParseFieldFilters2CypherWhereConditions(t *testing.T) {
 			FieldsValues: map[string][]interface{}{"toto": {"foo", "bar"}},
 		},
 		OrderFilter: OrderFilter{
-			OrderField: "toto",
+			OrderField: []string{"toto"},
 		},
 	}
 	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
@@ -57,11 +57,20 @@ func TestParseFieldFilters2CypherWhereConditions(t *testing.T) {
 	ff = FieldsFilters{
 		ContainsFilter: ContainsFilter{},
 		OrderFilter: OrderFilter{
-			OrderField: "toto",
+			OrderField: []string{"toto"},
 		},
 	}
 	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
 	assert.Equal(t, cypher, " WHERE  n.toto IS NOT NULL", "should be equal")
+
+	ff = FieldsFilters{
+		ContainsFilter: ContainsFilter{},
+		OrderFilter: OrderFilter{
+			OrderField: []string{"toto", "titi"},
+		},
+	}
+	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
+	assert.Equal(t, cypher, " WHERE  n.toto IS NOT NULL AND n.titi IS NOT NULL", "should be equal")
 
 }
 
@@ -69,18 +78,32 @@ func TestOrderFilter2CypherCondition(t *testing.T) {
 	node_name := "n"
 
 	ff := OrderFilter{
-		OrderField: "",
+		OrderField: []string{},
 	}
 
 	cypher := OrderFilter2CypherCondition(node_name, ff)
 	assert.Equal(t, cypher, "", "should be equal")
 
 	ff = OrderFilter{
-		OrderField: "toto",
+		OrderField: []string{""},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff)
+	assert.Equal(t, cypher, "", "should be equal")
+
+	ff = OrderFilter{
+		OrderField: []string{"toto"},
 	}
 
 	cypher = OrderFilter2CypherCondition(node_name, ff)
 	assert.Equal(t, cypher, " ORDER BY n.toto ", "should be equal")
+
+	ff = OrderFilter{
+		OrderField: []string{"toto", "titi"},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff)
+	assert.Equal(t, cypher, " ORDER BY n.toto,n.titi ", "should be equal")
 
 }
 
