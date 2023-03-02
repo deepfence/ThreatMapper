@@ -60,9 +60,10 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	defer tx.Close()
 
 	query := `
-		MATCH (n:` + dummy.NodeType() + `) ` +
+		MATCH (n:` + dummy.NodeType() + `)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-		` RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + ` ` +
+		` OPTIONAL MATCH (n) -[:IS]-> (e)
+		RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e ` +
 		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) + fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
@@ -96,6 +97,12 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 			node_map = map[string]interface{}{}
 			for i := range filter.InFieldFilter {
 				node_map[filter.InFieldFilter[i]] = rec.Values[i]
+			}
+		}
+		is_node, _ := rec.Get("e")
+		if is_node != nil {
+			for k, v := range is_node.(dbtype.Node).Props {
+				node_map[k] = v
 			}
 		}
 		var node T

@@ -16,72 +16,64 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelScanResultsActionRequest
+ * @interface ModelNodesInScanResultRequest
  */
-export interface ModelScanResultsActionRequest {
+export interface ModelNodesInScanResultRequest {
     /**
      * 
      * @type {Array<string>}
-     * @memberof ModelScanResultsActionRequest
+     * @memberof ModelNodesInScanResultRequest
      */
     result_ids: Array<string> | null;
     /**
      * 
      * @type {string}
-     * @memberof ModelScanResultsActionRequest
+     * @memberof ModelNodesInScanResultRequest
      */
-    scan_id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelScanResultsActionRequest
-     */
-    scan_type: ModelScanResultsActionRequestScanTypeEnum;
+    scan_type: ModelNodesInScanResultRequestScanTypeEnum;
 }
 
 
 /**
  * @export
  */
-export const ModelScanResultsActionRequestScanTypeEnum = {
+export const ModelNodesInScanResultRequestScanTypeEnum = {
     SecretScan: 'SecretScan',
     VulnerabilityScan: 'VulnerabilityScan',
     MalwareScan: 'MalwareScan',
     ComplianceScan: 'ComplianceScan',
     CloudComplianceScan: 'CloudComplianceScan'
 } as const;
-export type ModelScanResultsActionRequestScanTypeEnum = typeof ModelScanResultsActionRequestScanTypeEnum[keyof typeof ModelScanResultsActionRequestScanTypeEnum];
+export type ModelNodesInScanResultRequestScanTypeEnum = typeof ModelNodesInScanResultRequestScanTypeEnum[keyof typeof ModelNodesInScanResultRequestScanTypeEnum];
 
 
 /**
- * Check if a given object implements the ModelScanResultsActionRequest interface.
+ * Check if a given object implements the ModelNodesInScanResultRequest interface.
  */
-export function instanceOfModelScanResultsActionRequest(value: object): boolean {
+export function instanceOfModelNodesInScanResultRequest(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "result_ids" in value;
-    isInstance = isInstance && "scan_id" in value;
     isInstance = isInstance && "scan_type" in value;
 
     return isInstance;
 }
 
-export function ModelScanResultsActionRequestFromJSON(json: any): ModelScanResultsActionRequest {
-    return ModelScanResultsActionRequestFromJSONTyped(json, false);
+export function ModelNodesInScanResultRequestFromJSON(json: any): ModelNodesInScanResultRequest {
+    return ModelNodesInScanResultRequestFromJSONTyped(json, false);
 }
 
-export function ModelScanResultsActionRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelScanResultsActionRequest {
+export function ModelNodesInScanResultRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelNodesInScanResultRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
         'result_ids': json['result_ids'],
-        'scan_id': json['scan_id'],
         'scan_type': json['scan_type'],
     };
 }
 
-export function ModelScanResultsActionRequestToJSON(value?: ModelScanResultsActionRequest | null): any {
+export function ModelNodesInScanResultRequestToJSON(value?: ModelNodesInScanResultRequest | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -91,7 +83,6 @@ export function ModelScanResultsActionRequestToJSON(value?: ModelScanResultsActi
     return {
         
         'result_ids': value.result_ids,
-        'scan_id': value.scan_id,
         'scan_type': value.scan_type,
     };
 }

@@ -103,6 +103,12 @@ export interface ModelCompliance {
      * @memberof ModelCompliance
      */
     test_severity: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelCompliance
+     */
+    updated_at: number;
 }
 
 /**
@@ -124,6 +130,7 @@ export function instanceOfModelCompliance(value: object): boolean {
     isInstance = isInstance && "test_number" in value;
     isInstance = isInstance && "test_rationale" in value;
     isInstance = isInstance && "test_severity" in value;
+    isInstance = isInstance && "updated_at" in value;
 
     return isInstance;
 }
@@ -152,6 +159,7 @@ export function ModelComplianceFromJSONTyped(json: any, ignoreDiscriminator: boo
         'test_number': json['test_number'],
         'test_rationale': json['test_rationale'],
         'test_severity': json['test_severity'],
+        'updated_at': json['updated_at'],
     };
 }
 
@@ -178,6 +186,7 @@ export function ModelComplianceToJSON(value?: ModelCompliance | null): any {
         'test_number': value.test_number,
         'test_rationale': value.test_rationale,
         'test_severity': value.test_severity,
+        'updated_at': value.updated_at,
     };
 }
 

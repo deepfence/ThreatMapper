@@ -133,15 +133,22 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 	defer tx.Close()
 
 	var r neo4j.Result
+	var query string
 	if len(filter.NodeIds) == 0 {
-		r, err = tx.Run(`
-		MATCH (n:`+dummy.NodeType()+`) RETURN `+reporters.FieldFilterCypher("n", filter.InFieldFilter)+`
-		`, nil)
+		query = `
+			MATCH (n:` + dummy.NodeType() + `)
+			OPTIONAL MATCH (n) -[:IS]-> (e)
+			RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e`
 	} else {
-		r, err = tx.Run(`
-		MATCH (n:`+dummy.NodeType()+`) WHERE n.node_id IN $ids RETURN `+reporters.FieldFilterCypher("n", filter.InFieldFilter)+`
-		`, map[string]interface{}{"ids": filter.NodeIds})
+		query = `
+			MATCH (n:` + dummy.NodeType() + `)
+			WHERE n.node_id IN $ids
+			OPTIONAL MATCH (n) -[:IS]-> (e)
+			RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e`
 	}
+	log.Info().Msgf("query: %s", query)
+	r, err = tx.Run(query,
+		map[string]interface{}{"ids": filter.NodeIds})
 
 	if err != nil {
 		return res, err
@@ -171,6 +178,12 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 			node_map = map[string]interface{}{}
 			for i := range filter.InFieldFilter {
 				node_map[filter.InFieldFilter[i]] = rec.Values[i]
+			}
+		}
+		is_node, _ := rec.Get("e")
+		if is_node != nil {
+			for k, v := range is_node.(dbtype.Node).Props {
+				node_map[k] = v
 			}
 		}
 		var node T
