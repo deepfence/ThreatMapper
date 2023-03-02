@@ -41,13 +41,13 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.0.2
+	github.com/riandyrn/otelchi v0.5.1
 	github.com/rs/zerolog v1.29.0
 	github.com/samber/mo v1.8.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/swaggest/openapi-go v0.2.28
 	github.com/twmb/franz-go v1.12.1
 	github.com/ugorji/go/codec v1.2.10
-	github.com/urfave/negroni v1.0.0
 	github.com/weaveworks/scope v1.13.2
 	go.opentelemetry.io/otel v1.14.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.14.0
@@ -91,6 +91,7 @@ require (
 	github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
+	github.com/felixge/httpsnoop v1.0.2 // indirect
 	github.com/fsouza/go-dockerclient v1.9.5 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -170,6 +171,7 @@ require (
 	github.com/weaveworks/common v0.0.0-20230208133027-16871410fca4 // indirect
 	github.com/weaveworks/tcptracer-bpf v0.0.0-00010101000000-000000000000 // indirect
 	github.com/willdonnelly/passwd v0.0.0-20141013001024-7935dab3074c // indirect
+	go.opentelemetry.io/contrib v1.0.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/github.com/Shopify/sarama/otelsarama v0.31.0 // indirect
 	go.opentelemetry.io/otel/trace v1.14.0 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect

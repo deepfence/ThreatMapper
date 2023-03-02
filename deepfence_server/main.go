@@ -375,7 +375,11 @@ func initializeKafka() error {
 }
 
 func initializeTelemetry() error {
-	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint("http://deepfence-telemetry:14268/api/traces")))
+	exp, err := jaeger.New(
+		jaeger.WithCollectorEndpoint(
+			jaeger.WithEndpoint("http://deepfence-telemetry:14268/api/traces"),
+		),
+	)
 	if err != nil {
 		return err
 	}
@@ -389,6 +393,8 @@ func initializeTelemetry() error {
 	)
 
 	otel.SetTracerProvider(tp)
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	otel.SetTextMapPropagator(
+		propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}),
+	)
 	return nil
 }
