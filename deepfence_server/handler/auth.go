@@ -46,6 +46,7 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
+
 	httpext.JSON(w, http.StatusOK, accessTokenResponse)
 }
 
@@ -133,6 +134,9 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
+
+	h.AuditUserActivity(r, EVENT_AUTH, ACTION_LOGIN, u, true)
+
 	httpext.JSON(w, http.StatusOK, accessTokenResponse)
 }
 
@@ -142,6 +146,7 @@ func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
+	h.AuditUserActivity(r, EVENT_AUTH, ACTION_LOGOUT, nil, true)
 	w.WriteHeader(http.StatusNoContent)
 }
 

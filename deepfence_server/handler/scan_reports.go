@@ -153,6 +153,8 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	h.AuditUserActivity(r, EVENT_VULNERABILITY_SCAN, ACTION_START, reqs, true)
+
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -211,6 +213,8 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		respondError(err, w)
 		return
 	}
+
+	h.AuditUserActivity(r, EVENT_SECRET_SCAN, ACTION_START, reqs, true)
 
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
@@ -278,6 +282,8 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	h.AuditUserActivity(r, EVENT_COMPLIANCE_SCAN, ACTION_START, reqs, true)
+
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scanIds, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -336,6 +342,8 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		respondError(err, w)
 		return
 	}
+
+	h.AuditUserActivity(r, EVENT_MALWARE_SCAN, ACTION_START, reqs, true)
 
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {

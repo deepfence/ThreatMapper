@@ -104,18 +104,23 @@ func tenantID(rh []kgo.RecordHeader) string {
 }
 
 func processRecord(r *kgo.Record) {
-	processor, exists := processors[r.Topic]
-	if !exists {
-		log.Error().Msgf("Not Implemented for topic %s", r.Topic)
-		return
-	}
+	switch r.Topic {
+	case utils.AUDIT_LOGS:
+		addAuditLog(r)
+	default:
+		processor, exists := processors[r.Topic]
+		if !exists {
+			log.Error().Msgf("Not Implemented for topic %s", r.Topic)
+			return
+		}
 
-	// get tenant id from headers
-	tenant := tenantID(r.Headers)
+		// get tenant id from headers
+		tenant := tenantID(r.Headers)
 
-	err := Process(processor, tenant, r.Value)
-	if err != nil {
-		log.Error().Msgf("Process err: %s", err)
+		err := Process(processor, tenant, r.Value)
+		if err != nil {
+			log.Error().Msgf("Process err: %s", err)
+		}
 	}
 }
 

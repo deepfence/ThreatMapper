@@ -83,6 +83,10 @@ func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("registerInvitedUser", http.MethodPost, "/deepfence/user/invite/register",
 		"Register Invited User", "Register invited user",
 		http.StatusOK, []string{tagUser}, nil, new(RegisterInvitedUserRequest), new(ResponseAccessToken))
+
+	d.AddOperation("getUserActivityLogs", http.MethodGet, "/deepfence/user-activity-log",
+		"Get activity logs for all users", "Get activity logs for all users",
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.GetAuditLogsRow))
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {

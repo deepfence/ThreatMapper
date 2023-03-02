@@ -35,6 +35,7 @@ require (
 	github.com/go-playground/pkg/v5 v5.14.0
 	github.com/go-playground/validator/v10 v10.11.2
 	github.com/google/uuid v1.3.0
+	github.com/lestrrat-go/jwx/v2 v2.0.8
 	github.com/minio/minio-go/v7 v7.0.49
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.5
 	github.com/opentracing/opentracing-go v1.2.0
@@ -133,7 +134,6 @@ require (
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/httprc v1.0.4 // indirect
 	github.com/lestrrat-go/iter v1.0.2 // indirect
-	github.com/lestrrat-go/jwx/v2 v2.0.8 // indirect
 	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/lib/pq v1.10.7 // indirect
 	github.com/lithammer/shortuuid/v3 v3.0.7 // indirect

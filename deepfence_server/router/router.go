@@ -47,7 +47,7 @@ const (
 	ResourceRegistry    = "container-registry"
 )
 
-func telemteryInjector(next http.Handler) http.Handler {
+func telemetryInjector(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, span := otel.Tracer("router").Start(r.Context(), r.URL.Path)
 		defer span.End()
@@ -98,7 +98,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 	}
 
 	r.Route("/deepfence", func(r chi.Router) {
-		r.Use(telemteryInjector)
+		r.Use(telemetryInjector)
 
 		r.Get("/ping", dfHandler.Ping)
 
@@ -127,14 +127,13 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Use(jwtauth.Verifier(tokenAuth))
 			r.Use(directory.Injector)
 
-			r.Post("/user/logout", dfHandler.LogoutHandler)
-
 			// current user
 			r.Route("/user", func(r chi.Router) {
 				r.Get("/", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.GetUser))
 				r.Put("/", dfHandler.AuthHandler(ResourceUser, PermissionWrite, dfHandler.UpdateUser))
 				r.Put("/password", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.UpdateUserPassword))
 				r.Delete("/", dfHandler.AuthHandler(ResourceUser, PermissionDelete, dfHandler.DeleteUser))
+				r.Post("/logout", dfHandler.LogoutHandler)
 			})
 
 			r.Route("/api-token", func(r chi.Router) {
@@ -155,6 +154,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Put("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.UpdateUserByUserID))
 				r.Delete("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionDelete, dfHandler.DeleteUserByUserID))
 			})
+
+			// get audit logs user-activity-log
+			r.Get("/user-activity-log", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetAuditLogs))
 
 			r.Route("/graph", func(r chi.Router) {
 				r.Route("/topology", func(r chi.Router) {

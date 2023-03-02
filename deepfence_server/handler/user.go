@@ -217,6 +217,10 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
+
+	createdUser.PasswordHash = ""
+	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, createdUser, true)
+
 	httpext.JSON(w, http.StatusOK, accessTokenResponse)
 }
 
@@ -285,6 +289,9 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 		email.SendEmail()
 		message = "Invite sent"
 	}
+
+	h.AuditUserActivity(r, EVENT_AUTH, ACTION_INVITE, userInvite, true)
+
 	httpext.JSON(w, http.StatusOK, model.InviteUserResponse{InviteExpiryHours: 48, InviteURL: inviteURL, Message: message})
 }
 
@@ -485,6 +492,7 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		respondError(errors.New("Email not configured"), w)
 		return
 	}
+
 	httpext.JSON(w, http.StatusOK, model.MessageResponse{
 		Message: "A password reset email will be sent if a user exists with the provided email id"})
 }
