@@ -13,52 +13,53 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ReportersOrderSpec } from './ReportersOrderSpec';
-import {
-    ReportersOrderSpecFromJSON,
-    ReportersOrderSpecFromJSONTyped,
-    ReportersOrderSpecToJSON,
-} from './ReportersOrderSpec';
-
 /**
  * 
  * @export
- * @interface ReportersOrderFilter
+ * @interface ReportersOrderSpec
  */
-export interface ReportersOrderFilter {
+export interface ReportersOrderSpec {
     /**
      * 
-     * @type {Array<ReportersOrderSpec>}
-     * @memberof ReportersOrderFilter
+     * @type {boolean}
+     * @memberof ReportersOrderSpec
      */
-    order_fields: Array<ReportersOrderSpec> | null;
+    descending: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof ReportersOrderSpec
+     */
+    field_name: string;
 }
 
 /**
- * Check if a given object implements the ReportersOrderFilter interface.
+ * Check if a given object implements the ReportersOrderSpec interface.
  */
-export function instanceOfReportersOrderFilter(value: object): boolean {
+export function instanceOfReportersOrderSpec(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "order_fields" in value;
+    isInstance = isInstance && "descending" in value;
+    isInstance = isInstance && "field_name" in value;
 
     return isInstance;
 }
 
-export function ReportersOrderFilterFromJSON(json: any): ReportersOrderFilter {
-    return ReportersOrderFilterFromJSONTyped(json, false);
+export function ReportersOrderSpecFromJSON(json: any): ReportersOrderSpec {
+    return ReportersOrderSpecFromJSONTyped(json, false);
 }
 
-export function ReportersOrderFilterFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersOrderFilter {
+export function ReportersOrderSpecFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportersOrderSpec {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'order_fields': (json['order_fields'] === null ? null : (json['order_fields'] as Array<any>).map(ReportersOrderSpecFromJSON)),
+        'descending': json['descending'],
+        'field_name': json['field_name'],
     };
 }
 
-export function ReportersOrderFilterToJSON(value?: ReportersOrderFilter | null): any {
+export function ReportersOrderSpecToJSON(value?: ReportersOrderSpec | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -67,7 +68,8 @@ export function ReportersOrderFilterToJSON(value?: ReportersOrderFilter | null):
     }
     return {
         
-        'order_fields': (value.order_fields === null ? null : (value.order_fields as Array<any>).map(ReportersOrderSpecToJSON)),
+        'descending': value.descending,
+        'field_name': value.field_name,
     };
 }
 

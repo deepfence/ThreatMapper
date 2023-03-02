@@ -16,90 +16,138 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelSecret
+ * @interface ModelSecretRule
  */
-export interface ModelSecret {
+export interface ModelSecretRule {
     /**
      * 
      * @type {string}
-     * @memberof ModelSecret
+     * @memberof ModelSecretRule
      */
     full_filename: string;
     /**
      * 
+     * @type {number}
+     * @memberof ModelSecretRule
+     */
+    id: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelSecretRule
+     */
+    level: string;
+    /**
+     * 
      * @type {boolean}
-     * @memberof ModelSecret
+     * @memberof ModelSecretRule
      */
     masked: boolean;
     /**
      * 
      * @type {string}
-     * @memberof ModelSecret
+     * @memberof ModelSecretRule
      */
     matched_content: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelSecretRule
+     */
+    name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelSecretRule
+     */
+    part: string;
+    /**
+     * 
      * @type {number}
-     * @memberof ModelSecret
+     * @memberof ModelSecretRule
      */
     relative_ending_index: number;
     /**
      * 
      * @type {number}
-     * @memberof ModelSecret
+     * @memberof ModelSecretRule
      */
     relative_starting_index: number;
     /**
      * 
      * @type {number}
-     * @memberof ModelSecret
+     * @memberof ModelSecretRule
+     */
+    score: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelSecretRule
+     */
+    signature_to_match: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelSecretRule
      */
     starting_index: number;
     /**
      * 
      * @type {number}
-     * @memberof ModelSecret
+     * @memberof ModelSecretRule
      */
     updated_at: number;
 }
 
 /**
- * Check if a given object implements the ModelSecret interface.
+ * Check if a given object implements the ModelSecretRule interface.
  */
-export function instanceOfModelSecret(value: object): boolean {
+export function instanceOfModelSecretRule(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "full_filename" in value;
+    isInstance = isInstance && "id" in value;
+    isInstance = isInstance && "level" in value;
     isInstance = isInstance && "masked" in value;
     isInstance = isInstance && "matched_content" in value;
+    isInstance = isInstance && "name" in value;
+    isInstance = isInstance && "part" in value;
     isInstance = isInstance && "relative_ending_index" in value;
     isInstance = isInstance && "relative_starting_index" in value;
+    isInstance = isInstance && "score" in value;
+    isInstance = isInstance && "signature_to_match" in value;
     isInstance = isInstance && "starting_index" in value;
     isInstance = isInstance && "updated_at" in value;
 
     return isInstance;
 }
 
-export function ModelSecretFromJSON(json: any): ModelSecret {
-    return ModelSecretFromJSONTyped(json, false);
+export function ModelSecretRuleFromJSON(json: any): ModelSecretRule {
+    return ModelSecretRuleFromJSONTyped(json, false);
 }
 
-export function ModelSecretFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelSecret {
+export function ModelSecretRuleFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelSecretRule {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
         'full_filename': json['full_filename'],
+        'id': json['id'],
+        'level': json['level'],
         'masked': json['masked'],
         'matched_content': json['matched_content'],
+        'name': json['name'],
+        'part': json['part'],
         'relative_ending_index': json['relative_ending_index'],
         'relative_starting_index': json['relative_starting_index'],
+        'score': json['score'],
+        'signature_to_match': json['signature_to_match'],
         'starting_index': json['starting_index'],
         'updated_at': json['updated_at'],
     };
 }
 
-export function ModelSecretToJSON(value?: ModelSecret | null): any {
+export function ModelSecretRuleToJSON(value?: ModelSecretRule | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -109,10 +157,16 @@ export function ModelSecretToJSON(value?: ModelSecret | null): any {
     return {
         
         'full_filename': value.full_filename,
+        'id': value.id,
+        'level': value.level,
         'masked': value.masked,
         'matched_content': value.matched_content,
+        'name': value.name,
+        'part': value.part,
         'relative_ending_index': value.relative_ending_index,
         'relative_starting_index': value.relative_starting_index,
+        'score': value.score,
+        'signature_to_match': value.signature_to_match,
         'starting_index': value.starting_index,
         'updated_at': value.updated_at,
     };
