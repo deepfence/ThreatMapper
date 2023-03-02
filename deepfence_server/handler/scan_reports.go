@@ -990,9 +990,9 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 		respondError(err, w)
 		return
 	}
-
-	if req.ScanID == "" {
-		respondError(&BadDecoding{errors.New("scan_id is required")}, w)
+	err = h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
 		return
 	}
 

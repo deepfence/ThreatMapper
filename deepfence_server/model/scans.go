@@ -149,9 +149,9 @@ type ScanResultBasicNode struct {
 
 type SbomRequest struct {
 	// either scan_id or node_id+node_type is required
-	ScanID   string `json:"scan_id"`
-	NodeID   string `json:"node_id"`
-	NodeType string `json:"node_type"`
+	ScanID string `path:"scan_id" validate:"required" required:"true"`
+	//NodeID   string `json:"node_id"`
+	//NodeType string `json:"node_type"`
 }
 
 type SbomResponse struct {
