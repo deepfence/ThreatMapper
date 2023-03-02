@@ -181,6 +181,7 @@ services:
       <<: *common-creds
       ELASTICSEARCH_SCHEME: "http"
       DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES: 1440
+      DEEPFENCE_CONSOLE_ORCHESTRATOR: "docker"
     networks:
       - deepfence_net
     depends_on:

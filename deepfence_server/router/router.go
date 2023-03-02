@@ -8,6 +8,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
+	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -57,7 +58,7 @@ func telemteryInjector(next http.Handler) http.Handler {
 }
 
 func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool,
-	ingestC chan *kgo.Record, taskPublisher *kafka.Publisher, openApiDocs *apiDocs.OpenApiDocs) error {
+	ingestC chan *kgo.Record, taskPublisher *kafka.Publisher, openApiDocs *apiDocs.OpenApiDocs, orchestrator string) error {
 	// JWT
 	tokenAuth := jwtauth.New("HS256", jwtSecret, nil)
 
@@ -67,14 +68,20 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 		return err
 	}
 
+	consoleDiagnosis, err := consolediagnosis.NewConsoleDiagnosisHandler(orchestrator)
+	if err != nil {
+		return err
+	}
+
 	dfHandler := &handler.Handler{
-		TokenAuth:      tokenAuth,
-		AuthEnforcer:   authEnforcer,
-		OpenApiDocs:    openApiDocs,
-		SaasDeployment: IsSaasDeployment(),
-		Validator:      validator.New(),
-		IngestChan:     ingestC,
-		TasksPublisher: taskPublisher,
+		TokenAuth:        tokenAuth,
+		AuthEnforcer:     authEnforcer,
+		OpenApiDocs:      openApiDocs,
+		SaasDeployment:   IsSaasDeployment(),
+		Validator:        validator.New(),
+		IngestChan:       ingestC,
+		TasksPublisher:   taskPublisher,
+		ConsoleDiagnosis: consoleDiagnosis,
 	}
 
 	err = dfHandler.Validator.RegisterValidation("password", model.ValidatePassword)

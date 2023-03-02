@@ -21,6 +21,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
+	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -52,6 +53,7 @@ type Config struct {
 	HttpListenEndpoint     string
 	InternalListenEndpoint string
 	JwtSecret              []byte
+	Orchestrator           string
 }
 
 func main() {
@@ -96,13 +98,6 @@ func main() {
 	if err != nil {
 		log.Fatal().Msg(err.Error())
 	}
-
-	// log.Info().Msg("syncing images from registries")
-	// // todo: do this in cron
-	// err = registrysync.Sync()
-	// if err != nil {
-	// 	log.Fatal().Msg(err.Error())
-	// }
 
 	err = initializeTelemetry()
 	if err != nil {
@@ -161,7 +156,7 @@ func main() {
 
 	err = router.SetupRoutes(mux,
 		config.HttpListenEndpoint, config.JwtSecret,
-		*serveOpenapiDocs, ingestC, publisher, openApiDocs,
+		*serveOpenapiDocs, ingestC, publisher, openApiDocs, config.Orchestrator,
 	)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -241,9 +236,15 @@ func initialize() (*Config, error) {
 		httpListenEndpoint = "8080"
 	}
 
+	orchestrator := os.Getenv("DEEPFENCE_CONSOLE_ORCHESTRATOR")
+	if orchestrator != consolediagnosis.DockerOrchestrator && orchestrator != consolediagnosis.KubernetesOrchestrator {
+		orchestrator = consolediagnosis.DockerOrchestrator
+	}
+
 	return &Config{
 		HttpListenEndpoint:     ":" + httpListenEndpoint,
 		InternalListenEndpoint: ":8081",
+		Orchestrator:           orchestrator,
 	}, nil
 }
 

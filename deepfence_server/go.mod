@@ -29,6 +29,7 @@ require (
 	github.com/casbin/casbin/v2 v2.64.0
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230228072949-50c62cfc9ed6
+	github.com/docker/docker v23.0.1+incompatible
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/jwtauth/v5 v5.1.0
 	github.com/go-playground/pkg/v5 v5.14.0
@@ -49,10 +50,11 @@ require (
 	github.com/weaveworks/scope v1.13.2
 	go.opentelemetry.io/otel v1.14.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.14.0
-	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.14.0
 	go.opentelemetry.io/otel/sdk v1.14.0
 	golang.org/x/crypto v0.6.0
 	gotest.tools v2.2.0+incompatible
+	k8s.io/client-go v0.26.2
+	k8s.io/metrics v0.26.2
 )
 
 require (
@@ -80,7 +82,7 @@ require (
 	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230228072949-50c62cfc9ed6 // indirect
 	github.com/deepfence/kubernetes-scanner v0.0.0-20230228135439-cdd38c3c9381 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/docker/docker v23.0.1+incompatible // indirect
+	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
@@ -187,9 +189,8 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/api v0.26.1 // indirect
-	k8s.io/apimachinery v0.26.1 // indirect
-	k8s.io/client-go v0.26.1 // indirect
+	k8s.io/api v0.26.2 // indirect
+	k8s.io/apimachinery v0.26.2 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
 	k8s.io/utils v0.0.0-20221107191617-1a15be271d1d // indirect
