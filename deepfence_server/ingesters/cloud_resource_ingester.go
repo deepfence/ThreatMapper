@@ -92,22 +92,38 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 
 	fmt.Println("reached here")
 
-	if _, err = tx.Run("UNWIND $batch as row MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id}) SET m+=row WITH row UNWIND apoc.convert.fromJsonList(row.security_groups) as group WITH group, row WHERE group IS NOT NULL AND  row.resource_id IN ['aws_ec2_instance','aws_ec2_application_load_balancer','aws_ec2_classic_load_balancer','aws_ec2_gateway_load_balancer','aws_ec2_network_load_balancer'] AND group.GroupId IS NOT NULL MERGE (n:SecurityGroup{node_id:group.GroupId, name:group.GroupName}) MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id}) MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
+	if _, err = tx.Run("UNWIND $batch as row MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id})"+
+		" SET m+=row WITH row UNWIND apoc.convert.fromJsonList(row.security_groups) as group"+
+		" WITH group, row WHERE group IS NOT NULL AND  row.resource_id IN ['aws_ec2_instance',"+
+		" 'aws_ec2_application_load_balancer','aws_ec2_classic_load_balancer',"+
+		"'aws_ec2_gateway_load_balancer','aws_ec2_network_load_balancer'] AND group.GroupId"+
+		" IS NOT NULL MERGE (n:SecurityGroup{node_id:group.GroupId, name:group.GroupName})"+
+		" MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id})"+
+		" MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
 		fmt.Println("reached here err", err)
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (m:CloudResource{ resource_type:'aws_lambda_function'}) WITH apoc.convert.fromJsonList(m.vpc_security_group_ids) as sec_group_ids,m UNWIND sec_group_ids as group     MERGE (n:SecurityGroup{node_id:group})  MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
+	if _, err = tx.Run("MATCH (m:CloudResource{ resource_type:'aws_lambda_function'})"+
+		" WITH apoc.convert.fromJsonList(m.vpc_security_group_ids) as sec_group_ids,m"+
+		" UNWIND sec_group_ids as group     MERGE (n:SecurityGroup{node_id:group})"+
+		"  MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
 		fmt.Println("reached here err 2", err)
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (m:CloudResource{ resource_type:'aws_ecs_service'}) WITH apoc.convert.fromJsonMap(m.network_configuration) as map,m,n,k UNWIND  map.AwsvpcConfiguration.SecurityGroups as secgroup    MERGE (n:SecurityGroup{node_id:group})  MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
+	if _, err = tx.Run("MATCH (m:CloudResource{ resource_type:'aws_ecs_service'})"+
+		" WITH apoc.convert.fromJsonMap(m.network_configuration) as map,m,n,k UNWIND"+
+		"  map.AwsvpcConfiguration.SecurityGroups as secgroup"+
+		"    MERGE (n:SecurityGroup{node_id:group})"+
+		"  MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
 		fmt.Println("reached here err 5", err)
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_account'}) MATCH (t:CloudResource)  WHERE n.account_id = t.account_id and t.resource_type <> 'aws_account'    MERGE (n)-[:OWNS]->(t)", map[string]interface{}{}); err != nil {
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_account'})"+
+		" MATCH (t:CloudResource)  WHERE n.account_id = t.account_id and"+
+		" t.resource_type <> 'aws_account'    MERGE (n)-[:OWNS]->(t)", map[string]interface{}{}); err != nil {
 		fmt.Println("reached here err 3", err)
 		return err
 	}
