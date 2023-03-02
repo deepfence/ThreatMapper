@@ -52,7 +52,7 @@ func telemteryInjector(next http.Handler) http.Handler {
 		_, span := otel.Tracer("router").Start(r.Context(), r.URL.Path)
 		defer span.End()
 		lrw := negroni.NewResponseWriter(w)
-		next.ServeHTTP(lrw, r)
+		next.ServeHTTP(w, r)
 		span.SetAttributes(attribute.Int("status_code", lrw.Status()))
 	})
 }
