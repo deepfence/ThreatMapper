@@ -107,6 +107,7 @@ models/ModelScanStatusReq.ts
 models/ModelScanStatusResp.ts
 models/ModelScanTriggerResp.ts
 models/ModelSecret.ts
+models/ModelSecretRule.ts
 models/ModelSecretScanResult.ts
 models/ModelSecretScanTriggerReq.ts
 models/ModelUpdateUserIdRequest.ts
@@ -127,6 +128,7 @@ models/ReportersContainsFilter.ts
 models/ReportersFieldsFilters.ts
 models/ReportersMatchFilter.ts
 models/ReportersOrderFilter.ts
+models/ReportersOrderSpec.ts
 models/SearchSearchCountResp.ts
 models/SearchSearchFilter.ts
 models/SearchSearchNodeReq.ts

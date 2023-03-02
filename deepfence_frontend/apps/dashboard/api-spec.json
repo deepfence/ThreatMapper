@@ -5342,7 +5342,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/ModelSecret" }
+                  "items": { "$ref": "#/components/schemas/ModelSecretRule" }
                 }
               }
             }
@@ -7748,8 +7748,7 @@
           "full_filename",
           "matched_content",
           "masked",
-          "updated_at",
-          "rule_id"
+          "updated_at"
         ],
         "type": "object",
         "properties": {
@@ -7758,7 +7757,39 @@
           "matched_content": { "type": "string" },
           "relative_ending_index": { "type": "integer" },
           "relative_starting_index": { "type": "integer" },
-          "rule_id": { "type": "string" },
+          "starting_index": { "type": "integer" },
+          "updated_at": { "type": "integer" }
+        }
+      },
+      "ModelSecretRule": {
+        "required": [
+          "starting_index",
+          "relative_starting_index",
+          "relative_ending_index",
+          "full_filename",
+          "matched_content",
+          "masked",
+          "updated_at",
+          "id",
+          "name",
+          "part",
+          "signature_to_match",
+          "level",
+          "score"
+        ],
+        "type": "object",
+        "properties": {
+          "full_filename": { "type": "string" },
+          "id": { "type": "integer" },
+          "level": { "type": "string" },
+          "masked": { "type": "boolean" },
+          "matched_content": { "type": "string" },
+          "name": { "type": "string" },
+          "part": { "type": "string" },
+          "relative_ending_index": { "type": "integer" },
+          "relative_starting_index": { "type": "integer" },
+          "score": { "type": "number" },
+          "signature_to_match": { "type": "string" },
           "starting_index": { "type": "integer" },
           "updated_at": { "type": "integer" }
         }
@@ -8118,9 +8149,17 @@
         "properties": {
           "order_fields": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": { "$ref": "#/components/schemas/ReportersOrderSpec" },
             "nullable": true
           }
+        }
+      },
+      "ReportersOrderSpec": {
+        "required": ["field_name", "descending"],
+        "type": "object",
+        "properties": {
+          "descending": { "type": "boolean" },
+          "field_name": { "type": "string" }
         }
       },
       "SearchSearchCountResp": {

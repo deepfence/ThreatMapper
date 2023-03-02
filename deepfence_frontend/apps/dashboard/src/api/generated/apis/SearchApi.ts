@@ -24,7 +24,7 @@ import type {
   ModelHost,
   ModelMalware,
   ModelScanInfo,
-  ModelSecret,
+  ModelSecretRule,
   ModelVulnerability,
   SearchSearchCountResp,
   SearchSearchNodeReq,
@@ -49,8 +49,8 @@ import {
     ModelMalwareToJSON,
     ModelScanInfoFromJSON,
     ModelScanInfoToJSON,
-    ModelSecretFromJSON,
-    ModelSecretToJSON,
+    ModelSecretRuleFromJSON,
+    ModelSecretRuleToJSON,
     ModelVulnerabilityFromJSON,
     ModelVulnerabilityToJSON,
     SearchSearchCountRespFromJSON,
@@ -532,13 +532,13 @@ export interface SearchApiInterface {
      * @throws {RequiredError}
      * @memberof SearchApiInterface
      */
-    searchSecretsRaw(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecret>>>;
+    searchSecretsRaw(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecretRule>>>;
 
     /**
      * Search across all the data associated with secrets
      * Search Secrets
      */
-    searchSecrets(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecret>>;
+    searchSecrets(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecretRule>>;
 
     /**
      * Search across all the data associated with secrets scan
@@ -1457,7 +1457,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
      * Search across all the data associated with secrets
      * Search Secrets
      */
-    async searchSecretsRaw(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecret>>> {
+    async searchSecretsRaw(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecretRule>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1480,14 +1480,14 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
             body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelSecretFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelSecretRuleFromJSON));
     }
 
     /**
      * Search across all the data associated with secrets
      * Search Secrets
      */
-    async searchSecrets(requestParameters: SearchSecretsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecret>> {
+    async searchSecrets(requestParameters: SearchSecretsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecretRule>> {
         const response = await this.searchSecretsRaw(requestParameters, initOverrides);
         return await response.value();
     }
