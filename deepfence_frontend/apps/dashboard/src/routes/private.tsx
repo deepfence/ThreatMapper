@@ -33,9 +33,11 @@ import { module as secretScanConfigure } from '@/features/onboard/pages/SecretSc
 import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanSummary';
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
+import { module as postureConnectorLayout } from '@/features/postures/layouts/PostureConnectorLayout';
+import { module as postureAccounts } from '@/features/postures/pages/Accounts';
+import { module as postureAddAccounts } from '@/features/postures/pages/AddAccount';
 import { module as posture } from '@/features/postures/pages/Posture';
 import { module as postureScanResults } from '@/features/postures/pages/PostureScanResults';
-import { module as postureScan } from '@/features/postures/pages/PostureScans';
 import { Registries } from '@/features/registries/pages/Registries';
 import { vulnerabilityApiLoader } from '@/features/vulnerabilities/api/apiLoader';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
@@ -225,14 +227,45 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Posture' },
       },
       {
-        path: 'posture/scans/:accountId',
-        ...postureScan,
-        meta: { title: 'Posture Scans' },
+        path: 'posture/add-connection',
+        ...postureConnectorLayout,
+        children: [
+          {
+            path: 'aws',
+            ...postureAddAccounts.aws,
+            meta: { title: 'Posture Add AWS Account' },
+          },
+          {
+            path: 'azure',
+            ...postureAddAccounts.azure,
+            meta: { title: 'Posture Add Azure Account' },
+          },
+          {
+            path: 'gcp',
+            ...postureAddAccounts.azure,
+            meta: { title: 'Posture Add GCP Account' },
+          },
+          {
+            path: 'kubernetes',
+            ...postureAddAccounts.kubernetes,
+            meta: { title: 'Posture Add Kubernetes Account' },
+          },
+          {
+            path: 'host',
+            ...postureAddAccounts.host,
+            meta: { title: 'Posture Add Host Account' },
+          },
+        ],
       },
       {
         path: 'posture/scan-results/:accountId/:scanId',
         ...postureScanResults,
         meta: { title: 'Posture Scans Results' },
+      },
+      {
+        path: 'posture/accounts/:account',
+        ...postureAccounts,
+        meta: { title: 'Posture Accounts' },
       },
     ],
   },

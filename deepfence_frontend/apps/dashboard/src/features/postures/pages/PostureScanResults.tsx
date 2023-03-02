@@ -376,6 +376,62 @@ const ScanResultFilterModal = ({
             <Select
               noPortal
               name="status"
+              label={'Control Type'}
+              placeholder="Select Control Type"
+              value={searchParams.getAll('controls')}
+              sizing="xs"
+              onChange={(value) => {
+                setSearchParams((prev) => {
+                  prev.delete('controls');
+                  value.forEach((language) => {
+                    prev.append('controls', language);
+                  });
+                  return prev;
+                });
+              }}
+            >
+              {['hippa', 'gdpr', 'hippa', 'nist'].map((status: string) => {
+                return (
+                  <SelectItem value={status} key={status}>
+                    {capitalize(status)}
+                  </SelectItem>
+                );
+              })}
+            </Select>
+          </fieldset>
+          <fieldset>
+            <Select
+              noPortal
+              name="inventory"
+              label={'Inventory Type'}
+              placeholder="Select Inventory Type"
+              value={searchParams.getAll('inventory')}
+              sizing="xs"
+              onChange={(value) => {
+                setSearchParams((prev) => {
+                  prev.delete('inventory');
+                  value.forEach((language) => {
+                    prev.append('inventory', language);
+                  });
+                  return prev;
+                });
+              }}
+            >
+              {['inventory 1', 'inventory 2', 'inventory 3', 'inventory 4'].map(
+                (status: string) => {
+                  return (
+                    <SelectItem value={status} key={status}>
+                      {capitalize(status)}
+                    </SelectItem>
+                  );
+                },
+              )}
+            </Select>
+          </fieldset>
+          <fieldset>
+            <Select
+              noPortal
+              name="status"
               label={'Status'}
               placeholder="Select Status"
               value={searchParams.getAll('status')}
@@ -1085,7 +1141,7 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                   </div>
                   <div>
                     <h4 className="text-md font-semibold text-gray-900 dark:text-gray-200 tracking-wider">
-                      Total CIS Compliances
+                      Total Compliances
                     </h4>
                     <div className="mt-2">
                       <span className="text-2xl text-gray-900 dark:text-gray-200">

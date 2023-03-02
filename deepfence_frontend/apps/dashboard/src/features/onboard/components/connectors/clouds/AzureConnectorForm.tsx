@@ -1,13 +1,10 @@
 import cx from 'classnames';
 import { HiViewGridAdd } from 'react-icons/hi';
-import { Button, Card, Step, Stepper, Typography } from 'ui-components';
+import { Card, Step, Stepper, Typography } from 'ui-components';
 
 import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const AzureConnectorForm = () => {
-  const { navigate } = usePageNavigation();
-
   const code = `provider "azurerm" {
     features {}
     subscription_id = "<SUBSCRIPTION_ID eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX>"
@@ -99,22 +96,6 @@ export const AzureConnectorForm = () => {
               <CopyToClipboardIcon text={'terraform apply'} className="top-0" />
             </div>
           </Card>
-          <div className="flex flex-col mt-6">
-            <p className={`${Typography.size.xs}`}>
-              Note: After successfully run the commands above, your connector will appear
-              on MyConnector page, then you can perform scanning.
-            </p>
-            <Button
-              size="xs"
-              color="primary"
-              className="ml-auto"
-              onClick={() => {
-                navigate('/onboard/connectors/my-connectors');
-              }}
-            >
-              Go to connectors
-            </Button>
-          </div>
         </div>
       </Step>
     </Stepper>
