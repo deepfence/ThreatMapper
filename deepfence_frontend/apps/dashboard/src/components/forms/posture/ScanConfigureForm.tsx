@@ -8,6 +8,7 @@ import { ControlsTable } from '@/components/forms/posture/ControlsTable';
 
 type ScanConfigureFormProps = {
   loading: boolean;
+  hideTable: boolean;
   data: {
     urlIds: string[];
     urlType: string;
@@ -18,11 +19,11 @@ type ComplianceType = 'aws' | 'gcp' | 'azure' | 'host' | 'kubernetes_cluster';
 const complianceType: {
   [key in ComplianceType]: string[];
 } = {
-  aws: ['cis', 'nist', 'pci', 'hipaa', 'soc2', 'gdpr'],
-  gcp: ['cis'],
-  azure: ['cis', 'nist', 'hipaa'],
-  host: ['hipaa', 'gdpr', 'pci', 'nist'],
-  kubernetes_cluster: ['nsa-cisa'],
+  aws: ['CIS', 'NIST', 'PCI', 'HIPAA', 'SOC2', 'GDPR'],
+  gcp: ['CIS'],
+  azure: ['CIS', 'NIST', 'HIPAA'],
+  host: ['HIPAA', 'GDPR', 'PCI', 'NIST'],
+  kubernetes_cluster: ['NSA-CISA'],
 };
 
 type TabsType = {
@@ -34,19 +35,51 @@ const hasTypeSelected = (prevTabs: TabsType[], value: string) => {
   return find(prevTabs, ['value', value]);
 };
 
-export const ScanConfigureForm = ({ loading, data }: ScanConfigureFormProps) => {
+export const ScanConfigureForm = ({
+  loading,
+  data,
+  hideTable = true,
+}: ScanConfigureFormProps) => {
   const fetcher = useFetcher();
-  const [selectedTab, setSelectedTab] = useState('');
   const [searchParams, setSearchParams] = useSearchParams();
   const nodeType = data.urlType as ComplianceType;
-  const [tabs, setTabs] = useState<TabsType[] | []>([]);
+  const controls = searchParams.getAll('control');
+  const [selectedTab, setSelectedTab] = useState('');
+  const [tabs, setTabs] = useState<TabsType[] | []>(() => {
+    if (controls.length > 0) {
+      return controls.map((control) => {
+        return {
+          label: control.toUpperCase(),
+          value: control.toUpperCase(),
+        };
+      });
+    } else {
+      return complianceType[nodeType].map((value) => {
+        return {
+          label: value,
+          value: value,
+        };
+      });
+    }
+  });
 
   useEffect(() => {
     // set selected tab by last compliance type
     if (tabs.length > 0) {
       setSelectedTab(tabs[tabs.length - 1].value);
+      setSearchParams((prev) => {
+        prev.delete('control');
+        tabs.forEach((tab) => {
+          prev.append('control', tab.value.toLowerCase());
+        });
+        return prev;
+      });
     } else {
       setSelectedTab('');
+      setSearchParams((prev) => {
+        prev.delete('control');
+        return prev;
+      });
     }
   }, [tabs]);
 
@@ -55,14 +88,6 @@ export const ScanConfigureForm = ({ loading, data }: ScanConfigureFormProps) => 
       const found = hasTypeSelected(prevTabs, name);
       if (found) {
         const newType = filter(prevTabs, (tab: TabsType) => tab.value !== found.value);
-
-        setSearchParams({
-          controls: newType.map((type) => type.value).join(','),
-        });
-        if (newType.length === 0) {
-          searchParams.delete('controls');
-          setSearchParams(searchParams);
-        }
         return [...newType];
       } else {
         const newType = [
@@ -72,9 +97,6 @@ export const ScanConfigureForm = ({ loading, data }: ScanConfigureFormProps) => 
             value: name,
           },
         ];
-        setSearchParams({
-          controls: newType.map((type) => type.value).join(','),
-        });
         return newType;
       }
     });
@@ -97,7 +119,7 @@ export const ScanConfigureForm = ({ loading, data }: ScanConfigureFormProps) => 
             name={`${type}[]`}
             value={type}
           >
-            {type.toUpperCase()}
+            {type}
           </Button>
         ))}
         <fetcher.Form method="post" className="self-start ml-auto">
@@ -121,22 +143,23 @@ export const ScanConfigureForm = ({ loading, data }: ScanConfigureFormProps) => 
           </Button>
         </fetcher.Form>
       </div>
-
-      <div className={'text-sm font-medium mt-4 dark:text-white'}>
-        {selectedTab === '' ? (
-          <p>Please select at least one compliance type to start your scan.</p>
-        ) : (
-          <Tabs
-            value={selectedTab.toUpperCase()}
-            tabs={tabs}
-            onValueChange={(v) => setSelectedTab(v)}
-          >
-            <div className="h-full p-2 dark:text-white">
-              <ControlsTable />
-            </div>
-          </Tabs>
-        )}
-      </div>
+      {!hideTable && (
+        <div className={'text-sm font-medium mt-4 dark:text-white'}>
+          {selectedTab === '' ? (
+            <p>Please select at least one compliance type to start your scan.</p>
+          ) : (
+            <Tabs
+              value={selectedTab}
+              tabs={tabs}
+              onValueChange={(v) => setSelectedTab(v)}
+            >
+              <div className="h-full p-2 dark:text-white">
+                <ControlsTable />
+              </div>
+            </Tabs>
+          )}
+        </div>
+      )}
     </div>
   );
 };

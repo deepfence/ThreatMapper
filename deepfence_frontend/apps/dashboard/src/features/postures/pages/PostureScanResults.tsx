@@ -86,11 +86,13 @@ enum ActionEnumType {
   NOTIFY = 'notify',
 }
 type TableType = {
+  id: string;
   status: string;
+  control: string;
   service: string;
   nodeName: string;
   description: string;
-  action?: null;
+  masked: boolean;
 };
 type ScanResult = {
   status: string;
@@ -252,42 +254,54 @@ async function getScans(
     (result as unknown as ModelComplianceScanResult).compliance_percentage = 7;
     (result as unknown as ModelComplianceScanResult).compliances = [
       {
-        status: 'COMPLETED',
+        id: '1',
+        control: 'cis',
+        status: 'alarm',
         service: 'S3',
         nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
         description:
           'IAM policies are the means by which privileges are granted to users, groups',
       },
       {
-        status: 'COMPLETED',
+        id: '1',
+        control: 'hipaa',
+        status: 'info',
         service: 'S3',
         nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
         description:
           'IAM policies are the means by which privileges are granted to users, groups',
       },
       {
-        status: 'COMPLETED',
+        id: '1',
+        control: 'nist',
+        status: 'skip',
         service: 'S3',
         nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
         description:
           'IAM policies are the means by which privileges are granted to users, groups',
       },
       {
-        status: 'COMPLETED',
+        id: '1',
+        control: 'pci',
+        status: 'ok',
         service: 'S3',
         nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
         description:
           'IAM policies are the means by which privileges are granted to users, groups',
       },
       {
-        status: 'COMPLETED',
+        id: '1',
+        control: 'cis',
+        status: 'alarm',
         service: 'S3',
         nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
         description:
           'IAM policies are the means by which privileges are granted to users, groups',
       },
       {
-        status: 'COMPLETED',
+        id: '1',
+        control: 'cis',
+        status: 'skip',
         service: 'S3',
         nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
         description:
@@ -417,7 +431,7 @@ const ScanResultFilterModal = ({
                 });
               }}
             >
-              {['inventory 1', 'inventory 2', 'inventory 3', 'inventory 4'].map(
+              {['AWS S3 Bucket', 'AWS VPC', 'AWS EKS', 'AWS ELB'].map(
                 (status: string) => {
                   return (
                     <SelectItem value={status} key={status}>
@@ -777,31 +791,14 @@ const CVETable = () => {
         minSize: 30,
         maxSize: 50,
       }),
-      columnHelper.accessor('status', {
+      columnHelper.accessor('control', {
         enableSorting: false,
         enableResizing: false,
-        cell: (info) => {
-          console.log(info.getValue().toLowerCase() === 'completed');
-          return (
-            <Badge
-              label={info.getValue().toUpperCase()}
-              className={cx({
-                'bg-[#0E9F6E]/20 dark:bg-[#0E9F6E]/20 text-[#0E9F6E] dark:text-[#0E9F6E]':
-                  info.getValue().toLowerCase() === 'completed',
-                'bg-[#F05252]/20 dark:bg-[#F05252/20 text-[#F05252] dark:text-[#F05252]':
-                  info.getValue().toLowerCase() === 'error',
-                'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300':
-                  info.getValue().toLowerCase() !== 'completed' &&
-                  info.getValue().toLowerCase() !== 'error',
-              })}
-              size="sm"
-            />
-          );
-        },
-        header: () => 'Status',
-        minSize: 80,
-        size: 110,
-        maxSize: 110,
+        cell: (info) => info.getValue().toUpperCase(),
+        header: () => 'Check Type',
+        minSize: 60,
+        size: 80,
+        maxSize: 90,
       }),
       columnHelper.accessor('service', {
         enableSorting: false,
@@ -833,11 +830,37 @@ const CVETable = () => {
         header: () => 'Description',
         cell: (cell) => cell.getValue(),
       }),
-      columnHelper.accessor('action', {
+      columnHelper.accessor('status', {
+        enableResizing: false,
+        enableSorting: false,
+        minSize: 70,
+        size: 70,
+        maxSize: 70,
+        header: () => <div>Status</div>,
+        cell: (info) => (
+          <Badge
+            label={info.getValue().toUpperCase()}
+            className={cx({
+              'bg-[#F05252]/20 dark:bg-[#F05252]/20 text-[#F05252] dark:text-[#F05252]':
+                info.getValue().toLowerCase() === 'alarm',
+              'bg-[#3F83F8]/20 dark:bg-[#3F83F8/20 text-[#3F83F8] dark:text-[#3F83F8]':
+                info.getValue().toLowerCase() === 'info',
+              'bg-[#0E9F6E]/30 dark:bg-[##0E9F6E]/10 text-yellow-400 dark:text-[#0E9F6E]':
+                info.getValue().toLowerCase() === 'ok',
+              'bg-[#6B7280]/20 dark:bg-[#6B7280]/10 text-gray-700 dark:text-gray-300':
+                info.getValue().toLowerCase() === 'skip',
+              'bg-[#9CA3AF]/10 dark:bg-[#9CA3AF]/10 text-gray-400 dark:text-[#9CA3AF]':
+                info.getValue().toLowerCase() === 'unknown',
+            })}
+            size="sm"
+          />
+        ),
+      }),
+      columnHelper.display({
         id: 'actions',
         enableSorting: false,
         cell: (cell) => (
-          <ActionDropdown icon={<HiDotsVertical />} ids={[cell.row.original.cveId]} />
+          <ActionDropdown icon={<HiDotsVertical />} ids={[cell.row.original.id]} />
         ),
         header: () => '',
         minSize: 40,
@@ -950,11 +973,11 @@ const HeaderComponent = ({
       <Suspense fallback={<CircleSpinner size="xs" />}>
         <Await resolve={loaderData.data ?? []}>
           {(resolvedData: LoaderDataType['data']) => {
-            const { nodeType, hostName } = resolvedData;
+            const { nodeType = 'aws', hostName } = resolvedData;
             return (
               <>
                 <DFLink
-                  to={`/vulnerability/scans?nodeType=${nodeType}`}
+                  to={`/posture/accounts/${nodeType}`}
                   className="flex hover:no-underline items-center justify-center  mr-2"
                 >
                   <IconContext.Provider

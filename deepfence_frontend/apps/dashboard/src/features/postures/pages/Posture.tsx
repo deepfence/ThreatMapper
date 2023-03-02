@@ -104,7 +104,7 @@ const AccountSummary = () => {
         return (
           <Card key={name} className="p-4 flex flex-col gap-y-1">
             <div className="flex items-center justify-between w-full">
-              <h4 className="text-gray-900 text-md dark:text-white mr-4">{name}</h4>
+              <h4 className="text-gray-900 text-sm dark:text-white mr-4">{name}</h4>
               <div className="ml-auto">
                 <DFLink
                   to={`/posture/accounts/${id}`}
@@ -134,7 +134,8 @@ const AccountSummary = () => {
                       'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
                         compliancePercentage > 30 && compliancePercentage < 90,
                       'bg-[#0E9F6E]/20 dark:bg-[#0E9F6E]/20 text-[#0E9F6E] dark:text-[#0E9F6E]':
-                        compliancePercentage < 30,
+                        compliancePercentage !== 0 && compliancePercentage < 30,
+                      'text-gray-700 dark:text-gray-400': !compliancePercentage,
                     })}
                   >
                     {compliancePercentage}%
@@ -178,7 +179,7 @@ const AccountSummary = () => {
 const Posture = () => {
   return (
     <>
-      <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
+      <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
         <span className="text-md font-medium text-gray-700 dark:text-gray-200 uppercase">
           Posture
         </span>

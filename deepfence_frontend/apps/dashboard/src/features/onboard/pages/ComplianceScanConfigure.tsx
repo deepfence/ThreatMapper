@@ -33,7 +33,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ScanActionReturn
   const body = Object.fromEntries(formData);
   const nodeIds = body._nodeIds.toString().split(',');
   let nodeType = body._nodeType.toString();
-  const controls = new URL(request.url).searchParams.get('controls');
+  const controls = new URL(request.url).searchParams.getAll('control');
 
   if (nodeType === 'kubernetes_cluster') {
     nodeType = 'cluster';
@@ -46,7 +46,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ScanActionReturn
     apiArgs: [
       {
         modelComplianceScanTriggerReq: {
-          benchmark_types: controls ? controls.split(',') : [],
+          benchmark_types: controls,
           filters: {
             cloud_account_scan_filter: { filter_in: null },
             kubernetes_cluster_scan_filter: { filter_in: null },
@@ -158,6 +158,7 @@ const ComplianceScanConfigure = () => {
 
       <ScanConfigureForm
         loading={!!(fetcher.state === 'submitting' || isStatusPageLoading)}
+        hideTable={true}
         data={{
           urlIds: state.map((node) => node.urlId),
           urlType: state[0].urlType,

@@ -1,11 +1,12 @@
 import cx from 'classnames';
 import { capitalize, memoize, toNumber } from 'lodash-es';
-import { RefObject, useMemo, useRef, useState } from 'react';
+import { RefObject, Suspense, useMemo, useRef, useState } from 'react';
 import { FaPlay, FaPlus } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import { HiArrowSmLeft, HiDotsVertical, HiOutlineEye, HiRefresh } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import {
+  Await,
   Form,
   LoaderFunctionArgs,
   useLoaderData,
@@ -27,12 +28,60 @@ import {
   SelectItem,
   SlidingModal,
   Table,
+  TableSkeleton,
 } from 'ui-components';
 
 import { getCloudNodesApiClient } from '@/api/api';
 import { DFLink } from '@/components/DFLink';
+import { ScanConfigureForm } from '@/components/forms/posture/ScanConfigureForm';
 import { POSTURE_SEVERITY_COLORS } from '@/constants/charts';
+import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { usePageNavigation } from '@/utils/usePageNavigation';
+
+let mockData = [
+  {
+    id: 'cloud-node-aws-122565780891',
+    accountType: '122565780891',
+    cloud_provider: 'aws',
+    compliancePercentage: 0,
+    scanStatus: 'COMPLETE',
+    active: true,
+  },
+  {
+    id: 'cloud-node-aws-122565780892',
+    accountType: '122565780892',
+    cloud_provider: 'aws',
+    compliancePercentage: 0,
+    scanStatus: 'ERROR',
+    active: true,
+  },
+  {
+    id: 'cloud-node-aws-org-122565780891',
+    accountType: '122565780891',
+    cloud_provider: 'aws-org',
+    compliancePercentage: 0,
+    scanStatus: 'RUNNING',
+    active: true,
+  },
+  {
+    id: 'cloud-node-aws-org-122565780892',
+    accountType: '122565780892',
+    cloud_provider: 'aws-org',
+    compliancePercentage: 0,
+    scanStatus: 'RUNNING',
+    active: true,
+  },
+  {
+    id: 'cloud-node-aws-org-122565780893',
+    accountType: '122565780893',
+    cloud_provider: 'aws-org',
+    compliancePercentage: 0,
+    scanStatus: 'COMPLETE',
+    active: true,
+  },
+];
+
+mockData = [...mockData, ...mockData, ...mockData];
 
 enum ActionEnumType {
   START_SCAN = 'start_scan',
@@ -48,17 +97,15 @@ interface FocusableElement {
 export interface AccountData {
   id: string;
   accountType: string;
+  scanStatus: string;
   active?: boolean;
   compliancePercentage?: number;
-
-  action?: null;
-  startScan?: null;
 }
 
 type LoaderDataType = {
   error?: string;
   message?: string;
-  data?: AccountData[];
+  data: Awaited<ReturnType<typeof getAccountsData>>;
 };
 
 const PAGE_SIZE = 15;
@@ -71,7 +118,12 @@ function getPageFromSearchParams(searchParams: URLSearchParams): number {
   return isFinite(page) && !isNaN(page) && page > 0 ? page : 0;
 }
 
-async function getAccountsData(searchParams: URLSearchParams): Promise<LoaderDataType> {
+async function getAccountsData(searchParams: URLSearchParams): Promise<{
+  accounts: AccountData[];
+  currentPage: number;
+  totalRows: number;
+  message?: string;
+}> {
   const severity = getAccountSearch(searchParams);
   const page = getPageFromSearchParams(searchParams);
 
@@ -96,92 +148,57 @@ async function getAccountsData(searchParams: URLSearchParams): Promise<LoaderDat
   //     data: [],
   //   };
   // }
-  const awsResults = {
-    cloud_node_accounts_info: [
-      {
-        node_id: 'cloud-node-aws-122565780891',
-        node_name: '122565780891',
-        accountType: '122565780891',
-        cloud_provider: 'aws',
-        compliance_percentage: '0.00',
-        active: true,
-      },
-      {
-        node_id: 'cloud-node-aws-122565780892',
-        node_name: '122565780892',
-        accountType: '122565780892',
-        cloud_provider: 'aws',
-        compliance_percentage: '0.00',
-        active: true,
-      },
-      {
-        node_id: 'cloud-node-aws-org-122565780891',
-        node_name: '122565780891',
-        accountType: '122565780891',
-        cloud_provider: 'aws-org',
-        compliance_percentage: '0.00',
-        active: true,
-      },
-      {
-        node_id: 'cloud-node-aws-org-122565780892',
-        node_name: '122565780892',
-        accountType: '122565780892',
-        cloud_provider: 'aws-org',
-        compliance_percentage: '0.00',
-        active: true,
-      },
-      {
-        node_id: 'cloud-node-aws-org-122565780893',
-        accountType: '122565780893',
-        node_name: '122565780893',
-        cloud_provider: 'aws-org',
-        compliance_percentage: '0.00',
-        active: true,
-      },
-    ],
-    total: 5,
-  };
-  const data: LoaderDataType['data'] = awsResults.cloud_node_accounts_info.map(
-    (account) => {
-      return {
-        id: account.node_id,
-        accountType: account.accountType,
-        active: account.active,
-        compliancePercetage: account.compliance_percentage,
-      };
-    },
-  );
-
+  //   const awsResults = {
+  //     cloud_node_accounts_info: mockData,
+  //     total: 5,
+  //   };
+  //   const data: LoaderDataType['data'] = awsResults.cloud_node_accounts_info.map(
+  //     (account) => {
+  //       return {
+  //         id: account.node_id,
+  //         accountType: account.accountType,
+  //         scanStatus: account.scan_status,
+  //         active: account.active,
+  //         compliancePercetage: account.compliance_percentage,
+  //       };
+  //     },
+  //   );
   return {
-    data,
+    accounts: mockData,
+    currentPage: 1,
+    totalRows: 50,
   };
 }
 
 const loader = async ({
   params,
   request,
-}: LoaderFunctionArgs): Promise<LoaderDataType> => {
+}: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
   const searchParams = new URL(request.url).searchParams;
 
   // return Promise.resolve([]);
-  return getAccountsData(searchParams);
+  return typedDefer({
+    data: getAccountsData(searchParams),
+  });
 };
 
 const ActionDropdown = ({
   icon,
   id,
   label,
+  isScanComplete,
 }: {
   icon: React.ReactNode;
+  isScanComplete: boolean;
   id: string;
   label?: string;
 }) => {
   const { navigate } = usePageNavigation();
-  const onTableAction = (action: string) => () => {
+  const onTableAction = (action: string) => {
     const id = 12345;
     switch (action) {
       case ActionEnumType.VIEW_SCAN:
-        navigate(`/posture/scans/${id}`);
+        navigate(`/posture/scan-results/${id}/scanId`);
         break;
     }
   };
@@ -194,9 +211,20 @@ const ActionDropdown = ({
           <>
             <DropdownItem
               className="text-sm"
-              onClick={onTableAction(ActionEnumType.VIEW_SCAN)}
+              onClick={() => {
+                if (isScanComplete) {
+                  onTableAction(ActionEnumType.VIEW_SCAN);
+                }
+              }}
             >
-              <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
+              <span
+                className={cx(
+                  'flex items-center gap-x-2 text-gray-700 dark:text-gray-400',
+                  {
+                    'opacity-50 cursor-not-allowed': !isScanComplete,
+                  },
+                )}
+              >
                 <IconContext.Provider
                   value={{ className: 'text-gray-700 dark:text-gray-400' }}
                 >
@@ -238,17 +266,33 @@ const ScanConfigure = ({
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   return (
-    <Modal open={open} onOpenChange={() => setOpen(false)}>
-      hello
+    <Modal
+      open={open}
+      width="w-full"
+      title="Configure your scan option"
+      onOpenChange={() => setOpen(false)}
+    >
+      <div className="p-4 pt-0">
+        <ScanConfigureForm
+          loading={false}
+          hideTable={false}
+          data={{
+            urlIds: ['123', '456'],
+            urlType: 'host',
+          }}
+        />
+      </div>
     </Modal>
   );
 };
 
-const PostureTable = ({ data = [] }: LoaderDataType) => {
+const PostureTable = () => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [searchParams, setSearchParams] = useSearchParams();
   const columnHelper = createColumnHelper<AccountData>();
-  const [openScanConfigure, setOpemScanConfigure] = useState(false);
+  const [openScanConfigure, setOpenScanConfigure] = useState(false);
+  const loaderData = useLoaderData() as LoaderDataType;
+
   const columns = useMemo(
     () => [
       getRowSelectionColumn(columnHelper, {
@@ -258,9 +302,25 @@ const PostureTable = ({ data = [] }: LoaderDataType) => {
         header: () => null,
       }),
       columnHelper.accessor('accountType', {
-        cell: (cell) => (
-          <DFLink to={`/posture/scan-results/accountId/scanId`}>{cell.getValue()}</DFLink>
-        ),
+        cell: (cell) => {
+          const isScanComplete =
+            cell.row.original.scanStatus?.toLowerCase() === 'complete';
+          const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
+            if (isScanComplete) {
+              return (
+                <DFLink to={`/posture/scan-results/accountId/scanId`}>{children}</DFLink>
+              );
+            }
+            return <>{children}</>;
+          };
+          return (
+            <WrapperComponent>
+              <div className="flex items-center gap-x-2 truncate">
+                <span className="truncate capitalize">{cell.getValue()}</span>
+              </div>
+            </WrapperComponent>
+          );
+        },
         header: () => 'Account',
         minSize: 100,
         size: 100,
@@ -281,7 +341,8 @@ const PostureTable = ({ data = [] }: LoaderDataType) => {
                 'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
                   percent > 30 && percent < 90,
                 'bg-[#0E9F6E]/20 dark:bg-[#0E9F6E]/20 text-[#0E9F6E] dark:text-[#0E9F6E]':
-                  percent < 30,
+                  percent !== 0 && percent < 30,
+                'text-gray-700 dark:text-gray-400': !percent,
               })}
             >
               {percent}%
@@ -290,42 +351,66 @@ const PostureTable = ({ data = [] }: LoaderDataType) => {
         },
       }),
       columnHelper.accessor('active', {
-        minSize: 50,
-        size: 50,
-        maxSize: 50,
+        minSize: 60,
+        size: 70,
+        maxSize: 80,
         header: () => 'Active',
         cell: (info) => {
           const value = info.getValue();
           return value ? 'Yes' : 'No';
         },
       }),
-      columnHelper.accessor('startScan', {
+      columnHelper.accessor('scanStatus', {
+        cell: (info) => (
+          <span
+            className={cx({
+              'text-green-500': info.getValue().toLowerCase() === 'complete',
+              'text-red-500': info.getValue().toLowerCase() === 'error',
+              'text-blue-500':
+                info.getValue().toLowerCase() !== 'complete' &&
+                info.getValue().toLowerCase() !== 'error',
+            })}
+          >
+            {info.getValue()}
+          </span>
+        ),
+        header: () => 'Status',
+        minSize: 50,
+        size: 70,
+      }),
+      columnHelper.display({
+        id: 'startScan',
         enableSorting: false,
         cell: (info) => (
-          <DFLink
-            to={'#'}
-            className="flex items-center gap-x-2"
-            onClick={() => setOpemScanConfigure(true)}
+          <Button
+            size="xs"
+            color="normal"
+            startIcon={<FaPlay />}
+            className="text-blue-600 dark:text-blue-500"
+            onClick={() => setOpenScanConfigure(true)}
           >
-            <div className="p-1.5 bg-gray-100 shrink-0 dark:bg-gray-500/10 rounded-lg">
-              <div className="w-4 h-4">
-                <FaPlay />
-              </div>
-            </div>
-            <div>Start scan</div>
-          </DFLink>
+            Start scan
+          </Button>
         ),
         header: () => 'Start action',
         minSize: 80,
         size: 80,
         maxSize: 120,
       }),
-      columnHelper.accessor('action', {
+      columnHelper.display({
         id: 'actions',
         enableSorting: false,
-        cell: (cell) => (
-          <ActionDropdown icon={<HiDotsVertical />} id={cell.row.original.id ?? ''} />
-        ),
+        cell: (cell) => {
+          const isScanComplete =
+            cell.row.original.scanStatus?.toLowerCase() === 'complete';
+          return (
+            <ActionDropdown
+              icon={<HiDotsVertical />}
+              id={cell.row.original.id ?? ''}
+              isScanComplete={isScanComplete}
+            />
+          );
+        },
         header: () => '',
         minSize: 40,
         size: 40,
@@ -338,36 +423,67 @@ const PostureTable = ({ data = [] }: LoaderDataType) => {
 
   return (
     <>
-      <ScanConfigure open={openScanConfigure} setOpen={setOpemScanConfigure} />
-      <Form>
-        {Object.keys(rowSelectionState).length === 0 ? (
-          <div className="text-sm text-gray-400 font-medium mb-3 flex justify-between">
-            No rows selected
-          </div>
-        ) : (
-          <>
-            <div className="mb-1.5 flex gap-x-2">
-              <DFLink to={'#'} className="flex items-center gap-x-2">
-                <div className="p-1.5 bg-gray-100 shrink-0 dark:bg-gray-500/10 rounded-lg">
-                  <div className="w-4 h-4">
-                    <FaPlay />
-                  </div>
-                </div>
-                <div>Start scan</div>
-              </DFLink>
-            </div>
-          </>
-        )}
-      </Form>
-      <Table
-        size="sm"
-        data={data}
-        columns={columns}
-        enableRowSelection
-        rowSelectionState={rowSelectionState}
-        onRowSelectionChange={setRowSelectionState}
-        getRowId={(row) => row.id}
-      />
+      <ScanConfigure open={openScanConfigure} setOpen={setOpenScanConfigure} />
+      <Suspense fallback={<TableSkeleton columns={6} rows={10} size={'md'} />}>
+        <Await resolve={loaderData.data}>
+          {(resolvedData: LoaderDataType['data']) => {
+            return (
+              <>
+                <Form>
+                  {Object.keys(rowSelectionState).length === 0 ? (
+                    <div className="text-sm text-gray-400 font-medium mb-3 flex justify-between">
+                      No rows selected
+                    </div>
+                  ) : (
+                    <>
+                      <div className="mb-1.5 flex gap-x-2">
+                        <Button
+                          size="xs"
+                          color="normal"
+                          startIcon={<FaPlay />}
+                          className="text-blue-600 dark:text-blue-500"
+                          onClick={() => setOpenScanConfigure(true)}
+                        >
+                          Start scan
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </Form>
+                <Table
+                  size="sm"
+                  data={resolvedData.accounts}
+                  columns={columns}
+                  enableRowSelection
+                  enablePagination
+                  manualPagination
+                  totalRows={resolvedData.totalRows}
+                  pageIndex={resolvedData.currentPage}
+                  onPaginationChange={(updaterOrValue) => {
+                    let newPageIndex = 0;
+                    if (typeof updaterOrValue === 'function') {
+                      newPageIndex = updaterOrValue({
+                        pageIndex: resolvedData.currentPage,
+                        pageSize: PAGE_SIZE,
+                      }).pageIndex;
+                    } else {
+                      newPageIndex = updaterOrValue.pageIndex;
+                    }
+                    setSearchParams((prev) => {
+                      prev.set('page', String(newPageIndex));
+                      return prev;
+                    });
+                  }}
+                  pageSize={PAGE_SIZE}
+                  rowSelectionState={rowSelectionState}
+                  onRowSelectionChange={setRowSelectionState}
+                  getRowId={(row) => row.id}
+                />
+              </>
+            );
+          }}
+        </Await>
+      </Suspense>
     </>
   );
 };
@@ -526,7 +642,7 @@ const Accounts = () => {
         elementToFocusOnClose={elementToFocusOnClose.current}
       />
       <div className="px-1 mt-2">
-        <PostureTable data={loaderData.data ?? []} />
+        <PostureTable />
       </div>
     </div>
   );
