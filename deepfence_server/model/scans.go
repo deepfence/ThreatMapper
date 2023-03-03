@@ -220,13 +220,15 @@ type CloudComplianceScanResult struct {
 }
 
 type Secret struct {
-	StartingIndex         int32  `json:"starting_index" required:"true"`
-	RelativeStartingIndex int32  `json:"relative_starting_index" required:"true"`
-	RelativeEndingIndex   int32  `json:"relative_ending_index" required:"true"`
-	FullFilename          string `json:"full_filename" required:"true"`
-	MatchedContent        string `json:"matched_content" required:"true"`
-	Masked                bool   `json:"masked" required:"true"`
-	UpdatedAt             int64  `json:"updated_at" required:"true"`
+	StartingIndex         int32   `json:"starting_index" required:"true"`
+	RelativeStartingIndex int32   `json:"relative_starting_index" required:"true"`
+	RelativeEndingIndex   int32   `json:"relative_ending_index" required:"true"`
+	FullFilename          string  `json:"full_filename" required:"true"`
+	MatchedContent        string  `json:"matched_content" required:"true"`
+	Masked                bool    `json:"masked" required:"true"`
+	UpdatedAt             int64   `json:"updated_at" required:"true"`
+	Level                 string  `json:"level" required:"true"`
+	Score                 float64 `json:"score" required:"true"`
 }
 
 type SecretRule struct {
@@ -243,20 +245,18 @@ func (Secret) ExtendedField() string {
 }
 
 func (v Secret) GetCategory() string {
-	return ""
+	return v.Level
 }
 
 func (Secret) GetJsonCategory() string {
-	return ""
+	return "level"
 }
 
 type Rule struct {
-	ID               int32   `json:"id" required:"true" required:"true"`
-	Name             string  `json:"name" required:"true"`
-	Part             string  `json:"part" required:"true"`
-	SignatureToMatch string  `json:"signature_to_match" required:"true"`
-	Level            string  `json:"level" required:"true"`
-	Score            float64 `json:"score" required:"true"`
+	ID               int32  `json:"id" required:"true" required:"true"`
+	Name             string `json:"name" required:"true"`
+	Part             string `json:"part" required:"true"`
+	SignatureToMatch string `json:"signature_to_match" required:"true"`
 }
 
 type Vulnerability struct {
