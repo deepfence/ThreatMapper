@@ -179,11 +179,13 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                 sg_id = sec_group["VpcSecurityGroupId"]
                 if sg_id not in security_group_rds_map:
                     security_group_rds_map[sg_id] = db_instance
-                elif isinstance(security_group_resource_map[sg_id], list):
+                elif isinstance(security_group_rds_map[sg_id], list):
                     security_group_rds_map[sg_id].append(db_instance)
                 else:
                     security_group_rds_map[sg_id] = [
                         security_group_rds_map[sg_id], db_instance]
+                if sec_group["VpcSecurityGroupId"] not in security_groups:
+                    continue
                 if security_groups[sec_group["VpcSecurityGroupId"]]["is_egress"]:
                     if security_groups[sec_group["VpcSecurityGroupId"]]["cidr_ipv4"] == '0.0.0.0/0':
                         if not graph.has_node(db_instance):
@@ -200,6 +202,8 @@ def compute_aws_cloud_network_graph(cloud_resources, graph, include_nodes):
                 continue
             db_cluster = cloud_resource["db_cluster_identifier"] + ";<db>"
             for sec_group in cloud_resource["vpc_security_groups"]:
+                if sec_group["VpcSecurityGroupId"] not in security_groups:
+                    continue
                 if security_groups[sec_group["VpcSecurityGroupId"]]["is_egress"]:
                     if security_groups[sec_group["VpcSecurityGroupId"]]["cidr_ipv4"] == '0.0.0.0/0':
                         if not graph.has_node(db_cluster):
