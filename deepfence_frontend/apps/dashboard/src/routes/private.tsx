@@ -34,8 +34,10 @@ import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanS
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { Registries } from '@/features/registries/pages/Registries';
-import { vulnerabilityApiLoader } from '@/features/vulnerabilities/api/apiLoader';
+import { sbomApiLoader } from '@/features/vulnerabilities/api/sbomApiLoader';
+import { scanHistoryApiLoader } from '@/features/vulnerabilities/api/scanHistoryApiLoader';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
+import { module as runtimeBom } from '@/features/vulnerabilities/pages/RuntimeBom';
 import { module as uniqueVulnerabilities } from '@/features/vulnerabilities/pages/UniqueVulnerabilities';
 import { module as vulnerability } from '@/features/vulnerabilities/pages/Vulnerability';
 import { module as vulnerabilityDetails } from '@/features/vulnerabilities/pages/VulnerabilityDetailModal';
@@ -236,10 +238,29 @@ export const privateRoutes: CustomRouteObject[] = [
           },
         ],
       },
+      {
+        path: 'vulnerability/rbom',
+        ...runtimeBom,
+        meta: { title: 'Runtime BOM' },
+      },
     ],
   },
   {
-    path: '/_api/vulnerability/scan-results/history/:nodeType/:nodeId',
-    loader: vulnerabilityApiLoader,
+    path: '/_api',
+    children: [
+      {
+        path: 'vulnerability',
+        children: [
+          {
+            path: 'scan-history/:nodeType/:nodeId',
+            loader: scanHistoryApiLoader,
+          },
+          {
+            path: 'sbom/:scanId',
+            loader: sbomApiLoader,
+          },
+        ],
+      },
+    ],
   },
 ];
