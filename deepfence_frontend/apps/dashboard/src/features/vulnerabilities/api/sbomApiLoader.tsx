@@ -12,6 +12,7 @@ import {
 
 import { getVulnerabilityApiClient } from '@/api/api';
 import { ModelSbomResponse } from '@/api/generated';
+import { DFLink } from '@/components/DFLink';
 import { ApiError, makeRequest } from '@/utils/api';
 
 type LoaderData = {
@@ -91,7 +92,16 @@ export const SbomModal = ({
       }),
       columnHelper.accessor('cve_id', {
         cell: (info) => {
-          return info.getValue();
+          return info.getValue() ? (
+            <DFLink
+              to={generatePath('/vulnerability/unique-vulnerabilities/:cveId', {
+                cveId: info.getValue()!,
+              })}
+              target="_blank"
+            >
+              {info.getValue()}
+            </DFLink>
+          ) : null;
         },
         header: () => 'Top CVE',
         minSize: 50,
