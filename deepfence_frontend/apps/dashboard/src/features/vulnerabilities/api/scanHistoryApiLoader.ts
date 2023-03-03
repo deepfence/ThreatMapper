@@ -74,7 +74,7 @@ async function getVulnerabilityScanList(
   };
 }
 
-export const vulnerabilityApiLoader = async ({
+export const scanHistoryApiLoader = async ({
   params,
 }: LoaderFunctionArgs): Promise<ApiVulnerableLoaderDataType> => {
   const nodeId = params?.nodeId;

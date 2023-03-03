@@ -69,6 +69,7 @@ export function getVulnerabilityApiClient() {
       vulnerabilityApi.statusVulnerabilityScan.bind(vulnerabilityApi),
     listVulnerabilityScans:
       vulnerabilityApi.listVulnerabilityScans.bind(vulnerabilityApi),
+    getSbom: vulnerabilityApi.getSBOM.bind(vulnerabilityApi),
   };
 }
 
