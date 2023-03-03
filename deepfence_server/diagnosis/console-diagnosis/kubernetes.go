@@ -1,11 +1,24 @@
 package console_diagnosis
 
 import (
+	"archive/zip"
+	"context"
 	"flag"
+	"fmt"
+	"io"
 	"os"
+	"path"
 	"path/filepath"
+	"strconv"
+	"strings"
 
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/minio/minio-go/v7"
+	apiv1 "k8s.io/api/core/v1"
+	coreV1 "k8s.io/api/core/v1"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -20,9 +33,10 @@ func homeDir() string {
 }
 
 type KubernetesConsoleDiagnosisHandler struct {
-	kubeCli        *kubernetes.Clientset
-	kubeConfig     *rest.Config
-	kubeMetricsCli *metricsv.Clientset
+	kubeCli          *kubernetes.Clientset
+	kubeConfig       *rest.Config
+	kubeMetricsCli   *metricsv.Clientset
+	consoleNamespace string
 }
 
 func NewKubernetesConsoleDiagnosisHandler() (*KubernetesConsoleDiagnosisHandler, error) {
@@ -55,13 +69,138 @@ func NewKubernetesConsoleDiagnosisHandler() (*KubernetesConsoleDiagnosisHandler,
 	if err != nil {
 		log.Warn().Msg("metrics server not set up in kubernetes")
 	}
+	consoleNamespace := os.Getenv("CONSOLE_NAMESPACE")
+	if consoleNamespace == "" {
+		consoleNamespace = "default"
+	}
 	return &KubernetesConsoleDiagnosisHandler{
-		kubeCli:        kubeCli,
-		kubeConfig:     kubeConfig,
-		kubeMetricsCli: kubeMetricsCli,
+		kubeCli:          kubeCli,
+		kubeConfig:       kubeConfig,
+		kubeMetricsCli:   kubeMetricsCli,
+		consoleNamespace: consoleNamespace,
 	}, nil
 }
 
-func (d *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(tail string) error {
+func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(tail string) error {
+	zipFile, err := CreateTempFile("deepfence-console-logs-*.zip")
+	if err != nil {
+		return err
+	}
+	defer func() {
+		zipFile.Close()
+		os.RemoveAll(zipFile.Name())
+	}()
+	zipWriter := zip.NewWriter(zipFile)
+	ctx := context.Background()
+
+	labelSelector := "app=deepfence-console"
+	options := metaV1.ListOptions{LabelSelector: labelSelector}
+	pods, err := k.GetPods(ctx, options)
+	if err != nil {
+		return err
+	}
+
+	tailLimit, err := strconv.ParseInt(tail, 10, 64)
+	if err != nil {
+		return err
+	}
+	podLogOptions := apiv1.PodLogOptions{TailLines: &tailLimit}
+
+	for _, pod := range pods {
+		err = k.addPodLogs(ctx, &pod, &podLogOptions, zipWriter)
+		if err != nil {
+			log.Warn().Msg(err.Error())
+		}
+	}
+	err = zipWriter.Close()
+	if err != nil {
+		return err
+	}
+	zipWriter.Flush()
+
+	mc, err := directory.MinioClient(ctx)
+	if err != nil {
+		return err
+	}
+	filePath := path.Join("/diagnosis/console-diagnosis", filepath.Base(zipFile.Name()))
+	_, err = mc.UploadLocalFile(ctx, filePath, zipFile.Name(), minio.PutObjectOptions{ContentType: "application/zip"})
+	if err != nil {
+		return err
+	}
 	return nil
+}
+
+func (k *KubernetesConsoleDiagnosisHandler) addPodLogs(ctx context.Context, pod *apiv1.Pod, podLogOptions *apiv1.PodLogOptions, zipWriter *zip.Writer) error {
+	req := k.kubeCli.CoreV1().Pods(pod.Namespace).GetLogs(pod.Name, podLogOptions)
+	podLogs, err := req.Stream(ctx)
+	if err != nil {
+		return err
+	}
+	logBytes, err := io.ReadAll(podLogs)
+	if err != nil {
+		podLogs.Close()
+		return err
+	}
+	podLogs.Close()
+
+	zipFileWriter, err := zipWriter.Create(fmt.Sprintf("%s.log", pod.Name))
+	if err != nil {
+		return err
+	}
+	if _, err := zipFileWriter.Write(logBytes); err != nil {
+		return err
+	}
+
+	if strings.Contains(pod.Name, "router") {
+		err = k.CopyFromPod(pod, HaproxyLogsPath, zipWriter)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (k *KubernetesConsoleDiagnosisHandler) GetPods(ctx context.Context, options metaV1.ListOptions) ([]coreV1.Pod, error) {
+	pods, err := k.kubeCli.CoreV1().Pods(k.consoleNamespace).List(ctx, options)
+	if err != nil {
+		return nil, err
+	}
+	return pods.Items, nil
+}
+
+func (k *KubernetesConsoleDiagnosisHandler) CopyFromPod(pod *apiv1.Pod, srcPath string, zipWriter *zip.Writer) error {
+	randID := utils.NewUUIDString()
+	tmpFolder := "/tmp/" + randID + "/" + pod.Name
+	var err error
+	if err = os.MkdirAll(tmpFolder, os.ModePerm); err != nil {
+		return err
+	}
+	defer os.RemoveAll("/tmp/" + randID)
+	command := fmt.Sprintf("kubectl cp %s/%s:%s %s", pod.Namespace, pod.Name, srcPath, tmpFolder)
+	_, err = utils.ExecuteCommand(command, map[string]string{})
+	if err != nil {
+		return err
+	}
+	return filepath.Walk(tmpFolder,
+		func(file string, fi os.FileInfo, err error) error {
+			if !fi.IsDir() {
+				// here number 3 has been used to cut some nested path values in tar writer
+				// like if path is /tmp/some1/some2/some3 then dir structure in tar will be /some2/some3
+				fileName := strings.Join(strings.Split(filepath.ToSlash(file), "/")[3:], "/")
+
+				zipFileWriter, err := zipWriter.Create(fileName)
+				if err != nil {
+					return err
+				}
+				data, err := os.Open(file)
+				if err != nil {
+					return err
+				}
+				if _, err := io.Copy(zipFileWriter, data); err != nil {
+					return err
+				}
+			}
+			return nil
+		},
+	)
 }
