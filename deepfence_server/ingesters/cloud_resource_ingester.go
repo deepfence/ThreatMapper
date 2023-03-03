@@ -129,7 +129,7 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 	}
 
 	if _, err = tx.Run("MATCH (m:CloudResource{ resource_type:'aws_ecs_service'})"+
-		" WITH apoc.convert.fromJsonMap(m.network_configuration) as map,m,n,k UNWIND"+
+		" WITH apoc.convert.fromJsonMap(m.network_configuration) as map,m,k UNWIND"+
 		"  map.AwsvpcConfiguration.SecurityGroups as secgroup"+
 		"    MERGE (n:SecurityGroup{node_id:group})"+
 		"  MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
