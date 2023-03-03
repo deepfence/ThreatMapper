@@ -92,7 +92,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 
 	// add registry to database
 	// before that check if registry already exists
-	ctx := directory.NewGlobalContext()
+	ctx := directory.WithGlobalContext(r.Context())
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)

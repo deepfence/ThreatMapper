@@ -132,14 +132,15 @@ func (h *Handler) AddAuditLog(params postgresql_db.CreateAuditLogParams) error {
 }
 
 func (h *Handler) GetAuditLogs(w http.ResponseWriter, r *http.Request) {
-	pgClient, err := directory.PostgresClient(directory.NewGlobalContext())
+	ctx := directory.WithGlobalContext(r.Context())
+	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get db connection")
 		respondError(err, w)
 		return
 	}
 
-	auditLogs, err := pgClient.GetAuditLogs(r.Context())
+	auditLogs, err := pgClient.GetAuditLogs(ctx)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
