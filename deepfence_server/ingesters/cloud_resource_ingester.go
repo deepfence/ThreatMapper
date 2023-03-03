@@ -99,7 +99,8 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 
 	fmt.Println("reached here")
 
-	if _, err = tx.Run("UNWIND $batch as row MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id})"+
+	if _, err = tx.Run("UNWIND $batch as row MERGE (m:CloudResource{node_id:coalesce(row.arn,apoc.text.random(10, \"A-Z0-9.$\")),"+
+		" resource_type:row.resource_id}) "+
 		" SET m+=row WITH row UNWIND apoc.convert.fromJsonList(row.security_groups) as group"+
 		" WITH group, row WHERE group IS NOT NULL AND  row.resource_id IN ['aws_ec2_instance'] AND group.GroupId"+
 		" IS NOT NULL AND row.arn IS NOT NULL MERGE (n:SecurityGroup{node_id:group.GroupId, name:group.GroupName})"+
@@ -115,7 +116,7 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 		" ['aws_ec2_application_load_balancer','aws_ec2_classic_load_balancer',"+
 		" 'aws_ec2_network_load_balancer'] AND m.arn IS NOT NULL AND n.node_id=group"+
 		" MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
-		fmt.Println("reached here new err", err)
+		fmt.Println("reached here new err 2", err)
 		return err
 	}
 
