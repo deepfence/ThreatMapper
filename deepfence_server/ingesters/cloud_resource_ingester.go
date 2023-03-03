@@ -102,11 +102,11 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 		" SET m+=row WITH row UNWIND apoc.convert.fromJsonList(row.security_groups) as group"+
 		" WITH group, row WHERE group IS NOT NULL AND  row.resource_id IN ['aws_ec2_instance',"+
 		" 'aws_ec2_application_load_balancer','aws_ec2_classic_load_balancer',"+
-		"'aws_ec2_gateway_load_balancer','aws_ec2_network_load_balancer'] AND group.GroupId"+
-		" IS NOT NULL MERGE (n:SecurityGroup{node_id:group.GroupId, name:group.GroupName})"+
+		"'aws_ec2_network_load_balancer'] AND group.GroupId"+
+		" IS NOT NULL AND row.arn IS NOT NULL MERGE (n:SecurityGroup{node_id:group.GroupId, name:group.GroupName})"+
 		" MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id})"+
 		" MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
-		fmt.Println("reached here err", err)
+		fmt.Println("reached here new err", err)
 		return err
 	}
 
