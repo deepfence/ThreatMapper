@@ -95,7 +95,7 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
   }
 
   const countsResult = await makeRequest({
-    apiFunction: getSearchApiClient().searchVulnerabilityCount,
+    apiFunction: getSearchApiClient().searchVulnerabilitiesCount,
     apiArgs: [
       {
         searchSearchNodeReq: {

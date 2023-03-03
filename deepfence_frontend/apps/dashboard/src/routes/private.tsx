@@ -1,6 +1,10 @@
 import { Outlet } from 'react-router-dom';
 
 import { ErrorComponent } from '@/components/error/ErrorComponent';
+import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
+import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
+import { searchContainersApiLoader } from '@/features/common/data-component/searchContainersApiLoader';
+import { searchHostsApiLoader } from '@/features/common/data-component/searchHostsApiLoader';
 import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
 import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
@@ -34,8 +38,9 @@ import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanS
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { Registries } from '@/features/registries/pages/Registries';
+import { module as secret } from '@/features/secrets/pages/Secret';
+import { module as secretScans } from '@/features/secrets/pages/SecretScans';
 import { sbomApiLoader } from '@/features/vulnerabilities/api/sbomApiLoader';
-import { scanHistoryApiLoader } from '@/features/vulnerabilities/api/scanHistoryApiLoader';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
 import { module as runtimeBom } from '@/features/vulnerabilities/pages/RuntimeBom';
 import { module as uniqueVulnerabilities } from '@/features/vulnerabilities/pages/UniqueVulnerabilities';
@@ -192,6 +197,7 @@ export const privateRoutes: CustomRouteObject[] = [
         ...integrations,
         meta: { title: 'Integrations' },
       },
+      // vulnerability
       {
         path: 'vulnerability',
         ...vulnerability,
@@ -243,23 +249,46 @@ export const privateRoutes: CustomRouteObject[] = [
         ...runtimeBom,
         meta: { title: 'Runtime BOM' },
       },
+      // secrets
+      {
+        path: 'secret',
+        ...secret,
+        meta: { title: 'Secret' },
+      },
+      {
+        path: 'secret/scans',
+        ...secretScans,
+        meta: { title: 'Secret Scans' },
+      },
     ],
   },
   {
-    path: '/_api',
+    path: '/data-component',
     children: [
       {
         path: 'vulnerability',
         children: [
           {
-            path: 'scan-history/:nodeType/:nodeId',
-            loader: scanHistoryApiLoader,
-          },
-          {
             path: 'sbom/:scanId',
             loader: sbomApiLoader,
           },
         ],
+      },
+      {
+        path: 'scan-history/:scanType/:nodeType/:nodeId',
+        loader: scanHistoryApiLoader,
+      },
+      {
+        path: 'search/containers/:scanType',
+        loader: searchContainersApiLoader,
+      },
+      {
+        path: 'search/containerImages/:scanType',
+        loader: searchContainerImagesApiLoader,
+      },
+      {
+        path: 'search/hosts/:scanType',
+        loader: searchHostsApiLoader,
       },
     ],
   },

@@ -64,7 +64,7 @@ export const SbomModal = ({
   const fetcher = useFetcher<LoaderData>();
   useEffect(() => {
     fetcher.load(
-      generatePath('/_api/vulnerability/sbom/:scanId', {
+      generatePath('/data-component/vulnerability/sbom/:scanId', {
         scanId,
       }),
     );

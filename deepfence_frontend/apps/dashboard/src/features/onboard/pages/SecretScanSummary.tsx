@@ -312,7 +312,7 @@ const SecretScanSummary = () => {
       />
 
       <Link
-        to="/dashboard"
+        to="/secret"
         className={cx(
           `${Typography.size.sm} `,
           'underline underline-offset-2 ml-auto bg-transparent text-blue-600 dark:text-blue-500',
