@@ -539,7 +539,9 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 		MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
 		WITH d{.*, masked: coalesce(d.masked or r.masked, false)} as d` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
-		` RETURN d ` + fw.FetchWindow2CypherQuery()
+		` RETURN d ` +
+		reporters.OrderFilter2CypherCondition("d", ff.OrderFilter) +
+		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("query: %v", query)
 	nres, err := tx.Run(query,
 		map[string]interface{}{"scan_id": scan_id})
