@@ -9,7 +9,13 @@ import {
   useNavigation,
   useSearchParams,
 } from 'react-router-dom';
-import { CircleSpinner, createColumnHelper, Table, TableSkeleton } from 'ui-components';
+import {
+  CircleSpinner,
+  createColumnHelper,
+  SortingState,
+  Table,
+  TableSkeleton,
+} from 'ui-components';
 
 import { getSearchApiClient } from '@/api/api';
 import { ModelScanInfo, SearchSearchScanReq } from '@/api/generated';
@@ -18,6 +24,7 @@ import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNode
 import { SbomModal } from '@/features/vulnerabilities/api/sbomApiLoader';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
 const PAGE_SIZE = 15;
 
@@ -67,6 +74,15 @@ async function getScans(searchParams: URLSearchParams): Promise<{
       size: PAGE_SIZE,
     },
   };
+  const order = getOrderFromSearchParams(searchParams);
+  if (order) {
+    requestFilters.node_filters.filters.order_filter.order_fields = [
+      {
+        field_name: order.sortBy,
+        descending: order.descending,
+      },
+    ];
+  }
   const scans = await makeRequest({
     apiFunction: getSearchApiClient().searchVulnerabilityScan,
     apiArgs: [
@@ -127,12 +143,14 @@ const RuntimeBom = () => {
     nodeName: string;
     scanId: string;
   } | null>(null);
+  const [sort, setSort] = useSortingState();
 
   const columns = useMemo(() => {
     const columnHelper = createColumnHelper<LoaderData['scans']['scans'][number]>();
     const columns = [
       columnHelper.accessor('node_type', {
-        enableSorting: false,
+        enableSorting: true,
+        sortDescFirst: false,
         cell: (info) => {
           return (
             <div className="flex items-center gap-x-2">
@@ -215,7 +233,6 @@ const RuntimeBom = () => {
                   size="sm"
                   data={resolvedData.scans}
                   columns={columns}
-                  enableSorting
                   enablePagination
                   manualPagination
                   enableColumnResizing
@@ -236,6 +253,28 @@ const RuntimeBom = () => {
                       prev.set('page', String(newPageIndex));
                       return prev;
                     });
+                  }}
+                  enableSorting
+                  manualSorting
+                  sortingState={sort}
+                  onSortingChange={(updaterOrValue) => {
+                    let newSortState: SortingState = [];
+                    if (typeof updaterOrValue === 'function') {
+                      newSortState = updaterOrValue(sort);
+                    } else {
+                      newSortState = updaterOrValue;
+                    }
+                    setSearchParams((prev) => {
+                      if (!newSortState.length) {
+                        prev.delete('sortby');
+                        prev.delete('desc');
+                      } else {
+                        prev.set('sortby', String(newSortState[0].id));
+                        prev.set('desc', String(newSortState[0].desc));
+                      }
+                      return prev;
+                    });
+                    setSort(newSortState);
                   }}
                 />
               );
