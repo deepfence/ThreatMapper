@@ -75,6 +75,7 @@ type CloudResource struct {
 	TargetHealthDescriptions       *json.RawMessage `json:"target_health_descriptions"`
 	Instances                      *json.RawMessage `json:"instances"`
 	TargetGroupArn                 string           `json:"target_group_arn"`
+	VpcSecurityGroupIds            *json.RawMessage `json:"vpc_security_group_ids"`
 }
 
 func NewCloudResourceIngester() Ingester[[]CloudResource] {
@@ -100,11 +101,19 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 
 	if _, err = tx.Run("UNWIND $batch as row MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id})"+
 		" SET m+=row WITH row UNWIND apoc.convert.fromJsonList(row.security_groups) as group"+
-		" WITH group, row WHERE group IS NOT NULL AND  row.resource_id IN ['aws_ec2_instance',"+
-		" 'aws_ec2_application_load_balancer','aws_ec2_classic_load_balancer',"+
-		"'aws_ec2_network_load_balancer'] AND group.GroupId"+
+		" WITH group, row WHERE group IS NOT NULL AND  row.resource_id IN ['aws_ec2_instance'] AND group.GroupId"+
 		" IS NOT NULL AND row.arn IS NOT NULL MERGE (n:SecurityGroup{node_id:group.GroupId, name:group.GroupName})"+
 		" MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id})"+
+		" MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
+		fmt.Println("reached here new err", err)
+		return err
+	}
+
+	if _, err = tx.Run("MATCH (m:CloudResource{})  WITH  m, apoc.convert.fromJsonList(m.security_groups)"+
+		" as groups UNWIND groups as group MATCH (n:SecurityGroup{})"+
+		" WHERE group IS NOT NULL AND  m.resource_id IN"+
+		" ['aws_ec2_application_load_balancer','aws_ec2_classic_load_balancer',"+
+		" 'aws_ec2_network_load_balancer'] AND m.arn IS NOT NULL AND n.node_id=group"+
 		" MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
 		fmt.Println("reached here new err", err)
 		return err
@@ -213,6 +222,7 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 	bb = convertStructFieldToJSONString(bb, "inline_policies")
 	bb = convertStructFieldToJSONString(bb, "instances")
 	bb = convertStructFieldToJSONString(bb, "target_health_descriptions")
+	bb = convertStructFieldToJSONString(bb, "vpc_security_group_ids")
 
 	if bb["resource_id"] == "aws_ecs_service" {
 		bb["arn"] = bb["service_name"]
