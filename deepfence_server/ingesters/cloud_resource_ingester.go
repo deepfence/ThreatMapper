@@ -69,6 +69,12 @@ type CloudResource struct {
 	Action                         string           `json:"action"`
 	Description                    string           `json:"description"`
 	Privilege                      string           `json:"privilege"`
+	OrganizationId                 string           `json:"organization_id"`
+	OrganizationMasterAccountArn   string           `json:"organization_master_account_arn"`
+	OrganizationMasterAccountEmail string           `json:"organization_master_account_email"`
+	TargetHealthDescriptions       *json.RawMessage `json:"target_health_descriptions"`
+	Instances                      *json.RawMessage `json:"instances"`
+	TargetGroupArn                 string           `json:"target_group_arn"`
 }
 
 func NewCloudResourceIngester() Ingester[[]CloudResource] {
@@ -205,6 +211,8 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 	bb = convertStructFieldToJSONString(bb, "attached_policy_arns")
 	bb = convertStructFieldToJSONString(bb, "groups")
 	bb = convertStructFieldToJSONString(bb, "inline_policies")
+	bb = convertStructFieldToJSONString(bb, "instances")
+	bb = convertStructFieldToJSONString(bb, "target_health_descriptions")
 
 	if bb["resource_id"] == "aws_ecs_service" {
 		bb["arn"] = bb["service_name"]

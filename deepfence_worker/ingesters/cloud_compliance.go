@@ -241,6 +241,33 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 
 	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_iam_role' })"+
 		" MATCH (p:CloudResource{resource_type:'aws_iam_policy'})"+
+		"   WITH apoc.convert.fromJsonList(n.attached_policy_arns)"+
+		" as attached_policy_arns,p,n  WHERE p.arn IN attached_policy_arns"+
+		" MERGE (n) -[:attaches]-> (p) ", map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_ec2_classic_load_balancer' })"+
+		"  WITH apoc.convert.fromJsonList(n.instances)"+
+		" as instances,n  UNWIND instances as instance"+
+		" MERGE (p:CloudResource{resource_type:'aws_ec2_instance' }) "+
+		"WHERE p.instance_id = instance.InstanceId"+
+		" MERGE (n) -[:balances]-> (p) ", map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	//if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_ec2_target_group' })"+
+	//	" MATCH (p:CloudResource{resource_type:'aws_ec2_application_load_balancer' }) "+
+	//	"MATCH (k:CloudResource{resource_type:'aws_ec2_instance' }) "+
+	//	" WITH apoc.convert.fromJsonList(n.load_balancer_arns) as load_balancer_arns, "+
+	//	"apoc.convert.fromJsonList(n.target_health_descriptions) as health_descriptions ,load_balancer_arns,n,p,k"+
+	//	" WHERE p.arn  in load_balancer_arns and "+
+	//	" MERGE (n) -[:balances]-> (p) ", map[string]interface{}{}); err != nil {
+	//	return err
+	//}
+
+	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_iam_role' })"+
+		" MATCH (p:CloudResource{resource_type:'aws_iam_policy'})"+
 		"   WITH apoc.convert.fromJsonList(n.inline_policies_std) as inline_policies_std,p,n"+
 		"   UNWIND inline_policies_std as policy MERGE (p:CloudResource{resource_type:'inline_policy',"+
 		" policy: policy.PolicyName , arn: apoc.text.random(10, \"A-Z0-9.$\") })"+
