@@ -134,10 +134,16 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_account'})"+
-		" MATCH (t:CloudResource)  WHERE n.account_id = t.account_id and"+
-		" t.resource_type <> 'aws_account'    MERGE (n)-[:OWNS]->(t)", map[string]interface{}{}); err != nil {
+	if _, err = tx.Run("MATCH (t:CloudResource{})  MATCH (k:Node{}) "+
+		"where k.node_id= t.account_id MERGE (k)-[:OWNS]->(t)", map[string]interface{}{}); err != nil {
 		fmt.Println("reached here err 3", err)
+		return err
+	}
+
+	if _, err = tx.Run("match (n:Node) WITH apoc.convert.fromJsonMap(n.cloud_metadata) as map,"+
+		" n WHERE map.label = 'AWS' WITH map.id as id, n match (m:CloudResource)"+
+		" where m.resource_type = 'aws_ec2_instance' and m.instance_id = id"+
+		" MERGE (n) -[:IS]-> (m)", map[string]interface{}{}); err != nil {
 		return err
 	}
 
