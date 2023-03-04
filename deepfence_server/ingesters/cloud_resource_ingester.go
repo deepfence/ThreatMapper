@@ -43,7 +43,7 @@ type CloudResource struct {
 	StorageAccountName             string           `json:"storage_account_name,omitempty"`
 	IamInstanceProfileArn          string           `json:"iam_instance_profile_arn,omitempty"`
 	IamInstanceProfileId           string           `json:"iam_instance_profile_id,omitempty"`
-	PublicIpAddresss               string           `json:"public_ip_addresss"`
+	PublicIpAddress                string           `json:"public_ip_address"`
 	PolicyStd                      *json.RawMessage `json:"policy_std,omitempty"`
 	TaskDefinition                 *json.RawMessage `json:"task_definition,omitempty"`
 	VpcOptions                     *json.RawMessage `json:"vpc_options,omitempty"`
