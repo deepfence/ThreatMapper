@@ -110,30 +110,27 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (m:CloudResource{})  WITH  m, apoc.convert.fromJsonList(m.security_groups)"+
-		" as groups UNWIND groups as group MATCH (n:SecurityGroup{})"+
-		" WHERE group IS NOT NULL AND  m.resource_id IN"+
-		" ['aws_ec2_application_load_balancer','aws_ec2_classic_load_balancer',"+
-		" 'aws_ec2_network_load_balancer'] AND m.arn IS NOT NULL AND n.node_id=group"+
-		" MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
-		fmt.Println("reached here new err 2", err)
+	if _, err = tx.Run("MATCH (m:CloudResource{})  WITH  m, apoc.convert.fromJsonList(m.security_groups) "+
+		"as groups UNWIND groups as group MATCH(n:SecurityGroup{}) "+
+		"WHERE group IS NOT NULL AND  m.resource_id IN "+
+		"['aws_ec2_application_load_balancer','aws_ec2_classic_load_balancer', "+
+		"'aws_ec2_network_load_balancer'] AND m.arn IS NOT NULL MERGE (k:SecurityGroup{node_id:group})"+
+		" MERGE (k)-[:SECURED]->(m)", map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run("MATCH (m:CloudResource{ resource_type:'aws_lambda_function'})"+
 		" WITH apoc.convert.fromJsonList(m.vpc_security_group_ids) as sec_group_ids,m"+
 		" UNWIND sec_group_ids as group     MERGE (n:SecurityGroup{node_id:group})"+
-		"  MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
-		fmt.Println("reached here err 2", err)
+		"  MERGE (n)-[:SECURED]->(m)", map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run("MATCH (m:CloudResource{ resource_type:'aws_ecs_service'})"+
 		" WITH apoc.convert.fromJsonMap(m.network_configuration) as map,m UNWIND"+
 		"  map.AwsvpcConfiguration.SecurityGroups as secgroup"+
-		"    MERGE (n:SecurityGroup{node_id:group})"+
-		"  MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
-		fmt.Println("reached here err 5", err)
+		"    MERGE (n:SecurityGroup{node_id:secgroup})"+
+		"  MERGE (n)-[:SECURED]->(m)", map[string]interface{}{}); err != nil {
 		return err
 	}
 
