@@ -232,8 +232,8 @@ type Secret struct {
 }
 
 type SecretRule struct {
-	Secret
-	Rule
+	Secret `mapstructure:",squash"`
+	Rule   `mapstructure:",squash"`
 }
 
 func (SecretRule) NodeType() string {
