@@ -25,7 +25,7 @@ replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/ag
 require (
 	github.com/ThreeDotsLabs/watermill v1.2.0
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.2
-	github.com/bytedance/sonic v1.8.2
+	github.com/bytedance/sonic v1.8.3
 	github.com/casbin/casbin/v2 v2.64.0
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230228072949-50c62cfc9ed6
@@ -37,6 +37,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/lestrrat-go/jwx/v2 v2.0.8
 	github.com/minio/minio-go/v7 v7.0.49
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.5
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
@@ -45,7 +46,7 @@ require (
 	github.com/rs/zerolog v1.29.0
 	github.com/samber/mo v1.8.0
 	github.com/sirupsen/logrus v1.9.0
-	github.com/swaggest/openapi-go v0.2.28
+	github.com/swaggest/openapi-go v0.2.29
 	github.com/twmb/franz-go v1.12.1
 	github.com/ugorji/go/codec v1.2.10
 	github.com/weaveworks/scope v1.13.2
@@ -71,7 +72,7 @@ require (
 	github.com/abrander/go-supervisord v0.0.0-20210517172913-a5469a4c50e2 // indirect
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
-	github.com/aws/aws-sdk-go v1.44.210 // indirect
+	github.com/aws/aws-sdk-go v1.44.214 // indirect
 	github.com/bluele/gcache v0.0.2 // indirect
 	github.com/c9s/goprocinfo v0.0.0-20210130143923-c95fcf8c64a8 // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
@@ -162,7 +163,7 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rs/xid v1.4.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/swaggest/jsonschema-go v0.3.45 // indirect
+	github.com/swaggest/jsonschema-go v0.3.48 // indirect
 	github.com/swaggest/refl v1.1.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/twmb/franz-go/pkg/kadm v1.7.0 // indirect

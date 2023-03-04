@@ -236,6 +236,22 @@ type SecretRule struct {
 	Rule
 }
 
+func (SecretRule) NodeType() string {
+	return "Secret"
+}
+
+func (SecretRule) ExtendedField() string {
+	return "rule_id"
+}
+
+func (v SecretRule) GetCategory() string {
+	return v.Level
+}
+
+func (SecretRule) GetJsonCategory() string {
+	return "level"
+}
+
 func (Secret) NodeType() string {
 	return "Secret"
 }

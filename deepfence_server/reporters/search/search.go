@@ -8,6 +8,7 @@ import (
 	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
 	"github.com/rs/zerolog/log"
@@ -106,7 +107,12 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 			}
 		}
 		var node T
-		utils.FromMap(node_map, &node)
+		err = mapstructure.Decode(node_map, &node)
+		if err != nil {
+			log.Warn().Msg(err.Error())
+			continue
+		}
+		//utils.FromMap(node_map, &node)
 		res = append(res, node)
 	}
 

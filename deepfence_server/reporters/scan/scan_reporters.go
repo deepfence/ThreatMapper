@@ -10,6 +10,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/mitchellh/mapstructure"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/samber/mo"
 )
@@ -556,7 +557,12 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 
 	for _, rec := range recs {
 		var tmp T
-		utils.FromMap(rec.Values[0].(map[string]interface{}), &tmp)
+		err = mapstructure.Decode(rec.Values[0].(map[string]interface{}), &tmp)
+		if err != nil {
+			log.Warn().Msg(err.Error())
+			continue
+		}
+		//utils.FromMap(rec.Values[0].(map[string]interface{}), &tmp)
 		res = append(res, tmp)
 	}
 
@@ -573,7 +579,11 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 		return res, common, err
 	}
 
-	utils.FromMap(rec.Values[0].(neo4j.Node).Props, &common)
+	err = mapstructure.Decode(rec.Values[0].(neo4j.Node).Props, &common)
+	if err != nil {
+		return res, common, err
+	}
+	//utils.FromMap(rec.Values[0].(neo4j.Node).Props, &common)
 
 	return res, common, nil
 }
