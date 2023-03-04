@@ -619,7 +619,7 @@ const Reports = props => {
       if (
         resourceTypeText &&
         resourceTypeText.includes('compliance') &&
-        compliance_checktype.length !== 0
+        compliance_provider?.value !== 'kubernetes'
       ) {
         resourceData.push({
           type: 'compliance',
