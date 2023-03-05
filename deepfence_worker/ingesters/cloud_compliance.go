@@ -202,30 +202,30 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 	}
 
 	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_ec2_classic_load_balancer',"+
-		" scheme : 'internet_facing' }) MATCH (p:Node {node_id:'in-the-internet'})"+
+		" scheme : 'internet-facing' }) MATCH (p:Node {node_id:'in-the-internet'})"+
 		"   MERGE (p) -[:PUBLIC]-> (n) ", map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_ec2_network_load_balancer',"+
-		" scheme : 'internet_facing' }) MATCH (p:Node {node_id:'in-the-internet'})"+
+		" scheme : 'internet-facing' }) MATCH (p:Node {node_id:'in-the-internet'})"+
 		"   MERGE (p) -[:PUBLIC]-> (n) ", map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_ec2_application_load_balancer',"+
-		" scheme : 'internet_facing' }) MATCH (p:Node {node_id:'in-the-internet'})"+
+		" scheme : 'internet-facing' }) MATCH (p:Node {node_id:'in-the-internet'})"+
 		"   MERGE (p) -[:PUBLIC]-> (n) ", map[string]interface{}{}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_vpc_security_group_rule'})"+
-		"  MATCH (m:SecurityGroup{node_id: n.group_id})"+
-		" -[:SECURED]-> (z:CloudResource{resource_type:'aws_ec2_instance'})"+
-		"   MERGE (k:Node {node_id:'in-the-internet'})  MERGE (k)-[:PUBLIC]->(z)",
-		map[string]interface{}{}); err != nil {
-		return err
-	}
+	//if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_vpc_security_group_rule'})"+
+	//	"  MATCH (m:SecurityGroup{node_id: n.group_id})"+
+	//	" -[:SECURED]-> (z:CloudResource{resource_type:'aws_ec2_instance'})"+
+	//	"   MERGE (k:Node {node_id:'in-the-internet'})  MERGE (k)-[:PUBLIC]->(z)",
+	//	map[string]interface{}{}); err != nil {
+	//	return err
+	//}
 
 	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_iam_role' })"+
 		" MATCH (p:CloudResource{resource_type:'aws_ec2_instance'})"+
@@ -254,7 +254,7 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_ec2_classic_load_balancer' })"+
 		"  WITH apoc.convert.fromJsonList(n.instances)"+
 		" as instances,n  UNWIND instances as instance"+
-		" MERGE (p:CloudResource{resource_type:'aws_ec2_instance' }) "+
+		" MATCH (p:CloudResource{resource_type:'aws_ec2_instance' }) "+
 		"WHERE p.instance_id = instance.InstanceId"+
 		" MERGE (n) -[:balances]-> (p) ", map[string]interface{}{}); err != nil {
 		return err
@@ -271,11 +271,13 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 	//}
 
 	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_iam_role' })"+
-		" MATCH (p:CloudResource{resource_type:'aws_iam_policy'})"+
-		"   WITH apoc.convert.fromJsonList(n.inline_policies_std) as inline_policies_std,p,n"+
-		"   UNWIND inline_policies_std as policy MERGE (p:CloudResource{resource_type:'inline_policy',"+
-		" policy: policy.PolicyName , arn: apoc.text.random(10, \"A-Z0-9.$\") })"+
-		"  MERGE (n) -[:inline]-> (p) ", map[string]interface{}{}); err != nil {
+		" WITH apoc.convert.fromJsonList(n.inline_policies)"+
+		" as inline_policies,n UNWIND inline_policies as policy"+
+		"  MERGE (p:CloudResource{resource_type:'inline_policy',"+
+		" policy: policy.PolicyName ,"+
+		" policyDocument:apoc.convert.toString(policy.PolicyDocument),arn:"+
+		" apoc.text.random(10, 'A-Z0-9.$') }) MERGE (n) -[:inline]-> (p)",
+		map[string]interface{}{}); err != nil {
 		return err
 	}
 
