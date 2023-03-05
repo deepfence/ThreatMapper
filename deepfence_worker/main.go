@@ -11,6 +11,13 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
 type config struct {
@@ -45,10 +52,14 @@ func main() {
 	// check connection to kafka broker
 	err = utils.CheckKafkaConn(cfg.KafkaBrokers)
 	if err != nil {
-		log.Error().Msg(err.Error())
-		os.Exit(1)
+		log.Fatal().Err(err).Msg("Kafka connection check failed")
 	}
 	log.Info().Msgf("connection successful to kafka brokers %v", cfg.KafkaBrokers)
+
+	err = initializeTelemetry()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Telemetry initialization failed")
+	}
 
 	// task publisher
 	tasksPublisher, err := kafka.NewPublisher(
@@ -94,4 +105,29 @@ func main() {
 	default:
 		log.Fatal().Msgf("unknown mode %s", cfg.Mode)
 	}
+}
+
+func initializeTelemetry() error {
+	exp, err := jaeger.New(
+		jaeger.WithCollectorEndpoint(
+			jaeger.WithEndpoint("http://deepfence-telemetry:14268/api/traces"),
+		),
+	)
+	if err != nil {
+		return err
+	}
+	tp := tracesdk.NewTracerProvider(
+		tracesdk.WithBatcher(exp),
+		tracesdk.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String("deepfence-worker"),
+			attribute.String("environment", "dev"),
+		)),
+	)
+
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(
+		propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}),
+	)
+	return nil
 }
