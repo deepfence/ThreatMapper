@@ -79,6 +79,7 @@ type CloudResource struct {
 	TargetGroupArn                 string           `json:"target_group_arn"`
 	VpcSecurityGroupIds            *json.RawMessage `json:"vpc_security_group_ids"`
 	Users                          *json.RawMessage `json:"users"`
+	UserGroups                     *json.RawMessage `json:"user-groups"`
 }
 
 func NewCloudResourceIngester() Ingester[[]CloudResource] {
@@ -232,6 +233,7 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 	bb = convertStructFieldToJSONString(bb, "target_health_descriptions")
 	bb = convertStructFieldToJSONString(bb, "instance_profile_arns")
 	bb = convertStructFieldToJSONString(bb, "users")
+	bb = convertStructFieldToJSONString(bb, "user-groups")
 	bb = convertStructFieldToJSONString(bb, "vpc_security_group_ids")
 
 	if bb["resource_id"] == "aws_ecs_service" {
