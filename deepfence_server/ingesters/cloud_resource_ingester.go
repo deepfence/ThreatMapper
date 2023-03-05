@@ -74,6 +74,7 @@ type CloudResource struct {
 	OrganizationMasterAccountArn   string           `json:"organization_master_account_arn"`
 	OrganizationMasterAccountEmail string           `json:"organization_master_account_email"`
 	TargetHealthDescriptions       *json.RawMessage `json:"target_health_descriptions"`
+	InstanceProfileArns            *json.RawMessage `json:instance_profile_arns"`
 	Instances                      *json.RawMessage `json:"instances"`
 	TargetGroupArn                 string           `json:"target_group_arn"`
 	VpcSecurityGroupIds            *json.RawMessage `json:"vpc_security_group_ids"`
@@ -228,6 +229,7 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 	bb = convertStructFieldToJSONString(bb, "instances")
 	bb = convertStructFieldToJSONString(bb, "containers")
 	bb = convertStructFieldToJSONString(bb, "target_health_descriptions")
+	bb = convertStructFieldToJSONString(bb, "instance_profile_arns")
 	bb = convertStructFieldToJSONString(bb, "vpc_security_group_ids")
 
 	if bb["resource_id"] == "aws_ecs_service" {
