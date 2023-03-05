@@ -110,10 +110,12 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 	}
 
 	if _, err = tx.Run("MATCH (n:CloudResource{resource_type:'aws_vpc_security_group_rule'})"+
-		" MATCH (b:CloudResource{resource_type:'aws_ec2_instance'})"+
-		" MATCH (m:SecurityGroup{node_id: n.group_id})-[:SECURED]->"+
-		" (z:CloudResource{resource_type:'aws_ec2_instance'}) WHERE n.cidr_ipv4 = b.public_ip_address"+
-		"    MERGE (z)-[:COMMUNICATES]->(b)", map[string]interface{}{}); err != nil {
+		" MATCH (b:CloudResource{resource_type:'aws_ec2_instance'}) "+
+		"MATCH (m:SecurityGroup{node_id: n.group_id})-[:SECURED]->"+
+		" (z:CloudResource{resource_type:'aws_ec2_instance'}) "+
+		" where n.cidr_ipv4 =~ '.*'+b.public_ip_address+'.*' and"+
+		"  n.cidr_ipv4 <> '0.0.0.0/0' and b.public_ip_address<> '' "+
+		"MERGE (z)-[:COMMUNICATES]->(b)", map[string]interface{}{}); err != nil {
 		return err
 	}
 
@@ -130,16 +132,18 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 	}
 
 	if _, err = tx.Run("MATCH (s:CloudResource{resource_type:'aws_vpc_security_group_rule'})"+
-		"  MATCH (t:SecurityGroup{node_id: s.group_id})"+
-		"  MATCH (m:CloudResource{resource_type:'aws_ecs_service'})"+
-		"  MATCH (k:CloudResource{resource_type:'aws_ecs_task'})"+
-		" MATCH (n:CloudResource{resource_type:'aws_ecs_task_definition',node_id:substring(m.task_definition,1,size(m.task_definition)-2)})"+
-		" WITH apoc.convert.fromJsonMap(m.network_configuration) as map,m,n,k"+
-		" UNWIND  map.AwsvpcConfiguration.SecurityGroups as secgroup"+
-		"  WHERE n.node_id=k.task_definition_arn and secgroup.group_id=s.group_id"+
-		" and s.is_egress <> true and s.cidr_ipv4 = '0.0.0.0/0'"+
-		" MERGE (p:Node {node_id:'in-the-internet'})"+
-		"  MERGE (p) -[:PUBLIC]-> (k)", map[string]interface{}{}); err != nil {
+		" MATCH (t:SecurityGroup{node_id: s.group_id})"+
+		" MATCH (m:CloudResource{resource_type:'aws_ecs_service'})"+
+		" MATCH (k:CloudResource{resource_type:'aws_ecs_task'}) "+
+		"MATCH (n:CloudResource{resource_type:'aws_ecs_task_definition',"+
+		" node_id:substring(m.task_definition,1,size(m.task_definition)-2)}) "+
+		"WITH apoc.convert.fromJsonMap(m.network_configuration) as map,m,n,k,s "+
+		"UNWIND  map.AwsvpcConfiguration.SecurityGroups as secgroup "+
+		"MATCH (q:SecurityGroup{node_id: secgroup.group_id}) "+
+		"WHERE n.node_id=k.task_definition_arn and q.node_id=s.group_id "+
+		"and s.is_egress <> true and s.cidr_ipv4 = '0.0.0.0/0' "+
+		"MERGE (p:Node {node_id:'in-the-internet'}) MERGE (p) -[:PUBLIC]-> (k)",
+		map[string]interface{}{}); err != nil {
 		return err
 	}
 

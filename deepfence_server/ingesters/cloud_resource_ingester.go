@@ -45,6 +45,7 @@ type CloudResource struct {
 	IamInstanceProfileId           string           `json:"iam_instance_profile_id,omitempty"`
 	PublicIpAddress                string           `json:"public_ip_address"`
 	PolicyStd                      *json.RawMessage `json:"policy_std,omitempty"`
+	Containers                     *json.RawMessage `json:"containers,omitempty"`
 	TaskDefinition                 *json.RawMessage `json:"task_definition,omitempty"`
 	VpcOptions                     *json.RawMessage `json:"vpc_options,omitempty"`
 	Policy                         *json.RawMessage `json:"policy,omitempty"`
@@ -225,6 +226,7 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 	bb = convertStructFieldToJSONString(bb, "groups")
 	bb = convertStructFieldToJSONString(bb, "inline_policies")
 	bb = convertStructFieldToJSONString(bb, "instances")
+	bb = convertStructFieldToJSONString(bb, "containers")
 	bb = convertStructFieldToJSONString(bb, "target_health_descriptions")
 	bb = convertStructFieldToJSONString(bb, "vpc_security_group_ids")
 
