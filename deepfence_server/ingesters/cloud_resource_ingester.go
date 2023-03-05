@@ -74,7 +74,7 @@ type CloudResource struct {
 	OrganizationMasterAccountArn   string           `json:"organization_master_account_arn"`
 	OrganizationMasterAccountEmail string           `json:"organization_master_account_email"`
 	TargetHealthDescriptions       *json.RawMessage `json:"target_health_descriptions"`
-	InstanceProfileArns            *json.RawMessage `json:instance_profile_arns"`
+	InstanceProfileArns            *json.RawMessage `json:"instance_profile_arns"`
 	Instances                      *json.RawMessage `json:"instances"`
 	TargetGroupArn                 string           `json:"target_group_arn"`
 	VpcSecurityGroupIds            *json.RawMessage `json:"vpc_security_group_ids"`
