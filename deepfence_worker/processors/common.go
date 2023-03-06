@@ -42,7 +42,7 @@ func desWrapper[T any](commit func(ns string, des []T) error) func(ns string, b 
 
 func telemetryWrapper(task string, cf commitFn) commitFn {
 	return func(ns string, data [][]byte) error {
-		span := telemetry.NewSpan(context.Background(), "kafkajobs", task)
+		span := telemetry.NewSpan(context.Background(), "kafka-jobs", task)
 		defer span.End()
 		err := cf(ns, data)
 		if err != nil {

@@ -56,7 +56,7 @@ func main() {
 	}
 	log.Info().Msgf("connection successful to kafka brokers %v", cfg.KafkaBrokers)
 
-	err = initializeTelemetry()
+	err = initializeTelemetry(cfg.Mode)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Telemetry initialization failed")
 	}
@@ -107,7 +107,7 @@ func main() {
 	}
 }
 
-func initializeTelemetry() error {
+func initializeTelemetry(mode string) error {
 	exp, err := jaeger.New(
 		jaeger.WithCollectorEndpoint(
 			jaeger.WithEndpoint("http://deepfence-telemetry:14268/api/traces"),
@@ -120,7 +120,7 @@ func initializeTelemetry() error {
 		tracesdk.WithBatcher(exp),
 		tracesdk.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceNameKey.String("deepfence-worker"),
+			semconv.ServiceNameKey.String("deepfence-"+mode),
 			attribute.String("environment", "dev"),
 		)),
 	)
