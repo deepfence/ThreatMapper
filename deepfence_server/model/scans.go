@@ -183,9 +183,7 @@ type ScanResultsCommon struct {
 
 type SecretScanResult struct {
 	ScanResultsCommon
-	Secrets        []Secret         `json:"secrets" required:"true"`
-	Rules          []Rule           `json:"rules" required:"true"`
-	RuleSecrets    map[int][]int32  `json:"rule_2_secrets" required:"true"`
+	Secrets        []SecretRule     `json:"secrets" required:"true"`
 	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
 }
 
@@ -219,7 +217,8 @@ type CloudComplianceScanResult struct {
 	Compliances []CloudCompliance `json:"compliances" required:"true"`
 }
 
-type Secret struct {
+type SecretRule struct {
+	// Secret + Rule neo4j node
 	StartingIndex         int32   `json:"starting_index" required:"true"`
 	RelativeStartingIndex int32   `json:"relative_starting_index" required:"true"`
 	RelativeEndingIndex   int32   `json:"relative_ending_index" required:"true"`
@@ -229,11 +228,10 @@ type Secret struct {
 	UpdatedAt             int64   `json:"updated_at" required:"true"`
 	Level                 string  `json:"level" required:"true"`
 	Score                 float64 `json:"score" required:"true"`
-}
-
-type SecretRule struct {
-	Secret `mapstructure:",squash"`
-	Rule   `mapstructure:",squash"`
+	ID                    int32   `json:"id" required:"true" required:"true"`
+	Name                  string  `json:"name" required:"true"`
+	Part                  string  `json:"part" required:"true"`
+	SignatureToMatch      string  `json:"signature_to_match" required:"true"`
 }
 
 func (SecretRule) NodeType() string {
@@ -250,29 +248,6 @@ func (v SecretRule) GetCategory() string {
 
 func (SecretRule) GetJsonCategory() string {
 	return "level"
-}
-
-func (Secret) NodeType() string {
-	return "Secret"
-}
-
-func (Secret) ExtendedField() string {
-	return "rule_id"
-}
-
-func (v Secret) GetCategory() string {
-	return v.Level
-}
-
-func (Secret) GetJsonCategory() string {
-	return "level"
-}
-
-type Rule struct {
-	ID               int32  `json:"id" required:"true" required:"true"`
-	Name             string `json:"name" required:"true"`
-	Part             string `json:"part" required:"true"`
-	SignatureToMatch string `json:"signature_to_match" required:"true"`
 }
 
 type Vulnerability struct {
