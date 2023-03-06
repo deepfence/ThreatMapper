@@ -58,7 +58,7 @@ type CloudResource struct {
 	VpcSecurityGroups              *json.RawMessage `json:"vpc_security_groups,omitempty"`
 	ContainerDefinitions           *json.RawMessage `json:"container_definitions,omitempty"`
 	EventNotificationConfiguration *json.RawMessage `json:"event_notification_configuration,omitempty"`
-	ResourcesVpcConfig             *json.RawMessage `json:"resource_vpc_config,omitempty"`
+	ResourceVpcConfig              *json.RawMessage `json:"resource_vpc_config,omitempty"`
 	NetworkConfiguration           *json.RawMessage `json:"network_configuration,omitempty"`
 	AttachedPolicyArns             *json.RawMessage `json:"attached_policy_arns"`
 	CreateDate                     string           `json:"create_date,omitempty"`
@@ -80,6 +80,7 @@ type CloudResource struct {
 	VpcSecurityGroupIds            *json.RawMessage `json:"vpc_security_group_ids"`
 	Users                          *json.RawMessage `json:"users"`
 	UserGroups                     *json.RawMessage `json:"user-groups"`
+	ResourcesVpcConfig             *json.RawMessage `json:"resources_vpc_config"`
 }
 
 func NewCloudResourceIngester() Ingester[[]CloudResource] {
@@ -235,6 +236,7 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 	bb = convertStructFieldToJSONString(bb, "users")
 	bb = convertStructFieldToJSONString(bb, "user-groups")
 	bb = convertStructFieldToJSONString(bb, "vpc_security_group_ids")
+	bb = convertStructFieldToJSONString(bb, "resources_vpc_config")
 
 	if bb["resource_id"] == "aws_ecs_service" {
 		bb["arn"] = bb["service_name"]
