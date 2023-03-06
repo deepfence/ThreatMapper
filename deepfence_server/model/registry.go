@@ -8,7 +8,11 @@ import (
 	"time"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
+	"github.com/rs/zerolog/log"
 )
 
 type RegistryAddReq struct {
@@ -135,4 +139,158 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgres
 
 func (r *RegistryImageListReq) GetRegistryImages(ctx context.Context) ([]ContainerImage, error) {
 	return GetContainerImagesFromRegistryAndNamespace(ctx, r.ResourceType, r.Namespace)
+}
+
+type ContainerImageWithTags struct {
+	ID      string    `json:"id"`
+	Name    string    `json:"name"`
+	Tags    []string  `json:"tags"`
+	Size    string    `json:"size"`
+	Created time.Time `json:"created"`
+	Updated time.Time `json:"updated"`
+}
+
+func (i *ContainerImageWithTags) AddTags(tags ...string) ContainerImageWithTags {
+	i.Tags = append(i.Tags, tags...)
+	return *i
+}
+
+func toContainerImageWithTags(data map[string]interface{}) ContainerImageWithTags {
+	image := ContainerImageWithTags{
+		ID:   data["node_id"].(string),
+		Name: data["docker_image_name"].(string),
+		Tags: []string{data["docker_image_tag"].(string)},
+		Size: data["docker_image_size"].(string),
+	}
+	return image
+}
+
+func ListImages(ctx context.Context, registryId int32) ([]ContainerImageWithTags, error) {
+	var (
+		images []ContainerImageWithTags
+	)
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return images, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return images, err
+	}
+	defer tx.Close()
+
+	query := `MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage) RETURN m`
+	r, err := tx.Run(query, map[string]interface{}{"id": registryId})
+	if err != nil {
+		return images, err
+	}
+
+	records, err := r.Collect()
+	if err != nil {
+		return images, err
+	}
+
+	ri := map[string]ContainerImageWithTags{}
+
+	for _, rec := range records {
+		log.Info().Msgf("%+v", rec.Values)
+		data, has := rec.Get("m")
+		if !has {
+			log.Warn().Msgf("Missing neo4j entry")
+			continue
+		}
+		da, ok := data.(dbtype.Node)
+		if !ok {
+			log.Warn().Msgf("Missing neo4j entry")
+			continue
+		}
+
+		node := toContainerImageWithTags(da.Props)
+
+		i, ok := ri[node.Name]
+		if ok {
+			ri[node.Name] = i.AddTags(node.Tags...)
+		} else {
+			ri[node.Name] = node
+		}
+	}
+
+	for _, v := range ri {
+		images = append(images, v)
+	}
+
+	return images, nil
+}
+
+func toContainerImage(data map[string]interface{}) ContainerImage {
+	image := ContainerImage{
+		ID:   data["node_id"].(string),
+		Name: data["docker_image_name"].(string),
+		Tag:  data["docker_image_tag"].(string),
+		Size: data["docker_image_size"].(string),
+	}
+
+	md := data["metadata"].(string)
+	var metadata Metadata
+	if err := json.Unmarshal([]byte(md), &metadata); err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	image.Metadata = metadata
+
+	return image
+}
+
+func ListImageTags(ctx context.Context, registryId int32, imageName string) ([]ContainerImage, error) {
+	var (
+		imageTags []ContainerImage
+	)
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return imageTags, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return imageTags, err
+	}
+	defer tx.Close()
+
+	query := `MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage{docker_image_name:$name}) RETURN m`
+	r, err := tx.Run(query, map[string]interface{}{"id": registryId, "name": imageName})
+	if err != nil {
+		return imageTags, err
+	}
+
+	records, err := r.Collect()
+	if err != nil {
+		return imageTags, err
+	}
+
+	for _, rec := range records {
+		log.Info().Msgf("%+v", rec.Values)
+		data, has := rec.Get("m")
+		if !has {
+			log.Warn().Msgf("Missing neo4j entry")
+			continue
+		}
+		da, ok := data.(dbtype.Node)
+		if !ok {
+			log.Warn().Msgf("Missing neo4j entry")
+			continue
+		}
+
+		imageTags = append(imageTags, toContainerImage(da.Props))
+
+	}
+
+	return imageTags, nil
 }

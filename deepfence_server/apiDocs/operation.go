@@ -497,4 +497,10 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 	d.AddOperation("deleteRegistry", http.MethodDelete, "/deepfence/registryaccount/{id}/",
 		"Add Registry", "Delete registry",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryDeleteReq), nil)
+	d.AddOperation("listImages", http.MethodGet, "/deepfence/registryaccount/{id}/images",
+		"List Registry Images", "list images from a given registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, nil, new([]ContainerImageWithTags))
+	d.AddOperation("listImageTags", http.MethodGet, "/deepfence/registryaccount/{id}/images/{imageName}/tags",
+		"List Image Tags", "list image tags for a given image and registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, nil, new([]ContainerImage))
 }
