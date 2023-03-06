@@ -14,6 +14,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/riandyrn/otelchi"
@@ -96,6 +97,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 	}
 
 	r.Use(otelchi.Middleware("deepfence-server", otelchi.WithChiRoutes(r)))
+
+	r.Use(middleware.Compress(5))
 
 	r.Route("/deepfence", func(r chi.Router) {
 		// r.Use(telemetryInjector)
