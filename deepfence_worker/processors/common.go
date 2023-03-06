@@ -6,6 +6,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/telemetry"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -39,48 +40,70 @@ func desWrapper[T any](commit func(ns string, des []T) error) func(ns string, b 
 	}
 }
 
+func telemetryWrapper(task string, cf commitFn) commitFn {
+	return func(ns string, data [][]byte) error {
+		span := telemetry.NewSpan(context.Background(), "kafkajobs", task)
+		defer span.End()
+		err := cf(ns, data)
+		if err != nil {
+			span.EndWithErr(err)
+		}
+		return err
+	}
+}
+
 func StartKafkaProcessors(ctx context.Context) {
 	processors = map[string]*BulkProcessor{}
 
 	processors[utils.VULNERABILITY_SCAN] = NewBulkProcessor(
 		utils.VULNERABILITY_SCAN,
-		desWrapper(ingesters.CommitFuncVulnerabilities),
+		telemetryWrapper(utils.VULNERABILITY_SCAN,
+			desWrapper(ingesters.CommitFuncVulnerabilities)),
 	)
 	processors[utils.COMPLIANCE_SCAN] = NewBulkProcessor(
 		utils.COMPLIANCE_SCAN,
-		desWrapper(ingesters.CommitFuncCompliance),
+		telemetryWrapper(utils.COMPLIANCE_SCAN,
+			desWrapper(ingesters.CommitFuncCompliance)),
 	)
 	processors[utils.CLOUD_COMPLIANCE_SCAN] = NewBulkProcessor(
 		utils.CLOUD_COMPLIANCE_SCAN,
-		desWrapper(ingesters.CommitFuncCloudCompliance),
+		telemetryWrapper(utils.CLOUD_COMPLIANCE_SCAN,
+			desWrapper(ingesters.CommitFuncCloudCompliance)),
 	)
 	processors[utils.SECRET_SCAN] = NewBulkProcessor(
 		utils.SECRET_SCAN,
-		desWrapper(ingesters.CommitFuncSecrets),
+		telemetryWrapper(utils.SECRET_SCAN,
+			desWrapper(ingesters.CommitFuncSecrets)),
 	)
 	processors[utils.MALWARE_SCAN] = NewBulkProcessor(
 		utils.MALWARE_SCAN,
-		desWrapper(ingesters.CommitFuncMalware),
+		telemetryWrapper(utils.MALWARE_SCAN,
+			desWrapper(ingesters.CommitFuncMalware)),
 	)
 	processors[utils.VULNERABILITY_SCAN_STATUS] = NewBulkProcessor(
 		utils.VULNERABILITY_SCAN_STATUS,
-		desWrapper(ingesters.CommitFuncStatus[ingesters.VulnerabilityScanStatus](utils.NEO4J_VULNERABILITY_SCAN)),
+		telemetryWrapper(utils.VULNERABILITY_SCAN_STATUS,
+			desWrapper(ingesters.CommitFuncStatus[ingesters.VulnerabilityScanStatus](utils.NEO4J_VULNERABILITY_SCAN))),
 	)
 	processors[utils.COMPLIANCE_SCAN_STATUS] = NewBulkProcessor(
 		utils.COMPLIANCE_SCAN_STATUS,
-		desWrapper(ingesters.CommitFuncStatus[ingesters.ComplianceScanStatus](utils.NEO4J_COMPLIANCE_SCAN)),
+		telemetryWrapper(utils.COMPLIANCE_SCAN_STATUS,
+			desWrapper(ingesters.CommitFuncStatus[ingesters.ComplianceScanStatus](utils.NEO4J_COMPLIANCE_SCAN))),
 	)
 	processors[utils.SECRET_SCAN_STATUS] = NewBulkProcessor(
 		utils.SECRET_SCAN_STATUS,
-		desWrapper(ingesters.CommitFuncStatus[ingesters.SecretScanStatus](utils.NEO4J_SECRET_SCAN)),
+		telemetryWrapper(utils.SECRET_SCAN_STATUS,
+			desWrapper(ingesters.CommitFuncStatus[ingesters.SecretScanStatus](utils.NEO4J_SECRET_SCAN))),
 	)
 	processors[utils.MALWARE_SCAN_STATUS] = NewBulkProcessor(
 		utils.MALWARE_SCAN_STATUS,
-		desWrapper(ingesters.CommitFuncStatus[ingesters.MalwareScanStatus](utils.NEO4J_MALWARE_SCAN)),
+		telemetryWrapper(utils.MALWARE_SCAN_STATUS,
+			desWrapper(ingesters.CommitFuncStatus[ingesters.MalwareScanStatus](utils.NEO4J_MALWARE_SCAN))),
 	)
 	processors[utils.CLOUD_COMPLIANCE_SCAN_STATUS] = NewBulkProcessor(
 		utils.CLOUD_COMPLIANCE_SCAN_STATUS,
-		desWrapper(ingesters.CommitFuncStatus[ingesters.CloudComplianceScanStatus](utils.NEO4J_CLOUD_COMPLIANCE_SCAN)),
+		telemetryWrapper(utils.CLOUD_COMPLIANCE_SCAN_STATUS,
+			desWrapper(ingesters.CommitFuncStatus[ingesters.CloudComplianceScanStatus](utils.NEO4J_CLOUD_COMPLIANCE_SCAN))),
 	)
 
 	for i := range processors {

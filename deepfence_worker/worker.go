@@ -14,6 +14,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/sbom"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/tasks/secretscan"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/telemetry"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -32,6 +33,18 @@ func (w *worker) Run(ctx context.Context) error {
 	return w.mux.Run(ctx)
 }
 
+func telemetryCallbackWrapper(task string, taskCallback func(*message.Message) error) func(*message.Message) error {
+	return func(m *message.Message) error {
+		span := telemetry.NewSpan(context.Background(), "workerjobs", task)
+		defer span.End()
+		err := taskCallback(m)
+		if err != nil {
+			span.EndWithErr(err)
+		}
+		return err
+	}
+}
+
 func (w *worker) AddNoPublisherHandler(
 	task string,
 	taskCallback func(*message.Message) error,
@@ -44,7 +57,7 @@ func (w *worker) AddNoPublisherHandler(
 		task,
 		task,
 		subscriber,
-		taskCallback,
+		telemetryCallbackWrapper(task, taskCallback),
 	)
 	return nil
 }
