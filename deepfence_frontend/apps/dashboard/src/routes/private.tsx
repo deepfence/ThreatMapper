@@ -9,6 +9,8 @@ import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
 import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
 import { module as integrations } from '@/features/integrations/pages/Integrations';
+import { module as malware } from '@/features/malwares/pages/Malware';
+import { module as malwareScans } from '@/features/malwares/pages/MalwareScans';
 import {
   ConnectorsLayout,
   connectorsLoader,
@@ -265,6 +267,29 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'secret/scan-results/:scanId',
         ...secretScanResults,
         meta: { title: 'Secret Scan Results' },
+        children: [
+          // {
+          //   path: ':cveId',
+          //   ...secretDetails,
+          //   meta: { title: 'Secret Details' },
+          // },
+        ],
+      },
+      // malware
+      {
+        path: 'malware',
+        ...malware,
+        meta: { title: 'Malware' },
+      },
+      {
+        path: 'malware/scans',
+        ...malwareScans,
+        meta: { title: 'Malware Scans' },
+      },
+      {
+        path: 'malware/scan-results/:scanId',
+        ...secretScanResults,
+        meta: { title: 'Malware Scan Results' },
         children: [
           // {
           //   path: ':cveId',

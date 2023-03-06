@@ -111,23 +111,22 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
       },
     ],
   });
-  const registriesResultsPromise = makeRequest({
-    apiFunction: getRegistriesApiClient().listRegistries,
-    apiArgs: [],
-  });
-  const [awsResults, hostsResults, kubernetesResults, registriesResults] =
-    await Promise.all([
-      awsResultsPromise,
-      hostsResultsPromise,
-      kubernetesResultsPromise,
-      registriesResultsPromise,
-    ]);
+  // const registriesResultsPromise = makeRequest({
+  //   apiFunction: getRegistriesApiClient().listRegistries,
+  //   apiArgs: [],
+  // });
+  const [awsResults, hostsResults, kubernetesResults] = await Promise.all([
+    awsResultsPromise,
+    hostsResultsPromise,
+    kubernetesResultsPromise,
+    // registriesResultsPromise,
+  ]);
 
   if (
     ApiError.isApiError(awsResults) ||
     ApiError.isApiError(hostsResults) ||
-    ApiError.isApiError(kubernetesResults) ||
-    ApiError.isApiError(registriesResults)
+    ApiError.isApiError(kubernetesResults)
+    // ApiError.isApiError(registriesResults)
   ) {
     // TODO(manan) handle error cases
     return [];
@@ -214,24 +213,24 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
     }
   }
 
-  if (registriesResults.length) {
-    data.push({
-      id: 'registry',
-      urlId: 'registry',
-      urlType: 'registry',
-      accountType: 'Container Registries',
-      count: registriesResults.length,
-      connections: registriesResults.map((registry) => ({
-        id: `registry-${registry.id}`,
-        urlId: `${registry.id ?? ''}`,
-        urlType: 'registry',
-        accountType: startCase(registry.registry_type ?? 'Registry'),
-        connectionMethod: 'Registry',
-        accountId: getRegistryDisplayId(registry),
-        active: true,
-      })),
-    });
-  }
+  // if (registriesResults.length) {
+  //   data.push({
+  //     id: 'registry',
+  //     urlId: 'registry',
+  //     urlType: 'registry',
+  //     accountType: 'Container Registries',
+  //     count: registriesResults.length,
+  //     connections: registriesResults.map((registry) => ({
+  //       id: `registry-${registry.id}`,
+  //       urlId: `${registry.id ?? ''}`,
+  //       urlType: 'registry',
+  //       accountType: startCase(registry.registry_type ?? 'Registry'),
+  //       connectionMethod: 'Registry',
+  //       accountId: getRegistryDisplayId(registry),
+  //       active: true,
+  //     })),
+  //   });
+  // }
 
   return data;
 }
