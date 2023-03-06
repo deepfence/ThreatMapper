@@ -12,6 +12,7 @@ import { TopNSecretCard } from '@/features/secrets/components/landing/TopNSecret
 import { TopNSecretChartData } from '@/features/secrets/components/landing/TopNSecretChart';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { DFAwait } from '@/utils/suspense';
 
 async function getTop5SecretData(nodeType: 'image' | 'host' | 'container') {
   const top5Nodes = await makeRequest({
@@ -136,7 +137,7 @@ const Secret = () => {
               />
             }
           >
-            <Await resolve={loaderData.containerSeverityResults}>
+            <DFAwait resolve={loaderData.containerSeverityResults}>
               {(resolvedData: LoaderData['containerSeverityResults']) => {
                 return (
                   <TopNSecretCard
@@ -146,7 +147,7 @@ const Secret = () => {
                   />
                 );
               }}
-            </Await>
+            </DFAwait>
           </Suspense>
         </div>
         <div className="col-span-4">
@@ -160,7 +161,7 @@ const Secret = () => {
               />
             }
           >
-            <Await resolve={loaderData.hostSeverityResults}>
+            <DFAwait resolve={loaderData.hostSeverityResults}>
               {(resolvedData: LoaderData['hostSeverityResults']) => {
                 return (
                   <TopNSecretCard
@@ -170,7 +171,7 @@ const Secret = () => {
                   />
                 );
               }}
-            </Await>
+            </DFAwait>
           </Suspense>
         </div>
         <div className="col-span-4">
@@ -184,7 +185,7 @@ const Secret = () => {
               />
             }
           >
-            <Await resolve={loaderData.imageSeverityResults}>
+            <DFAwait resolve={loaderData.imageSeverityResults}>
               {(resolvedData: LoaderData['imageSeverityResults']) => {
                 return (
                   <TopNSecretCard
@@ -194,7 +195,7 @@ const Secret = () => {
                   />
                 );
               }}
-            </Await>
+            </DFAwait>
           </Suspense>
         </div>
       </div>

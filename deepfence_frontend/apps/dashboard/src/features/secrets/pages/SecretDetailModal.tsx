@@ -7,7 +7,6 @@ import { FaExpandAlt } from 'react-icons/fa';
 import { HiChevronDown, HiExternalLink } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import {
-  Await,
   Form,
   LoaderFunctionArgs,
   useLoaderData,
@@ -22,6 +21,7 @@ import { DFLink } from '@/components/DFLink';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { DFAwait } from '@/utils/suspense';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 dayjs.extend(relativeTime);
@@ -62,7 +62,7 @@ async function getSecrets(secretId: string) {
             filters: {
               contains_filter: {
                 filter_in: {
-                  cve_id: [secretId],
+                  node_id: ['1:root/.npm/_logs/2023-03-02T22_56_28_077Z-debug-0.log'],
                 },
               },
               order_filter: {
@@ -107,7 +107,7 @@ async function getSecrets(secretId: string) {
   const res = result[0];
 
   return {
-    secretId: res.id,
+    secretId: res.node_id,
     timestamp: res.updated_at,
     ruleName: res.name,
     matchedContent: res.matched_content,
@@ -144,7 +144,7 @@ const Header = () => {
   return (
     <ModalHeader>
       <Suspense fallback={<CircleSpinner size="xs" />}>
-        <Await resolve={loaderData.data}>
+        <DFAwait resolve={loaderData.data}>
           {(cve: LoaderDataType['data']) => {
             if (cve === undefined) {
               return (
@@ -186,7 +186,7 @@ const Header = () => {
               </div>
             );
           }}
-        </Await>
+        </DFAwait>
       </Suspense>
     </ModalHeader>
   );
@@ -201,7 +201,7 @@ const DetailsComponent = () => {
   return (
     <div>
       <Suspense fallback={<CircleSpinner size="xs" />}>
-        <Await resolve={loaderData.data}>
+        <DFAwait resolve={loaderData.data}>
           {(cve: LoaderDataType['data']) => {
             if (cve === undefined) {
               return (
@@ -353,7 +353,7 @@ const DetailsComponent = () => {
               </div>
             );
           }}
-        </Await>
+        </DFAwait>
       </Suspense>
     </div>
   );

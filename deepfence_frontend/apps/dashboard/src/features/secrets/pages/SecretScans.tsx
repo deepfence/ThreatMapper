@@ -1,7 +1,6 @@
 import cx from 'classnames';
 import dayjs from 'dayjs';
 import React, {
-  memo,
   Suspense,
   useCallback,
   useEffect,
@@ -9,7 +8,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { RefObject } from 'react';
 import { IconContext } from 'react-icons';
 import { FiFilter } from 'react-icons/fi';
 import {
@@ -23,7 +21,6 @@ import {
 } from 'react-icons/hi';
 import {
   ActionFunctionArgs,
-  Await,
   Form,
   LoaderFunctionArgs,
   useFetcher,
@@ -42,11 +39,13 @@ import {
   DropdownItem,
   IconButton,
   Modal,
+  Popover,
+  Select,
   SortingState,
   Table,
   TableSkeleton,
 } from 'ui-components';
-import { Checkbox, ModalHeader, Select, SelectItem, SlidingModal } from 'ui-components';
+import { Checkbox, SelectItem } from 'ui-components';
 
 import {
   getScanResultsApiClient,
@@ -62,10 +61,14 @@ import {
 import { DFLink } from '@/components/DFLink';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
+import { useGetContainerImagesList } from '@/features/common/data-component/searchContainerImagesApiLoader';
+import { useGetContainersList } from '@/features/common/data-component/searchContainersApiLoader';
+import { useGetHostsList } from '@/features/common/data-component/searchHostsApiLoader';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { DFAwait } from '@/utils/suspense';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
@@ -660,352 +663,6 @@ const action = async ({
   return null;
 };
 
-const FilterHeader = () => {
-  return (
-    <ModalHeader>
-      <div className="flex gap-x-2 items-center p-4">
-        <span className="font-medium text-lg">Filters</span>
-      </div>
-    </ModalHeader>
-  );
-};
-
-const FilterModal = memo(
-  ({
-    showFilter,
-    elementToFocusOnClose,
-    setShowFilter,
-  }: {
-    elementToFocusOnClose: RefObject<FocusableElement> | null;
-    showFilter: boolean;
-    setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
-  }) => {
-    const loaderData = useLoaderData() as LoaderDataType;
-
-    const [searchParams, setSearchParams] = useSearchParams();
-    return (
-      <SlidingModal
-        header={<FilterHeader />}
-        open={showFilter}
-        onOpenChange={() => setShowFilter(false)}
-        elementToFocusOnCloseRef={elementToFocusOnClose}
-        width={'w-[400px]'}
-      >
-        <div className="dark:text-white p-4">
-          <Form className="flex flex-col gap-y-6">
-            <fieldset>
-              <legend className="text-sm font-medium">Type</legend>
-              <div className="flex gap-x-4">
-                <Checkbox
-                  label="Host"
-                  checked={searchParams.getAll('nodeType').includes('host')}
-                  onCheckedChange={(state) => {
-                    if (state) {
-                      setSearchParams((prev) => {
-                        prev.append('nodeType', 'host');
-                        prev.delete('page');
-                        return prev;
-                      });
-                    } else {
-                      setSearchParams((prev) => {
-                        const prevStatuses = prev.getAll('nodeType');
-                        prev.delete('nodeType');
-                        prevStatuses
-                          .filter((status) => status !== 'host')
-                          .forEach((status) => {
-                            prev.append('nodeType', status);
-                          });
-                        prev.delete('page');
-                        return prev;
-                      });
-                    }
-                  }}
-                />
-                <Checkbox
-                  label="Container"
-                  checked={searchParams.getAll('nodeType').includes('container')}
-                  onCheckedChange={(state) => {
-                    if (state) {
-                      setSearchParams((prev) => {
-                        prev.append('nodeType', 'container');
-                        prev.delete('page');
-                        return prev;
-                      });
-                    } else {
-                      setSearchParams((prev) => {
-                        const prevStatuses = prev.getAll('nodeType');
-                        prev.delete('nodeType');
-                        prevStatuses
-                          .filter((status) => status !== 'container')
-                          .forEach((status) => {
-                            prev.append('nodeType', status);
-                          });
-                        prev.delete('page');
-                        return prev;
-                      });
-                    }
-                  }}
-                />
-                <Checkbox
-                  label="Container Images"
-                  checked={searchParams.getAll('nodeType').includes('container_image')}
-                  onCheckedChange={(state) => {
-                    if (state) {
-                      setSearchParams((prev) => {
-                        prev.append('nodeType', 'container_image');
-                        prev.delete('page');
-                        return prev;
-                      });
-                    } else {
-                      setSearchParams((prev) => {
-                        const prevStatuses = prev.getAll('nodeType');
-                        prev.delete('page');
-                        prev.delete('nodeType');
-                        prevStatuses
-                          .filter((status) => status !== 'container_image')
-                          .forEach((status) => {
-                            prev.append('nodeType', status);
-                          });
-                        return prev;
-                      });
-                    }
-                  }}
-                />
-              </div>
-            </fieldset>
-            <fieldset>
-              <legend className="text-sm font-medium">Status</legend>
-              <div className="flex gap-x-4">
-                <Checkbox
-                  label="Completed"
-                  checked={searchParams.getAll('status').includes('complete')}
-                  onCheckedChange={(state) => {
-                    if (state) {
-                      setSearchParams((prev) => {
-                        prev.append('status', 'complete');
-                        prev.delete('page');
-                        return prev;
-                      });
-                    } else {
-                      setSearchParams((prev) => {
-                        const prevStatuses = prev.getAll('status');
-                        prev.delete('status');
-                        prev.delete('page');
-                        prevStatuses
-                          .filter((status) => status !== 'complete')
-                          .forEach((status) => {
-                            prev.append('status', status);
-                          });
-                        return prev;
-                      });
-                    }
-                  }}
-                />
-                <Checkbox
-                  label="In Progress"
-                  checked={searchParams.getAll('status').includes('in_progress')}
-                  onCheckedChange={(state) => {
-                    if (state) {
-                      setSearchParams((prev) => {
-                        prev.append('status', 'in_progress');
-                        prev.delete('page');
-                        return prev;
-                      });
-                    } else {
-                      setSearchParams((prev) => {
-                        const prevStatuses = prev.getAll('status');
-                        prev.delete('status');
-                        prevStatuses
-                          .filter((status) => status !== 'in_progress')
-                          .forEach((status) => {
-                            prev.append('status', status);
-                          });
-                        prev.delete('page');
-                        return prev;
-                      });
-                    }
-                  }}
-                />
-                <Checkbox
-                  label="Error"
-                  checked={searchParams.getAll('status').includes('error')}
-                  onCheckedChange={(state) => {
-                    if (state) {
-                      setSearchParams((prev) => {
-                        prev.append('status', 'error');
-                        prev.delete('page');
-                        return prev;
-                      });
-                    } else {
-                      setSearchParams((prev) => {
-                        const prevStatuses = prev.getAll('status');
-                        prev.delete('status');
-                        prev.delete('page');
-                        prevStatuses
-                          .filter((status) => status !== 'error')
-                          .forEach((status) => {
-                            prev.append('status', status);
-                          });
-                        return prev;
-                      });
-                    }
-                  }}
-                />
-              </div>
-            </fieldset>
-            <fieldset>
-              <Suspense fallback={<CircleSpinner size="xs" />}>
-                <Await resolve={loaderData.hosts}>
-                  {(resolvedData: LoaderDataType['hosts']) => {
-                    return (
-                      <Select
-                        noPortal
-                        name="host"
-                        label={'Host'}
-                        placeholder="Select host"
-                        sizing="xs"
-                        value={searchParams.getAll('hosts')}
-                        onChange={(value) => {
-                          setSearchParams((prev) => {
-                            prev.delete('hosts');
-                            value.forEach((host) => {
-                              prev.append('hosts', host);
-                            });
-                            prev.delete('page');
-                            return prev;
-                          });
-                        }}
-                      >
-                        <>
-                          {resolvedData?.map((host) => {
-                            return (
-                              <SelectItem value={host.nodeId} key={host.nodeId}>
-                                {host.hostName}
-                              </SelectItem>
-                            );
-                          })}
-                        </>
-                      </Select>
-                    );
-                  }}
-                </Await>
-              </Suspense>
-            </fieldset>
-            <fieldset>
-              <Suspense fallback={<CircleSpinner size="xs" />}>
-                <Await resolve={loaderData.containers}>
-                  {(resolvedData: LoaderDataType['containers']) => {
-                    return (
-                      <Select
-                        noPortal
-                        name="container"
-                        label={'Container'}
-                        placeholder="Select container"
-                        sizing="xs"
-                        value={searchParams.getAll('containers')}
-                        onChange={(value) => {
-                          setSearchParams((prev) => {
-                            prev.delete('containers');
-                            value.forEach((container) => {
-                              prev.append('containers', container);
-                            });
-                            prev.delete('page');
-                            return prev;
-                          });
-                        }}
-                      >
-                        {resolvedData?.map((container) => {
-                          return (
-                            <SelectItem value={container.nodeId} key={container.nodeId}>
-                              {container.nodeName}
-                            </SelectItem>
-                          );
-                        })}
-                      </Select>
-                    );
-                  }}
-                </Await>
-              </Suspense>
-            </fieldset>
-            <fieldset>
-              <Suspense fallback={<CircleSpinner size="xs" />}>
-                <Await resolve={loaderData.containerImages}>
-                  {(resolvedData: LoaderDataType['containerImages']) => {
-                    return (
-                      <Select
-                        noPortal
-                        name="image"
-                        label={'Image'}
-                        placeholder="Select image"
-                        sizing="xs"
-                        value={searchParams.getAll('containerImages')}
-                        onChange={(value) => {
-                          setSearchParams((prev) => {
-                            prev.delete('containerImages');
-                            value.forEach((containerImage) => {
-                              prev.append('containerImages', containerImage);
-                            });
-                            prev.delete('page');
-                            return prev;
-                          });
-                        }}
-                      >
-                        {resolvedData?.map?.((image) => {
-                          return (
-                            <SelectItem value={image.nodeId} key={image.nodeId}>
-                              {image.containerImage}
-                            </SelectItem>
-                          );
-                        })}
-                      </Select>
-                    );
-                  }}
-                </Await>
-              </Suspense>
-            </fieldset>
-            <fieldset>
-              <Suspense fallback={<CircleSpinner size="xs" />}>
-                <Await resolve={loaderData.clusters}>
-                  {(resolvedData: LoaderDataType['clusters']) => {
-                    return (
-                      <Select
-                        noPortal
-                        name="cluster"
-                        label={'Cluster'}
-                        placeholder="Select cluster"
-                        sizing="xs"
-                        value={searchParams.getAll('clusters')}
-                        onChange={(value) => {
-                          setSearchParams((prev) => {
-                            prev.delete('clusters');
-                            value.forEach((cluster) => {
-                              prev.append('clusters', cluster);
-                            });
-                            prev.delete('page');
-                            return prev;
-                          });
-                        }}
-                      >
-                        {resolvedData?.map?.((cluster) => {
-                          return (
-                            <SelectItem value={cluster.clusterId} key={cluster.clusterId}>
-                              {cluster.clusterName}
-                            </SelectItem>
-                          );
-                        })}
-                      </Select>
-                    );
-                  }}
-                </Await>
-              </Suspense>
-            </fieldset>
-          </Form>
-        </div>
-      </SlidingModal>
-    );
-  },
-);
-
 const ScanFromDropdown = () => {
   return (
     <Dropdown
@@ -1190,12 +847,24 @@ const ActionDropdown = ({
 const SecretScans = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const elementToFocusOnClose = useRef(null);
-  const [showFilter, setShowFilter] = useState(false);
   const loaderData = useLoaderData() as LoaderDataType;
   const navigation = useNavigation();
   const [sort, setSort] = useSortingState();
 
   const columnHelper = createColumnHelper<ScanResult>();
+
+  const { hosts, status: listHostStatus } = useGetHostsList({
+    scanType: ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan,
+  });
+  const { containerImages, status: listContainerImageStatus } = useGetContainerImagesList(
+    {
+      scanType: ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan,
+    },
+  );
+  const { containers, status: listContainerStatus } = useGetContainersList({
+    scanType: ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan,
+  });
+
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('node_type', {
@@ -1424,11 +1093,6 @@ const SecretScans = () => {
 
   return (
     <div>
-      <FilterModal
-        showFilter={showFilter}
-        setShowFilter={setShowFilter}
-        elementToFocusOnClose={elementToFocusOnClose.current}
-      />
       <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
         <DFLink
           to={'/secret'}
@@ -1456,23 +1120,330 @@ const SecretScans = () => {
               <span className="absolute -left-[2px] -top-[2px] inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
             )}
 
-            <IconButton
-              className="ml-auto rounded-lg"
-              size="xs"
-              outline
-              color="primary"
-              ref={elementToFocusOnClose}
-              onClick={() => {
-                setShowFilter(true);
-              }}
-              icon={<FiFilter />}
-            />
+            <Popover
+              triggerAsChild
+              elementToFocusOnCloseRef={elementToFocusOnClose}
+              content={
+                <div className="dark:text-white p-4">
+                  <Form className="flex flex-col gap-y-6">
+                    <fieldset>
+                      <legend className="text-sm font-medium">Type</legend>
+                      <div className="flex gap-x-4">
+                        <Checkbox
+                          label="Host"
+                          checked={searchParams.getAll('nodeType').includes('host')}
+                          onCheckedChange={(state) => {
+                            if (state) {
+                              setSearchParams((prev) => {
+                                prev.append('nodeType', 'host');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            } else {
+                              setSearchParams((prev) => {
+                                const prevStatuses = prev.getAll('nodeType');
+                                prev.delete('nodeType');
+                                prevStatuses
+                                  .filter((status) => status !== 'host')
+                                  .forEach((status) => {
+                                    prev.append('nodeType', status);
+                                  });
+                                prev.delete('page');
+                                return prev;
+                              });
+                            }
+                          }}
+                        />
+                        <Checkbox
+                          label="Container"
+                          checked={searchParams.getAll('nodeType').includes('container')}
+                          onCheckedChange={(state) => {
+                            if (state) {
+                              setSearchParams((prev) => {
+                                prev.append('nodeType', 'container');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            } else {
+                              setSearchParams((prev) => {
+                                const prevStatuses = prev.getAll('nodeType');
+                                prev.delete('nodeType');
+                                prevStatuses
+                                  .filter((status) => status !== 'container')
+                                  .forEach((status) => {
+                                    prev.append('nodeType', status);
+                                  });
+                                prev.delete('page');
+                                return prev;
+                              });
+                            }
+                          }}
+                        />
+                        <Checkbox
+                          label="Container Images"
+                          checked={searchParams
+                            .getAll('nodeType')
+                            .includes('container_image')}
+                          onCheckedChange={(state) => {
+                            if (state) {
+                              setSearchParams((prev) => {
+                                prev.append('nodeType', 'container_image');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            } else {
+                              setSearchParams((prev) => {
+                                const prevStatuses = prev.getAll('nodeType');
+                                prev.delete('page');
+                                prev.delete('nodeType');
+                                prevStatuses
+                                  .filter((status) => status !== 'container_image')
+                                  .forEach((status) => {
+                                    prev.append('nodeType', status);
+                                  });
+                                return prev;
+                              });
+                            }
+                          }}
+                        />
+                      </div>
+                    </fieldset>
+                    <fieldset>
+                      <legend className="text-sm font-medium">Status</legend>
+                      <div className="flex gap-x-4">
+                        <Checkbox
+                          label="Completed"
+                          checked={searchParams.getAll('status').includes('complete')}
+                          onCheckedChange={(state) => {
+                            if (state) {
+                              setSearchParams((prev) => {
+                                prev.append('status', 'complete');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            } else {
+                              setSearchParams((prev) => {
+                                const prevStatuses = prev.getAll('status');
+                                prev.delete('status');
+                                prev.delete('page');
+                                prevStatuses
+                                  .filter((status) => status !== 'complete')
+                                  .forEach((status) => {
+                                    prev.append('status', status);
+                                  });
+                                return prev;
+                              });
+                            }
+                          }}
+                        />
+                        <Checkbox
+                          label="In Progress"
+                          checked={searchParams.getAll('status').includes('in_progress')}
+                          onCheckedChange={(state) => {
+                            if (state) {
+                              setSearchParams((prev) => {
+                                prev.append('status', 'in_progress');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            } else {
+                              setSearchParams((prev) => {
+                                const prevStatuses = prev.getAll('status');
+                                prev.delete('status');
+                                prevStatuses
+                                  .filter((status) => status !== 'in_progress')
+                                  .forEach((status) => {
+                                    prev.append('status', status);
+                                  });
+                                prev.delete('page');
+                                return prev;
+                              });
+                            }
+                          }}
+                        />
+                        <Checkbox
+                          label="Error"
+                          checked={searchParams.getAll('status').includes('error')}
+                          onCheckedChange={(state) => {
+                            if (state) {
+                              setSearchParams((prev) => {
+                                prev.append('status', 'error');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            } else {
+                              setSearchParams((prev) => {
+                                const prevStatuses = prev.getAll('status');
+                                prev.delete('status');
+                                prev.delete('page');
+                                prevStatuses
+                                  .filter((status) => status !== 'error')
+                                  .forEach((status) => {
+                                    prev.append('status', status);
+                                  });
+                                return prev;
+                              });
+                            }
+                          }}
+                        />
+                      </div>
+                    </fieldset>
+                    <fieldset>
+                      {listHostStatus === 'submitting' ? (
+                        <CircleSpinner size="xs" />
+                      ) : (
+                        <Select
+                          noPortal
+                          name="host"
+                          label={'Host'}
+                          placeholder="Select host"
+                          sizing="xs"
+                          value={searchParams.getAll('hosts')}
+                          onChange={(value) => {
+                            setSearchParams((prev) => {
+                              prev.delete('hosts');
+                              value.forEach((host) => {
+                                prev.append('hosts', host);
+                              });
+                              prev.delete('page');
+                              return prev;
+                            });
+                          }}
+                        >
+                          <>
+                            {hosts.map((host) => {
+                              return (
+                                <SelectItem value={host.nodeId} key={host.nodeId}>
+                                  {host.hostName}
+                                </SelectItem>
+                              );
+                            })}
+                          </>
+                        </Select>
+                      )}
+                    </fieldset>
+                    <fieldset>
+                      {listContainerStatus === 'submitting' ? (
+                        <CircleSpinner size="xs" />
+                      ) : (
+                        <Select
+                          noPortal
+                          name="container"
+                          label={'Container'}
+                          placeholder="Select container"
+                          sizing="xs"
+                          value={searchParams.getAll('containers')}
+                          onChange={(value) => {
+                            setSearchParams((prev) => {
+                              prev.delete('containers');
+                              value.forEach((container) => {
+                                prev.append('containers', container);
+                              });
+                              prev.delete('page');
+                              return prev;
+                            });
+                          }}
+                        >
+                          {containers.map((container) => {
+                            return (
+                              <SelectItem value={container.nodeId} key={container.nodeId}>
+                                {container.nodeName}
+                              </SelectItem>
+                            );
+                          })}
+                        </Select>
+                      )}
+                    </fieldset>
+                    <fieldset>
+                      {listContainerImageStatus === 'submitting' ? (
+                        <CircleSpinner size="xs" />
+                      ) : (
+                        <Select
+                          noPortal
+                          name="image"
+                          label={'Image'}
+                          placeholder="Select image"
+                          sizing="xs"
+                          value={searchParams.getAll('containerImages')}
+                          onChange={(value) => {
+                            setSearchParams((prev) => {
+                              prev.delete('containerImages');
+                              value.forEach((containerImage) => {
+                                prev.append('containerImages', containerImage);
+                              });
+                              prev.delete('page');
+                              return prev;
+                            });
+                          }}
+                        >
+                          {containerImages.map?.((image) => {
+                            return (
+                              <SelectItem value={image.nodeId} key={image.nodeId}>
+                                {image.containerImage}
+                              </SelectItem>
+                            );
+                          })}
+                        </Select>
+                      )}
+                    </fieldset>
+                    <fieldset>
+                      <Suspense fallback={<CircleSpinner size="xs" />}>
+                        <DFAwait resolve={loaderData.clusters}>
+                          {(resolvedData: LoaderDataType['clusters']) => {
+                            return (
+                              <Select
+                                noPortal
+                                name="cluster"
+                                label={'Cluster'}
+                                placeholder="Select cluster"
+                                sizing="xs"
+                                value={searchParams.getAll('clusters')}
+                                onChange={(value) => {
+                                  setSearchParams((prev) => {
+                                    prev.delete('clusters');
+                                    value.forEach((cluster) => {
+                                      prev.append('clusters', cluster);
+                                    });
+                                    prev.delete('page');
+                                    return prev;
+                                  });
+                                }}
+                              >
+                                {resolvedData?.map?.((cluster) => {
+                                  return (
+                                    <SelectItem
+                                      value={cluster.clusterId}
+                                      key={cluster.clusterId}
+                                    >
+                                      {cluster.clusterName}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </Select>
+                            );
+                          }}
+                        </DFAwait>
+                      </Suspense>
+                    </fieldset>
+                  </Form>
+                </div>
+              }
+            >
+              <IconButton
+                className="ml-auto rounded-lg"
+                size="xs"
+                outline
+                color="primary"
+                ref={elementToFocusOnClose}
+                icon={<FiFilter />}
+              />
+            </Popover>
           </div>
         </div>
       </div>
       <div className="m-2">
         <Suspense fallback={<TableSkeleton columns={7} rows={15} size={'md'} />}>
-          <Await resolve={loaderData.data}>
+          <DFAwait resolve={loaderData.data}>
             {(resolvedData: LoaderDataType['data']) => {
               return (
                 <Table
@@ -1525,7 +1496,7 @@ const SecretScans = () => {
                 />
               );
             }}
-          </Await>
+          </DFAwait>
         </Suspense>
       </div>
     </div>

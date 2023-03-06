@@ -7796,6 +7796,7 @@
       },
       "ModelSecretRule": {
         "required": [
+          "node_id",
           "starting_index",
           "relative_starting_index",
           "relative_ending_index",
@@ -7818,6 +7819,7 @@
           "masked": { "type": "boolean" },
           "matched_content": { "type": "string" },
           "name": { "type": "string" },
+          "node_id": { "type": "string" },
           "part": { "type": "string" },
           "relative_ending_index": { "type": "integer" },
           "relative_starting_index": { "type": "integer" },

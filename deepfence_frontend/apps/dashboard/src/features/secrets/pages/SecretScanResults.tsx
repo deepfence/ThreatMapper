@@ -10,7 +10,6 @@ import {
   HiBell,
   HiChevronLeft,
   HiDotsVertical,
-  HiExternalLink,
   HiEye,
   HiEyeOff,
   HiOutlineExclamationCircle,
@@ -18,7 +17,6 @@ import {
 import { IconContext } from 'react-icons/lib';
 import {
   ActionFunctionArgs,
-  Await,
   generatePath,
   LoaderFunctionArgs,
   Outlet,
@@ -69,6 +67,7 @@ import { SecretSeverityType } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { DFAwait } from '@/utils/suspense';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
@@ -542,7 +541,7 @@ const HistoryDropdown = () => {
         />
       }
     >
-      <Await resolve={loaderData.data ?? []}>
+      <DFAwait resolve={loaderData.data ?? []}>
         {(resolvedData: LoaderDataType['data']) => {
           return (
             <Dropdown
@@ -596,7 +595,7 @@ const HistoryDropdown = () => {
             </Dropdown>
           );
         }}
-      </Await>
+      </DFAwait>
     </Suspense>
   );
 };
@@ -880,7 +879,7 @@ const SecretTable = () => {
         minSize: 30,
         maxSize: 50,
       }),
-      columnHelper.accessor('id', {
+      columnHelper.accessor('node_id', {
         cell: (info) => (
           <DFLink
             to={{
@@ -1018,7 +1017,7 @@ const SecretTable = () => {
   return (
     <>
       <Suspense fallback={<TableSkeleton columns={6} rows={10} size={'md'} />}>
-        <Await resolve={loaderData.data}>
+        <DFAwait resolve={loaderData.data}>
           {(resolvedData: LoaderDataType['data']) => {
             return (
               <Form>
@@ -1121,7 +1120,7 @@ const SecretTable = () => {
               </Form>
             );
           }}
-        </Await>
+        </DFAwait>
       </Suspense>
     </>
   );
@@ -1143,7 +1142,7 @@ const HeaderComponent = ({
   return (
     <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <Suspense fallback={<CircleSpinner size="xs" />}>
-        <Await resolve={loaderData.data ?? []}>
+        <DFAwait resolve={loaderData.data ?? []}>
           {(resolvedData: LoaderDataType['data']) => {
             const { nodeType, hostName } = resolvedData;
             return (
@@ -1166,18 +1165,18 @@ const HeaderComponent = ({
               </>
             );
           }}
-        </Await>
+        </DFAwait>
       </Suspense>
       <div className="ml-auto flex items-center gap-x-4">
         <div className="flex flex-col">
           <span className="text-xs text-gray-500 dark:text-gray-200">
             <Suspense fallback={<CircleSpinner size="xs" />}>
-              <Await resolve={loaderData.data ?? []}>
+              <DFAwait resolve={loaderData.data ?? []}>
                 {(resolvedData: LoaderDataType['data']) => {
                   const { timestamp } = resolvedData;
                   return formatMilliseconds(timestamp);
                 }}
-              </Await>
+              </DFAwait>
             </Suspense>
           </span>
           <span className="text-gray-400 text-[10px]">Last scan</span>
@@ -1216,7 +1215,7 @@ const SeverityCountComponent = ({ theme }: { theme: Mode }) => {
           </div>
         }
       >
-        <Await resolve={loaderData.data}>
+        <DFAwait resolve={loaderData.data}>
           {(resolvedData: ScanResult) => {
             const { totalSeverity, severityCounts } = resolvedData;
             return (
@@ -1280,7 +1279,7 @@ const SeverityCountComponent = ({ theme }: { theme: Mode }) => {
               </>
             );
           }}
-        </Await>
+        </DFAwait>
       </Suspense>
     </Card>
   );
