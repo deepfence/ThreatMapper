@@ -304,11 +304,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			})
 
 			r.Route("/registryaccount", func(r chi.Router) {
-				r.Get("/list", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListRegistry))
+				r.Get("/", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListRegistry))
 				r.Post("/", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.AddRegistry))
 				r.Post("/gcr", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.AddGoogleContainerRegistry))
 				r.Route("/{registryId}", func(r chi.Router) {
-					// r.Use(directory.RegistryCtx)
 					r.Delete("/", dfHandler.AuthHandler(ResourceRegistry, PermissionDelete, dfHandler.DeleteRegistry))
 				})
 			})
