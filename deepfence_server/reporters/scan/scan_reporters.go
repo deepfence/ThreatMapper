@@ -539,7 +539,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 	query = `
 		MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
 		OPTIONAL MATCH (d) -[:IS]-> (e)
-		WITH d{.*, masked: coalesce(d.masked or r.masked, false)} as d` +
+		WITH d{.*, masked: coalesce(d.masked or r.masked, false)} as d, e` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
 		` RETURN d,e ` +
 		reporters.OrderFilter2CypherCondition("d", ff.OrderFilter) +
