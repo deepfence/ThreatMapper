@@ -1,7 +1,6 @@
 import cx from 'classnames';
 import { capitalize } from 'lodash-es';
 import { Suspense, useCallback, useMemo, useRef, useState } from 'react';
-import { RefObject } from 'react';
 import { FaHistory } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import {
@@ -41,6 +40,7 @@ import {
   getRowSelectionColumn,
   IconButton,
   Modal,
+  Popover,
   RowSelectionState,
   Select,
   SelectItem,
@@ -48,7 +48,6 @@ import {
   Table,
   TableSkeleton,
 } from 'ui-components';
-import { ModalHeader, SlidingModal } from 'ui-components';
 
 import { getScanResultsApiClient, getSecretApiClient } from '@/api/api';
 import {
@@ -330,128 +329,6 @@ const loader = async ({
   });
 };
 
-const FilterHeader = () => {
-  return (
-    <ModalHeader>
-      <div className="flex gap-x-2 items-center p-4">
-        <span className="font-medium text-lg">Filters</span>
-      </div>
-    </ModalHeader>
-  );
-};
-
-const ScanResultFilterModal = ({
-  showFilter,
-  elementToFocusOnClose,
-  setShowFilter,
-}: {
-  elementToFocusOnClose: RefObject<FocusableElement> | null;
-  showFilter: boolean;
-  setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  return (
-    <SlidingModal
-      header={<FilterHeader />}
-      open={showFilter}
-      onOpenChange={() => setShowFilter(false)}
-      elementToFocusOnCloseRef={elementToFocusOnClose}
-      width={'w-[350px]'}
-    >
-      <div className="dark:text-white p-4">
-        <div className="flex flex-col gap-y-6">
-          <fieldset>
-            <legend className="text-sm font-medium">Mask And Unmask</legend>
-            <div className="flex gap-x-4 mt-1">
-              <Checkbox
-                label="Mask"
-                checked={searchParams.getAll('mask').includes('true')}
-                onCheckedChange={(state) => {
-                  if (state) {
-                    setSearchParams((prev) => {
-                      prev.append('mask', 'true');
-                      prev.delete('page');
-                      return prev;
-                    });
-                  } else {
-                    setSearchParams((prev) => {
-                      const prevStatuses = prev.getAll('mask');
-                      prev.delete('mask');
-                      prevStatuses
-                        .filter((mask) => mask !== 'true')
-                        .forEach((mask) => {
-                          prev.append('mask', mask);
-                        });
-                      prev.delete('mask');
-                      prev.delete('page');
-                      return prev;
-                    });
-                  }
-                }}
-              />
-              <Checkbox
-                label="Unmask"
-                checked={searchParams.getAll('unmask').includes('true')}
-                onCheckedChange={(state) => {
-                  if (state) {
-                    setSearchParams((prev) => {
-                      prev.append('unmask', 'true');
-                      prev.delete('page');
-                      return prev;
-                    });
-                  } else {
-                    setSearchParams((prev) => {
-                      const prevStatuses = prev.getAll('unmask');
-                      prev.delete('unmask');
-                      prevStatuses
-                        .filter((status) => status !== 'true')
-                        .forEach((status) => {
-                          prev.append('unmask', status);
-                        });
-                      prev.delete('unmask');
-                      prev.delete('page');
-                      return prev;
-                    });
-                  }
-                }}
-              />
-            </div>
-          </fieldset>
-          <fieldset>
-            <Select
-              noPortal
-              name="severity"
-              label={'Severity'}
-              placeholder="Select Severity"
-              value={searchParams.getAll('severity')}
-              sizing="xs"
-              onChange={(value) => {
-                setSearchParams((prev) => {
-                  prev.delete('severity');
-                  value.forEach((language) => {
-                    prev.append('severity', language);
-                  });
-                  prev.delete('page');
-                  return prev;
-                });
-              }}
-            >
-              {['critical', 'high', 'medium', 'low', 'unknown'].map(
-                (severity: string) => {
-                  return (
-                    <SelectItem value={severity} key={severity}>
-                      {capitalize(severity)}
-                    </SelectItem>
-                  );
-                },
-              )}
-            </Select>
-          </fieldset>
-        </div>
-      </div>
-    </SlidingModal>
-  );
-};
 const DeleteConfirmationModal = ({
   showDialog,
   ids,
@@ -959,32 +836,13 @@ const SecretTable = () => {
         size: 250,
         maxSize: 400,
       }),
-      // columnHelper.accessor('cve_link', {
-      //   enableSorting: false,
-      //   cell: (info) => (
-      //     <DFLink to={info.getValue()} target="_blank" rel="noopener noreferrer">
-      //       <IconContext.Provider
-      //         value={{
-      //           className: 'w-4 h-4',
-      //         }}
-      //       >
-      //         <HiExternalLink />
-      //       </IconContext.Provider>
-      //     </DFLink>
-      //   ),
-      //   header: () => 'Link',
-      //   minSize: 40,
-      //   size: 40,
-      //   maxSize: 45,
-      //   enableResizing: false,
-      // }),
       columnHelper.display({
         id: 'actions',
         enableSorting: false,
         cell: (cell) => (
           <ActionDropdown
             icon={<HiDotsVertical />}
-            ids={[cell.row.original.id.toString()]}
+            ids={[cell.row.original.node_id.toString()]}
           />
         ),
         header: () => '',
@@ -1070,7 +928,7 @@ const SecretTable = () => {
                   totalRows={resolvedData.pagination.totalRows}
                   pageSize={PAGE_SIZE}
                   pageIndex={resolvedData.pagination.currentPage}
-                  getRowId={(row) => `${row.id}<-->${row.level}`}
+                  getRowId={(row) => `${row.node_id}`}
                   enableSorting
                   manualSorting
                   sortingState={sort}
@@ -1127,12 +985,11 @@ const SecretTable = () => {
 };
 
 const HeaderComponent = ({
-  setShowFilter,
+  elementToFocusOnClose,
 }: {
   elementToFocusOnClose: React.MutableRefObject<null>;
-  setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const loaderData = useLoaderData() as LoaderDataType;
   const isFilterApplied =
     searchParams.has('severity') ||
@@ -1189,16 +1046,113 @@ const HeaderComponent = ({
           {isFilterApplied && (
             <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
           )}
-          <div className="ml-auto">
+          <Popover
+            triggerAsChild
+            elementToFocusOnCloseRef={elementToFocusOnClose}
+            content={
+              <div className="ml-auto w-[300px]">
+                <div className="dark:text-white p-4">
+                  <div className="flex flex-col gap-y-6">
+                    <fieldset>
+                      <legend className="text-sm font-medium">Mask And Unmask</legend>
+                      <div className="flex gap-x-4 mt-1">
+                        <Checkbox
+                          label="Mask"
+                          checked={searchParams.getAll('mask').includes('true')}
+                          onCheckedChange={(state) => {
+                            if (state) {
+                              setSearchParams((prev) => {
+                                prev.append('mask', 'true');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            } else {
+                              setSearchParams((prev) => {
+                                const prevStatuses = prev.getAll('mask');
+                                prev.delete('mask');
+                                prevStatuses
+                                  .filter((mask) => mask !== 'true')
+                                  .forEach((mask) => {
+                                    prev.append('mask', mask);
+                                  });
+                                prev.delete('mask');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            }
+                          }}
+                        />
+                        <Checkbox
+                          label="Unmask"
+                          checked={searchParams.getAll('unmask').includes('true')}
+                          onCheckedChange={(state) => {
+                            if (state) {
+                              setSearchParams((prev) => {
+                                prev.append('unmask', 'true');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            } else {
+                              setSearchParams((prev) => {
+                                const prevStatuses = prev.getAll('unmask');
+                                prev.delete('unmask');
+                                prevStatuses
+                                  .filter((status) => status !== 'true')
+                                  .forEach((status) => {
+                                    prev.append('unmask', status);
+                                  });
+                                prev.delete('unmask');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            }
+                          }}
+                        />
+                      </div>
+                    </fieldset>
+                    <fieldset>
+                      <Select
+                        noPortal
+                        name="severity"
+                        label={'Severity'}
+                        placeholder="Select Severity"
+                        value={searchParams.getAll('severity')}
+                        sizing="xs"
+                        onChange={(value) => {
+                          setSearchParams((prev) => {
+                            prev.delete('severity');
+                            value.forEach((language) => {
+                              prev.append('severity', language);
+                            });
+                            prev.delete('page');
+                            return prev;
+                          });
+                        }}
+                      >
+                        {['critical', 'high', 'medium', 'low', 'unknown'].map(
+                          (severity: string) => {
+                            return (
+                              <SelectItem value={severity} key={severity}>
+                                {capitalize(severity)}
+                              </SelectItem>
+                            );
+                          },
+                        )}
+                      </Select>
+                    </fieldset>
+                  </div>
+                </div>
+              </div>
+            }
+          >
             <IconButton
               size="xs"
               outline
               color="primary"
               className="rounded-lg bg-transparent"
-              onClick={() => setShowFilter(true)}
               icon={<FiFilter />}
             />
-          </div>
+          </Popover>
         </div>
       </div>
     </div>
@@ -1286,20 +1240,11 @@ const SeverityCountComponent = ({ theme }: { theme: Mode }) => {
 };
 const SecretScanResults = () => {
   const elementToFocusOnClose = useRef(null);
-  const [showFilter, setShowFilter] = useState(false);
   const { mode } = useTheme();
 
   return (
     <>
-      <ScanResultFilterModal
-        showFilter={showFilter}
-        setShowFilter={setShowFilter}
-        elementToFocusOnClose={elementToFocusOnClose.current}
-      />
-      <HeaderComponent
-        elementToFocusOnClose={elementToFocusOnClose}
-        setShowFilter={setShowFilter}
-      />
+      <HeaderComponent elementToFocusOnClose={elementToFocusOnClose} />
       <div className="grid grid-cols-[400px_1fr] p-2 gap-x-2">
         <div className="self-start grid gap-y-2">
           <SeverityCountComponent theme={mode} />

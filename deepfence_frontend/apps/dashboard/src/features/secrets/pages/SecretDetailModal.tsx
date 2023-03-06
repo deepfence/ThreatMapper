@@ -1,7 +1,7 @@
 import cx from 'classnames';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { capitalize, startCase } from 'lodash-es';
+import { capitalize, startCase, truncate } from 'lodash-es';
 import { Suspense, useState } from 'react';
 import { FaExpandAlt } from 'react-icons/fa';
 import { HiChevronDown, HiExternalLink } from 'react-icons/hi';
@@ -30,16 +30,13 @@ type CveType = {
   secretId: string;
   timestamp: number;
   ruleName: string;
+  fileName: string;
   matchedContent: string;
-  cveType: string;
+  part: string;
   severity: string;
   score: number;
-  urls: string[] | null;
-  cveCausedByPackage: string;
-  cveCausedByPackagePath: string;
-  cveFixedIn: string;
-  cveAttackVector: number;
-  exploitPoc: string;
+  signatureToMatch: string;
+  masked: boolean;
   others: {
     [k: string]: string | string[] | number;
   };
@@ -110,18 +107,15 @@ async function getSecrets(secretId: string) {
     secretId: res.node_id,
     timestamp: res.updated_at,
     ruleName: res.name,
-    matchedContent: res.matched_content,
-    // cveType: res.cve_type,
+    fileName: res.full_filename,
     severity: res.level,
     score: res.score,
-    // others: {
-    //   cveCausedByPackage: res.cve_caused_by_package,
-    //   cveCausedByPackagePath: res.cve_caused_by_package_path,
-    //   cveFixedIn: res.cve_fixed_in,
-    //   cveAttackVector: res.cve_attack_vector,
-    //   exploitPoc: res.exploit_poc,
-    //   urls: res.urls || [],
-    // },
+    others: {
+      masked: res.masked.toString(),
+      matchedContent: res.matched_content,
+      part: res.part,
+      signatureToMatch: res.signature_to_match,
+    },
   };
 }
 const loader = async ({
@@ -145,8 +139,8 @@ const Header = () => {
     <ModalHeader>
       <Suspense fallback={<CircleSpinner size="xs" />}>
         <DFAwait resolve={loaderData.data}>
-          {(cve: LoaderDataType['data']) => {
-            if (cve === undefined) {
+          {(secret: LoaderDataType['data']) => {
+            if (secret === undefined) {
               return (
                 <div className="flex items-center p-4 justify-center">
                   <h3 className="text-md text-gray-700 dark:text-gray-400">-</h3>
@@ -159,29 +153,29 @@ const Header = () => {
                   <span className="w-5 h-5 text-gray-500 dark:text-white">
                     <SecretsIcon />
                   </span>
-                  <span className="text-md text-gray-900 dark:text-white">
-                    {cve.secretId}
+                  <span className="text-md text-gray-900 dark:text-white truncate">
+                    {truncate(secret.secretId, { length: 20 })}
                   </span>
                   <Badge
-                    label={cve.severity.toUpperCase()}
+                    label={secret.severity.toUpperCase()}
                     className={cx({
                       'bg-[#de425b]/20 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
-                        cve.severity.toLowerCase() === 'critical',
+                        secret.severity.toLowerCase() === 'critical',
                       'bg-[#f58055]/20 dark:bg-[#f58055/20 text-[#f58055] dark:text-[#f58055]':
-                        cve.severity.toLowerCase() === 'high',
+                        secret.severity.toLowerCase() === 'high',
                       'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
-                        cve.severity.toLowerCase() === 'medium',
+                        secret.severity.toLowerCase() === 'medium',
                       'bg-[#d6e184]/20 dark:bg-[#d6e184]/10 text-yellow-300 dark:text-[#d6e184]':
-                        cve.severity.toLowerCase() === 'low',
+                        secret.severity.toLowerCase() === 'low',
                       'bg-[#9CA3AF]/10 dark:bg-[#9CA3AF]/10 text-gray-400 dark:text-[#9CA3AF]':
-                        cve.severity.toLowerCase() === 'unknown',
+                        secret.severity.toLowerCase() === 'unknown',
                     })}
                     size="sm"
                   />
-                  <CopyToClipboardAsJson data={cve} />
+                  <CopyToClipboardAsJson data={secret} />
                 </div>
                 <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7">
-                  {dayjs(cve.timestamp).fromNow()}
+                  {dayjs(secret.timestamp).fromNow()}
                 </span>
               </div>
             );
@@ -194,7 +188,6 @@ const Header = () => {
 
 const DetailsComponent = () => {
   const [openDetails, setOpenDetails] = useState(true);
-  const [openTopFiveAttackPath, setOpenTopFiveAttackPath] = useState(true);
   const [showArrayFields, setShowArrayFields] = useState(false);
   const loaderData = useLoaderData() as LoaderDataType;
 
@@ -202,8 +195,8 @@ const DetailsComponent = () => {
     <div>
       <Suspense fallback={<CircleSpinner size="xs" />}>
         <DFAwait resolve={loaderData.data}>
-          {(cve: LoaderDataType['data']) => {
-            if (cve === undefined) {
+          {(secret: LoaderDataType['data']) => {
+            if (secret === undefined) {
               return (
                 <div className="flex items-center p-4 justify-center">
                   <h3 className="text-md text-gray-900 dark:text-gray-400">
@@ -245,33 +238,28 @@ const DetailsComponent = () => {
                             'p-2 mr-4 w-fit rounded-lg items-center',
                             {
                               'bg-[#de425b]/20 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
-                                cve.severity.toLowerCase() === 'critical',
+                                secret.severity.toLowerCase() === 'critical',
                               'bg-[#f58055]/20 dark:bg-[#f58055/20 text-[#f58055] dark:text-[#f58055]':
-                                cve.severity.toLowerCase() === 'high',
+                                secret.severity.toLowerCase() === 'high',
                               'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
-                                cve.severity.toLowerCase() === 'medium',
+                                secret.severity.toLowerCase() === 'medium',
                               'bg-[#d6e184]/20 dark:bg-[#d6e184]/10 text-yellow-300 dark:text-[#d6e184]':
-                                cve.severity.toLowerCase() === 'low',
+                                secret.severity.toLowerCase() === 'low',
                               'bg-[#9CA3AF]/10 dark:bg-[#9CA3AF]/10 text-gray-400 dark:text-[#9CA3AF]':
-                                cve.severity.toLowerCase() === 'unknown',
+                                secret.severity.toLowerCase() === 'unknown',
                             },
                           )}
                         >
                           <span className="text-xs text-gray-500">CVSS score</span>
-                          <span className="text-md">{cve.score || '-'}</span>
+                          <span className="text-md">{secret.score || '-'}</span>
                         </div>
-                        <p className="text-sm pr-2 mb-2 text-justify">{cve.ruleName}</p>
-                        <DFLink
-                          to={cve.matchedContent}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-2 text-sm pr-2 text-blue-600 dark:text-blue-500"
-                        >
-                          {cve.matchedContent}
-                        </DFLink>
+                        <p className="text-sm pr-2 mb-2 text-justify">
+                          {secret.ruleName}
+                        </p>
+                        <span className="mt-2 text-sm pr-2">{secret.fileName}</span>
                       </div>
                       <div className="mt-6 flex flex-wrap gap-y-4 gap-x-8">
-                        {Object.keys(cve.others).map((key) => {
+                        {Object.keys(secret.others).map((key) => {
                           const label = capitalize(
                             startCase(startCase(key)).toLowerCase(),
                           );
@@ -304,31 +292,33 @@ const DetailsComponent = () => {
                                     <>...</>
                                   ) : (
                                     <>
-                                      {(cve.others[key] as string[]).length === 0 ? (
+                                      {(secret.others[key] as string[]).length === 0 ? (
                                         '-'
                                       ) : (
                                         <>
                                           <div className="text-sm">
-                                            {(cve.others[key] as string[]).map((url) => {
-                                              return (
-                                                <div key={url}>
-                                                  <DFLink
-                                                    to={url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex gap-x-2 items-center"
-                                                  >
-                                                    <IconContext.Provider
-                                                      value={{
-                                                        className: 'w-4 h-4',
-                                                      }}
+                                            {(secret.others[key] as string[]).map(
+                                              (url) => {
+                                                return (
+                                                  <div key={url}>
+                                                    <DFLink
+                                                      to={url}
+                                                      target="_blank"
+                                                      rel="noopener noreferrer"
+                                                      className="flex gap-x-2 items-center"
                                                     >
-                                                      Link <HiExternalLink />
-                                                    </IconContext.Provider>
-                                                  </DFLink>
-                                                </div>
-                                              );
-                                            })}
+                                                      <IconContext.Provider
+                                                        value={{
+                                                          className: 'w-4 h-4',
+                                                        }}
+                                                      >
+                                                        Link <HiExternalLink />
+                                                      </IconContext.Provider>
+                                                    </DFLink>
+                                                  </div>
+                                                );
+                                              },
+                                            )}
                                           </div>
                                         </>
                                       )}
@@ -339,7 +329,7 @@ const DetailsComponent = () => {
                                 <div className="flex flex-col gap-">
                                   <span className="text-xs text-gray-500">{label}</span>
                                   <span className="text-sm">
-                                    {cve.others[key] || '-'}
+                                    {secret.others[key] === '' ? '-' : secret.others[key]}
                                   </span>
                                 </div>
                               )}
