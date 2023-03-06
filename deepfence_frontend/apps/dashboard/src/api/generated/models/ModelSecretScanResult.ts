@@ -13,18 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelRule } from './ModelRule';
+import type { ModelSecretRule } from './ModelSecretRule';
 import {
-    ModelRuleFromJSON,
-    ModelRuleFromJSONTyped,
-    ModelRuleToJSON,
-} from './ModelRule';
-import type { ModelSecret } from './ModelSecret';
-import {
-    ModelSecretFromJSON,
-    ModelSecretFromJSONTyped,
-    ModelSecretToJSON,
-} from './ModelSecret';
+    ModelSecretRuleFromJSON,
+    ModelSecretRuleFromJSONTyped,
+    ModelSecretRuleToJSON,
+} from './ModelSecretRule';
 
 /**
  * 
@@ -76,28 +70,16 @@ export interface ModelSecretScanResult {
     node_type: string;
     /**
      * 
-     * @type {{ [key: string]: Array<number>; }}
-     * @memberof ModelSecretScanResult
-     */
-    rule_2_secrets: { [key: string]: Array<number>; } | null;
-    /**
-     * 
-     * @type {Array<ModelRule>}
-     * @memberof ModelSecretScanResult
-     */
-    rules: Array<ModelRule> | null;
-    /**
-     * 
      * @type {string}
      * @memberof ModelSecretScanResult
      */
     scan_id: string;
     /**
      * 
-     * @type {Array<ModelSecret>}
+     * @type {Array<ModelSecretRule>}
      * @memberof ModelSecretScanResult
      */
-    secrets: Array<ModelSecret> | null;
+    secrets: Array<ModelSecretRule> | null;
     /**
      * 
      * @type {{ [key: string]: number; }}
@@ -124,8 +106,6 @@ export function instanceOfModelSecretScanResult(value: object): boolean {
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "node_type" in value;
-    isInstance = isInstance && "rule_2_secrets" in value;
-    isInstance = isInstance && "rules" in value;
     isInstance = isInstance && "scan_id" in value;
     isInstance = isInstance && "secrets" in value;
     isInstance = isInstance && "severity_counts" in value;
@@ -151,10 +131,8 @@ export function ModelSecretScanResultFromJSONTyped(json: any, ignoreDiscriminato
         'node_id': json['node_id'],
         'node_name': json['node_name'],
         'node_type': json['node_type'],
-        'rule_2_secrets': json['rule_2_secrets'],
-        'rules': (json['rules'] === null ? null : (json['rules'] as Array<any>).map(ModelRuleFromJSON)),
         'scan_id': json['scan_id'],
-        'secrets': (json['secrets'] === null ? null : (json['secrets'] as Array<any>).map(ModelSecretFromJSON)),
+        'secrets': (json['secrets'] === null ? null : (json['secrets'] as Array<any>).map(ModelSecretRuleFromJSON)),
         'severity_counts': json['severity_counts'],
         'updated_at': json['updated_at'],
     };
@@ -176,10 +154,8 @@ export function ModelSecretScanResultToJSON(value?: ModelSecretScanResult | null
         'node_id': value.node_id,
         'node_name': value.node_name,
         'node_type': value.node_type,
-        'rule_2_secrets': value.rule_2_secrets,
-        'rules': (value.rules === null ? null : (value.rules as Array<any>).map(ModelRuleToJSON)),
         'scan_id': value.scan_id,
-        'secrets': (value.secrets === null ? null : (value.secrets as Array<any>).map(ModelSecretToJSON)),
+        'secrets': (value.secrets === null ? null : (value.secrets as Array<any>).map(ModelSecretRuleToJSON)),
         'severity_counts': value.severity_counts,
         'updated_at': value.updated_at,
     };

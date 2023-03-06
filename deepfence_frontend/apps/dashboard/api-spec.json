@@ -585,6 +585,15 @@
         "summary": "Generate Agent Diagnostic Logs",
         "description": "Generate Agent Diagnostic Logs",
         "operationId": "generateAgentDiagnosticLogs",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiagnosisGenerateDiagnosticLogsRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "202": { "description": "Accepted" },
           "400": {
@@ -623,6 +632,15 @@
         "summary": "Generate Console Diagnostic Logs",
         "description": "Generate Console Diagnostic Logs",
         "operationId": "generateConsoleDiagnosticLogs",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiagnosisGenerateDiagnosticLogsRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "202": { "description": "Accepted" },
           "400": {
@@ -2105,20 +2123,23 @@
       }
     },
     "/deepfence/registryaccount/": {
-      "post": {
+      "get": {
         "tags": ["Registry"],
-        "summary": "Add Registry",
-        "description": "Add a new supported registry",
-        "operationId": "addRegistry",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModelRegistryAddReq" }
-            }
-          }
-        },
+        "summary": "List Registries",
+        "description": "List all the added Registries",
+        "operationId": "listRegistry",
         "responses": {
-          "200": { "description": "OK" },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelRegistryListResp" }
+                }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -2147,26 +2168,21 @@
           }
         },
         "security": [{ "bearer_token": [] }]
-      }
-    },
-    "/deepfence/registryaccount/list": {
-      "get": {
+      },
+      "post": {
         "tags": ["Registry"],
-        "summary": "List Registries",
-        "description": "List all the added Registries",
-        "operationId": "listRegistry",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/ModelRegistryListResp" }
-                }
-              }
+        "summary": "Add Registry",
+        "description": "Add a new supported registry",
+        "operationId": "addRegistry",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelRegistryAddReq" }
             }
-          },
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -5618,6 +5634,54 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/user-activity-log": {
+      "get": {
+        "tags": ["User"],
+        "summary": "Get activity logs for all users",
+        "description": "Get activity logs for all users",
+        "operationId": "getUserActivityLogs",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PostgresqlDbGetAuditLogsRow" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/user/invite": {
       "post": {
         "tags": ["User"],
@@ -6319,6 +6383,11 @@
           "source_application_id": { "type": "string" },
           "updated_at": { "type": "string" }
         }
+      },
+      "DiagnosisGenerateDiagnosticLogsRequest": {
+        "required": ["tail"],
+        "type": "object",
+        "properties": { "tail": { "type": "integer" } }
       },
       "GraphNodeInfo": {
         "required": [
@@ -7540,25 +7609,10 @@
           "refresh_token": { "type": "string" }
         }
       },
-      "ModelRule": {
-        "required": ["id", "name", "part", "signature_to_match", "level", "score"],
-        "type": "object",
-        "properties": {
-          "id": { "type": "integer" },
-          "level": { "type": "string" },
-          "name": { "type": "string" },
-          "part": { "type": "string" },
-          "score": { "type": "number" },
-          "signature_to_match": { "type": "string" }
-        }
-      },
       "ModelSbomRequest": {
+        "required": ["scan_id"],
         "type": "object",
-        "properties": {
-          "node_id": { "type": "string" },
-          "node_type": { "type": "string" },
-          "scan_id": { "type": "string" }
-        }
+        "properties": { "scan_id": { "type": "string" } }
       },
       "ModelSbomResponse": {
         "type": "object",
@@ -7740,27 +7794,6 @@
           "scan_ids": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
       },
-      "ModelSecret": {
-        "required": [
-          "starting_index",
-          "relative_starting_index",
-          "relative_ending_index",
-          "full_filename",
-          "matched_content",
-          "masked",
-          "updated_at"
-        ],
-        "type": "object",
-        "properties": {
-          "full_filename": { "type": "string" },
-          "masked": { "type": "boolean" },
-          "matched_content": { "type": "string" },
-          "relative_ending_index": { "type": "integer" },
-          "relative_starting_index": { "type": "integer" },
-          "starting_index": { "type": "integer" },
-          "updated_at": { "type": "integer" }
-        }
-      },
       "ModelSecretRule": {
         "required": [
           "starting_index",
@@ -7770,12 +7803,12 @@
           "matched_content",
           "masked",
           "updated_at",
+          "level",
+          "score",
           "id",
           "name",
           "part",
-          "signature_to_match",
-          "level",
-          "score"
+          "signature_to_match"
         ],
         "type": "object",
         "properties": {
@@ -7806,8 +7839,6 @@
           "scan_id",
           "updated_at",
           "secrets",
-          "rules",
-          "rule_2_secrets",
           "severity_counts"
         ],
         "type": "object",
@@ -7819,20 +7850,10 @@
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "node_type": { "type": "string" },
-          "rule_2_secrets": {
-            "type": "object",
-            "additionalProperties": { "type": "array", "items": { "type": "integer" } },
-            "nullable": true
-          },
-          "rules": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ModelRule" },
-            "nullable": true
-          },
           "scan_id": { "type": "string" },
           "secrets": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ModelSecret" },
+            "items": { "$ref": "#/components/schemas/ModelSecretRule" },
             "nullable": true
           },
           "severity_counts": {
@@ -8056,6 +8077,7 @@
         }
       },
       "PostgresqlDbApiToken": { "type": "object" },
+      "PostgresqlDbGetAuditLogsRow": { "type": "object" },
       "ReportColumn": {
         "type": "object",
         "properties": {

@@ -57,7 +57,7 @@ import {
   ApiDocsBadRequestResponse,
   ModelScanResultsActionRequestScanTypeEnum,
   ModelScanResultsReq,
-  ModelSecret,
+  ModelSecretRule,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
@@ -93,7 +93,7 @@ type ScanResult = {
   nodeType: string;
   nodeId: string;
   timestamp: number;
-  tableData: ModelSecret[];
+  tableData: ModelSecretRule[];
   pagination: {
     currentPage: number;
     totalRows: number;
@@ -880,7 +880,7 @@ const SecretTable = () => {
         minSize: 30,
         maxSize: 50,
       }),
-      columnHelper.accessor('cve_id', {
+      columnHelper.accessor('id', {
         cell: (info) => (
           <DFLink
             to={{
@@ -897,19 +897,26 @@ const SecretTable = () => {
             <div className="truncate">{info.getValue()}</div>
           </DFLink>
         ),
-        header: () => 'CVE ID',
+        header: () => 'ID',
         minSize: 100,
         size: 120,
         maxSize: 250,
       }),
-      columnHelper.accessor('cve_caused_by_package', {
+      columnHelper.accessor('full_filename', {
         cell: (info) => info.getValue(),
-        header: () => 'Package',
+        header: () => 'Filename',
         minSize: 100,
         size: 200,
         maxSize: 250,
       }),
-      columnHelper.accessor('cve_severity', {
+      columnHelper.accessor('matched_content', {
+        cell: (info) => info.getValue(),
+        header: () => 'Matched Content',
+        minSize: 100,
+        size: 200,
+        maxSize: 250,
+      }),
+      columnHelper.accessor('level', {
         cell: (info) => (
           <Badge
             label={info.getValue().toUpperCase()}
@@ -929,44 +936,57 @@ const SecretTable = () => {
           />
         ),
         header: () => 'Severity',
-        minSize: 70,
-        size: 80,
-        maxSize: 90,
+        minSize: 90,
+        size: 100,
+        maxSize: 110,
       }),
-      columnHelper.accessor('cve_description', {
+      columnHelper.accessor('name', {
         enableSorting: false,
         cell: (info) => {
-          return info.getValue() ?? 'No Description Available';
+          return info.getValue();
         },
-        header: () => 'Description',
+        header: () => 'Rule Name',
         minSize: 200,
         size: 250,
         maxSize: 400,
       }),
-      columnHelper.accessor('cve_link', {
+      columnHelper.accessor('signature_to_match', {
         enableSorting: false,
-        cell: (info) => (
-          <DFLink to={info.getValue()} target="_blank" rel="noopener noreferrer">
-            <IconContext.Provider
-              value={{
-                className: 'w-4 h-4',
-              }}
-            >
-              <HiExternalLink />
-            </IconContext.Provider>
-          </DFLink>
-        ),
-        header: () => 'Link',
-        minSize: 40,
-        size: 40,
-        maxSize: 45,
-        enableResizing: false,
+        cell: (info) => {
+          return info.getValue() || 'unknown';
+        },
+        header: () => 'Signature to match',
+        minSize: 200,
+        size: 250,
+        maxSize: 400,
       }),
+      // columnHelper.accessor('cve_link', {
+      //   enableSorting: false,
+      //   cell: (info) => (
+      //     <DFLink to={info.getValue()} target="_blank" rel="noopener noreferrer">
+      //       <IconContext.Provider
+      //         value={{
+      //           className: 'w-4 h-4',
+      //         }}
+      //       >
+      //         <HiExternalLink />
+      //       </IconContext.Provider>
+      //     </DFLink>
+      //   ),
+      //   header: () => 'Link',
+      //   minSize: 40,
+      //   size: 40,
+      //   maxSize: 45,
+      //   enableResizing: false,
+      // }),
       columnHelper.display({
         id: 'actions',
         enableSorting: false,
         cell: (cell) => (
-          <ActionDropdown icon={<HiDotsVertical />} ids={[cell.row.original.cve_id]} />
+          <ActionDropdown
+            icon={<HiDotsVertical />}
+            ids={[cell.row.original.id.toString()]}
+          />
         ),
         header: () => '',
         minSize: 40,
@@ -1051,7 +1071,7 @@ const SecretTable = () => {
                   totalRows={resolvedData.pagination.totalRows}
                   pageSize={PAGE_SIZE}
                   pageIndex={resolvedData.pagination.currentPage}
-                  getRowId={(row) => `${row.cve_id}<-->${row.cve_caused_by_package}`}
+                  getRowId={(row) => `${row.id}<-->${row.level}`}
                   enableSorting
                   manualSorting
                   sortingState={sort}

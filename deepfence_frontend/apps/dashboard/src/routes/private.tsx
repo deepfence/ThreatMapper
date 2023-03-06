@@ -39,6 +39,7 @@ import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/V
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { Registries } from '@/features/registries/pages/Registries';
 import { module as secret } from '@/features/secrets/pages/Secret';
+import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
 import { sbomApiLoader } from '@/features/vulnerabilities/api/sbomApiLoader';
@@ -266,11 +267,11 @@ export const privateRoutes: CustomRouteObject[] = [
         ...secretScanResults,
         meta: { title: 'Secret Scan Results' },
         children: [
-          // {
-          //   path: ':cveId',
-          //   ...secretDetails,
-          //   meta: { title: 'Secret Details' },
-          // },
+          {
+            path: ':secretId',
+            ...secretDetails,
+            meta: { title: 'Secret Details' },
+          },
         ],
       },
     ],
