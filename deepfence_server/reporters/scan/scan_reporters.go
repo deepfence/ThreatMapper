@@ -562,7 +562,9 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 		is_node, _ := rec.Get("e")
 		if is_node != nil {
 			for k, v := range is_node.(dbtype.Node).Props {
-				tmp2[k] = v
+				if k != "node_id" {
+					tmp2[k] = v
+				}
 			}
 		}
 		utils.FromMap(rec.Values[0].(map[string]interface{}), &tmp)

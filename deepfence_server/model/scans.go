@@ -219,6 +219,7 @@ type CloudComplianceScanResult struct {
 
 type SecretRule struct {
 	// Secret + Rule neo4j node
+	SecretID              string  `json:"node_id" required:"true"`
 	StartingIndex         int32   `json:"starting_index" required:"true"`
 	RelativeStartingIndex int32   `json:"relative_starting_index" required:"true"`
 	RelativeEndingIndex   int32   `json:"relative_ending_index" required:"true"`
@@ -228,7 +229,7 @@ type SecretRule struct {
 	UpdatedAt             int64   `json:"updated_at" required:"true"`
 	Level                 string  `json:"level" required:"true"`
 	Score                 float64 `json:"score" required:"true"`
-	ID                    int32   `json:"id" required:"true" required:"true"`
+	RuleID                int32   `json:"id" required:"true" required:"true"`
 	Name                  string  `json:"name" required:"true"`
 	Part                  string  `json:"part" required:"true"`
 	SignatureToMatch      string  `json:"signature_to_match" required:"true"`

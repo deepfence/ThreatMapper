@@ -183,7 +183,9 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 		is_node, _ := rec.Get("e")
 		if is_node != nil {
 			for k, v := range is_node.(dbtype.Node).Props {
-				node_map[k] = v
+				if k != "node_id" {
+					node_map[k] = v
+				}
 			}
 		}
 		var node T
