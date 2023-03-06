@@ -488,7 +488,7 @@ func (d *OpenApiDocs) AddDiagnosisOperations() {
 }
 
 func (d *OpenApiDocs) AddRegistryOperations() {
-	d.AddOperation("listRegistry", http.MethodGet, "/deepfence/registryaccount/list",
+	d.AddOperation("listRegistry", http.MethodGet, "/deepfence/registryaccount/",
 		"List Registries", "List all the added Registries",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryListReq), new([]RegistryListResp))
 	d.AddOperation("addRegistry", http.MethodPost, "/deepfence/registryaccount/",
