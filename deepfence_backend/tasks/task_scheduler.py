@@ -169,7 +169,8 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                             "masked": "false", "type": constants.CVE_SCAN_LOGS_ES_TYPE, "scan_id": scan_id, "host": "",
                             "@timestamp": datetime_now.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), "cve_scan_message": "",
                             "action": constants.CVE_SCAN_STATUS_QUEUED, "host_name": "", "node_id": image_name_with_tag,
-                            "time_stamp": int(time.time() * 1000.0), "node_type": constants.NODE_TYPE_CONTAINER_IMAGE
+                            "time_stamp": int(time.time() * 1000.0), "node_type": constants.NODE_TYPE_CONTAINER_IMAGE,
+                            "image_name": image_name_with_tag
                         }
                         ESConn.create_doc(constants.CVE_SCAN_LOGS_INDEX, body)
                         scan_details = {
