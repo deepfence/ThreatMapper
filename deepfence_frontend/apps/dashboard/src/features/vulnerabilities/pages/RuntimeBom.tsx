@@ -3,7 +3,6 @@ import { Suspense, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiArrowSmLeft } from 'react-icons/hi';
 import {
-  Await,
   LoaderFunctionArgs,
   useLoaderData,
   useNavigation,
@@ -24,6 +23,7 @@ import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNode
 import { SbomModal } from '@/features/vulnerabilities/api/sbomApiLoader';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { DFAwait } from '@/utils/suspense';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
 const PAGE_SIZE = 15;
@@ -226,7 +226,7 @@ const RuntimeBom = () => {
       </div>
       <div className="m-2">
         <Suspense fallback={<TableSkeleton columns={2} rows={15} size={'md'} />}>
-          <Await resolve={loaderData.scans}>
+          <DFAwait resolve={loaderData.scans}>
             {(resolvedData: LoaderData['scans']) => {
               return (
                 <Table
@@ -279,7 +279,7 @@ const RuntimeBom = () => {
                 />
               );
             }}
-          </Await>
+          </DFAwait>
         </Suspense>
       </div>
       {selectedNode ? (

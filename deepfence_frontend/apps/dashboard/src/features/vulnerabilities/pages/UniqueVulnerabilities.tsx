@@ -4,7 +4,6 @@ import { Suspense, useMemo } from 'react';
 import { IconContext } from 'react-icons';
 import { HiArrowSmLeft, HiExternalLink } from 'react-icons/hi';
 import {
-  Await,
   LoaderFunctionArgs,
   Outlet,
   useLoaderData,
@@ -31,6 +30,7 @@ import { DFLink } from '@/components/DFLink';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { DFAwait } from '@/utils/suspense';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
@@ -328,7 +328,7 @@ const UniqueVulnerabilities = () => {
       </div>
       <div className="m-2">
         <Suspense fallback={<TableSkeleton columns={9} rows={10} size={'md'} />}>
-          <Await resolve={loaderData.data}>
+          <DFAwait resolve={loaderData.data}>
             {(resolvedData: LoaderDataType['data']) => {
               return (
                 <Table
@@ -382,7 +382,7 @@ const UniqueVulnerabilities = () => {
                 />
               );
             }}
-          </Await>
+          </DFAwait>
         </Suspense>
       </div>
       <Outlet />
