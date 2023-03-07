@@ -326,13 +326,11 @@ func (h *Handler) ListImages(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 	}
 
-	dbr, err := pgClient.GetContainerRegistrySafe(r.Context(), int32(rId))
+	_, err = pgClient.GetContainerRegistrySafe(r.Context(), int32(rId))
 	if err != nil {
 		log.Error().Msgf("failed get registry %v", err)
 		respondError(&BadDecoding{err}, w)
 	}
-
-	log.Info().Msgf("found registry with id %d details %+v", rId, dbr)
 
 	images, err := model.ListImages(r.Context(), int32(rId))
 	if err != nil {
@@ -361,13 +359,11 @@ func (h *Handler) ListImageTags(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 	}
 
-	dbr, err := pgClient.GetContainerRegistrySafe(r.Context(), int32(rId))
+	_, err = pgClient.GetContainerRegistrySafe(r.Context(), int32(rId))
 	if err != nil {
 		log.Error().Msgf("failed get registry %v", err)
 		respondError(&BadDecoding{err}, w)
 	}
-
-	log.Info().Msgf("found registry with id %d details %+v", rId, dbr)
 
 	images, err := model.ListImageTags(r.Context(), int32(rId), imageName)
 	if err != nil {
