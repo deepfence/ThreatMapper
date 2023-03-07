@@ -60,6 +60,12 @@ export interface ModelSecretRule {
      * @type {string}
      * @memberof ModelSecretRule
      */
+    node_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelSecretRule
+     */
     part: string;
     /**
      * 
@@ -110,6 +116,7 @@ export function instanceOfModelSecretRule(value: object): boolean {
     isInstance = isInstance && "masked" in value;
     isInstance = isInstance && "matched_content" in value;
     isInstance = isInstance && "name" in value;
+    isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "part" in value;
     isInstance = isInstance && "relative_ending_index" in value;
     isInstance = isInstance && "relative_starting_index" in value;
@@ -137,6 +144,7 @@ export function ModelSecretRuleFromJSONTyped(json: any, ignoreDiscriminator: boo
         'masked': json['masked'],
         'matched_content': json['matched_content'],
         'name': json['name'],
+        'node_id': json['node_id'],
         'part': json['part'],
         'relative_ending_index': json['relative_ending_index'],
         'relative_starting_index': json['relative_starting_index'],
@@ -162,6 +170,7 @@ export function ModelSecretRuleToJSON(value?: ModelSecretRule | null): any {
         'masked': value.masked,
         'matched_content': value.matched_content,
         'name': value.name,
+        'node_id': value.node_id,
         'part': value.part,
         'relative_ending_index': value.relative_ending_index,
         'relative_starting_index': value.relative_starting_index,

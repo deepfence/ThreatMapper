@@ -40,11 +40,12 @@ import {
   IconButton,
   Modal,
   Popover,
+  Select,
   SortingState,
   Table,
   TableSkeleton,
 } from 'ui-components';
-import { Checkbox, Select, SelectItem } from 'ui-components';
+import { Checkbox, SelectItem } from 'ui-components';
 
 import {
   getScanResultsApiClient,
@@ -55,11 +56,10 @@ import {
   ApiDocsBadRequestResponse,
   ModelScanInfo,
   ModelScanResultsActionRequestScanTypeEnum,
-  ModelVulnerabilityScanConfigLanguageLanguageEnum,
   SearchSearchScanReq,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { useGetClustersList } from '@/features/common/data-component/searchClustersApiLoader';
 import { useGetContainerImagesList } from '@/features/common/data-component/searchContainerImagesApiLoader';
@@ -86,54 +86,6 @@ enum ActionEnumType {
 }
 
 const PAGE_SIZE = 15;
-
-const packages = [
-  // {
-  //   name: 'OS Packages',
-  //   checked: false,
-  //   value: ModelVulnerabilityScanConfigLanguageLanguageEnum.OsPackages,
-  // },
-  {
-    name: 'Java',
-    checked: false,
-    value: ModelVulnerabilityScanConfigLanguageLanguageEnum.Java,
-  },
-  {
-    name: 'Javascript',
-    checked: false,
-    value: ModelVulnerabilityScanConfigLanguageLanguageEnum.Javascript,
-  },
-  {
-    name: 'Rust',
-    checked: false,
-    value: ModelVulnerabilityScanConfigLanguageLanguageEnum.Rust,
-  },
-  {
-    name: 'GoLang',
-    checked: false,
-    value: ModelVulnerabilityScanConfigLanguageLanguageEnum.Golang,
-  },
-  {
-    name: 'Ruby',
-    checked: false,
-    value: ModelVulnerabilityScanConfigLanguageLanguageEnum.Ruby,
-  },
-  {
-    name: 'Python',
-    checked: false,
-    value: ModelVulnerabilityScanConfigLanguageLanguageEnum.Python,
-  },
-  {
-    name: 'PHP',
-    checked: false,
-    value: ModelVulnerabilityScanConfigLanguageLanguageEnum.Php,
-  },
-  {
-    name: 'Dotnet',
-    checked: false,
-    value: ModelVulnerabilityScanConfigLanguageLanguageEnum.Dotnet,
-  },
-];
 
 enum NodeTypeEnum {
   Host = 'host',
@@ -339,7 +291,7 @@ async function getScans(
   }
 
   const result = await makeRequest({
-    apiFunction: getSearchApiClient().searchVulnerabilityScan,
+    apiFunction: getSearchApiClient().searchSecretsScan,
     apiArgs: [{ searchSearchScanReq: scanRequestParams }],
     errorHandler: async (r) => {
       const error = new ApiError(results);
@@ -358,7 +310,7 @@ async function getScans(
   }
 
   const countsResult = await makeRequest({
-    apiFunction: getSearchApiClient().searchVulnerabilityScanCount,
+    apiFunction: getSearchApiClient().searchSecretScanCount,
     apiArgs: [
       {
         searchSearchScanReq: {
@@ -455,7 +407,7 @@ const action = async ({
       apiArgs: [
         {
           scanId: scanId.toString(),
-          scanType: ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan,
+          scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
         },
       ],
       errorHandler: async (r) => {
@@ -485,7 +437,7 @@ const action = async ({
       apiArgs: [
         {
           scanId: scanId.toString(),
-          scanType: ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan,
+          scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
         },
       ],
       errorHandler: async (r) => {
@@ -511,7 +463,7 @@ const action = async ({
     const a = document.createElement('a');
     const unixTime = dayjs(new Date()).unix();
     a.href = 'https://64.227.142.80/deepfence/openapi.json';
-    a.download = `vulnerability_scan_${unixTime}`;
+    a.download = `secret_scan_${unixTime}`;
     a.click();
     // TODO: Add download link
     return null;
@@ -700,7 +652,7 @@ const ActionDropdown = ({
   );
 };
 
-const VulnerabilityScans = () => {
+const SecretScans = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const elementToFocusOnClose = useRef(null);
   const loaderData = useLoaderData() as LoaderDataType;
@@ -710,15 +662,15 @@ const VulnerabilityScans = () => {
   const columnHelper = createColumnHelper<ScanResult>();
 
   const { hosts, status: listHostStatus } = useGetHostsList({
-    scanType: ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan,
+    scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
   });
   const { containerImages, status: listContainerImageStatus } = useGetContainerImagesList(
     {
-      scanType: ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan,
+      scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
     },
   );
   const { containers, status: listContainerStatus } = useGetContainersList({
-    scanType: ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan,
+    scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
   });
   const { clusters, status: listClusterStatus } = useGetClustersList();
 
@@ -753,7 +705,7 @@ const VulnerabilityScans = () => {
           const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
             if (isScanComplete) {
               return (
-                <DFLink to={`/vulnerability/scan-results/${info.row.original.scan_id}`}>
+                <DFLink to={`/secret/scan-results/${info.row.original.scan_id}`}>
                   {children}
                 </DFLink>
               );
@@ -815,7 +767,7 @@ const VulnerabilityScans = () => {
           <div className="flex items-center justify-end gap-x-2 tabular-nums">
             <span className="truncate">{info.getValue()}</span>
             <div className="w-5 h-5 text-gray-400 shrink-0">
-              <VulnerabilityIcon />
+              <SecretsIcon />
             </div>
           </div>
         ),
@@ -952,7 +904,7 @@ const VulnerabilityScans = () => {
     <div>
       <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
         <DFLink
-          to={'/vulnerability'}
+          to={'/secret'}
           className="flex hover:no-underline items-center justify-center mr-2"
         >
           <IconContext.Provider
@@ -964,7 +916,7 @@ const VulnerabilityScans = () => {
           </IconContext.Provider>
         </DFLink>
         <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-          VULNERABILITY SCANS
+          SECRET SCANS
         </span>
         <span className="ml-2">
           {navigation.state === 'loading' ? <CircleSpinner size="xs" /> : null}
@@ -976,6 +928,7 @@ const VulnerabilityScans = () => {
             {isFilterApplied && (
               <span className="absolute -left-[2px] -top-[2px] inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
             )}
+
             <Popover
               triggerAsChild
               elementToFocusOnCloseRef={elementToFocusOnClose}
@@ -1143,30 +1096,6 @@ const VulnerabilityScans = () => {
                           }}
                         />
                       </div>
-                    </fieldset>
-                    <fieldset>
-                      <Select
-                        noPortal
-                        name="language"
-                        label={'Language'}
-                        placeholder="Select language"
-                        value={searchParams.getAll('languages')}
-                        sizing="xs"
-                        onChange={(value) => {
-                          setSearchParams((prev) => {
-                            prev.delete('languages');
-                            value.forEach((language) => {
-                              prev.append('languages', language);
-                            });
-                            prev.delete('page');
-                            return prev;
-                          });
-                        }}
-                      >
-                        {packages.map((pkg: { name: string }) => {
-                          return <SelectItem value={pkg.name} key={pkg.name} />;
-                        })}
-                      </Select>
                     </fieldset>
                     <fieldset>
                       {listHostStatus === 'submitting' ? (
@@ -1382,5 +1311,5 @@ const VulnerabilityScans = () => {
 export const module = {
   loader,
   action,
-  element: <VulnerabilityScans />,
+  element: <SecretScans />,
 };

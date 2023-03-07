@@ -16,42 +16,42 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelSbomRequest
+ * @interface DiagnosisGenerateDiagnosticLogsRequest
  */
-export interface ModelSbomRequest {
+export interface DiagnosisGenerateDiagnosticLogsRequest {
     /**
      * 
-     * @type {string}
-     * @memberof ModelSbomRequest
+     * @type {number}
+     * @memberof DiagnosisGenerateDiagnosticLogsRequest
      */
-    scan_id: string;
+    tail: number;
 }
 
 /**
- * Check if a given object implements the ModelSbomRequest interface.
+ * Check if a given object implements the DiagnosisGenerateDiagnosticLogsRequest interface.
  */
-export function instanceOfModelSbomRequest(value: object): boolean {
+export function instanceOfDiagnosisGenerateDiagnosticLogsRequest(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "scan_id" in value;
+    isInstance = isInstance && "tail" in value;
 
     return isInstance;
 }
 
-export function ModelSbomRequestFromJSON(json: any): ModelSbomRequest {
-    return ModelSbomRequestFromJSONTyped(json, false);
+export function DiagnosisGenerateDiagnosticLogsRequestFromJSON(json: any): DiagnosisGenerateDiagnosticLogsRequest {
+    return DiagnosisGenerateDiagnosticLogsRequestFromJSONTyped(json, false);
 }
 
-export function ModelSbomRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelSbomRequest {
+export function DiagnosisGenerateDiagnosticLogsRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): DiagnosisGenerateDiagnosticLogsRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'scan_id': json['scan_id'],
+        'tail': json['tail'],
     };
 }
 
-export function ModelSbomRequestToJSON(value?: ModelSbomRequest | null): any {
+export function DiagnosisGenerateDiagnosticLogsRequestToJSON(value?: DiagnosisGenerateDiagnosticLogsRequest | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -60,7 +60,7 @@ export function ModelSbomRequestToJSON(value?: ModelSbomRequest | null): any {
     }
     return {
         
-        'scan_id': value.scan_id,
+        'tail': value.tail,
     };
 }
 
