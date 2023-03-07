@@ -484,7 +484,7 @@ func (d *OpenApiDocs) AddDiagnosisOperations() {
 		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(GenerateDiagnosticLogsRequest), nil)
 	d.AddOperation("getDiagnosticLogs", http.MethodGet, "/deepfence/diagnosis/diagnostic-logs",
 		"Get Diagnostic Logs", "Get diagnostic logs download url links",
-		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, nil)
+		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new(GetDiagnosticLogsResponse))
 }
 
 func (d *OpenApiDocs) AddRegistryOperations() {

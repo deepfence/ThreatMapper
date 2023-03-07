@@ -33,7 +33,10 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-const MaxSbomRequestSize = 500 * 1e6
+const (
+	MaxSbomRequestSize      = 500 * 1e6
+	DownloadReportUrlExpiry = 5 * time.Minute
+)
 
 func scanId(req model.NodeIdentifier) string {
 	return fmt.Sprintf("%s-%d", req.NodeId, time.Now().Unix())
@@ -1030,7 +1033,7 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 	case "download":
 		resp := model.DownloadReportResponse{}
 		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(req.ScanID)+".json")
-		url, err := mc.ExposeFile(r.Context(), sbomFile, 5*time.Minute, url.Values{})
+		url, err := mc.ExposeFile(r.Context(), sbomFile, true, DownloadReportUrlExpiry, url.Values{})
 		if err != nil {
 			log.Error().Msg(err.Error())
 			respondError(err, w)

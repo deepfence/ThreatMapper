@@ -25,7 +25,7 @@ func (h *Handler) GenerateConsoleDiagnosticLogs(w http.ResponseWriter, r *http.R
 		respondError(&ValidatorError{err}, w)
 		return
 	}
-	err = h.ConsoleDiagnosis.GenerateDiagnosticLogs(strconv.Itoa(req.Tail))
+	err = h.ConsoleDiagnosis.GenerateDiagnosticLogs(r.Context(), strconv.Itoa(req.Tail))
 	if err != nil {
 		respondError(err, w)
 		return
@@ -38,4 +38,10 @@ func (h *Handler) GenerateAgentDiagnosticLogs(w http.ResponseWriter, r *http.Req
 }
 
 func (h *Handler) GetDiagnosticLogs(w http.ResponseWriter, r *http.Request) {
+	resp, err := diagnosis.GetDiagnosticLogs(r.Context())
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, resp)
 }

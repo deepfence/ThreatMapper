@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -81,7 +80,7 @@ func NewKubernetesConsoleDiagnosisHandler() (*KubernetesConsoleDiagnosisHandler,
 	}, nil
 }
 
-func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(tail string) error {
+func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.Context, tail string) error {
 	zipFile, err := CreateTempFile("deepfence-console-logs-*.zip")
 	if err != nil {
 		return err
@@ -91,7 +90,6 @@ func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(tail string) 
 		os.RemoveAll(zipFile.Name())
 	}()
 	zipWriter := zip.NewWriter(zipFile)
-	ctx := context.Background()
 
 	labelSelector := "app=deepfence-console"
 	options := metaV1.ListOptions{LabelSelector: labelSelector}
@@ -122,8 +120,8 @@ func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(tail string) 
 	if err != nil {
 		return err
 	}
-	filePath := path.Join("/diagnosis/console-diagnosis", filepath.Base(zipFile.Name()))
-	_, err = mc.UploadLocalFile(ctx, filePath, zipFile.Name(), minio.PutObjectOptions{ContentType: "application/zip"})
+	_, err = mc.UploadLocalFile(ctx, ConsoleDiagnosisFileServerPrefix+filepath.Base(zipFile.Name()), zipFile.Name(),
+		minio.PutObjectOptions{ContentType: "application/zip"})
 	if err != nil {
 		return err
 	}
