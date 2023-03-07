@@ -145,6 +145,11 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 		return err
 	}
 
+	if _, err = tx.Run("MATCH p=(s)-[r:OWNS]->(k:CloudResource) SET k.cspm=s.cloud_provider", map[string]interface{}{}); err != nil {
+		fmt.Println("reached here err 3", err)
+		return err
+	}
+
 	if _, err = tx.Run("match (n:Node) WITH apoc.convert.fromJsonMap(n.cloud_metadata) as map,"+
 		" n WHERE map.label = 'AWS' WITH map.id as id, n match (m:CloudResource)"+
 		" where m.resource_type = 'aws_ec2_instance' and m.instance_id = id"+
