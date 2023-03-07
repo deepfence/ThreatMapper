@@ -1,6 +1,6 @@
 import { VulnerabilitySeverityType } from '@/types/common';
 
-export const VULNERABILITY_SEVERITY_COLORS: {
+export const SEVERITY_COLORS: {
   [x in VulnerabilitySeverityType]: string;
 } = {
   critical: '#de425b',

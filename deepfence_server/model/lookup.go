@@ -52,11 +52,6 @@ type BasicNode struct {
 	HostName string `json:"host_name" required:"true"`
 }
 
-type ScanResultBasicNode struct {
-	ResultID   string      `json:"result_id" required:"true"`
-	BasicNodes []BasicNode `json:"basic_nodes" required:"true"`
-}
-
 type Host struct {
 	ID              string           `json:"node_id" required:"true"`
 	Name            string           `json:"host_name" required:"true"`

@@ -114,7 +114,7 @@ export const SlidingModal: FC<ModalProps> = ({
             'flex flex-col fixed top-0 bottom-0',
             'overflow-hidden focus:outline-none',
             'bg-white text-gray-900',
-            'dark:bg-gray-900 dark:text-white ',
+            'dark:bg-gray-900 dark:text-white',
             `${width}`,
             {
               '-left-[100%]': direction === 'left',

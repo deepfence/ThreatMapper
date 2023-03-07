@@ -3,11 +3,26 @@ package reporters
 import (
 	"errors"
 
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 var (
-	NotFoundErr = errors.New("Resource not found")
+	NotFoundErr        = errors.New("Resource not found")
+	ScanResultMaskNode = map[utils.Neo4jScanType]string{
+		utils.NEO4J_VULNERABILITY_SCAN:    "VulnerabilityStub",
+		utils.NEO4J_SECRET_SCAN:           "Secret",
+		utils.NEO4J_MALWARE_SCAN:          "Malware",
+		utils.NEO4J_COMPLIANCE_SCAN:       "Compliance",
+		utils.NEO4J_CLOUD_COMPLIANCE_SCAN: "CloudCompliance",
+	}
+	ScanResultIDField = map[utils.Neo4jScanType]string{
+		utils.NEO4J_VULNERABILITY_SCAN:    "cve_id",
+		utils.NEO4J_SECRET_SCAN:           "node_id",
+		utils.NEO4J_MALWARE_SCAN:          "node_id",
+		utils.NEO4J_COMPLIANCE_SCAN:       "node_id",
+		utils.NEO4J_CLOUD_COMPLIANCE_SCAN: "node_id",
+	}
 )
 
 type Cypherable interface {
@@ -49,4 +64,13 @@ func Neo4jGetStringRecord(rec *neo4j.Record, key, defaultVal string) string {
 		return val.(string)
 	}
 	return defaultVal
+}
+
+func Neo4jGetSliceRecord(rec *neo4j.Record, key string, defaultVal []interface{}) []interface{} {
+	val, ok := rec.Get(key)
+	if ok && val != nil {
+		return val.([]interface{})
+	} else {
+		return defaultVal
+	}
 }

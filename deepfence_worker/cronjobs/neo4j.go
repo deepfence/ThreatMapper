@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	dbCleanUpTimeout = time.Minute * 2
-	dbScanTimeout    = time.Minute * 2
-	dbUpgradeTimeout = time.Minute * 5
+	dbReportCleanUpTimeout   = time.Minute * 2
+	dbRegistryCleanUpTimeout = time.Minute * 30
+	dbScanTimeout            = time.Minute * 2
+	dbUpgradeTimeout         = time.Minute * 5
 )
 
 func CleanUpDB(msg *message.Message) error {
@@ -34,19 +35,43 @@ func CleanUpDB(msg *message.Message) error {
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("MATCH (n:Node) WHERE n.updated_at < TIMESTAMP()-$time_ms SET n.agent_running=false", map[string]interface{}{"time_ms": dbCleanUpTimeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run(`
+		MATCH (n:Node)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		SET n.agent_running=false`,
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:Container) WHERE n.updated_at < TIMESTAMP()-$time_ms DETACH DELETE n", map[string]interface{}{"time_ms": dbCleanUpTimeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run(`
+		MATCH (n:ContainerImage)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		DETACH DELETE n`,
+		map[string]interface{}{"time_ms": dbRegistryCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:Pod) WHERE n.updated_at < TIMESTAMP()-$time_ms DETACH DELETE n", map[string]interface{}{"time_ms": dbCleanUpTimeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run(`
+		MATCH (n:Container)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		DETACH DELETE n`,
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (n:Process) WHERE n.updated_at < TIMESTAMP()-$time_ms DETACH DELETE n", map[string]interface{}{"time_ms": dbCleanUpTimeout.Milliseconds()}); err != nil {
+	if _, err = tx.Run(`
+		MATCH (n:Pod)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		DETACH DELETE n`,
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run(`
+		MATCH (n:Process)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		DETACH DELETE n`,
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
@@ -163,6 +188,7 @@ func ApplyGraphDBStartup(msg *message.Message) error {
 	session.Run("CREATE CONSTRAINT ON (n:Secret) ASSERT n.rule_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Malware) ASSERT n.malware_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Vulnerability) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:VulnerabilityStub) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:SecurityGroup) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:CloudResource) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:RegistryAccount) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})

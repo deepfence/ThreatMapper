@@ -8,7 +8,11 @@ import (
 	"time"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
+	"github.com/rs/zerolog/log"
 )
 
 type RegistryAddReq struct {
@@ -20,7 +24,15 @@ type RegistryAddReq struct {
 }
 
 type RegistryDeleteReq struct {
-	ID int32 `path:"id"`
+	RegistryId int32 `path:"registry_id" validate:"required" required:"true"`
+}
+
+type RegistryImagesReq struct {
+	RegistryId string `path:"registry_id" validate:"required" required:"true"`
+}
+type RegistryImageTagsReq struct {
+	RegistryId string `path:"registry_id" validate:"required" required:"true"`
+	ImageName  string `path:"image_name" validate:"required" required:"true"`
 }
 
 // todo: add support to list by name and type, id
@@ -56,7 +68,8 @@ type RegistryImage struct {
 }
 
 type RegistryListResp struct {
-	ID           string          `json:"id"`
+	ID           int32           `json:"id"`
+	NodeID       string          `json:"node_id"`
 	Name         string          `json:"name"`
 	RegistryType string          `json:"registry_type"`
 	NonSecret    json.RawMessage `json:"non_secret"`
@@ -71,7 +84,7 @@ func (rl *RegistryListReq) ListRegistriesSafe(ctx context.Context, pgClient *pos
 
 // ListRegistriesSafe doesnot get secret field from DB
 func (rl *RegistryDeleteReq) DeleteRegistry(ctx context.Context, pgClient *postgresqlDb.Queries) error {
-	return pgClient.DeleteContainerRegistry(ctx, rl.ID)
+	return pgClient.DeleteContainerRegistry(ctx, rl.RegistryId)
 }
 
 func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {
@@ -135,4 +148,230 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgres
 
 func (r *RegistryImageListReq) GetRegistryImages(ctx context.Context) ([]ContainerImage, error) {
 	return GetContainerImagesFromRegistryAndNamespace(ctx, r.ResourceType, r.Namespace)
+}
+
+type ContainerImageWithTags struct {
+	ID      string    `json:"id"`
+	Name    string    `json:"name"`
+	Tags    []string  `json:"tags"`
+	Size    string    `json:"size"`
+	Created time.Time `json:"created"`
+	Updated time.Time `json:"updated"`
+}
+
+func (i *ContainerImageWithTags) AddTags(tags ...string) ContainerImageWithTags {
+	i.Tags = append(i.Tags, tags...)
+	return *i
+}
+
+func toContainerImageWithTags(data map[string]interface{}) ContainerImageWithTags {
+	image := ContainerImageWithTags{
+		ID:   data["node_id"].(string),
+		Name: data["docker_image_name"].(string),
+		Tags: []string{data["docker_image_tag"].(string)},
+		Size: data["docker_image_size"].(string),
+	}
+	return image
+}
+
+func ListImages(ctx context.Context, registryId int32) ([]ContainerImageWithTags, error) {
+
+	images := []ContainerImageWithTags{}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return images, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return images, err
+	}
+	defer tx.Close()
+
+	query := `MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage) RETURN m`
+	r, err := tx.Run(query, map[string]interface{}{"id": registryId})
+	if err != nil {
+		return images, err
+	}
+
+	records, err := r.Collect()
+	if err != nil {
+		return images, err
+	}
+
+	ri := map[string]ContainerImageWithTags{}
+
+	for _, rec := range records {
+		data, has := rec.Get("m")
+		if !has {
+			log.Warn().Msgf("Missing neo4j entry")
+			continue
+		}
+		da, ok := data.(dbtype.Node)
+		if !ok {
+			log.Warn().Msgf("Missing neo4j entry")
+			continue
+		}
+
+		node := toContainerImageWithTags(da.Props)
+
+		i, ok := ri[node.Name]
+		if ok {
+			ri[node.Name] = i.AddTags(node.Tags...)
+		} else {
+			ri[node.Name] = node
+		}
+	}
+
+	for _, v := range ri {
+		images = append(images, v)
+	}
+
+	return images, nil
+}
+
+func toContainerImage(data map[string]interface{}) ContainerImage {
+	image := ContainerImage{
+		ID:   data["node_id"].(string),
+		Name: data["docker_image_name"].(string),
+		Tag:  data["docker_image_tag"].(string),
+		Size: data["docker_image_size"].(string),
+	}
+
+	md := data["metadata"].(string)
+	var metadata Metadata
+	if err := json.Unmarshal([]byte(md), &metadata); err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	image.Metadata = metadata
+
+	return image
+}
+
+func ListImageTags(ctx context.Context, registryId int32, imageName string) ([]ContainerImage, error) {
+
+	imageTags := []ContainerImage{}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return imageTags, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return imageTags, err
+	}
+	defer tx.Close()
+
+	query := `MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage{docker_image_name:$name}) RETURN m`
+	r, err := tx.Run(query, map[string]interface{}{"id": registryId, "name": imageName})
+	if err != nil {
+		return imageTags, err
+	}
+
+	records, err := r.Collect()
+	if err != nil {
+		return imageTags, err
+	}
+
+	for _, rec := range records {
+		data, has := rec.Get("m")
+		if !has {
+			log.Warn().Msgf("Missing neo4j entry")
+			continue
+		}
+		da, ok := data.(dbtype.Node)
+		if !ok {
+			log.Warn().Msgf("Missing neo4j entry")
+			continue
+		}
+
+		imageTags = append(imageTags, toContainerImage(da.Props))
+
+	}
+
+	return imageTags, nil
+}
+
+func toScansCount(scans []interface{}) map[string]int {
+	counts := map[string]int{
+		"vulnerability_scan": 0,
+		"secret_scan":        0,
+		"malware_scan":       0,
+		"total_scans":        0,
+	}
+	for _, n := range scans {
+		log.Info().Msgf("scans %+v", n)
+		l := n.(dbtype.Node)
+		counts["total_scans"]++
+		switch l.Labels[0] {
+		case "VulnerabilityScan":
+			counts["vulnerability_scan"]++
+		case "SecretScan":
+			counts["secret_scan"]++
+		case "MalwareScan":
+			counts["malware_scan"]++
+		default:
+			log.Info().Msg("unknown scan")
+		}
+	}
+	return counts
+}
+
+func RegistrySummary(ctx context.Context, registryId int32) (map[string]int, error) {
+
+	count := map[string]int{}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return count, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return count, err
+	}
+	defer tx.Close()
+
+	query := `
+	MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage)
+	WITH count(n) as images
+	MATCH (s) -[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount{container_registry_id:$id})
+	RETURN images, COLLECT(s) as scans
+	`
+	result, err := tx.Run(query, map[string]interface{}{"id": registryId})
+	if err != nil {
+		return count, err
+	}
+
+	record, err := result.Single()
+	if err != nil {
+		return count, err
+	}
+
+	images, has := record.Get("images")
+	if !has {
+		log.Warn().Msgf("Missing neo4j entry")
+	}
+
+	scans, has := record.Get("scans")
+	if !has {
+		log.Warn().Msgf("Missing neo4j entry")
+	}
+
+	count = toScansCount(scans.([]interface{}))
+	count["total_images"] = int(images.(int64))
+
+	return count, nil
 }

@@ -21,6 +21,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
+	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -31,6 +32,13 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
 var (
@@ -45,6 +53,7 @@ type Config struct {
 	HttpListenEndpoint     string
 	InternalListenEndpoint string
 	JwtSecret              []byte
+	Orchestrator           string
 }
 
 func main() {
@@ -90,12 +99,10 @@ func main() {
 		log.Fatal().Msg(err.Error())
 	}
 
-	// log.Info().Msg("syncing images from registries")
-	// // todo: do this in cron
-	// err = registrysync.Sync()
-	// if err != nil {
-	// 	log.Fatal().Msg(err.Error())
-	// }
+	err = initializeTelemetry()
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
 
 	log.Info().Msg("starting deepfence-server")
 
@@ -149,7 +156,7 @@ func main() {
 
 	err = router.SetupRoutes(mux,
 		config.HttpListenEndpoint, config.JwtSecret,
-		*serveOpenapiDocs, ingestC, publisher, openApiDocs,
+		*serveOpenapiDocs, ingestC, publisher, openApiDocs, config.Orchestrator,
 	)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -229,9 +236,15 @@ func initialize() (*Config, error) {
 		httpListenEndpoint = "8080"
 	}
 
+	orchestrator := os.Getenv("DEEPFENCE_CONSOLE_ORCHESTRATOR")
+	if orchestrator != consolediagnosis.DockerOrchestrator && orchestrator != consolediagnosis.KubernetesOrchestrator {
+		orchestrator = consolediagnosis.DockerOrchestrator
+	}
+
 	return &Config{
 		HttpListenEndpoint:     ":" + httpListenEndpoint,
 		InternalListenEndpoint: ":8081",
+		Orchestrator:           orchestrator,
 	}, nil
 }
 
@@ -358,5 +371,30 @@ func initializeKafka() error {
 
 	log.Info().Msg("connection to kafka brokers successful")
 
+	return nil
+}
+
+func initializeTelemetry() error {
+	exp, err := jaeger.New(
+		jaeger.WithCollectorEndpoint(
+			jaeger.WithEndpoint("http://deepfence-telemetry:14268/api/traces"),
+		),
+	)
+	if err != nil {
+		return err
+	}
+	tp := tracesdk.NewTracerProvider(
+		tracesdk.WithBatcher(exp),
+		tracesdk.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String("deepfence-server"),
+			attribute.String("environment", "dev"),
+		)),
+	)
+
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(
+		propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}),
+	)
 	return nil
 }

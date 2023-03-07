@@ -48,7 +48,7 @@ const MenuItems: Array<{
   {
     title: 'Secrets',
     Icon: SecretsIcon,
-    to: '/secrets',
+    to: '/secret',
   },
   {
     title: 'Malwares',

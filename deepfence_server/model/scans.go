@@ -142,17 +142,16 @@ type NodesInScanResultRequest struct {
 	ScanType  string   `json:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
 }
 
-type ScanResultFoundNodesRequest struct {
-	ResultID string `path:"result_id" validate:"required" required:"true"`
-	ScanType string `path:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
-	//utils.Neo4jScanType
+type ScanResultBasicNode struct {
+	ResultID   string      `json:"result_id" required:"true"`
+	BasicNodes []BasicNode `json:"basic_nodes" required:"true"`
 }
 
 type SbomRequest struct {
 	// either scan_id or node_id+node_type is required
-	ScanID   string `json:"scan_id"`
-	NodeID   string `json:"node_id"`
-	NodeType string `json:"node_type"`
+	ScanID string `json:"scan_id" validate:"required" required:"true"`
+	//NodeID   string `json:"node_id"`
+	//NodeType string `json:"node_type"`
 }
 
 type SbomResponse struct {
@@ -184,9 +183,7 @@ type ScanResultsCommon struct {
 
 type SecretScanResult struct {
 	ScanResultsCommon
-	Secrets        []Secret         `json:"secrets" required:"true"`
-	Rules          []Rule           `json:"rules" required:"true"`
-	RuleSecrets    map[int][]int32  `json:"rule_2_secrets" required:"true"`
+	Secrets        []SecretRule     `json:"secrets" required:"true"`
 	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
 }
 
@@ -220,40 +217,38 @@ type CloudComplianceScanResult struct {
 	Compliances []CloudCompliance `json:"compliances" required:"true"`
 }
 
-type Secret struct {
-	StartingIndex         int32  `json:"starting_index" required:"true"`
-	RelativeStartingIndex int32  `json:"relative_starting_index" required:"true"`
-	RelativeEndingIndex   int32  `json:"relative_ending_index" required:"true"`
-	FullFilename          string `json:"full_filename" required:"true"`
-	MatchedContent        string `json:"matched_content" required:"true"`
-	Masked                bool   `json:"masked" required:"true"`
-	UpdatedAt             int64  `json:"updated_at" required:"true"`
-	RuleId                string `json:"rule_id" required:"true"`
+type SecretRule struct {
+	// Secret + Rule neo4j node
+	SecretID              string  `json:"node_id" required:"true"`
+	StartingIndex         int32   `json:"starting_index" required:"true"`
+	RelativeStartingIndex int32   `json:"relative_starting_index" required:"true"`
+	RelativeEndingIndex   int32   `json:"relative_ending_index" required:"true"`
+	FullFilename          string  `json:"full_filename" required:"true"`
+	MatchedContent        string  `json:"matched_content" required:"true"`
+	Masked                bool    `json:"masked" required:"true"`
+	UpdatedAt             int64   `json:"updated_at" required:"true"`
+	Level                 string  `json:"level" required:"true"`
+	Score                 float64 `json:"score" required:"true"`
+	RuleID                int32   `json:"id" required:"true" required:"true"`
+	Name                  string  `json:"name" required:"true"`
+	Part                  string  `json:"part" required:"true"`
+	SignatureToMatch      string  `json:"signature_to_match" required:"true"`
 }
 
-func (Secret) NodeType() string {
+func (SecretRule) NodeType() string {
 	return "Secret"
 }
 
-func (Secret) ExtendedField() string {
+func (SecretRule) ExtendedField() string {
 	return "rule_id"
 }
 
-func (v Secret) GetCategory() string {
-	return ""
+func (v SecretRule) GetCategory() string {
+	return v.Level
 }
 
-func (Secret) GetJsonCategory() string {
-	return ""
-}
-
-type Rule struct {
-	ID               int32   `json:"id" required:"true" required:"true"`
-	Name             string  `json:"name" required:"true"`
-	Part             string  `json:"part" required:"true"`
-	SignatureToMatch string  `json:"signature_to_match" required:"true"`
-	Level            string  `json:"level" required:"true"`
-	Score            float64 `json:"score" required:"true"`
+func (SecretRule) GetJsonCategory() string {
+	return "level"
 }
 
 type Vulnerability struct {

@@ -1,6 +1,11 @@
 import { Outlet } from 'react-router-dom';
 
 import { ErrorComponent } from '@/components/error/ErrorComponent';
+import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
+import { searchClustersApiLoader } from '@/features/common/data-component/searchClustersApiLoader';
+import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
+import { searchContainersApiLoader } from '@/features/common/data-component/searchContainersApiLoader';
+import { searchHostsApiLoader } from '@/features/common/data-component/searchHostsApiLoader';
 import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
 import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
@@ -34,8 +39,14 @@ import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanS
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { Registries } from '@/features/registries/pages/Registries';
-import { vulnerabilityApiLoader } from '@/features/vulnerabilities/api/apiLoader';
+import { module as secret } from '@/features/secrets/pages/Secret';
+import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
+import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
+import { module as secretScans } from '@/features/secrets/pages/SecretScans';
+import { sbomApiLoader } from '@/features/vulnerabilities/api/sbomApiLoader';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
+import { module as runtimeBom } from '@/features/vulnerabilities/pages/RuntimeBom';
+import { module as uniqueVulnerabilities } from '@/features/vulnerabilities/pages/UniqueVulnerabilities';
 import { module as vulnerability } from '@/features/vulnerabilities/pages/Vulnerability';
 import { module as vulnerabilityDetails } from '@/features/vulnerabilities/pages/VulnerabilityDetailModal';
 import { module as vulnerabilityScanResults } from '@/features/vulnerabilities/pages/VulnerabilityScanResults';
@@ -189,6 +200,7 @@ export const privateRoutes: CustomRouteObject[] = [
         ...integrations,
         meta: { title: 'Integrations' },
       },
+      // vulnerability
       {
         path: 'vulnerability',
         ...vulnerability,
@@ -215,11 +227,88 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'vulnerability/most-exploitable',
         ...mostExploitableVulnerabilities,
         meta: { title: 'Most Exploitable Vulnerabilities' },
+        children: [
+          {
+            path: ':cveId',
+            ...vulnerabilityDetails,
+            meta: { title: 'Most Exploitable Vulnerability Details' },
+          },
+        ],
+      },
+      {
+        path: 'vulnerability/unique-vulnerabilities',
+        ...uniqueVulnerabilities,
+        meta: { title: 'Unique Vulnerabilities' },
+        children: [
+          {
+            path: ':cveId',
+            ...vulnerabilityDetails,
+            meta: { title: 'Unique Vulnerability Details' },
+          },
+        ],
+      },
+      {
+        path: 'vulnerability/rbom',
+        ...runtimeBom,
+        meta: { title: 'Runtime BOM' },
+      },
+      // secrets
+      {
+        path: 'secret',
+        ...secret,
+        meta: { title: 'Secret' },
+      },
+      {
+        path: 'secret/scans',
+        ...secretScans,
+        meta: { title: 'Secret Scans' },
+      },
+      {
+        path: 'secret/scan-results/:scanId',
+        ...secretScanResults,
+        meta: { title: 'Secret Scan Results' },
+        children: [
+          {
+            path: ':secretId',
+            ...secretDetails,
+            meta: { title: 'Secret Details' },
+          },
+        ],
       },
     ],
   },
   {
-    path: '/_api/vulnerability/scan-results/history/:nodeType/:nodeId',
-    loader: vulnerabilityApiLoader,
+    path: '/data-component',
+    children: [
+      {
+        path: 'vulnerability',
+        children: [
+          {
+            path: 'sbom/:scanId',
+            loader: sbomApiLoader,
+          },
+        ],
+      },
+      {
+        path: 'scan-history/:scanType/:nodeType/:nodeId',
+        loader: scanHistoryApiLoader,
+      },
+      {
+        path: 'search/containers/:scanType',
+        loader: searchContainersApiLoader,
+      },
+      {
+        path: 'search/containerImages/:scanType',
+        loader: searchContainerImagesApiLoader,
+      },
+      {
+        path: 'search/hosts/:scanType',
+        loader: searchHostsApiLoader,
+      },
+      {
+        path: 'search/clusters',
+        loader: searchClustersApiLoader,
+      },
+    ],
   },
 ];

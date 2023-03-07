@@ -26,7 +26,7 @@ func TestParseFieldFilters2CypherWhereConditions(t *testing.T) {
 			FieldsValues: map[string][]interface{}{},
 		},
 		OrderFilter: OrderFilter{
-			OrderFields: []string{},
+			OrderFields: []OrderSpec{},
 		},
 	}
 	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
@@ -37,7 +37,7 @@ func TestParseFieldFilters2CypherWhereConditions(t *testing.T) {
 			FieldsValues: map[string][]interface{}{"toto": {"foo", "bar"}},
 		},
 		OrderFilter: OrderFilter{
-			OrderFields: []string{},
+			OrderFields: []OrderSpec{},
 		},
 	}
 	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
@@ -48,7 +48,7 @@ func TestParseFieldFilters2CypherWhereConditions(t *testing.T) {
 			FieldsValues: map[string][]interface{}{"toto": {"foo", "bar"}},
 		},
 		OrderFilter: OrderFilter{
-			OrderFields: []string{"toto"},
+			OrderFields: []OrderSpec{{FieldName: "toto"}},
 		},
 	}
 	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
@@ -57,7 +57,7 @@ func TestParseFieldFilters2CypherWhereConditions(t *testing.T) {
 	ff = FieldsFilters{
 		ContainsFilter: ContainsFilter{},
 		OrderFilter: OrderFilter{
-			OrderFields: []string{"toto"},
+			OrderFields: []OrderSpec{{FieldName: "toto"}},
 		},
 	}
 	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
@@ -66,7 +66,16 @@ func TestParseFieldFilters2CypherWhereConditions(t *testing.T) {
 	ff = FieldsFilters{
 		ContainsFilter: ContainsFilter{},
 		OrderFilter: OrderFilter{
-			OrderFields: []string{"toto", "titi"},
+			OrderFields: []OrderSpec{{FieldName: "toto"}, {FieldName: "titi"}},
+		},
+	}
+	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
+	assert.Equal(t, cypher, " WHERE  n.toto IS NOT NULL AND n.titi IS NOT NULL", "should be equal")
+
+	ff = FieldsFilters{
+		ContainsFilter: ContainsFilter{},
+		OrderFilter: OrderFilter{
+			OrderFields: []OrderSpec{{FieldName: "toto", Descending: true}, {FieldName: "titi", Descending: true}},
 		},
 	}
 	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
@@ -78,32 +87,53 @@ func TestOrderFilter2CypherCondition(t *testing.T) {
 	node_name := "n"
 
 	ff := OrderFilter{
-		OrderFields: []string{},
+		OrderFields: []OrderSpec{},
 	}
 
 	cypher := OrderFilter2CypherCondition(node_name, ff)
 	assert.Equal(t, cypher, "", "should be equal")
 
 	ff = OrderFilter{
-		OrderFields: []string{""},
+		OrderFields: []OrderSpec{{FieldName: ""}},
 	}
 
 	cypher = OrderFilter2CypherCondition(node_name, ff)
 	assert.Equal(t, cypher, "", "should be equal")
 
 	ff = OrderFilter{
-		OrderFields: []string{"toto"},
+		OrderFields: []OrderSpec{{FieldName: "toto"}},
 	}
 
 	cypher = OrderFilter2CypherCondition(node_name, ff)
 	assert.Equal(t, cypher, " ORDER BY n.toto ", "should be equal")
 
 	ff = OrderFilter{
-		OrderFields: []string{"toto", "titi"},
+		OrderFields: []OrderSpec{{FieldName: "toto", Descending: true}},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff)
+	assert.Equal(t, cypher, " ORDER BY n.toto DESC ", "should be equal")
+
+	ff = OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "toto"}, {FieldName: "titi"}},
 	}
 
 	cypher = OrderFilter2CypherCondition(node_name, ff)
 	assert.Equal(t, cypher, " ORDER BY n.toto,n.titi ", "should be equal")
+
+	ff = OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "toto", Descending: true}, {FieldName: "titi", Descending: true}},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff)
+	assert.Equal(t, cypher, " ORDER BY n.toto DESC,n.titi DESC ", "should be equal")
+
+	ff = OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "toto"}, {FieldName: "titi", Descending: true}},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff)
+	assert.Equal(t, cypher, " ORDER BY n.toto,n.titi DESC ", "should be equal")
 
 }
 

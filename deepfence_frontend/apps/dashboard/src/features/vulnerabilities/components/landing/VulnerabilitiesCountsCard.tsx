@@ -6,7 +6,7 @@ import { Card, CircleSpinner } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { ReactECharts } from '@/components/ReactEcharts';
-import { VULNERABILITY_SEVERITY_COLORS } from '@/constants/charts';
+import { SEVERITY_COLORS } from '@/constants/charts';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { VulnerabilitySeverityType } from '@/types/common';
 import { getObjectKeys } from '@/utils/array';
@@ -46,11 +46,11 @@ const MostExploitableChartVertial = ({
           position: 'center',
         },
         color: [
-          VULNERABILITY_SEVERITY_COLORS['critical'],
-          VULNERABILITY_SEVERITY_COLORS['high'],
-          VULNERABILITY_SEVERITY_COLORS['medium'],
-          VULNERABILITY_SEVERITY_COLORS['low'],
-          VULNERABILITY_SEVERITY_COLORS['unknown'],
+          SEVERITY_COLORS['critical'],
+          SEVERITY_COLORS['high'],
+          SEVERITY_COLORS['medium'],
+          SEVERITY_COLORS['low'],
+          SEVERITY_COLORS['unknown'],
         ],
       },
     ],
@@ -77,10 +77,12 @@ export const VulnerabilitiesCountsCard = ({
   title,
   data,
   loading,
+  detailsLink,
 }: {
   title: string;
   data?: VulnerabilitiesCountsCardData;
   loading: boolean;
+  detailsLink: string;
 }) => {
   const { mode } = useTheme();
   return (
@@ -88,7 +90,7 @@ export const VulnerabilitiesCountsCard = ({
       <div className="p-2 flex">
         <h4 className="text-gray-900 text-sm dark:text-white truncate">{title}</h4>
         <DFLink
-          to={'/vulnerability/most-exploitable'}
+          to={detailsLink}
           className="shrink-0 flex hover:no-underline ml-auto mr-2"
         >
           <span className="text-xs text-blue-600 dark:text-blue-500">Details</span>
@@ -134,7 +136,7 @@ export const VulnerabilitiesCountsCard = ({
                       <div
                         className="rounded-full w-3 h-3"
                         style={{
-                          backgroundColor: VULNERABILITY_SEVERITY_COLORS[severity],
+                          backgroundColor: SEVERITY_COLORS[severity],
                         }}
                       ></div>
                       <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">

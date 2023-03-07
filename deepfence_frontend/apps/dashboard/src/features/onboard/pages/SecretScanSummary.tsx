@@ -2,7 +2,7 @@ import cx from 'classnames';
 import { isEmpty } from 'lodash-es';
 import { Suspense } from 'react';
 import { IconContext } from 'react-icons/lib';
-import { Await, Link, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
+import { Link, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { Card, CircleSpinner, Typography } from 'ui-components';
 
 import { getSecretApiClient } from '@/api/api';
@@ -17,6 +17,7 @@ import { statusScanApiFunctionMap } from '@/features/onboard/pages/ScanInProgres
 import { getAccountName } from '@/features/onboard/utils/summary';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { DFAwait } from '@/utils/suspense';
 
 const color: { [key: string]: string } = {
   alarm: 'bg-red-400 dark:bg-red-500',
@@ -312,7 +313,7 @@ const SecretScanSummary = () => {
       />
 
       <Link
-        to="/dashboard"
+        to="/secret"
         className={cx(
           `${Typography.size.sm} `,
           'underline underline-offset-2 ml-auto bg-transparent text-blue-600 dark:text-blue-500',
@@ -329,7 +330,7 @@ const SecretScanSummary = () => {
             </div>
           }
         >
-          <Await resolve={loaderData.data ?? []}>
+          <DFAwait resolve={loaderData.data ?? []}>
             {(resolvedData: ScanData[] | undefined) => {
               return resolvedData?.map((accountScanData, index) => (
                 <Scan
@@ -338,7 +339,7 @@ const SecretScanSummary = () => {
                 />
               ));
             }}
-          </Await>
+          </DFAwait>
         </Suspense>
       </div>
     </div>

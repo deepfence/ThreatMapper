@@ -28,6 +28,7 @@ models/DetailedConnectionSummary.ts
 models/DetailedNodeSummary.ts
 models/DetailedParent.ts
 models/DiagnosisDiagnosticNotification.ts
+models/DiagnosisGenerateDiagnosticLogsRequest.ts
 models/GraphNodeInfo.ts
 models/GraphProviderThreatGraph.ts
 models/GraphThreatNodeInfo.ts
@@ -82,6 +83,7 @@ models/ModelMalwareScanResult.ts
 models/ModelMalwareScanTriggerReq.ts
 models/ModelMessageResponse.ts
 models/ModelNodeIdentifier.ts
+models/ModelNodesInScanResultRequest.ts
 models/ModelPasswordResetRequest.ts
 models/ModelPasswordResetVerifyRequest.ts
 models/ModelPod.ts
@@ -91,7 +93,6 @@ models/ModelRegistryAccount.ts
 models/ModelRegistryAddReq.ts
 models/ModelRegistryListResp.ts
 models/ModelResponseAccessToken.ts
-models/ModelRule.ts
 models/ModelSbomRequest.ts
 models/ModelSbomResponse.ts
 models/ModelScanFilter.ts
@@ -105,7 +106,7 @@ models/ModelScanResultsReq.ts
 models/ModelScanStatusReq.ts
 models/ModelScanStatusResp.ts
 models/ModelScanTriggerResp.ts
-models/ModelSecret.ts
+models/ModelSecretRule.ts
 models/ModelSecretScanResult.ts
 models/ModelSecretScanTriggerReq.ts
 models/ModelUpdateUserIdRequest.ts
@@ -126,6 +127,7 @@ models/ReportersContainsFilter.ts
 models/ReportersFieldsFilters.ts
 models/ReportersMatchFilter.ts
 models/ReportersOrderFilter.ts
+models/ReportersOrderSpec.ts
 models/SearchSearchCountResp.ts
 models/SearchSearchFilter.ts
 models/SearchSearchNodeReq.ts

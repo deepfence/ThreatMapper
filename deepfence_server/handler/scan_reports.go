@@ -33,7 +33,10 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-const MaxSbomRequestSize = 500 * 1e6
+const (
+	MaxSbomRequestSize      = 500 * 1e6
+	DownloadReportUrlExpiry = 5 * time.Minute
+)
 
 func scanId(req model.NodeIdentifier) string {
 	return fmt.Sprintf("%s-%d", req.NodeId, time.Now().Unix())
@@ -153,6 +156,8 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
+	h.AuditUserActivity(r, EVENT_VULNERABILITY_SCAN, ACTION_START, reqs, true)
+
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -211,6 +216,8 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		respondError(err, w)
 		return
 	}
+
+	h.AuditUserActivity(r, EVENT_SECRET_SCAN, ACTION_START, reqs, true)
 
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
@@ -278,6 +285,8 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	h.AuditUserActivity(r, EVENT_COMPLIANCE_SCAN, ACTION_START, reqs, true)
+
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scanIds, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -337,6 +346,8 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	h.AuditUserActivity(r, EVENT_MALWARE_SCAN, ACTION_START, reqs, true)
+
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -361,10 +372,10 @@ func (h *Handler) StopMalwareScanHandler(w http.ResponseWriter, r *http.Request)
 
 func (h *Handler) IngestCloudResourcesReportHandler(w http.ResponseWriter, r *http.Request) {
 	ingester := ingesters.NewCloudResourceIngester()
-	ingest_scan_report(w, r, ingester)
+	ingest_cloud_scan_report(w, r, ingester)
 }
 
-func ingest_scan_report[T any](respWrite http.ResponseWriter, req *http.Request, ingester ingesters.Ingester[T]) {
+func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Request, ingester ingesters.Ingester[T]) {
 
 	defer req.Body.Close()
 	if req.Method != "POST" {
@@ -695,7 +706,7 @@ func (h *Handler) ListVulnerabilityScanResultsHandler(w http.ResponseWriter, r *
 }
 
 func (h *Handler) ListSecretScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, common, err := listScanResultsHandler[model.Secret](w, r, utils.NEO4J_SECRET_SCAN)
+	entries, common, err := listScanResultsHandler[model.SecretRule](w, r, utils.NEO4J_SECRET_SCAN)
 	if err != nil {
 		respondError(err, w)
 		return
@@ -764,7 +775,7 @@ func (h *Handler) CountVulnerabilityScanResultsHandler(w http.ResponseWriter, r 
 }
 
 func (h *Handler) CountSecretScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, _, err := listScanResultsHandler[model.Secret](w, r, utils.NEO4J_SECRET_SCAN)
+	entries, _, err := listScanResultsHandler[model.SecretRule](w, r, utils.NEO4J_SECRET_SCAN)
 	if err != nil {
 		respondError(err, w)
 		return
@@ -960,24 +971,6 @@ func (h *Handler) ScanDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	h.scanIdActionHandler(w, r, "delete")
 }
 
-func (h *Handler) GetAllNodesInScanResultHandler(w http.ResponseWriter, r *http.Request) {
-	req := model.ScanResultFoundNodesRequest{
-		ResultID: chi.URLParam(r, "result_id"),
-		ScanType: chi.URLParam(r, "scan_type"),
-	}
-	err := h.Validator.Struct(req)
-	if err != nil {
-		respondError(&ValidatorError{err}, w)
-		return
-	}
-	resp, err := reporters_scan.GetScanResultNodes(r.Context(), utils.Neo4jScanType(req.ScanType), req.ResultID)
-	if err != nil {
-		respondError(err, w)
-		return
-	}
-	httpext.JSON(w, http.StatusOK, resp)
-}
-
 func (h *Handler) GetAllNodesInScanResultBulkHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var req model.NodesInScanResultRequest
@@ -1008,9 +1001,9 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 		respondError(err, w)
 		return
 	}
-
-	if req.ScanID == "" {
-		respondError(&BadDecoding{errors.New("scan_id is required")}, w)
+	err = h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
 		return
 	}
 
@@ -1040,7 +1033,7 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 	case "download":
 		resp := model.DownloadReportResponse{}
 		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(req.ScanID)+".json")
-		url, err := mc.ExposeFile(r.Context(), sbomFile, 5*time.Minute, url.Values{})
+		url, err := mc.ExposeFile(r.Context(), sbomFile, true, DownloadReportUrlExpiry, url.Values{})
 		if err != nil {
 			log.Error().Msg(err.Error())
 			respondError(err, w)

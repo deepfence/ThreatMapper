@@ -24,19 +24,7 @@ export interface ModelSbomRequest {
      * @type {string}
      * @memberof ModelSbomRequest
      */
-    node_id?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelSbomRequest
-     */
-    node_type?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelSbomRequest
-     */
-    scan_id?: string;
+    scan_id: string;
 }
 
 /**
@@ -44,6 +32,7 @@ export interface ModelSbomRequest {
  */
 export function instanceOfModelSbomRequest(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "scan_id" in value;
 
     return isInstance;
 }
@@ -58,9 +47,7 @@ export function ModelSbomRequestFromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
         
-        'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
-        'node_type': !exists(json, 'node_type') ? undefined : json['node_type'],
-        'scan_id': !exists(json, 'scan_id') ? undefined : json['scan_id'],
+        'scan_id': json['scan_id'],
     };
 }
 
@@ -73,8 +60,6 @@ export function ModelSbomRequestToJSON(value?: ModelSbomRequest | null): any {
     }
     return {
         
-        'node_id': value.node_id,
-        'node_type': value.node_type,
         'scan_id': value.scan_id,
     };
 }
