@@ -375,3 +375,38 @@ func (h *Handler) ListImageTags(w http.ResponseWriter, r *http.Request) {
 
 	httpext.JSON(w, http.StatusOK, images)
 }
+
+func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
+
+	counts := map[string]int{}
+
+	registryId := chi.URLParam(r, "registry_id")
+	rId, err := strconv.ParseInt(registryId, 10, 32)
+	if err != nil {
+		log.Error().Msgf("failed to parse registry id %v", registryId)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	// check if exists
+	pgClient, err := directory.PostgresClient(directory.WithGlobalContext(r.Context()))
+	if err != nil {
+		log.Error().Msgf("failed get postgres client %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	_, err = pgClient.GetContainerRegistrySafe(r.Context(), int32(rId))
+	if err != nil {
+		log.Error().Msgf("failed get registry %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	// count registry resource
+	counts, err = model.RegistrySummary(r.Context(), int32(rId))
+	if err != nil {
+		respondError(err, w)
+	}
+
+	log.Info().Msgf("registry %d summary %+v", rId, counts)
+
+	httpext.JSON(w, http.StatusOK, counts)
+}

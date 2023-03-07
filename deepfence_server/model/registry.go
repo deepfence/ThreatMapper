@@ -300,3 +300,78 @@ func ListImageTags(ctx context.Context, registryId int32, imageName string) ([]C
 
 	return imageTags, nil
 }
+
+func toScansCount(scans []interface{}) map[string]int {
+	counts := map[string]int{
+		"vulnerability_scan": 0,
+		"secret_scan":        0,
+		"malware_scan":       0,
+		"total_scans":        0,
+	}
+	for _, n := range scans {
+		log.Info().Msgf("scans %+v", n)
+		l := n.(dbtype.Node)
+		counts["total_scans"]++
+		switch l.Labels[0] {
+		case "VulnerabilityScan":
+			counts["vulnerability_scan"]++
+		case "SecretScan":
+			counts["secret_scan"]++
+		case "MalwareScan":
+			counts["malware_scan"]++
+		default:
+			log.Info().Msg("unknown scan")
+		}
+	}
+	return counts
+}
+
+func RegistrySummary(ctx context.Context, registryId int32) (map[string]int, error) {
+
+	count := map[string]int{}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return count, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return count, err
+	}
+	defer tx.Close()
+
+	query := `
+	MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage)
+	WITH count(n) as images
+	MATCH (s) -[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount{container_registry_id:$id})
+	RETURN images, COLLECT(s) as scans
+	`
+	result, err := tx.Run(query, map[string]interface{}{"id": registryId})
+	if err != nil {
+		return count, err
+	}
+
+	record, err := result.Single()
+	if err != nil {
+		return count, err
+	}
+
+	images, has := record.Get("images")
+	if !has {
+		log.Warn().Msgf("Missing neo4j entry")
+	}
+
+	scans, has := record.Get("scans")
+	if !has {
+		log.Warn().Msgf("Missing neo4j entry")
+	}
+
+	count = toScansCount(scans.([]interface{}))
+	count["total_images"] = int(images.(int64))
+
+	return count, nil
+}
