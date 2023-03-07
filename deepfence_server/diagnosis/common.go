@@ -64,7 +64,7 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 			UrlLink:   urlLink,
 			Label:     filepath.Base(obj.Key),
 			Message:   message,
-			CreatedAt: obj.LastModified.Format(time.DateTime),
+			CreatedAt: obj.LastModified.Format("2006-01-02 15:04:05"),
 		})
 	}
 	return diagnosticLogsResponse
