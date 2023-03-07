@@ -175,9 +175,8 @@ func toContainerImageWithTags(data map[string]interface{}) ContainerImageWithTag
 }
 
 func ListImages(ctx context.Context, registryId int32) ([]ContainerImageWithTags, error) {
-	var (
-		images []ContainerImageWithTags
-	)
+
+	images := []ContainerImageWithTags{}
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -207,7 +206,6 @@ func ListImages(ctx context.Context, registryId int32) ([]ContainerImageWithTags
 	ri := map[string]ContainerImageWithTags{}
 
 	for _, rec := range records {
-		log.Info().Msgf("%+v", rec.Values)
 		data, has := rec.Get("m")
 		if !has {
 			log.Warn().Msgf("Missing neo4j entry")
@@ -256,9 +254,9 @@ func toContainerImage(data map[string]interface{}) ContainerImage {
 }
 
 func ListImageTags(ctx context.Context, registryId int32, imageName string) ([]ContainerImage, error) {
-	var (
-		imageTags []ContainerImage
-	)
+
+	imageTags := []ContainerImage{}
+
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return imageTags, err
@@ -285,7 +283,6 @@ func ListImageTags(ctx context.Context, registryId int32, imageName string) ([]C
 	}
 
 	for _, rec := range records {
-		log.Info().Msgf("%+v", rec.Values)
 		data, has := rec.Get("m")
 		if !has {
 			log.Warn().Msgf("Missing neo4j entry")

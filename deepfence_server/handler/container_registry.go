@@ -320,6 +320,20 @@ func (h *Handler) ListImages(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 	}
 
+	pgClient, err := directory.PostgresClient(directory.WithGlobalContext(r.Context()))
+	if err != nil {
+		log.Error().Msgf("failed get postgres client %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	dbr, err := pgClient.GetContainerRegistrySafe(r.Context(), int32(rId))
+	if err != nil {
+		log.Error().Msgf("failed get registry %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	log.Info().Msgf("found registry with id %d details %+v", rId, dbr)
+
 	images, err := model.ListImages(r.Context(), int32(rId))
 	if err != nil {
 		respondError(err, w)
@@ -339,6 +353,21 @@ func (h *Handler) ListImageTags(w http.ResponseWriter, r *http.Request) {
 		log.Error().Msgf("failed to parse registry id %v", registryId)
 		respondError(&BadDecoding{err}, w)
 	}
+
+	// check if exists
+	pgClient, err := directory.PostgresClient(directory.WithGlobalContext(r.Context()))
+	if err != nil {
+		log.Error().Msgf("failed get postgres client %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	dbr, err := pgClient.GetContainerRegistrySafe(r.Context(), int32(rId))
+	if err != nil {
+		log.Error().Msgf("failed get registry %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	log.Info().Msgf("found registry with id %d details %+v", rId, dbr)
 
 	images, err := model.ListImageTags(r.Context(), int32(rId), imageName)
 	if err != nil {
