@@ -60,9 +60,10 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	defer tx.Close()
 
 	query := `
-		MATCH (n:` + dummy.NodeType() + `) ` +
+		MATCH (n:` + dummy.NodeType() + `)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-		` RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + ` ` +
+		` OPTIONAL MATCH (n) -[:IS]-> (e)
+		RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e ` +
 		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) + fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
@@ -98,6 +99,14 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 				node_map[filter.InFieldFilter[i]] = rec.Values[i]
 			}
 		}
+		is_node, _ := rec.Get("e")
+		if is_node != nil {
+			for k, v := range is_node.(dbtype.Node).Props {
+				if k != "node_id" {
+					node_map[k] = v
+				}
+			}
+		}
 		var node T
 		utils.FromMap(node_map, &node)
 		res = append(res, node)
@@ -127,10 +136,12 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 	defer tx.Close()
 
 	query := `
-		MATCH (n:` + string(scan_type) + `) ` +
+		MATCH (n:` + string(scan_type) + `)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(scan_filter.Filters), true) +
-		`MATCH (n) -[:SCANNED]- (m)` +
+		` MATCH (n:` + string(scan_type) + `) -[:SCANNED]-> (m)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(resource_filter.Filters), true) +
+		` WITH DISTINCT m, max(n.updated_at) as latest
+	    MATCH (n:` + string(scan_type) + `{updated_at:latest}) -[:SCANNED]-> (m)` +
 		` RETURN n.node_id as scan_id, n.status, n.updated_at, m.node_id, labels(m) as node_type, m.node_name` +
 		reporters.OrderFilter2CypherCondition("n", scan_filter.Filters.OrderFilter) +
 		fw.FetchWindow2CypherQuery()

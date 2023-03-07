@@ -6,7 +6,7 @@ import {
   HiCubeTransparent,
   HiRefresh,
 } from 'react-icons/hi';
-import { Await, useLoaderData, useRevalidator } from 'react-router-dom';
+import { useLoaderData, useRevalidator } from 'react-router-dom';
 import {
   Button,
   createColumnHelper,
@@ -30,6 +30,7 @@ import { connectorLayoutTabs } from '@/features/onboard/layouts/ConnectorsLayout
 import { ApiError, makeRequest } from '@/utils/api';
 import { getRegistryDisplayId } from '@/utils/registry';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { DFAwait } from '@/utils/suspense';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export interface OnboardConnectionNode {
@@ -262,11 +263,11 @@ function MyConnectors() {
         <Suspense
           fallback={<TableSkeleton rows={4} columns={5} size="sm" className="mt-8" />}
         >
-          <Await resolve={loaderData.data}>
+          <DFAwait resolve={loaderData.data}>
             {(data: LoaderData['data']) => {
               return <MyConnectorsTable data={data} />;
             }}
-          </Await>
+          </DFAwait>
         </Suspense>
       </div>
     </Tabs>

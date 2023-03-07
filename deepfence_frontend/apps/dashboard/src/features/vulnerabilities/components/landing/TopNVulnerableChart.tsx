@@ -95,6 +95,9 @@ export const TopNVulnerableChart = ({
               return truncate(value, { length: 13 });
             },
           },
+          axisLine: {
+            show: false,
+          },
           axisTick: {
             show: false,
           },
@@ -103,41 +106,26 @@ export const TopNVulnerableChart = ({
           {
             type: 'bar',
             stack: 'total',
-            label: {
-              show: true,
-            },
             color: VULNERABILITY_SEVERITY_COLORS['critical'],
           },
           {
             type: 'bar',
             stack: 'total',
-            label: {
-              show: true,
-            },
             color: VULNERABILITY_SEVERITY_COLORS['high'],
           },
           {
             type: 'bar',
             stack: 'total',
-            label: {
-              show: true,
-            },
             color: VULNERABILITY_SEVERITY_COLORS['medium'],
           },
           {
             type: 'bar',
             stack: 'total',
-            label: {
-              show: true,
-            },
             color: VULNERABILITY_SEVERITY_COLORS['low'],
           },
           {
             type: 'bar',
             stack: 'total',
-            label: {
-              show: true,
-            },
             color: VULNERABILITY_SEVERITY_COLORS['unknown'],
           },
         ],

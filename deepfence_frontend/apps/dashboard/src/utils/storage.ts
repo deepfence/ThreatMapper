@@ -1,4 +1,4 @@
-const storagePrefix = 'deefence_';
+const storagePrefix = 'deepfence_';
 
 export type AuthUserType = {
   accessToken: string;

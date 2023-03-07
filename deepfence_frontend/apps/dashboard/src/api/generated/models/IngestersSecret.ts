@@ -70,46 +70,10 @@ export interface IngestersSecret {
     Severity?: IngestersSecretSeverity;
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof IngestersSecret
      */
-    container_name?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    host_name?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    kubernetes_cluster_name?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    masked?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    node_id?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    node_name?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersSecret
-     */
-    node_type?: string;
+    masked?: boolean;
     /**
      * 
      * @type {string}
@@ -142,13 +106,7 @@ export function IngestersSecretFromJSONTyped(json: any, ignoreDiscriminator: boo
         'Match': !exists(json, 'Match') ? undefined : IngestersSecretMatchFromJSON(json['Match']),
         'Rule': !exists(json, 'Rule') ? undefined : IngestersSecretRuleFromJSON(json['Rule']),
         'Severity': !exists(json, 'Severity') ? undefined : IngestersSecretSeverityFromJSON(json['Severity']),
-        'container_name': !exists(json, 'container_name') ? undefined : json['container_name'],
-        'host_name': !exists(json, 'host_name') ? undefined : json['host_name'],
-        'kubernetes_cluster_name': !exists(json, 'kubernetes_cluster_name') ? undefined : json['kubernetes_cluster_name'],
         'masked': !exists(json, 'masked') ? undefined : json['masked'],
-        'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
-        'node_name': !exists(json, 'node_name') ? undefined : json['node_name'],
-        'node_type': !exists(json, 'node_type') ? undefined : json['node_type'],
         'scan_id': !exists(json, 'scan_id') ? undefined : json['scan_id'],
     };
 }
@@ -167,13 +125,7 @@ export function IngestersSecretToJSON(value?: IngestersSecret | null): any {
         'Match': IngestersSecretMatchToJSON(value.Match),
         'Rule': IngestersSecretRuleToJSON(value.Rule),
         'Severity': IngestersSecretSeverityToJSON(value.Severity),
-        'container_name': value.container_name,
-        'host_name': value.host_name,
-        'kubernetes_cluster_name': value.kubernetes_cluster_name,
         'masked': value.masked,
-        'node_id': value.node_id,
-        'node_name': value.node_name,
-        'node_type': value.node_type,
         'scan_id': value.scan_id,
     };
 }

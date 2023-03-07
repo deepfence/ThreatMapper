@@ -55,6 +55,12 @@ export interface ModelSecret {
      * @memberof ModelSecret
      */
     starting_index: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelSecret
+     */
+    updated_at: number;
 }
 
 /**
@@ -68,6 +74,7 @@ export function instanceOfModelSecret(value: object): boolean {
     isInstance = isInstance && "relative_ending_index" in value;
     isInstance = isInstance && "relative_starting_index" in value;
     isInstance = isInstance && "starting_index" in value;
+    isInstance = isInstance && "updated_at" in value;
 
     return isInstance;
 }
@@ -88,6 +95,7 @@ export function ModelSecretFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'relative_ending_index': json['relative_ending_index'],
         'relative_starting_index': json['relative_starting_index'],
         'starting_index': json['starting_index'],
+        'updated_at': json['updated_at'],
     };
 }
 
@@ -106,6 +114,7 @@ export function ModelSecretToJSON(value?: ModelSecret | null): any {
         'relative_ending_index': value.relative_ending_index,
         'relative_starting_index': value.relative_starting_index,
         'starting_index': value.starting_index,
+        'updated_at': value.updated_at,
     };
 }
 

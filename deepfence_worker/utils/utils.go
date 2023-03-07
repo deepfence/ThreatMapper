@@ -30,6 +30,7 @@ func PublishNewJob(pub *kafka.Publisher, metadata map[string]string, topic strin
 	}
 	return nil
 }
+
 func RunCommand(cmd *exec.Cmd) (*bytes.Buffer, error) {
 	var out bytes.Buffer
 	var stderr bytes.Buffer

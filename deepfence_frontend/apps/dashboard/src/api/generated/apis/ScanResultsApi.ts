@@ -17,8 +17,9 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
-  ModelBasicNode,
   ModelDownloadReportResponse,
+  ModelNodesInScanResultRequest,
+  ModelScanResultBasicNode,
   ModelScanResultsActionRequest,
   ModelScanResultsMaskRequest,
 } from '../models';
@@ -27,10 +28,12 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    ModelBasicNodeFromJSON,
-    ModelBasicNodeToJSON,
     ModelDownloadReportResponseFromJSON,
     ModelDownloadReportResponseToJSON,
+    ModelNodesInScanResultRequestFromJSON,
+    ModelNodesInScanResultRequestToJSON,
+    ModelScanResultBasicNodeFromJSON,
+    ModelScanResultBasicNodeToJSON,
     ModelScanResultsActionRequestFromJSON,
     ModelScanResultsActionRequestToJSON,
     ModelScanResultsMaskRequestFromJSON,
@@ -51,10 +54,8 @@ export interface DownloadScanResultsRequest {
     scanType: DownloadScanResultsScanTypeEnum;
 }
 
-export interface GetAllNodesOfScanResultDocumentRequest {
-    docId: string;
-    scanId: string;
-    scanType: GetAllNodesOfScanResultDocumentScanTypeEnum;
+export interface GetAllNodesInScanResultsRequest {
+    modelNodesInScanResultRequest?: ModelNodesInScanResultRequest;
 }
 
 export interface MaskScanResultRequest {
@@ -127,22 +128,20 @@ export interface ScanResultsApiInterface {
     downloadScanResults(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelDownloadReportResponse>;
 
     /**
-     * Get all nodes for given result document
-     * @summary Get all nodes for given result document
-     * @param {string} docId 
-     * @param {string} scanId 
-     * @param {'SecretScan' | 'VulnerabilityScan' | 'MalwareScan' | 'ComplianceScan' | 'CloudComplianceScan'} scanType 
+     * Get all nodes in given scan result ids
+     * @summary Get all nodes in given scan result ids
+     * @param {ModelNodesInScanResultRequest} [modelNodesInScanResultRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ScanResultsApiInterface
      */
-    getAllNodesOfScanResultDocumentRaw(requestParameters: GetAllNodesOfScanResultDocumentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelBasicNode>>>;
+    getAllNodesInScanResultsRaw(requestParameters: GetAllNodesInScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelScanResultBasicNode>>>;
 
     /**
-     * Get all nodes for given result document
-     * Get all nodes for given result document
+     * Get all nodes in given scan result ids
+     * Get all nodes in given scan result ids
      */
-    getAllNodesOfScanResultDocument(requestParameters: GetAllNodesOfScanResultDocumentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelBasicNode>>;
+    getAllNodesInScanResults(requestParameters: GetAllNodesInScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelScanResultBasicNode>>;
 
     /**
      * Mask scan results
@@ -325,25 +324,15 @@ export class ScanResultsApi extends runtime.BaseAPI implements ScanResultsApiInt
     }
 
     /**
-     * Get all nodes for given result document
-     * Get all nodes for given result document
+     * Get all nodes in given scan result ids
+     * Get all nodes in given scan result ids
      */
-    async getAllNodesOfScanResultDocumentRaw(requestParameters: GetAllNodesOfScanResultDocumentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelBasicNode>>> {
-        if (requestParameters.docId === null || requestParameters.docId === undefined) {
-            throw new runtime.RequiredError('docId','Required parameter requestParameters.docId was null or undefined when calling getAllNodesOfScanResultDocument.');
-        }
-
-        if (requestParameters.scanId === null || requestParameters.scanId === undefined) {
-            throw new runtime.RequiredError('scanId','Required parameter requestParameters.scanId was null or undefined when calling getAllNodesOfScanResultDocument.');
-        }
-
-        if (requestParameters.scanType === null || requestParameters.scanType === undefined) {
-            throw new runtime.RequiredError('scanType','Required parameter requestParameters.scanType was null or undefined when calling getAllNodesOfScanResultDocument.');
-        }
-
+    async getAllNodesInScanResultsRaw(requestParameters: GetAllNodesInScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelScanResultBasicNode>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
@@ -354,21 +343,22 @@ export class ScanResultsApi extends runtime.BaseAPI implements ScanResultsApiInt
             }
         }
         const response = await this.request({
-            path: `/deepfence/scan/{scan_type}/{scan_id}/{doc_id}/nodes`.replace(`{${"doc_id"}}`, encodeURIComponent(String(requestParameters.docId))).replace(`{${"scan_id"}}`, encodeURIComponent(String(requestParameters.scanId))).replace(`{${"scan_type"}}`, encodeURIComponent(String(requestParameters.scanType))),
-            method: 'GET',
+            path: `/deepfence/scan/nodes-in-result`,
+            method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: ModelNodesInScanResultRequestToJSON(requestParameters.modelNodesInScanResultRequest),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelBasicNodeFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelScanResultBasicNodeFromJSON));
     }
 
     /**
-     * Get all nodes for given result document
-     * Get all nodes for given result document
+     * Get all nodes in given scan result ids
+     * Get all nodes in given scan result ids
      */
-    async getAllNodesOfScanResultDocument(requestParameters: GetAllNodesOfScanResultDocumentRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelBasicNode>> {
-        const response = await this.getAllNodesOfScanResultDocumentRaw(requestParameters, initOverrides);
+    async getAllNodesInScanResults(requestParameters: GetAllNodesInScanResultsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelScanResultBasicNode>> {
+        const response = await this.getAllNodesInScanResultsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -510,14 +500,3 @@ export const DownloadScanResultsScanTypeEnum = {
     CloudComplianceScan: 'CloudComplianceScan'
 } as const;
 export type DownloadScanResultsScanTypeEnum = typeof DownloadScanResultsScanTypeEnum[keyof typeof DownloadScanResultsScanTypeEnum];
-/**
- * @export
- */
-export const GetAllNodesOfScanResultDocumentScanTypeEnum = {
-    SecretScan: 'SecretScan',
-    VulnerabilityScan: 'VulnerabilityScan',
-    MalwareScan: 'MalwareScan',
-    ComplianceScan: 'ComplianceScan',
-    CloudComplianceScan: 'CloudComplianceScan'
-} as const;
-export type GetAllNodesOfScanResultDocumentScanTypeEnum = typeof GetAllNodesOfScanResultDocumentScanTypeEnum[keyof typeof GetAllNodesOfScanResultDocumentScanTypeEnum];

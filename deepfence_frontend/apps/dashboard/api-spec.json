@@ -2451,6 +2451,61 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/scan/nodes-in-result": {
+      "post": {
+        "tags": ["Scan Results"],
+        "summary": "Get all nodes in given scan result ids",
+        "description": "Get all nodes in given scan result ids",
+        "operationId": "getAllNodesInScanResults",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelNodesInScanResultRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelScanResultBasicNode" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/scan/results/action/delete": {
       "patch": {
         "tags": ["Scan Results"],
@@ -4041,88 +4096,11 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/scan/{scan_type}/{scan_id}/{doc_id}/nodes": {
-      "get": {
-        "tags": ["Scan Results"],
-        "summary": "Get all nodes for given result document",
-        "description": "Get all nodes for given result document",
-        "operationId": "getAllNodesOfScanResultDocument",
-        "parameters": [
-          {
-            "name": "doc_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "scan_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "scan_type",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "enum": [
-                "SecretScan",
-                "VulnerabilityScan",
-                "MalwareScan",
-                "ComplianceScan",
-                "CloudComplianceScan"
-              ],
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/ModelBasicNode" }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
-              }
-            }
-          },
-          "401": { "description": "Unauthorized" },
-          "403": { "description": "Forbidden" },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          }
-        },
-        "security": [{ "bearer_token": [] }]
-      }
-    },
     "/deepfence/search/cloud-compliance/scans": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Vulnerability Scan results",
-        "description": "Search scan results",
+        "summary": "Search Cloud Compliance Scan results",
+        "description": "Search across all the data associated with cloud-compliance scan",
         "operationId": "searchCloudComplianceScans",
         "requestBody": {
           "content": {
@@ -4177,7 +4155,7 @@
       "post": {
         "tags": ["Search"],
         "summary": "Search Cloud compliances",
-        "description": "List all the images present in the given registry",
+        "description": "Search across all the data associated with cloud-compliances",
         "operationId": "searchCloudCompliances",
         "requestBody": {
           "content": {
@@ -4231,8 +4209,8 @@
     "/deepfence/search/compliance/scans": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Vulnerability Scan results",
-        "description": "Search scan results",
+        "summary": "Search Compliance Scan results",
+        "description": "Search across all the data associated with compliance scan",
         "operationId": "searchComplianceScans",
         "requestBody": {
           "content": {
@@ -4287,7 +4265,7 @@
       "post": {
         "tags": ["Search"],
         "summary": "Search Compliances",
-        "description": "List all the images present in the given registry",
+        "description": "Search across all the data associated with compliances",
         "operationId": "searchCompliances",
         "requestBody": {
           "content": {
@@ -4342,7 +4320,7 @@
       "post": {
         "tags": ["Search"],
         "summary": "Search Containers data",
-        "description": "Retrieve all the data associated with containers",
+        "description": "Search across all data associated with containers",
         "operationId": "searchContainers",
         "requestBody": {
           "content": {
@@ -4396,8 +4374,8 @@
     "/deepfence/search/count/cloud-compliance/scans": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Vulnerability Scan results",
-        "description": "Search scan results",
+        "summary": "Count Cloud Compliance Scan results",
+        "description": "Count across all the data associated with cloud-compliance scans",
         "operationId": "countCloudComplianceScans",
         "requestBody": {
           "content": {
@@ -4448,8 +4426,8 @@
     "/deepfence/search/count/cloud-compliances": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Cloud compliances",
-        "description": "List all the images present in the given registry",
+        "summary": "Count Cloud compliances",
+        "description": "Count across all the data ssociated with cloud compliances",
         "operationId": "countCloudCompliances",
         "requestBody": {
           "content": {
@@ -4500,8 +4478,8 @@
     "/deepfence/search/count/compliance/scans": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Vulnerability Scan results",
-        "description": "Search scan results",
+        "summary": "Count Compliance Scan results",
+        "description": "Count across all the data associated with compliance scans",
         "operationId": "countComplianceScans",
         "requestBody": {
           "content": {
@@ -4552,8 +4530,8 @@
     "/deepfence/search/count/compliances": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Compliances",
-        "description": "List all the images present in the given registry",
+        "summary": "Count Compliances",
+        "description": "Count across all the data associated with compliances",
         "operationId": "countCompliances",
         "requestBody": {
           "content": {
@@ -4604,8 +4582,8 @@
     "/deepfence/search/count/containers": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Containers data",
-        "description": "Retrieve all the data associated with containers",
+        "summary": "Count Containers data",
+        "description": "Count across all the data associated with containers",
         "operationId": "countContainers",
         "requestBody": {
           "content": {
@@ -4656,8 +4634,8 @@
     "/deepfence/search/count/hosts": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search hosts",
-        "description": "Retrieve all the data associated with hosts",
+        "summary": "Count hosts",
+        "description": "Count across all the data associated with hosts",
         "operationId": "countHosts",
         "requestBody": {
           "content": {
@@ -4708,8 +4686,8 @@
     "/deepfence/search/count/images": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Container images",
-        "description": "Retrieve all the data associated with processes",
+        "summary": "Count Container images",
+        "description": "Count across all the data associated with container images",
         "operationId": "countContainerImages",
         "requestBody": {
           "content": {
@@ -4760,8 +4738,8 @@
     "/deepfence/search/count/malware/scans": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Vulnerability Scan results",
-        "description": "Search scan results",
+        "summary": "Count Malware Scan results",
+        "description": "Count across all the data associated with malware scans",
         "operationId": "countMalwareScans",
         "requestBody": {
           "content": {
@@ -4812,8 +4790,8 @@
     "/deepfence/search/count/malwares": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Malwares",
-        "description": "List all the images present in the given registry",
+        "summary": "Count Malwares",
+        "description": "Count across all the data associated with malwares",
         "operationId": "countMalwares",
         "requestBody": {
           "content": {
@@ -4864,8 +4842,8 @@
     "/deepfence/search/count/secret/scans": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Vulnerability Scan results",
-        "description": "Search scan results",
+        "summary": "Count Secret Scan results",
+        "description": "Count across all the data associated with secret scans",
         "operationId": "countSecretsScans",
         "requestBody": {
           "content": {
@@ -4916,8 +4894,8 @@
     "/deepfence/search/count/secrets": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Secrets",
-        "description": "Retrieve all the data associated with pods",
+        "summary": "Count Secrets",
+        "description": "Count across all the data associated with secrets",
         "operationId": "countSecrets",
         "requestBody": {
           "content": {
@@ -4968,8 +4946,8 @@
     "/deepfence/search/count/vulnerabilities": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Vulnerabilities",
-        "description": "Retrieve all the data associated with k8s clusters",
+        "summary": "Count Vulnerabilities",
+        "description": "Search across all the data associated with vulnerabilities",
         "operationId": "countVulnerabilities",
         "requestBody": {
           "content": {
@@ -5020,8 +4998,8 @@
     "/deepfence/search/count/vulnerability/scans": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Vulnerability Scan results",
-        "description": "Search scan results",
+        "summary": "Count Vulnerability Scan results",
+        "description": "Count across all the data associated with vulnerability scans",
         "operationId": "countVulnerabilityScans",
         "requestBody": {
           "content": {
@@ -5073,7 +5051,7 @@
       "post": {
         "tags": ["Search"],
         "summary": "Search hosts",
-        "description": "Retrieve all the data associated with hosts",
+        "description": "Search across all data associated with hosts",
         "operationId": "searchHosts",
         "requestBody": {
           "content": {
@@ -5128,7 +5106,7 @@
       "post": {
         "tags": ["Search"],
         "summary": "Search Container images",
-        "description": "Retrieve all the data associated with processes",
+        "description": "Search across all the data associated with container images",
         "operationId": "searchContainerImages",
         "requestBody": {
           "content": {
@@ -5182,8 +5160,8 @@
     "/deepfence/search/malware/scans": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Vulnerability Scan results",
-        "description": "Search scan results",
+        "summary": "Search Malware Scan results",
+        "description": "Search across all the data associated with malwares scan",
         "operationId": "searchMalwareScans",
         "requestBody": {
           "content": {
@@ -5238,7 +5216,7 @@
       "post": {
         "tags": ["Search"],
         "summary": "Search Malwares",
-        "description": "List all the images present in the given registry",
+        "description": "Search across all the data associated with malwares",
         "operationId": "searchMalwares",
         "requestBody": {
           "content": {
@@ -5292,8 +5270,8 @@
     "/deepfence/search/secret/scans": {
       "post": {
         "tags": ["Search"],
-        "summary": "Search Vulnerability Scan results",
-        "description": "Search scan results",
+        "summary": "Search Secrets Scan results",
+        "description": "Search across all the data associated with secrets scan",
         "operationId": "searchSecretsScans",
         "requestBody": {
           "content": {
@@ -5348,7 +5326,7 @@
       "post": {
         "tags": ["Search"],
         "summary": "Search Secrets",
-        "description": "Retrieve all the data associated with pods",
+        "description": "Search across all the data associated with secrets",
         "operationId": "searchSecrets",
         "requestBody": {
           "content": {
@@ -5364,7 +5342,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/ModelSecret" }
+                  "items": { "$ref": "#/components/schemas/ModelSecretRule" }
                 }
               }
             }
@@ -5403,7 +5381,7 @@
       "post": {
         "tags": ["Search"],
         "summary": "Search Vulnerabilities",
-        "description": "Retrieve all the data associated with k8s clusters",
+        "description": "Search across all the data associated with vulnerabilities",
         "operationId": "searchVulnerabilities",
         "requestBody": {
           "content": {
@@ -5458,7 +5436,7 @@
       "post": {
         "tags": ["Search"],
         "summary": "Search Vulnerability Scan results",
-        "description": "Search scan results",
+        "description": "Search across all the data associated with vulnerability scan",
         "operationId": "searchVulnerabilityScans",
         "requestBody": {
           "content": {
@@ -6477,9 +6455,7 @@
           "description": { "type": "string" },
           "doc_id": { "type": "string" },
           "group": { "type": "string" },
-          "masked": { "type": "string" },
-          "node_id": { "type": "string" },
-          "node_name": { "type": "string" },
+          "masked": { "type": "boolean" },
           "reason": { "type": "string" },
           "region": { "type": "string" },
           "resource": { "type": "string" },
@@ -6539,13 +6515,7 @@
           "compliance_check_type": { "type": "string" },
           "compliance_node_type": { "type": "string" },
           "description": { "type": "string" },
-          "doc_id": { "type": "string" },
-          "kubernetes_cluster_id": { "type": "string" },
-          "kubernetes_cluster_name": { "type": "string" },
-          "masked": { "type": "string" },
-          "node_id": { "type": "string" },
-          "node_name": { "type": "string" },
-          "node_type": { "type": "string" },
+          "masked": { "type": "boolean" },
           "remediation_ansible": { "type": "string" },
           "remediation_puppet": { "type": "string" },
           "remediation_script": { "type": "string" },
@@ -6557,7 +6527,6 @@
           "test_number": { "type": "string" },
           "test_rationale": { "type": "string" },
           "test_severity": { "type": "string" },
-          "time_stamp": { "type": "integer" },
           "type": { "type": "string" }
         }
       },
@@ -6567,13 +6536,8 @@
           "@timestamp": { "type": "string", "format": "date-time" },
           "class": { "type": "string" },
           "complete_filename": { "type": "string" },
-          "container_name": { "type": "string" },
           "file_severity": { "type": "string" },
-          "host_name": { "type": "string" },
-          "image_id": { "type": "string" },
           "image_layer_id": { "type": "string" },
-          "image_name": { "type": "string" },
-          "kubernetes_cluster_name": { "type": "string" },
           "masked": { "type": "boolean" },
           "meta": { "type": "array", "items": { "type": "string" }, "nullable": true },
           "meta_rules": {
@@ -6581,8 +6545,6 @@
             "additionalProperties": { "type": "string" },
             "nullable": true
           },
-          "node_id": { "type": "string" },
-          "node_type": { "type": "string" },
           "registry_id": { "type": "string" },
           "rule_name": { "type": "string" },
           "scan_id": { "type": "string" },
@@ -6599,13 +6561,6 @@
         "type": "object",
         "properties": {
           "@timestamp": { "type": "string", "format": "date-time" },
-          "container_name": { "type": "string" },
-          "host_name": { "type": "string" },
-          "kubernetes_cluster_name": { "type": "string" },
-          "masked": { "type": "string" },
-          "node_id": { "type": "string" },
-          "node_name": { "type": "string" },
-          "node_type": { "type": "string" },
           "scan_id": { "type": "string" },
           "scan_status": { "type": "string" }
         }
@@ -6723,13 +6678,7 @@
             "type": "object",
             "properties": { "level": { "type": "string" }, "score": { "type": "number" } }
           },
-          "container_name": { "type": "string" },
-          "host_name": { "type": "string" },
-          "kubernetes_cluster_name": { "type": "string" },
-          "masked": { "type": "string" },
-          "node_id": { "type": "string" },
-          "node_name": { "type": "string" },
-          "node_type": { "type": "string" },
+          "masked": { "type": "boolean" },
           "scan_id": { "type": "string" }
         }
       },
@@ -6737,14 +6686,8 @@
         "type": "object",
         "properties": {
           "@timestamp": { "type": "string", "format": "date-time" },
-          "container_name": { "type": "string" },
-          "host_name": { "type": "string" },
-          "kubernetes_cluster_name": { "type": "string" },
-          "masked": { "type": "string" },
-          "node_id": { "type": "string" },
-          "node_name": { "type": "string" },
-          "node_type": { "type": "string" },
           "scan_id": { "type": "string" },
+          "scan_message": { "type": "string" },
           "scan_status": { "type": "string" }
         }
       },
@@ -6756,26 +6699,17 @@
           "cve_attack_vector": { "type": "string" },
           "cve_caused_by_package": { "type": "string" },
           "cve_caused_by_package_path": { "type": "string" },
-          "cve_container_image": { "type": "string" },
-          "cve_container_image_id": { "type": "string" },
           "cve_container_layer": { "type": "string" },
-          "cve_container_name": { "type": "string" },
           "cve_cvss_score": { "type": "number" },
           "cve_description": { "type": "string" },
           "cve_fixed_in": { "type": "string" },
           "cve_id": { "type": "string" },
-          "cve_id_cve_severity_cve_container_image": { "type": "string" },
           "cve_link": { "type": "string" },
           "cve_overall_score": { "type": "number" },
           "cve_severity": { "type": "string" },
           "cve_type": { "type": "string" },
-          "doc_id": { "type": "string" },
           "exploit_poc": { "type": "string" },
-          "host": { "type": "string" },
-          "host_name": { "type": "string" },
-          "kubernetes_cluster_name": { "type": "string" },
-          "masked": { "type": "string" },
-          "node_type": { "type": "string" },
+          "masked": { "type": "boolean" },
           "scan_id": { "type": "string" },
           "type": { "type": "string" },
           "urls": { "type": "array", "items": { "type": "string" }, "nullable": true }
@@ -6785,14 +6719,8 @@
         "type": "object",
         "properties": {
           "@timestamp": { "type": "string", "format": "date-time" },
-          "container_name": { "type": "string" },
-          "host_name": { "type": "string" },
-          "kubernetes_cluster_name": { "type": "string" },
-          "masked": { "type": "string" },
-          "node_id": { "type": "string" },
-          "node_name": { "type": "string" },
-          "node_type": { "type": "string" },
           "scan_id": { "type": "string" },
+          "scan_message": { "type": "string" },
           "scan_status": { "type": "string" }
         }
       },
@@ -6859,6 +6787,7 @@
           "node_id",
           "scan_id",
           "masked",
+          "updated_at",
           "type",
           "control_id",
           "description",
@@ -6885,7 +6814,8 @@
           "severity": { "type": "string" },
           "status": { "type": "string" },
           "title": { "type": "string" },
-          "type": { "type": "string" }
+          "type": { "type": "string" },
+          "updated_at": { "type": "integer" }
         }
       },
       "ModelCloudComplianceScanDetails": {
@@ -7044,7 +6974,8 @@
           "status",
           "compliance_check_type",
           "compliance_node_type",
-          "masked"
+          "masked",
+          "updated_at"
         ],
         "type": "object",
         "properties": {
@@ -7061,7 +6992,8 @@
           "test_desc": { "type": "string" },
           "test_number": { "type": "string" },
           "test_rationale": { "type": "string" },
-          "test_severity": { "type": "string" }
+          "test_severity": { "type": "string" },
+          "updated_at": { "type": "integer" }
         }
       },
       "ModelComplianceScanInfo": {
@@ -7370,7 +7302,8 @@
           "severity_score",
           "summary",
           "rule_name",
-          "masked"
+          "masked",
+          "updated_at"
         ],
         "type": "object",
         "properties": {
@@ -7382,7 +7315,8 @@
           "masked": { "type": "boolean" },
           "rule_name": { "type": "string" },
           "severity_score": { "type": "number" },
-          "summary": { "type": "string" }
+          "summary": { "type": "string" },
+          "updated_at": { "type": "integer" }
         }
       },
       "ModelMalwareScanResult": {
@@ -7453,6 +7387,27 @@
               "cloud_account",
               "cluster",
               "registry"
+            ],
+            "type": "string"
+          }
+        }
+      },
+      "ModelNodesInScanResultRequest": {
+        "required": ["result_ids", "scan_type"],
+        "type": "object",
+        "properties": {
+          "result_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "scan_type": {
+            "enum": [
+              "SecretScan",
+              "VulnerabilityScan",
+              "MalwareScan",
+              "ComplianceScan",
+              "CloudComplianceScan"
             ],
             "type": "string"
           }
@@ -7609,16 +7564,8 @@
         "type": "object",
         "properties": {
           "cve_id": { "type": "string" },
-          "licenses": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
-          "locations": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
+          "licenses": { "type": "array", "items": { "type": "string" } },
+          "locations": { "type": "array", "items": { "type": "string" } },
           "package_name": { "type": "string" },
           "severity": { "type": "string" },
           "version": { "type": "string" }
@@ -7700,11 +7647,27 @@
           }
         }
       },
-      "ModelScanResultsActionRequest": {
-        "required": ["scan_id", "doc_ids", "scan_type"],
+      "ModelScanResultBasicNode": {
+        "required": ["result_id", "basic_nodes"],
         "type": "object",
         "properties": {
-          "doc_ids": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "basic_nodes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelBasicNode" },
+            "nullable": true
+          },
+          "result_id": { "type": "string" }
+        }
+      },
+      "ModelScanResultsActionRequest": {
+        "required": ["scan_id", "result_ids", "scan_type"],
+        "type": "object",
+        "properties": {
+          "result_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "scan_id": { "type": "string" },
           "scan_type": {
             "enum": [
@@ -7719,11 +7682,15 @@
         }
       },
       "ModelScanResultsMaskRequest": {
-        "required": ["scan_id", "doc_ids", "scan_type"],
+        "required": ["scan_id", "result_ids", "scan_type"],
         "type": "object",
         "properties": {
-          "doc_ids": { "type": "array", "items": { "type": "string" }, "nullable": true },
           "mask_across_hosts_and_images": { "type": "boolean" },
+          "result_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "scan_id": { "type": "string" },
           "scan_type": {
             "enum": [
@@ -7780,7 +7747,8 @@
           "relative_ending_index",
           "full_filename",
           "matched_content",
-          "masked"
+          "masked",
+          "updated_at"
         ],
         "type": "object",
         "properties": {
@@ -7789,7 +7757,41 @@
           "matched_content": { "type": "string" },
           "relative_ending_index": { "type": "integer" },
           "relative_starting_index": { "type": "integer" },
-          "starting_index": { "type": "integer" }
+          "starting_index": { "type": "integer" },
+          "updated_at": { "type": "integer" }
+        }
+      },
+      "ModelSecretRule": {
+        "required": [
+          "starting_index",
+          "relative_starting_index",
+          "relative_ending_index",
+          "full_filename",
+          "matched_content",
+          "masked",
+          "updated_at",
+          "id",
+          "name",
+          "part",
+          "signature_to_match",
+          "level",
+          "score"
+        ],
+        "type": "object",
+        "properties": {
+          "full_filename": { "type": "string" },
+          "id": { "type": "integer" },
+          "level": { "type": "string" },
+          "masked": { "type": "boolean" },
+          "matched_content": { "type": "string" },
+          "name": { "type": "string" },
+          "part": { "type": "string" },
+          "relative_ending_index": { "type": "integer" },
+          "relative_starting_index": { "type": "integer" },
+          "score": { "type": "number" },
+          "signature_to_match": { "type": "string" },
+          "starting_index": { "type": "integer" },
+          "updated_at": { "type": "integer" }
         }
       },
       "ModelSecretScanResult": {
@@ -7949,7 +7951,10 @@
           "cve_attack_vector",
           "urls",
           "exploit_poc",
-          "masked"
+          "masked",
+          "updated_at",
+          "parsed_attack_vector",
+          "has_live_connection"
         ],
         "type": "object",
         "properties": {
@@ -7966,7 +7971,10 @@
           "cve_severity": { "type": "string" },
           "cve_type": { "type": "string" },
           "exploit_poc": { "type": "string" },
+          "has_live_connection": { "type": "boolean" },
           "masked": { "type": "boolean" },
+          "parsed_attack_vector": { "type": "string" },
+          "updated_at": { "type": "integer" },
           "urls": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
       },
@@ -8136,9 +8144,23 @@
         }
       },
       "ReportersOrderFilter": {
-        "required": ["order_field"],
+        "required": ["order_fields"],
         "type": "object",
-        "properties": { "order_field": { "type": "string" } }
+        "properties": {
+          "order_fields": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ReportersOrderSpec" },
+            "nullable": true
+          }
+        }
+      },
+      "ReportersOrderSpec": {
+        "required": ["field_name", "descending"],
+        "type": "object",
+        "properties": {
+          "descending": { "type": "boolean" },
+          "field_name": { "type": "string" }
+        }
       },
       "SearchSearchCountResp": {
         "required": ["count", "categories"],

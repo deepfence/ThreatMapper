@@ -21,8 +21,13 @@ type MatchFilter struct {
 	FieldsValues map[string][]interface{} `json:"filter_in" required:"true"`
 }
 
+type OrderSpec struct {
+	FieldName  string `json:"field_name" required:"true"`
+	Descending bool   `json:"descending" required:"true"`
+}
+
 type OrderFilter struct {
-	OrderField string `json:"order_field" required:"true"`
+	OrderFields []OrderSpec `json:"order_fields" required:"true"`
 }
 
 type FieldsFilters struct {
@@ -48,18 +53,50 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 	return conditions
 }
 
+func extractOrderDescFormattedField(field string, descending bool) string {
+	if descending {
+		return field + " DESC"
+	}
+	return field
+}
+
+func formatOrderField(format string, input []OrderSpec, ignoreOrder bool) []string {
+	res := []string{}
+	if len(input) == 0 {
+		return res
+	}
+
+	for i := range input {
+		if len(input[i].FieldName) == 0 {
+			continue
+		}
+		orderByEntry := fmt.Sprintf(format, extractOrderDescFormattedField(input[i].FieldName, input[i].Descending && !ignoreOrder))
+		res = append(res, orderByEntry)
+	}
+
+	return res
+}
+
 func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) string {
-	if len(filter.OrderField) == 0 {
+	if len(filter.OrderFields) == 0 {
 		return ""
 	}
-	return fmt.Sprintf(" ORDER BY %s.%s ", cypherNodeName, filter.OrderField)
+
+	list := formatOrderField(cypherNodeName+".%s", filter.OrderFields, false)
+
+	if len(list) == 0 {
+		return ""
+	}
+
+	return fmt.Sprintf(" ORDER BY %s ", strings.Join(list, ","))
 }
 
 func orderFilter2CypherWhere(cypherNodeName string, filter OrderFilter) []string {
-	if filter.OrderField != "" {
-		return []string{fmt.Sprintf("%s.%s IS NOT NULL", cypherNodeName, filter.OrderField)}
+	if len(filter.OrderFields) == 0 {
+		return []string{}
 	}
-	return []string{}
+
+	return formatOrderField(cypherNodeName+".%s IS NOT NULL", filter.OrderFields, true)
 }
 
 func ParseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.Option[FieldsFilters], starts_where_clause bool) string {

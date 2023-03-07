@@ -2,7 +2,7 @@ import cx from 'classnames';
 import { groupBy, isEmpty } from 'lodash-es';
 import { Suspense } from 'react';
 import { IconContext } from 'react-icons/lib';
-import { Await, Link, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
+import { Link, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { Card, CircleSpinner, Separator, Typography } from 'ui-components';
 
 import { getCloudComplianceApiClient, getComplianceApiClient } from '@/api/api';
@@ -18,6 +18,7 @@ import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNode
 import { statusScanApiFunctionMap } from '@/features/onboard/pages/ScanInProgress';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { DFAwait } from '@/utils/suspense';
 
 const color: { [key: string]: string } = {
   alarm: 'bg-red-400 dark:bg-red-500',
@@ -62,7 +63,7 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
                 filter_in: {},
               },
               order_filter: {
-                order_field: '',
+                order_fields: [],
               },
               match_filter: {
                 filter_in: {},
@@ -172,7 +173,7 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
                 filter_in: {},
               },
               order_filter: {
-                order_field: '',
+                order_fields: [],
               },
               match_filter: {
                 filter_in: {},
@@ -487,7 +488,7 @@ const ComplianceScanSummary = () => {
             </div>
           }
         >
-          <Await resolve={loaderData.data ?? []}>
+          <DFAwait resolve={loaderData.data ?? []}>
             {(resolvedData: ScanData[] | undefined) => {
               return resolvedData?.map((accountScanData, index) => (
                 <Scan
@@ -496,7 +497,7 @@ const ComplianceScanSummary = () => {
                 />
               ));
             }}
-          </Await>
+          </DFAwait>
         </Suspense>
       </div>
     </div>

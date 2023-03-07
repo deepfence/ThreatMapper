@@ -21,16 +21,16 @@ import { exists, mapValues } from '../runtime';
 export interface ModelScanResultsMaskRequest {
     /**
      * 
-     * @type {Array<string>}
-     * @memberof ModelScanResultsMaskRequest
-     */
-    doc_ids: Array<string> | null;
-    /**
-     * 
      * @type {boolean}
      * @memberof ModelScanResultsMaskRequest
      */
     mask_across_hosts_and_images?: boolean;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ModelScanResultsMaskRequest
+     */
+    result_ids: Array<string> | null;
     /**
      * 
      * @type {string}
@@ -64,7 +64,7 @@ export type ModelScanResultsMaskRequestScanTypeEnum = typeof ModelScanResultsMas
  */
 export function instanceOfModelScanResultsMaskRequest(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "doc_ids" in value;
+    isInstance = isInstance && "result_ids" in value;
     isInstance = isInstance && "scan_id" in value;
     isInstance = isInstance && "scan_type" in value;
 
@@ -81,8 +81,8 @@ export function ModelScanResultsMaskRequestFromJSONTyped(json: any, ignoreDiscri
     }
     return {
         
-        'doc_ids': json['doc_ids'],
         'mask_across_hosts_and_images': !exists(json, 'mask_across_hosts_and_images') ? undefined : json['mask_across_hosts_and_images'],
+        'result_ids': json['result_ids'],
         'scan_id': json['scan_id'],
         'scan_type': json['scan_type'],
     };
@@ -97,8 +97,8 @@ export function ModelScanResultsMaskRequestToJSON(value?: ModelScanResultsMaskRe
     }
     return {
         
-        'doc_ids': value.doc_ids,
         'mask_across_hosts_and_images': value.mask_across_hosts_and_images,
+        'result_ids': value.result_ids,
         'scan_id': value.scan_id,
         'scan_type': value.scan_type,
     };

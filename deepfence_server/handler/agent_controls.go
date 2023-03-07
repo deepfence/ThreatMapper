@@ -47,6 +47,7 @@ func (h *Handler) GetAgentControls(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(b)
 
 	if err != nil {
@@ -96,6 +97,7 @@ func (h *Handler) GetAgentInitControls(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(b)
 
 	if err != nil {

@@ -11,6 +11,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
 	"github.com/samber/mo"
 )
 
@@ -537,9 +538,12 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 
 	query = `
 		MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
-		WITH d{.*, masked: r.masked} as d` +
+		OPTIONAL MATCH (d) -[:IS]-> (e)
+		WITH d{.*, masked: coalesce(d.masked or r.masked, false)} as d, e` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
-		` RETURN d ` + fw.FetchWindow2CypherQuery()
+		` RETURN d,e ` +
+		reporters.OrderFilter2CypherCondition("d", ff.OrderFilter) +
+		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("query: %v", query)
 	nres, err := tx.Run(query,
 		map[string]interface{}{"scan_id": scan_id})
@@ -554,6 +558,15 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 
 	for _, rec := range recs {
 		var tmp T
+		tmp2 := rec.Values[0].(map[string]interface{})
+		is_node, _ := rec.Get("e")
+		if is_node != nil {
+			for k, v := range is_node.(dbtype.Node).Props {
+				if k != "node_id" {
+					tmp2[k] = v
+				}
+			}
+		}
 		utils.FromMap(rec.Values[0].(map[string]interface{}), &tmp)
 		res = append(res, tmp)
 	}
@@ -630,8 +643,8 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	return res, nil
 }
 
-func GetScanResultDocumentNodes(ctx context.Context, scanType utils.Neo4jScanType, docId string) ([]model.BasicNode, error) {
-	var res []model.BasicNode
+func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, resultIds []string) ([]model.ScanResultBasicNode, error) {
+	var res []model.ScanResultBasicNode
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return res, err
@@ -649,11 +662,12 @@ func GetScanResultDocumentNodes(ctx context.Context, scanType utils.Neo4jScanTyp
 	}
 	defer tx.Close()
 
+	resultIdKey := "collect(distinct d." + reporters.ScanResultIDField[scanType] + ")"
 	nres, err := tx.Run(`
-		MATCH (node) <- [s:SCANNED] - (m:`+string(scanType)+`) - [r:DETECTED] -> (d:`+utils.ScanTypeDetectedNode[scanType]+`{node_id: $node_id})
-		WHERE r.masked = false
-		RETURN node.host_name,node.node_id,node.node_type,node.docker_container_name,node.docker_image_name,node.docker_image_tag`,
-		map[string]interface{}{"node_id": docId})
+		MATCH (node) <- [s:SCANNED] - (m:`+string(scanType)+`) - [r:DETECTED] -> (d:`+utils.ScanTypeDetectedNode[scanType]+`)
+		WHERE r.masked = false AND d.`+reporters.ScanResultIDField[scanType]+` IN $result_ids
+		RETURN `+resultIdKey+`,node.host_name,node.node_id,node.node_type,node.docker_container_name,node.docker_image_name,node.docker_image_tag`,
+		map[string]interface{}{"result_ids": resultIds})
 	if err != nil {
 		return res, err
 	}
@@ -662,7 +676,7 @@ func GetScanResultDocumentNodes(ctx context.Context, scanType utils.Neo4jScanTyp
 	if err != nil {
 		return res, err
 	}
-
+	tempRes := make(map[string][]model.BasicNode)
 	for _, rec := range recs {
 		hostName := reporters.Neo4jGetStringRecord(rec, "node.host_name", "")
 		containerName := reporters.Neo4jGetStringRecord(rec, "node.docker_container_name", "")
@@ -683,7 +697,17 @@ func GetScanResultDocumentNodes(ctx context.Context, scanType utils.Neo4jScanTyp
 			NodeType: nodeType,
 			HostName: hostName,
 		}
-		res = append(res, node)
+
+		resultIDs := reporters.Neo4jGetSliceRecord(rec, resultIdKey, []interface{}{})
+		for _, resultID := range resultIDs {
+			tempRes[resultID.(string)] = append(tempRes[resultID.(string)], node)
+		}
+	}
+	for resultID, basicNodes := range tempRes {
+		res = append(res, model.ScanResultBasicNode{
+			ResultID:   resultID,
+			BasicNodes: basicNodes,
+		})
 	}
 	return res, nil
 }

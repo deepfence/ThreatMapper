@@ -82,6 +82,7 @@ models/ModelMalwareScanResult.ts
 models/ModelMalwareScanTriggerReq.ts
 models/ModelMessageResponse.ts
 models/ModelNodeIdentifier.ts
+models/ModelNodesInScanResultRequest.ts
 models/ModelPasswordResetRequest.ts
 models/ModelPasswordResetVerifyRequest.ts
 models/ModelPod.ts
@@ -98,6 +99,7 @@ models/ModelScanFilter.ts
 models/ModelScanInfo.ts
 models/ModelScanListReq.ts
 models/ModelScanListResp.ts
+models/ModelScanResultBasicNode.ts
 models/ModelScanResultsActionRequest.ts
 models/ModelScanResultsMaskRequest.ts
 models/ModelScanResultsReq.ts
@@ -105,6 +107,7 @@ models/ModelScanStatusReq.ts
 models/ModelScanStatusResp.ts
 models/ModelScanTriggerResp.ts
 models/ModelSecret.ts
+models/ModelSecretRule.ts
 models/ModelSecretScanResult.ts
 models/ModelSecretScanTriggerReq.ts
 models/ModelUpdateUserIdRequest.ts
@@ -125,6 +128,7 @@ models/ReportersContainsFilter.ts
 models/ReportersFieldsFilters.ts
 models/ReportersMatchFilter.ts
 models/ReportersOrderFilter.ts
+models/ReportersOrderSpec.ts
 models/SearchSearchCountResp.ts
 models/SearchSearchFilter.ts
 models/SearchSearchNodeReq.ts

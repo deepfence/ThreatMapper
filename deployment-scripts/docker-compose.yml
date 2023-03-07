@@ -86,7 +86,7 @@ services:
     environment:
       <<: *common-creds
       NEO4J_dbms_memory_pagecache_size: 2600m
-      NEO4J_dbms.memory.heap.initial_size: 3800m
+      NEO4J_dbms_memory_heap_initial__size: 3800m
       NEO4J_dbms_memory_heap_max__size: 3800m
       NEO4JLABS_PLUGINS: '["apoc"]'
     ports:
@@ -181,6 +181,7 @@ services:
       <<: *common-creds
       ELASTICSEARCH_SCHEME: "http"
       DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES: 1440
+      DEEPFENCE_CONSOLE_ORCHESTRATOR: "docker"
     networks:
       - deepfence_net
     depends_on:
@@ -289,6 +290,20 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
+
+  deepfence-telemetry:
+    image: jaegertracing/all-in-one:1.42
+    hostname: deepfence-telemetry
+    container_name: deepfence-telemetry
+    ports:
+      - "127.0.0.1:14267:14267"
+      - "127.0.0.1:14268:14268"
+      - "127.0.0.1:9411:9411"
+      - "127.0.0.1:14269:14269"
+      - "0.0.0.0:16686:16686"
+    networks:
+      - deepfence_net
+
 
 volumes:
   deepfence_data:

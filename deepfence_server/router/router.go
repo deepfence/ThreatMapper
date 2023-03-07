@@ -8,13 +8,16 @@ import (
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
+	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-playground/validator/v10"
+	"github.com/riandyrn/otelchi"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -43,8 +46,18 @@ const (
 	ResourceRegistry    = "container-registry"
 )
 
+// func telemetryInjector(next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		_, span := otel.Tracer("router").Start(r.Context(), r.URL.Path)
+// 		defer span.End()
+// 		lrw := negroni.NewResponseWriter(w)
+// 		next.ServeHTTP(w, r)
+// 		span.SetAttributes(attribute.Int("status_code", lrw.Status()))
+// 	})
+// }
+
 func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool,
-	ingestC chan *kgo.Record, taskPublisher *kafka.Publisher, openApiDocs *apiDocs.OpenApiDocs) error {
+	ingestC chan *kgo.Record, taskPublisher *kafka.Publisher, openApiDocs *apiDocs.OpenApiDocs, orchestrator string) error {
 	// JWT
 	tokenAuth := jwtauth.New("HS256", jwtSecret, nil)
 
@@ -54,14 +67,20 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 		return err
 	}
 
+	consoleDiagnosis, err := consolediagnosis.NewConsoleDiagnosisHandler(orchestrator)
+	if err != nil {
+		return err
+	}
+
 	dfHandler := &handler.Handler{
-		TokenAuth:      tokenAuth,
-		AuthEnforcer:   authEnforcer,
-		OpenApiDocs:    openApiDocs,
-		SaasDeployment: IsSaasDeployment(),
-		Validator:      validator.New(),
-		IngestChan:     ingestC,
-		TasksPublisher: taskPublisher,
+		TokenAuth:        tokenAuth,
+		AuthEnforcer:     authEnforcer,
+		OpenApiDocs:      openApiDocs,
+		SaasDeployment:   IsSaasDeployment(),
+		Validator:        validator.New(),
+		IngestChan:       ingestC,
+		TasksPublisher:   taskPublisher,
+		ConsoleDiagnosis: consoleDiagnosis,
 	}
 
 	err = dfHandler.Validator.RegisterValidation("password", model.ValidatePassword)
@@ -77,7 +96,13 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 		return err
 	}
 
+	r.Use(otelchi.Middleware("deepfence-server", otelchi.WithChiRoutes(r)))
+
+	r.Use(middleware.Compress(5))
+
 	r.Route("/deepfence", func(r chi.Router) {
+		// r.Use(telemetryInjector)
+
 		r.Get("/ping", dfHandler.Ping)
 
 		// public apis
@@ -105,14 +130,13 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Use(jwtauth.Verifier(tokenAuth))
 			r.Use(directory.Injector)
 
-			r.Post("/user/logout", dfHandler.LogoutHandler)
-
 			// current user
 			r.Route("/user", func(r chi.Router) {
 				r.Get("/", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.GetUser))
 				r.Put("/", dfHandler.AuthHandler(ResourceUser, PermissionWrite, dfHandler.UpdateUser))
 				r.Put("/password", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.UpdateUserPassword))
 				r.Delete("/", dfHandler.AuthHandler(ResourceUser, PermissionDelete, dfHandler.DeleteUser))
+				r.Post("/logout", dfHandler.LogoutHandler)
 			})
 
 			r.Route("/api-token", func(r chi.Router) {
@@ -133,6 +157,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Put("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.UpdateUserByUserID))
 				r.Delete("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionDelete, dfHandler.DeleteUserByUserID))
 			})
+
+			// get audit logs user-activity-log
+			r.Get("/user-activity-log", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetAuditLogs))
 
 			r.Route("/graph", func(r chi.Router) {
 				r.Route("/topology", func(r chi.Router) {
@@ -272,20 +299,21 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Get("/download", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ScanResultDownloadHandler))
 				r.Delete("/", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.ScanDeleteHandler))
 			})
-			r.Get("/scan/nodes/{scan_type}/{result_id}", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetAllNodesForScanResultHandler))
+			r.Post("/scan/nodes-in-result", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetAllNodesInScanResultBulkHandler))
 
 			r.Route("/scan/sbom", func(r chi.Router) {
-				r.Get("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetSbomHandler))
-				r.Get("/download", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.SbomDownloadHandler))
+				r.Post("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GetSbomHandler))
+				r.Post("/download", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.SbomDownloadHandler))
 			})
 
 			r.Route("/registryaccount", func(r chi.Router) {
-				r.Get("/list", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListRegistry))
+				r.Get("/", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListRegistry))
 				r.Post("/", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.AddRegistry))
 				r.Post("/gcr", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.AddGoogleContainerRegistry))
 				r.Route("/{registryId}", func(r chi.Router) {
-					// r.Use(directory.RegistryCtx)
 					r.Delete("/", dfHandler.AuthHandler(ResourceRegistry, PermissionDelete, dfHandler.DeleteRegistry))
+					r.Get("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImages))
+					r.Get("/images/{imageName}/tags", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImageTags))
 				})
 			})
 
@@ -297,6 +325,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			})
 		})
 	})
+
 	return nil
 }
 

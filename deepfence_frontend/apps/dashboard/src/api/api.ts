@@ -69,6 +69,7 @@ export function getVulnerabilityApiClient() {
       vulnerabilityApi.statusVulnerabilityScan.bind(vulnerabilityApi),
     listVulnerabilityScans:
       vulnerabilityApi.listVulnerabilityScans.bind(vulnerabilityApi),
+    getSbom: vulnerabilityApi.getSBOM.bind(vulnerabilityApi),
   };
 }
 
@@ -127,6 +128,7 @@ export function getSearchApiClient() {
     searchVulnerabilities: searchApi.searchVulnerabilities.bind(searchApi),
     searchVulnerabilitiesCount: searchApi.countVulnerabilities.bind(searchApi),
     searchVulnerabilityScanCount: searchApi.countVulnerabilityScans.bind(searchApi),
+    searchVulnerabilityCount: searchApi.countVulnerabilities.bind(searchApi),
   };
 }
 
@@ -141,5 +143,7 @@ export function getScanResultsApiClient() {
     notifyScanResult: scanResultsApi.notifyScanResult.bind(scanResultsApi),
     maskScanResult: scanResultsApi.maskScanResult.bind(scanResultsApi),
     unmaskScanResult: scanResultsApi.unmaskScanResult.bind(scanResultsApi),
+    getAllNodesInScanResults:
+      scanResultsApi.getAllNodesInScanResults.bind(scanResultsApi),
   };
 }
