@@ -78,7 +78,9 @@ export function getSecretApiClient() {
   return {
     startSecretScan: secretApi.startSecretScan.bind(secretApi),
     resultSecretScan: secretApi.resultsSecretScan.bind(secretApi),
+    resultCountSecretScan: secretApi.countResultsSecretScan.bind(secretApi),
     statusSecretScan: secretApi.statusSecretScan.bind(secretApi),
+    listSecretScans: secretApi.listSecretScan.bind(secretApi),
   };
 }
 
@@ -128,7 +130,11 @@ export function getSearchApiClient() {
     searchVulnerabilities: searchApi.searchVulnerabilities.bind(searchApi),
     searchVulnerabilitiesCount: searchApi.countVulnerabilities.bind(searchApi),
     searchVulnerabilityScanCount: searchApi.countVulnerabilityScans.bind(searchApi),
-    searchVulnerabilityCount: searchApi.countVulnerabilities.bind(searchApi),
+
+    searchSecretsScan: searchApi.searchSecretsScans.bind(searchApi),
+    searchSecrets: searchApi.searchSecrets.bind(searchApi),
+    searchSecretsCount: searchApi.countSecrets.bind(searchApi),
+    searchSecretScanCount: searchApi.countSecretsScans.bind(searchApi),
   };
 }
 

@@ -1,10 +1,12 @@
 import { LoaderFunctionArgs } from 'react-router-dom';
 
-import { getVulnerabilityApiClient } from '@/api/api';
+import { getSecretApiClient, getVulnerabilityApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
   ModelNodeIdentifierNodeTypeEnum,
+  ModelScanResultsActionRequestScanTypeEnum,
 } from '@/api/generated';
+import { ScanType } from '@/features/common/data-component/searchHostsApiLoader';
 import { ApiError, makeRequest } from '@/utils/api';
 
 type ScanList = {
@@ -12,18 +14,31 @@ type ScanList = {
   scanId: string;
   status: string;
 };
-export type ApiVulnerableLoaderDataType = {
+export type ApiLoaderDataType = {
   error?: string;
   message?: string;
   data: ScanList[];
 };
 
-async function getVulnerabilityScanList(
+async function getScanList(
+  scanType: ScanType,
   nodeId: string,
   nodeType: string,
-): Promise<ApiVulnerableLoaderDataType> {
+): Promise<ApiLoaderDataType> {
   const result = await makeRequest({
-    apiFunction: getVulnerabilityApiClient().listVulnerabilityScans,
+    apiFunction: {
+      [ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan]:
+        getVulnerabilityApiClient().listVulnerabilityScans,
+      [ModelScanResultsActionRequestScanTypeEnum.SecretScan]:
+        getSecretApiClient().listSecretScans,
+      [ModelScanResultsActionRequestScanTypeEnum.MalwareScan]:
+        getSecretApiClient().listSecretScans,
+      [ModelScanResultsActionRequestScanTypeEnum.CloudComplianceScan]:
+        getSecretApiClient().listSecretScans,
+      [ModelScanResultsActionRequestScanTypeEnum.ComplianceScan]:
+        getSecretApiClient().listSecretScans,
+    }[scanType],
+
     apiArgs: [
       {
         modelScanListReq: {
@@ -76,12 +91,17 @@ async function getVulnerabilityScanList(
 
 export const scanHistoryApiLoader = async ({
   params,
-}: LoaderFunctionArgs): Promise<ApiVulnerableLoaderDataType> => {
+}: LoaderFunctionArgs): Promise<ApiLoaderDataType> => {
   const nodeId = params?.nodeId;
   const nodeType = params?.nodeType;
-  if (!nodeId || !nodeType) {
-    throw new Error('Node Type and Node Id are required');
+  const scanType = params?.scanType;
+  if (!nodeId || !nodeType || !scanType) {
+    throw new Error('Scan Type, Node Type and Node Id are required');
   }
 
-  return await getVulnerabilityScanList(nodeId, nodeType);
+  return await getScanList(
+    scanType as ModelScanResultsActionRequestScanTypeEnum,
+    nodeId,
+    nodeType,
+  );
 };

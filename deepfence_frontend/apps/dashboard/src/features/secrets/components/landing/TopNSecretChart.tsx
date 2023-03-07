@@ -4,7 +4,7 @@ import { ReactECharts } from '@/components/ReactEcharts';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { Mode } from '@/theme/ThemeContext';
 
-export interface TopNVulnerableChartData {
+export interface TopNSecretChartData {
   name: string;
   low: number;
   high: number;
@@ -13,13 +13,13 @@ export interface TopNVulnerableChartData {
   unknown: number;
 }
 
-export const TopNVulnerableChart = ({
+export const TopNSecretChart = ({
   theme,
   data,
   loading,
 }: {
   theme: Mode;
-  data: Array<TopNVulnerableChartData>;
+  data: Array<TopNSecretChartData>;
   loading?: boolean;
 }) => {
   return (

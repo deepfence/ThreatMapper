@@ -488,19 +488,19 @@ func (d *OpenApiDocs) AddDiagnosisOperations() {
 }
 
 func (d *OpenApiDocs) AddRegistryOperations() {
-	d.AddOperation("listRegistry", http.MethodGet, "/deepfence/registryaccount/",
+	d.AddOperation("listRegistry", http.MethodGet, "/deepfence/registryaccount",
 		"List Registries", "List all the added Registries",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryListReq), new([]RegistryListResp))
-	d.AddOperation("addRegistry", http.MethodPost, "/deepfence/registryaccount/",
+	d.AddOperation("addRegistry", http.MethodPost, "/deepfence/registryaccount",
 		"Add Registry", "Add a new supported registry",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryAddReq), nil)
-	d.AddOperation("deleteRegistry", http.MethodDelete, "/deepfence/registryaccount/{id}/",
+	d.AddOperation("deleteRegistry", http.MethodDelete, "/deepfence/registryaccount/{registry_id}",
 		"Add Registry", "Delete registry",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryDeleteReq), nil)
-	d.AddOperation("listImages", http.MethodGet, "/deepfence/registryaccount/{id}/images",
+	d.AddOperation("listImages", http.MethodGet, "/deepfence/registryaccount/{registry_id}/images",
 		"List Registry Images", "list images from a given registry",
-		http.StatusOK, []string{tagRegistry}, bearerToken, nil, new([]ContainerImageWithTags))
-	d.AddOperation("listImageTags", http.MethodGet, "/deepfence/registryaccount/{id}/images/{imageName}/tags",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImagesReq), new([]ContainerImageWithTags))
+	d.AddOperation("listImageTags", http.MethodGet, "/deepfence/registryaccount/{registry_id}/images/{image_name}/tags",
 		"List Image Tags", "list image tags for a given image and registry",
-		http.StatusOK, []string{tagRegistry}, bearerToken, nil, new([]ContainerImage))
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImageTagsReq), new([]ContainerImage))
 }

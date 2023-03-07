@@ -9,7 +9,6 @@ import {
   HiBell,
   HiChevronLeft,
   HiDotsVertical,
-  HiExternalLink,
   HiEye,
   HiEyeOff,
   HiOutlineExclamationCircle,
@@ -50,20 +49,20 @@ import {
   TableSkeleton,
 } from 'ui-components';
 
-import { getScanResultsApiClient, getVulnerabilityApiClient } from '@/api/api';
+import { getScanResultsApiClient, getSecretApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
   ModelScanResultsActionRequestScanTypeEnum,
   ModelScanResultsReq,
-  ModelVulnerability,
+  ModelSecretRule,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
-import { MostExploitableChart } from '@/features/vulnerabilities/components/landing/MostExploitableChart';
+import { SecretsResultChart } from '@/features/secrets/components/landing/SecretsResultChart';
 import { Mode, useTheme } from '@/theme/ThemeContext';
-import { VulnerabilitySeverityType } from '@/types/common';
+import { SecretSeverityType } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -92,7 +91,7 @@ type ScanResult = {
   nodeType: string;
   nodeId: string;
   timestamp: number;
-  tableData: ModelVulnerability[];
+  tableData: ModelSecretRule[];
   pagination: {
     currentPage: number;
     totalRows: number;
@@ -108,7 +107,7 @@ export type LoaderDataType = {
 const PAGE_SIZE = 15;
 
 const getSeveritySearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('severity');
+  return searchParams.getAll('level');
 };
 const getMaskSearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('mask');
@@ -144,7 +143,7 @@ async function getScans(
   };
 
   if (severity.length) {
-    scanResultsReq.fields_filter.contains_filter.filter_in!['cve_severity'] = severity;
+    scanResultsReq.fields_filter.contains_filter.filter_in!['level'] = severity;
   }
 
   if ((mask.length || unmask.length) && !(mask.length && unmask.length)) {
@@ -161,7 +160,7 @@ async function getScans(
   }
 
   const result = await makeRequest({
-    apiFunction: getVulnerabilityApiClient().resultVulnerabilityScan,
+    apiFunction: getSecretApiClient().resultSecretScan,
     apiArgs: [{ modelScanResultsReq: scanResultsReq }],
   });
 
@@ -182,7 +181,7 @@ async function getScans(
   );
 
   const resultCounts = await makeRequest({
-    apiFunction: getVulnerabilityApiClient().resultCountVulnerabilityScan,
+    apiFunction: getSecretApiClient().resultCountSecretScan,
     apiArgs: [
       {
         modelScanResultsReq: {
@@ -213,7 +212,7 @@ async function getScans(
     nodeType: result.node_type,
     nodeId: result.node_id,
     timestamp: result.updated_at,
-    tableData: result.vulnerabilities ?? [],
+    tableData: result.secrets ?? [],
     pagination: {
       currentPage: page,
       totalRows: page * PAGE_SIZE + resultCounts.count,
@@ -232,7 +231,7 @@ const action = async ({
   request,
 }: ActionFunctionArgs): Promise<null> => {
   const formData = await request.formData();
-  const cveIds = (formData.getAll('cveIds[]') ?? []) as string[];
+  const ids = (formData.getAll('ids[]') ?? []) as string[];
   const actionType = formData.get('actionType');
   const _scanId = scanId;
   const mask = formData.get('maskHostAndImages');
@@ -255,9 +254,9 @@ const action = async ({
       apiArgs: [
         {
           modelScanResultsActionRequest: {
-            result_ids: [...cveIds],
+            result_ids: [...ids],
             scan_id: _scanId,
-            scan_type: ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan,
+            scan_type: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
           },
         },
       ],
@@ -284,9 +283,9 @@ const action = async ({
         {
           modelScanResultsMaskRequest: {
             mask_across_hosts_and_images: mask === 'maskHostAndImages',
-            result_ids: [...cveIds],
+            result_ids: [...ids],
             scan_id: _scanId,
-            scan_type: ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan,
+            scan_type: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
           },
         },
       ],
@@ -351,7 +350,7 @@ const DeleteConfirmationModal = ({
     (actionType: string) => {
       const formData = new FormData();
       formData.append('actionType', actionType);
-      ids.forEach((item) => formData.append('cveIds[]', item));
+      ids.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -370,7 +369,7 @@ const DeleteConfirmationModal = ({
           <HiOutlineExclamationCircle />
         </IconContext.Provider>
         <h3 className="mb-4 font-normal text-center text-sm">
-          The selected vulnerabilities will be deleted.
+          The selected secrets will be deleted.
           <br />
           <span>Are you sure you want to delete?</span>
         </h3>
@@ -406,7 +405,7 @@ const HistoryDropdown = () => {
       generatePath('/data-component/scan-history/:scanType/:nodeType/:nodeId', {
         nodeId: nodeId,
         nodeType: nodeType,
-        scanType: ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan,
+        scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
       }),
     );
   };
@@ -442,7 +441,7 @@ const HistoryDropdown = () => {
                         key={item.scanId}
                         onClick={() => {
                           navigate(
-                            generatePath('/vulnerability/scan-results/:scanId', {
+                            generatePath('/secret/scan-results/:scanId', {
                               scanId: item.scanId,
                             }),
                             {
@@ -491,7 +490,7 @@ const MaskDropdown = ({ ids }: { ids: string[] }) => {
       const formData = new FormData();
       formData.append('actionType', ActionEnumType.MASK);
       formData.append('maskHostAndImages', maskHostAndImages);
-      ids.forEach((item) => formData.append('cveIds[]', item));
+      ids.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -511,7 +510,7 @@ const MaskDropdown = ({ ids }: { ids: string[] }) => {
               >
                 <HiEyeOff />
               </IconContext.Provider>
-              Mask {ids.length > 1 ? 'vulnerabilities' : 'vulnerability'}
+              Mask {ids.length > 1 ? 'secrets' : 'secret'}
             </span>
           </DropdownItem>
           <DropdownItem
@@ -524,8 +523,7 @@ const MaskDropdown = ({ ids }: { ids: string[] }) => {
               >
                 <HiEyeOff />
               </IconContext.Provider>
-              Mask {ids.length > 1 ? 'vulnerabilities' : 'vulnerability'} across hosts and
-              images
+              Mask {ids.length > 1 ? 'secrets' : 'secret'} across hosts and images
             </span>
           </DropdownItem>
         </>
@@ -545,7 +543,7 @@ const UnMaskDropdown = ({ ids }: { ids: string[] }) => {
       const formData = new FormData();
       formData.append('actionType', ActionEnumType.UNMASK);
       formData.append('maskHostAndImages', unMaskHostAndImages);
-      ids.forEach((item) => formData.append('cveIds[]', item));
+      ids.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -565,7 +563,7 @@ const UnMaskDropdown = ({ ids }: { ids: string[] }) => {
               >
                 <HiEye />
               </IconContext.Provider>
-              Unmask {ids.length > 1 ? 'vulnerabilities' : 'vulnerability'}
+              Unmask {ids.length > 1 ? 'secrets' : 'secret'}
             </span>
           </DropdownItem>
           <DropdownItem
@@ -578,8 +576,7 @@ const UnMaskDropdown = ({ ids }: { ids: string[] }) => {
               >
                 <HiEye />
               </IconContext.Provider>
-              Unmask {ids.length > 1 ? 'vulnerabilities' : 'vulnerability'} across hosts
-              and images
+              Unmask {ids.length > 1 ? 'secret' : 'secrets'} across hosts and images
             </span>
           </DropdownItem>
         </>
@@ -612,7 +609,7 @@ const ActionDropdown = ({
         formData.append('maskHostAndImages', maskHostAndImages ?? '');
       }
 
-      ids.forEach((item) => formData.append('cveIds[]', item));
+      ids.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -642,7 +639,7 @@ const ActionDropdown = ({
                     >
                       <HiEyeOff />
                     </IconContext.Provider>
-                    Mask vulnerability
+                    Mask secret
                   </DropdownItem>
                   <DropdownItem
                     onClick={() =>
@@ -654,7 +651,7 @@ const ActionDropdown = ({
                     >
                       <HiEyeOff />
                     </IconContext.Provider>
-                    Mask vulnerability across hosts and images
+                    Mask secret across hosts and images
                   </DropdownItem>
                 </>
               }
@@ -680,7 +677,7 @@ const ActionDropdown = ({
                     >
                       <HiEye />
                     </IconContext.Provider>
-                    Un mask vulnerability
+                    Un mask secret
                   </DropdownItem>
                   <DropdownItem
                     onClick={() =>
@@ -692,7 +689,7 @@ const ActionDropdown = ({
                     >
                       <HiEye />
                     </IconContext.Provider>
-                    Un mask vulnerability across hosts and images
+                    Un mask secret across hosts and images
                   </DropdownItem>
                 </>
               }
@@ -749,7 +746,7 @@ const ActionDropdown = ({
     </>
   );
 };
-const CVETable = () => {
+const SecretTable = () => {
   const fetcher = useFetcher();
   const loaderData = useLoaderData() as LoaderDataType;
   const columnHelper = createColumnHelper<LoaderDataType['data']['tableData'][number]>();
@@ -765,7 +762,7 @@ const CVETable = () => {
         minSize: 30,
         maxSize: 50,
       }),
-      columnHelper.accessor('cve_id', {
+      columnHelper.accessor('node_id', {
         cell: (info) => (
           <DFLink
             to={{
@@ -776,25 +773,32 @@ const CVETable = () => {
           >
             <div className="p-1.5 bg-gray-100 shrink-0 dark:bg-gray-500/10 rounded-lg">
               <div className="w-4 h-4">
-                <VulnerabilityIcon />
+                <SecretsIcon />
               </div>
             </div>
             <div className="truncate">{info.getValue()}</div>
           </DFLink>
         ),
-        header: () => 'CVE ID',
+        header: () => 'ID',
         minSize: 100,
         size: 120,
-        maxSize: 250,
+        maxSize: 130,
       }),
-      columnHelper.accessor('cve_caused_by_package', {
+      columnHelper.accessor('full_filename', {
         cell: (info) => info.getValue(),
-        header: () => 'Package',
+        header: () => 'Filename',
         minSize: 100,
         size: 200,
-        maxSize: 250,
+        maxSize: 210,
       }),
-      columnHelper.accessor('cve_severity', {
+      columnHelper.accessor('matched_content', {
+        cell: (info) => info.getValue(),
+        header: () => 'Matched Content',
+        minSize: 100,
+        size: 200,
+        maxSize: 210,
+      }),
+      columnHelper.accessor('level', {
         cell: (info) => (
           <Badge
             label={info.getValue().toUpperCase()}
@@ -814,44 +818,38 @@ const CVETable = () => {
           />
         ),
         header: () => 'Severity',
-        minSize: 70,
-        size: 80,
-        maxSize: 90,
+        minSize: 90,
+        size: 100,
+        maxSize: 110,
       }),
-      columnHelper.accessor('cve_description', {
+      columnHelper.accessor('name', {
         enableSorting: false,
         cell: (info) => {
-          return info.getValue() ?? 'No Description Available';
+          return info.getValue();
         },
-        header: () => 'Description',
+        header: () => 'Rule Name',
         minSize: 200,
         size: 250,
-        maxSize: 400,
+        maxSize: 260,
       }),
-      columnHelper.accessor('cve_link', {
+      columnHelper.accessor('signature_to_match', {
         enableSorting: false,
-        cell: (info) => (
-          <DFLink to={info.getValue()} target="_blank" rel="noopener noreferrer">
-            <IconContext.Provider
-              value={{
-                className: 'w-4 h-4',
-              }}
-            >
-              <HiExternalLink />
-            </IconContext.Provider>
-          </DFLink>
-        ),
-        header: () => 'Link',
-        minSize: 40,
-        size: 40,
-        maxSize: 45,
-        enableResizing: false,
+        cell: (info) => {
+          return info.getValue() || 'unknown';
+        },
+        header: () => 'Signature to match',
+        minSize: 200,
+        size: 250,
+        maxSize: 260,
       }),
       columnHelper.display({
         id: 'actions',
         enableSorting: false,
         cell: (cell) => (
-          <ActionDropdown icon={<HiDotsVertical />} ids={[cell.row.original.cve_id]} />
+          <ActionDropdown
+            icon={<HiDotsVertical />}
+            ids={[cell.row.original.node_id.toString()]}
+          />
         ),
         header: () => '',
         minSize: 40,
@@ -872,7 +870,7 @@ const CVETable = () => {
     (actionType: string) => {
       const formData = new FormData();
       formData.append('actionType', actionType);
-      selectedIds.forEach((item) => formData.append('cveIds[]', item));
+      selectedIds.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -936,7 +934,7 @@ const CVETable = () => {
                   totalRows={resolvedData.pagination.totalRows}
                   pageSize={PAGE_SIZE}
                   pageIndex={resolvedData.pagination.currentPage}
-                  getRowId={(row) => `${row.cve_id}<-->${row.cve_caused_by_package}`}
+                  getRowId={(row) => `${row.node_id}`}
                   enableSorting
                   manualSorting
                   sortingState={sort}
@@ -1000,9 +998,7 @@ const HeaderComponent = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const loaderData = useLoaderData() as LoaderDataType;
   const isFilterApplied =
-    searchParams.has('severity') ||
-    searchParams.has('mask') ||
-    searchParams.has('unmask');
+    searchParams.has('level') || searchParams.has('mask') || searchParams.has('unmask');
 
   return (
     <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
@@ -1013,7 +1009,7 @@ const HeaderComponent = ({
             return (
               <>
                 <DFLink
-                  to={`/vulnerability/scans?nodeType=${nodeType}`}
+                  to={`/secret/scans?nodeType=${nodeType}`}
                   className="flex hover:no-underline items-center justify-center  mr-2"
                 >
                   <IconContext.Provider
@@ -1025,7 +1021,7 @@ const HeaderComponent = ({
                   </IconContext.Provider>
                 </DFLink>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  VULNERABILITY SCAN RESULTS - {nodeType} / {hostName}
+                  SECRET SCAN RESULTS - {nodeType} / {hostName}
                 </span>
               </>
             );
@@ -1049,6 +1045,7 @@ const HeaderComponent = ({
         <div className="ml-auto">
           <HistoryDropdown />
         </div>
+
         <div className="relative">
           {isFilterApplied && (
             <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
@@ -1120,16 +1117,16 @@ const HeaderComponent = ({
                     <fieldset>
                       <Select
                         noPortal
-                        name="severity"
+                        name="level"
                         label={'Severity'}
                         placeholder="Select Severity"
-                        value={searchParams.getAll('severity')}
+                        value={searchParams.getAll('level')}
                         sizing="xs"
                         onChange={(value) => {
                           setSearchParams((prev) => {
-                            prev.delete('severity');
+                            prev.delete('level');
                             value.forEach((language) => {
-                              prev.append('severity', language);
+                              prev.append('level', language);
                             });
                             prev.delete('page');
                             return prev;
@@ -1184,12 +1181,12 @@ const SeverityCountComponent = ({ theme }: { theme: Mode }) => {
                 <div className="grid grid-flow-col-dense gap-x-4">
                   <div className="bg-red-100 dark:bg-red-500/10 rounded-lg flex items-center justify-center">
                     <div className="w-14 h-14 text-red-500 dark:text-red-400">
-                      <VulnerabilityIcon />
+                      <SecretsIcon />
                     </div>
                   </div>
                   <div>
                     <h4 className="text-md font-semibold text-gray-900 dark:text-gray-200 tracking-wider">
-                      Total vulnerabilities
+                      Total Secrets
                     </h4>
                     <div className="mt-2">
                       <span className="text-2xl text-gray-900 dark:text-gray-200">
@@ -1210,7 +1207,7 @@ const SeverityCountComponent = ({ theme }: { theme: Mode }) => {
                   </div>
                 </div>
                 <div className="min-h-[220px]">
-                  <MostExploitableChart theme={theme} data={severityCounts} />
+                  <SecretsResultChart theme={theme} data={severityCounts} />
                 </div>
                 <div>
                   {Object.keys(severityCounts)?.map((key: string) => {
@@ -1220,9 +1217,7 @@ const SeverityCountComponent = ({ theme }: { theme: Mode }) => {
                           className={cx('h-3 w-3 rounded-full')}
                           style={{
                             backgroundColor:
-                              SEVERITY_COLORS[
-                                key.toLowerCase() as VulnerabilitySeverityType
-                              ],
+                              SEVERITY_COLORS[key.toLowerCase() as SecretSeverityType],
                           }}
                         />
                         <span className="text-sm text-gray-500 dark:text-gray-200">
@@ -1247,7 +1242,7 @@ const SeverityCountComponent = ({ theme }: { theme: Mode }) => {
     </Card>
   );
 };
-const VulnerabilityScanResults = () => {
+const SecretScanResults = () => {
   const elementToFocusOnClose = useRef(null);
   const { mode } = useTheme();
 
@@ -1258,7 +1253,7 @@ const VulnerabilityScanResults = () => {
         <div className="self-start grid gap-y-2">
           <SeverityCountComponent theme={mode} />
         </div>
-        <CVETable />
+        <SecretTable />
       </div>
       <Outlet />
     </>
@@ -1268,5 +1263,5 @@ const VulnerabilityScanResults = () => {
 export const module = {
   loader,
   action,
-  element: <VulnerabilityScanResults />,
+  element: <SecretScanResults />,
 };

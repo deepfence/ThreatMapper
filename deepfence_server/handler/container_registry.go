@@ -45,7 +45,8 @@ func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 		}
 		registryId := model.GetRegistryID(reg.GetRegistryType(), reg.GetNamespace())
 		registryResponse := model.RegistryListResp{
-			ID:           registryId,
+			ID:           r.ID,
+			NodeID:       registryId,
 			Name:         r.Name,
 			RegistryType: r.RegistryType,
 			NonSecret:    r.NonSecret,
@@ -285,11 +286,11 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 	var req model.RegistryDeleteReq
 	// id := r.Context().Value("registryId").(string)
-	id := chi.URLParam(r, "registryId")
+	id := chi.URLParam(r, "registry_id")
 	log.Info().Msgf("IDssss: %v", id)
 	x, _ := strconv.ParseInt(id, 10, 64)
 	req = model.RegistryDeleteReq{
-		ID: int32(x),
+		RegistryId: int32(x),
 	}
 
 	ctx := directory.NewGlobalContext()
@@ -312,10 +313,22 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ListImages(w http.ResponseWriter, r *http.Request) {
-	registryId := chi.URLParam(r, "registryId")
+	registryId := chi.URLParam(r, "registry_id")
 	rId, err := strconv.ParseInt(registryId, 10, 32)
 	if err != nil {
 		log.Error().Msgf("failed to parse registry id %v", registryId)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	pgClient, err := directory.PostgresClient(directory.WithGlobalContext(r.Context()))
+	if err != nil {
+		log.Error().Msgf("failed get postgres client %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	_, err = pgClient.GetContainerRegistrySafe(r.Context(), int32(rId))
+	if err != nil {
+		log.Error().Msgf("failed get registry %v", err)
 		respondError(&BadDecoding{err}, w)
 	}
 
@@ -330,12 +343,25 @@ func (h *Handler) ListImages(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ListImageTags(w http.ResponseWriter, r *http.Request) {
-	registryId := chi.URLParam(r, "registryId")
-	imageName := chi.URLParam(r, "imageName")
+	registryId := chi.URLParam(r, "registry_id")
+	imageName := chi.URLParam(r, "image_name")
 
 	rId, err := strconv.ParseInt(registryId, 10, 32)
 	if err != nil {
 		log.Error().Msgf("failed to parse registry id %v", registryId)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	// check if exists
+	pgClient, err := directory.PostgresClient(directory.WithGlobalContext(r.Context()))
+	if err != nil {
+		log.Error().Msgf("failed get postgres client %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	_, err = pgClient.GetContainerRegistrySafe(r.Context(), int32(rId))
+	if err != nil {
+		log.Error().Msgf("failed get registry %v", err)
 		respondError(&BadDecoding{err}, w)
 	}
 

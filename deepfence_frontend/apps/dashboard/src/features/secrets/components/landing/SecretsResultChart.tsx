@@ -18,7 +18,7 @@ const option: EChartsOption = {
   },
   series: [
     {
-      name: 'Vulnerabilities',
+      name: 'Secrets',
       type: 'pie',
       radius: ['70%', '90%'],
       bottom: '10%',
@@ -38,7 +38,7 @@ const option: EChartsOption = {
   ],
 };
 
-export const MostExploitableChart = ({
+export const SecretsResultChart = ({
   theme,
   data,
 }: {
@@ -51,7 +51,7 @@ export const MostExploitableChart = ({
 
   option.dataset = {
     source: Object.keys(data).map((key) => ({
-      Vulnerability: key,
+      Secret: key,
       value: data[key],
     })),
   };
