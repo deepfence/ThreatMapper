@@ -68,7 +68,8 @@ type RegistryImage struct {
 }
 
 type RegistryListResp struct {
-	ID           string          `json:"id"`
+	ID           int32           `json:"id"`
+	NodeID       string          `json:"node_id"`
 	Name         string          `json:"name"`
 	RegistryType string          `json:"registry_type"`
 	NonSecret    json.RawMessage `json:"non_secret"`

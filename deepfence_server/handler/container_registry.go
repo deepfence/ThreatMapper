@@ -45,7 +45,8 @@ func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 		}
 		registryId := model.GetRegistryID(reg.GetRegistryType(), reg.GetNamespace())
 		registryResponse := model.RegistryListResp{
-			ID:           registryId,
+			ID:           r.ID,
+			NodeID:       registryId,
 			Name:         r.Name,
 			RegistryType: r.RegistryType,
 			NonSecret:    r.NonSecret,
