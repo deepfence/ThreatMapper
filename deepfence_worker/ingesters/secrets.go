@@ -93,7 +93,7 @@ func secretsToMaps(data []Secret) []map[string]map[string]interface{} {
 		for k, v := range utils.ToMap(i.Match) {
 			secret[k] = v
 		}
-		secret["node_id"] = fmt.Sprintf("%v:%v", i.Rule.ID, i.Match.FullFilename)
+		secret["node_id"] = utils.ScanIdReplacer.Replace(fmt.Sprintf("%v:%v", i.Rule.ID, i.Match.FullFilename))
 		secrets = append(secrets, map[string]map[string]interface{}{
 			"Rule":   utils.ToMap(i.Rule),
 			"Secret": secret,
