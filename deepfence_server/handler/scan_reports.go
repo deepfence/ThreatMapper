@@ -369,10 +369,10 @@ func (h *Handler) StopMalwareScanHandler(w http.ResponseWriter, r *http.Request)
 
 func (h *Handler) IngestCloudResourcesReportHandler(w http.ResponseWriter, r *http.Request) {
 	ingester := ingesters.NewCloudResourceIngester()
-	ingest_scan_report(w, r, ingester)
+	ingest_cloud_scan_report(w, r, ingester)
 }
 
-func ingest_scan_report[T any](respWrite http.ResponseWriter, req *http.Request, ingester ingesters.Ingester[T]) {
+func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Request, ingester ingesters.Ingester[T]) {
 
 	defer req.Body.Close()
 	if req.Method != "POST" {
@@ -703,7 +703,7 @@ func (h *Handler) ListVulnerabilityScanResultsHandler(w http.ResponseWriter, r *
 }
 
 func (h *Handler) ListSecretScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, common, err := listScanResultsHandler[model.Secret](w, r, utils.NEO4J_SECRET_SCAN)
+	entries, common, err := listScanResultsHandler[model.SecretRule](w, r, utils.NEO4J_SECRET_SCAN)
 	if err != nil {
 		respondError(err, w)
 		return
@@ -772,7 +772,7 @@ func (h *Handler) CountVulnerabilityScanResultsHandler(w http.ResponseWriter, r 
 }
 
 func (h *Handler) CountSecretScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, _, err := listScanResultsHandler[model.Secret](w, r, utils.NEO4J_SECRET_SCAN)
+	entries, _, err := listScanResultsHandler[model.SecretRule](w, r, utils.NEO4J_SECRET_SCAN)
 	if err != nil {
 		respondError(err, w)
 		return

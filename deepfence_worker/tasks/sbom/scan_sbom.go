@@ -206,7 +206,7 @@ func mapVulnerabilities(vulnerabilities []ps.VulnerabilityScanReport) map[string
 // generate runtime sbom format
 func generateRuntimeSBOM(path string, vulnerabilities []ps.VulnerabilityScanReport) (*[]model.SbomResponse, error) {
 	var (
-		runSBOM []model.SbomResponse
+		runSBOM = make([]model.SbomResponse, 0)
 		err     error
 	)
 

@@ -1,7 +1,6 @@
 import cx from 'classnames';
 import { capitalize } from 'lodash-es';
 import { Suspense, useCallback, useMemo, useRef, useState } from 'react';
-import { RefObject } from 'react';
 import { FaHistory } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import {
@@ -10,7 +9,6 @@ import {
   HiBell,
   HiChevronLeft,
   HiDotsVertical,
-  HiExternalLink,
   HiEye,
   HiEyeOff,
   HiOutlineExclamationCircle,
@@ -18,7 +16,6 @@ import {
 import { IconContext } from 'react-icons/lib';
 import {
   ActionFunctionArgs,
-  Await,
   generatePath,
   LoaderFunctionArgs,
   Outlet,
@@ -43,6 +40,7 @@ import {
   getRowSelectionColumn,
   IconButton,
   Modal,
+  Popover,
   RowSelectionState,
   Select,
   SelectItem,
@@ -50,25 +48,25 @@ import {
   Table,
   TableSkeleton,
 } from 'ui-components';
-import { ModalHeader, SlidingModal } from 'ui-components';
 
 import { getScanResultsApiClient, getSecretApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
   ModelScanResultsActionRequestScanTypeEnum,
   ModelScanResultsReq,
-  ModelSecret,
+  ModelSecretRule,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
-import { MostExploitableChart } from '@/features/vulnerabilities/components/landing/MostExploitableChart';
+import { SecretsResultChart } from '@/features/secrets/components/landing/SecretsResultChart';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { SecretSeverityType } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { DFAwait } from '@/utils/suspense';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
@@ -93,7 +91,7 @@ type ScanResult = {
   nodeType: string;
   nodeId: string;
   timestamp: number;
-  tableData: ModelSecret[];
+  tableData: ModelSecretRule[];
   pagination: {
     currentPage: number;
     totalRows: number;
@@ -109,7 +107,7 @@ export type LoaderDataType = {
 const PAGE_SIZE = 15;
 
 const getSeveritySearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('severity');
+  return searchParams.getAll('level');
 };
 const getMaskSearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('mask');
@@ -145,7 +143,7 @@ async function getScans(
   };
 
   if (severity.length) {
-    scanResultsReq.fields_filter.contains_filter.filter_in!['cve_severity'] = severity;
+    scanResultsReq.fields_filter.contains_filter.filter_in!['level'] = severity;
   }
 
   if ((mask.length || unmask.length) && !(mask.length && unmask.length)) {
@@ -203,7 +201,13 @@ async function getScans(
 
   return {
     totalSeverity,
-    severityCounts: result.severity_counts ?? {},
+    severityCounts: {
+      critical: result.severity_counts?.['critical'] ?? 0,
+      high: result.severity_counts?.['high'] ?? 0,
+      medium: result.severity_counts?.['medium'] ?? 0,
+      low: result.severity_counts?.['low'] ?? 0,
+      unknown: result.severity_counts?.['unknown'] ?? 0,
+    },
     hostName: result.host_name,
     nodeType: result.node_type,
     nodeId: result.node_id,
@@ -227,7 +231,7 @@ const action = async ({
   request,
 }: ActionFunctionArgs): Promise<null> => {
   const formData = await request.formData();
-  const cveIds = (formData.getAll('cveIds[]') ?? []) as string[];
+  const ids = (formData.getAll('ids[]') ?? []) as string[];
   const actionType = formData.get('actionType');
   const _scanId = scanId;
   const mask = formData.get('maskHostAndImages');
@@ -250,7 +254,7 @@ const action = async ({
       apiArgs: [
         {
           modelScanResultsActionRequest: {
-            result_ids: [...cveIds],
+            result_ids: [...ids],
             scan_id: _scanId,
             scan_type: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
           },
@@ -279,7 +283,7 @@ const action = async ({
         {
           modelScanResultsMaskRequest: {
             mask_across_hosts_and_images: mask === 'maskHostAndImages',
-            result_ids: [...cveIds],
+            result_ids: [...ids],
             scan_id: _scanId,
             scan_type: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
           },
@@ -331,128 +335,6 @@ const loader = async ({
   });
 };
 
-const FilterHeader = () => {
-  return (
-    <ModalHeader>
-      <div className="flex gap-x-2 items-center p-4">
-        <span className="font-medium text-lg">Filters</span>
-      </div>
-    </ModalHeader>
-  );
-};
-
-const ScanResultFilterModal = ({
-  showFilter,
-  elementToFocusOnClose,
-  setShowFilter,
-}: {
-  elementToFocusOnClose: RefObject<FocusableElement> | null;
-  showFilter: boolean;
-  setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  return (
-    <SlidingModal
-      header={<FilterHeader />}
-      open={showFilter}
-      onOpenChange={() => setShowFilter(false)}
-      elementToFocusOnCloseRef={elementToFocusOnClose}
-      width={'w-[350px]'}
-    >
-      <div className="dark:text-white p-4">
-        <div className="flex flex-col gap-y-6">
-          <fieldset>
-            <legend className="text-sm font-medium">Mask And Unmask</legend>
-            <div className="flex gap-x-4 mt-1">
-              <Checkbox
-                label="Mask"
-                checked={searchParams.getAll('mask').includes('true')}
-                onCheckedChange={(state) => {
-                  if (state) {
-                    setSearchParams((prev) => {
-                      prev.append('mask', 'true');
-                      prev.delete('page');
-                      return prev;
-                    });
-                  } else {
-                    setSearchParams((prev) => {
-                      const prevStatuses = prev.getAll('mask');
-                      prev.delete('mask');
-                      prevStatuses
-                        .filter((mask) => mask !== 'true')
-                        .forEach((mask) => {
-                          prev.append('mask', mask);
-                        });
-                      prev.delete('mask');
-                      prev.delete('page');
-                      return prev;
-                    });
-                  }
-                }}
-              />
-              <Checkbox
-                label="Unmask"
-                checked={searchParams.getAll('unmask').includes('true')}
-                onCheckedChange={(state) => {
-                  if (state) {
-                    setSearchParams((prev) => {
-                      prev.append('unmask', 'true');
-                      prev.delete('page');
-                      return prev;
-                    });
-                  } else {
-                    setSearchParams((prev) => {
-                      const prevStatuses = prev.getAll('unmask');
-                      prev.delete('unmask');
-                      prevStatuses
-                        .filter((status) => status !== 'true')
-                        .forEach((status) => {
-                          prev.append('unmask', status);
-                        });
-                      prev.delete('unmask');
-                      prev.delete('page');
-                      return prev;
-                    });
-                  }
-                }}
-              />
-            </div>
-          </fieldset>
-          <fieldset>
-            <Select
-              noPortal
-              name="severity"
-              label={'Severity'}
-              placeholder="Select Severity"
-              value={searchParams.getAll('severity')}
-              sizing="xs"
-              onChange={(value) => {
-                setSearchParams((prev) => {
-                  prev.delete('severity');
-                  value.forEach((language) => {
-                    prev.append('severity', language);
-                  });
-                  prev.delete('page');
-                  return prev;
-                });
-              }}
-            >
-              {['critical', 'high', 'medium', 'low', 'unknown'].map(
-                (severity: string) => {
-                  return (
-                    <SelectItem value={severity} key={severity}>
-                      {capitalize(severity)}
-                    </SelectItem>
-                  );
-                },
-              )}
-            </Select>
-          </fieldset>
-        </div>
-      </div>
-    </SlidingModal>
-  );
-};
 const DeleteConfirmationModal = ({
   showDialog,
   ids,
@@ -468,7 +350,7 @@ const DeleteConfirmationModal = ({
     (actionType: string) => {
       const formData = new FormData();
       formData.append('actionType', actionType);
-      ids.forEach((item) => formData.append('cveIds[]', item));
+      ids.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -542,7 +424,7 @@ const HistoryDropdown = () => {
         />
       }
     >
-      <Await resolve={loaderData.data ?? []}>
+      <DFAwait resolve={loaderData.data ?? []}>
         {(resolvedData: LoaderDataType['data']) => {
           return (
             <Dropdown
@@ -596,7 +478,7 @@ const HistoryDropdown = () => {
             </Dropdown>
           );
         }}
-      </Await>
+      </DFAwait>
     </Suspense>
   );
 };
@@ -608,7 +490,7 @@ const MaskDropdown = ({ ids }: { ids: string[] }) => {
       const formData = new FormData();
       formData.append('actionType', ActionEnumType.MASK);
       formData.append('maskHostAndImages', maskHostAndImages);
-      ids.forEach((item) => formData.append('cveIds[]', item));
+      ids.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -661,7 +543,7 @@ const UnMaskDropdown = ({ ids }: { ids: string[] }) => {
       const formData = new FormData();
       formData.append('actionType', ActionEnumType.UNMASK);
       formData.append('maskHostAndImages', unMaskHostAndImages);
-      ids.forEach((item) => formData.append('cveIds[]', item));
+      ids.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -727,7 +609,7 @@ const ActionDropdown = ({
         formData.append('maskHostAndImages', maskHostAndImages ?? '');
       }
 
-      ids.forEach((item) => formData.append('cveIds[]', item));
+      ids.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -880,7 +762,7 @@ const SecretTable = () => {
         minSize: 30,
         maxSize: 50,
       }),
-      columnHelper.accessor('cve_id', {
+      columnHelper.accessor('node_id', {
         cell: (info) => (
           <DFLink
             to={{
@@ -897,19 +779,26 @@ const SecretTable = () => {
             <div className="truncate">{info.getValue()}</div>
           </DFLink>
         ),
-        header: () => 'CVE ID',
+        header: () => 'ID',
         minSize: 100,
         size: 120,
-        maxSize: 250,
+        maxSize: 130,
       }),
-      columnHelper.accessor('cve_caused_by_package', {
+      columnHelper.accessor('full_filename', {
         cell: (info) => info.getValue(),
-        header: () => 'Package',
+        header: () => 'Filename',
         minSize: 100,
         size: 200,
-        maxSize: 250,
+        maxSize: 210,
       }),
-      columnHelper.accessor('cve_severity', {
+      columnHelper.accessor('matched_content', {
+        cell: (info) => info.getValue(),
+        header: () => 'Matched Content',
+        minSize: 100,
+        size: 200,
+        maxSize: 210,
+      }),
+      columnHelper.accessor('level', {
         cell: (info) => (
           <Badge
             label={info.getValue().toUpperCase()}
@@ -929,44 +818,38 @@ const SecretTable = () => {
           />
         ),
         header: () => 'Severity',
-        minSize: 70,
-        size: 80,
-        maxSize: 90,
+        minSize: 90,
+        size: 100,
+        maxSize: 110,
       }),
-      columnHelper.accessor('cve_description', {
+      columnHelper.accessor('name', {
         enableSorting: false,
         cell: (info) => {
-          return info.getValue() ?? 'No Description Available';
+          return info.getValue();
         },
-        header: () => 'Description',
+        header: () => 'Rule Name',
         minSize: 200,
         size: 250,
-        maxSize: 400,
+        maxSize: 260,
       }),
-      columnHelper.accessor('cve_link', {
+      columnHelper.accessor('signature_to_match', {
         enableSorting: false,
-        cell: (info) => (
-          <DFLink to={info.getValue()} target="_blank" rel="noopener noreferrer">
-            <IconContext.Provider
-              value={{
-                className: 'w-4 h-4',
-              }}
-            >
-              <HiExternalLink />
-            </IconContext.Provider>
-          </DFLink>
-        ),
-        header: () => 'Link',
-        minSize: 40,
-        size: 40,
-        maxSize: 45,
-        enableResizing: false,
+        cell: (info) => {
+          return info.getValue() || 'unknown';
+        },
+        header: () => 'Signature to match',
+        minSize: 200,
+        size: 250,
+        maxSize: 260,
       }),
       columnHelper.display({
         id: 'actions',
         enableSorting: false,
         cell: (cell) => (
-          <ActionDropdown icon={<HiDotsVertical />} ids={[cell.row.original.cve_id]} />
+          <ActionDropdown
+            icon={<HiDotsVertical />}
+            ids={[cell.row.original.node_id.toString()]}
+          />
         ),
         header: () => '',
         minSize: 40,
@@ -987,7 +870,7 @@ const SecretTable = () => {
     (actionType: string) => {
       const formData = new FormData();
       formData.append('actionType', actionType);
-      selectedIds.forEach((item) => formData.append('cveIds[]', item));
+      selectedIds.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -998,7 +881,7 @@ const SecretTable = () => {
   return (
     <>
       <Suspense fallback={<TableSkeleton columns={6} rows={10} size={'md'} />}>
-        <Await resolve={loaderData.data}>
+        <DFAwait resolve={loaderData.data}>
           {(resolvedData: LoaderDataType['data']) => {
             return (
               <Form>
@@ -1051,7 +934,7 @@ const SecretTable = () => {
                   totalRows={resolvedData.pagination.totalRows}
                   pageSize={PAGE_SIZE}
                   pageIndex={resolvedData.pagination.currentPage}
-                  getRowId={(row) => `${row.cve_id}<-->${row.cve_caused_by_package}`}
+                  getRowId={(row) => `${row.node_id}`}
                   enableSorting
                   manualSorting
                   sortingState={sort}
@@ -1101,29 +984,26 @@ const SecretTable = () => {
               </Form>
             );
           }}
-        </Await>
+        </DFAwait>
       </Suspense>
     </>
   );
 };
 
 const HeaderComponent = ({
-  setShowFilter,
+  elementToFocusOnClose,
 }: {
   elementToFocusOnClose: React.MutableRefObject<null>;
-  setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const loaderData = useLoaderData() as LoaderDataType;
   const isFilterApplied =
-    searchParams.has('severity') ||
-    searchParams.has('mask') ||
-    searchParams.has('unmask');
+    searchParams.has('level') || searchParams.has('mask') || searchParams.has('unmask');
 
   return (
     <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <Suspense fallback={<CircleSpinner size="xs" />}>
-        <Await resolve={loaderData.data ?? []}>
+        <DFAwait resolve={loaderData.data ?? []}>
           {(resolvedData: LoaderDataType['data']) => {
             const { nodeType, hostName } = resolvedData;
             return (
@@ -1146,18 +1026,18 @@ const HeaderComponent = ({
               </>
             );
           }}
-        </Await>
+        </DFAwait>
       </Suspense>
       <div className="ml-auto flex items-center gap-x-4">
         <div className="flex flex-col">
           <span className="text-xs text-gray-500 dark:text-gray-200">
             <Suspense fallback={<CircleSpinner size="xs" />}>
-              <Await resolve={loaderData.data ?? []}>
+              <DFAwait resolve={loaderData.data ?? []}>
                 {(resolvedData: LoaderDataType['data']) => {
                   const { timestamp } = resolvedData;
                   return formatMilliseconds(timestamp);
                 }}
-              </Await>
+              </DFAwait>
             </Suspense>
           </span>
           <span className="text-gray-400 text-[10px]">Last scan</span>
@@ -1170,16 +1050,113 @@ const HeaderComponent = ({
           {isFilterApplied && (
             <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
           )}
-          <div className="ml-auto">
+          <Popover
+            triggerAsChild
+            elementToFocusOnCloseRef={elementToFocusOnClose}
+            content={
+              <div className="ml-auto w-[300px]">
+                <div className="dark:text-white p-4">
+                  <div className="flex flex-col gap-y-6">
+                    <fieldset>
+                      <legend className="text-sm font-medium">Mask And Unmask</legend>
+                      <div className="flex gap-x-4 mt-1">
+                        <Checkbox
+                          label="Mask"
+                          checked={searchParams.getAll('mask').includes('true')}
+                          onCheckedChange={(state) => {
+                            if (state) {
+                              setSearchParams((prev) => {
+                                prev.append('mask', 'true');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            } else {
+                              setSearchParams((prev) => {
+                                const prevStatuses = prev.getAll('mask');
+                                prev.delete('mask');
+                                prevStatuses
+                                  .filter((mask) => mask !== 'true')
+                                  .forEach((mask) => {
+                                    prev.append('mask', mask);
+                                  });
+                                prev.delete('mask');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            }
+                          }}
+                        />
+                        <Checkbox
+                          label="Unmask"
+                          checked={searchParams.getAll('unmask').includes('true')}
+                          onCheckedChange={(state) => {
+                            if (state) {
+                              setSearchParams((prev) => {
+                                prev.append('unmask', 'true');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            } else {
+                              setSearchParams((prev) => {
+                                const prevStatuses = prev.getAll('unmask');
+                                prev.delete('unmask');
+                                prevStatuses
+                                  .filter((status) => status !== 'true')
+                                  .forEach((status) => {
+                                    prev.append('unmask', status);
+                                  });
+                                prev.delete('unmask');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            }
+                          }}
+                        />
+                      </div>
+                    </fieldset>
+                    <fieldset>
+                      <Select
+                        noPortal
+                        name="level"
+                        label={'Severity'}
+                        placeholder="Select Severity"
+                        value={searchParams.getAll('level')}
+                        sizing="xs"
+                        onChange={(value) => {
+                          setSearchParams((prev) => {
+                            prev.delete('level');
+                            value.forEach((language) => {
+                              prev.append('level', language);
+                            });
+                            prev.delete('page');
+                            return prev;
+                          });
+                        }}
+                      >
+                        {['critical', 'high', 'medium', 'low', 'unknown'].map(
+                          (severity: string) => {
+                            return (
+                              <SelectItem value={severity} key={severity}>
+                                {capitalize(severity)}
+                              </SelectItem>
+                            );
+                          },
+                        )}
+                      </Select>
+                    </fieldset>
+                  </div>
+                </div>
+              </div>
+            }
+          >
             <IconButton
               size="xs"
               outline
               color="primary"
               className="rounded-lg bg-transparent"
-              onClick={() => setShowFilter(true)}
               icon={<FiFilter />}
             />
-          </div>
+          </Popover>
         </div>
       </div>
     </div>
@@ -1196,7 +1173,7 @@ const SeverityCountComponent = ({ theme }: { theme: Mode }) => {
           </div>
         }
       >
-        <Await resolve={loaderData.data}>
+        <DFAwait resolve={loaderData.data}>
           {(resolvedData: ScanResult) => {
             const { totalSeverity, severityCounts } = resolvedData;
             return (
@@ -1230,7 +1207,7 @@ const SeverityCountComponent = ({ theme }: { theme: Mode }) => {
                   </div>
                 </div>
                 <div className="min-h-[220px]">
-                  <MostExploitableChart theme={theme} data={severityCounts} />
+                  <SecretsResultChart theme={theme} data={severityCounts} />
                 </div>
                 <div>
                   {Object.keys(severityCounts)?.map((key: string) => {
@@ -1260,27 +1237,18 @@ const SeverityCountComponent = ({ theme }: { theme: Mode }) => {
               </>
             );
           }}
-        </Await>
+        </DFAwait>
       </Suspense>
     </Card>
   );
 };
 const SecretScanResults = () => {
   const elementToFocusOnClose = useRef(null);
-  const [showFilter, setShowFilter] = useState(false);
   const { mode } = useTheme();
 
   return (
     <>
-      <ScanResultFilterModal
-        showFilter={showFilter}
-        setShowFilter={setShowFilter}
-        elementToFocusOnClose={elementToFocusOnClose.current}
-      />
-      <HeaderComponent
-        elementToFocusOnClose={elementToFocusOnClose}
-        setShowFilter={setShowFilter}
-      />
+      <HeaderComponent elementToFocusOnClose={elementToFocusOnClose} />
       <div className="grid grid-cols-[400px_1fr] p-2 gap-x-2">
         <div className="self-start grid gap-y-2">
           <SeverityCountComponent theme={mode} />

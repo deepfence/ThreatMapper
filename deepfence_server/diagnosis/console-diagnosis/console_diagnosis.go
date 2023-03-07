@@ -9,6 +9,7 @@ import (
 const (
 	DockerOrchestrator     = "docker"
 	KubernetesOrchestrator = "kubernetes"
+	HaproxyLogsPath        = "/var/log/haproxy"
 )
 
 type ConsoleDiagnosisHandler interface {
@@ -25,8 +26,8 @@ func NewConsoleDiagnosisHandler(orchestrator string) (ConsoleDiagnosisHandler, e
 	return NewDockerConsoleDiagnosisHandler()
 }
 
-func CreateTempFile() (*os.File, error) {
-	file, err := os.CreateTemp("/tmp", "deepfence-console-logs.*.json")
+func CreateTempFile(pattern string) (*os.File, error) {
+	file, err := os.CreateTemp("/tmp", pattern)
 	if err != nil {
 		return nil, err
 	}

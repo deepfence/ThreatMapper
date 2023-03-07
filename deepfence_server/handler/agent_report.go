@@ -1,7 +1,11 @@
 package handler
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"io"
 	"net/http"
 
@@ -10,8 +14,6 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	reportUtils "github.com/deepfence/golang_deepfence_sdk/utils/report"
 	"github.com/weaveworks/scope/report"
-
-	"github.com/bytedance/sonic"
 )
 
 var agent_report_ingesters map[directory.NamespaceID]*ingesters.Ingester[report.Report]
@@ -39,16 +41,6 @@ func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[report.Rep
 }
 
 func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
-	var (
-	//buf    = &bytes.Buffer{}
-	//reader = io.TeeReader(r.Body, buf)
-	)
-
-	//gzipped := strings.Contains(r.Header.Get("Content-Encoding"), "gzip")
-	//if !gzipped {
-	//	reader = io.TeeReader(r.Body, gzip.NewWriter(buf))
-	//}
-
 	ctx := r.Context()
 
 	//contentType := r.Header.Get("Content-Type")
@@ -65,29 +57,53 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	//	return
 	//}
 	data, err := io.ReadAll(r.Body)
+	r.Body.Close()
 	if err != nil {
+		log.Error().Msgf("Error reading all: %v", err)
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
 
 	var rawReport reportUtils.RawReport
 
-	err = sonic.Unmarshal(data, &rawReport)
+	err = json.Unmarshal(data, &rawReport)
 	if err != nil {
+		log.Error().Msgf("Error unmarshal: %v", err)
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+	b64, err := base64.StdEncoding.DecodeString(rawReport.GetPayload())
+	if err != nil {
+		log.Error().Msgf("Error b64 reader: %v", err)
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+	sr := bytes.NewReader(b64)
+	gzr, err := gzip.NewReader(sr)
+	if err != nil {
+		log.Error().Msgf("Error gzip reader: %v", err)
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+	data, err = io.ReadAll(gzr)
+	if err != nil {
+		log.Error().Msgf("Error read all raw: %v", err)
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
 	rpt := report.MakeReport()
-	err = sonic.Unmarshal([]byte(rawReport.GetPayload()), &rpt)
+	err = json.Unmarshal(data, &rpt)
 
 	//if err := codec.NewDecoderBytes([]byte(rawReport.GetPayload()), &codec.JsonHandle{}).Decode(&rpt); err != nil {
 	if err != nil {
+		log.Error().Msgf("Error sonic unmarshal: %v", err)
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
 
 	ingester, err := getAgentReportIngester(ctx)
 	if err != nil {
+		log.Error().Msgf("Error report ingest: %v", err)
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
@@ -101,10 +117,17 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) IngestSyncAgentReport(w http.ResponseWriter, r *http.Request) {
+	var (
+		buf    = &bytes.Buffer{}
+		reader = io.TeeReader(r.Body, buf)
+	)
+
+	reader = io.TeeReader(r.Body, gzip.NewWriter(buf))
 
 	ctx := r.Context()
 
-	data, err := io.ReadAll(r.Body)
+	data, err := io.ReadAll(reader)
+	r.Body.Close()
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
@@ -112,7 +135,7 @@ func (h *Handler) IngestSyncAgentReport(w http.ResponseWriter, r *http.Request) 
 
 	var rpt ingesters.ReportIngestionData
 
-	err = sonic.Unmarshal(data, &rpt)
+	err = json.Unmarshal(data, &rpt)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return

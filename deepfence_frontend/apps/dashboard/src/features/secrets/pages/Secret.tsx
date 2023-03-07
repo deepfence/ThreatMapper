@@ -12,6 +12,7 @@ import { TopNSecretCard } from '@/features/secrets/components/landing/TopNSecret
 import { TopNSecretChartData } from '@/features/secrets/components/landing/TopNSecretChart';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { DFAwait } from '@/utils/suspense';
 
 async function getTop5SecretData(nodeType: 'image' | 'host' | 'container') {
   const top5Nodes = await makeRequest({
@@ -78,7 +79,7 @@ async function getTop5SecretData(nodeType: 'image' | 'host' | 'container') {
 
   return top5Nodes.map((node) => {
     const latestScan = top5NodeScans.scans_info?.find(
-      (scan) => (scan.node_id = node.node_id),
+      (scan) => scan.node_id === node.node_id,
     );
     let name = '';
     if (nodeType === 'image') {
@@ -86,7 +87,9 @@ async function getTop5SecretData(nodeType: 'image' | 'host' | 'container') {
         (node as ModelContainerImage).docker_image_tag
       }`;
     } else if (nodeType === 'container') {
-      name = (node as ModelContainer).host_name;
+      name = `${(node as ModelContainer).docker_container_name} on ${
+        (node as ModelContainer).host_name
+      }`;
     } else if (nodeType === 'host') {
       name = (node as ModelHost).host_name;
     }
@@ -136,7 +139,7 @@ const Secret = () => {
               />
             }
           >
-            <Await resolve={loaderData.containerSeverityResults}>
+            <DFAwait resolve={loaderData.containerSeverityResults}>
               {(resolvedData: LoaderData['containerSeverityResults']) => {
                 return (
                   <TopNSecretCard
@@ -146,7 +149,7 @@ const Secret = () => {
                   />
                 );
               }}
-            </Await>
+            </DFAwait>
           </Suspense>
         </div>
         <div className="col-span-4">
@@ -160,7 +163,7 @@ const Secret = () => {
               />
             }
           >
-            <Await resolve={loaderData.hostSeverityResults}>
+            <DFAwait resolve={loaderData.hostSeverityResults}>
               {(resolvedData: LoaderData['hostSeverityResults']) => {
                 return (
                   <TopNSecretCard
@@ -170,7 +173,7 @@ const Secret = () => {
                   />
                 );
               }}
-            </Await>
+            </DFAwait>
           </Suspense>
         </div>
         <div className="col-span-4">
@@ -184,7 +187,7 @@ const Secret = () => {
               />
             }
           >
-            <Await resolve={loaderData.imageSeverityResults}>
+            <DFAwait resolve={loaderData.imageSeverityResults}>
               {(resolvedData: LoaderData['imageSeverityResults']) => {
                 return (
                   <TopNSecretCard
@@ -194,7 +197,7 @@ const Secret = () => {
                   />
                 );
               }}
-            </Await>
+            </DFAwait>
           </Suspense>
         </div>
       </div>

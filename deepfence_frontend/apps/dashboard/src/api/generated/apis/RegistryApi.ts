@@ -195,7 +195,7 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
             }
         }
         const response = await this.request({
-            path: `/deepfence/registryaccount/list`,
+            path: `/deepfence/registryaccount/`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
