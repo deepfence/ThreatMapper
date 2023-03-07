@@ -244,7 +244,7 @@ const DetailsComponent = () => {
                             <div key={key} className="flex flex-col gap-4">
                               <span className="text-xs text-gray-500">{label}</span>
                               <span className="text-sm">
-                                {others[key] === '' ? '-' : others[key]}
+                                {others[key] === '' ? '-' : others[key]?.toString()}
                               </span>
                             </div>
                           );
