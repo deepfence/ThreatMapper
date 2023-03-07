@@ -79,7 +79,7 @@ async function getTop5SecretData(nodeType: 'image' | 'host' | 'container') {
 
   return top5Nodes.map((node) => {
     const latestScan = top5NodeScans.scans_info?.find(
-      (scan) => (scan.node_id = node.node_id),
+      (scan) => scan.node_id === node.node_id,
     );
     let name = '';
     if (nodeType === 'image') {
@@ -87,7 +87,9 @@ async function getTop5SecretData(nodeType: 'image' | 'host' | 'container') {
         (node as ModelContainerImage).docker_image_tag
       }`;
     } else if (nodeType === 'container') {
-      name = (node as ModelContainer).host_name;
+      name = `${(node as ModelContainer).docker_container_name} on ${
+        (node as ModelContainer).host_name
+      }`;
     } else if (nodeType === 'host') {
       name = (node as ModelHost).host_name;
     }

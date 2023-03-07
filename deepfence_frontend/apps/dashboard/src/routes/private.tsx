@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 
 import { ErrorComponent } from '@/components/error/ErrorComponent';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
+import { searchClustersApiLoader } from '@/features/common/data-component/searchClustersApiLoader';
 import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
 import { searchContainersApiLoader } from '@/features/common/data-component/searchContainersApiLoader';
 import { searchHostsApiLoader } from '@/features/common/data-component/searchHostsApiLoader';
@@ -303,6 +304,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'search/hosts/:scanType',
         loader: searchHostsApiLoader,
+      },
+      {
+        path: 'search/clusters',
+        loader: searchClustersApiLoader,
       },
     ],
   },

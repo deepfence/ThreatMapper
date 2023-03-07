@@ -60,7 +60,7 @@ import { DFLink } from '@/components/DFLink';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
-import { MostExploitableChart } from '@/features/vulnerabilities/components/landing/MostExploitableChart';
+import { SecretsResultChart } from '@/features/secrets/components/landing/SecretsResultChart';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { SecretSeverityType } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -201,7 +201,13 @@ async function getScans(
 
   return {
     totalSeverity,
-    severityCounts: result.severity_counts ?? {},
+    severityCounts: {
+      critical: result.severity_counts?.['critical'] ?? 0,
+      high: result.severity_counts?.['high'] ?? 0,
+      medium: result.severity_counts?.['medium'] ?? 0,
+      low: result.severity_counts?.['low'] ?? 0,
+      unknown: result.severity_counts?.['unknown'] ?? 0,
+    },
     hostName: result.host_name,
     nodeType: result.node_type,
     nodeId: result.node_id,
@@ -1201,7 +1207,7 @@ const SeverityCountComponent = ({ theme }: { theme: Mode }) => {
                   </div>
                 </div>
                 <div className="min-h-[220px]">
-                  <MostExploitableChart theme={theme} data={severityCounts} />
+                  <SecretsResultChart theme={theme} data={severityCounts} />
                 </div>
                 <div>
                   {Object.keys(severityCounts)?.map((key: string) => {

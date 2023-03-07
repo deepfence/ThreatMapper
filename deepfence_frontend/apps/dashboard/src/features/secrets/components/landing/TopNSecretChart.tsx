@@ -95,6 +95,9 @@ export const TopNSecretChart = ({
               return truncate(value, { length: 13 });
             },
           },
+          axisLine: {
+            show: false,
+          },
           axisTick: {
             show: false,
           },

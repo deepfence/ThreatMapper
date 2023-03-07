@@ -61,6 +61,7 @@ import {
 import { DFLink } from '@/components/DFLink';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
+import { useGetClustersList } from '@/features/common/data-component/searchClustersApiLoader';
 import { useGetContainerImagesList } from '@/features/common/data-component/searchContainerImagesApiLoader';
 import { useGetContainersList } from '@/features/common/data-component/searchContainersApiLoader';
 import { useGetHostsList } from '@/features/common/data-component/searchHostsApiLoader';
@@ -105,18 +106,6 @@ export type LoaderDataType = {
   error?: string;
   message?: string;
   data: Awaited<ReturnType<typeof getScans>>;
-  containerImages?: {
-    nodeId: string;
-    containerImage: string;
-  }[];
-  containers?: {
-    nodeId: string;
-    nodeName: string;
-  }[];
-  hosts?: {
-    nodeId: string;
-    hostName: string;
-  }[];
   clusters?: {
     clusterId: string;
     clusterName: string;
@@ -141,184 +130,6 @@ const getLanguagesSearch = (searchParams: URLSearchParams) => {
 const getClustersSearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('clusters');
 };
-
-async function getContainerImages(): Promise<LoaderDataType['containerImages']> {
-  const result = await makeRequest({
-    apiFunction: getSearchApiClient().searchContainerImages,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          node_filter: {
-            filters: {
-              contains_filter: {
-                filter_in: {},
-              },
-              order_filter: {
-                order_fields: [
-                  {
-                    field_name: 'secrets_count',
-                    descending: true,
-                  },
-                ],
-              },
-              match_filter: {
-                filter_in: {},
-              },
-            },
-            in_field_filter: ['node_id', 'docker_image_name', 'docker_image_tag'],
-          },
-          window: {
-            offset: 0,
-            size: 100,
-          },
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
-  });
-
-  if (ApiError.isApiError(result)) {
-    throw result.value();
-  }
-
-  if (result === null) {
-    return [];
-  }
-  return result.map((res) => {
-    return {
-      nodeId: res.node_id,
-      containerImage: `${res.docker_image_name}:${res.docker_image_tag}`,
-    };
-  });
-}
-
-async function getContainers(): Promise<LoaderDataType['containers']> {
-  const result = await makeRequest({
-    apiFunction: getSearchApiClient().searchContainers,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          node_filter: {
-            filters: {
-              contains_filter: {
-                filter_in: {},
-              },
-              order_filter: {
-                order_fields: [
-                  {
-                    field_name: 'secrets_count',
-                    descending: true,
-                  },
-                ],
-              },
-              match_filter: {
-                filter_in: {},
-              },
-            },
-            in_field_filter: null,
-          },
-          window: {
-            offset: 0,
-            size: 100,
-          },
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
-  });
-
-  if (ApiError.isApiError(result)) {
-    throw result.value();
-  }
-
-  if (result === null) {
-    return [];
-  }
-  return result.map((res) => {
-    return {
-      nodeId: res.node_id,
-      nodeName: res.docker_container_name,
-    };
-  });
-}
-
-async function getHosts(): Promise<LoaderDataType['hosts']> {
-  const result = await makeRequest({
-    apiFunction: getSearchApiClient().searchHosts,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          node_filter: {
-            filters: {
-              contains_filter: {
-                filter_in: {},
-              },
-              order_filter: {
-                order_fields: [
-                  {
-                    field_name: 'secrets_count',
-                    descending: true,
-                  },
-                ],
-              },
-              match_filter: {
-                filter_in: {},
-              },
-            },
-            in_field_filter: null,
-          },
-          window: {
-            offset: 0,
-            size: 100,
-          },
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
-  });
-
-  if (ApiError.isApiError(result)) {
-    throw result.value();
-  }
-
-  if (result === null) {
-    return [];
-  }
-  return result.map((res) => {
-    return {
-      nodeId: res.node_id,
-      hostName: res.host_name,
-    };
-  });
-}
 
 async function getClusters(): Promise<LoaderDataType['clusters']> {
   const result = await makeRequest({
@@ -573,9 +384,6 @@ const loader = async ({
 
   return typedDefer({
     data: getScans(nodeType as NodeTypeEnum[], searchParams),
-    hosts: getHosts(),
-    containers: getContainers(),
-    containerImages: getContainerImages(),
     clusters: getClusters(),
   });
 };
@@ -864,6 +672,7 @@ const SecretScans = () => {
   const { containers, status: listContainerStatus } = useGetContainersList({
     scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
   });
+  const { clusters, status: listClusterStatus } = useGetClustersList();
 
   const columns = useMemo(() => {
     const columns = [
@@ -1387,43 +1196,39 @@ const SecretScans = () => {
                       )}
                     </fieldset>
                     <fieldset>
-                      <Suspense fallback={<CircleSpinner size="xs" />}>
-                        <DFAwait resolve={loaderData.clusters}>
-                          {(resolvedData: LoaderDataType['clusters']) => {
-                            return (
-                              <Select
-                                noPortal
-                                name="cluster"
-                                label={'Cluster'}
-                                placeholder="Select cluster"
-                                sizing="xs"
-                                value={searchParams.getAll('clusters')}
-                                onChange={(value) => {
-                                  setSearchParams((prev) => {
-                                    prev.delete('clusters');
-                                    value.forEach((cluster) => {
-                                      prev.append('clusters', cluster);
-                                    });
-                                    prev.delete('page');
-                                    return prev;
-                                  });
-                                }}
-                              >
-                                {resolvedData?.map?.((cluster) => {
-                                  return (
-                                    <SelectItem
-                                      value={cluster.clusterId}
-                                      key={cluster.clusterId}
-                                    >
-                                      {cluster.clusterName}
-                                    </SelectItem>
-                                  );
-                                })}
-                              </Select>
-                            );
+                      {listClusterStatus === 'submitting' ? (
+                        <CircleSpinner size="xs" />
+                      ) : (
+                        <Select
+                          noPortal
+                          name="cluster"
+                          label={'Cluster'}
+                          placeholder="Select cluster"
+                          sizing="xs"
+                          value={searchParams.getAll('clusters')}
+                          onChange={(value) => {
+                            setSearchParams((prev) => {
+                              prev.delete('clusters');
+                              value.forEach((cluster) => {
+                                prev.append('clusters', cluster);
+                              });
+                              prev.delete('page');
+                              return prev;
+                            });
                           }}
-                        </DFAwait>
-                      </Suspense>
+                        >
+                          {clusters.map((cluster) => {
+                            return (
+                              <SelectItem
+                                value={cluster.clusterId}
+                                key={cluster.clusterId}
+                              >
+                                {cluster.clusterName}
+                              </SelectItem>
+                            );
+                          })}
+                        </Select>
+                      )}
                     </fieldset>
                   </Form>
                 </div>
