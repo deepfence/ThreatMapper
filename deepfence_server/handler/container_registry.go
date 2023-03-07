@@ -285,11 +285,11 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 	var req model.RegistryDeleteReq
 	// id := r.Context().Value("registryId").(string)
-	id := chi.URLParam(r, "registryId")
+	id := chi.URLParam(r, "registry_id")
 	log.Info().Msgf("IDssss: %v", id)
 	x, _ := strconv.ParseInt(id, 10, 64)
 	req = model.RegistryDeleteReq{
-		ID: int32(x),
+		RegistryId: int32(x),
 	}
 
 	ctx := directory.NewGlobalContext()
@@ -312,7 +312,7 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ListImages(w http.ResponseWriter, r *http.Request) {
-	registryId := chi.URLParam(r, "registryId")
+	registryId := chi.URLParam(r, "registry_id")
 	rId, err := strconv.ParseInt(registryId, 10, 32)
 	if err != nil {
 		log.Error().Msgf("failed to parse registry id %v", registryId)
@@ -330,8 +330,8 @@ func (h *Handler) ListImages(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ListImageTags(w http.ResponseWriter, r *http.Request) {
-	registryId := chi.URLParam(r, "registryId")
-	imageName := chi.URLParam(r, "imageName")
+	registryId := chi.URLParam(r, "registry_id")
+	imageName := chi.URLParam(r, "image_name")
 
 	rId, err := strconv.ParseInt(registryId, 10, 32)
 	if err != nil {

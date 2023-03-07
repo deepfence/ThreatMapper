@@ -24,7 +24,15 @@ type RegistryAddReq struct {
 }
 
 type RegistryDeleteReq struct {
-	ID int32 `path:"id"`
+	RegistryId int32 `path:"registry_id" validate:"required" required:"true"`
+}
+
+type RegistryImagesReq struct {
+	RegistryId string `path:"registry_id" validate:"required" required:"true"`
+}
+type RegistryImageTagsReq struct {
+	RegistryId string `path:"registry_id" validate:"required" required:"true"`
+	ImageName  string `path:"image_name" validate:"required" required:"true"`
 }
 
 // todo: add support to list by name and type, id
@@ -75,7 +83,7 @@ func (rl *RegistryListReq) ListRegistriesSafe(ctx context.Context, pgClient *pos
 
 // ListRegistriesSafe doesnot get secret field from DB
 func (rl *RegistryDeleteReq) DeleteRegistry(ctx context.Context, pgClient *postgresqlDb.Queries) error {
-	return pgClient.DeleteContainerRegistry(ctx, rl.ID)
+	return pgClient.DeleteContainerRegistry(ctx, rl.RegistryId)
 }
 
 func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {
