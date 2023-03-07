@@ -107,7 +107,7 @@ export type LoaderDataType = {
 const PAGE_SIZE = 15;
 
 const getSeveritySearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('severity');
+  return searchParams.getAll('level');
 };
 const getMaskSearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('mask');
@@ -143,7 +143,7 @@ async function getScans(
   };
 
   if (severity.length) {
-    scanResultsReq.fields_filter.contains_filter.filter_in!['cve_severity'] = severity;
+    scanResultsReq.fields_filter.contains_filter.filter_in!['level'] = severity;
   }
 
   if ((mask.length || unmask.length) && !(mask.length && unmask.length)) {
@@ -225,7 +225,7 @@ const action = async ({
   request,
 }: ActionFunctionArgs): Promise<null> => {
   const formData = await request.formData();
-  const cveIds = (formData.getAll('cveIds[]') ?? []) as string[];
+  const ids = (formData.getAll('ids[]') ?? []) as string[];
   const actionType = formData.get('actionType');
   const _scanId = scanId;
   const mask = formData.get('maskHostAndImages');
@@ -248,7 +248,7 @@ const action = async ({
       apiArgs: [
         {
           modelScanResultsActionRequest: {
-            result_ids: [...cveIds],
+            result_ids: [...ids],
             scan_id: _scanId,
             scan_type: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
           },
@@ -277,7 +277,7 @@ const action = async ({
         {
           modelScanResultsMaskRequest: {
             mask_across_hosts_and_images: mask === 'maskHostAndImages',
-            result_ids: [...cveIds],
+            result_ids: [...ids],
             scan_id: _scanId,
             scan_type: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
           },
@@ -344,7 +344,7 @@ const DeleteConfirmationModal = ({
     (actionType: string) => {
       const formData = new FormData();
       formData.append('actionType', actionType);
-      ids.forEach((item) => formData.append('cveIds[]', item));
+      ids.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -484,7 +484,7 @@ const MaskDropdown = ({ ids }: { ids: string[] }) => {
       const formData = new FormData();
       formData.append('actionType', ActionEnumType.MASK);
       formData.append('maskHostAndImages', maskHostAndImages);
-      ids.forEach((item) => formData.append('cveIds[]', item));
+      ids.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -537,7 +537,7 @@ const UnMaskDropdown = ({ ids }: { ids: string[] }) => {
       const formData = new FormData();
       formData.append('actionType', ActionEnumType.UNMASK);
       formData.append('maskHostAndImages', unMaskHostAndImages);
-      ids.forEach((item) => formData.append('cveIds[]', item));
+      ids.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -603,7 +603,7 @@ const ActionDropdown = ({
         formData.append('maskHostAndImages', maskHostAndImages ?? '');
       }
 
-      ids.forEach((item) => formData.append('cveIds[]', item));
+      ids.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -776,21 +776,21 @@ const SecretTable = () => {
         header: () => 'ID',
         minSize: 100,
         size: 120,
-        maxSize: 250,
+        maxSize: 130,
       }),
       columnHelper.accessor('full_filename', {
         cell: (info) => info.getValue(),
         header: () => 'Filename',
         minSize: 100,
         size: 200,
-        maxSize: 250,
+        maxSize: 210,
       }),
       columnHelper.accessor('matched_content', {
         cell: (info) => info.getValue(),
         header: () => 'Matched Content',
         minSize: 100,
         size: 200,
-        maxSize: 250,
+        maxSize: 210,
       }),
       columnHelper.accessor('level', {
         cell: (info) => (
@@ -824,7 +824,7 @@ const SecretTable = () => {
         header: () => 'Rule Name',
         minSize: 200,
         size: 250,
-        maxSize: 400,
+        maxSize: 260,
       }),
       columnHelper.accessor('signature_to_match', {
         enableSorting: false,
@@ -834,7 +834,7 @@ const SecretTable = () => {
         header: () => 'Signature to match',
         minSize: 200,
         size: 250,
-        maxSize: 400,
+        maxSize: 260,
       }),
       columnHelper.display({
         id: 'actions',
@@ -864,7 +864,7 @@ const SecretTable = () => {
     (actionType: string) => {
       const formData = new FormData();
       formData.append('actionType', actionType);
-      selectedIds.forEach((item) => formData.append('cveIds[]', item));
+      selectedIds.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -992,9 +992,7 @@ const HeaderComponent = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const loaderData = useLoaderData() as LoaderDataType;
   const isFilterApplied =
-    searchParams.has('severity') ||
-    searchParams.has('mask') ||
-    searchParams.has('unmask');
+    searchParams.has('level') || searchParams.has('mask') || searchParams.has('unmask');
 
   return (
     <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
@@ -1113,16 +1111,16 @@ const HeaderComponent = ({
                     <fieldset>
                       <Select
                         noPortal
-                        name="severity"
+                        name="level"
                         label={'Severity'}
                         placeholder="Select Severity"
-                        value={searchParams.getAll('severity')}
+                        value={searchParams.getAll('level')}
                         sizing="xs"
                         onChange={(value) => {
                           setSearchParams((prev) => {
-                            prev.delete('severity');
+                            prev.delete('level');
                             value.forEach((language) => {
-                              prev.append('severity', language);
+                              prev.append('level', language);
                             });
                             prev.delete('page');
                             return prev;

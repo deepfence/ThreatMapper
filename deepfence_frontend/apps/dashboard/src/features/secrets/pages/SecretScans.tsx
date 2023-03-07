@@ -854,15 +854,15 @@ const SecretScans = () => {
   const columnHelper = createColumnHelper<ScanResult>();
 
   const { hosts, status: listHostStatus } = useGetHostsList({
-    scanType: ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan,
+    scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
   });
   const { containerImages, status: listContainerImageStatus } = useGetContainerImagesList(
     {
-      scanType: ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan,
+      scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
     },
   );
   const { containers, status: listContainerStatus } = useGetContainersList({
-    scanType: ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan,
+    scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
   });
 
   const columns = useMemo(() => {

@@ -1,10 +1,9 @@
 import cx from 'classnames';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { capitalize, startCase, truncate } from 'lodash-es';
+import { capitalize, omit, pick, startCase, truncate } from 'lodash-es';
 import { Suspense, useState } from 'react';
-import { FaExpandAlt } from 'react-icons/fa';
-import { HiChevronDown, HiExternalLink } from 'react-icons/hi';
+import { HiChevronDown } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import {
   Form,
@@ -15,39 +14,22 @@ import {
 import { Badge, CircleSpinner, ModalHeader, SlidingModal } from 'ui-components';
 
 import { getSearchApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse } from '@/api/generated';
+import { ApiDocsBadRequestResponse, ModelSecretRule } from '@/api/generated';
 import { CopyToClipboardAsJson } from '@/components/CopyToClipboardIcon';
-import { DFLink } from '@/components/DFLink';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { ApiError, makeRequest } from '@/utils/api';
+import { getObjectKeys } from '@/utils/array';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 dayjs.extend(relativeTime);
 
-type CveType = {
-  secretId: string;
-  timestamp: number;
-  ruleName: string;
-  fileName: string;
-  matchedContent: string;
-  part: string;
-  severity: string;
-  score: number;
-  signatureToMatch: string;
-  masked: boolean;
-  others: {
-    [k: string]: string | string[] | number;
-  };
-};
-
 type LoaderDataType = {
   error?: string;
   message?: string;
-  data?: CveType;
+  data?: ModelSecretRule;
 };
-const arrayFields = ['urls'];
 
 async function getSecrets(secretId: string) {
   const result = await makeRequest({
@@ -59,7 +41,7 @@ async function getSecrets(secretId: string) {
             filters: {
               contains_filter: {
                 filter_in: {
-                  node_id: ['1:root/.npm/_logs/2023-03-02T22_56_28_077Z-debug-0.log'],
+                  node_id: [secretId],
                 },
               },
               order_filter: {
@@ -103,20 +85,7 @@ async function getSecrets(secretId: string) {
   }
   const res = result[0];
 
-  return {
-    secretId: res.node_id,
-    timestamp: res.updated_at,
-    ruleName: res.name,
-    fileName: res.full_filename,
-    severity: res.level,
-    score: res.score,
-    others: {
-      masked: res.masked.toString(),
-      matchedContent: res.matched_content,
-      part: res.part,
-      signatureToMatch: res.signature_to_match,
-    },
-  };
+  return res;
 }
 const loader = async ({
   params,
@@ -154,28 +123,28 @@ const Header = () => {
                     <SecretsIcon />
                   </span>
                   <span className="text-md text-gray-900 dark:text-white truncate">
-                    {truncate(secret.secretId, { length: 20 })}
+                    {truncate(secret.name ?? '', { length: 20 })}
                   </span>
                   <Badge
-                    label={secret.severity.toUpperCase()}
+                    label={secret?.level?.toUpperCase()}
                     className={cx({
                       'bg-[#de425b]/20 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
-                        secret.severity.toLowerCase() === 'critical',
+                        secret?.level?.toLowerCase() === 'critical',
                       'bg-[#f58055]/20 dark:bg-[#f58055/20 text-[#f58055] dark:text-[#f58055]':
-                        secret.severity.toLowerCase() === 'high',
+                        secret?.level?.toLowerCase() === 'high',
                       'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
-                        secret.severity.toLowerCase() === 'medium',
+                        secret?.level?.toLowerCase() === 'medium',
                       'bg-[#d6e184]/20 dark:bg-[#d6e184]/10 text-yellow-300 dark:text-[#d6e184]':
-                        secret.severity.toLowerCase() === 'low',
+                        secret?.level?.toLowerCase() === 'low',
                       'bg-[#9CA3AF]/10 dark:bg-[#9CA3AF]/10 text-gray-400 dark:text-[#9CA3AF]':
-                        secret.severity.toLowerCase() === 'unknown',
+                        secret?.level?.toLowerCase() === 'unknown',
                     })}
                     size="sm"
                   />
                   <CopyToClipboardAsJson data={secret} />
                 </div>
                 <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7">
-                  {dayjs(secret.timestamp).fromNow()}
+                  {dayjs(secret?.updated_at).fromNow()}
                 </span>
               </div>
             );
@@ -188,7 +157,6 @@ const Header = () => {
 
 const DetailsComponent = () => {
   const [openDetails, setOpenDetails] = useState(true);
-  const [showArrayFields, setShowArrayFields] = useState(false);
   const loaderData = useLoaderData() as LoaderDataType;
 
   return (
@@ -205,6 +173,17 @@ const DetailsComponent = () => {
                 </div>
               );
             }
+            const pickBy = [
+              'updated_at',
+              'name',
+              'full_filename',
+              'level',
+              'score',
+              'node_id',
+            ];
+            const fixed = pick<ModelSecretRule>(secret, pickBy);
+            const others = omit<ModelSecretRule>(secret, pickBy);
+
             return (
               <div className="text-gray-900 dark:text-gray-300">
                 <section>
@@ -238,101 +217,35 @@ const DetailsComponent = () => {
                             'p-2 mr-4 w-fit rounded-lg items-center',
                             {
                               'bg-[#de425b]/20 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
-                                secret.severity.toLowerCase() === 'critical',
+                                fixed?.level?.toLowerCase() === 'critical',
                               'bg-[#f58055]/20 dark:bg-[#f58055/20 text-[#f58055] dark:text-[#f58055]':
-                                secret.severity.toLowerCase() === 'high',
+                                fixed?.level?.toLowerCase() === 'high',
                               'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
-                                secret.severity.toLowerCase() === 'medium',
+                                fixed?.level?.toLowerCase() === 'medium',
                               'bg-[#d6e184]/20 dark:bg-[#d6e184]/10 text-yellow-300 dark:text-[#d6e184]':
-                                secret.severity.toLowerCase() === 'low',
+                                fixed?.level?.toLowerCase() === 'low',
                               'bg-[#9CA3AF]/10 dark:bg-[#9CA3AF]/10 text-gray-400 dark:text-[#9CA3AF]':
-                                secret.severity.toLowerCase() === 'unknown',
+                                fixed?.level?.toLowerCase() === 'unknown',
                             },
                           )}
                         >
                           <span className="text-xs text-gray-500">CVSS score</span>
-                          <span className="text-md">{secret.score || '-'}</span>
+                          <span className="text-md">{fixed.score || '-'}</span>
                         </div>
-                        <p className="text-sm pr-2 mb-2 text-justify">
-                          {secret.ruleName}
-                        </p>
-                        <span className="mt-2 text-sm pr-2">{secret.fileName}</span>
+                        <p className="text-sm pr-2 mb-2 text-justify">{fixed.name}</p>
+                        <span className="mt-2 text-sm pr-2">{fixed.full_filename}</span>
                       </div>
                       <div className="mt-6 flex flex-wrap gap-y-4 gap-x-8">
-                        {Object.keys(secret.others).map((key) => {
+                        {getObjectKeys(others).map((key) => {
                           const label = capitalize(
                             startCase(startCase(key)).toLowerCase(),
                           );
                           return (
-                            <div key={key}>
-                              {arrayFields.includes(key) ? (
-                                <div className="flex flex-col text-sm">
-                                  <button
-                                    className="flex items-center gap-x-2"
-                                    onClick={() => {
-                                      setShowArrayFields(!showArrayFields);
-                                    }}
-                                  >
-                                    <span className="text-xs text-gray-500">
-                                      {capitalize(
-                                        startCase(startCase(key)).toLowerCase(),
-                                      )}
-                                    </span>
-                                    <IconContext.Provider
-                                      value={{
-                                        className: cx('cursor-pointer h-2.5 w-2.5', {
-                                          'rotate-45': showArrayFields,
-                                        }),
-                                      }}
-                                    >
-                                      <FaExpandAlt />
-                                    </IconContext.Provider>
-                                  </button>
-                                  {!showArrayFields ? (
-                                    <>...</>
-                                  ) : (
-                                    <>
-                                      {(secret.others[key] as string[]).length === 0 ? (
-                                        '-'
-                                      ) : (
-                                        <>
-                                          <div className="text-sm">
-                                            {(secret.others[key] as string[]).map(
-                                              (url) => {
-                                                return (
-                                                  <div key={url}>
-                                                    <DFLink
-                                                      to={url}
-                                                      target="_blank"
-                                                      rel="noopener noreferrer"
-                                                      className="flex gap-x-2 items-center"
-                                                    >
-                                                      <IconContext.Provider
-                                                        value={{
-                                                          className: 'w-4 h-4',
-                                                        }}
-                                                      >
-                                                        Link <HiExternalLink />
-                                                      </IconContext.Provider>
-                                                    </DFLink>
-                                                  </div>
-                                                );
-                                              },
-                                            )}
-                                          </div>
-                                        </>
-                                      )}
-                                    </>
-                                  )}
-                                </div>
-                              ) : (
-                                <div className="flex flex-col gap-">
-                                  <span className="text-xs text-gray-500">{label}</span>
-                                  <span className="text-sm">
-                                    {secret.others[key] === '' ? '-' : secret.others[key]}
-                                  </span>
-                                </div>
-                              )}
+                            <div key={key} className="flex flex-col gap-4">
+                              <span className="text-xs text-gray-500">{label}</span>
+                              <span className="text-sm">
+                                {others[key] === '' ? '-' : others[key]}
+                              </span>
                             </div>
                           );
                         })}
