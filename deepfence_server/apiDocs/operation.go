@@ -169,7 +169,7 @@ func (d *OpenApiDocs) AddSearchOperations() {
 
 	d.AddOperation("searchSecrets", http.MethodPost, "/deepfence/search/secrets",
 		"Search Secrets", "Search across all the data associated with secrets",
-		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]SecretRule))
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Secret))
 
 	d.AddOperation("searchMalwares", http.MethodPost, "/deepfence/search/malwares",
 		"Search Malwares", "Search across all the data associated with malwares",

@@ -75,7 +75,7 @@ func (h *Handler) SearchVulnerabilities(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *Handler) SearchSecrets(w http.ResponseWriter, r *http.Request) {
-	SearchHandler[model.SecretRule](w, r)
+	SearchHandler[model.Secret](w, r)
 }
 
 func (h *Handler) SearchMalwares(w http.ResponseWriter, r *http.Request) {
@@ -127,7 +127,7 @@ func (h *Handler) SearchVulnerabilitiesCount(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *Handler) SearchSecretsCount(w http.ResponseWriter, r *http.Request) {
-	SearchCountHandler[model.SecretRule](w, r)
+	SearchCountHandler[model.Secret](w, r)
 }
 
 func (h *Handler) SearchMalwaresCount(w http.ResponseWriter, r *http.Request) {

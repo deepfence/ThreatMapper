@@ -1,6 +1,8 @@
 package model
 
 import (
+	"time"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
@@ -183,7 +185,7 @@ type ScanResultsCommon struct {
 
 type SecretScanResult struct {
 	ScanResultsCommon
-	Secrets        []SecretRule     `json:"secrets" required:"true"`
+	Secrets        []Secret         `json:"secrets" required:"true"`
 	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
 }
 
@@ -217,7 +219,7 @@ type CloudComplianceScanResult struct {
 	Compliances []CloudCompliance `json:"compliances" required:"true"`
 }
 
-type SecretRule struct {
+type Secret struct {
 	// Secret + Rule neo4j node
 	SecretID              string  `json:"node_id" required:"true"`
 	StartingIndex         int32   `json:"starting_index" required:"true"`
@@ -229,25 +231,25 @@ type SecretRule struct {
 	UpdatedAt             int64   `json:"updated_at" required:"true"`
 	Level                 string  `json:"level" required:"true"`
 	Score                 float64 `json:"score" required:"true"`
-	RuleID                int32   `json:"id" required:"true" required:"true"`
+	RuleID                int32   `json:"rule_id" required:"true" required:"true"`
 	Name                  string  `json:"name" required:"true"`
 	Part                  string  `json:"part" required:"true"`
 	SignatureToMatch      string  `json:"signature_to_match" required:"true"`
 }
 
-func (SecretRule) NodeType() string {
+func (Secret) NodeType() string {
 	return "Secret"
 }
 
-func (SecretRule) ExtendedField() string {
+func (Secret) ExtendedField() string {
 	return "rule_id"
 }
 
-func (v SecretRule) GetCategory() string {
+func (v Secret) GetCategory() string {
 	return v.Level
 }
 
-func (SecretRule) GetJsonCategory() string {
+func (Secret) GetJsonCategory() string {
 	return "level"
 }
 
@@ -289,16 +291,27 @@ func (Vulnerability) GetJsonCategory() string {
 }
 
 type Malware struct {
-	ImageLayerID     string  `json:"image_layer_id" required:"true"`
-	Class            string  `json:"class" required:"true"`
-	CompleteFilename string  `json:"complete_filename" required:"true"`
-	FileSevScore     float64 `json:"file_sevScore" required:"true"`
-	FileSeverity     string  `json:"file_severity" required:"true"`
-	SeverityScore    float64 `json:"severity_score" required:"true"`
-	Summary          string  `json:"summary" required:"true"`
-	RuleName         string  `json:"rule_name" required:"true"`
-	Masked           bool    `json:"masked" required:"true"`
-	UpdatedAt        int64   `json:"updated_at" required:"true"`
+	// Malware + MalwareRule node in neo4j
+	Timestamp        time.Time `json:"@timestamp"`
+	Class            string    `json:"Class"`
+	CompleteFilename string    `json:"CompleteFilename"`
+	FileSevScore     int       `json:"FileSevScore"`
+	FileSeverity     string    `json:"FileSeverity"`
+	ImageLayerID     string    `json:"ImageLayerId"`
+	Meta             []string  `json:"Meta"`
+	RuleID           string    `json:"rule_id"`
+	RuleName         string    `json:"rule_name"`
+	Author           string    `json:"author"`
+	Date             string    `json:"date"`
+	Description      string    `json:"description"`
+	Filetype         string    `json:"filetype"`
+	Info             string    `json:"info"`
+	Version          string    `json:"version"`
+	SeverityScore    int       `json:"SeverityScore"`
+	StringsToMatch   []string  `json:"StringsToMatch"`
+	Summary          string    `json:"Summary"`
+	Masked           bool      `json:"masked"`
+	ScanID           string    `json:"scan_id"`
 }
 
 func (Malware) NodeType() string {
@@ -310,11 +323,11 @@ func (Malware) ExtendedField() string {
 }
 
 func (v Malware) GetCategory() string {
-	return v.Class
+	return v.FileSeverity
 }
 
 func (Malware) GetJsonCategory() string {
-	return "class"
+	return "FileSeverity"
 }
 
 type Compliance struct {
