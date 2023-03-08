@@ -43,7 +43,7 @@ import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
-import { module as topologyCloudTable } from '@/features/topology/pages/cloud/Table';
+import { module as topologyCloudTable } from '@/features/topology/pages/table/Table';
 import { module as topology } from '@/features/topology/pages/Topology';
 import { sbomApiLoader } from '@/features/vulnerabilities/api/sbomApiLoader';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';

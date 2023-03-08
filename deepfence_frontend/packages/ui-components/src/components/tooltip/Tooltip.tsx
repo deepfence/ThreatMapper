@@ -9,6 +9,7 @@ export interface TooltipProps
   children: React.ReactNode;
   triggerAsChild?: boolean;
   content: string;
+  delayDuration?: number;
 }
 
 export const Tooltip = (props: TooltipProps) => {
@@ -20,9 +21,10 @@ export const Tooltip = (props: TooltipProps) => {
     open,
     onOpenChange,
     defaultOpen,
+    delayDuration,
   } = props;
   return (
-    <TooltipPrimitive.Provider delayDuration={0}>
+    <TooltipPrimitive.Provider delayDuration={delayDuration ?? 0}>
       <TooltipPrimitive.Root
         open={open}
         onOpenChange={onOpenChange}
