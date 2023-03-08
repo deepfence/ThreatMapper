@@ -230,7 +230,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph() (map[string]AttackPaths, erro
 		var res neo4j.Result
 		if cloud_provider != CLOUD_PRIVATE {
 			if res, err = tx.Run(`
-				CALL apoc.nodes.group(['CloudResource','Node'], ['node_type', 'depth',
+				CALL apoc.nodes.group(['CloudResource','Node'], ['node_type', 'resource_type','depth',
 				'cloud_provider'], [{`+"`*`"+`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum',
 				node_id:'collect', num_cve: 'collect', num_secrets:'collect', num_compliance:'collect'},{`+"`*`"+`: 'count'}], {selfRels: false})
 				YIELD node, relationships
