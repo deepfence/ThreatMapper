@@ -36,7 +36,7 @@ func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var registriesResponse []model.RegistryListResp
+	registriesResponse := make([]model.RegistryListResp, 0)
 	for _, r := range registries {
 		reg, err := registry.GetRegistryWithRegistrySafeRow(r)
 		if err != nil {
