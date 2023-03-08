@@ -10,7 +10,9 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-type CloudResourceIngester struct{}
+type CloudResourceIngester struct {
+	driver neo4j.Driver
+}
 
 type CloudResource struct {
 	AccountID                      string           `json:"account_id"`
@@ -100,7 +102,6 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 	}
 	defer tx.Close()
 
-
 	fmt.Println("reached here")
 
 	if _, err = tx.Run("UNWIND $batch as row MERGE (m:CloudResource{node_id:coalesce(row.arn,apoc.text.random(10, \"A-Z0-9.$\")),"+
@@ -144,7 +145,7 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 		return err
 	}
 
-	if _, err = tx.Run("MATCH p=(s)-[r:OWNS]->(k:CloudResource) SET k.cspm=s.cloud_provider", map[string]interface{}{}); err != nil {
+	if _, err = tx.Run("MATCH p=(s)-[r:OWNS]->(k:CloudResource) SET k.cloud_provider=s.cloud_provider", map[string]interface{}{}); err != nil {
 		fmt.Println("reached here err 3", err)
 		return err
 	}
@@ -153,8 +154,8 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 		" n WHERE map.label = 'AWS' WITH map.id as id, n match (m:CloudResource)"+
 		" where m.resource_type = 'aws_ec2_instance' and m.instance_id = id"+
 		" MERGE (n) -[:IS]-> (m)", map[string]interface{}{}); err != nil {
-
-
+		return err
+	}
 
 	return tx.Commit()
 }
@@ -179,13 +180,7 @@ func (tc *CloudComplianceIngester) LinkNodesWithCloudResources(ctx context.Conte
 		return err
 	}
 
-	if _, err = tx.Run(`
-		MATCH (n:Node) 
-		WITH apoc.convert.fromJsonMap(n.cloud_metadata) as map, n 
-		WHERE map.label = 'AWS' 
-		WITH map.id as id, n match (m:CloudResource) 
-		WHERE m.resource_type = 'aws_ec2_instance' AND m.instance_id = id 
-		MERGE (n) -[:IS]-> (m)`, map[string]interface{}{}); err != nil {
+	if _, err = tx.Run("match (n:Node) WITH apoc.convert.fromJsonMap(n.cloud_metadata) as map, n WHERE map.label = 'AWS' WITH map.id as id, n match (m:CloudResource) where m.resource_type = 'aws_ec2_instance' and m.instance_id = id MERGE (n) -[:IS]-> (m)", map[string]interface{}{}); err != nil {
 		return err
 	}
 
