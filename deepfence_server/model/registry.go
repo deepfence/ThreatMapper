@@ -10,6 +10,7 @@ import (
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
 	"github.com/rs/zerolog/log"
@@ -303,30 +304,24 @@ func ListImageTags(ctx context.Context, registryId int32, imageName string) ([]C
 
 func toScansCount(scans []interface{}) map[string]int {
 	counts := map[string]int{
-		"vulnerability_scan": 0,
-		"secret_scan":        0,
-		"malware_scan":       0,
-		"total_scans":        0,
+		"scans_complete":    0,
+		"scans_in_progress": 0,
+		"scans_total":       0,
 	}
 	for _, n := range scans {
-		log.Info().Msgf("scans %+v", n)
-		l := n.(dbtype.Node)
-		counts["total_scans"]++
-		switch l.Labels[0] {
-		case "VulnerabilityScan":
-			counts["vulnerability_scan"]++
-		case "SecretScan":
-			counts["secret_scan"]++
-		case "MalwareScan":
-			counts["malware_scan"]++
+		counts["scans_total"]++
+		l := n.(string)
+		switch l {
+		case utils.SCAN_STATUS_SUCCESS, utils.SCAN_STATUS_FAILED:
+			counts["scans_complete"]++
 		default:
-			log.Info().Msg("unknown scan")
+			counts["scans_in_progress"]++
 		}
 	}
 	return counts
 }
 
-func RegistrySummary(ctx context.Context, registryId int32) (map[string]int, error) {
+func RegistrySummary(ctx context.Context, registryId *int32) (map[string]int, error) {
 
 	count := map[string]int{}
 
@@ -344,15 +339,36 @@ func RegistrySummary(ctx context.Context, registryId int32) (map[string]int, err
 	}
 	defer tx.Close()
 
-	query := `
-	MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage)
-	WITH count(n) as images
-	MATCH (s) -[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount{container_registry_id:$id})
-	RETURN images, COLLECT(s) as scans
+	queryPerRegistry := `
+	MATCH (n:RegistryAccount{container_registry_id:$id})-[:HOSTS]->(m:ContainerImage)
+	WITH
+		COUNT(distinct m.docker_image_name) AS images,
+		COUNT(m.docker_image_tag) AS tags,
+		COUNT(distinct n) AS registries
+	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount{container_registry_id:$id})
+	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
 	`
-	result, err := tx.Run(query, map[string]interface{}{"id": registryId})
-	if err != nil {
-		return count, err
+	queryAllRegistries := `
+	MATCH (n:RegistryAccount)-[:HOSTS]->(m:ContainerImage)
+	WITH
+		COUNT(distinct m.docker_image_name) AS images,
+		COUNT(m.docker_image_tag) AS tags,
+		COUNT(distinct n) AS registries
+	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount)
+	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
+	`
+
+	var (
+		result neo4j.Result
+	)
+	if registryId != nil {
+		if result, err = tx.Run(queryPerRegistry, map[string]interface{}{"id": *registryId}); err != nil {
+			return count, err
+		}
+	} else {
+		if result, err = tx.Run(queryAllRegistries, map[string]interface{}{}); err != nil {
+			return count, err
+		}
 	}
 
 	record, err := result.Single()
@@ -362,16 +378,28 @@ func RegistrySummary(ctx context.Context, registryId int32) (map[string]int, err
 
 	images, has := record.Get("images")
 	if !has {
-		log.Warn().Msgf("Missing neo4j entry")
+		log.Warn().Msgf("images not found in query result")
 	}
 
-	scans, has := record.Get("scans")
+	tags, has := record.Get("tags")
 	if !has {
-		log.Warn().Msgf("Missing neo4j entry")
+		log.Warn().Msg("tags not found in query result")
 	}
 
-	count = toScansCount(scans.([]interface{}))
-	count["total_images"] = int(images.(int64))
+	registries, has := record.Get("registries")
+	if !has {
+		log.Warn().Msg("registries not found in query result")
+	}
+
+	scansStatus, has := record.Get("scan_status")
+	if !has {
+		log.Warn().Msg("scan_status not found in query result")
+	}
+
+	count = toScansCount(scansStatus.([]interface{}))
+	count["images"] = int(images.(int64))
+	count["tags"] = int(tags.(int64))
+	count["registries"] = int(registries.(int64))
 
 	return count, nil
 }

@@ -376,6 +376,10 @@ func (h *Handler) ListImageTags(w http.ResponseWriter, r *http.Request) {
 	httpext.JSON(w, http.StatusOK, images)
 }
 
+func getIntPointer(val int32) *int32 {
+	return &val
+}
+
 func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 
 	counts := map[string]int{}
@@ -401,12 +405,27 @@ func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// count registry resource
-	counts, err = model.RegistrySummary(r.Context(), int32(rId))
+	counts, err = model.RegistrySummary(r.Context(), getIntPointer(int32(rId)))
 	if err != nil {
 		respondError(err, w)
 	}
 
 	log.Info().Msgf("registry %d summary %+v", rId, counts)
+
+	httpext.JSON(w, http.StatusOK, counts)
+}
+
+func (h *Handler) AllRegistriesSummary(w http.ResponseWriter, r *http.Request) {
+
+	counts := map[string]int{}
+
+	// count registry resource
+	counts, err := model.RegistrySummary(r.Context(), nil)
+	if err != nil {
+		respondError(err, w)
+	}
+
+	log.Info().Msgf("all registries summary %+v", counts)
 
 	httpext.JSON(w, http.StatusOK, counts)
 }
