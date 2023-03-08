@@ -75,7 +75,7 @@ const MOST_VULNERABLES = [
     },
   },
 ];
-export const TopRisksVulnerability = () => {
+export const TopRisksSecret = () => {
   const { mode } = useTheme();
   return (
     <Card className="p-2">
@@ -87,7 +87,7 @@ export const TopRisksVulnerability = () => {
         >
           <HiShieldExclamation />
         </IconContext.Provider>
-        <h4 className="text-base font-medium">Top Risks Vulnerabilities</h4>
+        <h4 className="text-base font-medium">Top Risks Secrets</h4>
         <div className="flex justify-end ml-auto">
           <Button color="normal" size="xs">
             View Details&nbsp;

@@ -1,29 +1,23 @@
-import { useState } from 'react';
+import cx from 'classnames';
 import { IconContext } from 'react-icons';
 import {
   HiChip,
   HiClipboardList,
-  HiClock,
   HiCloud,
   HiPhotograph,
-  HiRefresh,
   HiServer,
   HiSupport,
   HiViewGrid,
 } from 'react-icons/hi';
-import { Card, Select, SelectItem, Typography } from 'ui-components';
+import { Card } from 'ui-components';
 
 import { Posture } from '@/features/dashboard/components/Posture';
+import { Registries } from '@/features/dashboard/components/Registries';
 import { RuntimeIncidents } from '@/features/dashboard/components/RuntimeIncidents';
 import { TopAttackPaths } from '@/features/dashboard/components/TopAttackPath';
+import { TopRisksMalware } from '@/features/dashboard/components/TopRisksMalware';
+import { TopRisksSecret } from '@/features/dashboard/components/TopRisksSecret';
 import { TopRisksVulnerability } from '@/features/dashboard/components/TopRisksVulnerability';
-
-// import { Activity } from '../components/activity/Activity';
-// import { AttackPath } from '../components/attack-paths/AttackPath';
-// import { Posture } from '../components/posture/Posture';
-// import { Registries } from '../components/registries/Registries';
-// import { RuntimeIncidents } from '../components/runtime-incidents/RuntimeIncidents';
-// import { TopRisks } from '../components/top-risks/TopRisks';
 
 const COUNTS_DATA = [
   {
@@ -125,108 +119,43 @@ const COUNTS_DATA = [
     ),
   },
 ];
-
-const IntervalIcon = () => {
-  return (
-    <div
-      className={`${Typography.size.sm} ${Typography.weight.medium} flex items-center gap-2`}
-    >
-      Interval
-      <HiClock />
-    </div>
-  );
-};
-const RefreshIcon = () => {
-  return (
-    <div
-      className={`${Typography.size.sm} ${Typography.weight.medium} flex items-center gap-2`}
-    >
-      Refresh <HiRefresh />
-    </div>
-  );
-};
 export const Dashboard = () => {
-  const [value, setValue] = useState<string | undefined>();
   return (
     <>
       <div className="grid grid-cols-[3fr_1fr] p-2 gap-2">
-        <Card className="flex items-center py-1 gap-2">
-          {COUNTS_DATA.map((data) => {
+        <Card className="flex items-center gap-2">
+          {COUNTS_DATA.map((data, index) => {
             return (
               <div
-                className="p-1 border-r basis-full flex flex-col gap-1 cursor-pointer hover:bg-gray-100 first:pl-2"
                 key={data.label}
+                className="py-2 basis-full flex flex-col h-full cursor-pointer hover:bg-gray-50 hover:dark:bg-gray-700/20 pl-2 justify-center"
               >
                 <div
-                  className={`${Typography.size.base} ${Typography.weight.bold} flex flex-col text-gray-800`}
+                  className={cx('border-r dark:border-gray-700 pr-4 ', {
+                    'border-none': index === COUNTS_DATA.length - 1,
+                  })}
                 >
-                  {data.icon}
-                  <span className={`pl-1 ${Typography.size.lg}`}>{data.count}</span>
-                </div>
-                <div
-                  className={`${Typography.size.xs} flex items-center text-gray-500 pl-1`}
-                >
-                  {data.label}
+                  <div className="font-light flex text-gray-700 dark:text-white items-center">
+                    {data.icon}
+                    <span className="pl-1 text-[1.5rem]">{data.count}</span>
+                  </div>
+                  <div className="text-xs flex items-center text-gray-400 dark:text-gray-500 pl-1">
+                    {data.label}
+                  </div>
                 </div>
               </div>
             );
           })}
         </Card>
-        <Card className="flex flex-col px-8 py-1 justify-center gap-1">
-          <Select
-            value={value}
-            name="fruit"
-            onChange={(value) => {
-              setValue(value);
-            }}
-            placeholder="30 seconds"
-            sizing="xs"
-            prefixComponent={<IntervalIcon />}
-          >
-            <SelectItem value="Apple" />
-            <SelectItem value="Banana" />
-            <SelectItem value="Grape" />
-            <SelectItem value="Orange" />
-            <SelectItem value="Papaya" />
-            <SelectItem value="Watermalon" />
-            <SelectItem value="Guava" />
-            <SelectItem value="Tomato" />
-            <SelectItem value="Blueberries" />
-            <SelectItem value="Pear" />
-            <SelectItem value="Pineapple" />
-          </Select>
-          <Select
-            value={value}
-            name="fruit"
-            onChange={(value) => {
-              setValue(value);
-            }}
-            placeholder="Last 30 Days"
-            sizing="xs"
-            prefixComponent={<RefreshIcon />}
-          >
-            <SelectItem value="Apple" />
-            <SelectItem value="Banana" />
-            <SelectItem value="Grape" />
-            <SelectItem value="Orange" />
-            <SelectItem value="Papaya" />
-            <SelectItem value="Watermalon" />
-            <SelectItem value="Guava" />
-            <SelectItem value="Tomato" />
-            <SelectItem value="Blueberries" />
-            <SelectItem value="Pear" />
-            <SelectItem value="Pineapple" />
-          </Select>
-        </Card>
       </div>
-      <div className="grid grid-cols-[35%_1fr_35%] gap-2 auto-rows-[minmax(300px,_auto)] px-2">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 auto-rows-[minmax(300px,_auto)] px-2">
         <TopAttackPaths />
         <Posture />
-        <RuntimeIncidents />
-        {/* <Registries /> */}
         <TopRisksVulnerability />
-        {/* <Activity /> */}
-        {/* <RuntimeIncidents /> */}
+        <TopRisksSecret />
+        <TopRisksMalware />
+        <Registries />
+        <RuntimeIncidents />
       </div>
     </>
   );
