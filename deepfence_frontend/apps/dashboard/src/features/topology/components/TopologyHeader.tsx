@@ -1,6 +1,6 @@
 import classNames from 'classnames';
-import { ReactNode, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { ReactNode } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Tooltip } from 'ui-components';
 
 import { CloudIcon } from '@/components/icons/cloud';
@@ -95,8 +95,9 @@ const ResourceSelectorButton = ({
 };
 
 const ViewSwitcher = () => {
-  const [activeView, setActiveView] = useState<'graph' | 'table'>('graph');
-  const isGraphView = activeView === 'graph';
+  const location = useLocation();
+
+  const isGraphView = location.pathname.endsWith('graph');
   return (
     <div className="flex h-full">
       <Tooltip
@@ -105,7 +106,8 @@ const ViewSwitcher = () => {
         placement="bottom"
         delayDuration={200}
       >
-        <button
+        <Link
+          to="/topology/graph"
           type="button"
           className={classNames(
             'flex items-center text-lg font-semibold rounded-l-lg h-full px-2',
@@ -119,7 +121,7 @@ const ViewSwitcher = () => {
           <div className="h-8 w-8">
             <GraphIcon />
           </div>
-        </button>
+        </Link>
       </Tooltip>
       <Tooltip
         content={'Table View'}
@@ -127,7 +129,8 @@ const ViewSwitcher = () => {
         placement="bottom"
         delayDuration={200}
       >
-        <button
+        <Link
+          to="/topology/table"
           type="button"
           className={classNames(
             'flex items-center text-lg font-semibold rounded-r-lg h-full px-2',
@@ -141,7 +144,7 @@ const ViewSwitcher = () => {
           <div className="h-8 w-8">
             <TableIcon />
           </div>
-        </button>
+        </Link>
       </Tooltip>
     </div>
   );
