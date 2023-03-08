@@ -1,5 +1,6 @@
 import classNames from 'classnames';
 import { ReactNode, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Tooltip } from 'ui-components';
 
 import { CloudIcon } from '@/components/icons/cloud';
@@ -14,12 +15,12 @@ import { TableIcon } from '@/components/icons/table';
 
 export const TopologyHeader = () => {
   return (
-    <div className="flex p-1 w-full shadow bg-white dark:bg-gray-800 justify-between items-center">
+    <div className="flex p-1 w-full shadow bg-white dark:bg-gray-800 items-center">
       <span className="text-md font-medium text-gray-700 dark:text-gray-200 uppercase">
         Topology
       </span>
-      <div className="flex gap-4">
-        <div className="flex items-center gap-2">
+      <div className="flex gap-4 ml-auto flex-1 shrink min-w-0">
+        <div className="flex items-center gap-1 flex-1 shrink justify-end min-w-0">
           <ResourceSelectorButton
             icon={<CloudIcon />}
             name="Clouds"
@@ -76,22 +77,20 @@ const ResourceSelectorButton = ({
   active?: boolean;
 }) => {
   return (
-    <Tooltip content={name} triggerAsChild placement="bottom" delayDuration={200}>
-      <button
-        type="button"
-        className={classNames(
-          'flex items-center text-xl font-medium rounded-lg h-full px-2',
-          {
-            ['border-2 border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-500']:
-              !active,
-            ['bg-blue-600 text-gray-100 dark:border-blue-400 dark:text-white']: active,
-          },
-        )}
-      >
-        <div className="h-8 w-8">{icon}</div>
-        {count}
-      </button>
-    </Tooltip>
+    <Link
+      to={link}
+      className={classNames(
+        'flex gap-1 items-center text-base font-medium rounded-lg h-full px-2 shrink justify-end min-w-0',
+        {
+          ['text-gray-700 dark:text-gray-400']: !active,
+          ['text-blue-600 dark:text-blue-500']: active,
+        },
+      )}
+    >
+      <div className="h-6 w-6 shrink-0">{icon}</div>
+      <div className="shrink">{count}</div>
+      <div className="font-normal truncate">{name}</div>
+    </Link>
   );
 };
 

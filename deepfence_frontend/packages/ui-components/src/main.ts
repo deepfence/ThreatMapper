@@ -19,6 +19,7 @@ export {
   DropdownSeparator,
   DropdownSubMenu,
 } from '@/components/dropdown/Dropdown';
+export { CountIndicator } from '@/components/indicator/CountIndicator';
 export { default as TextInput } from '@/components/input/TextInput';
 export { default as TextInputArea } from '@/components/input/TextInputArea';
 export { default as Modal } from '@/components/modal/Modal';
