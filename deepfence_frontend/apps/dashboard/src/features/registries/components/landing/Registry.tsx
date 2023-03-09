@@ -3,8 +3,6 @@ import { HiArrowSmRight } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import { Button, Card } from 'ui-components';
 
-import LogoAzure from '@/assets/logo-azure.svg';
-import LogoDocker from '@/assets/logo-docker.svg';
 import { DFLink } from '@/components/DFLink';
 
 interface RegistryProps {
@@ -20,7 +18,7 @@ interface RegistryProps {
 
 export const Registry = ({ registry }: { registry: RegistryProps }) => {
   return (
-    <Card className="p-4 flex flex-col items-center gap-2 shrink-0" key={registry.type}>
+    <Card className="p-4 items-center gap-2 grow-0 w-5/12" key={registry.type}>
       <div className="flex items-center justify-between w-full">
         <h4 className="text-gray-900 text-md dark:text-white">{registry.name}</h4>
         <div className="flex ml-auto mt-2">

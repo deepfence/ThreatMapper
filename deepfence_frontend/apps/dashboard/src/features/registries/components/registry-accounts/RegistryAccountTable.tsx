@@ -1,81 +1,33 @@
-import { Table } from 'ui-components';
+import { useMemo } from 'react';
+import { createColumnHelper, Table } from 'ui-components';
 
-import { formatMilliseconds } from '@/utils/date';
+import { ModelRegistryListResp } from '@/api/generated';
+import { DFLink } from '@/components/DFLink';
 
-const regData = [
-  {
-    created: '2020-10-01T00:00:00.000Z',
-    name: 'ubuntu',
-    totalImage: 21,
-    totalTag: 322,
-    totalScanned: 2,
-    inProgress: 0,
-    credentials: {},
-  },
-  {
-    created: '2020-10-01T00:00:00.000Z',
-    name: 'dhub test',
-    totalImage: 54,
-    totalTag: 132,
-    totalScanned: 9,
-    inProgress: 0,
-    credentials: {},
-  },
-  {
-    created: '2020-10-01T00:00:00.000Z',
-    name: 'deepfenceio',
-    totalImage: 89,
-    totalTag: 123,
-    totalScanned: 55,
-    inProgress: 2,
-    credentials: {
-      'docker hub namespace': 'deepfenceio',
-      'docker hub username': 'harshvkarn',
-    },
-  },
-];
-export const RegistryAccountTable = () => {
-  return (
-    <Table
-      columns={[
-        {
-          cell: () => {},
-          id: 'expander',
-          maxSize: 10,
-          minSize: 10,
-          size: 10,
-        },
-        {
-          accessorKey: 'created',
-          cell: (row) => {
-            return <div>{formatMilliseconds(row.created)}</div>;
-          },
-          minSize: 200,
-        },
-        {
-          accessorKey: 'name',
-        },
-        {
-          accessorKey: 'totalImage',
-        },
-        {
-          accessorKey: 'totalTag',
-        },
-        {
-          accessorKey: 'totalScanned',
-        },
-        {
-          accessorKey: 'inProgress',
-        },
-        {
-          accessorKey: 'credentials',
-          cell: (row) => {
-            // donot print [object Object]
-            return <div>{JSON.stringify(row.credentials)}</div>;
-          },
-        },
-      ]}
-      data={regData}
-    />
+export const RegistryAccountTable = ({ data }: { data: ModelRegistryListResp[] }) => {
+  const columnHelper = createColumnHelper<ModelRegistryListResp>();
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor('name', {
+        header: () => 'Name',
+        cell: (info) => (
+          <div>
+            <DFLink to={`./${info.row.original.id}`}> {info.renderValue()} </DFLink>
+          </div>
+        ),
+        minSize: 150,
+      }),
+      columnHelper.accessor('created_at', {
+        header: () => 'Created',
+        minSize: 150,
+      }),
+      columnHelper.accessor('non_secret', {
+        header: () => 'Credentials',
+        cell: (info) => <div>{JSON.stringify(info.renderValue())}</div>,
+        minSize: 150,
+      }),
+    ],
+    [],
   );
+  return <Table columns={columns} data={data} />;
 };

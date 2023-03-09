@@ -4,7 +4,7 @@ import { Registry } from '@/features/registries/components/landing/Registry';
 
 const RegistryData = [
   {
-    type: 'dockerhub',
+    type: 'docker_hub',
     name: 'Docker Hub',
     icon: <img height="100%" width="100%" src={LogoDocker} alt="logo" />,
     data: {
@@ -97,7 +97,7 @@ const RegistryData = [
 
 export const Registries = () => {
   return (
-    <div className="flex gap-6 flex-wrap">
+    <div className="flex gap-6 flex-wrap mt-6 ml-6">
       {RegistryData.map((registry) => {
         return <Registry key={registry.name} registry={registry} />;
       })}

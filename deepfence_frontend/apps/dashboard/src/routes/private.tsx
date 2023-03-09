@@ -43,7 +43,9 @@ import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanS
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { Registries } from '@/features/registries/pages/Registries';
-import { RegistryAccount } from '@/features/registries/pages/RegistryAccount';
+import { module as registryAccount } from '@/features/registries/pages/RegistryAccount';
+import { module as registryImages } from '@/features/registries/pages/RegistryImages';
+import { module as registryImageTags } from '@/features/registries/pages/RegistryImageTags';
 import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
@@ -202,7 +204,17 @@ export const privateRoutes: CustomRouteObject[] = [
       },
       {
         path: 'registries/:type/registry-accounts',
-        element: <RegistryAccount />,
+        ...registryAccount,
+        meta: { title: 'Registries' },
+      },
+      {
+        path: 'registries/:type/registry-accounts/:id',
+        ...registryImages,
+        meta: { title: 'Registries' },
+      },
+      {
+        path: 'registries/:type/registry-accounts/:id/:image',
+        ...registryImageTags,
         meta: { title: 'Registries' },
       },
       {

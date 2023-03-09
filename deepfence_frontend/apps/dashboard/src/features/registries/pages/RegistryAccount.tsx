@@ -2,37 +2,50 @@ import { useRef, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { FaHistory, FaPlus } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
-import { useParams } from 'react-router-dom';
+import { LoaderFunctionArgs, useLoaderData, useParams } from 'react-router-dom';
 import { Button, Card, SlidingModal } from 'ui-components';
 
+import { getRegistriesApiClient } from '@/api/api';
+import { ApiDocsBadRequestResponse, ModelRegistryListResp } from '@/api/generated';
+import LogoDocker from '@/assets/logo-docker.svg';
 import { GoBack } from '@/components/GoBack';
-import { AddRegistry } from '@/features/registries/components/registry-accounts/AddRegistry';
+import { Metaheader } from '@/features/registries/components/common/Metaheader';
+import { AddRegistry } from '@/features/registries/components/registry-accounts/AddRegistrySliding';
 import { RegistryAccountTable } from '@/features/registries/components/registry-accounts/RegistryAccountTable';
+import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
-
-type ScanResult = {
-  id: string;
-  package: string;
-  severity: string;
-  description: string;
-  link: string;
-  action?: null;
-};
 
 export type LoaderDataType = {
   error?: string;
   message?: string;
-  data?: ScanResult[];
+  data?: ModelRegistryListResp[];
 };
 
+const metaheader = [
+  {
+    key: 'Registries',
+    value: 2,
+  },
+  {
+    key: 'Total Images',
+    value: 25,
+  },
+  {
+    key: 'Total Tags',
+    value: 56,
+  },
+  {
+    key: 'In Progress',
+    value: 0,
+  },
+];
+
 const HeaderComponent = ({
-  scanId,
   nodeType,
   timestamp,
   elementToFocusOnClose,
   setShowFilter,
 }: {
-  scanId: string;
   nodeType: string;
   timestamp: number;
   elementToFocusOnClose: React.MutableRefObject<null>;
@@ -93,112 +106,184 @@ const HeaderComponent = ({
   );
 };
 
-export const RegistryAccount = () => {
+async function getRegistryAccounts() {
+  const result = await makeRequest({
+    apiFunction: getRegistriesApiClient().listRegistries,
+    apiArgs: [],
+    errorHandler: async (r) => {
+      const error = new ApiError<LoaderDataType>({});
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message,
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(result)) {
+    throw result.value();
+  }
+
+  if (result === null) {
+    return {
+      data: [],
+    };
+  }
+  if (result !== undefined) {
+    // Assign the array to the variable or parameter
+    return {
+      data: result,
+    };
+  }
+
+  return {
+    data: [],
+  };
+}
+
+async function getRegistryMetadata() {
+  const result = await makeRequest({
+    apiFunction: getRegistriesApiClient().listRegistries,
+    apiArgs: [],
+    errorHandler: async (r) => {
+      const error = new ApiError<LoaderDataType>({});
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message,
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(result)) {
+    throw result.value();
+  }
+
+  if (result === null) {
+    return {
+      data: [],
+    };
+  }
+  if (result !== undefined) {
+    // Assign the array to the variable or parameter
+    return {
+      data: result,
+    };
+  }
+
+  return {
+    data: [],
+  };
+}
+
+const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderDataType> => {
+  return await getRegistryAccounts();
+};
+
+const RegistryAccount = () => {
   const params = useParams() as {
     type: string;
   };
+  const loaderData = useLoaderData() as LoaderDataType;
+  const { data } = loaderData;
+
   const elementToFocusOnClose = useRef(null);
   const [showFilter, setShowFilter] = useState(false);
 
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const currentTime = new Date().getTime();
+
+  if (data === undefined || data.length === 0) {
+    return <div>Loading...</div>;
+  }
+
+  // filter data based on the type
+  const filteredData = data.filter((item) => item.registry_type === params.type);
 
   return (
     <>
-      {/* <ScanResultFilterModal
-        showFilter={showFilter}
-        setShowFilter={setShowFilter}
-        elementToFocusOnClose={elementToFocusOnClose.current}
-      /> */}
       <HeaderComponent
-        scanId={'jljl'}
         nodeType={params.type}
         elementToFocusOnClose={elementToFocusOnClose}
         setShowFilter={setShowFilter}
-        timestamp={0}
+        timestamp={currentTime}
       />
-      <div className="grid p-2 gap-x-2">
-        {/* <div className="self-start grid gap-y-2"> */}
-        {/* <SeverityCountComponent
-            theme={mode}
-            data={{
-              total: location.state.severityCounts.total,
-              severityCounts: {
-                critical: location.state.severityCounts.critical,
-                medium: location.state.severityCounts.medium,
-                high: location.state.severityCounts.high,
-                low: location.state.severityCounts.low,
-              },
-            }}
-          /> */}
-        {/* </div> */}
-        <div className="self-start grid gap-y-2">
-          <Card className="w-auto h-12 flex p-4 pt-8 pb-8">
-            <div className="flex">
-              <div className="pr-6 gap-x-2 flex flex-col justify-center">
-                <div className="pr-4 flex items-center gap-x-2">
-                  <span className="text-lg text-gray-900 dark:text-gray-200 font-semibold">
-                    2
-                  </span>
-                </div>
-                <span className="text-xs text-gray-400 dark:text-gray-500">
-                  Registries
-                </span>
+      {filteredData.length > 0 && (
+        <div className="grid p-2 gap-x-2">
+          <div className="self-start grid gap-y-2">
+            <Card className="w-auto h-12 flex p-4 pt-8 pb-8">
+              <Metaheader metaheader={metaheader} />
+              <div className="ml-auto flex items-center gap-x-4">
+                <Button
+                  color="primary"
+                  size="xs"
+                  startIcon={<FaPlus />}
+                  onClick={() => setOpen(true)}
+                  ref={ref}
+                >
+                  Add Registry
+                </Button>
+                <SlidingModal
+                  width="w-3/12"
+                  header="Add Registry"
+                  open={open}
+                  onOpenChange={() => setOpen(false)}
+                  elementToFocusOnCloseRef={ref}
+                >
+                  <AddRegistry type={params.type} />
+                </SlidingModal>
               </div>
-              <div className="pr-6 gap-x-2 flex flex-col justify-center">
-                <div className="pr-4 flex items-center gap-x-2">
-                  <span className="text-lg text-gray-900 dark:text-gray-200 font-semibold">
-                    25
-                  </span>
-                </div>
-                <span className="text-xs text-gray-400 dark:text-gray-500">
-                  Total Images
-                </span>
-              </div>
-              <div className="pr-6 gap-x-2 flex flex-col justify-center">
-                <div className="pr-4 flex items-center gap-x-2">
-                  <span className="text-lg text-gray-900 dark:text-gray-200 font-semibold">
-                    0
-                  </span>
-                </div>
-                <span className="text-xs text-gray-400 dark:text-gray-500">Scanned</span>
-              </div>
-              <div className="pr-6 gap-x-2 flex flex-col justify-center">
-                <div className="pr-4 flex items-center gap-x-2">
-                  <span className="text-lg text-gray-900 dark:text-gray-200 font-semibold">
-                    0
-                  </span>
-                </div>
-                <span className="text-xs text-gray-400 dark:text-gray-500">
-                  In Progress
-                </span>
-              </div>
-            </div>
-            {/* add button on right side */}
-            <div className="ml-auto flex items-center gap-x-4">
-              <Button
-                color="primary"
-                size="xs"
-                startIcon={<FaPlus />}
-                onClick={() => setOpen(true)}
-                ref={ref}
-              >
-                Add Registry
-              </Button>
-              <SlidingModal
-                width="w-2/6"
-                header="Add Registry"
-                open={open}
-                onOpenChange={() => setOpen(false)}
-                elementToFocusOnCloseRef={ref}
-              >
-                <AddRegistry />
-              </SlidingModal>
-            </div>
-          </Card>
-          <RegistryAccountTable />
+            </Card>
+            <RegistryAccountTable data={filteredData} />
+          </div>
         </div>
-      </div>
+      )}
+
+      {filteredData.length === 0 && (
+        <div className="flex flex-col items-center justify-center h-full">
+          <div className="flex flex-col items-center justify-center mt-40">
+            <div className="flex items-center justify-center">
+              <img src={LogoDocker} alt="empty registry" />
+            </div>
+            <div className="flex flex-col items-center justify-center">
+              <span className="text-2xl font-medium text-gray-700 dark:text-gray-200">
+                No Registry Accounts
+              </span>
+              <span className="text-sm text-gray-500 dark:text-gray-200">
+                Add a registry account to get started
+              </span>
+              <div className="flex items-center gap-x-4 mt-6">
+                <Button
+                  color="primary"
+                  size="xs"
+                  startIcon={<FaPlus />}
+                  onClick={() => setOpen(true)}
+                  ref={ref}
+                >
+                  Add Registry
+                </Button>
+                <SlidingModal
+                  width="w-3/12"
+                  header="Add Registry"
+                  open={open}
+                  onOpenChange={() => setOpen(false)}
+                  elementToFocusOnCloseRef={ref}
+                >
+                  <AddRegistry type={params.type} />
+                </SlidingModal>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
+};
+
+export const module = {
+  loader,
+  element: <RegistryAccount />,
 };
