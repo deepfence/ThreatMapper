@@ -10,6 +10,10 @@ import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
 import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
 import { module as integrations } from '@/features/integrations/pages/Integrations';
+import { module as malware } from '@/features/malwares/pages/Malware';
+import { module as malwareDetails } from '@/features/malwares/pages/MalwareDetailModal';
+import { module as malwareScanResults } from '@/features/malwares/pages/MalwareScanResults';
+import { module as malwareScans } from '@/features/malwares/pages/MalwareScans';
 import {
   ConnectorsLayout,
   connectorsLoader,
@@ -272,6 +276,29 @@ export const privateRoutes: CustomRouteObject[] = [
             path: ':secretId',
             ...secretDetails,
             meta: { title: 'Secret Details' },
+          },
+        ],
+      },
+      // malware
+      {
+        path: 'malware',
+        ...malware,
+        meta: { title: 'Malware' },
+      },
+      {
+        path: 'malware/scans',
+        ...malwareScans,
+        meta: { title: 'Malware Scans' },
+      },
+      {
+        path: 'malware/scan-results/:scanId',
+        ...malwareScanResults,
+        meta: { title: 'Malware Scan Results' },
+        children: [
+          {
+            path: ':malwareId',
+            ...malwareDetails,
+            meta: { title: 'Malware Details' },
           },
         ],
       },
