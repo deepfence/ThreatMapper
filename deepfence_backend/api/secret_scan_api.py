@@ -179,6 +179,8 @@ def secret_scanned_nodes():
 
     if "aggregations" in aggs_response:
         for node_id_aggr in aggs_response["aggregations"]["node_id"]["buckets"]:
+            if not status_map.get(node_id_aggr["key"], {}):
+                continue
             node_type = ""
             if node_id_aggr["node_type"]["buckets"]:
                 node_type = node_id_aggr["node_type"]["buckets"][0]["key"]
