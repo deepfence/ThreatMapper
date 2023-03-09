@@ -2,8 +2,6 @@ package main
 
 import (
 	"errors"
-	"github.com/armon/go-metrics"
-	"github.com/weaveworks/go-checkpoint"
 	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
@@ -12,6 +10,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/armon/go-metrics"
+	"github.com/weaveworks/go-checkpoint"
 
 	metrics_prom "github.com/armon/go-metrics/prometheus"
 	dfUtils "github.com/deepfence/df-utils"
@@ -150,18 +151,11 @@ func setAgentControls() {
 	}
 	err = controls.RegisterControl(ctl.StartComplianceScan,
 		func(req ctl.StartComplianceScanRequest) error {
-			log.Info("Start Compliance Scan")
 			//TODO
 			return nil
 		})
 	err = controls.RegisterControl(ctl.StartMalwareScan,
 		func(req ctl.StartMalwareScanRequest) error {
-			log.Info("Start Malware Scan")
-			return host.StartMalwareScan(req)
-		})
-	err = controls.RegisterControl(ctl.StartMalwareScan,
-		func(req ctl.StartMalwareScanRequest) error {
-			log.Info("Start Malware Scan")
 			return host.StartMalwareScan(req)
 		})
 	err = controls.RegisterControl(ctl.StartAgentUpgrade,

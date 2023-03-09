@@ -1,7 +1,7 @@
 import { truncate } from 'lodash-es';
 
 import { ReactECharts } from '@/components/ReactEcharts';
-import { VULNERABILITY_SEVERITY_COLORS } from '@/constants/charts';
+import { SEVERITY_COLORS } from '@/constants/charts';
 import { Mode } from '@/theme/ThemeContext';
 
 export interface TopNVulnerableChartData {
@@ -95,6 +95,9 @@ export const TopNVulnerableChart = ({
               return truncate(value, { length: 13 });
             },
           },
+          axisLine: {
+            show: false,
+          },
           axisTick: {
             show: false,
           },
@@ -106,7 +109,7 @@ export const TopNVulnerableChart = ({
             label: {
               show: true,
             },
-            color: VULNERABILITY_SEVERITY_COLORS['critical'],
+            color: SEVERITY_COLORS['critical'],
           },
           {
             type: 'bar',
@@ -114,7 +117,7 @@ export const TopNVulnerableChart = ({
             label: {
               show: true,
             },
-            color: VULNERABILITY_SEVERITY_COLORS['high'],
+            color: SEVERITY_COLORS['high'],
           },
           {
             type: 'bar',
@@ -122,7 +125,7 @@ export const TopNVulnerableChart = ({
             label: {
               show: true,
             },
-            color: VULNERABILITY_SEVERITY_COLORS['medium'],
+            color: SEVERITY_COLORS['medium'],
           },
           {
             type: 'bar',
@@ -130,7 +133,7 @@ export const TopNVulnerableChart = ({
             label: {
               show: true,
             },
-            color: VULNERABILITY_SEVERITY_COLORS['low'],
+            color: SEVERITY_COLORS['low'],
           },
           {
             type: 'bar',
@@ -138,7 +141,7 @@ export const TopNVulnerableChart = ({
             label: {
               show: true,
             },
-            color: VULNERABILITY_SEVERITY_COLORS['unknown'],
+            color: SEVERITY_COLORS['unknown'],
           },
         ],
       }}

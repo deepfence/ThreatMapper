@@ -149,9 +149,9 @@ type ScanResultBasicNode struct {
 
 type SbomRequest struct {
 	// either scan_id or node_id+node_type is required
-	ScanID   string `json:"scan_id"`
-	NodeID   string `json:"node_id"`
-	NodeType string `json:"node_type"`
+	ScanID string `json:"scan_id" validate:"required" required:"true"`
+	//NodeID   string `json:"node_id"`
+	//NodeType string `json:"node_type"`
 }
 
 type SbomResponse struct {
@@ -184,8 +184,6 @@ type ScanResultsCommon struct {
 type SecretScanResult struct {
 	ScanResultsCommon
 	Secrets        []Secret         `json:"secrets" required:"true"`
-	Rules          []Rule           `json:"rules" required:"true"`
-	RuleSecrets    map[int][]int32  `json:"rule_2_secrets" required:"true"`
 	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
 }
 
@@ -220,14 +218,21 @@ type CloudComplianceScanResult struct {
 }
 
 type Secret struct {
-	StartingIndex         int32  `json:"starting_index" required:"true"`
-	RelativeStartingIndex int32  `json:"relative_starting_index" required:"true"`
-	RelativeEndingIndex   int32  `json:"relative_ending_index" required:"true"`
-	FullFilename          string `json:"full_filename" required:"true"`
-	MatchedContent        string `json:"matched_content" required:"true"`
-	Masked                bool   `json:"masked" required:"true"`
-	UpdatedAt             int64  `json:"updated_at" required:"true"`
-	RuleId                string `json:"rule_id" required:"true"`
+	// Secret + Rule neo4j node
+	NodeId                string  `json:"node_id" required:"true"`
+	StartingIndex         int32   `json:"starting_index" required:"true"`
+	RelativeStartingIndex int32   `json:"relative_starting_index" required:"true"`
+	RelativeEndingIndex   int32   `json:"relative_ending_index" required:"true"`
+	FullFilename          string  `json:"full_filename" required:"true"`
+	MatchedContent        string  `json:"matched_content" required:"true"`
+	Masked                bool    `json:"masked" required:"true"`
+	UpdatedAt             int64   `json:"updated_at" required:"true"`
+	Level                 string  `json:"level" required:"true"`
+	Score                 float64 `json:"score" required:"true"`
+	RuleID                int32   `json:"rule_id" required:"true" required:"true"`
+	Name                  string  `json:"name" required:"true"`
+	Part                  string  `json:"part" required:"true"`
+	SignatureToMatch      string  `json:"signature_to_match" required:"true"`
 }
 
 func (Secret) NodeType() string {
@@ -239,20 +244,11 @@ func (Secret) ExtendedField() string {
 }
 
 func (v Secret) GetCategory() string {
-	return ""
+	return v.Level
 }
 
 func (Secret) GetJsonCategory() string {
-	return ""
-}
-
-type Rule struct {
-	ID               int32   `json:"id" required:"true" required:"true"`
-	Name             string  `json:"name" required:"true"`
-	Part             string  `json:"part" required:"true"`
-	SignatureToMatch string  `json:"signature_to_match" required:"true"`
-	Level            string  `json:"level" required:"true"`
-	Score            float64 `json:"score" required:"true"`
+	return "level"
 }
 
 type Vulnerability struct {
@@ -293,16 +289,26 @@ func (Vulnerability) GetJsonCategory() string {
 }
 
 type Malware struct {
-	ImageLayerID     string  `json:"image_layer_id" required:"true"`
-	Class            string  `json:"class" required:"true"`
-	CompleteFilename string  `json:"complete_filename" required:"true"`
-	FileSevScore     float64 `json:"file_sevScore" required:"true"`
-	FileSeverity     string  `json:"file_severity" required:"true"`
-	SeverityScore    float64 `json:"severity_score" required:"true"`
-	Summary          string  `json:"summary" required:"true"`
-	RuleName         string  `json:"rule_name" required:"true"`
-	Masked           bool    `json:"masked" required:"true"`
-	UpdatedAt        int64   `json:"updated_at" required:"true"`
+	// Malware + MalwareRule node in neo4j
+	Class            string   `json:"Class" required:"true"`
+	CompleteFilename string   `json:"CompleteFilename" required:"true"`
+	FileSevScore     int      `json:"FileSevScore" required:"true"`
+	FileSeverity     string   `json:"FileSeverity" required:"true"`
+	ImageLayerID     string   `json:"ImageLayerId" required:"true"`
+	Meta             []string `json:"Meta"`
+	NodeId           string   `json:"node_id" required:"true"`
+	RuleID           string   `json:"rule_id" required:"true"`
+	RuleName         string   `json:"rule_name" required:"true"`
+	Author           string   `json:"author"`
+	Date             string   `json:"date"`
+	Description      string   `json:"description"`
+	Filetype         string   `json:"filetype"`
+	Info             string   `json:"info"`
+	Version          string   `json:"version"`
+	SeverityScore    int      `json:"SeverityScore"`
+	StringsToMatch   []string `json:"StringsToMatch"`
+	Summary          string   `json:"Summary"`
+	Masked           bool     `json:"masked" required:"true"`
 }
 
 func (Malware) NodeType() string {
@@ -314,11 +320,11 @@ func (Malware) ExtendedField() string {
 }
 
 func (v Malware) GetCategory() string {
-	return v.Class
+	return v.FileSeverity
 }
 
 func (Malware) GetJsonCategory() string {
-	return "class"
+	return "FileSeverity"
 }
 
 type Compliance struct {
@@ -356,7 +362,6 @@ func (Compliance) GetJsonCategory() string {
 }
 
 type CloudCompliance struct {
-	Timestamp           string `json:"@timestamp" required:"true"`
 	Count               int32  `json:"count,omitempty" required:"true"`
 	Reason              string `json:"reason" required:"true"`
 	Resource            string `json:"resource" required:"true"`
@@ -370,7 +375,6 @@ type CloudCompliance struct {
 	CloudProvider       string `json:"cloud_provider" required:"true"`
 	NodeName            string `json:"node_name" required:"true"`
 	NodeID              string `json:"node_id" required:"true"`
-	ScanID              string `json:"scan_id" required:"true"`
 	Masked              bool   `json:"masked" required:"true"`
 	UpdatedAt           int64  `json:"updated_at" required:"true"`
 	Type                string `json:"type" required:"true"`

@@ -27,7 +27,10 @@ models/ControlsAgentControls.ts
 models/DetailedConnectionSummary.ts
 models/DetailedNodeSummary.ts
 models/DetailedParent.ts
+models/DiagnosisDiagnosticLogsLink.ts
 models/DiagnosisDiagnosticNotification.ts
+models/DiagnosisGenerateDiagnosticLogsRequest.ts
+models/DiagnosisGetDiagnosticLogsResponse.ts
 models/GraphNodeInfo.ts
 models/GraphProviderThreatGraph.ts
 models/GraphThreatNodeInfo.ts
@@ -36,6 +39,7 @@ models/IngestersCloudCompliance.ts
 models/IngestersCloudResource.ts
 models/IngestersCompliance.ts
 models/IngestersMalware.ts
+models/IngestersMalwareRule.ts
 models/IngestersMalwareScanStatus.ts
 models/IngestersReportIngestionData.ts
 models/IngestersSecret.ts
@@ -69,6 +73,7 @@ models/ModelComplianceScanTriggerReq.ts
 models/ModelComputeMetrics.ts
 models/ModelContainer.ts
 models/ModelContainerImage.ts
+models/ModelContainerImageWithTags.ts
 models/ModelDownloadReportResponse.ts
 models/ModelFetchWindow.ts
 models/ModelHost.ts
@@ -92,7 +97,6 @@ models/ModelRegistryAccount.ts
 models/ModelRegistryAddReq.ts
 models/ModelRegistryListResp.ts
 models/ModelResponseAccessToken.ts
-models/ModelRule.ts
 models/ModelSbomRequest.ts
 models/ModelSbomResponse.ts
 models/ModelScanFilter.ts
@@ -127,6 +131,7 @@ models/ReportersContainsFilter.ts
 models/ReportersFieldsFilters.ts
 models/ReportersMatchFilter.ts
 models/ReportersOrderFilter.ts
+models/ReportersOrderSpec.ts
 models/SearchSearchCountResp.ts
 models/SearchSearchFilter.ts
 models/SearchSearchNodeReq.ts

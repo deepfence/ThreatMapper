@@ -40,7 +40,7 @@ func ComputeThreat(msg *message.Message) error {
 		WITH DISTINCT m
 		MATCH (m) -[:HOSTS]-> (o) <-[:SCANNED]- (s)
 		WITH DISTINCT o, max(s.updated_at) as latest, s
-		MATCH (s) -[:DETECTED]-> (v:Vulnerability) 
+		MATCH (s) -[:DETECTED]-> (v:Vulnerability)
 		SET v.exploitability_score = CASE WHEN v.exploitability_score = 2 THEN 3 ELSE v.exploitability_score END, v.has_live_connection = true`,
 		map[string]interface{}{}); err != nil {
 		return err
@@ -52,7 +52,7 @@ func ComputeThreat(msg *message.Message) error {
 		WITH DISTINCT m
 		MATCH (m) <-[:SCANNED]- (s)
 		WITH DISTINCT m, max(s.updated_at) as latest, s
-		MATCH (s) -[:DETECTED]-> (v:Vulnerability) 
+		MATCH (s) -[:DETECTED]-> (v:Vulnerability)
 		SET v.exploitability_score = CASE WHEN v.exploitability_score = 2 THEN 3 ELSE v.exploitability_score END, v.has_live_connection = true`,
 		map[string]interface{}{}); err != nil {
 		return err

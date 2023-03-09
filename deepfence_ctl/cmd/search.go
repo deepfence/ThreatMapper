@@ -50,7 +50,7 @@ var topCmd = &cobra.Command{
 		}
 
 		orderFilter := deepfence_server_client.ReportersOrderFilter{
-			OrderFields: []string{type2field(search_type)},
+			OrderFields: []deepfence_server_client.ReportersOrderSpec{{FieldName: type2field(search_type)}},
 		}
 
 		filtreq := deepfence_server_client.SearchSearchNodeReq{

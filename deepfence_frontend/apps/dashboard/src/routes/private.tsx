@@ -1,10 +1,19 @@
 import { Outlet } from 'react-router-dom';
 
 import { ErrorComponent } from '@/components/error/ErrorComponent';
+import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
+import { searchClustersApiLoader } from '@/features/common/data-component/searchClustersApiLoader';
+import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
+import { searchContainersApiLoader } from '@/features/common/data-component/searchContainersApiLoader';
+import { searchHostsApiLoader } from '@/features/common/data-component/searchHostsApiLoader';
 import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
 import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
 import { module as integrations } from '@/features/integrations/pages/Integrations';
+import { module as malware } from '@/features/malwares/pages/Malware';
+import { module as malwareDetails } from '@/features/malwares/pages/MalwareDetailModal';
+import { module as malwareScanResults } from '@/features/malwares/pages/MalwareScanResults';
+import { module as malwareScans } from '@/features/malwares/pages/MalwareScans';
 import {
   ConnectorsLayout,
   connectorsLoader,
@@ -39,8 +48,13 @@ import { module as postureAddAccounts } from '@/features/postures/pages/AddAccou
 import { module as posture } from '@/features/postures/pages/Posture';
 import { module as postureScanResults } from '@/features/postures/pages/PostureScanResults';
 import { Registries } from '@/features/registries/pages/Registries';
-import { vulnerabilityApiLoader } from '@/features/vulnerabilities/api/apiLoader';
+import { module as secret } from '@/features/secrets/pages/Secret';
+import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
+import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
+import { module as secretScans } from '@/features/secrets/pages/SecretScans';
+import { sbomApiLoader } from '@/features/vulnerabilities/api/sbomApiLoader';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
+import { module as runtimeBom } from '@/features/vulnerabilities/pages/RuntimeBom';
 import { module as uniqueVulnerabilities } from '@/features/vulnerabilities/pages/UniqueVulnerabilities';
 import { module as vulnerability } from '@/features/vulnerabilities/pages/Vulnerability';
 import { module as vulnerabilityDetails } from '@/features/vulnerabilities/pages/VulnerabilityDetailModal';
@@ -195,6 +209,7 @@ export const privateRoutes: CustomRouteObject[] = [
         ...integrations,
         meta: { title: 'Integrations' },
       },
+      // vulnerability
       {
         path: 'vulnerability',
         ...vulnerability,
@@ -241,6 +256,58 @@ export const privateRoutes: CustomRouteObject[] = [
           },
         ],
       },
+      {
+        path: 'vulnerability/rbom',
+        ...runtimeBom,
+        meta: { title: 'Runtime BOM' },
+      },
+      // secrets
+      {
+        path: 'secret',
+        ...secret,
+        meta: { title: 'Secret' },
+      },
+      {
+        path: 'secret/scans',
+        ...secretScans,
+        meta: { title: 'Secret Scans' },
+      },
+      {
+        path: 'secret/scan-results/:scanId',
+        ...secretScanResults,
+        meta: { title: 'Secret Scan Results' },
+        children: [
+          {
+            path: ':secretId',
+            ...secretDetails,
+            meta: { title: 'Secret Details' },
+          },
+        ],
+      },
+      // malware
+      {
+        path: 'malware',
+        ...malware,
+        meta: { title: 'Malware' },
+      },
+      {
+        path: 'malware/scans',
+        ...malwareScans,
+        meta: { title: 'Malware Scans' },
+      },
+      {
+        path: 'malware/scan-results/:scanId',
+        ...malwareScanResults,
+        meta: { title: 'Malware Scan Results' },
+        children: [
+          {
+            path: ':malwareId',
+            ...malwareDetails,
+            meta: { title: 'Malware Details' },
+          },
+        ],
+      },
+      // posture
       {
         path: 'posture',
         ...posture,
@@ -290,7 +357,37 @@ export const privateRoutes: CustomRouteObject[] = [
     ],
   },
   {
-    path: '/_api/vulnerability/scan-results/history/:nodeType/:nodeId',
-    loader: vulnerabilityApiLoader,
+    path: '/data-component',
+    children: [
+      {
+        path: 'vulnerability',
+        children: [
+          {
+            path: 'sbom/:scanId',
+            loader: sbomApiLoader,
+          },
+        ],
+      },
+      {
+        path: 'scan-history/:scanType/:nodeType/:nodeId',
+        loader: scanHistoryApiLoader,
+      },
+      {
+        path: 'search/containers/:scanType',
+        loader: searchContainersApiLoader,
+      },
+      {
+        path: 'search/containerImages/:scanType',
+        loader: searchContainerImagesApiLoader,
+      },
+      {
+        path: 'search/hosts/:scanType',
+        loader: searchHostsApiLoader,
+      },
+      {
+        path: 'search/clusters',
+        loader: searchClustersApiLoader,
+      },
+    ],
   },
 ];

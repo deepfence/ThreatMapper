@@ -1,7 +1,10 @@
 package appclient
 
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"net/url"
 	"os"
@@ -11,13 +14,12 @@ import (
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	oahttp "github.com/deepfence/golang_deepfence_sdk/utils/http"
+	"github.com/klauspost/compress/gzip"
 	"github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/common/xfer"
 	"github.com/weaveworks/scope/probe/controls"
 	"github.com/weaveworks/scope/probe/host"
 	"github.com/weaveworks/scope/report"
-
-	"github.com/bytedance/sonic"
 )
 
 type OpenapiClient struct {
@@ -75,15 +77,24 @@ func (OpenapiClient) PipeConnection(appID string, pipeID string, pipe xfer.Pipe)
 
 // Publish implements MultiAppClient
 func (oc OpenapiClient) Publish(r report.Report) error {
-	buf, err := sonic.Marshal(r)
+	buf, err := json.Marshal(r)
 	if err != nil {
 		return err
 	}
 
 	req := oc.client.TopologyApi.IngestAgentReport(context.Background())
 
+	var b bytes.Buffer
+	gz := gzip.NewWriter(&b)
+	if _, err := gz.Write(buf); err != nil {
+		return err
+	}
+	gz.Close()
+	bb := b.Bytes()
+	dst := make([]byte, base64.StdEncoding.EncodedLen(len(bb)))
+	base64.StdEncoding.Encode(dst, bb)
 	req = req.ReportRawReport(openapi.ReportRawReport{
-		Payload: string(buf),
+		Payload: string(dst),
 	})
 
 	_, err = oc.client.TopologyApi.IngestAgentReportExecute(req)

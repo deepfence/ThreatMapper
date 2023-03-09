@@ -86,7 +86,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	log.Info().Msg("scanning sbom for vulnerabilities ...")
 	vulnerabilities, err := grype.Scan(grypeBin, grypeConfig, sbomFile, nil)
 	if err != nil {
-		log.Error().Msg(err.Error())
+		log.Error().Msgf("error: %s output: %s", err.Error(), string(vulnerabilities))
 		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
 		return nil
 	}
@@ -206,7 +206,7 @@ func mapVulnerabilities(vulnerabilities []ps.VulnerabilityScanReport) map[string
 // generate runtime sbom format
 func generateRuntimeSBOM(path string, vulnerabilities []ps.VulnerabilityScanReport) (*[]model.SbomResponse, error) {
 	var (
-		runSBOM []model.SbomResponse
+		runSBOM = make([]model.SbomResponse, 0)
 		err     error
 	)
 

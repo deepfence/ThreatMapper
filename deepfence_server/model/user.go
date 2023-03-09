@@ -431,6 +431,7 @@ func (u *User) CreateAccessToken(tokenAuth *jwtauth.JWTAuth, grantType string) (
 		"first_name":           u.FirstName,
 		"last_name":            u.LastName,
 		"role":                 u.Role,
+		"role_id":              u.RoleID,
 		"company_id":           u.CompanyID,
 		"company":              u.Company,
 		"email":                u.Email,

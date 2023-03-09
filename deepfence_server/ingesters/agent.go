@@ -11,6 +11,7 @@ import (
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/telemetry"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	redis2 "github.com/redis/go-redis/v9"
 	"github.com/weaveworks/scope/report"
@@ -214,8 +215,7 @@ func (nc *neo4jIngester) resolversUpdater() {
 			if elements == 0 {
 				continue
 			}
-			start := time.Now()
-			//nc.resolvers_access.Lock()
+			span := telemetry.NewSpan(context.Background(), "ingester", "ResolversUpdater")
 			batch_resolver := <-nc.resolvers_update
 			for i := 1; i < elements; i++ {
 				resolver := <-nc.resolvers_update
@@ -223,10 +223,7 @@ func (nc *neo4jIngester) resolversUpdater() {
 			}
 			nc.resolvers.clean_maps()
 			nc.resolvers.push_maps(&batch_resolver)
-			log.Debug().Msgf("resolver merge time: %v for %v elements", time.Since(start), elements)
-			//log.Debug().Msgf("net_map size: %v", len(nc.resolvers.network_map))
-			//log.Debug().Msgf("hostport : %v", len(nc.resolvers.ipport_ippid))
-			//nc.resolvers_access.Unlock()
+			span.End()
 		}
 	}
 }
@@ -453,8 +450,6 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 	}
 	defer tx.Close()
 
-	start := time.Now()
-
 	if _, err := tx.Run("UNWIND $batch as row MERGE (n:Node{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Host_batch}); err != nil {
 		return err
 	}
@@ -478,9 +473,6 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 	if _, err = tx.Run("UNWIND $batch as row MERGE (n:Process{node_id:row.node_id}) SET n+= row, n.updated_at = TIMESTAMP()", map[string]interface{}{"batch": batches.Process_batch}); err != nil {
 		return err
 	}
-
-	log.Debug().Msgf("Upserting DB nodes took: %v", time.Since(start))
-	start = time.Now()
 
 	//if _, err = tx.Run("UNWIND $batch as row MERGE (n:TEndpoint{node_id:row.node_id}) SET n+= row", map[string]interface{}{"batch": batches.Endpoint_batch}); err != nil {
 	//return err
@@ -506,9 +498,6 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 		return err
 	}
 
-	log.Debug().Msgf("Upserting DB edges add took: %v", time.Since(start))
-	start = time.Now()
-
 	if _, err = tx.Run("UNWIND $batch as row MATCH (n:Node{node_id: row.node_id}) -[r:CONNECTS]-> (:Node) detach delete r", map[string]interface{}{"batch": batches.Hosts}); err != nil {
 		return err
 	}
@@ -520,8 +509,6 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 	if _, err = tx.Run("UNWIND $batch as row MATCH (n:Node{node_id: row.source}) WITH n, row UNWIND row.edges as row2  MATCH (m:Node{node_id: row2.destination}) MERGE (n)-[:CONNECTS {left_pid: row2.left_pid, right_pid: row2.right_pid}]->(m)", map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
 		return err
 	}
-
-	log.Debug().Msgf("Upserting DB connections edges took: %v", time.Since(start))
 
 	return tx.Commit()
 }
@@ -587,10 +574,11 @@ func (nc *neo4jIngester) runDBPusher(db_pusher chan ReportIngestionData) {
 	for {
 		select {
 		case batches := <-db_pusher:
-			start := time.Now()
+			span := telemetry.NewSpan(context.Background(), "ingester", "PushAgentReportsToDB")
+			defer span.End()
 			err := nc.PushToDB(batches)
-			log.Info().Msgf("DB push: %v", time.Since(start))
 			if err != nil {
+				span.EndWithErr(err)
 				log.Error().Msgf("push to neo4j err: %v", err)
 			}
 		}

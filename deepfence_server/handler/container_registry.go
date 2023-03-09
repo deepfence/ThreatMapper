@@ -36,7 +36,7 @@ func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var registriesResponse []model.RegistryListResp
+	registriesResponse := make([]model.RegistryListResp, 0)
 	for _, r := range registries {
 		reg, err := registry.GetRegistryWithRegistrySafeRow(r)
 		if err != nil {
@@ -45,7 +45,8 @@ func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 		}
 		registryId := model.GetRegistryID(reg.GetRegistryType(), reg.GetNamespace())
 		registryResponse := model.RegistryListResp{
-			ID:           registryId,
+			ID:           r.ID,
+			NodeID:       registryId,
 			Name:         r.Name,
 			RegistryType: r.RegistryType,
 			NonSecret:    r.NonSecret,
@@ -92,7 +93,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 
 	// add registry to database
 	// before that check if registry already exists
-	ctx := directory.NewGlobalContext()
+	ctx := directory.WithGlobalContext(r.Context())
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
@@ -282,33 +283,14 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	httpext.JSON(w, http.StatusOK, api_messages.SuccessRegistryCreated)
 }
 
-func (h *Handler) ListImagesInRegistry(w http.ResponseWriter, r *http.Request) {
-	queryParam := r.URL.Query()
-	rType := queryParam.Get("registry_type")
-	ns := queryParam.Get("namespace")
-	req := model.RegistryImageListReq{
-		ResourceType: rType,
-		Namespace:    ns,
-	}
-
-	i, err := req.GetRegistryImages(r.Context())
-	if err != nil {
-		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{err}, w)
-		return
-	}
-
-	httpext.JSON(w, http.StatusOK, i)
-}
-
 func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 	var req model.RegistryDeleteReq
 	// id := r.Context().Value("registryId").(string)
-	id := chi.URLParam(r, "registryId")
+	id := chi.URLParam(r, "registry_id")
 	log.Info().Msgf("IDssss: %v", id)
 	x, _ := strconv.ParseInt(id, 10, 64)
 	req = model.RegistryDeleteReq{
-		ID: int32(x),
+		RegistryId: int32(x),
 	}
 
 	ctx := directory.NewGlobalContext()
@@ -328,4 +310,122 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 
 	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: "registry deleted successfully"})
 
+}
+
+func (h *Handler) ListImages(w http.ResponseWriter, r *http.Request) {
+	registryId := chi.URLParam(r, "registry_id")
+	rId, err := strconv.ParseInt(registryId, 10, 32)
+	if err != nil {
+		log.Error().Msgf("failed to parse registry id %v", registryId)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	pgClient, err := directory.PostgresClient(directory.WithGlobalContext(r.Context()))
+	if err != nil {
+		log.Error().Msgf("failed get postgres client %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	_, err = pgClient.GetContainerRegistrySafe(r.Context(), int32(rId))
+	if err != nil {
+		log.Error().Msgf("failed get registry %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	images, err := model.ListImages(r.Context(), int32(rId))
+	if err != nil {
+		respondError(err, w)
+	}
+
+	log.Info().Msgf("get images for registry id %d found %d images", rId, len(images))
+
+	httpext.JSON(w, http.StatusOK, images)
+}
+
+func (h *Handler) ListImageTags(w http.ResponseWriter, r *http.Request) {
+	registryId := chi.URLParam(r, "registry_id")
+	imageName := chi.URLParam(r, "image_name")
+
+	rId, err := strconv.ParseInt(registryId, 10, 32)
+	if err != nil {
+		log.Error().Msgf("failed to parse registry id %v", registryId)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	// check if exists
+	pgClient, err := directory.PostgresClient(directory.WithGlobalContext(r.Context()))
+	if err != nil {
+		log.Error().Msgf("failed get postgres client %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	_, err = pgClient.GetContainerRegistrySafe(r.Context(), int32(rId))
+	if err != nil {
+		log.Error().Msgf("failed get registry %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	images, err := model.ListImageTags(r.Context(), int32(rId), imageName)
+	if err != nil {
+		respondError(err, w)
+	}
+
+	log.Info().Msgf("get tags for image %s from registry id %d found %d images",
+		imageName, rId, len(images))
+
+	httpext.JSON(w, http.StatusOK, images)
+}
+
+func getIntPointer(val int32) *int32 {
+	return &val
+}
+
+func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
+
+	counts := map[string]int{}
+
+	registryId := chi.URLParam(r, "registry_id")
+	rId, err := strconv.ParseInt(registryId, 10, 32)
+	if err != nil {
+		log.Error().Msgf("failed to parse registry id %v", registryId)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	// check if exists
+	pgClient, err := directory.PostgresClient(directory.WithGlobalContext(r.Context()))
+	if err != nil {
+		log.Error().Msgf("failed get postgres client %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	_, err = pgClient.GetContainerRegistrySafe(r.Context(), int32(rId))
+	if err != nil {
+		log.Error().Msgf("failed get registry %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	// count registry resource
+	counts, err = model.RegistrySummary(r.Context(), getIntPointer(int32(rId)))
+	if err != nil {
+		respondError(err, w)
+	}
+
+	log.Info().Msgf("registry %d summary %+v", rId, counts)
+
+	httpext.JSON(w, http.StatusOK, counts)
+}
+
+func (h *Handler) AllRegistriesSummary(w http.ResponseWriter, r *http.Request) {
+
+	counts := map[string]int{}
+
+	// count registry resource
+	counts, err := model.RegistrySummary(r.Context(), nil)
+	if err != nil {
+		respondError(err, w)
+	}
+
+	log.Info().Msgf("all registries summary %+v", counts)
+
+	httpext.JSON(w, http.StatusOK, counts)
 }

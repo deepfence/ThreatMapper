@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ReportersOrderSpec } from './ReportersOrderSpec';
+import {
+    ReportersOrderSpecFromJSON,
+    ReportersOrderSpecFromJSONTyped,
+    ReportersOrderSpecToJSON,
+} from './ReportersOrderSpec';
+
 /**
  * 
  * @export
@@ -21,10 +28,10 @@ import { exists, mapValues } from '../runtime';
 export interface ReportersOrderFilter {
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<ReportersOrderSpec>}
      * @memberof ReportersOrderFilter
      */
-    order_fields: Array<string> | null;
+    order_fields: Array<ReportersOrderSpec> | null;
 }
 
 /**
@@ -47,7 +54,7 @@ export function ReportersOrderFilterFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
         
-        'order_fields': json['order_fields'],
+        'order_fields': (json['order_fields'] === null ? null : (json['order_fields'] as Array<any>).map(ReportersOrderSpecFromJSON)),
     };
 }
 
@@ -60,7 +67,7 @@ export function ReportersOrderFilterToJSON(value?: ReportersOrderFilter | null):
     }
     return {
         
-        'order_fields': value.order_fields,
+        'order_fields': (value.order_fields === null ? null : (value.order_fields as Array<any>).map(ReportersOrderSpecToJSON)),
     };
 }
 

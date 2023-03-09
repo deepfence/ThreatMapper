@@ -23,7 +23,7 @@ import (
 const (
 	ebpfSocketPath          = "/tmp/secret-scanner.sock"
 	ssEbpfLogPath           = "/var/log/fenced/secretScanner.log"
-	defaultScanConcurrency  = 5
+	defaultScanConcurrency  = 1
 	secretScanIndexName     = "secret-scan"
 	secretScanLogsIndexName = "secret-scan-logs"
 )
@@ -127,7 +127,6 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req *pb.FindR
 	if err != nil {
 		fmt.Println("Error in sending data to secretScanLogsIndex to mark in progress:" + err.Error())
 	}
-	log.Infof("started context background: %v\n", req.Input)
 	res, err := client.FindSecretInfo(context.Background(), req)
 	if req.GetPath() != "" && err == nil && res != nil {
 		if scanDir == HostMountDir {

@@ -59,6 +59,15 @@ func (tc *ThreatGraphReporter) ComputeThreatGraph() error {
 	}
 
 	if _, err = tx.Run(`
+		MATCH (s:MalwareScan) -[:SCANNED]-> (m)
+		WITH max(s.updated_at) as most_recent, m
+		MATCH (s:MalwareScan {updated_at: most_recent})-[:DETECTED]->(c:Malware)
+		WITH m, count(distinct c) as num_malware
+		SET m.num_malware = num_malware`, map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run(`
 		MATCH (s:ComplianceScan) -[:SCANNED]-> (m)
 		WITH max(s.updated_at) as most_recent, m
 		MATCH (s:ComplianceScan {updated_at: most_recent})-[:DETECTED]->(c:Compliance)
@@ -69,25 +78,29 @@ func (tc *ThreatGraphReporter) ComputeThreatGraph() error {
 
 	if _, err = tx.Run(`
 		MATCH (n:Node)
-		SET n.num_cve = COALESCE(n.num_cve, 0), n.num_secrets = COALESCE(n.num_secrets, 0), n.num_compliance = COALESCE(n.num_compliance, 0);`, map[string]interface{}{}); err != nil {
+		SET n.num_cve = COALESCE(n.num_cve, 0), n.num_secrets = COALESCE(n.num_secrets, 0), n.num_malware = COALESCE(n.num_malware, 0),
+		n.num_compliance = COALESCE(n.num_compliance, 0);`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
 		MATCH (n:Node)
-		SET n.sum_cve = COALESCE(n.num_cve, 0), n.sum_secrets = COALESCE(n.num_secrets, 0), n.sum_compliance = COALESCE(n.num_compliance, 0);`, map[string]interface{}{}); err != nil {
+		SET n.sum_cve = COALESCE(n.num_cve, 0), n.sum_secrets = COALESCE(n.num_secrets, 0), n.num_malware = COALESCE(n.num_malware, 0),
+		n.sum_compliance = COALESCE(n.num_compliance, 0);`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
 		MATCH (n:Node) -[:HOSTS]-> (m)
-		SET n.sum_cve = n.sum_cve + COALESCE(m.num_cve, 0), n.sum_secrets = n.sum_secrets + COALESCE(m.num_secrets, 0), n.sum_compliance = n.sum_compliance + COALESCE(m.num_compliance, 0);`, map[string]interface{}{}); err != nil {
+		SET n.sum_cve = n.sum_cve + COALESCE(m.num_cve, 0), n.sum_secrets = n.sum_secrets + COALESCE(m.num_secrets, 0), 
+		n.sum_malware = n.sum_malware + COALESCE(n.num_malware, 0), n.sum_compliance = n.sum_compliance + COALESCE(m.num_compliance, 0);`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
 		MATCH (n:Node) -[:CONNECTED]->(m:Node)
-		SET n.sum_cve = COALESCE(n.sum_cve, 0) + COALESCE(m.sum_cve, m.num_cve, 0), n.sum_secrets = COALESCE(n.sum_secrets, 0) + COALESCE(m.sum_secrets, m.num_secrets, 0), n.sum_compliance = COALESCE(n.sum_compliance, 0) + COALESCE(m.sum_compliance, m.num_compliance, 0);`, map[string]interface{}{}); err != nil {
+		SET n.sum_cve = COALESCE(n.sum_cve, 0) + COALESCE(m.sum_cve, m.num_cve, 0), n.sum_secrets = COALESCE(n.sum_secrets, 0) + COALESCE(m.sum_secrets, m.num_secrets, 0), 
+		n.sum_malware = COALESCE(n.sum_malware, 0) + COALESCE(m.sum_malware, m.num_malware, 0), n.sum_compliance = COALESCE(n.sum_compliance, 0) + COALESCE(m.sum_compliance, m.num_compliance, 0);`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
@@ -98,9 +111,16 @@ func (tc *ThreatGraphReporter) ComputeThreatGraph() error {
 	}
 
 	if _, err = tx.Run(`
+		MATCH (n:Node {node_id:'in-the-internet'})-[d:PUBLIC|USES|IS|HOSTS|balances*]->(m:CloudResource) with SIZE(d) as depth, m with min(depth) as min_depth, m
+		SET m.depth = min_depth `, map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run(`
 		MATCH (n:Node) -[:CONNECTS]->(m:Node)
 		WITH n, m
-		SET n.sum_cve = COALESCE(n.sum_cve, 0) + COALESCE(m.sum_cve, m.num_cve, 0), n.sum_secrets = COALESCE(n.sum_secrets, 0) + COALESCE(m.sum_secrets, m.num_secrets, 0), n.sum_compliance = COALESCE(n.sum_compliance, 0) + COALESCE(m.sum_compliance, m.num_compliance, 0);`, map[string]interface{}{}); err != nil {
+		SET n.sum_cve = COALESCE(n.sum_cve, 0) + COALESCE(m.sum_cve, m.num_cve, 0), n.sum_malware = COALESCE(n.sum_malware, 0) + COALESCE(m.sum_malware, m.num_malware, 0) ,
+		n.sum_secrets = COALESCE(n.sum_secrets, 0) + COALESCE(m.sum_secrets, m.num_secrets, 0), n.sum_compliance = COALESCE(n.sum_compliance, 0) + COALESCE(m.sum_compliance, m.num_compliance, 0);`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
@@ -210,7 +230,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph() (map[string]AttackPaths, erro
 		var res neo4j.Result
 		if cloud_provider != CLOUD_PRIVATE {
 			if res, err = tx.Run(`
-				CALL apoc.nodes.group(['Node'], ['node_type', 'depth',
+				CALL apoc.nodes.group(['CloudResource','Node'], ['node_type', 'resource_type','depth',
 				'cloud_provider'], [{`+"`*`"+`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum',
 				node_id:'collect', num_cve: 'collect', num_secrets:'collect', num_compliance:'collect'},{`+"`*`"+`: 'count'}], {selfRels: false})
 				YIELD node, relationships

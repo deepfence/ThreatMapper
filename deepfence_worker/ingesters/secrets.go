@@ -61,7 +61,7 @@ func CommitFuncSecrets(ns string, data []Secret) error {
 
 	if _, err = tx.Run(`
 		UNWIND $batch as row WITH row.Rule as rule, row.Secret as secret
-		MERGE (r:Rule{node_id:rule.id})
+		MERGE (r:SecretRule{rule_id:rule.rule_id})
 		SET r+=rule WITH secret as row, r
 		MERGE (n:Secret{node_id:row.node_id})
 		SET n+= row
@@ -93,9 +93,12 @@ func secretsToMaps(data []Secret) []map[string]map[string]interface{} {
 		for k, v := range utils.ToMap(i.Match) {
 			secret[k] = v
 		}
-		secret["node_id"] = fmt.Sprintf("%v:%v", i.Rule.ID, i.Match.FullFilename)
+		secret["node_id"] = utils.ScanIdReplacer.Replace(fmt.Sprintf("%v:%v", i.Rule.ID, i.Match.FullFilename))
+		rule := utils.ToMap(i.Rule)
+		delete(rule, "id")
+		rule["rule_id"] = i.Rule.ID
 		secrets = append(secrets, map[string]map[string]interface{}{
-			"Rule":   utils.ToMap(i.Rule),
+			"Rule":   rule,
 			"Secret": secret,
 		})
 	}

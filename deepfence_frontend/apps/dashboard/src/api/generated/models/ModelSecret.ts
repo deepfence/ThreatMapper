@@ -27,6 +27,12 @@ export interface ModelSecret {
     full_filename: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelSecret
+     */
+    level: string;
+    /**
+     * 
      * @type {boolean}
      * @memberof ModelSecret
      */
@@ -37,6 +43,24 @@ export interface ModelSecret {
      * @memberof ModelSecret
      */
     matched_content: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelSecret
+     */
+    name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelSecret
+     */
+    node_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelSecret
+     */
+    part: string;
     /**
      * 
      * @type {number}
@@ -51,10 +75,22 @@ export interface ModelSecret {
     relative_starting_index: number;
     /**
      * 
+     * @type {number}
+     * @memberof ModelSecret
+     */
+    rule_id: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelSecret
+     */
+    score: number;
+    /**
+     * 
      * @type {string}
      * @memberof ModelSecret
      */
-    rule_id: string;
+    signature_to_match: string;
     /**
      * 
      * @type {number}
@@ -75,11 +111,17 @@ export interface ModelSecret {
 export function instanceOfModelSecret(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "full_filename" in value;
+    isInstance = isInstance && "level" in value;
     isInstance = isInstance && "masked" in value;
     isInstance = isInstance && "matched_content" in value;
+    isInstance = isInstance && "name" in value;
+    isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "part" in value;
     isInstance = isInstance && "relative_ending_index" in value;
     isInstance = isInstance && "relative_starting_index" in value;
     isInstance = isInstance && "rule_id" in value;
+    isInstance = isInstance && "score" in value;
+    isInstance = isInstance && "signature_to_match" in value;
     isInstance = isInstance && "starting_index" in value;
     isInstance = isInstance && "updated_at" in value;
 
@@ -97,11 +139,17 @@ export function ModelSecretFromJSONTyped(json: any, ignoreDiscriminator: boolean
     return {
         
         'full_filename': json['full_filename'],
+        'level': json['level'],
         'masked': json['masked'],
         'matched_content': json['matched_content'],
+        'name': json['name'],
+        'node_id': json['node_id'],
+        'part': json['part'],
         'relative_ending_index': json['relative_ending_index'],
         'relative_starting_index': json['relative_starting_index'],
         'rule_id': json['rule_id'],
+        'score': json['score'],
+        'signature_to_match': json['signature_to_match'],
         'starting_index': json['starting_index'],
         'updated_at': json['updated_at'],
     };
@@ -117,11 +165,17 @@ export function ModelSecretToJSON(value?: ModelSecret | null): any {
     return {
         
         'full_filename': value.full_filename,
+        'level': value.level,
         'masked': value.masked,
         'matched_content': value.matched_content,
+        'name': value.name,
+        'node_id': value.node_id,
+        'part': value.part,
         'relative_ending_index': value.relative_ending_index,
         'relative_starting_index': value.relative_starting_index,
         'rule_id': value.rule_id,
+        'score': value.score,
+        'signature_to_match': value.signature_to_match,
         'starting_index': value.starting_index,
         'updated_at': value.updated_at,
     };

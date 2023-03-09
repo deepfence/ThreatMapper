@@ -43,3 +43,5 @@ deepfence_ctl/deepfencectl
 deepfence_ctl/vendor
 
 .pnpm-store
+
+go.work*

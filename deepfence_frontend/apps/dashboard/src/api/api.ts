@@ -69,6 +69,7 @@ export function getVulnerabilityApiClient() {
       vulnerabilityApi.statusVulnerabilityScan.bind(vulnerabilityApi),
     listVulnerabilityScans:
       vulnerabilityApi.listVulnerabilityScans.bind(vulnerabilityApi),
+    getSbom: vulnerabilityApi.getSBOM.bind(vulnerabilityApi),
   };
 }
 
@@ -77,7 +78,9 @@ export function getSecretApiClient() {
   return {
     startSecretScan: secretApi.startSecretScan.bind(secretApi),
     resultSecretScan: secretApi.resultsSecretScan.bind(secretApi),
+    resultCountSecretScan: secretApi.countResultsSecretScan.bind(secretApi),
     statusSecretScan: secretApi.statusSecretScan.bind(secretApi),
+    listSecretScans: secretApi.listSecretScan.bind(secretApi),
   };
 }
 
@@ -112,12 +115,14 @@ export function getRegistriesApiClient() {
   };
 }
 
-export function getMalwareScanApiClient() {
+export function getMalwareApiClient() {
   const malwareApi = new MalwareScanApi(configuration);
   return {
     startMalwareScan: malwareApi.startMalwareScan.bind(malwareApi),
     resultMalwareScan: malwareApi.resultsMalwareScan.bind(malwareApi),
+    resultCountMalwareScan: malwareApi.countResultsMalwareScan.bind(malwareApi),
     statusMalwareScan: malwareApi.statusMalwareScan.bind(malwareApi),
+    listMalwareScans: malwareApi.listMalwareScan.bind(malwareApi),
   };
 }
 
@@ -131,7 +136,16 @@ export function getSearchApiClient() {
     searchVulnerabilities: searchApi.searchVulnerabilities.bind(searchApi),
     searchVulnerabilitiesCount: searchApi.countVulnerabilities.bind(searchApi),
     searchVulnerabilityScanCount: searchApi.countVulnerabilityScans.bind(searchApi),
-    searchVulnerabilityCount: searchApi.countVulnerabilities.bind(searchApi),
+
+    searchSecretsScan: searchApi.searchSecretsScans.bind(searchApi),
+    searchSecrets: searchApi.searchSecrets.bind(searchApi),
+    searchSecretsCount: searchApi.countSecrets.bind(searchApi),
+    searchSecretScanCount: searchApi.countSecretsScans.bind(searchApi),
+
+    searchMalwaresScan: searchApi.searchMalwareScans.bind(searchApi),
+    searchMalwares: searchApi.searchMalwares.bind(searchApi),
+    searchMalwaresCount: searchApi.countMalwares.bind(searchApi),
+    searchMalwareScanCount: searchApi.countMalwareScans.bind(searchApi),
   };
 }
 
