@@ -54,7 +54,8 @@ type BasicNode struct {
 
 type Host struct {
 	ID              string           `json:"node_id" required:"true"`
-	Name            string           `json:"host_name" required:"true"`
+	HostName        string           `json:"host_name" required:"true"`
+	NodeName        string           `json:"node_name" required:"true"`
 	Containers      []Container      `json:"containers" required:"true"`
 	Processes       []Process        `json:"processes" required:"true"`
 	Pods            []Pod            `json:"pods" required:"true"`
@@ -115,6 +116,7 @@ type Connection struct {
 
 type Pod struct {
 	ID         string         `json:"node_id" required:"true"`
+	NodeName   string         `json:"node_name" required:"true"`
 	Name       string         `json:"kubernetes_name" required:"true"`
 	Namespace  string         `json:"kubernetes_namespace" required:"true"`
 	Host       string         `json:"host_node_id" required:"true"`
@@ -142,6 +144,7 @@ func (Pod) GetJsonCategory() string {
 
 type Container struct {
 	ID             string         `json:"node_id" required:"true"`
+	NodeName       string         `json:"node_name" required:"true"`
 	Name           string         `json:"docker_container_name" required:"true"`
 	ContainerImage ContainerImage `json:"image" required:"true"`
 	Processes      []Process      `json:"processes" required:"true"`
@@ -197,6 +200,7 @@ func (Process) GetJsonCategory() string {
 
 type ContainerImage struct {
 	ID       string         `json:"node_id" required:"true"`
+	NodeName string         `json:"node_name" required:"true"`
 	Name     string         `json:"docker_image_name" required:"true"`
 	Tag      string         `json:"docker_image_tag" required:"true"`
 	Size     string         `json:"docker_image_size" required:"true"`
