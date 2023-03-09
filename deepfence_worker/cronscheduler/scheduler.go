@@ -10,6 +10,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	sdkUtils "github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/robfig/cron/v3"
 )
 
 type Scheduler struct {
