@@ -132,5 +132,5 @@ func AddCloudControls(msg *message.Message) error {
 			return err
 		}
 	}
-	return nil
+	return tx.Commit()
 }

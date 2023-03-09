@@ -46,12 +46,16 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeId, cloudProvider, 
 	}
 
 	for _, rec := range records {
+		var categoryHierarchy []string
+		for _, rVal := range rec.Values[4].([]interface{}) {
+			categoryHierarchy = append(categoryHierarchy, rVal.(string))
+		}
 		control := model.CloudNodeComplianceControl{
 			ControlId:         rec.Values[0].(string),
 			Title:             rec.Values[1].(string),
 			Description:       rec.Values[2].(string),
 			Service:           rec.Values[3].(string),
-			CategoryHierarchy: rec.Values[4].([]string),
+			CategoryHierarchy: categoryHierarchy,
 		}
 		controls = append(controls, control)
 	}
@@ -77,9 +81,8 @@ func EnableCloudNodeComplianceControls(ctx context.Context, nodeId string, contr
 	}
 	defer tx.Close()
 
-	_, err = tx.Run(`MATCH (n:CloudComplianceControl {
-			node_id: $control_ids
-		})
+	_, err = tx.Run(`MATCH (n:CloudComplianceControl {})
+		WHERE n.node_id IN $control_ids
 		SET n.active = true`,
 		map[string]interface{}{"control_ids": controlIds})
 	if err != nil {
@@ -107,9 +110,8 @@ func DisableCloudNodeComplianceControls(ctx context.Context, nodeId string, cont
 	}
 	defer tx.Close()
 
-	_, err = tx.Run(`MATCH (n:CloudComplianceControl {
-			node_id: $control_ids
-		})
+	_, err = tx.Run(`MATCH (n:CloudComplianceControl {})
+		WHERE n.node_id IN $control_ids
 		SET n.active = false`,
 		map[string]interface{}{"control_ids": controlIds})
 	if err != nil {

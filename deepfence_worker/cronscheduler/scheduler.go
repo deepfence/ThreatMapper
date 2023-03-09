@@ -68,7 +68,7 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 60s", s.enqeueTask(sdkUtils.CloudComplianceTask))
+	_, err = s.cron.AddFunc("@every 10m", s.enqeueTask(sdkUtils.CloudComplianceTask))
 	if err != nil {
 		return err
 	}
