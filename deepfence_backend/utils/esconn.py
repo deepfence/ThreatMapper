@@ -1067,7 +1067,7 @@ class ESConn:
                                         },
                                         "action_max_timestamp": {
                                             "max": {
-                                                "field": "@timestamp"
+                                                "field": "time_stamp"
                                             }
                                         },
                                         "scan_id": {

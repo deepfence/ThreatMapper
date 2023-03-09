@@ -62,7 +62,7 @@ def insert_cve_error_doc(cve_status, datetime_now, host_name, cve_node_id, cve_s
     if len(es_resp.get("hits", [])) > 0:
         source = es_resp.get("hits", [])[0].get("_source", {})
         body["image_name"] = source.get("image_name", "")
-        body["container_name"] = source.get("image_name", "")
+        body["container_name"] = source.get("container_name", "")
     ESConn.create_doc(CVE_SCAN_LOGS_INDEX, body)
     image_file_folder = get_cve_scan_tmp_folder(
         host_name, cve_status["scan_id"])
