@@ -29,55 +29,55 @@ func CleanUpDB(msg *message.Message) error {
 	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	if _, err = tx.Run(`
+	if _, err = session.Run(`
 		MATCH (n:Node)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		WITH n LIMIT 100000
 		SET n.agent_running=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = session.Run(`
 		MATCH (n:ContainerImage)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		WITH n LIMIT 100000
 		DETACH DELETE n`,
 		map[string]interface{}{"time_ms": dbRegistryCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = session.Run(`
 		MATCH (n:Container)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		WITH n LIMIT 100000
 		DETACH DELETE n`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = session.Run(`
 		MATCH (n:Pod)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		WITH n LIMIT 100000
 		DETACH DELETE n`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = session.Run(`
 		MATCH (n:Process)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		WITH n LIMIT 100000
 		DETACH DELETE n`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = session.Run(`
 		MATCH (n) -[:SCANNED]-> (:Node)
 		WHERE n.retries >= 3
+		WITH n LIMIT 100000
 		SET n.status = $new_status`,
 		map[string]interface{}{
 			"time_ms":    dbScanTimeout.Milliseconds(),
@@ -86,9 +86,10 @@ func CleanUpDB(msg *message.Message) error {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = session.Run(`
 		MATCH (:AgentVersion) -[n:SCHEDULED]-> (:Node)
 		WHERE n.retries >= 3
+		WITH n LIMIT 100000
 		SET n.status = $new_status`,
 		map[string]interface{}{
 			"time_ms":    dbUpgradeTimeout.Milliseconds(),
@@ -97,7 +98,7 @@ func CleanUpDB(msg *message.Message) error {
 		return err
 	}
 
-	return tx.Commit()
+	return nil
 }
 
 func RetryScansDB(msg *message.Message) error {
@@ -184,9 +185,10 @@ func ApplyGraphDBStartup(msg *message.Message) error {
 	session.Run("CREATE CONSTRAINT ON (n:Container) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Pod) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Process) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
-	session.Run("CREATE CONSTRAINT ON (n:KCluster) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
-	session.Run("CREATE CONSTRAINT ON (n:Secret) ASSERT n.rule_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:Secret) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:SecretRule) ASSERT n.rule_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Malware) ASSERT n.malware_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:MalwareRule) ASSERT n.rule_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Vulnerability) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:VulnerabilityStub) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:SecurityGroup) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
@@ -209,5 +211,27 @@ func ApplyGraphDBStartup(msg *message.Message) error {
 	session.Run("MERGE (n:Node{node_id:'out-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
 	session.Run("MERGE (n:Node{node_id:'deepfence-console-cron', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
 
+	// Indexes for fast searching & ordering
+	addIndexOnIssuesCount(session, "ContainerImage")
+	addIndexOnIssuesCount(session, "Container")
+
 	return nil
+}
+
+func addIndexOnIssuesCount(session neo4j.Session, node_type string) {
+	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByVulnerabilitiesCount FOR (n:%s) ON (n.vulnerabilities_count)",
+		node_type, node_type),
+		map[string]interface{}{})
+	session.Run(fmt.Sprintf("CREATE INDEX %sOrderBySecretsCount FOR (n:%s) ON (n.vulnerabilities_count)",
+		node_type, node_type),
+		map[string]interface{}{})
+	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByMalwaresCount FOR (n:%s) ON (n.secrets_count)",
+		node_type, node_type),
+		map[string]interface{}{})
+	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByCompliancesCount FOR (n:%s) ON (n.compliances_count)",
+		node_type, node_type),
+		map[string]interface{}{})
+	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByCloudCompliancesCount FOR (n:%s) ON (n.cloud_compliances_count)",
+		node_type, node_type),
+		map[string]interface{}{})
 }

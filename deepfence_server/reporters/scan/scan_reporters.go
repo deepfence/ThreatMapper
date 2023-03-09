@@ -596,7 +596,7 @@ func type2sev_field(scan_type utils.Neo4jScanType) string {
 	case utils.NEO4J_SECRET_SCAN:
 		return "level"
 	case utils.NEO4J_MALWARE_SCAN:
-		return "file_severity"
+		return "FileSeverity"
 	case utils.NEO4J_COMPLIANCE_SCAN:
 		return "status"
 	}
@@ -644,7 +644,7 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 }
 
 func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, resultIds []string) ([]model.ScanResultBasicNode, error) {
-	var res []model.ScanResultBasicNode
+	res := make([]model.ScanResultBasicNode, 0)
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return res, err

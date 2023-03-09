@@ -169,7 +169,7 @@ func (d *OpenApiDocs) AddSearchOperations() {
 
 	d.AddOperation("searchSecrets", http.MethodPost, "/deepfence/search/secrets",
 		"Search Secrets", "Search across all the data associated with secrets",
-		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]SecretRule))
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Secret))
 
 	d.AddOperation("searchMalwares", http.MethodPost, "/deepfence/search/malwares",
 		"Search Malwares", "Search across all the data associated with malwares",
@@ -484,7 +484,7 @@ func (d *OpenApiDocs) AddDiagnosisOperations() {
 		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(GenerateDiagnosticLogsRequest), nil)
 	d.AddOperation("getDiagnosticLogs", http.MethodGet, "/deepfence/diagnosis/diagnostic-logs",
 		"Get Diagnostic Logs", "Get diagnostic logs download url links",
-		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, nil)
+		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new(GetDiagnosticLogsResponse))
 }
 
 func (d *OpenApiDocs) AddRegistryOperations() {
@@ -503,4 +503,10 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 	d.AddOperation("listImageTags", http.MethodGet, "/deepfence/registryaccount/{registry_id}/images/{image_name}/tags",
 		"List Image Tags", "list image tags for a given image and registry",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImageTagsReq), new([]ContainerImage))
+	d.AddOperation("getSummary", http.MethodGet, "/deepfence/registryaccount/summary",
+		"Get All Registries Summary", "get summary of registry scans, images and tags",
+		http.StatusOK, []string{tagRegistry}, bearerToken, nil, new(map[string]int))
+	d.AddOperation("getRegistrySummary", http.MethodGet, "/deepfence/registryaccount/{registry_id}/summary",
+		"Get Registry Summary", "get summary of registry scans, images and tags",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImagesReq), new(map[string]int))
 }

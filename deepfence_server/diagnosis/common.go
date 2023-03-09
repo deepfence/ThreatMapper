@@ -1,5 +1,20 @@
 package diagnosis
 
+import (
+	"context"
+	"net/url"
+	"path/filepath"
+	"time"
+
+	agentdiagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/agent-diagnosis"
+	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+)
+
+const (
+	DiagnosisLinkExpiry = 5 * time.Minute
+)
+
 type DiagnosticNotification struct {
 	Content             string      `json:"content"`
 	ExpiryInSecs        interface{} `json:"expiry_in_secs"`
@@ -10,4 +25,47 @@ type DiagnosticNotification struct {
 
 type GenerateDiagnosticLogsRequest struct {
 	Tail int `json:"tail" validate:"required,min=100,max=10000" required:"true"`
+}
+
+type DiagnosticLogsLink struct {
+	UrlLink   string `json:"url_link"`
+	Label     string `json:"label"`
+	Message   string `json:"message"`
+	CreatedAt string `json:"created_at"`
+}
+
+type GetDiagnosticLogsResponse struct {
+	ConsoleLogs []DiagnosticLogsLink `json:"console_logs"`
+	AgentLogs   []DiagnosticLogsLink `json:"agent_logs"`
+}
+
+func GetDiagnosticLogs(ctx context.Context) (*GetDiagnosticLogsResponse, error) {
+	mc, err := directory.MinioClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+	diagnosticLogs := GetDiagnosticLogsResponse{
+		ConsoleLogs: getDiagnosticLogsHelper(ctx, mc, consolediagnosis.ConsoleDiagnosisFileServerPrefix),
+		AgentLogs:   getDiagnosticLogsHelper(ctx, mc, agentdiagnosis.AgentDiagnosisFileServerPrefix),
+	}
+	return &diagnosticLogs, err
+}
+
+func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, pathPrefix string) []DiagnosticLogsLink {
+	objects := mc.ListFiles(ctx, pathPrefix, false, 0, true)
+	diagnosticLogsResponse := make([]DiagnosticLogsLink, 0)
+	for _, obj := range objects {
+		message := ""
+		urlLink, err := mc.ExposeFile(ctx, obj.Key, false, DiagnosisLinkExpiry, url.Values{})
+		if err != nil {
+			message = err.Error()
+		}
+		diagnosticLogsResponse = append(diagnosticLogsResponse, DiagnosticLogsLink{
+			UrlLink:   urlLink,
+			Label:     filepath.Base(obj.Key),
+			Message:   message,
+			CreatedAt: obj.LastModified.Format("2006-01-02 15:04:05"),
+		})
+	}
+	return diagnosticLogsResponse
 }

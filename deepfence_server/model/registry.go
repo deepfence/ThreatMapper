@@ -5,11 +5,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"sort"
 	"time"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
 	"github.com/rs/zerolog/log"
@@ -227,8 +229,15 @@ func ListImages(ctx context.Context, registryId int32) ([]ContainerImageWithTags
 		}
 	}
 
-	for _, v := range ri {
-		images = append(images, v)
+	// sort response
+	keys := make([]string, 0, len(ri))
+	for k := range ri {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, v := range keys {
+		images = append(images, ri[v])
 	}
 
 	return images, nil
@@ -293,10 +302,115 @@ func ListImageTags(ctx context.Context, registryId int32, imageName string) ([]C
 			log.Warn().Msgf("Missing neo4j entry")
 			continue
 		}
-
 		imageTags = append(imageTags, toContainerImage(da.Props))
-
 	}
 
+	// sort response
+	sort.SliceStable(imageTags, func(i, j int) bool {
+		return imageTags[i].Tag < imageTags[j].Tag
+	})
+
 	return imageTags, nil
+}
+
+func toScansCount(scans []interface{}) map[string]int {
+	counts := map[string]int{
+		"scans_complete":    0,
+		"scans_in_progress": 0,
+		"scans_total":       0,
+	}
+	for _, n := range scans {
+		counts["scans_total"]++
+		l := n.(string)
+		switch l {
+		case utils.SCAN_STATUS_SUCCESS, utils.SCAN_STATUS_FAILED:
+			counts["scans_complete"]++
+		default:
+			counts["scans_in_progress"]++
+		}
+	}
+	return counts
+}
+
+func RegistrySummary(ctx context.Context, registryId *int32) (map[string]int, error) {
+
+	count := map[string]int{}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return count, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return count, err
+	}
+	defer tx.Close()
+
+	queryPerRegistry := `
+	MATCH (n:RegistryAccount{container_registry_id:$id})-[:HOSTS]->(m:ContainerImage)
+	WITH
+		COUNT(distinct m.docker_image_name) AS images,
+		COUNT(m.docker_image_tag) AS tags,
+		COUNT(distinct n) AS registries
+	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount{container_registry_id:$id})
+	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
+	`
+	queryAllRegistries := `
+	MATCH (n:RegistryAccount)-[:HOSTS]->(m:ContainerImage)
+	WITH
+		COUNT(distinct m.docker_image_name) AS images,
+		COUNT(m.docker_image_tag) AS tags,
+		COUNT(distinct n) AS registries
+	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount)
+	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
+	`
+
+	var (
+		result neo4j.Result
+	)
+	if registryId != nil {
+		if result, err = tx.Run(queryPerRegistry, map[string]interface{}{"id": *registryId}); err != nil {
+			return count, err
+		}
+	} else {
+		if result, err = tx.Run(queryAllRegistries, map[string]interface{}{}); err != nil {
+			return count, err
+		}
+	}
+
+	record, err := result.Single()
+	if err != nil {
+		return count, err
+	}
+
+	images, has := record.Get("images")
+	if !has {
+		log.Warn().Msgf("images not found in query result")
+	}
+
+	tags, has := record.Get("tags")
+	if !has {
+		log.Warn().Msg("tags not found in query result")
+	}
+
+	registries, has := record.Get("registries")
+	if !has {
+		log.Warn().Msg("registries not found in query result")
+	}
+
+	scansStatus, has := record.Get("scan_status")
+	if !has {
+		log.Warn().Msg("scan_status not found in query result")
+	}
+
+	count = toScansCount(scansStatus.([]interface{}))
+	count["images"] = int(images.(int64))
+	count["tags"] = int(tags.(int64))
+	count["registries"] = int(registries.(int64))
+
+	return count, nil
 }
