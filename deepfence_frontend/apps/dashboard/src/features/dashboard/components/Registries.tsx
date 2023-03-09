@@ -116,22 +116,17 @@ export const Registries = () => {
         </div>
       </div>
       <Separator />
-      <div className="mt-4 grid grid-cols-3 gap-4 [&>*:nth-child(3n)]:border-r-0">
-        {CONNECTORS.map((connector, index) => {
+      <div className="mt-4 grid grid-cols-3 gap-4">
+        {CONNECTORS.map((connector) => {
           return (
             <div
-              className={cx(
-                'flex flex-col gap-x-6 border-r border-b border-gray-100 dark:border-gray-700 w-full pl-4 py-4',
-                {
-                  'border-b-0': index >= 6,
-                },
-              )}
+              className={cx('flex flex-col gap-x-6 w-full pl-4 py-4')}
               key={connector.label}
             >
-              <h4 className="text-md text-gray-400 dark:text-gray-500">
+              <h4 className="text-md text-gray-500 dark:text-gray-400">
                 {connector.label}
               </h4>
-              <div className="flex items-center">
+              <div className="flex items-center gap-x-4">
                 <div className="p-4 pl-0 flex w-14 h-14">
                   <img src={getIcon(mode)[connector.id]} alt="Deefence Logo" />
                 </div>
@@ -139,7 +134,7 @@ export const Registries = () => {
                   <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">
                     {connector.accounts}
                   </span>
-                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     Registries
                   </span>
                 </div>

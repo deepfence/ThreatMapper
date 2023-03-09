@@ -4,13 +4,13 @@ import { Button, Card, Separator } from 'ui-components';
 
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { TopRisksVulnerabilityChart } from '@/features/dashboard/components/TopRisksVulnerabilityChart';
-import { useTheme } from '@/theme/ThemeContext';
+import { Mode, useTheme } from '@/theme/ThemeContext';
 
-const VULNERABLE_COUNTS = [
+const getData = (mode: Mode) => [
   {
     label: 'Total',
     count: 897,
-    color: '#6B7280',
+    color: mode === 'dark' ? '#9CA3AF' : '#6B7280',
   },
   {
     label: 'Critical',
@@ -99,7 +99,7 @@ export const TopRisksSecret = () => {
       <div className="mt-4">
         <div className="h-full dark:text-white">
           <div className={`flex gap-4 justify-center my-4 divide-x dark:divide-gray-700`}>
-            {VULNERABLE_COUNTS.map((data) => {
+            {getData(mode).map((data) => {
               return (
                 <div
                   key={data.count}
@@ -164,7 +164,7 @@ export const TopRisksSecret = () => {
             </div>
           </div>
           <div className={`flex justify-center gap-4 mt-4 mb-4 text-xs`}>
-            <div className="flex items-center gap-1 text-gray-500">
+            <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
               <div
                 className="h-2 w-2"
                 style={{
@@ -173,7 +173,7 @@ export const TopRisksSecret = () => {
               ></div>
               <span>Critical</span>
             </div>
-            <div className="flex items-center gap-1 text-gray-500">
+            <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
               <div
                 className="h-2 w-2"
                 style={{
@@ -182,7 +182,7 @@ export const TopRisksSecret = () => {
               ></div>
               <span>High</span>
             </div>
-            <div className="flex items-center gap-1 text-gray-500">
+            <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
               <div
                 className="h-2 w-2"
                 style={{
@@ -191,7 +191,7 @@ export const TopRisksSecret = () => {
               ></div>
               <span>Medium</span>
             </div>
-            <div className="flex items-center gap-1 text-gray-500">
+            <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
               <div
                 className="h-2 w-2"
                 style={{

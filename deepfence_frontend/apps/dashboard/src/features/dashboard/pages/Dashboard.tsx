@@ -139,7 +139,7 @@ export const Dashboard = () => {
                     {data.icon}
                     <span className="pl-1 text-[1.5rem]">{data.count}</span>
                   </div>
-                  <div className="text-xs flex items-center text-gray-400 dark:text-gray-500 pl-1">
+                  <div className="text-xs flex items-center text-gray-500 dark:text-gray-400 pl-1">
                     {data.label}
                   </div>
                 </div>
