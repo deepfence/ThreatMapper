@@ -60,6 +60,7 @@ FROM alpine:3.17 AS final
 LABEL MAINTAINER="Deepfence Inc"
 LABEL deepfence.role=system
 
+ADD deepfence_server/cloud_controls /cloud_controls
 RUN apk add --no-cache kafkacat docker openrc bash skopeo \
     jansson-dev \
     libmagic

@@ -182,6 +182,8 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 
 	worker.AddNoPublisherHandler(utils.MalwareScanTask, malwarescan.NewMalwareScanner(ingestC).StartMalwareScan)
 
+	worker.AddNoPublisherHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
+
 	log.Info().Msg("Starting the consumer")
 	if err = worker.Run(context.Background()); err != nil {
 		cancel()

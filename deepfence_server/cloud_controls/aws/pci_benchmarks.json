@@ -1,0 +1,387 @@
+[
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321",
+    "description": "The Payment Card Industry Data Security Standard (PCI DSS) standard in Security Hub consists of a set of AWS security best practices controls. Each control applies to a specific AWS resource, and relates to one or more PCI DSS version 3.2.1 requirements. A PCI DSS requirement can be related to multiple controls.",
+    "title": "PCI v3.2.1",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS",
+      "type": "Benchmark"
+    },
+    "documentation": "To obtain the latest version of the official guide, please visit https://www.pcisecuritystandards.org/document_library?category=pcidss\u0026document=pci_dss.\n\n## Overview\n\nThe Payment Card Industry Data Security Standard (PCI DSS) was developed to\nencourage and enhance cardholder data security and facilitate the broad\nadoption of consistent data security measures globally. PCI DSS provides a\nbaseline of technical and operational requirements designed to protect account\ndata. PCI DSS applies to all entities involved in payment card\nprocessing—including merchants, processors, acquirers, issuers, and service\nproviders. PCI DSS also applies to all other entities that store, process or\ntransmit cardholder data (CHD) and/or sensitive authentication data (SAD).\nBelow is a high-level overview of the 12 PCI DSS requirements.\n\n### PCI Data Security Standard – High Level Overview\n\nBuild and Maintain a Secure Network and Systems\n\n1. Install and maintain a firewall configuration to protect cardholder data\n2. Do not use vendor-supplied defaults for system passwords and other security parameters\n\nProtect Cardholder Data\n\n3. Protect stored cardholder data\n4. Encrypt transmission of cardholder data across open, public networks\n\nMaintain a Vulnerability Management Program\n\n5. Protect all systems against malware and regularly update anti-virus software or programs\n6. Develop and maintain secure systems and applications\n\nImplement Strong Access Control Measures\n\n7. Restrict access to cardholder data by business need to know\n8. Identify and authenticate access to system components\n9. Restrict physical access to cardholder data\n\nRegularly Monitor and Test Networks\n\n10. Track and monitor all access to network resources and cardholder data\n11. Regularly test security systems and processes\n\nMaintain an Information Security Policy\n\n12. Maintain a policy that addresses information security for all personnel",
+    "children": [
+      "aws_compliance.benchmark.pci_v321_autoscaling",
+      "aws_compliance.benchmark.pci_v321_cloudtrail",
+      "aws_compliance.benchmark.pci_v321_codebuild",
+      "aws_compliance.benchmark.pci_v321_config",
+      "aws_compliance.benchmark.pci_v321_cw",
+      "aws_compliance.benchmark.pci_v321_dms",
+      "aws_compliance.benchmark.pci_v321_ec2",
+      "aws_compliance.benchmark.pci_v321_elbv2",
+      "aws_compliance.benchmark.pci_v321_es",
+      "aws_compliance.benchmark.pci_v321_guardduty",
+      "aws_compliance.benchmark.pci_v321_iam",
+      "aws_compliance.benchmark.pci_v321_kms",
+      "aws_compliance.benchmark.pci_v321_lambda",
+      "aws_compliance.benchmark.pci_v321_opensearch",
+      "aws_compliance.benchmark.pci_v321_rds",
+      "aws_compliance.benchmark.pci_v321_redshift",
+      "aws_compliance.benchmark.pci_v321_s3",
+      "aws_compliance.benchmark.pci_v321_sagemaker",
+      "aws_compliance.benchmark.pci_v321_ssm"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_autoscaling",
+    "description": "",
+    "title": "Auto Scaling",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/AutoScaling",
+      "type": "Benchmark"
+    },
+    "documentation": "## Description\n\nThis control checks whether your Auto Scaling groups that are associated with a load balancer are using Elastic Load Balancing health checks.\n\nPCI DSS does not require load balancing or highly available configurations. However, this check aligns with AWS best practices.\n\n## Remediation\n\nTo enable Elastic Load Balancing health checks\n\n1. Open the Amazon [EC2 console](https://console.aws.amazon.com/ec2/)\n2. On the navigation pane, under `Auto Scaling`, choose **Auto Scaling Groups**\n3. To select the group from the list, choose the right box\n4. Choose **Edit**\n5. For `Health Check Type`, choose **ELB**\n6. For `Health Check Grace Period`, enter `300`\n7. Choose **Save**\n",
+    "children": [
+      "aws_compliance.control.pci_v321_autoscaling_1"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_cloudtrail",
+    "description": "",
+    "title": "CloudTrail",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/CloudTrail",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring CloudTrail resources and options.",
+    "children": [
+      "aws_compliance.control.pci_v321_cloudtrail_1",
+      "aws_compliance.control.pci_v321_cloudtrail_2",
+      "aws_compliance.control.pci_v321_cloudtrail_3",
+      "aws_compliance.control.pci_v321_cloudtrail_4"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_codebuild",
+    "description": "",
+    "title": "CodeBuild",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/CodeBuild",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring CodeBuild resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_codebuild_1",
+      "aws_compliance.control.pci_v321_codebuild_2"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_config",
+    "description": "",
+    "title": "Config",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/Config",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring AWS Config.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_config_1"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_cw",
+    "description": "",
+    "title": "CloudWatch",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/CloudWatch",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring CloudWatch resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_cw_1"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_dms",
+    "description": "",
+    "title": "DMS",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/DMS",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring AWS DMS resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_dms_1"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_ec2",
+    "description": "",
+    "title": "EC2",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/EC2",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring EC2 resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_ec2_1",
+      "aws_compliance.control.pci_v321_ec2_2",
+      "aws_compliance.control.pci_v321_ec2_3",
+      "aws_compliance.control.pci_v321_ec2_4",
+      "aws_compliance.control.pci_v321_ec2_5",
+      "aws_compliance.control.pci_v321_ec2_6"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_elbv2",
+    "description": "",
+    "title": "ELBV2",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/ELBv2",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring Elastic Load Balancer resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_elbv2_1"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_es",
+    "description": "",
+    "title": "Elasticsearch",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/ES",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring Elasticsearch resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_es_1",
+      "aws_compliance.control.pci_v321_es_2"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_guardduty",
+    "description": "",
+    "title": "GuardDuty",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/GuardDuty",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring AWS GuardDuty resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_guardduty_1"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_iam",
+    "description": "",
+    "title": "IAM",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/IAM",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring AWS IAM resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_iam_1",
+      "aws_compliance.control.pci_v321_iam_2",
+      "aws_compliance.control.pci_v321_iam_3",
+      "aws_compliance.control.pci_v321_iam_4",
+      "aws_compliance.control.pci_v321_iam_5",
+      "aws_compliance.control.pci_v321_iam_6",
+      "aws_compliance.control.pci_v321_iam_7",
+      "aws_compliance.control.pci_v321_iam_8"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_kms",
+    "description": "",
+    "title": "KMS",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/KMS",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring AWS KMS resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_kms_1"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_lambda",
+    "description": "",
+    "title": "Lambda",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/Lambda",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring Lambda resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_lambda_1",
+      "aws_compliance.control.pci_v321_lambda_2"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_opensearch",
+    "description": "",
+    "title": "OpenSearch",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/OpenSearch",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring OpenSearch resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_opensearch_1",
+      "aws_compliance.control.pci_v321_opensearch_2"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_rds",
+    "description": "",
+    "title": "RDS",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/RDS",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring AWS RDS resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_rds_1",
+      "aws_compliance.control.pci_v321_rds_2"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_redshift",
+    "description": "",
+    "title": "Redshift",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/Redshift",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring AWS Redshift resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_redshift_1"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_s3",
+    "description": "",
+    "title": "S3",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/S3",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring AWS S3 resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_s3_1",
+      "aws_compliance.control.pci_v321_s3_2",
+      "aws_compliance.control.pci_v321_s3_3",
+      "aws_compliance.control.pci_v321_s3_4",
+      "aws_compliance.control.pci_v321_s3_5",
+      "aws_compliance.control.pci_v321_s3_6"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_sagemaker",
+    "description": "",
+    "title": "SageMaker",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/SageMaker",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring AWS Sagemaker resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_sagemaker_1"
+    ]
+  },
+  {
+    "benchmark_id": "aws_compliance.benchmark.pci_v321_ssm",
+    "description": "",
+    "title": "SSM",
+    "tags": {
+      "category": "Compliance",
+      "pci": "true",
+      "pci_version": "v3.2.1",
+      "plugin": "aws",
+      "service": "AWS/SSM",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section contains recommendations for configuring AWS SSM resources and options.\n",
+    "children": [
+      "aws_compliance.control.pci_v321_ssm_1",
+      "aws_compliance.control.pci_v321_ssm_2",
+      "aws_compliance.control.pci_v321_ssm_3"
+    ]
+  }
+]
