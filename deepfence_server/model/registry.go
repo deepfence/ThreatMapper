@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"sort"
 	"time"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
@@ -228,8 +229,15 @@ func ListImages(ctx context.Context, registryId int32) ([]ContainerImageWithTags
 		}
 	}
 
-	for _, v := range ri {
-		images = append(images, v)
+	// sort response
+	keys := make([]string, 0, len(ri))
+	for k := range ri {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, v := range keys {
+		images = append(images, ri[v])
 	}
 
 	return images, nil
@@ -294,10 +302,13 @@ func ListImageTags(ctx context.Context, registryId int32, imageName string) ([]C
 			log.Warn().Msgf("Missing neo4j entry")
 			continue
 		}
-
 		imageTags = append(imageTags, toContainerImage(da.Props))
-
 	}
+
+	// sort response
+	sort.SliceStable(imageTags, func(i, j int) bool {
+		return imageTags[i].Tag < imageTags[j].Tag
+	})
 
 	return imageTags, nil
 }
