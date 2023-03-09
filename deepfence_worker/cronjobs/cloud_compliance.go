@@ -69,7 +69,6 @@ func AddCloudControls(msg *message.Message) error {
 		}
 		if _, err = tx.Run(`
 		UNWIND $batch as row
-		CASE row.tags.service WHEN row.tags.service IS NULL THEN 'AWS' ELSE row.tags.service END AS service
 		MERGE (n:CloudComplianceExecutable:CloudComplianceControl{
 			node_id: row.parent_control_breadcrumb + row.control_id,
 			control_id: row.control_id,
@@ -77,7 +76,7 @@ func AddCloudControls(msg *message.Message) error {
 			description: row.description,
 			title: row.title,
 			documentation: row.documentation,
-			service: service,
+			service: 'AWS',
 			cloud_provider: 'aws',
 			category: 'Compliance',
 			compliance_type: $benchmark,
@@ -110,7 +109,6 @@ func AddCloudControls(msg *message.Message) error {
 		}
 		if _, err = tx.Run(`
 		UNWIND $batch as row
-		CASE row.tags.service WHEN row.tags.service IS NULL THEN 'AWS' ELSE row.tags.service END AS service
 		MERGE (n:CloudComplianceExecutable:CloudComplianceBenchmark{
 			node_id: row.benchmark_id,
 			benchmark_id: row.benchmark_id,
@@ -118,7 +116,7 @@ func AddCloudControls(msg *message.Message) error {
 			description: row.description,
 			title: row.title,
 			documentation: row.documentation,
-			service: service,
+			service: 'AWS',
 			cloud_provider: 'aws',
 			category: 'Compliance',
 			executable: false
