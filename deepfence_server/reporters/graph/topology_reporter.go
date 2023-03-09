@@ -84,7 +84,7 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 
 func (nc *neo4jTopologyReporter) GetNonPublicCloudResources(tx neo4j.Transaction, cloud_provider, cloud_regions, cloud_services, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
 	res := map[NodeID][]ResourceStub{}
-	r, err := tx.Run(`MATCH (s:CloudResource) where t.depth IS  NULL
+	r, err := tx.Run(`MATCH (s:CloudResource) where s.depth IS  NULL
     and coalesce(s.node_id,s.name) IS NOT NULL 
 	AND CASE WHEN $services IS NULL THEN [1] ELSE s.resource_id IN $services END 
 	AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
@@ -124,7 +124,7 @@ func (nc *neo4jTopologyReporter) GetNonPublicCloudResources(tx neo4j.Transaction
 func (nc *neo4jTopologyReporter) GetCloudServices(tx neo4j.Transaction, cloud_provider, cloud_regions, fieldfilters mo.Option[reporters.FieldsFilters]) ([]NodeStub, error) {
 	res := []NodeStub{}
 	r, err := tx.Run(` 
-	MATCH (s:CloudResource) where t.resource_id in
+	MATCH (s:CloudResource) where s.resource_id in
 	['aws_ec2_instance','aws_eks_cluster','aws_s3_bucket','aws_lambda_function',
 	'aws_ecs_task','aws_ecs_cluster','aws_ecr_repository','aws_ecrpublic_repository',
 	'aws_ecs_task','aws_rds_db_instance','aws_rds_db_cluster','aws_ec2_application_load_balancer',
@@ -155,7 +155,7 @@ func (nc *neo4jTopologyReporter) GetCloudServices(tx neo4j.Transaction, cloud_pr
 
 func (nc *neo4jTopologyReporter) GetPublicCloudResources(tx neo4j.Transaction, cloud_provider, cloud_regions, cloud_services, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
 	res := map[NodeID][]ResourceStub{}
-	r, err := tx.Run(`MATCH (s:CloudResource) where t.depth IS NOT NULL
+	r, err := tx.Run(`MATCH (s:CloudResource) where s.depth IS NOT NULL
     and coalesce(s.node_id,s.name) IS NOT NULL 
 	AND CASE WHEN $services IS NULL THEN [1] ELSE s.resource_id IN $services END 
 	AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
