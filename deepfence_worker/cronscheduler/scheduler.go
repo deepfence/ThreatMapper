@@ -10,7 +10,6 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	sdkUtils "github.com/deepfence/golang_deepfence_sdk/utils/utils"
-	"github.com/robfig/cron/v3"
 )
 
 type Scheduler struct {
@@ -65,6 +64,10 @@ func (s *Scheduler) addJobs() error {
 		return err
 	}
 	_, err = s.cron.AddFunc("@every 300s", s.enqeueTask(sdkUtils.SyncRegistryTask))
+	if err != nil {
+		return err
+	}
+	_, err = s.cron.AddFunc("@every 120s", s.enqeueTask(sdkUtils.CloudComplianceTask))
 	if err != nil {
 		return err
 	}
