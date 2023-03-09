@@ -121,7 +121,7 @@ const COUNTS_DATA = [
 ];
 export const Dashboard = () => {
   return (
-    <>
+    <div className="overflow-auto">
       <div className="grid grid-cols-[3fr_1fr] p-2 gap-2">
         <Card className="flex items-center gap-2">
           {COUNTS_DATA.map((data, index) => {
@@ -148,7 +148,7 @@ export const Dashboard = () => {
           })}
         </Card>
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 auto-rows-[minmax(300px,_auto)] px-2">
+      <div className="grid grid-cols-2 2xl:grid-cols-3 gap-2 auto-rows-auto px-2 last:mb-2">
         <TopAttackPaths />
         <Posture />
         <TopRisksVulnerability />
@@ -157,6 +157,6 @@ export const Dashboard = () => {
         <Registries />
         <RuntimeIncidents />
       </div>
-    </>
+    </div>
   );
 };

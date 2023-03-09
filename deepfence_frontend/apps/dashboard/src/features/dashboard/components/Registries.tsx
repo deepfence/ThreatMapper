@@ -65,13 +65,13 @@ const CONNECTORS = [
     accounts: 6,
     color: color_low,
   },
-  //   {
-  //     label: 'Docker Hub',
-  //     id: 'docker',
-  //     percent: '93%',
-  //     accounts: 6,
-  //     color: color_low,
-  //   },
+  {
+    label: 'Docker Hub',
+    id: 'docker',
+    percent: '93%',
+    accounts: 6,
+    color: color_low,
+  },
   {
     label: 'Harbor',
     id: 'harbor',
@@ -79,20 +79,20 @@ const CONNECTORS = [
     accounts: 6,
     color: color_low,
   },
-  //   {
-  //     label: 'GitLab',
-  //     id: 'gitlab',
-  //     percent: '93%',
-  //     accounts: 6,
-  //     color: color_low,
-  //   },
-  //   {
-  //     label: 'JFrog',
-  //     id: 'jfrog',
-  //     percent: '93%',
-  //     accounts: 6,
-  //     color: color_low,
-  //   },
+  {
+    label: 'GitLab',
+    id: 'gitlab',
+    percent: '93%',
+    accounts: 6,
+    color: color_low,
+  },
+  {
+    label: 'JFrog',
+    id: 'jfrog',
+    percent: '93%',
+    accounts: 6,
+    color: color_low,
+  },
 ];
 
 export const Registries = () => {
@@ -116,23 +116,23 @@ export const Registries = () => {
         </div>
       </div>
       <Separator />
-      <div className="mt-4 grid grid-cols-2 2xl:grid-cols-3 gap-x-2 gap-y-4">
+      <div className="mt-4 grid grid-cols-3 gap-4 [&>*:nth-child(3n)]:border-r-0">
         {CONNECTORS.map((connector, index) => {
           return (
             <div
               className={cx(
-                'flex flex-col gap-x-6 border-r border-b border-gray-100 dark:border-gray-700 w-full',
+                'flex flex-col gap-x-6 border-r border-b border-gray-100 dark:border-gray-700 w-full pl-4 py-4',
                 {
-                  'border-r-0': (index + 1) % 2 === 0,
+                  'border-b-0': index >= 6,
                 },
               )}
               key={connector.label}
             >
-              <h4 className="text-gray-900 text-md dark:text-white mr-4">
+              <h4 className="text-md text-gray-400 dark:text-gray-500">
                 {connector.label}
               </h4>
-              <div className="flex gap-x-4">
-                <div className="p-4 flex w-16 h-16">
+              <div className="flex items-center">
+                <div className="p-4 pl-0 flex w-14 h-14">
                   <img src={getIcon(mode)[connector.id]} alt="Deefence Logo" />
                 </div>
                 <div className="flex flex-col">

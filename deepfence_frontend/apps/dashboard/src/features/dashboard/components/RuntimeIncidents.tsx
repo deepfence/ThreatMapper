@@ -3,6 +3,7 @@ import { HiArrowRight, HiFlag } from 'react-icons/hi';
 import { Button, Card, Separator } from 'ui-components';
 
 import PlacehoderRuntimeIncidents from '@/assets/placeholder-runtime-incidents.svg';
+import { DFLink } from '@/components/DFLink';
 
 export const RuntimeIncidents = () => {
   return (
@@ -36,17 +37,14 @@ export const RuntimeIncidents = () => {
           runtime information.
         </p>
         <p>
-          <a
-            href="https://deepfence.io/threatstryker/"
-            rel="noreferrer"
-            className="text-sm font-semibold text-blue-600 underline"
-          >
-            Find out more
-          </a>
-          .
+          <DFLink to="https://deepfence.io/threatstryker/">More information...</DFLink>
         </p>
-        <div className="mt-3">
-          <Button color="success" size="md">
+        <div className="py-3">
+          <Button
+            color="success"
+            size="md"
+            className="bg-green-500 dark:bg-green-500 hover:bg-green-600 hover:dark:bg-green-600"
+          >
             Grab ThreatStryker&nbsp;
             <HiArrowRight />
           </Button>

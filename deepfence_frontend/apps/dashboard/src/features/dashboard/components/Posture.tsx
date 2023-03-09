@@ -1,3 +1,4 @@
+import cx from 'classnames';
 import { HiOutlineChevronRight } from 'react-icons/hi';
 import { Button, Card, Separator } from 'ui-components';
 
@@ -72,36 +73,41 @@ export const Posture = () => {
         </div>
       </div>
       <Separator />
-      <div className="mt-4 grid grid-cols-[repeat(auto-fill,_minmax(40%,_1fr))] gap-2 place-items-center [&>*:nth-child(3n)]:border-0">
-        {CONNECTORS.map((connector) => {
+      <div className="mt-4 grid grid-cols-2 gap-y-4 [&>*:nth-child(2n)]:border-r-0">
+        {CONNECTORS.map((connector, index) => {
           return (
-            <div key={connector.label} className="p-4 flex flex-col shrink-0 gap-y-1">
-              <div
-                className="flex flex-col gap-x-6 border-r border-b border-gray-100 dark:border-gray-700 w-full"
-                key={connector.label}
-              >
-                <h4 className="text-gray-900 text-md dark:text-white mr-4">
+            <div
+              key={connector.label}
+              className={cx(
+                'flex w-full flex-cols gap-y-1 pl-4 border-r border-b border-gray-100 dark:border-gray-700',
+                {
+                  'border-b-0': index >= 4,
+                },
+              )}
+            >
+              <div className="flex flex-col py-4">
+                <h4 className="text-gray-400 dark:text-gray-500 text-md font-normal">
                   {connector.label}
                 </h4>
-                <div className="flex items-center justify-center gap-x-4">
-                  <div className="p-4 flex w-16 h-16">
+                <div className="flex items-center">
+                  <div className="p-4 pl-0 flex w-14 h-14">
                     <img src={getIcon(mode)[connector.label.toLowerCase()]} alt="logo" />
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">
-                      {connector.accounts}
-                    </span>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">
-                      Accounts
-                    </span>
-                  </div>
-                  <div className="flex flex-col gap-x-4">
-                    <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">
-                      {connector.percent}
-                    </span>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">
-                      Compliance
-                    </span>
+                  <div className="flex gap-x-6">
+                    <div className="flex flex-col">
+                      <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">
+                        {connector.accounts}
+                      </span>
+                      <span className="text-xs text-gray-500">Accounts</span>
+                    </div>
+                    <div className="flex flex-col gap-x-4">
+                      <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">
+                        {connector.percent}
+                      </span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500">
+                        Compliance
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
