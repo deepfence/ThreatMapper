@@ -6,6 +6,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"os"
 )
@@ -62,6 +63,10 @@ func AddCloudControls(msg *message.Message) error {
 		if err := json.Unmarshal(controlsJson, &controlList); err != nil {
 			return fmt.Errorf("Error unmarshalling controls for compliance type %s: %s", benchmark, err.Error())
 		}
+		var controlMap []map[string]interface{}
+		for _, control := range controlList {
+			controlMap = append(controlMap, utils.ToMap(control))
+		}
 		if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:CloudComplianceExecutable:CloudComplianceControl{
@@ -84,7 +89,7 @@ func AddCloudControls(msg *message.Message) error {
 		ON CREATE
 			SET n.active = true`,
 			map[string]interface{}{
-				"batch":     controlList,
+				"batch":     controlMap,
 				"benchmark": benchmark,
 			}); err != nil {
 			return err
@@ -97,6 +102,10 @@ func AddCloudControls(msg *message.Message) error {
 		var benchmarkList []Benchmark
 		if err := json.Unmarshal(benchmarksJson, &benchmarkList); err != nil {
 			return fmt.Errorf("Error unmarshalling benchmarks for compliance type %s: %s", benchmark, err.Error())
+		}
+		var benchmarkMap []map[string]interface{}
+		for _, benchMark := range benchmarkList {
+			benchmarkMap = append(benchmarkMap, utils.ToMap(benchMark))
 		}
 		if _, err = tx.Run(`
 		UNWIND $batch as row
@@ -117,7 +126,7 @@ func AddCloudControls(msg *message.Message) error {
 		MERGE (n) -[:INCLUDES]-> (m)
 		`,
 			map[string]interface{}{
-				"batch": benchmarkList,
+				"batch": benchmarkMap,
 			}); err != nil {
 			return err
 		}
