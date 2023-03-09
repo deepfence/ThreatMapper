@@ -1,8 +1,6 @@
 package model
 
 import (
-	"time"
-
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
@@ -221,7 +219,7 @@ type CloudComplianceScanResult struct {
 
 type Secret struct {
 	// Secret + Rule neo4j node
-	SecretID              string  `json:"node_id" required:"true"`
+	NodeId                string  `json:"node_id" required:"true"`
 	StartingIndex         int32   `json:"starting_index" required:"true"`
 	RelativeStartingIndex int32   `json:"relative_starting_index" required:"true"`
 	RelativeEndingIndex   int32   `json:"relative_ending_index" required:"true"`
@@ -292,26 +290,25 @@ func (Vulnerability) GetJsonCategory() string {
 
 type Malware struct {
 	// Malware + MalwareRule node in neo4j
-	Timestamp        time.Time `json:"@timestamp"`
-	Class            string    `json:"Class"`
-	CompleteFilename string    `json:"CompleteFilename"`
-	FileSevScore     int       `json:"FileSevScore"`
-	FileSeverity     string    `json:"FileSeverity"`
-	ImageLayerID     string    `json:"ImageLayerId"`
-	Meta             []string  `json:"Meta"`
-	RuleID           string    `json:"rule_id"`
-	RuleName         string    `json:"rule_name"`
-	Author           string    `json:"author"`
-	Date             string    `json:"date"`
-	Description      string    `json:"description"`
-	Filetype         string    `json:"filetype"`
-	Info             string    `json:"info"`
-	Version          string    `json:"version"`
-	SeverityScore    int       `json:"SeverityScore"`
-	StringsToMatch   []string  `json:"StringsToMatch"`
-	Summary          string    `json:"Summary"`
-	Masked           bool      `json:"masked"`
-	ScanID           string    `json:"scan_id"`
+	Class            string   `json:"Class" required:"true"`
+	CompleteFilename string   `json:"CompleteFilename" required:"true"`
+	FileSevScore     int      `json:"FileSevScore" required:"true"`
+	FileSeverity     string   `json:"FileSeverity" required:"true"`
+	ImageLayerID     string   `json:"ImageLayerId" required:"true"`
+	Meta             []string `json:"Meta"`
+	NodeId           string   `json:"node_id" required:"true"`
+	RuleID           string   `json:"rule_id" required:"true"`
+	RuleName         string   `json:"rule_name" required:"true"`
+	Author           string   `json:"author"`
+	Date             string   `json:"date"`
+	Description      string   `json:"description"`
+	Filetype         string   `json:"filetype"`
+	Info             string   `json:"info"`
+	Version          string   `json:"version"`
+	SeverityScore    int      `json:"SeverityScore"`
+	StringsToMatch   []string `json:"StringsToMatch"`
+	Summary          string   `json:"Summary"`
+	Masked           bool     `json:"masked" required:"true"`
 }
 
 func (Malware) NodeType() string {
@@ -365,7 +362,6 @@ func (Compliance) GetJsonCategory() string {
 }
 
 type CloudCompliance struct {
-	Timestamp           string `json:"@timestamp" required:"true"`
 	Count               int32  `json:"count,omitempty" required:"true"`
 	Reason              string `json:"reason" required:"true"`
 	Resource            string `json:"resource" required:"true"`
@@ -379,7 +375,6 @@ type CloudCompliance struct {
 	CloudProvider       string `json:"cloud_provider" required:"true"`
 	NodeName            string `json:"node_name" required:"true"`
 	NodeID              string `json:"node_id" required:"true"`
-	ScanID              string `json:"scan_id" required:"true"`
 	Masked              bool   `json:"masked" required:"true"`
 	UpdatedAt           int64  `json:"updated_at" required:"true"`
 	Type                string `json:"type" required:"true"`
