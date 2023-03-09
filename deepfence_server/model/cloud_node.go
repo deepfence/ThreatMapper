@@ -89,6 +89,7 @@ type CloudNodeComplianceControl struct {
 	Description       string   `json:"description"`
 	Service           string   `json:"service"`
 	CategoryHierarchy []string `json:"category_hierarchy"`
+	Enabled           bool     `json:"enabled"`
 }
 
 func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]interface{}) error {

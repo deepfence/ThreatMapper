@@ -29,10 +29,9 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeId, cloudProvider, 
 
 	r, err := tx.Run(`MATCH (n:CloudComplianceControl {
 			cloud_provider: $cloud_provider,
-			compliance_type: $compliance_type,
-			active: true
+			compliance_type: $compliance_type
 		})
-		RETURN n.node_id, n.title, n.description, n.service, n.category_hierarchy`,
+		RETURN n.node_id, n.title, n.description, n.service, n.category_hierarchy, n.active`,
 		map[string]interface{}{"cloud_provider": cloudProvider, "compliance_type": complianceType})
 
 	if err != nil {
@@ -56,6 +55,7 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeId, cloudProvider, 
 			Description:       rec.Values[2].(string),
 			Service:           rec.Values[3].(string),
 			CategoryHierarchy: categoryHierarchy,
+			Enabled:           rec.Values[5].(bool),
 		}
 		controls = append(controls, control)
 	}
