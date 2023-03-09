@@ -20,6 +20,7 @@ ENV DEEPFENCE_HTTP_LISTEN_ENDPOINT=8080 \
     DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES=30
 
 ADD deepfence_server/auth /auth
+ADD deepfence_server/cloud_controls /cloud_controls
 ADD golang_deepfence_sdk/utils/postgresql /usr/local/postgresql-migrate
 COPY deepfence_server/entrypoint.sh /entrypoint.sh
 

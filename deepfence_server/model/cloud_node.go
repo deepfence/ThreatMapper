@@ -68,6 +68,29 @@ type PendingCloudComplianceScan struct {
 	AccountId string   `json:"account_id"`
 }
 
+type CloudNodeControlReq struct {
+	NodeId         string `json:"node_id"`
+	CloudProvider  string `json:"cloud_provider" required:"true" enum:"aws,gcp,azure"`
+	ComplianceType string `json:"compliance_type" required:"true"`
+}
+
+type CloudNodeEnableDisableReq struct {
+	NodeId      string   `json:"node_id"`
+	ControlsIds []string `json:"control_ids"`
+}
+
+type CloudNodeControlResp struct {
+	Controls []CloudNodeComplianceControl `json:"controls"`
+}
+
+type CloudNodeComplianceControl struct {
+	ControlId         string   `json:"control_id"`
+	Title             string   `json:"title"`
+	Description       string   `json:"description"`
+	Service           string   `json:"service"`
+	CategoryHierarchy []string `json:"category_hierarchy"`
+}
+
 func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]interface{}) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {

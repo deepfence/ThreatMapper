@@ -273,6 +273,18 @@ func (d *OpenApiDocs) AddControlsOperations() {
 	d.AddOperation("upgradeAgentVersion", http.MethodPost, "/deepfence/controls/agent-upgrade",
 		"Schedule new agent version upgrade", "Schedule new agent version upgrade",
 		http.StatusOK, []string{tagControls}, bearerToken, new(AgentUpgrade), nil)
+
+	d.AddOperation("getCloudNodeControls", http.MethodPost, "/deepfence/controls/cloud-node",
+		"Fetch Cloud Node Controls", "Fetch controls for a cloud node",
+		http.StatusOK, []string{tagControls}, bearerToken, new(CloudNodeControlReq), nil)
+
+	d.AddOperation("enableCloudNodeControls", http.MethodPost, "/deepfence/controls/cloud-node/enable",
+		"Enable Cloud Node Controls", "Enable controls for a cloud node",
+		http.StatusOK, []string{tagControls}, bearerToken, new(CloudNodeEnableDisableReq), nil)
+
+	d.AddOperation("disableCloudNodeControls", http.MethodPost, "/deepfence/controls/cloud-node/disable",
+		"Disable Cloud Node Controls", "Disable controls for a cloud node",
+		http.StatusOK, []string{tagControls}, bearerToken, new(CloudNodeEnableDisableReq), nil)
 }
 
 func (d *OpenApiDocs) AddCloudNodeOperations() {
