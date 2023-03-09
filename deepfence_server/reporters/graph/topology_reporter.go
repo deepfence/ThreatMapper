@@ -84,14 +84,19 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 
 func (nc *neo4jTopologyReporter) GetNonPublicCloudResources(tx neo4j.Transaction, cloud_provider []string, cloud_regions []string, cloud_services []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
 	res := map[NodeID][]ResourceStub{}
-	r, err := tx.Run(`MATCH (s:CloudResource) where s.depth IS  NULL
-    and coalesce(s.node_id,s.name) IS NOT NULL 
-	AND CASE WHEN $services IS NULL THEN [1] ELSE s.resource_id IN $services END 
-	AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
-    ELSE CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END`+
-		reporters.ParseFieldFilters2CypherWhereConditions("t", fieldfilters, false)+`
-	return coalesce(s.node_id,s.name),s.cloud_provider,s.region,s.account_id,s.resource_id,count(coalesce(s.node_id,s.name)) order by count(coalesce(s.node_id,s.name)) desc`,
-		filterNil(map[string]interface{}{"providers": cloud_provider, "services": cloud_services, "regions": cloud_regions}))
+	r, err := tx.Run(`
+		MATCH (s:CloudResource) 
+		WHERE s.depth IS NULL
+		AND CASE WHEN $services IS NULL THEN [1] ELSE s.resource_id IN $services END 
+		AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
+		AND CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END `+
+		reporters.ParseFieldFilters2CypherWhereConditions("s", fieldfilters, false)+`
+		RETURN s.node_id,s.cloud_provider,s.region,s.account_id,s.resource_id`,
+		filterNil(map[string]interface{}{
+			"providers": cloud_provider,
+			"services":  cloud_services,
+			"regions":   cloud_regions,
+		}))
 	if err != nil {
 		return res, err
 	}
@@ -126,16 +131,19 @@ func (nc *neo4jTopologyReporter) GetCloudServices(tx neo4j.Transaction, cloud_pr
 
 	res := []NodeStub{}
 	r, err := tx.Run(` 
-	MATCH (s:CloudResource) where s.resource_id in
-	['aws_ec2_instance','aws_eks_cluster','aws_s3_bucket','aws_lambda_function',
-	'aws_ecs_task','aws_ecs_cluster','aws_ecr_repository','aws_ecrpublic_repository',
-	'aws_ecs_task','aws_rds_db_instance','aws_rds_db_cluster','aws_ec2_application_load_balancer',
-	'aws_ec2_classic_load_balancer','aws_ec2_network_load_balancer'] 	
-	AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
-    ELSE CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END`+
+		MATCH (s:CloudResource) WHERE s.resource_id IN
+		['aws_ec2_instance','aws_eks_cluster','aws_s3_bucket','aws_lambda_function',
+		'aws_ecs_task','aws_ecs_cluster','aws_ecr_repository','aws_ecrpublic_repository',
+		'aws_ecs_task','aws_rds_db_instance','aws_rds_db_cluster','aws_ec2_application_load_balancer',
+		'aws_ec2_classic_load_balancer','aws_ec2_network_load_balancer'] 	
+		AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
+		AND CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END `+
 		reporters.ParseFieldFilters2CypherWhereConditions("s", fieldfilters, false)+`
-	return s.resource_id,count(s.resource_id)  order by count(s.resource_id) desc`,
-		filterNil(map[string]interface{}{"providers": cloud_provider, "regions": cloud_regions}))
+		RETURN s.resource_id`,
+		filterNil(map[string]interface{}{
+			"providers": cloud_provider,
+			"regions":   cloud_regions,
+		}))
 
 	if err != nil {
 		return res, err
@@ -157,14 +165,19 @@ func (nc *neo4jTopologyReporter) GetCloudServices(tx neo4j.Transaction, cloud_pr
 
 func (nc *neo4jTopologyReporter) GetPublicCloudResources(tx neo4j.Transaction, cloud_provider []string, cloud_regions []string, cloud_services []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
 	res := map[NodeID][]ResourceStub{}
-	r, err := tx.Run(`MATCH (s:CloudResource) where s.depth IS NOT NULL
-    and coalesce(s.node_id,s.name) IS NOT NULL 
-	AND CASE WHEN $services IS NULL THEN [1] ELSE s.resource_id IN $services END 
-	AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
-    ELSE CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END`+
-		reporters.ParseFieldFilters2CypherWhereConditions("t", fieldfilters, false)+`
-	return coalesce(s.node_id,s.name),s.cloud_provider,s.region,s.account_id,s.resource_id,count(coalesce(s.node_id,s.name)) order by count(coalesce(s.node_id,s.name)) desc`,
-		filterNil(map[string]interface{}{"providers": cloud_provider, "services": cloud_services, "regions": cloud_regions}))
+	r, err := tx.Run(`
+		MATCH (s:CloudResource) 
+		WHERE s.depth IS NOT NULL
+		AND CASE WHEN $services IS NULL THEN [1] ELSE s.resource_id IN $services END 
+		AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
+		AND CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END`+
+		reporters.ParseFieldFilters2CypherWhereConditions("s", fieldfilters, false)+`
+		RETURN s.node_id,s.cloud_provider,s.region,s.account_id,s.resource_id`,
+		filterNil(map[string]interface{}{
+			"providers": cloud_provider,
+			"services":  cloud_services,
+			"regions":   cloud_regions,
+		}))
 	if err != nil {
 		return res, err
 	}
