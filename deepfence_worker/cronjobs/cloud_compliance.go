@@ -62,7 +62,7 @@ func AddCloudControls(msg *message.Message) error {
 		if err := json.Unmarshal(controlsJson, &controlList); err != nil {
 			return fmt.Errorf("Error unmarshalling controls for compliance type %s: %s", benchmark, err.Error())
 		}
-		if _, err = session.Run(`
+		if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:CloudComplianceExecutable:CloudComplianceControl{
 			node_id: row.parent_control_breadcrumb + row.control_id,
@@ -98,7 +98,7 @@ func AddCloudControls(msg *message.Message) error {
 		if err := json.Unmarshal(benchmarksJson, &benchmarkList); err != nil {
 			return fmt.Errorf("Error unmarshalling benchmarks for compliance type %s: %s", benchmark, err.Error())
 		}
-		if _, err = session.Run(`
+		if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:CloudComplianceExecutable:CloudComplianceBenchmark{
 			node_id: row.benchmark_id,
