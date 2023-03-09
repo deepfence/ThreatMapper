@@ -58,7 +58,7 @@ def insert_cve_error_doc(cve_status, datetime_now, host_name, cve_node_id, cve_s
         "host_name": host_name, "node_id": cve_node_id,
     }
     filters = {"scan_id": cve_status["scan_id"], "action": "QUEUED"}
-    es_resp = ESConn.search_by_and_clause(CVE_SCAN_LOGS_INDEX, filters, 0, "desc", size=1)
+    es_resp = ESConn.search_by_and_clause(CVE_SCAN_LOGS_INDEX, filters, 0, "asc", size=1)
     if len(es_resp.get("hits", [])) > 0:
         source = es_resp.get("hits", [])[0].get("_source", {})
         body["image_name"] = source.get("image_name", "")

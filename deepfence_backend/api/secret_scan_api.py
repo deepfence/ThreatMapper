@@ -163,7 +163,7 @@ def secret_scanned_nodes():
     }
     scan_aggs_response = ESConn.aggregation_helper(
         SECRET_SCAN_LOGS_INDEX,
-        {},
+        {"scan_status": [constants.SECRET_SCAN_STATUS_COMPLETED, constants.CVE_SCAN_STATUS_ERROR]},
         scan_aggs,
         add_masked_filter=False if hide_masked == "false" else True
     )
