@@ -82,10 +82,49 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 	return res, nil
 }
 
+func (nc *neo4jTopologyReporter) GetNonPublicCloudResources(tx neo4j.Transaction, cloud_provider, cloud_regions, cloud_services, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
+	res := map[NodeID][]ResourceStub{}
+	r, err := tx.Run(`MATCH (s:CloudResource) where t.depth IS  NULL
+    and coalesce(s.node_id,s.name) IS NOT NULL 
+	AND CASE WHEN $services IS NULL THEN [1] ELSE s.resource_id IN $services END 
+	AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
+    ELSE CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END`+
+		reporters.ParseFieldFilters2CypherWhereConditions("t", fieldfilters, false)+`
+	return coalesce(s.node_id,s.name),s.cloud_provider,s.region,s.account_id,s.resource_id,count(coalesce(s.node_id,s.name)) order by count(coalesce(s.node_id,s.name)) desc`,
+		filterNil(map[string]interface{}{"providers": cloud_provider, "services": cloud_services, "regions": cloud_regions}))
+	if err != nil {
+		return res, err
+	}
+	records, err := r.Collect()
+
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		//provider := record.Values[0].(string)
+		if record.Values[0] == nil || record.Values[1] == nil {
+			continue
+		}
+		node_id := NodeID(record.Values[0].(string))
+		region := NodeID(record.Values[2].(string))
+		account_id := NodeID(record.Values[3].(string))
+		resource_id := NodeID(record.Values[4].(string))
+		key := NodeID(string(region) + ":" + string(resource_id))
+		if _, present := res[key]; !present {
+			res[key] = []ResourceStub{}
+		}
+
+		res[key] = append(res[key], ResourceStub{ID: node_id, ResourceType: string(resource_id), AccountId: string(account_id)})
+	}
+	return res, nil
+
+}
+
 func (nc *neo4jTopologyReporter) GetCloudServices(tx neo4j.Transaction, cloud_provider, cloud_regions, fieldfilters mo.Option[reporters.FieldsFilters]) ([]NodeStub, error) {
 	res := []NodeStub{}
 	r, err := tx.Run(` 
-	MATCH p=()-[r:PUBLIC|OWNS]-(t:CloudResource)-[l:USES|balances|IS|HOSTS*0..1]-(s) where t.resource_type IN
+	MATCH (s:CloudResource) where t.resource_id in
 	['aws_ec2_instance','aws_eks_cluster','aws_s3_bucket','aws_lambda_function',
 	'aws_ecs_task','aws_ecs_cluster','aws_ecr_repository','aws_ecrpublic_repository',
 	'aws_ecs_task','aws_rds_db_instance','aws_rds_db_cluster','aws_ec2_application_load_balancer',
@@ -114,10 +153,11 @@ func (nc *neo4jTopologyReporter) GetCloudServices(tx neo4j.Transaction, cloud_pr
 
 }
 
-func (nc *neo4jTopologyReporter) GetCloudResources(tx neo4j.Transaction, cloud_provider, cloud_regions, cloud_services, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
+func (nc *neo4jTopologyReporter) GetPublicCloudResources(tx neo4j.Transaction, cloud_provider, cloud_regions, cloud_services, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
 	res := map[NodeID][]ResourceStub{}
-	r, err := tx.Run(`MATCH p=()-[r:PUBLIC|OWNS]-(t:CloudResource)-[l:USES|balances|IS|HOSTS*0..1]-(s) 
-    where coalesce(s.node_id,s.name) IS NOT NULL AND CASE WHEN $services IS NULL THEN [1] ELSE s.resource_id IN $services END 
+	r, err := tx.Run(`MATCH (s:CloudResource) where t.depth IS NOT NULL
+    and coalesce(s.node_id,s.name) IS NOT NULL 
+	AND CASE WHEN $services IS NULL THEN [1] ELSE s.resource_id IN $services END 
 	AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
     ELSE CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END`+
 		reporters.ParseFieldFilters2CypherWhereConditions("t", fieldfilters, false)+`
@@ -389,16 +429,17 @@ type ConnectionSummary struct {
 }
 
 type RenderedGraph struct {
-	Hosts          map[NodeID][]NodeStub     `json:"hosts" required:"true"`
-	Processes      map[NodeID][]NodeStub     `json:"processes" required:"true"`
-	Pods           map[NodeID][]NodeStub     `json:"pods" required:"true"`
-	Containers     map[NodeID][]NodeStub     `json:"containers" required:"true"`
-	Providers      []NodeStub                `json:"providers" required:"true"`
-	Regions        map[NodeID][]NodeStub     `json:"regions" required:"true"`
-	Kubernetes     map[NodeID][]NodeStub     `json:"kubernetes" required:"true"`
-	Connections    []ConnectionSummary       `json:"connections" required:"true"`
-	CloudResources map[NodeID][]ResourceStub `json:"cloud-resources" required:"true"`
-	CloudServices  []NodeStub                `json:"cloud-services" required:"true"`
+	Hosts                   map[NodeID][]NodeStub     `json:"hosts" required:"true"`
+	Processes               map[NodeID][]NodeStub     `json:"processes" required:"true"`
+	Pods                    map[NodeID][]NodeStub     `json:"pods" required:"true"`
+	Containers              map[NodeID][]NodeStub     `json:"containers" required:"true"`
+	Providers               []NodeStub                `json:"providers" required:"true"`
+	Regions                 map[NodeID][]NodeStub     `json:"regions" required:"true"`
+	Kubernetes              map[NodeID][]NodeStub     `json:"kubernetes" required:"true"`
+	Connections             []ConnectionSummary       `json:"connections" required:"true"`
+	PublicCloudResources    map[NodeID][]ResourceStub `json:"public-cloud-resources" required:"true"`
+	NonPublicCloudResources map[NodeID][]ResourceStub `json:"non-public-cloud-resources" required:"true"`
+	CloudServices           []NodeStub                `json:"cloud-services" required:"true"`
 }
 
 type TopologyFilters struct {
@@ -601,7 +642,12 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyF
 		return res, err
 	}
 
-	res.CloudResources, err = nc.GetCloudResources(tx, cloud_filter, region_filter, service_filter, mo.None[reporters.FieldsFilters]())
+	res.PublicCloudResources, err = nc.GetPublicCloudResources(tx, cloud_filter, region_filter, service_filter, mo.None[reporters.FieldsFilters]())
+	if err != nil {
+		return res, err
+	}
+
+	res.NonPublicCloudResources, err = nc.GetNonPublicCloudResources(tx, cloud_filter, region_filter, service_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
