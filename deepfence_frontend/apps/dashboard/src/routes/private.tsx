@@ -11,6 +11,7 @@ import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
 import { module as integrations } from '@/features/integrations/pages/Integrations';
 import { module as malware } from '@/features/malwares/pages/Malware';
+import { module as malwareDetails } from '@/features/malwares/pages/MalwareDetailModal';
 import { module as malwareScanResults } from '@/features/malwares/pages/MalwareScanResults';
 import { module as malwareScans } from '@/features/malwares/pages/MalwareScans';
 import {
@@ -294,11 +295,11 @@ export const privateRoutes: CustomRouteObject[] = [
         ...malwareScanResults,
         meta: { title: 'Malware Scan Results' },
         children: [
-          // {
-          //   path: ':cveId',
-          //   ...secretDetails,
-          //   meta: { title: 'Secret Details' },
-          // },
+          {
+            path: ':malwareId',
+            ...malwareDetails,
+            meta: { title: 'Malware Details' },
+          },
         ],
       },
     ],

@@ -54,8 +54,8 @@ import {
   ApiDocsBadRequestResponse,
   ModelScanResultsActionRequestScanTypeEnum,
   ModelScanResultsReq,
-  ModelSecretRule,
 } from '@/api/generated';
+import { ModelSecret } from '@/api/generated/models/ModelSecret';
 import { DFLink } from '@/components/DFLink';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
@@ -91,7 +91,7 @@ type ScanResult = {
   nodeType: string;
   nodeId: string;
   timestamp: number;
-  tableData: ModelSecretRule[];
+  tableData: ModelSecret[];
   pagination: {
     currentPage: number;
     totalRows: number;
@@ -107,7 +107,7 @@ export type LoaderDataType = {
 const PAGE_SIZE = 15;
 
 const getSeveritySearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('level');
+  return searchParams.getAll('severity');
 };
 const getMaskSearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('mask');
@@ -998,7 +998,9 @@ const HeaderComponent = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const loaderData = useLoaderData() as LoaderDataType;
   const isFilterApplied =
-    searchParams.has('level') || searchParams.has('mask') || searchParams.has('unmask');
+    searchParams.has('severity') ||
+    searchParams.has('mask') ||
+    searchParams.has('unmask');
 
   return (
     <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
@@ -1117,16 +1119,16 @@ const HeaderComponent = ({
                     <fieldset>
                       <Select
                         noPortal
-                        name="level"
+                        name="severity"
                         label={'Severity'}
                         placeholder="Select Severity"
-                        value={searchParams.getAll('level')}
+                        value={searchParams.getAll('severity')}
                         sizing="xs"
                         onChange={(value) => {
                           setSearchParams((prev) => {
-                            prev.delete('level');
-                            value.forEach((language) => {
-                              prev.append('level', language);
+                            prev.delete('severity');
+                            value.forEach((severity) => {
+                              prev.append('severity', severity);
                             });
                             prev.delete('page');
                             return prev;

@@ -27,16 +27,22 @@ export interface ModelRegistryListResp {
     created_at?: Date;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof ModelRegistryListResp
      */
-    id?: string;
+    id?: number;
     /**
      * 
      * @type {string}
      * @memberof ModelRegistryListResp
      */
     name?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelRegistryListResp
+     */
+    node_id?: string;
     /**
      * 
      * @type {any}
@@ -79,6 +85,7 @@ export function ModelRegistryListRespFromJSONTyped(json: any, ignoreDiscriminato
         'created_at': !exists(json, 'created_at') ? undefined : (new Date(json['created_at'])),
         'id': !exists(json, 'id') ? undefined : json['id'],
         'name': !exists(json, 'name') ? undefined : json['name'],
+        'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
         'non_secret': !exists(json, 'non_secret') ? undefined : json['non_secret'],
         'registry_type': !exists(json, 'registry_type') ? undefined : json['registry_type'],
         'updated_at': !exists(json, 'updated_at') ? undefined : (new Date(json['updated_at'])),
@@ -97,6 +104,7 @@ export function ModelRegistryListRespToJSON(value?: ModelRegistryListResp | null
         'created_at': value.created_at === undefined ? undefined : (value.created_at.toISOString()),
         'id': value.id,
         'name': value.name,
+        'node_id': value.node_id,
         'non_secret': value.non_secret,
         'registry_type': value.registry_type,
         'updated_at': value.updated_at === undefined ? undefined : (value.updated_at.toISOString()),
