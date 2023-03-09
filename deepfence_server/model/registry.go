@@ -29,12 +29,16 @@ type RegistryDeleteReq struct {
 	RegistryId int32 `path:"registry_id" validate:"required" required:"true"`
 }
 
-type RegistryImagesReq struct {
+type RegistryIDReq struct {
 	RegistryId string `path:"registry_id" validate:"required" required:"true"`
 }
 type RegistryImageTagsReq struct {
 	RegistryId string `path:"registry_id" validate:"required" required:"true"`
 	ImageName  string `path:"image_name" validate:"required" required:"true"`
+}
+
+type RegistryTypeReq struct {
+	RegistryType string `path:"registry_type" validate:"required" required:"true"`
 }
 
 // todo: add support to list by name and type, id
@@ -332,7 +336,7 @@ func toScansCount(scans []interface{}) map[string]int {
 	return counts
 }
 
-func RegistrySummary(ctx context.Context, registryId *int32) (map[string]int, error) {
+func RegistrySummary(ctx context.Context, registryId *int32, registryType *string) (map[string]int, error) {
 
 	count := map[string]int{}
 
@@ -359,6 +363,17 @@ func RegistrySummary(ctx context.Context, registryId *int32) (map[string]int, er
 	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount{container_registry_id:$id})
 	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
 	`
+
+	queryRegistriesByType := `
+	MATCH (n:RegistryAccount{registry_type:$type})-[:HOSTS]->(m:ContainerImage)
+	WITH
+		COUNT(distinct m.docker_image_name) AS images,
+		COUNT(m.docker_image_tag) AS tags,
+		COUNT(distinct n) AS registries
+	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount{registry_type:$type})
+	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
+	`
+
 	queryAllRegistries := `
 	MATCH (n:RegistryAccount)-[:HOSTS]->(m:ContainerImage)
 	WITH
@@ -374,10 +389,17 @@ func RegistrySummary(ctx context.Context, registryId *int32) (map[string]int, er
 	)
 	if registryId != nil {
 		if result, err = tx.Run(queryPerRegistry, map[string]interface{}{"id": *registryId}); err != nil {
+			log.Error().Err(err).Msgf("failed to query summary for registry id %d", *registryId)
+			return count, err
+		}
+	} else if registryType != nil {
+		if result, err = tx.Run(queryRegistriesByType, map[string]interface{}{"type": *registryType}); err != nil {
+			log.Error().Err(err).Msgf("failed to query summary for registry type %s", *registryType)
 			return count, err
 		}
 	} else {
 		if result, err = tx.Run(queryAllRegistries, map[string]interface{}{}); err != nil {
+			log.Error().Err(err).Msgf("failed to query summary for all registries")
 			return count, err
 		}
 	}
