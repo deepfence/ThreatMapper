@@ -2,7 +2,7 @@ ARG DF_IMG_TAG=latest
 ARG IMAGE_REPOSITORY=deepfenceio
 FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS packagescanner
 FROM $IMAGE_REPOSITORY/deepfence_secret_scanner_ce:$DF_IMG_TAG AS secretscanner
-FROM $IMAGE_REPOSITORY/yara-hunter:$DF_IMG_TAG AS yarahunter
+FROM $IMAGE_REPOSITORY/deepfence_malware_scanner_ce:$DF_IMG_TAG AS yarahunter
 
 FROM alpine:3.17 AS builder-yara
 
