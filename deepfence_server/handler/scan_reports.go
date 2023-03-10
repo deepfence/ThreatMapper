@@ -384,6 +384,7 @@ func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Re
 	}
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error reading request body", http.StatusInternalServerError)
 		return
 	}
@@ -393,11 +394,13 @@ func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Re
 	var data T
 	err = json.Unmarshal(body, &data)
 	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}
-	ingester.Ingest(ctx, data)
+	err = ingester.Ingest(ctx, data)
 	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}
