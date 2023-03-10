@@ -454,3 +454,18 @@ func (h *Handler) SummaryByRegistryType(w http.ResponseWriter, r *http.Request) 
 
 	httpext.JSON(w, http.StatusOK, counts)
 }
+
+func (h *Handler) Summary(w http.ResponseWriter, r *http.Request) {
+
+	counts := map[string]map[string]int{}
+
+	// count registry resource
+	counts, err := model.RegistrySummaryAll(r.Context())
+	if err != nil {
+		respondError(err, w)
+	}
+
+	log.Info().Msgf("all registries summary %+v", counts)
+
+	httpext.JSON(w, http.StatusOK, counts)
+}

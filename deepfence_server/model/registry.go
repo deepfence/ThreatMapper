@@ -9,6 +9,7 @@ import (
 	"time"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
+	pkgConst "github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -433,6 +434,83 @@ func RegistrySummary(ctx context.Context, registryId *int32, registryType *strin
 	count["images"] = int(images.(int64))
 	count["tags"] = int(tags.(int64))
 	count["registries"] = int(registries.(int64))
+
+	return count, nil
+}
+
+func RegistrySummaryAll(ctx context.Context) (map[string]map[string]int, error) {
+
+	count := map[string]map[string]int{}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return count, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return count, err
+	}
+	defer tx.Close()
+
+	queryRegistriesByType := `
+	MATCH (n:RegistryAccount{registry_type:$type})-[:HOSTS]->(m:ContainerImage)
+	WITH
+		COUNT(distinct m.docker_image_name) AS images,
+		COUNT(m.docker_image_tag) AS tags,
+		COUNT(distinct n) AS registries
+	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount{registry_type:$type})
+	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
+	`
+
+	for _, t := range pkgConst.RegistryTypes {
+		var (
+			result neo4j.Result
+			rCount = map[string]int{}
+		)
+
+		if result, err = tx.Run(queryRegistriesByType, map[string]interface{}{"type": t}); err != nil {
+			log.Error().Err(err).Msgf("failed to query summary for registry type %s", t)
+			count[t] = rCount
+			continue
+		}
+
+		record, err := result.Single()
+		if err != nil {
+			count[t] = rCount
+			continue
+		}
+
+		images, has := record.Get("images")
+		if !has {
+			log.Warn().Msgf("images not found in query result")
+		}
+
+		tags, has := record.Get("tags")
+		if !has {
+			log.Warn().Msg("tags not found in query result")
+		}
+
+		registries, has := record.Get("registries")
+		if !has {
+			log.Warn().Msg("registries not found in query result")
+		}
+
+		scansStatus, has := record.Get("scan_status")
+		if !has {
+			log.Warn().Msg("scan_status not found in query result")
+		}
+
+		rCount = toScansCount(scansStatus.([]interface{}))
+		rCount["images"] = int(images.(int64))
+		rCount["tags"] = int(tags.(int64))
+		rCount["registries"] = int(registries.(int64))
+
+		count[t] = rCount
+	}
 
 	return count, nil
 }

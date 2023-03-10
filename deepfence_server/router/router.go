@@ -314,6 +314,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.AddRegistry))
 				r.Post("/gcr", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.AddGoogleContainerRegistry))
 				r.Get("/{registry_type}/summary", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.SummaryByRegistryType))
+				r.Get("/summary", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.Summary))
 				r.Route("/{registry_id}", func(r chi.Router) {
 					r.Delete("/", dfHandler.AuthHandler(ResourceRegistry, PermissionDelete, dfHandler.DeleteRegistry))
 					r.Get("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImages))
