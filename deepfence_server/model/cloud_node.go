@@ -2,10 +2,21 @@ package model
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
+
+const PostureProviderAWS = "aws"
+const PostureProviderGCP = "gcp"
+const PostureProviderAzure = "azure"
+const PostureProviderLinux = "linux"
+const PostureProviderKubernetes = "kubernetes"
+
+var SupportedPostureProviders = []string{PostureProviderAWS, PostureProviderGCP, PostureProviderAzure,
+	PostureProviderLinux, PostureProviderKubernetes}
 
 type CloudNodeAccountRegisterReq struct {
 	NodeId              string            `json:"node_id" required:"true"`
@@ -33,7 +44,7 @@ type CloudNodeAccountsListReq struct {
 type CloudNodeProvidersListReq struct{}
 
 type CloudNodeProvidersListResp struct {
-	Providers []string `json:"providers" required:"true"`
+	Providers []PostureProvider `json:"providers" required:"true"`
 }
 
 type CloudNodeAccountsListResp struct {
@@ -92,6 +103,15 @@ type CloudNodeComplianceControl struct {
 	Enabled           bool     `json:"enabled"`
 }
 
+type PostureProvider struct {
+	Name                 string  `json:"name"`
+	NodeCount            int     `json:"node_count"`
+	NodeLabel            string  `json:"node_label"`
+	ScanCount            int     `json:"scan_count"`
+	CompliancePercentage float64 `json:"compliance_percentage"`
+	ResourceCount        int     `json:"resource_count"`
+}
+
 func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]interface{}) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -114,42 +134,94 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 	return tx.Commit()
 }
 
-func GetCloudProvidersList(ctx context.Context) ([]string, error) {
+func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
+	var postureProviders []PostureProvider
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return []string{}, err
+		return postureProviders, err
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
-		return []string{}, err
+		return postureProviders, err
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction()
 	if err != nil {
-		return []string{}, err
+		return postureProviders, err
 	}
 	defer tx.Close()
 
-	res, err := tx.Run(`
-		MATCH (n:Node) 
-		RETURN DISTINCT(n.cloud_provider)`,
-		map[string]interface{}{})
-	if err != nil {
-		return []string{}, err
+	for _, postureProviderName := range SupportedPostureProviders {
+		postureProvider := PostureProvider{
+			Name:                 postureProviderName,
+			NodeCount:            0,
+			NodeLabel:            utils.ResourceTypeToNeo4jLabel(utils.StringToCloudProvider(postureProviderName)),
+			ScanCount:            0,
+			CompliancePercentage: 0,
+			ResourceCount:        0,
+		}
+		scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
+		neo4jNodeType := "Node"
+		if postureProviderName == PostureProviderKubernetes {
+			neo4jNodeType = "KubernetesCluster"
+		}
+		if postureProviderName == PostureProviderLinux || postureProviderName == PostureProviderKubernetes {
+			postureProvider.NodeLabel = utils.ResourceTypeToNeo4jLabel(utils.StringToCloudProvider(postureProviderName))
+			scanType = utils.NEO4J_COMPLIANCE_SCAN
+			nodeRes, err := tx.Run(fmt.Sprintf(`
+			MATCH (m:%s)
+			WITH COUNT(DISTINCT m.node_id) AS account_count
+			MATCH (n:%s)-[:SCANNED]->(m:%s)
+			WITH account_count, COUNT(DISTINCT n.node_id) AS scan_count
+			MATCH (m:%s)<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:Compliance)
+			WITH account_count, scan_count, COUNT(c) AS total_compliance_count
+			MATCH (m:%s)<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:Compliance)
+			WHERE c1.status IN ['ok', 'info', 'skip']
+			RETURN account_count, scan_count, COUNT(c1.status)*100.0/total_compliance_count AS compliance_percentage`,
+				neo4jNodeType, scanType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType),
+				map[string]interface{}{})
+			nodeRec, err := nodeRes.Single()
+			if err != nil {
+				continue
+			}
+			postureProvider.NodeCount = nodeRec.Values[0].(int)
+			postureProvider.ScanCount = nodeRec.Values[1].(int)
+			postureProvider.CompliancePercentage = nodeRec.Values[2].(float64)
+		} else {
+			postureProvider.NodeLabel = utils.ResourceTypeToNeo4jLabel(utils.StringToCloudProvider(postureProviderName))
+			nodeRes, err := tx.Run(fmt.Sprintf(`
+			MATCH (p:CloudResource)
+			WHERE p.cloud_provider = $cloud_provider
+			WITH COUNT(*) AS resource_count
+			MATCH (m:%s{cloud_provider: $cloud_provider})
+			WITH resource_count, COUNT(DISTINCT m.node_id) AS account_count
+			MATCH (n:%s)-[:SCANNED]->(m:%s{cloud_provider: $cloud_provider})
+			WITH account_count, resource_count, COUNT(DISTINCT n.node_id) AS scan_count
+			MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudComplianceResult)
+			WITH account_count, resource_count, scan_count, COUNT(c) AS total_compliance_count
+			MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:CloudComplianceResult)
+			WHERE c1.status IN ['ok', 'info', 'skip']
+			RETURN account_count, resource_count, scan_count,
+				COUNT(c1.status)*100.0/total_compliance_count AS compliance_percentage`, neo4jNodeType, scanType,
+				neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType),
+				map[string]interface{}{
+					"cloud_provider": postureProviderName,
+				})
+			nodeRec, err := nodeRes.Single()
+			if err != nil {
+				continue
+			}
+			postureProvider.NodeCount = nodeRec.Values[0].(int)
+			postureProvider.ResourceCount = nodeRec.Values[1].(int)
+			postureProvider.ScanCount = nodeRec.Values[2].(int)
+			postureProvider.CompliancePercentage = nodeRec.Values[3].(float64)
+		}
+		postureProviders = append(postureProviders, postureProvider)
 	}
 
-	recs, err := res.Collect()
-	if err != nil {
-		return []string{}, err
-	}
-
-	providers := []string{}
-	for _, rec := range recs {
-		providers = append(providers, rec.Values[0].(string))
-	}
-	return providers, nil
+	return postureProviders, nil
 }
 
 func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw FetchWindow) (CloudNodeAccountsListResp, error) {
