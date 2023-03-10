@@ -110,10 +110,9 @@ const ViewSwitcher = () => {
           to="/topology/graph"
           type="button"
           className={classNames(
-            'flex items-center text-lg font-semibold rounded-l-lg h-full px-2',
+            'flex items-center text-lg font-semibold rounded-l-lg h-full px-2 border-2 border-blue-600 dark:border-blue-600',
             {
-              ['border-2 border-blue-600 text-blue-600 dark:border-blue-600 dark:text-blue-500']:
-                !isGraphView,
+              ['text-blue-600 dark:text-blue-500']: !isGraphView,
               ['bg-blue-600 text-gray-100 dark:text-white']: isGraphView,
             },
           )}
@@ -133,10 +132,9 @@ const ViewSwitcher = () => {
           to="/topology/table"
           type="button"
           className={classNames(
-            'flex items-center text-lg font-semibold rounded-r-lg h-full px-2',
+            'flex items-center text-lg font-semibold rounded-r-lg h-full px-2 border-2 border-blue-600 dark:border-blue-600',
             {
-              ['border-2 border-blue-600 text-blue-600 dark:border-blue-600 dark:text-blue-500']:
-                isGraphView,
+              ['text-blue-600 dark:text-blue-500']: isGraphView,
               ['bg-blue-600 text-gray-100 dark:text-white']: !isGraphView,
             },
           )}

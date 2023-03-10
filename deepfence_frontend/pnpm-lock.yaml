@@ -8,11 +8,13 @@ importers:
       turbo: latest
     devDependencies:
       prettier: 2.8.4
-      turbo: 1.8.2
+      turbo: 1.8.3
 
   apps/dashboard:
     specifiers:
-      '@antv/g6': ^4.8.5
+      '@antv/g6': ^4.8.7
+      '@antv/g6-core': ^0.8.7
+      '@antv/layout': ^0.3.17
       '@openapitools/openapi-generator-cli': ^2.5.2
       '@playwright/test': ^1.30.0
       '@radix-ui/react-navigation-menu': ^1.1.1
@@ -59,11 +61,13 @@ importers:
       vite: ^4.0.4
       vitest: ^0.28.3
       whatwg-fetch: ^3.6.2
-      xstate: ^4.36.0
+      xstate: ^4.37.0
     dependencies:
-      '@antv/g6': 4.8.5
+      '@antv/g6': 4.8.7
+      '@antv/g6-core': 0.8.7
+      '@antv/layout': 0.3.17_dagre@0.8.5
       '@radix-ui/react-navigation-menu': 1.1.1_biqbaboplfbrettd7655fr4n2y
-      '@xstate/react': 3.2.0_gtag2pdc6ctwabmisrelzywdam
+      '@xstate/react': 3.2.0_7ldedhq65n2n63dxu54z7lcb2q
       classnames: 2.3.2
       dayjs: 1.11.7
       echarts: 5.4.1
@@ -76,7 +80,7 @@ importers:
       sonner: 0.1.1_react@18.2.0
       tailwind-merge: 1.9.0
       ui-components: link:../../packages/ui-components
-      xstate: 4.36.0
+      xstate: 4.37.0
     devDependencies:
       '@openapitools/openapi-generator-cli': 2.5.2
       '@playwright/test': 1.30.0
@@ -355,8 +359,8 @@ packages:
       lodash: 4.17.21
     dev: false
 
-  /@antv/g6-core/0.8.5:
-    resolution: {integrity: sha512-cBxXB1rJkdmNWCimVqJlgVTFVvDRj3481WU2IM/+un3IbphjDP6Ft1KXHZqwJMGc03o/JUNjEgQyhwhL5iqgDQ==}
+  /@antv/g6-core/0.8.7:
+    resolution: {integrity: sha512-na3kjtGwnZ10/yZQSQB6fkywN21jQp3CE0PRgO3N3dBke9F1tHy8Y8b4bpY14H6ob9Q8lGFozXO/Aqy266SWjA==}
     dependencies:
       '@antv/algorithm': 0.1.25
       '@antv/dom-util': 2.0.4
@@ -370,16 +374,16 @@ packages:
       tslib: 2.4.1
     dev: false
 
-  /@antv/g6-element/0.8.5:
-    resolution: {integrity: sha512-/IXW2eRV7zwjdMUbYmO/mceFzyApKbOP+JxU90f5nH8LcxT2L0DKSgUiv4yBuMHs/caKnViUGRMLBcrSmFHEZA==}
+  /@antv/g6-element/0.8.7:
+    resolution: {integrity: sha512-39QDIbRxXqJGhEoltMEj9/jQf7xTIDNM8xsSBhaqNTXFF8l0G0XrQ3kcOqi0/147tjxDVGhcgOPANi9p4Yj3WA==}
     dependencies:
       '@antv/g-base': 0.5.12
-      '@antv/g6-core': 0.8.5
+      '@antv/g6-core': 0.8.7
       '@antv/util': 2.0.17
     dev: false
 
-  /@antv/g6-pc/0.8.5:
-    resolution: {integrity: sha512-6OlbxVMnz5wYm7PhWBNiJB7aEczEMn0bKtvBCIC1Kx8tx8Rk879DtLF2l+myq1Baod8TfzIj3gnYSBLtkO8zgw==}
+  /@antv/g6-pc/0.8.7:
+    resolution: {integrity: sha512-oUe2vQ6UpT2SUeEvQQeO6BIQPFrC7xCSzUZBJv9FLAuQ/6p0/NIzQ/s4JU7rfZG6X31XqKDhdOg+kvDlMC27lg==}
     dependencies:
       '@ant-design/colors': 4.0.5
       '@antv/algorithm': 0.1.25
@@ -389,11 +393,11 @@ packages:
       '@antv/g-canvas': 0.5.13
       '@antv/g-math': 0.1.9
       '@antv/g-svg': 0.5.7
-      '@antv/g6-core': 0.8.5
-      '@antv/g6-element': 0.8.5
-      '@antv/g6-plugin': 0.8.5
+      '@antv/g6-core': 0.8.7
+      '@antv/g6-element': 0.8.7
+      '@antv/g6-plugin': 0.8.7
       '@antv/hierarchy': 0.6.10
-      '@antv/layout': 0.3.13_dagre@0.8.5
+      '@antv/layout': 0.3.17_dagre@0.8.5
       '@antv/matrix-util': 3.1.0-beta.3
       '@antv/path-util': 2.0.15
       '@antv/util': 2.0.17
@@ -404,15 +408,15 @@ packages:
       ml-matrix: 6.10.4
     dev: false
 
-  /@antv/g6-plugin/0.8.5:
-    resolution: {integrity: sha512-6czIPyFlXAVd6lFAoPck4OaaCVXYXfkKfaInqfNlSG0P4/zerLPictJikgwJIbeXo0VBtuDbsPE/0eFjUfM4Hw==}
+  /@antv/g6-plugin/0.8.7:
+    resolution: {integrity: sha512-BnVwFvFnAy4J5mBETHp6mO2M9k2kJVuWeYmkVBWc1LmqSBt5zeevuRvQVgwFOS0YYdQ9XkzoTw9jDBeLWsWOtw==}
     dependencies:
       '@antv/dom-util': 2.0.4
       '@antv/g-base': 0.5.12
       '@antv/g-canvas': 0.5.13
       '@antv/g-svg': 0.5.7
-      '@antv/g6-core': 0.8.5
-      '@antv/g6-element': 0.8.5
+      '@antv/g6-core': 0.8.7
+      '@antv/g6-element': 0.8.7
       '@antv/matrix-util': 3.1.0-beta.3
       '@antv/path-util': 2.0.15
       '@antv/scale': 0.3.18
@@ -420,10 +424,10 @@ packages:
       insert-css: 2.0.0
     dev: false
 
-  /@antv/g6/4.8.5:
-    resolution: {integrity: sha512-Cmr82GWPkgEt9/Z632NoMtSnkgjKTFnbs6FvV/W9lsmVnimUOsB626pdm5qG+HB3CvA3v7D+cNAcRIo8iKtnuA==}
+  /@antv/g6/4.8.7:
+    resolution: {integrity: sha512-80kk9EHsVynWRROW8VjkjxTTbu23ZLC/06bkar01c5ANQcmpJFPfVrnvYTbk67EAym8zXhHHn68CQ2XMXmkPOQ==}
     dependencies:
-      '@antv/g6-pc': 0.8.5
+      '@antv/g6-pc': 0.8.7
     dev: false
 
   /@antv/graphlib/1.2.0:
@@ -436,8 +440,8 @@ packages:
       '@antv/util': 2.0.17
     dev: false
 
-  /@antv/layout/0.3.13_dagre@0.8.5:
-    resolution: {integrity: sha512-N5dNTH3EW2B1/gNUg38OuOvc7jtHMjvY8i5+BDZn4ejYAovyhPJeIvhIhdjOir6UTXWhvtzVYYDXYfpr8/mQtQ==}
+  /@antv/layout/0.3.17_dagre@0.8.5:
+    resolution: {integrity: sha512-KYqnTkqQ1Dddv57yM39FVR//OHFituWJ6Fjhip4VqIYsD07RIvo4g6gMRRqVwEZufGJjgdYJKVn4xIEh/8Ezhw==}
     dependencies:
       '@antv/g-webgpu': 0.7.2
       '@antv/graphlib': 1.2.0
@@ -5923,7 +5927,7 @@ packages:
     resolution: {integrity: sha512-N8tkAACJx2ww8vFMneJmaAgmjAG1tnVBZJRLRcx061tmsLRZHSEZSLuGWnwPtunsSLvSqXQ2wfp7Mgqg1I+2dQ==}
     dev: false
 
-  /@xstate/react/3.2.0_gtag2pdc6ctwabmisrelzywdam:
+  /@xstate/react/3.2.0_7ldedhq65n2n63dxu54z7lcb2q:
     resolution: {integrity: sha512-Oxz1WB3/Z9IHjrd2uCIQGjGA8P7UsTTPc3YuIbIsgDgfSntQuvvjR0rZlL9NKQltrCRTXvzGf/wI95wAc2u7Uw==}
     peerDependencies:
       '@xstate/fsm': ^2.0.0
@@ -5938,7 +5942,7 @@ packages:
       react: 18.2.0
       use-isomorphic-layout-effect: 1.1.2_3stiutgnnbnfnf3uowm5cip22i
       use-sync-external-store: 1.2.0_react@18.2.0
-      xstate: 4.36.0
+      xstate: 4.37.0
     transitivePeerDependencies:
       - '@types/react'
     dev: false
@@ -14835,65 +14839,65 @@ packages:
     resolution: {integrity: sha512-JVa5ijo+j/sOoHGjw0sxw734b1LhBkQ3bvUGNdxnVXDCX81Yx7TFgnZygxrIIWn23hbfTaMYLwRmAxFyDuFmIw==}
     dev: true
 
-  /turbo-darwin-64/1.8.2:
-    resolution: {integrity: sha512-j77U0uOeppENexFsIvvzExADSqMBEeCHnm+6LSNQfaajHSrbUVSTsuD6ZMYHamT6bslc+ZZm21jdecWkwZFBbw==}
+  /turbo-darwin-64/1.8.3:
+    resolution: {integrity: sha512-bLM084Wr17VAAY/EvCWj7+OwYHvI9s/NdsvlqGp8iT5HEYVimcornCHespgJS/yvZDfC+mX9EQkn3V2JmYgGGw==}
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
     dev: true
     optional: true
 
-  /turbo-darwin-arm64/1.8.2:
-    resolution: {integrity: sha512-1NoAvjlwt2wycsAFJouauy9epn9DptSMy6BoGqxJVc4jiibsLepp9qYc4f1/ln0zjd3FR1IvhGOiBfdpqMN7hg==}
+  /turbo-darwin-arm64/1.8.3:
+    resolution: {integrity: sha512-4oZjXtzakopMK110kue3z/hqu3WLv+eDLZOX1NGdo49gqca9BeD8GbH+sXpAp6tqyeuzpss+PIliVYuyt7LgbA==}
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
     dev: true
     optional: true
 
-  /turbo-linux-64/1.8.2:
-    resolution: {integrity: sha512-TcT3CRYnBYA46kLGGbGC2jDyCEAvMgVpUdpIZGTmod48EKpZaEfVgTkpa4GJde8W68yRFogPZjPVL3yJHFpXSA==}
+  /turbo-linux-64/1.8.3:
+    resolution: {integrity: sha512-uvX2VKotf5PU14FCxJA5iHItPQno2JWzerMd+g3/h/Asay6dvxvtVjc39MQeGT0H5njSvzVKFkT+3/5q8lgOEg==}
     cpu: [x64]
     os: [linux]
     requiresBuild: true
     dev: true
     optional: true
 
-  /turbo-linux-arm64/1.8.2:
-    resolution: {integrity: sha512-Mb9+KBy4YJzPMZ6WGoMzMVZ6EtueCSvOvgmNpVFgkwbtabfBuaBOvN+irtg4RRSWvJQTDTziLABieocEEXZImQ==}
+  /turbo-linux-arm64/1.8.3:
+    resolution: {integrity: sha512-E1p+oH3XKMaPS4rqWhYsL4j2Pzc0d/9P5KU7Kn1kqVLo2T3iRA7n2KVULEieUNE0nTH+aIJPXYXOpqCI5wFJaA==}
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
     dev: true
     optional: true
 
-  /turbo-windows-64/1.8.2:
-    resolution: {integrity: sha512-/+R5ikRrw2w2w38JtNPubGLIQHgUC70m783DI9aPgaM5c8P5D/Y0k6HgjuC/uXgiaz2h3R7p7YWlr+2/E0bqyA==}
+  /turbo-windows-64/1.8.3:
+    resolution: {integrity: sha512-cnzAytHtoLXd0J7aNzRpZFpL/GTjcBmkvAPlbOdf/Pl1iwS4qzGrudZQ+OM1lmLgLIfBPIavsGHBknTwTNib4A==}
     cpu: [x64]
     os: [win32]
     requiresBuild: true
     dev: true
     optional: true
 
-  /turbo-windows-arm64/1.8.2:
-    resolution: {integrity: sha512-s07viz5nXSx4kyiksuPM4FGLRkoaGMaw0BpwFjdRQsl1p+WclUN1IPdokVPKOmFpu5pNCVYlG/raP/mXAEzDCg==}
+  /turbo-windows-arm64/1.8.3:
+    resolution: {integrity: sha512-ulIiItNm2w/zYJdD5/oAzjzNns1IjbpweRzpsE8tLXaWwo6+fnXXkyloUug0IUhcd2k6fJXfoiDZfygqpOVuXg==}
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
     dev: true
     optional: true
 
-  /turbo/1.8.2:
-    resolution: {integrity: sha512-G/uJx6bZK5RwTWHsRN/MP0MvXFznmCaL3MQXdSf+OG/q0o8GE7+yivyyWEplWI1Asc8AEN909A/wlIkoz2FKTg==}
+  /turbo/1.8.3:
+    resolution: {integrity: sha512-zGrkU1EuNFmkq6iky6LcMqD4h0OLE8XysVFxQWRIZbcTNnf0XAycbsbeEyiJpiWeqb7qtg2bVuY9EYcNoNhVuQ==}
     hasBin: true
     requiresBuild: true
     optionalDependencies:
-      turbo-darwin-64: 1.8.2
-      turbo-darwin-arm64: 1.8.2
-      turbo-linux-64: 1.8.2
-      turbo-linux-arm64: 1.8.2
-      turbo-windows-64: 1.8.2
-      turbo-windows-arm64: 1.8.2
+      turbo-darwin-64: 1.8.3
+      turbo-darwin-arm64: 1.8.3
+      turbo-linux-64: 1.8.3
+      turbo-linux-arm64: 1.8.3
+      turbo-windows-64: 1.8.3
+      turbo-windows-arm64: 1.8.3
     dev: true
 
   /type-check/0.3.2:
@@ -15971,8 +15975,8 @@ packages:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
     dev: true
 
-  /xstate/4.36.0:
-    resolution: {integrity: sha512-AUI+KPgyy3g4PDpZWzUy/5ubd8VymbqikNmrJx5AQfqh+AQnemkBiabGROno+am1wUl2yeuT3UDrzUTSidfa6g==}
+  /xstate/4.37.0:
+    resolution: {integrity: sha512-YC+JCerRclKS9ixQTuw8l3vs3iFqWzNzOGR0ID5XsSlieMXIV9nNPE43h9CGr7VdxA1QYhMwhCZA0EdpOd17Bg==}
     dev: false
 
   /xtend/4.0.2:

@@ -4,9 +4,9 @@ import { TopologyHeader } from '@/features/topology/components/TopologyHeader';
 
 function Topology() {
   return (
-    <div>
+    <div className="h-full flex flex-col">
       <TopologyHeader />
-      <div className="m-2">
+      <div className="m-2 flex-1">
         <Outlet />
       </div>
     </div>

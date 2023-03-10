@@ -17,7 +17,9 @@
     "codegen:clean": "rm -rf ./src/api/generated"
   },
   "dependencies": {
-    "@antv/g6": "^4.8.5",
+    "@antv/g6": "^4.8.7",
+    "@antv/g6-core": "^0.8.7",
+    "@antv/layout": "^0.3.17",
     "@radix-ui/react-navigation-menu": "^1.1.1",
     "@xstate/react": "^3.2.0",
     "classnames": "^2.3.2",
@@ -32,7 +34,7 @@
     "sonner": "^0.1.1",
     "tailwind-merge": "^1.9.0",
     "ui-components": "workspace:*",
-    "xstate": "^4.36.0"
+    "xstate": "^4.37.0"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.5.2",

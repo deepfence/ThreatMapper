@@ -45,6 +45,7 @@ export function getTopologyApiClient() {
   return {
     getHostsTopologyGraph: topologyApi.getHostsTopologyGraph.bind(topologyApi),
     getKubernetesTopologyGraph: topologyApi.getKubernetesTopologyGraph.bind(topologyApi),
+    getCloudTopologyGraph: topologyApi.getTopologyGraph.bind(topologyApi),
   };
 }
 
