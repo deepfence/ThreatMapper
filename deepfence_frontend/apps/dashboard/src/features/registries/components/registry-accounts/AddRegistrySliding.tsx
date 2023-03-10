@@ -7,9 +7,9 @@ import { AddECRForm } from '@/features/registries/components/registry-accounts/E
 import { AddGCRForm } from '@/features/registries/components/registry-accounts/GCR';
 import { AddQuayForm } from '@/features/registries/components/registry-accounts/Quay';
 
-export const AddRegistry = (type: { type: string }) => {
+export const AddRegistry = ({ account }: { account: string }) => {
   // return according to type using switch case
-  switch (type.type) {
+  switch (account) {
     case 'ecr':
       return <AddECRForm />;
     case 'docker':

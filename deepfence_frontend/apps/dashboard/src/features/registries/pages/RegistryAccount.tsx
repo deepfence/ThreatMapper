@@ -2,18 +2,26 @@ import { useRef, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { FaHistory, FaPlus } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
-import { LoaderFunctionArgs, useLoaderData, useParams } from 'react-router-dom';
+import { HiArrowSmLeft } from 'react-icons/hi';
+import {
+  generatePath,
+  LoaderFunctionArgs,
+  useLoaderData,
+  useParams,
+} from 'react-router-dom';
 import { Button, Card, SlidingModal } from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelRegistryListResp } from '@/api/generated';
 import LogoDocker from '@/assets/logo-docker.svg';
+import { DFLink } from '@/components/DFLink';
 import { GoBack } from '@/components/GoBack';
 import { Metaheader } from '@/features/registries/components/common/Metaheader';
 import { AddRegistry } from '@/features/registries/components/registry-accounts/AddRegistrySliding';
 import { RegistryAccountTable } from '@/features/registries/components/registry-accounts/RegistryAccountTable';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export type LoaderDataType = {
   error?: string;
@@ -42,45 +50,46 @@ const metaheader = [
 
 const HeaderComponent = ({
   nodeType,
-  timestamp,
   elementToFocusOnClose,
   setShowFilter,
 }: {
   nodeType: string;
-  timestamp: number;
   elementToFocusOnClose: React.MutableRefObject<null>;
   setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
+  const { navigate } = usePageNavigation();
   return (
     <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-      <GoBack />
-      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-        {nodeType.toUpperCase()} / REGISTRY ACCOUNTS
-      </span>
-      <div className="ml-auto flex items-center gap-x-4">
-        <div className="flex flex-col">
-          <span className="text-xs text-gray-500 dark:text-gray-200">
-            {formatMilliseconds(timestamp)}
-          </span>
-          <span className="text-gray-400 text-[10px]">Last refreshed</span>
-        </div>
-        <Button
-          className="ml-auto bg-blue-100 dark:bg-blue-500/10"
-          size="xs"
-          color="normal"
-          onClick={() => {
-            setShowFilter(true);
+      <DFLink
+        to="/registries"
+        className="flex hover:no-underline items-center justify-center  mr-2"
+      >
+        <IconContext.Provider
+          value={{
+            className: 'w-5 h-5 text-blue-600 dark:text-blue-500 ',
           }}
         >
-          <IconContext.Provider
-            value={{
-              className: 'w-4 h-4',
-            }}
-          >
-            <FaHistory />
-          </IconContext.Provider>
+          <HiArrowSmLeft />
+        </IconContext.Provider>
+      </DFLink>
+      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+        REGISTRY ACCOUNTS / {nodeType.toUpperCase()}
+      </span>
+      <div className="ml-auto flex items-center gap-x-4">
+        <Button
+          color="primary"
+          size="xs"
+          startIcon={<FaPlus />}
+          onClick={() => {
+            navigate(
+              generatePath('/registries/add/:account', {
+                account: nodeType,
+              }),
+            );
+          }}
+        >
+          Add Registry
         </Button>
-
         <div className="relative">
           <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
           <Button
@@ -184,7 +193,7 @@ const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderDataType> =
 
 const RegistryAccount = () => {
   const params = useParams() as {
-    type: string;
+    account: string;
   };
   const loaderData = useLoaderData() as LoaderDataType;
   const { data } = loaderData;
@@ -194,48 +203,26 @@ const RegistryAccount = () => {
 
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  const currentTime = new Date().getTime();
 
   if (data === undefined || data.length === 0) {
     return <div>Loading...</div>;
   }
 
   // filter data based on the type
-  const filteredData = data.filter((item) => item.registry_type === params.type);
+  const filteredData = data.filter((item) => item.registry_type === params.account);
 
   return (
     <>
       <HeaderComponent
-        nodeType={params.type}
+        nodeType={params.account}
         elementToFocusOnClose={elementToFocusOnClose}
         setShowFilter={setShowFilter}
-        timestamp={currentTime}
       />
       {filteredData.length > 0 && (
         <div className="grid p-2 gap-x-2">
           <div className="self-start grid gap-y-2">
             <Card className="w-auto h-12 flex p-4 pt-8 pb-8">
               <Metaheader metaheader={metaheader} />
-              <div className="ml-auto flex items-center gap-x-4">
-                <Button
-                  color="primary"
-                  size="xs"
-                  startIcon={<FaPlus />}
-                  onClick={() => setOpen(true)}
-                  ref={ref}
-                >
-                  Add Registry
-                </Button>
-                <SlidingModal
-                  width="w-3/12"
-                  header="Add Registry"
-                  open={open}
-                  onOpenChange={() => setOpen(false)}
-                  elementToFocusOnCloseRef={ref}
-                >
-                  <AddRegistry type={params.type} />
-                </SlidingModal>
-              </div>
             </Card>
             <RegistryAccountTable data={filteredData} />
           </div>
@@ -272,7 +259,7 @@ const RegistryAccount = () => {
                   onOpenChange={() => setOpen(false)}
                   elementToFocusOnCloseRef={ref}
                 >
-                  <AddRegistry type={params.type} />
+                  <AddRegistry account={params.account} />
                 </SlidingModal>
               </div>
             </div>

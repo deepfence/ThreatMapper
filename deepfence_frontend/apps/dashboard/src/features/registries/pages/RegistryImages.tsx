@@ -41,23 +41,24 @@ const metaheader = [
 ];
 
 const HeaderComponent = ({
-  nodeType,
-  regID,
   timestamp,
   elementToFocusOnClose,
   setShowFilter,
 }: {
-  nodeType: string;
-  regID: string;
   timestamp: number;
   elementToFocusOnClose: React.MutableRefObject<null>;
   setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
+  const { account, accountId } = useParams() as {
+    account: string;
+    accountId: string;
+  };
+
   return (
     <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <GoBack />
       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-        {nodeType.toUpperCase()} / REGISTRY ACCOUNTS / {regID}
+        REGISTRY ACCOUNTS / {account.toUpperCase()} / {accountId}
       </span>
       <div className="ml-auto flex items-center gap-x-4">
         <div className="flex flex-col">
@@ -142,20 +143,20 @@ async function getImagesForRegistry(registryID: string): Promise<LoaderDataType>
 }
 
 const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderDataType> => {
-  const { id } = params;
+  const { accountId } = params;
   console.log('parararaa', params);
-  if (!id) {
+  if (!accountId) {
     return {
-      error: 'No registry ID provided',
+      error: 'Registry Id is required',
     };
   }
-  return await getImagesForRegistry(id);
+  return await getImagesForRegistry(accountId);
 };
 
 const RegistryImages = () => {
   const params = useParams() as {
     type: string;
-    id: string;
+    accuntId: string;
   };
   const loaderData = useLoaderData() as LoaderDataType;
   const { data, error } = loaderData;
@@ -176,8 +177,6 @@ const RegistryImages = () => {
   return (
     <>
       <HeaderComponent
-        nodeType={params.type}
-        regID={params.id}
         elementToFocusOnClose={elementToFocusOnClose}
         setShowFilter={setShowFilter}
         timestamp={currentTime}
@@ -186,26 +185,6 @@ const RegistryImages = () => {
         <div className="self-start grid gap-y-2">
           <Card className="w-auto h-12 flex p-4 pt-8 pb-8">
             <Metaheader metaheader={metaheader} />
-            <div className="ml-auto flex items-center gap-x-4">
-              <Button
-                color="primary"
-                size="xs"
-                startIcon={<FaPlus />}
-                onClick={() => setOpen(true)}
-                ref={ref}
-              >
-                Add Registry
-              </Button>
-              <SlidingModal
-                width="w-3/12"
-                header="Add Registry"
-                open={open}
-                onOpenChange={() => setOpen(false)}
-                elementToFocusOnCloseRef={ref}
-              >
-                <AddRegistry type={params.type} />
-              </SlidingModal>
-            </div>
           </Card>
           <RegistryImageTable data={data} />
         </div>

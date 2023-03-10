@@ -12,7 +12,9 @@ type ActionReturnType = {
   message?: string;
 };
 
-const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType> => {
+export const action = async ({
+  request,
+}: ActionFunctionArgs): Promise<ActionReturnType> => {
   const formData = await request.formData();
   const body = Object.fromEntries(formData);
 
@@ -63,12 +65,17 @@ const DockerRegistryContainer = () => {
       />
       <Form method="post">
         <DockerConnectionForm errorMessage={loaderData?.message ?? ''} />
+        <div className="flex">
+          <Button onClick={goBack} size="xs">
+            Go Back
+          </Button>
+          <div className="flex items-center ml-auto">
+            <Button color="primary" size="xs" className="ml-auto" type="submit">
+              Save and go to connectors
+            </Button>
+          </div>
+        </div>
       </Form>
-      <div className="flex mt-16">
-        <Button onClick={goBack} size="xs">
-          Go Back
-        </Button>
-      </div>
     </div>
   );
 };
