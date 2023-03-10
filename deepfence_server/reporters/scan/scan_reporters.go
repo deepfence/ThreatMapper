@@ -679,21 +679,11 @@ func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, re
 	tempRes := make(map[string][]model.BasicNode)
 	for _, rec := range recs {
 		hostName := reporters.Neo4jGetStringRecord(rec, "node.host_name", "")
-		containerName := reporters.Neo4jGetStringRecord(rec, "node.docker_container_name", "")
-		imageName := reporters.Neo4jGetStringRecord(rec, "node.docker_image_name", "")
-		imageTag := reporters.Neo4jGetStringRecord(rec, "node.docker_image_tag", "")
-		var name string
+		nodeName := reporters.Neo4jGetStringRecord(rec, "node.node_name", "")
 		nodeType := reporters.Neo4jGetStringRecord(rec, "node.node_type", "")
-		if nodeType == "container_image" {
-			name = imageName + ":" + imageTag
-		} else if nodeType == "container" {
-			name = containerName
-		} else {
-			name = hostName
-		}
 		node := model.BasicNode{
 			NodeId:   reporters.Neo4jGetStringRecord(rec, "node.node_id", ""),
-			Name:     name,
+			Name:     nodeName,
 			NodeType: nodeType,
 			HostName: hostName,
 		}
