@@ -111,7 +111,7 @@ func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, get
 
 	graph, err := getGraph(ctx, filters, reporter)
 	if err != nil {
-		log.Error().Msgf("Error Adding report: %v", err)
+		log.Error().Msgf("Error getGraph: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
@@ -248,6 +248,17 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 					{ID: hst.AgentRunning, Label: "Sensor", Value: "yes", Priority: 33},
 				},
 				Type: report.Host,
+			}
+		}
+	}
+
+	for cp, crs := range graph.CloudServices {
+		for _, cr_stub := range crs {
+			cr := string(cr_stub.ID)
+			nodes[cr] = detailed.NodeSummary{
+				ImmediateParentID: string(cp),
+				BasicNodeSummary:  nodeStubToSummary(cr_stub.NodeStub),
+				Type:              cr_stub.ResourceType,
 			}
 		}
 	}
