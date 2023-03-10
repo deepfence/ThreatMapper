@@ -276,7 +276,7 @@ func (d *OpenApiDocs) AddControlsOperations() {
 
 	d.AddOperation("getCloudNodeControls", http.MethodPost, "/deepfence/controls/cloud-node",
 		"Fetch Cloud Node Controls", "Fetch controls for a cloud node",
-		http.StatusOK, []string{tagControls}, bearerToken, new(CloudNodeControlReq), nil)
+		http.StatusOK, []string{tagControls}, bearerToken, new(CloudNodeControlReq), new(CloudNodeControlResp))
 
 	d.AddOperation("enableCloudNodeControls", http.MethodPost, "/deepfence/controls/cloud-node/enable",
 		"Enable Cloud Node Controls", "Enable controls for a cloud node",
