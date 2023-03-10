@@ -423,6 +423,30 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 			model.ErrorResponse{Message: "scan_id is required to process sbom"})
 		return
 	}
+	// // decompress sbom
+	// b64, err := base64.StdEncoding.DecodeString(params.SBOM)
+	// if err != nil {
+	// 	log.Error().Err(err).Msgf("error b64 reader")
+	// 	respondError(&BadDecoding{err}, w)
+	// 	return
+	// }
+	// sr := bytes.NewReader(b64)
+	// gzr, err := gzip.NewReader(sr)
+	// if err != nil {
+	// 	log.Error().Err(err).Msgf("error gzip reader")
+	// 	respondError(&BadDecoding{err}, w)
+	// 	return
+	// }
+	// defer gzr.Close()
+	// sbom, err := io.ReadAll(gzr)
+	// if err != nil {
+	// 	log.Error().Err(err).Msgf("error read all decompressed sbom")
+	// 	respondError(&BadDecoding{err}, w)
+	// 	return
+	// }
+
+	// log.Info().Msgf("received sbom size: %.4fmb decompressed: %.4fmb",
+	// 	float64(len(params.SBOM))/1000.0/1000.0, float64(len(sbom))/1000.0/1000.0)
 
 	mc, err := directory.MinioClient(r.Context())
 	if err != nil {
