@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -157,18 +158,19 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 		postureProvider := PostureProvider{
 			Name:                 postureProviderName,
 			NodeCount:            0,
-			NodeLabel:            utils.ResourceTypeToNeo4jLabel(utils.StringToCloudProvider(postureProviderName)),
 			ScanCount:            0,
 			CompliancePercentage: 0,
 			ResourceCount:        0,
 		}
 		scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
 		neo4jNodeType := "Node"
+		nodeLabel := "Hosts"
 		if postureProviderName == PostureProviderKubernetes {
 			neo4jNodeType = "KubernetesCluster"
+			nodeLabel = "Clusters"
 		}
 		if postureProviderName == PostureProviderLinux || postureProviderName == PostureProviderKubernetes {
-			postureProvider.NodeLabel = utils.ResourceTypeToNeo4jLabel(utils.StringToCloudProvider(postureProviderName))
+			postureProvider.NodeLabel = nodeLabel
 			scanType = utils.NEO4J_COMPLIANCE_SCAN
 			nodeRes, err := tx.Run(fmt.Sprintf(`
 			MATCH (m:%s)
@@ -184,13 +186,14 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 				map[string]interface{}{})
 			nodeRec, err := nodeRes.Single()
 			if err != nil {
-				continue
+				log.Error().Msgf("Provider query error for %s: %v", postureProviderName, err)
+			} else {
+				postureProvider.NodeCount = int(nodeRec.Values[0].(int64))
+				postureProvider.ScanCount = int(nodeRec.Values[1].(int64))
+				postureProvider.CompliancePercentage = nodeRec.Values[2].(float64)
 			}
-			postureProvider.NodeCount = nodeRec.Values[0].(int)
-			postureProvider.ScanCount = nodeRec.Values[1].(int)
-			postureProvider.CompliancePercentage = nodeRec.Values[2].(float64)
 		} else {
-			postureProvider.NodeLabel = utils.ResourceTypeToNeo4jLabel(utils.StringToCloudProvider(postureProviderName))
+			postureProvider.NodeLabel = "Accounts"
 			nodeRes, err := tx.Run(fmt.Sprintf(`
 			MATCH (p:CloudResource)
 			WHERE p.cloud_provider = $cloud_provider
@@ -211,12 +214,13 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 				})
 			nodeRec, err := nodeRes.Single()
 			if err != nil {
-				continue
+				log.Error().Msgf("Provider query error for %s: %v", postureProviderName, err)
+			} else {
+				postureProvider.NodeCount = int(nodeRec.Values[0].(int64))
+				postureProvider.ResourceCount = int(nodeRec.Values[1].(int64))
+				postureProvider.ScanCount = int(nodeRec.Values[2].(int64))
+				postureProvider.CompliancePercentage = nodeRec.Values[3].(float64)
 			}
-			postureProvider.NodeCount = nodeRec.Values[0].(int)
-			postureProvider.ResourceCount = nodeRec.Values[1].(int)
-			postureProvider.ScanCount = nodeRec.Values[2].(int)
-			postureProvider.CompliancePercentage = nodeRec.Values[3].(float64)
 		}
 		postureProviders = append(postureProviders, postureProvider)
 	}
