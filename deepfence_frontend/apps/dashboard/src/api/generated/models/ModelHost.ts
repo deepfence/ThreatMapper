@@ -112,6 +112,12 @@ export interface ModelHost {
     node_id: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelHost
+     */
+    node_name: string;
+    /**
+     * 
      * @type {Array<ModelPod>}
      * @memberof ModelHost
      */
@@ -163,6 +169,7 @@ export function instanceOfModelHost(value: object): boolean {
     isInstance = isInstance && "malwares_count" in value;
     isInstance = isInstance && "metrics" in value;
     isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "pods" in value;
     isInstance = isInstance && "processes" in value;
     isInstance = isInstance && "secret_scan_status" in value;
@@ -193,6 +200,7 @@ export function ModelHostFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'malwares_count': json['malwares_count'],
         'metrics': ModelComputeMetricsFromJSON(json['metrics']),
         'node_id': json['node_id'],
+        'node_name': json['node_name'],
         'pods': (json['pods'] === null ? null : (json['pods'] as Array<any>).map(ModelPodFromJSON)),
         'processes': (json['processes'] === null ? null : (json['processes'] as Array<any>).map(ModelProcessFromJSON)),
         'secret_scan_status': json['secret_scan_status'],
@@ -221,6 +229,7 @@ export function ModelHostToJSON(value?: ModelHost | null): any {
         'malwares_count': value.malwares_count,
         'metrics': ModelComputeMetricsToJSON(value.metrics),
         'node_id': value.node_id,
+        'node_name': value.node_name,
         'pods': (value.pods === null ? null : (value.pods as Array<any>).map(ModelPodToJSON)),
         'processes': (value.processes === null ? null : (value.processes as Array<any>).map(ModelProcessToJSON)),
         'secret_scan_status': value.secret_scan_status,

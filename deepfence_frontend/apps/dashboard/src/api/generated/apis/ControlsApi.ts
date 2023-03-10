@@ -20,6 +20,9 @@ import type {
   ControlsAgentControls,
   ModelAgentId,
   ModelAgentUpgrade,
+  ModelCloudNodeControlReq,
+  ModelCloudNodeControlResp,
+  ModelCloudNodeEnableDisableReq,
   ModelInitAgentReq,
 } from '../models';
 import {
@@ -33,9 +36,23 @@ import {
     ModelAgentIdToJSON,
     ModelAgentUpgradeFromJSON,
     ModelAgentUpgradeToJSON,
+    ModelCloudNodeControlReqFromJSON,
+    ModelCloudNodeControlReqToJSON,
+    ModelCloudNodeControlRespFromJSON,
+    ModelCloudNodeControlRespToJSON,
+    ModelCloudNodeEnableDisableReqFromJSON,
+    ModelCloudNodeEnableDisableReqToJSON,
     ModelInitAgentReqFromJSON,
     ModelInitAgentReqToJSON,
 } from '../models';
+
+export interface DisableCloudNodeControlsRequest {
+    modelCloudNodeEnableDisableReq?: ModelCloudNodeEnableDisableReq;
+}
+
+export interface EnableCloudNodeControlsRequest {
+    modelCloudNodeEnableDisableReq?: ModelCloudNodeEnableDisableReq;
+}
 
 export interface GetAgentControlsRequest {
     modelAgentId?: ModelAgentId;
@@ -43,6 +60,10 @@ export interface GetAgentControlsRequest {
 
 export interface GetAgentInitControlsRequest {
     modelInitAgentReq?: ModelInitAgentReq;
+}
+
+export interface GetCloudNodeControlsRequest {
+    modelCloudNodeControlReq?: ModelCloudNodeControlReq;
 }
 
 export interface GetKubernetesClusterControlsRequest {
@@ -60,6 +81,38 @@ export interface UpgradeAgentVersionRequest {
  * @interface ControlsApiInterface
  */
 export interface ControlsApiInterface {
+    /**
+     * Disable controls for a cloud node
+     * @summary Disable Cloud Node Controls
+     * @param {ModelCloudNodeEnableDisableReq} [modelCloudNodeEnableDisableReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ControlsApiInterface
+     */
+    disableCloudNodeControlsRaw(requestParameters: DisableCloudNodeControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Disable controls for a cloud node
+     * Disable Cloud Node Controls
+     */
+    disableCloudNodeControls(requestParameters: DisableCloudNodeControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Enable controls for a cloud node
+     * @summary Enable Cloud Node Controls
+     * @param {ModelCloudNodeEnableDisableReq} [modelCloudNodeEnableDisableReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ControlsApiInterface
+     */
+    enableCloudNodeControlsRaw(requestParameters: EnableCloudNodeControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Enable controls for a cloud node
+     * Enable Cloud Node Controls
+     */
+    enableCloudNodeControls(requestParameters: EnableCloudNodeControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
     /**
      * Fetch actions for a given agent
      * @summary Fetch Agent Actions
@@ -91,6 +144,22 @@ export interface ControlsApiInterface {
      * Fetch Agent Init Actions
      */
     getAgentInitControls(requestParameters: GetAgentInitControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsAgentControls>;
+
+    /**
+     * Fetch controls for a cloud node
+     * @summary Fetch Cloud Node Controls
+     * @param {ModelCloudNodeControlReq} [modelCloudNodeControlReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ControlsApiInterface
+     */
+    getCloudNodeControlsRaw(requestParameters: GetCloudNodeControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelCloudNodeControlResp>>;
+
+    /**
+     * Fetch controls for a cloud node
+     * Fetch Cloud Node Controls
+     */
+    getCloudNodeControls(requestParameters: GetCloudNodeControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelCloudNodeControlResp>;
 
     /**
      * Fetch actions for a given Kubernetes Cluster
@@ -130,6 +199,82 @@ export interface ControlsApiInterface {
  * 
  */
 export class ControlsApi extends runtime.BaseAPI implements ControlsApiInterface {
+
+    /**
+     * Disable controls for a cloud node
+     * Disable Cloud Node Controls
+     */
+    async disableCloudNodeControlsRaw(requestParameters: DisableCloudNodeControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/controls/cloud-node/disable`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelCloudNodeEnableDisableReqToJSON(requestParameters.modelCloudNodeEnableDisableReq),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Disable controls for a cloud node
+     * Disable Cloud Node Controls
+     */
+    async disableCloudNodeControls(requestParameters: DisableCloudNodeControlsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.disableCloudNodeControlsRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Enable controls for a cloud node
+     * Enable Cloud Node Controls
+     */
+    async enableCloudNodeControlsRaw(requestParameters: EnableCloudNodeControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/controls/cloud-node/enable`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelCloudNodeEnableDisableReqToJSON(requestParameters.modelCloudNodeEnableDisableReq),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Enable controls for a cloud node
+     * Enable Cloud Node Controls
+     */
+    async enableCloudNodeControls(requestParameters: EnableCloudNodeControlsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.enableCloudNodeControlsRaw(requestParameters, initOverrides);
+    }
 
     /**
      * Fetch actions for a given agent
@@ -206,6 +351,45 @@ export class ControlsApi extends runtime.BaseAPI implements ControlsApiInterface
      */
     async getAgentInitControls(requestParameters: GetAgentInitControlsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsAgentControls> {
         const response = await this.getAgentInitControlsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Fetch controls for a cloud node
+     * Fetch Cloud Node Controls
+     */
+    async getCloudNodeControlsRaw(requestParameters: GetCloudNodeControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelCloudNodeControlResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/controls/cloud-node`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelCloudNodeControlReqToJSON(requestParameters.modelCloudNodeControlReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelCloudNodeControlRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Fetch controls for a cloud node
+     * Fetch Cloud Node Controls
+     */
+    async getCloudNodeControls(requestParameters: GetCloudNodeControlsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelCloudNodeControlResp> {
+        const response = await this.getCloudNodeControlsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

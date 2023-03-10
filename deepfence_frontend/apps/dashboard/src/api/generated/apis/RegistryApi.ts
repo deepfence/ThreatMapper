@@ -49,6 +49,10 @@ export interface GetRegistrySummaryRequest {
     registryId: string;
 }
 
+export interface GetSummaryRequest {
+    registryType: string;
+}
+
 export interface ListImageTagsRequest {
     registryId: string;
     imageName: string;
@@ -83,7 +87,7 @@ export interface RegistryApiInterface {
 
     /**
      * Delete registry
-     * @summary Add Registry
+     * @summary Delete Registry
      * @param {number} registryId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -93,7 +97,7 @@ export interface RegistryApiInterface {
 
     /**
      * Delete registry
-     * Add Registry
+     * Delete Registry
      */
     deleteRegistry(requestParameters: DeleteRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
@@ -114,19 +118,20 @@ export interface RegistryApiInterface {
     getRegistrySummary(requestParameters: GetRegistrySummaryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: number; }>;
 
     /**
-     * get summary of registry scans, images and tags
-     * @summary Get All Registries Summary
+     * get summary of registries scans, images and tags by registry type
+     * @summary Get Registry Summary By Type
+     * @param {string} registryType 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RegistryApiInterface
      */
-    getSummaryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: number; }>>;
+    getSummaryRaw(requestParameters: GetSummaryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: number; }>>;
 
     /**
-     * get summary of registry scans, images and tags
-     * Get All Registries Summary
+     * get summary of registries scans, images and tags by registry type
+     * Get Registry Summary By Type
      */
-    getSummary(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: number; }>;
+    getSummary(requestParameters: GetSummaryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: number; }>;
 
     /**
      * list image tags for a given image and registry
@@ -223,7 +228,7 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
 
     /**
      * Delete registry
-     * Add Registry
+     * Delete Registry
      */
     async deleteRegistryRaw(requestParameters: DeleteRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         if (requestParameters.registryId === null || requestParameters.registryId === undefined) {
@@ -254,7 +259,7 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
 
     /**
      * Delete registry
-     * Add Registry
+     * Delete Registry
      */
     async deleteRegistry(requestParameters: DeleteRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.deleteRegistryRaw(requestParameters, initOverrides);
@@ -301,10 +306,14 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
     }
 
     /**
-     * get summary of registry scans, images and tags
-     * Get All Registries Summary
+     * get summary of registries scans, images and tags by registry type
+     * Get Registry Summary By Type
      */
-    async getSummaryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: number; }>> {
+    async getSummaryRaw(requestParameters: GetSummaryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: number; }>> {
+        if (requestParameters.registryType === null || requestParameters.registryType === undefined) {
+            throw new runtime.RequiredError('registryType','Required parameter requestParameters.registryType was null or undefined when calling getSummary.');
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -318,7 +327,7 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
             }
         }
         const response = await this.request({
-            path: `/deepfence/registryaccount/summary`,
+            path: `/deepfence/registryaccount/{registry_type}/summary`.replace(`{${"registry_type"}}`, encodeURIComponent(String(requestParameters.registryType))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -328,11 +337,11 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
     }
 
     /**
-     * get summary of registry scans, images and tags
-     * Get All Registries Summary
+     * get summary of registries scans, images and tags by registry type
+     * Get Registry Summary By Type
      */
-    async getSummary(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: number; }> {
-        const response = await this.getSummaryRaw(initOverrides);
+    async getSummary(requestParameters: GetSummaryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: number; }> {
+        const response = await this.getSummaryRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -7,6 +7,7 @@ import {
   CloudScannerApi,
   ComplianceApi,
   Configuration,
+  ControlsApi,
   MalwareScanApi,
   RegistryApi,
   ScanResultsApi,
@@ -162,5 +163,15 @@ export function getScanResultsApiClient() {
     unmaskScanResult: scanResultsApi.unmaskScanResult.bind(scanResultsApi),
     getAllNodesInScanResults:
       scanResultsApi.getAllNodesInScanResults.bind(scanResultsApi),
+  };
+}
+
+export function getControlsApiClient() {
+  const controlsApi = new ControlsApi(configuration);
+
+  return {
+    listControls: controlsApi.getCloudNodeControls.bind(controlsApi),
+    enableControl: controlsApi.enableCloudNodeControls.bind(controlsApi),
+    disableControl: controlsApi.disableCloudNodeControls.bind(controlsApi),
   };
 }

@@ -276,7 +276,7 @@ const ScanConfigure = ({
         <ScanConfigureForm
           loading={false}
           hideTable={false}
-          data={{
+          accountData={{
             urlIds: ['123', '456'],
             urlType: 'host',
           }}

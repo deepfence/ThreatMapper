@@ -13,7 +13,12 @@ import { DFLink } from '@/components/DFLink';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 
 const logoMap = (accountType: string, mode: Mode) => {
-  const map = {
+  const map: {
+    [k: string]: {
+      label: string;
+      icon: string;
+    };
+  } = {
     aws: {
       label: 'AWS',
       icon: mode === 'dark' ? LogoAwsWhite : LogoAws,

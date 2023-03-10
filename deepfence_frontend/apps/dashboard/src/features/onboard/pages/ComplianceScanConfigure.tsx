@@ -159,7 +159,7 @@ const ComplianceScanConfigure = () => {
       <ScanConfigureForm
         loading={!!(fetcher.state === 'submitting' || isStatusPageLoading)}
         hideTable={true}
-        data={{
+        accountData={{
           urlIds: state.map((node) => node.urlId),
           urlType: state[0].urlType,
         }}

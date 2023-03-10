@@ -42,6 +42,10 @@ import { module as secretScanConfigure } from '@/features/onboard/pages/SecretSc
 import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanSummary';
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
+import {
+  listControlsApiLoader,
+  toggleControlApiAction,
+} from '@/features/postures/data-component/listControlsApiLoader';
 import { module as postureConnectorLayout } from '@/features/postures/layouts/PostureConnectorLayout';
 import { module as postureAccounts } from '@/features/postures/pages/Accounts';
 import { module as postureAddAccounts } from '@/features/postures/pages/AddAccount';
@@ -192,7 +196,7 @@ export const privateRoutes: CustomRouteObject[] = [
     path: '/',
     loader: dashboardLoader,
     element: <DashboardLayout />,
-    errorElement: <ErrorComponent />,
+    // errorElement: <ErrorComponent />,
     children: [
       {
         path: 'dashboard',
@@ -387,6 +391,11 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'search/clusters',
         loader: searchClustersApiLoader,
+      },
+      {
+        path: 'list/controls/:checkType',
+        loader: listControlsApiLoader,
+        action: toggleControlApiAction,
       },
     ],
   },

@@ -1,22 +1,23 @@
 import { filter, find } from 'lodash-es';
 import { useEffect, useState } from 'react';
 import { HiMinusCircle, HiPlusCircle } from 'react-icons/hi';
-import { useFetcher, useSearchParams } from 'react-router-dom';
-import { Button, Tabs } from 'ui-components';
+import { useFetcher } from 'react-router-dom';
+import { Button, TableSkeleton, Tabs } from 'ui-components';
 
-import { ControlsTable } from '@/components/forms/posture/ControlsTable';
+import { ControlsTable } from '@/features/postures/components/ControlsTable';
+import { useGetControlsList } from '@/features/postures/data-component/listControlsApiLoader';
 
 type ScanConfigureFormProps = {
   loading: boolean;
   hideTable: boolean;
-  data: {
+  accountData: {
     urlIds: string[];
     urlType: string;
   };
 };
-type ComplianceType = 'aws' | 'gcp' | 'azure' | 'host' | 'kubernetes_cluster';
+export type ComplianceType = 'aws' | 'gcp' | 'azure' | 'host' | 'kubernetes_cluster';
 
-const complianceType: {
+export const complianceType: {
   [key in ComplianceType]: string[];
 } = {
   aws: ['CIS', 'NIST', 'PCI', 'HIPAA', 'SOC2', 'GDPR'],
@@ -37,49 +38,37 @@ const hasTypeSelected = (prevTabs: TabsType[], value: string) => {
 
 export const ScanConfigureForm = ({
   loading,
-  data,
+  accountData,
   hideTable = true,
 }: ScanConfigureFormProps) => {
   const fetcher = useFetcher();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const nodeType = data.urlType as ComplianceType;
-  const controls = searchParams.getAll('control');
+  const nodeType = accountData.urlType as ComplianceType;
+
   const [selectedTab, setSelectedTab] = useState('');
+  const { controls: controlsList, status, load: fetchControls } = useGetControlsList();
+
+  const isLoading = status === 'loading';
   const [tabs, setTabs] = useState<TabsType[] | []>(() => {
-    if (controls.length > 0) {
-      return controls.map((control) => {
-        return {
-          label: control.toUpperCase(),
-          value: control.toUpperCase(),
-        };
-      });
-    } else {
-      return complianceType[nodeType].map((value) => {
-        return {
-          label: value,
-          value: value,
-        };
-      });
-    }
+    return complianceType[nodeType].map((value) => {
+      return {
+        label: value,
+        value: value,
+      };
+    });
   });
 
   useEffect(() => {
-    // set selected tab by last compliance type
+    if (selectedTab) {
+      fetchControls(selectedTab.toLowerCase());
+    }
+  }, [selectedTab]);
+
+  useEffect(() => {
+    // set selected tab by last checktype
     if (tabs.length > 0) {
       setSelectedTab(tabs[tabs.length - 1].value);
-      setSearchParams((prev) => {
-        prev.delete('control');
-        tabs.forEach((tab) => {
-          prev.append('control', tab.value.toLowerCase());
-        });
-        return prev;
-      });
     } else {
       setSelectedTab('');
-      setSearchParams((prev) => {
-        prev.delete('control');
-        return prev;
-      });
     }
   }, [tabs]);
 
@@ -128,9 +117,15 @@ export const ScanConfigureForm = ({
             name="_nodeIds"
             hidden
             readOnly
-            value={data.urlIds.join(',')}
+            value={accountData.urlIds.join(',')}
           />
-          <input type="text" name="_nodeType" readOnly hidden value={data.urlType} />
+          <input
+            type="text"
+            name="_nodeType"
+            readOnly
+            hidden
+            value={accountData.urlType}
+          />
           <Button
             disabled={loading}
             loading={loading}
@@ -153,9 +148,18 @@ export const ScanConfigureForm = ({
               tabs={tabs}
               onValueChange={(v) => setSelectedTab(v)}
             >
-              <div className="h-full p-2 dark:text-white">
-                <ControlsTable />
-              </div>
+              {isLoading && controlsList.length === 0 ? (
+                <TableSkeleton columns={3} rows={10} size={'md'} />
+              ) : (
+                <div className="h-full p-2 dark:text-white">
+                  <ControlsTable
+                    data={controlsList}
+                    checkType={selectedTab.toLowerCase()}
+                    nodeId={''}
+                    loading={isLoading}
+                  />
+                </div>
+              )}
             </Tabs>
           )}
         </div>
