@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"net/url"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/bytedance/sonic"
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	oahttp "github.com/deepfence/golang_deepfence_sdk/utils/http"
@@ -77,7 +77,7 @@ func (OpenapiClient) PipeConnection(appID string, pipeID string, pipe xfer.Pipe)
 
 // Publish implements MultiAppClient
 func (oc OpenapiClient) Publish(r report.Report) error {
-	buf, err := json.Marshal(r)
+	buf, err := sonic.Marshal(r)
 	if err != nil {
 		return err
 	}
