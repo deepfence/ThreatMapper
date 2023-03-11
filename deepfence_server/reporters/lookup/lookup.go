@@ -95,6 +95,14 @@ func GetKubernetesClustersReport(ctx context.Context, filter LookupFilter) ([]mo
 	return clusters, nil
 }
 
+func GetCloudResourcesReport(ctx context.Context, filter LookupFilter) ([]model.CloudResource, error) {
+	entries, err := getGenericDirectNodeReport[model.CloudResource](ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	return entries, nil
+}
+
 func GetRegistryAccountReport(ctx context.Context, filter LookupFilter) ([]model.RegistryAccount, error) {
 	registry, err := getGenericDirectNodeReport[model.RegistryAccount](ctx, filter)
 	if err != nil {

@@ -229,3 +229,25 @@ type ComputeMetrics struct {
 	CPUPercent float32 `json:"cpu_percent" required:"true"`
 	MemoryMB   float32 `json:"memory_mb" required:"true"`
 }
+
+type CloudResource struct {
+	ID   string `json:"node_id" required:"true"`
+	Name string `json:"node_name" required:"true"`
+	Type string `json:"node_type" required:"true"`
+}
+
+func (CloudResource) NodeType() string {
+	return "CloudResource"
+}
+
+func (CloudResource) GetCategory() string {
+	return ""
+}
+
+func (CloudResource) GetJsonCategory() string {
+	return ""
+}
+
+func (CloudResource) ExtendedField() string {
+	return ""
+}

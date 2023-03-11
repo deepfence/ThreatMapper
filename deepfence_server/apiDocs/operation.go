@@ -147,6 +147,10 @@ func (d *OpenApiDocs) AddLookupOperations() {
 	d.AddOperation("getRegistryAccount", http.MethodPost, "/deepfence/lookup/registryaccount",
 		"Get Images in Registry", "List all the images present in the given registry",
 		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]RegistryAccount))
+
+	d.AddOperation("getCloudResources", http.MethodPost, "/deepfence/lookup/cloud-resources",
+		"Get Cloud Resources", "Retrieve the cloud resources",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]CloudResource))
 }
 
 func (d *OpenApiDocs) AddSearchOperations() {

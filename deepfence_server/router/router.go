@@ -180,6 +180,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/containerimages", dfHandler.GetContainerImages)
 				r.Post("/pods", dfHandler.GetPods)
 				r.Post("/registryaccount", dfHandler.GetRegistryAccount)
+				r.Post("/cloud-resources", dfHandler.GetCloudResources)
 			})
 
 			r.Route("/search", func(r chi.Router) {
