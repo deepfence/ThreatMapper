@@ -3,7 +3,6 @@ import { generatePath, useParams } from 'react-router-dom';
 import {
   createColumnHelper,
   getRowSelectionColumn,
-  Modal,
   RowSelectionState,
   Select,
   SelectItem,
@@ -12,35 +11,10 @@ import {
 
 import { ModelContainerImageWithTags } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { ScanConfigureModal } from '@/components/registries-scan/ScanConfigureModal';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
-import { MalwareScanForm } from '@/features/registries/components/scan-forms/MalwareScanForm';
-import { SecretScanForm } from '@/features/registries/components/scan-forms/SecretScanForm';
-import { VulnerabilityScanForm } from '@/features/registries/components/scan-forms/VulnerabilityScanForms';
-
-const ScanConfigure = ({
-  open,
-  setOpen,
-  scanType,
-}: {
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<string>>;
-  scanType: string;
-}) => {
-  return (
-    <Modal
-      open={open}
-      width="w-full"
-      title={`Configure ${scanType} scan option`}
-      onOpenChange={() => setOpen('')}
-    >
-      {scanType === 'vulnerability' && <VulnerabilityScanForm />}
-      {scanType === 'secret' && <SecretScanForm />}
-      {scanType === 'malware' && <MalwareScanForm />}
-    </Modal>
-  );
-};
 
 export const RegistryImagesTable = ({
   data,
@@ -116,19 +90,19 @@ export const RegistryImagesTable = ({
                 setOpenScanConfigure(value);
               }}
             >
-              <SelectItem value={'vulnerability'} key={'vulnerability'}>
+              <SelectItem value={'vulnerability'} key={'scan_vulnerability'}>
                 <div className="w-4 h-4">
                   <VulnerabilityIcon />
                 </div>
                 Vulnerability
               </SelectItem>
-              <SelectItem value={'secret'} key={'secret'}>
+              <SelectItem value={'secret'} key={'scan_secret'}>
                 <div className="w-4 h-4">
                   <SecretsIcon />
                 </div>
                 Secret
               </SelectItem>
-              <SelectItem value={'malware'} key={'malware'}>
+              <SelectItem value={'malware'} key={'scan_malware'}>
                 <div className="w-4 h-4">
                   <MalwareIcon />
                 </div>
@@ -138,10 +112,15 @@ export const RegistryImagesTable = ({
           </div>
         </>
       )}
-      <ScanConfigure
+      <ScanConfigureModal
         open={openScanConfigure !== ''}
         setOpen={setOpenScanConfigure}
         scanType={openScanConfigure}
+        wantAdvanceOptions={true}
+        data={{
+          urlIds: selectedIds,
+          urlType: 'registry',
+        }}
       />
       <Table
         columns={columns}

@@ -2,11 +2,19 @@ import { Suspense, useRef, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { FaAngleDoubleUp, FaHistory, FaImages, FaTags } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
-import { LoaderFunctionArgs, Outlet, useLoaderData, useParams } from 'react-router-dom';
+import { HiArrowSmLeft } from 'react-icons/hi';
+import {
+  generatePath,
+  LoaderFunctionArgs,
+  Outlet,
+  useLoaderData,
+  useParams,
+} from 'react-router-dom';
 import { Button, Card, CircleSpinner, TableSkeleton } from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelContainerImageWithTags } from '@/api/generated';
+import { DFLink } from '@/components/DFLink';
 import { GoBack } from '@/components/GoBack';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { startVulnerabilityScanAction } from '@/features/registries/actions/startScan';
@@ -94,55 +102,23 @@ const HeaderComponent = ({
 
   return (
     <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-      <GoBack />
+      <DFLink
+        to={generatePath('/registries/:account', {
+          account,
+        })}
+        className="flex hover:no-underline items-center justify-center mr-2"
+      >
+        <IconContext.Provider
+          value={{
+            className: 'w-5 h-5 text-blue-600 dark:text-blue-500 ',
+          }}
+        >
+          <HiArrowSmLeft />
+        </IconContext.Provider>
+      </DFLink>
       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
         REGISTRY ACCOUNTS / {account.toUpperCase()} / {accountId}
       </span>
-      <div className="ml-auto flex items-center gap-x-4">
-        <div className="flex flex-col">
-          <span className="text-xs text-gray-500 dark:text-gray-200">
-            {formatMilliseconds(timestamp)}
-          </span>
-          <span className="text-gray-400 text-[10px]">Last refreshed</span>
-        </div>
-        <Button
-          className="ml-auto bg-blue-100 dark:bg-blue-500/10"
-          size="xs"
-          color="normal"
-          onClick={() => {
-            setShowFilter(true);
-          }}
-        >
-          <IconContext.Provider
-            value={{
-              className: 'w-4 h-4',
-            }}
-          >
-            <FaHistory />
-          </IconContext.Provider>
-        </Button>
-
-        <div className="relative">
-          <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
-          <Button
-            className="ml-auto bg-blue-100 dark:bg-blue-500/10"
-            size="xs"
-            color="normal"
-            ref={elementToFocusOnClose}
-            onClick={() => {
-              setShowFilter(true);
-            }}
-          >
-            <IconContext.Provider
-              value={{
-                className: 'w-4 h-4',
-              }}
-            >
-              <FiFilter />
-            </IconContext.Provider>
-          </Button>
-        </div>
-      </div>
     </div>
   );
 };

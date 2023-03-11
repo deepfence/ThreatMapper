@@ -16,6 +16,7 @@ import { ApiDocsBadRequestResponse, ModelRegistryListResp } from '@/api/generate
 import LogoDocker from '@/assets/logo-docker.svg';
 import { DFLink } from '@/components/DFLink';
 import { RegistryAccountsTable } from '@/features/registries/components/RegistryAccountsTable';
+import { action } from '@/features/registries/components/RegistryAccountsTable';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -114,26 +115,6 @@ const HeaderComponent = ({
         >
           Add Registry
         </Button>
-        <div className="relative">
-          <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
-          <Button
-            className="ml-auto bg-blue-100 dark:bg-blue-500/10"
-            size="xs"
-            color="normal"
-            ref={elementToFocusOnClose}
-            onClick={() => {
-              setShowFilter(true);
-            }}
-          >
-            <IconContext.Provider
-              value={{
-                className: 'w-4 h-4',
-              }}
-            >
-              <FiFilter />
-            </IconContext.Provider>
-          </Button>
-        </div>
       </div>
     </div>
   );
@@ -193,6 +174,7 @@ const RegistryAccounts = () => {
 };
 
 export const module = {
+  action,
   loader,
   element: <RegistryAccounts />,
 };

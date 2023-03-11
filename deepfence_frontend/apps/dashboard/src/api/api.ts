@@ -108,6 +108,7 @@ export function getRegistriesApiClient() {
   return {
     listRegistries: registriesApi.listRegistry.bind(registriesApi),
     addRegistry: registriesApi.addRegistry.bind(registriesApi),
+    deleteRegistry: registriesApi.deleteRegistry.bind(registriesApi),
     listImages: registriesApi.listImages.bind(registriesApi),
     listImageTags: registriesApi.listImageTags.bind(registriesApi),
   };
