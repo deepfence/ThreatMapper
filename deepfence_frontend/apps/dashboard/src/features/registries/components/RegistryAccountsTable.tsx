@@ -1,11 +1,13 @@
+import { capitalize } from 'lodash-es';
 import { useMemo } from 'react';
 import { generatePath, useParams } from 'react-router-dom';
 import { createColumnHelper, Table } from 'ui-components';
 
 import { ModelRegistryListResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { formatMilliseconds } from '@/utils/date';
 
-export const RegistryAccountTable = ({ data }: { data: ModelRegistryListResp[] }) => {
+export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] }) => {
   const { account } = useParams() as {
     account: string;
   };
@@ -23,23 +25,37 @@ export const RegistryAccountTable = ({ data }: { data: ModelRegistryListResp[] }
                 accountId: info.row.original.id?.toString() ?? '',
               })}
             >
-              {info.renderValue()}
+              {capitalize(info.getValue())}
             </DFLink>
           </div>
         ),
-        minSize: 150,
+        minSize: 100,
+        size: 110,
+        maxSize: 120,
       }),
       columnHelper.accessor('created_at', {
+        enableSorting: true,
         header: () => 'Created',
-        minSize: 150,
+        minSize: 100,
+        size: 110,
+        maxSize: 120,
+        cell: (info) => {
+          if (info.getValue()) {
+            return formatMilliseconds(info.getValue());
+          }
+          return '';
+        },
       }),
       columnHelper.accessor('non_secret', {
+        enableSorting: false,
         header: () => 'Credentials',
-        cell: (info) => <div>{JSON.stringify(info.renderValue())}</div>,
-        minSize: 150,
+        cell: (info) => <div className="truncate">{JSON.stringify(info.getValue())}</div>,
+        minSize: 120,
+        size: 130,
+        maxSize: 140,
       }),
     ],
     [],
   );
-  return <Table columns={columns} data={data} />;
+  return <Table columns={columns} data={data} enableSorting />;
 };

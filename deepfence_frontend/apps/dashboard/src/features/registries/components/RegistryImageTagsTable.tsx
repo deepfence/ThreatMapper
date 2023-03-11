@@ -10,7 +10,6 @@ import {
 } from 'ui-components';
 
 import { ModelContainerImage } from '@/api/generated';
-import { TableOptions } from '@/features/registries/components/common/TableOptions';
 
 function generateRandomImgData() {
   const checked = false;
@@ -56,7 +55,7 @@ function generateRandomImgDataArray(size: number) {
 const numObjects = Math.floor(Math.random() * 21) + 10; // generates a random number between 10 and 30
 const tagData = generateRandomImgDataArray(numObjects);
 
-export const ImageTagTable = ({ data }: { data: ModelContainerImage[] }) => {
+export const RegistryImageTagsTable = ({ data }: { data: ModelContainerImage[] }) => {
   const columnHelper = createColumnHelper<ModelContainerImage>();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [tableData] = useState(tagData);
@@ -162,7 +161,6 @@ export const ImageTagTable = ({ data }: { data: ModelContainerImage[] }) => {
   );
   return (
     <>
-      <TableOptions selection={rowSelectionState} />
       <Table
         columns={columns}
         data={data}

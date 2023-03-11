@@ -44,7 +44,7 @@ import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/V
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { module as registryConnectorLayout } from '@/features/registries/layouts/RegistryConnectorLayout';
 import { module as registries } from '@/features/registries/pages/Registries';
-import { module as registryAccount } from '@/features/registries/pages/RegistryAccount';
+import { module as registryAccounts } from '@/features/registries/pages/RegistryAccounts';
 import { module as registryAdd } from '@/features/registries/pages/RegistryAdd';
 import { module as registryImages } from '@/features/registries/pages/RegistryImages';
 import { module as registryImageTags } from '@/features/registries/pages/RegistryImageTags';
@@ -207,7 +207,7 @@ export const privateRoutes: CustomRouteObject[] = [
       },
       {
         path: 'registries/:account',
-        ...registryAccount,
+        ...registryAccounts,
         meta: { title: 'Registry Account' },
       },
       {
@@ -225,12 +225,15 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'registries/images/:account/:accountId',
         ...registryImages,
         meta: { title: 'Registries Images' },
+        children: [
+          {
+            path: ':imageId',
+            ...registryImageTags,
+            meta: { title: 'Registries Image Tags' },
+          },
+        ],
       },
-      {
-        path: 'registries/:type/registry-accounts/:id/:image',
-        ...registryImageTags,
-        meta: { title: 'Registries' },
-      },
+      // integrations
       {
         path: 'integrations',
         ...integrations,
