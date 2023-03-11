@@ -12,9 +12,9 @@ import {
 export const AmazonECRConnectorForm = () => {
   return (
     <Stepper>
-      <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation">
+      <Step indicator={<HiViewGridAdd />} title="Amazon Registry Connecton">
         <div className={`${Typography.size.sm} dark:text-gray-200`}>
-          Connect to your Google Cloud Account via Teraform. Find out more information by{' '}
+          Connect to your Amazon Cloud Account. Find out more information by{' '}
           <a
             href={`https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage`}
             target="_blank"
@@ -66,9 +66,6 @@ export const AmazonECRConnectorForm = () => {
               placeholder="AWS Region"
             />
           </div>
-          <Button color="primary" size="xs" className="ml-auto mt-6">
-            Save And Go To Connectors
-          </Button>
         </Card>
       </Step>
     </Stepper>

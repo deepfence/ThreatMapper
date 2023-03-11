@@ -1,3 +1,3 @@
-import { SecretScanConfigureForm } from '@/components/registries/SecretScanConfigureForm';
+import { SecretScanConfigureForm } from '@/components/registries-scan/SecretScanConfigureForm';
 
 export const SecretScanForm = () => <SecretScanConfigureForm />;

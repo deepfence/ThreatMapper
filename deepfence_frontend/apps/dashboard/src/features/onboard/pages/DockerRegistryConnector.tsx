@@ -3,8 +3,8 @@ import { Button } from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
+import { DockerConnectorForm } from '@/components/registries-connector/DockerConnectorForm';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
-import { DockerConnectionForm } from '@/features/onboard/components/connectors/registries/DockerConnectionForm';
 import { ApiError, makeRequest } from '@/utils/api';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -64,7 +64,7 @@ const DockerRegistryContainer = () => {
         description="Deploy all modules for Deepfence Compliance Scanner for your registry"
       />
       <Form method="post">
-        <DockerConnectionForm errorMessage={loaderData?.message ?? ''} />
+        <DockerConnectorForm errorMessage={loaderData?.message ?? ''} />
         <div className="flex">
           <Button onClick={goBack} size="xs">
             Go Back

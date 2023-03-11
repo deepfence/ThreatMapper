@@ -1,18 +1,21 @@
 import { HiViewGridAdd } from 'react-icons/hi';
-import { Button, Card, Step, Stepper, TextInput, Typography } from 'ui-components';
+import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
 
 type DockerConnectionFormProps = {
   errorMessage: string;
 };
-export const DockerConnectionForm = ({ errorMessage }: DockerConnectionFormProps) => {
+export const QuayConnectorForm = ({ errorMessage }: DockerConnectionFormProps) => {
   return (
     <>
       <Stepper>
-        <Step indicator={<HiViewGridAdd />} title="Container Registry">
+        <Step indicator={<HiViewGridAdd />} title="Quay Container Registry">
           <div className={`${Typography.size.sm} dark:text-gray-200`}>
-            Connect to your Docker Registry by{' '}
+            Using Certificate based Docker client Authentication? A custom certificate is
+            configured by creating a directory under /etc/docker/certs.d on Deepfence
+            console machine, using the same name as the registry&apos;s hostname provided
+            above. All *.crt files are added to this directory as CA roots &nbsp;
             <a
-              href={`https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage`}
+              href={`https://docs.docker.com/engine/security/certificates/`}
               target="_blank"
               rel="noreferrer"
               className="text-blue-600 dark:text-blue-500 mt-2"
@@ -34,27 +37,28 @@ export const DockerConnectionForm = ({ errorMessage }: DockerConnectionFormProps
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
+              label="Registry URL"
+              type={'text'}
+              sizing="sm"
+              name="registryUrl"
+              placeholder="Registry URL"
+            />
+            <TextInput
+              className="w-3/4 min-[200px] max-w-xs"
               label="Namespace"
               type={'text'}
               sizing="sm"
               name="namespace"
               placeholder="Namespace"
             />
+
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
-              label="Username"
-              type={'text'}
-              sizing="sm"
-              name="username"
-              placeholder="Username"
-            />
-            <TextInput
-              className="w-3/4 min-[200px] max-w-xs"
-              label="Password"
+              label="OAuth 2 Access Token (Optional)"
               type={'password'}
               sizing="sm"
-              name="password"
-              placeholder="••••••••"
+              name="accessToken"
+              placeholder="OAuth Access Token"
             />
           </Card>
         </Step>
