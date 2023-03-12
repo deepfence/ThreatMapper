@@ -106,6 +106,7 @@ export function getCloudComplianceApiClient() {
 export function getRegistriesApiClient() {
   const registriesApi = new RegistryApi(configuration);
   return {
+    getRegistriesSummary: registriesApi.getSummary.bind(registriesApi),
     listRegistries: registriesApi.listRegistry.bind(registriesApi),
     addRegistry: registriesApi.addRegistry.bind(registriesApi),
     deleteRegistry: registriesApi.deleteRegistry.bind(registriesApi),
