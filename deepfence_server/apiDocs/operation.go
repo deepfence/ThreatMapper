@@ -300,7 +300,7 @@ func (d *OpenApiDocs) AddCloudNodeOperations() {
 		"List Cloud Node Accounts", "List Cloud Node Accounts registered with the console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountsListReq), new(CloudNodeAccountsListResp))
 
-	d.AddOperation("listCloudProviders", http.MethodPost, "/deepfence/cloud-node/list/providers",
+	d.AddOperation("listCloudProviders", http.MethodGet, "/deepfence/cloud-node/list/providers",
 		"List Cloud Node Providers", "List Cloud Node Providers registered with the console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeProvidersListReq), new(CloudNodeProvidersListResp))
 }
