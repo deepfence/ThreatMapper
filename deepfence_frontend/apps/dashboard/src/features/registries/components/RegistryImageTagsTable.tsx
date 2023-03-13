@@ -1,69 +1,105 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import cx from 'classnames';
-import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { IconContext } from 'react-icons';
+import { HiDotsVertical } from 'react-icons/hi';
+import { useFetcher, useSearchParams } from 'react-router-dom';
 import {
   Badge,
+  Button,
   createColumnHelper,
+  Dropdown,
+  DropdownItem,
   getRowSelectionColumn,
   RowSelectionState,
+  Select,
+  SelectItem,
   Table,
 } from 'ui-components';
 
 import { ModelContainerImage } from '@/api/generated';
+import {
+  ActionEnumType,
+  ScanConfigureModal,
+} from '@/components/scan-configure-forms/ScanConfigureModal';
+import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
+import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
+import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 
-function generateRandomImgData() {
-  const checked = false;
-  const pushedAt = new Date(
-    +new Date() - Math.floor(Math.random() * 10000000000),
-  ).toISOString(); // generates a random date within the past 10,000,000,000 milliseconds (approximately 317 years)
-  const imageTag = Math.random().toString(36).substring(2, 10); // generates a random string of length 8 using alphanumeric characters
-  const platform = ['linux/amd64', 'linux/arm64', 'windows/amd64'][
-    Math.floor(Math.random() * 3)
-  ]; // generates a random platform from a list of options
-  const size = Math.floor(Math.random() * 10000); // generates a random size between 0 and 9999
-  const vulnerabilityScanStatus = ['Not_Scanned', 'In_Progress', 'Completed', 'Error'][
-    Math.floor(Math.random() * 3)
-  ]; // generates a random vulnerability scan status from a list of options
-  const malwareScanStatus = ['Not_Scanned', 'In_Progress', 'Completed', 'Error'][
-    Math.floor(Math.random() * 3)
-  ]; // generates a random malware scan status from a list of options
-  const secretsScanStatus = ['Not_Scanned', 'In_Progress', 'Completed', 'Error'][
-    Math.floor(Math.random() * 4)
-  ]; // generates a random secrets scan status from a list of options
+const PAGE_SIZE = 15;
 
-  return {
-    checked,
-    pushedAt,
-    imageTag,
-    platform,
-    size,
-    vulnerabilityScanStatus,
-    malwareScanStatus,
-    secretsScanStatus,
+const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
+  const [openScanConfigure, setOpenScanConfigure] = useState('');
+
+  return (
+    <>
+      <ScanConfigureModal
+        open={openScanConfigure !== ''}
+        setOpen={setOpenScanConfigure}
+        scanType={openScanConfigure}
+        wantAdvanceOptions={true}
+        data={{
+          urlIds: ids,
+          urlType: 'registry',
+        }}
+      />
+      <Dropdown
+        triggerAsChild={true}
+        align="end"
+        content={
+          <>
+            <DropdownItem
+              onClick={() => setOpenScanConfigure(ActionEnumType.SCAN_VULNERABILITY)}
+            >
+              <div className="w-4 h-4">
+                <VulnerabilityIcon />
+              </div>
+              Scan for vulnerability
+            </DropdownItem>
+            <DropdownItem
+              onClick={() => setOpenScanConfigure(ActionEnumType.SCAN_SECRET)}
+            >
+              <div className="w-4 h-4">
+                <SecretsIcon />
+              </div>
+              Scan for secret
+            </DropdownItem>
+            <DropdownItem
+              onClick={() => setOpenScanConfigure(ActionEnumType.SCAN_MALWARE)}
+            >
+              <div className="w-4 h-4">
+                <MalwareIcon />
+              </div>
+              Scan for malware
+            </DropdownItem>
+          </>
+        }
+      >
+        <Button size="xs" color="normal" className="hover:bg-transparent">
+          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
+            <HiDotsVertical />
+          </IconContext.Provider>
+          {label ? <span className="ml-2">{label}</span> : null}
+        </Button>
+      </Dropdown>
+    </>
+  );
+};
+
+export const RegistryImageTagsTable = ({
+  data,
+  pagination: { totalRows, currentPage },
+}: {
+  data: ModelContainerImage[];
+  pagination: {
+    totalRows: number;
+    currentPage: number;
   };
-}
-function generateRandomImgDataArray(size: number) {
-  const imgDataArray = [];
-
-  for (let i = 0; i < size; i++) {
-    imgDataArray.push(generateRandomImgData());
-  }
-
-  return imgDataArray;
-}
-
-const numObjects = Math.floor(Math.random() * 21) + 10; // generates a random number between 10 and 30
-const tagData = generateRandomImgDataArray(numObjects);
-
-export const RegistryImageTagsTable = ({ data }: { data: ModelContainerImage[] }) => {
+}) => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const columnHelper = createColumnHelper<ModelContainerImage>();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
-  const [tableData] = useState(tagData);
-  // data[0].
-  // todo: remove this
-  useEffect(() => {
-    console.log(rowSelectionState);
-  }, [rowSelectionState]);
+
+  const [openScanConfigure, setOpenScanConfigure] = useState('');
 
   const columns = useMemo(
     () => [
@@ -83,8 +119,8 @@ export const RegistryImageTagsTable = ({ data }: { data: ModelContainerImage[] }
       columnHelper.accessor('metadata', {
         header: () => 'Pushed at',
         cell: (info) => {
-          const metadata = info.renderValue() || {};
-          return metadata['pushed_at'];
+          const metadata = info.row.original.metadata;
+          return metadata['last_updated'];
         },
         maxSize: 50,
       }),
@@ -156,20 +192,113 @@ export const RegistryImageTagsTable = ({ data }: { data: ModelContainerImage[] }
         ),
         maxSize: 50,
       }),
+      columnHelper.display({
+        id: 'actions',
+        enableSorting: false,
+        cell: (cell) => {
+          return <ActionDropdown ids={[cell.row.original.node_id]} />;
+        },
+        header: () => '',
+        minSize: 20,
+        size: 20,
+        maxSize: 20,
+        enableResizing: false,
+      }),
     ],
-    [],
+    [setSearchParams],
   );
+
+  const selectedIds = useMemo(() => {
+    return Object.keys(rowSelectionState);
+  }, [rowSelectionState]);
+
   return (
     <>
+      {selectedIds.length === 0 ? (
+        <div className="text-sm text-gray-400 font-medium py-2.5">No rows selected</div>
+      ) : (
+        <>
+          <div className="mb-2 w-[160px]">
+            <Select
+              placeholder="Select a scan"
+              value={openScanConfigure}
+              sizing="xs"
+              onChange={(value) => {
+                setOpenScanConfigure(value);
+              }}
+            >
+              <SelectItem
+                value={ActionEnumType.SCAN_VULNERABILITY}
+                key={ActionEnumType.SCAN_VULNERABILITY}
+              >
+                <div className="w-4 h-4">
+                  <VulnerabilityIcon />
+                </div>
+                Vulnerability
+              </SelectItem>
+              <SelectItem
+                value={ActionEnumType.SCAN_SECRET}
+                key={ActionEnumType.SCAN_SECRET}
+              >
+                <div className="w-4 h-4">
+                  <SecretsIcon />
+                </div>
+                Secret
+              </SelectItem>
+              <SelectItem
+                value={ActionEnumType.SCAN_MALWARE}
+                key={ActionEnumType.SCAN_MALWARE}
+              >
+                <div className="w-4 h-4">
+                  <MalwareIcon />
+                </div>
+                Malware
+              </SelectItem>
+            </Select>
+          </div>
+        </>
+      )}
+
+      <ScanConfigureModal
+        open={openScanConfigure !== ''}
+        setOpen={setOpenScanConfigure}
+        scanType={openScanConfigure}
+        wantAdvanceOptions={true}
+        data={{
+          urlIds: selectedIds,
+          urlType: 'registry',
+        }}
+      />
       <Table
         columns={columns}
         data={data}
-        enablePagination
         enableRowSelection
         rowSelectionState={rowSelectionState}
-        onRowSelectionChange={setRowSelectionState}
+        enablePagination
+        manualSorting
+        manualPagination
+        enableColumnResizing
         enableSorting
-        getRowId={(row) => row.docker_image_tag}
+        totalRows={totalRows}
+        pageSize={PAGE_SIZE}
+        pageIndex={currentPage}
+        getRowId={(row) => row.node_id || ''}
+        onRowSelectionChange={setRowSelectionState}
+        onPaginationChange={(updaterOrValue) => {
+          let newPageIndex = 0;
+          if (typeof updaterOrValue === 'function') {
+            newPageIndex = updaterOrValue({
+              pageIndex: currentPage,
+              pageSize: PAGE_SIZE,
+            }).pageIndex;
+          } else {
+            newPageIndex = updaterOrValue.pageIndex;
+          }
+          setSearchParams((prev) => {
+            prev.set('page', String(newPageIndex));
+            return prev;
+          });
+        }}
       />
     </>
   );

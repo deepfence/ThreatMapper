@@ -1,13 +1,5 @@
 import { HiViewGridAdd } from 'react-icons/hi';
-import {
-  Button,
-  Card,
-  Step,
-  Stepper,
-  Switch,
-  TextInput,
-  Typography,
-} from 'ui-components';
+import { Card, Step, Stepper, Switch, TextInput, Typography } from 'ui-components';
 
 export const AmazonECRConnectorForm = () => {
   return (

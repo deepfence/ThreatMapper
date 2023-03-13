@@ -138,15 +138,7 @@ const DeleteConfirmationModal = ({
   );
 };
 
-const ActionDropdown = ({
-  icon,
-  ids,
-  label,
-}: {
-  icon: React.ReactNode;
-  ids: string[];
-  label?: string;
-}) => {
+const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
   const fetcher = useFetcher();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [openScanConfigure, setOpenScanConfigure] = useState('');
@@ -264,7 +256,7 @@ const ActionDropdown = ({
       >
         <Button size="xs" color="normal" className="hover:bg-transparent">
           <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-            {icon}
+            <HiDotsVertical />
           </IconContext.Provider>
           {label ? <span className="ml-2">{label}</span> : null}
         </Button>
@@ -328,12 +320,7 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
           if (!cell.row.original.id) {
             throw new Error('Registry Account id not found');
           }
-          return (
-            <ActionDropdown
-              icon={<HiDotsVertical />}
-              ids={[cell.row.original.id.toString()]}
-            />
-          );
+          return <ActionDropdown ids={[cell.row.original.id.toString()]} />;
         },
         header: () => '',
         minSize: 20,

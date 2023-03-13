@@ -1,10 +1,7 @@
 import { HiViewGridAdd } from 'react-icons/hi';
-import { Button, Card, Step, Stepper, TextInput, Typography } from 'ui-components';
+import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
 
-type DockerConnectionFormProps = {
-  errorMessage: string;
-};
-export const DockerConnectorForm = ({ errorMessage }: DockerConnectionFormProps) => {
+export const DockerConnectorForm = () => {
   return (
     <>
       <Stepper>
@@ -59,7 +56,7 @@ export const DockerConnectorForm = ({ errorMessage }: DockerConnectionFormProps)
           </Card>
         </Step>
       </Stepper>
-      <p className="text-red-500 text-sm ml-14">{errorMessage}</p>
+      {/* {errorMessage && <p className="text-red-500 text-sm ml-14">{errorMessage}</p>} */}
     </>
   );
 };

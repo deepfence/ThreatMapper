@@ -101,6 +101,9 @@ models/ModelProcess.ts
 models/ModelRegisterInvitedUserRequest.ts
 models/ModelRegistryAccount.ts
 models/ModelRegistryAddReq.ts
+models/ModelRegistryCountResp.ts
+models/ModelRegistryImageTagsReq.ts
+models/ModelRegistryImagesReq.ts
 models/ModelRegistryListResp.ts
 models/ModelResponseAccessToken.ts
 models/ModelSbomRequest.ts

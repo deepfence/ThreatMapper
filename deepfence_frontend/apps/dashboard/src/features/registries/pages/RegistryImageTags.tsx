@@ -1,37 +1,57 @@
-import { useRef, useState } from 'react';
+import { Suspense, useRef } from 'react';
 import { IconContext } from 'react-icons';
-import { FaHistory } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import { HiArrowSmLeft } from 'react-icons/hi';
 import {
+  Form,
   generatePath,
   LoaderFunctionArgs,
   useLoaderData,
   useParams,
+  useSearchParams,
 } from 'react-router-dom';
-import { Button, ModalHeader, SlidingModal } from 'ui-components';
+import { Checkbox, IconButton, Popover, TableSkeleton } from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelContainerImage } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { RegistryImageTagsTable } from '@/features/registries/components/RegistryImageTagsTable';
 import { ApiError, makeRequest } from '@/utils/api';
-import { formatMilliseconds } from '@/utils/date';
-import { usePageNavigation } from '@/utils/usePageNavigation';
+import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { DFAwait } from '@/utils/suspense';
+import { getPageFromSearchParams } from '@/utils/table';
 
-export type LoaderDataType = {
+const PAGE_SIZE = 15;
+
+export type LoaderDataTypeForImageTags = {
   error?: string;
   message?: string;
-  data?: ModelContainerImage[];
+  tableData: Awaited<ReturnType<typeof getTags>>;
 };
 
-async function getImageTags(accountId: string, imageId: string): Promise<LoaderDataType> {
+async function getTags(
+  accountId: string,
+  imageId: string,
+  searchParams: URLSearchParams,
+): Promise<{
+  tags: ModelContainerImage[];
+  currentPage: number;
+  totalRows: number;
+}> {
+  const page = getPageFromSearchParams(searchParams);
+  const imageTagsRequest = {
+    registry_id: accountId,
+    image_name: imageId,
+    window: {
+      offset: page * PAGE_SIZE,
+      size: PAGE_SIZE,
+    },
+  };
   const result = await makeRequest({
     apiFunction: getRegistriesApiClient().listImageTags,
     apiArgs: [
       {
-        imageName: imageId,
-        registryId: accountId,
+        modelRegistryImageTagsReq: imageTagsRequest,
       },
     ],
     errorHandler: async (r) => {
@@ -49,17 +69,44 @@ async function getImageTags(accountId: string, imageId: string): Promise<LoaderD
     throw result.value();
   }
 
-  if (result === null) {
+  if (!result) {
     return {
-      error: 'No data found',
+      tags: [],
+      currentPage: 0,
+      totalRows: 0,
     };
   }
+
+  // count api
+  const resultCounts = await makeRequest({
+    apiFunction: getRegistriesApiClient().countImageTags,
+    apiArgs: [
+      {
+        modelRegistryImageTagsReq: {
+          ...imageTagsRequest,
+          window: {
+            ...imageTagsRequest.window,
+            size: 10 * imageTagsRequest.window.size,
+          },
+        },
+      },
+    ],
+  });
+
+  if (ApiError.isApiError(resultCounts)) {
+    throw resultCounts.value();
+  }
   return {
-    data: result,
+    tags: result,
+    currentPage: page,
+    totalRows: resultCounts.count || 0,
   };
 }
 
-const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderDataType> => {
+const loader = async ({
+  params,
+  request,
+}: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataTypeForImageTags>> => {
   const { account, accountId, imageId } = params as {
     account: string;
     accountId: string;
@@ -67,25 +114,22 @@ const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderDataType> =
   };
 
   if (!account || !accountId || !imageId) {
-    return {
-      error: 'Account Type, Account Id and Image Id are required',
-    };
+    throw new Error('Account Type, Account Id and Image Id are required');
   }
-  return await getImageTags(accountId, imageId);
+  const searchParams = new URL(request.url).searchParams;
+
+  return typedDefer({
+    tableData: getTags(accountId, imageId, searchParams),
+  });
 };
 
-const HeaderComponent = ({
-  timestamp,
-  elementToFocusOnClose,
-  setShowFilter,
-}: {
-  timestamp: number;
-  elementToFocusOnClose: React.MutableRefObject<null>;
-  setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
-  const { account, accountId } = useParams() as {
+const HeaderComponent = () => {
+  const elementToFocusOnClose = useRef(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { account, accountId, imageId } = useParams() as {
     account: string;
     accountId: string;
+    imageId: string;
   };
 
   return (
@@ -106,51 +150,110 @@ const HeaderComponent = ({
         </IconContext.Provider>
       </DFLink>
       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-        REGISTRY ACCOUNTS / {account.toUpperCase()} / {accountId}
+        REGISTRY ACCOUNTS / {account.toUpperCase()} / {accountId} / {imageId}
       </span>
       <div className="ml-auto flex items-center gap-x-4">
-        <div className="flex flex-col">
-          <span className="text-xs text-gray-500 dark:text-gray-200">
-            {formatMilliseconds(timestamp)}
-          </span>
-          <span className="text-gray-400 text-[10px]">Last refreshed</span>
-        </div>
-        <Button
-          className="ml-auto bg-blue-100 dark:bg-blue-500/10"
-          size="xs"
-          color="normal"
-          onClick={() => {
-            setShowFilter(true);
-          }}
-        >
-          <IconContext.Provider
-            value={{
-              className: 'w-4 h-4',
-            }}
-          >
-            <FaHistory />
-          </IconContext.Provider>
-        </Button>
-
         <div className="relative">
           <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
-          <Button
-            className="ml-auto bg-blue-100 dark:bg-blue-500/10"
-            size="xs"
-            color="normal"
-            ref={elementToFocusOnClose}
-            onClick={() => {
-              setShowFilter(true);
-            }}
+          <Popover
+            triggerAsChild
+            elementToFocusOnCloseRef={elementToFocusOnClose}
+            content={
+              <div className="dark:text-white p-4">
+                <Form className="flex flex-col gap-y-6">
+                  <fieldset>
+                    <legend className="text-sm font-medium">Status</legend>
+                    <div className="flex gap-x-4">
+                      <Checkbox
+                        label="Completed"
+                        checked={searchParams.getAll('status').includes('complete')}
+                        onCheckedChange={(state) => {
+                          if (state) {
+                            setSearchParams((prev) => {
+                              prev.append('status', 'complete');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          } else {
+                            setSearchParams((prev) => {
+                              const prevStatuses = prev.getAll('status');
+                              prev.delete('status');
+                              prev.delete('page');
+                              prevStatuses
+                                .filter((status) => status !== 'complete')
+                                .forEach((status) => {
+                                  prev.append('status', status);
+                                });
+                              return prev;
+                            });
+                          }
+                        }}
+                      />
+                      <Checkbox
+                        label="In Progress"
+                        checked={searchParams.getAll('status').includes('in_progress')}
+                        onCheckedChange={(state) => {
+                          if (state) {
+                            setSearchParams((prev) => {
+                              prev.append('status', 'in_progress');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          } else {
+                            setSearchParams((prev) => {
+                              const prevStatuses = prev.getAll('status');
+                              prev.delete('status');
+                              prevStatuses
+                                .filter((status) => status !== 'in_progress')
+                                .forEach((status) => {
+                                  prev.append('status', status);
+                                });
+                              prev.delete('page');
+                              return prev;
+                            });
+                          }
+                        }}
+                      />
+                      <Checkbox
+                        label="Error"
+                        checked={searchParams.getAll('status').includes('error')}
+                        onCheckedChange={(state) => {
+                          if (state) {
+                            setSearchParams((prev) => {
+                              prev.append('status', 'error');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          } else {
+                            setSearchParams((prev) => {
+                              const prevStatuses = prev.getAll('status');
+                              prev.delete('status');
+                              prev.delete('page');
+                              prevStatuses
+                                .filter((status) => status !== 'error')
+                                .forEach((status) => {
+                                  prev.append('status', status);
+                                });
+                              return prev;
+                            });
+                          }
+                        }}
+                      />
+                    </div>
+                  </fieldset>
+                </Form>
+              </div>
+            }
           >
-            <IconContext.Provider
-              value={{
-                className: 'w-4 h-4',
-              }}
-            >
-              <FiFilter />
-            </IconContext.Provider>
-          </Button>
+            <IconButton
+              className="rounded-lg"
+              size="xs"
+              outline
+              color="primary"
+              ref={elementToFocusOnClose}
+              icon={<FiFilter />}
+            />
+          </Popover>
         </div>
       </div>
     </div>
@@ -158,32 +261,29 @@ const HeaderComponent = ({
 };
 
 const RegistryImageTags = () => {
-  const { navigate } = usePageNavigation();
-  const { account, accountId } = useParams() as {
-    account: string;
-    accountId: string;
-  };
-  const elementToFocusOnClose = useRef(null);
-  const [showFilter, setShowFilter] = useState(false);
+  const loaderData = useLoaderData() as LoaderDataTypeForImageTags;
 
-  const [open, setOpen] = useState(true);
-  const ref = useRef(null);
-
-  const loaderData = useLoaderData() as LoaderDataType;
-  const { data, error } = loaderData;
-
-  if (data === undefined) {
-    return <div>Loading...</div>;
-  }
   return (
     <>
-      <HeaderComponent
-        elementToFocusOnClose={elementToFocusOnClose}
-        setShowFilter={setShowFilter}
-        timestamp={0}
-      />
+      <HeaderComponent />
       <div className="p-4">
-        <RegistryImageTagsTable data={data} />
+        <Suspense fallback={<TableSkeleton columns={8} rows={10} size={'md'} />}>
+          <DFAwait resolve={loaderData.tableData}>
+            {(resolvedData: LoaderDataTypeForImageTags['tableData']) => {
+              const { tags, currentPage, totalRows } = resolvedData;
+              console.log(currentPage, totalRows);
+              return (
+                <RegistryImageTagsTable
+                  data={tags}
+                  pagination={{
+                    totalRows,
+                    currentPage,
+                  }}
+                />
+              );
+            }}
+          </DFAwait>
+        </Suspense>
       </div>
     </>
   );

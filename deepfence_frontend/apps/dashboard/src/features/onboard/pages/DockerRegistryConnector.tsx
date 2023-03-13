@@ -3,7 +3,7 @@ import { Button } from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
-import { DockerConnectorForm } from '@/components/registries-connector/DockerConnectorForm';
+import { DockerConnectorForm as DockerRegistryConnectorForm } from '@/components/registries-connector/DockerConnectorForm';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { ApiError, makeRequest } from '@/utils/api';
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -54,8 +54,7 @@ export const action = async ({
 };
 
 const DockerRegistryContainer = () => {
-  const { goBack } = usePageNavigation();
-  const loaderData = useActionData() as { message: string };
+  const { goBack, navigate } = usePageNavigation();
 
   return (
     <div className="w-full">
@@ -64,13 +63,21 @@ const DockerRegistryContainer = () => {
         description="Deploy all modules for Deepfence Compliance Scanner for your registry"
       />
       <Form method="post">
-        <DockerConnectorForm errorMessage={loaderData?.message ?? ''} />
+        <DockerRegistryConnectorForm />
         <div className="flex">
           <Button onClick={goBack} size="xs">
             Go Back
           </Button>
           <div className="flex items-center ml-auto">
-            <Button color="primary" size="xs" className="ml-auto" type="submit">
+            <Button
+              color="primary"
+              size="xs"
+              className="ml-auto"
+              type="submit"
+              onClick={() => {
+                navigate('/onboard/connectors/my-connectors');
+              }}
+            >
               Save and go to connectors
             </Button>
           </div>

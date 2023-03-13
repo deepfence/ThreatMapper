@@ -108,13 +108,15 @@ export const SecretScanConfigureForm = ({ data, onSuccess }: ScanConfigureFormPr
 
   return (
     <fetcher.Form
-      className="flex flex-col px-6 py-2"
+      className="flex flex-col px-6 py-2 mb-4"
       method="post"
       action="/data-component/scan/secret"
     >
       <input type="text" name="_nodeIds" hidden readOnly value={data.urlIds.join(',')} />
       <input type="text" name="_nodeType" readOnly hidden value={data.urlType} />
-      <p className="text-red-500 text-md py-3">{fetcherData?.message}</p>
+      {fetcherData?.message && (
+        <p className="text-red-500 text-md py-3">{fetcherData.message}</p>
+      )}
       <div className="flex">
         <h6 className={'text-md font-medium dark:text-white'}>Advanced Options</h6>
         <Button

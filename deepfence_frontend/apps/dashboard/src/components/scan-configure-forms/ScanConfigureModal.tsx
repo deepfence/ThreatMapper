@@ -25,13 +25,19 @@ export const ScanConfigureModal = ({
     urlType: string;
   };
 }) => {
+  let title = '';
+
+  if (scanType === ActionEnumType.SCAN_VULNERABILITY) {
+    title = `Configure vulnerability scan option`;
+  } else if (scanType === ActionEnumType.SCAN_SECRET) {
+    title = `Configure secret scan option`;
+  } else if (scanType === ActionEnumType.SCAN_MALWARE) {
+    title = `Configure malware scan option`;
+  }
+  console.log('data for start scan', data);
+
   return (
-    <Modal
-      open={open}
-      width="w-full"
-      title={`Configure scan option`}
-      onOpenChange={() => setOpen('')}
-    >
+    <Modal open={open} width="w-full" title={title} onOpenChange={() => setOpen('')}>
       {scanType === ActionEnumType.SCAN_VULNERABILITY && (
         <VulnerabilityScanConfigureForm
           wantAdvanceOptions={wantAdvanceOptions}

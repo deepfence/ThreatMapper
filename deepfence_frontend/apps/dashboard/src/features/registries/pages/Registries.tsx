@@ -110,7 +110,7 @@ async function getRegistriesSummary(): Promise<RegistryResponseType[]> {
       icon,
     });
   }
-  console.log(response);
+
   return response;
 }
 

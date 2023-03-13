@@ -22,6 +22,9 @@ import { Mode, useTheme } from '@/theme/ThemeContext';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
+import { getPageFromSearchParams } from '@/utils/table';
+
+const PAGE_SIZE = 15;
 
 export type LoaderDataTypeForImages = {
   error?: string;
@@ -67,17 +70,28 @@ async function getRegistrySummaryById(accountId: string): Promise<{
   };
 }
 
-async function getImages(registryId: string): Promise<{
+async function getImages(
+  registryId: string,
+  searchParams: URLSearchParams,
+): Promise<{
   images: ModelContainerImageWithTags[];
   currentPage: number;
   totalRows: number;
   message?: string;
 }> {
+  const page = getPageFromSearchParams(searchParams);
+  const imageRequest = {
+    registry_id: registryId,
+    window: {
+      offset: page * PAGE_SIZE,
+      size: PAGE_SIZE,
+    },
+  };
   const result = await makeRequest({
     apiFunction: getRegistriesApiClient().listImages,
     apiArgs: [
       {
-        registryId,
+        modelRegistryImagesReq: imageRequest,
       },
     ],
     errorHandler: async (r) => {
@@ -102,24 +116,47 @@ async function getImages(registryId: string): Promise<{
       totalRows: 0,
     };
   }
+  // count api
+  const resultCounts = await makeRequest({
+    apiFunction: getRegistriesApiClient().countImages,
+    apiArgs: [
+      {
+        modelRegistryImagesReq: {
+          ...imageRequest,
+          window: {
+            ...imageRequest.window,
+            size: 10 * imageRequest.window.size,
+          },
+        },
+      },
+    ],
+  });
+
+  if (ApiError.isApiError(resultCounts)) {
+    throw resultCounts.value();
+  }
+
   return {
     images: result,
-    currentPage: 0,
-    totalRows: 0,
+    currentPage: page,
+    totalRows: resultCounts.count || 0,
   };
 }
 
 const loader = async ({
   params,
+  request,
 }: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
   const { accountId } = params;
 
   if (!accountId) {
     throw new Error('Registry Account Id is required');
   }
+  const searchParams = new URL(request.url).searchParams;
+
   return typedDefer({
     summary: getRegistrySummaryById(accountId),
-    images: getImages(accountId),
+    images: getImages(accountId, searchParams),
   });
 };
 
@@ -260,7 +297,15 @@ const RegistryImages = () => {
         <Suspense fallback={<TableSkeleton columns={2} rows={10} size={'md'} />}>
           <DFAwait resolve={loaderData.images}>
             {(resolvedData: LoaderDataType['images']) => {
-              return <RegistryImagesTable data={resolvedData?.images} />;
+              return (
+                <RegistryImagesTable
+                  data={resolvedData?.images}
+                  pagination={{
+                    totalRows: resolvedData.totalRows,
+                    currentPage: resolvedData.currentPage,
+                  }}
+                />
+              );
             }}
           </DFAwait>
         </Suspense>

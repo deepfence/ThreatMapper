@@ -20,6 +20,9 @@ import type {
   ModelContainerImage,
   ModelContainerImageWithTags,
   ModelRegistryAddReq,
+  ModelRegistryCountResp,
+  ModelRegistryImageTagsReq,
+  ModelRegistryImagesReq,
   ModelRegistryListResp,
   ModelSummary,
 } from '../models';
@@ -34,6 +37,12 @@ import {
     ModelContainerImageWithTagsToJSON,
     ModelRegistryAddReqFromJSON,
     ModelRegistryAddReqToJSON,
+    ModelRegistryCountRespFromJSON,
+    ModelRegistryCountRespToJSON,
+    ModelRegistryImageTagsReqFromJSON,
+    ModelRegistryImageTagsReqToJSON,
+    ModelRegistryImagesReqFromJSON,
+    ModelRegistryImagesReqToJSON,
     ModelRegistryListRespFromJSON,
     ModelRegistryListRespToJSON,
     ModelSummaryFromJSON,
@@ -44,8 +53,16 @@ export interface AddRegistryRequest {
     modelRegistryAddReq?: ModelRegistryAddReq;
 }
 
+export interface CountImageTagsRequest {
+    modelRegistryImageTagsReq?: ModelRegistryImageTagsReq;
+}
+
+export interface CountImagesRequest {
+    modelRegistryImagesReq?: ModelRegistryImagesReq;
+}
+
 export interface DeleteRegistryRequest {
-    registryId: number;
+    registryId: string;
 }
 
 export interface GetRegistrySummaryRequest {
@@ -57,12 +74,11 @@ export interface GetSummaryByTypeRequest {
 }
 
 export interface ListImageTagsRequest {
-    registryId: string;
-    imageName: string;
+    modelRegistryImageTagsReq?: ModelRegistryImageTagsReq;
 }
 
 export interface ListImagesRequest {
-    registryId: string;
+    modelRegistryImagesReq?: ModelRegistryImagesReq;
 }
 
 /**
@@ -89,9 +105,41 @@ export interface RegistryApiInterface {
     addRegistry(requestParameters: AddRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
+     * count of image tags for a given image and registry
+     * @summary Count Image Tags
+     * @param {ModelRegistryImageTagsReq} [modelRegistryImageTagsReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RegistryApiInterface
+     */
+    countImageTagsRaw(requestParameters: CountImageTagsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelRegistryCountResp>>;
+
+    /**
+     * count of image tags for a given image and registry
+     * Count Image Tags
+     */
+    countImageTags(requestParameters: CountImageTagsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelRegistryCountResp>;
+
+    /**
+     * count of images from a given registry
+     * @summary Count Registry Images
+     * @param {ModelRegistryImagesReq} [modelRegistryImagesReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RegistryApiInterface
+     */
+    countImagesRaw(requestParameters: CountImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelRegistryCountResp>>;
+
+    /**
+     * count of images from a given registry
+     * Count Registry Images
+     */
+    countImages(requestParameters: CountImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelRegistryCountResp>;
+
+    /**
      * Delete registry
      * @summary Delete Registry
-     * @param {number} registryId 
+     * @param {string} registryId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RegistryApiInterface
@@ -154,8 +202,7 @@ export interface RegistryApiInterface {
     /**
      * list image tags for a given image and registry
      * @summary List Image Tags
-     * @param {string} registryId 
-     * @param {string} imageName 
+     * @param {ModelRegistryImageTagsReq} [modelRegistryImageTagsReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RegistryApiInterface
@@ -171,7 +218,7 @@ export interface RegistryApiInterface {
     /**
      * list images from a given registry
      * @summary List Registry Images
-     * @param {string} registryId 
+     * @param {ModelRegistryImagesReq} [modelRegistryImagesReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RegistryApiInterface
@@ -242,6 +289,84 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
      */
     async addRegistry(requestParameters: AddRegistryRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.addRegistryRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * count of image tags for a given image and registry
+     * Count Image Tags
+     */
+    async countImageTagsRaw(requestParameters: CountImageTagsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelRegistryCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/registryaccount/count/tags`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelRegistryImageTagsReqToJSON(requestParameters.modelRegistryImageTagsReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelRegistryCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * count of image tags for a given image and registry
+     * Count Image Tags
+     */
+    async countImageTags(requestParameters: CountImageTagsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelRegistryCountResp> {
+        const response = await this.countImageTagsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * count of images from a given registry
+     * Count Registry Images
+     */
+    async countImagesRaw(requestParameters: CountImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelRegistryCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/registryaccount/count/images`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelRegistryImagesReqToJSON(requestParameters.modelRegistryImagesReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelRegistryCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * count of images from a given registry
+     * Count Registry Images
+     */
+    async countImages(requestParameters: CountImagesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelRegistryCountResp> {
+        const response = await this.countImagesRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
@@ -404,17 +529,11 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
      * List Image Tags
      */
     async listImageTagsRaw(requestParameters: ListImageTagsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainerImage>>> {
-        if (requestParameters.registryId === null || requestParameters.registryId === undefined) {
-            throw new runtime.RequiredError('registryId','Required parameter requestParameters.registryId was null or undefined when calling listImageTags.');
-        }
-
-        if (requestParameters.imageName === null || requestParameters.imageName === undefined) {
-            throw new runtime.RequiredError('imageName','Required parameter requestParameters.imageName was null or undefined when calling listImageTags.');
-        }
-
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
@@ -425,10 +544,11 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
             }
         }
         const response = await this.request({
-            path: `/deepfence/registryaccount/{registry_id}/images/{image_name}/tags`.replace(`{${"registry_id"}}`, encodeURIComponent(String(requestParameters.registryId))).replace(`{${"image_name"}}`, encodeURIComponent(String(requestParameters.imageName))),
-            method: 'GET',
+            path: `/deepfence/registryaccount/tags`,
+            method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: ModelRegistryImageTagsReqToJSON(requestParameters.modelRegistryImageTagsReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelContainerImageFromJSON));
@@ -438,7 +558,7 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
      * list image tags for a given image and registry
      * List Image Tags
      */
-    async listImageTags(requestParameters: ListImageTagsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImage>> {
+    async listImageTags(requestParameters: ListImageTagsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImage>> {
         const response = await this.listImageTagsRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -448,13 +568,11 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
      * List Registry Images
      */
     async listImagesRaw(requestParameters: ListImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainerImageWithTags>>> {
-        if (requestParameters.registryId === null || requestParameters.registryId === undefined) {
-            throw new runtime.RequiredError('registryId','Required parameter requestParameters.registryId was null or undefined when calling listImages.');
-        }
-
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
@@ -465,10 +583,11 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
             }
         }
         const response = await this.request({
-            path: `/deepfence/registryaccount/{registry_id}/images`.replace(`{${"registry_id"}}`, encodeURIComponent(String(requestParameters.registryId))),
-            method: 'GET',
+            path: `/deepfence/registryaccount/images`,
+            method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: ModelRegistryImagesReqToJSON(requestParameters.modelRegistryImagesReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelContainerImageWithTagsFromJSON));
@@ -478,7 +597,7 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
      * list images from a given registry
      * List Registry Images
      */
-    async listImages(requestParameters: ListImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImageWithTags>> {
+    async listImages(requestParameters: ListImagesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImageWithTags>> {
         const response = await this.listImagesRaw(requestParameters, initOverrides);
         return await response.value();
     }
