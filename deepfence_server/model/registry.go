@@ -26,16 +26,23 @@ type RegistryAddReq struct {
 	RegistryType string                 `json:"registry_type"`
 }
 
-type RegistryDeleteReq struct {
-	RegistryId int32 `path:"registry_id" validate:"required" required:"true"`
+type RegistryIDPathReq struct {
+	RegistryId string `path:"registry_id" validate:"required" required:"true"`
 }
 
-type RegistryIDReq struct {
-	RegistryId string `path:"registry_id" validate:"required" required:"true"`
+type RegistryImagesReq struct {
+	RegistryId string `json:"registry_id" validate:"required" required:"true"`
+	FetchWindow
 }
+
 type RegistryImageTagsReq struct {
-	RegistryId string `path:"registry_id" validate:"required" required:"true"`
-	ImageName  string `path:"image_name" validate:"required" required:"true"`
+	RegistryId string `json:"registry_id" validate:"required" required:"true"`
+	ImageName  string `json:"image_name" validate:"required" required:"true"`
+	FetchWindow
+}
+
+type RegistryCountResp struct {
+	Count int `json:"count"`
 }
 
 type RegistryTypeReq struct {
@@ -100,9 +107,9 @@ func (rl *RegistryListReq) ListRegistriesSafe(ctx context.Context, pgClient *pos
 	return pgClient.GetContainerRegistriesSafe(ctx)
 }
 
-// ListRegistriesSafe doesnot get secret field from DB
-func (rl *RegistryDeleteReq) DeleteRegistry(ctx context.Context, pgClient *postgresqlDb.Queries) error {
-	return pgClient.DeleteContainerRegistry(ctx, rl.RegistryId)
+// DeleteRegistry from DB
+func DeleteRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r int32) error {
+	return pgClient.DeleteContainerRegistry(ctx, r)
 }
 
 func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {
@@ -192,7 +199,7 @@ func toContainerImageWithTags(data map[string]interface{}) ContainerImageWithTag
 	return image
 }
 
-func ListImages(ctx context.Context, registryId int32) ([]ContainerImageWithTags, error) {
+func ListImages(ctx context.Context, registryId int32, fw FetchWindow) ([]ContainerImageWithTags, error) {
 
 	images := []ContainerImageWithTags{}
 
@@ -210,7 +217,11 @@ func ListImages(ctx context.Context, registryId int32) ([]ContainerImageWithTags
 	}
 	defer tx.Close()
 
-	query := `MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage) RETURN m`
+	query := `
+	MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage)
+	RETURN m
+	ORDER BY m.node_id
+	` + fw.FetchWindow2CypherQuery()
 	r, err := tx.Run(query, map[string]interface{}{"id": registryId})
 	if err != nil {
 		return images, err
@@ -278,7 +289,7 @@ func toContainerImage(data map[string]interface{}) ContainerImage {
 	return image
 }
 
-func ListImageTags(ctx context.Context, registryId int32, imageName string) ([]ContainerImage, error) {
+func ListImageTags(ctx context.Context, registryId int32, imageName string, fw FetchWindow) ([]ContainerImage, error) {
 
 	imageTags := []ContainerImage{}
 
@@ -296,7 +307,11 @@ func ListImageTags(ctx context.Context, registryId int32, imageName string) ([]C
 	}
 	defer tx.Close()
 
-	query := `MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage{docker_image_name:$name}) RETURN m`
+	query := `
+	MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage{docker_image_name:$name})
+	RETURN m
+	ORDER BY m.node_id
+	` + fw.FetchWindow2CypherQuery()
 	r, err := tx.Run(query, map[string]interface{}{"id": registryId, "name": imageName})
 	if err != nil {
 		return imageTags, err

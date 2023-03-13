@@ -318,9 +318,14 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Get("/summary", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.Summary))
 				r.Route("/{registry_id}", func(r chi.Router) {
 					r.Delete("/", dfHandler.AuthHandler(ResourceRegistry, PermissionDelete, dfHandler.DeleteRegistry))
-					r.Get("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImages))
-					r.Get("/images/{image_name}/tags", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImageTags))
 					r.Get("/summary", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.RegistrySummary))
+				})
+				r.Post("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImages))
+				r.Post("/tags", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImageTags))
+				// count api
+				r.Route("/count", func(r chi.Router) {
+					r.Post("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.CountImages))
+					r.Post("/tags", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.CountImageTags))
 				})
 			})
 
