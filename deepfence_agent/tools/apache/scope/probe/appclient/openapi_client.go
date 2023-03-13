@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -25,6 +26,7 @@ import (
 type OpenapiClient struct {
 	client               *openapi.APIClient
 	stopControlListening chan struct{}
+	publishInterval      atomic.Int32
 }
 
 var (
@@ -59,10 +61,14 @@ func NewOpenapiClient() (*OpenapiClient, error) {
 		return nil, ConnError
 	}
 
-	return &OpenapiClient{
+	res := &OpenapiClient{
 		client:               https_client.Client(),
 		stopControlListening: make(chan struct{}),
-	}, err
+		publishInterval:      atomic.Int32{},
+	}
+	res.publishInterval.Store(10)
+
+	return res, err
 }
 
 // PipeClose implements MultiAppClient
@@ -105,6 +111,10 @@ func (oc OpenapiClient) Publish(r report.Report) error {
 	return nil
 }
 
+func (ct *OpenapiClient) PublishInterval() int32 {
+	return ct.publishInterval.Load()
+}
+
 // Set implements MultiAppClient
 func (OpenapiClient) Set(hostname string, urls []url.URL) {
 	panic("unimplemented")
@@ -133,6 +143,8 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 			),
 		)
 		ctl, _, err := ct.client.ControlsApi.GetAgentInitControlsExecute(req)
+
+		ct.publishInterval.Store(ctl.Beatrate)
 
 		if err != nil {
 			return err
@@ -170,6 +182,8 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 					continue
 				}
 
+				ct.publishInterval.Store(ctl.Beatrate)
+
 				workload_allocator.Reserve(int32(len(ctl.Commands)))
 
 				for _, action := range ctl.Commands {
@@ -201,6 +215,8 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 					logrus.Errorf("Getting controls failed: %v\n", err)
 					continue
 				}
+
+				ct.publishInterval.Store(ctl.Beatrate)
 
 				workload_allocator.Reserve(int32(len(ctl.Commands)))
 
