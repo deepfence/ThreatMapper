@@ -390,7 +390,7 @@ func getIntPointer(val int32) *int32 {
 
 func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 
-	counts := map[string]int{}
+	counts := model.Summary{}
 
 	req := model.RegistryIDReq{
 		RegistryId: chi.URLParam(r, "registry_id"),
@@ -433,7 +433,7 @@ func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) SummaryByRegistryType(w http.ResponseWriter, r *http.Request) {
 
-	counts := map[string]int{}
+	counts := model.Summary{}
 
 	req := model.RegistryTypeReq{
 		RegistryType: chi.URLParam(r, "registry_type"),
@@ -457,7 +457,7 @@ func (h *Handler) SummaryByRegistryType(w http.ResponseWriter, r *http.Request) 
 
 func (h *Handler) Summary(w http.ResponseWriter, r *http.Request) {
 
-	counts := map[string]map[string]int{}
+	counts := model.RegistrySummaryAllResp{}
 
 	// count registry resource
 	counts, err := model.RegistrySummaryAll(r.Context())

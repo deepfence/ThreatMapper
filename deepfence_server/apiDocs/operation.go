@@ -521,11 +521,11 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImageTagsReq), new([]ContainerImage))
 	d.AddOperation("getSummaryAll", http.MethodGet, "/deepfence/registryaccount/summary",
 		"Get All Registries Summary By Type", "get summary of all registries scans, images and tags by registry type",
-		http.StatusOK, []string{tagRegistry}, bearerToken, nil, new(map[string]map[string]int))
+		http.StatusOK, []string{tagRegistry}, bearerToken, nil, new(RegistrySummaryAllResp))
 	d.AddOperation("getSummaryByType", http.MethodGet, "/deepfence/registryaccount/{registry_type}/summary-by-type",
 		"Get Registry Summary By Type", "get summary of registries scans, images and tags by registry type",
-		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryTypeReq), new(map[string]int))
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryTypeReq), new(Summary))
 	d.AddOperation("getRegistrySummary", http.MethodGet, "/deepfence/registryaccount/{registry_id}/summary",
 		"Get Registry Summary", "get summary of registry scans, images and tags",
-		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryIDReq), new(map[string]int))
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryIDReq), new(Summary))
 }

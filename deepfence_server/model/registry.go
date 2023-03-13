@@ -84,6 +84,17 @@ type RegistryListResp struct {
 	UpdatedAt    time.Time       `json:"updated_at"`
 }
 
+type RegistrySummaryAllResp map[string]Summary
+
+type Summary struct {
+	Images          int `json:"images"`
+	Registries      int `json:"registries"`
+	ScansComplete   int `json:"scans_complete"`
+	ScansInProgress int `json:"scans_in_progress"`
+	ScansTotal      int `json:"scans_total"`
+	Tags            int `json:"tags"`
+}
+
 // ListRegistriesSafe doesnot get secret field from DB
 func (rl *RegistryListReq) ListRegistriesSafe(ctx context.Context, pgClient *postgresqlDb.Queries) ([]postgresqlDb.GetContainerRegistriesSafeRow, error) {
 	return pgClient.GetContainerRegistriesSafe(ctx)
@@ -318,28 +329,24 @@ func ListImageTags(ctx context.Context, registryId int32, imageName string) ([]C
 	return imageTags, nil
 }
 
-func toScansCount(scans []interface{}) map[string]int {
-	counts := map[string]int{
-		"scans_complete":    0,
-		"scans_in_progress": 0,
-		"scans_total":       0,
-	}
+func toScansCount(scans []interface{}) Summary {
+	counts := Summary{}
 	for _, n := range scans {
-		counts["scans_total"]++
+		counts.ScansTotal++
 		l := n.(string)
 		switch l {
 		case utils.SCAN_STATUS_SUCCESS, utils.SCAN_STATUS_FAILED:
-			counts["scans_complete"]++
+			counts.ScansComplete++
 		default:
-			counts["scans_in_progress"]++
+			counts.ScansInProgress++
 		}
 	}
 	return counts
 }
 
-func RegistrySummary(ctx context.Context, registryId *int32, registryType *string) (map[string]int, error) {
+func RegistrySummary(ctx context.Context, registryId *int32, registryType *string) (Summary, error) {
 
-	count := map[string]int{}
+	count := Summary{}
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -431,16 +438,16 @@ func RegistrySummary(ctx context.Context, registryId *int32, registryType *strin
 	}
 
 	count = toScansCount(scansStatus.([]interface{}))
-	count["images"] = int(images.(int64))
-	count["tags"] = int(tags.(int64))
-	count["registries"] = int(registries.(int64))
+	count.Images = int(images.(int64))
+	count.Tags = int(tags.(int64))
+	count.Registries = int(registries.(int64))
 
 	return count, nil
 }
 
-func RegistrySummaryAll(ctx context.Context) (map[string]map[string]int, error) {
+func RegistrySummaryAll(ctx context.Context) (RegistrySummaryAllResp, error) {
 
-	count := map[string]map[string]int{}
+	count := RegistrySummaryAllResp{}
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -469,7 +476,7 @@ func RegistrySummaryAll(ctx context.Context) (map[string]map[string]int, error) 
 	for _, t := range pkgConst.RegistryTypes {
 		var (
 			result neo4j.Result
-			rCount = map[string]int{}
+			rCount = Summary{}
 		)
 
 		if result, err = tx.Run(queryRegistriesByType, map[string]interface{}{"type": t}); err != nil {
@@ -505,9 +512,9 @@ func RegistrySummaryAll(ctx context.Context) (map[string]map[string]int, error) 
 		}
 
 		rCount = toScansCount(scansStatus.([]interface{}))
-		rCount["images"] = int(images.(int64))
-		rCount["tags"] = int(tags.(int64))
-		rCount["registries"] = int(registries.(int64))
+		rCount.Images = int(images.(int64))
+		rCount.Tags = int(tags.(int64))
+		rCount.Registries = int(registries.(int64))
 
 		count[t] = rCount
 	}
