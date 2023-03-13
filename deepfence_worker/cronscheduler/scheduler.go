@@ -60,6 +60,10 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
+	_, err = s.cron.AddFunc("@every 60m", s.enqeueTask(sdkUtils.CleanupDiagnosisLogs))
+	if err != nil {
+		return err
+	}
 	_, err = s.cron.AddFunc("@every 60m", s.enqeueTask(sdkUtils.CheckAgentUpgradeTask))
 	if err != nil {
 		return err
