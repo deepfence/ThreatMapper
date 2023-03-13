@@ -31,14 +31,14 @@ type RegistryIDPathReq struct {
 }
 
 type RegistryImagesReq struct {
-	RegistryId string `json:"registry_id" validate:"required" required:"true"`
-	FetchWindow
+	RegistryId string      `json:"registry_id" validate:"required" required:"true"`
+	Window     FetchWindow `json:"window"`
 }
 
 type RegistryImageTagsReq struct {
-	RegistryId string `json:"registry_id" validate:"required" required:"true"`
-	ImageName  string `json:"image_name" validate:"required" required:"true"`
-	FetchWindow
+	RegistryId string      `json:"registry_id" validate:"required" required:"true"`
+	ImageName  string      `json:"image_name" validate:"required" required:"true"`
+	Window     FetchWindow `json:"window"`
 }
 
 type RegistryCountResp struct {

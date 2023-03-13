@@ -342,7 +342,7 @@ func (h *Handler) ListImages(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 	}
 
-	images, err := model.ListImages(r.Context(), int32(rId), req.FetchWindow)
+	images, err := model.ListImages(r.Context(), int32(rId), req.Window)
 	if err != nil {
 		respondError(err, w)
 	}
@@ -383,7 +383,7 @@ func (h *Handler) CountImages(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 	}
 
-	images, err := model.ListImages(r.Context(), int32(rId), req.FetchWindow)
+	images, err := model.ListImages(r.Context(), int32(rId), req.Window)
 	if err != nil {
 		respondError(err, w)
 	}
@@ -428,7 +428,7 @@ func (h *Handler) ListImageTags(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 	}
 
-	images, err := model.ListImageTags(r.Context(), int32(rId), req.ImageName, req.FetchWindow)
+	images, err := model.ListImageTags(r.Context(), int32(rId), req.ImageName, req.Window)
 	if err != nil {
 		respondError(err, w)
 	}
@@ -472,7 +472,7 @@ func (h *Handler) CountImageTags(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 	}
 
-	imageTags, err := model.ListImageTags(r.Context(), int32(rId), req.ImageName, req.FetchWindow)
+	imageTags, err := model.ListImageTags(r.Context(), int32(rId), req.ImageName, req.Window)
 	if err != nil {
 		respondError(err, w)
 	}
