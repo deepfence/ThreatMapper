@@ -1,9 +1,13 @@
+import { useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from 'ui-components';
 
 import { AmazonECRConnectorForm } from '@/components/registries-connector/AmazonECRConnectorForm';
 import { AzureCRConnectorForm } from '@/components/registries-connector/AzureCRConnectorForm';
-import { DockerConnectorForm as DockerRegistryConnectorForm } from '@/components/registries-connector/DockerConnectorForm';
+import {
+  DockerConnectorForm as DockerRegistryConnectorForm,
+  dockerRegistryConnectorApi,
+} from '@/components/registries-connector/DockerConnectorForm';
 import { DockerPriavateConnectorForm } from '@/components/registries-connector/DockerPrivateConnectorForm';
 import { GitLabConnectorForm } from '@/components/registries-connector/GitLabConnectorForm';
 import { GoogleCRConnectorForm } from '@/components/registries-connector/GoogleCRConnectorForm';
@@ -12,6 +16,7 @@ import { JfrogConnectorForm } from '@/components/registries-connector/JfrogConne
 import { QuayConnectorForm } from '@/components/registries-connector/QuayConnectorForm';
 
 const RegistryAdd = () => {
+  const formRef = useRef<HTMLFormElement>(null);
   const { account } = useParams() as {
     account: string;
   };
@@ -22,7 +27,7 @@ const RegistryAdd = () => {
 
   return (
     <>
-      {account === 'docker_hub' && <DockerRegistryConnectorForm />}
+      {account === 'docker_hub' && <DockerRegistryConnectorForm ref={formRef} />}
       {account === 'ecr' && <AmazonECRConnectorForm />}
       {account === 'azure' && <AzureCRConnectorForm />}
       {account === 'gcr' && <GoogleCRConnectorForm />}
@@ -38,7 +43,17 @@ const RegistryAdd = () => {
       {account === 'quay' && <QuayConnectorForm />}
 
       <div className="flex ml-auto">
-        <Button color="primary" size="xs" className="ml-auto" type="submit">
+        <Button
+          color="primary"
+          size="xs"
+          className="ml-auto"
+          type="submit"
+          onClick={(e) => {
+            e.preventDefault();
+            console.log('', formRef.current);
+            formRef.current?.requestSubmit();
+          }}
+        >
           Save information
         </Button>
       </div>
@@ -47,5 +62,6 @@ const RegistryAdd = () => {
 };
 
 export const module = {
+  action: dockerRegistryConnectorApi,
   element: <RegistryAdd />,
 };

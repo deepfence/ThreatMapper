@@ -34,7 +34,6 @@ export const ScanConfigureModal = ({
   } else if (scanType === ActionEnumType.SCAN_MALWARE) {
     title = `Configure malware scan option`;
   }
-  console.log('data for start scan', data);
 
   return (
     <Modal open={open} width="w-full" title={title} onOpenChange={() => setOpen('')}>
