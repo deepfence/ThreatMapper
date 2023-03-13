@@ -90,7 +90,8 @@ func computeThreatGraph(session neo4j.Session) error {
 		MATCH (s:VulnerabilityScan) -[:SCANNED]-> (m)
 		WITH max(s.updated_at) as most_recent, m
 		MATCH (s:VulnerabilityScan{updated_at: most_recent})-[:DETECTED]->(c:Vulnerability)
-		WITH m, count(distinct c) as num_cve SET m.num_cve = num_cve`, map[string]interface{}{}); err != nil {
+		WITH m, count(distinct c) as num_cve
+		SET m.num_cve = num_cve`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
@@ -123,40 +124,51 @@ func computeThreatGraph(session neo4j.Session) error {
 
 	if _, err = tx.Run(`
 		MATCH (n:Node)
-		SET n.num_cve = COALESCE(n.num_cve, 0), n.num_secrets = COALESCE(n.num_secrets, 0), n.num_malware = COALESCE(n.num_malware, 0),
-		n.num_compliance = COALESCE(n.num_compliance, 0);`, map[string]interface{}{}); err != nil {
+		SET n.num_cve = COALESCE(n.num_cve, 0),
+		n.num_secrets = COALESCE(n.num_secrets, 0),
+		n.num_malware = COALESCE(n.num_malware, 0),
+		n.num_compliance = COALESCE(n.num_compliance, 0)`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
 		MATCH (n:Node)
-		SET n.sum_cve = COALESCE(n.num_cve, 0), n.sum_secrets = COALESCE(n.num_secrets, 0), n.num_malware = COALESCE(n.num_malware, 0),
-		n.sum_compliance = COALESCE(n.num_compliance, 0);`, map[string]interface{}{}); err != nil {
+		SET n.sum_cve = COALESCE(n.num_cve, 0),
+		n.sum_secrets = COALESCE(n.num_secrets, 0),
+		n.sum_malware = COALESCE(n.num_malware, 0),
+		n.sum_compliance = COALESCE(n.num_compliance, 0)`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
 		MATCH (n:Node) -[:HOSTS]-> (m)
-		SET n.sum_cve = n.sum_cve + COALESCE(m.num_cve, 0), n.sum_secrets = n.sum_secrets + COALESCE(m.num_secrets, 0),
-		n.sum_malware = n.sum_malware + COALESCE(n.num_malware, 0), n.sum_compliance = n.sum_compliance + COALESCE(m.num_compliance, 0);`, map[string]interface{}{}); err != nil {
+		SET n.sum_cve = n.sum_cve + COALESCE(m.num_cve, 0),
+		n.sum_secrets = n.sum_secrets + COALESCE(m.num_secrets, 0),
+		n.sum_malware = n.sum_malware + COALESCE(n.num_malware, 0),
+		n.sum_compliance = n.sum_compliance + COALESCE(m.num_compliance, 0)`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
 		MATCH (n:Node) -[:CONNECTED]->(m:Node)
-		SET n.sum_cve = COALESCE(n.sum_cve, 0) + COALESCE(m.sum_cve, m.num_cve, 0), n.sum_secrets = COALESCE(n.sum_secrets, 0) + COALESCE(m.sum_secrets, m.num_secrets, 0),
-		n.sum_malware = COALESCE(n.sum_malware, 0) + COALESCE(m.sum_malware, m.num_malware, 0), n.sum_compliance = COALESCE(n.sum_compliance, 0) + COALESCE(m.sum_compliance, m.num_compliance, 0);`, map[string]interface{}{}); err != nil {
+		SET n.sum_cve = COALESCE(n.sum_cve, 0) + COALESCE(m.sum_cve, m.num_cve, 0),
+		n.sum_secrets = COALESCE(n.sum_secrets, 0) + COALESCE(m.sum_secrets, m.num_secrets, 0),
+		n.sum_malware = COALESCE(n.sum_malware, 0) + COALESCE(m.sum_malware, m.num_malware, 0),
+		n.sum_compliance = COALESCE(n.sum_compliance, 0) + COALESCE(m.sum_compliance, m.num_compliance, 0)`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
-		MATCH (n:Node {node_id:'in-the-internet'})-[d:CONNECTS*]->(m:Node) with SIZE(d) as depth, m with min(depth) as min_depth, m
+		MATCH (n:Node {node_id:'in-the-internet'})-[d:CONNECTS*]->(m:Node)
+		WITH SIZE(d) as depth, m with min(depth) as min_depth, m
 		SET m.depth = min_depth`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
 	if _, err = tx.Run(`
-		MATCH (n:Node {node_id:'in-the-internet'})-[d:PUBLIC|USES|IS|HOSTS|balances*]->(m:CloudResource) with SIZE(d) as depth, m with min(depth) as min_depth, m
+		MATCH (n:Node {node_id:'in-the-internet'})-[d:PUBLIC|USES|IS|HOSTS|balances*]->(m:CloudResource)
+		WITH SIZE(d) as depth, m
+		WITH min(depth) as min_depth, m
 		SET m.depth = min_depth `, map[string]interface{}{}); err != nil {
 		return err
 	}
@@ -164,8 +176,10 @@ func computeThreatGraph(session neo4j.Session) error {
 	if _, err = tx.Run(`
 		MATCH (n:Node) -[:CONNECTS]->(m:Node)
 		WITH n, m
-		SET n.sum_cve = COALESCE(n.sum_cve, 0) + COALESCE(m.sum_cve, m.num_cve, 0), n.sum_malware = COALESCE(n.sum_malware, 0) + COALESCE(m.sum_malware, m.num_malware, 0) ,
-		n.sum_secrets = COALESCE(n.sum_secrets, 0) + COALESCE(m.sum_secrets, m.num_secrets, 0), n.sum_compliance = COALESCE(n.sum_compliance, 0) + COALESCE(m.sum_compliance, m.num_compliance, 0);`, map[string]interface{}{}); err != nil {
+		SET n.sum_cve = COALESCE(n.sum_cve, 0) + COALESCE(m.sum_cve, m.num_cve, 0),
+		n.sum_malware = COALESCE(n.sum_malware, 0) + COALESCE(m.sum_malware, m.num_malware, 0) ,
+		n.sum_secrets = COALESCE(n.sum_secrets, 0) + COALESCE(m.sum_secrets, m.num_secrets, 0),
+		n.sum_compliance = COALESCE(n.sum_compliance, 0) + COALESCE(m.sum_compliance, m.num_compliance, 0)`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
