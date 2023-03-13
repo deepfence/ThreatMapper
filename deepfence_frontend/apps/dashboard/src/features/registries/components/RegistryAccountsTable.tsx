@@ -36,7 +36,6 @@ import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { ApiError, makeRequest } from '@/utils/api';
-import { formatMilliseconds } from '@/utils/date';
 
 enum TableActionEnumType {
   DELETE = 'delete',
@@ -58,7 +57,7 @@ export const action = async ({
     apiFunction: getRegistriesApiClient().deleteRegistry,
     apiArgs: [
       {
-        registryId: +ids[0],
+        registryId: ids[0],
       },
     ],
     errorHandler: async (r) => {
@@ -149,7 +148,7 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
       formData.append('actionType', actionType);
       formData.append('_nodeType', 'registry');
 
-      ids.forEach((item) => formData.append('_nodeIds[]', item));
+      ids.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
