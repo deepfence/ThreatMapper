@@ -11,7 +11,7 @@ import {
 
 import { ModelContainerImageWithTags } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { ScanConfigureModal } from '@/components/registries-scan/ScanConfigureModal';
+import { ScanConfigureModal } from '@/components/scan-configure-forms/ScanConfigureModal';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';

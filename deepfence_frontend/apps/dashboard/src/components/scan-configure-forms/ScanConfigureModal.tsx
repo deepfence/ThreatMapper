@@ -1,9 +1,8 @@
-import { useFetcher } from 'react-router-dom';
 import { Modal } from 'ui-components';
 
-import { MalwareScanConfigureForm } from '@/components/registries-scan/MalwareScanConfigureForm';
-import { SecretScanConfigureForm } from '@/components/registries-scan/SecretScanConfigureForm';
-import { VulnerabilityScanConfigureForm } from '@/components/registries-scan/VulnerabilityScanConfigureForm';
+import { MalwareScanConfigureForm } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
+import { SecretScanConfigureForm } from '@/components/scan-configure-forms/SecretScanConfigureForm';
+import { VulnerabilityScanConfigureForm } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 
 export enum ActionEnumType {
   SCAN_VULNERABILITY = 'scan_vulnerability',
@@ -26,8 +25,6 @@ export const ScanConfigureModal = ({
     urlType: string;
   };
 }) => {
-  const fetcher = useFetcher();
-
   return (
     <Modal
       open={open}
@@ -38,29 +35,29 @@ export const ScanConfigureModal = ({
       {scanType === ActionEnumType.SCAN_VULNERABILITY && (
         <VulnerabilityScanConfigureForm
           wantAdvanceOptions={wantAdvanceOptions}
-          loading={fetcher.state === 'submitting'}
           data={{
             urlIds: data.urlIds,
             urlType: data.urlType,
           }}
+          onSuccess={() => setOpen('')}
         />
       )}
       {scanType === ActionEnumType.SCAN_SECRET && (
         <SecretScanConfigureForm
-          loading={fetcher.state === 'submitting'}
           data={{
             urlIds: data.urlIds,
             urlType: data.urlType,
           }}
+          onSuccess={() => setOpen('')}
         />
       )}
       {scanType === ActionEnumType.SCAN_MALWARE && (
         <MalwareScanConfigureForm
-          loading={fetcher.state === 'submitting'}
           data={{
             urlIds: data.urlIds,
             urlType: data.urlType,
           }}
+          onSuccess={() => setOpen('')}
         />
       )}
     </Modal>

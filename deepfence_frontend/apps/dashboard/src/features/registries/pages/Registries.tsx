@@ -6,6 +6,8 @@ import { useLoaderData } from 'react-router-dom';
 import { Button, Card } from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
+import { ApiDocsBadRequestResponse } from '@/api/generated';
+import { ModelSummary } from '@/api/generated/models/ModelSummary';
 import LogoAWS from '@/assets/logo-aws.svg';
 import LogoAzure from '@/assets/logo-azure-registry.svg';
 import LogoDocker from '@/assets/logo-docker.svg';
@@ -19,10 +21,7 @@ import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
-interface RegistryResponseType {
-  registries: number;
-  images: number;
-  tags: number;
+interface RegistryResponseType extends ModelSummary {
   name: string;
   type: string;
   icon: string;
@@ -46,13 +45,21 @@ export const RegistryType = {
 } as const;
 
 type Keys = keyof typeof RegistryType;
-// type ReponseType = Record<keyof ReponseType, RegistryResponseType>;
 type ReponseType = { [K in Keys]: RegistryResponseType };
 
-async function getRegistries(): Promise<RegistryResponseType[]> {
+async function getRegistriesSummary(): Promise<RegistryResponseType[]> {
   const result = await makeRequest({
     apiFunction: getRegistriesApiClient().getRegistriesSummary,
     apiArgs: [],
+    errorHandler: async (r) => {
+      const error = new ApiError<{ message?: string }>({});
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message,
+        });
+      }
+    },
   });
 
   if (ApiError.isApiError(result)) {
@@ -63,7 +70,7 @@ async function getRegistries(): Promise<RegistryResponseType[]> {
     throw new Error('Error getting registries');
   }
   const response: RegistryResponseType[] = [];
-  for (const [key, value] of Object.entries(result as unknown as ReponseType)) {
+  for (const [key, value] of Object.entries(result as ReponseType)) {
     let icon = '';
     let name = '';
     if (key === RegistryType.azure_container_registry) {
@@ -98,7 +105,7 @@ async function getRegistries(): Promise<RegistryResponseType[]> {
       registries: value.registries,
       images: value.images,
       tags: value.tags,
-      type: 'azure',
+      type: key,
       name,
       icon,
     });
@@ -109,7 +116,7 @@ async function getRegistries(): Promise<RegistryResponseType[]> {
 
 const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
   return typedDefer({
-    data: getRegistries(),
+    data: getRegistriesSummary(),
   });
 };
 
@@ -117,7 +124,7 @@ const RegistrySkeleton = () => {
   return (
     <>
       {Array.from(Array(9).keys()).map((k) => (
-        <Card className="p-4 animate-pulse items-center gap-2 w-1/4" key={k}>
+        <Card className="p-4 animate-pulse items-center gap-2 min-w-[400px]" key={k}>
           <div className="flex items-center justify-between w-full">
             <div className="h-2 w-24 bg-slate-200"></div>
             <div className="h-2 w-20 bg-slate-200 ml-auto mt-2"></div>
@@ -142,7 +149,7 @@ const RegistrySkeleton = () => {
 
 const Registry = ({ registry }: { registry: RegistryResponseType }) => {
   return (
-    <Card className="p-4 items-center gap-2 w-1/4" key={registry.type}>
+    <Card className="p-4 items-center gap-2" key={registry.type}>
       <div className="flex items-center justify-between w-full">
         <h4 className="text-gray-900 text-md dark:text-white">{registry.name}</h4>
         <div className="flex ml-auto mt-2">

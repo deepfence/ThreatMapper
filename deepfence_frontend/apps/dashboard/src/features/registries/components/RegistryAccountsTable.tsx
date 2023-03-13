@@ -31,7 +31,7 @@ import { DFLink } from '@/components/DFLink';
 import {
   ActionEnumType,
   ScanConfigureModal,
-} from '@/components/registries-scan/ScanConfigureModal';
+} from '@/components/scan-configure-forms/ScanConfigureModal';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
@@ -105,7 +105,7 @@ const DeleteConfirmationModal = ({
 
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center">
+      <div className="grid place-items-center p-6">
         <IconContext.Provider
           value={{
             className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',

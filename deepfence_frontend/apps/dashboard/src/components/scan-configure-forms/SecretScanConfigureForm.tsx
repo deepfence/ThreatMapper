@@ -1,29 +1,30 @@
-import { useState } from 'react';
-import { ActionFunctionArgs, Form, generatePath, redirect } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { ActionFunctionArgs, generatePath, redirect, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button, Checkbox, Radio, TextInput } from 'ui-components';
 
-import { getMalwareApiClient } from '@/api/api';
+import { getSecretApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
-  ModelMalwareScanTriggerReq,
   ModelNodeIdentifierNodeTypeEnum,
+  ModelSecretScanTriggerReq,
 } from '@/api/generated';
 import { ApiError, makeRequest } from '@/utils/api';
 
 type ScanConfigureFormProps = {
-  loading: boolean;
   data: {
     urlIds: string[];
     urlType: string;
   };
+  onSuccess: () => void;
 };
 
-export type ScanActionReturnType = {
+type ScanActionReturnType = {
   message?: string;
+  success: boolean;
 };
 
-export const scanMalwareApiAction = async ({
+export const scanSecretApiAction = async ({
   request,
 }: ActionFunctionArgs): Promise<ScanActionReturnType | null> => {
   const formData = await request.formData();
@@ -35,7 +36,7 @@ export const scanMalwareApiAction = async ({
   const scanTag = formData.get('scanTag')?.toString() ?? '';
   const priorityScan = formData.get('priorityScan')?.toString() ?? '';
 
-  const requestBody: ModelMalwareScanTriggerReq = {
+  const requestBody: ModelSecretScanTriggerReq = {
     filters: {
       cloud_account_scan_filter: { filter_in: null },
       kubernetes_cluster_scan_filter: { filter_in: null },
@@ -52,18 +53,21 @@ export const scanMalwareApiAction = async ({
   };
 
   const r = await makeRequest({
-    apiFunction: getMalwareApiClient().startMalwareScan,
+    apiFunction: getSecretApiClient().startSecretScan,
     apiArgs: [
       {
-        modelMalwareScanTriggerReq: requestBody,
+        modelSecretScanTriggerReq: requestBody,
       },
     ],
     errorHandler: async (r) => {
-      const error = new ApiError<ScanActionReturnType>({});
+      const error = new ApiError<ScanActionReturnType>({
+        success: false,
+      });
       if (r.status === 400 || r.status === 409) {
         const modelResponse: ApiDocsBadRequestResponse = await r.json();
         return error.set({
           message: modelResponse.message ?? '',
+          success: false,
         });
       }
     },
@@ -72,35 +76,50 @@ export const scanMalwareApiAction = async ({
   if (ApiError.isApiError(r)) {
     return r.value();
   }
-
   if (request.url.includes('onboard')) {
     throw redirect(
       generatePath('/onboard/scan/view-summary/running/:nodeType/:scanType/:bulkScanId', {
         nodeType,
-        scanType: 'malware',
+        scanType: 'secret',
         bulkScanId: r.bulk_scan_id,
       }),
       302,
     );
   }
   toast('Scan has been sucessfully started');
-  return null;
+  return {
+    success: true,
+  };
 };
 
-export const MalwareScanConfigureForm = ({ loading, data }: ScanConfigureFormProps) => {
+export const SecretScanConfigureForm = ({ data, onSuccess }: ScanConfigureFormProps) => {
   const [priorityScan, setPriorityScan] = useState(false);
   const [autoCheckandScan, setAutoCheckandScan] = useState(false);
   const [scanTag, setScanTag] = useState('last');
+  const fetcher = useFetcher<ScanActionReturnType>();
+
+  const { state, data: fetcherData } = fetcher;
+
+  useEffect(() => {
+    if (fetcherData?.success) {
+      onSuccess();
+    }
+  }, [fetcherData]);
 
   return (
-    <Form className="flex flex-col" method="post" action="/data-component/scan/malware">
+    <fetcher.Form
+      className="flex flex-col px-6 py-2"
+      method="post"
+      action="/data-component/scan/secret"
+    >
       <input type="text" name="_nodeIds" hidden readOnly value={data.urlIds.join(',')} />
       <input type="text" name="_nodeType" readOnly hidden value={data.urlType} />
+      <p className="text-red-500 text-md py-3">{fetcherData?.message}</p>
       <div className="flex">
         <h6 className={'text-md font-medium dark:text-white'}>Advanced Options</h6>
         <Button
-          disabled={loading}
-          loading={loading}
+          disabled={state === 'loading'}
+          loading={state === 'loading'}
           size="sm"
           color="primary"
           className="ml-auto"
@@ -148,6 +167,6 @@ export const MalwareScanConfigureForm = ({ loading, data }: ScanConfigureFormPro
           }}
         />
       </div>
-    </Form>
+    </fetcher.Form>
   );
 };

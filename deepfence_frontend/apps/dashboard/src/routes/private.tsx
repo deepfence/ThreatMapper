@@ -1,9 +1,9 @@
 import { Outlet } from 'react-router-dom';
 
 import { ErrorComponent } from '@/components/error/ErrorComponent';
-import { scanMalwareApiAction } from '@/components/registries-scan/MalwareScanConfigureForm';
-import { scanSecretApiAction } from '@/components/registries-scan/SecretScanConfigureForm';
-import { scanVulnerabilityApiAction } from '@/components/registries-scan/VulnerabilityScanConfigureForm';
+import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
+import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
+import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
 import { searchClustersApiLoader } from '@/features/common/data-component/searchClustersApiLoader';
 import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';

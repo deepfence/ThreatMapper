@@ -64,7 +64,12 @@ models/ModelCloudNodeAccountRegisterRespData.ts
 models/ModelCloudNodeAccountsListReq.ts
 models/ModelCloudNodeAccountsListResp.ts
 models/ModelCloudNodeCloudtrailTrail.ts
+models/ModelCloudNodeComplianceControl.ts
+models/ModelCloudNodeControlReq.ts
+models/ModelCloudNodeControlResp.ts
+models/ModelCloudNodeEnableDisableReq.ts
 models/ModelCloudNodeProvidersListResp.ts
+models/ModelCloudResource.ts
 models/ModelCompliance.ts
 models/ModelComplianceScanInfo.ts
 models/ModelComplianceScanResult.ts
@@ -91,6 +96,7 @@ models/ModelNodesInScanResultRequest.ts
 models/ModelPasswordResetRequest.ts
 models/ModelPasswordResetVerifyRequest.ts
 models/ModelPod.ts
+models/ModelPostureProvider.ts
 models/ModelProcess.ts
 models/ModelRegisterInvitedUserRequest.ts
 models/ModelRegistryAccount.ts
@@ -113,6 +119,7 @@ models/ModelScanTriggerResp.ts
 models/ModelSecret.ts
 models/ModelSecretScanResult.ts
 models/ModelSecretScanTriggerReq.ts
+models/ModelSummary.ts
 models/ModelUpdateUserIdRequest.ts
 models/ModelUpdateUserPasswordRequest.ts
 models/ModelUpdateUserRequest.ts

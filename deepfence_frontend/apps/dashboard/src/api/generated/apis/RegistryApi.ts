@@ -21,6 +21,7 @@ import type {
   ModelContainerImageWithTags,
   ModelRegistryAddReq,
   ModelRegistryListResp,
+  ModelSummary,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -35,6 +36,8 @@ import {
     ModelRegistryAddReqToJSON,
     ModelRegistryListRespFromJSON,
     ModelRegistryListRespToJSON,
+    ModelSummaryFromJSON,
+    ModelSummaryToJSON,
 } from '../models';
 
 export interface AddRegistryRequest {
@@ -47,6 +50,10 @@ export interface DeleteRegistryRequest {
 
 export interface GetRegistrySummaryRequest {
     registryId: string;
+}
+
+export interface GetSummaryByTypeRequest {
+    registryType: string;
 }
 
 export interface ListImageTagsRequest {
@@ -83,7 +90,7 @@ export interface RegistryApiInterface {
 
     /**
      * Delete registry
-     * @summary Add Registry
+     * @summary Delete Registry
      * @param {number} registryId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -93,7 +100,7 @@ export interface RegistryApiInterface {
 
     /**
      * Delete registry
-     * Add Registry
+     * Delete Registry
      */
     deleteRegistry(requestParameters: DeleteRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
@@ -105,28 +112,44 @@ export interface RegistryApiInterface {
      * @throws {RequiredError}
      * @memberof RegistryApiInterface
      */
-    getRegistrySummaryRaw(requestParameters: GetRegistrySummaryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: number; }>>;
+    getRegistrySummaryRaw(requestParameters: GetRegistrySummaryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelSummary>>;
 
     /**
      * get summary of registry scans, images and tags
      * Get Registry Summary
      */
-    getRegistrySummary(requestParameters: GetRegistrySummaryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: number; }>;
+    getRegistrySummary(requestParameters: GetRegistrySummaryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelSummary>;
 
     /**
-     * get summary of registry scans, images and tags
-     * @summary Get All Registries Summary
+     * get summary of all registries scans, images and tags by registry type
+     * @summary Get All Registries Summary By Type
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RegistryApiInterface
      */
-    getSummaryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: number; }>>;
+    getSummaryAllRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: ModelSummary; }>>;
 
     /**
-     * get summary of registry scans, images and tags
-     * Get All Registries Summary
+     * get summary of all registries scans, images and tags by registry type
+     * Get All Registries Summary By Type
      */
-    getSummary(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: number; }>;
+    getSummaryAll(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: ModelSummary; }>;
+
+    /**
+     * get summary of registries scans, images and tags by registry type
+     * @summary Get Registry Summary By Type
+     * @param {string} registryType 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RegistryApiInterface
+     */
+    getSummaryByTypeRaw(requestParameters: GetSummaryByTypeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelSummary>>;
+
+    /**
+     * get summary of registries scans, images and tags by registry type
+     * Get Registry Summary By Type
+     */
+    getSummaryByType(requestParameters: GetSummaryByTypeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelSummary>;
 
     /**
      * list image tags for a given image and registry
@@ -223,7 +246,7 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
 
     /**
      * Delete registry
-     * Add Registry
+     * Delete Registry
      */
     async deleteRegistryRaw(requestParameters: DeleteRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         if (requestParameters.registryId === null || requestParameters.registryId === undefined) {
@@ -254,7 +277,7 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
 
     /**
      * Delete registry
-     * Add Registry
+     * Delete Registry
      */
     async deleteRegistry(requestParameters: DeleteRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.deleteRegistryRaw(requestParameters, initOverrides);
@@ -264,7 +287,7 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
      * get summary of registry scans, images and tags
      * Get Registry Summary
      */
-    async getRegistrySummaryRaw(requestParameters: GetRegistrySummaryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: number; }>> {
+    async getRegistrySummaryRaw(requestParameters: GetRegistrySummaryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelSummary>> {
         if (requestParameters.registryId === null || requestParameters.registryId === undefined) {
             throw new runtime.RequiredError('registryId','Required parameter requestParameters.registryId was null or undefined when calling getRegistrySummary.');
         }
@@ -288,23 +311,23 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse<any>(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelSummaryFromJSON(jsonValue));
     }
 
     /**
      * get summary of registry scans, images and tags
      * Get Registry Summary
      */
-    async getRegistrySummary(requestParameters: GetRegistrySummaryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: number; }> {
+    async getRegistrySummary(requestParameters: GetRegistrySummaryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelSummary> {
         const response = await this.getRegistrySummaryRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
-     * get summary of registry scans, images and tags
-     * Get All Registries Summary
+     * get summary of all registries scans, images and tags by registry type
+     * Get All Registries Summary By Type
      */
-    async getSummaryRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: number; }>> {
+    async getSummaryAllRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: ModelSummary; }>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -324,15 +347,55 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse<any>(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => runtime.mapValues(jsonValue, ModelSummaryFromJSON));
     }
 
     /**
-     * get summary of registry scans, images and tags
-     * Get All Registries Summary
+     * get summary of all registries scans, images and tags by registry type
+     * Get All Registries Summary By Type
      */
-    async getSummary(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: number; }> {
-        const response = await this.getSummaryRaw(initOverrides);
+    async getSummaryAll(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: ModelSummary; }> {
+        const response = await this.getSummaryAllRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * get summary of registries scans, images and tags by registry type
+     * Get Registry Summary By Type
+     */
+    async getSummaryByTypeRaw(requestParameters: GetSummaryByTypeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelSummary>> {
+        if (requestParameters.registryType === null || requestParameters.registryType === undefined) {
+            throw new runtime.RequiredError('registryType','Required parameter requestParameters.registryType was null or undefined when calling getSummaryByType.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/registryaccount/{registry_type}/summary-by-type`.replace(`{${"registry_type"}}`, encodeURIComponent(String(requestParameters.registryType))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelSummaryFromJSON(jsonValue));
+    }
+
+    /**
+     * get summary of registries scans, images and tags by registry type
+     * Get Registry Summary By Type
+     */
+    async getSummaryByType(requestParameters: GetSummaryByTypeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelSummary> {
+        const response = await this.getSummaryByTypeRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
