@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	ConsoleURLSettingKey = "console_url"
-	JwtSecretSettingKey  = "jwt_secret"
+	ConsoleURLSettingKey              = "console_url"
+	JwtSecretSettingKey               = "jwt_secret"
+	InactiveNodesDeleteScanResultsKey = "inactive_delete_scan_results"
 )
 
 type SettingValue struct {
@@ -79,4 +80,27 @@ func GetJwtSecretSetting(ctx context.Context, pgClient *postgresqlDb.Queries) ([
 		return nil, err
 	}
 	return []byte(fmt.Sprintf("%v", sVal.Value)), nil
+}
+
+func SetScanResultsDeletionSetting(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	_, err := pgClient.GetSetting(ctx, InactiveNodesDeleteScanResultsKey)
+	if errors.Is(err, sql.ErrNoRows) {
+		s := Setting{
+			Key: InactiveNodesDeleteScanResultsKey,
+			Value: &SettingValue{
+				Label:       "Inactive Nodes Scan Results Deletion Interval",
+				Value:       30, // 30 days
+				Description: "Scan results deletion interval (in days) for nodes that are not active",
+			},
+			IsVisibleOnUi: true,
+		}
+		_, err = s.Create(ctx, pgClient)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else if err != nil {
+		return err
+	}
+	return nil
 }
