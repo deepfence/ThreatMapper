@@ -88,8 +88,8 @@ func computeThreatGraph(session neo4j.Session) error {
 
 	if _, err = tx.Run(`
 		MATCH (s:VulnerabilityScan) -[:SCANNED]-> (m)
-		WITH max(s.updated_at) as most_recent, m
-		MATCH (s:VulnerabilityScan{updated_at: most_recent})-[:DETECTED]->(c:Vulnerability)
+		WITH distinct m, max(s.updated_at) as most_recent
+		MATCH (m) <-[:SCANNED]- (s:VulnerabilityScan{updated_at: most_recent})-[:DETECTED]->(c:Vulnerability)
 		WITH m, count(distinct c) as num_cve
 		SET m.num_cve = num_cve`, map[string]interface{}{}); err != nil {
 		return err
@@ -97,8 +97,8 @@ func computeThreatGraph(session neo4j.Session) error {
 
 	if _, err = tx.Run(`
 		MATCH (s:SecretScan) -[:SCANNED]-> (m)
-		WITH max(s.updated_at) as most_recent, m
-		MATCH (s:SecretScan {updated_at: most_recent})-[:DETECTED]->(c:Secret)
+		WITH distinct m, max(s.updated_at) as most_recent
+		MATCH (m) <-[:SCANNED]- (s:SecretScan{updated_at: most_recent})-[:DETECTED]->(c:Secret)
 		WITH m, count(distinct c) as num_secrets
 		SET m.num_secrets = num_secrets`, map[string]interface{}{}); err != nil {
 		return err
@@ -106,8 +106,8 @@ func computeThreatGraph(session neo4j.Session) error {
 
 	if _, err = tx.Run(`
 		MATCH (s:MalwareScan) -[:SCANNED]-> (m)
-		WITH max(s.updated_at) as most_recent, m
-		MATCH (s:MalwareScan {updated_at: most_recent})-[:DETECTED]->(c:Malware)
+		WITH distinct m, max(s.updated_at) as most_recent
+		MATCH (m) <-[:SCANNED]- (s:MalwareScan{updated_at: most_recent})-[:DETECTED]->(c:Malware)
 		WITH m, count(distinct c) as num_malware
 		SET m.num_malware = num_malware`, map[string]interface{}{}); err != nil {
 		return err
@@ -115,8 +115,8 @@ func computeThreatGraph(session neo4j.Session) error {
 
 	if _, err = tx.Run(`
 		MATCH (s:ComplianceScan) -[:SCANNED]-> (m)
-		WITH max(s.updated_at) as most_recent, m
-		MATCH (s:ComplianceScan {updated_at: most_recent})-[:DETECTED]->(c:Compliance)
+		WITH distinct m, max(s.updated_at) as most_recent
+		MATCH (m) <-[:SCANNED]- (s:ComplianceScan{updated_at: most_recent})-[:DETECTED]->(c:Compliance)
 		WITH m, count(distinct c) as num_compliance
 		SET m.num_compliance = num_compliance`, map[string]interface{}{}); err != nil {
 		return err
