@@ -16,7 +16,6 @@ import { ApiDocsBadRequestResponse, ModelContainerImageWithTags } from '@/api/ge
 import { ModelSummary } from '@/api/generated/models/ModelSummary';
 import { DFLink } from '@/components/DFLink';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
-import { startVulnerabilityScanAction } from '@/features/registries/actions/startScan';
 import { RegistryImagesTable } from '@/features/registries/components/RegistryImagesTable';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -317,6 +316,5 @@ const RegistryImages = () => {
 
 export const module = {
   loader,
-  action: startVulnerabilityScanAction,
   element: <RegistryImages />,
 };
