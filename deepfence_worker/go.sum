@@ -341,8 +341,8 @@ github.com/deepfence/SecretScanner v1.2.1-0.20230214033423-8a950b2b3f38 h1:lHVfx
 github.com/deepfence/SecretScanner v1.2.1-0.20230214033423-8a950b2b3f38/go.mod h1:4jjUsmJVc+rnGRyBzCTVkAzgVJ/rV0xNvP0L2+U7eYc=
 github.com/deepfence/YaraHunter v0.0.0-20230224113232-4d957879f501 h1:fLO6l5BJzXlokDbdwBDBo9l+QpGAFpG1pxXmaR7ilwQ=
 github.com/deepfence/YaraHunter v0.0.0-20230224113232-4d957879f501/go.mod h1:/8OcLJU0WnWZ2dBDIzKO4nrhlX3MMoT+kvwCrUwk3ws=
-github.com/deepfence/package-scanner v1.2.4-0.20230228135144-66bf717b2741 h1:iTbTqFIRIJ/XIFfBuDZITN+t00yODj9YmSJcMPig7dk=
-github.com/deepfence/package-scanner v1.2.4-0.20230228135144-66bf717b2741/go.mod h1:gq334piyC5+zASyBmUliS+lG3wHzvPLU8nzkqyNYR0Y=
+github.com/deepfence/package-scanner v1.2.4-0.20230310105052-bb17f6b37380 h1:BSM9BTp25GEDo+0WwxHArMECA2p7O7XwpnBYoJm3bJY=
+github.com/deepfence/package-scanner v1.2.4-0.20230310105052-bb17f6b37380/go.mod h1:+renn/4ySjuXlV94mfGof0RHdlKOM/WWPwQBM5kQ0N8=
 github.com/deepfence/vessel v0.9.2 h1:j7Q3BayywHFA6IUvuvnZ+6QiJHY5ElWAcSaylvQ6vOQ=
 github.com/deepfence/vessel v0.9.2/go.mod h1:Ifxpwywfi7dhn5NdWc4AdwVteG/kmvkGD+avxeXYvcI=
 github.com/denverdino/aliyungo v0.0.0-20190125010748-a747050bb1ba/go.mod h1:dV8lFg6daOBZbT6/BDGIz6Y3WFGn8juu6G+CQ6LHtl0=
@@ -527,8 +527,9 @@ github.com/golang/protobuf v1.4.2/go.mod h1:oDoupMAO8OvCJWAcko0GGGIgR6R6ocIYbsSw
 github.com/golang/protobuf v1.4.3/go.mod h1:oDoupMAO8OvCJWAcko0GGGIgR6R6ocIYbsSw735rRwI=
 github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaSAoJOfIk=
 github.com/golang/protobuf v1.5.1/go.mod h1:DopwsBzvsk0Fs44TXzsVbJyPhcCPeIwnvohx4u74HPM=
-github.com/golang/protobuf v1.5.2 h1:ROPKBNFfQgOUMifHyP+KYbvpjbdoFNs+aK7DXlji0Tw=
 github.com/golang/protobuf v1.5.2/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiuN0vRsmY=
+github.com/golang/protobuf v1.5.3 h1:KhyjKVUg7Usr/dYsdSqoFveMYd5ko72D+zANwlG1mmg=
+github.com/golang/protobuf v1.5.3/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiuN0vRsmY=
 github.com/golang/snappy v0.0.2/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/golang/snappy v0.0.3/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/golang/snappy v0.0.4 h1:yAGX7huGHXlcLOEtBnF4w7FQwA26wojNCwOYAEhLjQM=
@@ -1754,8 +1755,8 @@ google.golang.org/protobuf v1.25.0/go.mod h1:9JNX74DMeImyA3h4bdi1ymwjUzf21/xIlba
 google.golang.org/protobuf v1.26.0-rc.1/go.mod h1:jlhhOSvTdKEhbULTjvd4ARK9grFBp09yW+WbY/TyQbw=
 google.golang.org/protobuf v1.26.0/go.mod h1:9q0QmTI4eRPtz6boOQmLYwt+qCgq0jsYwAQnmE0givc=
 google.golang.org/protobuf v1.27.1/go.mod h1:9q0QmTI4eRPtz6boOQmLYwt+qCgq0jsYwAQnmE0givc=
-google.golang.org/protobuf v1.28.1 h1:d0NfwRgPtno5B1Wa6L2DAG+KivqkdutMf1UhdNx175w=
-google.golang.org/protobuf v1.28.1/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
+google.golang.org/protobuf v1.29.0 h1:44S3JjaKmLEE4YIkjzexaP+NzZsudE3Zin5Njn/pYX0=
+google.golang.org/protobuf v1.29.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
 gopkg.in/airbrake/gobrake.v2 v2.0.9/go.mod h1:/h5ZAUhDkGaJfjzjKLSjv6zCL6O0LLBxU4K+aSYdM/U=
 gopkg.in/alecthomas/kingpin.v2 v2.2.6/go.mod h1:FMv+mEhP44yOT+4EoQTLFTRgOQ1FBLkstjWtayDeSgw=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=

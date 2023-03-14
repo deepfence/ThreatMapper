@@ -104,8 +104,16 @@ export function getCloudComplianceApiClient() {
 export function getRegistriesApiClient() {
   const registriesApi = new RegistryApi(configuration);
   return {
+    getRegistriesSummary: registriesApi.getSummaryAll.bind(registriesApi),
+    getRegistrySummary: registriesApi.getRegistrySummary.bind(registriesApi),
+    getRegistrySummaryByType: registriesApi.getSummaryByType.bind(registriesApi),
     listRegistries: registriesApi.listRegistry.bind(registriesApi),
     addRegistry: registriesApi.addRegistry.bind(registriesApi),
+    deleteRegistry: registriesApi.deleteRegistry.bind(registriesApi),
+    listImages: registriesApi.listImages.bind(registriesApi),
+    countImages: registriesApi.countImages.bind(registriesApi),
+    countImageTags: registriesApi.countImageTags.bind(registriesApi),
+    listImageTags: registriesApi.listImageTags.bind(registriesApi),
   };
 }
 

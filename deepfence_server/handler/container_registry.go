@@ -284,13 +284,12 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
-	var req model.RegistryDeleteReq
-	// id := r.Context().Value("registryId").(string)
 	id := chi.URLParam(r, "registry_id")
-	log.Info().Msgf("IDssss: %v", id)
-	x, _ := strconv.ParseInt(id, 10, 64)
-	req = model.RegistryDeleteReq{
-		RegistryId: int32(x),
+	x, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to parse int")
+		respondError(err, w)
+		return
 	}
 
 	ctx := directory.NewGlobalContext()
@@ -301,7 +300,7 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Info().Msgf("ID: %v", id)
-	err = req.DeleteRegistry(ctx, pgClient)
+	err = model.DeleteRegistry(ctx, pgClient, int32(x))
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(&InternalServerError{err}, w)
@@ -313,10 +312,21 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ListImages(w http.ResponseWriter, r *http.Request) {
-	registryId := chi.URLParam(r, "registry_id")
-	rId, err := strconv.ParseInt(registryId, 10, 32)
+	var req model.RegistryImagesReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		log.Error().Msgf("failed to parse registry id %v", registryId)
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+	err = h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+
+	rId, err := strconv.ParseInt(req.RegistryId, 10, 32)
+	if err != nil {
+		log.Error().Msgf("failed to parse registry id %v", req.RegistryId)
 		respondError(&BadDecoding{err}, w)
 	}
 
@@ -332,7 +342,7 @@ func (h *Handler) ListImages(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 	}
 
-	images, err := model.ListImages(r.Context(), int32(rId))
+	images, err := model.ListImages(r.Context(), int32(rId), req.Window)
 	if err != nil {
 		respondError(err, w)
 	}
@@ -342,13 +352,66 @@ func (h *Handler) ListImages(w http.ResponseWriter, r *http.Request) {
 	httpext.JSON(w, http.StatusOK, images)
 }
 
-func (h *Handler) ListImageTags(w http.ResponseWriter, r *http.Request) {
-	registryId := chi.URLParam(r, "registry_id")
-	imageName := chi.URLParam(r, "image_name")
-
-	rId, err := strconv.ParseInt(registryId, 10, 32)
+func (h *Handler) CountImages(w http.ResponseWriter, r *http.Request) {
+	var req model.RegistryImagesReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
-		log.Error().Msgf("failed to parse registry id %v", registryId)
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+	err = h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+
+	rId, err := strconv.ParseInt(req.RegistryId, 10, 32)
+	if err != nil {
+		log.Error().Msgf("failed to parse registry id %v", req.RegistryId)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	pgClient, err := directory.PostgresClient(directory.WithGlobalContext(r.Context()))
+	if err != nil {
+		log.Error().Msgf("failed get postgres client %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	_, err = pgClient.GetContainerRegistrySafe(r.Context(), int32(rId))
+	if err != nil {
+		log.Error().Msgf("failed get registry %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	images, err := model.ListImages(r.Context(), int32(rId), req.Window)
+	if err != nil {
+		respondError(err, w)
+	}
+
+	log.Info().Msgf("get images for registry id %d found %d images", rId, len(images))
+
+	httpext.JSON(w, http.StatusOK, model.RegistryCountResp{
+		Count: len(images),
+	})
+}
+
+func (h *Handler) ListImageTags(w http.ResponseWriter, r *http.Request) {
+
+	var req model.RegistryImageTagsReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+	err = h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+
+	rId, err := strconv.ParseInt(req.RegistryId, 10, 32)
+	if err != nil {
+		log.Error().Msgf("failed to parse registry id %v", req.RegistryId)
 		respondError(&BadDecoding{err}, w)
 	}
 
@@ -365,15 +428,61 @@ func (h *Handler) ListImageTags(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 	}
 
-	images, err := model.ListImageTags(r.Context(), int32(rId), imageName)
+	images, err := model.ListImageTags(r.Context(), int32(rId), req.ImageName, req.Window)
 	if err != nil {
 		respondError(err, w)
 	}
 
 	log.Info().Msgf("get tags for image %s from registry id %d found %d images",
-		imageName, rId, len(images))
+		req.ImageName, rId, len(images))
 
 	httpext.JSON(w, http.StatusOK, images)
+}
+
+func (h *Handler) CountImageTags(w http.ResponseWriter, r *http.Request) {
+
+	var req model.RegistryImageTagsReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+	err = h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+
+	rId, err := strconv.ParseInt(req.RegistryId, 10, 32)
+	if err != nil {
+		log.Error().Msgf("failed to parse registry id %v", req.RegistryId)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	// check if exists
+	pgClient, err := directory.PostgresClient(directory.WithGlobalContext(r.Context()))
+	if err != nil {
+		log.Error().Msgf("failed get postgres client %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	_, err = pgClient.GetContainerRegistrySafe(r.Context(), int32(rId))
+	if err != nil {
+		log.Error().Msgf("failed get registry %v", err)
+		respondError(&BadDecoding{err}, w)
+	}
+
+	imageTags, err := model.ListImageTags(r.Context(), int32(rId), req.ImageName, req.Window)
+	if err != nil {
+		respondError(err, w)
+	}
+
+	log.Info().Msgf("get tags count for image %s from registry id %d found %d images",
+		req.ImageName, rId, len(imageTags))
+
+	httpext.JSON(w, http.StatusOK, model.RegistryCountResp{
+		Count: len(imageTags),
+	})
 }
 
 func getIntPointer(val int32) *int32 {
@@ -382,12 +491,20 @@ func getIntPointer(val int32) *int32 {
 
 func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 
-	counts := map[string]int{}
+	counts := model.Summary{}
 
-	registryId := chi.URLParam(r, "registry_id")
-	rId, err := strconv.ParseInt(registryId, 10, 32)
+	req := model.RegistryIDPathReq{
+		RegistryId: chi.URLParam(r, "registry_id"),
+	}
+	err := h.Validator.Struct(req)
 	if err != nil {
-		log.Error().Msgf("failed to parse registry id %v", registryId)
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+
+	rId, err := strconv.ParseInt(req.RegistryId, 10, 32)
+	if err != nil {
+		log.Error().Msgf("failed to parse registry id %v", req.RegistryId)
 		respondError(&BadDecoding{err}, w)
 	}
 
@@ -405,7 +522,7 @@ func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// count registry resource
-	counts, err = model.RegistrySummary(r.Context(), getIntPointer(int32(rId)))
+	counts, err = model.RegistrySummary(r.Context(), getIntPointer(int32(rId)), nil)
 	if err != nil {
 		respondError(err, w)
 	}
@@ -415,12 +532,36 @@ func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 	httpext.JSON(w, http.StatusOK, counts)
 }
 
-func (h *Handler) AllRegistriesSummary(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) SummaryByRegistryType(w http.ResponseWriter, r *http.Request) {
 
-	counts := map[string]int{}
+	counts := model.Summary{}
+
+	req := model.RegistryTypeReq{
+		RegistryType: chi.URLParam(r, "registry_type"),
+	}
+	err := h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
 
 	// count registry resource
-	counts, err := model.RegistrySummary(r.Context(), nil)
+	counts, err = model.RegistrySummary(r.Context(), nil, &req.RegistryType)
+	if err != nil {
+		respondError(err, w)
+	}
+
+	log.Info().Msgf("registries %s summary %+v", req.RegistryType, counts)
+
+	httpext.JSON(w, http.StatusOK, counts)
+}
+
+func (h *Handler) Summary(w http.ResponseWriter, r *http.Request) {
+
+	counts := model.RegistrySummaryAllResp{}
+
+	// count registry resource
+	counts, err := model.RegistrySummaryAll(r.Context())
 	if err != nil {
 		respondError(err, w)
 	}

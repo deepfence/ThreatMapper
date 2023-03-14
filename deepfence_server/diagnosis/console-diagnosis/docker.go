@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	dockerClient "github.com/docker/docker/client"
@@ -97,7 +98,7 @@ func (d *DockerConsoleDiagnosisHandler) addContainerLogs(ctx context.Context, co
 	if err != nil {
 		return err
 	}
-	if _, err := zipFileWriter.Write(logBytes); err != nil {
+	if _, err := zipFileWriter.Write(utils.StripAnsi(logBytes)); err != nil {
 		return err
 	}
 	if strings.Contains(containerName, "router") {
@@ -130,6 +131,12 @@ func (d *DockerConsoleDiagnosisHandler) CopyFromContainer(ctx context.Context, c
 	if err != nil {
 		return err
 	}
+
+	_, err = zipWriter.Create(containerName + "/")
+	if err != nil {
+		return err
+	}
+
 	tr := tar.NewReader(tarStream)
 	for {
 		hdr, err := tr.Next()
@@ -139,20 +146,24 @@ func (d *DockerConsoleDiagnosisHandler) CopyFromContainer(ctx context.Context, c
 		if err != nil {
 			return err
 		}
+		if hdr.FileInfo().IsDir() {
+			_, err = zipWriter.Create(containerName + "/" + hdr.Name + "/")
+			if err != nil {
+				return err
+			}
+			continue
+		}
+
 		logBytes, err := io.ReadAll(tr)
 		if err != nil {
 			return err
 		}
-		if hdr.FileInfo().IsDir() {
-			hdr.Name = containerName
-		} else {
-			hdr.Name = containerName + "/" + hdr.Name
-		}
-		zipFileWriter, err := zipWriter.Create(hdr.Name)
+
+		zipFileWriter, err := zipWriter.Create(containerName + "/" + hdr.Name)
 		if err != nil {
 			return err
 		}
-		if _, err := zipFileWriter.Write(logBytes); err != nil {
+		if _, err := zipFileWriter.Write(utils.StripAnsi(logBytes)); err != nil {
 			return err
 		}
 	}

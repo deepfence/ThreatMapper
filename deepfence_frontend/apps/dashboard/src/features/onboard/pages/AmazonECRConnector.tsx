@@ -1,11 +1,11 @@
 import { Button } from 'ui-components';
 
+import { AmazonECRConnectorForm } from '@/components/registries-connector/AmazonECRConnectorForm';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
-import { AmazonECRConnectorForm } from '@/features/onboard/components/connectors/registries/AmazonECRConnectionForm';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const AmazonECRConnector = () => {
-  const { goBack } = usePageNavigation();
+  const { goBack, navigate } = usePageNavigation();
   return (
     <div className="w-full">
       <ConnectorHeader
@@ -13,9 +13,19 @@ export const AmazonECRConnector = () => {
         description="Deploy all modules for Deepfence Compliance Scanner for your registry"
       />
       <AmazonECRConnectorForm />
-      <div className="flex mt-16">
-        <Button onClick={goBack} size="xs">
+      <div className="flex">
+        <Button onClick={goBack} size="xs" color="default">
           Go Back
+        </Button>
+        <Button
+          size="xs"
+          color="primary"
+          className="ml-auto"
+          onClick={() => {
+            navigate('/onboard/connectors/my-connectors');
+          }}
+        >
+          Go to connectors
         </Button>
       </div>
     </div>

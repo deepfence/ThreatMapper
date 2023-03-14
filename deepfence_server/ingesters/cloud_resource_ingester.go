@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -102,58 +103,68 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 	}
 	defer tx.Close()
 
-	fmt.Println("reached here")
+	// Add everything
+	_, err = tx.Run(`
+		UNWIND $batch as row
+		MERGE (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID), resource_type:row.resource_id})
+		SET n+=row`,
+		map[string]interface{}{
+			"batch": ResourceToMaps(cs),
+		},
+	)
 
-	if _, err = tx.Run("UNWIND $batch as row MERGE (m:CloudResource{node_id:coalesce(row.arn,apoc.text.random(10, \"A-Z0-9.$\")),"+
-		" resource_type:row.resource_id}) "+
-		" SET m+=row WITH row UNWIND apoc.convert.fromJsonList(row.security_groups) as group"+
-		" WITH group, row WHERE group IS NOT NULL AND  row.resource_id IN ['aws_ec2_instance'] AND group.GroupId"+
-		" IS NOT NULL AND row.arn IS NOT NULL MERGE (n:SecurityGroup{node_id:group.GroupId, name:group.GroupName})"+
-		" MERGE (m:CloudResource{node_id:row.arn, resource_type:row.resource_id})"+
-		" MERGE (n)-[:SECURED]->(m)", map[string]interface{}{"batch": ResourceToMaps(cs)}); err != nil {
-		fmt.Println("reached here new err", err)
+	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (m:CloudResource{})  WITH  m, apoc.convert.fromJsonList(m.security_groups) "+
-		"as groups UNWIND groups as group MATCH(n:SecurityGroup{}) "+
-		"WHERE group IS NOT NULL AND  m.resource_id IN "+
-		"['aws_ec2_application_load_balancer','aws_ec2_classic_load_balancer', "+
-		"'aws_ec2_network_load_balancer'] AND m.arn IS NOT NULL MERGE (k:SecurityGroup{node_id:group})"+
-		" MERGE (k)-[:SECURED]->(m)", map[string]interface{}{}); err != nil {
+	// Handle AWS EC2 & LBs
+	if _, err = tx.Run(`
+		MATCH (n:CloudResource)
+		WHERE n.arn IS NOT NULL
+		AND n.security_groups IS NOT NULL
+		AND n.resource_id IN ['aws_ec2_instance', 'aws_ec2_application_load_balancer','aws_ec2_classic_load_balancer', 'aws_ec2_network_load_balancer']
+		WITH n, apoc.convert.fromJsonList(n.security_groups) as groups
+		UNWIND groups as group
+		WITH group, CASE WHEN apoc.meta.type(group) = "STRING" THEN group ELSE group.GroupName END as name, CASE WHEN apoc.meta.type(group) = "STRING" THEN group ELSE group.GroupId END as node_id
+		MERGE (m:SecurityGroup{node_id:node_id})
+		MERGE (m)-[:SECURED]->(n)
+		SET m.name = name`, map[string]interface{}{}); err != nil {
+		log.Error().Msgf("error: %+v", err)
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (m:CloudResource{ resource_type:'aws_lambda_function'})"+
-		" WITH apoc.convert.fromJsonList(m.vpc_security_group_ids) as sec_group_ids,m"+
-		" UNWIND sec_group_ids as group     MERGE (n:SecurityGroup{node_id:group})"+
-		"  MERGE (n)-[:SECURED]->(m)", map[string]interface{}{}); err != nil {
+	// Handle AWS Lambda
+	if _, err = tx.Run(`
+		MATCH (n:CloudResource{ resource_type:'aws_lambda_function'})
+		WITH apoc.convert.fromJsonList(n.vpc_security_group_ids) as sec_group_ids,n
+		UNWIND sec_group_ids as group
+		MERGE (m:SecurityGroup{node_id:group})
+		MERGE (m)-[:SECURED]->(n)`, map[string]interface{}{}); err != nil {
+		log.Error().Msgf("error: %+v", err)
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (m:CloudResource{ resource_type:'aws_ecs_service'})"+
-		" WITH apoc.convert.fromJsonMap(m.network_configuration) as map,m UNWIND"+
-		"  map.AwsvpcConfiguration.SecurityGroups as secgroup"+
-		"    MERGE (n:SecurityGroup{node_id:secgroup})"+
-		"  MERGE (n)-[:SECURED]->(m)", map[string]interface{}{}); err != nil {
+	// Handle AWS ECS
+	if _, err = tx.Run(`
+		MATCH (n:CloudResource)
+		WHERE n.arn IS NOT NULL
+		AND n.resource_type IN ['aws_ecs_service']
+		WITH apoc.convert.fromJsonMap(n.network_configuration) as map,n
+		UNWIND map.AwsvpcConfiguration.SecurityGroups as secgroup
+		MERGE (m:SecurityGroup{node_id:secgroup})
+		MERGE (m)-[:SECURED]->(n)`, map[string]interface{}{}); err != nil {
+		log.Error().Msgf("error: %+v", err)
 		return err
 	}
 
-	if _, err = tx.Run("MATCH (t:CloudResource{})  MATCH (k:Node{}) "+
-		"where k.node_id= t.account_id MERGE (k)-[:OWNS]->(t)", map[string]interface{}{}); err != nil {
-		fmt.Println("reached here err 3", err)
-		return err
-	}
-
-	if _, err = tx.Run("MATCH p=(s)-[r:OWNS]->(k:CloudResource) SET k.cloud_provider=s.cloud_provider", map[string]interface{}{}); err != nil {
-		fmt.Println("reached here err 3", err)
-		return err
-	}
-
-	if _, err = tx.Run("match (n:Node) WITH apoc.convert.fromJsonMap(n.cloud_metadata) as map,"+
-		" n WHERE map.label = 'AWS' WITH map.id as id, n match (m:CloudResource)"+
-		" where m.resource_type = 'aws_ec2_instance' and m.instance_id = id"+
-		" MERGE (n) -[:IS]-> (m)", map[string]interface{}{}); err != nil {
+	if _, err = tx.Run(`
+		MATCH (n:CloudResource)
+		MATCH (m:Node{node_id: n.account_id})
+		SET n.cloud_provider = m.cloud_provider
+		WITH n, m
+		MERGE (m)-[:OWNS]->(n)`, map[string]interface{}{}); err != nil {
+		log.Error().Msgf("error: %+v", err)
 		return err
 	}
 
@@ -176,19 +187,50 @@ func (tc *CloudComplianceIngester) LinkNodesWithCloudResources(ctx context.Conte
 	}
 	defer tx.Close()
 
-	if _, err = tx.Run("match (n) -[r:IS]-> (m) delete r", map[string]interface{}{}); err != nil {
+	if _, err = tx.Run(`
+		MATCH (n:Node) -[r:IS]-> (m:CloudResource)
+		DELETE r`,
+		map[string]interface{}{}); err != nil {
+		log.Error().Msgf("error: %+v", err)
 		return err
 	}
 
-	if _, err = tx.Run("match (n:Node) WITH apoc.convert.fromJsonMap(n.cloud_metadata) as map, n WHERE map.label = 'AWS' WITH map.id as id, n match (m:CloudResource) where m.resource_type = 'aws_ec2_instance' and m.instance_id = id MERGE (n) -[:IS]-> (m)", map[string]interface{}{}); err != nil {
+	if _, err = tx.Run(`
+		MATCH (n:Node)
+		WITH apoc.convert.fromJsonMap(n.cloud_metadata) as map, n
+		WHERE map.label = 'AWS'
+		WITH map.id as id, n
+		MATCH (m:CloudResource)
+		WHERE m.resource_type = 'aws_ec2_instance'
+		AND m.instance_id = id
+		MERGE (n) -[:IS]-> (m)`, map[string]interface{}{}); err != nil {
+		log.Error().Msgf("error: %+v", err)
 		return err
 	}
 
-	if _, err = tx.Run("match (n:Node) WITH apoc.convert.fromJsonMap(n.cloud_metadata) as map, n WHERE map.label = 'GCP' WITH map.hostname as hostname, n match (m:CloudResource) where m.resource_type = 'gcp_compute_instance' and m.hostname = hostname MERGE (n) -[:IS]-> (m)", map[string]interface{}{}); err != nil {
+	if _, err = tx.Run(`
+		MATCH (n:Node)
+		WITH apoc.convert.fromJsonMap(n.cloud_metadata) as map, n
+		WHERE map.label = 'GCP'
+		WITH map.hostname as hostname, n
+		MATCH (m:CloudResource)
+		WHERE m.resource_type = 'gcp_compute_instance'
+		AND m.hostname = hostname
+		MERGE (n) -[:IS]-> (m)`, map[string]interface{}{}); err != nil {
+		log.Error().Msgf("error: %+v", err)
 		return err
 	}
 
-	if _, err = tx.Run("match (n:Node) WITH apoc.convert.fromJsonMap(n.cloud_metadata) as map, n WHERE map.label = 'AZURE' WITH map.vmId as vm, n match (m:CloudResource) where m.resource_type = 'azure_compute_virtual_machine' and m.arn = vm MERGE (n) -[:IS]-> (m)", map[string]interface{}{}); err != nil {
+	if _, err = tx.Run(`
+		MATCH (n:Node)
+		WITH apoc.convert.fromJsonMap(n.cloud_metadata) as map, n
+		WHERE map.label = 'AZURE'
+		WITH map.vmId as vm, n
+		MATCH (m:CloudResource)
+		WHERE m.resource_type = 'azure_compute_virtual_machine'
+		AND m.arn = vm
+		MERGE (n) -[:IS]-> (m)`, map[string]interface{}{}); err != nil {
+		log.Error().Msgf("error: %+v", err)
 		return err
 	}
 

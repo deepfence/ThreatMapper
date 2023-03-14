@@ -145,7 +145,7 @@ func (k *KubernetesConsoleDiagnosisHandler) addPodLogs(ctx context.Context, pod 
 	if err != nil {
 		return err
 	}
-	if _, err := zipFileWriter.Write(logBytes); err != nil {
+	if _, err := zipFileWriter.Write(utils.StripAnsi(logBytes)); err != nil {
 		return err
 	}
 
@@ -185,7 +185,27 @@ func (k *KubernetesConsoleDiagnosisHandler) CopyFromPod(pod *apiv1.Pod, srcPath 
 				// here number 3 has been used to cut some nested path values in tar writer
 				// like if path is /tmp/some1/some2/some3 then dir structure in tar will be /some2/some3
 				fileName := strings.Join(strings.Split(filepath.ToSlash(file), "/")[3:], "/")
+				if fileName == "" {
+					return nil
+				}
 
+				// create directories
+				var tmpFilePath string
+				dirs := strings.Split(fileName, "/")
+				if len(dirs) > 1 {
+					dirs = dirs[:len(dirs)-1]
+					for _, dir := range dirs {
+						tmpFilePath += dir + "/"
+						if tmpFilePath != "/" {
+							_, err = zipWriter.Create(tmpFilePath)
+							if err != nil {
+								return err
+							}
+						}
+					}
+				}
+
+				// create file
 				zipFileWriter, err := zipWriter.Create(fileName)
 				if err != nil {
 					return err

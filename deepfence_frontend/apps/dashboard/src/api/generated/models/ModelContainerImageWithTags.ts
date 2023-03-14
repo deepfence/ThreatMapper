@@ -21,10 +21,10 @@ import { exists, mapValues } from '../runtime';
 export interface ModelContainerImageWithTags {
     /**
      * 
-     * @type {Date}
+     * @type {number}
      * @memberof ModelContainerImageWithTags
      */
-    created?: Date;
+    created?: number;
     /**
      * 
      * @type {string}
@@ -51,10 +51,10 @@ export interface ModelContainerImageWithTags {
     tags?: Array<string> | null;
     /**
      * 
-     * @type {Date}
+     * @type {number}
      * @memberof ModelContainerImageWithTags
      */
-    updated?: Date;
+    updated?: number;
 }
 
 /**
@@ -76,12 +76,12 @@ export function ModelContainerImageWithTagsFromJSONTyped(json: any, ignoreDiscri
     }
     return {
         
-        'created': !exists(json, 'created') ? undefined : (new Date(json['created'])),
+        'created': !exists(json, 'created') ? undefined : json['created'],
         'id': !exists(json, 'id') ? undefined : json['id'],
         'name': !exists(json, 'name') ? undefined : json['name'],
         'size': !exists(json, 'size') ? undefined : json['size'],
         'tags': !exists(json, 'tags') ? undefined : json['tags'],
-        'updated': !exists(json, 'updated') ? undefined : (new Date(json['updated'])),
+        'updated': !exists(json, 'updated') ? undefined : json['updated'],
     };
 }
 
@@ -94,12 +94,12 @@ export function ModelContainerImageWithTagsToJSON(value?: ModelContainerImageWit
     }
     return {
         
-        'created': value.created === undefined ? undefined : (value.created.toISOString()),
+        'created': value.created,
         'id': value.id,
         'name': value.name,
         'size': value.size,
         'tags': value.tags,
-        'updated': value.updated === undefined ? undefined : (value.updated.toISOString()),
+        'updated': value.updated,
     };
 }
 

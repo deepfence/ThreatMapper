@@ -21,6 +21,7 @@ const (
 // ReportPublisher publishes reports, probably to a remote collector.
 type ReportPublisher interface {
 	Publish(r report.Report) error
+	PublishInterval() int32
 }
 
 // Probe sits there, generating and publishing reports.
@@ -129,7 +130,7 @@ func (p *Probe) Stop() error {
 // bypassing the spy tick
 func (p *Probe) Publish(rpt report.Report) {
 	rpt = p.tag(rpt)
-	p.shortcutReports <- rpt
+	p.spiedReports <- rpt
 }
 
 func (p *Probe) spyLoop() {
@@ -239,14 +240,13 @@ ForLoop:
 func (p *Probe) publishLoop() {
 	defer p.done.Done()
 	startTime := mtime.Now()
-	pubTick := time.Tick(p.publishInterval)
 	publishCount := 0
 	var lastFullReport report.Report
 
 	for {
 		var err error
 		select {
-		case <-pubTick:
+		case <-time.After(time.Second * time.Duration(p.publisher.PublishInterval())):
 			rpt, count := p.drainAndSanitise(report.MakeReport(), p.spiedReports)
 			if count == 0 {
 				continue // No data has been collected - don't bother publishing.
@@ -269,9 +269,9 @@ func (p *Probe) publishLoop() {
 				publishCount = 0
 			}
 
-		case rpt := <-p.shortcutReports:
-			rpt, _ = p.drainAndSanitise(rpt, p.shortcutReports)
-			err = p.publisher.Publish(rpt)
+		//case rpt := <-p.shortcutReports:
+		//	rpt, _ = p.drainAndSanitise(rpt, p.shortcutReports)
+		//	err = p.publisher.Publish(rpt)
 
 		case <-p.quit:
 			return

@@ -111,7 +111,7 @@ func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, get
 
 	graph, err := getGraph(ctx, filters, reporter)
 	if err != nil {
-		log.Error().Msgf("Error Adding report: %v", err)
+		log.Error().Msgf("Error getGraph: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
@@ -252,6 +252,17 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		}
 	}
 
+	for cp, crs := range graph.CloudServices {
+		for _, cr_stub := range crs {
+			cr := string(cr_stub.ID)
+			nodes[cr] = detailed.NodeSummary{
+				ImmediateParentID: string(cp),
+				BasicNodeSummary:  nodeStubToSummary(cr_stub.NodeStub),
+				Type:              cr_stub.ResourceType,
+			}
+		}
+	}
+
 	nodes["in-the-internet"] = detailed.NodeSummary{
 		ImmediateParentID: "",
 		BasicNodeSummary: detailed.BasicNodeSummary{
@@ -266,15 +277,6 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		BasicNodeSummary: detailed.BasicNodeSummary{
 			ID:    "out-the-internet",
 			Label: "The Internet",
-		},
-		Type: "pseudo",
-	}
-
-	nodes["deepfence-console-cron"] = detailed.NodeSummary{
-		ImmediateParentID: "",
-		BasicNodeSummary: detailed.BasicNodeSummary{
-			ID:    "deepfence-console-cron",
-			Label: "Console",
 		},
 		Type: "pseudo",
 	}

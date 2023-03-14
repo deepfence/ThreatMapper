@@ -325,10 +325,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		if len(targets) > 0 {
 			log.Warnf("Dumping to stdout only: targets %v will be ignored", targets)
 		}
-		clients = new(struct {
-			report.StdoutPublisher
-			controls.DummyPipeClient
-		})
+		log.Fatal("Print on Stdout not supported")
 	} else {
 		var multiClients *appclient.OpenapiClient
 		for {

@@ -172,6 +172,8 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 
 	worker.AddNoPublisherHandler(utils.CleanUpPostgresqlTask, cronjobs.CleanUpPostgresDB)
 
+	worker.AddNoPublisherHandler(utils.CleanupDiagnosisLogs, cronjobs.CleanUpDiagnosisLogs)
+
 	worker.AddNoPublisherHandler(utils.CheckAgentUpgradeTask, cronjobs.CheckAgentUpgrade)
 
 	worker.AddNoPublisherHandler(utils.TriggerConsoleActionsTask, cronjobs.TriggerConsoleControls)
@@ -181,6 +183,8 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 	worker.AddNoPublisherHandler(utils.SecretScanTask, secretscan.NewSecretScanner(ingestC).StartSecretScan)
 
 	worker.AddNoPublisherHandler(utils.MalwareScanTask, malwarescan.NewMalwareScanner(ingestC).StartMalwareScan)
+
+	worker.AddNoPublisherHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
 
 	log.Info().Msg("Starting the consumer")
 	if err = worker.Run(context.Background()); err != nil {

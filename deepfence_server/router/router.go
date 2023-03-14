@@ -180,6 +180,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/containerimages", dfHandler.GetContainerImages)
 				r.Post("/pods", dfHandler.GetPods)
 				r.Post("/registryaccount", dfHandler.GetRegistryAccount)
+				r.Post("/cloud-resources", dfHandler.GetCloudResources)
 			})
 
 			r.Route("/search", func(r chi.Router) {
@@ -221,6 +222,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/kubernetes-cluster", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetKubernetesClusterControls))
 				r.Post("/agent-init", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetAgentInitControls))
 				r.Post("/agent-upgrade", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.ScheduleAgentUpgrade))
+				r.Post("/cloud-node", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetCloudNodeControls))
+				r.Post("/cloud-node/enable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.EnableCloudNodeControls))
+				r.Post("/cloud-node/disable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.DisableCloudNodeControls))
 			})
 
 			r.Route("/ingest", func(r chi.Router) {
@@ -310,12 +314,18 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Get("/", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListRegistry))
 				r.Post("/", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.AddRegistry))
 				r.Post("/gcr", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.AddGoogleContainerRegistry))
-				r.Get("/summary", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.AllRegistriesSummary))
+				r.Get("/{registry_type}/summary-by-type", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.SummaryByRegistryType))
+				r.Get("/summary", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.Summary))
 				r.Route("/{registry_id}", func(r chi.Router) {
 					r.Delete("/", dfHandler.AuthHandler(ResourceRegistry, PermissionDelete, dfHandler.DeleteRegistry))
-					r.Get("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImages))
-					r.Get("/images/{image_name}/tags", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImageTags))
 					r.Get("/summary", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.RegistrySummary))
+				})
+				r.Post("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImages))
+				r.Post("/tags", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImageTags))
+				// count api
+				r.Route("/count", func(r chi.Router) {
+					r.Post("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.CountImages))
+					r.Post("/tags", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.CountImageTags))
 				})
 			})
 

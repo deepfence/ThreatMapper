@@ -295,7 +295,6 @@ type Malware struct {
 	FileSevScore     int      `json:"FileSevScore" required:"true"`
 	FileSeverity     string   `json:"FileSeverity" required:"true"`
 	ImageLayerID     string   `json:"ImageLayerId" required:"true"`
-	Meta             []string `json:"Meta"`
 	NodeId           string   `json:"node_id" required:"true"`
 	RuleID           string   `json:"rule_id" required:"true"`
 	RuleName         string   `json:"rule_name" required:"true"`
