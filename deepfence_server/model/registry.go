@@ -284,6 +284,7 @@ func ListImages(ctx context.Context, registryId int32, fw FetchWindow) ([]Contai
 		node, err := toContainerImageWithTags(da.Props)
 		if err != nil {
 			log.Warn().Msgf("Missing neo4j entry: %s", err.Error())
+			continue
 		}
 
 		i, ok := ri[node.Name]
