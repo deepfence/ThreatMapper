@@ -190,7 +190,7 @@ const Registries = () => {
     {
       icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
       label: 'Amazon Elastic Container Registry',
-      path: 'registry-amazon-ecr',
+      path: 'ecr',
     },
     {
       icon: LogoAzureRegistry,
@@ -205,7 +205,7 @@ const Registries = () => {
     {
       icon: LogoGoogle,
       label: 'Docker Container Registry',
-      path: 'registry-docker',
+      path: 'docker_hub',
     },
     {
       icon: LogoAzureRegistry,

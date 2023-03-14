@@ -4,6 +4,7 @@ import { ErrorComponent } from '@/components/error/ErrorComponent';
 import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
 import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
+import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
 import { searchClustersApiLoader } from '@/features/common/data-component/searchClustersApiLoader';
 import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
@@ -25,6 +26,7 @@ import {
   OnboardLayout,
   rootOnboardLoader,
 } from '@/features/onboard/layouts/OnboardLayout';
+import { module as registriesConnector } from '@/features/onboard/pages//RegistriesConnector';
 import { AmazonECRConnector } from '@/features/onboard/pages/AmazonECRConnector';
 import { AWSConnector } from '@/features/onboard/pages/AWSConnector';
 import { AzureConnector } from '@/features/onboard/pages/AzureConnector';
@@ -34,7 +36,6 @@ import { module as complianceScanSummary } from '@/features/onboard/pages/Compli
 import { AddConnector } from '@/features/onboard/pages/connectors/AddConnectors';
 import { module as myConnectors } from '@/features/onboard/pages/connectors/MyConnectors';
 import { DockerConnector } from '@/features/onboard/pages/DockerConnector';
-import { module as dockerRegistryConnector } from '@/features/onboard/pages/DockerRegistryConnector';
 import { GCPConnector } from '@/features/onboard/pages/GCPConnector';
 import { K8sConnector } from '@/features/onboard/pages/K8sConnector';
 import { LinuxConnector } from '@/features/onboard/pages/LinuxConnector';
@@ -123,14 +124,9 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Connect Linux Machine' },
           },
           {
-            path: 'registry-amazon-ecr',
-            element: <AmazonECRConnector />,
-            meta: { title: 'Connect ECR Registry' },
-          },
-          {
-            path: 'registry-docker',
-            ...dockerRegistryConnector,
-            meta: { title: 'Docker Container Registry' },
+            path: ':registryType',
+            ...registriesConnector,
+            meta: { title: 'Registry Conector' },
           },
         ],
       },
@@ -383,6 +379,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'scan/malware',
         action: scanMalwareApiAction,
+      },
+      {
+        path: 'registries/add-connector',
+        action: registryConnectorActionApi,
       },
     ],
   },
