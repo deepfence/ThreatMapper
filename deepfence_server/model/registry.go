@@ -223,11 +223,18 @@ func ListImageStubs(ctx context.Context, registryId int32, filter reporters.Cont
 	}
 
 	for i := range records {
+		tags := []string{}
+		if records[i].Values[1] != nil {
+			arr := records[i].Values[1].([]interface{})
+			for j := range arr {
+				tags = append(tags, arr[j].(string))
+			}
+		}
 		images = append(images,
 			ImageStub{
 				ID:   records[i].Values[0].(string),
 				Name: records[i].Values[0].(string),
-				Tags: records[i].Values[1].([]string),
+				Tags: tags,
 			},
 		)
 	}
