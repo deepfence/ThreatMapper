@@ -268,6 +268,12 @@ func (n *Node) ToDataMap() map[string]string {
 		res["node_name"] = res["docker_image_name"] + ":" + res["docker_image_tag"]
 	case Pod:
 		res["node_name"] = res["kubernetes_name"] + " / " + res["kubernetes_namespace"] + " / " + res["kubernetes_cluster_name"]
+	case Process:
+		res["node_name"] = res["name"]
+	default:
+		if _, ok := res["node_name"]; !ok {
+			res["node_name"] = ""
+		}
 	}
 	return res
 }

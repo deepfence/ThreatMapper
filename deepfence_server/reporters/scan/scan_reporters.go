@@ -68,7 +68,7 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 	res, err := tx.Run(fmt.Sprintf(`
 		MATCH (m:%s) -[:SCANNED]-> (n)
 		WHERE m.node_id IN $scan_ids
-		RETURN m.node_id, m.status, n.node_id, labels(n) as node_type, m.updated_at`, scan_type),
+		RETURN m.node_id, m.status, n.node_id, n.node_name, labels(n) as node_type, m.updated_at`, scan_type),
 		map[string]interface{}{"scan_ids": scan_ids})
 	if err != nil {
 		return model.ScanStatusResp{}, err
@@ -85,8 +85,9 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 			ScanId:    rec.Values[0].(string),
 			Status:    rec.Values[1].(string),
 			NodeId:    rec.Values[2].(string),
-			NodeType:  Labels2NodeType(rec.Values[3].([]interface{})),
-			UpdatedAt: rec.Values[4].(int64),
+			NodeName:  rec.Values[3].(string),
+			NodeType:  Labels2NodeType(rec.Values[4].([]interface{})),
+			UpdatedAt: rec.Values[5].(int64),
 		}
 		statuses[rec.Values[0].(string)] = info
 	}
@@ -415,7 +416,7 @@ func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_ids [
 		query := `
 			MATCH (m:` + string(scan_type) + `) -[:SCANNED]-> (n:` + nodeType2Neo4jType(node_ids[i].NodeType) + `{node_id: $node_id})
 			` + statusQuery + `
-			RETURN m.node_id, m.status, m.updated_at, n.node_id, labels(n) as node_type
+			RETURN m.node_id, m.status, m.updated_at, n.node_id, n.node_name, labels(n) as node_type
 			ORDER BY m.updated_at ` + fw.FetchWindow2CypherQuery()
 		fmt.Printf("list query %v\n", query)
 		res, err := tx.Run(query,
@@ -435,7 +436,8 @@ func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_ids [
 				Status:    rec.Values[1].(string),
 				UpdatedAt: rec.Values[2].(int64),
 				NodeId:    rec.Values[3].(string),
-				NodeType:  Labels2NodeType(rec.Values[4].([]interface{})),
+				NodeName:  rec.Values[4].(string),
+				NodeType:  Labels2NodeType(rec.Values[5].([]interface{})),
 			}
 			scans_info = append(scans_info, tmp)
 		}
@@ -813,7 +815,7 @@ func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 
 	neo_res, err := tx.Run(`
 		MATCH (m:Bulk`+string(scan_type)+`{node_id:$scan_id}) -[:BATCH]-> (d:`+string(scan_type)+`) -[:SCANNED]-> (n)
-		RETURN d.node_id as scan_id, d.status as status, n.node_id as node_id, labels(n) as node_type, d.updated_at`,
+		RETURN d.node_id as scan_id, d.status as status, n.node_id as node_id, n.node_name, labels(n) as node_type, d.updated_at`,
 		map[string]interface{}{"scan_id": scan_id})
 	if err != nil {
 		return scan_ids, err
@@ -829,8 +831,9 @@ func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 			ScanId:    rec.Values[0].(string),
 			Status:    rec.Values[1].(string),
 			NodeId:    rec.Values[2].(string),
-			NodeType:  Labels2NodeType(rec.Values[3].([]interface{})),
-			UpdatedAt: rec.Values[4].(int64),
+			NodeName:  rec.Values[3].(string),
+			NodeType:  Labels2NodeType(rec.Values[4].([]interface{})),
+			UpdatedAt: rec.Values[5].(int64),
 		}
 		scan_ids.Statuses[rec.Values[0].(string)] = info
 	}
