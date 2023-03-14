@@ -1,28 +1,26 @@
 import { HiViewGridAdd } from 'react-icons/hi';
-import { Button, Card, Step, Stepper, TextInput, Typography } from 'ui-components';
+import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
 
-type DockerConnectionFormProps = {
-  errorMessage: string;
-};
-export const DockerConnectionForm = ({ errorMessage }: DockerConnectionFormProps) => {
+import { DFLink } from '@/components/DFLink';
+
+export const AzureCRConnectorForm = () => {
   return (
     <Stepper>
-      <Step indicator={<HiViewGridAdd />} title="Container Registry">
+      <Step indicator={<HiViewGridAdd />} title="Azure Registry Connection">
         <div className={`${Typography.size.sm} dark:text-gray-200`}>
-          Connect to your Docker Registry by{' '}
-          <a
+          Connect to your Google Azure Account. Find out more information by{' '}
+          <DFLink
             href={`https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage`}
             target="_blank"
             rel="noreferrer"
-            className="text-blue-600 dark:text-blue-500 mt-2"
           >
             reading our documentation
-          </a>
+          </DFLink>
           .
         </div>
       </Step>
-      <Step indicator="1" title="Enter Information">
-        <Card className="w-full relative p-5 mt-2 flex flex-col gap-y-4">
+      <Step indicator="1" title="Region Selection">
+        <Card className="w-full flex flex-col relative p-5 mt-2 gap-y-4">
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
             label="Registry Name"
@@ -33,11 +31,11 @@ export const DockerConnectionForm = ({ errorMessage }: DockerConnectionFormProps
           />
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
-            label="Namespace"
+            label="Registry URL"
             type={'text'}
             sizing="sm"
-            name="namespace"
-            placeholder="Namespace"
+            name="registryUrl"
+            placeholder="Registry URL"
           />
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
@@ -55,13 +53,6 @@ export const DockerConnectionForm = ({ errorMessage }: DockerConnectionFormProps
             name="password"
             placeholder="••••••••"
           />
-          <div className="flex items-center mt-6">
-            <p className="text-red-500 text-sm">{errorMessage}</p>
-
-            <Button color="primary" size="xs" className="ml-auto" type="submit">
-              Save and go to connectors
-            </Button>
-          </div>
         </Card>
       </Step>
     </Stepper>

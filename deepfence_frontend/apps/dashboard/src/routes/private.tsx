@@ -1,6 +1,9 @@
 import { Outlet } from 'react-router-dom';
 
 import { ErrorComponent } from '@/components/error/ErrorComponent';
+import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
+import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
+import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
 import { searchClustersApiLoader } from '@/features/common/data-component/searchClustersApiLoader';
 import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
@@ -42,7 +45,12 @@ import { module as secretScanConfigure } from '@/features/onboard/pages/SecretSc
 import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanSummary';
 import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
-import { Registries } from '@/features/registries/pages/Registries';
+import { module as registryConnectorLayout } from '@/features/registries/layouts/RegistryConnectorLayout';
+import { module as registries } from '@/features/registries/pages/Registries';
+import { module as registryAccounts } from '@/features/registries/pages/RegistryAccounts';
+import { module as registryAdd } from '@/features/registries/pages/RegistryAdd';
+import { module as registryImages } from '@/features/registries/pages/RegistryImages';
+import { module as registryImageTags } from '@/features/registries/pages/RegistryImageTags';
 import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
@@ -194,11 +202,39 @@ export const privateRoutes: CustomRouteObject[] = [
         element: <Dashboard />,
         meta: { title: 'Dashboard' },
       },
+      // registries
       {
         path: 'registries',
-        element: <Registries />,
+        ...registries,
         meta: { title: 'Registries' },
       },
+      {
+        path: 'registries/:account',
+        ...registryAccounts,
+        meta: { title: 'Registry Account' },
+      },
+      {
+        path: 'registries/add',
+        ...registryConnectorLayout,
+        children: [
+          {
+            path: ':account',
+            ...registryAdd,
+            meta: { title: 'Registry Add Account' },
+          },
+        ],
+      },
+      {
+        path: 'registries/images/:account/:accountId',
+        ...registryImages,
+        meta: { title: 'Registries Images' },
+      },
+      {
+        path: 'registries/images/:account/:accountId/:imageId',
+        ...registryImageTags,
+        meta: { title: 'Registries Image Tags' },
+      },
+      // integrations
       {
         path: 'integrations',
         ...integrations,
@@ -335,6 +371,18 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'search/clusters',
         loader: searchClustersApiLoader,
+      },
+      {
+        path: 'scan/vulnerability',
+        action: scanVulnerabilityApiAction,
+      },
+      {
+        path: 'scan/secret',
+        action: scanSecretApiAction,
+      },
+      {
+        path: 'scan/malware',
+        action: scanMalwareApiAction,
       },
     ],
   },

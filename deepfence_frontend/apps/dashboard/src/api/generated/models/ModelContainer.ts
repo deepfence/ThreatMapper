@@ -106,6 +106,12 @@ export interface ModelContainer {
     node_id: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    node_name: string;
+    /**
+     * 
      * @type {Array<ModelProcess>}
      * @memberof ModelContainer
      */
@@ -152,6 +158,7 @@ export function instanceOfModelContainer(value: object): boolean {
     isInstance = isInstance && "metadata" in value;
     isInstance = isInstance && "metrics" in value;
     isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "processes" in value;
     isInstance = isInstance && "secret_scan_status" in value;
     isInstance = isInstance && "secrets_count" in value;
@@ -182,6 +189,7 @@ export function ModelContainerFromJSONTyped(json: any, ignoreDiscriminator: bool
         'metadata': json['metadata'],
         'metrics': ModelComputeMetricsFromJSON(json['metrics']),
         'node_id': json['node_id'],
+        'node_name': json['node_name'],
         'processes': (json['processes'] === null ? null : (json['processes'] as Array<any>).map(ModelProcessFromJSON)),
         'secret_scan_status': json['secret_scan_status'],
         'secrets_count': json['secrets_count'],
@@ -210,6 +218,7 @@ export function ModelContainerToJSON(value?: ModelContainer | null): any {
         'metadata': value.metadata,
         'metrics': ModelComputeMetricsToJSON(value.metrics),
         'node_id': value.node_id,
+        'node_name': value.node_name,
         'processes': (value.processes === null ? null : (value.processes as Array<any>).map(ModelProcessToJSON)),
         'secret_scan_status': value.secret_scan_status,
         'secrets_count': value.secrets_count,

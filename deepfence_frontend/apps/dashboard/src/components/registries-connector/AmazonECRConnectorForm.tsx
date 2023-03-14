@@ -1,28 +1,21 @@
 import { HiViewGridAdd } from 'react-icons/hi';
-import {
-  Button,
-  Card,
-  Step,
-  Stepper,
-  Switch,
-  TextInput,
-  Typography,
-} from 'ui-components';
+import { Card, Step, Stepper, Switch, TextInput, Typography } from 'ui-components';
+
+import { DFLink } from '@/components/DFLink';
 
 export const AmazonECRConnectorForm = () => {
   return (
     <Stepper>
-      <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation">
+      <Step indicator={<HiViewGridAdd />} title="Amazon Registry Connecton">
         <div className={`${Typography.size.sm} dark:text-gray-200`}>
-          Connect to your Google Cloud Account via Teraform. Find out more information by{' '}
-          <a
+          Connect to your Amazon Cloud Account. Find out more information by{' '}
+          <DFLink
             href={`https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage`}
             target="_blank"
             rel="noreferrer"
-            className="text-blue-600 dark:text-blue-500 mt-2"
           >
             reading our documentation
-          </a>
+          </DFLink>
           .
         </div>
       </Step>
@@ -66,9 +59,6 @@ export const AmazonECRConnectorForm = () => {
               placeholder="AWS Region"
             />
           </div>
-          <Button color="primary" size="xs" className="ml-auto mt-6">
-            Save And Go To Connectors
-          </Button>
         </Card>
       </Step>
     </Stepper>

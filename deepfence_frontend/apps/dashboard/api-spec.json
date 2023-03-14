@@ -332,7 +332,7 @@
       }
     },
     "/deepfence/cloud-node/list/providers": {
-      "post": {
+      "get": {
         "tags": ["Cloud Nodes"],
         "summary": "List Cloud Node Providers",
         "description": "List Cloud Node Providers registered with the console",
@@ -492,6 +492,148 @@
           "content": {
             "application/json": {
               "schema": { "$ref": "#/components/schemas/ModelAgentUpgrade" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/controls/cloud-node": {
+      "post": {
+        "tags": ["Controls"],
+        "summary": "Fetch Cloud Node Controls",
+        "description": "Fetch controls for a cloud node",
+        "operationId": "getCloudNodeControls",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelCloudNodeControlReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelCloudNodeControlResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/controls/cloud-node/disable": {
+      "post": {
+        "tags": ["Controls"],
+        "summary": "Disable Cloud Node Controls",
+        "description": "Disable controls for a cloud node",
+        "operationId": "disableCloudNodeControls",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelCloudNodeEnableDisableReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/controls/cloud-node/enable": {
+      "post": {
+        "tags": ["Controls"],
+        "summary": "Enable Cloud Node Controls",
+        "description": "Enable controls for a cloud node",
+        "operationId": "enableCloudNodeControls",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelCloudNodeEnableDisableReq" }
             }
           }
         },
@@ -1746,6 +1888,61 @@
         }
       }
     },
+    "/deepfence/lookup/cloud-resources": {
+      "post": {
+        "tags": ["Lookup"],
+        "summary": "Get Cloud Resources",
+        "description": "Retrieve the cloud resources",
+        "operationId": "getCloudResources",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LookupLookupFilter" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelCloudResource" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/lookup/containerimages": {
       "post": {
         "tags": ["Lookup"],
@@ -2222,21 +2419,25 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/registryaccount/summary": {
-      "get": {
+    "/deepfence/registryaccount/count/images": {
+      "post": {
         "tags": ["Registry"],
-        "summary": "Get All Registries Summary",
-        "description": "get summary of registry scans, images and tags",
-        "operationId": "getSummary",
+        "summary": "Count Registry Images",
+        "description": "count of images from a given registry",
+        "operationId": "CountImages",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelRegistryImagesReq" }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": { "type": "integer" }
-                }
+                "schema": { "$ref": "#/components/schemas/ModelRegistryCountResp" }
               }
             }
           },
@@ -2270,22 +2471,28 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/registryaccount/{registry_id}": {
-      "delete": {
+    "/deepfence/registryaccount/count/tags": {
+      "post": {
         "tags": ["Registry"],
-        "summary": "Add Registry",
-        "description": "Delete registry",
-        "operationId": "deleteRegistry",
-        "parameters": [
-          {
-            "name": "registry_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "integer" }
+        "summary": "Count Image Tags",
+        "description": "count of image tags for a given image and registry",
+        "operationId": "CountImageTags",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelRegistryImageTagsReq" }
+            }
           }
-        ],
+        },
         "responses": {
-          "200": { "description": "OK" },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelRegistryCountResp" }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -2316,20 +2523,19 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/registryaccount/{registry_id}/images": {
-      "get": {
+    "/deepfence/registryaccount/images": {
+      "post": {
         "tags": ["Registry"],
         "summary": "List Registry Images",
         "description": "list images from a given registry",
         "operationId": "listImages",
-        "parameters": [
-          {
-            "name": "registry_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelRegistryImagesReq" }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -2372,26 +2578,64 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/registryaccount/{registry_id}/images/{image_name}/tags": {
+    "/deepfence/registryaccount/summary": {
       "get": {
+        "tags": ["Registry"],
+        "summary": "Get All Registries Summary By Type",
+        "description": "get summary of all registries scans, images and tags by registry type",
+        "operationId": "getSummaryAll",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelRegistrySummaryAllResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/registryaccount/tags": {
+      "post": {
         "tags": ["Registry"],
         "summary": "List Image Tags",
         "description": "list image tags for a given image and registry",
         "operationId": "listImageTags",
-        "parameters": [
-          {
-            "name": "registry_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "image_name",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelRegistryImageTagsReq" }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -2404,6 +2648,52 @@
               }
             }
           },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/registryaccount/{registry_id}": {
+      "delete": {
+        "tags": ["Registry"],
+        "summary": "Delete Registry",
+        "description": "Delete registry",
+        "operationId": "deleteRegistry",
+        "parameters": [
+          {
+            "name": "registry_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -2453,10 +2743,60 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": { "type": "integer" }
-                }
+                "schema": { "$ref": "#/components/schemas/ModelSummary" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/registryaccount/{registry_type}/summary-by-type": {
+      "get": {
+        "tags": ["Registry"],
+        "summary": "Get Registry Summary By Type",
+        "description": "get summary of registries scans, images and tags by registry type",
+        "operationId": "getSummaryByType",
+        "parameters": [
+          {
+            "name": "registry_type",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelSummary" }
               }
             }
           },
@@ -6794,41 +7134,71 @@
       "IngestersCloudResource": {
         "type": "object",
         "properties": {
+          "access_level": { "type": "string" },
           "account_id": { "type": "string" },
+          "action": { "type": "string" },
           "allow_blob_public_access": { "type": "string" },
           "arn": { "type": "string" },
+          "attached_policy_arns": {},
           "block_public_acls": { "type": "boolean" },
           "block_public_policy": { "type": "boolean" },
           "bucket_policy_is_public": { "type": "boolean" },
           "cidr_ipv4": { "type": "string" },
           "container_definitions": {},
+          "containers": {},
+          "create_date": { "type": "string" },
           "db_cluster_identifier": { "type": "string" },
+          "description": { "type": "string" },
           "event_notification_configuration": {},
           "group_id": { "type": "string" },
+          "groups": {},
+          "host_name": { "type": "string" },
+          "iam_instance_profile_arn": { "type": "string" },
+          "iam_instance_profile_id": { "type": "string" },
           "iam_policy": {},
           "id": { "type": "string" },
           "ignore_public_acls": { "type": "boolean" },
-          "ingress_settings": {},
+          "ingress_settings": { "type": "string" },
+          "inline_policies": {},
           "instance_id": { "type": "string" },
+          "instance_profile_arns": {},
+          "instances": {},
           "ip_configuration": {},
+          "is_egress": { "type": "boolean" },
           "name": { "type": "string" },
+          "network_configuration": {},
           "network_interfaces": {},
           "network_mode": { "type": "string" },
+          "organization_id": { "type": "string" },
+          "organization_master_account_arn": { "type": "string" },
+          "organization_master_account_email": { "type": "string" },
+          "path": { "type": "string" },
           "policy": {},
-          "policy_std": { "type": "string" },
+          "policy_std": {},
+          "privilege": { "type": "string" },
           "public_access": { "type": "string" },
+          "public_ip_address": { "type": "string" },
           "public_ips": {},
+          "public_network_access": { "type": "string" },
           "region": { "type": "string" },
           "resource_id": { "type": "string" },
           "resource_vpc_config": {},
+          "resources_vpc_config": {},
           "restrict_public_buckets": { "type": "boolean" },
           "scheme": { "type": "string" },
           "security_groups": {},
           "service_name": { "type": "string" },
+          "storage_account_name": { "type": "string" },
+          "target_group_arn": { "type": "string" },
+          "target_health_descriptions": {},
           "task_definition": {},
           "task_definition_arn": { "type": "string" },
+          "user-groups": {},
+          "user_id": { "type": "string" },
+          "users": {},
           "vpc_id": { "type": "string" },
           "vpc_options": {},
+          "vpc_security_group_ids": {},
           "vpc_security_groups": {}
         }
       },
@@ -7277,15 +7647,69 @@
           "trail_name": { "type": "string" }
         }
       },
+      "ModelCloudNodeComplianceControl": {
+        "type": "object",
+        "properties": {
+          "category_hierarchy": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "control_id": { "type": "string" },
+          "description": { "type": "string" },
+          "enabled": { "type": "boolean" },
+          "service": { "type": "string" },
+          "title": { "type": "string" }
+        }
+      },
+      "ModelCloudNodeControlReq": {
+        "required": ["cloud_provider", "compliance_type"],
+        "type": "object",
+        "properties": {
+          "cloud_provider": { "enum": ["aws", "gcp", "azure"], "type": "string" },
+          "compliance_type": { "type": "string" },
+          "node_id": { "type": "string" }
+        }
+      },
+      "ModelCloudNodeControlResp": {
+        "type": "object",
+        "properties": {
+          "controls": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelCloudNodeComplianceControl" },
+            "nullable": true
+          }
+        }
+      },
+      "ModelCloudNodeEnableDisableReq": {
+        "type": "object",
+        "properties": {
+          "control_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "node_id": { "type": "string" }
+        }
+      },
       "ModelCloudNodeProvidersListResp": {
         "required": ["providers"],
         "type": "object",
         "properties": {
           "providers": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": { "$ref": "#/components/schemas/ModelPostureProvider" },
             "nullable": true
           }
+        }
+      },
+      "ModelCloudResource": {
+        "required": ["node_id", "node_name", "node_type"],
+        "type": "object",
+        "properties": {
+          "node_id": { "type": "string" },
+          "node_name": { "type": "string" },
+          "node_type": { "type": "string" }
         }
       },
       "ModelCompliance": {
@@ -7430,6 +7854,7 @@
       "ModelContainer": {
         "required": [
           "node_id",
+          "node_name",
           "docker_container_name",
           "image",
           "processes",
@@ -7459,6 +7884,7 @@
           "metadata": { "$ref": "#/components/schemas/ModelMetadata" },
           "metrics": { "$ref": "#/components/schemas/ModelComputeMetrics" },
           "node_id": { "type": "string" },
+          "node_name": { "type": "string" },
           "processes": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelProcess" },
@@ -7473,6 +7899,7 @@
       "ModelContainerImage": {
         "required": [
           "node_id",
+          "node_name",
           "docker_image_name",
           "docker_image_tag",
           "docker_image_size",
@@ -7499,6 +7926,7 @@
           "metadata": { "$ref": "#/components/schemas/ModelMetadata" },
           "metrics": { "$ref": "#/components/schemas/ModelComputeMetrics" },
           "node_id": { "type": "string" },
+          "node_name": { "type": "string" },
           "secret_scan_status": { "type": "string" },
           "secrets_count": { "type": "integer" },
           "vulnerabilities_count": { "type": "integer" },
@@ -7529,6 +7957,7 @@
         "required": [
           "node_id",
           "host_name",
+          "node_name",
           "containers",
           "processes",
           "pods",
@@ -7564,6 +7993,7 @@
           "malwares_count": { "type": "integer" },
           "metrics": { "$ref": "#/components/schemas/ModelComputeMetrics" },
           "node_id": { "type": "string" },
+          "node_name": { "type": "string" },
           "pods": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelPod" },
@@ -7651,7 +8081,6 @@
           "FileSevScore": { "type": "integer" },
           "FileSeverity": { "type": "string" },
           "ImageLayerId": { "type": "string" },
-          "Meta": { "type": "array", "items": { "type": "string" }, "nullable": true },
           "SeverityScore": { "type": "integer" },
           "StringsToMatch": {
             "type": "array",
@@ -7778,6 +8207,7 @@
       "ModelPod": {
         "required": [
           "node_id",
+          "node_name",
           "kubernetes_name",
           "kubernetes_namespace",
           "host_node_id",
@@ -7799,11 +8229,23 @@
           "metadata": { "$ref": "#/components/schemas/ModelMetadata" },
           "metrics": { "$ref": "#/components/schemas/ModelComputeMetrics" },
           "node_id": { "type": "string" },
+          "node_name": { "type": "string" },
           "processes": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelProcess" },
             "nullable": true
           }
+        }
+      },
+      "ModelPostureProvider": {
+        "type": "object",
+        "properties": {
+          "compliance_percentage": { "type": "number" },
+          "name": { "type": "string" },
+          "node_count": { "type": "integer" },
+          "node_label": { "type": "string" },
+          "resource_count": { "type": "integer" },
+          "scan_count": { "type": "integer" }
         }
       },
       "ModelProcess": {
@@ -7873,6 +8315,27 @@
           "secret": { "type": "object", "additionalProperties": {}, "nullable": true }
         }
       },
+      "ModelRegistryCountResp": {
+        "type": "object",
+        "properties": { "count": { "type": "integer" } }
+      },
+      "ModelRegistryImageTagsReq": {
+        "required": ["registry_id", "image_name"],
+        "type": "object",
+        "properties": {
+          "image_name": { "type": "string" },
+          "registry_id": { "type": "string" },
+          "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
+        }
+      },
+      "ModelRegistryImagesReq": {
+        "required": ["registry_id"],
+        "type": "object",
+        "properties": {
+          "registry_id": { "type": "string" },
+          "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
+        }
+      },
       "ModelRegistryListResp": {
         "type": "object",
         "properties": {
@@ -7884,6 +8347,11 @@
           "registry_type": { "type": "string" },
           "updated_at": { "type": "string", "format": "date-time" }
         }
+      },
+      "ModelRegistrySummaryAllResp": {
+        "type": "object",
+        "additionalProperties": { "$ref": "#/components/schemas/ModelSummary" },
+        "nullable": true
       },
       "ModelResponseAccessToken": {
         "required": ["access_token", "refresh_token"],
@@ -8160,6 +8628,17 @@
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
             "nullable": true
           }
+        }
+      },
+      "ModelSummary": {
+        "type": "object",
+        "properties": {
+          "images": { "type": "integer" },
+          "registries": { "type": "integer" },
+          "scans_complete": { "type": "integer" },
+          "scans_in_progress": { "type": "integer" },
+          "scans_total": { "type": "integer" },
+          "tags": { "type": "integer" }
         }
       },
       "ModelUpdateUserIdRequest": {
