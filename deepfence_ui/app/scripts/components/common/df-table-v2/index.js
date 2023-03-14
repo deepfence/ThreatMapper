@@ -350,7 +350,10 @@ const DfTableV2 = forwardRef(({
     return {
       resetPageIndex: () => {
         gotoPage(0);
-      }
+      },
+      toggleAllRowsExpanded: (value) => {
+        toggleAllRowsExpanded(value);
+      },
     }
   })
 

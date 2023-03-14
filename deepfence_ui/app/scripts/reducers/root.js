@@ -510,6 +510,16 @@ export function rootReducer(state = initialState, action) {
       return state;
     }
 
+    case ActionTypes.RECEIVE_ALERT_DELETE_RESPONSE: {
+      state = state.set('isSuccess', action.response.isSuccess);
+      state = state.set('isError', action.response.isError);
+      state = state.set(
+        'alertsDeleteResponse',
+        action.response.alertsDeleteResponse
+      );
+      return state;
+    }
+
     case ActionTypes.SELECTED_ACTIVE_MENU: {
       state = state.set('isSelectedMenu', action.response.menuName);
       return state;

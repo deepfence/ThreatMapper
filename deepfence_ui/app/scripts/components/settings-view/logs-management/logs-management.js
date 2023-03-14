@@ -96,13 +96,13 @@ const VulnerabilityManagementView = props => {
     setAlertsDeleteResponse(props.alertsDeleteResponse);
     setIsSuccess(props.isSuccess);
     setIsError(props.isError);
-  }, [props.isSuccess && !props.isError]);
+  }, [props.isSuccess && !props.isError, props.alertsDeleteResponse]);
 
   useEffect(() => {
     setAlertsDeleteResponse(props.alertsDeleteResponse);
     setIsSuccess(props.isSuccess);
     setIsError(props.isError);
-  }, [!props.isSuccess && props.isError]);
+  }, [!props.isSuccess && props.isError, props.alertsDeleteResponse]);
 
   const resetStates = () => {
     props.dispatch(resetUserProfileStates());
