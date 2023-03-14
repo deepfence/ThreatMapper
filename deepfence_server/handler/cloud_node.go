@@ -51,12 +51,13 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			return
 		}
 		monitoredAccountIds[req.CloudAccount] = nodeId
+		orgNodeId := fmt.Sprintf("%s-%s-cloud-org", req.CloudProvider, orgAccountId)
 		node := map[string]interface{}{
-			"node_id":        fmt.Sprintf("%s-%s-cloud-org", req.CloudProvider, orgAccountId),
-			"cloud_provider": req.CloudProvider,
+			"node_id":        orgNodeId,
+			"cloud_provider": model.PostureProviderAWSOrg,
 			"node_name":      orgAccountId,
 		}
-		err = model.UpsertCloudComplianceNode(ctx, node)
+		err = model.UpsertCloudComplianceNode(ctx, node, "")
 		if err != nil {
 			complianceError(w, err.Error())
 		}
@@ -67,7 +68,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 				"cloud_provider": req.CloudProvider,
 				"node_name":      monitoredAccountId,
 			}
-			err = model.UpsertCloudComplianceNode(ctx, monitoredNode)
+			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeId)
 			if err != nil {
 				complianceError(w, err.Error())
 			}
@@ -94,7 +95,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			"node_name":      req.CloudAccount,
 		}
 		logrus.Debugf("Node for upsert: %+v", node)
-		err = model.UpsertCloudComplianceNode(ctx, node)
+		err = model.UpsertCloudComplianceNode(ctx, node, "")
 		if err != nil {
 			logrus.Infof("Error while upserting node: %+v", err)
 			complianceError(w, err.Error())
