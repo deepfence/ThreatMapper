@@ -1,4 +1,6 @@
 import {
+  ComboConfig,
+  EdgeConfig,
   Graph,
   GraphData,
   GraphOptions,
@@ -7,6 +9,7 @@ import {
   IG6GraphEvent,
   INode,
   Layout,
+  NodeConfig,
 } from '@antv/g6';
 import { GForceLayoutOptions } from '@antv/layout';
 
@@ -51,11 +54,15 @@ export interface EnhancedDiff {
   nodesDiff: EnhancedNodeDiff;
   edgesDiff: EnhancedEdgesDiff;
 }
-export interface EnhancedDetailedNodeSummary extends DetailedNodeSummary {
+export interface EnhancedDetailedNodeSummary
+  extends Pick<DetailedNodeSummary, 'id' | 'label'> {
+  df_data: DetailedNodeSummary;
   label_short: string;
+  children_ids?: Set<string>;
 }
 export interface EnhancedDetailedConnectionSummary extends DetailedConnectionSummary {
   id: string;
+  df_data: DetailedConnectionSummary;
 }
 
 export type InputLayoutOptions = {
@@ -72,4 +79,11 @@ export type OutputLayoutOptions = {
   options: GForceLayoutOptions;
   nodes: INode[];
   edges: IEdge[];
+};
+
+export type NodeModel = NodeConfig & Partial<EnhancedDetailedNodeSummary>;
+export type EdgeModel = EdgeConfig & Partial<EnhancedDetailedConnectionSummary>;
+export type ComboModel = ComboConfig & {
+  children_ids?: Set<string>;
+  center_ids?: Array<string>;
 };

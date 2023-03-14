@@ -1,4 +1,12 @@
-import { G6Edge, G6Graph, G6Item, G6Node } from '@/features/topology/types/graph';
+import {
+  ComboModel,
+  EdgeModel,
+  G6Edge,
+  G6Graph,
+  G6Item,
+  G6Node,
+  NodeModel,
+} from '@/features/topology/types/graph';
 import { pointAround } from '@/features/topology/utils/gForce';
 
 export const expandNode = (item: G6Item) => {
@@ -18,7 +26,7 @@ const finishExpandSimpleNode = (graph: G6Graph, item: G6Item) => {
 };
 
 const finishExpandCombo = (graph: G6Graph, item: G6Item) => {
-  const model = item.get('model');
+  const model = item.get('model') as NodeModel;
   const node_id = model.id;
   const combo_id = `${node_id}-combo`;
 
@@ -30,17 +38,14 @@ const finishExpandCombo = (graph: G6Graph, item: G6Item) => {
       node_type: 'combo',
       center_ids: [],
       children_ids: new Set(),
-      x: pointAround(model.x, 50),
-      y: pointAround(model.y, 50),
-      style: {
-        stroke: model.cloudInfo?.edgeStyle?.stroke,
-      },
+      x: pointAround(model.x!, 50),
+      y: pointAround(model.y!, 50),
     },
     [],
   );
 
   const combo = graph.findById(combo_id);
-  const combo_model = combo.get('model');
+  const combo_model = combo.get('model') as ComboModel;
 
   const center_id = `${combo_id}-center`;
   // This node will be an invisible node that lie at the center of combo layout nodes which
@@ -57,14 +62,14 @@ const finishExpandCombo = (graph: G6Graph, item: G6Item) => {
     x: combo_model.x,
     y: combo_model.y,
   });
-  combo_model.center_ids.push(center_id);
+  combo_model.center_ids?.push(center_id);
 
   // this is the edge between the parent node and the combo. The gForce layout
   // skips this during layout
   graph.addItem('edge', {
     ...pseudoEdge(node_id, combo_id),
     combo_pseudo: true,
-    style: { ...model.cloudInfo?.edgeStyle, endArrow: false },
+    style: { endArrow: false },
   });
 
   // this is an extra invisible edge between the parent node and the center of
@@ -87,20 +92,21 @@ const finishExpandCombo = (graph: G6Graph, item: G6Item) => {
 
 // this is the static things that will consider a node as combo or not
 export const itemExpandsAsCombo = (item: G6Item | null) => {
-  const model = item?.get('model');
+  const model = item?.get('model') as NodeModel;
+  if (!model || !model.df_data) return false;
   return (
-    model.type === 'kubernetes_cluster' ||
-    model.type === 'host' ||
-    model.type === 'pod' ||
-    model.type == 'container'
+    model.df_data.type === 'kubernetes_cluster' ||
+    model.df_data.type === 'host' ||
+    model.df_data.type === 'pod' ||
+    model.df_data.type == 'container'
   );
 };
 
 // nodes that can expand
 export const itemExpands = (item: G6Item) => {
-  const model = item.get('model');
-
-  switch (model.type) {
+  const model = item.get('model') as NodeModel;
+  if (!model.df_data) return false;
+  switch (model.df_data.type) {
     case 'cloud_provider':
     case 'region':
     case 'kubernetes_cluster':
@@ -121,10 +127,8 @@ export const pseudoEdge = (source: string, target: string) => ({
 
 export const removeNodeItem = (graph: G6Graph, item: G6Node) => {
   for (const edge of item.getEdges()) {
-    const edgeModel = edge.get('model');
-    if (edgeModel.connection) {
-      graph.removeItem(edgeModel.id);
-    }
+    const edgeModel = edge.get('model') as EdgeModel;
+    graph.removeItem(edgeModel.id!); //TODO: do we need this removal?
   }
 
   graph.removeItem(item);
@@ -136,26 +140,28 @@ const ExpandState = {
 };
 
 const itemSetExpanding = (item: G6Item) => {
-  const model = item.get('model');
+  const model = item.get('model') as NodeModel | ComboModel;
   model.expand_state = ExpandState.EXPANDING;
 };
 
 const itemSetExpanded = (item: G6Item) => {
-  const model = item.get('model');
+  const model = item.get('model') as NodeModel | ComboModel;
   model.expand_state = ExpandState.EXPANDED;
 };
 
 const itemUnsetExpanded = (item: G6Item) => {
-  const model = item.get('model');
+  const model = item.get('model') as NodeModel | ComboModel;
   delete model.expand_state;
 };
 
 export const isItemExpanding = (item: G6Item) => {
-  return item.get('model').expand_state === ExpandState.EXPANDING;
+  return (
+    (item.get('model') as NodeModel | ComboModel).expand_state === ExpandState.EXPANDING
+  );
 };
 
 export const isItemExpanded = (item: G6Item) => {
-  return item.get('model').expand_state !== undefined;
+  return (item.get('model') as NodeModel | ComboModel).expand_state !== undefined;
 };
 
 export const collapseNode = (
@@ -179,7 +185,7 @@ const collapseSimpleNode = (
   onNodeCollapsed?: (item: G6Item) => void,
   isChild?: boolean,
 ) => {
-  const model = item.get('model');
+  const model = item.get('model') as NodeModel;
 
   for (const edge of item.getOutEdges() as G6Edge[]) {
     // TODO: seems this id is always undefined
@@ -213,12 +219,12 @@ const collapseCombo = (
   onNodeCollapsed?: (item: G6Item) => void,
   isChild?: boolean,
 ) => {
-  const model = item.get('model');
+  const model = item.get('model') as NodeModel;
 
   if (!isItemExpanding(item)) {
-    const combo_id = model.children_ids.values().next().value;
+    const combo_id = model.children_ids?.values().next().value;
     const combo = graph.findById(combo_id);
-    const combo_model = combo.get('model');
+    const combo_model = combo.get('model') as ComboModel;
     if (combo_model.children_ids) {
       for (const child_id of combo_model.children_ids) {
         // remove a child node from children_ids set

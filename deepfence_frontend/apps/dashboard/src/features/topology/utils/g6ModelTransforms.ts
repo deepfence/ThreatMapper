@@ -5,12 +5,15 @@ import {
   EnhancedDetailedNodeSummary,
   EnhancedDiff,
   G6Graph,
+  NodeModel,
 } from '@/features/topology/types/graph';
 
 function enhanceApiNode(apiNode: DetailedNodeSummary): EnhancedDetailedNodeSummary {
   return {
-    ...apiNode,
+    id: apiNode.id!,
+    label: apiNode.label,
     label_short: apiNode.label ?? '',
+    df_data: apiNode,
   };
 }
 
@@ -50,8 +53,10 @@ export function convertApiNodesDiffToModelNodesDiff(
         continue;
       }
 
-      const model = graphNode.get('model');
-      const parentId = model.immediate_parent_id || 'root';
+      const model = graphNode.get('model') as NodeModel;
+      const parentId = model.df_data?.immediate_parent_id?.length
+        ? model.df_data.immediate_parent_id
+        : 'root';
       if (!enhancedDiff[parentId]) enhancedDiff[parentId] = createEmptyEnhancedNodeDiff();
       enhancedDiff[parentId].remove.push(node.id ?? '');
     }
@@ -65,7 +70,7 @@ export function convertApiNodesDiffToModelNodesDiff(
 const enhanceApiEdge = (
   apiEdge: DetailedConnectionSummary,
 ): EnhancedDetailedConnectionSummary => {
-  return { ...apiEdge, id: `${apiEdge.source}-${apiEdge.target}` };
+  return { ...apiEdge, id: `${apiEdge.source}-${apiEdge.target}`, df_data: apiEdge };
 };
 export function convertApiEdgesDiffToModelEdgesDiff(
   apiEdgesDiff: ApiDiff['edgesDiff'],

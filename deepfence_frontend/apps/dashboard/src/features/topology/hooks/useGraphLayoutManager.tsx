@@ -12,6 +12,7 @@ import {
   G6Node,
   InputLayoutOptions,
   LayoutOptions,
+  NodeModel,
   OutputLayoutOptions,
 } from '@/features/topology/types/graph';
 import { itemExpandsAsCombo } from '@/features/topology/utils/expand-collapse';
@@ -88,7 +89,7 @@ export function useGraphLayoutManager(graph: G6Graph | null, options: LayoutOpti
     const _opts = layoutsRef.current[nodeId];
     delete layoutsRef.current[nodeId];
 
-    const layout = buildLayout(graph!, nodeId, _opts);
+    const layout = buildLayoutOptions(graph!, nodeId, _opts);
     if (!layout) {
       return maybeStartNextLayout();
     }
@@ -122,7 +123,7 @@ class LayoutExecutor {
   }
 }
 
-const buildLayout = (
+const buildLayoutOptions = (
   graph: G6Graph,
   nodeId: string,
   options: InputLayoutOptions | null,
@@ -137,17 +138,17 @@ const buildLayout = (
   }
 
   if (nodeId === 'root' || !itemExpandsAsCombo(item)) {
-    return buildNormalLayout(graph, options);
+    return buildNormalLayoutOptions(graph, options);
   } else {
-    return buildComboLayout(graph, item as G6Item, options);
+    return buildComboLayoutOptions(graph, item as G6Item, options);
   }
 };
 
-const buildNormalLayout = (
+const buildNormalLayoutOptions = (
   graph: G6Graph,
   options: InputLayoutOptions | null,
 ): OutputLayoutOptions => {
-  const nodes: Record<string, EnhancedDetailedNodeSummary> = {};
+  const nodes: Record<string, NodeModel> = {};
   let edges = [];
 
   // nodes are already added to graph at this time
@@ -155,7 +156,7 @@ const buildNormalLayout = (
 
   for (const node of graph.getNodes()) {
     // model is actually a g6 graph node
-    const model = node.get('model');
+    const model = node.get('model') as NodeModel;
     if (!model || model.comboId) {
       continue;
     }
@@ -203,7 +204,7 @@ const buildNormalLayout = (
   };
 };
 
-const buildComboLayout = (
+const buildComboLayoutOptions = (
   graph: G6Graph,
   comboItem: G6Item,
   options: InputLayoutOptions | null,

@@ -54,5 +54,5 @@ export const nodeStrength = (node: EnhancedDetailedNodeSummary, num_nodes: numbe
     host: 10,
   };
 
-  return BASE_NODE_STRENGTH * (mul[node.type!] || 1);
+  return BASE_NODE_STRENGTH * (mul[node.df_data?.type ?? ''] || 1);
 };

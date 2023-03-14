@@ -8,7 +8,7 @@ import { getTopologyApiClient } from '@/api/api';
 import { ApiDocsGraphResult } from '@/api/generated';
 import { useG6raph } from '@/features/topology/hooks/useG6Graph';
 import { useTopology } from '@/features/topology/hooks/useTopology';
-import { G6GraphEvent } from '@/features/topology/types/graph';
+import { G6GraphEvent, NodeModel } from '@/features/topology/types/graph';
 import { expandNode } from '@/features/topology/utils/expand-collapse';
 import {
   getTopologyDiff,
@@ -104,25 +104,25 @@ const Graph = () => {
     if (!graph) return;
     graph.on('node:click', (e: G6GraphEvent) => {
       const { item: node } = e;
-      const model = node?.get('model');
+      const model = node?.getModel() as NodeModel;
 
       if (
         !graphDataManagerFunctionsRef.current.isNodeExpanded({
           nodeId: model.id,
-          nodeType: model.type,
+          nodeType: model.df_data!.type!,
         })
       ) {
         expandNode(node!);
         graphDataManagerFunctionsRef.current.getDataUpdates({
           type: 'expandNode',
           nodeId: model.id,
-          nodeType: model.type,
+          nodeType: model.df_data!.type!,
         });
       } else {
         graphDataManagerFunctionsRef.current.getDataUpdates({
           type: 'collapseNode',
           nodeId: model.id,
-          nodeType: model.type,
+          nodeType: model.df_data!.type!,
         });
       }
     });
@@ -144,7 +144,6 @@ function useGraphDataManager() {
   const [storageManager] = useState(new GraphStorageManager());
 
   const fetcher = useFetcher<ActionData>();
-  console.log('fetcher state is ', fetcher.state);
   const getDataUpdates = (action: ActionData['action']): void => {
     if (fetcher.state !== 'idle') return;
     if (action?.type === 'expandNode')

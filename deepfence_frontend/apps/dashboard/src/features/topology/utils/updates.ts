@@ -1,10 +1,13 @@
 import {
+  ComboModel,
+  EdgeModel,
   EnhancedDetailedNodeSummary,
   EnhancedDiff,
   G6Edge,
   G6Graph,
   G6Item,
   G6Node,
+  NodeModel,
 } from '@/features/topology/types/graph';
 import {
   collapseNode,
@@ -15,7 +18,7 @@ import {
   removeNodeItem,
 } from '@/features/topology/utils/expand-collapse';
 import { pointAround } from '@/features/topology/utils/gForce';
-import { COLORS, PALETTE } from '@/features/topology/utils/theme';
+import { COLORS } from '@/features/topology/utils/theme';
 
 const updateSimpleNode = (
   graph: G6Graph,
@@ -64,19 +67,18 @@ const updateComboNode = (
 
 const addNodesSimple = (
   graph: G6Graph,
-  item: G6Item,
+  parent: G6Item,
   nodes: EnhancedDetailedNodeSummary[],
 ) => {
-  const model = item.get('model');
-  const node_id = model.id;
-  const children_ids = model.children_ids;
-  const cloudInfo = model.cloudInfo;
+  const parentModel = parent.get('model') as NodeModel;
+  const parentId = parentModel.id;
+  const childrenIds = parentModel.children_ids;
 
   for (const node of nodes) {
     const item = graph.findById(node.id ?? '');
     if (item !== undefined) {
       console.error(
-        `trying to add node that is already in the graph (parent=${node_id})`,
+        `trying to add node that is already in the graph (parent=${parentId})`,
         node,
       );
       continue;
@@ -84,33 +86,31 @@ const addNodesSimple = (
 
     const node_item = graph.addItem('node', {
       ...node,
-      x: pointAround(model.x),
-      y: pointAround(model.y),
-      parent_id: node_id,
-      cloudInfo,
-      style: { ...nodeStyle(node, cloudInfo?.nodeStyle) },
+      x: pointAround(parentModel.x!),
+      y: pointAround(parentModel.y!),
+      parent_id: parentId,
+      style: { ...nodeStyle(node, {}) },
       children_ids: new Set(),
     }) as G6Item;
     graph.addItem('edge', {
-      ...pseudoEdge(node_id, node.id ?? ''),
-      style: { ...model.cloudInfo?.edgeStyle },
+      ...pseudoEdge(parentId, node.id ?? ''),
     });
-    children_ids.add(node.id);
+    childrenIds?.add(node.id!);
     node_item.refresh();
   }
 };
 
-const removeNodesSimple = (graph: G6Graph, item: G6Item, nodes: string[]) => {
-  const model = item.get('model');
-  const children_ids = model.children_ids;
+const removeNodesSimple = (graph: G6Graph, parent: G6Item, nodes: string[]) => {
+  const parentModel = parent.get('model') as NodeModel;
+  const childrenIds = parentModel.children_ids;
 
-  for (const child_node_id of nodes) {
-    const child = graph.findById(child_node_id) as G6Node;
-    if (!child || !children_ids.has(child_node_id)) {
-      console.error('trying to remove an unknown child', child_node_id);
+  for (const childNodeId of nodes) {
+    const child = graph.findById(childNodeId) as G6Node;
+    if (!child || !childrenIds?.has(childNodeId)) {
+      console.error('trying to remove an unknown child', childNodeId);
       continue;
     }
-    children_ids.delete(child_node_id);
+    childrenIds.delete(childNodeId);
 
     if (isItemExpanded(child)) {
       collapseNode(graph, child, undefined, false);
@@ -119,19 +119,19 @@ const removeNodesSimple = (graph: G6Graph, item: G6Item, nodes: string[]) => {
   }
 };
 
-const removeNodesCombo = (graph: G6Graph, item: G6Item, nodes: string[]) => {
-  const model = item.get('model');
-  const node_id: string = model.id;
-  const combo_id = `${node_id}-combo`;
-  const combo_model = graph.findById(combo_id).get('model');
-  const combo_children_ids = combo_model.children_ids;
+const removeNodesCombo = (graph: G6Graph, parent: G6Item, nodes: string[]) => {
+  const parentModel = parent.get('model') as NodeModel;
+  const parentNodeId: string = parentModel.id;
+  const comboId = `${parentNodeId}-combo`;
+  const comboModel = graph.findById(comboId).get('model') as ComboModel;
+  const comboChildrenIds = comboModel.children_ids;
 
   for (const node_id of nodes) {
-    if (!combo_children_ids.has(node_id)) {
-      console.error('trying to remove unknown child from combo', combo_id, node_id);
+    if (!comboChildrenIds?.has(node_id)) {
+      console.error('trying to remove unknown child from combo', comboId, node_id);
       continue;
     }
-    combo_children_ids.delete(node_id);
+    comboChildrenIds.delete(node_id);
 
     const item = graph.findById(node_id) as G6Node;
     if (isItemExpanded(item)) {
@@ -143,43 +143,41 @@ const removeNodesCombo = (graph: G6Graph, item: G6Item, nodes: string[]) => {
 
 const addNodesCombo = (
   graph: G6Graph,
-  item: G6Item,
+  parent: G6Item,
   nodes: EnhancedDetailedNodeSummary[],
 ) => {
-  const model = item.get('model');
-  const node_id = model.id;
-  const combo_id = `${node_id}-combo`;
+  const parentModel = parent.get('model') as NodeModel;
+  const parentNodeId = parentModel.id;
+  const combo_id = `${parentNodeId}-combo`;
 
   const combo = graph.findById(combo_id);
-  const combo_model = combo.get('model');
-  const children_ids = combo_model.children_ids;
+  const comboModel = combo.get('model') as ComboModel;
+  const comboChildrenIds = comboModel.children_ids;
 
-  const center_id = combo_model.center_ids[0];
-  const center_model = graph.findById(center_id).get('model');
+  const center_id = comboModel?.center_ids?.[0];
+  const center_model = graph.findById(center_id!).get('model') as NodeModel;
 
-  const n_nodes = children_ids.size + nodes.length;
+  const n_nodes = (comboChildrenIds?.size ?? 0) + nodes.length;
 
-  const cloudInfo = model.cloudInfo;
   for (const node of nodes) {
     graph.addItem('node', {
       ...node,
       style: {
-        ...nodeStyle(node, cloudInfo?.nodeStyle),
+        ...nodeStyle(node, {}),
       },
-      cloudInfo,
-      parent_id: node_id,
+      parent_id: parentNodeId,
       comboId: combo_id,
       children_ids: new Set([]),
-      x: n_nodes > 1 ? pointAround(center_model.x) : center_model.x,
-      y: n_nodes > 1 ? pointAround(center_model.y) : center_model.y,
+      x: n_nodes > 1 ? pointAround(center_model.x!) : center_model.x,
+      y: n_nodes > 1 ? pointAround(center_model.y!) : center_model.y,
     });
 
     graph.addItem('edge', {
-      ...pseudoEdge(center_id, node.id ?? ''),
+      ...pseudoEdge(center_id!, node.id ?? ''),
       combo_pseudo_inner: true,
       style: { lineWidth: 0, endArrow: false },
     });
-    children_ids.add(node.id);
+    comboChildrenIds?.add(node.id!);
   }
 };
 
@@ -197,14 +195,11 @@ export const updateGraphRootNodes = (graph: G6Graph, diff: EnhancedDiff['nodesDi
   const center_y = graph.getHeight() / 2;
 
   for (const node of diff.add) {
-    const info = node.type === 'cloud_provider' ? cloudInfo() : null;
-
     graph.addItem('node', {
       ...node,
       x: pointAround(center_x),
       y: pointAround(center_y),
-      cloudInfo: info,
-      style: nodeStyle(node, info?.nodeStyle ?? {}),
+      style: nodeStyle(node, {}),
       children_ids: new Set(),
     });
   }
@@ -213,10 +208,8 @@ export const updateGraphRootNodes = (graph: G6Graph, diff: EnhancedDiff['nodesDi
 // updateGraphEdges api is where the graph starts updating edges
 export const updateGraphEdges = (graph: G6Graph, delta: EnhancedDiff['edgesDiff']) => {
   const removeEdge = (item: G6Edge) => {
-    const model = item.get('model');
-    if (model.connection === true) {
-      graph.removeItem(model.id);
-    }
+    const model = item.get('model') as EdgeModel;
+    graph.removeItem(model.id!); // TODO: do we need this removal?
   };
 
   // if (delta.reset) {
@@ -227,20 +220,23 @@ export const updateGraphEdges = (graph: G6Graph, delta: EnhancedDiff['edgesDiff'
 
   if (delta.add) {
     for (const edge of delta.add) {
-      const sourceNode = graph.findById(edge.source ?? '')?.get('model');
-      if (sourceNode === undefined) {
+      const sourceNode = graph.findById(edge.source ?? '')?.get('model') as
+        | NodeModel
+        | undefined;
+      if (!sourceNode) {
         console.error('edge source does not exist', edge);
         continue;
       }
-      const targetNode = graph.findById(edge.target ?? '')?.get('model');
-      if (targetNode === undefined) {
+      const targetNode = graph.findById(edge.target ?? '')?.get('model') as
+        | NodeModel
+        | undefined;
+      if (!targetNode) {
         console.error('edge target does not exist', edge);
         continue;
       }
 
       graph.addItem('edge', {
         ...edge,
-        style: sourceNode.cloudInfo?.edgeStyle,
         connection: true,
         type: edge.source === edge.target ? 'loop' : undefined,
       });
@@ -267,38 +263,24 @@ const pseudoEdge = (source: string, target: string) => ({
   pseudo: true,
 });
 
-const nodeStyle = (node: Record<string, any>, override: Record<string, any>) => {
+const nodeStyle = (node: EnhancedDetailedNodeSummary, override: Record<string, any>) => {
   let style: Record<string, string> = {};
   const fill: Record<string, string> = {
-    cloud: COLORS.CLOUD_PROVIDER,
+    cloud_provider: COLORS.CLOUD_PROVIDER,
     region: COLORS.REGION,
     host: COLORS.HOST,
     pod: COLORS.POD,
     container: COLORS.CONTAINER,
     process: COLORS.PROCESS,
   };
-  style.fill = fill[node.type] || COLORS.NODE;
+  style.fill = fill[node?.df_data?.type ?? ''] || COLORS.NODE;
 
   style = { ...style, ...override };
-  if (node.img !== undefined) {
+  if (node.df_data.image !== undefined) {
     delete style.fill;
-  } else if (node.type === 'process') {
+  } else if (node?.df_data?.type === 'process') {
     style.fill = COLORS.PROCESS;
   }
 
   return style;
-};
-
-const CLOUD_STYLES = [PALETTE.GOOGLE_BLUE, PALETTE.AWS_YELLOW];
-const cloudInfo = () => {
-  const color = CLOUD_STYLES.shift() as string;
-  CLOUD_STYLES.push(color);
-  return {
-    nodeStyle: {
-      fill: color || COLORS.NODE,
-    },
-    edgeStyle: {
-      stroke: COLORS.EDGE,
-    },
-  };
 };
