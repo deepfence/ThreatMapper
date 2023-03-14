@@ -5,12 +5,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"sort"
-	"strconv"
 	"time"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	pkgConst "github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -32,14 +31,15 @@ type RegistryIDPathReq struct {
 }
 
 type RegistryImagesReq struct {
-	RegistryId string      `json:"registry_id" validate:"required" required:"true"`
-	Window     FetchWindow `json:"window"`
+	RegistryId  string                   `json:"registry_id" validate:"required" required:"true"`
+	ImageFilter reporters.ContainsFilter `json:"image_filter" required:"true"`
+	Window      FetchWindow              `json:"window" required:"true"`
 }
 
-type RegistryImageTagsReq struct {
-	RegistryId string      `json:"registry_id" validate:"required" required:"true"`
-	ImageName  string      `json:"image_name" validate:"required" required:"true"`
-	Window     FetchWindow `json:"window"`
+type RegistryImageStubsReq struct {
+	RegistryId  string                   `json:"registry_id" validate:"required" required:"true"`
+	ImageFilter reporters.ContainsFilter `json:"image_filter" required:"true"`
+	Window      FetchWindow              `json:"window" required:"true"`
 }
 
 type RegistryCountResp struct {
@@ -176,67 +176,20 @@ func (r *RegistryImageListReq) GetRegistryImages(ctx context.Context) ([]Contain
 	return GetContainerImagesFromRegistryAndNamespace(ctx, r.ResourceType, r.Namespace)
 }
 
-type ContainerImageWithTags struct {
-	ID      string   `json:"id"`
-	Name    string   `json:"name"`
-	Tags    []string `json:"tags"`
-	Size    string   `json:"size"`
-	Created int64    `json:"created"`
-	Updated int64    `json:"updated"`
+type ImageStub struct {
+	ID   string   `json:"id"`
+	Name string   `json:"name"`
+	Tags []string `json:"tags"`
 }
 
-func (i *ContainerImageWithTags) AddTags(tags ...string) ContainerImageWithTags {
+func (i *ImageStub) AddTags(tags ...string) ImageStub {
 	i.Tags = append(i.Tags, tags...)
 	return *i
 }
 
-func toContainerImageWithTags(data map[string]interface{}) (ContainerImageWithTags, error) {
-	var image ContainerImageWithTags
+func ListImageStubs(ctx context.Context, registryId int32, filter reporters.ContainsFilter, fw FetchWindow) ([]ImageStub, error) {
 
-	var ok bool
-	var val interface{}
-
-	if val, ok = data["node_id"]; !ok {
-		return image, errors.New("missing node_id")
-	}
-	image.ID = val.(string)
-
-	if val, ok = data["docker_image_name"]; !ok {
-		return image, errors.New("missing docker_image_name")
-	}
-	image.Name = val.(string)
-
-	if val, ok = data["docker_image_tag"]; !ok {
-		return image, errors.New("missing docker_image_tag")
-	}
-	image.Tags = []string{val.(string)}
-
-	if val, ok = data["docker_image_size"]; !ok {
-		return image, errors.New("missing docker_image_size")
-	}
-	image.Size = val.(string)
-
-	if val, ok = data["metadata"]; !ok {
-		return image, errors.New("missing metadata")
-	}
-	log.Info().Msgf("metadata: %+v", val)
-	if metadata, ok := val.(map[string]interface{}); ok {
-		if val, ok = metadata["last_updated"]; ok {
-			if updatedString, ok := val.(string); ok {
-				var err error
-				if image.Updated, err = strconv.ParseInt(updatedString, 10, 64); err != nil {
-					return image, err
-				}
-			}
-		}
-	}
-
-	return image, nil
-}
-
-func ListImages(ctx context.Context, registryId int32, fw FetchWindow) ([]ContainerImageWithTags, error) {
-
-	images := []ContainerImageWithTags{}
+	images := []ImageStub{}
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -253,9 +206,11 @@ func ListImages(ctx context.Context, registryId int32, fw FetchWindow) ([]Contai
 	defer tx.Close()
 
 	query := `
-	MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage)
-	RETURN m
-	ORDER BY m.node_id
+	MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage) -[:IS]-> (l:ImageStub)
+	` + reporters.ContainsFilter2CypherWhereConditions("m", filter, true) + `
+	WITH distinct l.node_id as name, collect(m.docker_image_tag) as tags
+	RETURN name, tags
+	ORDER BY name
 	` + fw.FetchWindow2CypherQuery()
 	r, err := tx.Run(query, map[string]interface{}{"id": registryId})
 	if err != nil {
@@ -267,74 +222,26 @@ func ListImages(ctx context.Context, registryId int32, fw FetchWindow) ([]Contai
 		return images, err
 	}
 
-	ri := map[string]ContainerImageWithTags{}
-
-	for _, rec := range records {
-		data, has := rec.Get("m")
-		if !has {
-			log.Warn().Msgf("Missing neo4j entry")
-			continue
-		}
-		da, ok := data.(dbtype.Node)
-		if !ok {
-			log.Warn().Msgf("Missing neo4j entry")
-			continue
-		}
-
-		node, err := toContainerImageWithTags(da.Props)
-		if err != nil {
-			log.Warn().Msgf("Missing neo4j entry: %s", err.Error())
-			continue
-		}
-
-		i, ok := ri[node.Name]
-		if ok {
-			ri[node.Name] = i.AddTags(node.Tags...)
-		} else {
-			ri[node.Name] = node
-		}
-	}
-
-	// sort response
-	keys := make([]string, 0, len(ri))
-	for k := range ri {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	for _, v := range keys {
-		images = append(images, ri[v])
+	for i := range records {
+		images = append(images,
+			ImageStub{
+				ID:   records[i].Values[0].(string),
+				Name: records[i].Values[0].(string),
+				Tags: records[i].Values[1].([]string),
+			},
+		)
 	}
 
 	return images, nil
 }
 
-func toContainerImage(data map[string]interface{}) ContainerImage {
-	image := ContainerImage{
-		ID:   data["node_id"].(string),
-		Name: data["docker_image_name"].(string),
-		Tag:  data["docker_image_tag"].(string),
-		Size: data["docker_image_size"].(string),
-	}
+func ListImages(ctx context.Context, registryId int32, filter reporters.ContainsFilter, fw FetchWindow) ([]ContainerImage, error) {
 
-	md := data["metadata"].(string)
-	var metadata Metadata
-	if err := json.Unmarshal([]byte(md), &metadata); err != nil {
-		log.Error().Msg(err.Error())
-	}
-
-	image.Metadata = metadata
-
-	return image
-}
-
-func ListImageTags(ctx context.Context, registryId int32, imageName string, fw FetchWindow) ([]ContainerImage, error) {
-
-	imageTags := []ContainerImage{}
+	res := []ContainerImage{}
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return imageTags, err
+		return res, err
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
@@ -342,23 +249,25 @@ func ListImageTags(ctx context.Context, registryId int32, imageName string, fw F
 
 	tx, err := session.BeginTransaction()
 	if err != nil {
-		return imageTags, err
+		return res, err
 	}
 	defer tx.Close()
 
 	query := `
-	MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage{docker_image_name:$name})
+	MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage)
+	` + reporters.ContainsFilter2CypherWhereConditions("m", filter, true) + `
 	RETURN m
 	ORDER BY m.node_id
 	` + fw.FetchWindow2CypherQuery()
-	r, err := tx.Run(query, map[string]interface{}{"id": registryId, "name": imageName})
+	log.Info().Msgf("query: %v", query)
+	r, err := tx.Run(query, map[string]interface{}{"id": registryId})
 	if err != nil {
-		return imageTags, err
+		return res, err
 	}
 
 	records, err := r.Collect()
 	if err != nil {
-		return imageTags, err
+		return res, err
 	}
 
 	for _, rec := range records {
@@ -372,15 +281,12 @@ func ListImageTags(ctx context.Context, registryId int32, imageName string, fw F
 			log.Warn().Msgf("Missing neo4j entry")
 			continue
 		}
-		imageTags = append(imageTags, toContainerImage(da.Props))
+		var node ContainerImage
+		utils.FromMap(da.Props, &node)
+		res = append(res, node)
 	}
 
-	// sort response
-	sort.SliceStable(imageTags, func(i, j int) bool {
-		return imageTags[i].Tag < imageTags[j].Tag
-	})
-
-	return imageTags, nil
+	return res, nil
 }
 
 func toScansCount(scans []interface{}) Summary {

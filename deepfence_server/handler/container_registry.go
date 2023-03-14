@@ -342,7 +342,7 @@ func (h *Handler) ListImages(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 	}
 
-	images, err := model.ListImages(r.Context(), int32(rId), req.Window)
+	images, err := model.ListImages(r.Context(), int32(rId), req.ImageFilter, req.Window)
 	if err != nil {
 		respondError(err, w)
 	}
@@ -383,7 +383,7 @@ func (h *Handler) CountImages(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 	}
 
-	images, err := model.ListImages(r.Context(), int32(rId), req.Window)
+	images, err := model.ListImages(r.Context(), int32(rId), req.ImageFilter, req.Window)
 	if err != nil {
 		respondError(err, w)
 	}
@@ -395,9 +395,9 @@ func (h *Handler) CountImages(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *Handler) ListImageTags(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ListImageStubs(w http.ResponseWriter, r *http.Request) {
 
-	var req model.RegistryImageTagsReq
+	var req model.RegistryImageStubsReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		respondError(&BadDecoding{err}, w)
@@ -428,20 +428,17 @@ func (h *Handler) ListImageTags(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 	}
 
-	images, err := model.ListImageTags(r.Context(), int32(rId), req.ImageName, req.Window)
+	images, err := model.ListImageStubs(r.Context(), int32(rId), req.ImageFilter, req.Window)
 	if err != nil {
 		respondError(err, w)
 	}
-
-	log.Info().Msgf("get tags for image %s from registry id %d found %d images",
-		req.ImageName, rId, len(images))
 
 	httpext.JSON(w, http.StatusOK, images)
 }
 
-func (h *Handler) CountImageTags(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) CountImageStubs(w http.ResponseWriter, r *http.Request) {
 
-	var req model.RegistryImageTagsReq
+	var req model.RegistryImageStubsReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		respondError(&BadDecoding{err}, w)
@@ -472,13 +469,10 @@ func (h *Handler) CountImageTags(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 	}
 
-	imageTags, err := model.ListImageTags(r.Context(), int32(rId), req.ImageName, req.Window)
+	imageTags, err := model.ListImageStubs(r.Context(), int32(rId), req.ImageFilter, req.Window)
 	if err != nil {
 		respondError(err, w)
 	}
-
-	log.Info().Msgf("get tags count for image %s from registry id %d found %d images",
-		req.ImageName, rId, len(imageTags))
 
 	httpext.JSON(w, http.StatusOK, model.RegistryCountResp{
 		Count: len(imageTags),

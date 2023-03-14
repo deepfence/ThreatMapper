@@ -524,14 +524,14 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryIDPathReq), new(Summary))
 	d.AddOperation("listImages", http.MethodPost, "/deepfence/registryaccount/images",
 		"List Registry Images", "list images from a given registry",
-		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImagesReq), new([]ContainerImageWithTags))
-	d.AddOperation("listImageTags", http.MethodPost, "/deepfence/registryaccount/tags",
-		"List Image Tags", "list image tags for a given image and registry",
-		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImageTagsReq), new([]ContainerImage))
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImagesReq), new([]ContainerImage))
+	d.AddOperation("listImageStubs", http.MethodPost, "/deepfence/registryaccount/stubs",
+		"List Image Stubs", "list image tags for a given image and registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImageStubsReq), new([]ImageStub))
 	d.AddOperation("CountImages", http.MethodPost, "/deepfence/registryaccount/count/images",
 		"Count Registry Images", "count of images from a given registry",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImagesReq), new(RegistryCountResp))
-	d.AddOperation("CountImageTags", http.MethodPost, "/deepfence/registryaccount/count/tags",
-		"Count Image Tags", "count of image tags for a given image and registry",
-		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImageTagsReq), new(RegistryCountResp))
+	d.AddOperation("CountImageStubs", http.MethodPost, "/deepfence/registryaccount/count/stubs",
+		"Count Image Stubs", "count of image tags for a given image and registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImageStubsReq), new(RegistryCountResp))
 }
