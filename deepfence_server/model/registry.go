@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"sort"
+	"strconv"
 	"time"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
@@ -87,8 +88,8 @@ type RegistryListResp struct {
 	Name         string          `json:"name"`
 	RegistryType string          `json:"registry_type"`
 	NonSecret    json.RawMessage `json:"non_secret"`
-	CreatedAt    time.Time       `json:"created_at"`
-	UpdatedAt    time.Time       `json:"updated_at"`
+	CreatedAt    int64           `json:"created_at"`
+	UpdatedAt    int64           `json:"updated_at"`
 }
 
 type RegistrySummaryAllResp map[string]Summary
@@ -176,12 +177,12 @@ func (r *RegistryImageListReq) GetRegistryImages(ctx context.Context) ([]Contain
 }
 
 type ContainerImageWithTags struct {
-	ID      string    `json:"id"`
-	Name    string    `json:"name"`
-	Tags    []string  `json:"tags"`
-	Size    string    `json:"size"`
-	Created time.Time `json:"created"`
-	Updated time.Time `json:"updated"`
+	ID      string   `json:"id"`
+	Name    string   `json:"name"`
+	Tags    []string `json:"tags"`
+	Size    string   `json:"size"`
+	Created int64    `json:"created"`
+	Updated int64    `json:"updated"`
 }
 
 func (i *ContainerImageWithTags) AddTags(tags ...string) ContainerImageWithTags {
@@ -189,14 +190,48 @@ func (i *ContainerImageWithTags) AddTags(tags ...string) ContainerImageWithTags 
 	return *i
 }
 
-func toContainerImageWithTags(data map[string]interface{}) ContainerImageWithTags {
-	image := ContainerImageWithTags{
-		ID:   data["node_id"].(string),
-		Name: data["docker_image_name"].(string),
-		Tags: []string{data["docker_image_tag"].(string)},
-		Size: data["docker_image_size"].(string),
+func toContainerImageWithTags(data map[string]interface{}) (ContainerImageWithTags, error) {
+	var image ContainerImageWithTags
+
+	var ok bool
+	var val interface{}
+
+	if val, ok = data["node_id"]; !ok {
+		return image, errors.New("missing node_id")
 	}
-	return image
+	image.ID = val.(string)
+
+	if val, ok = data["docker_image_name"]; !ok {
+		return image, errors.New("missing docker_image_name")
+	}
+	image.Name = val.(string)
+
+	if val, ok = data["docker_image_tag"]; !ok {
+		return image, errors.New("missing docker_image_tag")
+	}
+	image.Tags = []string{val.(string)}
+
+	if val, ok = data["docker_image_size"]; !ok {
+		return image, errors.New("missing docker_image_size")
+	}
+	image.Size = val.(string)
+
+	if val, ok = data["metadata"]; !ok {
+		return image, errors.New("missing metadata")
+	}
+	log.Info().Msgf("metadata: %+v", val)
+	if metadata, ok := val.(map[string]interface{}); ok {
+		if val, ok = metadata["last_updated"]; ok {
+			if updatedString, ok := val.(string); ok {
+				var err error
+				if image.Updated, err = strconv.ParseInt(updatedString, 10, 64); err != nil {
+					return image, err
+				}
+			}
+		}
+	}
+
+	return image, nil
 }
 
 func ListImages(ctx context.Context, registryId int32, fw FetchWindow) ([]ContainerImageWithTags, error) {
@@ -246,7 +281,10 @@ func ListImages(ctx context.Context, registryId int32, fw FetchWindow) ([]Contai
 			continue
 		}
 
-		node := toContainerImageWithTags(da.Props)
+		node, err := toContainerImageWithTags(da.Props)
+		if err != nil {
+			log.Warn().Msgf("Missing neo4j entry: %s", err.Error())
+		}
 
 		i, ok := ri[node.Name]
 		if ok {

@@ -50,8 +50,8 @@ func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 			Name:         r.Name,
 			RegistryType: r.RegistryType,
 			NonSecret:    r.NonSecret,
-			CreatedAt:    r.CreatedAt,
-			UpdatedAt:    r.UpdatedAt,
+			CreatedAt:    r.CreatedAt.Unix(),
+			UpdatedAt:    r.UpdatedAt.Unix(),
 		}
 		registriesResponse = append(registriesResponse, registryResponse)
 	}
