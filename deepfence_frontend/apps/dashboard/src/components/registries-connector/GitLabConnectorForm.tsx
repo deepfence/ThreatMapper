@@ -1,6 +1,8 @@
 import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
 
+import { DFLink } from '@/components/DFLink';
+
 export const GitLabConnectorForm = () => {
   return (
     <>
@@ -11,14 +13,13 @@ export const GitLabConnectorForm = () => {
             configured by creating a directory under /etc/docker/certs.d on Deepfence
             console machine, using the same name as the registry&apos;s hostname provided
             above. All *.crt files are added to this directory as CA roots &nbsp;
-            <a
+            <DFLink
               href={`https://docs.docker.com/engine/security/certificates/`}
               target="_blank"
               rel="noreferrer"
-              className="text-blue-600 dark:text-blue-500 mt-2"
             >
               reading our documentation
-            </a>
+            </DFLink>
             .
           </div>
         </Step>

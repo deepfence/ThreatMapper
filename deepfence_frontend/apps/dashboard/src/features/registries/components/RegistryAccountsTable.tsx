@@ -1,5 +1,5 @@
 import { capitalize } from 'lodash-es';
-import { useCallback, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   HiArchive,
@@ -10,8 +10,9 @@ import {
 } from 'react-icons/hi';
 import {
   ActionFunctionArgs,
+  Form,
   generatePath,
-  useFetcher,
+  useActionData,
   useParams,
 } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -37,35 +38,30 @@ import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { ApiError, makeRequest } from '@/utils/api';
 
-enum TableActionEnumType {
-  DELETE = 'delete',
-  EDIT = 'edit',
-}
-
 export type ActionReturnType = {
   message?: string;
+  success: boolean;
 };
 
 export const action = async ({
   request,
-}: ActionFunctionArgs): Promise<ActionReturnType | null> => {
+}: ActionFunctionArgs): Promise<ActionReturnType> => {
   const formData = await request.formData();
-  const actionType = formData.get('actionType');
-  const ids = (formData.getAll('ids[]') ?? []) as string[];
-
+  const id = formData.get('_accountId')?.toString() ?? '';
   const r = await makeRequest({
     apiFunction: getRegistriesApiClient().deleteRegistry,
     apiArgs: [
       {
-        registryId: ids[0],
+        registryId: id,
       },
     ],
     errorHandler: async (r) => {
-      const error = new ApiError<ActionReturnType>({ message: '' });
-      if (r.status === 400 || r.status === 409) {
+      const error = new ApiError<ActionReturnType>({ success: false });
+      if (r.status === 400) {
         const modelResponse: ApiDocsBadRequestResponse = await r.json();
         return error.set({
           message: modelResponse.message ?? '',
+          success: false,
         });
       }
     },
@@ -76,31 +72,27 @@ export const action = async ({
   }
 
   toast('Registry account deleted sucessfully');
-  return null;
+  return {
+    success: true,
+  };
 };
 
 const DeleteConfirmationModal = ({
   showDialog,
-  ids,
+  id,
   setShowDialog,
 }: {
   showDialog: boolean;
-  ids: string[];
+  id: string;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const fetcher = useFetcher();
+  const actionData = useActionData() as ActionReturnType;
 
-  const onDeleteAction = useCallback(
-    (actionType: string) => {
-      const formData = new FormData();
-      formData.append('actionType', actionType);
-      ids.forEach((item) => formData.append('ids[]', item));
-      fetcher.submit(formData, {
-        method: 'post',
-      });
-    },
-    [ids, fetcher],
-  );
+  useEffect(() => {
+    if (actionData?.success) {
+      setShowDialog(false);
+    }
+  }, [actionData]);
 
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
@@ -117,50 +109,34 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
         </h3>
+        {actionData?.message && (
+          <p className="text-red-500 text-sm mb-4">{actionData.message}</p>
+        )}
         <div className="flex items-center justify-right gap-4">
           <Button size="xs" onClick={() => setShowDialog(false)}>
             No, cancel
           </Button>
-          <Button
-            size="xs"
-            color="danger"
-            onClick={() => {
-              onDeleteAction(TableActionEnumType.DELETE);
-              setShowDialog(false);
-            }}
-          >
-            Yes, I&apos;m sure
-          </Button>
+          <Form method="post">
+            <input type="text" name="_accountId" hidden readOnly value={id} />
+            <Button size="xs" color="danger" type="submit">
+              Yes, I&apos;m sure
+            </Button>
+          </Form>
         </div>
       </div>
     </Modal>
   );
 };
 
-const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
-  const fetcher = useFetcher();
+const ActionDropdown = ({ id }: { id: string }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [openScanConfigure, setOpenScanConfigure] = useState('');
-
-  const onTableAction = useCallback(
-    (actionType: string) => {
-      const formData = new FormData();
-      formData.append('actionType', actionType);
-      formData.append('_nodeType', 'registry');
-
-      ids.forEach((item) => formData.append('ids[]', item));
-      fetcher.submit(formData, {
-        method: 'post',
-      });
-    },
-    [ids],
-  );
 
   return (
     <>
       <DeleteConfirmationModal
         showDialog={showDeleteDialog}
-        ids={ids}
+        id={id}
         setShowDialog={setShowDeleteDialog}
       />
       <ScanConfigureModal
@@ -169,7 +145,7 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
         scanType={openScanConfigure}
         wantAdvanceOptions={true}
         data={{
-          urlIds: ids,
+          urlIds: [id],
           urlType: 'registry',
         }}
       />
@@ -222,10 +198,7 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
                 <span className="text-gray-700 dark:text-gray-400">Scan</span>
               </DropdownItem>
             </DropdownSubMenu>
-            <DropdownItem
-              className="text-sm"
-              onClick={() => onTableAction(TableActionEnumType.EDIT)}
-            >
+            <DropdownItem className="text-sm">
               <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
                 <IconContext.Provider
                   value={{ className: 'text-gray-700 dark:text-gray-400' }}
@@ -257,7 +230,6 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
           <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
             <HiDotsVertical />
           </IconContext.Provider>
-          {label ? <span className="ml-2">{label}</span> : null}
         </Button>
       </Dropdown>
     </>
@@ -319,7 +291,7 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
           if (!cell.row.original.id) {
             throw new Error('Registry Account id not found');
           }
-          return <ActionDropdown ids={[cell.row.original.id.toString()]} />;
+          return <ActionDropdown id={cell.row.original.id.toString()} />;
         },
         header: () => '',
         minSize: 20,

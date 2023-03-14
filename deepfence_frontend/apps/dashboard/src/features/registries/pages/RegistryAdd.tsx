@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { generatePath, useParams } from 'react-router-dom';
 import { Button } from 'ui-components';
 
 import { AmazonECRConnectorForm } from '@/components/registries-connector/AmazonECRConnectorForm';
@@ -14,8 +14,10 @@ import { GoogleCRConnectorForm } from '@/components/registries-connector/GoogleC
 import { HarborConnectorForm } from '@/components/registries-connector/HarborConnectorForm';
 import { JfrogConnectorForm } from '@/components/registries-connector/JfrogConnectorForm';
 import { QuayConnectorForm } from '@/components/registries-connector/QuayConnectorForm';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 const RegistryAdd = () => {
+  const { navigate } = usePageNavigation();
   const formRef = useRef<HTMLFormElement>(null);
   const { account } = useParams() as {
     account: string;
@@ -27,7 +29,18 @@ const RegistryAdd = () => {
 
   return (
     <>
-      {account === 'docker_hub' && <DockerRegistryConnectorForm ref={formRef} />}
+      {account === 'docker_hub' && (
+        <DockerRegistryConnectorForm
+          ref={formRef}
+          onSuccess={() => {
+            navigate(
+              generatePath('/registries/:account', {
+                account,
+              }),
+            );
+          }}
+        />
+      )}
       {account === 'ecr' && <AmazonECRConnectorForm />}
       {account === 'azure' && <AzureCRConnectorForm />}
       {account === 'gcr' && <GoogleCRConnectorForm />}

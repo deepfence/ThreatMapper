@@ -1,5 +1,4 @@
 import { useRef } from 'react';
-import { Form } from 'react-router-dom';
 import { Button } from 'ui-components';
 
 import {
@@ -20,7 +19,12 @@ const DockerRegistryContainer = () => {
         description="Deploy all modules for Deepfence Compliance Scanner for your registry"
       />
       <>
-        <DockerRegistryConnectorForm ref={formRef} />
+        <DockerRegistryConnectorForm
+          ref={formRef}
+          onSuccess={() => {
+            navigate('/onboard/connectors/my-connectors');
+          }}
+        />
         <div className="flex">
           <Button onClick={goBack} size="xs">
             Go Back
@@ -34,7 +38,6 @@ const DockerRegistryContainer = () => {
               onClick={(e) => {
                 e.preventDefault();
                 formRef.current?.requestSubmit();
-                navigate('/onboard/connectors/my-connectors');
               }}
             >
               Save and go to connectors

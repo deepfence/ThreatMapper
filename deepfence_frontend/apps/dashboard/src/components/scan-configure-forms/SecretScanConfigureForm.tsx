@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActionFunctionArgs, generatePath, redirect, useFetcher } from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button, Checkbox, Radio, TextInput } from 'ui-components';
 
@@ -76,16 +76,7 @@ export const scanSecretApiAction = async ({
   if (ApiError.isApiError(r)) {
     return r.value();
   }
-  if (request.url.includes('onboard')) {
-    throw redirect(
-      generatePath('/onboard/scan/view-summary/running/:nodeType/:scanType/:bulkScanId', {
-        nodeType,
-        scanType: 'secret',
-        bulkScanId: r.bulk_scan_id,
-      }),
-      302,
-    );
-  }
+
   toast('Scan has been sucessfully started');
   return {
     success: true,
