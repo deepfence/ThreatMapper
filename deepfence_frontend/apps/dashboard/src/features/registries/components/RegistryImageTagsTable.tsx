@@ -1,8 +1,8 @@
 import cx from 'classnames';
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiDotsVertical } from 'react-icons/hi';
-import { useFetcher, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import {
   Badge,
   Button,

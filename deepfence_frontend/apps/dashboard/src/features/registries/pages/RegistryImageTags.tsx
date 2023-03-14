@@ -132,6 +132,8 @@ const HeaderComponent = () => {
     imageId: string;
   };
 
+  const isFilterApplied = searchParams.has('status');
+
   return (
     <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <DFLink
@@ -154,7 +156,9 @@ const HeaderComponent = () => {
       </span>
       <div className="ml-auto flex items-center gap-x-4">
         <div className="relative">
-          <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
+          {isFilterApplied && (
+            <span className="absolute -left-[2px] -top-[2px] inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
+          )}
           <Popover
             triggerAsChild
             elementToFocusOnCloseRef={elementToFocusOnClose}
@@ -205,6 +209,31 @@ const HeaderComponent = () => {
                               prev.delete('status');
                               prevStatuses
                                 .filter((status) => status !== 'in_progress')
+                                .forEach((status) => {
+                                  prev.append('status', status);
+                                });
+                              prev.delete('page');
+                              return prev;
+                            });
+                          }
+                        }}
+                      />
+                      <Checkbox
+                        label="Not scan"
+                        checked={searchParams.getAll('status').includes('not_scan')}
+                        onCheckedChange={(state) => {
+                          if (state) {
+                            setSearchParams((prev) => {
+                              prev.append('status', 'not_scan');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          } else {
+                            setSearchParams((prev) => {
+                              const prevStatuses = prev.getAll('status');
+                              prev.delete('status');
+                              prevStatuses
+                                .filter((status) => status !== 'not_scan')
                                 .forEach((status) => {
                                   prev.append('status', status);
                                 });
@@ -271,7 +300,6 @@ const RegistryImageTags = () => {
           <DFAwait resolve={loaderData.tableData}>
             {(resolvedData: LoaderDataTypeForImageTags['tableData']) => {
               const { tags, currentPage, totalRows } = resolvedData;
-              console.log(currentPage, totalRows);
               return (
                 <RegistryImageTagsTable
                   data={tags}
