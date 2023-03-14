@@ -32,56 +32,15 @@ import {
 } from 'ui-components';
 
 import { getCloudNodesApiClient } from '@/api/api';
+import {
+  ApiDocsBadRequestResponse,
+  ModelCloudNodeAccountsListResp,
+} from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { ScanConfigureForm } from '@/components/forms/posture/ScanConfigureForm';
-import { POSTURE_SEVERITY_COLORS } from '@/constants/charts';
+import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { usePageNavigation } from '@/utils/usePageNavigation';
-
-let mockData = [
-  {
-    id: 'cloud-node-aws-122565780891',
-    accountType: '122565780891',
-    cloud_provider: 'aws',
-    compliancePercentage: 0,
-    scanStatus: 'COMPLETE',
-    active: true,
-  },
-  {
-    id: 'cloud-node-aws-122565780892',
-    accountType: '122565780892',
-    cloud_provider: 'aws',
-    compliancePercentage: 0,
-    scanStatus: 'ERROR',
-    active: true,
-  },
-  {
-    id: 'cloud-node-aws-org-122565780891',
-    accountType: '122565780891',
-    cloud_provider: 'aws-org',
-    compliancePercentage: 0,
-    scanStatus: 'RUNNING',
-    active: true,
-  },
-  {
-    id: 'cloud-node-aws-org-122565780892',
-    accountType: '122565780892',
-    cloud_provider: 'aws-org',
-    compliancePercentage: 0,
-    scanStatus: 'RUNNING',
-    active: true,
-  },
-  {
-    id: 'cloud-node-aws-org-122565780893',
-    accountType: '122565780893',
-    cloud_provider: 'aws-org',
-    compliancePercentage: 0,
-    scanStatus: 'COMPLETE',
-    active: true,
-  },
-];
-
-mockData = [...mockData, ...mockData, ...mockData];
 
 enum ActionEnumType {
   START_SCAN = 'start_scan',
@@ -105,7 +64,7 @@ export interface AccountData {
 type LoaderDataType = {
   error?: string;
   message?: string;
-  data: Awaited<ReturnType<typeof getAccountsData>>;
+  data: Awaited<ReturnType<typeof getAccounts>>;
 };
 
 const PAGE_SIZE = 15;
@@ -118,53 +77,46 @@ function getPageFromSearchParams(searchParams: URLSearchParams): number {
   return isFinite(page) && !isNaN(page) && page > 0 ? page : 0;
 }
 
-async function getAccountsData(searchParams: URLSearchParams): Promise<{
-  accounts: AccountData[];
+async function getAccounts(
+  nodeType: string,
+  searchParams: URLSearchParams,
+): Promise<{
+  accountData: ModelCloudNodeAccountsListResp;
   currentPage: number;
   totalRows: number;
   message?: string;
 }> {
-  const severity = getAccountSearch(searchParams);
-  const page = getPageFromSearchParams(searchParams);
+  const accounts = await makeRequest({
+    apiFunction: getCloudNodesApiClient().listCloudNodeAccount,
+    apiArgs: [
+      {
+        modelCloudNodeAccountsListReq: {
+          cloud_provider: nodeType,
+          window: {
+            offset: 0 * PAGE_SIZE,
+            size: PAGE_SIZE,
+          },
+        },
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError([]);
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          ...accounts,
+          message: modelResponse.message,
+        });
+      }
+    },
+  });
 
-  // const awsResultsPromise = makeRequest({
-  //   apiFunction: getCloudNodesApiClient().listCloudNodeAccount,
-  //   apiArgs: [
-  //     {
-  //       modelCloudNodeAccountsListReq: {
-  //         cloud_provider: 'aws',
-  //         window: {
-  //           offset: page * PAGE_SIZE,
-  //           size: PAGE_SIZE,
-  //         },
-  //       },
-  //     },
-  //   ],
-  // });
-  // const [awsResults] = await Promise.all([awsResultsPromise]);
-  // if (ApiError.isApiError(awsResults)) {
-  //   // TODO(manan) handle error cases
-  //   return {
-  //     data: [],
-  //   };
-  // }
-  //   const awsResults = {
-  //     cloud_node_accounts_info: mockData,
-  //     total: 5,
-  //   };
-  //   const data: LoaderDataType['data'] = awsResults.cloud_node_accounts_info.map(
-  //     (account) => {
-  //       return {
-  //         id: account.node_id,
-  //         accountType: account.accountType,
-  //         scanStatus: account.scan_status,
-  //         active: account.active,
-  //         compliancePercetage: account.compliance_percentage,
-  //       };
-  //     },
-  //   );
+  if (ApiError.isApiError(accounts)) {
+    throw accounts.value();
+  }
+
   return {
-    accounts: mockData,
+    accountData: accounts,
     currentPage: 1,
     totalRows: 50,
   };
@@ -175,10 +127,13 @@ const loader = async ({
   request,
 }: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
   const searchParams = new URL(request.url).searchParams;
+  const nodeType = params.nodeType;
 
-  // return Promise.resolve([]);
+  if (!nodeType) {
+    throw new Error('Cloud Node Type is required');
+  }
   return typedDefer({
-    data: getAccountsData(searchParams),
+    data: getAccounts(nodeType, searchParams),
   });
 };
 
@@ -289,7 +244,8 @@ const ScanConfigure = ({
 const PostureTable = () => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [searchParams, setSearchParams] = useSearchParams();
-  const columnHelper = createColumnHelper<AccountData>();
+  const columnHelper =
+    createColumnHelper<ModelCloudNodeAccountsListResp['cloud_node_accounts_info']>();
   const [openScanConfigure, setOpenScanConfigure] = useState(false);
   const loaderData = useLoaderData() as LoaderDataType;
 
@@ -301,7 +257,7 @@ const PostureTable = () => {
         maxSize: 30,
         header: () => null,
       }),
-      columnHelper.accessor('accountType', {
+      columnHelper.accessor('cloud_provider', {
         cell: (cell) => {
           const isScanComplete =
             cell.row.original.scanStatus?.toLowerCase() === 'complete';
@@ -326,7 +282,7 @@ const PostureTable = () => {
         size: 100,
         maxSize: 120,
       }),
-      columnHelper.accessor('compliancePercentage', {
+      columnHelper.accessor('compliance_percentage', {
         minSize: 80,
         size: 80,
         maxSize: 100,
@@ -360,24 +316,24 @@ const PostureTable = () => {
           return value ? 'Yes' : 'No';
         },
       }),
-      columnHelper.accessor('scanStatus', {
-        cell: (info) => (
-          <span
-            className={cx({
-              'text-green-500': info.getValue().toLowerCase() === 'complete',
-              'text-red-500': info.getValue().toLowerCase() === 'error',
-              'text-blue-500':
-                info.getValue().toLowerCase() !== 'complete' &&
-                info.getValue().toLowerCase() !== 'error',
-            })}
-          >
-            {info.getValue()}
-          </span>
-        ),
-        header: () => 'Status',
-        minSize: 50,
-        size: 70,
-      }),
+      // columnHelper.accessor('scanStatus', {
+      //   cell: (info) => (
+      //     <span
+      //       className={cx({
+      //         'text-green-500': info.getValue().toLowerCase() === 'complete',
+      //         'text-red-500': info.getValue().toLowerCase() === 'error',
+      //         'text-blue-500':
+      //           info.getValue().toLowerCase() !== 'complete' &&
+      //           info.getValue().toLowerCase() !== 'error',
+      //       })}
+      //     >
+      //       {info.getValue()}
+      //     </span>
+      //   ),
+      //   header: () => 'Status',
+      //   minSize: 50,
+      //   size: 70,
+      // }),
       columnHelper.display({
         id: 'startScan',
         enableSorting: false,
@@ -427,6 +383,9 @@ const PostureTable = () => {
       <Suspense fallback={<TableSkeleton columns={6} rows={10} size={'md'} />}>
         <Await resolve={loaderData.data}>
           {(resolvedData: LoaderDataType['data']) => {
+            console.log('resolvedData', resolvedData);
+            const accounts = resolvedData.accountData.cloud_node_accounts_info;
+
             return (
               <>
                 <Form>
@@ -452,7 +411,7 @@ const PostureTable = () => {
                 </Form>
                 <Table
                   size="sm"
-                  data={resolvedData.accounts}
+                  data={accounts ?? []}
                   columns={columns}
                   enableRowSelection
                   enablePagination

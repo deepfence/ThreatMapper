@@ -49,13 +49,6 @@ export function getTopologyApiClient() {
   };
 }
 
-export function getCloudNodesApiClient() {
-  const cloudNodesApi = new CloudNodesApi(configuration);
-  return {
-    listCloudNodeAccount: cloudNodesApi.listCloudNodeAccount.bind(cloudNodesApi),
-  };
-}
-
 export function getVulnerabilityApiClient() {
   const vulnerabilityApi = new VulnerabilityApi(configuration);
 
@@ -173,5 +166,14 @@ export function getControlsApiClient() {
     listControls: controlsApi.getCloudNodeControls.bind(controlsApi),
     enableControl: controlsApi.enableCloudNodeControls.bind(controlsApi),
     disableControl: controlsApi.disableCloudNodeControls.bind(controlsApi),
+  };
+}
+
+export function getCloudNodesApiClient() {
+  const cloudNodesApi = new CloudNodesApi(configuration);
+
+  return {
+    listCloudNodeAccount: cloudNodesApi.listCloudNodeAccount.bind(cloudNodesApi),
+    listCloudProviders: cloudNodesApi.listCloudProviders.bind(cloudNodesApi),
   };
 }
