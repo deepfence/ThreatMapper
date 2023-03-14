@@ -7,7 +7,11 @@ import {
   convertApiEdgesDiffToModelEdgesDiff,
   convertApiNodesDiffToModelNodesDiff,
 } from '@/features/topology/utils/g6ModelTransforms';
-
+/**
+ * what does this do?
+ * exposes a singular layout function, whose job is to
+ * update the graph with delta and queue the layouts.
+ */
 export function useTopology(
   graph: G6Graph | null,
   options: {
@@ -79,6 +83,8 @@ export function useTopology(
         remove: [],
       });
     }
+
+    updateManagerRef.current?.processLayouts?.();
   };
 
   return { update };

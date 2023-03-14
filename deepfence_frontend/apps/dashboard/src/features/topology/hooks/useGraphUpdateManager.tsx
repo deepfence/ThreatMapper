@@ -83,17 +83,17 @@ export function useGraphUpdateManager(
     queueLayout('root');
   }
 
-  function processNodeUpdate(node_id: string, diff: EnhancedDiff['nodesDiff']) {
-    const item = graph?.findById(node_id);
+  function processNodeUpdate(nodeId: string, diff: EnhancedDiff['nodesDiff']) {
+    const item = graph?.findById(nodeId);
     if (item === undefined) {
-      console.error("received update for a node that doesn't exist", node_id, diff);
+      console.error("received update for a node that doesn't exist", nodeId, diff);
       return;
     }
 
     if (!isItemExpanded(item)) {
       // this can happen if we get an update before the backend has received
       // our message where we told it the node was collapsed
-      console.warn('ignoring node update as the node is not expanded', node_id, diff);
+      console.warn('ignoring node update as the node is not expanded', nodeId, diff);
       return;
     }
 
@@ -114,7 +114,7 @@ export function useGraphUpdateManager(
 
     // TODO: Explain me size concept used here, 30 threshold seems quite high
     if (size > 0) {
-      queueLayout(node_id, {
+      queueLayout(nodeId, {
         expanding,
         refreshOnTick: expanding || size > 30,
       });

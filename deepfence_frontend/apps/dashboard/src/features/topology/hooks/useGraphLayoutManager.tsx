@@ -84,11 +84,11 @@ export function useGraphLayoutManager(graph: G6Graph | null, options: LayoutOpti
     }
   };
 
-  const startLayout = (node_id: string) => {
-    const _opts = layoutsRef.current[node_id];
-    delete layoutsRef.current[node_id];
+  const startLayout = (nodeId: string) => {
+    const _opts = layoutsRef.current[nodeId];
+    delete layoutsRef.current[nodeId];
 
-    const layout = buildLayout(graph!, node_id, _opts);
+    const layout = buildLayout(graph!, nodeId, _opts);
     if (!layout) {
       return maybeStartNextLayout();
     }

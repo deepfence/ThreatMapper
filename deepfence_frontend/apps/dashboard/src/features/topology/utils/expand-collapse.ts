@@ -15,7 +15,6 @@ export const finishExpandingNode = (graph: G6Graph, item: G6Item) => {
 
 const finishExpandSimpleNode = (graph: G6Graph, item: G6Item) => {
   itemSetExpanded(item);
-  graph.emit('df-track-item', { item });
 };
 
 const finishExpandCombo = (graph: G6Graph, item: G6Item) => {
@@ -84,18 +83,16 @@ const finishExpandCombo = (graph: G6Graph, item: G6Item) => {
 
   itemSetExpanded(combo);
   itemSetExpanded(item);
-
-  graph.emit('df-track-item', { item: combo });
 };
 
 // this is the static things that will consider a node as combo or not
 export const itemExpandsAsCombo = (item: G6Item | null) => {
   const model = item?.get('model');
   return (
-    model.node_type === 'kubernetes_cluster' ||
-    model.node_type === 'host' ||
-    model.node_type === 'pod' ||
-    model.node_type == 'container'
+    model.type === 'kubernetes_cluster' ||
+    model.type === 'host' ||
+    model.type === 'pod' ||
+    model.type == 'container'
   );
 };
 
@@ -103,8 +100,8 @@ export const itemExpandsAsCombo = (item: G6Item | null) => {
 export const itemExpands = (item: G6Item) => {
   const model = item.get('model');
 
-  switch (model.node_type) {
-    case 'cloud':
+  switch (model.type) {
+    case 'cloud_provider':
     case 'region':
     case 'kubernetes_cluster':
     case 'host':

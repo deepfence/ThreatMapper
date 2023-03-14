@@ -65,10 +65,6 @@ export function convertApiNodesDiffToModelNodesDiff(
 const enhanceApiEdge = (
   apiEdge: DetailedConnectionSummary,
 ): EnhancedDetailedConnectionSummary => {
-  if (apiEdge.source == apiEdge.target) {
-    throw new Error('handle me');
-  }
-
   return { ...apiEdge, id: `${apiEdge.source}-${apiEdge.target}` };
 };
 export function convertApiEdgesDiffToModelEdgesDiff(

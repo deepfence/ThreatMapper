@@ -1,4 +1,13 @@
-import { Graph, GraphData, GraphOptions, ICombo, IEdge, INode, Layout } from '@antv/g6';
+import {
+  Graph,
+  GraphData,
+  GraphOptions,
+  ICombo,
+  IEdge,
+  IG6GraphEvent,
+  INode,
+  Layout,
+} from '@antv/g6';
 import { GForceLayoutOptions } from '@antv/layout';
 
 import { DetailedConnectionSummary, DetailedNodeSummary } from '@/api/generated';
@@ -11,6 +20,7 @@ export type G6Edge = IEdge;
 export type G6Combo = ICombo;
 export type G6Item = G6Node | G6Edge | G6Combo;
 export type G6Layout = typeof Layout;
+export type G6GraphEvent = IG6GraphEvent;
 
 interface ApiNodeDiff {
   add: DetailedNodeSummary[];

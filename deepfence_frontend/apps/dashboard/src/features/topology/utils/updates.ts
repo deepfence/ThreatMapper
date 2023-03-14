@@ -197,7 +197,7 @@ export const updateGraphRootNodes = (graph: G6Graph, diff: EnhancedDiff['nodesDi
   const center_y = graph.getHeight() / 2;
 
   for (const node of diff.add) {
-    const info = node.type === 'cloud' ? cloudInfo() : null;
+    const info = node.type === 'cloud_provider' ? cloudInfo() : null;
 
     graph.addItem('node', {
       ...node,
@@ -242,6 +242,7 @@ export const updateGraphEdges = (graph: G6Graph, delta: EnhancedDiff['edgesDiff'
         ...edge,
         style: sourceNode.cloudInfo?.edgeStyle,
         connection: true,
+        type: edge.source === edge.target ? 'loop' : undefined,
       });
     }
   }
@@ -276,12 +277,12 @@ const nodeStyle = (node: Record<string, any>, override: Record<string, any>) => 
     container: COLORS.CONTAINER,
     process: COLORS.PROCESS,
   };
-  style.fill = fill[node.node_type] || COLORS.NODE;
+  style.fill = fill[node.type] || COLORS.NODE;
 
   style = { ...style, ...override };
   if (node.img !== undefined) {
     delete style.fill;
-  } else if (node.node_type === 'process') {
+  } else if (node.type === 'process') {
     style.fill = COLORS.PROCESS;
   }
 

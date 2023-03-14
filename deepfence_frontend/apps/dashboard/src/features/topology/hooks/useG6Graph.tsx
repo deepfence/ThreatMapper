@@ -11,7 +11,7 @@ import { COLORS } from '@/features/topology/utils/theme';
 const toolbar = new G6.ToolBar({
   className: 'absolute bottom-2.5 left-2.5',
   getContent: () => `<div>
-    <ul class="list-none m-0 p-2.5 pt-0 border-solid border border-[#abb2b7]">
+    <ul class="list-none m-0 p-2.5 pt-0 rounded-md drop-shadow-md shadow-gray-500 border-solid border border-[#abb2b7]">
       <li code="zoom-out" title="Zoom Out" class="mt-2.5 cursor-pointer">
         <svg class="fill-[#abb2b7]" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="24" height="24">
           <path d="M658.432 428.736a33.216 33.216 0 0 1-33.152 33.152H525.824v99.456a33.216 33.216 0 0 1-66.304 0V461.888H360.064a33.152 33.152 0 0 1 0-66.304H459.52V296.128a33.152 33.152 0 0 1 66.304 0V395.52H625.28c18.24 0 33.152 14.848 33.152 33.152z m299.776 521.792a43.328 43.328 0 0 1-60.864-6.912l-189.248-220.992a362.368 362.368 0 0 1-215.36 70.848 364.8 364.8 0 1 1 364.8-364.736 363.072 363.072 0 0 1-86.912 235.968l192.384 224.64a43.392 43.392 0 0 1-4.8 61.184z m-465.536-223.36a298.816 298.816 0 0 0 298.432-298.432 298.816 298.816 0 0 0-298.432-298.432A298.816 298.816 0 0 0 194.24 428.8a298.816 298.816 0 0 0 298.432 298.432z"></path>
@@ -90,8 +90,8 @@ const DEFAULT_OPTIONS: G6GraphOptionsWithoutContainer = {
         stroke: 'black',
         lineWidth: 0,
         fill: COLORS.LABEL,
-        fontFamily: 'Source Sans Pro',
-        fontSize: 20,
+        fontFamily: 'Inter',
+        fontSize: 16,
         background: {
           fill: '#ffffff',
           fillOpacity: 0.1,
@@ -106,13 +106,11 @@ const DEFAULT_OPTIONS: G6GraphOptionsWithoutContainer = {
     size: 2,
     color: COLORS.EDGE,
     style: {
-      opacity: 0.6,
       endArrow: {
-        path: G6.Arrow.triangle(4, 6, 12),
-        opacity: 0.6,
-        strokeOpacity: 0.6,
-        fillOpacity: 0.6,
-        d: 16,
+        path: G6.Arrow.vee(4, 5, 12),
+        d: 14,
+        fill: COLORS.EDGE,
+        stroke: COLORS.EDGE,
       },
     },
   },
@@ -157,10 +155,6 @@ const DEFAULT_OPTIONS: G6GraphOptionsWithoutContainer = {
         onlyChangeComboSize: true,
       },
       'drag-combo',
-      // {
-      //   type: "activate-relations",
-      //   trigger: "mouseenter",
-      // },
     ],
   },
 };
