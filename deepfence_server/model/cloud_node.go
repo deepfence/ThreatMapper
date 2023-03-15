@@ -319,13 +319,13 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	var res neo4j.Result
 	if isOrgListing {
 		res, err = tx.Run(`
-		MATCH (m:Node) -[:IS_CHILD]-> (n:Node{cloud_provider: $cloud_provider})
+		MATCH (m:Node{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (n:Node{cloud_provider: $cloud_provider})
 		WITH DISTINCT m.node_id AS node_id, m.node_name AS node_name, m.cloud_provider AS cloud_provider, m.updated_at AS updated_at
-		MATCH (n:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c:CloudComplianceResult)
+		OPTIONAL MATCH (n:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c:CloudComplianceResult)
 		WITH node_id, node_name, cloud_provider, updated_at, COUNT(c) AS total_compliance_count
-		MATCH (n:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c1:CloudComplianceResult)
+		OPTIONAL MATCH (n:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c1:CloudComplianceResult)
 		WHERE c1.status IN ['ok', 'info', 'skip']
-		RETURN node_id, node_name, cloud_provider, COUNT(c1.status)*100.0/total_compliance_count AS compliance_percentage, updated_at
+		RETURN node_id, node_name, cloud_provider, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage, updated_at
 		ORDER BY updated_at`+fw.FetchWindow2CypherQuery(),
 			map[string]interface{}{"cloud_provider": cloudProvider})
 		if err != nil {
@@ -335,11 +335,11 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		res, err = tx.Run(`
 		MATCH (n:Node{cloud_provider: $cloud_provider}) 
 		WITH DISTINCT n.node_id AS node_id, n.node_name AS node_name, n.cloud_provider AS cloud_provider, n.updated_at AS updated_at
-		MATCH (n:Node{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:CloudComplianceScan)-[:DETECTED]->(c:CloudComplianceResult)
+		OPTIONAL MATCH (n:Node{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:CloudComplianceScan)-[:DETECTED]->(c:CloudComplianceResult)
 		WITH node_id, node_name, cloud_provider, updated_at, COUNT(c) AS total_compliance_count
-		MATCH (n:Node{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:CloudComplianceScan)-[:DETECTED]->(c1:CloudComplianceResult)
+		OPTIONAL MATCH (n:Node{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:CloudComplianceScan)-[:DETECTED]->(c1:CloudComplianceResult)
 		WHERE c1.status IN ['ok', 'info', 'skip']
-		RETURN node_id, node_name, cloud_provider, COUNT(c1.status)*100.0/total_compliance_count AS compliance_percentage, updated_at
+		RETURN node_id, node_name, cloud_provider, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage, updated_at
 		ORDER BY updated_at`+fw.FetchWindow2CypherQuery(),
 			map[string]interface{}{"cloud_provider": cloudProvider})
 		if err != nil {
