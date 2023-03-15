@@ -97,7 +97,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/containerd/containerd v1.6.18 // indirect
-	github.com/deepfence/compliance v0.1.3-0.20230315031021-8bd675373f9e // indirect
+	github.com/deepfence/compliance v0.1.3-0.20230315035520-cf4c1017c05f // indirect
 	github.com/docker/docker v23.0.1+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
