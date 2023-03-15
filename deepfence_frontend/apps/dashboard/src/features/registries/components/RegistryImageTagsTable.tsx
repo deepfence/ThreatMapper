@@ -24,6 +24,7 @@ import {
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { formatMilliseconds } from '@/utils/date';
 
 const PAGE_SIZE = 15;
 
@@ -38,8 +39,8 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
         scanType={openScanConfigure}
         wantAdvanceOptions={true}
         data={{
-          urlIds: ids,
-          urlType: 'registry',
+          nodeIds: ids,
+          nodeType: 'imageTag',
         }}
       />
       <Dropdown
@@ -120,13 +121,14 @@ export const RegistryImageTagsTable = ({
         header: () => 'Pushed at',
         cell: (info) => {
           const metadata = info.row.original.metadata;
-          return metadata['last_updated'];
+          const date = metadata['last_updated'];
+          return formatMilliseconds(date);
         },
         maxSize: 50,
       }),
       columnHelper.accessor('docker_image_size', {
         header: () => 'Size',
-        cell: (info) => info.renderValue() + ' KB',
+        cell: (info) => (Number(info.getValue()) / 1000000).toFixed(2) + ' MB',
         maxSize: 50,
       }),
       columnHelper.accessor('vulnerability_scan_status', {
@@ -265,8 +267,8 @@ export const RegistryImageTagsTable = ({
         scanType={openScanConfigure}
         wantAdvanceOptions={true}
         data={{
-          urlIds: selectedIds,
-          urlType: 'registry',
+          nodeIds: selectedIds,
+          nodeType: 'imageTag',
         }}
       />
       <Table

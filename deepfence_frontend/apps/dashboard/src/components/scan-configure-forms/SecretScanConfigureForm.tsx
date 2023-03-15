@@ -13,8 +13,9 @@ import { ApiError, makeRequest } from '@/utils/api';
 
 type ScanConfigureFormProps = {
   data: {
-    urlIds: string[];
-    urlType: string;
+    nodeIds: string[];
+    images: string[];
+    nodeType: 'cluster' | 'host' | 'image' | 'registry' | 'imageTag';
   };
   onSuccess: () => void;
 };
@@ -29,12 +30,40 @@ export const scanSecretApiAction = async ({
 }: ActionFunctionArgs): Promise<ScanActionReturnType | null> => {
   const formData = await request.formData();
   const nodeIds = formData.get('_nodeIds')?.toString().split(',') ?? [];
+  const _images = formData.get('_images')?.toString().split(',') ?? [];
   const nodeType = formData.get('_nodeType')?.toString() ?? '';
 
   const scanInterval = formData.get('scanInterval')?.toString() ?? '';
   const scanEveryday = formData.get('scanEveryday')?.toString() ?? '';
-  const scanTag = formData.get('scanTag')?.toString() ?? '';
+  const imageTag = formData.get('imageTag')?.toString() ?? '';
   const priorityScan = formData.get('priorityScan')?.toString() ?? '';
+
+  let filter_in = null;
+  let _nodeType = nodeType;
+
+  if (nodeType === 'imageTag') {
+    _nodeType = 'image';
+  } else if (nodeType === 'kubernetes_cluster') {
+    _nodeType = 'cluster';
+  } else if (nodeType === 'image') {
+    _nodeType = 'registry';
+    if (imageTag !== '') {
+      filter_in = {
+        docker_image_name: _images,
+        docker_image_tag: [imageTag],
+      };
+    } else {
+      filter_in = {
+        docker_image_name: _images,
+      };
+    }
+  } else if (nodeType === 'registry') {
+    if (imageTag !== '') {
+      filter_in = {
+        docker_image_tag: [imageTag],
+      };
+    }
+  }
 
   const requestBody: ModelSecretScanTriggerReq = {
     filters: {
@@ -42,13 +71,13 @@ export const scanSecretApiAction = async ({
       kubernetes_cluster_scan_filter: { filter_in: null },
       container_scan_filter: { filter_in: null },
       host_scan_filter: { filter_in: null },
-      image_scan_filter: { filter_in: null },
+      image_scan_filter: {
+        filter_in,
+      },
     },
     node_ids: nodeIds.map((nodeId) => ({
       node_id: nodeId,
-      node_type: (nodeType === 'kubernetes_cluster'
-        ? 'cluster'
-        : nodeType) as ModelNodeIdentifierNodeTypeEnum,
+      node_type: _nodeType as ModelNodeIdentifierNodeTypeEnum,
     })),
   };
 
@@ -86,7 +115,7 @@ export const scanSecretApiAction = async ({
 export const SecretScanConfigureForm = ({ data, onSuccess }: ScanConfigureFormProps) => {
   const [priorityScan, setPriorityScan] = useState(false);
   const [autoCheckandScan, setAutoCheckandScan] = useState(false);
-  const [scanTag, setScanTag] = useState('last');
+  const [imageTag, setImageTag] = useState('latest');
   const fetcher = useFetcher<ScanActionReturnType>();
 
   const { state, data: fetcherData } = fetcher;
@@ -103,8 +132,11 @@ export const SecretScanConfigureForm = ({ data, onSuccess }: ScanConfigureFormPr
       method="post"
       action="/data-component/scan/secret"
     >
-      <input type="text" name="_nodeIds" hidden readOnly value={data.urlIds.join(',')} />
-      <input type="text" name="_nodeType" readOnly hidden value={data.urlType} />
+      <input type="text" name="_nodeIds" hidden readOnly value={data.nodeIds.join(',')} />
+      <input type="text" name="_nodeType" readOnly hidden value={data.nodeType} />
+      {data.images && (
+        <input type="text" name="_images" hidden readOnly value={data.images.join(',')} />
+      )}
       {fetcherData?.message && (
         <p className="text-red-500 text-md py-3">{fetcherData.message}</p>
       )}
@@ -130,19 +162,20 @@ export const SecretScanConfigureForm = ({ data, onSuccess }: ScanConfigureFormPr
             setPriorityScan(checked);
           }}
         />
-        <Radio
-          name="scanTag"
-          defaultChecked
-          value={scanTag}
-          options={[
-            { label: 'Scan last pushed tag', value: 'recent' },
-            { label: 'Scan by "latest" tag', value: 'last' },
-            { label: 'Scan all image tags', value: 'all' },
-          ]}
-          onValueChange={(value) => {
-            setScanTag(value);
-          }}
-        />
+        {data.nodeType !== 'imageTag' && (
+          <Radio
+            name="imageTag"
+            value={imageTag}
+            options={[
+              { label: 'Scan last pushed tag', value: 'recent' },
+              { label: 'Scan by "latest" tag', value: 'latest' },
+              { label: 'Scan all image tags', value: 'all' },
+            ]}
+            onValueChange={(value) => {
+              setImageTag(value);
+            }}
+          />
+        )}
         <TextInput
           className="min-[200px] max-w-xs"
           label="Scan interval in days (optional)"

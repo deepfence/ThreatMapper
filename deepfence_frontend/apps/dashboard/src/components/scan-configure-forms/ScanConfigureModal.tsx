@@ -21,8 +21,9 @@ export const ScanConfigureModal = ({
   setOpen: React.Dispatch<React.SetStateAction<string>>;
   scanType: string;
   data: {
-    urlIds: string[];
-    urlType: string;
+    nodeIds: string[];
+    nodeType: 'cluster' | 'host' | 'registry' | 'image' | 'imageTag';
+    images?: string[];
   };
 }) => {
   let title = '';
@@ -41,8 +42,9 @@ export const ScanConfigureModal = ({
         <VulnerabilityScanConfigureForm
           wantAdvanceOptions={wantAdvanceOptions}
           data={{
-            urlIds: data.urlIds,
-            urlType: data.urlType,
+            nodeIds: data.nodeIds,
+            nodeType: data.nodeType,
+            images: data.images ?? [],
           }}
           onSuccess={() => setOpen('')}
         />
@@ -50,8 +52,9 @@ export const ScanConfigureModal = ({
       {scanType === ActionEnumType.SCAN_SECRET && (
         <SecretScanConfigureForm
           data={{
-            urlIds: data.urlIds,
-            urlType: data.urlType,
+            nodeIds: data.nodeIds,
+            nodeType: data.nodeType,
+            images: data.images ?? [],
           }}
           onSuccess={() => setOpen('')}
         />
@@ -59,8 +62,9 @@ export const ScanConfigureModal = ({
       {scanType === ActionEnumType.SCAN_MALWARE && (
         <MalwareScanConfigureForm
           data={{
-            urlIds: data.urlIds,
-            urlType: data.urlType,
+            nodeIds: data.nodeIds,
+            nodeType: data.nodeType,
+            images: data.images ?? [],
           }}
           onSuccess={() => setOpen('')}
         />

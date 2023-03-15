@@ -18,10 +18,10 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   ModelContainerImage,
-  ModelContainerImageWithTags,
+  ModelImageStub,
   ModelRegistryAddReq,
   ModelRegistryCountResp,
-  ModelRegistryImageTagsReq,
+  ModelRegistryImageStubsReq,
   ModelRegistryImagesReq,
   ModelRegistryListResp,
   ModelSummary,
@@ -33,14 +33,14 @@ import {
     ApiDocsFailureResponseToJSON,
     ModelContainerImageFromJSON,
     ModelContainerImageToJSON,
-    ModelContainerImageWithTagsFromJSON,
-    ModelContainerImageWithTagsToJSON,
+    ModelImageStubFromJSON,
+    ModelImageStubToJSON,
     ModelRegistryAddReqFromJSON,
     ModelRegistryAddReqToJSON,
     ModelRegistryCountRespFromJSON,
     ModelRegistryCountRespToJSON,
-    ModelRegistryImageTagsReqFromJSON,
-    ModelRegistryImageTagsReqToJSON,
+    ModelRegistryImageStubsReqFromJSON,
+    ModelRegistryImageStubsReqToJSON,
     ModelRegistryImagesReqFromJSON,
     ModelRegistryImagesReqToJSON,
     ModelRegistryListRespFromJSON,
@@ -53,8 +53,8 @@ export interface AddRegistryRequest {
     modelRegistryAddReq?: ModelRegistryAddReq;
 }
 
-export interface CountImageTagsRequest {
-    modelRegistryImageTagsReq?: ModelRegistryImageTagsReq;
+export interface CountImageStubsRequest {
+    modelRegistryImageStubsReq?: ModelRegistryImageStubsReq;
 }
 
 export interface CountImagesRequest {
@@ -73,8 +73,8 @@ export interface GetSummaryByTypeRequest {
     registryType: string;
 }
 
-export interface ListImageTagsRequest {
-    modelRegistryImageTagsReq?: ModelRegistryImageTagsReq;
+export interface ListImageStubsRequest {
+    modelRegistryImageStubsReq?: ModelRegistryImageStubsReq;
 }
 
 export interface ListImagesRequest {
@@ -106,19 +106,19 @@ export interface RegistryApiInterface {
 
     /**
      * count of image tags for a given image and registry
-     * @summary Count Image Tags
-     * @param {ModelRegistryImageTagsReq} [modelRegistryImageTagsReq] 
+     * @summary Count Image Stubs
+     * @param {ModelRegistryImageStubsReq} [modelRegistryImageStubsReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RegistryApiInterface
      */
-    countImageTagsRaw(requestParameters: CountImageTagsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelRegistryCountResp>>;
+    countImageStubsRaw(requestParameters: CountImageStubsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelRegistryCountResp>>;
 
     /**
      * count of image tags for a given image and registry
-     * Count Image Tags
+     * Count Image Stubs
      */
-    countImageTags(requestParameters: CountImageTagsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelRegistryCountResp>;
+    countImageStubs(requestParameters: CountImageStubsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelRegistryCountResp>;
 
     /**
      * count of images from a given registry
@@ -201,19 +201,19 @@ export interface RegistryApiInterface {
 
     /**
      * list image tags for a given image and registry
-     * @summary List Image Tags
-     * @param {ModelRegistryImageTagsReq} [modelRegistryImageTagsReq] 
+     * @summary List Image Stubs
+     * @param {ModelRegistryImageStubsReq} [modelRegistryImageStubsReq] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RegistryApiInterface
      */
-    listImageTagsRaw(requestParameters: ListImageTagsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainerImage>>>;
+    listImageStubsRaw(requestParameters: ListImageStubsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelImageStub>>>;
 
     /**
      * list image tags for a given image and registry
-     * List Image Tags
+     * List Image Stubs
      */
-    listImageTags(requestParameters: ListImageTagsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImage>>;
+    listImageStubs(requestParameters: ListImageStubsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelImageStub>>;
 
     /**
      * list images from a given registry
@@ -223,13 +223,13 @@ export interface RegistryApiInterface {
      * @throws {RequiredError}
      * @memberof RegistryApiInterface
      */
-    listImagesRaw(requestParameters: ListImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainerImageWithTags>>>;
+    listImagesRaw(requestParameters: ListImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainerImage>>>;
 
     /**
      * list images from a given registry
      * List Registry Images
      */
-    listImages(requestParameters: ListImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImageWithTags>>;
+    listImages(requestParameters: ListImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImage>>;
 
     /**
      * List all the added Registries
@@ -293,9 +293,9 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
 
     /**
      * count of image tags for a given image and registry
-     * Count Image Tags
+     * Count Image Stubs
      */
-    async countImageTagsRaw(requestParameters: CountImageTagsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelRegistryCountResp>> {
+    async countImageStubsRaw(requestParameters: CountImageStubsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelRegistryCountResp>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -311,11 +311,11 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
             }
         }
         const response = await this.request({
-            path: `/deepfence/registryaccount/count/tags`,
+            path: `/deepfence/registryaccount/count/stubs`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelRegistryImageTagsReqToJSON(requestParameters.modelRegistryImageTagsReq),
+            body: ModelRegistryImageStubsReqToJSON(requestParameters.modelRegistryImageStubsReq),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => ModelRegistryCountRespFromJSON(jsonValue));
@@ -323,10 +323,10 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
 
     /**
      * count of image tags for a given image and registry
-     * Count Image Tags
+     * Count Image Stubs
      */
-    async countImageTags(requestParameters: CountImageTagsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelRegistryCountResp> {
-        const response = await this.countImageTagsRaw(requestParameters, initOverrides);
+    async countImageStubs(requestParameters: CountImageStubsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelRegistryCountResp> {
+        const response = await this.countImageStubsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -526,9 +526,9 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
 
     /**
      * list image tags for a given image and registry
-     * List Image Tags
+     * List Image Stubs
      */
-    async listImageTagsRaw(requestParameters: ListImageTagsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainerImage>>> {
+    async listImageStubsRaw(requestParameters: ListImageStubsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelImageStub>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -544,22 +544,22 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
             }
         }
         const response = await this.request({
-            path: `/deepfence/registryaccount/tags`,
+            path: `/deepfence/registryaccount/stubs`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ModelRegistryImageTagsReqToJSON(requestParameters.modelRegistryImageTagsReq),
+            body: ModelRegistryImageStubsReqToJSON(requestParameters.modelRegistryImageStubsReq),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelContainerImageFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelImageStubFromJSON));
     }
 
     /**
      * list image tags for a given image and registry
-     * List Image Tags
+     * List Image Stubs
      */
-    async listImageTags(requestParameters: ListImageTagsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImage>> {
-        const response = await this.listImageTagsRaw(requestParameters, initOverrides);
+    async listImageStubs(requestParameters: ListImageStubsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelImageStub>> {
+        const response = await this.listImageStubsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -567,7 +567,7 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
      * list images from a given registry
      * List Registry Images
      */
-    async listImagesRaw(requestParameters: ListImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainerImageWithTags>>> {
+    async listImagesRaw(requestParameters: ListImagesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelContainerImage>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -590,14 +590,14 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
             body: ModelRegistryImagesReqToJSON(requestParameters.modelRegistryImagesReq),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelContainerImageWithTagsFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelContainerImageFromJSON));
     }
 
     /**
      * list images from a given registry
      * List Registry Images
      */
-    async listImages(requestParameters: ListImagesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImageWithTags>> {
+    async listImages(requestParameters: ListImagesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelContainerImage>> {
         const response = await this.listImagesRaw(requestParameters, initOverrides);
         return await response.value();
     }

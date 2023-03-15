@@ -16,76 +16,55 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelContainerImageWithTags
+ * @interface ModelImageStub
  */
-export interface ModelContainerImageWithTags {
-    /**
-     * 
-     * @type {Date}
-     * @memberof ModelContainerImageWithTags
-     */
-    created?: Date;
+export interface ModelImageStub {
     /**
      * 
      * @type {string}
-     * @memberof ModelContainerImageWithTags
+     * @memberof ModelImageStub
      */
     id?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelContainerImageWithTags
+     * @memberof ModelImageStub
      */
     name?: string;
     /**
      * 
-     * @type {string}
-     * @memberof ModelContainerImageWithTags
-     */
-    size?: string;
-    /**
-     * 
      * @type {Array<string>}
-     * @memberof ModelContainerImageWithTags
+     * @memberof ModelImageStub
      */
     tags?: Array<string> | null;
-    /**
-     * 
-     * @type {Date}
-     * @memberof ModelContainerImageWithTags
-     */
-    updated?: Date;
 }
 
 /**
- * Check if a given object implements the ModelContainerImageWithTags interface.
+ * Check if a given object implements the ModelImageStub interface.
  */
-export function instanceOfModelContainerImageWithTags(value: object): boolean {
+export function instanceOfModelImageStub(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function ModelContainerImageWithTagsFromJSON(json: any): ModelContainerImageWithTags {
-    return ModelContainerImageWithTagsFromJSONTyped(json, false);
+export function ModelImageStubFromJSON(json: any): ModelImageStub {
+    return ModelImageStubFromJSONTyped(json, false);
 }
 
-export function ModelContainerImageWithTagsFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelContainerImageWithTags {
+export function ModelImageStubFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelImageStub {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'created': !exists(json, 'created') ? undefined : (new Date(json['created'])),
         'id': !exists(json, 'id') ? undefined : json['id'],
         'name': !exists(json, 'name') ? undefined : json['name'],
-        'size': !exists(json, 'size') ? undefined : json['size'],
         'tags': !exists(json, 'tags') ? undefined : json['tags'],
-        'updated': !exists(json, 'updated') ? undefined : (new Date(json['updated'])),
     };
 }
 
-export function ModelContainerImageWithTagsToJSON(value?: ModelContainerImageWithTags | null): any {
+export function ModelImageStubToJSON(value?: ModelImageStub | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -94,12 +73,9 @@ export function ModelContainerImageWithTagsToJSON(value?: ModelContainerImageWit
     }
     return {
         
-        'created': value.created === undefined ? undefined : (value.created.toISOString()),
         'id': value.id,
         'name': value.name,
-        'size': value.size,
         'tags': value.tags,
-        'updated': value.updated === undefined ? undefined : (value.updated.toISOString()),
     };
 }
 

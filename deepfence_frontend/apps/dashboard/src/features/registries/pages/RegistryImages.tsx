@@ -12,7 +12,7 @@ import {
 import { Card, CircleSpinner, TableSkeleton } from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelContainerImageWithTags } from '@/api/generated';
+import { ApiDocsBadRequestResponse, ModelImageStub } from '@/api/generated';
 import { ModelSummary } from '@/api/generated/models/ModelSummary';
 import { DFLink } from '@/components/DFLink';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
@@ -73,13 +73,16 @@ async function getImages(
   registryId: string,
   searchParams: URLSearchParams,
 ): Promise<{
-  images: ModelContainerImageWithTags[];
+  images: ModelImageStub[];
   currentPage: number;
   totalRows: number;
   message?: string;
 }> {
   const page = getPageFromSearchParams(searchParams);
   const imageRequest = {
+    image_filter: {
+      filter_in: null,
+    },
     registry_id: registryId,
     window: {
       offset: page * PAGE_SIZE,
@@ -87,10 +90,10 @@ async function getImages(
     },
   };
   const result = await makeRequest({
-    apiFunction: getRegistriesApiClient().listImages,
+    apiFunction: getRegistriesApiClient().listImageStubs,
     apiArgs: [
       {
-        modelRegistryImagesReq: imageRequest,
+        modelRegistryImageStubsReq: imageRequest,
       },
     ],
     errorHandler: async (r) => {
@@ -117,10 +120,10 @@ async function getImages(
   }
   // count api
   const resultCounts = await makeRequest({
-    apiFunction: getRegistriesApiClient().countImages,
+    apiFunction: getRegistriesApiClient().countImageStubs,
     apiArgs: [
       {
-        modelRegistryImagesReq: {
+        modelRegistryImageStubsReq: {
           ...imageRequest,
           window: {
             ...imageRequest.window,
@@ -160,16 +163,18 @@ const loader = async ({
 };
 
 const HeaderComponent = () => {
-  const { account, accountId } = useParams() as {
+  const { account, nodeId, accountId } = useParams() as {
     account: string;
+    nodeId: string;
     accountId: string;
   };
 
   return (
     <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <DFLink
-        to={generatePath('/registries/:account', {
+        to={generatePath('/registries/:account/:nodeId', {
           account,
+          nodeId,
         })}
         className="flex hover:no-underline items-center justify-center mr-2"
       >

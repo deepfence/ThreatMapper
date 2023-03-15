@@ -19,8 +19,9 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 const RegistryAdd = () => {
   const { navigate } = usePageNavigation();
   const formRef = useRef<HTMLFormElement>(null);
-  const { account } = useParams() as {
+  const { account, nodeId } = useParams() as {
     account: string;
+    nodeId: string;
   };
 
   if (!account) {
@@ -34,8 +35,9 @@ const RegistryAdd = () => {
           ref={formRef}
           onSuccess={() => {
             navigate(
-              generatePath('/registries/:account', {
+              generatePath('/registries/:account/:nodeId', {
                 account,
+                nodeId,
               }),
             );
           }}

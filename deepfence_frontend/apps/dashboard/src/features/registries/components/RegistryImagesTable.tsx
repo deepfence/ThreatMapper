@@ -9,7 +9,7 @@ import {
   Table,
 } from 'ui-components';
 
-import { ModelContainerImageWithTags } from '@/api/generated';
+import { ModelImageStub } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import {
   ActionEnumType,
@@ -24,20 +24,21 @@ export const RegistryImagesTable = ({
   data,
   pagination: { totalRows, currentPage },
 }: {
-  data: ModelContainerImageWithTags[];
+  data: ModelImageStub[];
   pagination: {
     totalRows: number;
     currentPage: number;
   };
 }) => {
-  const { account, accountId } = useParams() as {
+  const { account, accountId, nodeId } = useParams() as {
     account: string;
+    nodeId: string;
     accountId: string;
   };
   const [searchParams, setSearchParams] = useSearchParams();
   const [openScanConfigure, setOpenScanConfigure] = useState('');
 
-  const columnHelper = createColumnHelper<ModelContainerImageWithTags>();
+  const columnHelper = createColumnHelper<ModelImageStub>();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
 
   const selectedIds = useMemo(() => {
@@ -56,11 +57,15 @@ export const RegistryImagesTable = ({
         cell: (info) => {
           return (
             <DFLink
-              to={generatePath('/registries/images/:account/:accountId/:imageId', {
-                account: account,
-                accountId: accountId,
-                imageId: info.row.original.name ?? '',
-              })}
+              to={generatePath(
+                '/registries/imagetags/:account/:accountId/:nodeId/:imageId',
+                {
+                  account: account,
+                  nodeId,
+                  accountId: accountId,
+                  imageId: info.row.original.name ?? '',
+                },
+              )}
             >
               {info.getValue()}
             </DFLink>
@@ -137,8 +142,9 @@ export const RegistryImagesTable = ({
         scanType={openScanConfigure}
         wantAdvanceOptions={true}
         data={{
-          urlIds: selectedIds,
-          urlType: 'registry',
+          nodeIds: [nodeId], // registry node id
+          nodeType: 'image',
+          images: selectedIds, // selected images
         }}
       />
       <Table

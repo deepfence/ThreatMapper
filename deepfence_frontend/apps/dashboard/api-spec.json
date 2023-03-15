@@ -2471,16 +2471,16 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/registryaccount/count/tags": {
+    "/deepfence/registryaccount/count/stubs": {
       "post": {
         "tags": ["Registry"],
-        "summary": "Count Image Tags",
+        "summary": "Count Image Stubs",
         "description": "count of image tags for a given image and registry",
-        "operationId": "CountImageTags",
+        "operationId": "CountImageStubs",
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModelRegistryImageTagsReq" }
+              "schema": { "$ref": "#/components/schemas/ModelRegistryImageStubsReq" }
             }
           }
         },
@@ -2543,7 +2543,62 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/ModelContainerImageWithTags" }
+                  "items": { "$ref": "#/components/schemas/ModelContainerImage" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/registryaccount/stubs": {
+      "post": {
+        "tags": ["Registry"],
+        "summary": "List Image Stubs",
+        "description": "list image tags for a given image and registry",
+        "operationId": "listImageStubs",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelRegistryImageStubsReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelImageStub" }
                 }
               }
             }
@@ -2590,61 +2645,6 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ModelRegistrySummaryAllResp" }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
-              }
-            }
-          },
-          "401": { "description": "Unauthorized" },
-          "403": { "description": "Forbidden" },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          }
-        },
-        "security": [{ "bearer_token": [] }]
-      }
-    },
-    "/deepfence/registryaccount/tags": {
-      "post": {
-        "tags": ["Registry"],
-        "summary": "List Image Tags",
-        "description": "list image tags for a given image and registry",
-        "operationId": "listImageTags",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/ModelRegistryImageTagsReq" }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/ModelContainerImage" }
-                }
               }
             }
           },
@@ -7933,17 +7933,6 @@
           "vulnerability_scan_status": { "type": "string" }
         }
       },
-      "ModelContainerImageWithTags": {
-        "type": "object",
-        "properties": {
-          "created": { "type": "string", "format": "date-time" },
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "size": { "type": "string" },
-          "tags": { "type": "array", "items": { "type": "string" }, "nullable": true },
-          "updated": { "type": "string", "format": "date-time" }
-        }
-      },
       "ModelDownloadReportResponse": {
         "type": "object",
         "properties": { "url_link": { "type": "string" } }
@@ -8008,6 +7997,14 @@
           "secrets_count": { "type": "integer" },
           "vulnerabilities_count": { "type": "integer" },
           "vulnerability_scan_status": { "type": "string" }
+        }
+      },
+      "ModelImageStub": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
       },
       "ModelInitAgentReq": {
@@ -8319,19 +8316,20 @@
         "type": "object",
         "properties": { "count": { "type": "integer" } }
       },
-      "ModelRegistryImageTagsReq": {
-        "required": ["registry_id", "image_name"],
+      "ModelRegistryImageStubsReq": {
+        "required": ["registry_id", "image_filter", "window"],
         "type": "object",
         "properties": {
-          "image_name": { "type": "string" },
+          "image_filter": { "$ref": "#/components/schemas/ReportersContainsFilter" },
           "registry_id": { "type": "string" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
       "ModelRegistryImagesReq": {
-        "required": ["registry_id"],
+        "required": ["registry_id", "image_filter", "window"],
         "type": "object",
         "properties": {
+          "image_filter": { "$ref": "#/components/schemas/ReportersContainsFilter" },
           "registry_id": { "type": "string" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
@@ -8339,13 +8337,13 @@
       "ModelRegistryListResp": {
         "type": "object",
         "properties": {
-          "created_at": { "type": "string", "format": "date-time" },
+          "created_at": { "type": "integer" },
           "id": { "type": "integer" },
           "name": { "type": "string" },
           "node_id": { "type": "string" },
           "non_secret": {},
           "registry_type": { "type": "string" },
-          "updated_at": { "type": "string", "format": "date-time" }
+          "updated_at": { "type": "integer" }
         }
       },
       "ModelRegistrySummaryAllResp": {
