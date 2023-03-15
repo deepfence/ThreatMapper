@@ -114,7 +114,7 @@ func checkFlagsRequiringRoot(flags probeFlags) {
 	}
 }
 
-func setClusterAgentControls() {
+func setClusterAgentControls(k8sClusterName string) {
 	err := controls.RegisterControl(ctl.StartComplianceScan,
 		func(req ctl.StartComplianceScanRequest) error {
 			return kubernetes.StartComplianceScan(req)
@@ -131,6 +131,14 @@ func setClusterAgentControls() {
 	err = controls.RegisterControl(ctl.StartAgentUpgrade,
 		func(req ctl.StartAgentUpgradeRequest) error {
 			return kubernetes.StartClusterAgentUpgrade(req)
+		})
+	if err != nil {
+		log.Errorf("set controls: %v", err)
+	}
+	err = controls.RegisterControl(ctl.SendAgentDiagnosticLogs,
+		func(req ctl.SendAgentDiagnosticLogsRequest) error {
+			log.Info("Generate Cluster Agent Diagnostic Logs")
+			return kubernetes.SendClusterAgentDiagnosticLogs(req, k8sClusterName)
 		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)
@@ -173,14 +181,28 @@ func setAgentControls() {
 			}
 			return nil
 		})
+	if err != nil {
+		log.Errorf("set controls: %v", err)
+	}
 	err = controls.RegisterControl(ctl.StartMalwareScan,
 		func(req ctl.StartMalwareScanRequest) error {
 			return host.StartMalwareScan(req)
 		})
+	if err != nil {
+		log.Errorf("set controls: %v", err)
+	}
 	err = controls.RegisterControl(ctl.StartAgentUpgrade,
 		func(req ctl.StartAgentUpgradeRequest) error {
 			log.Info("Start Agent Upgrade")
 			return host.StartAgentUpgrade(req)
+		})
+	if err != nil {
+		log.Errorf("set controls: %v", err)
+	}
+	err = controls.RegisterControl(ctl.SendAgentDiagnosticLogs,
+		func(req ctl.SendAgentDiagnosticLogsRequest) error {
+			log.Info("Generate Agent Diagnostic Logs")
+			return host.SendAgentDiagnosticLogs(req)
 		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)
@@ -192,9 +214,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	setLogLevel(flags.logLevel)
 	setLogFormatter(flags.logPrefix)
 
-	if flags.kubernetesRole == kubernetesRoleCluster {
-		setClusterAgentControls()
-	} else {
+	if flags.kubernetesRole != kubernetesRoleCluster {
 		setAgentControls()
 	}
 
@@ -322,6 +342,11 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	if err != nil {
 		log.Error(err.Error())
 	}
+
+	if flags.kubernetesRole == kubernetesRoleCluster {
+		setClusterAgentControls(k8sClusterName)
+	}
+
 	err = os.Setenv(report.KubernetesClusterName, k8sClusterName)
 	if err != nil {
 		log.Error(err.Error())
