@@ -36,7 +36,6 @@ func (tc *ComplianceIngester) Ingest(
 		if err != nil {
 			log.Error().Msg(err.Error())
 		} else {
-			log.Error().Msg(string(cb))
 			ingestC <- &kgo.Record{
 				Topic:   utils.COMPLIANCE_SCAN,
 				Value:   cb,
