@@ -129,26 +129,40 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 	}
 	defer tx.Close()
 
-	if parentNodeId == "" {
-		if _, err := tx.Run(`
+	matchNodeRes, err := tx.Run(`
 		WITH $param as row
-		MERGE (n:Node{node_id:row.node_id})
+		MATCH (n:Node{node_id:row.node_id})
 		SET n+= row, n.updated_at = TIMESTAMP()`,
-			map[string]interface{}{
-				"param": nodeDetails,
-			}); err != nil {
-			return err
-		}
-	} else {
-		if _, err := tx.Run(`
-		WITH $param as row
-		MERGE (n:Node{node_id:row.node_id}) <-[:IS_CHILD]- (m:Node{node_id: $parent_node_id})
-		SET n+= row, n.updated_at = TIMESTAMP()`,
-			map[string]interface{}{
-				"param":          nodeDetails,
-				"parent_node_id": parentNodeId,
-			}); err != nil {
-			return err
+		map[string]interface{}{
+			"param": nodeDetails,
+		})
+	if err != nil {
+		return err
+	}
+	_, err = matchNodeRes.Single()
+	if err != nil {
+		if parentNodeId == "" {
+			if _, err := tx.Run(`
+			WITH $param as row
+			MERGE (n:Node{node_id:row.node_id})
+			SET n+= row, n.updated_at = TIMESTAMP()`,
+				map[string]interface{}{
+					"param": nodeDetails,
+				}); err != nil {
+				return err
+			}
+		} else {
+			if _, err := tx.Run(`
+			MATCH (m:Node{node_id: $parent_node_id})
+			WITH $param as row, m
+			MERGE (n:Node{node_id:row.node_id}) <-[:IS_CHILD]- (m)
+			SET n+= row, n.updated_at = TIMESTAMP()`,
+				map[string]interface{}{
+					"param":          nodeDetails,
+					"parent_node_id": parentNodeId,
+				}); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -201,7 +215,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 			WITH account_count, scan_count, COUNT(c) AS total_compliance_count
 			MATCH (m:%s)<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:Compliance)
 			WHERE c1.status IN ['ok', 'info', 'skip']
-			RETURN account_count, scan_count, COUNT(c1.status)*100.0/total_compliance_count AS compliance_percentage`,
+			RETURN account_count, scan_count, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage`,
 				neo4jNodeType, scanType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType),
 				map[string]interface{}{})
 			nodeRec, err := nodeRes.Single()
@@ -216,19 +230,19 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 			cloudProvider := PostureProviderAWS
 			postureProvider.NodeLabel = "Organizations"
 			nodeRes, err := tx.Run(fmt.Sprintf(`
-			MATCH (p:CloudResource)
-			WHERE p.cloud_provider = $cloud_provider
-			WITH COUNT(*) AS resource_count
 			MATCH (o:%s)
-			WITH resource_count, COUNT(DISTINCT o.node_id) AS account_count
-			MATCH (n:%s)-[:SCANNED]->(m:%s{cloud_provider: $cloud_provider})<-[:IS_CHILD]-(o:%s)
+			WITH COUNT(DISTINCT o.node_id) AS account_count
+			OPTIONAL MATCH (p:CloudResource)
+			WHERE p.cloud_provider = $cloud_provider
+			WITH account_count, COUNT(*) AS resource_count
+			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s{cloud_provider: $cloud_provider})<-[:IS_CHILD]-(o:%s)
 			WITH account_count, resource_count, COUNT(DISTINCT n.node_id) AS scan_count
-			MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudComplianceResult), (o:%s) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
+			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudComplianceResult), (o:%s) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
 			WITH account_count, resource_count, scan_count, COUNT(c) AS total_compliance_count
-			MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:CloudComplianceResult), (o:%s) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
+			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:CloudComplianceResult), (o:%s) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
 			WHERE c1.status IN ['ok', 'info', 'skip']
 			RETURN account_count, resource_count, scan_count,
-				COUNT(c1.status)*100.0/total_compliance_count AS compliance_percentage`, neo4jNodeType, scanType,
+				CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage`, neo4jNodeType, scanType,
 				neo4jNodeType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, neo4jNodeType, neo4jNodeType,
 				scanType, neo4jNodeType, neo4jNodeType),
 				map[string]interface{}{
@@ -246,19 +260,19 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 		} else {
 			postureProvider.NodeLabel = "Accounts"
 			nodeRes, err := tx.Run(fmt.Sprintf(`
-			MATCH (p:CloudResource)
-			WHERE p.cloud_provider = $cloud_provider
-			WITH COUNT(*) AS resource_count
 			MATCH (m:%s{cloud_provider: $cloud_provider})
-			WITH resource_count, COUNT(DISTINCT m.node_id) AS account_count
-			MATCH (n:%s)-[:SCANNED]->(m:%s{cloud_provider: $cloud_provider})
+			WITH COUNT(DISTINCT m.node_id) AS account_count
+			OPTIONAL MATCH (p:CloudResource)
+			WHERE p.cloud_provider = $cloud_provider
+			WITH account_count, COUNT(*) AS resource_count
+			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s{cloud_provider: $cloud_provider})
 			WITH account_count, resource_count, COUNT(DISTINCT n.node_id) AS scan_count
-			MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudComplianceResult)
+			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudComplianceResult)
 			WITH account_count, resource_count, scan_count, COUNT(c) AS total_compliance_count
-			MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:CloudComplianceResult)
+			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:CloudComplianceResult)
 			WHERE c1.status IN ['ok', 'info', 'skip']
 			RETURN account_count, resource_count, scan_count,
-				COUNT(c1.status)*100.0/total_compliance_count AS compliance_percentage`, neo4jNodeType, scanType,
+				CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage`, neo4jNodeType, scanType,
 				neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType),
 				map[string]interface{}{
 					"cloud_provider": postureProviderName,
@@ -308,10 +322,10 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		MATCH (m:Node) -[:IS_CHILD]-> (n:Node{cloud_provider: $cloud_provider})
 		WITH DISTINCT m.node_id AS node_id, m.node_name AS node_name, m.cloud_provider AS cloud_provider, m.updated_at AS updated_at
 		MATCH (n:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c:CloudComplianceResult)
-		WITH node_id, node_name, cloud_provider, COUNT(c) AS total_compliance_count
+		WITH node_id, node_name, cloud_provider, updated_at, COUNT(c) AS total_compliance_count
 		MATCH (n:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c1:CloudComplianceResult)
 		WHERE c1.status IN ['ok', 'info', 'skip']
-		RETURN node_id, node_name, cloud_provider, COUNT(c1.status)*100.0/total_compliance_count AS compliance_percentage
+		RETURN node_id, node_name, cloud_provider, COUNT(c1.status)*100.0/total_compliance_count AS compliance_percentage, updated_at
 		ORDER BY updated_at`+fw.FetchWindow2CypherQuery(),
 			map[string]interface{}{"cloud_provider": cloudProvider})
 		if err != nil {
@@ -322,10 +336,10 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		MATCH (n:Node{cloud_provider: $cloud_provider}) 
 		WITH DISTINCT n.node_id AS node_id, n.node_name AS node_name, n.cloud_provider AS cloud_provider, n.updated_at AS updated_at
 		MATCH (n:Node{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:CloudComplianceScan)-[:DETECTED]->(c:CloudComplianceResult)
-		WITH node_id, node_name, cloud_provider, COUNT(c) AS total_compliance_count
+		WITH node_id, node_name, cloud_provider, updated_at, COUNT(c) AS total_compliance_count
 		MATCH (n:Node{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:CloudComplianceScan)-[:DETECTED]->(c1:CloudComplianceResult)
 		WHERE c1.status IN ['ok', 'info', 'skip']
-		RETURN node_id, node_name, cloud_provider, COUNT(c1.status)*100.0/total_compliance_count AS compliance_percentage
+		RETURN node_id, node_name, cloud_provider, COUNT(c1.status)*100.0/total_compliance_count AS compliance_percentage, updated_at
 		ORDER BY updated_at`+fw.FetchWindow2CypherQuery(),
 			map[string]interface{}{"cloud_provider": cloudProvider})
 		if err != nil {

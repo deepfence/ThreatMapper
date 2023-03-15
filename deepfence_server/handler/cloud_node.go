@@ -46,7 +46,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 	logrus.Debugf("Monitored account ids count: %d", len(monitoredAccountIds))
 	if len(monitoredAccountIds) != 0 {
 		logrus.Debugf("More than 1 account to be monitored: %+v", monitoredAccountIds)
-		if orgAccountId != "" {
+		if orgAccountId == "" {
 			complianceError(w, "Org account id is needed for multi account setup")
 			return
 		}
@@ -60,6 +60,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		err = model.UpsertCloudComplianceNode(ctx, node, "")
 		if err != nil {
 			complianceError(w, err.Error())
+			return
 		}
 		for monitoredAccountId, monitoredNodeId := range monitoredAccountIds {
 			var monitoredNode map[string]interface{}
@@ -71,6 +72,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeId)
 			if err != nil {
 				complianceError(w, err.Error())
+				return
 			}
 			pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, monitoredNodeId)
 			if err != nil {
