@@ -347,6 +347,7 @@ func (h *Handler) ListImages(w http.ResponseWriter, r *http.Request) {
 
 	images, err := model.ListImages(r.Context(), int32(rId), req.ImageFilter, req.Window)
 	if err != nil {
+		log.Error().Msgf("failed list images: %v", err)
 		respondError(err, w)
 		return
 	}
@@ -392,6 +393,7 @@ func (h *Handler) CountImages(w http.ResponseWriter, r *http.Request) {
 
 	images, err := model.ListImages(r.Context(), int32(rId), req.ImageFilter, req.Window)
 	if err != nil {
+		log.Error().Msgf("failed list images: %v", err)
 		respondError(err, w)
 		return
 	}
@@ -441,6 +443,7 @@ func (h *Handler) ListImageStubs(w http.ResponseWriter, r *http.Request) {
 
 	images, err := model.ListImageStubs(r.Context(), int32(rId), req.ImageFilter, req.Window)
 	if err != nil {
+		log.Error().Msgf("failed get stubs %v", err)
 		respondError(err, w)
 		return
 	}
@@ -485,6 +488,7 @@ func (h *Handler) CountImageStubs(w http.ResponseWriter, r *http.Request) {
 
 	imageTags, err := model.ListImageStubs(r.Context(), int32(rId), req.ImageFilter, req.Window)
 	if err != nil {
+		log.Error().Msgf("failed list stubs: %v", err)
 		respondError(err, w)
 		return
 	}
@@ -536,6 +540,7 @@ func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 	// count registry resource
 	counts, err = model.RegistrySummary(r.Context(), getIntPointer(int32(rId)), nil)
 	if err != nil {
+		log.Error().Msgf("failed registry summary: %v", err)
 		respondError(err, w)
 		return
 	}
@@ -561,6 +566,7 @@ func (h *Handler) SummaryByRegistryType(w http.ResponseWriter, r *http.Request) 
 	// count registry resource
 	counts, err = model.RegistrySummary(r.Context(), nil, &req.RegistryType)
 	if err != nil {
+		log.Error().Msgf("failed registry summary: %v", err)
 		respondError(err, w)
 		return
 	}
@@ -577,6 +583,7 @@ func (h *Handler) Summary(w http.ResponseWriter, r *http.Request) {
 	// count registry resource
 	counts, err := model.RegistrySummaryAll(r.Context())
 	if err != nil {
+		log.Error().Msgf("failed registry summary all: %v", err)
 		respondError(err, w)
 		return
 	}
