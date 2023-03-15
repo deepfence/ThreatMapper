@@ -40,18 +40,21 @@ async function getTags(
 }> {
   const page = getPageFromSearchParams(searchParams);
   const imageTagsRequest = {
+    image_filter: {
+      filter_in: null,
+    },
     registry_id: accountId,
-    image_name: imageId,
+    image_id: imageId,
     window: {
       offset: page * PAGE_SIZE,
       size: PAGE_SIZE,
     },
   };
   const result = await makeRequest({
-    apiFunction: getRegistriesApiClient().listImageTags,
+    apiFunction: getRegistriesApiClient().listImages,
     apiArgs: [
       {
-        modelRegistryImageTagsReq: imageTagsRequest,
+        modelRegistryImagesReq: imageTagsRequest,
       },
     ],
     errorHandler: async (r) => {
@@ -79,10 +82,10 @@ async function getTags(
 
   // count api
   const resultCounts = await makeRequest({
-    apiFunction: getRegistriesApiClient().countImageTags,
+    apiFunction: getRegistriesApiClient().countImages,
     apiArgs: [
       {
-        modelRegistryImageTagsReq: {
+        modelRegistryImagesReq: {
           ...imageTagsRequest,
           window: {
             ...imageTagsRequest.window,
@@ -126,8 +129,9 @@ const loader = async ({
 const HeaderComponent = () => {
   const elementToFocusOnClose = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
-  const { account, accountId, imageId } = useParams() as {
+  const { account, accountId, nodeId, imageId } = useParams() as {
     account: string;
+    nodeId: string;
     accountId: string;
     imageId: string;
   };
@@ -137,8 +141,9 @@ const HeaderComponent = () => {
   return (
     <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <DFLink
-        to={generatePath('/registries/images/:account/:accountId', {
+        to={generatePath('/registries/images/:account/:accountId/:nodeId', {
           account,
+          nodeId,
           accountId,
         })}
         className="flex hover:no-underline items-center justify-center mr-2"

@@ -17,13 +17,14 @@ import {
 } from 'ui-components';
 
 import { ModelContainerImage } from '@/api/generated';
-import {
-  ActionEnumType,
-  ScanConfigureModal,
-} from '@/components/scan-configure-forms/ScanConfigureModal';
+import { MalwareScanActionEnumType } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
+import { SecretScanActionEnumType } from '@/components/scan-configure-forms/SecretScanConfigureForm';
+import { VulnerabilityScanActionEnumType } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { ConfigureScanModal } from '@/features/registries/components/ConfigureScanModal';
+import { formatMilliseconds } from '@/utils/date';
 
 const PAGE_SIZE = 15;
 
@@ -32,14 +33,14 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
 
   return (
     <>
-      <ScanConfigureModal
+      <ConfigureScanModal
         open={openScanConfigure !== ''}
         setOpen={setOpenScanConfigure}
         scanType={openScanConfigure}
         wantAdvanceOptions={true}
         data={{
-          urlIds: ids,
-          urlType: 'registry',
+          nodeIds: ids,
+          nodeType: 'imageTag',
         }}
       />
       <Dropdown
@@ -48,7 +49,9 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
         content={
           <>
             <DropdownItem
-              onClick={() => setOpenScanConfigure(ActionEnumType.SCAN_VULNERABILITY)}
+              onClick={() =>
+                setOpenScanConfigure(VulnerabilityScanActionEnumType.SCAN_VULNERABILITY)
+              }
             >
               <div className="w-4 h-4">
                 <VulnerabilityIcon />
@@ -56,7 +59,7 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
               Scan for vulnerability
             </DropdownItem>
             <DropdownItem
-              onClick={() => setOpenScanConfigure(ActionEnumType.SCAN_SECRET)}
+              onClick={() => setOpenScanConfigure(SecretScanActionEnumType.SCAN_SECRET)}
             >
               <div className="w-4 h-4">
                 <SecretsIcon />
@@ -64,7 +67,7 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
               Scan for secret
             </DropdownItem>
             <DropdownItem
-              onClick={() => setOpenScanConfigure(ActionEnumType.SCAN_MALWARE)}
+              onClick={() => setOpenScanConfigure(MalwareScanActionEnumType.SCAN_MALWARE)}
             >
               <div className="w-4 h-4">
                 <MalwareIcon />
@@ -120,13 +123,14 @@ export const RegistryImageTagsTable = ({
         header: () => 'Pushed at',
         cell: (info) => {
           const metadata = info.row.original.metadata;
-          return metadata['last_updated'];
+          const date = metadata['last_updated'];
+          return formatMilliseconds(date);
         },
         maxSize: 50,
       }),
       columnHelper.accessor('docker_image_size', {
         header: () => 'Size',
-        cell: (info) => info.renderValue() + ' KB',
+        cell: (info) => (Number(info.getValue()) / 1000000).toFixed(2) + ' MB',
         maxSize: 50,
       }),
       columnHelper.accessor('vulnerability_scan_status', {
@@ -228,8 +232,8 @@ export const RegistryImageTagsTable = ({
               }}
             >
               <SelectItem
-                value={ActionEnumType.SCAN_VULNERABILITY}
-                key={ActionEnumType.SCAN_VULNERABILITY}
+                value={VulnerabilityScanActionEnumType.SCAN_VULNERABILITY}
+                key={VulnerabilityScanActionEnumType.SCAN_VULNERABILITY}
               >
                 <div className="w-4 h-4">
                   <VulnerabilityIcon />
@@ -237,8 +241,8 @@ export const RegistryImageTagsTable = ({
                 Vulnerability
               </SelectItem>
               <SelectItem
-                value={ActionEnumType.SCAN_SECRET}
-                key={ActionEnumType.SCAN_SECRET}
+                value={SecretScanActionEnumType.SCAN_SECRET}
+                key={SecretScanActionEnumType.SCAN_SECRET}
               >
                 <div className="w-4 h-4">
                   <SecretsIcon />
@@ -246,8 +250,8 @@ export const RegistryImageTagsTable = ({
                 Secret
               </SelectItem>
               <SelectItem
-                value={ActionEnumType.SCAN_MALWARE}
-                key={ActionEnumType.SCAN_MALWARE}
+                value={MalwareScanActionEnumType.SCAN_MALWARE}
+                key={MalwareScanActionEnumType.SCAN_MALWARE}
               >
                 <div className="w-4 h-4">
                   <MalwareIcon />
@@ -259,14 +263,14 @@ export const RegistryImageTagsTable = ({
         </>
       )}
 
-      <ScanConfigureModal
+      <ConfigureScanModal
         open={openScanConfigure !== ''}
         setOpen={setOpenScanConfigure}
         scanType={openScanConfigure}
         wantAdvanceOptions={true}
         data={{
-          urlIds: selectedIds,
-          urlType: 'registry',
+          nodeIds: selectedIds,
+          nodeType: 'imageTag',
         }}
       />
       <Table
