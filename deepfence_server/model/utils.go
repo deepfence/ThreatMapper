@@ -69,7 +69,11 @@ func ParseValidatorError(errMsg string) map[string]string {
 }
 
 func DigestToID(digest string) string {
-	return strings.Split(digest, ":")[1]
+	splits := strings.Split(digest, ":")
+	if len(splits) >= 2 {
+		return splits[1]
+	}
+	return digest
 }
 
 func GetRegistryID(registryType, ns string) string {

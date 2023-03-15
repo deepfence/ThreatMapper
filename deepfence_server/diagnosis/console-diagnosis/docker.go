@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -33,7 +34,7 @@ func NewDockerConsoleDiagnosisHandler() (*DockerConsoleDiagnosisHandler, error) 
 }
 
 func (d *DockerConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.Context, tail string) error {
-	zipFile, err := CreateTempFile("deepfence-console-logs-*.zip")
+	zipFile, err := os.Create(fmt.Sprintf("/tmp/deepfence-console-logs-%s.zip", time.Now().Format("2006-01-02-15-04-05")))
 	if err != nil {
 		return err
 	}

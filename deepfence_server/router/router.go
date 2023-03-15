@@ -321,11 +321,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Get("/summary", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.RegistrySummary))
 				})
 				r.Post("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImages))
-				r.Post("/tags", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImageTags))
+				r.Post("/stubs", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImageStubs))
 				// count api
 				r.Route("/count", func(r chi.Router) {
 					r.Post("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.CountImages))
-					r.Post("/tags", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.CountImageTags))
+					r.Post("/stubs", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.CountImageStubs))
 				})
 			})
 

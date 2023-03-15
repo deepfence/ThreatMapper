@@ -84,7 +84,7 @@ require (
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000 // indirect
 	github.com/deepfence/df-utils/cloud_metadata v0.0.0-00010101000000-000000000000 // indirect
 	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230310063137-b653517c5502 // indirect
-	github.com/deepfence/kubernetes-scanner v0.0.0-20230228135439-cdd38c3c9381 // indirect
+	github.com/deepfence/kubernetes-scanner v0.0.0-20230314174036-fcad1be08a26 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect

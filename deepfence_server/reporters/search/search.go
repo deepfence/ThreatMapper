@@ -165,17 +165,13 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 		if err != nil {
 			log.Error().Msgf("%v", err)
 		}
-		node_name := ""
-		if rec.Values[5] != nil {
-			node_name = rec.Values[5].(string)
-		}
 		res = append(res, model.ScanInfo{
 			ScanId:         rec.Values[0].(string),
 			Status:         rec.Values[1].(string),
 			UpdatedAt:      rec.Values[2].(int64),
 			NodeId:         rec.Values[3].(string),
 			NodeType:       reporters_scan.Labels2NodeType(rec.Values[4].([]interface{})),
-			NodeName:       node_name,
+			NodeName:       rec.Values[5].(string),
 			SeverityCounts: counts,
 		})
 	}

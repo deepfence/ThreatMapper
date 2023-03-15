@@ -633,7 +633,7 @@ const SecretScans = () => {
         size: 120,
         maxSize: 130,
       }),
-      columnHelper.accessor('node_id', {
+      columnHelper.accessor('node_name', {
         enableSorting: false,
         cell: (info) => {
           const isScanComplete = info.row.original.status?.toLowerCase() === 'complete';

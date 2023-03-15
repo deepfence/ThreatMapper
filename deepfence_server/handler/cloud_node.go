@@ -46,19 +46,21 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 	logrus.Debugf("Monitored account ids count: %d", len(monitoredAccountIds))
 	if len(monitoredAccountIds) != 0 {
 		logrus.Debugf("More than 1 account to be monitored: %+v", monitoredAccountIds)
-		if orgAccountId != "" {
+		if orgAccountId == "" {
 			complianceError(w, "Org account id is needed for multi account setup")
 			return
 		}
 		monitoredAccountIds[req.CloudAccount] = nodeId
+		orgNodeId := fmt.Sprintf("%s-%s-cloud-org", req.CloudProvider, orgAccountId)
 		node := map[string]interface{}{
-			"node_id":        fmt.Sprintf("%s-%s-cloud-org", req.CloudProvider, orgAccountId),
-			"cloud_provider": req.CloudProvider,
+			"node_id":        orgNodeId,
+			"cloud_provider": model.PostureProviderAWSOrg,
 			"node_name":      orgAccountId,
 		}
-		err = model.UpsertCloudComplianceNode(ctx, node)
+		err = model.UpsertCloudComplianceNode(ctx, node, "")
 		if err != nil {
 			complianceError(w, err.Error())
+			return
 		}
 		for monitoredAccountId, monitoredNodeId := range monitoredAccountIds {
 			var monitoredNode map[string]interface{}
@@ -67,9 +69,10 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 				"cloud_provider": req.CloudProvider,
 				"node_name":      monitoredAccountId,
 			}
-			err = model.UpsertCloudComplianceNode(ctx, monitoredNode)
+			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeId)
 			if err != nil {
 				complianceError(w, err.Error())
+				return
 			}
 			pendingScansList, err := reporters_scan.GetCloudCompliancePendingScansList(ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, monitoredNodeId)
 			if err != nil {
@@ -94,7 +97,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			"node_name":      req.CloudAccount,
 		}
 		logrus.Debugf("Node for upsert: %+v", node)
-		err = model.UpsertCloudComplianceNode(ctx, node)
+		err = model.UpsertCloudComplianceNode(ctx, node, "")
 		if err != nil {
 			logrus.Infof("Error while upserting node: %+v", err)
 			complianceError(w, err.Error())

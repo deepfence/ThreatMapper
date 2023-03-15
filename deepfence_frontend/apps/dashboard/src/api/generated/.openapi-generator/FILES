@@ -78,10 +78,10 @@ models/ModelComplianceScanTriggerReq.ts
 models/ModelComputeMetrics.ts
 models/ModelContainer.ts
 models/ModelContainerImage.ts
-models/ModelContainerImageWithTags.ts
 models/ModelDownloadReportResponse.ts
 models/ModelFetchWindow.ts
 models/ModelHost.ts
+models/ModelImageStub.ts
 models/ModelInitAgentReq.ts
 models/ModelInviteUserRequest.ts
 models/ModelInviteUserResponse.ts
@@ -102,7 +102,7 @@ models/ModelRegisterInvitedUserRequest.ts
 models/ModelRegistryAccount.ts
 models/ModelRegistryAddReq.ts
 models/ModelRegistryCountResp.ts
-models/ModelRegistryImageTagsReq.ts
+models/ModelRegistryImageStubsReq.ts
 models/ModelRegistryImagesReq.ts
 models/ModelRegistryListResp.ts
 models/ModelResponseAccessToken.ts
