@@ -38,7 +38,7 @@ export const LargeInput = Template.bind({});
 LargeInput.args = {
   placeholder: 'test@deepfence.io',
   startIcon: <AiOutlineMail />,
-  sizing: 'sm',
+  sizing: 'lg',
 };
 
 export const WithLabel = Template.bind({});
