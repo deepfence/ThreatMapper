@@ -230,16 +230,16 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 			cloudProvider := PostureProviderAWS
 			postureProvider.NodeLabel = "Organizations"
 			nodeRes, err := tx.Run(fmt.Sprintf(`
-			MATCH (o:%s)
+			MATCH (o:%s{cloud_provider:$cloud_provider+'_org'})
 			WITH COUNT(DISTINCT o.node_id) AS account_count
 			OPTIONAL MATCH (p:CloudResource)
 			WHERE p.cloud_provider = $cloud_provider
 			WITH account_count, COUNT(*) AS resource_count
-			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s{cloud_provider: $cloud_provider})<-[:IS_CHILD]-(o:%s)
+			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s{cloud_provider: $cloud_provider})<-[:IS_CHILD]-(o:%s{cloud_provider:$cloud_provider+'_org'})
 			WITH account_count, resource_count, COUNT(DISTINCT n.node_id) AS scan_count
-			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudComplianceResult), (o:%s) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
+			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudComplianceResult), (o:%s{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
 			WITH account_count, resource_count, scan_count, COUNT(c) AS total_compliance_count
-			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:CloudComplianceResult), (o:%s) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
+			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:CloudComplianceResult), (o:%s{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
 			WHERE c1.status IN ['ok', 'info', 'skip']
 			RETURN account_count, resource_count, scan_count,
 				CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage`, neo4jNodeType, scanType,
