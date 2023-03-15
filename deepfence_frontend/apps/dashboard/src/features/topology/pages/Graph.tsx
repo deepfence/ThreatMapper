@@ -1,12 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
-import { useMeasure } from 'react-use';
+import { useInterval, useMeasure } from 'react-use';
+import { CircleSpinner } from 'ui-components';
 
 import { getTopologyApiClient } from '@/api/api';
 import { ApiDocsGraphResult } from '@/api/generated';
 import { useG6raph } from '@/features/topology/hooks/useG6Graph';
 import { G6GraphEvent, GraphAction, NodeModel } from '@/features/topology/types/graph';
-import { focusItem, nodeToFront } from '@/features/topology/utils/expand-collapse';
+import {
+  focusItem,
+  itemExpands,
+  nodeToFront,
+} from '@/features/topology/utils/expand-collapse';
 import { updateGraph } from '@/features/topology/utils/graph-update';
 import {
   getTopologyDiff,
@@ -56,7 +61,8 @@ const Graph = () => {
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const { graph } = useG6raph(container, {}, {});
-  const { dataDiffWithAction, ...graphDataManagerFunctions } = useGraphDataManager();
+  const { dataDiffWithAction, isRefreshInProgress, ...graphDataManagerFunctions } =
+    useGraphDataManager();
   const graphDataManagerFunctionsRef = useRef(graphDataManagerFunctions);
 
   graphDataManagerFunctionsRef.current = graphDataManagerFunctions;
@@ -64,6 +70,10 @@ const Graph = () => {
   useEffect(() => {
     graphDataManagerFunctionsRef.current.getDataUpdates({ type: 'refresh' });
   }, []);
+
+  useInterval(() => {
+    graphDataManagerFunctionsRef.current.getDataUpdates({ type: 'refresh' });
+  }, 30000);
 
   useEffect(() => {
     if (dataDiffWithAction.diff && dataDiffWithAction.action) {
@@ -86,7 +96,8 @@ const Graph = () => {
     graph.on('node:click', (e: G6GraphEvent) => {
       const { item: node } = e;
       const model = node?.getModel() as NodeModel;
-      if (!model.df_data?.type) return;
+      if (!itemExpands(node)) return;
+      if (!model?.df_data?.type) return; // does not do anything, helps with typescript errors
 
       if (
         !graphDataManagerFunctionsRef.current.isNodeExpanded({
@@ -113,6 +124,11 @@ const Graph = () => {
     <div className="h-full w-full relative select-none" ref={measureRef}>
       {/** had to use this absolute relative trick, otherwise element does not shrink, only grows */}
       <div className="absolute inset-0" ref={setContainer} />
+      {isRefreshInProgress ? (
+        <div className="absolute bottom-32 left-6 text-gray-600 dark:text-gray-400">
+          <CircleSpinner size="xl" />
+        </div>
+      ) : null}
     </div>
   );
 };
@@ -156,6 +172,7 @@ function useGraphDataManager() {
     dataDiffWithAction,
     getDataUpdates,
     isNodeExpanded: storageManager.isNodeExpanded,
+    isRefreshInProgress: fetcher.state !== 'idle',
   };
 }
 

@@ -18,6 +18,19 @@ export const itemExpandsAsCombo = (item: G6Item | null) => {
   );
 };
 
+export const itemExpands = (item: G6Item | null) => {
+  const model = item?.get('model') as NodeModel;
+  if (!model || !model.df_data) return false;
+  return [
+    'cloud_provider',
+    'cloud_region',
+    'host',
+    'pod',
+    'kubernetes_cluster',
+    'container',
+  ].includes(model.df_data.type ?? '');
+};
+
 export const nodeToFront = (graph: G6Graph, nodeId: string) => {
   const node = graph.findById(nodeId) as G6Node | undefined;
   if (!node) {
