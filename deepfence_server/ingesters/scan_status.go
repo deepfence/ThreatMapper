@@ -163,6 +163,8 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
 		neo4jNodeType = "KubernetesCluster"
 		scanType = utils.NEO4J_COMPLIANCE_SCAN
+	} else if nodeType == controls.ResourceTypeToString(controls.Host) {
+		scanType = utils.NEO4J_COMPLIANCE_SCAN
 	}
 	res, err := tx.Run(fmt.Sprintf(`
 		OPTIONAL MATCH (n:%s{node_id:$node_id})
@@ -213,13 +215,17 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 			ScanType: string(scanType),
 		}
 	}
+	nt := ctl.KubernetesCluster
+	if nodeType == controls.ResourceTypeToString(controls.Host) {
+		nt = ctl.Host
+	}
 	internalReq, _ := json.Marshal(ctl.StartComplianceScanRequest{
 		NodeId:   nodeId,
-		NodeType: ctl.KubernetesCluster,
-		BinArgs:  map[string]string{"scan_id": scanId},
+		NodeType: nt,
+		BinArgs:  map[string]string{"scan_id": scanId, "benchmark_type": benchmarkType},
 	})
 	action, _ := json.Marshal("{}")
-	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
+	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) || nodeType == controls.ResourceTypeToString(controls.Host) {
 		action, _ = json.Marshal(ctl.Action{ID: ctl.StartComplianceScan, RequestPayload: string(internalReq)})
 	}
 	if _, err = tx.Run(fmt.Sprintf(`

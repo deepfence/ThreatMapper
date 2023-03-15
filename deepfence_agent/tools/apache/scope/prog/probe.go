@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
@@ -15,6 +16,8 @@ import (
 	"github.com/weaveworks/go-checkpoint"
 
 	metrics_prom "github.com/armon/go-metrics/prometheus"
+	linuxScanner "github.com/deepfence/compliance/scanner"
+	linuxScannerUtil "github.com/deepfence/compliance/util"
 	dfUtils "github.com/deepfence/df-utils"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	docker_client "github.com/fsouza/go-dockerclient"
@@ -151,7 +154,23 @@ func setAgentControls() {
 	}
 	err = controls.RegisterControl(ctl.StartComplianceScan,
 		func(req ctl.StartComplianceScanRequest) error {
-			//TODO
+			scanner, err := linuxScanner.NewComplianceScanner(
+				linuxScannerUtil.Config{
+					ComplianceCheckType:       req.BinArgs["benchmark_type"],
+					ScanId:                    req.BinArgs["scan_id"],
+					NodeId:                    req.NodeId,
+					NodeName:                  req.NodeId,
+					ComplianceResultsFilePath: fmt.Sprintf("/var/log/compliance/compliance-scan/%s.log", req.BinArgs["scan_id"]),
+					ComplianceStatusFilePath:  "/var/log/compliance/compliance-status/status.log",
+				})
+			if err != nil {
+				return err
+			}
+			err = scanner.RunComplianceScan()
+			if err != nil {
+				log.Errorf("Error from scan: %+v", err)
+				return err
+			}
 			return nil
 		})
 	err = controls.RegisterControl(ctl.StartMalwareScan,
