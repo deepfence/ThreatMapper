@@ -2,6 +2,7 @@ package ingesters
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -54,7 +55,7 @@ func CommitFuncCompliance(ns string, data []Compliance) error {
 		return err
 	}
 	defer tx.Close()
-
+	fmt.Printf("Data to commit: %+v\n", data)
 	if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:Compliance{node_id:row.node_id, test_number:row.test_number})
