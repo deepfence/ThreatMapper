@@ -129,15 +129,31 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 	}
 	defer tx.Close()
 
-	matchNodeRes, err := tx.Run(`
+	var matchNodeRes neo4j.Result
+	if parentNodeId == "" {
+		matchNodeRes, err = tx.Run(`
 		WITH $param as row
 		MATCH (n:Node{node_id:row.node_id})
 		SET n+= row, n.updated_at = TIMESTAMP()`,
-		map[string]interface{}{
-			"param": nodeDetails,
-		})
-	if err != nil {
-		return err
+			map[string]interface{}{
+				"param": nodeDetails,
+			})
+		if err != nil {
+			return err
+		}
+	} else {
+		matchNodeRes, err = tx.Run(`
+		MATCH (m:Node{node_id: $parent_node_id})
+		WITH $param as row, m
+		MERGE (n:Node{node_id:row.node_id}) <-[:IS_CHILD]- (m)
+		SET n+= row, n.updated_at = TIMESTAMP()`,
+			map[string]interface{}{
+				"param":          nodeDetails,
+				"parent_node_id": parentNodeId,
+			})
+		if err != nil {
+			return err
+		}
 	}
 	_, err = matchNodeRes.Single()
 	if err != nil {
