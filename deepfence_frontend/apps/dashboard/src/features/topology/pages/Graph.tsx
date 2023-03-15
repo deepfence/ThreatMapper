@@ -1,5 +1,3 @@
-// WARNING: This component is supposed to render only once at a time.
-import { debounce } from 'lodash-es';
 import { useEffect, useRef, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { useMeasure } from 'react-use';
@@ -7,31 +5,18 @@ import { useMeasure } from 'react-use';
 import { getTopologyApiClient } from '@/api/api';
 import { ApiDocsGraphResult } from '@/api/generated';
 import { useG6raph } from '@/features/topology/hooks/useG6Graph';
-import { useTopology } from '@/features/topology/hooks/useTopology';
-import { G6GraphEvent, NodeModel } from '@/features/topology/types/graph';
-import { expandNode } from '@/features/topology/utils/expand-collapse';
+import { G6GraphEvent, GraphAction, NodeModel } from '@/features/topology/types/graph';
+import { focusItem, nodeToFront } from '@/features/topology/utils/expand-collapse';
+import { updateGraph } from '@/features/topology/utils/graph-update';
 import {
   getTopologyDiff,
   GraphStorageManager,
-} from '@/features/topology/utils/topologyData';
+} from '@/features/topology/utils/topology-data';
 import { ApiError, makeRequest } from '@/utils/api';
 
 interface ActionData {
   data: ApiDocsGraphResult;
-  action?:
-    | {
-        type: 'expandNode';
-        nodeId: string;
-        nodeType: string;
-      }
-    | {
-        type: 'collapseNode';
-        nodeId: string;
-        nodeType: string;
-      }
-    | {
-        type: 'refresh';
-      };
+  action?: GraphAction;
 }
 
 const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
@@ -73,11 +58,6 @@ const Graph = () => {
   const { graph } = useG6raph(container, {}, {});
   const { dataDiffWithAction, ...graphDataManagerFunctions } = useGraphDataManager();
   const graphDataManagerFunctionsRef = useRef(graphDataManagerFunctions);
-  const { update } = useTopology(graph, {
-    tick: debounce(() => {
-      //todo
-    }, 500),
-  });
 
   graphDataManagerFunctionsRef.current = graphDataManagerFunctions;
 
@@ -86,16 +66,17 @@ const Graph = () => {
   }, []);
 
   useEffect(() => {
-    if (update && dataDiffWithAction.diff) {
-      update(dataDiffWithAction.diff);
+    if (dataDiffWithAction.diff && dataDiffWithAction.action) {
+      updateGraph(graph!, dataDiffWithAction.diff, dataDiffWithAction.action);
+      if (dataDiffWithAction.action.type === 'expandNode') {
+        nodeToFront(graph!, dataDiffWithAction.action.nodeId);
+        focusItem(graph!, dataDiffWithAction.action.nodeId);
+      }
     }
-    // todo add focus code
   }, [dataDiffWithAction]);
 
   useEffect(() => {
-    // update the graph size when the container element is resized by smaller height
     if (graph !== null && width && height) {
-      // browser resize won't impact graph layout
       graph.changeSize(width, height);
     }
   }, [width, height]);
@@ -105,24 +86,24 @@ const Graph = () => {
     graph.on('node:click', (e: G6GraphEvent) => {
       const { item: node } = e;
       const model = node?.getModel() as NodeModel;
+      if (!model.df_data?.type) return;
 
       if (
         !graphDataManagerFunctionsRef.current.isNodeExpanded({
           nodeId: model.id,
-          nodeType: model.df_data!.type!,
+          nodeType: model.df_data.type,
         })
       ) {
-        expandNode(node!);
         graphDataManagerFunctionsRef.current.getDataUpdates({
           type: 'expandNode',
           nodeId: model.id,
-          nodeType: model.df_data!.type!,
+          nodeType: model.df_data.type,
         });
       } else {
         graphDataManagerFunctionsRef.current.getDataUpdates({
           type: 'collapseNode',
           nodeId: model.id,
-          nodeType: model.df_data!.type!,
+          nodeType: model.df_data.type,
         });
       }
     });

@@ -87,3 +87,18 @@ export type ComboModel = ComboConfig & {
   children_ids?: Set<string>;
   center_ids?: Array<string>;
 };
+
+export type GraphAction =
+  | {
+      type: 'expandNode';
+      nodeId: string;
+      nodeType: string;
+    }
+  | {
+      type: 'collapseNode';
+      nodeId: string;
+      nodeType: string;
+    }
+  | {
+      type: 'refresh';
+    };

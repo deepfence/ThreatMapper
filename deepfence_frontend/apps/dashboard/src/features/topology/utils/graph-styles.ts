@@ -1,3 +1,5 @@
+import { EnhancedDetailedNodeSummary } from '@/features/topology/types/graph';
+
 export const PALETTE = {
   BLUE: '#55c1e9',
   DEEP_BLUE: '#426ca9',
@@ -40,4 +42,29 @@ export const COLORS = {
   POD: PALETTE.MID_GREY,
   CONTAINER: PALETTE.MID_GREY,
   PROCESS: PALETTE.LIGHT_GREY,
+};
+
+export const nodeStyle = (
+  node: EnhancedDetailedNodeSummary,
+  override: Record<string, any>,
+) => {
+  let style: Record<string, string> = {};
+  const fill: Record<string, string> = {
+    cloud_provider: COLORS.CLOUD_PROVIDER,
+    region: COLORS.REGION,
+    host: COLORS.HOST,
+    pod: COLORS.POD,
+    container: COLORS.CONTAINER,
+    process: COLORS.PROCESS,
+  };
+  style.fill = fill[node?.df_data?.type ?? ''] || COLORS.NODE;
+
+  style = { ...style, ...override };
+  if (node.df_data.image !== undefined) {
+    delete style.fill;
+  } else if (node?.df_data?.type === 'process') {
+    style.fill = COLORS.PROCESS;
+  }
+
+  return style;
 };

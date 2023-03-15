@@ -2,8 +2,7 @@ import { EnhancedDetailedNodeSummary, G6Graph } from '@/features/topology/types/
 
 export const BASE_NODE_STRENGTH = 6000;
 
-// We use gForceLayout and properties can be found here: https://g6.antv.vision/en/docs/api/graphLayout/gforce
-
+// gForce Layout properties can be found here: https://g6.antv.vision/en/docs/api/graphLayout/gforce
 export const gForceLayout = (graph: G6Graph) => {
   return {
     preventOverlap: true,

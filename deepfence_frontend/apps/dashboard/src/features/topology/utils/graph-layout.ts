@@ -1,6 +1,5 @@
 import { Layout } from '@antv/g6';
 import { PointTuple } from '@antv/layout';
-import { useRef } from 'react';
 
 import {
   EnhancedDetailedNodeSummary,
@@ -11,7 +10,6 @@ import {
   G6Layout,
   G6Node,
   InputLayoutOptions,
-  LayoutOptions,
   NodeModel,
   OutputLayoutOptions,
 } from '@/features/topology/types/graph';
@@ -22,96 +20,7 @@ import {
   nodeStrength,
 } from '@/features/topology/utils/gForce';
 
-export function useGraphLayoutManager(graph: G6Graph | null, options: LayoutOptions) {
-  const layoutsRef = useRef<Record<string, InputLayoutOptions | null>>({});
-  const queuedLayoutsRef = useRef<string[]>([]);
-  const pausedRef = useRef(false);
-  const currentExecutorRef = useRef<LayoutExecutor | null>(null);
-
-  function layoutEnded() {
-    currentExecutorRef.current = null;
-    graph?.emit('afterlayout');
-  }
-
-  const buildExecutor = (
-    nodes: G6Node[],
-    edges: G6Edge[],
-    layoutOptions: OutputLayoutOptions['options'],
-  ) => {
-    return new LayoutExecutor(nodes, edges, {
-      ...layoutOptions,
-      tick: () => {
-        if (options?.tick) {
-          options.tick();
-        }
-
-        if (layoutOptions?.tick) {
-          layoutOptions.tick();
-        }
-      },
-      onLayoutEnd: () => {
-        layoutEnded();
-        try {
-          if (layoutOptions?.onLayoutEnd) {
-            layoutOptions.onLayoutEnd();
-          }
-
-          if (options?.onLayoutEnd) {
-            options.onLayoutEnd();
-          }
-        } catch (e) {
-          console.error('onLayoutEnd failed', e);
-        }
-        maybeStartNextLayout();
-      },
-    });
-  };
-
-  const layout = (nodeId: string, options?: InputLayoutOptions) => {
-    layoutsRef.current[nodeId] = options ?? null;
-    const index = queuedLayoutsRef.current.findIndex((id) => nodeId === id);
-    if (index < 0) {
-      queuedLayoutsRef.current.push(nodeId);
-    }
-    maybeStartNextLayout();
-  };
-  const maybeStartNextLayout = () => {
-    if (!pausedRef.current && !currentExecutorRef.current) {
-      const next = queuedLayoutsRef.current.shift();
-
-      if (next) {
-        startLayout(next);
-      }
-    }
-  };
-
-  const startLayout = (nodeId: string) => {
-    const _opts = layoutsRef.current[nodeId];
-    delete layoutsRef.current[nodeId];
-
-    const layout = buildLayoutOptions(graph!, nodeId, _opts);
-    if (!layout) {
-      return maybeStartNextLayout();
-    }
-
-    const { nodes, edges, options: layoutOptions } = layout;
-    currentExecutorRef.current = buildExecutor(nodes, edges, layoutOptions);
-
-    graph?.emit('beforelayout');
-
-    if (options?.onLayoutStart) {
-      options.onLayoutStart();
-    }
-
-    currentExecutorRef.current?.start();
-  };
-
-  if (!graph) return {};
-
-  return { layout };
-}
-
-class LayoutExecutor {
+export class LayoutExecutor {
   layout: G6Layout;
   constructor(nodes: G6Node[], edges: G6Edge[], options: OutputLayoutOptions['options']) {
     this.layout = new Layout.gForce(options);
@@ -123,7 +32,7 @@ class LayoutExecutor {
   }
 }
 
-const buildLayoutOptions = (
+export const buildLayoutOptions = (
   graph: G6Graph,
   nodeId: string,
   options: InputLayoutOptions | null,
@@ -214,6 +123,10 @@ const buildComboLayoutOptions = (
   const combo_id = `${node_id}-combo`;
 
   const combo = graph.findById(combo_id) as G6Combo;
+  if (!combo) {
+    console.warn('not doing layout of already destroyed combo');
+    return;
+  }
   const combo_model = combo.get('model');
 
   let { nodes } = combo.getChildren();

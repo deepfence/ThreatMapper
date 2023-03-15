@@ -6,7 +6,7 @@ import {
   G6GraphData,
   G6GraphOptionsWithoutContainer,
 } from '@/features/topology/types/graph';
-import { COLORS } from '@/features/topology/utils/theme';
+import { COLORS } from '@/features/topology/utils/graph-styles';
 
 const toolbar = new G6.ToolBar({
   className: 'absolute bottom-2.5 left-2.5',
@@ -102,7 +102,7 @@ const DEFAULT_OPTIONS: G6GraphOptionsWithoutContainer = {
     },
   },
   defaultEdge: {
-    type: 'cubic',
+    // type: 'cubic',
     size: 2,
     color: COLORS.EDGE,
     style: {
