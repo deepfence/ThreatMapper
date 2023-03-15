@@ -19,6 +19,12 @@ import {
     ModelFetchWindowFromJSONTyped,
     ModelFetchWindowToJSON,
 } from './ModelFetchWindow';
+import type { ReportersContainsFilter } from './ReportersContainsFilter';
+import {
+    ReportersContainsFilterFromJSON,
+    ReportersContainsFilterFromJSONTyped,
+    ReportersContainsFilterToJSON,
+} from './ReportersContainsFilter';
 
 /**
  * 
@@ -26,6 +32,12 @@ import {
  * @interface ModelRegistryImagesReq
  */
 export interface ModelRegistryImagesReq {
+    /**
+     * 
+     * @type {ReportersContainsFilter}
+     * @memberof ModelRegistryImagesReq
+     */
+    image_filter: ReportersContainsFilter;
     /**
      * 
      * @type {string}
@@ -37,7 +49,7 @@ export interface ModelRegistryImagesReq {
      * @type {ModelFetchWindow}
      * @memberof ModelRegistryImagesReq
      */
-    window?: ModelFetchWindow;
+    window: ModelFetchWindow;
 }
 
 /**
@@ -45,7 +57,9 @@ export interface ModelRegistryImagesReq {
  */
 export function instanceOfModelRegistryImagesReq(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "image_filter" in value;
     isInstance = isInstance && "registry_id" in value;
+    isInstance = isInstance && "window" in value;
 
     return isInstance;
 }
@@ -60,8 +74,9 @@ export function ModelRegistryImagesReqFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         
+        'image_filter': ReportersContainsFilterFromJSON(json['image_filter']),
         'registry_id': json['registry_id'],
-        'window': !exists(json, 'window') ? undefined : ModelFetchWindowFromJSON(json['window']),
+        'window': ModelFetchWindowFromJSON(json['window']),
     };
 }
 
@@ -74,6 +89,7 @@ export function ModelRegistryImagesReqToJSON(value?: ModelRegistryImagesReq | nu
     }
     return {
         
+        'image_filter': ReportersContainsFilterToJSON(value.image_filter),
         'registry_id': value.registry_id,
         'window': ModelFetchWindowToJSON(value.window),
     };

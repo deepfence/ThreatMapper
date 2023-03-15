@@ -29,14 +29,15 @@ import {
 import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelRegistryListResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import {
-  ActionEnumType,
-  ScanConfigureModal,
-} from '@/components/scan-configure-forms/ScanConfigureModal';
+import { MalwareScanActionEnumType } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
+import { SecretScanActionEnumType } from '@/components/scan-configure-forms/SecretScanConfigureForm';
+import { VulnerabilityScanActionEnumType } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { ConfigureScanModal } from '@/features/registries/components/ConfigureScanModal';
 import { ApiError, makeRequest } from '@/utils/api';
+import { formatMilliseconds } from '@/utils/date';
 
 export type ActionReturnType = {
   message?: string;
@@ -139,14 +140,14 @@ const ActionDropdown = ({ id }: { id: string }) => {
         id={id}
         setShowDialog={setShowDeleteDialog}
       />
-      <ScanConfigureModal
+      <ConfigureScanModal
         open={openScanConfigure !== ''}
         setOpen={setOpenScanConfigure}
         scanType={openScanConfigure}
         wantAdvanceOptions={true}
         data={{
-          urlIds: [id],
-          urlType: 'registry',
+          nodeIds: [id],
+          nodeType: 'registry',
         }}
       />
       <Dropdown
@@ -160,7 +161,9 @@ const ActionDropdown = ({ id }: { id: string }) => {
                 <>
                   <DropdownItem
                     onClick={() =>
-                      setOpenScanConfigure(ActionEnumType.SCAN_VULNERABILITY)
+                      setOpenScanConfigure(
+                        VulnerabilityScanActionEnumType.SCAN_VULNERABILITY,
+                      )
                     }
                   >
                     <div className="w-4 h-4">
@@ -169,7 +172,9 @@ const ActionDropdown = ({ id }: { id: string }) => {
                     Scan for vulnerability
                   </DropdownItem>
                   <DropdownItem
-                    onClick={() => setOpenScanConfigure(ActionEnumType.SCAN_SECRET)}
+                    onClick={() =>
+                      setOpenScanConfigure(SecretScanActionEnumType.SCAN_SECRET)
+                    }
                   >
                     <div className="w-4 h-4">
                       <SecretsIcon />
@@ -177,7 +182,9 @@ const ActionDropdown = ({ id }: { id: string }) => {
                     Scan for secret
                   </DropdownItem>
                   <DropdownItem
-                    onClick={() => setOpenScanConfigure(ActionEnumType.SCAN_MALWARE)}
+                    onClick={() =>
+                      setOpenScanConfigure(MalwareScanActionEnumType.SCAN_MALWARE)
+                    }
                   >
                     <div className="w-4 h-4">
                       <MalwareIcon />
@@ -249,8 +256,9 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
         cell: (info) => (
           <div>
             <DFLink
-              to={generatePath('/registries/images/:account/:accountId', {
+              to={generatePath('/registries/images/:account/:accountId/:nodeId', {
                 account,
+                nodeId: info.row.original.node_id ?? '',
                 accountId: info.row.original.id?.toString() ?? '',
               })}
             >
@@ -269,9 +277,9 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
         size: 110,
         maxSize: 120,
         cell: (info) => {
-          if (info.getValue()) {
-            // return formatMilliseconds(info.getValue()); // TODO: format this string
-            return info.getValue()?.toString();
+          const date = info.getValue();
+          if (date !== undefined) {
+            return formatMilliseconds(date);
           }
           return '';
         },
@@ -288,10 +296,10 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
         id: 'actions',
         enableSorting: false,
         cell: (cell) => {
-          if (!cell.row.original.id) {
-            throw new Error('Registry Account id not found');
+          if (!cell.row.original.node_id) {
+            throw new Error('Registry Account node id not found');
           }
-          return <ActionDropdown id={cell.row.original.id.toString()} />;
+          return <ActionDropdown id={cell.row.original.node_id.toString()} />;
         },
         header: () => '',
         minSize: 20,

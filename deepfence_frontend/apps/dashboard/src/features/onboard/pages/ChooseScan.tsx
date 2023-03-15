@@ -1,6 +1,6 @@
 import { IconContext } from 'react-icons';
 import { HiArrowRight, HiDocumentSearch, HiSwitchHorizontal } from 'react-icons/hi';
-import { Navigate, useLocation } from 'react-router-dom';
+import { generatePath, Navigate, useLocation } from 'react-router-dom';
 import { Button, Card, Separator, Tooltip, Typography } from 'ui-components';
 
 import LogoAws from '@/assets/logo-aws.svg';
@@ -10,12 +10,21 @@ import LogoAzureRegistry from '@/assets/logo-azure-registry.svg';
 import LogoGoogle from '@/assets/logo-google.svg';
 import LogoK8 from '@/assets/logo-k8.svg';
 import LogoLinux from '@/assets/logo-linux.svg';
+import { MalwareScanActionEnumType } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
+import { SecretScanActionEnumType } from '@/components/scan-configure-forms/SecretScanConfigureForm';
+import { VulnerabilityScanActionEnumType } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { OnboardConnectionNode } from '@/features/onboard/pages/connectors/MyConnectors';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
-type NodeType = 'aws' | 'gcp' | 'azure' | 'host' | 'kubernetes_cluster' | 'registry';
+export type NodeType =
+  | 'aws'
+  | 'gcp'
+  | 'azure'
+  | 'host'
+  | 'kubernetes_cluster'
+  | 'registry';
 
 const getNodeDisplayText = (text: string) => {
   const splittedText = text.split(',');
@@ -45,19 +54,19 @@ const complianceScanData = {
 
 const vulnerabilityScanData = {
   scanTitle: 'Vulnerability Scan',
-  scanType: 'vulnerability',
+  scanType: VulnerabilityScanActionEnumType.SCAN_VULNERABILITY,
   description: `A few words about the vulnerability scan and why you need to use it.`,
   buttonText: 'Configure Vulnerability Scan',
 };
 const secretScanData = {
   scanTitle: 'Secret Scan',
-  scanType: 'secret',
+  scanType: SecretScanActionEnumType.SCAN_SECRET,
   description: `A few words about the secret scan and why you need to use it.`,
   buttonText: 'Configure Secret Scan',
 };
 const malwareScanData = {
   scanTitle: 'Malware Scan',
-  scanType: 'malware',
+  scanType: MalwareScanActionEnumType.SCAN_MALWARE,
   description: `A few words about the malwawre scan and why you need to use it.`,
   buttonText: 'Configure Malware Scan',
 };
@@ -204,9 +213,14 @@ const ScanType = ({ state }: { state: OnboardConnectionNode[] }) => {
                 className="mt-2 w-full"
                 endIcon={<HiArrowRight />}
                 onClick={() => {
-                  navigate(`/onboard/scan/configure/${scanType}`, {
-                    state,
-                  });
+                  navigate(
+                    generatePath('/onboard/scan/configure/:scanType', {
+                      scanType,
+                    }),
+                    {
+                      state,
+                    },
+                  );
                 }}
               >
                 {buttonText}

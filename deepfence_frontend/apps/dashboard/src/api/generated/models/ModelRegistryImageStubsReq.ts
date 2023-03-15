@@ -19,61 +19,68 @@ import {
     ModelFetchWindowFromJSONTyped,
     ModelFetchWindowToJSON,
 } from './ModelFetchWindow';
+import type { ReportersContainsFilter } from './ReportersContainsFilter';
+import {
+    ReportersContainsFilterFromJSON,
+    ReportersContainsFilterFromJSONTyped,
+    ReportersContainsFilterToJSON,
+} from './ReportersContainsFilter';
 
 /**
  * 
  * @export
- * @interface ModelRegistryImageTagsReq
+ * @interface ModelRegistryImageStubsReq
  */
-export interface ModelRegistryImageTagsReq {
+export interface ModelRegistryImageStubsReq {
     /**
      * 
-     * @type {string}
-     * @memberof ModelRegistryImageTagsReq
+     * @type {ReportersContainsFilter}
+     * @memberof ModelRegistryImageStubsReq
      */
-    image_name: string;
+    image_filter: ReportersContainsFilter;
     /**
      * 
      * @type {string}
-     * @memberof ModelRegistryImageTagsReq
+     * @memberof ModelRegistryImageStubsReq
      */
     registry_id: string;
     /**
      * 
      * @type {ModelFetchWindow}
-     * @memberof ModelRegistryImageTagsReq
+     * @memberof ModelRegistryImageStubsReq
      */
-    window?: ModelFetchWindow;
+    window: ModelFetchWindow;
 }
 
 /**
- * Check if a given object implements the ModelRegistryImageTagsReq interface.
+ * Check if a given object implements the ModelRegistryImageStubsReq interface.
  */
-export function instanceOfModelRegistryImageTagsReq(value: object): boolean {
+export function instanceOfModelRegistryImageStubsReq(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "image_name" in value;
+    isInstance = isInstance && "image_filter" in value;
     isInstance = isInstance && "registry_id" in value;
+    isInstance = isInstance && "window" in value;
 
     return isInstance;
 }
 
-export function ModelRegistryImageTagsReqFromJSON(json: any): ModelRegistryImageTagsReq {
-    return ModelRegistryImageTagsReqFromJSONTyped(json, false);
+export function ModelRegistryImageStubsReqFromJSON(json: any): ModelRegistryImageStubsReq {
+    return ModelRegistryImageStubsReqFromJSONTyped(json, false);
 }
 
-export function ModelRegistryImageTagsReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelRegistryImageTagsReq {
+export function ModelRegistryImageStubsReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelRegistryImageStubsReq {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'image_name': json['image_name'],
+        'image_filter': ReportersContainsFilterFromJSON(json['image_filter']),
         'registry_id': json['registry_id'],
-        'window': !exists(json, 'window') ? undefined : ModelFetchWindowFromJSON(json['window']),
+        'window': ModelFetchWindowFromJSON(json['window']),
     };
 }
 
-export function ModelRegistryImageTagsReqToJSON(value?: ModelRegistryImageTagsReq | null): any {
+export function ModelRegistryImageStubsReqToJSON(value?: ModelRegistryImageStubsReq | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -82,7 +89,7 @@ export function ModelRegistryImageTagsReqToJSON(value?: ModelRegistryImageTagsRe
     }
     return {
         
-        'image_name': value.image_name,
+        'image_filter': ReportersContainsFilterToJSON(value.image_filter),
         'registry_id': value.registry_id,
         'window': ModelFetchWindowToJSON(value.window),
     };
