@@ -27,24 +27,21 @@ import {
   rootOnboardLoader,
 } from '@/features/onboard/layouts/OnboardLayout';
 import { module as registriesConnector } from '@/features/onboard/pages//RegistriesConnector';
-import { AmazonECRConnector } from '@/features/onboard/pages/AmazonECRConnector';
 import { AWSConnector } from '@/features/onboard/pages/AWSConnector';
 import { AzureConnector } from '@/features/onboard/pages/AzureConnector';
 import { module as chooseScan } from '@/features/onboard/pages/ChooseScan';
 import { module as complianceScanConfigure } from '@/features/onboard/pages/ComplianceScanConfigure';
 import { module as complianceScanSummary } from '@/features/onboard/pages/ComplianceScanSummary';
+import { module as configureScanForm } from '@/features/onboard/pages/ConfigureScanForm';
 import { AddConnector } from '@/features/onboard/pages/connectors/AddConnectors';
 import { module as myConnectors } from '@/features/onboard/pages/connectors/MyConnectors';
 import { DockerConnector } from '@/features/onboard/pages/DockerConnector';
 import { GCPConnector } from '@/features/onboard/pages/GCPConnector';
 import { K8sConnector } from '@/features/onboard/pages/K8sConnector';
 import { LinuxConnector } from '@/features/onboard/pages/LinuxConnector';
-import { module as malwareScanConfigure } from '@/features/onboard/pages/MalwareScanConfigure';
 import { module as malwareScanSumary } from '@/features/onboard/pages/MalwareScanSummary';
 import { module as scanInProgress } from '@/features/onboard/pages/ScanInProgress';
-import { module as secretScanConfigure } from '@/features/onboard/pages/SecretScanConfigure';
 import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanSummary';
-import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
 import { module as registryConnectorLayout } from '@/features/registries/layouts/RegistryConnectorLayout';
 import { module as registries } from '@/features/registries/pages/Registries';
@@ -144,19 +141,9 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Configure Compliance Scan' },
           },
           {
-            path: 'configure/vulnerability',
-            ...vulnerabilityScanConfigure,
-            meta: { title: 'Configure Vulnerability Scan' },
-          },
-          {
-            path: 'configure/secret',
-            ...secretScanConfigure,
-            meta: { title: 'Configure Secret Scan' },
-          },
-          {
-            path: 'configure/malware',
-            ...malwareScanConfigure,
-            meta: { title: 'Configure Malware Scan' },
+            path: 'configure/:scanType',
+            ...configureScanForm,
+            meta: { title: 'Configure Scan' },
           },
           {
             path: 'view-summary/compliance/:nodeType/:bulkScanId',

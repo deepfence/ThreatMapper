@@ -11,13 +11,13 @@ import {
 
 import { ModelImageStub } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import {
-  ActionEnumType,
-  ScanConfigureModal,
-} from '@/components/scan-configure-forms/ScanConfigureModal';
+import { MalwareScanActionEnumType } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
+import { SecretScanActionEnumType } from '@/components/scan-configure-forms/SecretScanConfigureForm';
+import { VulnerabilityScanActionEnumType } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { ConfigureScanModal } from '@/features/registries/components/ConfigureScanModal';
 
 const PAGE_SIZE = 15;
 export const RegistryImagesTable = ({
@@ -106,8 +106,8 @@ export const RegistryImagesTable = ({
               }}
             >
               <SelectItem
-                value={ActionEnumType.SCAN_VULNERABILITY}
-                key={ActionEnumType.SCAN_VULNERABILITY}
+                value={VulnerabilityScanActionEnumType.SCAN_VULNERABILITY}
+                key={VulnerabilityScanActionEnumType.SCAN_VULNERABILITY}
               >
                 <div className="w-4 h-4">
                   <VulnerabilityIcon />
@@ -115,8 +115,8 @@ export const RegistryImagesTable = ({
                 Vulnerability
               </SelectItem>
               <SelectItem
-                value={ActionEnumType.SCAN_SECRET}
-                key={ActionEnumType.SCAN_SECRET}
+                value={SecretScanActionEnumType.SCAN_SECRET}
+                key={SecretScanActionEnumType.SCAN_SECRET}
               >
                 <div className="w-4 h-4">
                   <SecretsIcon />
@@ -124,8 +124,8 @@ export const RegistryImagesTable = ({
                 Secret
               </SelectItem>
               <SelectItem
-                value={ActionEnumType.SCAN_MALWARE}
-                key={ActionEnumType.SCAN_MALWARE}
+                value={MalwareScanActionEnumType.SCAN_MALWARE}
+                key={MalwareScanActionEnumType.SCAN_MALWARE}
               >
                 <div className="w-4 h-4">
                   <MalwareIcon />
@@ -136,7 +136,7 @@ export const RegistryImagesTable = ({
           </div>
         </>
       )}
-      <ScanConfigureModal
+      <ConfigureScanModal
         open={openScanConfigure !== ''}
         setOpen={setOpenScanConfigure}
         scanType={openScanConfigure}

@@ -9,20 +9,30 @@ import {
   ModelNodeIdentifierNodeTypeEnum,
   ModelSecretScanTriggerReq,
 } from '@/api/generated';
+import { NodeType } from '@/features/onboard/pages/ChooseScan';
 import { ApiError, makeRequest } from '@/utils/api';
 
+export enum SecretScanActionEnumType {
+  SCAN_SECRET = 'scan_secret',
+}
+
 type ScanConfigureFormProps = {
+  wantAdvanceOptions: boolean;
   data: {
     nodeIds: string[];
     images: string[];
-    nodeType: 'cluster' | 'host' | 'image' | 'registry' | 'imageTag';
+    nodeType: NodeType | ('cluster' | 'host' | 'image' | 'registry' | 'imageTag');
   };
-  onSuccess: () => void;
+  onSuccess: (data?: { nodeType: string; bulkScanId: string }) => void;
 };
 
 type ScanActionReturnType = {
   message?: string;
   success: boolean;
+  data?: {
+    nodeType: string;
+    bulkScanId: string;
+  };
 };
 
 export const scanSecretApiAction = async ({
@@ -109,10 +119,18 @@ export const scanSecretApiAction = async ({
   toast('Scan has been sucessfully started');
   return {
     success: true,
+    data: {
+      bulkScanId: r.bulk_scan_id,
+      nodeType,
+    },
   };
 };
 
-export const SecretScanConfigureForm = ({ data, onSuccess }: ScanConfigureFormProps) => {
+export const SecretScanConfigureForm = ({
+  data,
+  onSuccess,
+  wantAdvanceOptions,
+}: ScanConfigureFormProps) => {
   const [priorityScan, setPriorityScan] = useState(false);
   const [autoCheckandScan, setAutoCheckandScan] = useState(false);
   const [imageTag, setImageTag] = useState('latest');
@@ -121,8 +139,12 @@ export const SecretScanConfigureForm = ({ data, onSuccess }: ScanConfigureFormPr
   const { state, data: fetcherData } = fetcher;
 
   useEffect(() => {
+    let data = undefined;
     if (fetcherData?.success) {
-      onSuccess();
+      if (fetcher.data) {
+        data = fetcher.data.data;
+      }
+      onSuccess(data);
     }
   }, [fetcherData]);
 
@@ -141,7 +163,10 @@ export const SecretScanConfigureForm = ({ data, onSuccess }: ScanConfigureFormPr
         <p className="text-red-500 text-md py-3">{fetcherData.message}</p>
       )}
       <div className="flex">
-        <h6 className={'text-md font-medium dark:text-white'}>Advanced Options</h6>
+        {wantAdvanceOptions && (
+          <h6 className={'text-md font-medium dark:text-white'}>Advanced Options</h6>
+        )}
+
         <Button
           disabled={state === 'loading'}
           loading={state === 'loading'}
@@ -153,46 +178,48 @@ export const SecretScanConfigureForm = ({ data, onSuccess }: ScanConfigureFormPr
           Start Scan
         </Button>
       </div>
-      <div className="flex flex-col gap-y-6">
-        <Checkbox
-          name="priorityScan"
-          label="Priority Scan"
-          checked={priorityScan}
-          onCheckedChange={(checked: boolean) => {
-            setPriorityScan(checked);
-          }}
-        />
-        {data.nodeType !== 'imageTag' && (
-          <Radio
-            name="imageTag"
-            value={imageTag}
-            options={[
-              { label: 'Scan last pushed tag', value: 'recent' },
-              { label: 'Scan by "latest" tag', value: 'latest' },
-              { label: 'Scan all image tags', value: 'all' },
-            ]}
-            onValueChange={(value) => {
-              setImageTag(value);
+      {wantAdvanceOptions && (
+        <div className="flex flex-col gap-y-6">
+          <Checkbox
+            name="priorityScan"
+            label="Priority Scan"
+            checked={priorityScan}
+            onCheckedChange={(checked: boolean) => {
+              setPriorityScan(checked);
             }}
           />
-        )}
-        <TextInput
-          className="min-[200px] max-w-xs"
-          label="Scan interval in days (optional)"
-          type={'text'}
-          sizing="sm"
-          name="scanInterval"
-          placeholder=""
-        />
-        <Checkbox
-          name="scanEveryday"
-          label="Check and scan for new images every day"
-          checked={autoCheckandScan}
-          onCheckedChange={(checked: boolean) => {
-            setAutoCheckandScan(checked);
-          }}
-        />
-      </div>
+          {data.nodeType !== 'imageTag' && (
+            <Radio
+              name="imageTag"
+              value={imageTag}
+              options={[
+                { label: 'Scan last pushed tag', value: 'recent' },
+                { label: 'Scan by "latest" tag', value: 'latest' },
+                { label: 'Scan all image tags', value: 'all' },
+              ]}
+              onValueChange={(value) => {
+                setImageTag(value);
+              }}
+            />
+          )}
+          <TextInput
+            className="min-[200px] max-w-xs"
+            label="Scan interval in days (optional)"
+            type={'text'}
+            sizing="sm"
+            name="scanInterval"
+            placeholder=""
+          />
+          <Checkbox
+            name="scanEveryday"
+            label="Check and scan for new images every day"
+            checked={autoCheckandScan}
+            onCheckedChange={(checked: boolean) => {
+              setAutoCheckandScan(checked);
+            }}
+          />
+        </div>
+      )}
     </fetcher.Form>
   );
 };

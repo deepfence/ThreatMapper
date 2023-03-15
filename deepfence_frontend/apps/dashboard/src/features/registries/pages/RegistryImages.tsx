@@ -163,18 +163,16 @@ const loader = async ({
 };
 
 const HeaderComponent = () => {
-  const { account, nodeId, accountId } = useParams() as {
+  const { account, accountId } = useParams() as {
     account: string;
-    nodeId: string;
     accountId: string;
   };
 
   return (
     <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <DFLink
-        to={generatePath('/registries/:account/:nodeId', {
+        to={generatePath('/registries/:account', {
           account,
-          nodeId,
         })}
         className="flex hover:no-underline items-center justify-center mr-2"
       >

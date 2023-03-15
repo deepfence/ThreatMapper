@@ -29,13 +29,13 @@ import {
 import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelRegistryListResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import {
-  ActionEnumType,
-  ScanConfigureModal,
-} from '@/components/scan-configure-forms/ScanConfigureModal';
+import { MalwareScanActionEnumType } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
+import { SecretScanActionEnumType } from '@/components/scan-configure-forms/SecretScanConfigureForm';
+import { VulnerabilityScanActionEnumType } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { ConfigureScanModal } from '@/features/registries/components/ConfigureScanModal';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 
@@ -140,7 +140,7 @@ const ActionDropdown = ({ id }: { id: string }) => {
         id={id}
         setShowDialog={setShowDeleteDialog}
       />
-      <ScanConfigureModal
+      <ConfigureScanModal
         open={openScanConfigure !== ''}
         setOpen={setOpenScanConfigure}
         scanType={openScanConfigure}
@@ -161,7 +161,9 @@ const ActionDropdown = ({ id }: { id: string }) => {
                 <>
                   <DropdownItem
                     onClick={() =>
-                      setOpenScanConfigure(ActionEnumType.SCAN_VULNERABILITY)
+                      setOpenScanConfigure(
+                        VulnerabilityScanActionEnumType.SCAN_VULNERABILITY,
+                      )
                     }
                   >
                     <div className="w-4 h-4">
@@ -170,7 +172,9 @@ const ActionDropdown = ({ id }: { id: string }) => {
                     Scan for vulnerability
                   </DropdownItem>
                   <DropdownItem
-                    onClick={() => setOpenScanConfigure(ActionEnumType.SCAN_SECRET)}
+                    onClick={() =>
+                      setOpenScanConfigure(SecretScanActionEnumType.SCAN_SECRET)
+                    }
                   >
                     <div className="w-4 h-4">
                       <SecretsIcon />
@@ -178,7 +182,9 @@ const ActionDropdown = ({ id }: { id: string }) => {
                     Scan for secret
                   </DropdownItem>
                   <DropdownItem
-                    onClick={() => setOpenScanConfigure(ActionEnumType.SCAN_MALWARE)}
+                    onClick={() =>
+                      setOpenScanConfigure(MalwareScanActionEnumType.SCAN_MALWARE)
+                    }
                   >
                     <div className="w-4 h-4">
                       <MalwareIcon />

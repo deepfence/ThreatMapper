@@ -17,13 +17,13 @@ import {
 } from 'ui-components';
 
 import { ModelContainerImage } from '@/api/generated';
-import {
-  ActionEnumType,
-  ScanConfigureModal,
-} from '@/components/scan-configure-forms/ScanConfigureModal';
+import { MalwareScanActionEnumType } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
+import { SecretScanActionEnumType } from '@/components/scan-configure-forms/SecretScanConfigureForm';
+import { VulnerabilityScanActionEnumType } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { ConfigureScanModal } from '@/features/registries/components/ConfigureScanModal';
 import { formatMilliseconds } from '@/utils/date';
 
 const PAGE_SIZE = 15;
@@ -33,7 +33,7 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
 
   return (
     <>
-      <ScanConfigureModal
+      <ConfigureScanModal
         open={openScanConfigure !== ''}
         setOpen={setOpenScanConfigure}
         scanType={openScanConfigure}
@@ -49,7 +49,9 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
         content={
           <>
             <DropdownItem
-              onClick={() => setOpenScanConfigure(ActionEnumType.SCAN_VULNERABILITY)}
+              onClick={() =>
+                setOpenScanConfigure(VulnerabilityScanActionEnumType.SCAN_VULNERABILITY)
+              }
             >
               <div className="w-4 h-4">
                 <VulnerabilityIcon />
@@ -57,7 +59,7 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
               Scan for vulnerability
             </DropdownItem>
             <DropdownItem
-              onClick={() => setOpenScanConfigure(ActionEnumType.SCAN_SECRET)}
+              onClick={() => setOpenScanConfigure(SecretScanActionEnumType.SCAN_SECRET)}
             >
               <div className="w-4 h-4">
                 <SecretsIcon />
@@ -65,7 +67,7 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
               Scan for secret
             </DropdownItem>
             <DropdownItem
-              onClick={() => setOpenScanConfigure(ActionEnumType.SCAN_MALWARE)}
+              onClick={() => setOpenScanConfigure(MalwareScanActionEnumType.SCAN_MALWARE)}
             >
               <div className="w-4 h-4">
                 <MalwareIcon />
@@ -230,8 +232,8 @@ export const RegistryImageTagsTable = ({
               }}
             >
               <SelectItem
-                value={ActionEnumType.SCAN_VULNERABILITY}
-                key={ActionEnumType.SCAN_VULNERABILITY}
+                value={VulnerabilityScanActionEnumType.SCAN_VULNERABILITY}
+                key={VulnerabilityScanActionEnumType.SCAN_VULNERABILITY}
               >
                 <div className="w-4 h-4">
                   <VulnerabilityIcon />
@@ -239,8 +241,8 @@ export const RegistryImageTagsTable = ({
                 Vulnerability
               </SelectItem>
               <SelectItem
-                value={ActionEnumType.SCAN_SECRET}
-                key={ActionEnumType.SCAN_SECRET}
+                value={SecretScanActionEnumType.SCAN_SECRET}
+                key={SecretScanActionEnumType.SCAN_SECRET}
               >
                 <div className="w-4 h-4">
                   <SecretsIcon />
@@ -248,8 +250,8 @@ export const RegistryImageTagsTable = ({
                 Secret
               </SelectItem>
               <SelectItem
-                value={ActionEnumType.SCAN_MALWARE}
-                key={ActionEnumType.SCAN_MALWARE}
+                value={MalwareScanActionEnumType.SCAN_MALWARE}
+                key={MalwareScanActionEnumType.SCAN_MALWARE}
               >
                 <div className="w-4 h-4">
                   <MalwareIcon />
@@ -261,7 +263,7 @@ export const RegistryImageTagsTable = ({
         </>
       )}
 
-      <ScanConfigureModal
+      <ConfigureScanModal
         open={openScanConfigure !== ''}
         setOpen={setOpenScanConfigure}
         scanType={openScanConfigure}
