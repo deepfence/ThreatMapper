@@ -8,10 +8,10 @@ import { ThemeProvider, useThemeMode } from '@/theme/ThemeContext';
 import { useDocumentTitle } from '@/utils/useDocumentTitle';
 
 function App() {
-  const { toggleMode, mode } = useThemeMode(true);
+  const { setMode, userSelectedMode, mode } = useThemeMode();
   useDocumentTitle();
   return (
-    <ThemeProvider value={{ toggleMode, mode }}>
+    <ThemeProvider value={{ setMode, mode, userSelectedMode }}>
       <Toaster theme={mode === 'dark' ? 'dark' : 'light'} />
       <RouterProvider router={router} />
     </ThemeProvider>
