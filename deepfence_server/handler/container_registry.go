@@ -146,6 +146,105 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	httpext.JSON(w, http.StatusOK, api_messages.SuccessRegistryCreated)
 }
 
+// update registry
+func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.RegistryUpdateReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	idStr := req.Id
+	if idStr == "" {
+		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryIdMissing})
+		return
+	}
+
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	// before that check if registry exists
+	ctx := directory.WithGlobalContext(r.Context())
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+	registryExists, err := req.RegistryExists(ctx, pgClient, int32(id))
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+	if !registryExists {
+		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryNotExists})
+		return
+	}
+
+	// identify registry and interface it
+	b, err := json.Marshal(req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	registry, err := registry.GetRegistry(req.RegistryType, b)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	// validate if registry credential is correct
+	if !registry.IsValidCredential() {
+		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryAuthFailed})
+		return
+	}
+
+	// encrypt secret
+	aesValue, err := req.GetAESValueForEncryption(ctx, pgClient)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+
+	// note: we'll encrypt the secret in registry interface object and use its secretgetter
+	// to map the secrets with req
+	aes := encryption.AES{}
+	err = json.Unmarshal(aesValue, &aes)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+	err = registry.EncryptSecret(aes)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		respondError(&InternalServerError{errors.New("something went wrong")}, w)
+		return
+	}
+	req.Secret = registry.GetSecret()
+	req.Extras = registry.GetExtras()
+
+	// update registry db
+	err = req.UpdateRegistry(ctx, pgClient, req.Id)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, api_messages.SuccessRegistryUpdated)
+}
+
 func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
