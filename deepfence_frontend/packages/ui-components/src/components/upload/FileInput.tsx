@@ -1,6 +1,6 @@
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { cva, VariantProps } from 'cva';
-import { ChangeEvent, ComponentProps, forwardRef, useId, useRef } from 'react';
+import { ChangeEvent, ComponentProps, forwardRef, useId } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import HelperText from '@/components/input/HelperText';
@@ -10,39 +10,21 @@ export type SizeType = 'sm' | 'md' | 'lg';
 
 const inputCva = cva(
   [
-    'inline-flex flex-1 cursor-pointer focus:outline-none',
-    'text-gray-900 dark:text-gray-400 dark:placeholder-gray-400',
-    'border border-gray-300 dark:border-gray-600 rounded-r-lg',
+    'block w-full cursor-pointer rounded-lg dark:placeholder-gray-400',
+    'border border-gray-300 dark:border-gray-600',
     'bg-gray-50 dark:bg-gray-700',
+    'text-sm text-white file:text-white file:dark:text-white',
     'disabled:cursor-not-allowed',
+    'focus:outline-1',
+    'file:border-0',
+    'file:h-full  file:text-white file:dark:text-white file:bg-gray-800 dark:file:bg-gray-600 file:px-4',
   ],
   {
     variants: {
       sizing: {
-        sm: `text-sm px-4 py-2`,
-        md: `text-sm px-4 py-3`,
-        lg: `text-base px-4 py-3.5`,
-      },
-    },
-
-    defaultVariants: {
-      sizing: 'md',
-    },
-  },
-);
-
-const buttonCva = cva(
-  [
-    'cursor-pointer inline-flex self-start items-center bg-gray-800 text-white dark:text-white',
-    'border border-r-0 border-gray-300 dark:border-gray-600 outline-none rounded-l-md px-4',
-    'dark:bg-gray-600',
-  ],
-  {
-    variants: {
-      sizing: {
-        sm: `text-sm px-4 py-2`,
-        md: `text-sm px-4 py-3`,
-        lg: `text-base px-4 py-3.5`,
+        sm: 'text-sm file:py-2 file:mr-4',
+        md: 'text-sm file:py-3 file:mr-4',
+        lg: 'text-base file:py-3.5 file:mr-4',
       },
     },
 
@@ -53,25 +35,24 @@ const buttonCva = cva(
 );
 
 export interface TextInputProps
-  extends Omit<ComponentProps<'input'>, 'ref' | 'color' | 'className' | 'size'>,
+  extends Omit<ComponentProps<'input'>, 'ref' | 'color' | 'size'>,
     ObjectWithNonNullableValues<VariantProps<typeof inputCva>> {
   label?: string;
-  fileName?: string;
   helperText?: string;
-  className?: string;
   required?: boolean;
+  accept?: string;
   onChoosen?: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
-export const FileInput = forwardRef<HTMLButtonElement, TextInputProps>(
+export const FileInput = forwardRef<HTMLInputElement, TextInputProps>(
   (
     {
       sizing,
       label,
       disabled,
       helperText,
-      fileName,
       className = '',
+      accept,
       required,
       id,
       onChoosen,
@@ -79,15 +60,9 @@ export const FileInput = forwardRef<HTMLButtonElement, TextInputProps>(
     },
     ref,
   ) => {
-    const inputRef = useRef<HTMLInputElement>(null);
     const internalId = useId();
     const _id = id ? id : internalId;
 
-    const onFileChange = () => {
-      if (inputRef.current) {
-        inputRef.current.click();
-      }
-    };
     return (
       <div className={twMerge('flex flex-col gap-2 w-full', className)}>
         {label && (
@@ -99,43 +74,21 @@ export const FileInput = forwardRef<HTMLButtonElement, TextInputProps>(
             {label}
           </LabelPrimitive.Root>
         )}
-        <div className="relative flex">
-          <button
-            className={twMerge(
-              buttonCva({
-                sizing,
-              }),
-            )}
-            data-testid={`btn-fileinput-${id}`}
-            disabled={disabled}
-            ref={ref}
-            onClick={onFileChange}
-          >
-            Choose file
-          </button>
-          <input
-            className={twMerge(
-              inputCva({
-                sizing,
-              }),
-            )}
-            value={fileName ?? ''}
-            readOnly
-            data-testid={`fileinput-${id}`}
-            disabled={disabled}
-            onClick={onFileChange}
-            {...rest}
-          />
-          <input
-            ref={inputRef}
-            onChange={onChoosen}
-            type="file"
-            className="absolute w-0 h-0 opacity-0 pin-r pin-t left-0 top-0 cursor-pointer"
-            accept="*"
-            data-testid={`textinput-${_id}`}
-            {...rest}
-          />
-        </div>
+
+        <input
+          {...rest}
+          ref={ref}
+          disabled={disabled}
+          accept={accept}
+          data-testid={`fileinput-${id}`}
+          type="file"
+          className={twMerge(
+            inputCva({
+              sizing,
+            }),
+          )}
+          onChange={onChoosen}
+        />
         {helperText && <HelperText text={helperText} className="mb-2.5" />}
       </div>
     );
