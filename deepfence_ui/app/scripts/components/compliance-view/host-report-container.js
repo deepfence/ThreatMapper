@@ -25,7 +25,7 @@ const HostReportContainer = props => {
           {
             type: 'compliance',
             filter: {
-              scan_id: [scanId],
+              scan_id: scanId,
             },
           },
         ],

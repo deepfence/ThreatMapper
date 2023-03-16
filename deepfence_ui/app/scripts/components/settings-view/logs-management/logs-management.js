@@ -32,6 +32,7 @@ const complianceStatusCollection = [
 ];
 
 const COMPLIANCE = 'compliance';
+const MALWARE = 'malware-scan';
 const resourceCollection = [
   {
     name: 'Vulnerabilities',
@@ -44,6 +45,10 @@ const resourceCollection = [
   {
     name: 'Compliances',
     value: COMPLIANCE,
+  },
+  {
+    name: 'Malware',
+    value: MALWARE,
   },
 ];
 
@@ -91,13 +96,13 @@ const VulnerabilityManagementView = props => {
     setAlertsDeleteResponse(props.alertsDeleteResponse);
     setIsSuccess(props.isSuccess);
     setIsError(props.isError);
-  }, [props.isSuccess && !props.isError]);
+  }, [props.isSuccess && !props.isError, props.alertsDeleteResponse]);
 
   useEffect(() => {
     setAlertsDeleteResponse(props.alertsDeleteResponse);
     setIsSuccess(props.isSuccess);
     setIsError(props.isError);
-  }, [!props.isSuccess && props.isError]);
+  }, [!props.isSuccess && props.isError, props.alertsDeleteResponse]);
 
   const resetStates = () => {
     props.dispatch(resetUserProfileStates());
@@ -144,6 +149,8 @@ const VulnerabilityManagementView = props => {
     let optionList = [];
     if (docType === COMPLIANCE) {
       optionList = complianceStatusCollection.map(el => el);
+    } else if (docType === MALWARE) {
+      optionList = severityCollection.filter(el => el.value !== 'critical').map(el => el);
     } else {
       optionList = severityCollection.map(el => el);
     }

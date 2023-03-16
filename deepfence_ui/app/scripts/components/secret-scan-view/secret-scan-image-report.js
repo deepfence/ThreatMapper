@@ -32,8 +32,7 @@ const SecretScanImageReport = props => {
       Header: 'Node Type',
       accessor: 'node_type',
       Cell: row => {
-        let displayValue = row.value || 'container image';
-        displayValue = displayValue.replace('_', ' ');
+        const displayValue = (row.value === 'container_image' ? 'image' : row.value) || 'image';
         return displayValue;
       },
       width: 30,
@@ -76,7 +75,7 @@ const SecretScanImageReport = props => {
     });
     setPage(0)
     dispatch(saveImageReportTableStateAction({ pageNumber: 0 }));
-  }, [globals]);
+  }, [globals, filterValues]);
 
   useEffect(() => {
     // pollable: register the function which needs to be polled

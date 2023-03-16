@@ -5,7 +5,7 @@ from config.app import celery_app, app
 from models.user import User
 from models.integration import Integration
 from models.user_activity_log import UserActivityLog
-from models.notification import RunningNotification, VulnerabilityNotification
+from models.notification import RunningNotification, VulnerabilityNotification, MalwareNotification, SecretNotification
 from models.cloud_resource_node import CloudResourceNode
 from datetime import datetime, timedelta
 from utils.esconn import ESConn
@@ -57,6 +57,12 @@ def insert_cve_error_doc(cve_status, datetime_now, host_name, cve_node_id, cve_s
         "time_stamp": int(time.time() * 1000.0), "host": host_name, "action": CVE_SCAN_STATUS_ERROR,
         "host_name": host_name, "node_id": cve_node_id,
     }
+    filters = {"scan_id": cve_status["scan_id"], "action": "QUEUED"}
+    es_resp = ESConn.search_by_and_clause(CVE_SCAN_LOGS_INDEX, filters, 0, "asc", size=1)
+    if len(es_resp.get("hits", [])) > 0:
+        source = es_resp.get("hits", [])[0].get("_source", {})
+        body["image_name"] = source.get("image_name", "")
+        body["container_name"] = source.get("container_name", "")
     ESConn.create_doc(CVE_SCAN_LOGS_INDEX, body)
     image_file_folder = get_cve_scan_tmp_folder(
         host_name, cve_status["scan_id"])
@@ -149,6 +155,45 @@ def secret_fix_interrupted(*args):
                 # If scan was started 10 minutes ago, still no updated status found, then it has failed
                 if total_diff_minutes >= 10:
                     insert_secret_error_doc(status, datetime_now, host, node_id,
+                                            "Scan was interrupted. Please restart.")
+
+
+@celery_app.task(bind=True, default_retry_delay=60)
+def malware_fix_interrupted(*args):
+    """
+    Malware scans, if interrupted/killed, there not be any status update in es regarding failure.
+    This task will query all cve scan's in progress (from es), update es that cve was interrupted if scan failed.
+    """
+    hosts = fetch_topology_data(node_type=NODE_TYPE_HOST, format="deepfence")
+    windows_hosts = []
+    all_host_names = []
+    for node_id, node in hosts.items():
+        all_host_names.append(node.get("host_name", ""))
+        if node.get("os", "") == "windows":
+            windows_hosts.append(node.get("host_name", ""))
+    malware_in_progress = ESConn.get_node_wise_malware_status()
+    for host, host_malwares in malware_in_progress.items():
+        if host and host not in all_host_names:
+            # In case the agent itself is not connected, don't act now, wait till agent reconnects
+            continue
+        if host in windows_hosts:
+            continue
+        for node_id, status in host_malwares.items():
+            last_status_timestamp = datetime.fromtimestamp(
+                status["timestamp"] / 1000)
+            datetime_now = datetime.now()
+            total_diff_minutes = int(
+                round((datetime_now - last_status_timestamp).total_seconds() / 60))
+            if status["action"] == CVE_SCAN_STATUS_QUEUED:
+                # If scan is in QUEUED state for 7 days, then it has failed
+                if total_diff_minutes >= 1440:
+                    insert_malware_error_doc(status, datetime_now, host, node_id,
+                                            "Scan was stopped because it was in queued state for a week. Please start "
+                                            "again.")
+            elif status["action"] in MALWARE_SCAN_STATUS_IN_PROGRESS:
+                # If scan was started 40 minutes ago, still no updated status found, then it has failed
+                if total_diff_minutes >= 10:
+                    insert_malware_error_doc(status, datetime_now, host, node_id,
                                             "Scan was interrupted. Please restart.")
 
 
@@ -271,6 +316,53 @@ def pdf_report_fix(*args):
         if time_elapsed >= 10 and ele["_source"]["status"].lower() != 'completed':
             ESConn.delete_docs([doc_id], REPORT_INDEX)
 
+@celery_app.task(bind=True, default_retry_delay=1)
+def check_integration_failures(*args):
+    with app.app_context():
+        error = False
+        notification_content = "Integrations are okay"
+        resource_notifications = [MalwareNotification]
+        for resource_notification in resource_notifications:
+            integrations = resource_notification.query.all()
+            for info in integrations:
+                if info.error_msg:
+                    error = True
+                    notification_content = "Integrations are failing"
+                    break
+            if error:
+                break
+        running_notification_id = "integration_if_any_failure_notification"
+        r_notification = RunningNotification.query.filter_by(
+            source_application_id=running_notification_id).one_or_none()
+        if not r_notification:
+            r_notification = RunningNotification(source_application_id=running_notification_id)
+        r_notification.content = notification_content
+        r_notification.updated_at = datetime.now()
+        r_notification.save()
+
+@celery_app.task(bind=True, default_retry_delay=1)
+def check_integration_failures(*args):
+    with app.app_context():
+        error = False
+        notification_content = "Integrations are okay"
+        resource_notifications = [SecretNotification]
+        for resource_notification in resource_notifications:
+            integrations = resource_notification.query.all()
+            for info in integrations:
+                if info.error_msg:
+                    error = True
+                    notification_content = "Integrations are failing"
+                    break
+            if error:
+                break
+        running_notification_id = "integration_if_any_failure_notification"
+        r_notification = RunningNotification.query.filter_by(
+            source_application_id=running_notification_id).one_or_none()
+        if not r_notification:
+            r_notification = RunningNotification(source_application_id=running_notification_id)
+        r_notification.content = notification_content
+        r_notification.updated_at = datetime.now()
+        r_notification.save()
 
 @celery_app.task(bind=True, default_retry_delay=1)
 def check_integration_failures(*args):

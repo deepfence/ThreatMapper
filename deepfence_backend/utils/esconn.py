@@ -7,7 +7,7 @@ from elasticsearch import Elasticsearch
 from elasticsearch.client.indices import IndicesClient
 
 from utils.constants import COMPLIANCE_INDEX, CVE_SCAN_LOGS_INDEX, ES_TERMS_AGGR_SIZE, \
-    TIME_UNIT_MAPPING, SECRET_SCAN_LOGS_INDEX, COMPLIANCE_LOGS_INDEX
+    TIME_UNIT_MAPPING, SECRET_SCAN_LOGS_INDEX, MALWARE_SCAN_LOGS_INDEX, COMPLIANCE_LOGS_INDEX
 from utils.common import (
     sort_expression,
     get_rounding_time_unit,
@@ -498,8 +498,8 @@ class ESConn:
         body.update(q)
         res = EL_CLIENT.search(index=index_name, body=body, _source=_source)
         return res
-    
-    
+
+
 
     @staticmethod
     def msearch(body):
@@ -1067,7 +1067,7 @@ class ESConn:
                                         },
                                         "action_max_timestamp": {
                                             "max": {
-                                                "field": "@timestamp"
+                                                "field": "time_stamp"
                                             }
                                         },
                                         "scan_id": {
@@ -1208,6 +1208,105 @@ class ESConn:
         return response
 
     @staticmethod
+    def get_node_wise_malware_status():
+        """
+        Returns:
+        {
+          "ramanan-dev-2": {
+            "mysql:5.6": {
+              "scan_status": "ERROR",
+              "timestamp": "2018-06-18T07:04:33.678Z",
+              "scan_message": ""
+            },
+            "deepfenceio/wordpress:latest": {
+              "action": "COMPLETED",
+              "timestamp": "2018-06-18T06:45:17.478Z",
+              "scan_message": ""
+            },
+            "ramanan-dev-2": {
+              "action": "STARTED",
+              "timestamp": "2018-06-18T06:50:14.869Z",
+              "scan_message": "No feature has been detected on the image. This usually means that the image isn't supported by deepaudit, will do what we can."
+            }
+          }
+        }
+        """
+        aggs_query = {
+            "query": {"bool": {"must": [{"range": {"@timestamp": {"gte": "now-7d"}}}]}},
+            "aggs": {
+                "host_name": {
+                    "terms": {
+                        "field": "host_name.keyword", "size": ES_TERMS_AGGR_SIZE
+                    },
+                    "aggs": {
+                        "node_id": {
+                            "terms": {
+                                "field": "node_id.keyword", "size": ES_TERMS_AGGR_SIZE
+                            },
+                            "aggs": {
+                                "node_type": {
+                                    "terms": {
+                                        "field": "node_type.keyword", "size": ES_TERMS_AGGR_SIZE
+                                    }
+                                },
+                                "action": {
+                                    "terms": {
+                                        "field": "scan_status.keyword", "size": ES_TERMS_AGGR_SIZE
+                                    },
+                                    "aggs": {
+                                        "scan_message": {
+                                            "terms": {
+                                                "field": "scan_message.keyword", "size": ES_TERMS_AGGR_SIZE
+                                            }
+                                        },
+                                        "action_max_timestamp": {
+                                            "max": {
+                                                "field": "@timestamp"
+                                            }
+                                        },
+                                        "scan_id": {
+                                            "terms": {
+                                                "field": "scan_id.keyword", "size": ES_TERMS_AGGR_SIZE
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "size": 0
+        }
+        res = EL_CLIENT.search(index=MALWARE_SCAN_LOGS_INDEX, body=aggs_query)
+        response = {}
+        if "aggregations" not in res:
+            return response
+        for host_aggr in res["aggregations"]["host_name"]["buckets"]:
+            response[host_aggr["key"]] = {}
+            for node_aggr in host_aggr["node_id"]["buckets"]:
+                node_type = ""
+                if node_aggr["node_type"]["buckets"]:
+                    node_type = node_aggr["node_type"]["buckets"][0]["key"]
+                if node_aggr["action"]["buckets"]:
+                    recent_action = max(node_aggr["action"]["buckets"],
+                                        key=lambda x: x["action_max_timestamp"]["value"])
+                    malware_scan_message = ""
+                    malware_scan_messages = recent_action["scan_message"]["buckets"]
+                    if malware_scan_messages:
+                        malware_scan_message = malware_scan_messages[-1]["key"]
+                    scan_id = ""
+                    scan_id_buckets = recent_action["scan_id"]["buckets"]
+                    if scan_id_buckets:
+                        scan_id = scan_id_buckets[-1]["key"]
+                    response[host_aggr["key"]][node_aggr["key"]] = {
+                        "action": recent_action["key"], "timestamp": recent_action["action_max_timestamp"]["value"],
+                        "scan_message": malware_scan_message, "scan_id": scan_id, "node_type": node_type}
+        return response
+
+
+
+    @staticmethod
     def bulk_query(index_name, bulk_body, refresh="false"):
         """
         Bulk query elasticsearch
@@ -1279,11 +1378,11 @@ class ESConn:
         EL_CLIENT.delete_by_query(index=index_name, body=body,
                                   wait_for_completion=wait_for_completion)
 
-        
-            
-        
-        
-        
+
+
+
+
+
     @staticmethod
     def critical_notifications(index_name, field_name, filters, start_date, end_date='now'):
         aggr_name = 'aggr_alias_name'
@@ -1441,18 +1540,18 @@ class ESConn:
     # required with the use of add_agg_field_generic API/
     # The parameters still exists to support backward compatibility
     @staticmethod
-    def group_by(groupbyparam, aggs_name, sub_aggs_name=None):
+    def group_by(groupbyparam, aggs_name, sub_aggs_name=None, add_masked_filter=True):
         size = 10
         index_name = groupbyparam.indexname
 
         should_objects = []
-
-        # TODO: move masked filter to the caller. Not all doc types have field named 'masked'
-        and_terms = [{
-            "term": {
-                "masked.keyword": "false"
-            }
-        }]
+        and_terms = []
+        if add_masked_filter:
+            and_terms = [{
+                "term": {
+                    "masked.keyword": "false"
+                }
+            }]
         range_query = groupbyparam.prepare_range_query('@timestamp')
         if range_query.get("range", {}).get("@timestamp"):
             and_terms.append(range_query)

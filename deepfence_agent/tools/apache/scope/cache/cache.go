@@ -32,7 +32,8 @@ func NewRedisCache(topologyID string) *RedisCache {
 		topologyOptionsScope: TopologyOptions{NodeType: nodeType, Params: TopologyParams{Format: TopologyFormatScope}},
 		topologyOptionsDf:    TopologyOptions{NodeType: nodeType, Params: TopologyParams{Format: TopologyFormatDeepfence}},
 		filterRedisKey:       TopologyFilterPrefix + strings.ToUpper(nodeType),
-		nodeStatus:           NodeStatus{VulnerabilityScanStatus: make(map[string]string), SecretScanStatus: make(map[string]string)},
+		nodeStatus:           NodeStatus{VulnerabilityScanStatus: make(map[string]string), SecretScanStatus: make(map[string]string), MalwareScanStatus: make(map[string]string)},
+
 	}
 	r.redisPool, r.redisDbNum = NewRedisPool()
 	r.topologyOptionsScope.TopologyOptionsValidate()
@@ -257,6 +258,14 @@ func (r *RedisCache) updateScanStatusData(esClient *elastic.Client) error {
 	esQuery = elastic.NewSearchRequest().Index(secretScanLogsEsIndex).Query(elastic.NewMatchAllQuery()).Size(0).Aggregation("node_id", nodeIdAggs)
 	mSearch.Add(esQuery)
 
+	nodeIdAggs = elastic.NewTermsAggregation().Field("node_id.keyword").Size(esAggsSize)
+	statusAggs = elastic.NewTermsAggregation().Field("scan_status.keyword").Size(50)
+	recentTimestampAggs = elastic.NewMaxAggregation().Field("@timestamp")
+	statusAggs.SubAggregation("malware_scan_timestamp", recentTimestampAggs)
+	nodeIdAggs.SubAggregation("malware_scan_status", statusAggs)
+	esQuery = elastic.NewSearchRequest().Index(malwareScanLogsEsIndex).Query(elastic.NewMatchAllQuery()).Size(0).Aggregation("node_id", nodeIdAggs)
+	mSearch.Add(esQuery)
+
 	mSearchResult, err := mSearch.Do(context.Background())
 	if err != nil {
 		return err
@@ -345,6 +354,49 @@ func (r *RedisCache) updateScanStatusData(esClient *elastic.Client) error {
 	r.nodeStatus.Lock()
 	r.nodeStatus.SecretScanStatus = nodeIdSecretStatusMap
 	r.nodeStatus.SecretScanStatusTime = nodeIdSecretStatusTimeMap
+	r.nodeStatus.Unlock()
+	
+	nodeIdMalwareStatusMap := make(map[string]string)
+	nodeIdMalwareStatusTimeMap := make(map[string]string)
+	malwareResp := mSearchResult.Responses[2]
+	nodeIdAggsBkt, ok = malwareResp.Aggregations.Terms("node_id")
+	if !ok {
+		return nil
+	}
+	for _, nodeIdAggs := range nodeIdAggsBkt.Buckets {
+		if nodeIdAggs.Key.(string) == "" {
+			continue
+		}
+		latestScanTime := 0.0
+		var latestStatus, latestScanTimeStr string
+		scanStatusBkt, ok := nodeIdAggs.Aggregations.Terms("malware_scan_status")
+		if !ok {
+			continue
+		}
+		for _, scanStatusAggs := range scanStatusBkt.Buckets {
+			recentTimestampBkt, ok := scanStatusAggs.Aggregations.Max("malware_scan_timestamp")
+			if !ok || recentTimestampBkt == nil || recentTimestampBkt.Value == nil {
+				continue
+			}
+			if *recentTimestampBkt.Value > latestScanTime {
+				latestScanTime = *recentTimestampBkt.Value
+				latestStatus = scanStatusAggs.Key.(string)
+				valueAsStr, ok := recentTimestampBkt.Aggregations["value_as_string"]
+				if ok {
+					latestScanTimeStr = strings.ReplaceAll(string(valueAsStr), "\"", "")
+				}
+			}
+		}
+		latestStatus, ok = statusMap[latestStatus]
+		if !ok {
+			latestStatus = scanStatusNeverScanned
+		}
+		nodeIdMalwareStatusMap[strings.Split(nodeIdAggs.Key.(string), ";")[0]] = latestStatus
+		nodeIdMalwareStatusTimeMap[strings.Split(nodeIdAggs.Key.(string), ";")[0]] = latestScanTimeStr
+	}
+	r.nodeStatus.Lock()
+	r.nodeStatus.MalwareScanStatus = nodeIdMalwareStatusMap
+	r.nodeStatus.MalwareScanStatusTime = nodeIdMalwareStatusTimeMap
 	r.nodeStatus.Unlock()
 	return nil
 }

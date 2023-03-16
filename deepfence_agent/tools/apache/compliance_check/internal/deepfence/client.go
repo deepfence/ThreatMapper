@@ -5,18 +5,24 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/compliance_check/util"
-	dfUtils "github.com/deepfence/df-utils"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path"
+	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/deepfence/ThreatMapper/deepfence_agent/tools/apache/compliance_check/util"
+	dfUtils "github.com/deepfence/df-utils"
 )
 
 const (
-	MethodGet  = "GET"
-	MethodPost = "POST"
+	MethodGet            = "GET"
+	MethodPost           = "POST"
+	complianceResultFile = "compliance/compliance_scan.log"
+	complianceLogFile    = "compliance-scan-logs/compliance_scan_log.log"
 )
 
 type Client struct {
@@ -71,6 +77,49 @@ func (c *Client) SendScanStatustoConsole(scanMsg string, status string, totalChe
 	return err
 }
 
+func (c *Client) WriteScanStatusToFile(dfLogDir string, scanMsg string, status string,
+	totalChecks int, resultMap map[string]int) error {
+	scanMsg = strings.Replace(scanMsg, "\n", " ", -1)
+	scanLog := util.ComplianceScanLog{
+		ScanId:                c.config.ScanId,
+		Type:                  util.ComplianceScanLogsIndexName,
+		TimeStamp:             dfUtils.GetTimestamp(),
+		Timestamp:             dfUtils.GetDatetimeNow(),
+		Masked:                "false",
+		NodeId:                c.config.NodeId,
+		NodeType:              c.config.NodeType,
+		KubernetesClusterName: c.config.KubernetesClusterName,
+		KubernetesClusterId:   c.config.KubernetesClusterId,
+		NodeName:              c.config.NodeName,
+		ScanMessage:           scanMsg,
+		ScanStatus:            status,
+		ComplianceCheckType:   c.config.ComplianceCheckType,
+		TotalChecks:           totalChecks,
+		Result:                resultMap,
+	}
+	complianceScanLog, err := json.Marshal(scanLog)
+	if err != nil {
+		return err
+	}
+	complianceScanLog = append(complianceScanLog, []byte("\n")...)
+
+	logPath := path.Join(dfLogDir, complianceLogFile)
+	err = os.MkdirAll(filepath.Dir(logPath), 0755)
+	if err != nil {
+		return err
+	}
+	f, err := os.OpenFile(logPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	if _, err = f.Write(complianceScanLog); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (c *Client) getApiAccessToken() string {
 	if c.accessToken != "" {
 		return c.accessToken
@@ -112,6 +161,31 @@ func (c *Client) SendComplianceResultToConsole(complianceScan []util.ComplianceS
 	_, err = c.HttpRequest("POST", ingestScanStatusAPI, postReader, nil)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (c *Client) WriteComplianceResultToFile(dfLogDir string, complianceScan []util.ComplianceScan) error {
+	logPath := path.Join(dfLogDir, complianceResultFile)
+	err := os.MkdirAll(filepath.Dir(logPath), 0755)
+	if err != nil {
+		return err
+	}
+	f, err := os.OpenFile(logPath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	for _, cs := range complianceScan {
+		docBytes, err := json.Marshal(cs)
+		if err != nil {
+			return err
+		}
+		doc := strings.Replace(string(docBytes), "\n", " ", -1)
+		if _, err = f.WriteString(doc + "\n"); err != nil {
+			return err
+		}
 	}
 	return nil
 }

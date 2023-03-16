@@ -11,7 +11,7 @@ from config.error_handlers import handle_invalid_usage
 from config.extensions import cors, jwt, db, migrate
 from utils.constants import API_URL_PREFIX
 from api import user_api, threat_graph, common_api, vulnerability_api, resource_api, reports_api, \
-    cloud_compliance_api, setting_api, internal_api, secret_scan_api, license_api
+    cloud_compliance_api, setting_api, internal_api, secret_scan_api, license_api, malware_scan_api
 
 
 def create_app(config_object):
@@ -62,6 +62,7 @@ def register_blueprints(app):
     app.register_blueprint(reports_api.reports_api, url_prefix=API_URL_PREFIX)
     app.register_blueprint(setting_api.setting_api, url_prefix=API_URL_PREFIX)
     app.register_blueprint(secret_scan_api.secret_api, url_prefix=API_URL_PREFIX)
+    app.register_blueprint(malware_scan_api.malware_api, url_prefix=API_URL_PREFIX)
     app.register_blueprint(license_api.license_api, url_prefix=API_URL_PREFIX)
 
 
@@ -73,7 +74,7 @@ def register_extensions(app):
     # Don't remove these imports.
     # These are required for flask-migrate to make migrations.
     from models.integration import Integration
-    from models.notification import VulnerabilityNotification, UserActivityNotification
+    from models.notification import VulnerabilityNotification, UserActivityNotification, MalwareNotification, SecretNotification
     from models.system_events import SystemEvents
     from models.node_tags import NodeTags
     from models.compliance_rules import ComplianceRules
@@ -81,6 +82,7 @@ def register_extensions(app):
     from models.scheduler import Scheduler
     from models.user_activity_log import UserActivityLog
     from models.email_configuration import EmailConfiguration
+    from models.masked_cve import MaskedCVE
     from models.cloud_compliance_node import CloudComplianceNode
     from models.cloud_resource_node import CloudResourceNode
 

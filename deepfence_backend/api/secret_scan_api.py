@@ -1,3 +1,4 @@
+from asyncio.log import logger
 import json
 from datetime import datetime
 
@@ -34,6 +35,7 @@ secret_api = Blueprint("secret_api", __name__)
 def secret_scanned_nodes():
     number = request.args.get("number")
     time_unit = request.args.get("time_unit")
+    hide_masked = request.args.get("hideMasked", "true")
 
     if number:
         try:
@@ -57,12 +59,15 @@ def secret_scanned_nodes():
         req_filters = request.json.get("filters", {})
         node_ids = []
         node_ids.extend(req_filters.get("image_name_with_tag", []))
-        node_ids.extend(req_filters.get("host_name", []))
+        if len(req_filters.get("host_name", [])) > 0:
+            filters["host_name"] = req_filters.get("host_name", [])
         filters["node_id"] = node_ids
         if len(req_filters.get("container_name", [])) > 0:
             filters["container_name"] = req_filters.get("container_name", [])
         if len(req_filters.get("kubernetes_cluster_name", [])) > 0:
             filters["kubernetes_cluster_name"] = req_filters.get("kubernetes_cluster_name", [])
+        if req_filters.get("scan_id", ""):
+            filters["scan_id"] = req_filters.get("scan_id")
         node_filters = request.json.get("node_filters", {})
         page_size = request.json.get("size", page_size)
         start_index = request.json.get("start_index", start_index)
@@ -124,7 +129,8 @@ def secret_scanned_nodes():
         aggs,
         number,
         TIME_UNIT_MAPPING.get(time_unit),
-        lucene_query_string
+        lucene_query_string,
+        False if hide_masked == "false" else True
     )
     response = []
     active_containers = defaultdict(int)
@@ -157,8 +163,9 @@ def secret_scanned_nodes():
     }
     scan_aggs_response = ESConn.aggregation_helper(
         SECRET_SCAN_LOGS_INDEX,
-        {},
-        scan_aggs
+        {"scan_status": [constants.SECRET_SCAN_STATUS_COMPLETED, constants.CVE_SCAN_STATUS_ERROR]},
+        scan_aggs,
+        add_masked_filter=False if hide_masked == "false" else True
     )
     status_map = {}
     for node in scan_aggs_response["aggregations"]["node_id"]["buckets"]:
@@ -172,6 +179,8 @@ def secret_scanned_nodes():
 
     if "aggregations" in aggs_response:
         for node_id_aggr in aggs_response["aggregations"]["node_id"]["buckets"]:
+            if not status_map.get(node_id_aggr["key"], {}):
+                continue
             node_type = ""
             if node_id_aggr["node_type"]["buckets"]:
                 node_type = node_id_aggr["node_type"]["buckets"][0]["key"]
@@ -431,7 +440,9 @@ def secret_scan_results():
         "node_type": constants.NODE_TYPE_CONTAINER_IMAGE,
         "image_name_with_tag_list": registry_images["image_name_with_tag_list"]}
     response = requests.post(constants.SECRET_SCAN_API_URL, data=scan_details)
+    
     status_code = response.status_code
+    logger.info("reached here", status_code)
     if status_code != 200:
         InternalError(response.text)
     return set_response("Ok")
@@ -703,6 +714,7 @@ def secret_severity_chart():
     number = request.args.get("number")
     time_unit = request.args.get("time_unit")
     lucene_query_string = request.args.get("lucene_query")
+    hide_masked = request.args.get("hideMasked", "true")
     if lucene_query_string:
         lucene_query_string = urllib.parse.unquote(lucene_query_string)
 
@@ -743,7 +755,7 @@ def secret_severity_chart():
     for key, value in filters.items():
         params.add_filter('term', "{0}.keyword".format(key), value)
 
-    secret_aggs = ESConn.group_by(params, aggs_name, sub_aggs_name=sub_aggs_name)
+    secret_aggs = ESConn.group_by(params, aggs_name, sub_aggs_name=sub_aggs_name, add_masked_filter=False if hide_masked == "false" else True)
 
     data = {"name": "Secrets", "children": []}
     inner_children = []

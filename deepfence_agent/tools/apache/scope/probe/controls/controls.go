@@ -1,6 +1,7 @@
 package controls
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/weaveworks/scope/common/xfer"
@@ -116,6 +117,7 @@ func (r *HandlerRegistry) Batch(toRemove []string, toAdd map[string]xfer.Control
 
 // HandleControlRequest performs a control request.
 func (r *HandlerRegistry) HandleControlRequest(req xfer.Request) xfer.Response {
+	fmt.Print("check control", req.Control)
 	h, ok := r.handler(req.Control)
 	if !ok {
 		return xfer.ResponseErrorf("Control %q not recognised", req.Control)

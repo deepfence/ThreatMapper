@@ -6,8 +6,8 @@ from utils.esconn import ESConn
 from utils.common import get_rounding_time_unit
 from utils.constants import ES_TERMS_AGGR_SIZE, CVE_INDEX, COMPLIANCE_INDEX, NODE_TYPE_HOST, \
     NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, NODE_TYPE_POD, DEEPFENCE_SUPPORT_EMAIL, TIME_UNIT_MAPPING, \
-    ES_MAX_CLAUSE, CVE_ES_TYPE, SECRET_SCAN_INDEX, SECRET_SCAN_ES_TYPE, COMPLIANCE_ES_TYPE, \
-    NODE_TYPE_LINUX,CLOUD_AWS,CLOUD_GCP,CLOUD_AZURE,CLOUD_COMPLIANCE_ES_TYPE
+    ES_MAX_CLAUSE, CVE_ES_TYPE, SECRET_SCAN_INDEX, MALWARE_SCAN_INDEX, SECRET_SCAN_ES_TYPE, MALWARE_SCAN_ES_TYPE, COMPLIANCE_ES_TYPE, \
+    NODE_TYPE_LINUX,CLOUD_AWS,CLOUD_GCP,CLOUD_AZURE,CLOUD_COMPLIANCE_ES_TYPE, COMPLIANCE_KUBERNETES_HOST
 from utils.esconn import ESConn
 from utils.helper import modify_es_index
 from utils.resource import get_nodes_list, get_default_params
@@ -23,13 +23,18 @@ header_fields = {
     "secret-scan-source": ['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level',
                            'node_name', 'container_name', 'kubernetes_cluster_name', 'node_type'],
     "secret-scan-header": ['Filename', 'Content', 'Name', 'Rule', 'Severity', 'Node Name', 'Container Name',
-                           'Kubernetes Cluster Name', 'NodeType']
+                           'Kubernetes Cluster Name', 'NodeType'],
+    "malware-scan-source": ['RuleName', 'SeverityScore', 'Meta', 'MetaRules', 'FileSevScore', 'FileSeverity', 'Summary',
+                            'node_name', 'container_name', 'kubernetes_cluster_name', 'node_type'],
+    "malware-scan-header": ['Rule Name', 'Severity', 'Meta', 'Meta Rules', 'File Severity Score', 'File Severity',
+                            'Summary', 'Node Name', 'Container Name', 'Kubernetes Cluster Name', 'NodeType']
 }
 
 sheet_name = {
     CVE_ES_TYPE: "Vulnerability",
     COMPLIANCE_ES_TYPE: "Compliance",
-    SECRET_SCAN_ES_TYPE: "Secrets"
+    SECRET_SCAN_ES_TYPE: "Secrets",
+    MALWARE_SCAN_ES_TYPE: "Malwares"
 }
 
 
@@ -142,6 +147,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
     number = duration.get("duration", {}).get('number')
     time_unit = duration.get("duration", {}).get('time_unit')
     no_node_filters_set = False
+    
     if not filters:
         filters = {"type": node_type}
     elif not filters.get("type", None):
@@ -170,10 +176,12 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
     wb = xlsxwriter.Workbook(buffer, {'in_memory': True, 'strings_to_urls': False, 'strings_to_formulas': False})
     for resource in resources:
         resource_type = resource.get('type')
-        if resource_type not in [CVE_ES_TYPE, COMPLIANCE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
+        if resource_type not in [CVE_ES_TYPE, COMPLIANCE_ES_TYPE, SECRET_SCAN_ES_TYPE, MALWARE_SCAN_ES_TYPE]:
             continue
         if resource_type == SECRET_SCAN_ES_TYPE:
             headers = header_fields["secret-scan-header"]
+        elif resource_type == MALWARE_SCAN_ES_TYPE:
+            headers = header_fields["malware-scan-header"]
         else:
             headers = header_fields[resource_type]
         ws = wb.add_worksheet(sheet_name[resource_type])
@@ -190,6 +198,9 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
         # here changing the header to default format to align with the code
         if resource_type == SECRET_SCAN_ES_TYPE:
             headers = header_fields["secret-scan-source"]
+        # here changing the header to default format to align with the code
+        if resource_type == MALWARE_SCAN_ES_TYPE:
+            headers = header_fields["malware-scan-source"]
 
         if not filtered_node_list and no_node_filters_set is False:
             # User is trying to filter and download report for old node, which does not exist now
@@ -199,6 +210,8 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             if node_type == NODE_TYPE_CONTAINER and filters.get("container_name"):
                 proceed = True
             if node_type == NODE_TYPE_CONTAINER_IMAGE and filters.get("image_name_with_tag"):
+                proceed = True
+            if node_type == COMPLIANCE_KUBERNETES_HOST and filters.get("kubernetes_cluster_name"):
                 proceed = True
             if not proceed:
                 continue
@@ -242,10 +255,55 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                 aggs_response = ESConn.aggregation_helper(
                     CVE_INDEX, {**{"type": CVE_ES_TYPE}, **filters }, aggs, number, time_unit, None
                 )
-
-
+                
                 if "aggregations" in aggs_response:
                     for image_aggr in aggs_response["aggregations"]["cve_container_image"]["buckets"]:
+                        latest_scan_id = ""
+                        latest_scan_time = 0
+                        for scan_id_aggr in image_aggr["scan_id"]["buckets"]:
+                            if scan_id_aggr["scan_recent_timestamp"]["value"] > latest_scan_time:
+                                latest_scan_time = scan_id_aggr["scan_recent_timestamp"]["value"]
+                                latest_scan_id = scan_id_aggr["key"]
+                        cve_scan_id_list.append(latest_scan_id)
+        elif resource_type == MALWARE_SCAN_ES_TYPE:
+            if "scan_id" not in resource_filter:
+                aggs = {
+                    "node_name": {
+                        "terms": {
+                            "field": "node_name.keyword",
+                            "size": ES_TERMS_AGGR_SIZE
+                        },
+                        "aggs": {
+                            "scan_id": {
+                                "terms": {
+                                    "field": "scan_id.keyword",
+                                    "size": ES_TERMS_AGGR_SIZE
+                                },
+                                "aggs": {
+                                    "scan_recent_timestamp": {
+                                        "max": {
+                                            "field": "@timestamp"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                filter_for_scan = {}
+                if len(filters.get("type", [])) != 0:
+                    filter_for_scan["node_type"] = filters.get("type")
+                if len(filters.get("host_name", [])) != 0:
+                    filter_for_scan["node_name"] = filters.get("host_name")
+                if len(filters.get("image_name_with_tag", [])) != 0:
+                    filter_for_scan["node_name"] = filters.get("image_name_with_tag")
+                if len(filters.get("container_name", [])) != 0:
+                    filter_for_scan["container_name"] = filters.get("container_name")
+                aggs_response = ESConn.aggregation_helper(
+                    MALWARE_SCAN_INDEX, filter_for_scan, aggs, number, time_unit, None
+                )
+                if "aggregations" in aggs_response:
+                    for image_aggr in aggs_response["aggregations"]["node_name"]["buckets"]:
                         latest_scan_id = ""
                         latest_scan_time = 0
                         for scan_id_aggr in image_aggr["scan_id"]["buckets"]:
@@ -415,6 +473,7 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                     global_hits.extend(hits)
             else:
                 and_terms_per_batch = copy.deepcopy(and_terms)
+                # and_terms_per_batch.append({'term': {'node_type.keyword': node_type}})
 
                 query_body = {
                     "query": {"bool": {"must": and_terms_per_batch}}, "sort": [{"@timestamp": {"order": "desc"}}],
@@ -423,15 +482,17 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
                 hits = fetch_documents(modify_es_index(resource_type), query_body)
                 global_hits.extend(hits)
 
-        if node_type == NODE_TYPE_CONTAINER_IMAGE and resource_type in [CVE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
-            if resource_type == SECRET_SCAN_ES_TYPE:
+        if node_type == NODE_TYPE_CONTAINER_IMAGE and resource_type in [CVE_ES_TYPE, SECRET_SCAN_ES_TYPE,
+                                                                        MALWARE_SCAN_ES_TYPE]:
+            if resource_type in [SECRET_SCAN_ES_TYPE, MALWARE_SCAN_ES_TYPE]:
                 container_image = "node_name"
             else:
                 container_image = "cve_container_image"
             get_all_docs(image_name_with_tag_list, cve_scan_id_list, and_terms, container_image, global_hits,
                          resource_type)
-        elif node_type == NODE_TYPE_CONTAINER and resource_type in [CVE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
-            if resource_type == SECRET_SCAN_ES_TYPE:
+        elif node_type == NODE_TYPE_CONTAINER and resource_type in [CVE_ES_TYPE, SECRET_SCAN_ES_TYPE,
+                                                                    MALWARE_SCAN_ES_TYPE]:
+            if resource_type in [SECRET_SCAN_ES_TYPE, MALWARE_SCAN_ES_TYPE]:
                 container_name = "container_name"
             else:
                 container_name = "cve_container_name"
@@ -442,14 +503,15 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, resource_type)
         elif node_type == NODE_TYPE_CONTAINER and resource_type == COMPLIANCE_ES_TYPE:
             get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, resource_type)
-        elif node_type == NODE_TYPE_LINUX and resource_type == COMPLIANCE_ES_TYPE:
+        elif (node_type == NODE_TYPE_LINUX or node_type == COMPLIANCE_KUBERNETES_HOST) and resource_type == COMPLIANCE_ES_TYPE:
             and_terms.append({"term": {"compliance_node_type.keyword": node_type}})
             get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, resource_type)
         elif node_type in [CLOUD_AWS,CLOUD_GCP,CLOUD_AZURE] and resource_type == COMPLIANCE_ES_TYPE:
             and_terms.append({"term": {"cloud_provider.keyword": node_type}})
             # here resource_type has to be CLOUD_COMPLIANCE_ES_TYPE for cloud
             get_all_docs(scope_ids, cve_scan_id_list, and_terms, "node_id", global_hits, CLOUD_COMPLIANCE_ES_TYPE)
-        elif node_type == NODE_TYPE_POD and resource_type in [CVE_ES_TYPE, COMPLIANCE_ES_TYPE, SECRET_SCAN_ES_TYPE]:
+        elif node_type == NODE_TYPE_POD and resource_type in [CVE_ES_TYPE, COMPLIANCE_ES_TYPE, SECRET_SCAN_ES_TYPE,
+                                                              MALWARE_SCAN_ES_TYPE]:
             get_all_docs(pod_names, cve_scan_id_list, and_terms, "pod_name", global_hits, resource_type)
 
         global_hits = global_hits[:max_size]

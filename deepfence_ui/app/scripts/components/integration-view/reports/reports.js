@@ -31,6 +31,10 @@ const config = [
     label: 'Compliance',
     value: 'compliance',
   },
+  {
+    label: 'Malware Scan',
+    value: 'malware-scan',
+  },
 ];
 
 const cveSeverityOptions = [
@@ -38,6 +42,21 @@ const cveSeverityOptions = [
     label: 'Critical',
     value: 'critical',
   },
+  {
+    label: 'High',
+    value: 'high',
+  },
+  {
+    label: 'Medium',
+    value: 'medium',
+  },
+  {
+    label: 'Low',
+    value: 'low',
+  },
+];
+
+const malwareSeverityOptions = [
   {
     label: 'High',
     value: 'high',
@@ -69,6 +88,10 @@ const complianceProviders = [
   {
     label: 'Linux',
     value: 'linux',
+  },
+  {
+    label: 'Kubernetes',
+    value: 'kubernetes',
   },
 ];
 const awsCheckTypes = [
@@ -286,7 +309,15 @@ const Reports = props => {
   useEffect(() => {
     if (resource_type?.value === 'compliance') {
       if (!compliance_provider) return;
-      // debugger;
+      if (compliance_provider?.value === 'kubernetes') {
+        const resourceTypeText = resource_type.value;
+        props.enumerateFiltersAction({
+        resource_type: resourceTypeText,
+        filters:
+          'kubernetes_cluster_name,kubernetes_namespace,masked',
+      });
+      };
+      if (compliance_provider?.value !== 'kubernetes') {
       const resourceTypeText = resource_type.value;
       props.enumerateFiltersAction({
         resource_type: resourceTypeText,
@@ -294,6 +325,8 @@ const Reports = props => {
         filters:
           'host_name,container_name,image_name_with_tag,os,kubernetes_cluster_name,kubernetes_namespace,masked',
       });
+    };
+      // eslint-disable-next-line no-useless-return
     } else if (resource_type && node_type) {
       const resourceTypeText = resource_type.value;
       const nodeTypeText = node_type.value;
@@ -359,6 +392,26 @@ const Reports = props => {
     );
   };
 
+  const renderMalwareSeverityDropdown = () => {
+    return (
+      <div
+        className="nodes-filter-item"
+        style={{ marginLeft: '0px', width: '400px' }}
+      >
+        <Field
+          name="malware_severity"
+          rootClassName="form-field dir-column"
+          component={DFSearchableSelectField}
+          options={malwareSeverityOptions}
+          buttonLabel="Malware Severity"
+          clearable={false}
+          placeholder="Select malware severity"
+          isMulti
+        />
+      </div>
+    );
+  };
+
   const renderComplianceSeverityDropdown = errors => {
     return (
       <div
@@ -395,10 +448,9 @@ const Reports = props => {
       checkTypesDropdownList = linuxCheckType;
     } else if (provider.value === 'gcp') {
       checkTypesDropdownList = gcpCheckType;
+    } else if (provider.value === 'kubernetes') {
+      return;
     }
-    // } else if (provider.value === 'k8s') {
-    //   checkTypesDropdownList = ''
-    // }
     return (
       <div
         className="nodes-filter-item"
@@ -546,10 +598,28 @@ const Reports = props => {
           filter: {},
         });
       }
+      if (resourceTypeText && resourceTypeText.includes('malware-scan')) {
+        resourceData.push({
+          type: 'malware-scan',
+          filter: {},
+        });
+      }
       if (
         resourceTypeText &&
         resourceTypeText.includes('compliance') &&
-        compliance_checktype
+        compliance_provider?.value === 'kubernetes'
+      ) {
+        resourceData.push({
+          type: 'compliance',
+          filter: {
+            masked: maskedFilter,
+          },
+        });
+      }
+      if (
+        resourceTypeText &&
+        resourceTypeText.includes('compliance') &&
+        compliance_provider?.value !== 'kubernetes'
       ) {
         resourceData.push({
           type: 'compliance',
@@ -559,26 +629,37 @@ const Reports = props => {
           },
         });
       }
-      if (
-        resourceTypeText &&
-        resourceTypeText.includes('compliance') &&
-        !compliance_checktype
-      ) {
-        resourceData.push({
-          type: 'compliance',
-          filter: {
-            masked: maskedFilter,
-          },
-        });
-      }
+
       let globalFilter;
       const durationValues = duration && duration.value;
       const downloadTypeOption = download_type && download_type.value;
-      if (resource_type.value === 'compliance' && node_type.value === 'host') {
+      if (resource_type.value === 'compliance') {
+        if (compliance_provider?.value === 'kubernetes') {
+          const accountId = account_id && account_id.map(v => v.value);
+          const k8sClusterName =
+            kubernetes_cluster_name && kubernetes_cluster_name.map(v => v.value);
+          globalFilter = {
+            type: [compliance_provider.value],
+            kubernetes_cluster_name: k8sClusterName,
+            node_id: accountId,
+          };
+        }
+        if (compliance_provider?.value !== 'kubernetes' && node_type.value === 'host') {
+          const accountId = account_id && account_id.map(v => v.value);
+          const hostName = host_name && host_name.map(v => v.value);
+          globalFilter = {
+            type: [compliance_provider.value],
+            node_name: hostName,
+            node_id: accountId,
+          };
+        }
         const accountId = account_id && account_id.map(v => v.value);
         const hostName = host_name && host_name.map(v => v.value);
+        const k8sClusterName =
+          kubernetes_cluster_name && kubernetes_cluster_name.map(v => v.value);
         globalFilter = {
           type: [compliance_provider.value],
+          kubernetes_cluster_name: k8sClusterName,
           node_name: hostName,
           node_id: accountId,
         };
@@ -720,6 +801,11 @@ const Reports = props => {
             )}
           </div>
           <div>
+            {checkIfResourceSelected('malware-scan') && (
+              <div>{renderMalwareSeverityDropdown()}</div>
+            )}
+          </div>
+          <div>
             {checkIfResourceSelected('compliance') && (
               <>
                 <div>{renderComplianceSeverityDropdown(errors)}</div>
@@ -748,6 +834,23 @@ const Reports = props => {
             )}
 
             { checkIfResourceSelected('secret-scan') && (
+              <div
+                className="nodes-filter-item"
+                style={{ marginLeft: '0px', width: '400px' }}
+              >
+                <Field
+                  name="node_type"
+                  rootClassName="form-field dir-column"
+                  component={DFSearchableSelectField}
+                  options={nodeTypeOptionsSecret}
+                  buttonLabel="Node type"
+                  clearable={false}
+                  placeholder="Select node type"
+                />
+              </div>
+            )}
+
+            { checkIfResourceSelected('malware-scan') && (
               <div
                 className="nodes-filter-item"
                 style={{ marginLeft: '0px', width: '400px' }}

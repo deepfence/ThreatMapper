@@ -22,6 +22,7 @@ import {
   TIME_BOUNDARY_OPTIONS,
 } from '../constants/dashboard-refresh-config';
 import { SecretScannerReducer } from './secret-scanner-reducer';
+import { MalwareScannerReducer } from './malware-scanner-reducer';
 
 const error = debug('scope:error');
 
@@ -506,6 +507,16 @@ export function rootReducer(state = initialState, action) {
 
     case ActionTypes.TOGGLE_NAVBAR_STATE: {
       state = state.set('isNavbarActive', action.response);
+      return state;
+    }
+
+    case ActionTypes.RECEIVE_ALERT_DELETE_RESPONSE: {
+      state = state.set('isSuccess', action.response.isSuccess);
+      state = state.set('isError', action.response.isError);
+      state = state.set(
+        'alertsDeleteResponse',
+        action.response.alertsDeleteResponse
+      );
       return state;
     }
 
@@ -1649,7 +1660,144 @@ export function rootReducer(state = initialState, action) {
       state = state.setIn(['secretScanChart', 'data'], null);
       return state.setIn(['secretScanChart', 'status', 'error'],
         'No data available');
-    }
+      }
+    
+    
+    
+      case ActionTypes.GET_MALWARE_SCAN_DATA_REQUEST: {
+        return state.setIn(['malwareScan', 'status', 'loading'], true);
+      }
+  
+      case ActionTypes.GET_MALWARE_SCAN_DATA_SUCCESS: {
+        const {
+          payload: { data },
+        } = action;
+        state = state.setIn(['malwareScan', 'status', 'loading'], false);
+        return state.setIn(['malwareScan', 'data'], data);
+      }
+  
+      case ActionTypes.GET_MALWARE_SCAN_DATA_FAILURE: {
+        state = state.setIn(['malwareScan', 'status', 'loading'], false);
+        state = state.setIn(['malwareScan', 'data'], null);
+        return state.setIn(['malwareScan', 'status', 'error'],
+          'No data available');
+      }
+  
+      case ActionTypes.GET_SMALWARE_SCAN_RESULTS_REQUEST: {
+        return state.setIn(['malwareScanResults', 'status', 'loading'], true);
+      }
+  
+      case ActionTypes.GET_MALWARE_SCAN_RESULTS_SUCCESS: {
+        const {
+          payload: { data },
+        } = action;
+        state = state.setIn(['malwareScanResults', 'status', 'loading'], false);
+        state = state.setIn(['malwareScanResults', 'data'], data.rows);
+        return state.setIn(['malwareScanResults', 'total'], data.total);
+      }
+  
+      case ActionTypes.GET_MALWARE_SCAN_RESULTS_FAILURE: {
+        state = state.setIn(['malwareScanResults', 'status', 'loading'], false);
+        state = state.setIn(['malwareScanResults', 'data'], null);
+        state = state.setIn(['malwareScanResults', 'total'], 0)
+        return state.setIn(['malwareScanResults', 'status', 'error'],
+          'No data available');
+      }
+  
+      case ActionTypes.TOP_MALWARE_SCAN_NODES_REQUEST: {
+        return state.setIn(['malwareScanNodes', 'status', 'loading'], true);
+      }
+  
+      case ActionTypes.TOP_MALWARE_SCAN_NODES_SUCCESS: {
+        const {
+          payload: { data },
+        } = action;
+        state = state.setIn(['malwareScanNodes', 'status', 'loading'], false);
+        return state.setIn(['malwareScanNodes', 'data'], data);
+      }
+  
+      case ActionTypes.TOP_MALWARE_SCAN_NODES_FAILURE: {
+        state = state.setIn(['malwareScanNodes', 'status', 'loading'], false);
+        state = state.setIn(['malwareScanNodes', 'data'], null);
+        return state.setIn(['malwareScanNodes', 'status', 'error'],
+          'No data available');
+      }
+  
+      case ActionTypes.TOP_MALWARE_SCAN_REPORT_REQUEST: {
+        return state.setIn(['malwareScanReport', 'status', 'loading'], true);
+      }
+  
+      case ActionTypes.TOP_MALWARE_SCAN_REPORT_SUCCESS: {
+        const {
+          payload: { data },
+        } = action;
+        state = state.setIn(['malwareScanReport', 'status', 'loading'], false);
+        return state.setIn(['malwareScanReport', 'data'], data);
+      }
+  
+      case ActionTypes.TOP_MALWARE_SCAN_REPORT_FAILURE: {
+        state = state.setIn(['malwareScanReport', 'status', 'loading'], false);
+        state = state.setIn(['malwareScanReport', 'data'], null);
+        return state.setIn(['malwareScanReport', 'status', 'error'],
+          'No data available');
+      }
+  
+      case ActionTypes.MALWARE_SCAN_CHART_REQUEST: {
+        return state.setIn(['malwareScanChart', 'status', 'loading'], true);
+      }
+  
+      case ActionTypes.MALWARE_SCAN_CHART_SUCCESS: {
+        const {
+          payload: { data },
+        } = action;
+        state = state.setIn(['malwareScanChart', 'status', 'loading'], false);
+        return state.setIn(['malwareScanChart', 'data'], data);
+      }
+  
+      case ActionTypes.MALWARE_SCAN_CHART_FAILURE: {
+        state = state.setIn(['malwareScanChart', 'status', 'loading'], false);
+        state = state.setIn(['malwareScanChart', 'data'], null);
+        return state.setIn(['malwareScanChart', 'status', 'error'],
+          'No data available');
+      }
+
+      case ActionTypes.TOP_MALWARE_CLASSES_CHART_REPORT_REQUEST: {
+        return state.setIn(['malwareClassesReport', 'status', 'loading'], true);
+      }
+  
+      case ActionTypes.TOP_MALWARE_CLASSES_CHART_REPORT_SUCCESS: {
+        const {
+          payload: { data },
+        } = action;
+        state = state.setIn(['malwareClassesReport', 'status', 'loading'], false);
+        return state.setIn(['malwareClassesReport', 'data'], data);
+      }
+  
+      case ActionTypes.TOP_MALWARE_CLASSES_CHART_REPORT_FAILURE: {
+        state = state.setIn(['malwareClassesReport', 'status', 'loading'], false);
+        state = state.setIn(['malwareClassesReport', 'data'], null);
+        return state.setIn(['malwareClassesReport', 'status', 'error'],
+          'No data available');
+      }
+  
+      case ActionTypes.MALWARE_CLASSES_CHART_REQUEST: {
+        return state.setIn(['malwareClassesChart', 'status', 'loading'], true);
+      }
+  
+      case ActionTypes.MALWARE_CLASSES_CHART_SUCCESS: {
+        const {
+          payload: { data },
+        } = action;
+        state = state.setIn(['malwareClassesChart', 'status', 'loading'], false);
+        return state.setIn(['malwareClassesChart', 'data'], data);
+      }
+  
+      case ActionTypes.MALWARE_CLASSES_CHART_FAILURE: {
+        state = state.setIn(['malwareClassesChart', 'status', 'loading'], false);
+        state = state.setIn(['malwareClassesChart', 'data'], null);
+        return state.setIn(['malwareClassesChart', 'status', 'error'],
+          'No data available');
+      }
 
     case ActionTypes.START_SCAN_COMPLIANCE_SUCCESS: {
       const {
@@ -2026,6 +2174,7 @@ export function rootReducer(state = initialState, action) {
       state = state.set('form', formReducer(state.get('form'), action));
       state = state.set('cve', CVEReducer(state.get('cve'), action));
       state = state.set('secretScanner', SecretScannerReducer(state.get('secretScanner'), action));
+      state = state.set('malwareScanner', MalwareScannerReducer(state.get('malwareScanner'), action));
       state = state.set(
         'compliance',
         ComplianceReducer(state.get('compliance'), action)

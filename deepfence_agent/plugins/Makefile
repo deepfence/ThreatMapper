@@ -1,4 +1,4 @@
-all: localinit proto bin/SecretScanner bin/package-scanner
+all: localinit proto bin/SecretScanner bin/package-scanner bin/YaraHunter
 # bin/open-tracer
 
 localinit:
@@ -24,6 +24,7 @@ proto: ./agent-plugins-grpc/proto/*.proto
 
 clean:
 	-rm -rf $(PWD)/bin/secret-scanner/
+	-rm -rf $(PWD)/bin/YaraHunter/
 	-rm $(PWD)/bin/package-scanner
 	(cd agent-plugins-grpc && make clean)
 

@@ -32,6 +32,14 @@ const resourceCollection = [
     name: 'CloudTrail Alerts',
     value: 'cloudtrail_alert',
   },
+  {
+    name: 'Malware Scan',
+    value: 'malware-scan',
+  },
+  {
+    name: 'Secret Scan',
+    value: 'secret-scan',
+  }
 ];
 
 const allNodeType = 'host,container_image,pod,aws';
@@ -73,7 +81,7 @@ class MicrosoftIntegrationView extends React.Component {
     const params = {
       node_type: allNodeType,
       filters:
-        'host_name,container_name,image_name_with_tag,user_defined_tags,kubernetes_namespace,kubernetes_cluster_name,cloudtrail_trail',
+        'host_name,container_name,image_name_with_tag,user_defined_tags,kubernetes_namespace,kubernetes_cluster_name,cloudtrail_trail,severity',
     };
     return dispatch(enumerateFiltersAction(params));
   }

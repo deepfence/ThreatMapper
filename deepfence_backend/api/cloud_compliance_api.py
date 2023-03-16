@@ -180,6 +180,7 @@ def compliance_test_status_report(compliance_check_type):
 
     number = request.args.get("number")
     time_unit = request.args.get("time_unit")
+    hide_masked = request.args.get("hideMasked", "true")
 
     if number:
         try:
@@ -236,7 +237,8 @@ def compliance_test_status_report(compliance_check_type):
         aggs,
         number,
         TIME_UNIT_MAPPING.get(time_unit),
-        lucene_query_string
+        lucene_query_string,
+        False if hide_masked == "false" else True
     )
     response = defaultdict(int)
     if "aggregations" in aggs_response:
@@ -263,6 +265,7 @@ def compliance_test_category_report(compliance_check_type):
 
     number = request.args.get("number")
     time_unit = request.args.get("time_unit")
+    hide_masked = request.args.get("hideMasked", "true")
 
     if number:
         try:
@@ -330,7 +333,8 @@ def compliance_test_category_report(compliance_check_type):
         aggs,
         number,
         TIME_UNIT_MAPPING.get(time_unit),
-        lucene_query_string
+        lucene_query_string,
+        False if hide_masked == "false" else True
     )
     response = []
     unique_status_list = set()
@@ -958,26 +962,24 @@ def cloud_compliance_node_scans():
     es_resp = ESConn.search_by_and_clause(
         es_index, filters, start_index, sort_order, number=number,
         time_unit=TIME_UNIT_MAPPING.get(time_unit), size=page_size, lucene_query_string=lucene_query_string)
-    if request.args.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
-        added_scan_id = {}
-        hits = es_resp.get("hits", [])
-        es_resp["hits"] = []
-        for scan in hits:
-            source = scan.get("_source", {})
-            if added_scan_id.get(source.get("scan_id", ""), False):
-                continue
-            else:
-                added_scan_id[source.get("scan_id", "")] =  True
-            result = source.get("result", {})
-            if request.args.get("node_type", "") == COMPLIANCE_KUBERNETES_HOST:
-                total = result.get("alarm", 0) + result.get("error", 0) + result.get("ok", 1) + result.get("info", 1)
-                checks_passed = result.get("ok", 0)
-            else:
-                total = result.get("pass", 0) + result.get("warn", 0) + result.get("note", 1)
-                checks_passed = result.get("pass", 0)
-            total = 1 if total == 0 else total
-            source["result"]["compliance_percentage"] = (checks_passed * 100) / total
-            es_resp.get("hits").append(scan)
+    hits = es_resp.get("hits", [])
+    for scan in hits:
+        source = scan.get("_source", {})
+        scan_id = source.get("scan_id")
+        result = {}
+        if request.args.get("node_type", "") in [COMPLIANCE_LINUX_HOST, COMPLIANCE_KUBERNETES_HOST]:
+            es_index = COMPLIANCE_INDEX
+        else:
+            es_index = CLOUD_COMPLIANCE_INDEX
+        aggs_response = ESConn.aggregation_helper(es_index, {"scan_id": scan_id},
+                                                  {"status": {"terms": {"field": "status.keyword", "size": 25}}})
+        total = 0
+        for bucket in aggs_response["aggregations"]["status"]["buckets"]:
+            result[bucket.get("key", "")] = bucket.get("doc_count", 0)
+            total += bucket.get("doc_count", 0)
+        passed = result.get('ok', 0) + result.get('pass', 0)
+        result['compliance_percentage'] = (passed * 100) / total
+        source['result'] = result
     es_resp["node_type"] = request.args.get("node_type", "")
     return set_response(data=es_resp)
 
@@ -1050,6 +1052,15 @@ def get_compliance_report():
     if es_resp.get("hits", []):
         scan_doc = es_resp["hits"][0]
         if scan_doc.get("_source", {}):
+            aggs_response = ESConn.aggregation_helper(
+                COMPLIANCE_INDEX if es_index == COMPLIANCE_LOGS_INDEX else CLOUD_COMPLIANCE_INDEX,
+                {"scan_id": scan_doc["_source"].get("scan_id")},
+                {"status": {"terms": {"field": "status.keyword", "size": 25}}}
+            )
+            result = {}
+            for bucket in aggs_response["aggregations"]["status"]["buckets"]:
+                result[bucket.get("key", "")] = bucket.get("doc_count", 0)
+            scan_doc["_source"]["result"] = result
             unify["compliance_scan_status"].append({
                 "aggs": [],
                 "compliance_check_type": compliance_check_type,
@@ -1182,7 +1193,7 @@ def start_cloud_compliance_scan(node_id):
                 node.compliance_start_scan(compliance_check_type, None)
         if post_data.get("node_type", "") == COMPLIANCE_KUBERNETES_HOST:
             scan_id = node_id + "_" + datetime.now().strftime(
-                "%Y-%m-%dT%H:%M:%S") + ".000"
+                "%Y-%m-%dT%H:%M:%S.%f")
             time_time = time.time()
             es_doc = {
                 "total_checks": 0,
@@ -1202,11 +1213,16 @@ def start_cloud_compliance_scan(node_id):
                 "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.") + repr(time_time).split('.')[1][:3] + "Z"
             }
             ESConn.create_doc(COMPLIANCE_LOGS_INDEX, es_doc)
-            scan_list = [{
+            scan_list = []
+            current_pending_scans = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, node_id)
+
+            if current_pending_scans:
+                scan_list.extend(json.loads(current_pending_scans))
+            scan_list.append({
                 "scan_id": scan_id,
                 "scan_type": "nsa-cisa",
                 "account_id": node_id
-            }]
+            })
             redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, node_id, json.dumps(scan_list))
 
         return set_response(data={"message": "Scans queued successfully"}, status=200)
@@ -1214,6 +1230,11 @@ def start_cloud_compliance_scan(node_id):
     if node_id.endswith(";<cloud_org>"):
         accounts = CloudComplianceNode.query.filter_by(org_account_id=node_id).all()
     else:
+        try:
+            CloudResourceNode.query.filter_by(account_id=node_id).update(dict(last_scanned_time=datetime.now()))
+            db.session.commit()                                      
+        except Exception as e:
+            pass
         accounts = [CloudComplianceNode.query.filter_by(node_id=node_id).first()]
 
     if not accounts:
@@ -1571,20 +1592,10 @@ def register_kubernetes():
     if not current_pending_scans_str:
         return set_response(data={"scans": {}}, status=200)
     current_pending_scans = json.loads(current_pending_scans_str)
-    pending_scans_available = False
     scan_list = {}
     for scan in current_pending_scans:
-        filters = {
-            "node_id": kubernetes_id,
-            "scan_id": scan["scan_id"],
-            "scan_status": ["IN_PROGRESS", "ERROR", "COMPLETED"]
-        }
-        compliance_log = ESConn.search_by_and_clause(COMPLIANCE_LOGS_INDEX, filters, size=1)
-        if not compliance_log.get("hits", []):
-            pending_scans_available = True
-            scan_list[scan["scan_id"]] = scan
-    if not pending_scans_available:
-        redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, kubernetes_id, "")
+        scan_list[scan["scan_id"]] = scan
+    redis.hset(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, kubernetes_id, "")
     return set_response(data={"scans": scan_list}, status=200)
 
 
@@ -1820,7 +1831,8 @@ def cloud_resources_type(account_id):
             "scan_data": {}}
         node_type_data.append(node_data)
         node_type_data_map[cloud_resource.node_id] = node_data
-
+        
+    
     aggs_cc_scan = {
         "check_type": {
             "terms": {
@@ -1905,6 +1917,16 @@ def cloud_resources_type(account_id):
                 for status_name in ['alarm', 'info', 'pass', 'ok']:
                     if not status_data.get(status_name, None):
                         status_data[status_name] = 0
+                        
+        for node_type_datam in node_type_data:
+            last_scanned = ""
+            if not node_type_datam.get("scan_data", {}):
+                node_id_info = CloudResourceNode.query.filter_by(node_id=node_type_datam.get("arn", None)).first()
+                if node_id_info:
+                    node_type_datam["scan_data"]["last_scanned"] = node_id_info.last_scanned_time
+                else:
+                    node_type_datam["scan_data"]["last_scanned"] = last_scanned
+            
     return set_response(node_type_data)
 
 

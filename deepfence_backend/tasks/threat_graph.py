@@ -6,9 +6,9 @@ from utils.helper import get_topology_network_graph, get_recent_scan_ids, split_
     get_top_exploitable_vulnerabilities
 from utils.constants import CLOUD_RESOURCES_CACHE_KEY, NODE_TYPE_HOST, NODE_TYPE_CONTAINER, CLOUD_AWS, CLOUD_GCP, \
     CLOUD_AZURE, THREAT_GRAPH_CACHE_KEY, THREAT_GRAPH_NODE_DETAIL_KEY, CSPM_RESOURCE_LABELS, NODE_TYPE_LABEL, \
-    CSPM_RESOURCES, ES_MAX_CLAUSE, CVE_ES_TYPE, COMPLIANCE_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX, \
-    TIME_UNIT_MAPPING, ES_TERMS_AGGR_SIZE, COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_INDEX, \
-    CLOUD_TOPOLOGY_COUNT, COMPLIANCE_ES_TYPE, CLOUD_COMPLIANCE_ES_TYPE
+    CSPM_RESOURCES, ES_MAX_CLAUSE, CVE_INDEX, COMPLIANCE_INDEX, CLOUD_COMPLIANCE_LOGS_INDEX, SECRET_SCAN_LOGS_INDEX, \
+    TIME_UNIT_MAPPING, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, COMPLIANCE_LOGS_INDEX, CLOUD_COMPLIANCE_INDEX, \
+    SECRET_SCAN_INDEX, CLOUD_TOPOLOGY_COUNT, MALWARE_SCAN_INDEX, MALWARE_SCAN_LOGS_INDEX, COMPLIANCE_ES_TYPE, CLOUD_COMPLIANCE_ES_TYPE
 import networkx as nx
 from collections import defaultdict
 import json
@@ -463,14 +463,19 @@ def get_secrets_count():
     # return get_mis_config_count(SECRET_SCAN_INDEX, SECRET_SCAN_LOGS_INDEX, "node_id")
     return {}
 
+def get_malware_count():
+    return get_mis_config_count(MALWARE_SCAN_INDEX, MALWARE_SCAN_LOGS_INDEX, "node_id")
+
 
 def _compute_threat_graph():
     # Get count of vulnerability, compliance, secrets
     vulnerability_count_map = get_vulnerability_count()
     compliance_count_map = get_compliance_count()
+    malware_count_map = get_malware_count()
     cloud_compliance_count_map = get_cloud_compliance_count()
-    # secrets_count_map = get_secrets_count()
-    include_nodes = {**vulnerability_count_map, **compliance_count_map, **cloud_compliance_count_map}
+    secrets_count_map = get_secrets_count()
+    include_nodes = {**vulnerability_count_map, **compliance_count_map,
+                     **cloud_compliance_count_map, **secrets_count_map, **malware_count_map}
 
     graph = {CLOUD_AWS: nx.DiGraph(), CLOUD_GCP: nx.DiGraph(), CLOUD_AZURE: nx.DiGraph(), pvt_cloud: nx.DiGraph()}
     for cloud_provider, _ in graph.items():
@@ -534,10 +539,10 @@ def _compute_threat_graph():
                                                            node_type=NODE_TYPE_CONTAINER, include_nodes=include_nodes)
 
     threat_graph = {
-        CLOUD_AWS: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}},
-        CLOUD_AZURE: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}},
-        CLOUD_GCP: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}},
-        pvt_cloud: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "resources": {}}
+        CLOUD_AWS: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "malware_count":0,"resources": {}},
+        CLOUD_AZURE: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "malware_count":0, "resources": {}},
+        CLOUD_GCP: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "malware_count":0, "resources": {}},
+        pvt_cloud: {"count": 0, "secrets_count": 0, "vulnerability_count": 0, "compliance_count": 0, "malware_count":0, "resources": {}}
     }
     threat_graph_paths = defaultdict(dict)
     threat_graph_node = {}
@@ -577,7 +582,9 @@ def _compute_threat_graph():
                     vulnerability_scan_id = {}
                     compliance_scan_id = {}
                     secrets_count = 0
+                    malware_count = 0
                     secrets_scan_id = {}
+                    malware_scan_id = {}
                     cloud_id = ""
                     if node_type == NODE_TYPE_HOST:
                         vulnerability_count = vulnerability_count_map.get(meta["name"], {}).get("count", 0)
@@ -593,9 +600,12 @@ def _compute_threat_graph():
                                 **cloud_compliance_count_map.get(cloud_id, {}).get("scan_id", {}),
                                 **compliance_scan_id,
                             }
-                        # secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
-                        # if secrets_count > 0:
-                        #     secrets_scan_id = secrets_count_map[node_id]["scan_id"]
+                        secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
+                        if secrets_count > 0:
+                            secrets_scan_id = secrets_count_map[node_id]["scan_id"]
+                        malware_count = malware_count_map.get(node_id, {}).get("count", 0)
+                        if malware_count > 0:
+                            malware_scan_id = malware_count_map[node_id]["scan_id"]
                     elif node_type == NODE_TYPE_CONTAINER:
                         vulnerability_count = vulnerability_count_map.get(meta["image_name"], {}).get("count", 0)
                         if vulnerability_count > 0:
@@ -603,9 +613,12 @@ def _compute_threat_graph():
                         compliance_count = compliance_count_map.get(node_id, {}).get("count", 0)
                         if compliance_count > 0:
                             compliance_scan_id = compliance_count_map[node_id]["scan_id"]
-                        # secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
-                        # if secrets_count > 0:
-                        #     secrets_scan_id = secrets_count_map[node_id]["scan_id"]
+                        secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
+                        if secrets_count > 0:
+                            secrets_scan_id = secrets_count_map[node_id]["scan_id"]
+                        malware_count = malware_count_map.get(node_id, {}).get("count", 0)
+                        if malware_count > 0:
+                            malware_scan_id = malware_count_map[node_id]["scan_id"]
                     else:
                         cloud_id = node_id
                         compliance_count = cloud_compliance_count_map.get(node_id, {}).get("count", 0)
@@ -617,7 +630,8 @@ def _compute_threat_graph():
                         "node_id": node_id, "name": meta["name"], "image_name": meta.get("image_name", ""),
                         "vulnerability_count": vulnerability_count, "vulnerability_scan_id": vulnerability_scan_id,
                         "compliance_count": compliance_count, "compliance_scan_id": compliance_scan_id,
-                        "secrets_count": secrets_count, "secrets_scan_id": secrets_scan_id, "cloud_id": cloud_id
+                        "secrets_count": secrets_count, "malware_count": malware_count,"secrets_scan_id": secrets_scan_id,
+                         "cloud_id": cloud_id,"malware_scan_id": malware_scan_id
                     }
                     if key in threat_graph[cloud_provider]["resources"]:
                         if not threat_graph_paths[key][p_str]:
@@ -625,17 +639,19 @@ def _compute_threat_graph():
                         threat_graph[cloud_provider]["resources"][key]["count"] += 1
                         threat_graph[cloud_provider]["resources"][key]["vulnerability_count"] += vulnerability_count
                         threat_graph[cloud_provider]["resources"][key]["secrets_count"] += secrets_count
+                        threat_graph[cloud_provider]["resources"][key]["malware_count"] += malware_count
                         threat_graph[cloud_provider]["resources"][key]["compliance_count"] += compliance_count
                     else:
                         threat_graph_paths[key][p_str] = True
                         threat_graph[cloud_provider]["resources"][key] = {
                             "attack_path": [p], "count": 1, "vulnerability_count": vulnerability_count,
                             "compliance_count": compliance_count, "secrets_count": secrets_count,
-                            "label": label, "id": key, "node_type": node_type,
+                            "malware_count": malware_count, "label": label, "id": key, "node_type": node_type,
                         }
                     threat_graph[cloud_provider]["count"] += 1
                     threat_graph[cloud_provider]["vulnerability_count"] += vulnerability_count
                     threat_graph[cloud_provider]["secrets_count"] += secrets_count
+                    threat_graph[cloud_provider]["malware_count"] += malware_count
                     threat_graph[cloud_provider]["compliance_count"] += compliance_count
             except nx.NetworkXNoPath:
                 pass

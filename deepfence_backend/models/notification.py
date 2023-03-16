@@ -2,8 +2,8 @@ from sqlalchemy.sql import func
 from sqlalchemy.schema import UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from config.app import db
-from utils.constants import NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPE_USER_ACTIVITY, CVE_ES_TYPE, \
-    NOTIFICATION_TYPE_CLOUDTRAIL_ALERT
+from utils.constants import NOTIFICATION_TYPE_VULNERABILITY, NOTIFICATION_TYPE_MALWARE, NOTIFICATION_TYPE_SECRET, NOTIFICATION_TYPE_USER_ACTIVITY, \
+    NOTIFICATION_TYPE_COMPLIANCE, MALWARE_SCAN_ES_TYPE,CVE_ES_TYPE, NOTIFICATION_TYPE_CLOUDTRAIL_ALERT, SECRET_SCAN_ES_TYPE
 
 
 class Notification(db.Model):
@@ -122,6 +122,118 @@ class VulnerabilityNotification(Notification):
         return "<VulnerabilityNotification {}>".format(self.id)
 
 
+class SecretNotification(Notification):
+    id = db.Column(db.Integer, primary_key=True)
+
+    integration_id = db.Column(db.Integer, db.ForeignKey('integration.id'), nullable=False)
+    integration = db.relationship('Integration', backref=db.backref('secret_notifications', lazy=True))
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('secret_notifications', lazy=True))
+    error_msg = db.Column(db.Text, nullable=True)
+
+    __table_args__ = (UniqueConstraint('alert_level', 'integration_id', name='secret_notification_constraint'),)
+    secret_doc_fields_map = {
+        "LayerID": "Layer ID", "RuleName": "Rule Name", "PartToMatch": "Part to Match", "Match": "Match","scan_id": "Scan ID",
+        "Regex": "Regex", "Severity": "Severity","container_image": "Container image", "@timestamp": "@timestamp",
+        "container_name": "Container Name", "node_name": "Node Name", "kubernetes_cluster_name": "Kubernetes Cluster Name",
+        "image_id": "Image ID", "node_type": "Node Type", "registry_id": "Registry ID", "MatchFromByte": "match from byte",
+        "MatchToByte": "match to byte", "MatchedContents":"Matched Contents","host_name": "Host Name",
+        "kubernetes_cluster_name": "Kubernetes Cluster Name", "masked": "masked", "CompleteFilename" : "Complete File Name", "MetaRules": "Meta Rules", "Summary": "Summary", "Class": "Class",
+        "SeverityScore": "Severity Score", "Severity": "Severity" , "PrintBufferStartIndex": "Print Buffer Start Index" }
+
+    def pretty_print(self):
+        conf = self.integration.pretty_print()
+        filters = self.filters
+        if not filters:
+            filters = {}
+        conf.update({
+            "id": self.id,
+            "alert_level": self.alert_level,
+            "duration_in_mins": self.duration_in_mins,
+            "user_id": self.user_id,
+            "error_msg": self.error_msg,
+            "created_at": str(self.created_at),
+            "updated_at": str(self.updated_at),
+            "notification_type": NOTIFICATION_TYPE_SECRET,
+            "filters": filters,
+        })
+        return conf
+
+    @classmethod
+    def format_content(cls, contents):
+        if len(contents) > 1:
+            return {"contents": contents, "dump_indent": 4, "prefix": "Secret", "iteration_prefix": "Secret #{}",
+                    "doc_fields_map": cls.secret_doc_fields_map}
+        else:
+            return {"contents": contents, "dump_indent": 4, "prefix": "Secret", "iteration_prefix": "",
+                    "doc_fields_map": cls.secret_doc_fields_map}
+
+    def send(self, contents, **kwargs):
+        self.integration.send(self.format_content(contents), summary="Deepfence - Secret Subscription",
+                              notification_id=kwargs["notification_id"], resource_type=SECRET_SCAN_ES_TYPE)
+
+    def __repr__(self):
+        return "<SecretNotification {}>".format(self.id)
+
+
+class MalwareNotification(Notification):
+    id = db.Column(db.Integer, primary_key=True)
+
+    integration_id = db.Column(db.Integer, db.ForeignKey('integration.id'), nullable=False)
+    integration = db.relationship('Integration', backref=db.backref('malware_notifications', lazy=True))
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('malware_notifications', lazy=True))
+    error_msg = db.Column(db.Text, nullable=True)
+
+    __table_args__ = (UniqueConstraint('alert_level', 'integration_id', name='malware_notification_constraint'),)
+
+    malware_doc_fields_map = {
+        "LayerID": "Layer ID", "RuleName": "Rule Name", "StringsToMatch": "Strings to Match", "scan_id": "Scan ID",
+        "CategoryName": "Category Name", "Severity": "Severity","container_image": "Container image", "@timestamp": "@timestamp",
+        "container_name": "Container Name", "node_name": "Node Name", "kubernetes_cluster_name": "Kubernetes Cluster Name",
+        "image_id": "Image ID", "node_type": "Node Type", "registry_id": "Registry ID", "container_name": "Container Name",
+        "host_name": "Host Name", "kubernetes_cluster_name": "Kubernetes Cluster Name", "masked": "masked", "Meta" : "Meta",
+        "CompleteFilename" : "Complete File Name", "MetaRules": "Meta Rules", "Summary": "Summary", "Class": "Class",
+        "SeverityScore": "Severity Score", "Severity": "Severity", "FileSeverity": "File Severity", "FileSevScore" : "File Severity Score"
+        }
+
+    def pretty_print(self):
+        conf = self.integration.pretty_print()
+        filters = self.filters
+        if not filters:
+            filters = {}
+        conf.update({
+            "id": self.id,
+            "alert_level": self.alert_level,
+            "duration_in_mins": self.duration_in_mins,
+            "user_id": self.user_id,
+            "error_msg": self.error_msg,
+            "created_at": str(self.created_at),
+            "updated_at": str(self.updated_at),
+            "notification_type": NOTIFICATION_TYPE_MALWARE,
+            "filters": filters,
+        })
+        return conf
+
+    @classmethod
+    def format_content(cls, contents):
+        if len(contents) > 1:
+            return {"contents": contents, "dump_indent": 4, "prefix": "Malware", "iteration_prefix": "Malware #{}",
+                    "doc_fields_map": cls.malware_doc_fields_map}
+        else:
+            return {"contents": contents, "dump_indent": 4, "prefix": "Malware", "iteration_prefix": "",
+                    "doc_fields_map": cls.malware_doc_fields_map}
+
+    def send(self, contents, **kwargs):
+        self.integration.send(self.format_content(contents), summary="Deepfence - Malware Subscription",
+                              notification_id=kwargs["notification_id"], resource_type=MALWARE_SCAN_ES_TYPE)
+
+    def __repr__(self):
+        return "<MalwareNotification {}>".format(self.id)
+
+
 class UserActivityNotification(Notification):
     id = db.Column(db.Integer, primary_key=True)
 
@@ -170,6 +282,74 @@ class UserActivityNotification(Notification):
 
     def __repr__(self):
         return "<UserActivityNotification {}>".format(self.id)
+
+
+class ComplianceReportNotification(Notification):
+    id = db.Column(db.Integer, primary_key=True)
+
+    integration_id = db.Column(db.Integer, db.ForeignKey('integration.id'), nullable=False)
+    integration = db.relationship('Integration', backref=db.backref('compliance_report_notifications', lazy=True))
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref=db.backref('compliance_report_notifications', lazy=True))
+    error_msg = db.Column(db.Text, nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint('alert_level', 'integration_id', name='compliance_report_notification_constraint'),)
+
+    compliance_report_doc_fields_map = {
+        "@timestamp": "@timestamp",
+        "account_id": "Account",
+        "cloud_provider": "Cloud Provider",
+        "compliance_check_type": "Compliance Check Type",
+        "control_id": "Control Id",
+        "description": "Description",
+        "host_name": "Host Name",
+        "node_name": "Node",
+        "reason": "Reason",
+        "region": "Region",
+        "resource": "Resource",
+        "service": "Service",
+        "status": "Test Status",
+        "test_category": "Test Category",
+        "test_info": "Info",
+        "test_number": "Test ID",
+        "title": "Title"
+    }
+
+    def pretty_print(self):
+        conf = self.integration.pretty_print()
+        filters = self.filters
+        if not filters:
+            filters = {}
+        conf.update({
+            "id": self.id,
+            "alert_level": self.alert_level,
+            "duration_in_mins": self.duration_in_mins,
+            "user_id": self.user_id,
+            "error_msg": self.error_msg,
+            "created_at": str(self.created_at),
+            "updated_at": str(self.updated_at),
+            "notification_type": NOTIFICATION_TYPE_COMPLIANCE,
+            "filters": filters,
+        })
+        return conf
+
+    @classmethod
+    def format_content(cls, contents):
+        if len(contents) > 1:
+            return {"contents": contents, "dump_indent": 4, "prefix": "Compliance Reports",
+                    "iteration_prefix": "Compliance Report #{}",
+                    "doc_fields_map": cls.compliance_report_doc_fields_map}
+        else:
+            return {"contents": contents, "dump_indent": 4, "prefix": "Compliance Report", "iteration_prefix": "",
+                    "doc_fields_map": cls.compliance_report_doc_fields_map}
+
+    def send(self, contents, **kwargs):
+        self.integration.send(self.format_content(contents), summary="Deepfence - Compliance Reports Subscription")
+
+    def __repr__(self):
+        return "<ComplianceReportNotification {}>".format(self.id)
 
 
 class CloudtrailAlertNotification(Notification):

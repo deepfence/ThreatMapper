@@ -7,7 +7,7 @@ from tasks.task_scheduler import run_node_task
 from utils.constants import REPORT_INDEX, \
     NODE_TYPE_HOST, ES_TERMS_AGGR_SIZE, CVE_SCAN_LOGS_INDEX, ES_MAX_CLAUSE, NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER, \
     PDF_REPORT_MAX_DOCS, REPORT_ES_TYPE, CVE_ES_TYPE, COMPLIANCE_INDEX, SECRET_SCAN_INDEX, SECRET_SCAN_ES_TYPE, \
-    COMPLIANCE_ES_TYPE, CLOUD_COMPLIANCE_INDEX, CLOUD_COMPLIANCE_ES_TYPE
+    COMPLIANCE_ES_TYPE, CLOUD_COMPLIANCE_INDEX, CLOUD_COMPLIANCE_ES_TYPE, MALWARE_SCAN_ES_TYPE, MALWARE_SCAN_INDEX
 import pandas as pd
 import requests
 from utils.constants import CVE_INDEX, MAX_TOTAL_SEVERITY_SCORE
@@ -130,7 +130,7 @@ def compliance_pdf_report_cloud(filters, lucene_query_string, number, time_unit,
         return "<div>No compliance reports found for the applied filters, Try with different filters</div>"
 
     def datetime_format(string):
-        date_time = datetime.strptime(string, '%Y-%m-%dT%H:%M:%S.%f')
+        date_time = datetime.strptime(string, '%Y-%m-%dT%H:%M:%S.%fZ')
         return "{date} {time}".format(date=date_time.strftime("%d %b, %Y"), time=date_time.strftime("%H:%M:%S"))
 
     df['_source.@timestamp'] = df['_source.@timestamp'].apply(datetime_format)
@@ -454,12 +454,14 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
     filters_cve_scan = {"action": "COMPLETED"}
     filters["type"] = CVE_ES_TYPE
     node_filters_for_cve_scan_index = {}
+    
 
     if node_filters:
         node_filters_for_cve_index, node_filters_for_cve_scan_index = filter_node_for_vulnerabilities(node_filters)
         if node_filters_for_cve_index:
             filters = {**filters, **node_filters_for_cve_index}
             filters_cve_scan = {**filters_cve_scan, **node_filters_for_cve_scan_index}
+            
     and_terms = []
     for key, value in filters.items():
         if key == "image_name_with_tag":
@@ -468,6 +470,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
             value = [value]
         if value:
             and_terms.append({"terms": {key + ".keyword": value}})
+            
 
     for key, value in resource.items():
         if type(value) is not list:
@@ -484,6 +487,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
             number, time_unit, rounding_time_unit)}}})
 
     query_body = {"query": {"bool": {"must": and_terms}}, "sort": [{"@timestamp": {"order": "desc"}}]}
+    
 
 
     filters_applied = {**filters_applied, **resource}
@@ -558,7 +562,7 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
 
     cve_table_html = ""
     active_node_images_count = get_active_node_images_count(node_filters)
-    node_types = [i for i in [NODE_TYPE_HOST, NODE_TYPE_CONTAINER_IMAGE] if i in df.node_type.unique()]
+    node_types = [i for i in [NODE_TYPE_HOST, NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER] if i in df.node_type.unique()]
     for node_type in node_types:
         for severity_type in severity_types:
             count = int(
@@ -617,8 +621,12 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
                 set(active_node_images_count['image_names']) - scanned_images_names_dead_active)
             scanned_image_names_dead_count = len(
                 scanned_images_names_dead_active - set(active_node_images_count['image_names']))
-
-            active_image_summary = "Image Summary (scanned {scanned_image_names_active_count} out of {active} images)".format(
+            
+            if node_type == NODE_TYPE_CONTAINER:
+                active_image_summary = "Container Summary (scanned {scanned_image_names_active_count} out of {active} images)".format(
+                scanned_image_names_active_count=scanned_image_names_active_count, active=count_data['active'])
+            else:
+                active_image_summary = "Image Summary (scanned {scanned_image_names_active_count} out of {active} images)".format(
                 scanned_image_names_active_count=scanned_image_names_active_count, active=count_data['active'])
 
             dead_image_summary = "{scanned_image_names_dead_count} images currently not monitored. ".format(
@@ -693,7 +701,11 @@ def vulnerability_pdf_report(filters, lucene_query_string, number, time_unit, re
                     node_count_info[i[0]] = {i[1]: v}
                 else:
                     node_count_info[i[0]][i[1]] = v
-            summary_heading = "Image vulnerabilities"
+            
+            if node_type == NODE_TYPE_CONTAINER:
+                summary_heading = "Container vulnerabilities"
+            else:
+                summary_heading = "Image vulnerabilities"
             start_index = 0
             arr_index = 0
             end_index = 0
@@ -966,8 +978,10 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
         else:
             if node_type == NODE_TYPE_CONTAINER:
                 pivot = "container_name"
+                summary_heading = "Container Secrets"
             else:
                 pivot = "node_name"
+                summary_heading = "Image Secrets"
 
             df3 = df[df['node_type'] == node_type][["Severity.level", pivot, 'count']]
             pivot_table = pd.pivot_table(df3, index=[pivot, "Severity.level"], aggfunc=[np.sum])
@@ -985,7 +999,7 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
                     node_count_info[i[0]] = {i[1]: v}
                 else:
                     node_count_info[i[0]][i[1]] = v
-            summary_heading = "Image Secrets"
+            
             start_index = 0
             arr_index = 0
             end_index = 0
@@ -1092,6 +1106,306 @@ def vulnerability_pdf_report_secret(filters, lucene_query_string, number, time_u
     return final_html
 
 
+def malware_pdf_report(filters, lucene_query_string, number, time_unit, resource):
+    node_filters = deepcopy(filters)
+    filters_applied = deepcopy(node_filters)
+    filters_cve_scan = {"action": "COMPLETED"}
+    # filters["type"] = SECRET_SCAN_ES_TYPE
+    malware_scan_id_list = []
+    aggs = {
+        "node_name": {
+            "terms": {
+                "field": "node_name.keyword",
+                "size": ES_TERMS_AGGR_SIZE
+            },
+            "aggs": {
+                "scan_id": {
+                    "terms": {
+                        "field": "scan_id.keyword",
+                        "size": ES_TERMS_AGGR_SIZE
+                    },
+                    "aggs": {
+                        "scan_recent_timestamp": {
+                            "max": {
+                                "field": "@timestamp"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    filter_for_scan = {}
+    if len(filters.get("type", [])) != 0:
+        filter_for_scan["node_type"] = filters.get("type")
+    if len(filters.get("host_name", [])) != 0:
+        filter_for_scan["node_name"] = filters.get("host_name")
+    if len(filters.get("image_name_with_tag", [])) != 0:
+        filter_for_scan["node_name"] = filters.get("image_name_with_tag")
+    if len(filters.get("container_name", [])) != 0:
+        filter_for_scan["container_name"] = filters.get("container_name")
+    aggs_response = ESConn.aggregation_helper(
+        MALWARE_SCAN_INDEX, filter_for_scan, aggs, number, time_unit, None
+    )
+    if "aggregations" in aggs_response:
+        for image_aggr in aggs_response["aggregations"]["node_name"]["buckets"]:
+            latest_scan_id = ""
+            latest_scan_time = 0
+            for scan_id_aggr in image_aggr["scan_id"]["buckets"]:
+                if scan_id_aggr["scan_recent_timestamp"]["value"] > latest_scan_time:
+                    latest_scan_time = scan_id_aggr["scan_recent_timestamp"]["value"]
+                    latest_scan_id = scan_id_aggr["key"]
+            malware_scan_id_list.append(latest_scan_id)
+
+    and_terms = []
+    for key, value in filters.items():
+        if key == "type":
+            continue
+        if key == "image_name_with_tag":
+            key = "node_name"
+        if type(value) is not list:
+            value = [value]
+        if value:
+            and_terms.append({"terms": {key + ".keyword": value}})
+
+    # for key, value in resource.items():
+    #     if type(value) is not list:
+    #         value = [value]
+    #     if value and len(value) != 0:
+    #         if key == "cve_severity":
+    #             and_terms.append({"terms": {"cve_severity": value}})
+    #         else:
+    #             and_terms.append({"terms": {key: value}})
+
+    if number and time_unit and time_unit != 'all':
+        rounding_time_unit = get_rounding_time_unit(time_unit)
+        and_terms.append({"range": {"@timestamp": {"gt": "now-{0}{1}/{2}".format(
+            number, time_unit, rounding_time_unit)}}})
+
+    query_body = {"query": {"bool": {"must": and_terms}}, "sort": [{"@timestamp": {"order": "desc"}}]}
+
+    recent_scan_id_chunks = split_list_into_chunks(malware_scan_id_list, ES_MAX_CLAUSE)
+
+    # Count total data to fetch from es. If it's > 75000 docs, throw error
+    doc_count = 0
+    for scan_id_chunk in recent_scan_id_chunks:
+        tmp_filters = deepcopy({})
+        tmp_filters["scan_id"] = scan_id_chunk
+        doc_count += ESConn.count(MALWARE_SCAN_INDEX, tmp_filters, number=number, time_unit=time_unit,
+                                  lucene_query_string=lucene_query_string)
+        if doc_count > PDF_REPORT_MAX_DOCS:
+            return "<div>Error while fetching malwares, please use filters to reduce the number of documents " \
+                   "to download.</div> "
+
+    malware_scan_data = []
+    for scan_id_chunk in recent_scan_id_chunks:
+        query = deepcopy(query_body)
+
+        query["query"]["bool"]["must"].append({"terms": {"scan_id.keyword": scan_id_chunk}})
+        for total_pages, page_count, page_items, page_data in ESConn.scroll(
+                MALWARE_SCAN_INDEX, query, page_size=5000):
+            docs = page_data.get('hits', {}).get('hits', [])
+            for doc in docs:
+                if doc.get("_source"):
+                    malware_scan_data.append(doc["_source"])
+    if not malware_scan_data:
+        return "<div>No malwares found for the applied filter</div>"
+    df = pd.json_normalize(malware_scan_data)
+    df.insert(0, 'count', 1)
+    malware_count = {}
+    severity_types = ["critical", "high", "medium", "low"]
+
+    template_loader = jinja2.FileSystemLoader(searchpath="/app/code/config/templates/")
+    template_env = jinja2.Environment(loader=template_loader)
+
+    malware_table_html = ""
+
+    severity_wise_frequency = df['FileSeverity'].value_counts()
+    for severity_type in severity_types:
+        malware_count[severity_type] = severity_wise_frequency.get(severity_type, 0)
+
+    malware_table_html += template_env.get_template('detailed_malware_summary_table.html').render(
+        malware_count=malware_count, summary_heading="Total Count Severity Wise", applied_severity=severity_types)
+
+    node_types = [i for i in [NODE_TYPE_HOST, NODE_TYPE_CONTAINER_IMAGE, NODE_TYPE_CONTAINER] if i in
+                  df.node_type.unique()]
+    table_index_length = 22
+    for node_type in node_types:
+        if node_type == 'host':
+            df3 = df[df['node_type'] == node_type][["FileSeverity", 'host_name', 'count']]
+            pivot_table = pd.pivot_table(df3, index=["host_name", "FileSeverity"], aggfunc=[np.sum])
+
+            node_count_info = {}
+            temp_df = df[df['node_type'] == node_type][['host_name', 'count']].groupby('host_name').sum()
+            temp_df['score'] = temp_df['count'].apply(lambda x: min(x * 10 / MAX_TOTAL_SEVERITY_SCORE, 10))
+
+            for host_name in temp_df.sort_values('score', ascending=False).index:
+                node_count_info[host_name] = {}
+
+            for i, v in pivot_table.to_dict()[('sum', 'count')].items():
+                if i[0] not in node_count_info:
+                    node_count_info[i[0]] = {i[1]: v}
+                else:
+                    node_count_info[i[0]][i[1]] = v
+            summary_heading = "Host & worker node Malwares"
+            start_index = 0
+
+            arr_index = 0
+            end_index = 0
+            content_length = 0
+            while arr_index < len(node_count_info.keys()):
+                content_length += len(list(node_count_info.keys())[arr_index])
+                if content_length > 2950 or end_index - start_index > table_index_length:
+                    end_index = arr_index
+                    malware_table_html += template_env.get_template(
+                        'detailed_report_nodewise_vulnerability_count.html').render(
+                        summary_heading=summary_heading, data=dict(itertools.islice(
+                            node_count_info.items(), start_index, end_index)), applied_severity=severity_types)
+                    start_index = arr_index
+                    content_length = 0
+                    table_index_length = 30
+                elif content_length <= 2950 and arr_index == len(node_count_info.keys()) - 1:
+                    end_index = arr_index + 1
+                    malware_table_html += template_env.get_template(
+                        'detailed_report_nodewise_vulnerability_count.html').render(
+                        summary_heading=summary_heading, data=dict(itertools.islice(
+                            node_count_info.items(), start_index, end_index)), applied_severity=severity_types)
+                    table_index_length = 30
+                else:
+                    end_index += 1
+                arr_index += 1
+
+        else:
+            if node_type == NODE_TYPE_CONTAINER:
+                pivot = "container_name"
+                summary_heading = "Container Malwares"
+            else:
+                pivot = "node_name"
+                summary_heading = "Image Malwares"
+
+            df3 = df[df['node_type'] == node_type][["FileSeverity", pivot, 'count']]
+            pivot_table = pd.pivot_table(df3, index=[pivot, "FileSeverity"], aggfunc=[np.sum])
+
+            node_count_info = {}
+            temp_df = df[df['node_type'] == node_type][[pivot, 'count']].groupby(
+                pivot).sum()
+            temp_df['score'] = temp_df['count'].apply(lambda x: min(x * 10 / MAX_TOTAL_SEVERITY_SCORE, 10))
+
+            for node_name in temp_df.sort_values('score', ascending=False).index:
+                node_count_info[node_name] = {}
+
+            for i, v in pivot_table.to_dict()[('sum', 'count')].items():
+                if i[0] not in node_count_info:
+                    node_count_info[i[0]] = {i[1]: v}
+                else:
+                    node_count_info[i[0]][i[1]] = v
+            
+            start_index = 0
+            arr_index = 0
+            end_index = 0
+            content_length = 0
+            while arr_index < len(node_count_info.keys()):
+                content_length += len(list(node_count_info.keys())[arr_index])
+                if content_length > 2950 or end_index - start_index > table_index_length:
+                    end_index = arr_index
+                    malware_table_html += template_env.get_template(
+                        'detailed_report_nodewise_vulnerability_count.html').render(
+                        summary_heading=summary_heading, data=dict(itertools.islice(
+                            node_count_info.items(), start_index, end_index)), applied_severity=severity_types)
+                    start_index = arr_index
+                    content_length = 0
+                    table_index_length = 30
+                elif content_length <= 2950 and arr_index == len(node_count_info.keys()) - 1:
+                    end_index = arr_index + 1
+                    malware_table_html += template_env.get_template(
+                        'detailed_report_nodewise_vulnerability_count.html').render(
+                        summary_heading=summary_heading, data=dict(itertools.islice(
+                            node_count_info.items(), start_index, end_index)), applied_severity=severity_types)
+                    table_index_length = 30
+                else:
+                    end_index += 1
+                arr_index += 1
+
+    node_wise_malware_html = ''
+    for node_type in node_types:
+        if node_type == NODE_TYPE_HOST:
+            for host_name in df[df['node_type'] == node_type]['host_name'].unique():
+                df2 = df[(df['host_name'] == host_name) & (df['node_type'] == node_type)][
+                    ['CompleteFilename', 'Class', 'Summary', 'RuleName', 'FileSeverity', 'FileSevScore']
+                ].sort_values('FileSevScore', ascending=False)
+                df2.insert(0, 'ID', range(1, 1 + len(df2)))
+                secret_data = df2.to_dict('records')
+                start_index = 0
+                arr_index = 0
+                content_length = 0
+                end_index = 0
+                while arr_index < len(secret_data):
+                    content_length += len(secret_data[arr_index]['Summary'])
+                    if content_length > 1900 or end_index - start_index > 21:
+                        end_index = arr_index
+                        node_wise_malware_html += template_env.get_template(
+                            'detailed_report_nodewise_malware.html').render(
+                            host_image_name=host_name, data=secret_data[start_index: end_index])
+                        start_index = arr_index
+                        content_length = 0
+                    elif content_length <= 1900 and arr_index == len(secret_data) - 1:
+                        end_index = arr_index + 1
+                        node_wise_malware_html += template_env.get_template(
+                            'detailed_report_nodewise_malware.html').render(
+                            host_image_name=host_name, data=secret_data[start_index: end_index])
+                    else:
+                        end_index += 1
+                    arr_index += 1
+        else:
+            if node_type == NODE_TYPE_CONTAINER:
+                name = "container_name"
+            else:
+                name = "node_name"
+            for node_name in df[df['node_type'] == node_type][name].unique():
+                df2 = df[(df[name] == node_name) & (df['node_type'] == node_type)][
+                    ['CompleteFilename', 'Class', 'Summary', 'RuleName', 'FileSeverity', 'FileSevScore']
+                ].sort_values('FileSevScore', ascending=False)
+                df2.insert(0, 'ID', range(1, 1 + len(df2)))
+                secret_data = df2.to_dict('records')
+                start_index = 0
+                arr_index = 0
+                content_length = 0
+                end_index = 0
+                while arr_index < len(secret_data):
+                    content_length += len(secret_data[arr_index]['Summary'])
+                    if content_length > 1900 or end_index - start_index > 21:
+                        end_index = arr_index
+                        node_wise_malware_html += template_env.get_template(
+                            'detailed_report_nodewise_malware.html').render(
+                            host_image_name=node_name, data=secret_data[start_index: end_index])
+                        start_index = arr_index
+                        content_length = 0
+                    elif content_length <= 1900 and arr_index == len(secret_data) - 1:
+                        end_index = arr_index + 1
+                        node_wise_malware_html += template_env.get_template(
+                            'detailed_report_nodewise_malware.html').render(
+                            host_image_name=node_name, data=secret_data[start_index: end_index])
+                    else:
+                        end_index += 1
+                    arr_index += 1
+
+    start_time_str, end_time_str = convert_time_unit_to_date(number, time_unit)
+    header_html = template_env.get_template('detailed_report_summary_report_header.html').render(
+        start_time_str=start_time_str, end_time_str=end_time_str, heading="Malware Scan Report")
+    applied_filters_html = template_env.get_template('detailed_report_applied_filter.html').render(
+        applied_filter="Applied Filters" if filters_applied else "Filters Not Applied", data=filters_applied)
+
+    report_dict = {
+        "header_html": header_html,
+        "applied_filters_html": applied_filters_html,
+        "malware_table_html": malware_table_html,
+        "node_wise_malware_html": node_wise_malware_html
+    }
+
+    final_html = template_env.get_template('detailed_malware_report_summary.html').render(**report_dict)
+    return final_html
+
+
 def generate_xlsx_report(report_id, filters, number, time_unit, node_type, resources,
                          include_dead_nodes, report_email):
     add_report_status_in_es(report_id=report_id, status="In Progress",
@@ -1152,6 +1466,9 @@ def generate_pdf_report(report_id, filters, node_type,
             final_html += vulnerability_pdf_report_secret(filters=filters, lucene_query_string=lucene_query_string,
                                                           number=number, time_unit=time_unit,
                                                           resource=resource.get("filter", {}))
+        elif resource_type == MALWARE_SCAN_ES_TYPE:
+            final_html += malware_pdf_report(filters=filters, lucene_query_string=lucene_query_string,
+                                             number=number, time_unit=time_unit, resource=resource.get("filter", {}))
     options = {
         'page-size': 'Letter',
         'margin-top': '0.5in',

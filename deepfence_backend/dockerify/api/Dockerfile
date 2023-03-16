@@ -1,8 +1,12 @@
 FROM golang:1.18-bullseye AS build
 
-WORKDIR /go/logstashPubSubReader
-ADD tasks/logstashPubSubReader /go/logstashPubSubReader/
-RUN go build -o logstashPubSubReader .
+# WORKDIR /go/logstashPubSubReader
+# ADD tasks/logstashPubSubReader /go/logstashPubSubReader/
+# RUN go build -o logstashPubSubReader .
+
+WORKDIR /go/reportHandler
+ADD tasks/reportHandler /go/reportHandler/
+RUN CGO_ENABLED=0 go build -o reportHandler .
 
 FROM python:3.9-slim-bullseye
 LABEL deepfence.role=system
@@ -27,7 +31,16 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app/code \
     DOCKERVERSION=20.10.8 \
     AUTHLIB_INSECURE_TRANSPORT=true \
-    VULNERABILITY_SCAN_CONCURRENCY=25
+    VULNERABILITY_SCAN_CONCURRENCY=25 \
+    DEBUG=false \
+    KAFKA_BROKERS=deepfence-kafka-broker:9092 \
+    CUSTOMER_UNIQUE_ID="" \
+    KAFKA_TOPIC_PARTITIONS=1 \
+    KAFKA_TOPIC_REPLICAS=1 \
+    KAFKA_TOPIC_RETENTION_MS="86400000" \
+    ES_BULK_DOC_SIZE=1000 \
+    ES_BULK_NUM_WORKERS=4 \
+    PROCESS_REPORT_PARALLEL=10
 
 COPY ./requirements.txt /tmp/requirements.txt
 
@@ -68,7 +81,8 @@ ADD supervisord_celery.conf /etc/supervisor/supervisord_celery.conf
 ADD supervisord_api.conf /etc/supervisor/supervisord_api.conf
 
 COPY . /app/code
-COPY --from=build /go/logstashPubSubReader/logstashPubSubReader /app/code/tasks/logstashPubSubReader/logstashPubSubReader
+# COPY --from=build /go/logstashPubSubReader/logstashPubSubReader /app/code/tasks/logstashPubSubReader/logstashPubSubReader
+COPY --from=build /go/reportHandler/reportHandler /app/code/tasks/reportHandler/reportHandler
 
 RUN chmod +x /app/code/dockerify/api/entrypoint.sh /app/code/dockerify/api/init_es_config.sh /app/code/dockerify/celery/entrypoint.sh /app/code/dockerify/backend/entrypoint.sh \
     && rm -f /app/code/.gitignore /app/code/requirements.txt \

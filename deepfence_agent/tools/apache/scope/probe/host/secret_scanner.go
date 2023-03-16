@@ -1,7 +1,6 @@
 package host
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -11,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"strings"
@@ -129,12 +129,15 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	secretScanLogDoc["scan_status"] = "IN_PROGRESS"
 	secretScanLogDoc["time_stamp"] = getTimestamp()
 	secretScanLogDoc["@timestamp"] = getCurrentTime()
+
 	byteJson, err := json.Marshal(secretScanLogDoc)
 	if err != nil {
-		fmt.Println("Error in marshalling in progress secretScanLogDoc to json:" + err.Error())
+		fmt.Println("Error marshalling json: ", err)
 		return
 	}
-	err = ingestScanData(string(byteJson), secretScanLogsIndexName)
+	// byteJson := formatToKafka(secretScanLogDoc)
+
+	err = writeScanDataToFile(string(byteJson), secretScanLogsIndexName)
 	if err != nil {
 		fmt.Println("Error in sending data to secretScanLogsIndex to mark in progress:" + err.Error())
 	}
@@ -149,7 +152,7 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 				secretScanLogDoc["time_stamp"] = getTimestamp()
 				secretScanLogDoc["@timestamp"] = getCurrentTime()
 				byteJson, _ = json.Marshal(secretScanLogDoc)
-				ingestScanData(string(byteJson), secretScanLogsIndexName)
+				writeScanDataToFile(string(byteJson), secretScanLogsIndexName)
 			case <-stopScanStatus:
 				return
 			}
@@ -174,8 +177,13 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		secretScanLogDoc["scan_message"] = err.Error()
 		secretScanLogDoc["time_stamp"] = getTimestamp()
 		secretScanLogDoc["@timestamp"] = getCurrentTime()
-		byteJson, _ = json.Marshal(secretScanLogDoc)
-		ingestScanData(string(byteJson), secretScanLogsIndexName)
+		byteJson, err = json.Marshal(secretScanLogDoc)
+		if err != nil {
+			fmt.Println("Error marshalling json: ", err)
+			return
+		}
+		// byteJson = formatToKafka(secretScanLogDoc)
+		writeScanDataToFile(string(byteJson), secretScanLogsIndexName)
 		return
 	} else {
 		fmt.Println("Number of results received from SecretScanner for scan id:" + controlArgs["scan_id"] + " - " + strconv.Itoa(len(res.Secrets)))
@@ -201,10 +209,11 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 		}
 		byteJson, err := json.Marshal(secretScanDoc)
 		if err != nil {
-			fmt.Println("Error in marshalling secret result object to json:" + err.Error())
-			return
+			fmt.Println("Error marshalling json: ", err)
+			continue
 		}
-		err = ingestScanData(string(byteJson), secretScanIndexName)
+		// byteJson := formatToKafka(secretScanDoc)
+		err = writeScanDataToFile(string(byteJson), secretScanIndexName)
 		if err != nil {
 			fmt.Println("Error in sending data to secretScanIndex:" + err.Error())
 		}
@@ -219,10 +228,11 @@ func getAndPublishSecretScanResults(client pb.SecretScannerClient, req pb.FindRe
 	secretScanLogDoc["@timestamp"] = currTime
 	byteJson, err = json.Marshal(secretScanLogDoc)
 	if err != nil {
-		fmt.Println("Error in marshalling secretScanLogDoc to json:" + err.Error())
+		fmt.Println("Error marshalling json: ", err)
 		return
 	}
-	err = ingestScanData(string(byteJson), secretScanLogsIndexName)
+	// byteJson = formatToKafka(secretScanLogDoc)
+	err = writeScanDataToFile(string(byteJson), secretScanLogsIndexName)
 	if err != nil {
 		fmt.Println("Error in sending data to secretScanLogsIndex:" + err.Error())
 	}
@@ -237,39 +247,26 @@ func getCurrentTime() string {
 	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
 }
 
-func ingestScanData(secretScanMsg string, index string) error {
-	secretScanMsg = strings.Replace(secretScanMsg, "\n", " ", -1)
-	postReader := bytes.NewReader([]byte(secretScanMsg))
-	retryCount := 0
-	httpClient, err := buildClient()
+func writeScanDataToFile(secretScanMsg string, index string) error {
+	scanFilename := getDfInstallDir() + "/var/log/fenced/secret-scan/secret_scan.log"
+	scanStatusFilename := getDfInstallDir() + "/var/log/fenced/secret-scan-log/secret_scan_log.log"
+	files := map[string]string{
+		secretScanIndexName:     scanFilename,
+		secretScanLogsIndexName: scanStatusFilename,
+	}
+
+	filename := files[index]
+	err := os.MkdirAll(filepath.Dir(filename), 0755)
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
-		fmt.Println("Error building http client " + err.Error())
 		return err
 	}
-	for {
-		httpReq, err := http.NewRequest("POST", "https://"+mgmtConsoleUrl+"/df-api/ingest?doc_type="+index, postReader)
-		if err != nil {
-			return err
-		}
-		httpReq.Close = true
-		httpReq.Header.Add("deepfence-key", deepfenceKey)
-		resp, err := httpClient.Do(httpReq)
-		if err != nil {
-			return err
-		}
-		if resp.StatusCode == 200 {
-			resp.Body.Close()
-			break
-		} else {
-			if retryCount > 5 {
-				errMsg := fmt.Sprintf("Unable to complete request. Got %d ", resp.StatusCode)
-				resp.Body.Close()
-				return errors.New(errMsg)
-			}
-			resp.Body.Close()
-			retryCount += 1
-			time.Sleep(5 * time.Second)
-		}
+
+	defer f.Close()
+
+	secretScanMsg = strings.Replace(secretScanMsg, "\n", " ", -1)
+	if _, err = f.WriteString(secretScanMsg + "\n"); err != nil {
+		return err
 	}
 	return nil
 }
@@ -315,3 +312,13 @@ func buildClient() (*http.Client, error) {
 
 	return client, nil
 }
+
+// func formatToKafka(data map[string]interface{}) []byte {
+// 	encoded, err := json.Marshal(&data)
+// 	if err != nil {
+// 		fmt.Println("Error in marshalling in progress secretScan data to json:" + err.Error())
+// 		return nil
+// 	}
+// 	value := "{\"value\":" + string(encoded) + "}"
+// 	return []byte("{\"records\":[" + value + "]}")
+// }

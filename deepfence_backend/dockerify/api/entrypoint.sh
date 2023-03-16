@@ -34,6 +34,7 @@ sleep 30
 # flask db stamp head
 # flask db migrate
 
+
 # Apply migrations
 flask db upgrade
 

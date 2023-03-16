@@ -34,9 +34,12 @@ def task_scheduler():
         scheduled_tasks = Scheduler.query.filter_by(is_enabled=True).all()
         if not scheduled_tasks:
             return
+        
+            
         for scheduled_task in scheduled_tasks:
             if croniter.match(scheduled_task.cron_expr, curr_time):
                 run_node_task(scheduled_task.action, scheduled_task.nodes, scheduled_task.id, scheduled_task.cron_expr)
+        
 
 
 def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None):
@@ -166,7 +169,8 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                             "masked": "false", "type": constants.CVE_SCAN_LOGS_ES_TYPE, "scan_id": scan_id, "host": "",
                             "@timestamp": datetime_now.strftime("%Y-%m-%dT%H:%M:%S.%fZ"), "cve_scan_message": "",
                             "action": constants.CVE_SCAN_STATUS_QUEUED, "host_name": "", "node_id": image_name_with_tag,
-                            "time_stamp": int(time.time() * 1000.0), "node_type": constants.NODE_TYPE_CONTAINER_IMAGE
+                            "time_stamp": int(time.time() * 1000.0), "node_type": constants.NODE_TYPE_CONTAINER_IMAGE,
+                            "image_name": image_name_with_tag
                         }
                         ESConn.create_doc(constants.CVE_SCAN_LOGS_INDEX, body)
                         scan_details = {
@@ -176,12 +180,12 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                         celery_task_id = "cve_scan:" + scan_id
                         if node_action_details["registry_images"].get("priority", False):
                             celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(),
-                                                 task_id=celery_task_id, kwargs={"scan_details": scan_details},
-                                                 queue=constants.VULNERABILITY_SCAN_PRIORITY_QUEUE)
+                                                    task_id=celery_task_id, kwargs={"scan_details": scan_details},
+                                                    queue=constants.VULNERABILITY_SCAN_PRIORITY_QUEUE)
                         else:
                             celery_app.send_task('tasks.vulnerability_scan_worker.vulnerability_scan', args=(),
-                                                 task_id=celery_task_id, kwargs={"scan_details": scan_details},
-                                                 queue=constants.VULNERABILITY_SCAN_QUEUE)
+                                                    task_id=celery_task_id, kwargs={"scan_details": scan_details},
+                                                    queue=constants.VULNERABILITY_SCAN_QUEUE)
                     except Exception as ex:
                         save_scheduled_task_status("Error: " + str(ex))
                         app.logger.error(ex)
@@ -200,6 +204,8 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                                     topology_data_df_format=topology_data_df_format)
                         if node.type == constants.NODE_TYPE_HOST:
                             lock_key = "{0}:{1}".format(constants.NODE_ACTION_CVE_SCAN_START, node.host_name)
+                        elif node.type == constants.NODE_TYPE_CONTAINER:
+                            lock_key = "{0}:{1}".format(constants.NODE_ACTION_CVE_SCAN_START, node.scope_id)
                         else:
                             if not node.image_name_tag:
                                 continue
@@ -258,7 +264,7 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                         "kubernetes_cluster_id": node_id,
                         "kubernetes_cluster_name": node_id,
                         "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.") + repr(time_time).split('.')[1][
-                                                                                      :3] + "Z"
+                                                                                        :3] + "Z"
                     }
                     ESConn.create_doc(COMPLIANCE_LOGS_INDEX, es_doc)
                     scan_list = [{
@@ -314,8 +320,8 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                                     "scan_id": scan_id,
                                     "time_stamp": int(time_time * 1000.0),
                                     "@timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.") +
-                                                  repr(time_time).split('.')[1][:3] +
-                                                  "Z"
+                                                    repr(time_time).split('.')[1][:3] +
+                                                    "Z"
                                 }
                                 ESConn.create_doc(CLOUD_COMPLIANCE_LOGS_INDEX, es_doc)
                                 scan_list.append({
@@ -337,12 +343,12 @@ def run_node_task(action, node_action_details, scheduler_id=None, cron_expr=None
                                                                             "registry_id"]))
                     image_dict = json.loads(image_list_details_str)
                     node_action_details["registry_images"]["image_name_with_tag_list"] = [image["image_name_with_tag"]
-                                                                                          for image in
-                                                                                          image_dict['image_list']]
+                                                                                            for image in
+                                                                                            image_dict['image_list']]
                 for image_name_with_tag in node_action_details["registry_images"]["image_name_with_tag_list"]:
                     try:
                         es_response = ESConn.search_by_and_clause(constants.CVE_SCAN_LOGS_INDEX,
-                                                                  {"node_id": image_name_with_tag}, 0, size=1)
+                                                                    {"node_id": image_name_with_tag}, 0, size=1)
                         latest_cve_scan_doc = {}
                         cve_scan_list = es_response.get("hits", [])
                         if cve_scan_list:

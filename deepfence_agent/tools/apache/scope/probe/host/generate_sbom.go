@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	log "github.com/sirupsen/logrus"
 	scopeHostname "github.com/weaveworks/scope/common/hostname"
 	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
@@ -33,9 +34,8 @@ func createPackageScannerClient() (pb.PackageScannerClient, error) {
 	return pb.NewPackageScannerClient(conn), nil
 }
 
-func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, containerId, kubernetesClusterName, containerName, scanType string) error {
+func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, containerId, kubernetesClusterName, containerName, scanType, nodeId string) error {
 	ctx := context.Background()
-
 	hostName := scopeHostname.Get()
 	var nodeType string
 	if imageName == "host" {
@@ -52,9 +52,12 @@ func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, containerId, k
 	var source string
 	if imageName == "host" {
 		source = scanPath
+	} else if nodeType == "container" {
+		source = nodeId
 	} else {
 		source = imageName
 	}
+	log.Error("container name is ", containerName, nodeType)
 	sbomRequest := &pb.SBOMRequest{
 		Source:                source,
 		ScanType:              scanType,
@@ -66,6 +69,7 @@ func GenerateSbomForVulnerabilityScan(imageName, imageId, scanId, containerId, k
 		HostName:              hostName,
 		RegistryId:            "",
 		ContainerId:           containerId,
+		ImageName:             imageName,
 	}
 	_, err = packageScannerClient.GenerateSBOM(ctx, sbomRequest)
 	if err != nil {

@@ -44,6 +44,13 @@
   font-weight: normal;
   font-size: 28px;
 }
+.nav-icon-malware:before {
+  content: "\f188";
+  font-family: FontAwesome;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 28px;
+}
 .nav-icon-attack-graph {
   height: 32px;
 }

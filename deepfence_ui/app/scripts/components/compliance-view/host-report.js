@@ -73,7 +73,7 @@ class HostReport extends React.PureComponent {
     const { handleDownload } = this.props;
     return handleDownload({
       scanId,
-      nodeType,
+      nodeType : this.props.scanType,
     });
   }
 
@@ -165,7 +165,9 @@ class HostReport extends React.PureComponent {
           handleDownload={this.handleDownload}
           dispatch={this.props.dispatch}
           isToasterVisible={isToasterVisible}
-          onDelete={this.getComplianceHostReport}
+          onDelete={() => {
+            this.props.updatePollParams();
+          }}
           scanType={this.props?.scanType || []}
           updatePollParams={this.props?.updatePollParams}
         />

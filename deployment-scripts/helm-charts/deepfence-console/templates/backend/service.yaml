@@ -14,7 +14,10 @@ spec:
       port: 4041
       protocol: TCP
       targetPort: 4041
-
+    - name: deepfence-backend-metrics
+      port: 8181
+      protocol: TCP
+      targetPort: 8181
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
     name: deepfence-backend

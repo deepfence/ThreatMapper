@@ -152,11 +152,23 @@ spec:
                 secretKeyRef:
                   name: redis-secret-{{ include "deepfence-console.fullname" . }}
                   key: port
+            - name: KAFKA_BROKERS
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-secret-{{ include "deepfence-console.fullname" . }}
+                  key: kafka_brokers
+            - name: KAFKA_TOPIC_REPLICAS
+              value: "{{ .Values.db.kafka.kafka_topic_replicas }}"
+            - name: KAFKA_TOPIC_RETENTION_MS
+              value: "{{ .Values.db.kafka.kafka_topic_retention_ms }}"
           resources:
             {{- toYaml .Values.backend.resources | nindent 12 }}
           ports:
             - name: http
               containerPort: 4041
+              protocol: TCP
+            - name: metrics
+              containerPort: 8181
               protocol: TCP
           volumeMounts:
 {{- if .Values.saas_deployment }}

@@ -83,6 +83,14 @@ export const NOTIFICATION_RESOURCE_OPTIONS = [
     label: 'User Activities',
     value: 'user_activity',
   },
+  {
+      label: 'Malware Scan',
+    value: 'malware-scan',
+  },
+  {
+    label: 'Secret Scan',
+    value: 'secret-scan',
+  },
 ];
 
 export const NOTIFICATION_RESOURCE_OPTIONS_CLOUDTRAIL = [
@@ -102,6 +110,14 @@ export const NOTIFICATION_RESOURCE_OPTIONS_CLOUDTRAIL = [
     label: 'CloudTrail Alerts',
     value: 'cloudtrail_alert',
   },
+  {
+    label: 'Malware Scan',
+    value: 'malware-scan',
+  },
+  {
+    label: 'Secret Scan',
+    value: 'secret-scan',
+  }
 ];
 
 export const REGION_OPTIONS = {
