@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { useState } from 'react';
 
-import { FileInput } from '@/components/upload/FileInput';
+import FileInput from '@/components/input/FileInput';
 
 export default {
   title: 'Components/FileUpload',
@@ -14,7 +14,6 @@ const Template: ComponentStory<typeof FileInput> = (args) => {
   return (
     <FileInput
       label="Select your file"
-      fileName={file?.name ?? 'No file choosen'}
       helperText={'Format must be correct'}
       onChoosen={(e) => {
         if (e.target.files) {
