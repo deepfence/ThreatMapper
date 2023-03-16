@@ -58,7 +58,7 @@ type CloudNodeAccountInfo struct {
 	NodeName             string  `json:"node_name"`
 	CloudProvider        string  `json:"cloud_provider"`
 	CompliancePercentage float64 `json:"compliance_percentage"`
-	Active               string  `json:"active"`
+	Active               bool    `json:"active"`
 	LastScanId           string  `json:"last_scan_id"`
 	LastScanStatus       string  `json:"last_scan_status"`
 }
@@ -429,7 +429,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 			NodeName:             rec.Values[1].(string),
 			CloudProvider:        rec.Values[2].(string),
 			CompliancePercentage: rec.Values[3].(float64),
-			Active:               "true",
+			Active:               true,
 			LastScanId:           rec.Values[5].(string),
 			LastScanStatus:       rec.Values[6].(string),
 		}
