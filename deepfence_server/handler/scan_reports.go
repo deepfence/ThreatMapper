@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -107,12 +108,16 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId string) (ctl.Action, error) {
+	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
+		registryIdStr := ""
+		if registryId != -1 {
+			registryIdStr = strconv.Itoa(int(registryId))
+		}
 		binArgs := map[string]string{
 			"scan_id":     scanId,
 			"node_type":   req.NodeType,
 			"node_id":     req.NodeId,
-			"registry_id": registryId,
+			"registry_id": registryIdStr,
 		}
 
 		if len(reqs.ScanConfigLanguages) != 0 {
@@ -176,12 +181,16 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId string) (ctl.Action, error) {
+	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
+		registryIdStr := ""
+		if registryId != -1 {
+			registryIdStr = strconv.Itoa(int(registryId))
+		}
 		binArgs := map[string]string{
 			"scan_id":     scanId,
 			"node_type":   req.NodeType,
 			"node_id":     req.NodeId,
-			"registry_id": registryId,
+			"registry_id": registryIdStr,
 		}
 
 		nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
@@ -305,12 +314,16 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId string) (ctl.Action, error) {
+	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
+		registryIdStr := ""
+		if registryId != -1 {
+			registryIdStr = strconv.Itoa(int(registryId))
+		}
 		binArgs := map[string]string{
 			"scan_id":     scanId,
 			"node_type":   req.NodeType,
 			"node_id":     req.NodeId,
-			"registry_id": registryId,
+			"registry_id": registryIdStr,
 		}
 
 		nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
@@ -1138,8 +1151,8 @@ func FindNodesMatching(ctx context.Context,
 	return res, nil
 }
 
-func FindImageRegistryId(ctx context.Context, image_id string) (string, error) {
-	res := ""
+func FindImageRegistryIds(ctx context.Context, image_id string) ([]int32, error) {
+	res := []int32{}
 
 	driver, err := directory.Neo4jClient(ctx)
 
@@ -1162,7 +1175,7 @@ func FindImageRegistryId(ctx context.Context, image_id string) (string, error) {
 	nres, err := tx.Run(`
 		MATCH (n:ContainerImage{node_id:$node_id})
 		MATCH (m:RegistryAccount) -[:HOSTS]-> (n)
-		RETURN m.container_registry_id
+		RETURN m.container_registry_ids
 		LIMIT 1`,
 		map[string]interface{}{"node_id": image_id})
 	if err != nil {
@@ -1174,7 +1187,12 @@ func FindImageRegistryId(ctx context.Context, image_id string) (string, error) {
 		return res, nil
 	}
 
-	return fmt.Sprintf("%v", rec.Values[0]), nil
+	pgIds := rec.Values[0].([]interface{})
+	for i := range pgIds {
+		res = append(res, int32(pgIds[i].(int64)))
+	}
+
+	return res, nil
 }
 
 func extractBulksNodes(nodes []model.NodeIdentifier) (regularNodes []model.NodeIdentifier, clusterNodes []model.NodeIdentifier, registryNodes []model.NodeIdentifier) {
@@ -1199,7 +1217,7 @@ func startMultiScan(ctx context.Context,
 	gen_bulk_id bool,
 	scan_type utils.Neo4jScanType,
 	req model.ScanTriggerCommon,
-	actionBuilder func(string, model.NodeIdentifier, string) (ctl.Action, error)) ([]string, string, error) {
+	actionBuilder func(string, model.NodeIdentifier, int32) (ctl.Action, error)) ([]string, string, error) {
 
 	driver, err := directory.Neo4jClient(ctx)
 
@@ -1262,11 +1280,15 @@ func startMultiScan(ctx context.Context,
 	for _, req := range reqs {
 		scanId := scanId(req)
 
-		registryId := ""
+		registryId := int32(-1)
 		if req.NodeType == ctl.ResourceTypeToString(controls.Image) {
-			registryId, err = FindImageRegistryId(ctx, req.NodeId)
+			registryIds, err := FindImageRegistryIds(ctx, req.NodeId)
 			if err != nil {
 				return nil, "", err
+			}
+
+			if len(registryIds) != 0 {
+				registryId = registryIds[0]
 			}
 		}
 

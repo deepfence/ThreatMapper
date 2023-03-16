@@ -206,7 +206,8 @@ func ListImageStubs(ctx context.Context, registryId int32, filter reporters.Cont
 	defer tx.Close()
 
 	query := `
-	MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage) -[:IS]-> (l:ImageStub)
+	MATCH (n:RegistryAccount) -[:HOSTS]-> (m:ContainerImage) -[:IS]-> (l:ImageStub)
+	WHERE $id IN n.container_registry_ids
 	` + reporters.ContainsFilter2CypherWhereConditions("m", filter, true) + `
 	WITH distinct l.node_id as name, collect(m.docker_image_tag) as tags
 	RETURN name, tags
@@ -261,7 +262,8 @@ func ListImages(ctx context.Context, registryId int32, filter reporters.Contains
 	defer tx.Close()
 
 	query := `
-	MATCH (n:RegistryAccount{container_registry_id:$id}) -[:HOSTS]-> (m:ContainerImage)
+	MATCH (n:RegistryAccount) -[:HOSTS]-> (m:ContainerImage)
+	WHERE $id IN n.container_registry_ids
 	` + reporters.ContainsFilter2CypherWhereConditions("m", filter, true) + `
 	RETURN m
 	ORDER BY m.node_id
@@ -330,12 +332,14 @@ func RegistrySummary(ctx context.Context, registryId *int32, registryType *strin
 	defer tx.Close()
 
 	queryPerRegistry := `
-	MATCH (n:RegistryAccount{container_registry_id:$id})-[:HOSTS]->(m:ContainerImage)
+	MATCH (n:RegistryAccount)-[:HOSTS]->(m:ContainerImage)
+	WHERE $id IN n.container_registry_ids
 	WITH
 		COUNT(distinct m.docker_image_name) AS images,
 		COUNT(m.docker_image_tag) AS tags,
 		COUNT(distinct n) AS registries
-	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount{container_registry_id:$id})
+	OPTIONAL MATCH (s)-[:SCANNED]->()<-[:HOSTS]-(a:RegistryAccount)
+	WHERE $id IN a.container_registry_ids
 	RETURN COLLECT(s.status) AS scan_status, images, tags, registries
 	`
 
