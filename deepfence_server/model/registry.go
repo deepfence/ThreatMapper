@@ -137,26 +137,6 @@ func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgres
 	return true, nil
 }
 
-func (ra *RegistryAddReq) GetAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Queries) (json.RawMessage, error) {
-	s := Setting{}
-	aes, err := s.GetSettingByKey(ctx, pgClient, commonConstants.AES_SECRET)
-	if err != nil {
-		return nil, err
-	}
-	var sValue SettingValue
-	err = json.Unmarshal(aes.Value, &sValue)
-	if err != nil {
-		return nil, err
-	}
-
-	b, err := json.Marshal(sValue.Value)
-	if err != nil {
-		return nil, err
-	}
-
-	return json.RawMessage(b), nil
-}
-
 func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries) error {
 	bSecret, err := json.Marshal(ra.Secret)
 	if err != nil {
@@ -244,6 +224,26 @@ func (ru *RegistryUpdateReq) RegistryExists(ctx context.Context, pgClient *postg
 		}
 	}
 	return true, nil
+}
+
+func GetAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Queries) (json.RawMessage, error) {
+	s := Setting{}
+	aes, err := s.GetSettingByKey(ctx, pgClient, commonConstants.AES_SECRET)
+	if err != nil {
+		return nil, err
+	}
+	var sValue SettingValue
+	err = json.Unmarshal(aes.Value, &sValue)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := json.Marshal(sValue.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	return json.RawMessage(b), nil
 }
 
 func (r *RegistryImageListReq) GetRegistryImages(ctx context.Context) ([]ContainerImage, error) {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strconv"
 
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -111,7 +112,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// encrypt secret
-	aesValue, err := req.GetAESValueForEncryption(ctx, pgClient)
+	aesValue, err := model.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		respondError(&InternalServerError{err}, w)
@@ -150,7 +151,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var req model.RegistryUpdateReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	err := httpext.DecodeJSON(r, httpext.QueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(&BadDecoding{err}, w)
@@ -210,7 +211,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// encrypt secret
-	aesValue, err := req.GetAESValueForEncryption(ctx, pgClient)
+	aesValue, err := model.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		respondError(&InternalServerError{err}, w)
@@ -236,7 +237,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	req.Extras = registry.GetExtras()
 
 	// update registry db
-	err = req.UpdateRegistry(ctx, pgClient, req.Id)
+	err = req.UpdateRegistry(ctx, pgClient, int32(id))
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		respondError(&InternalServerError{err}, w)
@@ -338,7 +339,7 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	}
 
 	// encrypt secret
-	aesValue, err := req.GetAESValueForEncryption(ctx, pgClient)
+	aesValue, err := model.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		respondError(&InternalServerError{err}, w)
