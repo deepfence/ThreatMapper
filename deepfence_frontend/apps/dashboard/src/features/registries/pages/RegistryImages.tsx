@@ -38,7 +38,7 @@ type LoaderDataTypeForSummary = {
 };
 type LoaderDataType = LoaderDataTypeForImages & LoaderDataTypeForSummary;
 
-async function getRegistrySummaryById(accountId: string): Promise<{
+async function getRegistrySummaryById(nodeId: string): Promise<{
   message?: string;
   summary: ModelSummary;
 }> {
@@ -46,7 +46,7 @@ async function getRegistrySummaryById(accountId: string): Promise<{
     apiFunction: getRegistriesApiClient().getRegistrySummary,
     apiArgs: [
       {
-        registryId: accountId,
+        registryId: nodeId,
       },
     ],
     errorHandler: async (r) => {
@@ -149,23 +149,23 @@ const loader = async ({
   params,
   request,
 }: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
-  const { accountId } = params;
+  const { nodeId } = params;
 
-  if (!accountId) {
-    throw new Error('Registry Account Id is required');
+  if (!nodeId) {
+    throw new Error('Registry Node Id is required');
   }
   const searchParams = new URL(request.url).searchParams;
 
   return typedDefer({
-    summary: getRegistrySummaryById(accountId),
-    images: getImages(accountId, searchParams),
+    summary: getRegistrySummaryById(nodeId),
+    images: getImages(nodeId, searchParams),
   });
 };
 
 const HeaderComponent = () => {
-  const { account, accountId } = useParams() as {
+  const { account, nodeId } = useParams() as {
     account: string;
-    accountId: string;
+    nodeId: string;
   };
 
   return (
@@ -185,7 +185,7 @@ const HeaderComponent = () => {
         </IconContext.Provider>
       </DFLink>
       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-        REGISTRY ACCOUNTS / {account.toUpperCase()} / {accountId}
+        REGISTRY ACCOUNTS / {account.toUpperCase()} / {nodeId}
       </span>
     </div>
   );
@@ -296,7 +296,14 @@ const RegistryImages = () => {
         <div className="self-start grid gap-y-2">
           <ImagesSummaryComponent theme={mode} />
         </div>
-        <Suspense fallback={<TableSkeleton columns={2} rows={10} size={'md'} />}>
+        <Suspense
+          fallback={
+            <div>
+              <div className="h-4 w-28 mt-4 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+              <TableSkeleton columns={2} rows={10} size={'sm'} />
+            </div>
+          }
+        >
           <DFAwait resolve={loaderData.images}>
             {(resolvedData: LoaderDataType['images']) => {
               return (

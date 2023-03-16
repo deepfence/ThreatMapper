@@ -208,12 +208,12 @@ export const privateRoutes: CustomRouteObject[] = [
         ],
       },
       {
-        path: 'registries/images/:account/:accountId/:nodeId',
+        path: 'registries/images/:account/:nodeId',
         ...registryImages,
         meta: { title: 'Registries Images' },
       },
       {
-        path: 'registries/imagetags/:account/:accountId/:nodeId/:imageId',
+        path: 'registries/imagetags/:account/:nodeId/:imageId',
         ...registryImageTags,
         meta: { title: 'Registries Image Tags' },
       },

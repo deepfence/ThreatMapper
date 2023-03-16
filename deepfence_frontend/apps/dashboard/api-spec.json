@@ -4182,7 +4182,7 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ModelComplianceScanStatusResp" }
+                "schema": { "$ref": "#/components/schemas/ModelScanStatusResp" }
               }
             }
           },
@@ -7210,6 +7210,7 @@
           "compliance_node_type": { "type": "string" },
           "description": { "type": "string" },
           "masked": { "type": "boolean" },
+          "node_id": { "type": "string" },
           "remediation_ansible": { "type": "string" },
           "remediation_puppet": { "type": "string" },
           "remediation_script": { "type": "string" },
