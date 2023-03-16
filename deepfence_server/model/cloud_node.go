@@ -363,7 +363,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		UNWIND node_id AS x
 		OPTIONAL MATCH (n:%s{node_id: x})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c:Compliance)
 		WITH x, node_name, updated_at, COUNT(c) AS total_compliance_count
-		OPTIONAL MATCH (n:%s{node_id: y})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c1:Compliance)
+		OPTIONAL MATCH (n:%s{node_id: x})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c1:Compliance)
 		WHERE c1.status IN $pass_status
 		RETURN x, node_name, $cloud_provider, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage, updated_at
 		ORDER BY updated_at`, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType)+fw.FetchWindow2CypherQuery(),
