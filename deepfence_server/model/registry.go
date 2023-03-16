@@ -325,9 +325,9 @@ func checkRegistryExists(tx neo4j.Transaction, node_id string) error {
 	return nil
 }
 
-func GetRegistryPgIds(ctx context.Context, node_id string) ([]string, error) {
+func GetRegistryPgIds(ctx context.Context, node_id string) ([]int64, error) {
 
-	res := []string{}
+	res := []int64{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return res, err
@@ -356,7 +356,7 @@ func GetRegistryPgIds(ctx context.Context, node_id string) ([]string, error) {
 	}
 
 	for _, rec := range record.Values[0].([]interface{}) {
-		res = append(res, rec.(string))
+		res = append(res, rec.(int64))
 	}
 
 	return res, err

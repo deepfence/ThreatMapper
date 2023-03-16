@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"strconv"
 
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -303,12 +302,7 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Info().Msgf("IDs: %v", pgIds)
 	for _, id := range pgIds {
-		x, err := strconv.Atoi(id)
-		if err != nil {
-			log.Error().Msgf("%v, ignoring", err)
-			continue
-		}
-		err = model.DeleteRegistry(ctx, pgClient, int32(x))
+		err = model.DeleteRegistry(ctx, pgClient, int32(id))
 		if err != nil {
 			log.Error().Msgf("%v", err)
 			respondError(&InternalServerError{err}, w)
