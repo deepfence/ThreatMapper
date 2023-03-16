@@ -6,9 +6,8 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 
 const RegistryAdd = () => {
   const { navigate } = usePageNavigation();
-  const { account, nodeId } = useParams() as {
+  const { account } = useParams() as {
     account: string;
-    nodeId: string;
   };
 
   if (!account) {
@@ -20,9 +19,8 @@ const RegistryAdd = () => {
       <RegistryConnectorForm
         onSuccess={() => {
           navigate(
-            generatePath('/registries/:account/:nodeId', {
+            generatePath('/registries/:account', {
               account,
-              nodeId,
             }),
           );
         }}

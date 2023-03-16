@@ -30,7 +30,7 @@ export type LoaderDataTypeForImageTags = {
 };
 
 async function getTags(
-  accountId: string,
+  nodeId: string,
   imageId: string,
   searchParams: URLSearchParams,
 ): Promise<{
@@ -43,7 +43,7 @@ async function getTags(
     image_filter: {
       filter_in: null,
     },
-    registry_id: accountId,
+    registry_id: nodeId,
     image_id: imageId,
     window: {
       offset: page * PAGE_SIZE,
@@ -110,29 +110,28 @@ const loader = async ({
   params,
   request,
 }: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataTypeForImageTags>> => {
-  const { account, accountId, imageId } = params as {
+  const { account, nodeId, imageId } = params as {
     account: string;
-    accountId: string;
+    nodeId: string;
     imageId: string;
   };
 
-  if (!account || !accountId || !imageId) {
-    throw new Error('Account Type, Account Id and Image Id are required');
+  if (!account || !nodeId || !imageId) {
+    throw new Error('Account Type, Node Id and Image Id are required');
   }
   const searchParams = new URL(request.url).searchParams;
 
   return typedDefer({
-    tableData: getTags(accountId, imageId, searchParams),
+    tableData: getTags(nodeId, imageId, searchParams),
   });
 };
 
 const HeaderComponent = () => {
   const elementToFocusOnClose = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
-  const { account, accountId, nodeId, imageId } = useParams() as {
+  const { account, nodeId, imageId } = useParams() as {
     account: string;
     nodeId: string;
-    accountId: string;
     imageId: string;
   };
 
@@ -141,10 +140,9 @@ const HeaderComponent = () => {
   return (
     <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <DFLink
-        to={generatePath('/registries/images/:account/:accountId/:nodeId', {
+        to={generatePath('/registries/images/:account/:nodeId', {
           account,
           nodeId,
-          accountId,
         })}
         className="flex hover:no-underline items-center justify-center mr-2"
       >
@@ -157,7 +155,7 @@ const HeaderComponent = () => {
         </IconContext.Provider>
       </DFLink>
       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-        REGISTRY ACCOUNTS / {account.toUpperCase()} / {accountId} / {imageId}
+        REGISTRY ACCOUNTS / {account} / {nodeId} / {imageId}
       </span>
       <div className="ml-auto flex items-center gap-x-4">
         <div className="relative">
@@ -301,7 +299,14 @@ const RegistryImageTags = () => {
     <>
       <HeaderComponent />
       <div className="p-4">
-        <Suspense fallback={<TableSkeleton columns={8} rows={10} size={'md'} />}>
+        <Suspense
+          fallback={
+            <>
+              <div className="h-4 w-28 mt-4 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+              <TableSkeleton columns={8} rows={10} size={'sm'} />
+            </>
+          }
+        >
           <DFAwait resolve={loaderData.tableData}>
             {(resolvedData: LoaderDataTypeForImageTags['tableData']) => {
               const { tags, currentPage, totalRows } = resolvedData;

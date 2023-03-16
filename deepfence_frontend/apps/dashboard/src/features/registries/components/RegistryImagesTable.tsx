@@ -30,10 +30,9 @@ export const RegistryImagesTable = ({
     currentPage: number;
   };
 }) => {
-  const { account, accountId, nodeId } = useParams() as {
+  const { account, nodeId } = useParams() as {
     account: string;
     nodeId: string;
-    accountId: string;
   };
   const [searchParams, setSearchParams] = useSearchParams();
   const [openScanConfigure, setOpenScanConfigure] = useState('');
@@ -57,15 +56,11 @@ export const RegistryImagesTable = ({
         cell: (info) => {
           return (
             <DFLink
-              to={generatePath(
-                '/registries/imagetags/:account/:accountId/:nodeId/:imageId',
-                {
-                  account: account,
-                  nodeId,
-                  accountId: accountId,
-                  imageId: info.row.original.name ?? '',
-                },
-              )}
+              to={generatePath('/registries/imagetags/:account/:nodeId/:imageId', {
+                account: account,
+                nodeId,
+                imageId: info.row.original.name ?? '',
+              })}
             >
               {info.getValue()}
             </DFLink>
@@ -83,8 +78,8 @@ export const RegistryImagesTable = ({
     [setSearchParams],
   );
 
-  if (!account || !accountId) {
-    throw new Error('Account Type and Account Id are required');
+  if (!account || !nodeId) {
+    throw new Error('Account Type and Node Id are required');
   }
   if (data === undefined) {
     return <div>No Images Found</div>;
@@ -148,6 +143,7 @@ export const RegistryImagesTable = ({
         }}
       />
       <Table
+        size="sm"
         columns={columns}
         data={data}
         enableRowSelection

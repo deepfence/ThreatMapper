@@ -274,6 +274,7 @@ export const RegistryImageTagsTable = ({
         }}
       />
       <Table
+        size="sm"
         columns={columns}
         data={data}
         enableRowSelection
