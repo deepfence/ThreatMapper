@@ -7,6 +7,11 @@ import {
   MalwareScanConfigureForm,
 } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
 import {
+  ComplianceType,
+  PostureScanActionEnumType,
+  PostureScanConfigureForm,
+} from '@/components/scan-configure-forms/PostureScanConfigureForm';
+import {
   SecretScanActionEnumType,
   SecretScanConfigureForm,
 } from '@/components/scan-configure-forms/SecretScanConfigureForm';
@@ -53,10 +58,21 @@ const ScanConfigureForm = () => {
   }
   const state = pageState as OnboardConnectionNode[];
 
+  let title = '';
+  if (scanType === VulnerabilityScanActionEnumType.SCAN_VULNERABILITY) {
+    title = 'Vulnerability';
+  } else if (scanType === SecretScanActionEnumType.SCAN_SECRET) {
+    title = 'Secret';
+  } else if (scanType === MalwareScanActionEnumType.SCAN_MALWARE) {
+    title = 'Malware';
+  } else if (scanType === PostureScanActionEnumType.SCAN_POSTURE) {
+    title = 'Posture';
+  }
+
   return (
     <>
       <ConnectorHeader
-        title="Configure Vulnerability Scan"
+        title={`Configure ${title} Scan`}
         description="Choose from the below options to perform your first scan."
         endComponent={
           <SelectedAccountComponent
@@ -132,6 +148,31 @@ const ScanConfigureForm = () => {
                   {
                     nodeType,
                     scanType: 'malware',
+                    bulkScanId,
+                  },
+                ),
+              );
+            }
+          }}
+        />
+      )}
+      {scanType === PostureScanActionEnumType.SCAN_POSTURE && (
+        <PostureScanConfigureForm
+          wantAdvanceOptions={false}
+          data={{
+            nodeIds: state.map((node) => node.urlId),
+            nodeType: state[0].urlType as ComplianceType,
+            images: [],
+          }}
+          onSuccess={(data) => {
+            if (data) {
+              const { nodeType, bulkScanId } = data;
+              navigate(
+                generatePath(
+                  '/onboard/scan/view-summary/running/:nodeType/:scanType/:bulkScanId',
+                  {
+                    nodeType,
+                    scanType: 'compliance',
                     bulkScanId,
                   },
                 ),

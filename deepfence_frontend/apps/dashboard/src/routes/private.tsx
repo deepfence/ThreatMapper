@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 
 import { ErrorComponent } from '@/components/error/ErrorComponent';
 import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
+import { scanPostureApiAction } from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
@@ -30,7 +31,6 @@ import { module as registriesConnector } from '@/features/onboard/pages//Registr
 import { AWSConnector } from '@/features/onboard/pages/AWSConnector';
 import { AzureConnector } from '@/features/onboard/pages/AzureConnector';
 import { module as chooseScan } from '@/features/onboard/pages/ChooseScan';
-import { module as complianceScanConfigure } from '@/features/onboard/pages/ComplianceScanConfigure';
 import { module as complianceScanSummary } from '@/features/onboard/pages/ComplianceScanSummary';
 import { module as configureScanForm } from '@/features/onboard/pages/ConfigureScanForm';
 import { AddConnector } from '@/features/onboard/pages/connectors/AddConnectors';
@@ -145,11 +145,6 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Choose scan type' },
           },
           {
-            path: 'configure/compliance/:controls?',
-            ...complianceScanConfigure,
-            meta: { title: 'Configure Compliance Scan' },
-          },
-          {
             path: 'configure/:scanType',
             ...configureScanForm,
             meta: { title: 'Configure Scan' },
@@ -187,7 +182,7 @@ export const privateRoutes: CustomRouteObject[] = [
     path: '/',
     loader: dashboardLoader,
     element: <DashboardLayout />,
-    // errorElement: <ErrorComponent />,
+    errorElement: <ErrorComponent />,
     children: [
       {
         path: 'dashboard',
@@ -422,6 +417,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'scan/malware',
         action: scanMalwareApiAction,
+      },
+      {
+        path: 'scan/posture',
+        action: scanPostureApiAction,
       },
       {
         path: 'registries/add-connector',

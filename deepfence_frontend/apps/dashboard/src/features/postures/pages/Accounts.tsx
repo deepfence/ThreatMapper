@@ -32,12 +32,9 @@ import {
 } from 'ui-components';
 
 import { getCloudNodesApiClient } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelCloudNodeAccountsListResp,
-} from '@/api/generated';
+import { ApiDocsBadRequestResponse, ModelCloudNodeAccountInfo } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { ScanConfigureForm } from '@/components/forms/posture/ScanConfigureForm';
+import { PostureScanConfigureForm } from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -64,7 +61,7 @@ export interface AccountData {
 type LoaderDataType = {
   error?: string;
   message?: string;
-  data: Awaited<ReturnType<typeof getAccounts>>;
+  data?: Awaited<ReturnType<typeof getAccounts>>;
 };
 
 const PAGE_SIZE = 15;
@@ -81,12 +78,12 @@ async function getAccounts(
   nodeType: string,
   searchParams: URLSearchParams,
 ): Promise<{
-  accountData: ModelCloudNodeAccountsListResp;
+  accounts: ModelCloudNodeAccountInfo[];
   currentPage: number;
   totalRows: number;
   message?: string;
 }> {
-  const accounts = await makeRequest({
+  const result = await makeRequest({
     apiFunction: getCloudNodesApiClient().listCloudNodeAccount,
     apiArgs: [
       {
@@ -100,23 +97,22 @@ async function getAccounts(
       },
     ],
     errorHandler: async (r) => {
-      const error = new ApiError([]);
+      const error = new ApiError<LoaderDataType>({});
       if (r.status === 400) {
         const modelResponse: ApiDocsBadRequestResponse = await r.json();
         return error.set({
-          ...accounts,
           message: modelResponse.message,
         });
       }
     },
   });
 
-  if (ApiError.isApiError(accounts)) {
-    throw accounts.value();
+  if (ApiError.isApiError(result)) {
+    throw result.value();
   }
 
   return {
-    accountData: accounts,
+    accounts: result.cloud_node_accounts_info ?? [],
     currentPage: 1,
     totalRows: 50,
   };
@@ -213,40 +209,17 @@ const ActionDropdown = ({
   );
 };
 
-const ScanConfigure = ({
-  open,
-  setOpen,
-}: {
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
-  return (
-    <Modal
-      open={open}
-      width="w-full"
-      title="Configure your scan option"
-      onOpenChange={() => setOpen(false)}
-    >
-      <div className="p-4 pt-0">
-        <ScanConfigureForm
-          loading={false}
-          hideTable={false}
-          accountData={{
-            urlIds: ['123', '456'],
-            urlType: 'host',
-          }}
-        />
-      </div>
-    </Modal>
-  );
-};
-
 const PostureTable = () => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [searchParams, setSearchParams] = useSearchParams();
-  const columnHelper =
-    createColumnHelper<ModelCloudNodeAccountsListResp['cloud_node_accounts_info']>();
-  const [openScanConfigure, setOpenScanConfigure] = useState(false);
+  const columnHelper = createColumnHelper<ModelCloudNodeAccountInfo>();
+  const [openScanConfigure, setOpenScanConfigure] = useState<{
+    show: boolean;
+    nodeIds: string[];
+  }>({
+    show: false,
+    nodeIds: [],
+  });
   const loaderData = useLoaderData() as LoaderDataType;
 
   const columns = useMemo(
@@ -257,7 +230,7 @@ const PostureTable = () => {
         maxSize: 30,
         header: () => null,
       }),
-      columnHelper.accessor('cloud_provider', {
+      columnHelper.accessor('node_name', {
         cell: (cell) => {
           const isScanComplete =
             cell.row.original.scanStatus?.toLowerCase() === 'complete';
@@ -288,7 +261,7 @@ const PostureTable = () => {
         maxSize: 100,
         header: () => 'Compliance %',
         cell: (cell) => {
-          const percent = cell.getValue() ?? 0;
+          const percent = Number(cell.getValue()) ?? 0;
           return (
             <div
               className={cx('text-md rounded-lg font-medium text-center w-fit px-2', {
@@ -343,7 +316,15 @@ const PostureTable = () => {
             color="normal"
             startIcon={<FaPlay />}
             className="text-blue-600 dark:text-blue-500"
-            onClick={() => setOpenScanConfigure(true)}
+            onClick={() => {
+              if (!info.row.original.node_id) {
+                throw new Error('Node id is required to start scan');
+              }
+              setOpenScanConfigure({
+                show: true,
+                nodeIds: [info.row.original.node_id],
+              });
+            }}
           >
             Start scan
           </Button>
@@ -362,7 +343,7 @@ const PostureTable = () => {
           return (
             <ActionDropdown
               icon={<HiDotsVertical />}
-              id={cell.row.original.id ?? ''}
+              id={cell.row.original.node_id ?? ''}
               isScanComplete={isScanComplete}
             />
           );
@@ -379,15 +360,42 @@ const PostureTable = () => {
 
   return (
     <>
-      <ScanConfigure open={openScanConfigure} setOpen={setOpenScanConfigure} />
       <Suspense fallback={<TableSkeleton columns={6} rows={10} size={'md'} />}>
         <Await resolve={loaderData.data}>
           {(resolvedData: LoaderDataType['data']) => {
-            console.log('resolvedData', resolvedData);
-            const accounts = resolvedData.accountData.cloud_node_accounts_info;
-
+            const accounts = resolvedData?.accounts ?? [];
+            const totalRows = resolvedData?.totalRows ?? 0;
+            const currentPage = resolvedData?.currentPage ?? 0;
             return (
-              <>
+              <div>
+                <Modal
+                  open={openScanConfigure.show}
+                  width="w-full"
+                  title="Configure your scan option"
+                  onOpenChange={() =>
+                    setOpenScanConfigure({
+                      show: false,
+                      nodeIds: [],
+                    })
+                  }
+                >
+                  <div className="p-4 pt-0">
+                    <PostureScanConfigureForm
+                      wantAdvanceOptions={true}
+                      onSuccess={() => {
+                        setOpenScanConfigure({
+                          show: false,
+                          nodeIds: [],
+                        });
+                      }}
+                      data={{
+                        nodeType: 'aws',
+                        nodeIds: Object.keys(openScanConfigure),
+                        images: [],
+                      }}
+                    />
+                  </div>
+                </Modal>
                 <Form>
                   {Object.keys(rowSelectionState).length === 0 ? (
                     <div className="text-sm text-gray-400 font-medium mb-3 flex justify-between">
@@ -401,7 +409,12 @@ const PostureTable = () => {
                           color="normal"
                           startIcon={<FaPlay />}
                           className="text-blue-600 dark:text-blue-500"
-                          onClick={() => setOpenScanConfigure(true)}
+                          onClick={() =>
+                            setOpenScanConfigure({
+                              show: true,
+                              nodeIds: Object.keys(rowSelectionState),
+                            })
+                          }
                         >
                           Start scan
                         </Button>
@@ -416,13 +429,13 @@ const PostureTable = () => {
                   enableRowSelection
                   enablePagination
                   manualPagination
-                  totalRows={resolvedData.totalRows}
-                  pageIndex={resolvedData.currentPage}
+                  totalRows={totalRows}
+                  pageIndex={currentPage}
                   onPaginationChange={(updaterOrValue) => {
                     let newPageIndex = 0;
                     if (typeof updaterOrValue === 'function') {
                       newPageIndex = updaterOrValue({
-                        pageIndex: resolvedData.currentPage,
+                        pageIndex: currentPage,
                         pageSize: PAGE_SIZE,
                       }).pageIndex;
                     } else {
@@ -436,9 +449,9 @@ const PostureTable = () => {
                   pageSize={PAGE_SIZE}
                   rowSelectionState={rowSelectionState}
                   onRowSelectionChange={setRowSelectionState}
-                  getRowId={(row) => row.id}
+                  getRowId={(row) => row.node_id ?? ''}
                 />
-              </>
+              </div>
             );
           }}
         </Await>

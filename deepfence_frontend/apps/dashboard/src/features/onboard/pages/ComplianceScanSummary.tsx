@@ -199,22 +199,27 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
     accNonEmpty: [],
     accEmpty: [],
   };
+
   responses.forEach((response) => {
     if (ApiError.isApiError(response)) {
       // TODO: handle any one request has an error on this bulk request
       return initial.err.push(response);
     } else {
-      if (isEmpty(response.status_counts)) {
+      if (isEmpty(response.status_counts || response.status_counts === null)) {
         initial.accEmpty.push(response);
       } else {
         initial.accNonEmpty.push(response);
       }
     }
   });
-  const groupedNonEmptySevirityData = groupBy(initial.accNonEmpty, 'node_id');
-  const resultNonEmptySeverityData = Object.keys(groupedNonEmptySevirityData).map(
+
+  let groupedNonEmptySeverityData = groupBy(initial.accNonEmpty, 'node_id');
+  if (groupedNonEmptySeverityData.length) {
+    groupedNonEmptySeverityData = {};
+  }
+  const resultNonEmptySeverityData = Object.keys(groupedNonEmptySeverityData).map(
     (key) => {
-      const data = groupedNonEmptySevirityData[key];
+      const data = groupedNonEmptySeverityData[key];
       return {
         accountName: data[0].node_name,
         accountType: data[0].node_type,
@@ -239,9 +244,13 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
       };
     },
   );
-  const groupedEmptySevirityData = groupBy(initial.accEmpty, 'node_id');
-  const resulEmptySeverityData = Object.keys(groupedEmptySevirityData).map((key) => {
-    const data = groupedNonEmptySevirityData[key];
+  let groupedEmptySeverityData = groupBy(initial.accEmpty, 'node_id');
+  if (groupedNonEmptySeverityData.length) {
+    groupedEmptySeverityData = {};
+  }
+
+  const resulEmptySeverityData = Object.keys(groupedEmptySeverityData).map((key) => {
+    const data = groupedEmptySeverityData[key];
     return {
       accountName: data[0].node_name,
       accountType: data[0].node_type,
@@ -265,6 +274,7 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
       }),
     };
   });
+
   const resultWithEmptySeverityAtEnd =
     resultNonEmptySeverityData.concat(resulEmptySeverityData);
   return resultWithEmptySeverityAtEnd;

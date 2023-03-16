@@ -2,16 +2,26 @@ import { filter, find } from 'lodash-es';
 import { useEffect, useState } from 'react';
 import { memo, useMemo } from 'react';
 import { HiMinusCircle, HiPlusCircle } from 'react-icons/hi';
-import { generatePath, useFetcher } from 'react-router-dom';
+import { ActionFunctionArgs, generatePath, useFetcher } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Button, TableSkeleton, Tabs } from 'ui-components';
 import { CircleSpinner, createColumnHelper, Switch, Table } from 'ui-components';
 
+import { getComplianceApiClient } from '@/api/api';
+import {
+  ApiDocsBadRequestResponse,
+  ModelNodeIdentifierNodeTypeEnum,
+} from '@/api/generated';
 import { ModelCloudNodeComplianceControl } from '@/api/generated/models/ModelCloudNodeComplianceControl';
 import {
   ActionEnumType,
   useGetControlsList,
 } from '@/features/postures/data-component/listControlsApiLoader';
+import { ApiError, makeRequest } from '@/utils/api';
 
+export enum PostureScanActionEnumType {
+  SCAN_POSTURE = 'scan_posture',
+}
 export type ComplianceType = 'aws' | 'gcp' | 'azure' | 'host' | 'kubernetes_cluster';
 
 export const complianceType: {
@@ -47,6 +57,70 @@ type TabsType = {
   value: string;
 };
 
+const clouds = ['aws', 'gcp', 'azure'];
+
+export const scanPostureApiAction = async ({
+  request,
+}: ActionFunctionArgs): Promise<ScanActionReturnType> => {
+  const formData = await request.formData();
+  const body = Object.fromEntries(formData);
+  const nodeIds = body._nodeIds.toString().split(',');
+  let nodeType = body._nodeType.toString();
+  const checkTypes = body._checkTypes.toString();
+
+  if (nodeType === 'kubernetes_cluster') {
+    nodeType = 'cluster';
+  } else if (clouds.includes(nodeType)) {
+    nodeType = 'cloud_account';
+  }
+
+  const r = await makeRequest({
+    apiFunction: getComplianceApiClient().startComplianceScan,
+    apiArgs: [
+      {
+        modelComplianceScanTriggerReq: {
+          benchmark_types: checkTypes.toLowerCase().split(','),
+          filters: {
+            cloud_account_scan_filter: { filter_in: null },
+            kubernetes_cluster_scan_filter: { filter_in: null },
+            container_scan_filter: { filter_in: null },
+            host_scan_filter: { filter_in: null },
+            image_scan_filter: { filter_in: null },
+          },
+          node_ids: nodeIds.map((nodeId) => ({
+            node_id: nodeId,
+            node_type: nodeType as ModelNodeIdentifierNodeTypeEnum,
+          })),
+        },
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<ScanActionReturnType>({
+        success: false,
+      });
+      if (r.status === 400 || r.status === 409) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message ?? '',
+          success: false,
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(r)) {
+    return r.value();
+  }
+  toast('Scan has been sucessfully started');
+  return {
+    success: true,
+    data: {
+      bulkScanId: r.bulk_scan_id,
+      nodeType,
+    },
+  };
+};
+
 const hasTypeSelected = (prevTabs: TabsType[], value: string) => {
   return find(prevTabs, ['value', value]);
 };
@@ -70,35 +144,37 @@ const ToggleControl = ({
   }
 
   return (
-    <Switch
-      checked={checked}
-      size="sm"
-      onCheckedChange={(checked) => {
-        const formData = new FormData();
-        formData.append('nodeId', nodeId);
-        formData.append(
-          'actionType',
-          !checked ? ActionEnumType.DISABLE : ActionEnumType.ENABLE,
-        );
-        formData.append('enabled', checked.toString());
-        formData.append('controlId', controlId ?? '');
-        fetcher.submit(formData, {
-          method: 'post',
-          action: generatePath('/data-component/list/controls/:checkType', {
-            checkType,
-          }),
-        });
-      }}
-    />
+    <>
+      <Switch
+        checked={checked}
+        size="sm"
+        onCheckedChange={(checked) => {
+          const formData = new FormData();
+          formData.append('nodeId', nodeId);
+          formData.append(
+            'actionType',
+            !checked ? ActionEnumType.DISABLE : ActionEnumType.ENABLE,
+          );
+          formData.append('enabled', checked.toString());
+          formData.append('controlId', controlId ?? '');
+          fetcher.submit(formData, {
+            method: 'post',
+            action: generatePath('/data-component/list/controls/:checkType', {
+              checkType,
+            }),
+          });
+        }}
+      />
+    </>
   );
 };
 export const ControlsTable = memo(
   ({
-    nodeId,
+    nodeIds,
     tabs = [],
     defaultTab,
   }: {
-    nodeId: string;
+    nodeIds: string[];
     tabs: TabsType[];
     defaultTab: string;
   }) => {
@@ -132,7 +208,7 @@ export const ControlsTable = memo(
           cell: (info) => {
             return (
               <ToggleControl
-                nodeId={nodeId}
+                nodeId={nodeIds[0]}
                 loading={isLoading}
                 checkType={selectedTab.toLowerCase()}
                 checked={!!info.row.original.enabled}
@@ -145,7 +221,7 @@ export const ControlsTable = memo(
           minSize: 60,
         }),
       ],
-      [],
+      [selectedTab],
     );
 
     useEffect(() => {
@@ -192,7 +268,7 @@ export const PostureScanConfigureForm = ({
 }: ScanConfigureFormProps) => {
   const fetcher = useFetcher();
   const { nodeType, nodeIds } = data;
-
+  const { state, data: fetcherData } = fetcher;
   const [tabs, setTabs] = useState<TabsType[] | []>(() => {
     return complianceType[nodeType].map((value) => {
       return {
@@ -211,6 +287,16 @@ export const PostureScanConfigureForm = ({
       setDefaultTab('');
     }
   }, [tabs]);
+
+  useEffect(() => {
+    let data = undefined;
+    if (fetcherData?.success) {
+      if (fetcher.data) {
+        data = fetcher.data.data;
+      }
+      onSuccess(data);
+    }
+  }, [fetcherData]);
 
   const onCheckTypeSelection = (name: string) => {
     setTabs((prevTabs) => {
@@ -233,7 +319,18 @@ export const PostureScanConfigureForm = ({
 
   return (
     <>
-      <div className="mt-6 flex gap-4 mb-6">
+      <fetcher.Form
+        className="mt-6 flex gap-4 mb-6"
+        method="post"
+        action="/data-component/scan/posture"
+      >
+        <input
+          type="text"
+          name="_checkTypes"
+          readOnly
+          hidden
+          value={tabs.map((tab) => tab.value)}
+        />
         {complianceType[nodeType]?.map((type: string) => (
           <Button
             color="primary"
@@ -245,29 +342,32 @@ export const PostureScanConfigureForm = ({
             }}
             endIcon={hasTypeSelected(tabs, type) ? <HiMinusCircle /> : <HiPlusCircle />}
             className="self-start"
-            name={`${type}[]`}
             value={type}
+            type="button"
           >
             {type}
           </Button>
         ))}
-        <fetcher.Form method="post" className="self-start ml-auto">
-          <input type="text" name="_nodeIds" hidden readOnly value={nodeIds.join(',')} />
-          <input type="text" name="_nodeType" readOnly hidden value={nodeType} />
-          <Button
-            // disabled={loading}
-            // loading={loading}
-            size="sm"
-            color="primary"
-            className="ml-auto"
-            type="submit"
-          >
-            Start Scan
-          </Button>
-        </fetcher.Form>
-      </div>
+
+        <input type="text" name="_nodeIds" hidden readOnly value={nodeIds.join(',')} />
+        <input type="text" name="_nodeType" readOnly hidden value={nodeType} />
+
+        <Button
+          disabled={state === 'loading'}
+          loading={state === 'loading'}
+          size="sm"
+          color="primary"
+          type="submit"
+          className="ml-auto "
+        >
+          Start Scan
+        </Button>
+      </fetcher.Form>
+      {fetcherData?.message && (
+        <p className="text-red-500 text-sm py-3">{fetcherData.message}</p>
+      )}
       {wantAdvanceOptions && (
-        <ControlsTable nodeId={''} tabs={tabs} defaultTab={defaultTab} />
+        <ControlsTable nodeIds={data.nodeIds} tabs={tabs} defaultTab={defaultTab} />
       )}
     </>
   );
