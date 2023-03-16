@@ -18,13 +18,7 @@ import { exists, mapValues } from '../runtime';
  * @export
  * @interface ModelImageStub
  */
-export interface ModelContainerImageWithTags {
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelContainerImageWithTags
-     */
-    created?: number;
+export interface ModelImageStub {
     /**
      * 
      * @type {string}
@@ -43,12 +37,6 @@ export interface ModelContainerImageWithTags {
      * @memberof ModelImageStub
      */
     tags?: Array<string> | null;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelContainerImageWithTags
-     */
-    updated?: number;
 }
 
 /**
@@ -70,11 +58,9 @@ export function ModelImageStubFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
-        'created': !exists(json, 'created') ? undefined : json['created'],
         'id': !exists(json, 'id') ? undefined : json['id'],
         'name': !exists(json, 'name') ? undefined : json['name'],
         'tags': !exists(json, 'tags') ? undefined : json['tags'],
-        'updated': !exists(json, 'updated') ? undefined : json['updated'],
     };
 }
 
@@ -87,11 +73,9 @@ export function ModelImageStubToJSON(value?: ModelImageStub | null): any {
     }
     return {
         
-        'created': value.created,
         'id': value.id,
         'name': value.name,
         'tags': value.tags,
-        'updated': value.updated,
     };
 }
 

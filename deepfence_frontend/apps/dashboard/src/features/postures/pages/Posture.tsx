@@ -30,6 +30,10 @@ const logoMap = (accountType: string, mode: Mode) => {
       label: 'AWS',
       icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
     },
+    aws_org: {
+      label: 'AWS ORG',
+      icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
+    },
     azure: {
       label: 'Azure',
       icon: LogoGoogle,

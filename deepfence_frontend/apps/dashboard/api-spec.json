@@ -7210,6 +7210,7 @@
           "compliance_node_type": { "type": "string" },
           "description": { "type": "string" },
           "masked": { "type": "boolean" },
+          "node_id": { "type": "string" },
           "remediation_ansible": { "type": "string" },
           "remediation_puppet": { "type": "string" },
           "remediation_script": { "type": "string" },
@@ -7931,17 +7932,6 @@
           "secrets_count": { "type": "integer" },
           "vulnerabilities_count": { "type": "integer" },
           "vulnerability_scan_status": { "type": "string" }
-        }
-      },
-      "ModelContainerImageWithTags": {
-        "type": "object",
-        "properties": {
-          "created": { "type": "integer" },
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "size": { "type": "string" },
-          "tags": { "type": "array", "items": { "type": "string" }, "nullable": true },
-          "updated": { "type": "integer" }
         }
       },
       "ModelDownloadReportResponse": {
