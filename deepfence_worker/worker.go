@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -105,9 +108,22 @@ func subscribe(consumerGroup string, brokers []string, logger watermill.LoggerAd
 }
 
 func startWorker(wml watermill.LoggerAdapter, cfg config) error {
+
+	ctx, cancel := signal.NotifyContext(context.Background(),
+		os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+
+	// create if any topics is missing
+	err := utils.CreateMissingTopics(
+		cfg.KafkaBrokers, utils.Tasks,
+		cfg.KafkaTopicPartitionsTasks, cfg.KafkaTopicReplicas, cfg.KafkaTopicRetentionMs,
+	)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+	}
+
 	// this for sending messages to kafka
 	ingestC := make(chan *kgo.Record, 10000)
-	ctx, cancel := context.WithCancel(context.Background())
 	go utils.StartKafkaProducer(ctx, cfg.KafkaBrokers, ingestC)
 
 	// task publisher

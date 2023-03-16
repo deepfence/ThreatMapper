@@ -220,6 +220,48 @@ services:
       - /etc/docker/certs.d:/etc/docker/certs.d:ro
       - /var/run/docker.sock:/var/run/docker.sock
 
+  # deepfence-worker-2:
+  #   container_name: deepfence-worker-2
+  #   image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-1.4.1}
+  #   ulimits:
+  #     core: 0
+  #   restart: on-failure
+  #   networks:
+  #     - deepfence_net
+  #   depends_on:
+  #     - deepfence-redis
+  #     - deepfence-postgres
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "1g"
+  #   environment:
+  #     <<: *common-creds
+  #   volumes:
+  #     - /etc/docker/certs.d:/etc/docker/certs.d:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock
+
+  # deepfence-worker-3:
+  #   container_name: deepfence-worker-3
+  #   image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-1.4.1}
+  #   ulimits:
+  #     core: 0
+  #   restart: on-failure
+  #   networks:
+  #     - deepfence_net
+  #   depends_on:
+  #     - deepfence-redis
+  #     - deepfence-postgres
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "1g"
+  #   environment:
+  #     <<: *common-creds
+  #   volumes:
+  #     - /etc/docker/certs.d:/etc/docker/certs.d:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock
+
   deepfence-scheduler:
     container_name: deepfence-scheduler
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-1.4.1}

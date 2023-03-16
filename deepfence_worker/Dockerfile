@@ -67,6 +67,7 @@ RUN apk add --no-cache kafkacat docker openrc bash skopeo \
 RUN apk add hyperscan --repository=https://dl-cdn.alpinelinux.org/alpine/v3.13/community 
 
 ENV DEEPFENCE_KAFKA_TOPIC_PARTITIONS=3 \
+    DEEPFENCE_KAFKA_TOPIC_PARTITIONS_TASKS=3 \
     DEEPFENCE_KAFKA_TOPIC_REPLICAS=1 \
     DEEPFENCE_KAFKA_TOPIC_RETENTION_MS="86400000" \
     DEEPFENCE_DEBUG=false \
