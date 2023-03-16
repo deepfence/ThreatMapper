@@ -83,7 +83,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 				scanDetail := model.CloudComplianceScanDetails{
 					ScanId:    scan.ScanId,
 					ScanType:  scan.BenchmarkType,
-					AccountId: monitoredNodeId,
+					AccountId: monitoredAccountId,
 					Controls:  controls,
 				}
 				scanList[scan.ScanId] = scanDetail
@@ -140,10 +140,12 @@ func (h *Handler) ListCloudNodeAccountHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	if utils.StringToCloudProvider(req.CloudProvider) == -1 {
-		err = fmt.Errorf("unknown CloudProvider: %s", req.CloudProvider)
-		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
-		return
+		if req.CloudProvider != model.PostureProviderKubernetes && req.CloudProvider != model.PostureProviderLinux {
+			err = fmt.Errorf("unknown Provider: %s", req.CloudProvider)
+			log.Error().Msgf("%v", err)
+			respondError(&BadDecoding{err}, w)
+			return
+		}
 	}
 
 	infos, err := model.GetCloudComplianceNodesList(r.Context(), req.CloudProvider, req.Window)

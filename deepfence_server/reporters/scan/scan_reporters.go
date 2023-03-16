@@ -865,17 +865,20 @@ func GetComplianceBulkScans(ctx context.Context, scanType utils.Neo4jScanType, s
 	}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
+		log.Error().Msgf("Neo4j client init failed: %+v", err)
 		return scanIds, err
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
+		log.Error().Msgf("Neo4j session creation failed: %+v", err)
 		return scanIds, err
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction()
 	if err != nil {
+		log.Error().Msgf("Failed to begin new neo4j transaction: %+v", err)
 		return scanIds, err
 	}
 	defer tx.Close()
@@ -885,11 +888,13 @@ func GetComplianceBulkScans(ctx context.Context, scanType utils.Neo4jScanType, s
 		RETURN d.node_id, d.benchmark_type, d.status, n.node_id, d.updated_at`,
 		map[string]interface{}{"scan_id": scanId})
 	if err != nil {
+		log.Error().Msgf("Compliance bulk scans status query failed: %+v", err)
 		return scanIds, err
 	}
 
 	recs, err := neo_res.Collect()
 	if err != nil {
+		log.Error().Msgf("Compliance bulk scan neo4j result collection failed: %+v", err)
 		return scanIds, err
 	}
 
