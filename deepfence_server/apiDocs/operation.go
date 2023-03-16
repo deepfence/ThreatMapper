@@ -397,7 +397,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusOK, []string{tagSecretScan}, bearerToken, new(ScanStatusReq), new(ScanStatusResp))
 	d.AddOperation("statusComplianceScan", http.MethodPost, "/deepfence/scan/status/compliance",
 		"Get Compliance Scan Status", "Get Compliance Scan Status on agent or registry",
-		http.StatusOK, []string{tagCompliance}, bearerToken, new(ScanStatusReq), new(ComplianceScanStatusResp))
+		http.StatusOK, []string{tagCompliance}, bearerToken, new(ScanStatusReq), new(ScanStatusResp))
 	d.AddOperation("statusMalwareScan", http.MethodPost, "/deepfence/scan/status/malware",
 		"Get Malware Scan Status", "Get Malware Scan status on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanStatusReq), new(ScanStatusResp))
