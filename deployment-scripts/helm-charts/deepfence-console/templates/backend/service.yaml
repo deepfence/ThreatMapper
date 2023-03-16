@@ -18,7 +18,6 @@ spec:
       port: 8181
       protocol: TCP
       targetPort: 8181
-
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
     name: deepfence-backend

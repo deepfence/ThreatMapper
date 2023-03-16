@@ -167,6 +167,9 @@ spec:
             - name: http
               containerPort: 4041
               protocol: TCP
+            - name: metrics
+              containerPort: 8181
+              protocol: TCP
           volumeMounts:
 {{- if .Values.saas_deployment }}
             - name: varlog
