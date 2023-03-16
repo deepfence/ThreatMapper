@@ -10,5 +10,5 @@ ENV CHECKPOINT_DISABLE=1 \
     REDIS_PORT=6379 \
     REDIS_DB_NUMBER=0
 
-COPY ./entrypoint.sh /home/deepfence/
+COPY scope/docker/entrypoint.sh /home/deepfence/
 ENTRYPOINT ["/home/deepfence/entrypoint.sh"]
