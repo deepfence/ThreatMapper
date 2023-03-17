@@ -4,8 +4,7 @@ import (
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill/message"
-	agentdiagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/agent-diagnosis"
-	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
+	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/minio/minio-go/v7"
@@ -33,8 +32,8 @@ func CleanUpDiagnosisLogs(msg *message.Message) error {
 			}
 		}
 	}
-	cleanup(consolediagnosis.ConsoleDiagnosisFileServerPrefix)
-	cleanup(agentdiagnosis.AgentDiagnosisFileServerPrefix)
+	cleanup(diagnosis.ConsoleDiagnosisFileServerPrefix)
+	cleanup(diagnosis.AgentDiagnosisFileServerPrefix)
 
 	return nil
 }

@@ -14,11 +14,11 @@ replace github.com/weaveworks/tcptracer-bpf => ../deepfence_agent/tools/apache/d
 
 replace github.com/deepfence/df-utils/cloud_metadata => ../deepfence_agent/tools/apache/deepfence/df-utils/cloud_metadata
 
-replace github.com/deepfence/package-scanner => github.com/deepfence/package-scanner v1.2.4-0.20230310105052-bb17f6b37380
+replace github.com/deepfence/package-scanner => ../deepfence_agent/plugins/package-scanner
 
-replace github.com/deepfence/SecretScanner => github.com/deepfence/SecretScanner v1.2.1-0.20230214033423-8a950b2b3f38
+replace github.com/deepfence/SecretScanner => ../deepfence_agent/plugins/SecretScanner
 
-replace github.com/deepfence/YaraHunter => github.com/deepfence/YaraHunter v0.0.0-20230224113232-4d957879f501
+replace github.com/deepfence/YaraHunter => ../deepfence_agent/plugins/YaraHunter
 
 replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/agent-plugins-grpc
 
@@ -84,7 +84,7 @@ require (
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000 // indirect
 	github.com/deepfence/df-utils/cloud_metadata v0.0.0-00010101000000-000000000000 // indirect
 	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230310063137-b653517c5502 // indirect
-	github.com/deepfence/kubernetes-scanner v0.0.0-20230314174036-fcad1be08a26 // indirect
+	github.com/deepfence/kubernetes-scanner v0.0.0-20230316141044-7e29acdbad02 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
