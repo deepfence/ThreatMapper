@@ -21,7 +21,7 @@ import {
   buildLayoutOptions,
   LayoutExecutor,
 } from '@/features/topology/utils/graph-layout';
-import { nodeStyle } from '@/features/topology/utils/graph-styles';
+import { getNodeImage, nodeStyle } from '@/features/topology/utils/graph-styles';
 
 export const updateGraph = (graph: G6Graph, apiDiff: ApiDiff, action: GraphAction) => {
   const modelNodesDiff = convertApiNodesDiffToModelNodesDiff(graph, apiDiff.nodesDiff);
@@ -138,7 +138,7 @@ function processRootUpdate(graph: G6Graph, diff: EnhancedDiff['nodesDiff']) {
       x: pointAround(center_x),
       y: pointAround(center_y),
       style: nodeStyle(node, {}),
-      children_ids: new Set(),
+      type: getNodeImage(node.df_data) ? 'image' : undefined,
     });
   }
 }
@@ -157,7 +157,6 @@ function processNodeUpdate(
         continue;
       }
       removeNodeItem(graph, nodeToRemove);
-      // TODO remove from parent's children ids?
       // TODO: try to see if parent was expanded combo and if it was remove the combo itself if there is no children
       const comboId = `${nodeId}-combo`;
       const combo = graph.findById(comboId) as G6Combo | undefined;
@@ -187,7 +186,8 @@ function processNodeUpdate(
       const comboModel = combo.get('model') as ComboModel;
       const center_id = comboModel?.center_ids?.[0];
       const center_model = graph.findById(center_id!).get('model') as NodeModel;
-      const numNodesInCombo = (comboModel.children_ids?.size ?? 0) + diff.add.length;
+      const numNodesInCombo =
+        combo?.getChildren?.()?.nodes?.length ?? 0 + diff.add.length;
       for (const nodeToAdd of diff.add) {
         graph.addItem('node', {
           ...nodeToAdd,
@@ -196,9 +196,9 @@ function processNodeUpdate(
           },
           parent_id: itemModel.id,
           comboId: comboId,
-          children_ids: new Set([]),
           x: numNodesInCombo > 1 ? pointAround(center_model.x!) : center_model.x,
           y: numNodesInCombo > 1 ? pointAround(center_model.y!) : center_model.y,
+          type: getNodeImage(nodeToAdd.df_data) ? 'image' : undefined,
         });
 
         graph.addItem('edge', {
@@ -206,7 +206,6 @@ function processNodeUpdate(
           combo_pseudo_inner: true,
           style: { lineWidth: 0, endArrow: false },
         });
-        comboModel.children_ids?.add(nodeToAdd.id!);
       }
     } else {
       for (const nodeToAdd of diff.add) {
@@ -221,12 +220,11 @@ function processNodeUpdate(
           y: pointAround(itemModel.y!),
           parent_id: nodeId,
           style: { ...nodeStyle(nodeToAdd, {}) },
-          children_ids: new Set(),
+          type: getNodeImage(nodeToAdd.df_data) ? 'image' : undefined,
         }) as G6Node;
         graph.addItem('edge', {
           ...pseudoEdge(nodeId, nodeToAdd.id!),
         });
-        // TODO add this to parents children_ids?
         addedNode.refresh();
       }
     }
@@ -278,14 +276,12 @@ function addCombo(graph: G6Graph, item: G6Node) {
   const node_id = model.id;
   const combo_id = `${node_id}-combo`;
 
-  model.children_ids?.add(combo_id);
   graph.createCombo(
     {
       id: combo_id,
       parent_id: node_id,
       node_type: 'combo',
       center_ids: [],
-      children_ids: new Set(),
       x: pointAround(model.x!, 50),
       y: pointAround(model.y!, 50),
     },
@@ -317,6 +313,7 @@ function addCombo(graph: G6Graph, item: G6Node) {
   graph.addItem('edge', {
     ...pseudoEdge(node_id, combo_id),
     combo_pseudo: true,
+    type: 'line',
     style: { endArrow: false },
   });
 

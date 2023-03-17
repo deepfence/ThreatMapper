@@ -57,8 +57,8 @@ export interface EnhancedDiff {
 export interface EnhancedDetailedNodeSummary
   extends Pick<DetailedNodeSummary, 'id' | 'label'> {
   df_data: DetailedNodeSummary;
-  label_short: string;
   children_ids?: Set<string>;
+  img?: string;
 }
 export interface EnhancedDetailedConnectionSummary extends DetailedConnectionSummary {
   id: string;
@@ -84,7 +84,6 @@ export type OutputLayoutOptions = {
 export type NodeModel = NodeConfig & Partial<EnhancedDetailedNodeSummary>;
 export type EdgeModel = EdgeConfig & Partial<EnhancedDetailedConnectionSummary>;
 export type ComboModel = ComboConfig & {
-  children_ids?: Set<string>;
   center_ids?: Array<string>;
 };
 

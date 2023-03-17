@@ -6,12 +6,18 @@ import { CircleSpinner } from 'ui-components';
 import { getTopologyApiClient } from '@/api/api';
 import { ApiDocsGraphResult } from '@/api/generated';
 import { useG6raph } from '@/features/topology/hooks/useG6Graph';
-import { G6GraphEvent, GraphAction, NodeModel } from '@/features/topology/types/graph';
+import {
+  G6GraphEvent,
+  G6Node,
+  GraphAction,
+  NodeModel,
+} from '@/features/topology/types/graph';
 import {
   focusItem,
   itemExpands,
   nodeToFront,
 } from '@/features/topology/utils/expand-collapse';
+import { onNodeHover } from '@/features/topology/utils/graph-styles';
 import { updateGraph } from '@/features/topology/utils/graph-update';
 import {
   getTopologyDiff,
@@ -117,6 +123,21 @@ const Graph = () => {
           nodeType: model.df_data.type,
         });
       }
+    });
+    graph.on('node:mouseenter', (e: G6GraphEvent) => {
+      onNodeHover(e.item as G6Node, true);
+    });
+    graph.on('node:mouseleave', (e: G6GraphEvent) => {
+      onNodeHover(e.item as G6Node, false);
+    });
+    graph.on('node:drag', (e: G6GraphEvent) => {
+      e.preventDefault();
+    });
+    graph.on('combo:drag', (e: G6GraphEvent) => {
+      e.preventDefault();
+    });
+    graph.on('combo:click', (e: G6GraphEvent) => {
+      e.item && graph?.focusItem(e.item, true);
     });
   }, [graph]);
 

@@ -1,5 +1,30 @@
-import { EnhancedDetailedNodeSummary } from '@/features/topology/types/graph';
+import { truncate } from 'lodash-es';
 
+import { DetailedNodeSummary } from '@/api/generated';
+import CloudLogo from '@/assets/topology/cloud.png';
+import CloudRegionLogo from '@/assets/topology/cloud-region.png';
+import ContainerLogo from '@/assets/topology/container.png';
+import HostLogo from '@/assets/topology/host.png';
+import KubernetesClusterLogo from '@/assets/topology/kubernetes-cluster.png';
+import PodLogo from '@/assets/topology/pod.png';
+import ProcessLogo from '@/assets/topology/process.png';
+import TheInternetLogo from '@/assets/topology/the-internet.png';
+import { EnhancedDetailedNodeSummary, G6Node } from '@/features/topology/types/graph';
+
+export const GraphPalette = {
+  NODE_OUTLINE_DARK: '#E5E7EB',
+  NODE_OUTLINE_LIGHT: '#1F2937',
+  LABEL_TEXT_LIGHT: '#4B5563',
+  LABEL_TEXT_DARK: '#D1D5DB',
+  LABEL_BACKGROUND_LIGHT: 'white',
+  LABEL_BACKGROUND_DARK: '#F9FAFB',
+  EDGE_DARK: '#3F83F8',
+  EDGE_LIGHT: '#1C64F2',
+  COMBO_FILL_DARK: '#1F2937',
+  COMBO_FILL_LIGHT: '#EBF5FF',
+};
+
+// TODO: remove these legacy colors
 export const PALETTE = {
   BLUE: '#55c1e9',
   DEEP_BLUE: '#426ca9',
@@ -60,7 +85,7 @@ export const nodeStyle = (
   style.fill = fill[node?.df_data?.type ?? ''] || COLORS.NODE;
 
   style = { ...style, ...override };
-  if (node.df_data.image !== undefined) {
+  if (node.df_data && getNodeImage(node.df_data)) {
     delete style.fill;
   } else if (node?.df_data?.type === 'process') {
     style.fill = COLORS.PROCESS;
@@ -68,3 +93,51 @@ export const nodeStyle = (
 
   return style;
 };
+
+export const getShortLabel = (label?: string) => {
+  if (!label || !label.length) {
+    return 'unknown';
+  }
+  let shortLabel = label;
+  if (label.lastIndexOf('/') >= 0) {
+    shortLabel = label.split('/')[label.split('/').length - 1];
+  }
+
+  return truncate(shortLabel, { length: 25 });
+};
+
+export const onNodeHover = (item: G6Node, enter: boolean) => {
+  const model = item.get('model') as EnhancedDetailedNodeSummary | undefined;
+  if (model?.df_data?.type === 'process') {
+    if (enter) {
+      item.update({ label: model?.df_data?.label ?? 'unknown' });
+      item.toFront();
+    } else {
+      item.update({ label: getShortLabel(model?.df_data?.label) });
+    }
+  }
+};
+
+export const getNodeImage = (nodeData: DetailedNodeSummary): string | undefined => {
+  if (nodeData.type === 'cloud_provider') {
+    return getImageFullPath(CloudLogo);
+  } else if (nodeData.type === 'pseudo') {
+    return getImageFullPath(TheInternetLogo);
+  } else if (nodeData.type === 'cloud_region') {
+    return getImageFullPath(CloudRegionLogo);
+  } else if (nodeData.type === 'host') {
+    return getImageFullPath(HostLogo);
+  } else if (nodeData.type === 'kubernetes_cluster') {
+    return getImageFullPath(KubernetesClusterLogo);
+  } else if (nodeData.type === 'container') {
+    return getImageFullPath(ContainerLogo);
+  } else if (nodeData.type === 'pod') {
+    return getImageFullPath(PodLogo);
+  } else if (nodeData.type === 'process') {
+    return getImageFullPath(ProcessLogo);
+  }
+};
+
+function getImageFullPath(imageRelativePath: string) {
+  return `${location.protocol}//${location.host}${imageRelativePath}`;
+}

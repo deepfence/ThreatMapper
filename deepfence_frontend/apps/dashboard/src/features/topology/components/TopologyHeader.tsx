@@ -15,7 +15,7 @@ import { TableIcon } from '@/components/icons/table';
 
 export const TopologyHeader = () => {
   return (
-    <div className="flex p-1 w-full shadow bg-white dark:bg-gray-800 items-center">
+    <div className="flex py-1 px-2 w-full shadow bg-white dark:bg-gray-800 items-center">
       <span className="text-md font-medium text-gray-700 dark:text-gray-200 uppercase">
         Topology
       </span>
