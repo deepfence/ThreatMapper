@@ -164,6 +164,8 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	updateSecret := req.Secret != nil
+
 	id, err := strconv.ParseInt(idStr, 10, 32)
 	if err != nil {
 		log.Error().Msgf("%v", err)
@@ -204,22 +206,13 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// validate if registry credential is correct
-	if !registry.IsValidCredential() {
-		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryAuthFailed})
-		return
-	}
-
-	// encrypt secret
+	// todo: get aes key, has to be a better way to avoid getting this everytime
 	aesValue, err := model.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-
-	// note: we'll encrypt the secret in registry interface object and use its secretgetter
-	// to map the secrets with req
 	aes := encryption.AES{}
 	err = json.Unmarshal(aesValue, &aes)
 	if err != nil {
@@ -227,6 +220,24 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 		respondError(&InternalServerError{err}, w)
 		return
 	}
+	if !updateSecret {
+		// decrypt secret
+		err = registry.DecryptSecret(aes)
+		if err != nil {
+			log.Error().Msgf(err.Error())
+			respondError(&InternalServerError{errors.New("something went wrong")}, w)
+			return
+		}
+	}
+
+	// validate if registry credential is correct
+	if !registry.IsValidCredential() {
+		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryAuthFailed})
+		return
+	}
+
+	// note: we'll encrypt the secret in registry interface object and use its secretgetter
+	// to map the secrets with req
 	err = registry.EncryptSecret(aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
