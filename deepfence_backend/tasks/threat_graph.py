@@ -473,9 +473,9 @@ def _compute_threat_graph():
     compliance_count_map = get_compliance_count()
     malware_count_map = get_malware_count()
     cloud_compliance_count_map = get_cloud_compliance_count()
-    secrets_count_map = get_secrets_count()
+    # secrets_count_map = get_secrets_count()
     include_nodes = {**vulnerability_count_map, **compliance_count_map,
-                     **cloud_compliance_count_map, **secrets_count_map, **malware_count_map}
+                     **cloud_compliance_count_map, **malware_count_map}
 
     graph = {CLOUD_AWS: nx.DiGraph(), CLOUD_GCP: nx.DiGraph(), CLOUD_AZURE: nx.DiGraph(), pvt_cloud: nx.DiGraph()}
     for cloud_provider, _ in graph.items():
@@ -600,9 +600,9 @@ def _compute_threat_graph():
                                 **cloud_compliance_count_map.get(cloud_id, {}).get("scan_id", {}),
                                 **compliance_scan_id,
                             }
-                        secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
-                        if secrets_count > 0:
-                            secrets_scan_id = secrets_count_map[node_id]["scan_id"]
+                        # secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
+                        # if secrets_count > 0:
+                        #     secrets_scan_id = secrets_count_map[node_id]["scan_id"]
                         malware_count = malware_count_map.get(node_id, {}).get("count", 0)
                         if malware_count > 0:
                             malware_scan_id = malware_count_map[node_id]["scan_id"]
@@ -613,9 +613,9 @@ def _compute_threat_graph():
                         compliance_count = compliance_count_map.get(node_id, {}).get("count", 0)
                         if compliance_count > 0:
                             compliance_scan_id = compliance_count_map[node_id]["scan_id"]
-                        secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
-                        if secrets_count > 0:
-                            secrets_scan_id = secrets_count_map[node_id]["scan_id"]
+                        # secrets_count = secrets_count_map.get(node_id, {}).get("count", 0)
+                        # if secrets_count > 0:
+                        #     secrets_scan_id = secrets_count_map[node_id]["scan_id"]
                         malware_count = malware_count_map.get(node_id, {}).get("count", 0)
                         if malware_count > 0:
                             malware_scan_id = malware_count_map[node_id]["scan_id"]
