@@ -4182,7 +4182,7 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ModelComplianceScanStatusResp" }
+                "schema": { "$ref": "#/components/schemas/ModelScanStatusResp" }
               }
             }
           },

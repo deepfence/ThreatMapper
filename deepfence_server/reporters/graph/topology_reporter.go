@@ -40,7 +40,7 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 
 	r, err := tx.Run(`
 	MATCH (n:Node) -[r:CONNECTS]-> (m:Node)
-	WHERE n.active <> false
+	WHERE n.active = true
 	WITH CASE WHEN coalesce(n.kubernetes_cluster_id, '') <> '' THEN n.kubernetes_cluster_id ELSE n.cloud_region END AS left_region, n, m, r, CASE WHEN coalesce(m.kubernetes_cluster_id, '') <> '' THEN m.kubernetes_cluster_id ELSE m.cloud_region END AS right_region
 	RETURN n.cloud_provider, left_region, n.node_id, r.left_pid, m.cloud_provider, right_region, m.node_id, r.right_pid`, nil)
 
@@ -215,7 +215,7 @@ func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]Node
 	res := []NodeStub{}
 	r, err := tx.Run(`
 		MATCH (n:Node)
-		WHERE n.active <> false
+		WHERE n.active = true
 		AND n.cloud_provider <> 'internet' 
 		RETURN n.cloud_provider`, nil)
 
@@ -239,7 +239,7 @@ func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_pro
 	res := map[NodeID][]NodeStub{}
 	r, err := tx.Run(`
 		MATCH (n:Node)
-		WHERE n.active <> false
+		WHERE n.active = true
 		AND n.kubernetes_cluster_id = ""
 		AND CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
 		RETURN n.cloud_provider, n.cloud_region`,
@@ -294,6 +294,7 @@ func (nc *neo4jTopologyReporter) getCloudKubernetes(tx neo4j.Transaction, cloud_
 	res := map[NodeID][]NodeStub{}
 	r, err := tx.Run(`
 		MATCH (n:KubernetesCluster) -[:INSTANCIATE]-> (m:Node)
+		WHERE n.active = true
 		WITH DISTINCT m.cloud_provider as cloud_provider, n
 		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE cloud_provider IN $providers END
 		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
@@ -337,7 +338,7 @@ func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, 
 	r, err := tx.Run(`
 		MATCH (n:Node)
 		WITH coalesce(n.kubernetes_cluster_id, '') <> '' AS is_kub, n
-		WHERE n.active <> false
+		WHERE n.active = true
 		AND CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
 		AND CASE WHEN is_kub THEN
 		    CASE WHEN $kubernetes IS NULL THEN [1] ELSE n.kubernetes_cluster_id IN $kubernetes END
@@ -441,7 +442,7 @@ func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts, pods
 
 	r, err := tx.Run(`
 		MATCH (n:Node)
-		WHERE n.active <> false
+		WHERE n.active = true
 		AND (CASE WHEN $hosts IS NULL THEN [1] ELSE n.host_name IN $hosts END
 		OR CASE WHEN $pods IS NULL THEN [1] ELSE n.`+"`docker_label_io.kubernetes.pod.name`"+`IN $pods END)
 		WITH n

@@ -48,7 +48,7 @@ export const action = async ({
   request,
 }: ActionFunctionArgs): Promise<ActionReturnType> => {
   const formData = await request.formData();
-  const id = formData.get('_accountId')?.toString() ?? '';
+  const id = formData.get('_nodeId')?.toString() ?? '';
   const r = await makeRequest({
     apiFunction: getRegistriesApiClient().deleteRegistry,
     apiArgs: [
@@ -118,7 +118,7 @@ const DeleteConfirmationModal = ({
             No, cancel
           </Button>
           <Form method="post">
-            <input type="text" name="_accountId" hidden readOnly value={id} />
+            <input type="text" name="_nodeId" hidden readOnly value={id} />
             <Button size="xs" color="danger" type="submit">
               Yes, I&apos;m sure
             </Button>
@@ -256,10 +256,9 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
         cell: (info) => (
           <div>
             <DFLink
-              to={generatePath('/registries/images/:account/:accountId/:nodeId', {
+              to={generatePath('/registries/images/:account/:nodeId', {
                 account,
                 nodeId: info.row.original.node_id ?? '',
-                accountId: info.row.original.id?.toString() ?? '',
               })}
             >
               {capitalize(info.getValue())}

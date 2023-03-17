@@ -163,8 +163,8 @@ github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 h1:HbphB4TFFXpv7MNrT52FGrrgVXF1
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0/go.mod h1:DZGJHZMqrU4JJqFAWUS2UO1+lbSKsdiOoYi9Zzey7Fc=
 github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230310063137-b653517c5502 h1:qNqbvyuELBAiS7d842kzxHyN8p/1Aj17vvIfRadJ5cU=
 github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230310063137-b653517c5502/go.mod h1:rco4ZTBCAPvaqyHgKUD3lqxub8Km+5fxNk25nF3gRIc=
-github.com/deepfence/kubernetes-scanner v0.0.0-20230314174036-fcad1be08a26 h1:CMLlOqHdO3iyQ1KeYrWpRTWPMSyOxz2IhpeDM/pUb20=
-github.com/deepfence/kubernetes-scanner v0.0.0-20230314174036-fcad1be08a26/go.mod h1:Hv96hmVBYWdvWG2FC+vbeEPzqIRVRWxlcr6V20O7Q6s=
+github.com/deepfence/kubernetes-scanner v0.0.0-20230316141044-7e29acdbad02 h1:eIF/Oa6Mj2SKsyGZf9ZZ+T4pCOiyXjTigzv4ucW2r+w=
+github.com/deepfence/kubernetes-scanner v0.0.0-20230316141044-7e29acdbad02/go.mod h1:Hv96hmVBYWdvWG2FC+vbeEPzqIRVRWxlcr6V20O7Q6s=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f h1:lO4WD4F/rVNCu3HqELle0jiPLLBs70cWOduZpkS1E78=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod h1:cuUVRXasLTGF7a8hSLbxyZXjz+1KgoB3wDUb6vlszIc=
 github.com/docker/distribution v2.8.1+incompatible h1:Q50tZOPR6T/hjNsyc9g8/syEs6bk8XXApsHjKukMl68=

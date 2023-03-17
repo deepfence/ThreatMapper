@@ -8,10 +8,9 @@ import (
 )
 
 const (
-	DockerOrchestrator               = "docker"
-	KubernetesOrchestrator           = "kubernetes"
-	HaproxyLogsPath                  = "/var/log/haproxy"
-	ConsoleDiagnosisFileServerPrefix = "/diagnosis/console-diagnosis/"
+	DockerOrchestrator     = "docker"
+	KubernetesOrchestrator = "kubernetes"
+	HaproxyLogsPath        = "/var/log/haproxy"
 )
 
 type ConsoleDiagnosisHandler interface {

@@ -130,7 +130,7 @@ const HeaderComponent = ({ nodeType }: { nodeType: string }) => {
           <HiArrowSmLeft />
         </IconContext.Provider>
       </DFLink>
-      <span className="text-sm font-medium text-gray-700 dark:text-gray-200 uppercase">
+      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
         REGISTRY ACCOUNTS / {nodeType}
       </span>
       <div className="ml-auto flex items-center gap-x-4">

@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -121,7 +122,7 @@ func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.C
 	if err != nil {
 		return err
 	}
-	_, err = mc.UploadLocalFile(ctx, ConsoleDiagnosisFileServerPrefix+filepath.Base(zipFile.Name()), zipFile.Name(),
+	_, err = mc.UploadLocalFile(ctx, diagnosis.ConsoleDiagnosisFileServerPrefix+filepath.Base(zipFile.Name()), zipFile.Name(),
 		minio.PutObjectOptions{ContentType: "application/zip"})
 	if err != nil {
 		return err
