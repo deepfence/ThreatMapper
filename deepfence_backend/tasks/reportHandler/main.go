@@ -209,7 +209,6 @@ func createCeleryTasks(resourceType string, messages []interface{}) {
 			createNotificationCeleryTask(resourceType, messages)
 		}
 	} else if resourceType == resourceTypeMalware {
-		log.Infof("resourceTyper %s", resourceType)
 		notificationSettings.RLock()
 		malwareNotificationsSet := notificationSettings.malwareNotificationsSet
 		notificationSettings.RUnlock()
@@ -217,7 +216,6 @@ func createCeleryTasks(resourceType string, messages []interface{}) {
 			createNotificationCeleryTask(resourceType, messages)
 		}
 	} else if resourceType == resourceTypeSecret {
-		log.Infof("resourceTyper %s", resourceType)
 		notificationSettings.RLock()
 		secretNotificationsSet := notificationSettings.secretNotificationsSet
 		notificationSettings.RUnlock()

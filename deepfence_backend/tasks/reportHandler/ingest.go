@@ -148,7 +148,6 @@ func addToES(data []byte, index string, bulkp *elastic.BulkProcessor) error {
 	}
 	dataMap["masked"] = "false"
 	dataMap["@timestamp"] = getCurrentTime()
-	log.Infof("thi is from add to elstic las time %+v", dataMap)
 	bulkp.Add(elastic.NewBulkIndexRequest().Index(index).Doc(dataMap))
 	return nil
 }
@@ -215,7 +214,6 @@ func processReports(
 			if err := addToES(secret, secretScanIndexName, bulkp); err != nil {
 				log.Errorf("failed to process secret scan error: %s", err.Error())
 			} else {
-				log.Info("reaching secret queue")
 				if err := notifySecretQueue(secret); err != nil {
 					log.Errorf("error pushing to queue: %s", err.Error())
 				}
@@ -232,7 +230,6 @@ func processReports(
 			if err := addToES(malware, malwareScanIndexName, bulkp); err != nil {
 				log.Errorf("failed to process malware scan error: %s", err.Error())
 			} else {
-				log.Info("reaching malware queue")
 				if err := notifyMalwareQueue(malware); err != nil {
 					log.Errorf("error pushing to queue: %s", err.Error())
 				}
