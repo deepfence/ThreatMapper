@@ -259,7 +259,7 @@ func batchMessages(ctx context.Context, resourceType string,
 			}
 		}
 		if len(messages) > 0 {
-			log.Info("messages length is", messages)
+			log.Infof("messages length is %d", len(messages))
 			go func() {
 				createCeleryTasks(resourceType, messages)
 			}()
