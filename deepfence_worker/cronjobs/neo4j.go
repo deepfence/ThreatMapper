@@ -90,6 +90,16 @@ func CleanUpDB(msg *message.Message) error {
 		return err
 	}
 
+	if _, err = session.Run(`
+		MATCH (n:KubernetesCluster)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND exists((n) <-[:SCANNED]-())
+		WITH n LIMIT 100000
+		SET n.active=false`,
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		return err
+	}
+
 	// Delete old with no data
 	if _, err = session.Run(`
 		MATCH (n:Node)
@@ -128,6 +138,17 @@ func CleanUpDB(msg *message.Message) error {
 		DETACH DELETE n`,
 		map[string]interface{}{
 			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
+			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+		}); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:KubernetesCluster)
+		WHERE n.updated_at < TIMESTAMP()-$old_time_ms
+		WITH n LIMIT 100000
+		DETACH DELETE n`,
+		map[string]interface{}{
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
 		}); err != nil {
 		return err
