@@ -15,8 +15,9 @@ import LogoGitlab from '@/assets/logo-gitlab.svg';
 import LogoGoogle from '@/assets/logo-google.svg';
 import LogoHarbor from '@/assets/logo-harbor.svg';
 import LogoJFrog from '@/assets/logo-jfrog.svg';
-import LogoQuay from '@/assets/logo-jfrog.svg';
+import LogoQuay from '@/assets/logo-quay.svg';
 import { DFLink } from '@/components/DFLink';
+import { RegistryType } from '@/features/common/data-component/RegistryConnectorForm';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -32,17 +33,6 @@ export type LoaderDataType = {
   message?: string;
   data: RegistryResponseType[];
 };
-export const RegistryType = {
-  azure_container_registry: 'azure_container_registry',
-  docker_hub: 'docker_hub',
-  docker_private_registry: 'docker_private_registry',
-  ecr: 'ecr',
-  gitlab: 'gitlab',
-  google_container_registry: 'google_container_registry',
-  harbor: 'harbor',
-  jfrog_container_registry: 'jfrog_container_registry',
-  quay: 'quay',
-} as const;
 
 type Keys = keyof typeof RegistryType;
 type ReponseType = { [K in Keys]: RegistryResponseType };

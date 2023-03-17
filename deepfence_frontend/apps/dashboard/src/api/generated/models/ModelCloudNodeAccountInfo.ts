@@ -21,10 +21,10 @@ import { exists, mapValues } from '../runtime';
 export interface ModelCloudNodeAccountInfo {
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof ModelCloudNodeAccountInfo
      */
-    active?: string;
+    active?: boolean;
     /**
      * 
      * @type {string}
@@ -33,10 +33,22 @@ export interface ModelCloudNodeAccountInfo {
     cloud_provider?: string;
     /**
      * 
+     * @type {number}
+     * @memberof ModelCloudNodeAccountInfo
+     */
+    compliance_percentage?: number;
+    /**
+     * 
      * @type {string}
      * @memberof ModelCloudNodeAccountInfo
      */
-    compliance_percentage?: string;
+    last_scan_id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudNodeAccountInfo
+     */
+    last_scan_status?: string;
     /**
      * 
      * @type {string}
@@ -73,6 +85,8 @@ export function ModelCloudNodeAccountInfoFromJSONTyped(json: any, ignoreDiscrimi
         'active': !exists(json, 'active') ? undefined : json['active'],
         'cloud_provider': !exists(json, 'cloud_provider') ? undefined : json['cloud_provider'],
         'compliance_percentage': !exists(json, 'compliance_percentage') ? undefined : json['compliance_percentage'],
+        'last_scan_id': !exists(json, 'last_scan_id') ? undefined : json['last_scan_id'],
+        'last_scan_status': !exists(json, 'last_scan_status') ? undefined : json['last_scan_status'],
         'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
         'node_name': !exists(json, 'node_name') ? undefined : json['node_name'],
     };
@@ -90,6 +104,8 @@ export function ModelCloudNodeAccountInfoToJSON(value?: ModelCloudNodeAccountInf
         'active': value.active,
         'cloud_provider': value.cloud_provider,
         'compliance_percentage': value.compliance_percentage,
+        'last_scan_id': value.last_scan_id,
+        'last_scan_status': value.last_scan_status,
         'node_id': value.node_id,
         'node_name': value.node_name,
     };

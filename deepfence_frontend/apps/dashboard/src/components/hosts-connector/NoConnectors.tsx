@@ -4,6 +4,15 @@ import { Typography } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 
+export const ACCOUNT_CONNECTOR = {
+  DOCKER: 'docker',
+  AWS: 'aws',
+  GCP: 'gcp',
+  AZURE: 'azure',
+  LINUX: 'linux',
+  KUBERNETES: 'kubernetes',
+} as const;
+
 export const NoConnectors = () => {
   return (
     <div className="flex flex-col items-center h-full w-full justify-center">

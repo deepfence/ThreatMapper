@@ -8,6 +8,7 @@ import { IconContext } from 'react-icons/lib';
 import {
   Await,
   Form,
+  generatePath,
   LoaderFunctionArgs,
   useLoaderData,
   useParams,
@@ -15,6 +16,7 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import {
+  Badge,
   Button,
   createColumnHelper,
   Dropdown,
@@ -34,6 +36,7 @@ import {
 import { getCloudNodesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelCloudNodeAccountInfo } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { PostureScanConfigureForm } from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -114,7 +117,7 @@ async function getAccounts(
   return {
     accounts: result.cloud_node_accounts_info ?? [],
     currentPage: 1,
-    totalRows: 50,
+    totalRows: 15,
   };
 }
 
@@ -233,11 +236,18 @@ const PostureTable = () => {
       columnHelper.accessor('node_name', {
         cell: (cell) => {
           const isScanComplete =
-            cell.row.original.scanStatus?.toLowerCase() === 'complete';
+            cell.row.original.last_scan_status?.toLowerCase() === 'complete';
           const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
             if (isScanComplete) {
               return (
-                <DFLink to={`/posture/scan-results/accountId/scanId`}>{children}</DFLink>
+                <DFLink
+                  to={generatePath(`/posture/scan-results/:accountId/:scanId`, {
+                    accountId: 'test',
+                    scanId: cell.row.original.last_scan_id ?? '',
+                  })}
+                >
+                  {children}
+                </DFLink>
               );
             }
             return <>{children}</>;
@@ -252,8 +262,8 @@ const PostureTable = () => {
         },
         header: () => 'Account',
         minSize: 100,
-        size: 100,
-        maxSize: 120,
+        size: 120,
+        maxSize: 130,
       }),
       columnHelper.accessor('compliance_percentage', {
         minSize: 80,
@@ -274,39 +284,44 @@ const PostureTable = () => {
                 'text-gray-700 dark:text-gray-400': !percent,
               })}
             >
-              {percent}%
+              {percent.toFixed(2)}%
             </div>
           );
         },
       }),
       columnHelper.accessor('active', {
-        minSize: 60,
-        size: 70,
-        maxSize: 80,
+        minSize: 40,
+        size: 40,
+        maxSize: 40,
         header: () => 'Active',
         cell: (info) => {
-          const value = info.getValue();
-          return value ? 'Yes' : 'No';
+          return info.getValue() ? 'Yes' : 'No';
         },
       }),
-      // columnHelper.accessor('scanStatus', {
-      //   cell: (info) => (
-      //     <span
-      //       className={cx({
-      //         'text-green-500': info.getValue().toLowerCase() === 'complete',
-      //         'text-red-500': info.getValue().toLowerCase() === 'error',
-      //         'text-blue-500':
-      //           info.getValue().toLowerCase() !== 'complete' &&
-      //           info.getValue().toLowerCase() !== 'error',
-      //       })}
-      //     >
-      //       {info.getValue()}
-      //     </span>
-      //   ),
-      //   header: () => 'Status',
-      //   minSize: 50,
-      //   size: 70,
-      // }),
+      columnHelper.accessor('last_scan_status', {
+        cell: (info) => {
+          const value = info.getValue();
+          if (!value) {
+            console.error('last_scan_status is null');
+          }
+          return (
+            <Badge
+              label={value?.toUpperCase() || 'UNKNOWN'}
+              className={cx('text-md rounded-lg font-medium text-center w-fit px-2', {
+                'bg-[#0E9F6E]/20 dark:bg-[#0E9F6E]/20 text-[#0E9F6E] dark:text-[#0E9F6E]':
+                  value?.toLowerCase() === 'complete',
+                'bg-[#de425b]/30 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
+                  value?.toLowerCase() === 'error',
+              })}
+              size="sm"
+            />
+          );
+        },
+        header: () => 'Status',
+        minSize: 50,
+        size: 70,
+        maxSize: 80,
+      }),
       columnHelper.display({
         id: 'startScan',
         enableSorting: false,
@@ -331,7 +346,7 @@ const PostureTable = () => {
         ),
         header: () => 'Start action',
         minSize: 80,
-        size: 80,
+        size: 100,
         maxSize: 120,
       }),
       columnHelper.display({
@@ -339,7 +354,7 @@ const PostureTable = () => {
         enableSorting: false,
         cell: (cell) => {
           const isScanComplete =
-            cell.row.original.scanStatus?.toLowerCase() === 'complete';
+            cell.row.original.last_scan_status?.toLowerCase() === 'complete';
           return (
             <ActionDropdown
               icon={<HiDotsVertical />}
@@ -548,10 +563,11 @@ const Accounts = () => {
   const loaderData = useLoaderData() as LoaderDataType;
   const [searchParams, setSearchParams] = useSearchParams();
   const routeParams = useParams() as {
-    account: string;
+    nodeType: string;
   };
   const { navigate } = usePageNavigation();
   const isFilterApplied = searchParams.has('');
+  console.log('===', routeParams.nodeType);
   return (
     <div>
       <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
@@ -578,13 +594,13 @@ const Accounts = () => {
               color="primary"
               outline
               onClick={() => {
-                navigate(`/posture/add-connection/${routeParams.account}`);
+                navigate(`/posture/add-connection/${routeParams.nodeType}`);
               }}
             >
-              Add {routeParams.account === 'kubernetes' && 'Cluster'}
-              {routeParams.account === 'host' && 'Host'}
-              {routeParams.account !== 'kubernetes' &&
-                routeParams.account !== 'host' &&
+              Add {routeParams.nodeType === ACCOUNT_CONNECTOR.KUBERNETES && 'Cluster'}
+              {routeParams.nodeType === ACCOUNT_CONNECTOR.LINUX && 'Host'}
+              {routeParams.nodeType !== ACCOUNT_CONNECTOR.KUBERNETES &&
+                routeParams.nodeType !== ACCOUNT_CONNECTOR.LINUX &&
                 'Account'}
             </Button>
           </div>

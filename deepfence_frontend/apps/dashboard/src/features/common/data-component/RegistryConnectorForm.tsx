@@ -15,6 +15,18 @@ import { JfrogConnectorForm } from '@/components/registries-connector/JfrogConne
 import { QuayConnectorForm } from '@/components/registries-connector/QuayConnectorForm';
 import { ApiError, makeRequest } from '@/utils/api';
 
+export const RegistryType = {
+  azure_container_registry: 'azure_container_registry',
+  docker_hub: 'docker_hub',
+  docker_private_registry: 'docker_private_registry',
+  ecr: 'ecr',
+  gitlab: 'gitlab',
+  google_container_registry: 'google_container_registry',
+  harbor: 'harbor',
+  jfrog_container_registry: 'jfrog_container_registry',
+  quay: 'quay',
+} as const;
+
 type ActionReturnType = {
   message?: string;
   success: boolean;
@@ -26,24 +38,12 @@ type FormProps = {
   registryType: string;
 };
 
-const REGISTRY_TYPE = {
-  ECR: 'ecr',
-  AZURE: 'azure',
-  GCR: 'gcr',
-  DOCKER_PRIVATE: 'dockerhub_private',
-  HARBOR: 'harbor',
-  GITLAB: 'gitlab',
-  JFROG: 'jfrog',
-  QUAY: 'quay',
-  DOCKER_HUB: 'docker_hub',
-};
-
 const getRequestBodyByRegistryType = (registryType: string, formData: FormData) => {
   const body = Object.fromEntries(formData);
   let requestParams = {};
 
   switch (registryType) {
-    case REGISTRY_TYPE.DOCKER_HUB:
+    case RegistryType.docker_hub:
       requestParams = {
         name: body.registryName,
         non_secret: {
@@ -117,22 +117,27 @@ export const RegistryConnectorForm = ({
 
   return (
     <fetcher.Form method="post" action={'/data-component/registries/add-connector'}>
-      {registryType === REGISTRY_TYPE.DOCKER_HUB && (
+      {registryType === RegistryType.docker_hub && (
         <DockerRegistryConnectorForm errorMessage={fetcher?.data?.message ?? ''} />
       )}
-      {registryType === REGISTRY_TYPE.ECR && <AmazonECRConnectorForm />}
-      {registryType === REGISTRY_TYPE.AZURE && <AzureCRConnectorForm />}
-      {registryType === REGISTRY_TYPE.GCR && <GoogleCRConnectorForm />}
 
-      {registryType === REGISTRY_TYPE.DOCKER_PRIVATE && <DockerPriavateConnectorForm />}
+      {registryType === RegistryType.ecr && <AmazonECRConnectorForm />}
+      {registryType === RegistryType.azure_container_registry && <AzureCRConnectorForm />}
+      {registryType === RegistryType.google_container_registry && (
+        <GoogleCRConnectorForm />
+      )}
 
-      {registryType === REGISTRY_TYPE.HARBOR && <HarborConnectorForm />}
+      {registryType === RegistryType.docker_private_registry && (
+        <DockerPriavateConnectorForm />
+      )}
 
-      {registryType === REGISTRY_TYPE.GITLAB && <GitLabConnectorForm />}
+      {registryType === RegistryType.harbor && <HarborConnectorForm />}
 
-      {registryType === REGISTRY_TYPE.JFROG && <JfrogConnectorForm />}
+      {registryType === RegistryType.gitlab && <GitLabConnectorForm />}
 
-      {registryType === REGISTRY_TYPE.QUAY && <QuayConnectorForm />}
+      {registryType === RegistryType.jfrog_container_registry && <JfrogConnectorForm />}
+
+      {registryType === RegistryType.quay && <QuayConnectorForm />}
 
       <input type="text" name="registryType" hidden readOnly value={registryType} />
       {renderButton()}

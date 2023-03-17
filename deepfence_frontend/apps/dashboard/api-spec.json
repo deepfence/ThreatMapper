@@ -7575,9 +7575,11 @@
       "ModelCloudNodeAccountInfo": {
         "type": "object",
         "properties": {
-          "active": { "type": "string" },
+          "active": { "type": "boolean" },
           "cloud_provider": { "type": "string" },
-          "compliance_percentage": { "type": "string" },
+          "compliance_percentage": { "type": "number" },
+          "last_scan_id": { "type": "string" },
+          "last_scan_status": { "type": "string" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" }
         }

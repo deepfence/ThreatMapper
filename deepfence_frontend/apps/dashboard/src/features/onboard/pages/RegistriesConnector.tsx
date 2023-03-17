@@ -2,27 +2,22 @@ import { useParams } from 'react-router-dom';
 import { Button } from 'ui-components';
 
 import { RegistryConnectorForm } from '@/features/common/data-component/RegistryConnectorForm';
-import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
-const RegistriesConnector = () => {
-  const { registryType } = useParams() as {
-    registryType: string;
+export const RegistriesConnector = () => {
+  const { connectorType } = useParams() as {
+    connectorType: string;
   };
   const { goBack, navigate } = usePageNavigation();
 
   return (
     <div className="w-full">
-      <ConnectorHeader
-        title="Docker Registry"
-        description="Deploy all modules for Deepfence Compliance Scanner for your registry"
-      />
       <>
         <RegistryConnectorForm
           onSuccess={() => {
             navigate('/onboard/connectors/my-connectors');
           }}
-          registryType={registryType}
+          registryType={connectorType}
           renderButton={() => (
             <div className="flex">
               <Button onClick={goBack} size="xs">
@@ -39,8 +34,4 @@ const RegistriesConnector = () => {
       </>
     </div>
   );
-};
-
-export const module = {
-  element: <RegistriesConnector />,
 };
