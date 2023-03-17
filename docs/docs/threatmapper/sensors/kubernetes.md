@@ -31,8 +31,8 @@ helm show values deepfence/deepfence-agent
 helm install deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
     --set deepfenceKey=73f6f3d0-9931-4b31-8967-fd6adf475f80 \
-    --set image.tag=1.4.2 \
-    --set image.clusterAgentImageTag=1.4.2 \
+    --set image.tag=1.5.0 \
+    --set image.clusterAgentImageTag=1.5.0 \
     --set clusterName=prod-cluster \
     --set mountContainerRuntimeSocket.containerdSock=true \
     --set mountContainerRuntimeSocket.dockerSock=false \
@@ -51,8 +51,8 @@ helm repo update deepfence
 helm upgrade deepfence-agent deepfence/deepfence-agent \
     --set managementConsoleUrl=x.x.x.x \
     --set deepfenceKey=73f6f3d0-9931-4b31-8967-fd6adf475f80
-    --set image.tag=1.4.2 \
-    --set image.clusterAgentImageTag=1.4.2 \
+    --set image.tag=1.5.0 \
+    --set image.clusterAgentImageTag=1.5.0 \
     --set clusterName="prod-cluster"
 ```
 

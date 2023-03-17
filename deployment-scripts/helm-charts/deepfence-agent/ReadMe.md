@@ -43,10 +43,10 @@ managementConsoleUrl: ""
 image:
   # deepfence agent runs as a daemonset in all nodes in the cluster
   name: deepfenceio/deepfence_agent_ce
-  tag: 1.4.2
+  tag: 1.5.0
   # cluster agent runs as a single pod
   clusterAgentImageName: deepfenceio/deepfence_discovery_ce
-  clusterAgentImageTag: 1.4.2
+  clusterAgentImageTag: 1.5.0
   pullPolicy: Always
   pullSecretName: deepfence-docker-secret
 ```

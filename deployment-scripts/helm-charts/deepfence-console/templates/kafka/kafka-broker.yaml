@@ -83,6 +83,9 @@ spec:
           #   periodSeconds: 30
           resources:
             {{- toYaml .Values.kafkaBroker.resources | nindent 12 }}
+          volumeMounts:
+          - name: deepfence-kafka-data
+            mountPath: /data
       {{- with .Values.kafkaBroker.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -91,9 +94,6 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-          volumeMounts:
-            - name: deepfence-kafka-data
-              mountPath: /data
       imagePullSecrets:
         - name: {{ .Values.image.pullSecretName }}
   volumeClaimTemplates:

@@ -2,6 +2,21 @@ apiVersion: v1
 entries:
   deepfence-agent:
   - apiVersion: v2
+    appVersion: 1.5.0
+    created: "2023-03-17T12:51:43.096873+05:30"
+    dependencies:
+    - condition: deployKubernetesScanner
+      name: deepfence-k8s-scanner
+      repository: https://deepfence-helm-charts.s3.amazonaws.com/deepfence-k8s-scanner
+      version: 0.1.0
+    description: Deepfence Agent - Helm chart for Kubernetes
+    digest: f65fade5ea504eb17c8fa61c4d009bba0dcef11e49a3ee17dff908a2f1f6adf3
+    name: deepfence-agent
+    type: application
+    urls:
+    - deepfence-agent-1.5.0.tgz
+    version: 1.5.0
+  - apiVersion: v2
     appVersion: 1.4.2
     created: "2023-01-12T18:17:57.272773+05:30"
     dependencies:
@@ -177,6 +192,16 @@ entries:
     - deepfence-agent-1.0.0.tgz
     version: 1.0.0
   deepfence-console:
+  - apiVersion: v2
+    appVersion: 1.5.0
+    created: "2023-03-17T12:51:43.100909+05:30"
+    description: Deepfence Console - Helm chart for Kubernetes
+    digest: 6ac2447fc3cc77b8580d24bdf1fce517426cdb41cb13fffd02191c131e027a28
+    name: deepfence-console
+    type: application
+    urls:
+    - deepfence-console-1.5.0.tgz
+    version: 1.5.0
   - apiVersion: v2
     appVersion: 1.4.2
     created: "2023-01-12T18:17:57.277377+05:30"
@@ -359,6 +384,16 @@ entries:
     version: 1.0.0
   deepfence-router:
   - apiVersion: v2
+    appVersion: 1.5.0
+    created: "2023-03-17T12:51:43.102333+05:30"
+    description: Deepfence Router - Helm chart for Kubernetes
+    digest: 98a5b44fd0c821d51c9b45a3186c242d63c9798bca4129a7eba793ac5bc4f50e
+    name: deepfence-router
+    type: application
+    urls:
+    - deepfence-router-1.5.0.tgz
+    version: 1.5.0
+  - apiVersion: v2
     appVersion: 1.4.2
     created: "2023-01-12T18:17:57.278349+05:30"
     description: Deepfence Router - Helm chart for Kubernetes
@@ -458,4 +493,4 @@ entries:
     urls:
     - deepfence-router-1.0.0.tgz
     version: 1.0.0
-generated: "2023-01-12T18:17:57.270606+05:30"
+generated: "2023-03-17T12:51:43.095649+05:30"

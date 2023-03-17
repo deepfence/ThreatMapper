@@ -1,20 +1,19 @@
 package host
 
 import (
+	//"os/exec"
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
-
-	"github.com/deepfence/df-utils/cloud_metadata"
-	"github.com/sirupsen/logrus"
-
-	//"os/exec"
-	"encoding/json"
 	"runtime"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/deepfence/df-utils/cloud_metadata"
+	"github.com/sirupsen/logrus"
 
 	dfUtils "github.com/deepfence/df-utils"
 	"github.com/weaveworks/common/mtime"
@@ -24,7 +23,7 @@ import (
 
 // Agent version to dispay in metadata
 var (
-	agentVersionNo           = "1.4.2"
+	agentVersionNo           = "1.5.0"
 	agentCommitID            = "Unknown"
 	agentBuildTime           = "0"
 	agentRunning             = "yes"
