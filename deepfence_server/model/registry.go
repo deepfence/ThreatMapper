@@ -29,7 +29,7 @@ type RegistryAddReq struct {
 }
 
 type RegistryUpdateReq struct {
-	Id           string                 `json:"id" validate:"required" required:"true"`
+	Id           string                 `path:"registry_id" validate:"required" required:"true"`
 	Name         string                 `json:"name"`
 	NonSecret    map[string]interface{} `json:"non_secret"`
 	Secret       map[string]interface{} `json:"secret"`

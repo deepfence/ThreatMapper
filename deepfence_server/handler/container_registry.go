@@ -158,7 +158,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	idStr := req.Id
+	idStr := chi.URLParam(r, "registry_id")
 	if idStr == "" {
 		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryIdMissing})
 		return
