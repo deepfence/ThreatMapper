@@ -6,10 +6,10 @@ import {
   G6Edge,
   G6Graph,
   G6Node,
-  GraphAction,
   InputLayoutOptions,
   NodeModel,
   OutputLayoutOptions,
+  TopologyAction,
 } from '@/features/topology/types/graph';
 import { itemExpandsAsCombo } from '@/features/topology/utils/expand-collapse';
 import {
@@ -23,7 +23,7 @@ import {
 } from '@/features/topology/utils/graph-layout';
 import { getNodeImage, nodeStyle } from '@/features/topology/utils/graph-styles';
 
-export const updateGraph = (graph: G6Graph, apiDiff: ApiDiff, action: GraphAction) => {
+export const updateGraph = (graph: G6Graph, apiDiff: ApiDiff, action: TopologyAction) => {
   const modelNodesDiff = convertApiNodesDiffToModelNodesDiff(graph, apiDiff.nodesDiff);
   const modelEdgesDiff = convertApiEdgesDiffToModelEdgesDiff(apiDiff.edgesDiff);
 
@@ -352,7 +352,7 @@ function removeEdgeItem(graph: G6Graph, item: G6Edge) {
   graph.removeItem(item);
 }
 
-function isExpanding(nodeId: string, action: GraphAction) {
+function isExpanding(nodeId: string, action: TopologyAction) {
   return action.type === 'expandNode' && action.nodeId === nodeId;
 }
 

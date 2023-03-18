@@ -9,8 +9,8 @@ import { useG6raph } from '@/features/topology/hooks/useG6Graph';
 import {
   G6GraphEvent,
   G6Node,
-  GraphAction,
   NodeModel,
+  TopologyAction,
 } from '@/features/topology/types/graph';
 import {
   focusItem,
@@ -27,7 +27,7 @@ import { ApiError, makeRequest } from '@/utils/api';
 
 interface ActionData {
   data: ApiDocsGraphResult;
-  action?: GraphAction;
+  action?: TopologyAction;
 }
 
 const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
@@ -102,8 +102,8 @@ const Graph = () => {
     graph.on('node:click', (e: G6GraphEvent) => {
       const { item: node } = e;
       const model = node?.getModel() as NodeModel;
-      if (!itemExpands(node)) return;
       if (!model?.df_data?.type) return; // does not do anything, helps with typescript errors
+      if (!itemExpands(model.df_data)) return;
 
       if (
         !graphDataManagerFunctionsRef.current.isNodeExpanded({

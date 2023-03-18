@@ -1,3 +1,4 @@
+import { DetailedNodeSummary } from '@/api/generated';
 import {
   G6Combo,
   G6Graph,
@@ -18,9 +19,7 @@ export const itemExpandsAsCombo = (item: G6Item | null) => {
   );
 };
 
-export const itemExpands = (item: G6Item | null) => {
-  const model = item?.get('model') as NodeModel;
-  if (!model || !model.df_data) return false;
+export const itemExpands = (node: DetailedNodeSummary | null) => {
   return [
     'cloud_provider',
     'cloud_region',
@@ -28,7 +27,7 @@ export const itemExpands = (item: G6Item | null) => {
     'pod',
     'kubernetes_cluster',
     'container',
-  ].includes(model.df_data.type ?? '');
+  ].includes(node?.type ?? '');
 };
 
 export const nodeToFront = (graph: G6Graph, nodeId: string) => {

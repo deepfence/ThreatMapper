@@ -87,7 +87,7 @@ export type ComboModel = ComboConfig & {
   center_ids?: Array<string>;
 };
 
-export type GraphAction =
+export type TopologyAction =
   | {
       type: 'expandNode';
       nodeId: string;

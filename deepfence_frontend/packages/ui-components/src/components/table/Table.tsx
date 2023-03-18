@@ -171,7 +171,7 @@ const CustomTable = <TData extends RowData>(
             pagination: internalPaginationState,
           }
         : {}),
-      ...(enableSorting && manualSorting
+      ...(enableSorting && sortingState
         ? {
             sorting: sortingState,
           }
@@ -193,7 +193,8 @@ const CustomTable = <TData extends RowData>(
     ...(enablePagination && !manualPagination
       ? { onPaginationChange: setInternalPaginationState }
       : {}),
-    ...(enableSorting && manualSorting ? { manualSorting: true, onSortingChange } : {}),
+    ...(enableSorting && manualSorting ? { manualSorting: true } : {}),
+    ...(enableSorting && onSortingChange ? { onSortingChange } : {}),
     ...(enableRowSelection
       ? {
           onRowSelectionChange,

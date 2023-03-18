@@ -7,6 +7,7 @@ import {
   GraphTopologyFilters,
 } from '@/api/generated';
 import { ApiDiff } from '@/features/topology/types/graph';
+import { TopologyTreeData } from '@/features/topology/types/table';
 import { getObjectKeys } from '@/utils/array';
 
 export function getTopologyDiff(
@@ -112,6 +113,8 @@ export enum NodeType {
   process = 'process',
 }
 
+type NodesMap = Map<string, DetailedNodeSummary>;
+
 export class GraphStorageManager {
   private data?: ApiDocsGraphResult;
   private previousData?: ApiDocsGraphResult;
@@ -127,22 +130,23 @@ export class GraphStorageManager {
     region_filter: [],
   };
   constructor() {
-    this.getData = this.getData.bind(this);
-    this.getPreviousData = this.getPreviousData.bind(this);
+    this.getApiData = this.getApiData.bind(this);
+    this.getPreviousApiData = this.getPreviousApiData.bind(this);
     this.getDiff = this.getDiff.bind(this);
     this.getFilters = this.getFilters.bind(this);
     this.setGraphData = this.setGraphData.bind(this);
     this.createDiff = this.createDiff.bind(this);
-    this.updateFilters = this.updateFilters.bind(this);
+    this.updateFiltersFromApiData = this.updateFiltersFromApiData.bind(this);
     this.addNodeToFilters = this.addNodeToFilters.bind(this);
     this.removeNodeFromFilters = this.removeNodeFromFilters.bind(this);
     this.isNodeExpanded = this.isNodeExpanded.bind(this);
     this.findChildrenIdsOfType = this.findChildrenIdsOfType.bind(this);
+    this.getTreeData = this.getTreeData.bind(this);
   }
-  getData() {
+  getApiData() {
     return this.data;
   }
-  getPreviousData() {
+  getPreviousApiData() {
     return this.previousData;
   }
   getDiff() {
@@ -155,7 +159,7 @@ export class GraphStorageManager {
     this.previousData = this.data;
     this.data = data;
     this.createDiff();
-    this.updateFilters();
+    this.updateFiltersFromApiData();
   }
   private createDiff() {
     if (this.data) this.diff = getTopologyDiff(this.data, this.previousData);
@@ -175,7 +179,7 @@ export class GraphStorageManager {
     }
     return result;
   }
-  updateFilters() {
+  updateFiltersFromApiData() {
     // here we see if the latest data doesn't have a node that was filtered upon,
     // if so, we remove it from the filters.
     // we need to start at the top first and then down the tree.
@@ -285,4 +289,62 @@ export class GraphStorageManager {
       (nodeType === NodeType.pod && this.filters.pod_filter?.includes(nodeId))
     );
   }
+  getTreeData({
+    parentId = '',
+    rootNodeType,
+    nodesAsMap,
+  }: {
+    parentId?: string;
+    rootNodeType?: NodeType;
+    nodesAsMap?: NodesMap;
+  }): TopologyTreeData[] {
+    if (!nodesAsMap) {
+      nodesAsMap = new Map();
+      const apiData = this.getApiData()?.nodes ?? {};
+      Object.keys(apiData).forEach((nodeId) => {
+        const node = apiData[nodeId];
+        if (node.type === 'pseudo') return; // ignore psuedo nodes for tree data;
+        nodesAsMap?.set(nodeId, node);
+      });
+    }
+    const nodes: TopologyTreeData[] = [];
+    for (const node of nodesAsMap.values()) {
+      if (node.immediate_parent_id !== parentId) {
+        continue;
+      }
+      if (rootNodeType && node.type !== rootNodeType) {
+        continue;
+      }
+      nodes.push({
+        ...node,
+        children: this.getTreeData({
+          parentId: node.id,
+          nodesAsMap,
+        }),
+      });
+    }
+    return nodes;
+  }
+}
+
+export function getExpandedIdsFromTreeData(treeData: TopologyTreeData[]): string[] {
+  let results: string[] = [];
+  for (const node of treeData) {
+    if (node.children?.length) {
+      results.push(node.id!);
+      results = results.concat(getExpandedIdsFromTreeData(node.children));
+    }
+  }
+  return results;
+}
+
+export function getIdsFromTreeData(treeData: TopologyTreeData[]): string[] {
+  let results: string[] = [];
+  for (const node of treeData) {
+    results.push(node.id!);
+    if (node.children?.length) {
+      results = results.concat(getIdsFromTreeData(node.children));
+    }
+  }
+  return results;
 }
