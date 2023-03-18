@@ -33,7 +33,7 @@ import {
 import {
   getCloudComplianceApiClient,
   getComplianceApiClient,
-  getMalwareScanApiClient,
+  getMalwareApiClient,
   getSecretApiClient,
   getVulnerabilityApiClient,
 } from '@/api/api';
@@ -69,7 +69,7 @@ type ConfigProps = {
 export const statusScanApiFunctionMap = {
   vulnerability: getVulnerabilityApiClient().statusVulnerabilityScan,
   secret: getSecretApiClient().statusSecretScan,
-  malware: getMalwareScanApiClient().statusMalwareScan,
+  malware: getMalwareApiClient().statusMalwareScan,
   compliance: getComplianceApiClient().statusComplianceScan,
   cloudCompliance: getCloudComplianceApiClient().statusCloudComplianceScan,
 };

@@ -24,12 +24,6 @@ export interface ModelCloudCompliance {
      * @type {string}
      * @memberof ModelCloudCompliance
      */
-    timestamp: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelCloudCompliance
-     */
     account_id: string;
     /**
      * 
@@ -108,12 +102,6 @@ export interface ModelCloudCompliance {
      * @type {string}
      * @memberof ModelCloudCompliance
      */
-    scan_id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelCloudCompliance
-     */
     service: string;
     /**
      * 
@@ -152,7 +140,6 @@ export interface ModelCloudCompliance {
  */
 export function instanceOfModelCloudCompliance(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "timestamp" in value;
     isInstance = isInstance && "account_id" in value;
     isInstance = isInstance && "cloud_provider" in value;
     isInstance = isInstance && "compliance_check_type" in value;
@@ -166,7 +153,6 @@ export function instanceOfModelCloudCompliance(value: object): boolean {
     isInstance = isInstance && "reason" in value;
     isInstance = isInstance && "region" in value;
     isInstance = isInstance && "resource" in value;
-    isInstance = isInstance && "scan_id" in value;
     isInstance = isInstance && "service" in value;
     isInstance = isInstance && "severity" in value;
     isInstance = isInstance && "status" in value;
@@ -187,7 +173,6 @@ export function ModelCloudComplianceFromJSONTyped(json: any, ignoreDiscriminator
     }
     return {
         
-        'timestamp': json['@timestamp'],
         'account_id': json['account_id'],
         'cloud_provider': json['cloud_provider'],
         'compliance_check_type': json['compliance_check_type'],
@@ -201,7 +186,6 @@ export function ModelCloudComplianceFromJSONTyped(json: any, ignoreDiscriminator
         'reason': json['reason'],
         'region': json['region'],
         'resource': json['resource'],
-        'scan_id': json['scan_id'],
         'service': json['service'],
         'severity': json['severity'],
         'status': json['status'],
@@ -220,7 +204,6 @@ export function ModelCloudComplianceToJSON(value?: ModelCloudCompliance | null):
     }
     return {
         
-        '@timestamp': value.timestamp,
         'account_id': value.account_id,
         'cloud_provider': value.cloud_provider,
         'compliance_check_type': value.compliance_check_type,
@@ -234,7 +217,6 @@ export function ModelCloudComplianceToJSON(value?: ModelCloudCompliance | null):
         'reason': value.reason,
         'region': value.region,
         'resource': value.resource,
-        'scan_id': value.scan_id,
         'service': value.service,
         'severity': value.severity,
         'status': value.status,

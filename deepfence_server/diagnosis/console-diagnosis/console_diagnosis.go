@@ -1,19 +1,21 @@
 package console_diagnosis
 
 import (
+	"context"
 	"os"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
 const (
-	DockerOrchestrator     = "docker"
-	KubernetesOrchestrator = "kubernetes"
-	HaproxyLogsPath        = "/var/log/haproxy"
+	DockerOrchestrator               = "docker"
+	KubernetesOrchestrator           = "kubernetes"
+	HaproxyLogsPath                  = "/var/log/haproxy"
+	ConsoleDiagnosisFileServerPrefix = "/diagnosis/console-diagnosis/"
 )
 
 type ConsoleDiagnosisHandler interface {
-	GenerateDiagnosticLogs(tail string) error
+	GenerateDiagnosticLogs(ctx context.Context, tail string) error
 }
 
 func NewConsoleDiagnosisHandler(orchestrator string) (ConsoleDiagnosisHandler, error) {

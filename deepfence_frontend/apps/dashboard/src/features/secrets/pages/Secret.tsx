@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Await, useLoaderData } from 'react-router-dom';
+import { useLoaderData } from 'react-router-dom';
 
 import { getSearchApiClient, getSecretApiClient } from '@/api/api';
 import {

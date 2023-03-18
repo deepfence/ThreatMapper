@@ -47,11 +47,7 @@ import {
 } from 'ui-components';
 import { Checkbox, SelectItem } from 'ui-components';
 
-import {
-  getScanResultsApiClient,
-  getSearchApiClient,
-  getTopologyApiClient,
-} from '@/api/api';
+import { getScanResultsApiClient, getSearchApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
   ModelScanInfo,
@@ -106,10 +102,6 @@ export type LoaderDataType = {
   error?: string;
   message?: string;
   data: Awaited<ReturnType<typeof getScans>>;
-  clusters?: {
-    clusterId: string;
-    clusterName: string;
-  }[];
 };
 
 const getStatusSearch = (searchParams: URLSearchParams) => {
@@ -130,62 +122,6 @@ const getLanguagesSearch = (searchParams: URLSearchParams) => {
 const getClustersSearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('clusters');
 };
-
-async function getClusters(): Promise<LoaderDataType['clusters']> {
-  const result = await makeRequest({
-    apiFunction: getTopologyApiClient().getKubernetesTopologyGraph,
-    apiArgs: [
-      {
-        graphTopologyFilters: {
-          cloud_filter: [],
-          field_filters: {
-            contains_filter: { filter_in: null },
-            order_filter: null as any,
-            match_filter: {
-              filter_in: {},
-            },
-          },
-          host_filter: [],
-          kubernetes_filter: [],
-          pod_filter: [],
-          region_filter: [],
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
-  });
-  if (ApiError.isApiError(result)) {
-    throw result.value();
-  }
-
-  if (result === null) {
-    return [];
-  }
-  const clusters = Object.keys(result.nodes)
-    .map((key) => result.nodes[key])
-    .filter((node) => {
-      return node.type === 'kubernetes_cluster';
-    })
-    .sort((a, b) => {
-      return (a.label ?? a.id ?? '').localeCompare(b.label ?? b.id ?? '');
-    });
-  return clusters.map((res) => {
-    return {
-      clusterId: res.id ?? 'N/A',
-      clusterName: res.label ?? 'N/A',
-    };
-  });
-}
 
 async function getScans(
   nodeTypes: NodeTypeEnum[],
@@ -384,7 +320,6 @@ const loader = async ({
 
   return typedDefer({
     data: getScans(nodeType as NodeTypeEnum[], searchParams),
-    clusters: getClusters(),
   });
 };
 
@@ -715,7 +650,7 @@ const SecretScans = () => {
           return (
             <WrapperComponent>
               <div className="flex items-center gap-x-2 truncate">
-                <span className="truncate capitalize">{info.getValue()}</span>
+                <span className="truncate">{info.getValue()}</span>
               </div>
             </WrapperComponent>
           );

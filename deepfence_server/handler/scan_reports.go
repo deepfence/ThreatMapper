@@ -33,7 +33,10 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-const MaxSbomRequestSize = 500 * 1e6
+const (
+	MaxSbomRequestSize      = 500 * 1e6
+	DownloadReportUrlExpiry = 5 * time.Minute
+)
 
 func scanId(req model.NodeIdentifier) string {
 	return fmt.Sprintf("%s-%d", req.NodeId, time.Now().Unix())
@@ -703,7 +706,7 @@ func (h *Handler) ListVulnerabilityScanResultsHandler(w http.ResponseWriter, r *
 }
 
 func (h *Handler) ListSecretScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, common, err := listScanResultsHandler[model.SecretRule](w, r, utils.NEO4J_SECRET_SCAN)
+	entries, common, err := listScanResultsHandler[model.Secret](w, r, utils.NEO4J_SECRET_SCAN)
 	if err != nil {
 		respondError(err, w)
 		return
@@ -772,7 +775,7 @@ func (h *Handler) CountVulnerabilityScanResultsHandler(w http.ResponseWriter, r 
 }
 
 func (h *Handler) CountSecretScanResultsHandler(w http.ResponseWriter, r *http.Request) {
-	entries, _, err := listScanResultsHandler[model.SecretRule](w, r, utils.NEO4J_SECRET_SCAN)
+	entries, _, err := listScanResultsHandler[model.Secret](w, r, utils.NEO4J_SECRET_SCAN)
 	if err != nil {
 		respondError(err, w)
 		return
@@ -1013,7 +1016,7 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 
 	switch action {
 	case "get":
-		var sbom []model.SbomResponse
+		sbom := make([]model.SbomResponse, 0)
 		runtimeSbom := path.Join("sbom", "runtime-"+utils.ScanIdReplacer.Replace(req.ScanID)+".json")
 		buff, err := mc.DownloadFileContexts(r.Context(), runtimeSbom, minio.GetObjectOptions{})
 		if err != nil {
@@ -1030,7 +1033,7 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 	case "download":
 		resp := model.DownloadReportResponse{}
 		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(req.ScanID)+".json")
-		url, err := mc.ExposeFile(r.Context(), sbomFile, 5*time.Minute, url.Values{})
+		url, err := mc.ExposeFile(r.Context(), sbomFile, true, DownloadReportUrlExpiry, url.Values{})
 		if err != nil {
 			log.Error().Msg(err.Error())
 			respondError(err, w)

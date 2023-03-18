@@ -16,102 +16,101 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelSecretRule
+ * @interface ModelSecret
  */
-export interface ModelSecretRule {
+export interface ModelSecret {
     /**
      * 
      * @type {string}
-     * @memberof ModelSecretRule
+     * @memberof ModelSecret
      */
     full_filename: string;
     /**
      * 
-     * @type {number}
-     * @memberof ModelSecretRule
-     */
-    id: number;
-    /**
-     * 
      * @type {string}
-     * @memberof ModelSecretRule
+     * @memberof ModelSecret
      */
     level: string;
     /**
      * 
      * @type {boolean}
-     * @memberof ModelSecretRule
+     * @memberof ModelSecret
      */
     masked: boolean;
     /**
      * 
      * @type {string}
-     * @memberof ModelSecretRule
+     * @memberof ModelSecret
      */
     matched_content: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelSecretRule
+     * @memberof ModelSecret
      */
     name: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelSecretRule
+     * @memberof ModelSecret
      */
     node_id: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelSecretRule
+     * @memberof ModelSecret
      */
     part: string;
     /**
      * 
      * @type {number}
-     * @memberof ModelSecretRule
+     * @memberof ModelSecret
      */
     relative_ending_index: number;
     /**
      * 
      * @type {number}
-     * @memberof ModelSecretRule
+     * @memberof ModelSecret
      */
     relative_starting_index: number;
     /**
      * 
      * @type {number}
-     * @memberof ModelSecretRule
+     * @memberof ModelSecret
+     */
+    rule_id: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelSecret
      */
     score: number;
     /**
      * 
      * @type {string}
-     * @memberof ModelSecretRule
+     * @memberof ModelSecret
      */
     signature_to_match: string;
     /**
      * 
      * @type {number}
-     * @memberof ModelSecretRule
+     * @memberof ModelSecret
      */
     starting_index: number;
     /**
      * 
      * @type {number}
-     * @memberof ModelSecretRule
+     * @memberof ModelSecret
      */
     updated_at: number;
 }
 
 /**
- * Check if a given object implements the ModelSecretRule interface.
+ * Check if a given object implements the ModelSecret interface.
  */
-export function instanceOfModelSecretRule(value: object): boolean {
+export function instanceOfModelSecret(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "full_filename" in value;
-    isInstance = isInstance && "id" in value;
     isInstance = isInstance && "level" in value;
     isInstance = isInstance && "masked" in value;
     isInstance = isInstance && "matched_content" in value;
@@ -120,6 +119,7 @@ export function instanceOfModelSecretRule(value: object): boolean {
     isInstance = isInstance && "part" in value;
     isInstance = isInstance && "relative_ending_index" in value;
     isInstance = isInstance && "relative_starting_index" in value;
+    isInstance = isInstance && "rule_id" in value;
     isInstance = isInstance && "score" in value;
     isInstance = isInstance && "signature_to_match" in value;
     isInstance = isInstance && "starting_index" in value;
@@ -128,18 +128,17 @@ export function instanceOfModelSecretRule(value: object): boolean {
     return isInstance;
 }
 
-export function ModelSecretRuleFromJSON(json: any): ModelSecretRule {
-    return ModelSecretRuleFromJSONTyped(json, false);
+export function ModelSecretFromJSON(json: any): ModelSecret {
+    return ModelSecretFromJSONTyped(json, false);
 }
 
-export function ModelSecretRuleFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelSecretRule {
+export function ModelSecretFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelSecret {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
         'full_filename': json['full_filename'],
-        'id': json['id'],
         'level': json['level'],
         'masked': json['masked'],
         'matched_content': json['matched_content'],
@@ -148,6 +147,7 @@ export function ModelSecretRuleFromJSONTyped(json: any, ignoreDiscriminator: boo
         'part': json['part'],
         'relative_ending_index': json['relative_ending_index'],
         'relative_starting_index': json['relative_starting_index'],
+        'rule_id': json['rule_id'],
         'score': json['score'],
         'signature_to_match': json['signature_to_match'],
         'starting_index': json['starting_index'],
@@ -155,7 +155,7 @@ export function ModelSecretRuleFromJSONTyped(json: any, ignoreDiscriminator: boo
     };
 }
 
-export function ModelSecretRuleToJSON(value?: ModelSecretRule | null): any {
+export function ModelSecretToJSON(value?: ModelSecret | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -165,7 +165,6 @@ export function ModelSecretRuleToJSON(value?: ModelSecretRule | null): any {
     return {
         
         'full_filename': value.full_filename,
-        'id': value.id,
         'level': value.level,
         'masked': value.masked,
         'matched_content': value.matched_content,
@@ -174,6 +173,7 @@ export function ModelSecretRuleToJSON(value?: ModelSecretRule | null): any {
         'part': value.part,
         'relative_ending_index': value.relative_ending_index,
         'relative_starting_index': value.relative_starting_index,
+        'rule_id': value.rule_id,
         'score': value.score,
         'signature_to_match': value.signature_to_match,
         'starting_index': value.starting_index,

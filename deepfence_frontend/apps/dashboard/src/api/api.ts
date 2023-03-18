@@ -112,12 +112,14 @@ export function getRegistriesApiClient() {
   };
 }
 
-export function getMalwareScanApiClient() {
+export function getMalwareApiClient() {
   const malwareApi = new MalwareScanApi(configuration);
   return {
     startMalwareScan: malwareApi.startMalwareScan.bind(malwareApi),
     resultMalwareScan: malwareApi.resultsMalwareScan.bind(malwareApi),
+    resultCountMalwareScan: malwareApi.countResultsMalwareScan.bind(malwareApi),
     statusMalwareScan: malwareApi.statusMalwareScan.bind(malwareApi),
+    listMalwareScans: malwareApi.listMalwareScan.bind(malwareApi),
   };
 }
 
@@ -136,6 +138,11 @@ export function getSearchApiClient() {
     searchSecrets: searchApi.searchSecrets.bind(searchApi),
     searchSecretsCount: searchApi.countSecrets.bind(searchApi),
     searchSecretScanCount: searchApi.countSecretsScans.bind(searchApi),
+
+    searchMalwaresScan: searchApi.searchMalwareScans.bind(searchApi),
+    searchMalwares: searchApi.searchMalwares.bind(searchApi),
+    searchMalwaresCount: searchApi.countMalwares.bind(searchApi),
+    searchMalwareScanCount: searchApi.countMalwareScans.bind(searchApi),
   };
 }
 

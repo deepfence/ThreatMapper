@@ -19,6 +19,7 @@ import type {
   ApiDocsFailureResponse,
   DiagnosisDiagnosticNotification,
   DiagnosisGenerateDiagnosticLogsRequest,
+  DiagnosisGetDiagnosticLogsResponse,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -29,6 +30,8 @@ import {
     DiagnosisDiagnosticNotificationToJSON,
     DiagnosisGenerateDiagnosticLogsRequestFromJSON,
     DiagnosisGenerateDiagnosticLogsRequestToJSON,
+    DiagnosisGetDiagnosticLogsResponseFromJSON,
+    DiagnosisGetDiagnosticLogsResponseToJSON,
 } from '../models';
 
 export interface GenerateAgentDiagnosticLogsRequest {
@@ -100,13 +103,13 @@ export interface DiagnosisApiInterface {
      * @throws {RequiredError}
      * @memberof DiagnosisApiInterface
      */
-    getDiagnosticLogsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+    getDiagnosticLogsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DiagnosisGetDiagnosticLogsResponse>>;
 
     /**
      * Get diagnostic logs download url links
      * Get Diagnostic Logs
      */
-    getDiagnosticLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+    getDiagnosticLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DiagnosisGetDiagnosticLogsResponse>;
 
 }
 
@@ -231,7 +234,7 @@ export class DiagnosisApi extends runtime.BaseAPI implements DiagnosisApiInterfa
      * Get diagnostic logs download url links
      * Get Diagnostic Logs
      */
-    async getDiagnosticLogsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async getDiagnosticLogsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DiagnosisGetDiagnosticLogsResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -251,15 +254,16 @@ export class DiagnosisApi extends runtime.BaseAPI implements DiagnosisApiInterfa
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => DiagnosisGetDiagnosticLogsResponseFromJSON(jsonValue));
     }
 
     /**
      * Get diagnostic logs download url links
      * Get Diagnostic Logs
      */
-    async getDiagnosticLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.getDiagnosticLogsRaw(initOverrides);
+    async getDiagnosticLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DiagnosisGetDiagnosticLogsResponse> {
+        const response = await this.getDiagnosticLogsRaw(initOverrides);
+        return await response.value();
     }
 
 }

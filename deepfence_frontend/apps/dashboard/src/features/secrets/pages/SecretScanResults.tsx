@@ -54,8 +54,8 @@ import {
   ApiDocsBadRequestResponse,
   ModelScanResultsActionRequestScanTypeEnum,
   ModelScanResultsReq,
-  ModelSecretRule,
 } from '@/api/generated';
+import { ModelSecret } from '@/api/generated/models/ModelSecret';
 import { DFLink } from '@/components/DFLink';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
@@ -91,7 +91,7 @@ type ScanResult = {
   nodeType: string;
   nodeId: string;
   timestamp: number;
-  tableData: ModelSecretRule[];
+  tableData: ModelSecret[];
   pagination: {
     currentPage: number;
     totalRows: number;
@@ -107,7 +107,7 @@ export type LoaderDataType = {
 const PAGE_SIZE = 15;
 
 const getSeveritySearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('level');
+  return searchParams.getAll('severity');
 };
 const getMaskSearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('mask');
@@ -576,7 +576,7 @@ const UnMaskDropdown = ({ ids }: { ids: string[] }) => {
               >
                 <HiEye />
               </IconContext.Provider>
-              Unmask {ids.length > 1 ? 'secret' : 'secrets'} across hosts and images
+              Unmask {ids.length > 1 ? 'secrets' : 'secret'} across hosts and images
             </span>
           </DropdownItem>
         </>
@@ -758,8 +758,8 @@ const SecretTable = () => {
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
-        size: 50,
-        minSize: 30,
+        size: 20,
+        minSize: 20,
         maxSize: 50,
       }),
       columnHelper.accessor('node_id', {
@@ -780,23 +780,23 @@ const SecretTable = () => {
           </DFLink>
         ),
         header: () => 'ID',
-        minSize: 100,
-        size: 120,
-        maxSize: 130,
+        minSize: 50,
+        size: 60,
+        maxSize: 65,
       }),
       columnHelper.accessor('full_filename', {
         cell: (info) => info.getValue(),
         header: () => 'Filename',
-        minSize: 100,
-        size: 200,
-        maxSize: 210,
+        minSize: 80,
+        size: 90,
+        maxSize: 110,
       }),
       columnHelper.accessor('matched_content', {
         cell: (info) => info.getValue(),
         header: () => 'Matched Content',
-        minSize: 100,
-        size: 200,
-        maxSize: 210,
+        minSize: 50,
+        size: 60,
+        maxSize: 65,
       }),
       columnHelper.accessor('level', {
         cell: (info) => (
@@ -818,9 +818,9 @@ const SecretTable = () => {
           />
         ),
         header: () => 'Severity',
-        minSize: 90,
-        size: 100,
-        maxSize: 110,
+        minSize: 30,
+        size: 40,
+        maxSize: 65,
       }),
       columnHelper.accessor('name', {
         enableSorting: false,
@@ -828,9 +828,9 @@ const SecretTable = () => {
           return info.getValue();
         },
         header: () => 'Rule Name',
-        minSize: 200,
-        size: 250,
-        maxSize: 260,
+        minSize: 80,
+        size: 90,
+        maxSize: 110,
       }),
       columnHelper.accessor('signature_to_match', {
         enableSorting: false,
@@ -838,9 +838,9 @@ const SecretTable = () => {
           return info.getValue() || 'unknown';
         },
         header: () => 'Signature to match',
-        minSize: 200,
-        size: 250,
-        maxSize: 260,
+        minSize: 70,
+        size: 80,
+        maxSize: 100,
       }),
       columnHelper.display({
         id: 'actions',
@@ -852,9 +852,9 @@ const SecretTable = () => {
           />
         ),
         header: () => '',
-        minSize: 40,
-        size: 40,
-        maxSize: 40,
+        minSize: 20,
+        size: 20,
+        maxSize: 20,
         enableResizing: false,
       }),
     ];
@@ -998,7 +998,9 @@ const HeaderComponent = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const loaderData = useLoaderData() as LoaderDataType;
   const isFilterApplied =
-    searchParams.has('level') || searchParams.has('mask') || searchParams.has('unmask');
+    searchParams.has('severity') ||
+    searchParams.has('mask') ||
+    searchParams.has('unmask');
 
   return (
     <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
@@ -1117,16 +1119,16 @@ const HeaderComponent = ({
                     <fieldset>
                       <Select
                         noPortal
-                        name="level"
+                        name="severity"
                         label={'Severity'}
                         placeholder="Select Severity"
-                        value={searchParams.getAll('level')}
+                        value={searchParams.getAll('severity')}
                         sizing="xs"
                         onChange={(value) => {
                           setSearchParams((prev) => {
-                            prev.delete('level');
-                            value.forEach((language) => {
-                              prev.append('level', language);
+                            prev.delete('severity');
+                            value.forEach((severity) => {
+                              prev.append('severity', severity);
                             });
                             prev.delete('page');
                             return prev;

@@ -14,7 +14,8 @@ import {
 import { Badge, CircleSpinner, ModalHeader, SlidingModal } from 'ui-components';
 
 import { getSearchApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelSecretRule } from '@/api/generated';
+import { ApiDocsBadRequestResponse } from '@/api/generated';
+import { ModelSecret } from '@/api/generated/models/ModelSecret';
 import { CopyToClipboardAsJson } from '@/components/CopyToClipboardIcon';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -28,7 +29,7 @@ dayjs.extend(relativeTime);
 type LoaderDataType = {
   error?: string;
   message?: string;
-  data?: ModelSecretRule;
+  data?: ModelSecret;
 };
 
 async function getSecrets(secretId: string) {
@@ -173,16 +174,9 @@ const DetailsComponent = () => {
                 </div>
               );
             }
-            const pickBy = [
-              'updated_at',
-              'name',
-              'full_filename',
-              'level',
-              'score',
-              'node_id',
-            ];
-            const fixed = pick<ModelSecretRule>(secret, pickBy);
-            const others = omit<ModelSecretRule>(secret, pickBy);
+            const pickBy = ['updated_at', 'name', 'full_filename', 'level', 'score'];
+            const fixed = pick<ModelSecret>(secret, pickBy);
+            const others = omit<ModelSecret>(secret, pickBy);
 
             return (
               <div className="text-gray-900 dark:text-gray-300">
@@ -241,7 +235,7 @@ const DetailsComponent = () => {
                             startCase(startCase(key)).toLowerCase(),
                           );
                           return (
-                            <div key={key} className="flex flex-col gap-4">
+                            <div key={key} className="flex flex-col">
                               <span className="text-xs text-gray-500">{label}</span>
                               <span className="text-sm">
                                 {others[key] === '' ? '-' : others[key]?.toString()}

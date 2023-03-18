@@ -39,16 +39,33 @@ type FieldsFilters struct {
 func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilter) []string {
 	conditions := []string{}
 	for k, vs := range filter.FieldsValues {
-		var values []string
-		for i := range vs {
-			if str, ok := vs[i].(string); ok {
-				values = append(values, fmt.Sprintf("'%s'", str))
-			} else {
-				values = append(values, fmt.Sprintf("%v", vs[i]))
+		if k == "node_type" {
+			labels := []string{}
+			for i := range vs {
+				switch vs[i] {
+				case "host":
+					labels = append(labels, fmt.Sprintf("%s:Node", cypherNodeName))
+				case "image":
+					labels = append(labels, fmt.Sprintf("%s:ContainerImage", cypherNodeName))
+				case "container_image":
+					labels = append(labels, fmt.Sprintf("%s:ContainerImage", cypherNodeName))
+				case "container":
+					labels = append(labels, fmt.Sprintf("%s:Container", cypherNodeName))
+				}
 			}
-		}
+			conditions = append(conditions, strings.Join(labels, " OR "))
+		} else {
+			var values []string
+			for i := range vs {
+				if str, ok := vs[i].(string); ok {
+					values = append(values, fmt.Sprintf("'%s'", str))
+				} else {
+					values = append(values, fmt.Sprintf("%v", vs[i]))
+				}
+			}
 
-		conditions = append(conditions, fmt.Sprintf("%s.%s IN [%s]", cypherNodeName, k, strings.Join(values, ",")))
+			conditions = append(conditions, fmt.Sprintf("%s.%s IN [%s]", cypherNodeName, k, strings.Join(values, ",")))
+		}
 	}
 	return conditions
 }
