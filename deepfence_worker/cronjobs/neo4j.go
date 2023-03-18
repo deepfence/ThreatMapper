@@ -1,11 +1,14 @@
 package cronjobs
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill/message"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -13,15 +16,42 @@ import (
 )
 
 const (
-	dbReportCleanUpTimeout   = time.Minute * 2
-	dbRegistryCleanUpTimeout = time.Minute * 30
-	dbScanTimeout            = time.Minute * 2
-	dbUpgradeTimeout         = time.Minute * 5
+	dbReportCleanUpTimeout                 = time.Minute * 2
+	dbRegistryCleanUpTimeout               = time.Minute * 30
+	dbScanTimeout                          = time.Minute * 2
+	dbUpgradeTimeout                       = time.Minute * 5
+	defaultDBScannedResourceCleanUpTimeout = time.Hour * 24 * 30
 )
+
+func getResourceCleanUpTimeout(ctx context.Context) time.Duration {
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return defaultDBScannedResourceCleanUpTimeout
+	}
+	s := model.Setting{}
+	aes, err := s.GetSettingByKey(ctx, pgClient, model.InactiveNodesDeleteScanResultsKey)
+	if err != nil {
+		return defaultDBScannedResourceCleanUpTimeout
+	}
+	var sValue directory.SettingValue
+	err = json.Unmarshal(aes.Value, &sValue)
+	if err != nil {
+		return defaultDBScannedResourceCleanUpTimeout
+	}
+
+	if t, ok := sValue.Value.(int); ok {
+		return time.Hour * 24 * time.Duration(t)
+	}
+
+	return defaultDBScannedResourceCleanUpTimeout
+}
 
 func CleanUpDB(msg *message.Message) error {
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
+
+	dbScannedResourceCleanUpTimeout := getResourceCleanUpTimeout(ctx)
+
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -29,11 +59,13 @@ func CleanUpDB(msg *message.Message) error {
 	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
+	// Set inactives
 	if _, err = session.Run(`
 		MATCH (n:Node)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND exists((n) <-[:SCANNED]-())
 		WITH n LIMIT 100000
-		SET n.agent_running=false`,
+		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
@@ -41,8 +73,9 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:ContainerImage)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND exists((n) <-[:SCANNED]-())
 		WITH n LIMIT 100000
-		DETACH DELETE n`,
+		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbRegistryCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
@@ -50,9 +83,74 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:Container)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND exists((n) <-[:SCANNED]-())
+		WITH n LIMIT 100000
+		SET n.active=false`,
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:KubernetesCluster)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND exists((n) <-[:SCANNED]-())
+		WITH n LIMIT 100000
+		SET n.active=false`,
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		return err
+	}
+
+	// Delete old with no data
+	if _, err = session.Run(`
+		MATCH (n:Node)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND NOT exists((n) <-[:SCANNED]-())
+		OR n.updated_at < TIMESTAMP()-$old_time_ms
 		WITH n LIMIT 100000
 		DETACH DELETE n`,
-		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		map[string]interface{}{
+			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
+			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+		}); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:ContainerImage)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND NOT exists((n) <-[:SCANNED]-())
+		OR n.updated_at < TIMESTAMP()-$old_time_ms
+		WITH n LIMIT 100000
+		DETACH DELETE n`,
+		map[string]interface{}{
+			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
+			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+		}); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:Container)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND NOT exists((n) <-[:SCANNED]-())
+		OR n.updated_at < TIMESTAMP()-$old_time_ms
+		WITH n LIMIT 100000
+		DETACH DELETE n`,
+		map[string]interface{}{
+			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
+			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+		}); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:KubernetesCluster)
+		WHERE n.updated_at < TIMESTAMP()-$old_time_ms
+		WITH n LIMIT 100000
+		DETACH DELETE n`,
+		map[string]interface{}{
+			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+		}); err != nil {
 		return err
 	}
 
@@ -181,6 +279,7 @@ func ApplyGraphDBStartup(msg *message.Message) error {
 	session.Run("CREATE CONSTRAINT ON (n:AgentVersion) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:KubernetesCluster) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:ContainerImage) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:ImageStub) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Node) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Container) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Pod) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})

@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
@@ -15,6 +16,8 @@ import (
 	"github.com/weaveworks/go-checkpoint"
 
 	metrics_prom "github.com/armon/go-metrics/prometheus"
+	linuxScanner "github.com/deepfence/compliance/scanner"
+	linuxScannerUtil "github.com/deepfence/compliance/util"
 	dfUtils "github.com/deepfence/df-utils"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	docker_client "github.com/fsouza/go-dockerclient"
@@ -111,7 +114,7 @@ func checkFlagsRequiringRoot(flags probeFlags) {
 	}
 }
 
-func setClusterAgentControls() {
+func setClusterAgentControls(k8sClusterName string) {
 	err := controls.RegisterControl(ctl.StartComplianceScan,
 		func(req ctl.StartComplianceScanRequest) error {
 			return kubernetes.StartComplianceScan(req)
@@ -128,6 +131,14 @@ func setClusterAgentControls() {
 	err = controls.RegisterControl(ctl.StartAgentUpgrade,
 		func(req ctl.StartAgentUpgradeRequest) error {
 			return kubernetes.StartClusterAgentUpgrade(req)
+		})
+	if err != nil {
+		log.Errorf("set controls: %v", err)
+	}
+	err = controls.RegisterControl(ctl.SendAgentDiagnosticLogs,
+		func(req ctl.SendAgentDiagnosticLogsRequest) error {
+			log.Info("Generate Cluster Agent Diagnostic Logs")
+			return kubernetes.SendClusterAgentDiagnosticLogs(req, k8sClusterName)
 		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)
@@ -151,17 +162,47 @@ func setAgentControls() {
 	}
 	err = controls.RegisterControl(ctl.StartComplianceScan,
 		func(req ctl.StartComplianceScanRequest) error {
-			//TODO
+			scanner, err := linuxScanner.NewComplianceScanner(
+				linuxScannerUtil.Config{
+					ComplianceCheckType:       req.BinArgs["benchmark_type"],
+					ScanId:                    req.BinArgs["scan_id"],
+					NodeId:                    req.NodeId,
+					NodeName:                  req.NodeId,
+					ComplianceResultsFilePath: fmt.Sprintf("/var/log/fenced/compliance/%s.log", req.BinArgs["scan_id"]),
+					ComplianceStatusFilePath:  "/var/log/fenced/compliance-scan-logs/status.log",
+				})
+			if err != nil {
+				return err
+			}
+			err = scanner.RunComplianceScan()
+			if err != nil {
+				log.Errorf("Error from scan: %+v", err)
+				return err
+			}
 			return nil
 		})
+	if err != nil {
+		log.Errorf("set controls: %v", err)
+	}
 	err = controls.RegisterControl(ctl.StartMalwareScan,
 		func(req ctl.StartMalwareScanRequest) error {
 			return host.StartMalwareScan(req)
 		})
+	if err != nil {
+		log.Errorf("set controls: %v", err)
+	}
 	err = controls.RegisterControl(ctl.StartAgentUpgrade,
 		func(req ctl.StartAgentUpgradeRequest) error {
 			log.Info("Start Agent Upgrade")
 			return host.StartAgentUpgrade(req)
+		})
+	if err != nil {
+		log.Errorf("set controls: %v", err)
+	}
+	err = controls.RegisterControl(ctl.SendAgentDiagnosticLogs,
+		func(req ctl.SendAgentDiagnosticLogsRequest) error {
+			log.Info("Generate Agent Diagnostic Logs")
+			return host.SendAgentDiagnosticLogs(req)
 		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)
@@ -173,9 +214,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	setLogLevel(flags.logLevel)
 	setLogFormatter(flags.logPrefix)
 
-	if flags.kubernetesRole == kubernetesRoleCluster {
-		setClusterAgentControls()
-	} else {
+	if flags.kubernetesRole != kubernetesRoleCluster {
 		setAgentControls()
 	}
 
@@ -303,6 +342,11 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	if err != nil {
 		log.Error(err.Error())
 	}
+
+	if flags.kubernetesRole == kubernetesRoleCluster {
+		setClusterAgentControls(k8sClusterName)
+	}
+
 	err = os.Setenv(report.KubernetesClusterName, k8sClusterName)
 	if err != nil {
 		log.Error(err.Error())
@@ -325,10 +369,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		if len(targets) > 0 {
 			log.Warnf("Dumping to stdout only: targets %v will be ignored", targets)
 		}
-		clients = new(struct {
-			report.StdoutPublisher
-			controls.DummyPipeClient
-		})
+		log.Fatal("Print on Stdout not supported")
 	} else {
 		var multiClients *appclient.OpenapiClient
 		for {

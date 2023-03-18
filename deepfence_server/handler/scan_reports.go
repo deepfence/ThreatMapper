@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -104,12 +108,16 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId string) (ctl.Action, error) {
+	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
+		registryIdStr := ""
+		if registryId != -1 {
+			registryIdStr = strconv.Itoa(int(registryId))
+		}
 		binArgs := map[string]string{
 			"scan_id":     scanId,
 			"node_type":   req.NodeType,
 			"node_id":     req.NodeId,
-			"registry_id": registryId,
+			"registry_id": registryIdStr,
 		}
 
 		if len(reqs.ScanConfigLanguages) != 0 {
@@ -173,12 +181,16 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId string) (ctl.Action, error) {
+	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
+		registryIdStr := ""
+		if registryId != -1 {
+			registryIdStr = strconv.Itoa(int(registryId))
+		}
 		binArgs := map[string]string{
 			"scan_id":     scanId,
 			"node_type":   req.NodeType,
 			"node_id":     req.NodeId,
-			"registry_id": registryId,
+			"registry_id": registryIdStr,
 		}
 
 		nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
@@ -268,7 +280,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	var scanIds []string
 	var bulkId string
-	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) || scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
+	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) || scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) || scanTrigger.NodeType == controls.ResourceTypeToString(controls.Host) {
 		scanIds, bulkId, err = startMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
 	} else {
 		scanIds, bulkId, err = startMultiComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
@@ -302,12 +314,16 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId string) (ctl.Action, error) {
+	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
+		registryIdStr := ""
+		if registryId != -1 {
+			registryIdStr = strconv.Itoa(int(registryId))
+		}
 		binArgs := map[string]string{
 			"scan_id":     scanId,
 			"node_type":   req.NodeType,
 			"node_id":     req.NodeId,
-			"registry_id": registryId,
+			"registry_id": registryIdStr,
 		}
 
 		nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
@@ -384,6 +400,7 @@ func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Re
 	}
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error reading request body", http.StatusInternalServerError)
 		return
 	}
@@ -393,11 +410,13 @@ func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Re
 	var data T
 	err = json.Unmarshal(body, &data)
 	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}
-	ingester.Ingest(ctx, data)
+	err = ingester.Ingest(ctx, data)
 	if err != nil {
+		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}
@@ -420,6 +439,30 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 			model.ErrorResponse{Message: "scan_id is required to process sbom"})
 		return
 	}
+	// decompress sbom
+	b64, err := base64.StdEncoding.DecodeString(params.SBOM)
+	if err != nil {
+		log.Error().Err(err).Msgf("error b64 reader")
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+	sr := bytes.NewReader(b64)
+	gzr, err := gzip.NewReader(sr)
+	if err != nil {
+		log.Error().Err(err).Msgf("error gzip reader")
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+	defer gzr.Close()
+	sbom, err := io.ReadAll(gzr)
+	if err != nil {
+		log.Error().Err(err).Msgf("error read all decompressed sbom")
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	log.Info().Msgf("received sbom size: %.4fmb decompressed: %.4fmb",
+		float64(len(params.SBOM))/1000.0/1000.0, float64(len(sbom))/1000.0/1000.0)
 
 	mc, err := directory.MinioClient(r.Context())
 	if err != nil {
@@ -428,7 +471,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file := path.Join("/sbom/", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
+	file := path.Join("sbom", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
 	info, err := mc.UploadFile(r.Context(), file, []byte(params.SBOM),
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
@@ -619,7 +662,7 @@ func statusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.N
 func complianceStatusScanHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
 	defer r.Body.Close()
 	var req model.ScanStatusReq
-	err := httpext.DecodeQueryParams(r, &req)
+	err := httpext.DecodeJSON(r, httpext.QueryParams, MaxSbomRequestSize, &req)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(&BadDecoding{err}, w)
@@ -727,8 +770,13 @@ func (h *Handler) ListComplianceScanResultsHandler(w http.ResponseWriter, r *htt
 		respondError(err, w)
 		return
 	}
+	additionalInfo, err := reporters_scan.GetCloudComplianceStats(r.Context(), common.ScanID, utils.NEO4J_COMPLIANCE_SCAN)
+	if err != nil {
+		log.Error().Err(err).Msg("Counts computation issue")
+	}
 
-	httpext.JSON(w, http.StatusOK, model.ComplianceScanResult{Compliances: entries, ScanResultsCommon: common})
+	httpext.JSON(w, http.StatusOK, model.ComplianceScanResult{Compliances: entries, ScanResultsCommon: common,
+		ComplianceAdditionalInfo: additionalInfo})
 }
 
 func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -753,7 +801,7 @@ func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r
 		return
 	}
 
-	additionalInfo, err := reporters_scan.GetCloudComplianceStats(r.Context(), common.ScanID)
+	additionalInfo, err := reporters_scan.GetCloudComplianceStats(r.Context(), common.ScanID, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
 	if err != nil {
 		log.Error().Err(err).Msg("Counts computation issue")
 	}
@@ -1108,8 +1156,8 @@ func FindNodesMatching(ctx context.Context,
 	return res, nil
 }
 
-func FindImageRegistryId(ctx context.Context, image_id string) (string, error) {
-	res := ""
+func FindImageRegistryIds(ctx context.Context, image_id string) ([]int32, error) {
+	res := []int32{}
 
 	driver, err := directory.Neo4jClient(ctx)
 
@@ -1132,7 +1180,7 @@ func FindImageRegistryId(ctx context.Context, image_id string) (string, error) {
 	nres, err := tx.Run(`
 		MATCH (n:ContainerImage{node_id:$node_id})
 		MATCH (m:RegistryAccount) -[:HOSTS]-> (n)
-		RETURN m.container_registry_id
+		RETURN m.container_registry_ids
 		LIMIT 1`,
 		map[string]interface{}{"node_id": image_id})
 	if err != nil {
@@ -1144,7 +1192,12 @@ func FindImageRegistryId(ctx context.Context, image_id string) (string, error) {
 		return res, nil
 	}
 
-	return fmt.Sprintf("%v", rec.Values[0]), nil
+	pgIds := rec.Values[0].([]interface{})
+	for i := range pgIds {
+		res = append(res, int32(pgIds[i].(int64)))
+	}
+
+	return res, nil
 }
 
 func extractBulksNodes(nodes []model.NodeIdentifier) (regularNodes []model.NodeIdentifier, clusterNodes []model.NodeIdentifier, registryNodes []model.NodeIdentifier) {
@@ -1169,7 +1222,7 @@ func startMultiScan(ctx context.Context,
 	gen_bulk_id bool,
 	scan_type utils.Neo4jScanType,
 	req model.ScanTriggerCommon,
-	actionBuilder func(string, model.NodeIdentifier, string) (ctl.Action, error)) ([]string, string, error) {
+	actionBuilder func(string, model.NodeIdentifier, int32) (ctl.Action, error)) ([]string, string, error) {
 
 	driver, err := directory.Neo4jClient(ctx)
 
@@ -1232,11 +1285,15 @@ func startMultiScan(ctx context.Context,
 	for _, req := range reqs {
 		scanId := scanId(req)
 
-		registryId := ""
+		registryId := int32(-1)
 		if req.NodeType == ctl.ResourceTypeToString(controls.Image) {
-			registryId, err = FindImageRegistryId(ctx, req.NodeId)
+			registryIds, err := FindImageRegistryIds(ctx, req.NodeId)
 			if err != nil {
 				return nil, "", err
+			}
+
+			if len(registryIds) != 0 {
+				registryId = registryIds[0]
 			}
 		}
 
@@ -1327,7 +1384,7 @@ func startMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 
 	bulkId = bulkScanId()
 	scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
-	if reqs[0].NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
+	if reqs[0].NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) || reqs[0].NodeType == controls.ResourceTypeToString(controls.Host) {
 		scanType = utils.NEO4J_COMPLIANCE_SCAN
 	}
 	err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, scanType, bulkId, scanIds)

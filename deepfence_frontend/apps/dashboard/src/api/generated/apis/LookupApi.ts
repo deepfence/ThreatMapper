@@ -18,6 +18,7 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   LookupLookupFilter,
+  ModelCloudResource,
   ModelContainer,
   ModelContainerImage,
   ModelHost,
@@ -33,6 +34,8 @@ import {
     ApiDocsFailureResponseToJSON,
     LookupLookupFilterFromJSON,
     LookupLookupFilterToJSON,
+    ModelCloudResourceFromJSON,
+    ModelCloudResourceToJSON,
     ModelContainerFromJSON,
     ModelContainerToJSON,
     ModelContainerImageFromJSON,
@@ -48,6 +51,10 @@ import {
     ModelRegistryAccountFromJSON,
     ModelRegistryAccountToJSON,
 } from '../models';
+
+export interface GetCloudResourcesRequest {
+    lookupLookupFilter?: LookupLookupFilter;
+}
 
 export interface GetContainerImagesRequest {
     lookupLookupFilter?: LookupLookupFilter;
@@ -84,6 +91,22 @@ export interface GetRegistryAccountRequest {
  * @interface LookupApiInterface
  */
 export interface LookupApiInterface {
+    /**
+     * Retrieve the cloud resources
+     * @summary Get Cloud Resources
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LookupApiInterface
+     */
+    getCloudResourcesRaw(requestParameters: GetCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCloudResource>>>;
+
+    /**
+     * Retrieve the cloud resources
+     * Get Cloud Resources
+     */
+    getCloudResources(requestParameters: GetCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudResource>>;
+
     /**
      * Retrieve all the data associated with images
      * @summary Retrieve Container Images data
@@ -202,6 +225,45 @@ export interface LookupApiInterface {
  * 
  */
 export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
+
+    /**
+     * Retrieve the cloud resources
+     * Get Cloud Resources
+     */
+    async getCloudResourcesRaw(requestParameters: GetCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCloudResource>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/cloud-resources`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelCloudResourceFromJSON));
+    }
+
+    /**
+     * Retrieve the cloud resources
+     * Get Cloud Resources
+     */
+    async getCloudResources(requestParameters: GetCloudResourcesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudResource>> {
+        const response = await this.getCloudResourcesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Retrieve all the data associated with images

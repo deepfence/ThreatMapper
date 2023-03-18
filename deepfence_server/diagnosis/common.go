@@ -6,13 +6,13 @@ import (
 	"path/filepath"
 	"time"
 
-	agentdiagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/agent-diagnosis"
-	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 )
 
 const (
-	DiagnosisLinkExpiry = 5 * time.Minute
+	DiagnosisLinkExpiry              = 5 * time.Minute
+	ConsoleDiagnosisFileServerPrefix = "/diagnosis/console-diagnosis/"
+	AgentDiagnosisFileServerPrefix   = "/diagnosis/agent-diagnosis/"
 )
 
 type DiagnosticNotification struct {
@@ -23,8 +23,18 @@ type DiagnosticNotification struct {
 	UpdatedAt           string      `json:"updated_at"`
 }
 
-type GenerateDiagnosticLogsRequest struct {
+type GenerateConsoleDiagnosticLogsRequest struct {
 	Tail int `json:"tail" validate:"required,min=100,max=10000" required:"true"`
+}
+
+type NodeIdentifier struct {
+	NodeId   string `json:"node_id" validate:"required,min=1" required:"true"`
+	NodeType string `json:"node_type" required:"true" enum:"host,cluster"`
+}
+
+type GenerateAgentDiagnosticLogsRequest struct {
+	NodeIds []NodeIdentifier `json:"node_ids" validate:"required,gt=0" required:"true"`
+	Tail    int              `json:"tail" validate:"required,min=100,max=10000" required:"true"`
 }
 
 type DiagnosticLogsLink struct {
@@ -45,8 +55,8 @@ func GetDiagnosticLogs(ctx context.Context) (*GetDiagnosticLogsResponse, error) 
 		return nil, err
 	}
 	diagnosticLogs := GetDiagnosticLogsResponse{
-		ConsoleLogs: getDiagnosticLogsHelper(ctx, mc, consolediagnosis.ConsoleDiagnosisFileServerPrefix),
-		AgentLogs:   getDiagnosticLogsHelper(ctx, mc, agentdiagnosis.AgentDiagnosisFileServerPrefix),
+		ConsoleLogs: getDiagnosticLogsHelper(ctx, mc, ConsoleDiagnosisFileServerPrefix),
+		AgentLogs:   getDiagnosticLogsHelper(ctx, mc, AgentDiagnosisFileServerPrefix),
 	}
 	return &diagnosticLogs, err
 }

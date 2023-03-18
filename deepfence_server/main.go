@@ -327,6 +327,10 @@ func initializeDatabase() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = model.SetScanResultsDeletionSetting(ctx, pgClient)
+	if err != nil {
+		return nil, err
+	}
 	return jwtSecret, nil
 }
 

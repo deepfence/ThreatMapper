@@ -38,6 +38,7 @@ const Radio: FC<Props> = (props) => {
         'flex flex-row space-x-2': isRow(direction),
       })}
       {...rest}
+      name={name}
     >
       {options.map((option) => {
         if (option.value) {

@@ -97,12 +97,18 @@ func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registr
 	imageMap := RegistryImagesToMaps(images)
 	registryId := model.GetRegistryID(r.GetRegistryType(), r.GetNamespace())
 	_, err = tx.Run(`
-	UNWIND $batch as row
-	MERGE (n:ContainerImage{node_id:row.node_id})
-	MERGE (m:RegistryAccount{node_id: $node_id })
-    MERGE (m) -[:HOSTS]-> (n)
-	SET n+= row, n.updated_at = TIMESTAMP(), m.container_registry_id=$pgId, n.node_type='container_image'`,
-		map[string]interface{}{"batch": imageMap, "node_id": registryId, "pgId": pgId})
+		UNWIND $batch as row
+		MERGE (n:ContainerImage{node_id:row.node_id})
+		MERGE (s:ImageStub{node_id: row.docker_image_name})
+		MERGE (n) -[:IS]-> (s)
+		MERGE (m:RegistryAccount{node_id: $node_id })
+		MERGE (m) -[:HOSTS]-> (n)
+		SET n+= row, n.updated_at = TIMESTAMP(),
+		m.container_registry_ids = REDUCE(distinctElements = [], element IN m.container_registry_ids + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
+		n.node_type='container_image',
+		m.registry_type=$registry_type,
+		n.node_name=n.docker_image_name+":"+n.docker_image_tag`,
+		map[string]interface{}{"batch": imageMap, "node_id": registryId, "pgId": pgId, "registry_type": r.GetRegistryType()})
 	if err != nil {
 		return err
 	}
