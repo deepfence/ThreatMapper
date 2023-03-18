@@ -142,6 +142,7 @@ export class GraphStorageManager {
     this.isNodeExpanded = this.isNodeExpanded.bind(this);
     this.findChildrenIdsOfType = this.findChildrenIdsOfType.bind(this);
     this.getTreeData = this.getTreeData.bind(this);
+    this.getNodesForIds = this.getNodesForIds.bind(this);
   }
   getApiData() {
     return this.data;
@@ -324,6 +325,14 @@ export class GraphStorageManager {
       });
     }
     return nodes;
+  }
+  getNodesForIds(nodeIds: string[]): DetailedNodeSummary[] {
+    const nodesObj = this.getApiData()?.nodes ?? {};
+    return nodeIds
+      .map((nodeId) => {
+        return nodesObj[nodeId];
+      })
+      .filter((node) => !!node);
   }
 }
 
