@@ -29,7 +29,7 @@ type GenerateConsoleDiagnosticLogsRequest struct {
 
 type NodeIdentifier struct {
 	NodeId   string `json:"node_id" validate:"required,min=1" required:"true"`
-	NodeType string `json:"node_type" required:"true" enum:"host,cluster"`
+	NodeType string `json:"node_type" required:"true" validate:"required,oneof=host cluster" enum:"host,cluster"`
 }
 
 type GenerateAgentDiagnosticLogsRequest struct {
