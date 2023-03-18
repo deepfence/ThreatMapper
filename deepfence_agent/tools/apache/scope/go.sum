@@ -157,6 +157,8 @@ github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 h1:HbphB4TFFXpv7MNrT52FGrrgVXF1
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0/go.mod h1:DZGJHZMqrU4JJqFAWUS2UO1+lbSKsdiOoYi9Zzey7Fc=
 github.com/deepfence/compliance v0.1.3-0.20230315134930-aedc53a6df87 h1:inPI8u7l3EKolfzR7YCKoYCOvIw+FUcJh/WlBfaWIkc=
 github.com/deepfence/compliance v0.1.3-0.20230315134930-aedc53a6df87/go.mod h1:5N6hp4bwUlBTF9Kkk4A6qCli/lxM449yyqzmsSjqmc8=
+github.com/deepfence/compliance v0.1.3-0.20230317154654-61833975fcd0 h1:0o5LZ+ERmHcoRsWwzgisHnDoSGG86cCl/yrpO+0eXTA=
+github.com/deepfence/compliance v0.1.3-0.20230317154654-61833975fcd0/go.mod h1:5N6hp4bwUlBTF9Kkk4A6qCli/lxM449yyqzmsSjqmc8=
 github.com/deepfence/kubernetes-scanner v0.0.0-20230314174036-fcad1be08a26 h1:CMLlOqHdO3iyQ1KeYrWpRTWPMSyOxz2IhpeDM/pUb20=
 github.com/deepfence/kubernetes-scanner v0.0.0-20230314174036-fcad1be08a26/go.mod h1:Hv96hmVBYWdvWG2FC+vbeEPzqIRVRWxlcr6V20O7Q6s=
 github.com/deepfence/kubernetes-scanner v0.0.0-20230316141044-7e29acdbad02 h1:eIF/Oa6Mj2SKsyGZf9ZZ+T4pCOiyXjTigzv4ucW2r+w=

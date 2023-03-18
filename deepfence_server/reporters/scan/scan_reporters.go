@@ -704,7 +704,7 @@ func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, re
 	return res, nil
 }
 
-func GetCloudComplianceStats(ctx context.Context, scanId string) (model.ComplianceAdditionalInfo, error) {
+func GetCloudComplianceStats(ctx context.Context, scanId string, neo4jComplianceType utils.Neo4jScanType) (model.ComplianceAdditionalInfo, error) {
 	res := map[string]int32{}
 	additionalInfo := model.ComplianceAdditionalInfo{StatusCounts: res, CompliancePercentage: 0.0}
 	driver, err := directory.Neo4jClient(ctx)
@@ -725,7 +725,7 @@ func GetCloudComplianceStats(ctx context.Context, scanId string) (model.Complian
 	defer tx.Close()
 
 	benchRes, err := tx.Run(`
-		MATCH (m:`+string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN)+`{node_id: $scan_id})
+		MATCH (m:`+string(neo4jComplianceType)+`{node_id: $scan_id})
 		RETURN m.benchmark_type`,
 		map[string]interface{}{"scan_id": scanId})
 	if err != nil {
@@ -739,9 +739,13 @@ func GetCloudComplianceStats(ctx context.Context, scanId string) (model.Complian
 
 	additionalInfo.BenchmarkType = benchRec.Values[0].(string)
 
+	cloudComplianceFields := ""
+	if neo4jComplianceType == utils.NEO4J_CLOUD_COMPLIANCE_SCAN {
+		cloudComplianceFields = "DISTINCT d.control_id AS control_id, d.resource AS resource,"
+	}
 	nres, err := tx.Run(`
-		MATCH (m:`+string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN)+`{node_id: $scan_id}) -[:DETECTED]-> (d)
-		WITH DISTINCT d.control_id AS control_id, d.resource AS resource, d.status AS status
+		MATCH (m:`+string(neo4jComplianceType)+`{node_id: $scan_id}) -[:DETECTED]-> (d)
+		WITH `+cloudComplianceFields+` d.status AS status
 		RETURN status, COUNT(status)`,
 		map[string]interface{}{"scan_id": scanId})
 	if err != nil {
@@ -759,7 +763,7 @@ func GetCloudComplianceStats(ctx context.Context, scanId string) (model.Complian
 		status := recs[i].Values[0].(string)
 		statusCount := int32(recs[i].Values[1].(int64))
 		res[status] = statusCount
-		if status == "info" || status == "ok" {
+		if status == "info" || status == "ok" || status == "pass" {
 			positiveStatusCount += statusCount
 		}
 		totalStatusCount += statusCount

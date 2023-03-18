@@ -31,7 +31,7 @@ require (
 	github.com/c9s/goprocinfo v0.0.0-20210130143923-c95fcf8c64a8
 	github.com/coocood/freecache v1.2.3
 	github.com/davecgh/go-spew v1.1.1
-	github.com/deepfence/compliance v0.1.3-0.20230315134930-aedc53a6df87
+	github.com/deepfence/compliance v0.1.3-0.20230317154654-61833975fcd0
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/df-utils/cloud_metadata v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-00010101000000-000000000000
