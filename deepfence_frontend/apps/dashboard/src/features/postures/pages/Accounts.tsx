@@ -1,12 +1,10 @@
 import cx from 'classnames';
-import { capitalize, memoize, toNumber } from 'lodash-es';
-import { RefObject, Suspense, useMemo, useRef, useState } from 'react';
+import { Suspense, useMemo, useRef, useState } from 'react';
 import { FaPlay, FaPlus } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import { HiArrowSmLeft, HiDotsVertical, HiOutlineEye, HiRefresh } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import {
-  Await,
   Form,
   generatePath,
   LoaderFunctionArgs,
@@ -18,17 +16,15 @@ import {
 import {
   Badge,
   Button,
+  Checkbox,
   createColumnHelper,
   Dropdown,
   DropdownItem,
   getRowSelectionColumn,
   IconButton,
   Modal,
-  ModalHeader,
+  Popover,
   RowSelectionState,
-  Select,
-  SelectItem,
-  SlidingModal,
   Table,
   TableSkeleton,
 } from 'ui-components';
@@ -40,6 +36,8 @@ import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { PostureScanConfigureForm } from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { DFAwait } from '@/utils/suspense';
+import { getPageFromSearchParams } from '@/utils/table';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 enum ActionEnumType {
@@ -47,10 +45,6 @@ enum ActionEnumType {
   VIEW_SCAN = 'view_scan',
   VIEW_INVENTORY = 'view_inventory',
   REFRESH_DATA = 'refresh_data',
-}
-
-interface FocusableElement {
-  focus(options?: FocusOptions): void;
 }
 
 export interface AccountData {
@@ -69,13 +63,9 @@ type LoaderDataType = {
 
 const PAGE_SIZE = 15;
 
-const getAccountSearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('account');
+const getActiveStatus = (searchParams: URLSearchParams) => {
+  return searchParams.getAll('active');
 };
-function getPageFromSearchParams(searchParams: URLSearchParams): number {
-  const page = toNumber(searchParams.get('page') ?? '0');
-  return isFinite(page) && !isNaN(page) && page > 0 ? page : 0;
-}
 
 async function getAccounts(
   nodeType: string,
@@ -86,6 +76,20 @@ async function getAccounts(
   totalRows: number;
   message?: string;
 }> {
+  const active = getActiveStatus(searchParams);
+  const page = getPageFromSearchParams(searchParams);
+  // const scanResultsReq: ListCloudNodeAccountRequest = {
+  //   cloud_provider: '',
+  //   window: {
+  //     offset: page * PAGE_SIZE,
+  //     size: PAGE_SIZE,
+  //   },
+  // };
+  // if (active.length && !active.length) {
+  //   scanResultsReq.fields_filter.contains_filter.filter_in!['active'] = [
+  //     active.length ? true : false,
+  //   ];
+  // }
   const result = await makeRequest({
     apiFunction: getCloudNodesApiClient().listCloudNodeAccount,
     apiArgs: [
@@ -241,8 +245,7 @@ const PostureTable = () => {
             if (isScanComplete) {
               return (
                 <DFLink
-                  to={generatePath(`/posture/scan-results/:accountId/:scanId`, {
-                    accountId: 'test',
+                  to={generatePath(`/posture/scan-results/:scanId`, {
                     scanId: cell.row.original.last_scan_id ?? '',
                   })}
                 >
@@ -301,9 +304,6 @@ const PostureTable = () => {
       columnHelper.accessor('last_scan_status', {
         cell: (info) => {
           const value = info.getValue();
-          if (!value) {
-            console.error('last_scan_status is null');
-          }
           return (
             <Badge
               label={value?.toUpperCase() || 'UNKNOWN'}
@@ -376,7 +376,7 @@ const PostureTable = () => {
   return (
     <>
       <Suspense fallback={<TableSkeleton columns={6} rows={10} size={'md'} />}>
-        <Await resolve={loaderData.data}>
+        <DFAwait resolve={loaderData.data}>
           {(resolvedData: LoaderDataType['data']) => {
             const accounts = resolvedData?.accounts ?? [];
             const totalRows = resolvedData?.totalRows ?? 0;
@@ -469,78 +469,11 @@ const PostureTable = () => {
               </div>
             );
           }}
-        </Await>
+        </DFAwait>
       </Suspense>
     </>
   );
 };
-
-const FilterHeader = () => {
-  return (
-    <ModalHeader>
-      <div className="flex gap-x-2 items-center p-4">
-        <span className="font-medium text-lg">Filters</span>
-      </div>
-    </ModalHeader>
-  );
-};
-
-const FilterModal = memoize(
-  ({
-    showFilter,
-    elementToFocusOnClose,
-    setShowFilter,
-  }: {
-    elementToFocusOnClose: RefObject<FocusableElement> | null;
-    showFilter: boolean;
-    setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
-  }) => {
-    const [searchParams, setSearchParams] = useSearchParams();
-
-    return (
-      <SlidingModal
-        header={<FilterHeader />}
-        open={showFilter}
-        onOpenChange={() => setShowFilter(false)}
-        elementToFocusOnCloseRef={elementToFocusOnClose}
-        width={'w-[400px]'}
-      >
-        <Form className="flex flex-col p-4 gap-y-6">
-          <fieldset>
-            <Select
-              noPortal
-              name="account"
-              label={'Account'}
-              placeholder="Select Account"
-              value={searchParams.getAll('account')}
-              sizing="xs"
-              onChange={(value) => {
-                setSearchParams((prev) => {
-                  prev.delete('account');
-                  value.forEach((language) => {
-                    prev.append('account', language);
-                  });
-                  prev.delete('page');
-                  return prev;
-                });
-              }}
-            >
-              {['account 1', 'account 2', 'account 3', 'account 4', 'account 4'].map(
-                (account: string) => {
-                  return (
-                    <SelectItem value={account} key={account}>
-                      {capitalize(account)}
-                    </SelectItem>
-                  );
-                },
-              )}
-            </Select>
-          </fieldset>
-        </Form>
-      </SlidingModal>
-    );
-  },
-);
 
 const RefreshApiButton = () => {
   const revalidator = useRevalidator();
@@ -567,7 +500,7 @@ const Accounts = () => {
   };
   const { navigate } = usePageNavigation();
   const isFilterApplied = searchParams.has('');
-  console.log('===', routeParams.nodeType);
+
   return (
     <div>
       <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
@@ -610,25 +543,85 @@ const Accounts = () => {
               <span className="absolute -left-[2px] -top-[2px] inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
             )}
 
-            <IconButton
-              className="ml-auto rounded-lg"
-              size="xs"
-              outline
-              color="primary"
-              ref={elementToFocusOnClose}
-              onClick={() => {
-                setShowFilter(true);
-              }}
-              icon={<FiFilter />}
-            />
+            <Popover
+              triggerAsChild
+              elementToFocusOnCloseRef={elementToFocusOnClose}
+              content={
+                <div className="dark:text-white p-4 w-[300px]">
+                  <div className="flex flex-col gap-y-6">
+                    <fieldset>
+                      <legend className="text-sm font-medium">Active</legend>
+                      <div className="flex gap-x-4 mt-1">
+                        <Checkbox
+                          label="No"
+                          checked={searchParams.getAll('active').includes('true')}
+                          onCheckedChange={(state) => {
+                            if (state) {
+                              setSearchParams((prev) => {
+                                prev.append('active', 'true');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            } else {
+                              setSearchParams((prev) => {
+                                const prevStatuses = prev.getAll('active');
+                                prev.delete('active');
+                                prevStatuses
+                                  .filter((active) => active !== 'true')
+                                  .forEach((active) => {
+                                    prev.append('active', active);
+                                  });
+                                prev.delete('active');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            }
+                          }}
+                        />
+                        <Checkbox
+                          label="Yes"
+                          checked={searchParams.getAll('active').includes('false')}
+                          onCheckedChange={(state) => {
+                            if (state) {
+                              setSearchParams((prev) => {
+                                prev.append('active', 'false');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            } else {
+                              setSearchParams((prev) => {
+                                const prevStatuses = prev.getAll('false');
+                                prev.delete('active');
+                                prevStatuses
+                                  .filter((active) => active !== 'false')
+                                  .forEach((active) => {
+                                    prev.append('active', active);
+                                  });
+                                prev.delete('active');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            }
+                          }}
+                        />
+                      </div>
+                    </fieldset>
+                  </div>
+                </div>
+              }
+            >
+              <IconButton
+                size="xs"
+                outline
+                color="primary"
+                className="rounded-lg bg-transparent"
+                icon={<FiFilter />}
+              />
+            </Popover>
           </div>
         </div>
       </div>
-      <FilterModal
-        showFilter={showFilter}
-        setShowFilter={setShowFilter}
-        elementToFocusOnClose={elementToFocusOnClose.current}
-      />
+
       <div className="px-1 mt-2">
         <PostureTable />
       </div>

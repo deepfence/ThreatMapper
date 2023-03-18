@@ -16,71 +16,69 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelRegistryAddReq
+ * @interface ModelRegistryUpdateReq
  */
-export interface ModelRegistryAddReq {
+export interface ModelRegistryUpdateReq {
     /**
      * 
      * @type {{ [key: string]: any; }}
-     * @memberof ModelRegistryAddReq
+     * @memberof ModelRegistryUpdateReq
      */
     extras?: { [key: string]: any; } | null;
     /**
      * 
      * @type {string}
-     * @memberof ModelRegistryAddReq
+     * @memberof ModelRegistryUpdateReq
      */
-    name: string;
+    name?: string;
     /**
      * 
      * @type {{ [key: string]: any; }}
-     * @memberof ModelRegistryAddReq
+     * @memberof ModelRegistryUpdateReq
      */
     non_secret?: { [key: string]: any; } | null;
     /**
      * 
      * @type {string}
-     * @memberof ModelRegistryAddReq
+     * @memberof ModelRegistryUpdateReq
      */
-    registry_type: string;
+    registry_type?: string;
     /**
      * 
      * @type {{ [key: string]: any; }}
-     * @memberof ModelRegistryAddReq
+     * @memberof ModelRegistryUpdateReq
      */
     secret?: { [key: string]: any; } | null;
 }
 
 /**
- * Check if a given object implements the ModelRegistryAddReq interface.
+ * Check if a given object implements the ModelRegistryUpdateReq interface.
  */
-export function instanceOfModelRegistryAddReq(value: object): boolean {
+export function instanceOfModelRegistryUpdateReq(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "name" in value;
-    isInstance = isInstance && "registry_type" in value;
 
     return isInstance;
 }
 
-export function ModelRegistryAddReqFromJSON(json: any): ModelRegistryAddReq {
-    return ModelRegistryAddReqFromJSONTyped(json, false);
+export function ModelRegistryUpdateReqFromJSON(json: any): ModelRegistryUpdateReq {
+    return ModelRegistryUpdateReqFromJSONTyped(json, false);
 }
 
-export function ModelRegistryAddReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelRegistryAddReq {
+export function ModelRegistryUpdateReqFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelRegistryUpdateReq {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
         'extras': !exists(json, 'extras') ? undefined : json['extras'],
-        'name': json['name'],
+        'name': !exists(json, 'name') ? undefined : json['name'],
         'non_secret': !exists(json, 'non_secret') ? undefined : json['non_secret'],
-        'registry_type': json['registry_type'],
+        'registry_type': !exists(json, 'registry_type') ? undefined : json['registry_type'],
         'secret': !exists(json, 'secret') ? undefined : json['secret'],
     };
 }
 
-export function ModelRegistryAddReqToJSON(value?: ModelRegistryAddReq | null): any {
+export function ModelRegistryUpdateReqToJSON(value?: ModelRegistryUpdateReq | null): any {
     if (value === undefined) {
         return undefined;
     }

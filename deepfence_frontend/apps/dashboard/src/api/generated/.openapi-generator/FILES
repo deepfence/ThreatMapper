@@ -105,6 +105,7 @@ models/ModelRegistryCountResp.ts
 models/ModelRegistryImageStubsReq.ts
 models/ModelRegistryImagesReq.ts
 models/ModelRegistryListResp.ts
+models/ModelRegistryUpdateReq.ts
 models/ModelResponseAccessToken.ts
 models/ModelSbomRequest.ts
 models/ModelSbomResponse.ts

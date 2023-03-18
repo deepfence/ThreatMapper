@@ -1,17 +1,13 @@
 import cx from 'classnames';
-import { capitalize, toNumber, truncate } from 'lodash-es';
+import { capitalize } from 'lodash-es';
 import { Suspense, useCallback, useMemo, useRef, useState } from 'react';
-import { RefObject } from 'react';
 import { FaHistory } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import {
   HiArchive,
   HiArrowSmLeft,
   HiBell,
-  HiChevronLeft,
   HiDotsVertical,
-  HiDownload,
-  HiExternalLink,
   HiEye,
   HiEyeOff,
   HiOutlineExclamationCircle,
@@ -19,7 +15,6 @@ import {
 import { IconContext } from 'react-icons/lib';
 import {
   ActionFunctionArgs,
-  Await,
   generatePath,
   LoaderFunctionArgs,
   Outlet,
@@ -40,44 +35,57 @@ import {
   createColumnHelper,
   Dropdown,
   DropdownItem,
-  DropdownSubMenu,
   getRowSelectionColumn,
   IconButton,
   Modal,
+  Popover,
   RowSelectionState,
   Select,
   SelectItem,
+  SortingState,
   Table,
   TableSkeleton,
 } from 'ui-components';
-import { ModalHeader, SlidingModal } from 'ui-components';
 
-import {
-  getCloudComplianceApiClient,
-  getComplianceApiClient,
-  getScanResultsApiClient,
-  getVulnerabilityApiClient,
-} from '@/api/api';
+import { getComplianceApiClient, getScanResultsApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
-  ModelComplianceScanResult,
+  ModelCompliance,
   ModelScanResultsActionRequestScanTypeEnum,
+  ModelScanResultsReq,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
+import { complianceType } from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
-import { POSTURE_SEVERITY_COLORS } from '@/constants/charts';
-import { ApiVulnerableLoaderDataType } from '@/features/vulnerabilities/api/apiLoader';
-import { MostExploitableChart } from '@/features/vulnerabilities/components/landing/MostExploitableChart';
+import { POSTURE_STATUS_COLORS, SEVERITY_COLORS } from '@/constants/charts';
+import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
+import { PostureResultChart } from '@/features/postures/components/PostureResultChart';
 import { Mode, useTheme } from '@/theme/ThemeContext';
-import { VulnerabilitySeverityType } from '@/types/common';
+import { PostureSeverityType } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { DFAwait } from '@/utils/suspense';
+import {
+  getOrderFromSearchParams,
+  getPageFromSearchParams,
+  useSortingState,
+} from '@/utils/table';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export interface FocusableElement {
   focus(options?: FocusOptions): void;
 }
+const STATUSES: { [k: string]: string } = {
+  INFO: 'info',
+  PASS: 'pass',
+  WARN: 'warn',
+  NOTE: 'note',
+  ALARM: 'alarm',
+  OK: 'ok',
+  SKIP: 'skip',
+};
 enum ActionEnumType {
   MASK = 'mask',
   UNMASK = 'unmask',
@@ -85,21 +93,15 @@ enum ActionEnumType {
   DOWNLOAD = 'download',
   NOTIFY = 'notify',
 }
-type TableType = {
-  id: string;
-  status: string;
-  control: string;
-  service: string;
-  nodeName: string;
-  description: string;
-  masked: boolean;
-};
+
 type ScanResult = {
-  status: string;
-  service: string;
+  totalStatus: number;
+  statusCounts: { [key: string]: number };
   nodeName: string;
-  description: string;
-  tableData: TableType[];
+  nodeType: string;
+  nodeId: string;
+  timestamp: number;
+  compliances: ModelCompliance[];
   pagination: {
     currentPage: number;
     totalRows: number;
@@ -109,128 +111,251 @@ type ScanResult = {
 export type LoaderDataType = {
   error?: string;
   message?: string;
-  data: ScanResult;
+  data: Awaited<ReturnType<typeof getScans>>;
 };
 
 const PAGE_SIZE = 15;
-const page = 1;
-const emptyData = {
-  status: '',
-  service: '',
-  nodeName: '',
-  description: '',
-  timestamp: 0,
-  tableData: [],
-  pagination: {
-    currentPage: 0,
-    totalRows: 0,
-  },
+
+const getStatusSearch = (searchParams: URLSearchParams) => {
+  return searchParams.getAll('status');
+};
+const getMaskSearch = (searchParams: URLSearchParams) => {
+  return searchParams.getAll('mask');
+};
+const getUnmaskSearch = (searchParams: URLSearchParams) => {
+  return searchParams.getAll('unmask');
+};
+
+const getBenchmarkType = (searchParams: URLSearchParams) => {
+  return searchParams.getAll('benchmarkType');
 };
 
 async function getScans(
-  accountId: string,
-  scanType: string,
   scanId: string,
+  searchParams: URLSearchParams,
 ): Promise<ScanResult> {
-  const filterParams = {
+  const status = getStatusSearch(searchParams);
+  const page = getPageFromSearchParams(searchParams);
+  const order = getOrderFromSearchParams(searchParams);
+  const mask = getMaskSearch(searchParams);
+  const unmask = getUnmaskSearch(searchParams);
+  const benchmarkTypes = getBenchmarkType(searchParams);
+
+  const scanResultsReq: ModelScanResultsReq = {
     fields_filter: {
       contains_filter: {
         filter_in: {},
       },
       match_filter: { filter_in: {} },
-      order_filter: { order_field: '' },
+      order_filter: { order_fields: [] },
     },
     scan_id: scanId,
     window: {
-      offset: 0,
-      size: 10,
+      offset: page * PAGE_SIZE,
+      size: PAGE_SIZE,
     },
   };
 
+  if (status.length) {
+    scanResultsReq.fields_filter.contains_filter.filter_in!['status'] = status;
+  }
+
+  if ((mask.length || unmask.length) && !(mask.length && unmask.length)) {
+    scanResultsReq.fields_filter.contains_filter.filter_in!['masked'] = [
+      mask.length ? true : false,
+    ];
+  }
+
+  if (benchmarkTypes.length) {
+    scanResultsReq.fields_filter.contains_filter.filter_in!['compliance_check_type'] =
+      benchmarkTypes;
+  }
+
+  if (order) {
+    scanResultsReq.fields_filter.order_filter.order_fields?.push({
+      field_name: order.sortBy,
+      descending: order.descending,
+    });
+  }
+
   let result = null;
   let resultCounts = null;
-  if (scanType === 'compliance') {
-    // result = await makeRequest({
-    //   apiFunction: getComplianceApiClient().resultComplianceScan,
-    //   apiArgs: [
-    //     {
-    //       modelScanResultsReq: filterParams,
-    //     },
-    //   ],
-    //   errorHandler: async (r) => {
-    //     const error = new ApiError<LoaderDataType>({ data: emptyData });
-    //     if (r.status === 400) {
-    //       const modelResponse: ApiDocsBadRequestResponse = await r.json();
-    //       return error.set({
-    //         message: modelResponse.message,
-    //         data: emptyData,
-    //       });
-    //     }
-    //   },
-    // });
-    // resultCounts = await makeRequest({
-    //   apiFunction: getComplianceApiClient().resultCountComplianceScan,
-    //   apiArgs: [
-    //     {
-    //       modelScanResultsReq: {
-    //         ...filterParams,
-    //         window: {
-    //           ...filterParams.window,
-    //           size: 10 * filterParams.window.size,
-    //         },
-    //       },
-    //     },
-    //   ],
-    //   errorHandler: async (r) => {
-    //     const error = new ApiError<LoaderDataType>({ data: emptyData });
-    //     if (r.status === 400) {
-    //       const modelResponse: ApiDocsBadRequestResponse = await r.json();
-    //       return error.set({
-    //         message: modelResponse.message,
-    //         data: emptyData,
-    //       });
-    //     }
-    //   },
-    // });
-  } else if (scanType === 'cloudCompliance') {
-    result = await makeRequest({
-      apiFunction: getCloudComplianceApiClient().resultCloudComplianceScan,
-      apiArgs: [
-        {
-          modelScanResultsReq: filterParams,
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<LoaderDataType>({ data: emptyData });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message,
-            data: emptyData,
-          });
-        }
+
+  result = await makeRequest({
+    apiFunction: getComplianceApiClient().resultComplianceScan,
+    apiArgs: [
+      {
+        modelScanResultsReq: scanResultsReq,
       },
-    });
-    resultCounts = await makeRequest({
-      apiFunction: getCloudComplianceApiClient().resultCountCloudComplianceScan,
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<{ message?: string }>({});
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message ?? '',
+        });
+      }
+    },
+  });
+  resultCounts = await makeRequest({
+    apiFunction: getComplianceApiClient().resultCountComplianceScan,
+    apiArgs: [
+      {
+        modelScanResultsReq: {
+          ...scanResultsReq,
+          window: {
+            ...scanResultsReq.window,
+            size: 10 * scanResultsReq.window.size,
+          },
+        },
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<{ message?: string }>({});
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message,
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(result)) {
+    throw result.value();
+  }
+  if (ApiError.isApiError(resultCounts)) {
+    throw resultCounts.value();
+  }
+
+  const totalStatus = Object.values(result.status_counts ?? {}).reduce((acc, value) => {
+    acc = acc + value;
+    return acc;
+  }, 0);
+
+  const linuxComplianceStatus = {
+    info: result.status_counts?.[STATUSES.INFO] ?? 0,
+    pass: result.status_counts?.[STATUSES.PASS] ?? 0,
+    warn: result.status_counts?.[STATUSES.WARN] ?? 0,
+    note: result.status_counts?.[STATUSES.NOTE] ?? 0,
+  };
+
+  const clusterComplianceStatus = {
+    alarm: result.status_counts?.[STATUSES.ALARM] ?? 0,
+    info: result.status_counts?.[STATUSES.INFO] ?? 0,
+    ok: result.status_counts?.[STATUSES.OK] ?? 0,
+    skip: result.status_counts?.[STATUSES.SKIP] ?? 0,
+  };
+
+  return {
+    totalStatus,
+    statusCounts:
+      result.node_type === 'host' ? linuxComplianceStatus : clusterComplianceStatus,
+    nodeName: result.node_name,
+    nodeType: result.node_type,
+    nodeId: result.node_id,
+    timestamp: result.updated_at,
+    compliances: result.compliances ?? [],
+    pagination: {
+      currentPage: page,
+      totalRows: page * PAGE_SIZE + resultCounts.count,
+    },
+  };
+}
+
+const loader = async ({
+  params,
+  request,
+}: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
+  const scanType = params?.scanType ?? '';
+  const scanId = params?.scanId ?? '';
+
+  if (!scanId) {
+    throw new Error('Scan Id is required');
+  }
+  const searchParams = new URL(request.url).searchParams;
+
+  return typedDefer({
+    data: getScans(scanId, searchParams),
+  });
+};
+
+type ActionFunctionType =
+  | ReturnType<typeof getScanResultsApiClient>['deleteScanResult']
+  | ReturnType<typeof getScanResultsApiClient>['maskScanResult']
+  | ReturnType<typeof getScanResultsApiClient>['notifyScanResult']
+  | ReturnType<typeof getScanResultsApiClient>['unmaskScanResult'];
+
+const action = async ({
+  params: { scanId = '' },
+  request,
+}: ActionFunctionArgs): Promise<null> => {
+  const formData = await request.formData();
+  const ids = (formData.getAll('ids[]') ?? []) as string[];
+  const actionType = formData.get('actionType');
+  const _scanId = scanId;
+  if (!_scanId) {
+    throw new Error('Scan ID is required');
+  }
+  if (!actionType) {
+    return null;
+  }
+
+  let result = null;
+  let apiFunction: ActionFunctionType | null = null;
+  if (actionType === ActionEnumType.DELETE || actionType === ActionEnumType.NOTIFY) {
+    apiFunction =
+      actionType === ActionEnumType.DELETE
+        ? getScanResultsApiClient().deleteScanResult
+        : getScanResultsApiClient().notifyScanResult;
+    result = await makeRequest({
+      apiFunction: apiFunction,
       apiArgs: [
         {
-          modelScanResultsReq: {
-            ...filterParams,
-            window: {
-              ...filterParams.window,
-              size: 10 * filterParams.window.size,
-            },
+          modelScanResultsActionRequest: {
+            result_ids: [...ids],
+            scan_id: _scanId,
+            scan_type: ModelScanResultsActionRequestScanTypeEnum.ComplianceScan,
           },
         },
       ],
       errorHandler: async (r) => {
-        const error = new ApiError<LoaderDataType>({ data: emptyData });
-        if (r.status === 400) {
+        const error = new ApiError<{
+          message?: string;
+        }>({});
+        if (r.status === 400 || r.status === 409) {
           const modelResponse: ApiDocsBadRequestResponse = await r.json();
           return error.set({
-            message: modelResponse.message,
-            data: emptyData,
+            message: modelResponse.message ?? '',
+          });
+        }
+      },
+    });
+  } else if (actionType === ActionEnumType.MASK || actionType === ActionEnumType.UNMASK) {
+    apiFunction =
+      actionType === ActionEnumType.MASK
+        ? getScanResultsApiClient().maskScanResult
+        : getScanResultsApiClient().unmaskScanResult;
+    result = await makeRequest({
+      apiFunction: apiFunction,
+      apiArgs: [
+        {
+          modelScanResultsMaskRequest: {
+            result_ids: [...ids],
+            scan_id: _scanId,
+            scan_type: ModelScanResultsActionRequestScanTypeEnum.ComplianceScan,
+          },
+        },
+      ],
+      errorHandler: async (r) => {
+        const error = new ApiError<{
+          message?: string;
+        }>({});
+        if (r.status === 400 || r.status === 409) {
+          const modelResponse: ApiDocsBadRequestResponse = await r.json();
+          return error.set({
+            message: modelResponse.message ?? '',
           });
         }
       },
@@ -238,243 +363,24 @@ async function getScans(
   }
 
   if (ApiError.isApiError(result)) {
-    // throw result.value();
+    if (result.value()?.message !== undefined) {
+      const message = result.value()?.message ?? 'Something went wrong';
+      toast.error(message);
+    }
   }
 
-  if (result === null) {
-    // return emptyData;
-    result = {};
-    (result as unknown as ModelComplianceScanResult).status_counts = {
-      alarm: 0,
-      info: 0,
-      ok: 0,
-      skip: 0,
-    };
-
-    (result as unknown as ModelComplianceScanResult).compliance_percentage = 7;
-    (result as unknown as ModelComplianceScanResult).compliances = [
-      {
-        id: '1',
-        control: 'cis',
-        status: 'alarm',
-        service: 'S3',
-        nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
-        description:
-          'IAM policies are the means by which privileges are granted to users, groups',
-      },
-      {
-        id: '1',
-        control: 'hipaa',
-        status: 'info',
-        service: 'S3',
-        nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
-        description:
-          'IAM policies are the means by which privileges are granted to users, groups',
-      },
-      {
-        id: '1',
-        control: 'nist',
-        status: 'skip',
-        service: 'S3',
-        nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
-        description:
-          'IAM policies are the means by which privileges are granted to users, groups',
-      },
-      {
-        id: '1',
-        control: 'pci',
-        status: 'ok',
-        service: 'S3',
-        nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
-        description:
-          'IAM policies are the means by which privileges are granted to users, groups',
-      },
-      {
-        id: '1',
-        control: 'cis',
-        status: 'alarm',
-        service: 'S3',
-        nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
-        description:
-          'IAM policies are the means by which privileges are granted to users, groups',
-      },
-      {
-        id: '1',
-        control: 'cis',
-        status: 'skip',
-        service: 'S3',
-        nodeName: 'arn:aws:iam::aws:policy/job-function/ViewOnlyAccess',
-        description:
-          'IAM policies are the means by which privileges are granted to users, groups',
-      },
-    ];
+  if (actionType === ActionEnumType.DELETE) {
+    toast.success('Deleted successfully');
+  } else if (actionType === ActionEnumType.NOTIFY) {
+    toast.success('Notified successfully');
+  } else if (actionType === ActionEnumType.MASK) {
+    toast.success('Masked successfully');
+  } else if (actionType === ActionEnumType.UNMASK) {
+    toast.success('Unmasked successfully');
   }
-  const totalCompliance = Object.values(result.status_counts ?? {}).reduce(
-    (acc, value) => {
-      acc = acc + value;
-      return acc;
-    },
-    0,
-  );
-
-  const compliances = result.compliances;
-
-  if (ApiError.isApiError(resultCounts)) {
-    throw resultCounts.value();
-  }
-
-  return {
-    totalCompliance,
-    complianceCounts: {
-      alarm: 0,
-      info: 0,
-      ok: 0,
-      skip: 0,
-    },
-    tableData: compliances,
-    pagination: {
-      currentPage: page,
-      // totalRows: page * PAGE_SIZE + resultCounts.count,
-      totalRows: 15,
-    },
-  };
-}
-
-const loader = async ({
-  params,
-}: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
-  const scanType = params?.scanType ?? '';
-  const accountId = params?.accountId ?? '';
-  const scanId = params?.scanId ?? '';
-
-  if (!scanType || !accountId || !scanId) {
-    // throw new Error('Invalid params');
-  }
-
-  return typedDefer({
-    data: getScans(accountId, scanType, scanId),
-  });
+  return null;
 };
 
-const FilterHeader = () => {
-  return (
-    <ModalHeader>
-      <div className="flex gap-x-2 items-center p-4">
-        <span className="font-medium text-lg">Filters</span>
-      </div>
-    </ModalHeader>
-  );
-};
-
-const ScanResultFilterModal = ({
-  showFilter,
-  elementToFocusOnClose,
-  setShowFilter,
-}: {
-  elementToFocusOnClose: RefObject<FocusableElement> | null;
-  showFilter: boolean;
-  setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  return (
-    <SlidingModal
-      header={<FilterHeader />}
-      open={showFilter}
-      onOpenChange={() => setShowFilter(false)}
-      elementToFocusOnCloseRef={elementToFocusOnClose}
-      width={'w-[350px]'}
-    >
-      <div className="dark:text-white p-4">
-        <div className="flex flex-col gap-y-6">
-          <fieldset>
-            <Select
-              noPortal
-              name="status"
-              label={'Control Type'}
-              placeholder="Select Control Type"
-              value={searchParams.getAll('controls')}
-              sizing="xs"
-              onChange={(value) => {
-                setSearchParams((prev) => {
-                  prev.delete('controls');
-                  value.forEach((language) => {
-                    prev.append('controls', language);
-                  });
-                  return prev;
-                });
-              }}
-            >
-              {['hippa', 'gdpr', 'hippa', 'nist'].map((status: string) => {
-                return (
-                  <SelectItem value={status} key={status}>
-                    {capitalize(status)}
-                  </SelectItem>
-                );
-              })}
-            </Select>
-          </fieldset>
-          <fieldset>
-            <Select
-              noPortal
-              name="inventory"
-              label={'Inventory Type'}
-              placeholder="Select Inventory Type"
-              value={searchParams.getAll('inventory')}
-              sizing="xs"
-              onChange={(value) => {
-                setSearchParams((prev) => {
-                  prev.delete('inventory');
-                  value.forEach((language) => {
-                    prev.append('inventory', language);
-                  });
-                  return prev;
-                });
-              }}
-            >
-              {['AWS S3 Bucket', 'AWS VPC', 'AWS EKS', 'AWS ELB'].map(
-                (status: string) => {
-                  return (
-                    <SelectItem value={status} key={status}>
-                      {capitalize(status)}
-                    </SelectItem>
-                  );
-                },
-              )}
-            </Select>
-          </fieldset>
-          <fieldset>
-            <Select
-              noPortal
-              name="status"
-              label={'Status'}
-              placeholder="Select Status"
-              value={searchParams.getAll('status')}
-              sizing="xs"
-              onChange={(value) => {
-                setSearchParams((prev) => {
-                  prev.delete('status');
-                  value.forEach((language) => {
-                    prev.append('status', language);
-                  });
-                  prev.delete('page');
-                  return prev;
-                });
-              }}
-            >
-              {['alarm', 'info', 'ok', 'skip'].map((status: string) => {
-                return (
-                  <SelectItem value={status} key={status}>
-                    {capitalize(status)}
-                  </SelectItem>
-                );
-              })}
-            </Select>
-          </fieldset>
-        </div>
-      </div>
-    </SlidingModal>
-  );
-};
 const DeleteConfirmationModal = ({
   showDialog,
   ids,
@@ -500,7 +406,7 @@ const DeleteConfirmationModal = ({
 
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center">
+      <div className="grid place-items-center p-6">
         <IconContext.Provider
           value={{
             className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
@@ -509,7 +415,7 @@ const DeleteConfirmationModal = ({
           <HiOutlineExclamationCircle />
         </IconContext.Provider>
         <h3 className="mb-4 font-normal text-center text-sm">
-          The selected vulnerabilities will be deleted.
+          The selected compliances will be deleted.
           <br />
           <span>Are you sure you want to delete?</span>
         </h3>
@@ -520,6 +426,7 @@ const DeleteConfirmationModal = ({
           <Button
             size="xs"
             color="danger"
+            type="button"
             onClick={() => {
               onDeleteAction(ActionEnumType.DELETE);
               setShowDialog(false);
@@ -535,16 +442,17 @@ const DeleteConfirmationModal = ({
 
 const HistoryDropdown = () => {
   const { navigate } = usePageNavigation();
-  const fetcher = useFetcher<ApiVulnerableLoaderDataType>();
+  const fetcher = useFetcher<ApiLoaderDataType>();
   const loaderData = useLoaderData() as LoaderDataType;
   const params = useParams();
   const isScanHistoryLoading = fetcher.state === 'loading';
 
   const onHistoryClick = (nodeType: string, nodeId: string) => {
     fetcher.load(
-      generatePath('/_api/vulnerability/scan-results/history/:nodeType/:nodeId', {
+      generatePath('/data-component/scan-history/:scanType/:nodeType/:nodeId', {
         nodeId: nodeId,
         nodeType: nodeType,
+        scanType: ModelScanResultsActionRequestScanTypeEnum.ComplianceScan,
       }),
     );
   };
@@ -563,7 +471,7 @@ const HistoryDropdown = () => {
         />
       }
     >
-      <Await resolve={loaderData.data ?? []}>
+      <DFAwait resolve={loaderData.data ?? []}>
         {(resolvedData: LoaderDataType['data']) => {
           return (
             <Dropdown
@@ -580,7 +488,7 @@ const HistoryDropdown = () => {
                         key={item.scanId}
                         onClick={() => {
                           navigate(
-                            generatePath('/vulnerability/scan-results/:scanId', {
+                            generatePath('/posture/scan-results/:scanId', {
                               scanId: item.scanId,
                             }),
                             {
@@ -617,7 +525,7 @@ const HistoryDropdown = () => {
             </Dropdown>
           );
         }}
-      </Await>
+      </DFAwait>
     </Suspense>
   );
 };
@@ -635,11 +543,10 @@ const ActionDropdown = ({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const onTableAction = useCallback(
-    (actionType: string, maskHostAndImages?: string) => {
+    (actionType: string) => {
       const formData = new FormData();
       formData.append('actionType', actionType);
-
-      ids.forEach((item) => formData.append('cveIds[]', item));
+      ids.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -659,82 +566,22 @@ const ActionDropdown = ({
         align="end"
         content={
           <>
-            <DropdownSubMenu
-              triggerAsChild
-              content={
-                <>
-                  <DropdownItem onClick={() => onTableAction(ActionEnumType.MASK, '')}>
-                    <IconContext.Provider
-                      value={{ className: 'text-gray-700 dark:text-gray-400' }}
-                    >
-                      <HiEyeOff />
-                    </IconContext.Provider>
-                    Mask vulnerability
-                  </DropdownItem>
-                  <DropdownItem
-                    onClick={() =>
-                      onTableAction(ActionEnumType.MASK, 'maskHostAndImages')
-                    }
-                  >
-                    <IconContext.Provider
-                      value={{ className: 'text-gray-700 dark:text-gray-400' }}
-                    >
-                      <HiEyeOff />
-                    </IconContext.Provider>
-                    Mask vulnerability across hosts and images
-                  </DropdownItem>
-                </>
-              }
-            >
-              <DropdownItem>
-                <IconContext.Provider
-                  value={{
-                    className: 'w-4 h-4',
-                  }}
-                >
-                  <HiChevronLeft />
-                </IconContext.Provider>
-                <span className="text-gray-700 dark:text-gray-400">Mask</span>
-              </DropdownItem>
-            </DropdownSubMenu>
-            <DropdownSubMenu
-              triggerAsChild
-              content={
-                <>
-                  <DropdownItem onClick={() => onTableAction(ActionEnumType.UNMASK, '')}>
-                    <IconContext.Provider
-                      value={{ className: 'text-gray-700 dark:text-gray-400' }}
-                    >
-                      <HiEye />
-                    </IconContext.Provider>
-                    Un mask vulnerability
-                  </DropdownItem>
-                  <DropdownItem
-                    onClick={() =>
-                      onTableAction(ActionEnumType.UNMASK, 'maskHostAndImages')
-                    }
-                  >
-                    <IconContext.Provider
-                      value={{ className: 'text-gray-700 dark:text-gray-400' }}
-                    >
-                      <HiEye />
-                    </IconContext.Provider>
-                    Un mask vulnerability across hosts and images
-                  </DropdownItem>
-                </>
-              }
-            >
-              <DropdownItem>
-                <IconContext.Provider
-                  value={{
-                    className: 'w-4 h-4',
-                  }}
-                >
-                  <HiChevronLeft />
-                </IconContext.Provider>
-                <span className="text-gray-700 dark:text-gray-400">Un mask</span>
-              </DropdownItem>
-            </DropdownSubMenu>
+            <DropdownItem onClick={() => onTableAction(ActionEnumType.MASK)}>
+              <IconContext.Provider
+                value={{ className: 'text-gray-700 dark:text-gray-400' }}
+              >
+                <HiEyeOff />
+              </IconContext.Provider>
+              <span className="text-gray-700 dark:text-gray-400">Mask</span>
+            </DropdownItem>
+            <DropdownItem onClick={() => onTableAction(ActionEnumType.UNMASK)}>
+              <IconContext.Provider
+                value={{ className: 'text-gray-700 dark:text-gray-400' }}
+              >
+                <HiEye />
+              </IconContext.Provider>
+              <span className="text-gray-700 dark:text-gray-400">Un mask</span>
+            </DropdownItem>
             <DropdownItem
               className="text-sm"
               onClick={() => onTableAction(ActionEnumType.NOTIFY)}
@@ -776,13 +623,14 @@ const ActionDropdown = ({
     </>
   );
 };
-const CVETable = () => {
+const ScanResusltTable = () => {
   const fetcher = useFetcher();
   const loaderData = useLoaderData() as LoaderDataType;
-  const columnHelper = createColumnHelper<TableType>();
+  const columnHelper = createColumnHelper<ModelCompliance>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [sort, setSort] = useSortingState();
 
   const columns = useMemo(() => {
     const columns = [
@@ -791,7 +639,31 @@ const CVETable = () => {
         minSize: 30,
         maxSize: 50,
       }),
-      columnHelper.accessor('control', {
+      columnHelper.accessor('node_id', {
+        enableSorting: false,
+        enableResizing: false,
+        cell: (info) => (
+          <DFLink
+            to={{
+              pathname: `./${info.getValue()}`,
+              search: searchParams.toString(),
+            }}
+            className="flex items-center gap-x-2"
+          >
+            <div className="p-1.5 bg-gray-100 shrink-0 dark:bg-gray-500/10 rounded-lg">
+              <div className="w-4 h-4">
+                <PostureIcon />
+              </div>
+            </div>
+            <div className="truncate">{info.getValue()}</div>
+          </DFLink>
+        ),
+        header: () => 'ID',
+        minSize: 50,
+        size: 60,
+        maxSize: 65,
+      }),
+      columnHelper.accessor('compliance_check_type', {
         enableSorting: false,
         enableResizing: false,
         cell: (info) => info.getValue().toUpperCase(),
@@ -800,27 +672,7 @@ const CVETable = () => {
         size: 80,
         maxSize: 90,
       }),
-      columnHelper.accessor('service', {
-        enableSorting: false,
-        enableResizing: false,
-        cell: (info) => info.getValue(),
-        header: () => 'Service',
-        minSize: 80,
-        size: 80,
-        maxSize: 80,
-      }),
 
-      columnHelper.accessor('nodeName', {
-        enableSorting: false,
-        enableResizing: false,
-        cell: (info) => {
-          return info.getValue() ?? 'No Description Available';
-        },
-        header: () => 'Resource',
-        minSize: 80,
-        size: 150,
-        maxSize: 160,
-      }),
       columnHelper.accessor('description', {
         enableResizing: false,
         enableSorting: false,
@@ -832,35 +684,43 @@ const CVETable = () => {
       }),
       columnHelper.accessor('status', {
         enableResizing: false,
-        enableSorting: false,
         minSize: 70,
         size: 70,
         maxSize: 70,
         header: () => <div>Status</div>,
-        cell: (info) => (
-          <Badge
-            label={info.getValue().toUpperCase()}
-            className={cx({
-              'bg-[#F05252]/20 dark:bg-[#F05252]/20 text-[#F05252] dark:text-[#F05252]':
-                info.getValue().toLowerCase() === 'alarm',
-              'bg-[#3F83F8]/20 dark:bg-[#3F83F8/20 text-[#3F83F8] dark:text-[#3F83F8]':
-                info.getValue().toLowerCase() === 'info',
-              'bg-[#0E9F6E]/30 dark:bg-[##0E9F6E]/10 text-yellow-400 dark:text-[#0E9F6E]':
-                info.getValue().toLowerCase() === 'ok',
-              'bg-[#6B7280]/20 dark:bg-[#6B7280]/10 text-gray-700 dark:text-gray-300':
-                info.getValue().toLowerCase() === 'skip',
-              'bg-[#9CA3AF]/10 dark:bg-[#9CA3AF]/10 text-gray-400 dark:text-[#9CA3AF]':
-                info.getValue().toLowerCase() === 'unknown',
-            })}
-            size="sm"
-          />
-        ),
+        cell: (info) => {
+          return (
+            <Badge
+              label={info.getValue().toUpperCase()}
+              className={cx({
+                'bg-[#F05252]/20 dark:bg-[#F05252]/20 text-red-500 dark:text-[#F05252]':
+                  info.getValue().toLowerCase() === STATUSES.ALARM,
+                'bg-[#3F83F8]/20 dark:bg-[#3F83F8/20 text-[blue-500 dark:text-[#3F83F8]':
+                  info.getValue().toLowerCase() === STATUSES.INFO,
+                'bg-[#0E9F6E]/30 dark:bg-[##0E9F6E]/10 text-green-500 dark:text-[#0E9F6E]':
+                  info.getValue().toLowerCase() === STATUSES.OK,
+                'bg-[#FF5A1F]/20 dark:bg-[#FF5A1F]/10 text-orange-500 dark:text-[#FF5A1F]':
+                  info.getValue().toLowerCase() === STATUSES.WARN,
+                'bg-[#6B7280]/20 dark:bg-[#6B7280]/10 text-gray-700 dark:text-gray-300':
+                  info.getValue().toLowerCase() === STATUSES.SKIP,
+                'bg-[#0E9F6E]/10 dark:bg-[#0E9F6E]/10 text-green-500 dark:text-[#0E9F6E]':
+                  info.getValue().toLowerCase() === STATUSES.PASS,
+                'bg-[#d6e184]/10 dark:bg-[#d6e184]/10 text-yellow-500 dark:text-[#d6e184]':
+                  info.getValue().toLowerCase() === STATUSES.NOTE,
+              })}
+              size="sm"
+            />
+          );
+        },
       }),
       columnHelper.display({
         id: 'actions',
         enableSorting: false,
         cell: (cell) => (
-          <ActionDropdown icon={<HiDotsVertical />} ids={[cell.row.original.id]} />
+          <ActionDropdown
+            icon={<HiDotsVertical />}
+            ids={[cell.row.original.test_number]}
+          />
         ),
         header: () => '',
         minSize: 40,
@@ -876,7 +736,7 @@ const CVETable = () => {
   return (
     <>
       <Suspense fallback={<TableSkeleton columns={6} rows={10} size={'md'} />}>
-        <Await resolve={loaderData.data}>
+        <DFAwait resolve={loaderData.data}>
           {(resolvedData: LoaderDataType['data']) => {
             return (
               <Form>
@@ -901,27 +761,65 @@ const CVETable = () => {
                       >
                         Delete
                       </Button>
-                      <MaskDropdown ids={Object.keys(rowSelectionState)} />
-                      <UnMaskDropdown ids={Object.keys(rowSelectionState)} />
+                      <Button
+                        size="xs"
+                        color="default"
+                        outline
+                        startIcon={<HiEyeOff />}
+                        type="submit"
+                        onClick={() => {
+                          const formData = new FormData();
+                          formData.append('actionType', ActionEnumType.MASK);
+                          Object.keys(rowSelectionState).forEach((item) =>
+                            formData.append('ids[]', item),
+                          );
+                          fetcher.submit(formData, {
+                            method: 'post',
+                          });
+                        }}
+                      >
+                        Mask
+                      </Button>
+                      <Button
+                        size="xs"
+                        color="default"
+                        outline
+                        startIcon={<HiEye />}
+                        type="submit"
+                        onClick={() => {
+                          const formData = new FormData();
+                          formData.append('actionType', ActionEnumType.UNMASK);
+                          Object.keys(rowSelectionState).forEach((item) =>
+                            formData.append('ids[]', item),
+                          );
+                          fetcher.submit(formData, {
+                            method: 'post',
+                          });
+                        }}
+                      >
+                        Un mask
+                      </Button>
                     </div>
                   </>
                 )}
 
                 <Table
                   size="sm"
-                  data={resolvedData.tableData}
+                  data={resolvedData.compliances}
                   columns={columns}
                   enableRowSelection
                   rowSelectionState={rowSelectionState}
                   onRowSelectionChange={setRowSelectionState}
-                  enableSorting
                   enablePagination
                   manualPagination
                   enableColumnResizing
                   totalRows={resolvedData.pagination.totalRows}
                   pageSize={PAGE_SIZE}
                   pageIndex={resolvedData.pagination.currentPage}
-                  getRowId={(row) => row.cveId}
+                  enableSorting
+                  manualSorting
+                  sortingState={sort}
+                  getRowId={(row) => row.test_number}
                   onPaginationChange={(updaterOrValue) => {
                     let newPageIndex = 0;
                     if (typeof updaterOrValue === 'function') {
@@ -937,6 +835,25 @@ const CVETable = () => {
                       return prev;
                     });
                   }}
+                  onSortingChange={(updaterOrValue) => {
+                    let newSortState: SortingState = [];
+                    if (typeof updaterOrValue === 'function') {
+                      newSortState = updaterOrValue(sort);
+                    } else {
+                      newSortState = updaterOrValue;
+                    }
+                    setSearchParams((prev) => {
+                      if (!newSortState.length) {
+                        prev.delete('sortby');
+                        prev.delete('desc');
+                      } else {
+                        prev.set('sortby', String(newSortState[0].id));
+                        prev.set('desc', String(newSortState[0].desc));
+                      }
+                      return prev;
+                    });
+                    setSort(newSortState);
+                  }}
                   getTrProps={(row) => {
                     if (row.original.masked) {
                       return {
@@ -949,35 +866,37 @@ const CVETable = () => {
               </Form>
             );
           }}
-        </Await>
+        </DFAwait>
       </Suspense>
     </>
   );
 };
 
-const HeaderComponent = ({
-  setShowFilter,
-}: {
-  elementToFocusOnClose: React.MutableRefObject<null>;
-  setShowFilter: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
-  const [searchParams] = useSearchParams();
+const HeaderComponent = () => {
+  const elementToFocusOnClose = useRef(null);
+  const [searchParams, setSearchParams] = useSearchParams();
   const loaderData = useLoaderData() as LoaderDataType;
   const isFilterApplied =
-    searchParams.has('severity') ||
+    searchParams.has('status') ||
     searchParams.has('mask') ||
-    searchParams.has('unmask');
+    searchParams.has('unmask') ||
+    searchParams.has('benchmarkType');
 
   return (
     <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <Suspense fallback={<CircleSpinner size="xs" />}>
-        <Await resolve={loaderData.data ?? []}>
+        <DFAwait resolve={loaderData.data ?? []}>
           {(resolvedData: LoaderDataType['data']) => {
-            const { nodeType = 'aws', hostName } = resolvedData;
+            const { nodeType = 'unknown', nodeName } = resolvedData;
+
+            const _nodeType =
+              nodeType === 'host'
+                ? ACCOUNT_CONNECTOR.LINUX
+                : ACCOUNT_CONNECTOR.KUBERNETES;
             return (
               <>
                 <DFLink
-                  to={`/posture/accounts/${nodeType}`}
+                  to={`/posture/accounts/${_nodeType}`}
                   className="flex hover:no-underline items-center justify-center  mr-2"
                 >
                   <IconContext.Provider
@@ -989,23 +908,23 @@ const HeaderComponent = ({
                   </IconContext.Provider>
                 </DFLink>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  POSTURE SCAN RESULT - Account-12345 HIPPA
+                  POSTURE SCAN RESULT - {nodeType} / {nodeName}
                 </span>
               </>
             );
           }}
-        </Await>
+        </DFAwait>
       </Suspense>
       <div className="ml-auto flex items-center gap-x-4">
         <div className="flex flex-col">
           <span className="text-xs text-gray-500 dark:text-gray-200">
             <Suspense fallback={<CircleSpinner size="xs" />}>
-              <Await resolve={loaderData.data ?? []}>
+              <DFAwait resolve={loaderData.data ?? []}>
                 {(resolvedData: LoaderDataType['data']) => {
                   const { timestamp } = resolvedData;
                   return formatMilliseconds(timestamp);
                 }}
-              </Await>
+              </DFAwait>
             </Suspense>
           </span>
           <span className="text-gray-400 text-[10px]">Last scan</span>
@@ -1017,129 +936,190 @@ const HeaderComponent = ({
           {isFilterApplied && (
             <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
           )}
-          <div>
+          <Popover
+            triggerAsChild
+            elementToFocusOnCloseRef={elementToFocusOnClose}
+            content={
+              <div className="dark:text-white p-4 w-[300px]">
+                <div className="flex flex-col gap-y-6">
+                  <fieldset>
+                    <legend className="text-sm font-medium">Mask And Unmask</legend>
+                    <div className="flex gap-x-4 mt-1">
+                      <Checkbox
+                        label="Mask"
+                        checked={searchParams.getAll('mask').includes('true')}
+                        onCheckedChange={(state) => {
+                          if (state) {
+                            setSearchParams((prev) => {
+                              prev.append('mask', 'true');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          } else {
+                            setSearchParams((prev) => {
+                              const prevStatuses = prev.getAll('mask');
+                              prev.delete('mask');
+                              prevStatuses
+                                .filter((mask) => mask !== 'true')
+                                .forEach((mask) => {
+                                  prev.append('mask', mask);
+                                });
+                              prev.delete('mask');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          }
+                        }}
+                      />
+                      <Checkbox
+                        label="Unmask"
+                        checked={searchParams.getAll('unmask').includes('true')}
+                        onCheckedChange={(state) => {
+                          if (state) {
+                            setSearchParams((prev) => {
+                              prev.append('unmask', 'true');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          } else {
+                            setSearchParams((prev) => {
+                              const prevStatuses = prev.getAll('unmask');
+                              prev.delete('unmask');
+                              prevStatuses
+                                .filter((status) => status !== 'true')
+                                .forEach((status) => {
+                                  prev.append('unmask', status);
+                                });
+                              prev.delete('unmask');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          }
+                        }}
+                      />
+                    </div>
+                  </fieldset>
+                  <fieldset>
+                    <Suspense fallback={<CircleSpinner size="xs" />}>
+                      <DFAwait resolve={loaderData.data ?? []}>
+                        {(resolvedData: LoaderDataType['data']) => {
+                          const { nodeType = '' } = resolvedData;
+                          let benchmarks: string[] = [];
+                          if (nodeType === 'host') {
+                            benchmarks = complianceType.host;
+                          } else {
+                            benchmarks = complianceType.kubernetes_cluster;
+                          }
+                          return (
+                            <Select
+                              noPortal
+                              name="status"
+                              label={'Benchmark Type'}
+                              placeholder="Select Benchmark Type"
+                              value={searchParams.getAll('benchmarkType')}
+                              sizing="xs"
+                              onChange={(value) => {
+                                setSearchParams((prev) => {
+                                  prev.delete('benchmarkType');
+                                  value.forEach((benchmarkType) => {
+                                    prev.append('benchmarkType', benchmarkType);
+                                  });
+                                  prev.delete('page');
+                                  return prev;
+                                });
+                              }}
+                            >
+                              {benchmarks.map((status: string) => {
+                                return (
+                                  <SelectItem
+                                    value={status.toLowerCase()}
+                                    key={status.toLowerCase()}
+                                  >
+                                    {status.toUpperCase()}
+                                  </SelectItem>
+                                );
+                              })}
+                            </Select>
+                          );
+                        }}
+                      </DFAwait>
+                    </Suspense>
+                  </fieldset>
+                  <fieldset>
+                    <Suspense fallback={<CircleSpinner size="xs" />}>
+                      <DFAwait resolve={loaderData.data ?? []}>
+                        {(resolvedData: LoaderDataType['data']) => {
+                          const { nodeType = '' } = resolvedData;
+                          let statuses: string[] = [];
+                          if (nodeType === 'host') {
+                            statuses = [
+                              STATUSES.INFO,
+                              STATUSES.PASS,
+                              STATUSES.WARN,
+                              STATUSES.NOTE,
+                            ];
+                          } else {
+                            statuses = [
+                              STATUSES.ALARM,
+                              STATUSES.INFO,
+                              STATUSES.OK,
+                              STATUSES.SKIP,
+                            ];
+                          }
+
+                          return (
+                            <Select
+                              noPortal
+                              name="status"
+                              label={'Status'}
+                              placeholder="Select Status"
+                              value={searchParams.getAll('status')}
+                              sizing="xs"
+                              onChange={(value) => {
+                                setSearchParams((prev) => {
+                                  prev.delete('status');
+                                  value.forEach((language) => {
+                                    prev.append('status', language);
+                                  });
+                                  prev.delete('page');
+                                  return prev;
+                                });
+                              }}
+                            >
+                              {statuses.map((status: string) => {
+                                return (
+                                  <SelectItem
+                                    value={status.toLowerCase()}
+                                    key={status.toLowerCase()}
+                                  >
+                                    {status.toUpperCase()}
+                                  </SelectItem>
+                                );
+                              })}
+                            </Select>
+                          );
+                        }}
+                      </DFAwait>
+                    </Suspense>
+                  </fieldset>
+                </div>
+              </div>
+            }
+          >
             <IconButton
               size="xs"
               outline
               color="primary"
               className="rounded-lg bg-transparent"
-              onClick={() => setShowFilter(true)}
               icon={<FiFilter />}
             />
-          </div>
+          </Popover>
         </div>
       </div>
     </div>
   );
 };
-const MaskDropdown = ({ ids }: { ids: string[] }) => {
-  const fetcher = useFetcher();
 
-  const onMaskAction = useCallback(
-    (maskHostAndImages: string) => {
-      const formData = new FormData();
-      formData.append('actionType', ActionEnumType.MASK);
-      formData.append('maskHostAndImages', maskHostAndImages);
-      ids.forEach((item) => formData.append('cveIds[]', item));
-      fetcher.submit(formData, {
-        method: 'post',
-      });
-    },
-    [ids, fetcher],
-  );
-
-  return (
-    <Dropdown
-      triggerAsChild={true}
-      content={
-        <>
-          <DropdownItem className="text-sm" onClick={() => onMaskAction('')}>
-            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-              <IconContext.Provider
-                value={{ className: 'text-gray-700 dark:text-gray-400' }}
-              >
-                <HiEyeOff />
-              </IconContext.Provider>
-              Mask {ids.length > 1 ? 'vulnerabilities' : 'vulnerability'}
-            </span>
-          </DropdownItem>
-          <DropdownItem
-            className="text-sm"
-            onClick={() => onMaskAction('maskHostAndImages')}
-          >
-            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-              <IconContext.Provider
-                value={{ className: 'text-gray-700 dark:text-gray-400' }}
-              >
-                <HiEyeOff />
-              </IconContext.Provider>
-              Mask {ids.length > 1 ? 'vulnerabilities' : 'vulnerability'} across hosts and
-              images
-            </span>
-          </DropdownItem>
-        </>
-      }
-    >
-      <Button size="xs" color="default" outline startIcon={<HiEyeOff />} type="button">
-        Mask
-      </Button>
-    </Dropdown>
-  );
-};
-const UnMaskDropdown = ({ ids }: { ids: string[] }) => {
-  const fetcher = useFetcher();
-
-  const onUnMaskAction = useCallback(
-    (unMaskHostAndImages: string) => {
-      const formData = new FormData();
-      formData.append('actionType', ActionEnumType.UNMASK);
-      formData.append('maskHostAndImages', unMaskHostAndImages);
-      ids.forEach((item) => formData.append('cveIds[]', item));
-      fetcher.submit(formData, {
-        method: 'post',
-      });
-    },
-    [ids],
-  );
-
-  return (
-    <Dropdown
-      triggerAsChild={true}
-      content={
-        <>
-          <DropdownItem className="text-sm" onClick={() => onUnMaskAction('')}>
-            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-              <IconContext.Provider
-                value={{ className: 'text-gray-700 dark:text-gray-400' }}
-              >
-                <HiEye />
-              </IconContext.Provider>
-              Unmask {ids.length > 1 ? 'vulnerabilities' : 'vulnerability'}
-            </span>
-          </DropdownItem>
-          <DropdownItem
-            className="text-sm"
-            onClick={() => onUnMaskAction('maskHostAndImages')}
-          >
-            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-              <IconContext.Provider
-                value={{ className: 'text-gray-700 dark:text-gray-400' }}
-              >
-                <HiEye />
-              </IconContext.Provider>
-              Unmask {ids.length > 1 ? 'vulnerabilities' : 'vulnerability'} across hosts
-              and images
-            </span>
-          </DropdownItem>
-        </>
-      }
-    >
-      <Button size="xs" color="default" outline startIcon={<HiEye />} type="button">
-        Un mask
-      </Button>
-    </Dropdown>
-  );
-};
 const StatusCountComponent = ({ theme }: { theme: Mode }) => {
   const loaderData = useLoaderData() as LoaderDataType;
   return (
@@ -1151,9 +1131,9 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
           </div>
         }
       >
-        <Await resolve={loaderData.data}>
+        <DFAwait resolve={loaderData.data}>
           {(resolvedData: ScanResult) => {
-            const { totalCompliance, complianceCounts } = resolvedData;
+            const { totalStatus, statusCounts, nodeType } = resolvedData;
             return (
               <>
                 <div className="grid grid-flow-col-dense gap-x-4">
@@ -1168,7 +1148,7 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                     </h4>
                     <div className="mt-2">
                       <span className="text-2xl text-gray-900 dark:text-gray-200">
-                        {totalCompliance}
+                        {totalStatus}
                       </span>
                       <h5 className="text-xs text-gray-500 dark:text-gray-200 mb-2">
                         Total count
@@ -1185,18 +1165,41 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                   </div>
                 </div>
                 <div className="h-[200px]">
-                  <MostExploitableChart theme={theme} data={complianceCounts} />
+                  <PostureResultChart
+                    theme={theme}
+                    data={statusCounts}
+                    eoption={{
+                      series: [
+                        {
+                          color:
+                            nodeType === 'host'
+                              ? [
+                                  POSTURE_STATUS_COLORS['info'],
+                                  POSTURE_STATUS_COLORS['pass'],
+                                  POSTURE_STATUS_COLORS['warn'],
+                                  POSTURE_STATUS_COLORS['note'],
+                                ]
+                              : [
+                                  POSTURE_STATUS_COLORS['alarm'],
+                                  POSTURE_STATUS_COLORS['info'],
+                                  POSTURE_STATUS_COLORS['ok'],
+                                  POSTURE_STATUS_COLORS['skip'],
+                                ],
+                        },
+                      ],
+                    }}
+                  />
                 </div>
                 <div>
-                  {Object.keys(complianceCounts)?.map((key: string) => {
+                  {Object.keys(statusCounts)?.map((key: string) => {
                     return (
                       <div key={key} className="flex items-center gap-2 p-1">
                         <div
                           className={cx('h-3 w-3 rounded-full')}
                           style={{
                             backgroundColor:
-                              POSTURE_SEVERITY_COLORS[
-                                key.toLowerCase() as VulnerabilitySeverityType
+                              POSTURE_STATUS_COLORS[
+                                key.toLowerCase() as PostureSeverityType
                               ],
                           }}
                         />
@@ -1208,7 +1211,7 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                             'text-sm text-gray-900 dark:text-gray-200 ml-auto tabular-nums',
                           )}
                         >
-                          {complianceCounts[key]}
+                          {statusCounts[key]}
                         </span>
                       </div>
                     );
@@ -1217,32 +1220,22 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
               </>
             );
           }}
-        </Await>
+        </DFAwait>
       </Suspense>
     </Card>
   );
 };
 const PostureScanResults = () => {
-  const elementToFocusOnClose = useRef(null);
-  const [showFilter, setShowFilter] = useState(false);
   const { mode } = useTheme();
 
   return (
     <>
-      <ScanResultFilterModal
-        showFilter={showFilter}
-        setShowFilter={setShowFilter}
-        elementToFocusOnClose={elementToFocusOnClose.current}
-      />
-      <HeaderComponent
-        elementToFocusOnClose={elementToFocusOnClose}
-        setShowFilter={setShowFilter}
-      />
+      <HeaderComponent />
       <div className="grid grid-cols-[400px_1fr] p-2 gap-x-2">
         <div className="self-start grid gap-y-2">
           <StatusCountComponent theme={mode} />
         </div>
-        <CVETable />
+        <ScanResusltTable />
       </div>
       <Outlet />
     </>
@@ -1250,6 +1243,7 @@ const PostureScanResults = () => {
 };
 
 export const module = {
+  action,
   loader,
   element: <PostureScanResults />,
 };

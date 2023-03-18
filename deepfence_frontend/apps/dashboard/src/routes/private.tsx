@@ -306,7 +306,7 @@ export const privateRoutes: CustomRouteObject[] = [
         ],
       },
       {
-        path: 'posture/scan-results/:accountId/:scanId',
+        path: 'posture/scan-results/:scanId',
         ...postureScanResults,
         meta: { title: 'Posture Scans Results' },
       },

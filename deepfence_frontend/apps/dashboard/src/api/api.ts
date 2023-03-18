@@ -86,6 +86,7 @@ export function getComplianceApiClient() {
     resultComplianceScan: complianceApi.resultsComplianceScan.bind(complianceApi),
     resultCountComplianceScan:
       complianceApi.countResultsComplianceScan.bind(complianceApi),
+    listComplianceScan: complianceApi.listComplianceScan.bind(complianceApi),
   };
 }
 

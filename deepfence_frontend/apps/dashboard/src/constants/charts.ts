@@ -10,11 +10,15 @@ export const SEVERITY_COLORS: {
   unknown: '#9CA3AF',
 };
 
-export const POSTURE_SEVERITY_COLORS: {
+export const POSTURE_STATUS_COLORS: {
   [x in PostureSeverityType]: string;
 } = {
   alarm: '#F05252',
   info: '#3F83F8',
   ok: '#0E9F6E',
   skip: '#6B7280',
+
+  pass: '#0E9F6E',
+  warn: '#f58055',
+  note: '#d6e184',
 };
