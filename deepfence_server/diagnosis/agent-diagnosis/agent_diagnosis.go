@@ -1,3 +1,149 @@
 package agent_diagnosis
 
-const ()
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net/url"
+	"time"
+
+	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
+	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+)
+
+func missing(a, b []string) string {
+	ma := make(map[string]bool, len(a))
+	for _, ka := range a {
+		ma[ka] = true
+	}
+	for _, kb := range b {
+		if !ma[kb] {
+			return kb
+		}
+	}
+	return ""
+}
+
+func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifier) error {
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+	nodeIds := make([]string, len(nodeIdentifiers))
+	for i, n := range nodeIdentifiers {
+		nodeIds[i] = n.NodeId
+	}
+	res, err := tx.Run(`MATCH (n)
+		WHERE (n:Node OR n:KubernetesCluster) AND n.node_id IN $node_ids
+		RETURN n.node_id`, map[string]interface{}{"node_ids": nodeIds})
+	if err != nil {
+		return err
+	}
+	if err != nil {
+		return err
+	}
+	rec, err := res.Collect()
+	if err != nil {
+		return err
+	}
+	var foundNodeIds []string
+	for i := range rec {
+		foundNodeIds = append(foundNodeIds, rec[i].Values[0].(string))
+	}
+
+	var missingNodes []string
+	for _, nodeId := range nodeIds {
+		if !utils.InSlice(nodeId, foundNodeIds) {
+			missingNodes = append(missingNodes, nodeId)
+		}
+	}
+	if len(missingNodes) > 0 {
+		return errors.New(fmt.Sprintf("could not find nodes %v", missingNodes))
+	}
+	return nil
+}
+
+func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifier, tail string) error {
+	err := verifyNodeIds(ctx, nodeIdentifiers)
+	if err != nil {
+		return err
+	}
+	mc, err := directory.MinioClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	actionBuilder := func(nodeIdentifier diagnosis.NodeIdentifier, uploadUrl string, fileName string, tail string) (ctl.Action, error) {
+		req := ctl.SendAgentDiagnosticLogsRequest{
+			NodeId:    nodeIdentifier.NodeId,
+			NodeType:  ctl.StringToResourceType(nodeIdentifier.NodeType),
+			UploadURL: uploadUrl,
+			Tail:      tail,
+			FileName:  fileName,
+		}
+		b, err := json.Marshal(req)
+		if err != nil {
+			return ctl.Action{}, err
+		}
+		return ctl.Action{
+			ID:             ctl.SendAgentDiagnosticLogs,
+			RequestPayload: string(b),
+		}, nil
+	}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+	tx, err := session.BeginTransaction()
+	defer tx.Close()
+
+	fileNameSuffix := "-" + time.Now().Format("2006-01-02-15-04-05") + ".zip"
+	for _, nodeIdentifier := range nodeIdentifiers {
+		fileName := "deepfence-agent-logs-" + nodeIdentifier.NodeId + fileNameSuffix
+		uploadUrl, err := mc.CreatePublicUploadURL(ctx, diagnosis.AgentDiagnosisFileServerPrefix+fileName, true, time.Minute*10, url.Values{})
+		if err != nil {
+			return err
+		}
+		action, err := actionBuilder(nodeIdentifier, uploadUrl, fileName, tail)
+		if err != nil {
+			log.Error().Err(err)
+			return err
+		}
+		b, err := json.Marshal(action)
+		if err != nil {
+			return err
+		}
+		if _, err = tx.Run(fmt.Sprintf(`
+		MERGE (n:AgentDiagnosticLogs{node_id: $node_id, status: $status, retries: 0, trigger_action: $action, updated_at: TIMESTAMP()})
+		MERGE (m:%s{node_id:$node_id})
+		MERGE (n)-[:SCHEDULED]->(m)`, nodeIdentifier.NodeType),
+			map[string]interface{}{
+				"status":  utils.SCAN_STATUS_STARTING,
+				"node_id": nodeIdentifier.NodeId,
+				"action":  string(b)}); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}

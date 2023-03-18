@@ -1,8 +1,9 @@
 package kubernetes
 
 import (
+	"errors"
 	"fmt"
-	"time"
+	"net/http"
 
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -37,13 +38,21 @@ func StartClusterAgentUpgrade(req ctl.StartAgentUpgradeRequest) error {
 }
 
 func SendClusterAgentDiagnosticLogs(req ctl.SendAgentDiagnosticLogsRequest, k8sClusterName string) error {
+	fileName := "/tmp/" + req.FileName
 	err := utils.RecursiveZip(
 		[]string{"/var/log/compliance/compliance-status"},
 		[]string{},
-		fmt.Sprintf("/tmp/deepfence-k8s-agent-%s-logs-%s.zip", k8sClusterName, time.Now().Format("2006-01-02-15-04-05")),
+		fileName,
 	)
 	if err != nil {
 		return err
+	}
+	resp, statusCode, err := utils.UploadFile(req.UploadURL, fileName)
+	if err != nil {
+		return err
+	}
+	if statusCode != http.StatusOK {
+		return errors.New(string(resp))
 	}
 	return nil
 }

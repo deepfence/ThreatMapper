@@ -494,10 +494,10 @@ func (d *OpenApiDocs) AddDiagnosisOperations() {
 		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new([]DiagnosticNotification))
 	d.AddOperation("generateConsoleDiagnosticLogs", http.MethodPost, "/deepfence/diagnosis/console-logs",
 		"Generate Console Diagnostic Logs", "Generate Console Diagnostic Logs",
-		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(GenerateDiagnosticLogsRequest), nil)
+		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(GenerateConsoleDiagnosticLogsRequest), nil)
 	d.AddOperation("generateAgentDiagnosticLogs", http.MethodPost, "/deepfence/diagnosis/agent-logs",
 		"Generate Agent Diagnostic Logs", "Generate Agent Diagnostic Logs",
-		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(GenerateDiagnosticLogsRequest), nil)
+		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(GenerateAgentDiagnosticLogsRequest), nil)
 	d.AddOperation("getDiagnosticLogs", http.MethodGet, "/deepfence/diagnosis/diagnostic-logs",
 		"Get Diagnostic Logs", "Get diagnostic logs download url links",
 		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new(GetDiagnosticLogsResponse))

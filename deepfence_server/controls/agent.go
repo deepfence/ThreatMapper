@@ -32,6 +32,12 @@ func GetAgentActions(ctx context.Context, nodeId string, work_num_to_extract int
 		actions = append(actions, scan_actions...)
 	}
 
+	diagnosticLogActions, scan_err := ExtractAgentDiagnosticLogRequests(ctx, nodeId, work_num_to_extract)
+	work_num_to_extract -= len(diagnosticLogActions)
+	if scan_err == nil {
+		actions = append(actions, diagnosticLogActions...)
+	}
+
 	return actions, []error{scan_err, upgrade_err}
 }
 
@@ -92,6 +98,60 @@ func GetPendingAgentScans(ctx context.Context, nodeId string) ([]controls.Action
 
 	return res, tx.Commit()
 
+}
+
+func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeId string, max_work int) ([]controls.Action, error) {
+	res := []controls.Action{}
+	if len(nodeId) == 0 {
+		return res, errors.New("Missing node_id")
+	}
+
+	client, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+	session, err := client.Session(neo4j.AccessModeWrite)
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
+		WHERE s.status = '`+utils.SCAN_STATUS_STARTING+`'
+		AND s.retries < 3
+		WITH s LIMIT $max_work
+		SET s.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
+		WITH s
+		RETURN s.trigger_action`,
+		map[string]interface{}{"id": nodeId, "max_work": max_work})
+	if err != nil {
+		return res, err
+	}
+	records, err := r.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		var action controls.Action
+		if record.Values[0] == nil {
+			log.Error().Msgf("Invalid neo4j trigger_action result, skipping")
+			continue
+		}
+		err := json.Unmarshal([]byte(record.Values[0].(string)), &action)
+		if err != nil {
+			log.Error().Msgf("Unmarshal of action failed: %v", err)
+			continue
+		}
+		res = append(res, action)
+	}
+
+	return res, tx.Commit()
 }
 
 func ExtractStartingAgentScans(ctx context.Context, nodeId string, max_work int) ([]controls.Action, error) {

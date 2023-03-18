@@ -252,6 +252,7 @@ func (Secret) GetJsonCategory() string {
 }
 
 type Vulnerability struct {
+	NodeId                     string   `json:"node_id" required:"true"`
 	Cve_id                     string   `json:"cve_id" required:"true"`
 	Cve_type                   string   `json:"cve_type" required:"true"`
 	Cve_severity               string   `json:"cve_severity" required:"true"`
