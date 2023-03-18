@@ -2,7 +2,9 @@ package reporters_graph
 
 import (
 	"context"
-	"fmt"
+	"crypto/sha256"
+	"encoding/hex"
+	"sort"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -62,25 +64,27 @@ func (tc *ThreatGraphReporter) GetThreatGraph() (ThreatGraph, error) {
 				}
 				paths = append(paths, append([]string{"The Internet"}, path...))
 				entry := ThreatNodeInfo{
-					Label:               node_info[int64(len(Attack_path)-1)].Label,
-					Id:                  node_info[int64(len(Attack_path)-1)].Id,
-					Nodes:               node_info[int64(len(Attack_path)-1)].Nodes,
-					Vulnerability_count: node_info[int64(len(Attack_path)-1)].Vulnerability_count,
-					Secrets_count:       node_info[int64(len(Attack_path)-1)].Secrets_count,
-					Compliance_count:    node_info[int64(len(Attack_path)-1)].Compliance_count,
-					Count:               node_info[int64(len(Attack_path)-1)].Count,
-					Node_type:           node_info[int64(len(Attack_path)-1)].Node_type,
-					Attack_path:         paths,
+					Label:                 node_info[int64(len(Attack_path)-1)].Label,
+					Id:                    node_info[int64(len(Attack_path)-1)].Id,
+					Nodes:                 node_info[int64(len(Attack_path)-1)].Nodes,
+					Vulnerability_count:   node_info[int64(len(Attack_path)-1)].Vulnerability_count,
+					Secrets_count:         node_info[int64(len(Attack_path)-1)].Secrets_count,
+					Compliance_count:      node_info[int64(len(Attack_path)-1)].Compliance_count,
+					CloudCompliance_count: node_info[int64(len(Attack_path)-1)].CloudCompliance_count,
+					Count:                 node_info[int64(len(Attack_path)-1)].Count,
+					Node_type:             node_info[int64(len(Attack_path)-1)].Node_type,
+					Attack_path:           paths,
 				}
 				resources = append(resources, entry)
 			}
 		}
 	end:
 		all[cp] = ProviderThreatGraph{
-			Resources:           resources,
-			Compliance_count:    0,
-			Secrets_count:       0,
-			Vulnerability_count: 0,
+			Resources:             resources,
+			Compliance_count:      0,
+			Secrets_count:         0,
+			Vulnerability_count:   0,
+			CloudCompliance_count: 0,
 		}
 	}
 
@@ -130,9 +134,10 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph() (map[string]AttackPaths, erro
 		var res neo4j.Result
 		if cloud_provider != CLOUD_PRIVATE {
 			if res, err = tx.Run(`
-				CALL apoc.nodes.group(['CloudResource','Node'], ['node_type', 'resource_type','depth',
-				'cloud_provider'], [{`+"`*`"+`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum',
-				node_id:'collect', num_cve: 'collect', num_secrets:'collect', num_compliance:'collect'},{`+"`*`"+`: 'count'}], {selfRels: false})
+				CALL apoc.nodes.group(['CloudResource','Node'], ['node_type', 'depth', 'cloud_provider'],
+				[{`+"`*`"+`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum', sum_cloud_compliance: 'sum',
+				node_id:'collect', num_cve: 'collect', num_secrets:'collect', num_compliance:'collect', num_cloud_compliance: 'collect'},
+				{`+"`*`"+`: 'count'}], {selfRels: false})
 				YIELD node, relationships
 				WHERE apoc.any.property(node, 'depth') IS NOT NULL
 				AND apoc.any.property(node, 'cloud_provider') = '`+cloud_provider+`'
@@ -141,9 +146,10 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph() (map[string]AttackPaths, erro
 			}
 		} else {
 			if res, err = tx.Run(`
-				CALL apoc.nodes.group(['Node'], ['node_type', 'depth',
-				'cloud_provider'], [{`+"`*`"+`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum',
-				node_id:'collect', num_cve: 'collect', num_secrets:'collect', num_compliance:'collect'},{`+"`*`"+`: 'count'}], {selfRels: false})
+				CALL apoc.nodes.group(['Node'], ['node_type', 'depth', 'cloud_provider'],
+				[{`+"`*`"+`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum', sum_cloud_compliance: 'sum',
+				node_id:'collect', num_cve: 'collect', num_secrets:'collect', num_compliance:'collect', num_cloud_compliance:'collect'},
+				{`+"`*`"+`: 'count'}], {selfRels: false})
 				YIELD node, relationships
 				WHERE apoc.any.property(node, 'depth') IS NOT NULL
 				AND NOT apoc.any.property(node, 'cloud_provider') IN ['aws', 'gcp', 'azure']
@@ -202,14 +208,16 @@ func record2struct(node dbtype.Node) AttackPathData {
 	Node_type, _ := record["node_type"]
 	depth, _ := record["depth"]
 	cloud_provider, _ := record["cloud_provider"]
-	sum_sum_cve, _ := record["sum_sum_cve"]
-	sum_sum_secrets, _ := record["sum_sum_secrets"]
-	sum_sum_compliance, _ := record["sum_sum_compliance"]
+	sum_sum_cve_, _ := record["sum_sum_cve"]
+	sum_sum_secrets_, _ := record["sum_sum_secrets"]
+	sum_sum_compliance_, _ := record["sum_sum_compliance"]
+	sum_sum_cloud_compliance_, _ := record["sum_sum_cloud_compliance"]
 	node_count, _ := record["count_*"]
 	collect_node_id_, _ := record["collect_node_id"]
 	collect_num_cve_, _ := record["collect_num_cve"]
 	collect_num_secrets_, _ := record["collect_num_secrets"]
 	collect_num_compliance_, _ := record["collect_num_compliance"]
+	collect_num_cloud_compliance_, _ := record["collect_num_cloud_compliance"]
 
 	collect_node_id := []string{}
 	for _, v := range collect_node_id_.([]interface{}) {
@@ -217,94 +225,151 @@ func record2struct(node dbtype.Node) AttackPathData {
 	}
 
 	collect_num_cve := []int64{}
-	for _, v := range collect_num_cve_.([]interface{}) {
-		collect_num_cve = append(collect_num_cve, v.(int64))
+	sum_sum_cve := int64(0)
+	if collect_num_cve_ != nil {
+		for _, v := range collect_num_cve_.([]interface{}) {
+			collect_num_cve = append(collect_num_cve, v.(int64))
+		}
+
+		sum_sum_cve, _ = sum_sum_cve_.(int64)
 	}
 
 	collect_num_secrets := []int64{}
-	for _, v := range collect_num_secrets_.([]interface{}) {
-		collect_num_secrets = append(collect_num_secrets, v.(int64))
+	sum_sum_secrets := int64(0)
+	if collect_num_secrets_ != nil {
+		for _, v := range collect_num_secrets_.([]interface{}) {
+			collect_num_secrets = append(collect_num_secrets, v.(int64))
+		}
+
+		sum_sum_secrets = sum_sum_secrets_.(int64)
 	}
 
 	collect_num_compliance := []int64{}
-	for _, v := range collect_num_compliance_.([]interface{}) {
-		collect_num_compliance = append(collect_num_compliance, v.(int64))
+	sum_sum_compliance := int64(0)
+	if collect_num_compliance_ != nil {
+		for _, v := range collect_num_compliance_.([]interface{}) {
+			collect_num_compliance = append(collect_num_compliance, v.(int64))
+		}
+		sum_sum_compliance = sum_sum_compliance_.(int64)
+	}
+
+	collect_num_cloud_compliance := []int64{}
+	sum_sum_cloud_compliance := int64(0)
+	if collect_num_cloud_compliance_ != nil {
+		for _, v := range collect_num_cloud_compliance_.([]interface{}) {
+			collect_num_cloud_compliance = append(collect_num_cloud_compliance, v.(int64))
+		}
+		sum_sum_cloud_compliance = sum_sum_cloud_compliance_.(int64)
 	}
 
 	return AttackPathData{
-		Node_type:              Node_type.(string),
-		cloud_provider:         cloud_provider.(string),
-		depth:                  depth.(int64),
-		sum_sum_cve:            sum_sum_cve.(int64),
-		sum_sum_secrets:        sum_sum_secrets.(int64),
-		sum_sum_compliance:     sum_sum_compliance.(int64),
-		node_count:             node_count.(int64),
-		collect_node_id:        collect_node_id,
-		collect_num_cve:        collect_num_cve,
-		collect_num_secrets:    collect_num_secrets,
-		collect_num_compliance: collect_num_compliance,
+		Node_type:                    Node_type.(string),
+		cloud_provider:               cloud_provider.(string),
+		depth:                        depth.(int64),
+		sum_sum_cve:                  sum_sum_cve,
+		sum_sum_secrets:              sum_sum_secrets,
+		sum_sum_compliance:           sum_sum_compliance,
+		sum_sum_cloud_compliance:     sum_sum_cloud_compliance,
+		node_count:                   node_count.(int64),
+		collect_node_id:              collect_node_id,
+		collect_num_cve:              collect_num_cve,
+		collect_num_secrets:          collect_num_secrets,
+		collect_num_compliance:       collect_num_compliance,
+		collect_num_cloud_compliance: collect_num_cloud_compliance,
 	}
 }
 
 type AttackPathData struct {
-	identity               int64
-	Node_type              string
-	cloud_provider         string
-	depth                  int64
-	sum_sum_cve            int64
-	sum_sum_secrets        int64
-	sum_sum_compliance     int64
-	node_count             int64
-	collect_node_id        []string
-	collect_num_cve        []int64
-	collect_num_secrets    []int64
-	collect_num_compliance []int64
+	identity                     int64
+	Node_type                    string
+	cloud_provider               string
+	depth                        int64
+	sum_sum_cve                  int64
+	sum_sum_secrets              int64
+	sum_sum_compliance           int64
+	sum_sum_cloud_compliance     int64
+	node_count                   int64
+	collect_node_id              []string
+	collect_num_cve              []int64
+	collect_num_secrets          []int64
+	collect_num_compliance       []int64
+	collect_num_cloud_compliance []int64
 }
 
-var container_id = 0
-var host_id = 0
+func getThreatNodeId(apd AttackPathData) string {
+	h := sha256.New()
+	v := []string{}
+	for i := range apd.collect_node_id {
+		v = append(v, apd.collect_node_id[i])
+	}
+	sort.Strings(v)
+
+	for _, s := range v {
+		h.Write([]byte(s))
+	}
+
+	return hex.EncodeToString(h.Sum(nil))
+}
 
 func (ap AttackPaths) getNodeInfos() map[int64]ThreatNodeInfo {
 	res := map[int64]ThreatNodeInfo{}
 	for _, v := range ap.nodes_data {
 		var Label, Id string
+		Id = getThreatNodeId(v)
 		switch v.Node_type {
 		case "host":
 			Label = "Compute Instance"
-			Id = fmt.Sprintf("%v-host-%v", v.cloud_provider, host_id)
-			host_id += 1
 		case "container":
 			Label = "Container"
-			Id = fmt.Sprintf("%v-container-%v", v.cloud_provider, container_id)
-			container_id += 1
-		default:
+		case "internet":
 			Label = "The Internet"
 			Id = "The Internet"
+		default:
+			Label = "CloudResource"
 		}
 		Nodes := map[string]NodeInfo{}
 		for i, Node_id := range v.collect_node_id {
+			vuln_count := int64(0)
+			if len(v.collect_num_cve) == len(v.collect_node_id) {
+				vuln_count = v.collect_num_cve[i]
+			}
+			secrets_count := int64(0)
+			if len(v.collect_num_secrets) == len(v.collect_node_id) {
+				secrets_count = v.collect_num_secrets[i]
+			}
+			compliance_count := int64(0)
+			if len(v.collect_num_compliance) == len(v.collect_node_id) {
+				compliance_count = v.collect_num_compliance[i]
+			}
+			cloud_compliance_count := int64(0)
+			if len(v.collect_num_cloud_compliance) == len(v.collect_node_id) {
+				cloud_compliance_count = v.collect_num_cloud_compliance[i]
+			}
 			Nodes[Node_id] = NodeInfo{
-				Node_id:               v.collect_node_id[i],
-				Image_name:            "",
-				Name:                  Node_id,
-				Vulnerability_count:   v.collect_num_cve[i],
-				Vulnerability_scan_id: "",
-				Secrets_count:         v.collect_num_secrets[i],
-				Secrets_scan_id:       "",
-				Compliance_count:      v.collect_num_compliance[i],
-				Compliance_scan_id:    "",
+				Node_id:                 v.collect_node_id[i],
+				Image_name:              "",
+				Name:                    Node_id,
+				Vulnerability_count:     vuln_count,
+				Vulnerability_scan_id:   "",
+				Secrets_count:           secrets_count,
+				Secrets_scan_id:         "",
+				Compliance_count:        compliance_count,
+				Compliance_scan_id:      "",
+				CloudCompliance_count:   cloud_compliance_count,
+				CloudCompliance_scan_id: "",
 			}
 		}
 		res[v.identity] = ThreatNodeInfo{
-			Label:               Label,
-			Id:                  Id,
-			Nodes:               Nodes,
-			Vulnerability_count: v.sum_sum_cve,
-			Secrets_count:       v.sum_sum_secrets,
-			Compliance_count:    v.sum_sum_compliance,
-			Count:               int64(len(v.collect_node_id)),
-			Node_type:           v.Node_type,
-			Attack_path:         [][]string{},
+			Label:                 Label,
+			Id:                    Id,
+			Nodes:                 Nodes,
+			Vulnerability_count:   v.sum_sum_cve,
+			Secrets_count:         v.sum_sum_secrets,
+			Compliance_count:      v.sum_sum_compliance,
+			CloudCompliance_count: v.sum_sum_cloud_compliance,
+			Count:                 int64(len(v.collect_node_id)),
+			Node_type:             v.Node_type,
+			Attack_path:           [][]string{},
 		}
 	}
 	return res
@@ -313,10 +378,11 @@ func (ap AttackPaths) getNodeInfos() map[int64]ThreatNodeInfo {
 type ThreatGraph map[string]ProviderThreatGraph
 
 type ProviderThreatGraph struct {
-	Resources           []ThreatNodeInfo `json:"resources" required:"true"`
-	Compliance_count    int64            `json:"compliance_count" required:"true"`
-	Secrets_count       int64            `json:"secrets_count" required:"true"`
-	Vulnerability_count int64            `json:"vulnerability_count" required:"true"`
+	Resources             []ThreatNodeInfo `json:"resources" required:"true"`
+	Compliance_count      int64            `json:"compliance_count" required:"true"`
+	Secrets_count         int64            `json:"secrets_count" required:"true"`
+	Vulnerability_count   int64            `json:"vulnerability_count" required:"true"`
+	CloudCompliance_count int64            `json:"cloud_compliance_count" required:"true"`
 }
 
 type ThreatNodeInfo struct {
@@ -324,10 +390,11 @@ type ThreatNodeInfo struct {
 	Id    string              `json:"id" required:"true"`
 	Nodes map[string]NodeInfo `json:"nodes" required:"true"`
 
-	Vulnerability_count int64 `json:"vulnerability_count" required:"true"`
-	Secrets_count       int64 `json:"secrets_count" required:"true"`
-	Compliance_count    int64 `json:"compliance_count" required:"true"`
-	Count               int64 `json:"count" required:"true"`
+	Vulnerability_count   int64 `json:"vulnerability_count" required:"true"`
+	Secrets_count         int64 `json:"secrets_count" required:"true"`
+	Compliance_count      int64 `json:"compliance_count" required:"true"`
+	CloudCompliance_count int64 `json:"cloud_compliance_count" required:"true"`
+	Count                 int64 `json:"count" required:"true"`
 
 	Node_type string `json:"node_type" required:"true"`
 
@@ -335,13 +402,15 @@ type ThreatNodeInfo struct {
 }
 
 type NodeInfo struct {
-	Node_id               string `json:"node_id" required:"true"`
-	Image_name            string `json:"image_name" required:"true"`
-	Name                  string `json:"name" required:"true"`
-	Vulnerability_count   int64  `json:"vulnerability_count" required:"true"`
-	Vulnerability_scan_id string `json:"vulnerability_scan_id" required:"true"`
-	Secrets_count         int64  `json:"secrets_count" required:"true"`
-	Secrets_scan_id       string `json:"secrets_scan_id" required:"true"`
-	Compliance_count      int64  `json:"compliance_count" required:"true"`
-	Compliance_scan_id    string `json:"compliance_scan_id" required:"true"`
+	Node_id                 string `json:"node_id" required:"true"`
+	Image_name              string `json:"image_name" required:"true"`
+	Name                    string `json:"name" required:"true"`
+	Vulnerability_count     int64  `json:"vulnerability_count" required:"true"`
+	Vulnerability_scan_id   string `json:"vulnerability_scan_id" required:"true"`
+	Secrets_count           int64  `json:"secrets_count" required:"true"`
+	Secrets_scan_id         string `json:"secrets_scan_id" required:"true"`
+	Compliance_count        int64  `json:"compliance_count" required:"true"`
+	Compliance_scan_id      string `json:"compliance_scan_id" required:"true"`
+	CloudCompliance_count   int64  `json:"cloud_compliance_count" required:"true"`
+	CloudCompliance_scan_id string `json:"cloud_compliance_scan_id" required:"true"`
 }
