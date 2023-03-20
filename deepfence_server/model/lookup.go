@@ -35,14 +35,16 @@ func (KubernetesCluster) ExtendedField() string {
 }
 
 type RegularScanStatus struct {
-	VulnerabilitiesCount    int    `json:"vulnerabilities_count"  required:"true"`
-	VulnerabilityScanStatus string `json:"vulnerability_scan_status" required:"true"`
-	SecretsCount            int    `json:"secrets_count" required:"true"`
-	SecretScanStatus        string `json:"secret_scan_status" required:"true"`
-	MalwaresCount           int    `json:"malwares_count" required:"true"`
-	MalwareScanStatus       string `json:"malware_scan_status" required:"true"`
-	CompliancesCount        int    `json:"compliances_count" required:"true"`
-	ComplianceScanStatus    string `json:"compliance_scan_status" required:"true"`
+	VulnerabilitiesCount      int64  `json:"vulnerabilities_count"  required:"true"`
+	VulnerabilityScanStatus   string `json:"vulnerability_scan_status" required:"true"`
+	SecretsCount              int64  `json:"secrets_count" required:"true"`
+	SecretScanStatus          string `json:"secret_scan_status" required:"true"`
+	MalwaresCount             int64  `json:"malwares_count" required:"true"`
+	MalwareScanStatus         string `json:"malware_scan_status" required:"true"`
+	CompliancesCount          int64  `json:"compliances_count" required:"true"`
+	ComplianceScanStatus      string `json:"compliance_scan_status" required:"true"`
+	CloudCompliancesCount     int64  `json:"cloud_compliances_count" required:"true"`
+	CloudComplianceScanStatus string `json:"cloud_compliance_scan_status" required:"true"`
 }
 
 type BasicNode struct {
@@ -61,6 +63,10 @@ type Host struct {
 	Pods            []Pod            `json:"pods" required:"true"`
 	ContainerImages []ContainerImage `json:"container_images" required:"true"`
 	Metadata        Metadata         `json:"cloud_metadata" required:"true" nested_json:"true"`
+	InterfaceNames  string           `json:"interfaceNames" required:"true"`
+	InterfaceIps    string           `json:"interface_ips" required:"true"`
+	KernelVersion   string           `json:"kernel_version" required:"true"`
+	Uptime          string           `json:"uptime" required:"true"`
 	Metrics         ComputeMetrics   `json:"metrics" required:"true"`
 	RegularScanStatus
 }
@@ -177,7 +183,7 @@ type Process struct {
 	PID          string         `json:"pid" required:"true"`
 	Command      string         `json:"cmdline" required:"true"`
 	PPID         string         `json:"ppid" required:"true"`
-	ThreadNumber int            `json:"threads" required:"true"`
+	ThreadNumber string         `json:"threads" required:"true"`
 	Metrics      ComputeMetrics `json:"metrics" required:"true"`
 	Metadata     Metadata       `json:"metadata" required:"true" nested_json:"true"`
 }
