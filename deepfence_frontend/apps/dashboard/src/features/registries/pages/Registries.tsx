@@ -223,17 +223,24 @@ const Registries = () => {
   const loaderData = useLoaderData() as LoaderDataType;
 
   return (
-    <div className="flex gap-6 flex-wrap mt-6 ml-6">
-      <Suspense fallback={<RegistrySkeleton />}>
-        <DFAwait resolve={loaderData.data}>
-          {(resolvedData: LoaderDataType['data']) => {
-            return resolvedData.map((registry) => {
-              return <Registry key={registry.name} registry={registry} />;
-            });
-          }}
-        </DFAwait>
-      </Suspense>
-    </div>
+    <>
+      <div className="flex p-2 pl-2 w-full shadow bg-white dark:bg-gray-800">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+          REGISTRIES
+        </span>
+      </div>
+      <div className="flex gap-6 flex-wrap mt-6 ml-6">
+        <Suspense fallback={<RegistrySkeleton />}>
+          <DFAwait resolve={loaderData.data}>
+            {(resolvedData: LoaderDataType['data']) => {
+              return resolvedData.map((registry) => {
+                return <Registry key={registry.name} registry={registry} />;
+              });
+            }}
+          </DFAwait>
+        </Suspense>
+      </div>
+    </>
   );
 };
 

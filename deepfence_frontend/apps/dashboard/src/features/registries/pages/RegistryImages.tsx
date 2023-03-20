@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { IconContext } from 'react-icons';
 import { FaAngleDoubleUp, FaTags } from 'react-icons/fa';
-import { HiArrowSmLeft } from 'react-icons/hi';
+import { HiChevronRight } from 'react-icons/hi';
 import {
   generatePath,
   LoaderFunctionArgs,
@@ -9,7 +9,13 @@ import {
   useLoaderData,
   useParams,
 } from 'react-router-dom';
-import { Card, CircleSpinner, TableSkeleton } from 'ui-components';
+import {
+  Breadcrumb,
+  BreadcrumbLink,
+  Card,
+  CircleSpinner,
+  TableSkeleton,
+} from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelImageStub } from '@/api/generated';
@@ -170,23 +176,26 @@ const HeaderComponent = () => {
 
   return (
     <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-      <DFLink
-        to={generatePath('/registries/:account', {
-          account,
-        })}
-        className="flex hover:no-underline items-center justify-center mr-2"
-      >
-        <IconContext.Provider
-          value={{
-            className: 'w-5 h-5 text-blue-600 dark:text-blue-500 ',
-          }}
-        >
-          <HiArrowSmLeft />
-        </IconContext.Provider>
-      </DFLink>
-      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-        REGISTRY ACCOUNTS / {account.toUpperCase()} / {nodeId}
-      </span>
+      <Breadcrumb separator={<HiChevronRight />} transparent>
+        <BreadcrumbLink>
+          <DFLink to={'/registries'}>REGISTRIES</DFLink>
+        </BreadcrumbLink>
+        <BreadcrumbLink>
+          <DFLink
+            to={generatePath('/registries/:account', {
+              account,
+            })}
+          >
+            {account}
+          </DFLink>
+        </BreadcrumbLink>
+
+        <BreadcrumbLink>
+          <DFLink href="#" className="hover:no-underline text-gray-600 hover:cursor-auto">
+            {nodeId}
+          </DFLink>
+        </BreadcrumbLink>
+      </Breadcrumb>
     </div>
   );
 };

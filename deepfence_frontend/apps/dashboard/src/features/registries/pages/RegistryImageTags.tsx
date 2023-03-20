@@ -1,7 +1,6 @@
 import { Suspense, useRef } from 'react';
-import { IconContext } from 'react-icons';
 import { FiFilter } from 'react-icons/fi';
-import { HiArrowSmLeft } from 'react-icons/hi';
+import { HiChevronRight } from 'react-icons/hi';
 import {
   Form,
   generatePath,
@@ -10,7 +9,14 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom';
-import { Checkbox, IconButton, Popover, TableSkeleton } from 'ui-components';
+import {
+  Breadcrumb,
+  BreadcrumbLink,
+  Checkbox,
+  IconButton,
+  Popover,
+  TableSkeleton,
+} from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelContainerImage } from '@/api/generated';
@@ -139,24 +145,40 @@ const HeaderComponent = () => {
 
   return (
     <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-      <DFLink
-        to={generatePath('/registries/images/:account/:nodeId', {
-          account,
-          nodeId,
-        })}
-        className="flex hover:no-underline items-center justify-center mr-2"
-      >
-        <IconContext.Provider
-          value={{
-            className: 'w-5 h-5 text-blue-600 dark:text-blue-500 ',
-          }}
-        >
-          <HiArrowSmLeft />
-        </IconContext.Provider>
-      </DFLink>
-      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-        REGISTRY ACCOUNTS / {account} / {nodeId} / {imageId}
-      </span>
+      <Breadcrumb separator={<HiChevronRight />} transparent>
+        <BreadcrumbLink>
+          <DFLink to={'/registries'}>REGISTRIES</DFLink>
+        </BreadcrumbLink>
+        <BreadcrumbLink>
+          <DFLink
+            to={generatePath('/registries/:account', {
+              account,
+            })}
+          >
+            {account}
+          </DFLink>
+        </BreadcrumbLink>
+
+        <BreadcrumbLink>
+          <DFLink
+            to={generatePath('/registries/images/:account/:nodeId', {
+              account,
+              nodeId,
+            })}
+          >
+            {nodeId}
+          </DFLink>
+        </BreadcrumbLink>
+
+        <BreadcrumbLink>
+          <DFLink
+            href="#"
+            className="hover:no-underline text-gray-600 dark:text-gray-100 hover:cursor-auto"
+          >
+            {imageId}
+          </DFLink>
+        </BreadcrumbLink>
+      </Breadcrumb>
       <div className="ml-auto flex items-center gap-x-4">
         <div className="relative">
           {isFilterApplied && (

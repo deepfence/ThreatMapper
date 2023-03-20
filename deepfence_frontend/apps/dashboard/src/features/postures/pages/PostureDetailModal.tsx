@@ -233,9 +233,9 @@ const DetailsComponent = () => {
                           <span className="text-left text-xs text-gray-500">
                             Remediation
                           </span>
-                          <p className="text-sm pr-2 mb-2 text-justify">
+                          <pre className="whitespace-pre-wrap text-sm pr-2 mb-2 text-justify">
                             {fixed.remediation_puppet}
-                          </p>
+                          </pre>
                         </div>
                         {getObjectKeys(others).map((key) => {
                           const label = capitalize(
