@@ -61,6 +61,10 @@ type Host struct {
 	Pods            []Pod            `json:"pods" required:"true"`
 	ContainerImages []ContainerImage `json:"container_images" required:"true"`
 	Metadata        Metadata         `json:"cloud_metadata" required:"true" nested_json:"true"`
+	InterfaceNames  string           `json:"interfaceNames" required:"true"`
+	InterfaceIps    string           `json:"interface_ips" required:"true"`
+	KernelVersion   string           `json:"kernel_version" required:"true"`
+	Uptime          string           `json:"uptime" required:"true"`
 	Metrics         ComputeMetrics   `json:"metrics" required:"true"`
 	RegularScanStatus
 }
@@ -177,7 +181,7 @@ type Process struct {
 	PID          string         `json:"pid" required:"true"`
 	Command      string         `json:"cmdline" required:"true"`
 	PPID         string         `json:"ppid" required:"true"`
-	ThreadNumber int            `json:"threads" required:"true"`
+	ThreadNumber string         `json:"threads" required:"true"`
 	Metrics      ComputeMetrics `json:"metrics" required:"true"`
 	Metadata     Metadata       `json:"metadata" required:"true" nested_json:"true"`
 }
