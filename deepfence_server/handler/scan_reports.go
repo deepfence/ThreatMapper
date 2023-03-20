@@ -47,7 +47,7 @@ func scanId(req model.NodeIdentifier) string {
 }
 
 func cloudComplianceScanId(nodeId, benchmarkType string) string {
-	return fmt.Sprintf("%s-%s-%d", nodeId, benchmarkType, time.Now().Unix())
+	return fmt.Sprintf("%s-%s-%d", nodeId, time.Now().Unix())
 }
 
 func bulkScanId() string {
@@ -1359,21 +1359,19 @@ func startMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 	scanIds := []string{}
 
 	for _, req := range reqs {
-		for _, benchmarkType := range benchmarkTypes {
-			scanId := cloudComplianceScanId(req.NodeId, benchmarkType)
+		scanId := cloudComplianceScanId(req.NodeId)
 
-			err = ingesters.AddNewCloudComplianceScan(ingesters.WriteDBTransaction{Tx: tx},
-				scanId,
-				benchmarkType,
-				req.NodeId,
-				reqs[0].NodeType)
+		err = ingesters.AddNewCloudComplianceScan(ingesters.WriteDBTransaction{Tx: tx},
+			scanId,
+			benchmarkTypes,
+			req.NodeId,
+			reqs[0].NodeType)
 
-			if err != nil {
-				log.Error().Msgf("%v", err)
-				return nil, "", err
-			}
-			scanIds = append(scanIds, scanId)
+		if err != nil {
+			log.Error().Msgf("%v", err)
+			return nil, "", err
 		}
+		scanIds = append(scanIds, scanId)
 	}
 
 	if len(scanIds) == 0 {

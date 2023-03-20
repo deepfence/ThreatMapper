@@ -19,14 +19,14 @@ type ComplianceStats struct {
 }
 
 type CloudComplianceScanStatus struct {
-	Timestamp           time.Time       `json:"@timestamp"`
-	ComplianceCheckType string          `json:"compliance_check_type"`
-	Result              ComplianceStats `json:"result" nested_json:"true"`
-	ScanID              string          `json:"scan_id"`
-	ScanMessage         string          `json:"scan_message"`
-	Status              string          `json:"status"`
-	Type                string          `json:"type"`
-	TotalChecks         int             `json:"total_checks"`
+	Timestamp            time.Time       `json:"@timestamp"`
+	ComplianceCheckTypes []string        `json:"compliance_check_types"`
+	Result               ComplianceStats `json:"result" nested_json:"true"`
+	ScanID               string          `json:"scan_id"`
+	ScanMessage          string          `json:"scan_message"`
+	Status               string          `json:"status"`
+	Type                 string          `json:"type"`
+	TotalChecks          int             `json:"total_checks"`
 }
 
 type CloudCompliance struct {

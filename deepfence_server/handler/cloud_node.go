@@ -79,12 +79,15 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 				continue
 			}
 			for _, scan := range pendingScansList.ScansInfo {
-				controls, _ := AWS_DEFAULT_CONTROLS[scan.BenchmarkType]
+				benchmarks, err := model.GetActiveCloudControls(ctx, scan.BenchmarkTypes, req.CloudProvider)
+				if err != nil {
+					log.Error().Msgf("Error getting controls for compliance type: %+v", scan.BenchmarkTypes)
+				}
 				scanDetail := model.CloudComplianceScanDetails{
-					ScanId:    scan.ScanId,
-					ScanType:  scan.BenchmarkType,
-					AccountId: monitoredAccountId,
-					Controls:  controls,
+					ScanId:     scan.ScanId,
+					ScanTypes:  scan.BenchmarkTypes,
+					AccountId:  monitoredAccountId,
+					Benchmarks: benchmarks,
 				}
 				scanList[scan.ScanId] = scanDetail
 			}
@@ -111,12 +114,15 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			return
 		}
 		for _, scan := range pendingScansList.ScansInfo {
-			controls, _ := AWS_DEFAULT_CONTROLS[scan.BenchmarkType]
+			benchmarks, err := model.GetActiveCloudControls(ctx, scan.BenchmarkTypes, req.CloudProvider)
+			if err != nil {
+				log.Error().Msgf("Error getting controls for compliance type: %+v", scan.BenchmarkTypes)
+			}
 			scanDetail := model.CloudComplianceScanDetails{
-				ScanId:    scan.ScanId,
-				ScanType:  scan.BenchmarkType,
-				AccountId: req.CloudAccount,
-				Controls:  controls,
+				ScanId:     scan.ScanId,
+				ScanTypes:  scan.BenchmarkTypes,
+				AccountId:  req.CloudAccount,
+				Benchmarks: benchmarks,
 			}
 			scanList[scan.ScanId] = scanDetail
 		}

@@ -67,7 +67,7 @@ type ScanInfo struct {
 
 type ComplianceScanInfo struct {
 	ScanId         string           `json:"scan_id" required:"true"`
-	BenchmarkType  string           `json:"benchmark_type" required:"true"`
+	BenchmarkTypes []string         `json:"benchmark_types" required:"true"`
 	Status         string           `json:"status" required:"true"`
 	UpdatedAt      int64            `json:"updated_at" required:"true" format:"int64"`
 	NodeId         string           `json:"node_id" required:"true"`
@@ -206,7 +206,7 @@ type ComplianceScanResult struct {
 }
 
 type ComplianceAdditionalInfo struct {
-	BenchmarkType        string           `json:"benchmark_type" required:"true"`
+	BenchmarkTypes       []string         `json:"benchmark_type" required:"true"`
 	StatusCounts         map[string]int32 `json:"status_counts" required:"true"`
 	CompliancePercentage float64          `json:"compliance_percentage" required:"true"`
 }

@@ -63,11 +63,17 @@ type CloudNodeAccountInfo struct {
 	LastScanStatus       string  `json:"last_scan_status"`
 }
 
+type CloudComplianceBenchmark struct {
+	Id             string   `json:"id"`
+	ComplianceType string   `json:"compliance_type"`
+	Controls       []string `json:"controls"`
+}
+
 type CloudComplianceScanDetails struct {
-	ScanId    string   `json:"scan_id"`
-	ScanType  string   `json:"scan_type"`
-	AccountId string   `json:"account_id"`
-	Controls  []string `json:"controls"`
+	ScanId     string                     `json:"scan_id"`
+	ScanTypes  []string                   `json:"scan_types"`
+	AccountId  string                     `json:"account_id"`
+	Benchmarks []CloudComplianceBenchmark `json:"benchmarks"`
 }
 
 type CloudNodeCloudtrailTrail struct {
@@ -458,4 +464,54 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	total = int(countRec.Values[0].(int64))
 
 	return CloudNodeAccountsListResp{CloudNodeAccountInfo: cloud_node_accounts_info, Total: total}, nil
+}
+
+func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloudProvider string) ([]CloudComplianceBenchmark, error) {
+	var benchmarks []CloudComplianceBenchmark
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return benchmarks, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return benchmarks, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return benchmarks, err
+	}
+	defer tx.Close()
+
+	var res neo4j.Result
+	res, err = tx.Run(`
+		MATCH (n:CloudComplianceBenchmark) -[:INCLUDES]-> (m:CloudComplianceControl)
+		WHERE m.active = true AND m.compliance_type IN $compliance_types
+		RETURN  n.benchmark_id, n.compliance_type, collect(m.control_id)
+		ORDER BY n.compliance_type`,
+		map[string]interface{}{
+			"cloud_provider":   cloudProvider,
+			"compliance_types": complianceTypes,
+		})
+	if err != nil {
+		return benchmarks, err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return benchmarks, err
+	}
+
+	for _, rec := range recs {
+		benchmark := CloudComplianceBenchmark{
+			Id:             rec.Values[0].(string),
+			ComplianceType: rec.Values[1].(string),
+			Controls:       rec.Values[2].([]string),
+		}
+		benchmarks = append(benchmarks, benchmark)
+	}
+
+	return benchmarks, nil
 }
