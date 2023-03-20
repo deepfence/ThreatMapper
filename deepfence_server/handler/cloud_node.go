@@ -40,7 +40,6 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			complianceError(w, "Org account id is needed for multi account setup")
 			return
 		}
-		if orgAccountId !=
 		monitoredAccountIds[req.CloudAccount] = nodeId
 		orgNodeId := fmt.Sprintf("%s-%s-cloud-org", req.CloudProvider, orgAccountId)
 		node := map[string]interface{}{

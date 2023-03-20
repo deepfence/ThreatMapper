@@ -140,7 +140,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 	if parentNodeId == "" {
 		matchNodeRes, err = tx.Run(`
 		WITH $param as row
-		MATCH (n:Node{node_id:row.node_id})
+		MATCH (n:CloudNode{node_id:row.node_id})
 		RETURN n.node_id`,
 			map[string]interface{}{
 				"param": nodeDetails,
@@ -150,9 +150,9 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 		}
 	} else {
 		matchNodeRes, err = tx.Run(`
-		MATCH (m:Node{node_id: $parent_node_id})
+		MATCH (m:CloudNode{node_id: $parent_node_id})
 		WITH $param as row, m
-		MATCH (n:Node{node_id:row.node_id}) <-[:IS_CHILD]- (m)
+		MATCH (n:CloudNode{node_id:row.node_id}) <-[:IS_CHILD]- (m)
 		RETURN n.node_id`,
 			map[string]interface{}{
 				"param":          nodeDetails,
@@ -167,7 +167,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 		if parentNodeId == "" {
 			if _, err := tx.Run(`
 			WITH $param as row
-			MERGE (n:Node{node_id:row.node_id})
+			MERGE (n:CloudNode{node_id:row.node_id})
 			SET n+= row, n.updated_at = TIMESTAMP()`,
 				map[string]interface{}{
 					"param": nodeDetails,
@@ -176,9 +176,9 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 			}
 		} else {
 			if _, err := tx.Run(`
-			MATCH (m:Node{node_id: $parent_node_id})
+			MATCH (m:CloudNode{node_id: $parent_node_id})
 			WITH $param as row, m
-			MERGE (n:Node{node_id:row.node_id}) <-[:IS_CHILD]- (m)
+			MERGE (n:CloudNode{node_id:row.node_id}) <-[:IS_CHILD]- (m)
 			SET n+= row, n.updated_at = TIMESTAMP()`,
 				map[string]interface{}{
 					"param":          nodeDetails,
@@ -220,11 +220,13 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 			ResourceCount:        0,
 		}
 		scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
-		neo4jNodeType := "Node"
+		neo4jNodeType := "CloudNode"
 		nodeLabel := "Hosts"
 		if postureProviderName == PostureProviderKubernetes {
 			neo4jNodeType = "KubernetesCluster"
 			nodeLabel = "Clusters"
+		} else if postureProviderName == PostureProviderLinux {
+			neo4jNodeType = "Node"
 		}
 		if postureProviderName == PostureProviderLinux || postureProviderName == PostureProviderKubernetes {
 			postureProvider.NodeLabel = nodeLabel
@@ -335,7 +337,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	defer tx.Close()
 
 	isOrgListing := false
-	neo4jNodeType := "Node"
+	neo4jNodeType := "CloudNode"
 	passStatus := []string{"ok", "info", "skip"}
 	scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
 	if cloudProvider == PostureProviderAWSOrg {
@@ -344,6 +346,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	} else if cloudProvider == PostureProviderKubernetes {
 		neo4jNodeType = "KubernetesCluster"
 	} else if cloudProvider == PostureProviderLinux {
+		neo4jNodeType = "Node"
 		passStatus = []string{"warn", "pass"}
 	}
 	var res neo4j.Result
@@ -446,13 +449,13 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	var countRes neo4j.Result
 	if isOrgListing {
 		countRes, err = tx.Run(`
-		MATCH (m:Node) -[:IS_CHILD]-> (n:Node{cloud_provider: $cloud_provider})
+		MATCH (m:CloudNode) -[:IS_CHILD]-> (n:CloudNode{cloud_provider: $cloud_provider})
 		RETURN COUNT(m)`,
 			map[string]interface{}{"cloud_provider": cloudProvider})
 	} else {
-		countRes, err = tx.Run(`
-		MATCH (n:Node {cloud_provider: $cloud_provider}) 
-		RETURN COUNT(*)`,
+		countRes, err = tx.Run(fmt.Sprintf(`
+		MATCH (n:%s {cloud_provider: $cloud_provider})
+		RETURN COUNT(*)`, neo4jNodeType),
 			map[string]interface{}{"cloud_provider": cloudProvider})
 	}
 

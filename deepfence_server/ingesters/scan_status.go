@@ -159,12 +159,13 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	nodeId string,
 	nodeType string) error {
 
-	neo4jNodeType := "Node"
+	neo4jNodeType := "CloudNode"
 	scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
 	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
 		neo4jNodeType = "KubernetesCluster"
 		scanType = utils.NEO4J_COMPLIANCE_SCAN
 	} else if nodeType == controls.ResourceTypeToString(controls.Host) {
+		neo4jNodeType = "Node"
 		scanType = utils.NEO4J_COMPLIANCE_SCAN
 	}
 	res, err := tx.Run(fmt.Sprintf(`
