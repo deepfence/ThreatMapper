@@ -56,23 +56,25 @@ func (tc *ThreatGraphReporter) GetThreatGraph() (ThreatGraph, error) {
 			visited := map[int64]struct{}{}
 			attack_paths := build_attack_paths(aggreg[cp], root, visited)
 			paths := [][]string{}
+
 			for _, Attack_path := range attack_paths {
 				path := []string{}
 				for i := range Attack_path {
-					index := int64(len(Attack_path)-1) - int64(i)
+					index := Attack_path[int64(len(Attack_path)-1)-int64(i)]
 					path = append(path, node_info[index].Id)
 				}
 				paths = append(paths, append([]string{"The Internet"}, path...))
+				index := Attack_path[len(Attack_path)-1]
 				entry := ThreatNodeInfo{
-					Label:                 node_info[int64(len(Attack_path)-1)].Label,
-					Id:                    node_info[int64(len(Attack_path)-1)].Id,
-					Nodes:                 node_info[int64(len(Attack_path)-1)].Nodes,
-					Vulnerability_count:   node_info[int64(len(Attack_path)-1)].Vulnerability_count,
-					Secrets_count:         node_info[int64(len(Attack_path)-1)].Secrets_count,
-					Compliance_count:      node_info[int64(len(Attack_path)-1)].Compliance_count,
-					CloudCompliance_count: node_info[int64(len(Attack_path)-1)].CloudCompliance_count,
-					Count:                 node_info[int64(len(Attack_path)-1)].Count,
-					Node_type:             node_info[int64(len(Attack_path)-1)].Node_type,
+					Label:                 node_info[index].Label,
+					Id:                    node_info[index].Id,
+					Nodes:                 node_info[index].Nodes,
+					Vulnerability_count:   node_info[index].Vulnerability_count,
+					Secrets_count:         node_info[index].Secrets_count,
+					Compliance_count:      node_info[index].Compliance_count,
+					CloudCompliance_count: node_info[index].CloudCompliance_count,
+					Count:                 node_info[index].Count,
+					Node_type:             node_info[index].Node_type,
 					Attack_path:           paths,
 				}
 				resources = append(resources, entry)
@@ -263,6 +265,7 @@ func record2struct(node dbtype.Node) AttackPathData {
 	}
 
 	return AttackPathData{
+		identity:                     node.Id,
 		Node_type:                    Node_type.(string),
 		cloud_provider:               cloud_provider.(string),
 		depth:                        depth.(int64),
@@ -346,7 +349,7 @@ func (ap AttackPaths) getNodeInfos() map[int64]ThreatNodeInfo {
 				cloud_compliance_count = v.collect_num_cloud_compliance[i]
 			}
 			Nodes[Node_id] = NodeInfo{
-				Node_id:                 v.collect_node_id[i],
+				Node_id:                 Node_id,
 				Image_name:              "",
 				Name:                    Node_id,
 				Vulnerability_count:     vuln_count,
