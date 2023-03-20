@@ -14,6 +14,7 @@ import (
 
 	"github.com/armon/go-metrics"
 	"github.com/weaveworks/go-checkpoint"
+	"github.com/weaveworks/scope/probe/common"
 
 	metrics_prom "github.com/armon/go-metrics/prometheus"
 	linuxScanner "github.com/deepfence/compliance/scanner"
@@ -377,7 +378,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 			multiClients, err = appclient.NewOpenapiClient()
 			if err == nil {
 				break
-			} else if errors.Is(err, appclient.ConnError) {
+			} else if errors.Is(err, common.ConnError) {
 				log.Warnln("Failed to authenticate. Retrying...")
 				time.Sleep(authCheckPeriod)
 			} else {

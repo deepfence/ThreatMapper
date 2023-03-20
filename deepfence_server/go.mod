@@ -25,19 +25,19 @@ replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/ag
 require (
 	github.com/ThreeDotsLabs/watermill v1.2.0
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.2
-	github.com/bytedance/sonic v1.8.3
-	github.com/casbin/casbin/v2 v2.65.1
+	github.com/bytedance/sonic v1.8.5
+	github.com/casbin/casbin/v2 v2.65.2
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230310063137-b653517c5502
 	github.com/docker/docker v23.0.1+incompatible
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/jwtauth/v5 v5.1.0
 	github.com/go-playground/pkg/v5 v5.15.2
-	github.com/go-playground/validator/v10 v10.11.2
+	github.com/go-playground/validator/v10 v10.12.0
 	github.com/google/uuid v1.3.0
 	github.com/lestrrat-go/jwx/v2 v2.0.8
 	github.com/minio/minio-go/v7 v7.0.49
-	github.com/neo4j/neo4j-go-driver/v4 v4.4.5
+	github.com/neo4j/neo4j-go-driver/v4 v4.4.7
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.0.2
@@ -46,18 +46,18 @@ require (
 	github.com/samber/mo v1.8.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/swaggest/openapi-go v0.2.29
-	github.com/twmb/franz-go v1.12.1
-	github.com/ugorji/go/codec v1.2.10
+	github.com/twmb/franz-go v1.13.0
+	github.com/ugorji/go/codec v1.2.11
 	github.com/weaveworks/scope v1.13.2
 	go.opentelemetry.io/otel v1.14.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.14.0
 	go.opentelemetry.io/otel/sdk v1.14.0
 	golang.org/x/crypto v0.7.0
 	gotest.tools v2.2.0+incompatible
-	k8s.io/api v0.26.2
-	k8s.io/apimachinery v0.26.2
-	k8s.io/client-go v0.26.2
-	k8s.io/metrics v0.26.2
+	k8s.io/api v0.26.3
+	k8s.io/apimachinery v0.26.3
+	k8s.io/client-go v0.26.3
+	k8s.io/metrics v0.26.3
 )
 
 require (
@@ -71,7 +71,7 @@ require (
 	github.com/abrander/go-supervisord v0.0.0-20210517172913-a5469a4c50e2 // indirect
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
-	github.com/aws/aws-sdk-go v1.44.216 // indirect
+	github.com/aws/aws-sdk-go v1.44.225 // indirect
 	github.com/bluele/gcache v0.0.2 // indirect
 	github.com/c9s/goprocinfo v0.0.0-20210130143923-c95fcf8c64a8 // indirect
 	github.com/cenkalti/backoff/v3 v3.2.2 // indirect
@@ -117,6 +117,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.2 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
@@ -130,10 +131,10 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/k-sone/critbitgo v1.4.0 // indirect
-	github.com/klauspost/compress v1.16.0 // indirect
+	github.com/klauspost/compress v1.16.3 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
 	github.com/kolo/xmlrpc v0.0.0-20220921171641-a4b6fa1dd06b // indirect
-	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/leodido/go-urn v1.2.2 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.1 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/httprc v1.0.4 // indirect
@@ -165,7 +166,7 @@ require (
 	github.com/swaggest/jsonschema-go v0.3.48 // indirect
 	github.com/swaggest/refl v1.1.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
-	github.com/twmb/franz-go/pkg/kadm v1.7.0 // indirect
+	github.com/twmb/franz-go/pkg/kadm v1.8.0 // indirect
 	github.com/twmb/franz-go/pkg/kmsg v1.4.0 // indirect
 	github.com/typetypetype/conntrack v1.0.0 // indirect
 	github.com/ugorji/go/codec/codecgen v1.2.10 // indirect

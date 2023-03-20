@@ -10,11 +10,11 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/client"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
-	"github.com/weaveworks/scope/probe/appclient"
+	"github.com/weaveworks/scope/probe/common"
 )
 
 func SendAgentDiagnosticLogs(req ctl.SendAgentDiagnosticLogsRequest, pathsToZip []string, excludePathPrefixes []string) error {
-	httpsClient, err := appclient.NewClient()
+	httpsClient, err := common.NewClient()
 	if err != nil {
 		return err
 	}
