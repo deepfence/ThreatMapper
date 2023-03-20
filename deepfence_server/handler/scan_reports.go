@@ -46,8 +46,8 @@ func scanId(req model.NodeIdentifier) string {
 	return fmt.Sprintf("%s-%d", req.NodeId, time.Now().Unix())
 }
 
-func cloudComplianceScanId(nodeId, benchmarkType string) string {
-	return fmt.Sprintf("%s-%s-%d", nodeId, time.Now().Unix())
+func cloudComplianceScanId(nodeId string) string {
+	return fmt.Sprintf("%s-%d", nodeId, time.Now().Unix())
 }
 
 func bulkScanId() string {
@@ -1398,10 +1398,8 @@ func startMultiComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, 
 	scanIds := []string{}
 	bulkId := bulkScanId()
 	for _, req := range reqs {
-		for _, benchmarkType := range benchmarkTypes {
-			scanId := cloudComplianceScanId(req.NodeId, benchmarkType)
-			scanIds = append(scanIds, scanId)
-		}
+		scanId := cloudComplianceScanId(req.NodeId)
+		scanIds = append(scanIds, scanId)
 	}
 	return scanIds, bulkId, nil
 }
