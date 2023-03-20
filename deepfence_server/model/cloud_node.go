@@ -141,7 +141,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 		matchNodeRes, err = tx.Run(`
 		WITH $param as row
 		MATCH (n:Node{node_id:row.node_id})
-		SET n+= row, n.updated_at = TIMESTAMP()`,
+		RETURN n.node_id`,
 			map[string]interface{}{
 				"param": nodeDetails,
 			})
@@ -152,8 +152,8 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 		matchNodeRes, err = tx.Run(`
 		MATCH (m:Node{node_id: $parent_node_id})
 		WITH $param as row, m
-		MERGE (n:Node{node_id:row.node_id}) <-[:IS_CHILD]- (m)
-		SET n+= row, n.updated_at = TIMESTAMP()`,
+		MATCH (n:Node{node_id:row.node_id}) <-[:IS_CHILD]- (m)
+		RETURN n.node_id`,
 			map[string]interface{}{
 				"param":          nodeDetails,
 				"parent_node_id": parentNodeId,
