@@ -121,9 +121,10 @@ func AddCloudControls(msg *message.Message) error {
 			category: 'Compliance',
 			executable: false
 		})
-		WITH row.children AS children
+		WITH n, row.children AS children, row.benchmark_id AS benchmark_id
 		UNWIND children AS childControl
 		MATCH (m:CloudComplianceExecutable{control_id: childControl})
+		WHERE benchmark_id IN m.parent_control_hierarchy
 		MERGE (n) -[:INCLUDES]-> (m)
 		`,
 			map[string]interface{}{
