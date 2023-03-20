@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
+	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
@@ -50,7 +51,12 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 	}
 	res, err := tx.Run(`MATCH (n)
 		WHERE (n:Node OR n:KubernetesCluster) AND n.node_id IN $node_ids
-		RETURN n.node_id`, map[string]interface{}{"node_ids": nodeIds})
+		OPTIONAL MATCH (n)<-[:SCHEDULEDLOGS]-(a:AgentDiagnosticLogs)
+		WHERE NOT a.status = $complete AND NOT a.status = $failed
+		RETURN n.node_id,a.status`,
+		map[string]interface{}{"node_ids": nodeIds,
+			"complete": utils.SCAN_STATUS_SUCCESS,
+			"failed":   utils.SCAN_STATUS_FAILED})
 	if err != nil {
 		return err
 	}
@@ -64,6 +70,9 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 	var foundNodeIds []string
 	for i := range rec {
 		foundNodeIds = append(foundNodeIds, rec[i].Values[0].(string))
+		if rec[i].Values[1] != nil {
+			return errors.New(fmt.Sprintf("Diagnostic logs already scheduled for node %v", rec[i].Values[1]))
+		}
 	}
 
 	var missingNodes []string
@@ -76,6 +85,29 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 		return errors.New(fmt.Sprintf("could not find nodes %v", missingNodes))
 	}
 	return nil
+}
+
+func UpdateAgentDiagnosticLogsStatus(ctx context.Context, status diagnosis.DiagnosticLogsStatus) error {
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+	tx, err := session.BeginTransaction()
+	defer tx.Close()
+
+	_, err = tx.Run(`
+		MATCH (n:AgentDiagnosticLogs{node_id:$node_id})
+		SET n.status = $status, n.message = $message, n.updated_at = TIMESTAMP()`,
+		map[string]interface{}{"node_id": status.NodeID, "status": status.Status, "message": status.Message})
+	if err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifier, tail string) error {
@@ -137,7 +169,7 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 		if _, err = tx.Run(fmt.Sprintf(`
 		MERGE (n:AgentDiagnosticLogs{node_id: $node_id, status: $status, retries: 0, trigger_action: $action, updated_at: TIMESTAMP()})
 		MERGE (m:%s{node_id:$node_id})
-		MERGE (n)-[:SCHEDULED]->(m)`, nodeIdentifier.NodeType),
+		MERGE (n)-[:SCHEDULEDLOGS]->(m)`, controls.ResourceTypeToNeo4j(controls.StringToResourceType(nodeIdentifier.NodeType))),
 			map[string]interface{}{
 				"status":  utils.SCAN_STATUS_STARTING,
 				"node_id": nodeIdentifier.NodeId,

@@ -46,7 +46,6 @@ import (
 
 const (
 	versionCheckPeriod = 6 * time.Hour
-	defaultServiceHost = "https://cloud.weave.works.:443"
 
 	kubernetesRoleHost    = "host"
 	kubernetesRoleCluster = "cluster"
@@ -138,7 +137,9 @@ func setClusterAgentControls(k8sClusterName string) {
 	err = controls.RegisterControl(ctl.SendAgentDiagnosticLogs,
 		func(req ctl.SendAgentDiagnosticLogsRequest) error {
 			log.Info("Generate Cluster Agent Diagnostic Logs")
-			return kubernetes.SendClusterAgentDiagnosticLogs(req, k8sClusterName)
+			return controls.SendAgentDiagnosticLogs(req,
+				[]string{"/var/log/compliance/compliance-status"},
+				[]string{})
 		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)
@@ -202,7 +203,9 @@ func setAgentControls() {
 	err = controls.RegisterControl(ctl.SendAgentDiagnosticLogs,
 		func(req ctl.SendAgentDiagnosticLogsRequest) error {
 			log.Info("Generate Agent Diagnostic Logs")
-			return host.SendAgentDiagnosticLogs(req)
+			return controls.SendAgentDiagnosticLogs(req,
+				[]string{"/var/log/supervisor", "/var/log/fenced"},
+				[]string{"/var/log/fenced/compliance/", "/var/log/fenced/malware-scan/", "/var/log/fenced/secret-scan/"})
 		})
 	if err != nil {
 		log.Errorf("set controls: %v", err)
@@ -213,10 +216,6 @@ func setAgentControls() {
 func probeMain(flags probeFlags, targets []appclient.Target) {
 	setLogLevel(flags.logLevel)
 	setLogFormatter(flags.logPrefix)
-
-	if flags.kubernetesRole != kubernetesRoleCluster {
-		setAgentControls()
-	}
 
 	if flags.basicAuth {
 		log.Infof("Basic authentication enabled")
@@ -345,6 +344,8 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 
 	if flags.kubernetesRole == kubernetesRoleCluster {
 		setClusterAgentControls(k8sClusterName)
+	} else {
+		setAgentControls()
 	}
 
 	err = os.Setenv(report.KubernetesClusterName, k8sClusterName)

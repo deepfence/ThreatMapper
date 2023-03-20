@@ -6,6 +6,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	agentdiagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/agent-diagnosis"
+	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
@@ -32,6 +33,28 @@ func (h *Handler) GenerateConsoleDiagnosticLogs(w http.ResponseWriter, r *http.R
 		return
 	}
 	w.WriteHeader(http.StatusAccepted)
+}
+
+func (h *Handler) UpdateAgentDiagnosticLogsStatus(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req diagnosis.DiagnosticLogsStatus
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	req.NodeID = chi.URLParam(r, "node_id")
+	err = h.Validator.Struct(req)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+	err = agentdiagnosis.UpdateAgentDiagnosticLogsStatus(r.Context(), req)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) GenerateAgentDiagnosticLogs(w http.ResponseWriter, r *http.Request) {

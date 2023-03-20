@@ -33,8 +33,7 @@ var (
 	ConnError = errors.New("Connection error")
 )
 
-func NewOpenapiClient() (*OpenapiClient, error) {
-
+func NewClient() (*openapi.APIClient, error) {
 	url := os.Getenv("MGMT_CONSOLE_URL")
 	if url == "" {
 		return nil, errors.New("MGMT_CONSOLE_URL not set")
@@ -60,9 +59,13 @@ func NewOpenapiClient() (*OpenapiClient, error) {
 	if err != nil {
 		return nil, ConnError
 	}
+	return https_client.Client(), nil
+}
 
+func NewOpenapiClient() (*OpenapiClient, error) {
+	httpsClient, err := NewClient()
 	res := &OpenapiClient{
-		client:               https_client.Client(),
+		client:               httpsClient,
 		stopControlListening: make(chan struct{}),
 		publishInterval:      atomic.Int32{},
 	}

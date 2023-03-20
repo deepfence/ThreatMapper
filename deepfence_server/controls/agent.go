@@ -121,8 +121,9 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeId string, max_w
 	}
 	defer tx.Close()
 
-	r, err := tx.Run(`MATCH (s) -[:SCHEDULED]-> (n:Node{node_id:$id})
-		WHERE s.status = '`+utils.SCAN_STATUS_STARTING+`'
+	r, err := tx.Run(`MATCH (s:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n{node_id:$id})
+		WHERE (n:Node OR n:KubernetesCluster) 
+		AND s.status = '`+utils.SCAN_STATUS_STARTING+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work
 		SET s.status = '`+utils.SCAN_STATUS_INPROGRESS+`'

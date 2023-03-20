@@ -37,6 +37,12 @@ type GenerateAgentDiagnosticLogsRequest struct {
 	Tail    int              `json:"tail" validate:"required,min=100,max=10000" required:"true"`
 }
 
+type DiagnosticLogsStatus struct {
+	NodeID  string `path:"node_id" validate:"required" required:"true"`
+	Status  string `json:"status" validate:"required" required:"true"`
+	Message string `json:"message" validate:"required" required:"true"`
+}
+
 type DiagnosticLogsLink struct {
 	UrlLink   string `json:"url_link"`
 	Label     string `json:"label"`
