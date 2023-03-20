@@ -770,8 +770,13 @@ func (h *Handler) ListComplianceScanResultsHandler(w http.ResponseWriter, r *htt
 		respondError(err, w)
 		return
 	}
+	additionalInfo, err := reporters_scan.GetCloudComplianceStats(r.Context(), common.ScanID, utils.NEO4J_COMPLIANCE_SCAN)
+	if err != nil {
+		log.Error().Err(err).Msg("Counts computation issue")
+	}
 
-	httpext.JSON(w, http.StatusOK, model.ComplianceScanResult{Compliances: entries, ScanResultsCommon: common})
+	httpext.JSON(w, http.StatusOK, model.ComplianceScanResult{Compliances: entries, ScanResultsCommon: common,
+		ComplianceAdditionalInfo: additionalInfo})
 }
 
 func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -796,7 +801,7 @@ func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r
 		return
 	}
 
-	additionalInfo, err := reporters_scan.GetCloudComplianceStats(r.Context(), common.ScanID)
+	additionalInfo, err := reporters_scan.GetCloudComplianceStats(r.Context(), common.ScanID, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
 	if err != nil {
 		log.Error().Err(err).Msg("Counts computation issue")
 	}

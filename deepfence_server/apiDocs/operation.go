@@ -5,7 +5,7 @@ import (
 
 	"github.com/weaveworks/scope/render/detailed"
 
-	. "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
+	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/model"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
@@ -491,16 +491,16 @@ func (d *OpenApiDocs) AddScansOperations() {
 func (d *OpenApiDocs) AddDiagnosisOperations() {
 	d.AddOperation("diagnosticNotification", http.MethodGet, "/deepfence/diagnosis/notification",
 		"Get Diagnostic Notification", "Get Diagnostic Notification",
-		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new([]DiagnosticNotification))
+		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new([]diagnosis.DiagnosticNotification))
 	d.AddOperation("generateConsoleDiagnosticLogs", http.MethodPost, "/deepfence/diagnosis/console-logs",
 		"Generate Console Diagnostic Logs", "Generate Console Diagnostic Logs",
-		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(GenerateDiagnosticLogsRequest), nil)
+		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(diagnosis.GenerateConsoleDiagnosticLogsRequest), nil)
 	d.AddOperation("generateAgentDiagnosticLogs", http.MethodPost, "/deepfence/diagnosis/agent-logs",
 		"Generate Agent Diagnostic Logs", "Generate Agent Diagnostic Logs",
-		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(GenerateDiagnosticLogsRequest), nil)
+		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(diagnosis.GenerateAgentDiagnosticLogsRequest), nil)
 	d.AddOperation("getDiagnosticLogs", http.MethodGet, "/deepfence/diagnosis/diagnostic-logs",
 		"Get Diagnostic Logs", "Get diagnostic logs download url links",
-		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new(GetDiagnosticLogsResponse))
+		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new(diagnosis.GetDiagnosticLogsResponse))
 }
 
 func (d *OpenApiDocs) AddRegistryOperations() {
@@ -510,6 +510,9 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 	d.AddOperation("addRegistry", http.MethodPost, "/deepfence/registryaccount",
 		"Add Registry", "Add a new supported registry",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryAddReq), nil)
+	d.AddOperation("updateRegistry", http.MethodPut, "/deepfence/registryaccount/{registry_id}",
+		"Update Registry", "Update registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryUpdateReq), nil)
 	d.AddOperation("deleteRegistry", http.MethodDelete, "/deepfence/registryaccount/{registry_id}",
 		"Delete Registry", "Delete registry",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryIDPathReq), nil)

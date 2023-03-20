@@ -9,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
 func (h *Handler) GetAgentControls(w http.ResponseWriter, r *http.Request) {
@@ -39,17 +40,7 @@ func (h *Handler) GetAgentControls(w http.ResponseWriter, r *http.Request) {
 		BeatRateSec: 30,
 		Commands:    actions,
 	}
-	b, err := json.Marshal(res)
-	if err != nil {
-		log.Error().Msgf("Cannot marshal controls: %v", err)
-		respondWith(ctx, w, http.StatusInternalServerError, err)
-		return
-	}
-
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(b)
-
+	err = httpext.JSON(w, http.StatusOK, res)
 	if err != nil {
 		log.Error().Msgf("Cannot send controls: %v", err)
 		w.WriteHeader(http.StatusGone)
@@ -89,17 +80,7 @@ func (h *Handler) GetAgentInitControls(w http.ResponseWriter, r *http.Request) {
 		BeatRateSec: 30,
 		Commands:    actions,
 	}
-	b, err := json.Marshal(res)
-	if err != nil {
-		log.Error().Msgf("Cannot marshal controls: %v", err)
-		respondWith(ctx, w, http.StatusInternalServerError, err)
-		return
-	}
-
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(b)
-
+	err = httpext.JSON(w, http.StatusOK, res)
 	if err != nil {
 		log.Error().Msgf("Cannot send controls: %v", err)
 		w.WriteHeader(http.StatusGone)

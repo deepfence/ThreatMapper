@@ -33,8 +33,8 @@ type Compliance struct {
 	Status              string `json:"status"`
 	ComplianceCheckType string `json:"compliance_check_type"`
 	ScanId              string `json:"scan_id"`
-	ComplianceNodeType  string `json:"compliance_node_type"`
 	NodeId              string `json:"node_id"`
+	NodeType            string `json:"node_type"`
 }
 
 func CommitFuncCompliance(ns string, data []Compliance) error {

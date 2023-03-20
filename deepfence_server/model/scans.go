@@ -252,6 +252,7 @@ func (Secret) GetJsonCategory() string {
 }
 
 type Vulnerability struct {
+	NodeId                     string   `json:"node_id" required:"true"`
 	Cve_id                     string   `json:"cve_id" required:"true"`
 	Cve_type                   string   `json:"cve_type" required:"true"`
 	Cve_severity               string   `json:"cve_severity" required:"true"`
@@ -339,7 +340,8 @@ type Compliance struct {
 	TestDesc            string `json:"test_desc" required:"true"`
 	Status              string `json:"status" required:"true"`
 	ComplianceCheckType string `json:"compliance_check_type" required:"true"`
-	ComplianceNodeType  string `json:"compliance_node_type" required:"true"`
+	ComplianceNodeId    string `json:"node_id" required:"true"`
+	ComplianceNodeType  string `json:"node_type" required:"true"`
 	Masked              bool   `json:"masked" required:"true"`
 	UpdatedAt           int64  `json:"updated_at" required:"true"`
 }

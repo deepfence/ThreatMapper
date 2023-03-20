@@ -21,6 +21,15 @@ import (
 )
 
 type RegistryAddReq struct {
+	Name         string                 `json:"name" validate:"required,nospace,min=2,max=20" required:"true"`
+	NonSecret    map[string]interface{} `json:"non_secret"`
+	Secret       map[string]interface{} `json:"secret"`
+	Extras       map[string]interface{} `json:"extras"`
+	RegistryType string                 `json:"registry_type" validate:"required,nospace" required:"true"`
+}
+
+type RegistryUpdateReq struct {
+	Id           string                 `path:"registry_id" validate:"required" required:"true"`
 	Name         string                 `json:"name"`
 	NonSecret    map[string]interface{} `json:"non_secret"`
 	Secret       map[string]interface{} `json:"secret"`
@@ -128,26 +137,6 @@ func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgres
 	return true, nil
 }
 
-func (ra *RegistryAddReq) GetAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Queries) (json.RawMessage, error) {
-	s := Setting{}
-	aes, err := s.GetSettingByKey(ctx, pgClient, commonConstants.AES_SECRET)
-	if err != nil {
-		return nil, err
-	}
-	var sValue SettingValue
-	err = json.Unmarshal(aes.Value, &sValue)
-	if err != nil {
-		return nil, err
-	}
-
-	b, err := json.Marshal(sValue.Value)
-	if err != nil {
-		return nil, err
-	}
-
-	return json.RawMessage(b), nil
-}
-
 func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries) error {
 	bSecret, err := json.Marshal(ra.Secret)
 	if err != nil {
@@ -172,6 +161,89 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgres
 		Extras:          bExtras,    // rawExtrasJSON,
 	})
 	return err
+}
+
+func (ru *RegistryUpdateReq) UpdateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r int32) error {
+	bSecret, err := json.Marshal(ru.Secret)
+	if err != nil {
+		return err
+	}
+
+	bNonSecret, err := json.Marshal(ru.NonSecret)
+	if err != nil {
+		return err
+	}
+
+	bExtras, err := json.Marshal(ru.Extras)
+	if err != nil {
+		return err
+	}
+
+	_, err = pgClient.UpdateContainerRegistry(ctx, postgresqlDb.UpdateContainerRegistryParams{
+		ID:              r,
+		Name:            ru.Name,
+		RegistryType:    ru.RegistryType,
+		EncryptedSecret: bSecret,    // rawSecretJSON,
+		NonSecret:       bNonSecret, // rawNonSecretJSON,
+		Extras:          bExtras,    // rawExtrasJSON,
+	})
+	return err
+}
+
+func (ru *RegistryUpdateReq) RegistryExists(ctx context.Context, pgClient *postgresqlDb.Queries, id int32) (bool, error) {
+	registry, err := pgClient.GetContainerRegistry(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+
+	if ru.Name == "" {
+		ru.Name = registry.Name
+	}
+	// kludge: should we allow changing registry type?
+	if ru.RegistryType == "" {
+		ru.RegistryType = registry.RegistryType
+	}
+	if ru.Secret == nil {
+		err = json.Unmarshal(registry.EncryptedSecret, &ru.Secret)
+		if err != nil {
+			return false, err
+		}
+	}
+	if ru.NonSecret == nil {
+		err = json.Unmarshal(registry.NonSecret, &ru.NonSecret)
+		if err != nil {
+			return false, err
+		}
+	}
+	if ru.Extras == nil {
+		err = json.Unmarshal(registry.Extras, &ru.Extras)
+		if err != nil {
+			return false, err
+		}
+	}
+	return true, nil
+}
+
+func GetAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Queries) (json.RawMessage, error) {
+	s := Setting{}
+	aes, err := s.GetSettingByKey(ctx, pgClient, commonConstants.AES_SECRET)
+	if err != nil {
+		return nil, err
+	}
+	var sValue SettingValue
+	err = json.Unmarshal(aes.Value, &sValue)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := json.Marshal(sValue.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	return json.RawMessage(b), nil
 }
 
 func (r *RegistryImageListReq) GetRegistryImages(ctx context.Context) ([]ContainerImage, error) {
