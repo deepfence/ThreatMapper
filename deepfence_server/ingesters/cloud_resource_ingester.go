@@ -160,7 +160,7 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 
 	if _, err = tx.Run(`
 		MATCH (n:CloudResource)
-		MATCH (m:Node{node_id: n.account_id})
+		MATCH (m:CloudNode{node_id: n.account_id})
 		SET n.cloud_provider = m.cloud_provider
 		WITH n, m
 		MERGE (m)-[:OWNS]->(n)`, map[string]interface{}{}); err != nil {
