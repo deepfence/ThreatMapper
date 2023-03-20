@@ -35,14 +35,16 @@ func (KubernetesCluster) ExtendedField() string {
 }
 
 type RegularScanStatus struct {
-	VulnerabilitiesCount    int    `json:"vulnerabilities_count"  required:"true"`
-	VulnerabilityScanStatus string `json:"vulnerability_scan_status" required:"true"`
-	SecretsCount            int    `json:"secrets_count" required:"true"`
-	SecretScanStatus        string `json:"secret_scan_status" required:"true"`
-	MalwaresCount           int    `json:"malwares_count" required:"true"`
-	MalwareScanStatus       string `json:"malware_scan_status" required:"true"`
-	CompliancesCount        int    `json:"compliances_count" required:"true"`
-	ComplianceScanStatus    string `json:"compliance_scan_status" required:"true"`
+	VulnerabilitiesCount      int64  `json:"vulnerabilities_count"  required:"true"`
+	VulnerabilityScanStatus   string `json:"vulnerability_scan_status" required:"true"`
+	SecretsCount              int64  `json:"secrets_count" required:"true"`
+	SecretScanStatus          string `json:"secret_scan_status" required:"true"`
+	MalwaresCount             int64  `json:"malwares_count" required:"true"`
+	MalwareScanStatus         string `json:"malware_scan_status" required:"true"`
+	CompliancesCount          int64  `json:"compliances_count" required:"true"`
+	ComplianceScanStatus      string `json:"compliance_scan_status" required:"true"`
+	CloudCompliancesCount     int64  `json:"cloud_compliances_count" required:"true"`
+	CloudComplianceScanStatus string `json:"cloud_compliance_scan_status" required:"true"`
 }
 
 type BasicNode struct {
