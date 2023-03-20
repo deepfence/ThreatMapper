@@ -42,11 +42,7 @@ export const GoogleCRConnectorForm = () => {
             className="w-3/4 min-[200px] max-w-xs"
             label="Select your file"
             sizing="sm"
-            onChoosen={(e) => {
-              if (e.target.files) {
-                console.log();
-              }
-            }}
+            name="authFile"
           />
         </Card>
       </Step>

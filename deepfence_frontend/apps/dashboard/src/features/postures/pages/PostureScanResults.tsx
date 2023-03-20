@@ -635,9 +635,9 @@ const ScanResusltTable = () => {
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
-        size: 50,
+        size: 30,
         minSize: 30,
-        maxSize: 50,
+        maxSize: 40,
       }),
       columnHelper.accessor('node_id', {
         enableSorting: false,
@@ -659,9 +659,9 @@ const ScanResusltTable = () => {
           </DFLink>
         ),
         header: () => 'ID',
-        minSize: 50,
-        size: 60,
-        maxSize: 65,
+        minSize: 90,
+        size: 100,
+        maxSize: 110,
       }),
       columnHelper.accessor('compliance_check_type', {
         enableSorting: false,
@@ -669,24 +669,24 @@ const ScanResusltTable = () => {
         cell: (info) => info.getValue().toUpperCase(),
         header: () => 'Check Type',
         minSize: 60,
-        size: 80,
-        maxSize: 90,
+        size: 60,
+        maxSize: 70,
       }),
 
       columnHelper.accessor('description', {
         enableResizing: false,
         enableSorting: false,
-        minSize: 100,
-        size: 200,
-        maxSize: 210,
+        minSize: 140,
+        size: 150,
+        maxSize: 160,
         header: () => 'Description',
         cell: (cell) => cell.getValue(),
       }),
       columnHelper.accessor('status', {
         enableResizing: false,
-        minSize: 70,
-        size: 70,
-        maxSize: 70,
+        minSize: 60,
+        size: 60,
+        maxSize: 65,
         header: () => <div>Status</div>,
         cell: (info) => {
           return (
@@ -817,7 +817,6 @@ const ScanResusltTable = () => {
                   manualSorting
                   sortingState={sort}
                   getRowId={(row) => {
-                    console.log('row', row.node_id);
                     return row.node_id;
                   }}
                   onPaginationChange={(updaterOrValue) => {

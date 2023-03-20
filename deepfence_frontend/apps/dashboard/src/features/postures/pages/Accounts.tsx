@@ -152,14 +152,7 @@ const ActionDropdown = ({
   label?: string;
 }) => {
   const { navigate } = usePageNavigation();
-  const onTableAction = (action: string) => {
-    const id = 12345;
-    switch (action) {
-      case ActionEnumType.VIEW_SCAN:
-        navigate(`/posture/scan-results/${id}/scanId`);
-        break;
-    }
-  };
+
   return (
     <>
       <Dropdown
@@ -171,7 +164,7 @@ const ActionDropdown = ({
               className="text-sm"
               onClick={() => {
                 if (isScanComplete) {
-                  onTableAction(ActionEnumType.VIEW_SCAN);
+                  navigate(`/posture/scan-results/${id}`);
                 }
               }}
             >
@@ -355,10 +348,11 @@ const PostureTable = () => {
         cell: (cell) => {
           const isScanComplete =
             cell.row.original.last_scan_status?.toLowerCase() === 'complete';
+
           return (
             <ActionDropdown
               icon={<HiDotsVertical />}
-              id={cell.row.original.node_id ?? ''}
+              id={cell.row.original.last_scan_id ?? ''}
               isScanComplete={isScanComplete}
             />
           );

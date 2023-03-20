@@ -125,7 +125,7 @@ const Header = () => {
                     <PostureIcon />
                   </span>
                   <span className="text-md text-gray-900 dark:text-white truncate">
-                    {truncate(compliane.node_id ?? '', { length: 20 })}
+                    {truncate(compliane.test_number ?? '')}
                   </span>
                   <Badge
                     label={compliane?.compliance_check_type?.toUpperCase()}
@@ -165,10 +165,10 @@ const DetailsComponent = () => {
             }
             const pickBy = [
               'updated_at',
-              'node_id',
               'description',
               'status',
               'compliance_check_type',
+              'remediation_puppet',
             ];
             const fixed = pick<ModelCompliance>(compliance, pickBy);
             const others = omit<ModelCompliance>(compliance, pickBy);
@@ -229,6 +229,14 @@ const DetailsComponent = () => {
                         </p>
                       </div>
                       <div className="mt-6 flex flex-wrap gap-y-4 gap-x-8">
+                        <div className="flex flex-col">
+                          <span className="text-left text-xs text-gray-500">
+                            Remediation
+                          </span>
+                          <p className="text-sm pr-2 mb-2 text-justify">
+                            {fixed.remediation_puppet}
+                          </p>
+                        </div>
                         {getObjectKeys(others).map((key) => {
                           const label = capitalize(
                             startCase(startCase(key)).toLowerCase(),

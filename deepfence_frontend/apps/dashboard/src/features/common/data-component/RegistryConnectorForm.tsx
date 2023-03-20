@@ -165,11 +165,10 @@ const getRequestBodyByRegistryType = (
       requestParams = {
         name: body.registryName.toString(),
         non_secret: {
-          registry_hostname: body.registryUrl,
-          google_registry_username: body.username,
+          registry_url: body.registryUrl,
         },
         secret: {
-          service_account_json: body.password,
+          service_account_json: body.authFile,
         },
         registry_type: 'google_container_registry',
       };

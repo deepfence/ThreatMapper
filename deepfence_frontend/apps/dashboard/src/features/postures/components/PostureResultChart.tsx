@@ -17,10 +17,8 @@ const option: EChartsOption = {
   },
   series: [
     {
-      name: 'Postures',
       type: 'pie',
       radius: ['70%', '90%'],
-      bottom: '10%',
       avoidLabelOverlap: true,
       label: {
         show: false,
@@ -45,7 +43,7 @@ export const PostureResultChart = ({
 
   option.dataset = {
     source: Object.keys(data).map((key) => ({
-      Posture: key,
+      Compliances: key,
       value: data[key],
     })),
   };
