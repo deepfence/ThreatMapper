@@ -24,7 +24,13 @@ export { default as FileInput } from '@/components/input/FileInput';
 export { default as TextInput } from '@/components/input/TextInput';
 export { default as TextInputArea } from '@/components/input/TextInputArea';
 export { default as Modal } from '@/components/modal/Modal';
-export { ModalHeader, default as SlidingModal } from '@/components/modal/SlidingModal';
+export {
+  SlidingModal,
+  SlidingModalCloseButton,
+  SlidingModalContent,
+  SlidingModalFooter,
+  SlidingModalHeader,
+} from '@/components/modal/SlidingModal';
 export { Popover } from '@/components/popover/Popover';
 export { default as Radio } from '@/components/radio/Radio';
 export { Select, SelectItem } from '@/components/select/Select';

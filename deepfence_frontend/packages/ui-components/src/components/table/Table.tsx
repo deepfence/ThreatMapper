@@ -365,7 +365,7 @@ function TableBody<TData>({
                     'bg-gray-50 dark:bg-gray-700': striped && row.index % 2 !== 0,
                     '!bg-gray-100 dark:!bg-gray-600': row.getIsSelected(),
                   },
-                  `hover:!bg-gray-100 dark:hover:!bg-gray-600`,
+                  `hover:!bg-gray-100 dark:hover:!bg-gray-700`,
                   'transition-colors',
                 ),
                 rowProps?.className ?? '',

@@ -5,7 +5,12 @@ import { useRef, useState } from 'react';
 import { describe, expect, it } from 'vitest';
 
 import Button from '@/components/button/Button';
-import { SlidingModal } from '@/components/modal/SlidingModal';
+import {
+  SlidingModal,
+  SlidingModalContent,
+  SlidingModalFooter,
+  SlidingModalHeader,
+} from '@/components/modal/SlidingModal';
 import { renderUI } from '@/tests/utils';
 
 /**
@@ -36,7 +41,7 @@ describe(`Component SlidingModal`, () => {
             onOpenChange={() => setOpen(false)}
             elementToFocusOnCloseRef={ref}
           >
-            This is a content
+            <SlidingModalContent>This is a content</SlidingModalContent>
           </SlidingModal>
         </>
       );
@@ -63,7 +68,6 @@ describe(`Component SlidingModal`, () => {
   });
 
   it(`open sliding modal with header and footer`, async () => {
-    const Footer = () => <div>Footer</div>;
     const user = userEvent.setup();
     const UI = () => {
       const [open, setOpen] = useState(false);
@@ -79,10 +83,10 @@ describe(`Component SlidingModal`, () => {
             open={open}
             onOpenChange={() => setOpen(false)}
             elementToFocusOnCloseRef={ref}
-            header="Test title"
-            footer={<Footer />}
           >
-            This is a content
+            <SlidingModalHeader>Test title</SlidingModalHeader>
+            <SlidingModalContent>This is a content</SlidingModalContent>
+            <SlidingModalFooter>Footer</SlidingModalFooter>
           </SlidingModal>
         </>
       );

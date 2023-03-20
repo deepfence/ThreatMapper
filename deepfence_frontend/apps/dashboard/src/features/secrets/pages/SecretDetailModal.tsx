@@ -5,13 +5,15 @@ import { capitalize, omit, pick, startCase, truncate } from 'lodash-es';
 import { Suspense, useState } from 'react';
 import { HiChevronDown } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
+import { LoaderFunctionArgs, useLoaderData, useSearchParams } from 'react-router-dom';
 import {
-  Form,
-  LoaderFunctionArgs,
-  useLoaderData,
-  useSearchParams,
-} from 'react-router-dom';
-import { Badge, CircleSpinner, ModalHeader, SlidingModal } from 'ui-components';
+  Badge,
+  CircleSpinner,
+  SlidingModal,
+  SlidingModalCloseButton,
+  SlidingModalContent,
+  SlidingModalHeader,
+} from 'ui-components';
 
 import { getSearchApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
@@ -106,19 +108,19 @@ const Header = () => {
   const loaderData = useLoaderData() as LoaderDataType;
 
   return (
-    <ModalHeader>
+    <SlidingModalHeader>
       <Suspense fallback={<CircleSpinner size="xs" />}>
         <DFAwait resolve={loaderData.data}>
           {(secret: LoaderDataType['data']) => {
             if (secret === undefined) {
               return (
-                <div className="flex items-center p-4 justify-center">
+                <div className="flex items-center justify-center">
                   <h3 className="text-md text-gray-700 dark:text-gray-400">-</h3>
                 </div>
               );
             }
             return (
-              <div className="flex flex-col w-full p-4">
+              <div className="flex flex-col w-full">
                 <div className="flex gap-x-2 items-center">
                   <span className="w-5 h-5 text-gray-500 dark:text-white">
                     <SecretsIcon />
@@ -152,7 +154,7 @@ const Header = () => {
           }}
         </DFAwait>
       </Suspense>
-    </ModalHeader>
+    </SlidingModalHeader>
   );
 };
 
@@ -261,16 +263,17 @@ const SecretDetailModals = () => {
   const [searchParams] = useSearchParams();
   return (
     <SlidingModal
-      header={<Header />}
       open={true}
       onOpenChange={() => {
         navigate(`..?${searchParams.toString()}`);
       }}
       width={'w-2/6'}
     >
-      <Form className="p-4">
+      <SlidingModalCloseButton />
+      <Header />
+      <SlidingModalContent>
         <DetailsComponent />
-      </Form>
+      </SlidingModalContent>
     </SlidingModal>
   );
 };
