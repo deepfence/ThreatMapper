@@ -1,7 +1,17 @@
 ARG DF_IMG_TAG=latest
 ARG IMAGE_REPOSITORY=deepfenceio
-FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS build
+FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS package_scanner_build
 FROM $IMAGE_REPOSITORY/deepfence_malware_scanner_ce:$DF_IMG_TAG AS malware_build
+
+FROM rust:alpine AS updatemon_build
+
+RUN apk add --no-cache \
+    make \
+    musl-dev \
+    perl
+COPY store /src
+WORKDIR /src/updatemon
+RUN cargo build --release --features static
 
 FROM debian:bullseye-slim
 
@@ -28,7 +38,7 @@ RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
     && rm docker-${DOCKERVERSION}.tgz \
     && mkdir -p /etc/license/ /usr/local/bin /usr/local/lib \
-        /deepfenced /var/tmp/layers /usr/local/lua-waf /var/log/nginx/ \
+    /deepfenced /var/tmp/layers /usr/local/lua-waf /var/log/nginx/ \
     && chown root:root /deepfenced && chmod 0744 /deepfenced \
     && mkdir /usr/local/bin/compliance_check && mkdir /usr/local/discovery
 
@@ -56,17 +66,16 @@ COPY supervisord.conf /home/deepfence/supervisord-temp.conf
 COPY run_discovery.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
 COPY plugins/bin /home/deepfence/bin
+COPY store/dist/artifacts.json /home/deepfence/artifacts.json
 
-
-
-COPY --from=build /usr/local/bin/syft /usr/local/bin/syft
+COPY --from=package_scannner_build /usr/local/bin/syft /usr/local/bin/syft
 COPY --from=malware_build  /home/deepfence/usr/YaRadare /home/deepfence/usr/YaRadare
 COPY --from=malware_build  /home/deepfence/usr /home/deepfence/usr
 COPY --from=malware_build /home/deepfence/usr/config.yaml /home/deepfence/usr/yara-hunter/config.yaml
 COPY --from=malware_build /usr/local/yara /usr/local/yara
 COPY --from=malware_build /usr/local/yara/lib /usr/local/lib
 
-
+COPY --from=updatemon_build /src/target/release/deepfence-agent-updatemon /usr/local/bin/deepfence-agent-updatemon
 
 RUN mkdir -p /home/deepfence/bin/yara-hunter \
     && apt-get update --allow-insecure-repositories && apt-get -qq -y --no-install-recommends install libjansson4 libssl1.1 libmagic1 bash curl python3-pip \

@@ -445,6 +445,15 @@ services:
       options:
         max-size: "1g"
 
+  deepfence-store:
+    container_name: deepfence-store
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_store_ce:${DF_IMG_TAG:-1.4.2}
+    ulimits:
+      core: 0
+    restart: always 
+    networks:
+    - deepfence_net
+
 volumes:
   deepfence_data:
     driver: local

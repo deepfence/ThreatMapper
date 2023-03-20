@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepfence-store
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    app: deepfence-console
+    name: deepfence-store
+spec:
+  {{- if not .Values.store.autoscaling.enabled }}
+  replicas:  {{ .Values.store.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      name: deepfence-store
+      {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: deepfence-console
+        name: deepfence-store
+        {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecrets }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      automountServiceAccountToken: true
+      containers:
+        - name: deepfence-store
+          imagePullPolicy: {{ .Values.store.image.pullPolicy }}
+          image: "{{ .Values.registry.imagePrefix }}{{ .Values.store.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 8091
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.store.resources | nindent 12 }}
+      {{- with .Values.store.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.store.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

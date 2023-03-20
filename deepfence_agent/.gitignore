@@ -4,3 +4,14 @@
 .idea/
 .vscode/
 .DS_Store
+
+# Binaries
+deepfence_compliance_check
+agentAuth
+getCloudInstanceId
+deepfence
+deepfence_exe
+deepfenceutil
+
+# Binary archives
+*.tar.zst

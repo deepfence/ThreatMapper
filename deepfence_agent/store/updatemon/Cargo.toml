@@ -1,0 +1,24 @@
+[package]
+name = "deepfence-agent-updatemon"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0"
+async-compression = { version = "0.3", features = ["tokio", "zstd"] }
+clap = { version = "4.1", features = ["derive", "env"] }
+deepfence-agent-common = { path = "../common" }
+env_logger = "0.10"
+fcntl = "0.1"
+futures = "0.3"
+log = "0.4"
+openssl = { version = "0.10", features = ["vendored"], optional = true }
+reqwest = { version = "0.11", features = ["json", "stream"] }
+semver = "1.0"
+serde = { version = "1.0", features = ["derive", "rc"] }
+serde_json = "1.0"
+thiserror = "1.0"
+tokio = { version = "1.25", features = ["full"] }
+
+[features]
+static = ["openssl"]

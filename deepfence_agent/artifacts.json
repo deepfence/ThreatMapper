@@ -1,0 +1,58 @@
+{
+    "agentAuth": {
+        "source": "tools/apache/deepfence/df-utils/agent_auth/agentAuth",
+        "repository": ".",
+        "destination": "/usr/local/bin/agentAuth",
+        "service": null,
+        "lockfile": null
+    },
+    "getCloudInstanceId": {
+        "source": "tools/apache/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId",
+        "repository": ".",
+        "destination": "/usr/local/bin/getCloudInstanceId",
+        "service": null,
+        "lockfile": null
+    },
+    "deepfence-discovery": {
+        "source": "tools/apache/scope/docker/deepfence_exe",
+        "repository": ".",
+        "destination": "/usr/local/discovery/deepfence-discovery",
+        "service": "discovery",
+        "lockfile": null
+    },
+    "deepfence_compliance_check": {
+        "source": "tools/apache/compliance_check/deepfence_compliance_check",
+        "repository": ".",
+        "destination": "/usr/local/bin/compliance_check/deepfence_compliance_check",
+        "service": "discovery",
+        "lockfile": null
+    },
+    "compliance": {
+        "source": "plugins/bin/compliance",
+        "repository": "plugins/compliance",
+        "destination": "/home/deepfence/bin/compliance",
+        "service": "discovery",
+        "lockfile": null
+    },
+    "package-scanner": {
+        "source": "plugins/bin/package-scanner",
+        "repository": "plugins/package-scanner",
+        "destination": "/home/deepfence/bin/package-scanner",
+        "service": "package_scanner",
+        "lockfile": "/var/lock/deepfence-package-scanner.lock"
+    },
+    "SecretScanner": {
+        "source": "plugins/bin/secret-scanner/SecretScanner",
+        "repository": "plugins/SecretScanner",
+        "destination": "/home/deepfence/bin/secret-scanner/SecretScanner",
+        "service": "secret_scanner",
+        "lockfile": "/var/lock/deepfence-secret-scanner.lock"
+    },
+    "supervisord.conf": {
+        "source": "supervisord.conf",
+        "repository": ".",
+        "destination": "/home/deepfence/supervisord.conf",
+        "service": "supervisord",
+        "lockfile": null
+    }
+}

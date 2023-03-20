@@ -133,8 +133,8 @@ api:
   image:
     repository: deepfenceio/deepfence_api_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
+  imagePullSecrets:
+    - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
 
@@ -165,8 +165,8 @@ backend:
   image:
     repository: deepfenceio/deepfence_api_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
+  imagePullSecrets:
+    - name: docker-deepfence-secret
   initContainerRequired: true
   nameOverride: ""
   fullnameOverride: ""
@@ -193,14 +193,13 @@ backend:
   service:
     type: ClusterIP
 
-
 celery:
   replicaCount: 1
   image:
     repository: deepfenceio/deepfence_api_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
+  imagePullSecrets:
+    - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
 
@@ -232,8 +231,8 @@ diagnosis:
   image:
     repository: deepfenceio/deepfence_diagnosis_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
+  imagePullSecrets:
+    - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
 
@@ -268,8 +267,8 @@ discovery:
   enableGraphReport: true
   clusterName: ""
 
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
+  imagePullSecrets:
+    - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
 
@@ -304,8 +303,8 @@ topology:
   image:
     repository: deepfenceio/deepfence_discovery_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
+  imagePullSecrets:
+    - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
 
@@ -336,8 +335,8 @@ fetcher:
   image:
     repository: deepfenceio/deepfence_fetcher_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
+  imagePullSecrets:
+    - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
 
@@ -369,8 +368,8 @@ router:
   image:
     repository: deepfenceio/deepfence_router_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
+  imagePullSecrets:
+    - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
 
@@ -397,14 +396,13 @@ router:
   service:
     type: ClusterIP
 
-
 redis:
   replicaCount: 1
   image:
     repository: deepfenceio/deepfence_redis_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
+  imagePullSecrets:
+    - name: docker-deepfence-secret
   initContainerRequired: true
   nameOverride: ""
   fullnameOverride: ""
@@ -436,8 +434,8 @@ secretScanner:
   image:
     repository: deepfenceio/deepfence_secret_scanner_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
+  imagePullSecrets:
+    - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
 
@@ -501,8 +499,8 @@ vulnerabilityMapper:
   image:
     repository: deepfenceio/deepfence_vulnerability_mapper_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
+  imagePullSecrets:
+    - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
 
@@ -533,8 +531,8 @@ internalRouter:
   image:
     repository: deepfenceio/deepfence_router_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
+  imagePullSecrets:
+    - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
 
@@ -566,8 +564,8 @@ packageScanner:
   image:
     repository: deepfenceio/deepfence_package_scanner_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
+  imagePullSecrets:
+    - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
 
@@ -600,8 +598,8 @@ ui:
   image:
     repository: deepfenceio/deepfence_ui_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
+  imagePullSecrets:
+    - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
 
@@ -635,7 +633,7 @@ elasticsearch:
     repository: deepfenceio/deepfence_elastic_ce
     pullPolicy: Always
   imagePullSecrets:
-  - name: docker-deepfence-secret
+    - name: docker-deepfence-secret
   nameOverride: ""
   fullnameOverride: ""
 
@@ -650,11 +648,11 @@ elasticsearch:
 
   autoscaling:
     enabled: false
-  
+
   nodeSelector: {}
-  
+
   tolerations: []
-  
+
   service:
     type: ClusterIP
 
@@ -664,7 +662,7 @@ postgresql:
     repository: deepfenceio/deepfence_postgres_ce
     pullPolicy: Always
   imagePullSecrets:
-  - name: docker-deepfence-secret
+    - name: docker-deepfence-secret
 
   resources:
     requests:
@@ -675,9 +673,41 @@ postgresql:
       memory: 8Gi
 
   nodeSelector: {}
-  
+
   tolerations: []
-  
+
+  service:
+    type: ClusterIP
+
+store:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_store_ce
+    pullPolicy: Always
+  imagePullSecrets:
+    - name: docker-deepfence-secret
+  nameOverride: ""
+  fullnameOverride: ""
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      cpu: 500m
+      memory: 400Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+
+  nodeSelector: {}
+
+  tolerations: []
+
   service:
     type: ClusterIP
 

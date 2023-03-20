@@ -1,0 +1,21 @@
+ARG DF_IMG_TAG=latest
+ARG IMAGE_REPOSITORY=deepfenceio
+FROM rust:alpine AS build
+
+RUN apk add --no-cache \
+    make \
+    musl-dev \
+    perl
+COPY . /src
+WORKDIR /src
+RUN cargo build --release --features static
+
+FROM debian:bullseye-slim
+
+MAINTAINER Deepfence Inc
+LABEL deepfence.role=system
+
+COPY --from=build /src/target/release/deepfence-agent-archiver \
+    /usr/local/bin/deepfence-agent-archiver
+
+ENTRYPOINT ["/usr/local/bin/deepfence-agent-archiver"]
