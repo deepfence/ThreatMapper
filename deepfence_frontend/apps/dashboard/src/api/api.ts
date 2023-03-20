@@ -149,6 +149,8 @@ export function getSearchApiClient() {
     searchMalwares: searchApi.searchMalwares.bind(searchApi),
     searchMalwaresCount: searchApi.countMalwares.bind(searchApi),
     searchMalwareScanCount: searchApi.countMalwareScans.bind(searchApi),
+
+    searchCompliances: searchApi.searchCompliances.bind(searchApi),
   };
 }
 

@@ -45,6 +45,7 @@ import { module as postureConnectorLayout } from '@/features/postures/layouts/Po
 import { module as postureAddAccounts } from '@/features/postures/pages/AccountAdd';
 import { module as postureAccounts } from '@/features/postures/pages/Accounts';
 import { module as posture } from '@/features/postures/pages/Posture';
+import { module as postureDetails } from '@/features/postures/pages/PostureDetailModal';
 import { module as postureScanResults } from '@/features/postures/pages/PostureScanResults';
 import { module as registryConnectorLayout } from '@/features/registries/layouts/RegistryConnectorLayout';
 import { module as registries } from '@/features/registries/pages/Registries';
@@ -309,6 +310,13 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'posture/scan-results/:scanId',
         ...postureScanResults,
         meta: { title: 'Posture Scans Results' },
+        children: [
+          {
+            path: ':complianceId',
+            ...postureDetails,
+            meta: { title: 'Posture Details' },
+          },
+        ],
       },
       {
         path: 'posture/accounts/:nodeType',

@@ -58,7 +58,7 @@ import { DFLink } from '@/components/DFLink';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { complianceType } from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
-import { POSTURE_STATUS_COLORS, SEVERITY_COLORS } from '@/constants/charts';
+import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
 import { PostureResultChart } from '@/features/postures/components/PostureResultChart';
 import { Mode, useTheme } from '@/theme/ThemeContext';
@@ -77,7 +77,7 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 export interface FocusableElement {
   focus(options?: FocusOptions): void;
 }
-const STATUSES: { [k: string]: string } = {
+export const STATUSES: { [k: string]: string } = {
   INFO: 'info',
   PASS: 'pass',
   WARN: 'warn',
@@ -396,7 +396,7 @@ const DeleteConfirmationModal = ({
     (actionType: string) => {
       const formData = new FormData();
       formData.append('actionType', actionType);
-      ids.forEach((item) => formData.append('cveIds[]', item));
+      ids.forEach((item) => formData.append('ids[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -717,10 +717,7 @@ const ScanResusltTable = () => {
         id: 'actions',
         enableSorting: false,
         cell: (cell) => (
-          <ActionDropdown
-            icon={<HiDotsVertical />}
-            ids={[cell.row.original.test_number]}
-          />
+          <ActionDropdown icon={<HiDotsVertical />} ids={[cell.row.original.node_id]} />
         ),
         header: () => '',
         minSize: 40,
@@ -819,7 +816,10 @@ const ScanResusltTable = () => {
                   enableSorting
                   manualSorting
                   sortingState={sort}
-                  getRowId={(row) => row.test_number}
+                  getRowId={(row) => {
+                    console.log('row', row.node_id);
+                    return row.node_id;
+                  }}
                   onPaginationChange={(updaterOrValue) => {
                     let newPageIndex = 0;
                     if (typeof updaterOrValue === 'function') {
