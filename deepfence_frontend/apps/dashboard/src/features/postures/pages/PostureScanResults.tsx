@@ -1,6 +1,6 @@
 import cx from 'classnames';
 import { capitalize } from 'lodash-es';
-import { Suspense, useCallback, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useMemo, useRef, useState } from 'react';
 import { FaHistory } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import {
@@ -56,6 +56,7 @@ import {
   ModelScanResultsActionRequestScanTypeEnum,
   ModelScanResultsReq,
 } from '@/api/generated';
+import { withSubAppHeader } from '@/components/AppSubHeader';
 import { DFLink } from '@/components/DFLink';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { complianceType } from '@/components/scan-configure-forms/PostureScanConfigureForm';
@@ -625,7 +626,7 @@ const ActionDropdown = ({
     </>
   );
 };
-const ScanResusltTable = () => {
+const ScanResultTable = () => {
   const fetcher = useFetcher();
   const loaderData = useLoaderData() as LoaderDataType;
   const columnHelper = createColumnHelper<ModelCompliance>();
@@ -884,7 +885,7 @@ const HeaderComponent = () => {
     searchParams.has('benchmarkType');
 
   return (
-    <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
+    <>
       <Suspense fallback={<CircleSpinner size="xs" />}>
         <DFAwait resolve={loaderData.data ?? []}>
           {(resolvedData: LoaderDataType['data']) => {
@@ -1120,7 +1121,7 @@ const HeaderComponent = () => {
           </Popover>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -1231,16 +1232,17 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
 };
 const PostureScanResults = () => {
   const { mode } = useTheme();
-
+  const Component = withSubAppHeader(HeaderComponent);
   return (
     <>
-      <HeaderComponent />
-      <div className="grid grid-cols-[400px_1fr] p-2 gap-x-2">
-        <div className="self-start grid gap-y-2">
-          <StatusCountComponent theme={mode} />
+      <Component>
+        <div className="grid grid-cols-[400px_1fr] p-2 gap-x-2">
+          <div className="self-start grid gap-y-2">
+            <StatusCountComponent theme={mode} />
+          </div>
+          <ScanResultTable />
         </div>
-        <ScanResusltTable />
-      </div>
+      </Component>
       <Outlet />
     </>
   );
