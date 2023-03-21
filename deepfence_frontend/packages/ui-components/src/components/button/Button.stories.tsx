@@ -19,6 +19,13 @@ Default.args = {
   children: 'Button text md',
 };
 
+export const XXsSize = Template.bind({});
+XXsSize.args = {
+  children: 'Button text xxs',
+  endIcon: <FaAmazon />,
+  size: 'xxs',
+};
+
 export const XsSize = Template.bind({});
 XsSize.args = {
   children: 'Button text md',

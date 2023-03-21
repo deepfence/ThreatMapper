@@ -14,9 +14,10 @@ import {
 import { Badge, CircleSpinner, ModalHeader, SlidingModal } from 'ui-components';
 
 import { getSearchApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelMalware } from '@/api/generated';
+import { ApiDocsBadRequestResponse, ModelCompliance } from '@/api/generated';
 import { CopyToClipboardAsJson } from '@/components/CopyToClipboardIcon';
-import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
+import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
+import { STATUSES } from '@/features/postures/pages/PostureScanResults';
 import { ApiError, makeRequest } from '@/utils/api';
 import { getObjectKeys } from '@/utils/array';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -28,12 +29,12 @@ dayjs.extend(relativeTime);
 type LoaderDataType = {
   error?: string;
   message?: string;
-  data?: ModelMalware;
+  data?: ModelCompliance;
 };
 
-async function getMalwares(malwareId: string) {
+async function getCompliances(complianceId: string) {
   const result = await makeRequest({
-    apiFunction: getSearchApiClient().searchMalwares,
+    apiFunction: getSearchApiClient().searchCompliances,
     apiArgs: [
       {
         searchSearchNodeReq: {
@@ -41,7 +42,7 @@ async function getMalwares(malwareId: string) {
             filters: {
               contains_filter: {
                 filter_in: {
-                  node_id: [malwareId],
+                  node_id: [complianceId],
                 },
               },
               order_filter: {
@@ -83,6 +84,7 @@ async function getMalwares(malwareId: string) {
       data: undefined,
     };
   }
+
   const res = result[0];
 
   return res;
@@ -90,14 +92,14 @@ async function getMalwares(malwareId: string) {
 const loader = async ({
   params,
 }: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
-  const { malwareId } = params;
+  const { complianceId } = params;
 
-  if (!malwareId) {
-    throw new Error('Malware Id is required');
+  if (!complianceId) {
+    throw new Error('Compliance Id is required');
   }
 
   return typedDefer({
-    data: getMalwares(malwareId),
+    data: getCompliances(complianceId),
   });
 };
 
@@ -108,8 +110,8 @@ const Header = () => {
     <ModalHeader>
       <Suspense fallback={<CircleSpinner size="xs" />}>
         <DFAwait resolve={loaderData.data}>
-          {(malware: LoaderDataType['data']) => {
-            if (malware === undefined) {
+          {(compliane: LoaderDataType['data']) => {
+            if (compliane === undefined) {
               return (
                 <div className="flex items-center p-4 justify-center">
                   <h3 className="text-md text-gray-700 dark:text-gray-400">-</h3>
@@ -120,31 +122,19 @@ const Header = () => {
               <div className="flex flex-col w-full p-4">
                 <div className="flex gap-x-2 items-center">
                   <span className="w-5 h-5 text-gray-500 dark:text-white">
-                    <MalwareIcon />
+                    <PostureIcon />
                   </span>
                   <span className="text-md text-gray-900 dark:text-white truncate">
-                    {truncate(malware.rule_name ?? '', { length: 20 })}
+                    {truncate(compliane.test_number ?? '')}
                   </span>
                   <Badge
-                    label={malware?.FileSeverity?.toUpperCase()}
-                    className={cx({
-                      'bg-[#de425b]/20 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
-                        malware?.FileSeverity?.toLowerCase() === 'critical',
-                      'bg-[#f58055]/20 dark:bg-[#f58055/20 text-[#f58055] dark:text-[#f58055]':
-                        malware?.FileSeverity?.toLowerCase() === 'high',
-                      'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
-                        malware?.FileSeverity?.toLowerCase() === 'medium',
-                      'bg-[#d6e184]/20 dark:bg-[#d6e184]/10 text-yellow-300 dark:text-[#d6e184]':
-                        malware?.FileSeverity?.toLowerCase() === 'low',
-                      'bg-[#9CA3AF]/10 dark:bg-[#9CA3AF]/10 text-gray-400 dark:text-[#9CA3AF]':
-                        malware?.FileSeverity?.toLowerCase() === 'unknown',
-                    })}
+                    label={compliane?.compliance_check_type?.toUpperCase()}
                     size="sm"
                   />
-                  <CopyToClipboardAsJson data={malware} />
+                  <CopyToClipboardAsJson data={compliane} />
                 </div>
                 <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7">
-                  {malware?.date || '-'}
+                  {dayjs(compliane.updated_at).fromNow() || '-'}
                 </span>
               </div>
             );
@@ -163,26 +153,25 @@ const DetailsComponent = () => {
     <div>
       <Suspense fallback={<CircleSpinner size="xs" />}>
         <DFAwait resolve={loaderData.data}>
-          {(malware: LoaderDataType['data']) => {
-            if (malware === undefined) {
+          {(compliance: LoaderDataType['data']) => {
+            if (compliance === undefined) {
               return (
                 <div className="flex items-center p-4 justify-center">
                   <h3 className="text-md text-gray-900 dark:text-gray-400">
-                    No malware found
+                    No compliance found
                   </h3>
                 </div>
               );
             }
             const pickBy = [
-              'date',
-              'rule_name',
-              'Summary',
-              'FileSeverity',
-              'FileSevScore',
-              'Meta',
+              'updated_at',
+              'description',
+              'status',
+              'compliance_check_type',
+              'remediation_puppet',
             ];
-            const fixed = pick<ModelMalware>(malware, pickBy);
-            const others = omit<ModelMalware>(malware, pickBy);
+            const fixed = pick<ModelCompliance>(compliance, pickBy);
+            const others = omit<ModelCompliance>(compliance, pickBy);
             return (
               <div className="text-gray-900 dark:text-gray-300">
                 <section>
@@ -215,25 +204,39 @@ const DetailsComponent = () => {
                             'flex flex-col float-left',
                             'p-2 mr-4 w-fit rounded-lg items-center',
                             {
-                              'bg-[#de425b]/20 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
-                                fixed?.FileSeverity?.toLowerCase() === 'critical',
-                              'bg-[#f58055]/20 dark:bg-[#f58055/20 text-[#f58055] dark:text-[#f58055]':
-                                fixed?.FileSeverity?.toLowerCase() === 'high',
-                              'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
-                                fixed?.FileSeverity?.toLowerCase() === 'medium',
-                              'bg-[#d6e184]/20 dark:bg-[#d6e184]/10 text-yellow-300 dark:text-[#d6e184]':
-                                fixed?.FileSeverity?.toLowerCase() === 'low',
-                              'bg-[#9CA3AF]/10 dark:bg-[#9CA3AF]/10 text-gray-400 dark:text-[#9CA3AF]':
-                                fixed?.FileSeverity?.toLowerCase() === 'unknown',
+                              'bg-[#F05252]/20 dark:bg-[#F05252]/20 text-red-500 dark:text-[#F05252]':
+                                fixed?.status?.toLowerCase() === STATUSES.ALARM,
+                              'bg-[#3F83F8]/20 dark:bg-[#3F83F8/20 text-[blue-500 dark:text-[#3F83F8]':
+                                fixed?.status?.toLowerCase() === STATUSES.INFO,
+                              'bg-[#0E9F6E]/30 dark:bg-[##0E9F6E]/10 text-green-500 dark:text-[#0E9F6E]':
+                                fixed?.status?.toLowerCase() === STATUSES.OK,
+                              'bg-[#FF5A1F]/20 dark:bg-[#FF5A1F]/10 text-orange-500 dark:text-[#FF5A1F]':
+                                fixed?.status?.toLowerCase() === STATUSES.WARN,
+                              'bg-[#6B7280]/20 dark:bg-[#6B7280]/10 text-gray-700 dark:text-gray-300':
+                                fixed?.status?.toLowerCase() === STATUSES.SKIP,
+                              'bg-[#0E9F6E]/10 dark:bg-[#0E9F6E]/10 text-green-500 dark:text-[#0E9F6E]':
+                                fixed?.status?.toLowerCase() === STATUSES.PASS,
+                              'bg-[#d6e184]/10 dark:bg-[#d6e184]/10 text-yellow-500 dark:text-[#d6e184]':
+                                fixed?.status?.toLowerCase() === STATUSES.NOTE,
                             },
                           )}
                         >
-                          <span className="text-xs text-gray-500">CVSS score</span>
-                          <span className="text-md">{fixed.FileSevScore ?? '-'}</span>
+                          <span className="text-xs text-gray-500">Status</span>
+                          <span className="text-md uppercase">{fixed.status ?? '-'}</span>
                         </div>
-                        <p className="text-sm pr-2 mb-2 text-justify">{fixed.Summary}</p>
+                        <p className="text-sm pr-2 mb-2 text-justify">
+                          {fixed.description}
+                        </p>
                       </div>
                       <div className="mt-6 flex flex-wrap gap-y-4 gap-x-8">
+                        <div className="flex flex-col">
+                          <span className="text-left text-xs text-gray-500">
+                            Remediation
+                          </span>
+                          <pre className="whitespace-pre-wrap text-sm pr-2 mb-2 text-justify">
+                            {fixed.remediation_puppet}
+                          </pre>
+                        </div>
                         {getObjectKeys(others).map((key) => {
                           const label = capitalize(
                             startCase(startCase(key)).toLowerCase(),
@@ -248,9 +251,6 @@ const DetailsComponent = () => {
                             </div>
                           );
                         })}
-                        <div className="flex flex-col">
-                          <span className="text-xs text-gray-500">Meta</span>
-                        </div>
                       </div>
                     </>
                   ) : null}
@@ -264,7 +264,7 @@ const DetailsComponent = () => {
   );
 };
 
-const MalwareDetailModals = () => {
+const PostureDetailModal = () => {
   const { navigate } = usePageNavigation();
   const [searchParams] = useSearchParams();
   return (
@@ -285,5 +285,5 @@ const MalwareDetailModals = () => {
 
 export const module = {
   loader,
-  element: <MalwareDetailModals />,
+  element: <PostureDetailModal />,
 };

@@ -24,6 +24,7 @@ import type {
   ModelRegistryImageStubsReq,
   ModelRegistryImagesReq,
   ModelRegistryListResp,
+  ModelRegistryUpdateReq,
   ModelSummary,
 } from '../models';
 import {
@@ -45,6 +46,8 @@ import {
     ModelRegistryImagesReqToJSON,
     ModelRegistryListRespFromJSON,
     ModelRegistryListRespToJSON,
+    ModelRegistryUpdateReqFromJSON,
+    ModelRegistryUpdateReqToJSON,
     ModelSummaryFromJSON,
     ModelSummaryToJSON,
 } from '../models';
@@ -79,6 +82,11 @@ export interface ListImageStubsRequest {
 
 export interface ListImagesRequest {
     modelRegistryImagesReq?: ModelRegistryImagesReq;
+}
+
+export interface UpdateRegistryRequest {
+    registryId: string;
+    modelRegistryUpdateReq?: ModelRegistryUpdateReq;
 }
 
 /**
@@ -245,6 +253,23 @@ export interface RegistryApiInterface {
      * List Registries
      */
     listRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryListResp>>;
+
+    /**
+     * Update registry
+     * @summary Update Registry
+     * @param {string} registryId 
+     * @param {ModelRegistryUpdateReq} [modelRegistryUpdateReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RegistryApiInterface
+     */
+    updateRegistryRaw(requestParameters: UpdateRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Update registry
+     * Update Registry
+     */
+    updateRegistry(requestParameters: UpdateRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -636,6 +661,48 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
     async listRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryListResp>> {
         const response = await this.listRegistryRaw(initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Update registry
+     * Update Registry
+     */
+    async updateRegistryRaw(requestParameters: UpdateRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.registryId === null || requestParameters.registryId === undefined) {
+            throw new runtime.RequiredError('registryId','Required parameter requestParameters.registryId was null or undefined when calling updateRegistry.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/registryaccount/{registry_id}`.replace(`{${"registry_id"}}`, encodeURIComponent(String(requestParameters.registryId))),
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelRegistryUpdateReqToJSON(requestParameters.modelRegistryUpdateReq),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Update registry
+     * Update Registry
+     */
+    async updateRegistry(requestParameters: UpdateRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.updateRegistryRaw(requestParameters, initOverrides);
     }
 
 }

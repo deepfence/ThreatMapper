@@ -7,6 +7,7 @@ import {
   CloudScannerApi,
   ComplianceApi,
   Configuration,
+  ControlsApi,
   MalwareScanApi,
   RegistryApi,
   ScanResultsApi,
@@ -48,13 +49,6 @@ export function getTopologyApiClient() {
   };
 }
 
-export function getCloudNodesApiClient() {
-  const cloudNodesApi = new CloudNodesApi(configuration);
-  return {
-    listCloudNodeAccount: cloudNodesApi.listCloudNodeAccount.bind(cloudNodesApi),
-  };
-}
-
 export function getVulnerabilityApiClient() {
   const vulnerabilityApi = new VulnerabilityApi(configuration);
 
@@ -90,6 +84,9 @@ export function getComplianceApiClient() {
     startComplianceScan: complianceApi.startComplianceScan.bind(complianceApi),
     statusComplianceScan: complianceApi.statusComplianceScan.bind(complianceApi),
     resultComplianceScan: complianceApi.resultsComplianceScan.bind(complianceApi),
+    resultCountComplianceScan:
+      complianceApi.countResultsComplianceScan.bind(complianceApi),
+    listComplianceScan: complianceApi.listComplianceScan.bind(complianceApi),
   };
 }
 
@@ -100,6 +97,8 @@ export function getCloudComplianceApiClient() {
       cloudScannerApi.statusCloudComplianceScan.bind(cloudScannerApi),
     resultCloudComplianceScan:
       cloudScannerApi.resultsCloudComplianceScan.bind(cloudScannerApi),
+    resultCountCloudComplianceScan:
+      cloudScannerApi.countResultsCloudComplianceScan.bind(cloudScannerApi),
   };
 }
 
@@ -150,6 +149,8 @@ export function getSearchApiClient() {
     searchMalwares: searchApi.searchMalwares.bind(searchApi),
     searchMalwaresCount: searchApi.countMalwares.bind(searchApi),
     searchMalwareScanCount: searchApi.countMalwareScans.bind(searchApi),
+
+    searchCompliances: searchApi.searchCompliances.bind(searchApi),
   };
 }
 
@@ -166,5 +167,24 @@ export function getScanResultsApiClient() {
     unmaskScanResult: scanResultsApi.unmaskScanResult.bind(scanResultsApi),
     getAllNodesInScanResults:
       scanResultsApi.getAllNodesInScanResults.bind(scanResultsApi),
+  };
+}
+
+export function getControlsApiClient() {
+  const controlsApi = new ControlsApi(configuration);
+
+  return {
+    listControls: controlsApi.getCloudNodeControls.bind(controlsApi),
+    enableControl: controlsApi.enableCloudNodeControls.bind(controlsApi),
+    disableControl: controlsApi.disableCloudNodeControls.bind(controlsApi),
+  };
+}
+
+export function getCloudNodesApiClient() {
+  const cloudNodesApi = new CloudNodesApi(configuration);
+
+  return {
+    listCloudNodeAccount: cloudNodesApi.listCloudNodeAccount.bind(cloudNodesApi),
+    listCloudProviders: cloudNodesApi.listCloudProviders.bind(cloudNodesApi),
   };
 }

@@ -1,7 +1,6 @@
-import { EChartsOption } from 'echarts';
+import { EChartsOption, PieSeriesOption, SeriesOption } from 'echarts';
 
 import { ReactECharts } from '@/components/ReactEcharts';
-import { SEVERITY_COLORS } from '@/constants/charts';
 import { Mode } from '@/theme/ThemeContext';
 
 const option: EChartsOption = {
@@ -25,23 +24,18 @@ const option: EChartsOption = {
         show: false,
         position: 'center',
       },
-      color: [
-        SEVERITY_COLORS['critical'],
-        SEVERITY_COLORS['high'],
-        SEVERITY_COLORS['medium'],
-        SEVERITY_COLORS['low'],
-        SEVERITY_COLORS['unknown'],
-      ],
     },
   ],
 };
 
-export const MalwaresResultChart = ({
+export const PostureResultChart = ({
   theme,
   data,
+  eoption,
 }: {
   theme: Mode;
   data: { [key: string]: number };
+  eoption?: EChartsOption;
 }) => {
   if (!data) {
     return null;
@@ -49,9 +43,17 @@ export const MalwaresResultChart = ({
 
   option.dataset = {
     source: Object.keys(data).map((key) => ({
-      Malwares: key,
+      Compliances: key,
       value: data[key],
     })),
   };
+
+  if (eoption && option && option.series) {
+    const seriesOption = option.series as PieSeriesOption[];
+    const seriesEOption = eoption.series as PieSeriesOption[];
+    const merge = { ...seriesOption[0], ...seriesEOption[0] };
+    option.series = [merge];
+  }
+
   return <ReactECharts theme={theme === 'dark' ? 'dark' : 'light'} option={option} />;
 };

@@ -11,6 +11,7 @@ import LogoGoogle from '@/assets/logo-google.svg';
 import LogoK8 from '@/assets/logo-k8.svg';
 import LogoLinux from '@/assets/logo-linux.svg';
 import { MalwareScanActionEnumType } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
+import { PostureScanActionEnumType } from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import { SecretScanActionEnumType } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { VulnerabilityScanActionEnumType } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
@@ -47,7 +48,7 @@ type ScanTypeListProps = {
 
 const complianceScanData = {
   scanTitle: 'Compliance Scan',
-  scanType: 'compliance',
+  scanType: PostureScanActionEnumType.SCAN_POSTURE,
   description: `A few words about the compliance scan and why you need to use it.`,
   buttonText: 'Configure Compliance Scan',
 };

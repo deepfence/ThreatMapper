@@ -112,7 +112,7 @@ const getSeveritySearch = (searchParams: URLSearchParams) => {
 const getMaskSearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('mask');
 };
-const getUnmaskySearch = (searchParams: URLSearchParams) => {
+const getUnmaskSearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('unmask');
 };
 
@@ -125,7 +125,7 @@ async function getScans(
   const order = getOrderFromSearchParams(searchParams);
 
   const mask = getMaskSearch(searchParams);
-  const unmask = getUnmaskySearch(searchParams);
+  const unmask = getUnmaskSearch(searchParams);
 
   const scanResultsReq: ModelScanResultsReq = {
     fields_filter: {

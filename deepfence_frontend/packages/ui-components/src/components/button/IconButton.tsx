@@ -7,7 +7,7 @@ import { Loader } from '@/components/button/Button';
 import { ObjectWithNonNullableValues } from '@/types/utils';
 
 export type ColorType = 'default' | 'primary' | 'danger' | 'success' | 'normal';
-export type SizeType = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type SizeType = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 export const iconButtonCVA = cva(
   [
@@ -18,6 +18,7 @@ export const iconButtonCVA = cva(
   {
     variants: {
       size: {
+        xxs: `p-[6px]`,
         xs: `p-[9px]`,
         sm: `p-[13px]`,
         md: `p-[15px]`,
@@ -178,6 +179,7 @@ interface IconButtonProps
 const iconCva = cva('', {
   variants: {
     size: {
+      xxs: 'w-3 h-3',
       xs: 'w-3 h-3',
       sm: 'w-3.5 h-3.5',
       md: 'w-4 h-4',

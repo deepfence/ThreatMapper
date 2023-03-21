@@ -25,7 +25,7 @@ import {
   getTopologyApiClient,
 } from '@/api/api';
 import { DFLink } from '@/components/DFLink';
-import { NoConnectors } from '@/features/onboard/components/connectors/NoConnectors';
+import { NoConnectors } from '@/components/hosts-connector/NoConnectors';
 import { connectorLayoutTabs } from '@/features/onboard/layouts/ConnectorsLayout';
 import { ApiError, makeRequest } from '@/utils/api';
 import { getRegistryDisplayId } from '@/utils/registry';

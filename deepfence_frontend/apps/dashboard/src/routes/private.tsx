@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 
 import { ErrorComponent } from '@/components/error/ErrorComponent';
 import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
+import { scanPostureApiAction } from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
@@ -26,23 +27,26 @@ import {
   OnboardLayout,
   rootOnboardLoader,
 } from '@/features/onboard/layouts/OnboardLayout';
-import { module as registriesConnector } from '@/features/onboard/pages//RegistriesConnector';
-import { AWSConnector } from '@/features/onboard/pages/AWSConnector';
-import { AzureConnector } from '@/features/onboard/pages/AzureConnector';
 import { module as chooseScan } from '@/features/onboard/pages/ChooseScan';
-import { module as complianceScanConfigure } from '@/features/onboard/pages/ComplianceScanConfigure';
 import { module as complianceScanSummary } from '@/features/onboard/pages/ComplianceScanSummary';
 import { module as configureScanForm } from '@/features/onboard/pages/ConfigureScanForm';
+import { module as connector } from '@/features/onboard/pages/Connector';
 import { AddConnector } from '@/features/onboard/pages/connectors/AddConnectors';
 import { module as myConnectors } from '@/features/onboard/pages/connectors/MyConnectors';
-import { DockerConnector } from '@/features/onboard/pages/DockerConnector';
-import { GCPConnector } from '@/features/onboard/pages/GCPConnector';
-import { K8sConnector } from '@/features/onboard/pages/K8sConnector';
-import { LinuxConnector } from '@/features/onboard/pages/LinuxConnector';
 import { module as malwareScanSumary } from '@/features/onboard/pages/MalwareScanSummary';
 import { module as scanInProgress } from '@/features/onboard/pages/ScanInProgress';
 import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanSummary';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
+import {
+  listControlsApiLoader,
+  toggleControlApiAction,
+} from '@/features/postures/data-component/listControlsApiLoader';
+import { module as postureConnectorLayout } from '@/features/postures/layouts/PostureConnectorLayout';
+import { module as postureAddAccounts } from '@/features/postures/pages/AccountAdd';
+import { module as postureAccounts } from '@/features/postures/pages/Accounts';
+import { module as posture } from '@/features/postures/pages/Posture';
+import { module as postureDetails } from '@/features/postures/pages/PostureDetailModal';
+import { module as postureScanResults } from '@/features/postures/pages/PostureScanResults';
 import { module as registryConnectorLayout } from '@/features/registries/layouts/RegistryConnectorLayout';
 import { module as registries } from '@/features/registries/pages/Registries';
 import { module as registryAccounts } from '@/features/registries/pages/RegistryAccounts';
@@ -91,39 +95,8 @@ export const privateRoutes: CustomRouteObject[] = [
         element: <Outlet />,
         children: [
           {
-            path: 'cloud/aws',
-            element: <AWSConnector />,
-            meta: { title: 'Connect AWS Account' },
-          },
-          {
-            path: 'cloud/gcp',
-            element: <GCPConnector />,
-            meta: { title: 'Connect GCP Account' },
-          },
-          {
-            path: 'cloud/azure',
-            element: <AzureConnector />,
-            meta: { title: 'Connect Azure Account' },
-          },
-          {
-            path: 'host/k8s',
-            element: <K8sConnector />,
-            meta: { title: 'Connect K8S Cluster' },
-          },
-          {
-            path: 'host/docker',
-            element: <DockerConnector />,
-            meta: { title: 'Connect Docker Container' },
-          },
-          {
-            path: 'host/linux',
-            element: <LinuxConnector />,
-            meta: { title: 'Connect Linux Machine' },
-          },
-          {
-            path: ':registryType',
-            ...registriesConnector,
-            meta: { title: 'Registry Conector' },
+            path: ':connectorType',
+            ...connector,
           },
         ],
       },
@@ -134,11 +107,6 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'choose',
             ...chooseScan,
             meta: { title: 'Choose scan type' },
-          },
-          {
-            path: 'configure/compliance/:controls?',
-            ...complianceScanConfigure,
-            meta: { title: 'Configure Compliance Scan' },
           },
           {
             path: 'configure/:scanType',
@@ -321,6 +289,40 @@ export const privateRoutes: CustomRouteObject[] = [
           },
         ],
       },
+      // posture
+      {
+        path: 'posture',
+        ...posture,
+        meta: { title: 'Posture' },
+      },
+      {
+        path: 'posture/add-connection',
+        ...postureConnectorLayout,
+        children: [
+          {
+            path: ':account',
+            ...postureAddAccounts,
+            meta: { title: 'Posture Add Account' },
+          },
+        ],
+      },
+      {
+        path: 'posture/scan-results/:scanId',
+        ...postureScanResults,
+        meta: { title: 'Posture Scans Results' },
+        children: [
+          {
+            path: ':complianceId',
+            ...postureDetails,
+            meta: { title: 'Posture Details' },
+          },
+        ],
+      },
+      {
+        path: 'posture/accounts/:nodeType',
+        ...postureAccounts,
+        meta: { title: 'Posture Accounts' },
+      },
     ],
   },
   {
@@ -368,8 +370,17 @@ export const privateRoutes: CustomRouteObject[] = [
         action: scanMalwareApiAction,
       },
       {
+        path: 'scan/posture',
+        action: scanPostureApiAction,
+      },
+      {
         path: 'registries/add-connector',
         action: registryConnectorActionApi,
+      },
+      {
+        path: 'list/controls/:checkType',
+        loader: listControlsApiLoader,
+        action: toggleControlApiAction,
       },
     ],
   },

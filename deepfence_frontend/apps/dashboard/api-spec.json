@@ -2722,6 +2722,57 @@
           }
         },
         "security": [{ "bearer_token": [] }]
+      },
+      "put": {
+        "tags": ["Registry"],
+        "summary": "Update Registry",
+        "description": "Update registry",
+        "operationId": "updateRegistry",
+        "parameters": [
+          {
+            "name": "registry_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelRegistryUpdateReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
       }
     },
     "/deepfence/registryaccount/{registry_id}/summary": {
@@ -7207,10 +7258,10 @@
         "properties": {
           "@timestamp": { "type": "string" },
           "compliance_check_type": { "type": "string" },
-          "compliance_node_type": { "type": "string" },
           "description": { "type": "string" },
           "masked": { "type": "boolean" },
           "node_id": { "type": "string" },
+          "node_type": { "type": "string" },
           "remediation_ansible": { "type": "string" },
           "remediation_puppet": { "type": "string" },
           "remediation_script": { "type": "string" },
@@ -7575,9 +7626,11 @@
       "ModelCloudNodeAccountInfo": {
         "type": "object",
         "properties": {
-          "active": { "type": "string" },
+          "active": { "type": "boolean" },
           "cloud_provider": { "type": "string" },
-          "compliance_percentage": { "type": "string" },
+          "compliance_percentage": { "type": "number" },
+          "last_scan_id": { "type": "string" },
+          "last_scan_status": { "type": "string" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" }
         }
@@ -7727,16 +7780,18 @@
           "test_desc",
           "status",
           "compliance_check_type",
-          "compliance_node_type",
+          "node_id",
+          "node_type",
           "masked",
           "updated_at"
         ],
         "type": "object",
         "properties": {
           "compliance_check_type": { "type": "string" },
-          "compliance_node_type": { "type": "string" },
           "description": { "type": "string" },
           "masked": { "type": "boolean" },
+          "node_id": { "type": "string" },
+          "node_type": { "type": "string" },
           "remediation_ansible": { "type": "string" },
           "remediation_puppet": { "type": "string" },
           "remediation_script": { "type": "string" },
@@ -8300,6 +8355,7 @@
         }
       },
       "ModelRegistryAddReq": {
+        "required": ["name", "registry_type"],
         "type": "object",
         "properties": {
           "extras": { "type": "object", "additionalProperties": {}, "nullable": true },
@@ -8351,6 +8407,20 @@
         "type": "object",
         "additionalProperties": { "$ref": "#/components/schemas/ModelSummary" },
         "nullable": true
+      },
+      "ModelRegistryUpdateReq": {
+        "type": "object",
+        "properties": {
+          "extras": { "type": "object", "additionalProperties": {}, "nullable": true },
+          "name": { "type": "string" },
+          "non_secret": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "registry_type": { "type": "string" },
+          "secret": { "type": "object", "additionalProperties": {}, "nullable": true }
+        }
       },
       "ModelResponseAccessToken": {
         "required": ["access_token", "refresh_token"],

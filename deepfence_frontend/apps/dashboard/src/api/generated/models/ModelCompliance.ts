@@ -30,12 +30,6 @@ export interface ModelCompliance {
      * @type {string}
      * @memberof ModelCompliance
      */
-    compliance_node_type: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelCompliance
-     */
     description: string;
     /**
      * 
@@ -43,6 +37,18 @@ export interface ModelCompliance {
      * @memberof ModelCompliance
      */
     masked: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCompliance
+     */
+    node_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCompliance
+     */
+    node_type: string;
     /**
      * 
      * @type {string}
@@ -117,9 +123,10 @@ export interface ModelCompliance {
 export function instanceOfModelCompliance(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "compliance_check_type" in value;
-    isInstance = isInstance && "compliance_node_type" in value;
     isInstance = isInstance && "description" in value;
     isInstance = isInstance && "masked" in value;
+    isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_type" in value;
     isInstance = isInstance && "remediation_ansible" in value;
     isInstance = isInstance && "remediation_puppet" in value;
     isInstance = isInstance && "remediation_script" in value;
@@ -146,9 +153,10 @@ export function ModelComplianceFromJSONTyped(json: any, ignoreDiscriminator: boo
     return {
         
         'compliance_check_type': json['compliance_check_type'],
-        'compliance_node_type': json['compliance_node_type'],
         'description': json['description'],
         'masked': json['masked'],
+        'node_id': json['node_id'],
+        'node_type': json['node_type'],
         'remediation_ansible': json['remediation_ansible'],
         'remediation_puppet': json['remediation_puppet'],
         'remediation_script': json['remediation_script'],
@@ -173,9 +181,10 @@ export function ModelComplianceToJSON(value?: ModelCompliance | null): any {
     return {
         
         'compliance_check_type': value.compliance_check_type,
-        'compliance_node_type': value.compliance_node_type,
         'description': value.description,
         'masked': value.masked,
+        'node_id': value.node_id,
+        'node_type': value.node_type,
         'remediation_ansible': value.remediation_ansible,
         'remediation_puppet': value.remediation_puppet,
         'remediation_script': value.remediation_script,

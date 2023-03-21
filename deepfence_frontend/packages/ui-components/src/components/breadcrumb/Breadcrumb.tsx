@@ -42,7 +42,7 @@ export const BreadcrumbLink = React.forwardRef<
       {icon && (
         <IconContext.Provider
           value={{
-            className: 'mr-[18px] w-[16px] h-[16px]',
+            className: 'mr-2 w-[16px] h-[16px]',
           }}
         >
           {icon}
@@ -53,7 +53,7 @@ export const BreadcrumbLink = React.forwardRef<
       {!isLast && (
         <IconContext.Provider
           value={{
-            className: 'mx-[23px]',
+            className: 'mx-2',
           }}
         >
           {separator ? separator : <HiChevronRight />}
@@ -95,7 +95,7 @@ export const Breadcrumb = ({
 
   return (
     <div
-      className={cx('flex w-fit items-center py-2 px-5 rounded-lg', {
+      className={cx('flex w-fit items-center rounded-lg', {
         'outline-none border border-gray-200 dark:border-gray-700': outline,
         'bg-transparent': transparent,
         'bg-gray-50 dark:bg-gray-800': !transparent,

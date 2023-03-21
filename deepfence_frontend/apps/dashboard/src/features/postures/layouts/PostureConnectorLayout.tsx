@@ -4,14 +4,10 @@ import { Breadcrumb, BreadcrumbLink } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 
-const RegistryConnectorLayout = () => {
+const PostureConnectorLayout = () => {
   const params = useParams() as {
     account: string;
   };
-
-  if (!params.account) {
-    throw new Error('Account Type is required');
-  }
 
   return (
     <>
@@ -19,11 +15,11 @@ const RegistryConnectorLayout = () => {
         <Breadcrumb separator={<HiChevronRight />} transparent>
           <BreadcrumbLink>
             <DFLink
-              to={generatePath('/registries/:account', {
-                account: params.account,
+              to={generatePath('/posture/accounts/:nodeType', {
+                nodeType: params.account,
               })}
             >
-              REGISTRY ACCOUNTS
+              POSTURE ACCOUNTS
             </DFLink>
           </BreadcrumbLink>
 
@@ -32,7 +28,6 @@ const RegistryConnectorLayout = () => {
           </BreadcrumbLink>
         </Breadcrumb>
       </div>
-
       <div className="p-4">
         <Outlet />
       </div>
@@ -40,5 +35,5 @@ const RegistryConnectorLayout = () => {
   );
 };
 export const module = {
-  element: <RegistryConnectorLayout />,
+  element: <PostureConnectorLayout />,
 };
