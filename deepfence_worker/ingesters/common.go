@@ -1,7 +1,9 @@
 package ingesters
 
 import (
+	"encoding/json"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -73,6 +75,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			MATCH (n) -[:SCANNED]- (r)
 			SET r.`+status_count_field(ts)+` = count, r.`+status_scan_field(ts)+`=n.scan_status`,
 			map[string]interface{}{"batch": statusesToMaps(data)}); err != nil {
+			log.Error().Msgf("Error while updating scan status: %+v", err)
 			return err
 		}
 
@@ -83,7 +86,17 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 func statusesToMaps[T any](data []T) []map[string]interface{} {
 	statuses := []map[string]interface{}{}
 	for _, i := range data {
-		statuses = append(statuses, utils.ToMap(i))
+		statuses = append(statuses, ToMap(i))
 	}
 	return statuses
+}
+
+func ToMap[T any](data T) map[string]interface{} {
+	out, err := json.Marshal(data)
+	if err != nil {
+		return nil
+	}
+	bb := map[string]interface{}{}
+	_ = json.Unmarshal(out, &bb)
+	return bb
 }
