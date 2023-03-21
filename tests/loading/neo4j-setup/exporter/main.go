@@ -5,6 +5,8 @@ import (
 	"io"
 	"log"
 	"os"
+	"sync"
+	"sync/atomic"
 
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
@@ -19,8 +21,50 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	defer session.Close()
+
+	batch := make(chan string, 2000)
+
+	wg := sync.WaitGroup{}
+	count := atomic.Int64{}
+	worker_count := 1
+	wg.Add(worker_count)
+	batch_size := 256
+	for i := 0; i < worker_count; i += 1 {
+		go func() {
+			internal_count := 0
+			tx, err := session.BeginTransaction()
+			if err != nil {
+				log.Fatal(err)
+			}
+			for query := range batch {
+
+				_, err = tx.Run(query, map[string]interface{}{})
+				if err != nil {
+					log.Println(err)
+				}
+
+				internal_count += 1
+
+				if internal_count%batch_size == 0 {
+					tx.Commit()
+					tx.Close()
+					tx, err = session.BeginTransaction()
+					if err != nil {
+						log.Fatal(err)
+					}
+					count.Add(int64(batch_size))
+					log.Printf("Committed: %v queries\n", count.Load())
+				}
+			}
+			tx.Commit()
+			tx.Close()
+			count.Add(int64(internal_count) % int64(batch_size))
+			log.Printf("Committed: %v queries\n", count.Load())
+
+			wg.Done()
+		}()
+	}
 
 	f, err := os.Open("/tmp/graphdb")
 	if err != nil {
@@ -29,44 +73,6 @@ func main() {
 
 	r := bufio.NewReader(f)
 	query := ""
-
-	batch := make(chan string, 100)
-	done := make(chan struct{})
-
-	go func() {
-		queries := []string{}
-		for query := range batch {
-
-			queries = append(queries, query)
-
-			if len(queries) == 100 {
-				batch_query := ""
-				for i := range queries {
-					batch_query += queries[i]
-				}
-				_, err = session.Run(batch_query, map[string]interface{}{})
-				if err != nil {
-					log.Println(err)
-					log.Println(query)
-				}
-				queries = []string{}
-			}
-		}
-
-		if len(queries) > 0 {
-			batch_query := ""
-			for i := range queries {
-				batch_query += queries[i]
-			}
-			_, err = session.Run(batch_query, map[string]interface{}{})
-			if err != nil {
-				log.Println(err)
-				log.Println(query)
-			}
-			queries = []string{}
-		}
-		done <- struct{}{}
-	}()
 
 	for {
 
@@ -92,5 +98,5 @@ func main() {
 
 	close(batch)
 
-	<-done
+	wg.Done()
 }
