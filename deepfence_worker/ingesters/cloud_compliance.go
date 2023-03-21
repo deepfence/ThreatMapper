@@ -23,7 +23,7 @@ type CloudComplianceScanStatus struct {
 	Result               ComplianceStats `json:"result" nested_json:"true"`
 	ScanID               string          `json:"scan_id"`
 	ScanMessage          string          `json:"scan_message"`
-	Status               string          `json:"status"`
+	ScanStatus           string          `json:"scan_status"`
 	Type                 string          `json:"type"`
 	TotalChecks          int             `json:"total_checks"`
 }
