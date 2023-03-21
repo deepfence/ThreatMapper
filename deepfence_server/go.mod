@@ -4,6 +4,8 @@ go 1.19
 
 replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils/
 
+replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_sdk/client/
+
 replace github.com/weaveworks/scope => ../deepfence_agent/tools/apache/scope/
 
 replace github.com/deepfence/df-utils => ../deepfence_agent/tools/apache/deepfence/df-utils
@@ -95,7 +97,7 @@ require (
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/emicklei/go-restful/v3 v3.9.0 // indirect
 	github.com/felixge/httpsnoop v1.0.2 // indirect
-	github.com/fsouza/go-dockerclient v1.9.5 // indirect
+	github.com/fsouza/go-dockerclient v1.9.6 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
@@ -169,10 +171,10 @@ require (
 	github.com/twmb/franz-go/pkg/kadm v1.8.0 // indirect
 	github.com/twmb/franz-go/pkg/kmsg v1.4.0 // indirect
 	github.com/typetypetype/conntrack v1.0.0 // indirect
-	github.com/ugorji/go/codec/codecgen v1.2.10 // indirect
+	github.com/ugorji/go/codec/codecgen v1.2.11 // indirect
 	github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5 // indirect
 	github.com/vishvananda/netns v0.0.4 // indirect
-	github.com/weaveworks/common v0.0.0-20230208133027-16871410fca4 // indirect
+	github.com/weaveworks/common v0.0.0-20230315122012-918bab8e5f88 // indirect
 	github.com/weaveworks/tcptracer-bpf v0.0.0-00010101000000-000000000000 // indirect
 	github.com/willdonnelly/passwd v0.0.0-20141013001024-7935dab3074c // indirect
 	go.opentelemetry.io/contrib v1.0.0 // indirect

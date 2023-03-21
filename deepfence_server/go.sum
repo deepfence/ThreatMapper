@@ -161,8 +161,6 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/decred/dcrd/crypto/blake256 v1.0.0/go.mod h1:sQl2p6Y26YV+ZOcSTP6thNdn47hh8kt6rqSlvmrXFAc=
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 h1:HbphB4TFFXpv7MNrT52FGrrgVXF1owhMVTHFZIlnvd4=
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0/go.mod h1:DZGJHZMqrU4JJqFAWUS2UO1+lbSKsdiOoYi9Zzey7Fc=
-github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230310063137-b653517c5502 h1:qNqbvyuELBAiS7d842kzxHyN8p/1Aj17vvIfRadJ5cU=
-github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230310063137-b653517c5502/go.mod h1:rco4ZTBCAPvaqyHgKUD3lqxub8Km+5fxNk25nF3gRIc=
 github.com/deepfence/kubernetes-scanner v0.0.0-20230316141044-7e29acdbad02 h1:eIF/Oa6Mj2SKsyGZf9ZZ+T4pCOiyXjTigzv4ucW2r+w=
 github.com/deepfence/kubernetes-scanner v0.0.0-20230316141044-7e29acdbad02/go.mod h1:Hv96hmVBYWdvWG2FC+vbeEPzqIRVRWxlcr6V20O7Q6s=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f h1:lO4WD4F/rVNCu3HqELle0jiPLLBs70cWOduZpkS1E78=
@@ -209,8 +207,8 @@ github.com/frankban/quicktest v1.14.2/go.mod h1:mgiwOwqx65TmIk1wJ6Q7wvnVMocbUork
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/fsnotify/fsnotify v1.5.1/go.mod h1:T3375wBYaZdLLcVNkcVbzGHY7f1l/uK5T5Ai1i3InKU=
-github.com/fsouza/go-dockerclient v1.9.5 h1:B6YpXKPy0JVcuGcw7gV0Xuk9HMF5JB5L8h5UgK2muqk=
-github.com/fsouza/go-dockerclient v1.9.5/go.mod h1:aOJ3hIOAYql58s+dsqROYR+OF+W1Q5TDX2cAK+1cvqQ=
+github.com/fsouza/go-dockerclient v1.9.6 h1:6yTc8oTLHjz4H3AXAAdO4R+Nh5B7s9Uf5R4oQUtZ9Mg=
+github.com/fsouza/go-dockerclient v1.9.6/go.mod h1:Z0GysXoBlysCsdUO2tMK/13R2tvpehDns08Mih0XvKg=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-chi/chi/v5 v5.0.8 h1:lD+NLqFcAi1ovnVZpsnObHGW4xb4J8lNmoYVfECH1Y0=
 github.com/go-chi/chi/v5 v5.0.8/go.mod h1:DslCQbL2OYiznFReuXYUmQ2hGd1aDpCnlMNITLSKoi8=
@@ -566,10 +564,12 @@ github.com/prometheus/client_golang v1.7.1/go.mod h1:PY5Wy2awLA44sXw4AOSfFBetzPP
 github.com/prometheus/client_golang v1.11.0/go.mod h1:Z6t4BnS23TR94PD6BsDNk8yVqroYurpAkEiz0P2BEV0=
 github.com/prometheus/client_golang v1.12.1/go.mod h1:3Z9XVyYiZYEO+YQWt3RD2R3jrbd179Rt297l4aS6nDY=
 github.com/prometheus/client_golang v1.13.0/go.mod h1:vTeo+zgvILHsnnj/39Ou/1fPN5nJFOEMgftOUOmlvYQ=
+github.com/prometheus/client_golang v1.14.0/go.mod h1:8vpkKitgIVNcqrRBWh1C4TIUQgYNtG/XQE4E/Zae36Y=
 github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910/go.mod h1:MbSGuTsp3dbXC40dX6PRTWyKYBIrTGTE9sqQNg2J8bo=
 github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
 github.com/prometheus/client_model v0.2.0/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
+github.com/prometheus/client_model v0.3.0/go.mod h1:LDGWKZIo7rky3hgvBe+caln+Dr3dPggB5dvjtD7w9+w=
 github.com/prometheus/common v0.4.1/go.mod h1:TNfzLD0ON7rHzMJeJkieUDPYmFC7Snx/y86RQel1bk4=
 github.com/prometheus/common v0.9.1/go.mod h1:yhUN8i9wzaXS3w1O07YhxHEBxD+W35wd8bs7vj7HSQ4=
 github.com/prometheus/common v0.10.0/go.mod h1:Tlit/dnDKsSWFlCLTWaA1cyBgKHSMdTB80sz/V91rCo=
@@ -654,11 +654,10 @@ github.com/typetypetype/conntrack v1.0.0 h1:odwYkxwZyP89t91MTaE0dHvParU6YSAhSvQy
 github.com/typetypetype/conntrack v1.0.0/go.mod h1:phl/pSgdyplXYfXIPJ5y8tKLdzCygh2ql3Fo5ZzfPBc=
 github.com/uber/jaeger-client-go v2.28.0+incompatible/go.mod h1:WVhlPFC8FDjOFMMWRy2pZqQJSXxYSwNYOkTr/Z6d3Kk=
 github.com/uber/jaeger-lib v2.2.0+incompatible/go.mod h1:ComeNDZlWwrWnDv8aPp0Ba6+uUTzImX/AauajbLI56U=
-github.com/ugorji/go/codec v1.2.10/go.mod h1:UNopzCgEMSXjBc6AOMqYvWC1ktqTAfzJZUZgYf6w6lg=
 github.com/ugorji/go/codec v1.2.11 h1:BMaWp1Bb6fHwEtbplGBGJ498wD+LKlNSl25MjdZY4dU=
 github.com/ugorji/go/codec v1.2.11/go.mod h1:UNopzCgEMSXjBc6AOMqYvWC1ktqTAfzJZUZgYf6w6lg=
-github.com/ugorji/go/codec/codecgen v1.2.10 h1:7uV7g2uQlKCLzmfnL19LhYuu0CVtm7HsxllRdWqUFIM=
-github.com/ugorji/go/codec/codecgen v1.2.10/go.mod h1:/xrsNrOujtUI+Ttx4Ot3gCDtGfDM7ZSLkINjUd9WDUc=
+github.com/ugorji/go/codec/codecgen v1.2.11 h1:5++1i48FgVRK6ElCPxTU4ySiLA9vIimKATSLEV7JF8c=
+github.com/ugorji/go/codec/codecgen v1.2.11/go.mod h1:Bg6W8Tjlj2+PaYcWEeV/7x5675Y5heuW6/MaNPh5TEw=
 github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/urfave/cli/v2 v2.3.0/go.mod h1:LJmUH05zAU44vOAcrfzZQKsZbVcdbOG8rtL3/XcUArI=
 github.com/vishvananda/netlink v1.1.0/go.mod h1:cTgwzPIzzgDAYoQrMm0EdrjRUBkTqKYppBueQtXaqoE=
@@ -668,8 +667,8 @@ github.com/vishvananda/netns v0.0.0-20191106174202-0a2b9b5464df/go.mod h1:JP3t17
 github.com/vishvananda/netns v0.0.0-20200728191858-db3c7e526aae/go.mod h1:DD4vA1DwXk04H54A1oHXtwZmA0grkVMdPxx/VGLCah0=
 github.com/vishvananda/netns v0.0.4 h1:Oeaw1EM2JMxD51g9uhtC0D7erkIjgmj8+JZc26m1YX8=
 github.com/vishvananda/netns v0.0.4/go.mod h1:SpkAiCQRtJ6TvvxPnOSyH3BMl6unz3xZlaprSwhNNJM=
-github.com/weaveworks/common v0.0.0-20230208133027-16871410fca4 h1:8eoXaryYVOWJZCnCzULYXtxiHHLrJpvoD7p283ogmo8=
-github.com/weaveworks/common v0.0.0-20230208133027-16871410fca4/go.mod h1:KoQ+3z63GUJzQ7AhU0AWQNU+LPda2EwL/cx1PlbDzVQ=
+github.com/weaveworks/common v0.0.0-20230315122012-918bab8e5f88 h1:c6YK+WCvZcv4XVQ/U9dYuqyQftDgZLTqMwIvovbjOgE=
+github.com/weaveworks/common v0.0.0-20230315122012-918bab8e5f88/go.mod h1:jNg927CX15JDvXTNY+W7Pp8B1G/wB9HQOG3UJXoOVVM=
 github.com/weaveworks/promrus v1.2.0/go.mod h1:SaE82+OJ91yqjrE1rsvBWVzNZKcHYFtMUyS1+Ogs/KA=
 github.com/willdonnelly/passwd v0.0.0-20141013001024-7935dab3074c h1:4+NVyrLUuEmvE3r3Xst7gPuKhAP6X04ACpMmPvtK0M0=
 github.com/willdonnelly/passwd v0.0.0-20141013001024-7935dab3074c/go.mod h1:xcvfY9pOw6s4wyrhilFSbMthL6KzgrfCIETHHUOQ/fQ=
