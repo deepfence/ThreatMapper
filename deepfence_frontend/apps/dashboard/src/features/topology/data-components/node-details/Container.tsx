@@ -1,13 +1,9 @@
 import { useEffect, useState } from 'react';
 import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
-import { Button, CircleSpinner, SlidingModalContent, Tabs } from 'ui-components';
+import { CircleSpinner, SlidingModalContent, Tabs } from 'ui-components';
 
 import { getLookupApiClient } from '@/api/api';
 import { ModelContainer } from '@/api/generated';
-import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
-import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
-import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
-import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { Header } from '@/features/topology/components/node-details/Header';
 import { Metadata } from '@/features/topology/components/node-details/Metadata';
 import { ProcessTable } from '@/features/topology/components/node-details/SummaryTables';
@@ -77,10 +73,6 @@ export const Container = ({
       label: 'Connections & Processes',
       value: 'containers-and-processes',
     },
-    {
-      label: 'Containers & Images',
-      value: 'containers-and-images',
-    },
   ];
 
   const header = (
@@ -109,72 +101,32 @@ export const Container = ({
     <>
       {header}
       <SlidingModalContent>
-        <div className="flex gap-2">
-          <Button
-            color="primary"
-            size="sm"
-            startIcon={
-              <div className="h-6 w-6 mr-1">
-                <VulnerabilityIcon />
-              </div>
-            }
-          >
-            Start Vulnerability Scan
-          </Button>
-          <Button
-            color="primary"
-            size="sm"
-            startIcon={
-              <div className="h-6 w-6 mr-1">
-                <SecretsIcon />
-              </div>
-            }
-          >
-            Start Secret Scan
-          </Button>
-          <Button
-            color="primary"
-            size="sm"
-            startIcon={
-              <div className="h-6 w-6 mr-1">
-                <MalwareIcon />
-              </div>
-            }
-          >
-            Start Malware Scan
-          </Button>
-          <Button
-            color="primary"
-            size="sm"
-            startIcon={
-              <div className="h-6 w-6 mr-1">
-                <PostureIcon />
-              </div>
-            }
-          >
-            Start Compliance Scan
-          </Button>
-        </div>
         <Tabs
           value={tab}
           defaultValue={tab}
           tabs={tabs}
           onValueChange={(v) => setTab(v)}
-          variant="underline"
-          className="mt-6"
+          variant="tab"
         >
-          <div className="py-4 flex flex-col gap-6">
+          <div className="pt-6 flex flex-col gap-6">
             {tab === 'metadata' && (
-              <Metadata
-                data={{
-                  // TODO: fix this
-                  // kernel_version: (fetcher.data?.hostData as any)?.kernel_version,
-                  // interface_ips: (fetcher.data?.hostData as any)?.interface_ips,
-                  // interface_names: (fetcher.data?.hostData as any)?.interfaceNames,
-                  // uptime: (fetcher.data?.hostData as any)?.uptime,
-                  ...fetcher.data?.containerData.metadata,
-                }}
-              />
+              <>
+                <Metadata
+                  data={{
+                    ...fetcher.data?.containerData.metadata,
+                  }}
+                />
+                <Metadata
+                  title="Image details"
+                  data={{
+                    id: fetcher.data?.containerData?.image?.node_id ?? '-',
+                    name: fetcher.data?.containerData?.image?.docker_image_name ?? '-',
+                    tag: fetcher.data?.containerData?.image?.docker_image_tag ?? '-',
+                    size: fetcher.data?.containerData?.image?.docker_image_size ?? '-',
+                  }}
+                />
+                {/* TODO docker labels in case of k8s */}
+              </>
             )}
             {tab === 'containers-and-processes' && (
               <ProcessTable processes={fetcher.data?.containerData.processes ?? []} />

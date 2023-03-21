@@ -116,17 +116,15 @@ export const Host = ({
           tabs={tabs}
           onValueChange={(v) => setTab(v)}
           variant="tab"
-          className="flex items-center flex-col"
         >
           <div className="pt-6 flex flex-col gap-6">
             {tab === 'metadata' && (
               <Metadata
                 data={{
-                  // TODO: fix this
-                  // kernel_version: (fetcher.data?.hostData as any)?.kernel_version,
-                  // interface_ips: (fetcher.data?.hostData as any)?.interface_ips,
-                  // interface_names: (fetcher.data?.hostData as any)?.interfaceNames,
-                  // uptime: (fetcher.data?.hostData as any)?.uptime,
+                  kernel_version: fetcher.data?.hostData?.kernel_version ?? '-',
+                  interface_ips: fetcher.data?.hostData?.interface_ips ?? '-',
+                  interface_names: fetcher.data?.hostData?.interfaceNames ?? '-',
+                  uptime: fetcher.data?.hostData?.uptime ?? '-',
                   ...fetcher.data?.hostData.cloud_metadata,
                 }}
               />

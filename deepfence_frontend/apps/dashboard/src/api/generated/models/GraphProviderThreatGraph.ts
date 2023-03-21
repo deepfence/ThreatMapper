@@ -31,6 +31,12 @@ export interface GraphProviderThreatGraph {
      * @type {number}
      * @memberof GraphProviderThreatGraph
      */
+    cloud_compliance_count: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof GraphProviderThreatGraph
+     */
     compliance_count: number;
     /**
      * 
@@ -57,6 +63,7 @@ export interface GraphProviderThreatGraph {
  */
 export function instanceOfGraphProviderThreatGraph(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "cloud_compliance_count" in value;
     isInstance = isInstance && "compliance_count" in value;
     isInstance = isInstance && "resources" in value;
     isInstance = isInstance && "secrets_count" in value;
@@ -75,6 +82,7 @@ export function GraphProviderThreatGraphFromJSONTyped(json: any, ignoreDiscrimin
     }
     return {
         
+        'cloud_compliance_count': json['cloud_compliance_count'],
         'compliance_count': json['compliance_count'],
         'resources': (json['resources'] === null ? null : (json['resources'] as Array<any>).map(GraphThreatNodeInfoFromJSON)),
         'secrets_count': json['secrets_count'],
@@ -91,6 +99,7 @@ export function GraphProviderThreatGraphToJSON(value?: GraphProviderThreatGraph 
     }
     return {
         
+        'cloud_compliance_count': value.cloud_compliance_count,
         'compliance_count': value.compliance_count,
         'resources': (value.resources === null ? null : (value.resources as Array<any>).map(GraphThreatNodeInfoToJSON)),
         'secrets_count': value.secrets_count,

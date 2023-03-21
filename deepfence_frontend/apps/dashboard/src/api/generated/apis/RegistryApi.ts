@@ -56,6 +56,12 @@ export interface AddRegistryRequest {
     modelRegistryAddReq?: ModelRegistryAddReq;
 }
 
+export interface AddRegistryGCRRequest {
+    name: string;
+    registryUrl: string;
+    serviceAccountJson: Blob | null;
+}
+
 export interface CountImageStubsRequest {
     modelRegistryImageStubsReq?: ModelRegistryImageStubsReq;
 }
@@ -111,6 +117,24 @@ export interface RegistryApiInterface {
      * Add Registry
      */
     addRegistry(requestParameters: AddRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Add a Google Container registry
+     * @summary Add Google Container Registry
+     * @param {string} name 
+     * @param {string} registryUrl 
+     * @param {Blob} serviceAccountJson 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RegistryApiInterface
+     */
+    addRegistryGCRRaw(requestParameters: AddRegistryGCRRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Add a Google Container registry
+     * Add Google Container Registry
+     */
+    addRegistryGCR(requestParameters: AddRegistryGCRRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * count of image tags for a given image and registry
@@ -314,6 +338,82 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
      */
     async addRegistry(requestParameters: AddRegistryRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.addRegistryRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Add a Google Container registry
+     * Add Google Container Registry
+     */
+    async addRegistryGCRRaw(requestParameters: AddRegistryGCRRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.name === null || requestParameters.name === undefined) {
+            throw new runtime.RequiredError('name','Required parameter requestParameters.name was null or undefined when calling addRegistryGCR.');
+        }
+
+        if (requestParameters.registryUrl === null || requestParameters.registryUrl === undefined) {
+            throw new runtime.RequiredError('registryUrl','Required parameter requestParameters.registryUrl was null or undefined when calling addRegistryGCR.');
+        }
+
+        if (requestParameters.serviceAccountJson === null || requestParameters.serviceAccountJson === undefined) {
+            throw new runtime.RequiredError('serviceAccountJson','Required parameter requestParameters.serviceAccountJson was null or undefined when calling addRegistryGCR.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters.name !== undefined) {
+            formParams.append('name', requestParameters.name as any);
+        }
+
+        if (requestParameters.registryUrl !== undefined) {
+            formParams.append('registry_url', requestParameters.registryUrl as any);
+        }
+
+        if (requestParameters.serviceAccountJson !== undefined) {
+            formParams.append('service_account_json', requestParameters.serviceAccountJson as any);
+        }
+
+        const response = await this.request({
+            path: `/deepfence/registryaccount/gcr`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Add a Google Container registry
+     * Add Google Container Registry
+     */
+    async addRegistryGCR(requestParameters: AddRegistryGCRRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.addRegistryGCRRaw(requestParameters, initOverrides);
     }
 
     /**

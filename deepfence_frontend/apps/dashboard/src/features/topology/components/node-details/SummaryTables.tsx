@@ -65,6 +65,7 @@ export const ProcessTable = ({ processes }: { processes: ModelProcess[] }) => {
           +{remainingRows} More
         </button>
       ) : null}
+      {!sortedData.length ? <NoData>No Processes</NoData> : null}
     </div>
   );
 };
@@ -132,6 +133,7 @@ export const ContainerTable = ({
           +{remainingRows} More
         </button>
       ) : null}
+      {!sortedData.length ? <NoData>No Containers</NoData> : null}
     </div>
   );
 };
@@ -193,6 +195,15 @@ export const ImageTable = ({
           +{remainingRows} More
         </button>
       ) : null}
+      {!sortedData.length ? <NoData>No Images</NoData> : null}
+    </div>
+  );
+};
+
+const NoData = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <div className="h-12 flex items-center justify-center text-gray-400 dark:text-gray-300">
+      {children}
     </div>
   );
 };
