@@ -42,6 +42,7 @@ import { DFAwait } from '@/utils/suspense';
 import { getPageFromSearchParams } from '@/utils/table';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
+// TODO: remove this once we have correct type from api
 const getNodeTypeByProviderName = (providerName: string) => {
   switch (providerName) {
     case 'linux':
@@ -52,7 +53,6 @@ const getNodeTypeByProviderName = (providerName: string) => {
       return 'gcp';
     case 'azure':
       return 'azure';
-
     case 'kubernetes':
       return 'kubernetes_cluster';
     default:
