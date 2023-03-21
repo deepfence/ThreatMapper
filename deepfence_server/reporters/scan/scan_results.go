@@ -23,10 +23,11 @@ func getScanStatuses[T reporters.Cypherable](tx neo4j.Transaction, scanType util
 	query := `
 	MATCH (n:` + dummy.NodeType() + `) <-[:SCANNED]- (s:` + string(scanType) + `)
 	WHERE n.node_id IN $ids
-	WITH n.node_id as id, min(s.updated_at) as latest
-	MATCH (s:` + string(scanType) + `{updated_at: latest}) -[:DETECTED]-> (v)
-	RETURN id, s.status, count(v)
-	ORDER BY id`
+	WITH n, min(s.updated_at) as latest
+	MATCH (n) <-[:SCANNED]- (s:` + string(scanType) + `{updated_at: latest})
+	OPTIONAL MATCH (s) -[:DETECTED]-> (v)
+	RETURN n.node_id, s.status, count(v)
+	ORDER BY n.node_id`
 
 	log.Info().Msgf("query: %s", query)
 	r, err := tx.Run(query,
