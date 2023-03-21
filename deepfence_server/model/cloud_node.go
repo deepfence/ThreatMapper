@@ -509,7 +509,7 @@ func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloud
 
 	for _, rec := range recs {
 		var controls []string
-		for _, rVal := range rec.Values[1].([]interface{}) {
+		for _, rVal := range rec.Values[2].([]interface{}) {
 			controls = append(controls, rVal.(string))
 		}
 		benchmark := CloudComplianceBenchmark{
