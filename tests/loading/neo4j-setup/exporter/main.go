@@ -12,7 +12,11 @@ import (
 )
 
 func main() {
-	tc, err := neo4j.NewDriver("bolt://143.110.232.114:7687", neo4j.BasicAuth("neo4j", "e16908ffa5b9f8e9d4ed", ""))
+	ip := os.Getenv("OUT_IP")
+	if ip == "" {
+		log.Fatal("Missing OUT_IP")
+	}
+	tc, err := neo4j.NewDriver("bolt://"+ip+":7687", neo4j.BasicAuth("neo4j", "e16908ffa5b9f8e9d4ed", ""))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,9 +44,6 @@ func main() {
 			for query := range batch {
 
 				_, err = tx.Run(query, map[string]interface{}{})
-				if err != nil {
-					log.Println(err)
-				}
 
 				internal_count += 1
 

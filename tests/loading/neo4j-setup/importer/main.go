@@ -8,7 +8,11 @@ import (
 )
 
 func main() {
-	tc, err := neo4j.NewDriver("bolt://64.227.142.80:7687", neo4j.BasicAuth("neo4j", "e16908ffa5b9f8e9d4ed", ""))
+	ip := os.Getenv("IN_IP")
+	if ip == "" {
+		log.Fatal("Missing IN_IP")
+	}
+	tc, err := neo4j.NewDriver("bolt://"+ip+":7687", neo4j.BasicAuth("neo4j", "e16908ffa5b9f8e9d4ed", ""))
 	if err != nil {
 		log.Fatal(err)
 	}
