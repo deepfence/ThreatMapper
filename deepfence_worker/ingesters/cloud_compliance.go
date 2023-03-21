@@ -76,7 +76,6 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 		SET n+= row
 		WITH n, m
 		MATCH (l:CloudComplianceScan{node_id: n.scan_id})
-		MERGE (l) -[:SCANNED]-> (m)
 		MERGE (l) -[r:DETECTED]-> (n)
 		SET r.masked = false`,
 		map[string]interface{}{"batch": CloudCompliancesToMaps(data)}); err != nil {
