@@ -1,0 +1,4 @@
+Add thoe followeing to docker-compose:
+
+- NEO4J_apoc_export_file_enabled: true
+
