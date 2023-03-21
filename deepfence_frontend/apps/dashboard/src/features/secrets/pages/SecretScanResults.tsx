@@ -5,9 +5,9 @@ import { FaHistory } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import {
   HiArchive,
-  HiArrowSmLeft,
   HiBell,
   HiChevronLeft,
+  HiChevronRight,
   HiDotsVertical,
   HiEye,
   HiEyeOff,
@@ -29,6 +29,8 @@ import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 import {
   Badge,
+  Breadcrumb,
+  BreadcrumbLink,
   Button,
   Card,
   Checkbox,
@@ -1010,21 +1012,17 @@ const HeaderComponent = ({
             const { nodeType, nodeName } = resolvedData;
             return (
               <>
-                <DFLink
-                  to={`/secret/scans?nodeType=${nodeType}`}
-                  className="flex hover:no-underline items-center justify-center  mr-2"
-                >
-                  <IconContext.Provider
-                    value={{
-                      className: 'w-5 h-5 text-blue-600 dark:text-blue-500 ',
-                    }}
-                  >
-                    <HiArrowSmLeft />
-                  </IconContext.Provider>
-                </DFLink>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  SECRET SCAN RESULTS - {nodeType} / {nodeName}
-                </span>
+                <Breadcrumb separator={<HiChevronRight />} transparent>
+                  <BreadcrumbLink>
+                    <DFLink to={'/secret'}>SECRETS</DFLink>
+                  </BreadcrumbLink>
+                  <BreadcrumbLink>
+                    <DFLink to={`/secret/scans?nodeType=${nodeType}`}>{nodeType}</DFLink>
+                  </BreadcrumbLink>
+                  <BreadcrumbLink>
+                    <span className="inherit cursor-auto">{nodeName}</span>
+                  </BreadcrumbLink>
+                </Breadcrumb>
               </>
             );
           }}

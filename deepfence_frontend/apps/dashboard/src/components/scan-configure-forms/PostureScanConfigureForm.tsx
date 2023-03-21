@@ -241,20 +241,28 @@ export const ControlsTable = memo(
         {selectedTab === '' ? (
           <p>Please select at least one compliance type to start your scan.</p>
         ) : (
-          <Tabs value={selectedTab} tabs={tabs} onValueChange={(v) => setSelectedTab(v)}>
-            {isLoading && controlsList.length === 0 ? (
-              <TableSkeleton columns={3} rows={10} size={'md'} />
-            ) : (
-              <Table
-                size="sm"
-                data={controlsList}
-                columns={columns}
-                enablePagination
-                enableColumnResizing
-                enableSorting
-              />
-            )}
-          </Tabs>
+          <>
+            {nodeIds.length === 1 ? (
+              <Tabs
+                value={selectedTab}
+                tabs={tabs}
+                onValueChange={(v) => setSelectedTab(v)}
+              >
+                {isLoading && controlsList.length === 0 ? (
+                  <TableSkeleton columns={3} rows={10} size={'md'} />
+                ) : (
+                  <Table
+                    size="sm"
+                    data={controlsList}
+                    columns={columns}
+                    enablePagination
+                    enableColumnResizing
+                    enableSorting
+                  />
+                )}
+              </Tabs>
+            ) : null}
+          </>
         )}
       </div>
     );

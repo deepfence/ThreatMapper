@@ -657,13 +657,22 @@ const ScanResusltTable = () => {
                 <PostureIcon />
               </div>
             </div>
-            <div className="truncate">{info.getValue()}</div>
+            <div className="truncate">{info.row.original.test_number}</div>
           </DFLink>
         ),
-        header: () => 'ID',
-        minSize: 90,
-        size: 100,
-        maxSize: 110,
+        header: () => 'Test ID',
+        minSize: 50,
+        size: 60,
+        maxSize: 65,
+      }),
+      columnHelper.accessor('test_category', {
+        enableSorting: false,
+        enableResizing: false,
+        cell: (info) => info.getValue(),
+        header: () => 'Category',
+        minSize: 80,
+        size: 90,
+        maxSize: 95,
       }),
       columnHelper.accessor('compliance_check_type', {
         enableSorting: false,
@@ -898,7 +907,7 @@ const HeaderComponent = () => {
               <>
                 <Breadcrumb separator={<HiChevronRight />} transparent>
                   <BreadcrumbLink>
-                    <DFLink to={'/posture'}>REGISTRIES</DFLink>
+                    <DFLink to={'/posture'}>POSTURE</DFLink>
                   </BreadcrumbLink>
                   <BreadcrumbLink>
                     <DFLink
