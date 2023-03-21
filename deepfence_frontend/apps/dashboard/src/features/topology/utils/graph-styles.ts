@@ -85,7 +85,7 @@ export const nodeStyle = (
   style.fill = fill[node?.df_data?.type ?? ''] || COLORS.NODE;
 
   style = { ...style, ...override };
-  if (node.df_data && getNodeImage(node.df_data)) {
+  if (node.df_data && getNodeImage(node.df_data?.type ?? '')) {
     delete style.fill;
   } else if (node?.df_data?.type === 'process') {
     style.fill = COLORS.PROCESS;
@@ -118,22 +118,22 @@ export const onNodeHover = (item: G6Node, enter: boolean) => {
   }
 };
 
-export const getNodeImage = (nodeData: DetailedNodeSummary): string | undefined => {
-  if (nodeData.type === 'cloud_provider') {
+export const getNodeImage = (nodeType: string): string | undefined => {
+  if (nodeType === 'cloud_provider') {
     return getImageFullPath(CloudLogo);
-  } else if (nodeData.type === 'pseudo') {
+  } else if (nodeType === 'pseudo') {
     return getImageFullPath(TheInternetLogo);
-  } else if (nodeData.type === 'cloud_region') {
+  } else if (nodeType === 'cloud_region') {
     return getImageFullPath(CloudRegionLogo);
-  } else if (nodeData.type === 'host') {
+  } else if (nodeType === 'host') {
     return getImageFullPath(HostLogo);
-  } else if (nodeData.type === 'kubernetes_cluster') {
+  } else if (nodeType === 'kubernetes_cluster') {
     return getImageFullPath(KubernetesClusterLogo);
-  } else if (nodeData.type === 'container') {
+  } else if (nodeType === 'container') {
     return getImageFullPath(ContainerLogo);
-  } else if (nodeData.type === 'pod') {
+  } else if (nodeType === 'pod') {
     return getImageFullPath(PodLogo);
-  } else if (nodeData.type === 'process') {
+  } else if (nodeType === 'process') {
     return getImageFullPath(ProcessLogo);
   }
 };

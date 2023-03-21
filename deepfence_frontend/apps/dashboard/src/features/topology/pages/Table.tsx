@@ -20,6 +20,7 @@ import {
 import { getTopologyApiClient } from '@/api/api';
 import { ApiDocsGraphResult, DetailedNodeSummary } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { TopologyAction } from '@/features/topology/types/graph';
 import { TopologyTreeData } from '@/features/topology/types/table';
 import { itemExpands } from '@/features/topology/utils/expand-collapse';
@@ -83,6 +84,10 @@ function TopologyCloudTable() {
       desc: false,
     },
   ]);
+  const [clickedItem, setClickedItem] = useState<{
+    nodeId: string;
+    nodeType: string;
+  }>();
 
   const columnHelper = createColumnHelper<(typeof treeData)[number]>();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
@@ -146,7 +151,17 @@ function TopologyCloudTable() {
                 </button>
               ) : null}
               {!info.row.getCanExpand() ? <span>&nbsp;&nbsp;&nbsp;</span> : null}
-              <DFLink href="#" className="flex-1 shrink-0 truncate pl-2">
+              <DFLink
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setClickedItem({
+                    nodeId: info.row.original.id!,
+                    nodeType: info.row.original.type!,
+                  });
+                }}
+                className="flex-1 shrink-0 truncate pl-2"
+              >
                 {info.getValue()}
               </DFLink>
             </div>
@@ -239,6 +254,15 @@ function TopologyCloudTable() {
         }}
         getSubRows={(row) => row.children ?? []}
       />
+      {clickedItem ? (
+        <NodeDetailsStackedModal
+          node={clickedItem}
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setClickedItem(undefined);
+          }}
+        />
+      ) : null}
     </>
   );
 }

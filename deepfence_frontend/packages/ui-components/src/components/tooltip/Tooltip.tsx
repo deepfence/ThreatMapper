@@ -59,6 +59,9 @@ export const Tooltip = (props: TooltipProps) => {
                 Typography.size.sm,
                 Typography.weight.medium,
               )}
+              style={{
+                wordBreak: 'break-word',
+              }}
             >
               {content}
             </span>

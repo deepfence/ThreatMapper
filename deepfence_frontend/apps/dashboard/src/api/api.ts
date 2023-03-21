@@ -7,6 +7,7 @@ import {
   CloudScannerApi,
   ComplianceApi,
   Configuration,
+  LookupApi,
   MalwareScanApi,
   RegistryApi,
   ScanResultsApi,
@@ -167,5 +168,18 @@ export function getScanResultsApiClient() {
     unmaskScanResult: scanResultsApi.unmaskScanResult.bind(scanResultsApi),
     getAllNodesInScanResults:
       scanResultsApi.getAllNodesInScanResults.bind(scanResultsApi),
+  };
+}
+
+export function getLookupApiClient() {
+  const lookupApi = new LookupApi(configuration);
+  return {
+    lookupHost: lookupApi.getHosts.bind(lookupApi),
+    lookupContainer: lookupApi.getContainers.bind(lookupApi),
+    lookupImage: lookupApi.getContainerImages.bind(lookupApi),
+    lookupPod: lookupApi.getPods.bind(lookupApi),
+    lookupProcess: lookupApi.getProcesses.bind(lookupApi),
+    lookupKubernetesClusters: lookupApi.getKubernetesClusters.bind(lookupApi),
+    lookupCloudResources: lookupApi.getCloudResources.bind(lookupApi),
   };
 }
