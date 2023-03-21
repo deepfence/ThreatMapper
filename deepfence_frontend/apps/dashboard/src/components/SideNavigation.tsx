@@ -1,6 +1,14 @@
 import * as NavigationMenu from '@radix-ui/react-navigation-menu';
 import classNames from 'classnames';
-import { forwardRef, ReactNode, useEffect } from 'react';
+import {
+  createContext,
+  FC,
+  forwardRef,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { NavLink } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
 import { Tooltip } from 'ui-components';
@@ -15,6 +23,36 @@ import { SettingsIcon } from '@/components/sideNavigation/icons/Settings';
 import { ThreatGraphIcon } from '@/components/sideNavigation/icons/ThreatGraph';
 import { TopologyIcon } from '@/components/sideNavigation/icons/Topology';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+
+interface SidenavProviderProps {
+  children: ReactNode;
+  value: SidenavContextProps;
+}
+type SidenavContextProps = {
+  navWidth: number;
+  setNavWidth: (width: number) => void;
+};
+export const SideNavContext = createContext<SidenavContextProps>({
+  navWidth: 0,
+  setNavWidth: () => null,
+});
+export const SideNavProvider: FC<SidenavProviderProps> = ({ children }) => {
+  const [width, setWidth] = useState(0);
+
+  return (
+    <SideNavContext.Provider
+      value={{
+        navWidth: width,
+        setNavWidth: setWidth,
+      }}
+    >
+      {children}
+    </SideNavContext.Provider>
+  );
+};
+export function useSideNavContext(): SidenavContextProps {
+  return useContext(SideNavContext);
+}
 
 export interface SideNavigationRootProps {
   expanded?: boolean;
@@ -100,9 +138,13 @@ const ItemWrapper = forwardRef(
 );
 
 export function SideNavigation({ expanded }: SideNavigationRootProps) {
+  const { setNavWidth } = useSideNavContext();
+
   useEffect(() => {
     setSideNavigationState(expanded ? 'open' : 'closed');
+    setNavWidth(expanded ? 240 : 60);
   }, [expanded]);
+
   return (
     <NavigationMenu.Root
       orientation="vertical"
