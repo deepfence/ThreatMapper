@@ -25,7 +25,7 @@ func main() {
 	defer session.Close()
 
 	r, err := session.Run(`
-		CALL apoc.export.cypher.all(null,{useTypes:true, stream:true})
+		CALL apoc.export.cypher.all(null,{writeNodeProperties:true, stream:true,format:'plain',ifNotExists:true,useOptimizations:{type: "UNWIND_BATCH", unwindBatchSize: 5000},cypherFromat:'updateStructure'})
 		`,
 		map[string]interface{}{})
 	if err != nil {

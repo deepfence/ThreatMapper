@@ -21,51 +21,30 @@ func main() {
 		log.Fatal(err)
 	}
 
-	session, err := tc.Session(neo4j.AccessModeWrite)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer session.Close()
-
-	batch := make(chan string, 2000)
+	batch := make(chan string, 1000)
 
 	wg := sync.WaitGroup{}
-	count := atomic.Int64{}
-	worker_count := 1
-	wg.Add(worker_count)
-	batch_size := 256
-	for i := 0; i < worker_count; i += 1 {
-		go func() {
-			internal_count := 0
-			tx, err := session.BeginTransaction()
+	total_count := atomic.Int64{}
+	wg.Add(1)
+	go func() {
+		session, err := tc.Session(neo4j.AccessModeWrite)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer session.Close()
+		internal_count := 0
+		for query := range batch {
+
+			_, err = session.Run(query, map[string]interface{}{})
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
-			for query := range batch {
 
-				_, err = tx.Run(query, map[string]interface{}{})
-
-				internal_count += 1
-
-				if internal_count%batch_size == 0 {
-					tx.Commit()
-					tx.Close()
-					tx, err = session.BeginTransaction()
-					if err != nil {
-						log.Fatal(err)
-					}
-					count.Add(int64(batch_size))
-					log.Printf("Committed: %v queries\n", count.Load())
-				}
-			}
-			tx.Commit()
-			tx.Close()
-			count.Add(int64(internal_count) % int64(batch_size))
-			log.Printf("Committed: %v queries\n", count.Load())
-
-			wg.Done()
-		}()
-	}
+			internal_count += 1
+			log.Printf("count: %v/%v queries\n", internal_count, total_count.Load())
+		}
+		wg.Done()
+	}()
 
 	f, err := os.Open("/tmp/graphdb")
 	if err != nil {
@@ -85,19 +64,14 @@ func main() {
 			log.Fatal(err)
 		}
 
-		if statement[0] == ':' {
-			continue
-		}
-
 		query += statement
 
 		if len(statement) > 2 && statement[len(statement)-2] == ';' {
 			batch <- query
 			query = ""
+			total_count.Add(1)
 		}
 	}
-
 	close(batch)
-
-	wg.Done()
+	wg.Wait()
 }
