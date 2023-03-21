@@ -124,26 +124,19 @@ const loader = async ({
 const HeaderComponent = ({ nodeType }: { nodeType: string }) => {
   const { navigate } = usePageNavigation();
   return (
-    <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
+    <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <Breadcrumb separator={<HiChevronRight />} transparent>
         <BreadcrumbLink>
-          <DFLink
-            to={generatePath('/registries', {
-              account: nodeType,
-            })}
-          >
-            REGISTRIES
-          </DFLink>
+          <DFLink to={'/registries'}>REGISTRIES</DFLink>
         </BreadcrumbLink>
         <BreadcrumbLink>
-          <DFLink href="#" className="hover:no-underline text-gray-600 hover:cursor-auto">
-            {nodeType}
-          </DFLink>
+          <span className="inherit cursor-auto">{nodeType}</span>
         </BreadcrumbLink>
       </Breadcrumb>
       <div className="ml-auto flex items-center gap-x-4">
         <Button
           outline
+          color="primary"
           size="xs"
           startIcon={<FaPlus />}
           onClick={() => {

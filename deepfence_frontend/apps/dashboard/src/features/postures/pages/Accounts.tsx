@@ -2,7 +2,7 @@ import cx from 'classnames';
 import { Suspense, useMemo, useRef, useState } from 'react';
 import { FaPlay, FaPlus } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
-import { HiArrowSmLeft, HiDotsVertical, HiOutlineEye, HiRefresh } from 'react-icons/hi';
+import { HiChevronRight, HiDotsVertical, HiOutlineEye, HiRefresh } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import {
   Form,
@@ -15,6 +15,8 @@ import {
 } from 'react-router-dom';
 import {
   Badge,
+  Breadcrumb,
+  BreadcrumbLink,
   Button,
   Checkbox,
   createColumnHelper,
@@ -498,21 +500,14 @@ const Accounts = () => {
   return (
     <div>
       <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-        <DFLink
-          to="/posture"
-          className="flex hover:no-underline items-center justify-center  mr-2"
-        >
-          <IconContext.Provider
-            value={{
-              className: 'w-5 h-5 text-blue-600 dark:text-blue-500 ',
-            }}
-          >
-            <HiArrowSmLeft />
-          </IconContext.Provider>
-        </DFLink>
-        <span className="text-md font-medium text-gray-700 dark:text-gray-200 uppercase">
-          Posture Accounts
-        </span>
+        <Breadcrumb separator={<HiChevronRight />} transparent>
+          <BreadcrumbLink>
+            <DFLink to={'/posture'}>POSTURE</DFLink>
+          </BreadcrumbLink>
+          <BreadcrumbLink>
+            <span className="inherit cursor-auto">{routeParams.nodeType}</span>
+          </BreadcrumbLink>
+        </Breadcrumb>
         <div className="ml-auto flex relative gap-x-4">
           <div className="ml-auto">
             <Button

@@ -191,9 +191,7 @@ const HeaderComponent = () => {
         </BreadcrumbLink>
 
         <BreadcrumbLink>
-          <DFLink href="#" className="hover:no-underline text-gray-600 hover:cursor-auto">
-            {nodeId}
-          </DFLink>
+          <span className="inherit cursor-auto">{nodeId}</span>
         </BreadcrumbLink>
       </Breadcrumb>
     </div>

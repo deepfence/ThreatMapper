@@ -19,7 +19,11 @@ import {
 } from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelContainerImage } from '@/api/generated';
+import {
+  ApiDocsBadRequestResponse,
+  ModelContainerImage,
+  ModelRegistryImagesReq,
+} from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { RegistryImageTagsTable } from '@/features/registries/components/RegistryImageTagsTable';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -35,9 +39,20 @@ export type LoaderDataTypeForImageTags = {
   tableData: Awaited<ReturnType<typeof getTags>>;
 };
 
+const getVulnerabilityScanStatus = (searchParams: URLSearchParams) => {
+  return searchParams.getAll('vulnerabilityScanStatus');
+};
+
+const getSecretScanStatus = (searchParams: URLSearchParams) => {
+  return searchParams.getAll('secretScanStatus');
+};
+
+const getMalwareScanStatus = (searchParams: URLSearchParams) => {
+  return searchParams.getAll('malwareScanStatus');
+};
+
 async function getTags(
   nodeId: string,
-  imageId: string,
   searchParams: URLSearchParams,
 ): Promise<{
   tags: ModelContainerImage[];
@@ -45,17 +60,34 @@ async function getTags(
   totalRows: number;
 }> {
   const page = getPageFromSearchParams(searchParams);
-  const imageTagsRequest = {
+  const vulnerabilityScanStatus = getVulnerabilityScanStatus(searchParams);
+  const secretScanStatus = getSecretScanStatus(searchParams);
+  const malwareScanStatus = getMalwareScanStatus(searchParams);
+
+  const imageTagsRequest: ModelRegistryImagesReq = {
     image_filter: {
-      filter_in: null,
+      filter_in: {},
     },
     registry_id: nodeId,
-    image_id: imageId,
     window: {
       offset: page * PAGE_SIZE,
       size: PAGE_SIZE,
     },
   };
+
+  if (vulnerabilityScanStatus.length) {
+    imageTagsRequest.image_filter.filter_in!['vulnerability_scan_status'] =
+      vulnerabilityScanStatus;
+  }
+
+  if (secretScanStatus.length) {
+    imageTagsRequest.image_filter.filter_in!['secret_scan_status'] = secretScanStatus;
+  }
+
+  if (malwareScanStatus.length) {
+    imageTagsRequest.image_filter.filter_in!['malware_scan_status'] = malwareScanStatus;
+  }
+
   const result = await makeRequest({
     apiFunction: getRegistriesApiClient().listImages,
     apiArgs: [
@@ -116,19 +148,19 @@ const loader = async ({
   params,
   request,
 }: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataTypeForImageTags>> => {
-  const { account, nodeId, imageId } = params as {
+  const { account, nodeId } = params as {
     account: string;
     nodeId: string;
     imageId: string;
   };
 
-  if (!account || !nodeId || !imageId) {
+  if (!account || !nodeId) {
     throw new Error('Account Type, Node Id and Image Id are required');
   }
   const searchParams = new URL(request.url).searchParams;
 
   return typedDefer({
-    tableData: getTags(nodeId, imageId, searchParams),
+    tableData: getTags(nodeId, searchParams),
   });
 };
 
@@ -141,10 +173,13 @@ const HeaderComponent = () => {
     imageId: string;
   };
 
-  const isFilterApplied = searchParams.has('status');
+  const isFilterApplied =
+    searchParams.has('vulnerabilityScanStatus') ||
+    searchParams.has('secretScanStatus') ||
+    searchParams.has('malwareScanStatus');
 
   return (
-    <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
+    <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <Breadcrumb separator={<HiChevronRight />} transparent>
         <BreadcrumbLink>
           <DFLink to={'/registries'}>REGISTRIES</DFLink>
@@ -171,12 +206,7 @@ const HeaderComponent = () => {
         </BreadcrumbLink>
 
         <BreadcrumbLink>
-          <DFLink
-            href="#"
-            className="hover:no-underline text-gray-600 dark:text-gray-100 hover:cursor-auto"
-          >
-            {imageId}
-          </DFLink>
+          <span className="inherit cursor-auto">{imageId}</span>
         </BreadcrumbLink>
       </Breadcrumb>
       <div className="ml-auto flex items-center gap-x-4">
@@ -191,27 +221,31 @@ const HeaderComponent = () => {
               <div className="dark:text-white p-4">
                 <Form className="flex flex-col gap-y-6">
                   <fieldset>
-                    <legend className="text-sm font-medium">Status</legend>
+                    <legend className="text-sm font-medium">
+                      Vulnerability Scan Status
+                    </legend>
                     <div className="flex gap-x-4">
                       <Checkbox
                         label="Completed"
-                        checked={searchParams.getAll('status').includes('complete')}
+                        checked={searchParams
+                          .getAll('vulnerabilityScanStatus')
+                          .includes('complete')}
                         onCheckedChange={(state) => {
                           if (state) {
                             setSearchParams((prev) => {
-                              prev.append('status', 'complete');
+                              prev.append('vulnerabilityScanStatus', 'complete');
                               prev.delete('page');
                               return prev;
                             });
                           } else {
                             setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('status');
-                              prev.delete('status');
+                              const prevStatuses = prev.getAll('vulnerabilityScanStatus');
+                              prev.delete('vulnerabilityScanStatus');
                               prev.delete('page');
                               prevStatuses
                                 .filter((status) => status !== 'complete')
                                 .forEach((status) => {
-                                  prev.append('status', status);
+                                  prev.append('vulnerabilityScanStatus', status);
                                 });
                               return prev;
                             });
@@ -220,22 +254,24 @@ const HeaderComponent = () => {
                       />
                       <Checkbox
                         label="In Progress"
-                        checked={searchParams.getAll('status').includes('in_progress')}
+                        checked={searchParams
+                          .getAll('vulnerabilityScanStatus')
+                          .includes('in_progress')}
                         onCheckedChange={(state) => {
                           if (state) {
                             setSearchParams((prev) => {
-                              prev.append('status', 'in_progress');
+                              prev.append('vulnerabilityScanStatus', 'in_progress');
                               prev.delete('page');
                               return prev;
                             });
                           } else {
                             setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('status');
-                              prev.delete('status');
+                              const prevStatuses = prev.getAll('vulnerabilityScanStatus');
+                              prev.delete('vulnerabilityScanStatus');
                               prevStatuses
                                 .filter((status) => status !== 'in_progress')
                                 .forEach((status) => {
-                                  prev.append('status', status);
+                                  prev.append('vulnerabilityScanStatus', status);
                                 });
                               prev.delete('page');
                               return prev;
@@ -245,22 +281,24 @@ const HeaderComponent = () => {
                       />
                       <Checkbox
                         label="Not scan"
-                        checked={searchParams.getAll('status').includes('not_scan')}
+                        checked={searchParams
+                          .getAll('vulnerabilityScanStatus')
+                          .includes('not_scan')}
                         onCheckedChange={(state) => {
                           if (state) {
                             setSearchParams((prev) => {
-                              prev.append('status', 'not_scan');
+                              prev.append('vulnerabilityScanStatus', 'not_scan');
                               prev.delete('page');
                               return prev;
                             });
                           } else {
                             setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('status');
-                              prev.delete('status');
+                              const prevStatuses = prev.getAll('vulnerabilityScanStatus');
+                              prev.delete('vulnerabilityScanStatus');
                               prevStatuses
                                 .filter((status) => status !== 'not_scan')
                                 .forEach((status) => {
-                                  prev.append('status', status);
+                                  prev.append('vulnerabilityScanStatus', status);
                                 });
                               prev.delete('page');
                               return prev;
@@ -269,24 +307,254 @@ const HeaderComponent = () => {
                         }}
                       />
                       <Checkbox
-                        label="Error"
-                        checked={searchParams.getAll('status').includes('error')}
+                        label="Failed"
+                        checked={searchParams
+                          .getAll('vulnerabilityScanStatus')
+                          .includes('error')}
                         onCheckedChange={(state) => {
                           if (state) {
                             setSearchParams((prev) => {
-                              prev.append('status', 'error');
+                              prev.append('vulnerabilityScanStatus', 'error');
                               prev.delete('page');
                               return prev;
                             });
                           } else {
                             setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('status');
-                              prev.delete('status');
+                              const prevStatuses = prev.getAll('vulnerabilityScanStatus');
+                              prev.delete('vulnerabilityScanStatus');
                               prev.delete('page');
                               prevStatuses
                                 .filter((status) => status !== 'error')
                                 .forEach((status) => {
-                                  prev.append('status', status);
+                                  prev.append('vulnerabilityScanStatus', status);
+                                });
+                              return prev;
+                            });
+                          }
+                        }}
+                      />
+                    </div>
+                  </fieldset>
+
+                  <fieldset>
+                    <legend className="text-sm font-medium">Secret Scan Status</legend>
+                    <div className="flex gap-x-4">
+                      <Checkbox
+                        label="Completed"
+                        checked={searchParams
+                          .getAll('secretScanStatus')
+                          .includes('complete')}
+                        onCheckedChange={(state) => {
+                          if (state) {
+                            setSearchParams((prev) => {
+                              prev.append('secretScanStatus', 'complete');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          } else {
+                            setSearchParams((prev) => {
+                              const prevStatuses = prev.getAll('secretScanStatus');
+                              prev.delete('secretScanStatus');
+                              prev.delete('page');
+                              prevStatuses
+                                .filter((status) => status !== 'complete')
+                                .forEach((status) => {
+                                  prev.append('secretScanStatus', status);
+                                });
+                              return prev;
+                            });
+                          }
+                        }}
+                      />
+                      <Checkbox
+                        label="In Progress"
+                        checked={searchParams
+                          .getAll('secretScanStatus')
+                          .includes('in_progress')}
+                        onCheckedChange={(state) => {
+                          if (state) {
+                            setSearchParams((prev) => {
+                              prev.append('secretScanStatus', 'in_progress');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          } else {
+                            setSearchParams((prev) => {
+                              const prevStatuses = prev.getAll('secretScanStatus');
+                              prev.delete('secretScanStatus');
+                              prevStatuses
+                                .filter((status) => status !== 'in_progress')
+                                .forEach((status) => {
+                                  prev.append('secretScanStatus', status);
+                                });
+                              prev.delete('page');
+                              return prev;
+                            });
+                          }
+                        }}
+                      />
+                      <Checkbox
+                        label="Not scan"
+                        checked={searchParams
+                          .getAll('secretScanStatus')
+                          .includes('not_scan')}
+                        onCheckedChange={(state) => {
+                          if (state) {
+                            setSearchParams((prev) => {
+                              prev.append('secretScanStatus', 'not_scan');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          } else {
+                            setSearchParams((prev) => {
+                              const prevStatuses = prev.getAll('secretScanStatus');
+                              prev.delete('secretScanStatus');
+                              prevStatuses
+                                .filter((status) => status !== 'not_scan')
+                                .forEach((status) => {
+                                  prev.append('secretScanStatus', status);
+                                });
+                              prev.delete('page');
+                              return prev;
+                            });
+                          }
+                        }}
+                      />
+                      <Checkbox
+                        label="Failed"
+                        checked={searchParams
+                          .getAll('secretScanStatus')
+                          .includes('error')}
+                        onCheckedChange={(state) => {
+                          if (state) {
+                            setSearchParams((prev) => {
+                              prev.append('secretScanStatus', 'error');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          } else {
+                            setSearchParams((prev) => {
+                              const prevStatuses = prev.getAll('secretScanStatus');
+                              prev.delete('secretScanStatus');
+                              prev.delete('page');
+                              prevStatuses
+                                .filter((status) => status !== 'error')
+                                .forEach((status) => {
+                                  prev.append('secretScanStatus', status);
+                                });
+                              return prev;
+                            });
+                          }
+                        }}
+                      />
+                    </div>
+                  </fieldset>
+
+                  <fieldset>
+                    <legend className="text-sm font-medium">Malware Scan Status</legend>
+                    <div className="flex gap-x-4">
+                      <Checkbox
+                        label="Completed"
+                        checked={searchParams
+                          .getAll('malwareScanStatus')
+                          .includes('complete')}
+                        onCheckedChange={(state) => {
+                          if (state) {
+                            setSearchParams((prev) => {
+                              prev.append('malwareScanStatus', 'complete');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          } else {
+                            setSearchParams((prev) => {
+                              const prevStatuses = prev.getAll('malwareScanStatus');
+                              prev.delete('malwareScanStatus');
+                              prev.delete('page');
+                              prevStatuses
+                                .filter((status) => status !== 'complete')
+                                .forEach((status) => {
+                                  prev.append('malwareScanStatus', status);
+                                });
+                              return prev;
+                            });
+                          }
+                        }}
+                      />
+                      <Checkbox
+                        label="In Progress"
+                        checked={searchParams
+                          .getAll('malwareScanStatus')
+                          .includes('in_progress')}
+                        onCheckedChange={(state) => {
+                          if (state) {
+                            setSearchParams((prev) => {
+                              prev.append('malwareScanStatus', 'in_progress');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          } else {
+                            setSearchParams((prev) => {
+                              const prevStatuses = prev.getAll('malwareScanStatus');
+                              prev.delete('malwareScanStatus');
+                              prevStatuses
+                                .filter((status) => status !== 'in_progress')
+                                .forEach((status) => {
+                                  prev.append('malwareScanStatus', status);
+                                });
+                              prev.delete('page');
+                              return prev;
+                            });
+                          }
+                        }}
+                      />
+                      <Checkbox
+                        label="Not scan"
+                        checked={searchParams
+                          .getAll('malwareScanStatus')
+                          .includes('not_scan')}
+                        onCheckedChange={(state) => {
+                          if (state) {
+                            setSearchParams((prev) => {
+                              prev.append('malwareScanStatus', 'not_scan');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          } else {
+                            setSearchParams((prev) => {
+                              const prevStatuses = prev.getAll('malwareScanStatus');
+                              prev.delete('malwareScanStatus');
+                              prevStatuses
+                                .filter((status) => status !== 'not_scan')
+                                .forEach((status) => {
+                                  prev.append('malwareScanStatus', status);
+                                });
+                              prev.delete('page');
+                              return prev;
+                            });
+                          }
+                        }}
+                      />
+                      <Checkbox
+                        label="Failed"
+                        checked={searchParams
+                          .getAll('malwareScanStatus')
+                          .includes('error')}
+                        onCheckedChange={(state) => {
+                          if (state) {
+                            setSearchParams((prev) => {
+                              prev.append('malwareScanStatus', 'error');
+                              prev.delete('page');
+                              return prev;
+                            });
+                          } else {
+                            setSearchParams((prev) => {
+                              const prevStatuses = prev.getAll('malwareScanStatus');
+                              prev.delete('malwareScanStatus');
+                              prev.delete('page');
+                              prevStatuses
+                                .filter((status) => status !== 'error')
+                                .forEach((status) => {
+                                  prev.append('malwareScanStatus', status);
                                 });
                               return prev;
                             });

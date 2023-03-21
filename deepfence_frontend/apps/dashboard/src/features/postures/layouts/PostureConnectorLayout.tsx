@@ -1,33 +1,32 @@
-import { HiArrowSmLeft } from 'react-icons/hi';
-import { IconContext } from 'react-icons/lib';
-import { Outlet } from 'react-router-dom';
+import { HiChevronRight } from 'react-icons/hi';
+import { generatePath, Outlet, useParams } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbLink } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 const PostureConnectorLayout = () => {
-  const { goBack } = usePageNavigation();
+  const params = useParams() as {
+    account: string;
+  };
+
   return (
     <>
       <div className="flex p-2  w-full items-center shadow bg-white dark:bg-gray-800">
-        <DFLink
-          to="#"
-          className="flex hover:no-underline items-center justify-center mr-2"
-          onClick={() => {
-            goBack();
-          }}
-        >
-          <IconContext.Provider
-            value={{
-              className: 'w-5 h-5 text-blue-600 dark:text-blue-500 ',
-            }}
-          >
-            <HiArrowSmLeft />
-          </IconContext.Provider>
-        </DFLink>
-        <span className="text-md font-medium text-gray-700 dark:text-gray-200 uppercase">
-          Posture Connector
-        </span>
+        <Breadcrumb separator={<HiChevronRight />} transparent>
+          <BreadcrumbLink>
+            <DFLink
+              to={generatePath('/posture/accounts/:nodeType', {
+                nodeType: params.account,
+              })}
+            >
+              POSTURE ACCOUNTS
+            </DFLink>
+          </BreadcrumbLink>
+
+          <BreadcrumbLink>
+            <span className="inherit cursor-auto">Connector</span>
+          </BreadcrumbLink>
+        </Breadcrumb>
       </div>
       <div className="p-4">
         <Outlet />

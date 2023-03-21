@@ -5,8 +5,8 @@ import { FaHistory } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import {
   HiArchive,
-  HiArrowSmLeft,
   HiBell,
+  HiChevronRight,
   HiDotsVertical,
   HiEye,
   HiEyeOff,
@@ -28,6 +28,8 @@ import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 import {
   Badge,
+  Breadcrumb,
+  BreadcrumbLink,
   Button,
   Card,
   Checkbox,
@@ -894,21 +896,24 @@ const HeaderComponent = () => {
                 : ACCOUNT_CONNECTOR.KUBERNETES;
             return (
               <>
-                <DFLink
-                  to={`/posture/accounts/${_nodeType}`}
-                  className="flex hover:no-underline items-center justify-center  mr-2"
-                >
-                  <IconContext.Provider
-                    value={{
-                      className: 'w-5 h-5 text-blue-600 dark:text-blue-500 ',
-                    }}
-                  >
-                    <HiArrowSmLeft />
-                  </IconContext.Provider>
-                </DFLink>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  POSTURE SCAN RESULT - {nodeType} / {nodeName}
-                </span>
+                <Breadcrumb separator={<HiChevronRight />} transparent>
+                  <BreadcrumbLink>
+                    <DFLink to={'/posture'}>REGISTRIES</DFLink>
+                  </BreadcrumbLink>
+                  <BreadcrumbLink>
+                    <DFLink
+                      to={generatePath('/posture/accounts/:nodeType', {
+                        nodeType: _nodeType,
+                      })}
+                    >
+                      {_nodeType}
+                    </DFLink>
+                  </BreadcrumbLink>
+
+                  <BreadcrumbLink>
+                    <span className="inherit cursor-auto">{nodeName}</span>
+                  </BreadcrumbLink>
+                </Breadcrumb>
               </>
             );
           }}
