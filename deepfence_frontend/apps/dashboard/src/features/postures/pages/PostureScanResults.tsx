@@ -56,7 +56,7 @@ import {
   ModelScanResultsActionRequestScanTypeEnum,
   ModelScanResultsReq,
 } from '@/api/generated';
-import { withSubAppHeader } from '@/components/AppSubHeader';
+import { AppSubHeader } from '@/components/AppSubHeader';
 import { DFLink } from '@/components/DFLink';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { complianceType } from '@/components/scan-configure-forms/PostureScanConfigureForm';
@@ -1232,17 +1232,17 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
 };
 const PostureScanResults = () => {
   const { mode } = useTheme();
-  const Component = withSubAppHeader(HeaderComponent);
   return (
     <>
-      <Component>
-        <div className="grid grid-cols-[400px_1fr] p-2 gap-x-2">
-          <div className="self-start grid gap-y-2">
-            <StatusCountComponent theme={mode} />
-          </div>
-          <ScanResultTable />
+      <AppSubHeader>
+        <HeaderComponent />
+      </AppSubHeader>
+      <div className="grid grid-cols-[400px_1fr] p-2 gap-x-2">
+        <div className="self-start grid gap-y-2">
+          <StatusCountComponent theme={mode} />
         </div>
-      </Component>
+        <ScanResultTable />
+      </div>
       <Outlet />
     </>
   );
