@@ -388,6 +388,8 @@ func nodeType2Neo4jType(node_type string) string {
 		return "Node"
 	case "cluster":
 		return "KubernetesCluster"
+	case "cloud_account":
+		return "CloudNode"
 	}
 	return "unknown"
 }
@@ -609,6 +611,8 @@ func type2sev_field(scan_type utils.Neo4jScanType) string {
 		return "FileSeverity"
 	case utils.NEO4J_COMPLIANCE_SCAN:
 		return "status"
+	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
+		return "status"
 	}
 	return "error_sev_field_unknown"
 }
@@ -635,7 +639,7 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	nres, err := tx.Run(`
 		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[r:DETECTED]-> (d)
 		WHERE r.masked = false
-		RETURN d.`+type2sev_field(scan_type),
+		RETURN d.`+type2sev_field(scan_type)+`, COUNT(*)`,
 		map[string]interface{}{"scan_id": scan_id})
 	if err != nil {
 		return res, err
@@ -646,8 +650,8 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 		return res, err
 	}
 
-	for i := range recs {
-		res[recs[i].Values[0].(string)] += 1
+	for _, rec := range recs {
+		res[rec.Values[0].(string)] = int32(rec.Values[1].(int64))
 	}
 
 	return res, nil
@@ -870,6 +874,8 @@ func Labels2NodeType(labels []interface{}) string {
 			return "cluster"
 		} else if str == "RegistryAccount" {
 			return "registry"
+		} else if str == "CloudNode" {
+			return "cloud_account"
 		}
 	}
 	return "unknown"

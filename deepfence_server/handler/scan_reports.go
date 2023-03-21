@@ -701,6 +701,10 @@ func (h *Handler) ListMalwareScansHandler(w http.ResponseWriter, r *http.Request
 	listScansHandler(w, r, utils.NEO4J_MALWARE_SCAN)
 }
 
+func (h *Handler) ListCloudComplianceScansHandler(w http.ResponseWriter, r *http.Request) {
+	listScansHandler(w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
+}
+
 func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
 	defer r.Body.Close()
 	var req model.ScanListReq
