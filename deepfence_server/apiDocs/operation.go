@@ -3,7 +3,7 @@ package apiDocs
 import (
 	"net/http"
 
-	"github.com/weaveworks/scope/render/detailed"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/render/detailed"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
