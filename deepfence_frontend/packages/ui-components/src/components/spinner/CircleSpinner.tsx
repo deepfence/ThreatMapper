@@ -1,7 +1,7 @@
 import { cva } from 'cva';
 import { twMerge } from 'tailwind-merge';
 
-export type SizeType = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'default';
+export type SizeType = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'default';
 
 type CircleSpinnerProps = {
   size?: SizeType;
@@ -12,6 +12,7 @@ const spinnerCVA = cva(['text-gray-200 animate-spin dark:text-gray-600 fill-blue
   variants: {
     size: {
       default: 'w-8 h-8',
+      xxs: 'w-2.5 h-2.5',
       xs: 'w-3 h-3',
       sm: 'w-3.5 h-3.5',
       md: 'w-4 h-4',

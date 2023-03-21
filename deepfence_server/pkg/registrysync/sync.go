@@ -104,7 +104,7 @@ func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registr
 		MERGE (m:RegistryAccount{node_id: $node_id })
 		MERGE (m) -[:HOSTS]-> (n)
 		SET n+= row, n.updated_at = TIMESTAMP(),
-		m.container_registry_ids = REDUCE(distinctElements = [], element IN m.container_registry_ids + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
+		m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
 		n.node_type='container_image',
 		m.registry_type=$registry_type,
 		n.node_name=n.docker_image_name+":"+n.docker_image_tag`,

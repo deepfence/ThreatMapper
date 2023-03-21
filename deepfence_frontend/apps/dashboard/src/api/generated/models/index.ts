@@ -86,6 +86,7 @@ export * from './ModelRegistryCountResp';
 export * from './ModelRegistryImageStubsReq';
 export * from './ModelRegistryImagesReq';
 export * from './ModelRegistryListResp';
+export * from './ModelRegistryUpdateReq';
 export * from './ModelResponseAccessToken';
 export * from './ModelSbomRequest';
 export * from './ModelSbomResponse';

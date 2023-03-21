@@ -103,13 +103,15 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 	}
 	defer tx.Close()
 
+	batch := ResourceToMaps(cs)
+
 	// Add everything
 	_, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
-		SET n+=row, n.resource_type = row.resource_id, n.cloud_region = COALESCE(row.region, 'global')`,
+		SET n+=row, n.node_type = row.resource_id, n.cloud_region = COALESCE(row.region, 'global')`,
 		map[string]interface{}{
-			"batch": ResourceToMaps(cs),
+			"batch": batch,
 		},
 	)
 
@@ -120,50 +122,65 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 
 	// Handle AWS EC2 & LBs
 	if _, err = tx.Run(`
-		MATCH (n:CloudResource)
-		WHERE n.arn IS NOT NULL
+		UNWIND $batch as row
+		MATCH (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
+		WHERE n.resource_id IN ['aws_ec2_instance', 'aws_ec2_application_load_balancer','aws_ec2_classic_load_balancer', 'aws_ec2_network_load_balancer']
 		AND n.security_groups IS NOT NULL
-		AND n.resource_id IN ['aws_ec2_instance', 'aws_ec2_application_load_balancer','aws_ec2_classic_load_balancer', 'aws_ec2_network_load_balancer']
 		WITH n, apoc.convert.fromJsonList(n.security_groups) as groups
 		UNWIND groups as group
 		WITH group, CASE WHEN apoc.meta.type(group) = "STRING" THEN group ELSE group.GroupName END as name, CASE WHEN apoc.meta.type(group) = "STRING" THEN group ELSE group.GroupId END as node_id
 		MERGE (m:SecurityGroup{node_id:node_id})
 		MERGE (m)-[:SECURED]->(n)
-		SET m.name = name`, map[string]interface{}{}); err != nil {
+		SET m.name = name`,
+		map[string]interface{}{
+			"batch": batch,
+		}); err != nil {
 		log.Error().Msgf("error: %+v", err)
 		return err
 	}
 
 	// Handle AWS Lambda
 	if _, err = tx.Run(`
-		MATCH (n:CloudResource{ resource_type:'aws_lambda_function'})
+		UNWIND $batch as row
+		MATCH (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
+		WHERE n.node_type IN ['aws_lambda_function']
 		WITH apoc.convert.fromJsonList(n.vpc_security_group_ids) as sec_group_ids,n
 		UNWIND sec_group_ids as group
 		MERGE (m:SecurityGroup{node_id:group})
-		MERGE (m)-[:SECURED]->(n)`, map[string]interface{}{}); err != nil {
+		MERGE (m)-[:SECURED]->(n)`,
+		map[string]interface{}{
+			"batch": batch,
+		}); err != nil {
 		log.Error().Msgf("error: %+v", err)
 		return err
 	}
 
 	// Handle AWS ECS
 	if _, err = tx.Run(`
-		MATCH (n:CloudResource)
-		WHERE n.arn IS NOT NULL
-		AND n.resource_type IN ['aws_ecs_service']
+		UNWIND $batch as row
+		MATCH (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
+		WHERE n.node_type IN ['aws_ecs_service']
 		WITH apoc.convert.fromJsonMap(n.network_configuration) as map,n
 		UNWIND map.AwsvpcConfiguration.SecurityGroups as secgroup
 		MERGE (m:SecurityGroup{node_id:secgroup})
-		MERGE (m)-[:SECURED]->(n)`, map[string]interface{}{}); err != nil {
+		MERGE (m)-[:SECURED]->(n)`,
+		map[string]interface{}{
+			"batch": batch,
+		}); err != nil {
 		log.Error().Msgf("error: %+v", err)
 		return err
 	}
 
 	if _, err = tx.Run(`
-		MATCH (n:CloudResource)
+		UNWIND $batch as row
+		MATCH (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
 		MATCH (m:Node{node_id: n.account_id})
 		SET n.cloud_provider = m.cloud_provider
 		WITH n, m
-		MERGE (m)-[:OWNS]->(n)`, map[string]interface{}{}); err != nil {
+		MERGE (m)-[:OWNS]->(n)`,
+		map[string]interface{}{
+			"batch": batch,
+		}); err != nil {
 		log.Error().Msgf("error: %+v", err)
 		return err
 	}
@@ -201,7 +218,7 @@ func (tc *CloudComplianceIngester) LinkNodesWithCloudResources(ctx context.Conte
 		WHERE map.label = 'AWS'
 		WITH map.id as id, n
 		MATCH (m:CloudResource)
-		WHERE m.resource_type = 'aws_ec2_instance'
+		WHERE m.node_type = 'aws_ec2_instance'
 		AND m.instance_id = id
 		MERGE (n) -[:IS]-> (m)`, map[string]interface{}{}); err != nil {
 		log.Error().Msgf("error: %+v", err)
@@ -214,7 +231,7 @@ func (tc *CloudComplianceIngester) LinkNodesWithCloudResources(ctx context.Conte
 		WHERE map.label = 'GCP'
 		WITH map.hostname as hostname, n
 		MATCH (m:CloudResource)
-		WHERE m.resource_type = 'gcp_compute_instance'
+		WHERE m.node_type = 'gcp_compute_instance'
 		AND m.hostname = hostname
 		MERGE (n) -[:IS]-> (m)`, map[string]interface{}{}); err != nil {
 		log.Error().Msgf("error: %+v", err)
@@ -227,7 +244,7 @@ func (tc *CloudComplianceIngester) LinkNodesWithCloudResources(ctx context.Conte
 		WHERE map.label = 'AZURE'
 		WITH map.vmId as vm, n
 		MATCH (m:CloudResource)
-		WHERE m.resource_type = 'azure_compute_virtual_machine'
+		WHERE m.node_type = 'azure_compute_virtual_machine'
 		AND m.arn = vm
 		MERGE (n) -[:IS]-> (m)`, map[string]interface{}{}); err != nil {
 		log.Error().Msgf("error: %+v", err)

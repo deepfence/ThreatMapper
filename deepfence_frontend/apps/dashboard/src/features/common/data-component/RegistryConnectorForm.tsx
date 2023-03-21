@@ -3,7 +3,7 @@ import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { getRegistriesApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse } from '@/api/generated';
+import { ApiDocsBadRequestResponse, ModelRegistryAddReq } from '@/api/generated';
 import { AmazonECRConnectorForm } from '@/components/registries-connector/AmazonECRConnectorForm';
 import { AzureCRConnectorForm } from '@/components/registries-connector/AzureCRConnectorForm';
 import { DockerConnectorForm as DockerRegistryConnectorForm } from '@/components/registries-connector/DockerConnectorForm';
@@ -14,6 +14,18 @@ import { HarborConnectorForm } from '@/components/registries-connector/HarborCon
 import { JfrogConnectorForm } from '@/components/registries-connector/JfrogConnectorForm';
 import { QuayConnectorForm } from '@/components/registries-connector/QuayConnectorForm';
 import { ApiError, makeRequest } from '@/utils/api';
+
+export const RegistryType = {
+  azure_container_registry: 'azure_container_registry',
+  docker_hub: 'docker_hub',
+  docker_private_registry: 'docker_private_registry',
+  ecr: 'ecr',
+  gitlab: 'gitlab',
+  google_container_registry: 'google_container_registry',
+  harbor: 'harbor',
+  jfrog_container_registry: 'jfrog_container_registry',
+  quay: 'quay',
+} as const;
 
 type ActionReturnType = {
   message?: string;
@@ -26,26 +38,20 @@ type FormProps = {
   registryType: string;
 };
 
-const REGISTRY_TYPE = {
-  ECR: 'ecr',
-  AZURE: 'azure',
-  GCR: 'gcr',
-  DOCKER_PRIVATE: 'dockerhub_private',
-  HARBOR: 'harbor',
-  GITLAB: 'gitlab',
-  JFROG: 'jfrog',
-  QUAY: 'quay',
-  DOCKER_HUB: 'docker_hub',
-};
-
-const getRequestBodyByRegistryType = (registryType: string, formData: FormData) => {
+const getRequestBodyByRegistryType = (
+  registryType: string,
+  formData: FormData,
+): ModelRegistryAddReq => {
   const body = Object.fromEntries(formData);
-  let requestParams = {};
+  let requestParams: ModelRegistryAddReq = {
+    name: '',
+    registry_type: '',
+  };
 
   switch (registryType) {
-    case REGISTRY_TYPE.DOCKER_HUB:
+    case RegistryType.docker_hub:
       requestParams = {
-        name: body.registryName,
+        name: body.registryName.toString(),
         non_secret: {
           docker_hub_namespace: body.namespace,
           docker_hub_username: body.username,
@@ -53,10 +59,120 @@ const getRequestBodyByRegistryType = (registryType: string, formData: FormData) 
         secret: {
           docker_hub_password: body.password,
         },
-        registry_type: registryType,
+        registry_type: 'docker_hub',
+      };
+      break;
+    case RegistryType.docker_private_registry:
+      requestParams = {
+        name: body.registryName.toString(),
+        non_secret: {
+          docker_registry_url: body.registryUrl,
+          docker_username: body.username,
+        },
+        secret: {
+          docker_password: body.password,
+        },
+        registry_type: 'docker_private_registry',
+      };
+      break;
+    case RegistryType.harbor:
+      requestParams = {
+        name: body.registryName.toString(),
+        non_secret: {
+          harbor_registry_url: body.registryUrl,
+          harbor_project_name: body.projectName,
+          harbor_username: body.username,
+        },
+        secret: {
+          harbor_password: body.password,
+        },
+        registry_type: 'harbor',
+      };
+      break;
+    case RegistryType.quay:
+      requestParams = {
+        name: body.registryName.toString(),
+        non_secret: {
+          quay_registry_url: body.registryUrl,
+          quay_namespace: body.namespace,
+        },
+        secret: {
+          quay_access_token: body.accessToken,
+        },
+        registry_type: 'quay',
       };
       break;
 
+    case RegistryType.gitlab:
+      requestParams = {
+        name: body.registryName.toString(),
+        non_secret: {
+          gitlab_registry_url: body.registryUrl,
+          gitlab_server_url: body.serverUrl,
+        },
+        secret: {
+          gitlab_access_token: body.accessToken,
+        },
+        registry_type: 'gitlab',
+      };
+      break;
+    case RegistryType.jfrog_container_registry:
+      requestParams = {
+        name: body.registryName.toString(),
+        non_secret: {
+          jfrog_registry_url: body.registryUrl,
+          jfrog_repository: body.repository,
+          jfrog_username: body.username,
+        },
+        secret: {
+          jfrog_password: body.password,
+        },
+        registry_type: 'jfrog_container_registry',
+      };
+      break;
+    case RegistryType.azure_container_registry:
+      requestParams = {
+        name: body.registryName.toString(),
+        non_secret: {
+          azure_registry_url: body.registryUrl,
+          azure_registry_username: body.username,
+        },
+        secret: {
+          azure_registry_password: body.password,
+        },
+        registry_type: 'azure_container_registry',
+      };
+      break;
+    case RegistryType.ecr:
+      requestParams = {
+        name: body.registryName.toString(),
+        non_secret: {
+          aws_region_name: body.awsRegion,
+          ecr_registry_username: body.username,
+
+          registry_id: body.awsSecretKey,
+          use_iam_role: body.awsSecretKey,
+          target_account_role_arn: body.awsSecretKey,
+        },
+        secret: {
+          aws_access_key_id: body.awsAccessKey,
+          aws_secret_access_key: body.awsSecretKey,
+        },
+        registry_type: 'ecr',
+      };
+      break;
+    case RegistryType.google_container_registry:
+      requestParams = {
+        name: body.registryName.toString(),
+        non_secret: {
+          registry_url: body.registryUrl,
+        },
+        secret: {
+          service_account_json: body.authFile,
+        },
+        registry_type: 'google_container_registry',
+      };
+      break;
     default:
       break;
   }
@@ -117,22 +233,27 @@ export const RegistryConnectorForm = ({
 
   return (
     <fetcher.Form method="post" action={'/data-component/registries/add-connector'}>
-      {registryType === REGISTRY_TYPE.DOCKER_HUB && (
+      {registryType === RegistryType.docker_hub && (
         <DockerRegistryConnectorForm errorMessage={fetcher?.data?.message ?? ''} />
       )}
-      {registryType === REGISTRY_TYPE.ECR && <AmazonECRConnectorForm />}
-      {registryType === REGISTRY_TYPE.AZURE && <AzureCRConnectorForm />}
-      {registryType === REGISTRY_TYPE.GCR && <GoogleCRConnectorForm />}
 
-      {registryType === REGISTRY_TYPE.DOCKER_PRIVATE && <DockerPriavateConnectorForm />}
+      {registryType === RegistryType.ecr && <AmazonECRConnectorForm />}
+      {registryType === RegistryType.azure_container_registry && <AzureCRConnectorForm />}
+      {registryType === RegistryType.google_container_registry && (
+        <GoogleCRConnectorForm />
+      )}
 
-      {registryType === REGISTRY_TYPE.HARBOR && <HarborConnectorForm />}
+      {registryType === RegistryType.docker_private_registry && (
+        <DockerPriavateConnectorForm />
+      )}
 
-      {registryType === REGISTRY_TYPE.GITLAB && <GitLabConnectorForm />}
+      {registryType === RegistryType.harbor && <HarborConnectorForm />}
 
-      {registryType === REGISTRY_TYPE.JFROG && <JfrogConnectorForm />}
+      {registryType === RegistryType.gitlab && <GitLabConnectorForm />}
 
-      {registryType === REGISTRY_TYPE.QUAY && <QuayConnectorForm />}
+      {registryType === RegistryType.jfrog_container_registry && <JfrogConnectorForm />}
+
+      {registryType === RegistryType.quay && <QuayConnectorForm />}
 
       <input type="text" name="registryType" hidden readOnly value={registryType} />
       {renderButton()}

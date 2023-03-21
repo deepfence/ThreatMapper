@@ -18,16 +18,16 @@ replace github.com/deepfence/golang_deepfence_sdk/utils => ../../../../golang_de
 require (
 	camlistore.org v0.0.0-20171230002226-a5a65f0d8b22
 	github.com/Jeffail/tunny v0.1.4
-	github.com/NYTimes/gziphandler v1.1.1
+	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/abrander/go-supervisord v0.0.0-20210517172913-a5469a4c50e2
 	github.com/armon/go-metrics v0.4.1
 	github.com/armon/go-radix v1.0.0
 	github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5
-	github.com/aws/aws-sdk-go v1.44.216
+	github.com/aws/aws-sdk-go v1.44.66
 	github.com/bluele/gcache v0.0.2
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/bradfitz/gomemcache v0.0.0-20230124162541-5f7a7d875746
-	github.com/bytedance/sonic v1.8.3
+	github.com/bytedance/sonic v1.8.5
 	github.com/c9s/goprocinfo v0.0.0-20210130143923-c95fcf8c64a8
 	github.com/coocood/freecache v1.2.3
 	github.com/davecgh/go-spew v1.1.1
@@ -38,7 +38,7 @@ require (
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/kubernetes-scanner v0.0.0-20230316141044-7e29acdbad02
 	github.com/dustin/go-humanize v1.0.1
-	github.com/fsouza/go-dockerclient v1.9.5
+	github.com/fsouza/go-dockerclient v1.9.6
 	github.com/gogo/protobuf v1.3.2
 	github.com/goji/httpauth v0.0.0-20160601135302-2da839ab0f4d
 	github.com/golang/protobuf v1.5.2
@@ -46,13 +46,13 @@ require (
 	github.com/google/gopacket v1.1.19
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
-	github.com/gorilla/websocket v1.5.0
+	github.com/gorilla/websocket v1.4.2
 	github.com/hashicorp/consul/api v1.20.0
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/k-sone/critbitgo v1.4.0
-	github.com/klauspost/compress v1.16.0
+	github.com/klauspost/compress v1.16.3
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d
-	github.com/miekg/dns v1.1.51
+	github.com/miekg/dns v1.1.52
 	github.com/mjibson/esc v0.2.0
 	github.com/nats-io/nats.go v1.24.0
 	github.com/olivere/elastic/v7 v7.0.32
@@ -64,15 +64,15 @@ require (
 	github.com/richo/GOSHOUT v0.0.0-20210103052837-9a2e452d4c18
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spaolacci/murmur3 v1.1.0
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.1
 	github.com/tylerb/graceful v1.2.15
 	github.com/typetypetype/conntrack v1.0.0
-	github.com/ugorji/go/codec v1.2.10
-	github.com/ugorji/go/codec/codecgen v1.2.10
+	github.com/ugorji/go/codec v1.2.11
+	github.com/ugorji/go/codec/codecgen v1.2.11
 	github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5
-	github.com/vishvananda/netns v0.0.4
+	github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74
 	github.com/weaveworks/billing-client v0.5.0
-	github.com/weaveworks/common v0.0.0-20230208133027-16871410fca4
+	github.com/weaveworks/common v0.0.0-20230315122012-918bab8e5f88
 	github.com/weaveworks/go-checkpoint v0.0.0-20220223124739-fd9899e2b4f2
 	github.com/weaveworks/tcptracer-bpf v0.0.0-00010101000000-000000000000
 	github.com/weaveworks/weave v2.6.5+incompatible
@@ -84,9 +84,9 @@ require (
 	golang.org/x/tools v0.7.0
 	google.golang.org/grpc v1.53.0
 	google.golang.org/protobuf v1.28.1
-	k8s.io/api v0.26.2
-	k8s.io/apimachinery v0.26.2
-	k8s.io/client-go v0.26.2
+	k8s.io/api v0.26.3
+	k8s.io/apimachinery v0.26.3
+	k8s.io/client-go v0.26.3
 )
 
 require (

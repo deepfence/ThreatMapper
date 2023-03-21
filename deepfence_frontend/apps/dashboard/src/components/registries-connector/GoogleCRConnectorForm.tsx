@@ -1,5 +1,5 @@
 import { HiViewGridAdd } from 'react-icons/hi';
-import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
+import { Card, FileInput, Step, Stepper, TextInput, Typography } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 
@@ -36,6 +36,13 @@ export const GoogleCRConnectorForm = () => {
             sizing="sm"
             name="registryUrl"
             placeholder="Registry URL"
+          />
+
+          <FileInput
+            className="w-3/4 min-[200px] max-w-xs"
+            label="Select your file"
+            sizing="sm"
+            name="authFile"
           />
         </Card>
       </Step>

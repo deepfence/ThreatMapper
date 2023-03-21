@@ -1,13 +1,10 @@
 import cx from 'classnames';
 import { HiViewGridAdd } from 'react-icons/hi';
-import { Button, Card, Step, Stepper, Typography } from 'ui-components';
+import { Card, Step, Stepper, Typography } from 'ui-components';
 
 import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const LinuxConnectorForm = () => {
-  const { navigate } = usePageNavigation();
-
   const code = `
 docker run -dit \\
 --cpus=".2" \\
@@ -58,22 +55,6 @@ deepfenceio/deepfence_agent_ce:latest`;
             </pre>
             <CopyToClipboardIcon text={code} />
           </Card>
-          <div className="flex flex-col mt-6">
-            <p className={`${Typography.size.xs}`}>
-              Note: After successfully run the commands above, your connector will appear
-              on MyConnector page, then you can perform scanning.
-            </p>
-            <Button
-              size="xs"
-              color="primary"
-              className="ml-auto"
-              onClick={() => {
-                navigate('/onboard/connectors/my-connectors');
-              }}
-            >
-              Go to connectors
-            </Button>
-          </div>
         </div>
       </Step>
     </Stepper>

@@ -1,14 +1,21 @@
 import { Suspense } from 'react';
 import { IconContext } from 'react-icons';
 import { FaAngleDoubleUp, FaImages, FaPlus, FaTags } from 'react-icons/fa';
-import { HiArrowSmLeft } from 'react-icons/hi';
+import { HiChevronRight } from 'react-icons/hi';
 import {
   generatePath,
   LoaderFunctionArgs,
   useLoaderData,
   useParams,
 } from 'react-router-dom';
-import { Button, Card, CircleSpinner, TableSkeleton } from 'ui-components';
+import {
+  Breadcrumb,
+  BreadcrumbLink,
+  Button,
+  Card,
+  CircleSpinner,
+  TableSkeleton,
+} from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelRegistryListResp } from '@/api/generated';
@@ -117,25 +124,19 @@ const loader = async ({
 const HeaderComponent = ({ nodeType }: { nodeType: string }) => {
   const { navigate } = usePageNavigation();
   return (
-    <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-      <DFLink
-        to="/registries"
-        className="flex hover:no-underline items-center justify-center mr-2"
-      >
-        <IconContext.Provider
-          value={{
-            className: 'w-5 h-5 text-blue-600 dark:text-blue-500 ',
-          }}
-        >
-          <HiArrowSmLeft />
-        </IconContext.Provider>
-      </DFLink>
-      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-        REGISTRY ACCOUNTS / {nodeType}
-      </span>
+    <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
+      <Breadcrumb separator={<HiChevronRight />} transparent>
+        <BreadcrumbLink>
+          <DFLink to={'/registries'}>REGISTRIES</DFLink>
+        </BreadcrumbLink>
+        <BreadcrumbLink>
+          <span className="inherit cursor-auto">{nodeType}</span>
+        </BreadcrumbLink>
+      </Breadcrumb>
       <div className="ml-auto flex items-center gap-x-4">
         <Button
           outline
+          color="primary"
           size="xs"
           startIcon={<FaPlus />}
           onClick={() => {

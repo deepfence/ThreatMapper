@@ -2,7 +2,7 @@ import cx from 'classnames';
 import { capitalize } from 'lodash-es';
 import { Suspense, useMemo } from 'react';
 import { IconContext } from 'react-icons';
-import { HiArrowSmLeft, HiExternalLink } from 'react-icons/hi';
+import { HiChevronRight, HiExternalLink } from 'react-icons/hi';
 import {
   LoaderFunctionArgs,
   Outlet,
@@ -12,6 +12,8 @@ import {
 } from 'react-router-dom';
 import {
   Badge,
+  Breadcrumb,
+  BreadcrumbLink,
   CircleSpinner,
   createColumnHelper,
   SortingState,
@@ -307,21 +309,15 @@ const UniqueVulnerabilities = () => {
   return (
     <div>
       <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-        <DFLink
-          to={'/vulnerability'}
-          className="flex hover:no-underline items-center justify-center  mr-2"
-        >
-          <IconContext.Provider
-            value={{
-              className: 'w-5 h-5 text-blue-600 dark:text-blue-500 ',
-            }}
-          >
-            <HiArrowSmLeft />
-          </IconContext.Provider>
-        </DFLink>
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-          UNIQUE VULNERABILITIES
-        </span>
+        <Breadcrumb separator={<HiChevronRight />} transparent>
+          <BreadcrumbLink>
+            <DFLink to={'/vulnerability'}>VULNERABILITIES</DFLink>
+          </BreadcrumbLink>
+          <BreadcrumbLink>
+            <span className="inherit cursor-auto">UNIQUE VULNERABILITIES</span>
+          </BreadcrumbLink>
+        </Breadcrumb>
+
         <span className="ml-2 max-h-5 flex items-center">
           {navigation.state === 'loading' ? <CircleSpinner size="xs" /> : null}
         </span>

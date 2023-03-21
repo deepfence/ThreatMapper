@@ -2,7 +2,6 @@ import cx from 'classnames';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { HiViewGridAdd } from 'react-icons/hi';
 import {
-  Button,
   Card,
   Select,
   SelectItem,
@@ -13,7 +12,6 @@ import {
 } from 'ui-components';
 
 import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 import { containsWhiteSpace } from '@/utils/validator';
 
 const containerRuntimeDropdown = [
@@ -197,7 +195,6 @@ ${sockCommand}="${_socketPath}" \\
 );
 
 export const K8ConnectorForm = () => {
-  const { navigate } = usePageNavigation();
   const [instruction, setInstruction] =
     useState(`helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 helm repo update
@@ -289,22 +286,6 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
                 <CopyToClipboardIcon text={instruction} className="top-0" />
               </div>
             </Card>
-            <div className="flex flex-col mt-6">
-              <p className={`${Typography.size.xs}`}>
-                Note: After successfully run the commands above, your connector will
-                appear on MyConnector page, then you can perform scanning.
-              </p>
-              <Button
-                size="xs"
-                color="primary"
-                className="ml-auto"
-                onClick={() => {
-                  navigate('/onboard/connectors/my-connectors');
-                }}
-              >
-                Go to connectors
-              </Button>
-            </div>
           </div>
         </Step>
       </Stepper>

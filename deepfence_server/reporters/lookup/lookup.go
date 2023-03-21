@@ -5,6 +5,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -26,6 +27,12 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 	if err != nil {
 		return nil, err
 	}
+
+	statuses, err := reporters_scan.GetScanStatuses[model.Host](ctx, filter.NodeIds)
+	if err != nil {
+		return nil, err
+	}
+
 	for i := range hosts {
 		processes, err := getHostProcesses(ctx, hosts[i])
 		if err != nil {
@@ -44,8 +51,25 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 			return nil, err
 		}
 		hosts[i].ContainerImages = container_images
+		hosts[i].RegularScanStatus = statuses[i]
 	}
 	return hosts, nil
+}
+
+func fillContainers(ctx context.Context, containers []model.Container) ([]model.Container, error) {
+	for i := range containers {
+		processes, err := getContainerProcesses(ctx, containers[i])
+		if err != nil {
+			return nil, err
+		}
+		containers[i].Processes = processes
+		images, err := getContainerContainerImages(ctx, containers[i])
+		if err != nil || len(images) != 1 {
+			return nil, err
+		}
+		containers[i].ContainerImage = images[0]
+	}
+	return containers, nil
 }
 
 func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Container, error) {
@@ -53,13 +77,21 @@ func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Cont
 	if err != nil {
 		return nil, err
 	}
-	for i := range containers {
-		processes, err := getContainerProcesses(ctx, containers[i])
-		if err != nil {
-			return nil, err
-		}
-		containers[i].Processes = processes
+
+	containers, err = fillContainers(ctx, containers)
+	if err != nil {
+		return nil, err
 	}
+
+	statuses, err := reporters_scan.GetScanStatuses[model.Container](ctx, filter.NodeIds)
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range containers {
+		containers[i].RegularScanStatus = statuses[i]
+	}
+
 	return containers, nil
 }
 
@@ -83,6 +115,14 @@ func GetContainerImagesReport(ctx context.Context, filter LookupFilter) ([]model
 	images, err := getGenericDirectNodeReport[model.ContainerImage](ctx, filter)
 	if err != nil {
 		return nil, err
+	}
+
+	statuses, err := reporters_scan.GetScanStatuses[model.Container](ctx, filter.NodeIds)
+	if err != nil {
+		return nil, err
+	}
+	for i := range images {
+		images[i].RegularScanStatus = statuses[i]
 	}
 	return images, nil
 }
@@ -256,11 +296,15 @@ func getIndirectFromIDs[T any](ctx context.Context, query string, ids []string) 
 }
 
 func getHostContainers(ctx context.Context, host model.Host) ([]model.Container, error) {
-	return getIndirectFromIDs[model.Container](ctx, `
+	containers, err := getIndirectFromIDs[model.Container](ctx, `
 		MATCH (n:Node) -[:HOSTS]-> (m:Container)
 		WHERE n.node_id IN $ids
 		RETURN m`,
 		[]string{host.ID})
+	if err != nil {
+		return nil, err
+	}
+	return fillContainers(ctx, containers)
 }
 
 func getHostContainerImages(ctx context.Context, host model.Host) ([]model.ContainerImage, error) {
@@ -289,16 +333,17 @@ func getHostProcesses(ctx context.Context, host model.Host) ([]model.Process, er
 
 func getContainerProcesses(ctx context.Context, container model.Container) ([]model.Process, error) {
 	return getIndirectFromIDs[model.Process](ctx, `
-		MATCH (n:Node) -[:HOSTS]-> (m:Process)
+		MATCH (n:Container) -[:HOSTS]-> (m:Process)
 		WHERE n.node_id IN $ids
 		RETURN m`,
 		[]string{container.ID})
 }
 
-func getContainerContainerImages(ctx context.Context, container model.Container) ([]model.Process, error) {
-	return getIndirectFromIDs[model.Process](ctx, `
-		MATCH (n:Node) -[:HOSTS]-> (m:Process)
+func getContainerContainerImages(ctx context.Context, container model.Container) ([]model.ContainerImage, error) {
+	return getIndirectFromIDs[model.ContainerImage](ctx, `
+		MATCH (n:Container) 
 		WHERE n.node_id IN $ids
+		MATCH (m:ContainerImage{node_id:n.docker_image_id})
 		RETURN m`,
 		[]string{container.ID})
 }

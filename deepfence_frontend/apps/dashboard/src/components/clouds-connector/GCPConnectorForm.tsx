@@ -1,34 +1,37 @@
 import cx from 'classnames';
 import { HiViewGridAdd } from 'react-icons/hi';
-import { Button, Card, Step, Stepper, Typography } from 'ui-components';
+import { Card, Step, Stepper, Typography } from 'ui-components';
 
 import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
-export const AzureConnectorForm = () => {
-  const { navigate } = usePageNavigation();
+export const GCPConnectorForm = () => {
+  const code = `
+provider "google" {
+  project = "<PROJECT_ID>; ex. dev1-123456"
+  region  = "<REGION_ID>; ex. asia-east1"
+}
 
-  const code = `provider "azurerm" {
-    features {}
-    subscription_id = "<SUBSCRIPTION_ID eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX>"
-  }
-  
-  module "cloud-scanner_example_single-subscription" {
-    source              = "deepfence/cloud-scanner/azure//examples/single-subscription"
-    version             = "0.1.0"
-    mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
-    mgmt-console-port   = "443"
-    deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  }
-  `;
+provider "google-beta" {
+  project = "<PROJECT_ID> ex. dev1-123456"
+  region  = "<REGION_ID>; ex. asia-east1"
+}
+
+module "cloud-scanner_example_single-project" {
+  source            = "deepfence/cloud-scanner/gcp//examples/single-project"
+  version           = "0.1.0"
+  mgmt-console-url  = "<Console URL> eg. XXX.XXX.XX.XXX"
+  mgmt-console-port = "443"
+  deepfence-key     = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+}
+`;
 
   return (
     <Stepper>
       <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation">
         <div className={`${Typography.size.sm} dark:text-gray-200`}>
-          Connect to your Azure Cloud Account via Teraform. Find out more information by{' '}
+          Connect to your Google Cloud Account via Teraform. Find out more information by{' '}
           <a
-            href={`https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/site_recovery_replicated_vm`}
+            href={`https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage`}
             target="_blank"
             rel="noreferrer"
             className="text-blue-600 dark:text-blue-500 mt-2"
@@ -99,22 +102,6 @@ export const AzureConnectorForm = () => {
               <CopyToClipboardIcon text={'terraform apply'} className="top-0" />
             </div>
           </Card>
-          <div className="flex flex-col mt-6">
-            <p className={`${Typography.size.xs}`}>
-              Note: After successfully run the commands above, your connector will appear
-              on MyConnector page, then you can perform scanning.
-            </p>
-            <Button
-              size="xs"
-              color="primary"
-              className="ml-auto"
-              onClick={() => {
-                navigate('/onboard/connectors/my-connectors');
-              }}
-            >
-              Go to connectors
-            </Button>
-          </div>
         </div>
       </Step>
     </Stepper>

@@ -29,23 +29,23 @@ replace github.com/weaveworks/scope => ../deepfence_agent/tools/apache/scope/
 require (
 	github.com/ThreeDotsLabs/watermill v1.2.0
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.2
-	github.com/anchore/syft v0.74.0
-	github.com/aws/aws-sdk-go v1.44.216
+	github.com/anchore/syft v0.75.0
+	github.com/aws/aws-sdk-go v1.44.225
 	github.com/deepfence/SecretScanner v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
 	github.com/deepfence/YaraHunter v0.0.0-00010101000000-000000000000
-	github.com/deepfence/agent-plugins-grpc v1.0.1
+	github.com/deepfence/agent-plugins-grpc v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230310063137-b653517c5502
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
 	github.com/hillu/go-yara/v4 v4.2.4
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/minio/minio-go/v7 v7.0.49
-	github.com/neo4j/neo4j-go-driver/v4 v4.4.5
+	github.com/neo4j/neo4j-go-driver/v4 v4.4.7
 	github.com/prometheus/client_golang v1.14.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/zerolog v1.29.0
-	github.com/twmb/franz-go v1.12.1
-	github.com/twmb/franz-go/pkg/kadm v1.7.0
+	github.com/twmb/franz-go v1.13.0
+	github.com/twmb/franz-go/pkg/kadm v1.8.0
 	go.opentelemetry.io/otel v1.14.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.14.0
 	go.opentelemetry.io/otel/sdk v1.14.0
@@ -105,7 +105,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.11.2 // indirect
+	github.com/go-playground/validator/v10 v10.12.0 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
 	github.com/gogo/googleapis v1.4.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -132,10 +132,10 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/k-sone/critbitgo v1.4.0 // indirect
-	github.com/klauspost/compress v1.16.0 // indirect
+	github.com/klauspost/compress v1.16.3 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
-	github.com/leodido/go-urn v1.2.1 // indirect
+	github.com/leodido/go-urn v1.2.2 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.1 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/httprc v1.0.4 // indirect
@@ -192,13 +192,13 @@ require (
 	github.com/sylabs/squashfs v0.6.1 // indirect
 	github.com/therootcompany/xz v1.0.1 // indirect
 	github.com/twmb/franz-go/pkg/kmsg v1.4.0 // indirect
-	github.com/ugorji/go/codec v1.2.10 // indirect
-	github.com/ugorji/go/codec/codecgen v1.2.10 // indirect
+	github.com/ugorji/go/codec v1.2.11 // indirect
+	github.com/ugorji/go/codec/codecgen v1.2.11 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/vbatts/tar-split v0.11.2 // indirect
 	github.com/wagoodman/go-partybus v0.0.0-20210627031916-db1f5573bbc5 // indirect
 	github.com/wagoodman/go-progress v0.0.0-20230301185719-21920a456ad5 // indirect
-	github.com/weaveworks/common v0.0.0-20230208133027-16871410fca4 // indirect
+	github.com/weaveworks/common v0.0.0-20230315122012-918bab8e5f88 // indirect
 	github.com/weaveworks/scope v1.13.2 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	go.opencensus.io v0.23.0 // indirect

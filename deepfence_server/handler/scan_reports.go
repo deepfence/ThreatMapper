@@ -472,7 +472,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	file := path.Join("sbom", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
-	info, err := mc.UploadFile(r.Context(), file, []byte(params.SBOM),
+	info, err := mc.UploadFile(r.Context(), file, []byte(sbom),
 		minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
 		log.Error().Msg(err.Error())
