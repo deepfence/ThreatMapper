@@ -16,6 +16,7 @@ import (
 )
 
 const (
+	diagnosticLogsCleanUpTimeout           = time.Hour * 6
 	dbReportCleanUpTimeout                 = time.Minute * 2
 	dbRegistryCleanUpTimeout               = time.Minute * 30
 	dbScanTimeout                          = time.Minute * 2
@@ -196,6 +197,20 @@ func CleanUpDB(msg *message.Message) error {
 		return err
 	}
 
+	if _, err = session.Run(`
+		MATCH (n:AgentDiagnosticLogs)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND NOT exists((n)-[:SCHEDULEDLOGS]->())
+		OR n.updated_at < TIMESTAMP()-$old_time_ms
+		WITH n LIMIT 100000
+		DETACH DELETE n`,
+		map[string]interface{}{
+			"time_ms":     diagnosticLogsCleanUpTimeout.Milliseconds(),
+			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+		}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -221,6 +236,20 @@ func RetryScansDB(msg *message.Message) error {
 		AND n.updated_at < TIMESTAMP()-$time_ms
 		AND n.retries < 3
 		SET n.retries = n.retries + 1, n.status=$new_status`,
+		map[string]interface{}{
+			"time_ms":    dbScanTimeout.Milliseconds(),
+			"old_status": utils.SCAN_STATUS_INPROGRESS,
+			"new_status": utils.SCAN_STATUS_STARTING,
+		}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run(`
+		MATCH (a:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n)
+		WHERE a.status = $old_status
+		AND a.updated_at < TIMESTAMP()-$time_ms
+		AND a.retries < 3
+		SET a.retries = a.retries + 1, a.status=$new_status`,
 		map[string]interface{}{
 			"time_ms":    dbScanTimeout.Milliseconds(),
 			"old_status": utils.SCAN_STATUS_INPROGRESS,

@@ -44,7 +44,7 @@ func SendAgentDiagnosticLogs(req ctl.SendAgentDiagnosticLogsRequest, pathsToZip 
 func publishDiagnosticLogsStatus(ctx context.Context, httpsClient *client.APIClient, nodeId string, status string, message string) error {
 	httpReq := httpsClient.DiagnosisApi.UpdateAgentDiagnosticLogsStatus(ctx, nodeId)
 	httpReq = httpReq.DiagnosisDiagnosticLogsStatus(client.DiagnosisDiagnosticLogsStatus{
-		Message: message,
+		Message: &message,
 		Status:  status,
 	})
 	res, err := httpsClient.DiagnosisApi.UpdateAgentDiagnosticLogsStatusExecute(httpReq)

@@ -40,7 +40,7 @@ type GenerateAgentDiagnosticLogsRequest struct {
 type DiagnosticLogsStatus struct {
 	NodeID  string `path:"node_id" validate:"required" required:"true"`
 	Status  string `json:"status" validate:"required" required:"true"`
-	Message string `json:"message" validate:"required" required:"true"`
+	Message string `json:"message"`
 }
 
 type DiagnosticLogsLink struct {
