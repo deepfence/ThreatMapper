@@ -14,7 +14,6 @@ type stringLatestEntry struct {
 	Key       string    `json:"key"`
 	Timestamp time.Time `json:"timestamp"`
 	Value     string    `json:"value"`
-	dummySelfer
 }
 
 // String returns the StringLatestEntry's string representation.
