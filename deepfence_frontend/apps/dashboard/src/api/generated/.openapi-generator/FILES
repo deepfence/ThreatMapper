@@ -28,9 +28,12 @@ models/DetailedConnectionSummary.ts
 models/DetailedNodeSummary.ts
 models/DetailedParent.ts
 models/DiagnosisDiagnosticLogsLink.ts
+models/DiagnosisDiagnosticLogsStatus.ts
 models/DiagnosisDiagnosticNotification.ts
-models/DiagnosisGenerateDiagnosticLogsRequest.ts
+models/DiagnosisGenerateAgentDiagnosticLogsRequest.ts
+models/DiagnosisGenerateConsoleDiagnosticLogsRequest.ts
 models/DiagnosisGetDiagnosticLogsResponse.ts
+models/DiagnosisNodeIdentifier.ts
 models/GraphNodeInfo.ts
 models/GraphProviderThreatGraph.ts
 models/GraphThreatNodeInfo.ts

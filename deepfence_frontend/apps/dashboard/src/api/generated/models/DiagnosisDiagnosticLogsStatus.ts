@@ -16,42 +16,49 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface DiagnosisGenerateDiagnosticLogsRequest
+ * @interface DiagnosisDiagnosticLogsStatus
  */
-export interface DiagnosisGenerateDiagnosticLogsRequest {
+export interface DiagnosisDiagnosticLogsStatus {
     /**
      * 
-     * @type {number}
-     * @memberof DiagnosisGenerateDiagnosticLogsRequest
+     * @type {string}
+     * @memberof DiagnosisDiagnosticLogsStatus
      */
-    tail: number;
+    message?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DiagnosisDiagnosticLogsStatus
+     */
+    status: string;
 }
 
 /**
- * Check if a given object implements the DiagnosisGenerateDiagnosticLogsRequest interface.
+ * Check if a given object implements the DiagnosisDiagnosticLogsStatus interface.
  */
-export function instanceOfDiagnosisGenerateDiagnosticLogsRequest(value: object): boolean {
+export function instanceOfDiagnosisDiagnosticLogsStatus(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "tail" in value;
+    isInstance = isInstance && "status" in value;
 
     return isInstance;
 }
 
-export function DiagnosisGenerateDiagnosticLogsRequestFromJSON(json: any): DiagnosisGenerateDiagnosticLogsRequest {
-    return DiagnosisGenerateDiagnosticLogsRequestFromJSONTyped(json, false);
+export function DiagnosisDiagnosticLogsStatusFromJSON(json: any): DiagnosisDiagnosticLogsStatus {
+    return DiagnosisDiagnosticLogsStatusFromJSONTyped(json, false);
 }
 
-export function DiagnosisGenerateDiagnosticLogsRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): DiagnosisGenerateDiagnosticLogsRequest {
+export function DiagnosisDiagnosticLogsStatusFromJSONTyped(json: any, ignoreDiscriminator: boolean): DiagnosisDiagnosticLogsStatus {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'tail': json['tail'],
+        'message': !exists(json, 'message') ? undefined : json['message'],
+        'status': json['status'],
     };
 }
 
-export function DiagnosisGenerateDiagnosticLogsRequestToJSON(value?: DiagnosisGenerateDiagnosticLogsRequest | null): any {
+export function DiagnosisDiagnosticLogsStatusToJSON(value?: DiagnosisDiagnosticLogsStatus | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -60,7 +67,8 @@ export function DiagnosisGenerateDiagnosticLogsRequestToJSON(value?: DiagnosisGe
     }
     return {
         
-        'tail': value.tail,
+        'message': value.message,
+        'status': value.status,
     };
 }
 

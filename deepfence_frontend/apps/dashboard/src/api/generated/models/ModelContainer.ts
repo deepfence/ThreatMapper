@@ -43,6 +43,18 @@ export interface ModelContainer {
      * @type {string}
      * @memberof ModelContainer
      */
+    cloud_compliance_scan_status: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelContainer
+     */
+    cloud_compliances_count: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
     compliance_scan_status: string;
     /**
      * 
@@ -147,6 +159,8 @@ export interface ModelContainer {
  */
 export function instanceOfModelContainer(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "cloud_compliance_scan_status" in value;
+    isInstance = isInstance && "cloud_compliances_count" in value;
     isInstance = isInstance && "compliance_scan_status" in value;
     isInstance = isInstance && "compliances_count" in value;
     isInstance = isInstance && "docker_container_name" in value;
@@ -178,6 +192,8 @@ export function ModelContainerFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
+        'cloud_compliance_scan_status': json['cloud_compliance_scan_status'],
+        'cloud_compliances_count': json['cloud_compliances_count'],
         'compliance_scan_status': json['compliance_scan_status'],
         'compliances_count': json['compliances_count'],
         'docker_container_name': json['docker_container_name'],
@@ -207,6 +223,8 @@ export function ModelContainerToJSON(value?: ModelContainer | null): any {
     }
     return {
         
+        'cloud_compliance_scan_status': value.cloud_compliance_scan_status,
+        'cloud_compliances_count': value.cloud_compliances_count,
         'compliance_scan_status': value.compliance_scan_status,
         'compliances_count': value.compliances_count,
         'docker_container_name': value.docker_container_name,
