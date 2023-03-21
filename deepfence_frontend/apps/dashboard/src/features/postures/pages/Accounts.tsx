@@ -42,12 +42,23 @@ import { DFAwait } from '@/utils/suspense';
 import { getPageFromSearchParams } from '@/utils/table';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
-enum ActionEnumType {
-  START_SCAN = 'start_scan',
-  VIEW_SCAN = 'view_scan',
-  VIEW_INVENTORY = 'view_inventory',
-  REFRESH_DATA = 'refresh_data',
-}
+const getNodeTypeByProviderName = (providerName: string) => {
+  switch (providerName) {
+    case 'linux':
+      return 'host';
+    case 'aws':
+      return 'aws';
+    case 'gcp':
+      return 'gcp';
+    case 'azure':
+      return 'azure';
+
+    case 'kubernetes':
+      return 'kubernetes_cluster';
+    default:
+      throw new Error('Invalid provider name');
+  }
+};
 
 export interface AccountData {
   id: string;
@@ -377,6 +388,11 @@ const PostureTable = () => {
             const accounts = resolvedData?.accounts ?? [];
             const totalRows = resolvedData?.totalRows ?? 0;
             const currentPage = resolvedData?.currentPage ?? 0;
+            const cloudProvider = accounts[0]?.cloud_provider ?? '';
+
+            if (!cloudProvider) {
+              throw new Error('Cloud provider is required to show table');
+            }
             return (
               <div>
                 <Modal
@@ -400,8 +416,8 @@ const PostureTable = () => {
                         });
                       }}
                       data={{
-                        nodeType: 'aws',
-                        nodeIds: Object.keys(openScanConfigure),
+                        nodeType: getNodeTypeByProviderName(cloudProvider),
+                        nodeIds: openScanConfigure.nodeIds,
                         images: [],
                       }}
                     />
