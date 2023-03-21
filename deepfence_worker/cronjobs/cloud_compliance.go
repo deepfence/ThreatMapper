@@ -119,15 +119,18 @@ func AddCloudControls(msg *message.Message) error {
 			service: 'AWS',
 			cloud_provider: 'aws',
 			category: 'Compliance',
+			compliance_type: $benchmark,
 			executable: false
 		})
-		WITH row.children AS children
+		WITH n, row.children AS children, row.benchmark_id AS benchmark_id
 		UNWIND children AS childControl
 		MATCH (m:CloudComplianceExecutable{control_id: childControl})
+		WHERE benchmark_id = m.parent_control_hierarchy[-1]
 		MERGE (n) -[:INCLUDES]-> (m)
 		`,
 			map[string]interface{}{
-				"batch": benchmarkMap,
+				"batch":     benchmarkMap,
+				"benchmark": benchmark,
 			}); err != nil {
 			return err
 		}

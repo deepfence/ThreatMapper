@@ -174,7 +174,7 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 	if _, err = tx.Run(`
 		UNWIND $batch as row
 		MATCH (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
-		MATCH (m:Node{node_id: n.account_id})
+		MATCH (m:CloudNode{node_id: n.account_id})
 		SET n.cloud_provider = m.cloud_provider
 		WITH n, m
 		MERGE (m)-[:OWNS]->(n)`,

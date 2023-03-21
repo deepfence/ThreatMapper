@@ -63,11 +63,17 @@ type CloudNodeAccountInfo struct {
 	LastScanStatus       string  `json:"last_scan_status"`
 }
 
+type CloudComplianceBenchmark struct {
+	Id             string   `json:"id"`
+	ComplianceType string   `json:"compliance_type"`
+	Controls       []string `json:"controls"`
+}
+
 type CloudComplianceScanDetails struct {
-	ScanId    string   `json:"scan_id"`
-	ScanType  string   `json:"scan_type"`
-	AccountId string   `json:"account_id"`
-	Controls  []string `json:"controls"`
+	ScanId     string                     `json:"scan_id"`
+	ScanTypes  []string                   `json:"scan_types"`
+	AccountId  string                     `json:"account_id"`
+	Benchmarks []CloudComplianceBenchmark `json:"benchmarks"`
 }
 
 type CloudNodeCloudtrailTrail struct {
@@ -134,8 +140,8 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 	if parentNodeId == "" {
 		matchNodeRes, err = tx.Run(`
 		WITH $param as row
-		MATCH (n:Node{node_id:row.node_id})
-		SET n+= row, n.updated_at = TIMESTAMP()`,
+		MATCH (n:CloudNode{node_id:row.node_id})
+		RETURN n.node_id`,
 			map[string]interface{}{
 				"param": nodeDetails,
 			})
@@ -144,10 +150,10 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 		}
 	} else {
 		matchNodeRes, err = tx.Run(`
-		MATCH (m:Node{node_id: $parent_node_id})
+		MATCH (m:CloudNode{node_id: $parent_node_id})
 		WITH $param as row, m
-		MERGE (n:Node{node_id:row.node_id}) <-[:IS_CHILD]- (m)
-		SET n+= row, n.updated_at = TIMESTAMP()`,
+		MATCH (n:CloudNode{node_id:row.node_id}) <-[:IS_CHILD]- (m)
+		RETURN n.node_id`,
 			map[string]interface{}{
 				"param":          nodeDetails,
 				"parent_node_id": parentNodeId,
@@ -161,7 +167,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 		if parentNodeId == "" {
 			if _, err := tx.Run(`
 			WITH $param as row
-			MERGE (n:Node{node_id:row.node_id})
+			MERGE (n:CloudNode{node_id:row.node_id})
 			SET n+= row, n.updated_at = TIMESTAMP()`,
 				map[string]interface{}{
 					"param": nodeDetails,
@@ -170,9 +176,9 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 			}
 		} else {
 			if _, err := tx.Run(`
-			MATCH (m:Node{node_id: $parent_node_id})
+			MATCH (m:CloudNode{node_id: $parent_node_id})
 			WITH $param as row, m
-			MERGE (n:Node{node_id:row.node_id}) <-[:IS_CHILD]- (m)
+			MERGE (n:CloudNode{node_id:row.node_id}) <-[:IS_CHILD]- (m)
 			SET n+= row, n.updated_at = TIMESTAMP()`,
 				map[string]interface{}{
 					"param":          nodeDetails,
@@ -214,11 +220,13 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 			ResourceCount:        0,
 		}
 		scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
-		neo4jNodeType := "Node"
+		neo4jNodeType := "CloudNode"
 		nodeLabel := "Hosts"
 		if postureProviderName == PostureProviderKubernetes {
 			neo4jNodeType = "KubernetesCluster"
 			nodeLabel = "Clusters"
+		} else if postureProviderName == PostureProviderLinux {
+			neo4jNodeType = "Node"
 		}
 		if postureProviderName == PostureProviderLinux || postureProviderName == PostureProviderKubernetes {
 			postureProvider.NodeLabel = nodeLabel
@@ -329,7 +337,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	defer tx.Close()
 
 	isOrgListing := false
-	neo4jNodeType := "Node"
+	neo4jNodeType := "CloudNode"
 	passStatus := []string{"ok", "info", "skip"}
 	scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
 	if cloudProvider == PostureProviderAWSOrg {
@@ -338,6 +346,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	} else if cloudProvider == PostureProviderKubernetes {
 		neo4jNodeType = "KubernetesCluster"
 	} else if cloudProvider == PostureProviderLinux {
+		neo4jNodeType = "Node"
 		passStatus = []string{"warn", "pass"}
 	}
 	var res neo4j.Result
@@ -440,13 +449,13 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	var countRes neo4j.Result
 	if isOrgListing {
 		countRes, err = tx.Run(`
-		MATCH (m:Node) -[:IS_CHILD]-> (n:Node{cloud_provider: $cloud_provider})
+		MATCH (m:CloudNode) -[:IS_CHILD]-> (n:CloudNode{cloud_provider: $cloud_provider})
 		RETURN COUNT(m)`,
 			map[string]interface{}{"cloud_provider": cloudProvider})
 	} else {
-		countRes, err = tx.Run(`
-		MATCH (n:Node {cloud_provider: $cloud_provider}) 
-		RETURN COUNT(*)`,
+		countRes, err = tx.Run(fmt.Sprintf(`
+		MATCH (n:%s {cloud_provider: $cloud_provider})
+		RETURN COUNT(*)`, neo4jNodeType),
 			map[string]interface{}{"cloud_provider": cloudProvider})
 	}
 
@@ -458,4 +467,58 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	total = int(countRec.Values[0].(int64))
 
 	return CloudNodeAccountsListResp{CloudNodeAccountInfo: cloud_node_accounts_info, Total: total}, nil
+}
+
+func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloudProvider string) ([]CloudComplianceBenchmark, error) {
+	var benchmarks []CloudComplianceBenchmark
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return benchmarks, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return benchmarks, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return benchmarks, err
+	}
+	defer tx.Close()
+
+	var res neo4j.Result
+	res, err = tx.Run(`
+		MATCH (n:CloudComplianceBenchmark) -[:INCLUDES]-> (m:CloudComplianceControl)
+		WHERE m.active = true AND m.compliance_type IN $compliance_types
+		RETURN  n.benchmark_id, n.compliance_type, collect(m.control_id)
+		ORDER BY n.compliance_type`,
+		map[string]interface{}{
+			"cloud_provider":   cloudProvider,
+			"compliance_types": complianceTypes,
+		})
+	if err != nil {
+		return benchmarks, err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return benchmarks, err
+	}
+
+	for _, rec := range recs {
+		var controls []string
+		for _, rVal := range rec.Values[2].([]interface{}) {
+			controls = append(controls, rVal.(string))
+		}
+		benchmark := CloudComplianceBenchmark{
+			Id:             rec.Values[0].(string),
+			ComplianceType: rec.Values[1].(string),
+			Controls:       controls,
+		}
+		benchmarks = append(benchmarks, benchmark)
+	}
+
+	return benchmarks, nil
 }
