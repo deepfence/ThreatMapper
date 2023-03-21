@@ -513,6 +513,9 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 	d.AddOperation("addRegistry", http.MethodPost, "/deepfence/registryaccount",
 		"Add Registry", "Add a new supported registry",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryAddReq), nil)
+	d.AddOperation("addRegistryGCR", http.MethodPost, "/deepfence/registryaccount/gcr",
+		"Add Google Container Registry", "Add a Google Container registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryGCRAddReq), nil)
 	d.AddOperation("updateRegistry", http.MethodPut, "/deepfence/registryaccount/{registry_id}",
 		"Update Registry", "Update registry",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryUpdateReq), nil)

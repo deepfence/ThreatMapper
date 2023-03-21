@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"mime/multipart"
 	"time"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
@@ -26,6 +27,12 @@ type RegistryAddReq struct {
 	Secret       map[string]interface{} `json:"secret"`
 	Extras       map[string]interface{} `json:"extras"`
 	RegistryType string                 `json:"registry_type" validate:"required,nospace" required:"true"`
+}
+
+type RegistryGCRAddReq struct {
+	Name               string         `formData:"name" json:"name" validate:"required,nospace,min=2,max=20" required:"true"`
+	RegistryURL        string         `formData:"registry_url" json:"registry_url" required:"true"`
+	ServiceAccountJson multipart.File `formData:"service_account_json" json:"service_account_json" validate:"required,nospace" required:"true"`
 }
 
 type RegistryUpdateReq struct {
