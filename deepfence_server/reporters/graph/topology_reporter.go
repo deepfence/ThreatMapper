@@ -500,6 +500,18 @@ type TopologyFilters struct {
 	FieldFilter      reporters.FieldsFilters `json:"field_filters" required:"true"`
 }
 
+type CloudProviderFilter struct {
+	AccountIds []string `json:"account_ids" required:"true"`
+}
+
+type ThreatFilters struct {
+	AwsFilter         CloudProviderFilter `json:"aws_filter" required:"true"`
+	GcpFilter         CloudProviderFilter `json:"gcp_filter" required:"true"`
+	AzureFilter       CloudProviderFilter `json:"azure_filter" required:"true"`
+	IssueType         string              `json:"type" required:"true" enum:"vulnerability,secret,malware,compliance,cloud_compliance"`
+	CloudResourceOnly bool                `json:"cloud_resource_only" required:"true"`
+}
+
 func (nc *neo4jTopologyReporter) getContainerGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
 	res := RenderedGraph{}
 

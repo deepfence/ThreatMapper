@@ -116,7 +116,7 @@ func (d *OpenApiDocs) AddGraphOperations() {
 
 	d.AddOperation("getThreatGraph", http.MethodPost, "/deepfence/graph/threat",
 		"Get Threat Graph", "Retrieve the full threat graph associated with the account",
-		http.StatusOK, []string{tagThreat}, bearerToken, nil, new(ThreatGraph))
+		http.StatusOK, []string{tagThreat}, bearerToken, new(ThreatFilters), new(ThreatGraph))
 }
 
 func (d *OpenApiDocs) AddLookupOperations() {
