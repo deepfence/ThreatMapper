@@ -3,7 +3,7 @@ package apiDocs
 import (
 	"net/http"
 
-	"github.com/weaveworks/scope/render/detailed"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/render/detailed"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
@@ -418,6 +418,9 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("listMalwareScan", http.MethodPost, "/deepfence/scan/list/malware",
 		"Get Malware Scans List", "Get Malware Scans list on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanListReq), new(ScanListResp))
+	d.AddOperation("listCloudComplianceScan", http.MethodPost, "/deepfence/scan/list/cloud-compliance",
+		"Get Cloud Compliance Scans List", "Get Cloud Compliance Scans list for cloud node",
+		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanListReq), new(ScanListResp))
 
 	// Scans' Results
 	d.AddOperation("resultsVulnerabilityScans", http.MethodPost, "/deepfence/scan/results/vulnerability",

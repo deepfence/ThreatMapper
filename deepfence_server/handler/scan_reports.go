@@ -46,8 +46,8 @@ func scanId(req model.NodeIdentifier) string {
 	return fmt.Sprintf("%s-%d", req.NodeId, time.Now().Unix())
 }
 
-func cloudComplianceScanId(nodeId, benchmarkType string) string {
-	return fmt.Sprintf("%s-%s-%d", nodeId, benchmarkType, time.Now().Unix())
+func cloudComplianceScanId(nodeId string) string {
+	return fmt.Sprintf("%s-%d", nodeId, time.Now().Unix())
 }
 
 func bulkScanId() string {
@@ -699,6 +699,10 @@ func (h *Handler) ListComplianceScansHandler(w http.ResponseWriter, r *http.Requ
 
 func (h *Handler) ListMalwareScansHandler(w http.ResponseWriter, r *http.Request) {
 	listScansHandler(w, r, utils.NEO4J_MALWARE_SCAN)
+}
+
+func (h *Handler) ListCloudComplianceScansHandler(w http.ResponseWriter, r *http.Request) {
+	listScansHandler(w, r, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
 }
 
 func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) {
@@ -1359,21 +1363,19 @@ func startMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 	scanIds := []string{}
 
 	for _, req := range reqs {
-		for _, benchmarkType := range benchmarkTypes {
-			scanId := cloudComplianceScanId(req.NodeId, benchmarkType)
+		scanId := cloudComplianceScanId(req.NodeId)
 
-			err = ingesters.AddNewCloudComplianceScan(ingesters.WriteDBTransaction{Tx: tx},
-				scanId,
-				benchmarkType,
-				req.NodeId,
-				reqs[0].NodeType)
+		err = ingesters.AddNewCloudComplianceScan(ingesters.WriteDBTransaction{Tx: tx},
+			scanId,
+			benchmarkTypes,
+			req.NodeId,
+			reqs[0].NodeType)
 
-			if err != nil {
-				log.Error().Msgf("%v", err)
-				return nil, "", err
-			}
-			scanIds = append(scanIds, scanId)
+		if err != nil {
+			log.Error().Msgf("%v", err)
+			return nil, "", err
 		}
+		scanIds = append(scanIds, scanId)
 	}
 
 	if len(scanIds) == 0 {
@@ -1400,10 +1402,8 @@ func startMultiComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, 
 	scanIds := []string{}
 	bulkId := bulkScanId()
 	for _, req := range reqs {
-		for _, benchmarkType := range benchmarkTypes {
-			scanId := cloudComplianceScanId(req.NodeId, benchmarkType)
-			scanIds = append(scanIds, scanId)
-		}
+		scanId := cloudComplianceScanId(req.NodeId)
+		scanIds = append(scanIds, scanId)
 	}
 	return scanIds, bulkId, nil
 }
