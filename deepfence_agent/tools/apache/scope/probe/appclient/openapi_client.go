@@ -98,6 +98,7 @@ const (
 func GetScannersWorkloads() int32 {
 	res := int32(0)
 	res += host.GetSecretScannerJobCount()
+	res += host.GetMalwareScannerJobCount()
 	//TODO: Add more scanners workfload
 	return res
 }
