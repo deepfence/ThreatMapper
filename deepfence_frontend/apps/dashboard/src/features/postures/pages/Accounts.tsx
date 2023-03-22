@@ -35,7 +35,10 @@ import { getCloudNodesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelCloudNodeAccountInfo } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
-import { PostureScanConfigureForm } from '@/components/scan-configure-forms/PostureScanConfigureForm';
+import {
+  CLOUDS,
+  PostureScanConfigureForm,
+} from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -133,7 +136,7 @@ async function getAccounts(
 
   return {
     accounts: result.cloud_node_accounts_info ?? [],
-    currentPage: 1,
+    currentPage: 0,
     totalRows: 15,
   };
 }
@@ -249,15 +252,19 @@ const PostureTable = () => {
             cell.row.original.last_scan_status?.toLowerCase() === 'complete';
           const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
             if (isScanComplete) {
-              return (
-                <DFLink
-                  to={generatePath(`/posture/scan-results/:scanId`, {
+              let redirectUrl = generatePath(`/posture/scan-results/:scanId`, {
+                scanId: cell.row.original.last_scan_id ?? '',
+              });
+              if (CLOUDS.includes(cell.row.original.cloud_provider ?? '')) {
+                redirectUrl = generatePath(
+                  `/posture/cloud/scan-results/:nodeType/:scanId`,
+                  {
                     scanId: cell.row.original.last_scan_id ?? '',
-                  })}
-                >
-                  {children}
-                </DFLink>
-              );
+                    nodeType: cell.row.original.cloud_provider ?? '',
+                  },
+                );
+              }
+              return <DFLink to={redirectUrl}>{children}</DFLink>;
             }
             return <>{children}</>;
           };
@@ -310,6 +317,11 @@ const PostureTable = () => {
       columnHelper.accessor('last_scan_status', {
         cell: (info) => {
           const value = info.getValue();
+          const unknowStatus =
+            value?.toLowerCase() !== 'complete' &&
+            value?.toLowerCase() !== 'error' &&
+            value;
+
           return (
             <Badge
               label={value?.toUpperCase() || 'UNKNOWN'}
@@ -318,6 +330,8 @@ const PostureTable = () => {
                   value?.toLowerCase() === 'complete',
                 'bg-[#de425b]/30 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
                   value?.toLowerCase() === 'error',
+                'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
+                  unknowStatus,
               })}
               size="sm"
             />
@@ -377,7 +391,7 @@ const PostureTable = () => {
         enableResizing: false,
       }),
     ],
-    [rowSelectionState, searchParams, setSearchParams],
+    [rowSelectionState, searchParams],
   );
 
   return (
@@ -391,7 +405,7 @@ const PostureTable = () => {
             const cloudProvider = accounts[0]?.cloud_provider ?? '';
 
             if (!cloudProvider) {
-              throw new Error('Cloud provider is required to show table');
+              return null;
             }
             return (
               <div>

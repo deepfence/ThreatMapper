@@ -37,6 +37,12 @@ export interface GraphThreatNodeInfo {
      * @type {number}
      * @memberof GraphThreatNodeInfo
      */
+    cloud_compliance_count: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof GraphThreatNodeInfo
+     */
     compliance_count: number;
     /**
      * 
@@ -88,6 +94,7 @@ export interface GraphThreatNodeInfo {
 export function instanceOfGraphThreatNodeInfo(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "attack_path" in value;
+    isInstance = isInstance && "cloud_compliance_count" in value;
     isInstance = isInstance && "compliance_count" in value;
     isInstance = isInstance && "count" in value;
     isInstance = isInstance && "id" in value;
@@ -111,6 +118,7 @@ export function GraphThreatNodeInfoFromJSONTyped(json: any, ignoreDiscriminator:
     return {
         
         'attack_path': json['attack_path'],
+        'cloud_compliance_count': json['cloud_compliance_count'],
         'compliance_count': json['compliance_count'],
         'count': json['count'],
         'id': json['id'],
@@ -132,6 +140,7 @@ export function GraphThreatNodeInfoToJSON(value?: GraphThreatNodeInfo | null): a
     return {
         
         'attack_path': value.attack_path,
+        'cloud_compliance_count': value.cloud_compliance_count,
         'compliance_count': value.compliance_count,
         'count': value.count,
         'id': value.id,

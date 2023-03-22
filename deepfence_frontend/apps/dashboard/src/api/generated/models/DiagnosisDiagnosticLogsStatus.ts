@@ -16,55 +16,49 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface DetailedParent
+ * @interface DiagnosisDiagnosticLogsStatus
  */
-export interface DetailedParent {
+export interface DiagnosisDiagnosticLogsStatus {
     /**
      * 
      * @type {string}
-     * @memberof DetailedParent
+     * @memberof DiagnosisDiagnosticLogsStatus
      */
-    id?: string;
+    message?: string;
     /**
      * 
      * @type {string}
-     * @memberof DetailedParent
+     * @memberof DiagnosisDiagnosticLogsStatus
      */
-    label?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DetailedParent
-     */
-    topologyId?: string;
+    status: string;
 }
 
 /**
- * Check if a given object implements the DetailedParent interface.
+ * Check if a given object implements the DiagnosisDiagnosticLogsStatus interface.
  */
-export function instanceOfDetailedParent(value: object): boolean {
+export function instanceOfDiagnosisDiagnosticLogsStatus(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "status" in value;
 
     return isInstance;
 }
 
-export function DetailedParentFromJSON(json: any): DetailedParent {
-    return DetailedParentFromJSONTyped(json, false);
+export function DiagnosisDiagnosticLogsStatusFromJSON(json: any): DiagnosisDiagnosticLogsStatus {
+    return DiagnosisDiagnosticLogsStatusFromJSONTyped(json, false);
 }
 
-export function DetailedParentFromJSONTyped(json: any, ignoreDiscriminator: boolean): DetailedParent {
+export function DiagnosisDiagnosticLogsStatusFromJSONTyped(json: any, ignoreDiscriminator: boolean): DiagnosisDiagnosticLogsStatus {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'id': !exists(json, 'id') ? undefined : json['id'],
-        'label': !exists(json, 'label') ? undefined : json['label'],
-        'topologyId': !exists(json, 'topologyId') ? undefined : json['topologyId'],
+        'message': !exists(json, 'message') ? undefined : json['message'],
+        'status': json['status'],
     };
 }
 
-export function DetailedParentToJSON(value?: DetailedParent | null): any {
+export function DiagnosisDiagnosticLogsStatusToJSON(value?: DiagnosisDiagnosticLogsStatus | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -73,9 +67,8 @@ export function DetailedParentToJSON(value?: DetailedParent | null): any {
     }
     return {
         
-        'id': value.id,
-        'label': value.label,
-        'topologyId': value.topologyId,
+        'message': value.message,
+        'status': value.status,
     };
 }
 

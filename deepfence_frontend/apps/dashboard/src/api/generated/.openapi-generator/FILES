@@ -26,11 +26,13 @@ models/ControlsAction.ts
 models/ControlsAgentControls.ts
 models/DetailedConnectionSummary.ts
 models/DetailedNodeSummary.ts
-models/DetailedParent.ts
 models/DiagnosisDiagnosticLogsLink.ts
+models/DiagnosisDiagnosticLogsStatus.ts
 models/DiagnosisDiagnosticNotification.ts
-models/DiagnosisGenerateDiagnosticLogsRequest.ts
+models/DiagnosisGenerateAgentDiagnosticLogsRequest.ts
+models/DiagnosisGenerateConsoleDiagnosticLogsRequest.ts
 models/DiagnosisGetDiagnosticLogsResponse.ts
+models/DiagnosisNodeIdentifier.ts
 models/GraphNodeInfo.ts
 models/GraphProviderThreatGraph.ts
 models/GraphThreatNodeInfo.ts
@@ -55,6 +57,7 @@ models/ModelAgentUpgrade.ts
 models/ModelApiAuthRequest.ts
 models/ModelBasicNode.ts
 models/ModelCloudCompliance.ts
+models/ModelCloudComplianceBenchmark.ts
 models/ModelCloudComplianceScanDetails.ts
 models/ModelCloudComplianceScanResult.ts
 models/ModelCloudNodeAccountInfo.ts
@@ -133,11 +136,8 @@ models/ModelVulnerability.ts
 models/ModelVulnerabilityScanConfigLanguage.ts
 models/ModelVulnerabilityScanResult.ts
 models/ModelVulnerabilityScanTriggerReq.ts
-models/ReportColumn.ts
 models/ReportMetadataRow.ts
 models/ReportRawReport.ts
-models/ReportRow.ts
-models/ReportTable.ts
 models/ReportersContainsFilter.ts
 models/ReportersFieldsFilters.ts
 models/ReportersMatchFilter.ts

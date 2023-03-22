@@ -10,7 +10,9 @@ export const ACCOUNT_CONNECTOR = {
   GCP: 'gcp',
   AZURE: 'azure',
   LINUX: 'linux',
+  HOST: 'host',
   KUBERNETES: 'kubernetes',
+  CLUSTER: 'cluster',
 } as const;
 
 export const NoConnectors = () => {

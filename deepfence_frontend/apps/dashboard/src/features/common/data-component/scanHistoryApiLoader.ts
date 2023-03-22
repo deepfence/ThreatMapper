@@ -1,6 +1,7 @@
 import { LoaderFunctionArgs } from 'react-router-dom';
 
 import {
+  getCloudComplianceApiClient,
   getComplianceApiClient,
   getMalwareApiClient,
   getSecretApiClient,
@@ -39,7 +40,7 @@ async function getScanList(
       [ModelScanResultsActionRequestScanTypeEnum.MalwareScan]:
         getMalwareApiClient().listMalwareScans,
       [ModelScanResultsActionRequestScanTypeEnum.CloudComplianceScan]:
-        getComplianceApiClient().listComplianceScan,
+        getCloudComplianceApiClient().listCloudComplianceScan,
       [ModelScanResultsActionRequestScanTypeEnum.ComplianceScan]:
         getComplianceApiClient().listComplianceScan,
     }[scanType],

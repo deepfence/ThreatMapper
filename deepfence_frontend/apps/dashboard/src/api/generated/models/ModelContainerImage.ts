@@ -31,6 +31,18 @@ export interface ModelContainerImage {
      * @type {string}
      * @memberof ModelContainerImage
      */
+    cloud_compliance_scan_status: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelContainerImage
+     */
+    cloud_compliances_count: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainerImage
+     */
     compliance_scan_status: string;
     /**
      * 
@@ -123,6 +135,8 @@ export interface ModelContainerImage {
  */
 export function instanceOfModelContainerImage(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "cloud_compliance_scan_status" in value;
+    isInstance = isInstance && "cloud_compliances_count" in value;
     isInstance = isInstance && "compliance_scan_status" in value;
     isInstance = isInstance && "compliances_count" in value;
     isInstance = isInstance && "docker_image_name" in value;
@@ -152,6 +166,8 @@ export function ModelContainerImageFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
+        'cloud_compliance_scan_status': json['cloud_compliance_scan_status'],
+        'cloud_compliances_count': json['cloud_compliances_count'],
         'compliance_scan_status': json['compliance_scan_status'],
         'compliances_count': json['compliances_count'],
         'docker_image_name': json['docker_image_name'],
@@ -179,6 +195,8 @@ export function ModelContainerImageToJSON(value?: ModelContainerImage | null): a
     }
     return {
         
+        'cloud_compliance_scan_status': value.cloud_compliance_scan_status,
+        'cloud_compliances_count': value.cloud_compliances_count,
         'compliance_scan_status': value.compliance_scan_status,
         'compliances_count': value.compliances_count,
         'docker_image_name': value.docker_image_name,

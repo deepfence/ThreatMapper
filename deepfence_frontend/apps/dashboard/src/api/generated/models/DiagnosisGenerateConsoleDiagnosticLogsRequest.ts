@@ -16,32 +16,32 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface DiagnosisGenerateDiagnosticLogsRequest
+ * @interface DiagnosisGenerateConsoleDiagnosticLogsRequest
  */
-export interface DiagnosisGenerateDiagnosticLogsRequest {
+export interface DiagnosisGenerateConsoleDiagnosticLogsRequest {
     /**
      * 
      * @type {number}
-     * @memberof DiagnosisGenerateDiagnosticLogsRequest
+     * @memberof DiagnosisGenerateConsoleDiagnosticLogsRequest
      */
     tail: number;
 }
 
 /**
- * Check if a given object implements the DiagnosisGenerateDiagnosticLogsRequest interface.
+ * Check if a given object implements the DiagnosisGenerateConsoleDiagnosticLogsRequest interface.
  */
-export function instanceOfDiagnosisGenerateDiagnosticLogsRequest(value: object): boolean {
+export function instanceOfDiagnosisGenerateConsoleDiagnosticLogsRequest(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "tail" in value;
 
     return isInstance;
 }
 
-export function DiagnosisGenerateDiagnosticLogsRequestFromJSON(json: any): DiagnosisGenerateDiagnosticLogsRequest {
-    return DiagnosisGenerateDiagnosticLogsRequestFromJSONTyped(json, false);
+export function DiagnosisGenerateConsoleDiagnosticLogsRequestFromJSON(json: any): DiagnosisGenerateConsoleDiagnosticLogsRequest {
+    return DiagnosisGenerateConsoleDiagnosticLogsRequestFromJSONTyped(json, false);
 }
 
-export function DiagnosisGenerateDiagnosticLogsRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): DiagnosisGenerateDiagnosticLogsRequest {
+export function DiagnosisGenerateConsoleDiagnosticLogsRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): DiagnosisGenerateConsoleDiagnosticLogsRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -51,7 +51,7 @@ export function DiagnosisGenerateDiagnosticLogsRequestFromJSONTyped(json: any, i
     };
 }
 
-export function DiagnosisGenerateDiagnosticLogsRequestToJSON(value?: DiagnosisGenerateDiagnosticLogsRequest | null): any {
+export function DiagnosisGenerateConsoleDiagnosticLogsRequestToJSON(value?: DiagnosisGenerateConsoleDiagnosticLogsRequest | null): any {
     if (value === undefined) {
         return undefined;
     }

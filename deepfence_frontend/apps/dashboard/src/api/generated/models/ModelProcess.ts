@@ -70,10 +70,10 @@ export interface ModelProcess {
     ppid: string;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof ModelProcess
      */
-    threads: number;
+    threads: string;
 }
 
 /**

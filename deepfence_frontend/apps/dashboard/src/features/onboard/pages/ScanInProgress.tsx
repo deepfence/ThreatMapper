@@ -263,16 +263,7 @@ const ScanInProgress = () => {
         size: 150,
       }),
     ];
-    if (scanType.startsWith('compliance')) {
-      columns.push(
-        columnHelper.accessor('benchmark_type', {
-          cell: (info) => info.getValue()?.toUpperCase(),
-          header: () => 'Control Type',
-          minSize: 50,
-          size: 70,
-        }),
-      );
-    }
+
     columns.push(
       columnHelper.accessor((row) => row.status, {
         id: 'status',

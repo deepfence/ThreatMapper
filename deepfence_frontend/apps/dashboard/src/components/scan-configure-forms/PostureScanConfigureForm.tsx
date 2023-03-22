@@ -57,7 +57,7 @@ type TabsType = {
   value: string;
 };
 
-const clouds = ['aws', 'gcp', 'azure'];
+export const CLOUDS = ['aws', 'gcp', 'azure'];
 
 export const scanPostureApiAction = async ({
   request,
@@ -70,7 +70,7 @@ export const scanPostureApiAction = async ({
 
   if (nodeType === 'kubernetes_cluster') {
     nodeType = 'cluster';
-  } else if (clouds.includes(nodeType)) {
+  } else if (CLOUDS.includes(nodeType)) {
     nodeType = 'cloud_account';
   }
 

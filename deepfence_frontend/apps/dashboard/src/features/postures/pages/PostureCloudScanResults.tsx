@@ -49,10 +49,10 @@ import {
   TableSkeleton,
 } from 'ui-components';
 
-import { getComplianceApiClient, getScanResultsApiClient } from '@/api/api';
+import { getCloudComplianceApiClient, getScanResultsApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
-  ModelCompliance,
+  ModelCloudCompliance,
   ModelScanResultsActionRequestScanTypeEnum,
   ModelScanResultsReq,
 } from '@/api/generated';
@@ -103,7 +103,7 @@ type ScanResult = {
   nodeType: string;
   nodeId: string;
   timestamp: number;
-  compliances: ModelCompliance[];
+  compliances: ModelCloudCompliance[];
   pagination: {
     currentPage: number;
     totalRows: number;
@@ -132,6 +132,10 @@ const getBenchmarkType = (searchParams: URLSearchParams) => {
   return searchParams.getAll('benchmarkType');
 };
 
+const getServices = (searchParams: URLSearchParams) => {
+  return searchParams.getAll('services');
+};
+
 async function getScans(
   scanId: string,
   searchParams: URLSearchParams,
@@ -142,6 +146,7 @@ async function getScans(
   const mask = getMaskSearch(searchParams);
   const unmask = getUnmaskSearch(searchParams);
   const benchmarkTypes = getBenchmarkType(searchParams);
+  const services = getServices(searchParams);
 
   const scanResultsReq: ModelScanResultsReq = {
     fields_filter: {
@@ -173,6 +178,10 @@ async function getScans(
       benchmarkTypes;
   }
 
+  if (services.length) {
+    scanResultsReq.fields_filter.contains_filter.filter_in!['service'] = services;
+  }
+
   if (order) {
     scanResultsReq.fields_filter.order_filter.order_fields?.push({
       field_name: order.sortBy,
@@ -184,7 +193,7 @@ async function getScans(
   let resultCounts = null;
 
   result = await makeRequest({
-    apiFunction: getComplianceApiClient().resultComplianceScan,
+    apiFunction: getCloudComplianceApiClient().resultCloudComplianceScan,
     apiArgs: [
       {
         modelScanResultsReq: scanResultsReq,
@@ -201,7 +210,7 @@ async function getScans(
     },
   });
   resultCounts = await makeRequest({
-    apiFunction: getComplianceApiClient().resultCountComplianceScan,
+    apiFunction: getCloudComplianceApiClient().resultCountCloudComplianceScan,
     apiArgs: [
       {
         modelScanResultsReq: {
@@ -446,15 +455,18 @@ const HistoryDropdown = () => {
   const { navigate } = usePageNavigation();
   const fetcher = useFetcher<ApiLoaderDataType>();
   const loaderData = useLoaderData() as LoaderDataType;
-  const params = useParams();
+  const params = useParams() as {
+    scanId: string;
+    nodeType: string;
+  };
   const isScanHistoryLoading = fetcher.state === 'loading';
 
-  const onHistoryClick = (nodeType: string, nodeId: string) => {
+  const onHistoryClick = (nodeId: string) => {
     fetcher.load(
       generatePath('/data-component/scan-history/:scanType/:nodeType/:nodeId', {
         nodeId: nodeId,
-        nodeType: nodeType,
-        scanType: ModelScanResultsActionRequestScanTypeEnum.ComplianceScan,
+        nodeType: 'cloud_account',
+        scanType: ModelScanResultsActionRequestScanTypeEnum.CloudComplianceScan,
       }),
     );
   };
@@ -479,7 +491,7 @@ const HistoryDropdown = () => {
             <Dropdown
               triggerAsChild
               onOpenChange={(open) => {
-                if (open) onHistoryClick(resolvedData.nodeType, resolvedData.nodeId);
+                if (open) onHistoryClick(resolvedData.nodeId);
               }}
               content={
                 <>
@@ -490,9 +502,13 @@ const HistoryDropdown = () => {
                         key={item.scanId}
                         onClick={() => {
                           navigate(
-                            generatePath('/posture/scan-results/:scanId', {
-                              scanId: item.scanId,
-                            }),
+                            generatePath(
+                              '/posture/cloud/scan-results/:nodeType/:scanId',
+                              {
+                                scanId: item.scanId,
+                                nodeType: params.nodeType,
+                              },
+                            ),
                             {
                               replace: true,
                             },
@@ -628,7 +644,7 @@ const ActionDropdown = ({
 const ScanResusltTable = () => {
   const fetcher = useFetcher();
   const loaderData = useLoaderData() as LoaderDataType;
-  const columnHelper = createColumnHelper<ModelCompliance>();
+  const columnHelper = createColumnHelper<ModelCloudCompliance>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -637,17 +653,17 @@ const ScanResusltTable = () => {
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
-        size: 30,
+        size: 35,
         minSize: 30,
         maxSize: 40,
       }),
-      columnHelper.accessor('node_id', {
+      columnHelper.accessor('control_id', {
         enableSorting: false,
         enableResizing: false,
         cell: (info) => (
           <DFLink
             to={{
-              pathname: `./${info.getValue()}`,
+              pathname: `./${info.row.original.control_id}`,
               search: searchParams.toString(),
             }}
             className="flex items-center gap-x-2"
@@ -657,39 +673,47 @@ const ScanResusltTable = () => {
                 <PostureIcon />
               </div>
             </div>
-            <div className="truncate">{info.row.original.test_number}</div>
+            <div className="truncate">{info.row.original.control_id}</div>
           </DFLink>
         ),
-        header: () => 'Test ID',
-        minSize: 50,
-        size: 60,
-        maxSize: 65,
-      }),
-      columnHelper.accessor('test_category', {
-        enableSorting: false,
-        enableResizing: false,
-        cell: (info) => info.getValue(),
-        header: () => 'Category',
-        minSize: 80,
-        size: 90,
-        maxSize: 95,
+        header: () => 'Control ID',
+        minSize: 75,
+        size: 80,
+        maxSize: 85,
       }),
       columnHelper.accessor('compliance_check_type', {
         enableSorting: false,
         enableResizing: false,
         cell: (info) => info.getValue().toUpperCase(),
-        header: () => 'Check Type',
-        minSize: 60,
+        header: () => 'Benchmark Type',
+        minSize: 50,
         size: 60,
-        maxSize: 70,
+        maxSize: 65,
       }),
-
+      columnHelper.accessor('service', {
+        enableSorting: false,
+        enableResizing: false,
+        cell: (info) => info.getValue(),
+        header: () => 'Service',
+        minSize: 50,
+        size: 60,
+        maxSize: 65,
+      }),
+      columnHelper.accessor('resource', {
+        enableResizing: false,
+        enableSorting: false,
+        minSize: 115,
+        size: 120,
+        maxSize: 125,
+        header: () => 'Resource',
+        cell: (cell) => cell.getValue(),
+      }),
       columnHelper.accessor('description', {
         enableResizing: false,
         enableSorting: false,
-        minSize: 140,
-        size: 150,
-        maxSize: 160,
+        minSize: 115,
+        size: 120,
+        maxSize: 125,
         header: () => 'Description',
         cell: (cell) => cell.getValue(),
       }),
@@ -884,6 +908,11 @@ const ScanResusltTable = () => {
 
 const HeaderComponent = () => {
   const elementToFocusOnClose = useRef(null);
+
+  const params = useParams() as {
+    nodeType: string;
+  };
+
   const [searchParams, setSearchParams] = useSearchParams();
   const loaderData = useLoaderData() as LoaderDataType;
   const isFilterApplied =
@@ -897,12 +926,16 @@ const HeaderComponent = () => {
       <Suspense fallback={<CircleSpinner size="xs" />}>
         <DFAwait resolve={loaderData.data ?? []}>
           {(resolvedData: LoaderDataType['data']) => {
-            const { nodeType = 'unknown', nodeName } = resolvedData;
+            const { nodeName } = resolvedData;
+            let _nodeType = '';
+            if (params.nodeType === ACCOUNT_CONNECTOR.HOST) {
+              _nodeType = ACCOUNT_CONNECTOR.LINUX;
+            } else if (params.nodeType === ACCOUNT_CONNECTOR.CLUSTER) {
+              _nodeType = ACCOUNT_CONNECTOR.KUBERNETES;
+            } else {
+              _nodeType = params.nodeType;
+            }
 
-            const _nodeType =
-              nodeType === 'host'
-                ? ACCOUNT_CONNECTOR.LINUX
-                : ACCOUNT_CONNECTOR.KUBERNETES;
             return (
               <>
                 <Breadcrumb separator={<HiChevronRight />} transparent>
@@ -1015,13 +1048,15 @@ const HeaderComponent = () => {
                   <fieldset>
                     <Suspense fallback={<CircleSpinner size="xs" />}>
                       <DFAwait resolve={loaderData.data ?? []}>
-                        {(resolvedData: LoaderDataType['data']) => {
-                          const { nodeType = '' } = resolvedData;
+                        {(_: LoaderDataType['data']) => {
+                          const nodeType = params.nodeType;
                           let benchmarks: string[] = [];
-                          if (nodeType === 'host') {
-                            benchmarks = complianceType.host;
-                          } else {
-                            benchmarks = complianceType.kubernetes_cluster;
+                          if (nodeType === ACCOUNT_CONNECTOR.AWS) {
+                            benchmarks = complianceType.aws;
+                          } else if (nodeType === ACCOUNT_CONNECTOR.GCP) {
+                            benchmarks = complianceType.gcp;
+                          } else if (nodeType === ACCOUNT_CONNECTOR.AZURE) {
+                            benchmarks = complianceType.azure;
                           }
                           return (
                             <Select
@@ -1059,61 +1094,59 @@ const HeaderComponent = () => {
                     </Suspense>
                   </fieldset>
                   <fieldset>
-                    <Suspense fallback={<CircleSpinner size="xs" />}>
-                      <DFAwait resolve={loaderData.data ?? []}>
-                        {(resolvedData: LoaderDataType['data']) => {
-                          const { nodeType = '' } = resolvedData;
-                          let statuses: string[] = [];
-                          if (nodeType === 'host') {
-                            statuses = [
-                              STATUSES.INFO,
-                              STATUSES.PASS,
-                              STATUSES.WARN,
-                              STATUSES.NOTE,
-                            ];
-                          } else {
-                            statuses = [
-                              STATUSES.ALARM,
-                              STATUSES.INFO,
-                              STATUSES.OK,
-                              STATUSES.SKIP,
-                            ];
-                          }
-
+                    <Select
+                      noPortal
+                      name="services"
+                      label={'Service Name'}
+                      placeholder="Select Service Name"
+                      value={searchParams.getAll('services')}
+                      sizing="xs"
+                      onChange={(value) => {
+                        setSearchParams((prev) => {
+                          prev.delete('services');
+                          value.forEach((service) => {
+                            prev.append('services', service);
+                          });
+                          prev.delete('page');
+                          return prev;
+                        });
+                      }}
+                    >
+                      <SelectItem />
+                    </Select>
+                  </fieldset>
+                  <fieldset>
+                    <Select
+                      noPortal
+                      name="status"
+                      label={'Status'}
+                      placeholder="Select Status"
+                      value={searchParams.getAll('status')}
+                      sizing="xs"
+                      onChange={(value) => {
+                        setSearchParams((prev) => {
+                          prev.delete('status');
+                          value.forEach((language) => {
+                            prev.append('status', language);
+                          });
+                          prev.delete('page');
+                          return prev;
+                        });
+                      }}
+                    >
+                      {[STATUSES.ALARM, STATUSES.INFO, STATUSES.OK, STATUSES.SKIP].map(
+                        (status: string) => {
                           return (
-                            <Select
-                              noPortal
-                              name="status"
-                              label={'Status'}
-                              placeholder="Select Status"
-                              value={searchParams.getAll('status')}
-                              sizing="xs"
-                              onChange={(value) => {
-                                setSearchParams((prev) => {
-                                  prev.delete('status');
-                                  value.forEach((language) => {
-                                    prev.append('status', language);
-                                  });
-                                  prev.delete('page');
-                                  return prev;
-                                });
-                              }}
+                            <SelectItem
+                              value={status.toLowerCase()}
+                              key={status.toLowerCase()}
                             >
-                              {statuses.map((status: string) => {
-                                return (
-                                  <SelectItem
-                                    value={status.toLowerCase()}
-                                    key={status.toLowerCase()}
-                                  >
-                                    {status.toUpperCase()}
-                                  </SelectItem>
-                                );
-                              })}
-                            </Select>
+                              {status.toUpperCase()}
+                            </SelectItem>
                           );
-                        }}
-                      </DFAwait>
-                    </Suspense>
+                        },
+                      )}
+                    </Select>
                   </fieldset>
                 </div>
               </div>
@@ -1184,20 +1217,12 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                     eoption={{
                       series: [
                         {
-                          color:
-                            nodeType === 'host'
-                              ? [
-                                  POSTURE_STATUS_COLORS['info'],
-                                  POSTURE_STATUS_COLORS['pass'],
-                                  POSTURE_STATUS_COLORS['warn'],
-                                  POSTURE_STATUS_COLORS['note'],
-                                ]
-                              : [
-                                  POSTURE_STATUS_COLORS['alarm'],
-                                  POSTURE_STATUS_COLORS['info'],
-                                  POSTURE_STATUS_COLORS['ok'],
-                                  POSTURE_STATUS_COLORS['skip'],
-                                ],
+                          color: [
+                            POSTURE_STATUS_COLORS['alarm'],
+                            POSTURE_STATUS_COLORS['info'],
+                            POSTURE_STATUS_COLORS['ok'],
+                            POSTURE_STATUS_COLORS['skip'],
+                          ],
                         },
                       ],
                     }}
@@ -1238,7 +1263,7 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
     </Card>
   );
 };
-const PostureScanResults = () => {
+const PostureCloudScanResults = () => {
   const { mode } = useTheme();
 
   return (
@@ -1258,5 +1283,5 @@ const PostureScanResults = () => {
 export const module = {
   action,
   loader,
-  element: <PostureScanResults />,
+  element: <PostureCloudScanResults />,
 };

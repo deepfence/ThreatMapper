@@ -16,48 +16,61 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ReportRow
+ * @interface DiagnosisNodeIdentifier
  */
-export interface ReportRow {
-    /**
-     * 
-     * @type {{ [key: string]: string; }}
-     * @memberof ReportRow
-     */
-    entries?: { [key: string]: string; } | null;
+export interface DiagnosisNodeIdentifier {
     /**
      * 
      * @type {string}
-     * @memberof ReportRow
+     * @memberof DiagnosisNodeIdentifier
      */
-    id?: string;
+    node_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof DiagnosisNodeIdentifier
+     */
+    node_type: DiagnosisNodeIdentifierNodeTypeEnum;
 }
 
+
 /**
- * Check if a given object implements the ReportRow interface.
+ * @export
  */
-export function instanceOfReportRow(value: object): boolean {
+export const DiagnosisNodeIdentifierNodeTypeEnum = {
+    Host: 'host',
+    Cluster: 'cluster'
+} as const;
+export type DiagnosisNodeIdentifierNodeTypeEnum = typeof DiagnosisNodeIdentifierNodeTypeEnum[keyof typeof DiagnosisNodeIdentifierNodeTypeEnum];
+
+
+/**
+ * Check if a given object implements the DiagnosisNodeIdentifier interface.
+ */
+export function instanceOfDiagnosisNodeIdentifier(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_type" in value;
 
     return isInstance;
 }
 
-export function ReportRowFromJSON(json: any): ReportRow {
-    return ReportRowFromJSONTyped(json, false);
+export function DiagnosisNodeIdentifierFromJSON(json: any): DiagnosisNodeIdentifier {
+    return DiagnosisNodeIdentifierFromJSONTyped(json, false);
 }
 
-export function ReportRowFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportRow {
+export function DiagnosisNodeIdentifierFromJSONTyped(json: any, ignoreDiscriminator: boolean): DiagnosisNodeIdentifier {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'entries': !exists(json, 'entries') ? undefined : json['entries'],
-        'id': !exists(json, 'id') ? undefined : json['id'],
+        'node_id': json['node_id'],
+        'node_type': json['node_type'],
     };
 }
 
-export function ReportRowToJSON(value?: ReportRow | null): any {
+export function DiagnosisNodeIdentifierToJSON(value?: DiagnosisNodeIdentifier | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -66,8 +79,8 @@ export function ReportRowToJSON(value?: ReportRow | null): any {
     }
     return {
         
-        'entries': value.entries,
-        'id': value.id,
+        'node_id': value.node_id,
+        'node_type': value.node_type,
     };
 }
 

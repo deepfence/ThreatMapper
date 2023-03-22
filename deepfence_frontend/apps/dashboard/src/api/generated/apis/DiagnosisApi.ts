@@ -17,8 +17,10 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
+  DiagnosisDiagnosticLogsStatus,
   DiagnosisDiagnosticNotification,
-  DiagnosisGenerateDiagnosticLogsRequest,
+  DiagnosisGenerateAgentDiagnosticLogsRequest,
+  DiagnosisGenerateConsoleDiagnosticLogsRequest,
   DiagnosisGetDiagnosticLogsResponse,
 } from '../models';
 import {
@@ -26,20 +28,29 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
+    DiagnosisDiagnosticLogsStatusFromJSON,
+    DiagnosisDiagnosticLogsStatusToJSON,
     DiagnosisDiagnosticNotificationFromJSON,
     DiagnosisDiagnosticNotificationToJSON,
-    DiagnosisGenerateDiagnosticLogsRequestFromJSON,
-    DiagnosisGenerateDiagnosticLogsRequestToJSON,
+    DiagnosisGenerateAgentDiagnosticLogsRequestFromJSON,
+    DiagnosisGenerateAgentDiagnosticLogsRequestToJSON,
+    DiagnosisGenerateConsoleDiagnosticLogsRequestFromJSON,
+    DiagnosisGenerateConsoleDiagnosticLogsRequestToJSON,
     DiagnosisGetDiagnosticLogsResponseFromJSON,
     DiagnosisGetDiagnosticLogsResponseToJSON,
 } from '../models';
 
 export interface GenerateAgentDiagnosticLogsRequest {
-    diagnosisGenerateDiagnosticLogsRequest?: DiagnosisGenerateDiagnosticLogsRequest;
+    diagnosisGenerateAgentDiagnosticLogsRequest?: DiagnosisGenerateAgentDiagnosticLogsRequest;
 }
 
 export interface GenerateConsoleDiagnosticLogsRequest {
-    diagnosisGenerateDiagnosticLogsRequest?: DiagnosisGenerateDiagnosticLogsRequest;
+    diagnosisGenerateConsoleDiagnosticLogsRequest?: DiagnosisGenerateConsoleDiagnosticLogsRequest;
+}
+
+export interface UpdateAgentDiagnosticLogsStatusRequest {
+    nodeId: string;
+    diagnosisDiagnosticLogsStatus?: DiagnosisDiagnosticLogsStatus;
 }
 
 /**
@@ -67,7 +78,7 @@ export interface DiagnosisApiInterface {
     /**
      * Generate Agent Diagnostic Logs
      * @summary Generate Agent Diagnostic Logs
-     * @param {DiagnosisGenerateDiagnosticLogsRequest} [diagnosisGenerateDiagnosticLogsRequest] 
+     * @param {DiagnosisGenerateAgentDiagnosticLogsRequest} [diagnosisGenerateAgentDiagnosticLogsRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DiagnosisApiInterface
@@ -83,7 +94,7 @@ export interface DiagnosisApiInterface {
     /**
      * Generate Console Diagnostic Logs
      * @summary Generate Console Diagnostic Logs
-     * @param {DiagnosisGenerateDiagnosticLogsRequest} [diagnosisGenerateDiagnosticLogsRequest] 
+     * @param {DiagnosisGenerateConsoleDiagnosticLogsRequest} [diagnosisGenerateConsoleDiagnosticLogsRequest] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DiagnosisApiInterface
@@ -110,6 +121,23 @@ export interface DiagnosisApiInterface {
      * Get Diagnostic Logs
      */
     getDiagnosticLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DiagnosisGetDiagnosticLogsResponse>;
+
+    /**
+     * Update agent diagnostic logs status
+     * @summary Update Agent Diagnostic Logs Status
+     * @param {string} nodeId 
+     * @param {DiagnosisDiagnosticLogsStatus} [diagnosisDiagnosticLogsStatus] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof DiagnosisApiInterface
+     */
+    updateAgentDiagnosticLogsStatusRaw(requestParameters: UpdateAgentDiagnosticLogsStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Update agent diagnostic logs status
+     * Update Agent Diagnostic Logs Status
+     */
+    updateAgentDiagnosticLogsStatus(requestParameters: UpdateAgentDiagnosticLogsStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
 }
 
@@ -178,7 +206,7 @@ export class DiagnosisApi extends runtime.BaseAPI implements DiagnosisApiInterfa
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: DiagnosisGenerateDiagnosticLogsRequestToJSON(requestParameters.diagnosisGenerateDiagnosticLogsRequest),
+            body: DiagnosisGenerateAgentDiagnosticLogsRequestToJSON(requestParameters.diagnosisGenerateAgentDiagnosticLogsRequest),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
@@ -216,7 +244,7 @@ export class DiagnosisApi extends runtime.BaseAPI implements DiagnosisApiInterfa
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: DiagnosisGenerateDiagnosticLogsRequestToJSON(requestParameters.diagnosisGenerateDiagnosticLogsRequest),
+            body: DiagnosisGenerateConsoleDiagnosticLogsRequestToJSON(requestParameters.diagnosisGenerateConsoleDiagnosticLogsRequest),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
@@ -264,6 +292,48 @@ export class DiagnosisApi extends runtime.BaseAPI implements DiagnosisApiInterfa
     async getDiagnosticLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DiagnosisGetDiagnosticLogsResponse> {
         const response = await this.getDiagnosticLogsRaw(initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Update agent diagnostic logs status
+     * Update Agent Diagnostic Logs Status
+     */
+    async updateAgentDiagnosticLogsStatusRaw(requestParameters: UpdateAgentDiagnosticLogsStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.nodeId === null || requestParameters.nodeId === undefined) {
+            throw new runtime.RequiredError('nodeId','Required parameter requestParameters.nodeId was null or undefined when calling updateAgentDiagnosticLogsStatus.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/diagnosis/agent-logs/status/{node_id}`.replace(`{${"node_id"}}`, encodeURIComponent(String(requestParameters.nodeId))),
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DiagnosisDiagnosticLogsStatusToJSON(requestParameters.diagnosisDiagnosticLogsStatus),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Update agent diagnostic logs status
+     * Update Agent Diagnostic Logs Status
+     */
+    async updateAgentDiagnosticLogsStatus(requestParameters: UpdateAgentDiagnosticLogsStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.updateAgentDiagnosticLogsStatusRaw(requestParameters, initOverrides);
     }
 
 }

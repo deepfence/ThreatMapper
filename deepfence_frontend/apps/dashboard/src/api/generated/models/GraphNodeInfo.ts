@@ -24,6 +24,18 @@ export interface GraphNodeInfo {
      * @type {number}
      * @memberof GraphNodeInfo
      */
+    cloud_compliance_count: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof GraphNodeInfo
+     */
+    cloud_compliance_scan_id: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof GraphNodeInfo
+     */
     compliance_count: number;
     /**
      * 
@@ -80,6 +92,8 @@ export interface GraphNodeInfo {
  */
 export function instanceOfGraphNodeInfo(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "cloud_compliance_count" in value;
+    isInstance = isInstance && "cloud_compliance_scan_id" in value;
     isInstance = isInstance && "compliance_count" in value;
     isInstance = isInstance && "compliance_scan_id" in value;
     isInstance = isInstance && "image_name" in value;
@@ -103,6 +117,8 @@ export function GraphNodeInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
     }
     return {
         
+        'cloud_compliance_count': json['cloud_compliance_count'],
+        'cloud_compliance_scan_id': json['cloud_compliance_scan_id'],
         'compliance_count': json['compliance_count'],
         'compliance_scan_id': json['compliance_scan_id'],
         'image_name': json['image_name'],
@@ -124,6 +140,8 @@ export function GraphNodeInfoToJSON(value?: GraphNodeInfo | null): any {
     }
     return {
         
+        'cloud_compliance_count': value.cloud_compliance_count,
+        'cloud_compliance_scan_id': value.cloud_compliance_scan_id,
         'compliance_count': value.compliance_count,
         'compliance_scan_id': value.compliance_scan_id,
         'image_name': value.image_name,
