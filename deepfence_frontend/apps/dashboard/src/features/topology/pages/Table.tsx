@@ -256,6 +256,9 @@ function TopologyCloudTable() {
       />
       {clickedItem ? (
         <NodeDetailsStackedModal
+          onStartScanClick={() => {
+            /** TODO */
+          }}
           node={clickedItem}
           open={true}
           onOpenChange={(open) => {

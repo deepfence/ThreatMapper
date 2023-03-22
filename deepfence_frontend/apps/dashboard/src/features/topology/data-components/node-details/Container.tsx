@@ -77,6 +77,9 @@ export const Container = ({
 
   const header = (
     <Header
+      onStartScanClick={() => {
+        /**TODO */
+      }}
       nodeId={nodeId}
       nodeType="container"
       onGoBack={onGoBack}
