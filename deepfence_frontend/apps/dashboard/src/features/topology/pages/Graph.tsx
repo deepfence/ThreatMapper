@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
+import { IconContext } from 'react-icons';
+import { HiArrowsExpand } from 'react-icons/hi';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { useInterval, useMeasure } from 'react-use';
-import { CircleSpinner } from 'ui-components';
+import { CircleSpinner, Dropdown, DropdownItem } from 'ui-components';
 
 import { getTopologyApiClient } from '@/api/api';
 import { ApiDocsGraphResult } from '@/api/generated';
+import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { useG6raph } from '@/features/topology/hooks/useG6Graph';
 import {
   G6GraphEvent,
@@ -65,6 +68,16 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 
 const Graph = () => {
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
+  const [clickedItem, setClickedItem] = useState<{
+    nodeId: string;
+    nodeType: string;
+  }>();
+  const [contextmenu, setContextmenu] = useState<{
+    open: boolean;
+    x: number;
+    y: number;
+    model?: NodeModel;
+  }>({ open: false, x: 0, y: 0 });
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const { graph } = useG6raph(container, {}, {});
   const { dataDiffWithAction, isRefreshInProgress, ...graphDataManagerFunctions } =
@@ -102,27 +115,23 @@ const Graph = () => {
     graph.on('node:click', (e: G6GraphEvent) => {
       const { item: node } = e;
       const model = node?.getModel() as NodeModel;
-      if (!model?.df_data?.type) return; // does not do anything, helps with typescript errors
+      if (!model?.df_data?.type || !model?.df_data?.id) return;
+
+      setClickedItem({
+        nodeId: model.df_data.id,
+        nodeType: model.df_data.type,
+      });
+    });
+    graph.on('node:contextmenu', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const { item: node } = e;
+      const model = node?.getModel() as NodeModel;
+      if (!model?.df_data?.type) return;
       if (!itemExpands(model.df_data)) return;
 
-      if (
-        !graphDataManagerFunctionsRef.current.isNodeExpanded({
-          nodeId: model.id,
-          nodeType: model.df_data.type,
-        })
-      ) {
-        graphDataManagerFunctionsRef.current.getDataUpdates({
-          type: 'expandNode',
-          nodeId: model.id,
-          nodeType: model.df_data.type,
-        });
-      } else {
-        graphDataManagerFunctionsRef.current.getDataUpdates({
-          type: 'collapseNode',
-          nodeId: model.id,
-          nodeType: model.df_data.type,
-        });
-      }
+      setContextmenu({ open: true, x: e.canvasX, y: e.canvasY, model });
     });
     graph.on('node:mouseenter', (e: G6GraphEvent) => {
       onNodeHover(e.item as G6Node, true);
@@ -142,15 +151,85 @@ const Graph = () => {
   }, [graph]);
 
   return (
-    <div className="h-full w-full relative select-none" ref={measureRef}>
-      {/** had to use this absolute relative trick, otherwise element does not shrink, only grows */}
-      <div className="absolute inset-0" ref={setContainer} />
-      {isRefreshInProgress ? (
-        <div className="absolute bottom-32 left-6 text-gray-600 dark:text-gray-400">
-          <CircleSpinner size="xl" />
-        </div>
+    <>
+      <div className="h-full w-full relative select-none" ref={measureRef}>
+        {/** had to use this absolute relative trick, otherwise element does not shrink, only grows */}
+        <div className="absolute inset-0" ref={setContainer} />
+        {isRefreshInProgress ? (
+          <div className="absolute bottom-32 left-6 text-gray-600 dark:text-gray-400">
+            <CircleSpinner size="xl" />
+          </div>
+        ) : null}
+        {
+          <Dropdown
+            open={contextmenu.open}
+            onOpenChange={(open) => {
+              setContextmenu((prev) => {
+                return {
+                  ...prev,
+                  open,
+                };
+              });
+            }}
+            content={
+              <DropdownItem
+                onClick={() => {
+                  const model = contextmenu.model;
+                  if (!model) return;
+                  if (!model.df_data?.type) return;
+                  if (
+                    !graphDataManagerFunctionsRef.current.isNodeExpanded({
+                      nodeId: model.id,
+                      nodeType: model.df_data.type,
+                    })
+                  ) {
+                    graphDataManagerFunctionsRef.current.getDataUpdates({
+                      type: 'expandNode',
+                      nodeId: model.id,
+                      nodeType: model.df_data.type,
+                    });
+                  } else {
+                    graphDataManagerFunctionsRef.current.getDataUpdates({
+                      type: 'collapseNode',
+                      nodeId: model.id,
+                      nodeType: model.df_data.type,
+                    });
+                  }
+                }}
+              >
+                <IconContext.Provider value={{ size: '18px' }}>
+                  <HiArrowsExpand />
+                </IconContext.Provider>
+                <span>Expand/Collapse</span>
+              </DropdownItem>
+            }
+            triggerAsChild
+          >
+            {
+              <div
+                style={{
+                  height: 0,
+                  width: 0,
+                  opacity: 0,
+                  position: 'absolute',
+                  left: contextmenu.x,
+                  top: contextmenu.y,
+                }}
+              ></div>
+            }
+          </Dropdown>
+        }
+      </div>
+      {clickedItem ? (
+        <NodeDetailsStackedModal
+          node={clickedItem}
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setClickedItem(undefined);
+          }}
+        />
       ) : null}
-    </div>
+    </>
   );
 };
 

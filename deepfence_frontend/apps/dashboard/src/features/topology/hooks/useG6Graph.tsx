@@ -8,6 +8,7 @@ import {
   G6GraphData,
   G6GraphOptionsWithoutContainer,
 } from '@/features/topology/types/graph';
+import { itemExpands } from '@/features/topology/utils/expand-collapse';
 import { COLORS, GraphPalette } from '@/features/topology/utils/graph-styles';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 
@@ -84,12 +85,22 @@ const tooltip = new G6.Tooltip({
   className: 'g6-tooltip-override',
   getContent: (e) => {
     const model = e?.item?.getModel() as EnhancedDetailedNodeSummary | undefined;
+    const expands = model && itemExpands(model.df_data);
 
     return `
       <div role="tooltip" class="inline-block text-sm font-light text-gray-500 bg-white border border-gray-200 rounded-lg shadow-sm w-72 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400">
           <div class="p-3 space-y-2">
-              <h3 class="font-semibold text-gray-900 dark:text-gray-200">${model?.df_data.label}</h3>
-              <h4 class="text-sm font-normal text-gray-600 dark:text-gray-400">${model?.df_data.type}</h3>
+              <h3 class="font-semibold text-gray-900 dark:text-gray-200">${
+                model?.df_data.label
+              }</h3>
+              <h4 class="text-sm font-normal text-gray-600 dark:text-gray-400">${
+                model?.df_data.type
+              }</h3>
+              <div class="text-xs italic mt-4">
+                    * Click to view details.${
+                      expands ? ' Right-Click for more options.' : ''
+                    }
+              </div>
           </div>
       </div>
     `;

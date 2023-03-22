@@ -90,6 +90,9 @@ export const nodeStyle = (
   } else if (node?.df_data?.type === 'process') {
     style.fill = COLORS.PROCESS;
   }
+  if (node.df_data?.type && node.df_data.type !== 'pseudo') {
+    style.cursor = 'pointer';
+  }
 
   return style;
 };
