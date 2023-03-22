@@ -9,9 +9,13 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"os"
+	"strings"
 )
 
-var BenchmarksAvailable = []string{"cis", "nist", "pci", "gdpr", "hipaa", "soc_2"}
+var BenchmarksAvailableMap = map[string][]string{
+	"aws":   {"cis", "nist", "pci", "gdpr", "hipaa", "soc_2"},
+	"gcp":   {"cis"},
+	"azure": {"cis", "nist", "pci", "hipaa"}}
 
 type Benchmark struct {
 	BenchmarkId   string            `json:"benchmark_id"`
@@ -52,22 +56,23 @@ func AddCloudControls(msg *message.Message) error {
 	}
 	defer tx.Close()
 
-	cwd := "/cloud_controls/aws"
-	for _, benchmark := range BenchmarksAvailable {
-		controlFilePath := fmt.Sprintf("%s/%s.json", cwd, benchmark)
-		controlsJson, err := os.ReadFile(controlFilePath)
-		if err != nil {
-			return fmt.Errorf("Error reading controls file %s: %s", controlFilePath, err.Error())
-		}
-		var controlList []Control
-		if err := json.Unmarshal(controlsJson, &controlList); err != nil {
-			return fmt.Errorf("Error unmarshalling controls for compliance type %s: %s", benchmark, err.Error())
-		}
-		var controlMap []map[string]interface{}
-		for _, control := range controlList {
-			controlMap = append(controlMap, utils.ToMap(control))
-		}
-		if _, err = tx.Run(`
+	for cloud, benchmarksAvailable := range BenchmarksAvailableMap {
+		cwd := "/cloud_controls/" + cloud
+		for _, benchmark := range benchmarksAvailable {
+			controlFilePath := fmt.Sprintf("%s/%s.json", cwd, benchmark)
+			controlsJson, err := os.ReadFile(controlFilePath)
+			if err != nil {
+				return fmt.Errorf("Error reading controls file %s: %s", controlFilePath, err.Error())
+			}
+			var controlList []Control
+			if err := json.Unmarshal(controlsJson, &controlList); err != nil {
+				return fmt.Errorf("Error unmarshalling controls for compliance type %s: %s", benchmark, err.Error())
+			}
+			var controlMap []map[string]interface{}
+			for _, control := range controlList {
+				controlMap = append(controlMap, utils.ToMap(control))
+			}
+			if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:CloudComplianceExecutable:CloudComplianceControl{
 			node_id: row.parent_control_breadcrumb + row.control_id,
@@ -76,8 +81,8 @@ func AddCloudControls(msg *message.Message) error {
 			description: row.description,
 			title: row.title,
 			documentation: row.documentation,
-			service: 'AWS',
-			cloud_provider: 'aws',
+			service: $cloudCap,
+			cloud_provider: $cloud,
 			category: 'Compliance',
 			compliance_type: $benchmark,
 			parent_control_hierarchy: row.parent_control_hierarchy,
@@ -88,26 +93,28 @@ func AddCloudControls(msg *message.Message) error {
 		})
 		ON CREATE
 			SET n.active = true`,
-			map[string]interface{}{
-				"batch":     controlMap,
-				"benchmark": benchmark,
-			}); err != nil {
-			return err
-		}
-		benchmarkFilePath := fmt.Sprintf("%s/%s_benchmarks.json", cwd, benchmark)
-		benchmarksJson, err := os.ReadFile(benchmarkFilePath)
-		if err != nil {
-			return fmt.Errorf("Error reading benchmarks file %s: %s", benchmarkFilePath, err.Error())
-		}
-		var benchmarkList []Benchmark
-		if err := json.Unmarshal(benchmarksJson, &benchmarkList); err != nil {
-			return fmt.Errorf("Error unmarshalling benchmarks for compliance type %s: %s", benchmark, err.Error())
-		}
-		var benchmarkMap []map[string]interface{}
-		for _, benchMark := range benchmarkList {
-			benchmarkMap = append(benchmarkMap, utils.ToMap(benchMark))
-		}
-		if _, err = tx.Run(`
+				map[string]interface{}{
+					"batch":     controlMap,
+					"benchmark": benchmark,
+					"cloud":     cloud,
+					"cloudCap":  strings.ToUpper(cloud),
+				}); err != nil {
+				return err
+			}
+			benchmarkFilePath := fmt.Sprintf("%s/%s_benchmarks.json", cwd, benchmark)
+			benchmarksJson, err := os.ReadFile(benchmarkFilePath)
+			if err != nil {
+				return fmt.Errorf("Error reading benchmarks file %s: %s", benchmarkFilePath, err.Error())
+			}
+			var benchmarkList []Benchmark
+			if err := json.Unmarshal(benchmarksJson, &benchmarkList); err != nil {
+				return fmt.Errorf("Error unmarshalling benchmarks for compliance type %s: %s", benchmark, err.Error())
+			}
+			var benchmarkMap []map[string]interface{}
+			for _, benchMark := range benchmarkList {
+				benchmarkMap = append(benchmarkMap, utils.ToMap(benchMark))
+			}
+			if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:CloudComplianceExecutable:CloudComplianceBenchmark{
 			node_id: row.benchmark_id,
@@ -116,8 +123,8 @@ func AddCloudControls(msg *message.Message) error {
 			description: row.description,
 			title: row.title,
 			documentation: row.documentation,
-			service: 'AWS',
-			cloud_provider: 'aws',
+			service: $cloudCap,
+			cloud_provider: $cloud,
 			category: 'Compliance',
 			compliance_type: $benchmark,
 			executable: false
@@ -128,11 +135,14 @@ func AddCloudControls(msg *message.Message) error {
 		WHERE benchmark_id = m.parent_control_hierarchy[-1]
 		MERGE (n) -[:INCLUDES]-> (m)
 		`,
-			map[string]interface{}{
-				"batch":     benchmarkMap,
-				"benchmark": benchmark,
-			}); err != nil {
-			return err
+				map[string]interface{}{
+					"batch":     benchmarkMap,
+					"benchmark": benchmark,
+					"cloud":     cloud,
+					"cloudCap":  strings.ToUpper(cloud),
+				}); err != nil {
+				return err
+			}
 		}
 	}
 	return tx.Commit()

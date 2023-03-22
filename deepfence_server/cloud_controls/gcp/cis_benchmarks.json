@@ -1,0 +1,282 @@
+[
+  {
+    "benchmark_id": "gcp_compliance.benchmark.cis_v200",
+    "description": "The CIS Google Cloud Platform Foundations Security Benchmark covers foundational elements of Google Cloud Platform.",
+    "title": "CIS v2.0.0",
+    "tags": {
+      "benchmark": "cis",
+      "category": "Compliance",
+      "cis_version": "v2.0.0",
+      "plugin": "gcp",
+      "service": "GCP",
+      "type": "Benchmark"
+    },
+    "documentation": "To obtain the latest version of the official guide, please visit http://benchmarks.cisecurity.org.\n\n## Overview\n\nThe CIS Google Cloud Platform Foundations Security Benchmark covers foundational elements of Google Cloud Platform.\n\n## Profiles\n\nThe following configuration profiles are defined by this Benchmark:\n\n### Level 1\n\nItems in this profile intend to:\n- be practical and prudent;\n- provide a clear security benefit; and\n- not inhibit the utility of the technology beyond acceptable means.\n\n### Level 2\n\nThis profile extends the \"Level 1\" profile. Items in this profile exhibit one or more of the following characteristics:\n\n- are intended for environments or use cases where security is more critical than manageability and usability\n- acts as defense in depth measure\n- may impact the utility or performance of the technology\n- may include additional licensing, cost, or addition of third party software",
+    "children": [
+      "gcp_compliance.benchmark.cis_v200_1",
+      "gcp_compliance.benchmark.cis_v200_2",
+      "gcp_compliance.benchmark.cis_v200_3",
+      "gcp_compliance.benchmark.cis_v200_4",
+      "gcp_compliance.benchmark.cis_v200_5",
+      "gcp_compliance.benchmark.cis_v200_6",
+      "gcp_compliance.benchmark.cis_v200_7"
+    ]
+  },
+  {
+    "benchmark_id": "gcp_compliance.benchmark.cis_v200_1",
+    "description": "",
+    "title": "1 Identity and Access Management",
+    "tags": {
+      "benchmark": "cis",
+      "category": "Compliance",
+      "cis_section_id": "1",
+      "cis_version": "v2.0.0",
+      "plugin": "gcp",
+      "service": "GCP",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers recommendations addressing Identity and Access Management on Google Cloud Platform.\n",
+    "children": [
+      "gcp_compliance.control.cis_v200_1_1",
+      "gcp_compliance.control.cis_v200_1_2",
+      "gcp_compliance.control.cis_v200_1_3",
+      "gcp_compliance.control.cis_v200_1_4",
+      "gcp_compliance.control.cis_v200_1_5",
+      "gcp_compliance.control.cis_v200_1_6",
+      "gcp_compliance.control.cis_v200_1_7",
+      "gcp_compliance.control.cis_v200_1_8",
+      "gcp_compliance.control.cis_v200_1_9",
+      "gcp_compliance.control.cis_v200_1_10",
+      "gcp_compliance.control.cis_v200_1_11",
+      "gcp_compliance.control.cis_v200_1_12",
+      "gcp_compliance.control.cis_v200_1_13",
+      "gcp_compliance.control.cis_v200_1_14",
+      "gcp_compliance.control.cis_v200_1_15",
+      "gcp_compliance.control.cis_v200_1_16",
+      "gcp_compliance.control.cis_v200_1_17",
+      "gcp_compliance.control.cis_v200_1_18"
+    ]
+  },
+  {
+    "benchmark_id": "gcp_compliance.benchmark.cis_v200_2",
+    "description": "",
+    "title": "2 Logging and Monitoring",
+    "tags": {
+      "benchmark": "cis",
+      "category": "Compliance",
+      "cis_section_id": "2",
+      "cis_version": "v2.0.0",
+      "plugin": "gcp",
+      "service": "GCP",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers recommendations addressing Logging and Monitoring on Google Cloud Platform.",
+    "children": [
+      "gcp_compliance.control.cis_v200_2_1",
+      "gcp_compliance.control.cis_v200_2_2",
+      "gcp_compliance.control.cis_v200_2_3",
+      "gcp_compliance.control.cis_v200_2_4",
+      "gcp_compliance.control.cis_v200_2_5",
+      "gcp_compliance.control.cis_v200_2_6",
+      "gcp_compliance.control.cis_v200_2_7",
+      "gcp_compliance.control.cis_v200_2_8",
+      "gcp_compliance.control.cis_v200_2_9",
+      "gcp_compliance.control.cis_v200_2_10",
+      "gcp_compliance.control.cis_v200_2_11",
+      "gcp_compliance.control.cis_v200_2_12",
+      "gcp_compliance.control.cis_v200_2_13",
+      "gcp_compliance.control.cis_v200_2_14",
+      "gcp_compliance.control.cis_v200_2_15",
+      "gcp_compliance.control.cis_v200_2_16"
+    ]
+  },
+  {
+    "benchmark_id": "gcp_compliance.benchmark.cis_v200_3",
+    "description": "",
+    "title": "3 Networking",
+    "tags": {
+      "benchmark": "cis",
+      "category": "Compliance",
+      "cis_section_id": "3",
+      "cis_version": "v2.0.0",
+      "plugin": "gcp",
+      "service": "GCP",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers recommendations addressing networking on Google Cloud Platform.\n",
+    "children": [
+      "gcp_compliance.control.cis_v200_3_1",
+      "gcp_compliance.control.cis_v200_3_2",
+      "gcp_compliance.control.cis_v200_3_3",
+      "gcp_compliance.control.cis_v200_3_4",
+      "gcp_compliance.control.cis_v200_3_5",
+      "gcp_compliance.control.cis_v200_3_6",
+      "gcp_compliance.control.cis_v200_3_7",
+      "gcp_compliance.control.cis_v200_3_8",
+      "gcp_compliance.control.cis_v200_3_9",
+      "gcp_compliance.control.cis_v200_3_10"
+    ]
+  },
+  {
+    "benchmark_id": "gcp_compliance.benchmark.cis_v200_4",
+    "description": "",
+    "title": "4 Virtual Machines",
+    "tags": {
+      "benchmark": "cis",
+      "category": "Compliance",
+      "cis_section_id": "4",
+      "cis_version": "v2.0.0",
+      "plugin": "gcp",
+      "service": "GCP",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers recommendations addressing virtual machines on Google Cloud Platform.",
+    "children": [
+      "gcp_compliance.control.cis_v200_4_1",
+      "gcp_compliance.control.cis_v200_4_2",
+      "gcp_compliance.control.cis_v200_4_3",
+      "gcp_compliance.control.cis_v200_4_4",
+      "gcp_compliance.control.cis_v200_4_5",
+      "gcp_compliance.control.cis_v200_4_6",
+      "gcp_compliance.control.cis_v200_4_7",
+      "gcp_compliance.control.cis_v200_4_8",
+      "gcp_compliance.control.cis_v200_4_9",
+      "gcp_compliance.control.cis_v200_4_10",
+      "gcp_compliance.control.cis_v200_4_11",
+      "gcp_compliance.control.cis_v200_4_12"
+    ]
+  },
+  {
+    "benchmark_id": "gcp_compliance.benchmark.cis_v200_5",
+    "description": "",
+    "title": "5 Storage",
+    "tags": {
+      "benchmark": "cis",
+      "category": "Compliance",
+      "cis_section_id": "5",
+      "cis_version": "v2.0.0",
+      "plugin": "gcp",
+      "service": "GCP/Storage",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers recommendations addressing storage on Google Cloud Platform.",
+    "children": [
+      "gcp_compliance.control.cis_v200_5_1",
+      "gcp_compliance.control.cis_v200_5_2"
+    ]
+  },
+  {
+    "benchmark_id": "gcp_compliance.benchmark.cis_v200_6",
+    "description": "",
+    "title": "6 Cloud SQL Database Services",
+    "tags": {
+      "benchmark": "cis",
+      "category": "Compliance",
+      "cis_section_id": "6",
+      "cis_version": "v2.0.0",
+      "plugin": "gcp",
+      "service": "GCP/SQL",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers security recommendations to follow to secure Cloud SQL database services.\n\nThe recommendations in this section on setting up database flags are also present in the [CIS Oracle MySQL Community Server 5.7 Benchmarks](https://www.cisecurity.org/benchmark/oracle_mysql) and in the [CIS PostgreSQL 12 Benchmarks](https://www.cisecurity.org/benchmark/postgresql). We, nevertheless, include them here as well, the remediation instructions are different on Cloud SQL. Settings these flags require superuser privileges and can only be configured through GCP controls.\n\nLearn more at: [https://cloud.google.com/sql/docs/postgres/users](https://cloud.google.com/sql/docs/postgres/users) and [https://cloud.google.com/sql/docs/mysql/flags](https://cloud.google.com/sql/docs/mysql/flags).",
+    "children": [
+      "gcp_compliance.benchmark.cis_v200_6_1",
+      "gcp_compliance.benchmark.cis_v200_6_2",
+      "gcp_compliance.benchmark.cis_v200_6_3",
+      "gcp_compliance.control.cis_v200_6_4",
+      "gcp_compliance.control.cis_v200_6_5",
+      "gcp_compliance.control.cis_v200_6_6",
+      "gcp_compliance.control.cis_v200_6_7"
+    ]
+  },
+  {
+    "benchmark_id": "gcp_compliance.benchmark.cis_v200_6_1",
+    "description": "",
+    "title": "6.1 MySQL Database",
+    "tags": {
+      "benchmark": "cis",
+      "category": "Compliance",
+      "cis_section_id": "6.1",
+      "cis_version": "v2.0.0",
+      "plugin": "gcp",
+      "service": "GCP/SQL",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers recommendations addressing Cloud SQL for MySQL on Google Cloud Platform.",
+    "children": [
+      "gcp_compliance.control.cis_v200_6_1_1",
+      "gcp_compliance.control.cis_v200_6_1_2",
+      "gcp_compliance.control.cis_v200_6_1_3"
+    ]
+  },
+  {
+    "benchmark_id": "gcp_compliance.benchmark.cis_v200_6_2",
+    "description": "",
+    "title": "6.2 PostgreSQL Database",
+    "tags": {
+      "benchmark": "cis",
+      "category": "Compliance",
+      "cis_section_id": "6.2",
+      "cis_version": "v2.0.0",
+      "plugin": "gcp",
+      "service": "GCP/SQL",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers recommendations addressing Cloud SQL for PostgreSQL on Google Cloud Platform.",
+    "children": [
+      "gcp_compliance.control.cis_v200_6_2_1",
+      "gcp_compliance.control.cis_v200_6_2_2",
+      "gcp_compliance.control.cis_v200_6_2_3",
+      "gcp_compliance.control.cis_v200_6_2_4",
+      "gcp_compliance.control.cis_v200_6_2_5",
+      "gcp_compliance.control.cis_v200_6_2_6",
+      "gcp_compliance.control.cis_v200_6_2_7",
+      "gcp_compliance.control.cis_v200_6_2_8",
+      "gcp_compliance.control.cis_v200_6_2_9"
+    ]
+  },
+  {
+    "benchmark_id": "gcp_compliance.benchmark.cis_v200_6_3",
+    "description": "",
+    "title": "6.3 SQL Server",
+    "tags": {
+      "benchmark": "cis",
+      "category": "Compliance",
+      "cis_section_id": "6.3",
+      "cis_version": "v2.0.0",
+      "plugin": "gcp",
+      "service": "GCP/SQL",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers recommendations addressing Cloud SQL for SQL Server on Google Cloud Platform.",
+    "children": [
+      "gcp_compliance.control.cis_v200_6_3_1",
+      "gcp_compliance.control.cis_v200_6_3_2",
+      "gcp_compliance.control.cis_v200_6_3_3",
+      "gcp_compliance.control.cis_v200_6_3_4",
+      "gcp_compliance.control.cis_v200_6_3_5",
+      "gcp_compliance.control.cis_v200_6_3_6",
+      "gcp_compliance.control.cis_v200_6_3_7"
+    ]
+  },
+  {
+    "benchmark_id": "gcp_compliance.benchmark.cis_v200_7",
+    "description": "",
+    "title": "7 BigQuery",
+    "tags": {
+      "benchmark": "cis",
+      "category": "Compliance",
+      "cis_section_id": "7",
+      "cis_version": "v2.0.0",
+      "plugin": "gcp",
+      "service": "GCP/BigQuery",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section addresses Google CloudPlatform BigQuery. BigQuery is a serverless, highly-scalable, and cost-effective cloud data warehouse with an in-memory BI Engine and machine learning built in.\n",
+    "children": [
+      "gcp_compliance.control.cis_v200_7_1",
+      "gcp_compliance.control.cis_v200_7_2",
+      "gcp_compliance.control.cis_v200_7_3"
+    ]
+  }
+]
