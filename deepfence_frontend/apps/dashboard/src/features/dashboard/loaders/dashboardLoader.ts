@@ -1,11 +1,9 @@
 import { LoaderFunctionArgs, redirect } from 'react-router-dom';
 
-import storage from '@/utils/storage';
+import { requireLogin } from '@/utils/api';
 
-export const dashboardLoader = ({ request }: LoaderFunctionArgs) => {
-  if (!storage.getAuth()) {
-    throw redirect('/auth/login');
-  }
+export const dashboardLoader = async ({ request }: LoaderFunctionArgs) => {
+  await requireLogin();
   const url = new URL(request.url);
   if (url.pathname !== '/') {
     return null;

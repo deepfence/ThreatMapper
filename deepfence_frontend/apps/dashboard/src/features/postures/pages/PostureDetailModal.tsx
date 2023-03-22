@@ -5,13 +5,15 @@ import { capitalize, omit, pick, startCase, truncate } from 'lodash-es';
 import { Suspense, useState } from 'react';
 import { HiChevronDown } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
+import { LoaderFunctionArgs, useLoaderData, useSearchParams } from 'react-router-dom';
 import {
-  Form,
-  LoaderFunctionArgs,
-  useLoaderData,
-  useSearchParams,
-} from 'react-router-dom';
-import { Badge, CircleSpinner, ModalHeader, SlidingModal } from 'ui-components';
+  Badge,
+  CircleSpinner,
+  SlidingModal,
+  SlidingModalCloseButton,
+  SlidingModalContent,
+  SlidingModalHeader,
+} from 'ui-components';
 
 import { getSearchApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelCompliance } from '@/api/generated';
@@ -107,7 +109,7 @@ const Header = () => {
   const loaderData = useLoaderData() as LoaderDataType;
 
   return (
-    <ModalHeader>
+    <SlidingModalHeader>
       <Suspense fallback={<CircleSpinner size="xs" />}>
         <DFAwait resolve={loaderData.data}>
           {(compliane: LoaderDataType['data']) => {
@@ -141,7 +143,7 @@ const Header = () => {
           }}
         </DFAwait>
       </Suspense>
-    </ModalHeader>
+    </SlidingModalHeader>
   );
 };
 
@@ -262,16 +264,17 @@ const PostureDetailModal = () => {
   const [searchParams] = useSearchParams();
   return (
     <SlidingModal
-      header={<Header />}
       open={true}
       onOpenChange={() => {
         navigate(`..?${searchParams.toString()}`);
       }}
       width={'w-2/6'}
     >
-      <Form className="p-4">
+      <SlidingModalCloseButton />
+      <Header />
+      <SlidingModalContent>
         <DetailsComponent />
-      </Form>
+      </SlidingModalContent>
     </SlidingModal>
   );
 };

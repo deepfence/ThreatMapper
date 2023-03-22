@@ -4,8 +4,10 @@ import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 import {
   Badge,
   createColumnHelper,
-  ModalHeader,
   SlidingModal,
+  SlidingModalCloseButton,
+  SlidingModalContent,
+  SlidingModalHeader,
   Table,
   TableSkeleton,
 } from 'ui-components';
@@ -156,18 +158,17 @@ export const SbomModal = ({
 
   return (
     <SlidingModal
-      header={
-        <ModalHeader>
-          <div className="font-medium text-lg p-4">SBOM for {nodeName}</div>
-        </ModalHeader>
-      }
       open={true}
       onOpenChange={() => {
         onClose();
       }}
       width={'w-2/3'}
     >
-      <div className="p-4">{fetcher.data?.message ? fetcher.data?.message : table}</div>
+      <SlidingModalCloseButton />
+      <SlidingModalHeader>SBOM for {nodeName}</SlidingModalHeader>
+      <SlidingModalContent>
+        {fetcher.data?.message ? fetcher.data?.message : table}
+      </SlidingModalContent>
     </SlidingModal>
   );
 };

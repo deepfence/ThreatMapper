@@ -38,8 +38,8 @@ const (
 
 var CLOUD_ALL = [...]string{CLOUD_AWS, CLOUD_AZURE, CLOUD_GCP, CLOUD_PRIVATE}
 
-func (tc *ThreatGraphReporter) GetThreatGraph() (ThreatGraph, error) {
-	aggreg, err := tc.GetRawThreatGraph()
+func (tc *ThreatGraphReporter) GetThreatGraph(filter ThreatFilters) (ThreatGraph, error) {
+	aggreg, err := tc.GetRawThreatGraph(filter)
 	if err != nil {
 		return ThreatGraph{}, err
 	}
@@ -117,8 +117,8 @@ func build_attack_paths(paths AttackPaths, root int64, visited map[int64]struct{
 	return res
 }
 
-func (tc *ThreatGraphReporter) GetRawThreatGraph() (map[string]AttackPaths, error) {
-	session, err := tc.driver.Session(neo4j.AccessModeRead)
+func (tc *ThreatGraphReporter) GetRawThreatGraph(filters ThreatFilters) (map[string]AttackPaths, error) {
+	session, err := tc.driver.Session(neo4j.AccessModeWrite)
 
 	if err != nil {
 		return nil, err
@@ -131,30 +131,97 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph() (map[string]AttackPaths, erro
 	}
 	defer tx.Close()
 
+	_, err = tx.Run(`
+		MATCH (n:ThreatCloudResource)
+		REMOVE n:ThreatCloudResource
+	`, map[string]interface{}{})
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = tx.Run(`
+		MATCH (n:ThreatNode)
+		REMOVE n:ThreatNode
+	`, map[string]interface{}{})
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = tx.Run(`
+		MATCH (n:CloudResource)
+		WHERE n.depth IS NOT NULL
+		AND (
+			CASE WHEN $type = 'vulnerability' or $type = 'all' THEN n.num_cve > 0 ELSE false END
+			OR
+			CASE WHEN $type = 'secret' or $type = 'all' THEN n.num_secrets > 0 ELSE false END
+			OR
+			CASE WHEN $type = 'malware' or $type = 'all' THEN n.num_malware > 0 ELSE false END
+			OR
+			CASE WHEN $type = 'compliance' or $type = 'all' THEN n.num_compliance > 0 ELSE false END
+			OR 
+			CASE WHEN $type = 'cloud_compliance' or $type = 'all' THEN n.num_cloud_compliance > 0 ELSE false END
+		)
+		WITH n, n.cloud_provider as provider
+		WHERE CASE WHEN size($aws_ids) = 0 OR provider <> 'aws' then true ELSE n.account_id IN $aws_ids END
+		AND CASE WHEN size($gcp_ids) = 0 OR provider <> 'gcp' then true ELSE n.account_id IN $gcp_ids END
+		AND CASE WHEN size($azure_ids) = 0 OR provider <> 'azure' then true ELSE n.account_id IN $azure_ids END
+		SET n:ThreatCloudResource`,
+		map[string]interface{}{
+			"aws_ids":   filters.AwsFilter.AccountIds,
+			"gcp_ids":   filters.GcpFilter.AccountIds,
+			"azure_ids": filters.AzureFilter.AccountIds,
+			"type":      filters.IssueType,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = tx.Run(`
+		MATCH (n:Node)
+		WHERE n.depth IS NOT NULL
+		AND (
+			CASE WHEN $type = 'vulnerability' or $type = 'all' THEN n.num_cve > 0 ELSE false END
+			OR
+			CASE WHEN $type = 'secret' or $type = 'all' THEN n.num_secrets > 0 ELSE false END
+			OR
+			CASE WHEN $type = 'malware' or $type = 'all' THEN n.num_malware > 0 ELSE false END
+			OR
+			CASE WHEN $type = 'compliance' or $type = 'all' THEN n.num_compliance > 0 ELSE false END
+			OR 
+			CASE WHEN $type = 'cloud_compliance' or $type = 'all' THEN n.num_cloud_compliance > 0 ELSE false END
+		)
+		SET n:ThreatNode
+	`, map[string]interface{}{
+		"type": filters.IssueType,
+	},
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	all := map[string]AttackPaths{}
 	for _, cloud_provider := range CLOUD_ALL {
 		var res neo4j.Result
 		if cloud_provider != CLOUD_PRIVATE {
 			if res, err = tx.Run(`
-				CALL apoc.nodes.group(['CloudResource','Node'], ['node_type', 'depth', 'cloud_provider'],
+				CALL apoc.nodes.group(['ThreatCloudResource','ThreatNode'], ['node_type', 'depth', 'cloud_provider'],
 				[{`+"`*`"+`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum', sum_cloud_compliance: 'sum',
 				node_id:'collect', num_cve: 'collect', num_secrets:'collect', num_compliance:'collect', num_cloud_compliance: 'collect'},
 				{`+"`*`"+`: 'count'}], {selfRels: false})
 				YIELD node, relationships
-				WHERE apoc.any.property(node, 'depth') IS NOT NULL
-				AND apoc.any.property(node, 'cloud_provider') = '`+cloud_provider+`'
+				WHERE apoc.any.property(node, 'cloud_provider') = '`+cloud_provider+`'
 				RETURN node, relationships
 				`, map[string]interface{}{}); err != nil {
 			}
-		} else {
+		} else if !filters.CloudResourceOnly {
 			if res, err = tx.Run(`
-				CALL apoc.nodes.group(['Node'], ['node_type', 'depth', 'cloud_provider'],
+				CALL apoc.nodes.group(['ThreatNode'], ['node_type', 'depth', 'cloud_provider'],
 				[{`+"`*`"+`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum', sum_cloud_compliance: 'sum',
 				node_id:'collect', num_cve: 'collect', num_secrets:'collect', num_compliance:'collect', num_cloud_compliance:'collect'},
 				{`+"`*`"+`: 'count'}], {selfRels: false})
 				YIELD node, relationships
-				WHERE apoc.any.property(node, 'depth') IS NOT NULL
-				AND NOT apoc.any.property(node, 'cloud_provider') IN ['aws', 'gcp', 'azure']
+				WHERE NOT apoc.any.property(node, 'cloud_provider') IN ['aws', 'gcp', 'azure']
 				AND apoc.any.property(node, 'cloud_provider') <> 'internet'
 				RETURN node, relationships
 				`, map[string]interface{}{}); err != nil {

@@ -133,10 +133,10 @@ export const RegistryImagesTable = ({
       )}
       <ConfigureScanModal
         open={openScanConfigure !== ''}
-        setOpen={setOpenScanConfigure}
-        scanType={openScanConfigure}
-        wantAdvanceOptions={true}
-        data={{
+        onOpenChange={() => setOpenScanConfigure('')}
+        scanOptions={{
+          scanType: openScanConfigure,
+          showAdvancedOptions: true,
           nodeIds: [nodeId], // registry node id
           nodeType: 'image',
           images: selectedIds, // selected images

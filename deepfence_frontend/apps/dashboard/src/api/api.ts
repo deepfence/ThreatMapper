@@ -8,6 +8,7 @@ import {
   ComplianceApi,
   Configuration,
   ControlsApi,
+  LookupApi,
   MalwareScanApi,
   RegistryApi,
   ScanResultsApi,
@@ -46,6 +47,7 @@ export function getTopologyApiClient() {
   return {
     getHostsTopologyGraph: topologyApi.getHostsTopologyGraph.bind(topologyApi),
     getKubernetesTopologyGraph: topologyApi.getKubernetesTopologyGraph.bind(topologyApi),
+    getCloudTopologyGraph: topologyApi.getTopologyGraph.bind(topologyApi),
   };
 }
 
@@ -189,5 +191,18 @@ export function getCloudNodesApiClient() {
   return {
     listCloudNodeAccount: cloudNodesApi.listCloudNodeAccount.bind(cloudNodesApi),
     listCloudProviders: cloudNodesApi.listCloudProviders.bind(cloudNodesApi),
+  };
+}
+
+export function getLookupApiClient() {
+  const lookupApi = new LookupApi(configuration);
+  return {
+    lookupHost: lookupApi.getHosts.bind(lookupApi),
+    lookupContainer: lookupApi.getContainers.bind(lookupApi),
+    lookupImage: lookupApi.getContainerImages.bind(lookupApi),
+    lookupPod: lookupApi.getPods.bind(lookupApi),
+    lookupProcess: lookupApi.getProcesses.bind(lookupApi),
+    lookupKubernetesClusters: lookupApi.getKubernetesClusters.bind(lookupApi),
+    lookupCloudResources: lookupApi.getCloudResources.bind(lookupApi),
   };
 }

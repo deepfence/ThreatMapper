@@ -16,8 +16,10 @@ export const handlers = [
 ];
 
 const AllTheProviders: FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { toggleMode } = useThemeMode(true);
-  return <ThemeProvider value={{ toggleMode }}>{children}</ThemeProvider>;
+  const { mode, setMode, userSelectedMode } = useThemeMode();
+  return (
+    <ThemeProvider value={{ mode, setMode, userSelectedMode }}>{children}</ThemeProvider>
+  );
 };
 
 const renderUI = (ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) =>

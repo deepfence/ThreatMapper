@@ -200,13 +200,13 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
         id: 'kubernetesCluster',
         urlId: 'kubernetes_cluster',
         urlType: 'kubernetes_cluster',
-        accountType: 'Kubernetes Cluster',
+        accountType: 'Kubernetes Clusters',
         count: clusters.length,
         connections: clusters.map((cluster) => ({
           id: `kubernetesCluster-${cluster.id}`,
           urlId: cluster.id ?? '',
           urlType: 'kubernetes_cluster',
-          accountType: 'Kubernetes Cluster',
+          accountType: 'Kubernetes Clusters',
           connectionMethod: 'Agent',
           accountId: cluster.label ?? cluster.id ?? '-',
           active: true,
@@ -334,7 +334,9 @@ function MyConnectorsTable({ data }: LoaderData) {
           );
           return (
             <div className="flex gap-4">
-              {info.getValue()} ({info.row.original.count ?? 0} {nodeText})
+              <div className="font-semibold">
+                {info.getValue()} ({info.row.original.count ?? 0} {nodeText})
+              </div>
               {rowSelectionState[info.row.original.id] ? (
                 <DFLink
                   href="#"

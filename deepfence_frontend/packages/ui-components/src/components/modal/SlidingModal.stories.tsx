@@ -2,7 +2,12 @@ import { ComponentMeta } from '@storybook/react';
 import { useRef, useState } from 'react';
 
 import Button from '@/components/button/Button';
-import SlidingModal, { ModalHeader } from '@/components/modal/SlidingModal';
+import SlidingModal, {
+  SlidingModalCloseButton,
+  SlidingModalContent,
+  SlidingModalFooter,
+  SlidingModalHeader,
+} from '@/components/modal/SlidingModal';
 
 export default {
   title: 'Components/SlidingModal',
@@ -22,12 +27,17 @@ export const ModalWithTrigger = () => {
         Click to open
       </Button>
       <SlidingModal
-        header="Modal Title"
         open={open}
         onOpenChange={() => setOpen(false)}
         elementToFocusOnCloseRef={ref}
       >
-        <div className="dark:text-white">This is a content</div>
+        <SlidingModalCloseButton />
+        <SlidingModalHeader>
+          <div>Modal Header</div>
+        </SlidingModalHeader>
+        <SlidingModalContent>
+          <div className="dark:text-white">This is a content</div>
+        </SlidingModalContent>
       </SlidingModal>
     </>
   );
@@ -37,25 +47,28 @@ export const TriggerFromLeft = () => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
-  const Header = () => (
-    <ModalHeader>
-      <div>Title</div>
-    </ModalHeader>
-  );
-
   return (
     <>
       <Button color="primary" onClick={() => setOpen(true)} ref={ref}>
         Click to open
       </Button>
       <SlidingModal
-        header={<Header />}
         open={open}
         onOpenChange={() => setOpen(false)}
         elementToFocusOnCloseRef={ref}
         direction="left"
       >
-        <div className="dark:text-white">This is a content</div>
+        <SlidingModalCloseButton />
+
+        <SlidingModalHeader>
+          <div>Modal Title</div>
+        </SlidingModalHeader>
+        <SlidingModalContent>
+          <div className="dark:text-white">This is a content</div>
+        </SlidingModalContent>
+        <SlidingModalFooter>
+          <div>Modal Footer</div>
+        </SlidingModalFooter>
       </SlidingModal>
     </>
   );
@@ -75,13 +88,13 @@ export const WithoutTitle = () => {
         onOpenChange={() => setOpen(false)}
         elementToFocusOnCloseRef={ref}
       >
-        <div className="dark:text-white">This is a content</div>
+        <SlidingModalContent>
+          <div className="dark:text-white">This is a content</div>
+        </SlidingModalContent>
       </SlidingModal>
     </>
   );
 };
-
-const Footer = () => <div>Footer</div>;
 
 export const LongContent = () => {
   const [open, setOpen] = useState(false);
@@ -90,17 +103,15 @@ export const LongContent = () => {
       <Button color="primary" onClick={() => setOpen(true)}>
         Click to open
       </Button>
-      <SlidingModal
-        header="Modal Title"
-        open={open}
-        onOpenChange={() => setOpen(false)}
-        footer={<Footer />}
-      >
-        <div className="dark:text-white">
-          {Array.from(Array(30).keys()).map((k) => (
+      <SlidingModal open={open} onOpenChange={() => setOpen(false)}>
+        <SlidingModalCloseButton />
+        <SlidingModalHeader>Modal Title</SlidingModalHeader>
+        <SlidingModalContent>
+          {Array.from(Array(300).keys()).map((k) => (
             <p key={k}>This is a content</p>
           ))}
-        </div>
+        </SlidingModalContent>
+        <SlidingModalFooter>Modal Footer</SlidingModalFooter>
       </SlidingModal>
     </>
   );

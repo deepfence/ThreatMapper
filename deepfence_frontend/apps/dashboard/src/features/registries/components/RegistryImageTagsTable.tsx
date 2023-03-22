@@ -35,10 +35,10 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
     <>
       <ConfigureScanModal
         open={openScanConfigure !== ''}
-        setOpen={setOpenScanConfigure}
-        scanType={openScanConfigure}
-        wantAdvanceOptions={true}
-        data={{
+        onOpenChange={() => setOpenScanConfigure('')}
+        scanOptions={{
+          showAdvancedOptions: true,
+          scanType: openScanConfigure,
           nodeIds: ids,
           nodeType: 'imageTag',
         }}
@@ -265,10 +265,10 @@ export const RegistryImageTagsTable = ({
 
       <ConfigureScanModal
         open={openScanConfigure !== ''}
-        setOpen={setOpenScanConfigure}
-        scanType={openScanConfigure}
-        wantAdvanceOptions={true}
-        data={{
+        onOpenChange={() => setOpenScanConfigure('')}
+        scanOptions={{
+          showAdvancedOptions: true,
+          scanType: openScanConfigure,
           nodeIds: selectedIds,
           nodeType: 'imageTag',
         }}

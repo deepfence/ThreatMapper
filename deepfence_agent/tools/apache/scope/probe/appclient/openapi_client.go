@@ -10,7 +10,6 @@ import (
 
 	"github.com/bytedance/sonic"
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
-	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/klauspost/compress/gzip"
 	"github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/common/xfer"
@@ -96,15 +95,43 @@ const (
 	MAX_AGENT_WORKLOAD = 2
 )
 
+func GetScannersWorkloads() int32 {
+	res := int32(0)
+	res += host.GetSecretScannerJobCount()
+	//TODO: Add more scanners workfload
+	return res
+}
+
+var upgrade atomic.Bool
+
+func SetUpgrade() {
+	upgrade.Store(true)
+}
+
+func getUpgradeWorkload() int32 {
+	if upgrade.Load() {
+		return MAX_AGENT_WORKLOAD
+	}
+	return 0
+}
+
+func getMaxAllocatable() int32 {
+	workload := MAX_AGENT_WORKLOAD - GetScannersWorkloads() - getUpgradeWorkload()
+	if workload <= 0 {
+		workload = 0
+	}
+	logrus.Infof("Workload: %v\n", workload)
+	return workload
+}
+
 func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent bool) error {
-	workload_allocator := ctl.NewWorkloadAllocator(MAX_AGENT_WORKLOAD)
 	if isClusterAgent {
 
 	} else {
 		req := ct.client.ControlsApi.GetAgentInitControls(context.Background())
 		req = req.ModelInitAgentReq(
 			*openapi.NewModelInitAgentReq(
-				workload_allocator.MaxAllocable(),
+				getMaxAllocatable(),
 				nodeId,
 				host.AgentVersionNo,
 			),
@@ -117,23 +144,19 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 			return err
 		}
 
-		workload_allocator.Reserve(int32(len(ctl.Commands)))
-
 		for _, action := range ctl.Commands {
 			logrus.Infof("Init execute :%v", action.Id)
 			err := controls.ApplyControl(action)
 			if err != nil {
 				logrus.Errorf("Control %v failed: %v\n", action, err)
 			}
-			// TODO: call when work truly completes
-			workload_allocator.Free()
 		}
 	}
 
 	if isClusterAgent {
 		go func() {
 			req := ct.client.ControlsApi.GetKubernetesClusterControls(context.Background())
-			agentId := openapi.NewModelAgentId(workload_allocator.MaxAllocable(), nodeId)
+			agentId := openapi.NewModelAgentId(getMaxAllocatable(), nodeId)
 			req = req.ModelAgentId(*agentId)
 			for {
 				select {
@@ -141,7 +164,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 				case <-ct.stopControlListening:
 					break
 				}
-				agentId.SetAvailableWorkload(workload_allocator.MaxAllocable())
+				agentId.SetAvailableWorkload(getMaxAllocatable())
 				req = req.ModelAgentId(*agentId)
 				ctl, _, err := ct.client.ControlsApi.GetKubernetesClusterControlsExecute(req)
 				if err != nil {
@@ -151,23 +174,19 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 
 				ct.publishInterval.Store(ctl.Beatrate)
 
-				workload_allocator.Reserve(int32(len(ctl.Commands)))
-
 				for _, action := range ctl.Commands {
 					logrus.Infof("Execute :%v", action.Id)
 					err := controls.ApplyControl(action)
 					if err != nil {
 						logrus.Errorf("Control %v failed: %v\n", action, err)
 					}
-					// TODO: call when work truly completes
-					workload_allocator.Free()
 				}
 			}
 		}()
 	} else {
 		go func() {
 			req := ct.client.ControlsApi.GetAgentControls(context.Background())
-			agentId := openapi.NewModelAgentId(workload_allocator.MaxAllocable(), nodeId)
+			agentId := openapi.NewModelAgentId(getMaxAllocatable(), nodeId)
 			req = req.ModelAgentId(*agentId)
 			for {
 				select {
@@ -175,7 +194,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 				case <-ct.stopControlListening:
 					break
 				}
-				agentId.SetAvailableWorkload(workload_allocator.MaxAllocable())
+				agentId.SetAvailableWorkload(getMaxAllocatable())
 				req = req.ModelAgentId(*agentId)
 				ctl, _, err := ct.client.ControlsApi.GetAgentControlsExecute(req)
 				if err != nil {
@@ -185,16 +204,12 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 
 				ct.publishInterval.Store(ctl.Beatrate)
 
-				workload_allocator.Reserve(int32(len(ctl.Commands)))
-
 				for _, action := range ctl.Commands {
 					logrus.Infof("Execute :%v", action.Id)
 					err := controls.ApplyControl(action)
 					if err != nil {
 						logrus.Errorf("Control %v failed: %v\n", action, err)
 					}
-					// TODO: call when work truly completes
-					workload_allocator.Free()
 				}
 			}
 		}()

@@ -142,10 +142,10 @@ const ActionDropdown = ({ id }: { id: string }) => {
       />
       <ConfigureScanModal
         open={openScanConfigure !== ''}
-        setOpen={setOpenScanConfigure}
-        scanType={openScanConfigure}
-        wantAdvanceOptions={true}
-        data={{
+        onOpenChange={() => setOpenScanConfigure('')}
+        scanOptions={{
+          showAdvancedOptions: true,
+          scanType: openScanConfigure,
           nodeIds: [id],
           nodeType: 'registry',
         }}

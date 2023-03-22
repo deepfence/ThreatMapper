@@ -130,6 +130,8 @@ func setClusterAgentControls(k8sClusterName string) {
 	}
 	err = controls.RegisterControl(ctl.StartAgentUpgrade,
 		func(req ctl.StartAgentUpgradeRequest) error {
+			log.Info("Start Cluster Agent Upgrade")
+			appclient.SetUpgrade()
 			return kubernetes.StartClusterAgentUpgrade(req)
 		})
 	if err != nil {
@@ -166,7 +168,7 @@ func setAgentControls() {
 		func(req ctl.StartComplianceScanRequest) error {
 			scanner, err := linuxScanner.NewComplianceScanner(
 				linuxScannerUtil.Config{
-					ComplianceCheckType:       req.BinArgs["benchmark_type"],
+					ComplianceCheckType:       req.BinArgs["benchmark_types"],
 					ScanId:                    req.BinArgs["scan_id"],
 					NodeId:                    req.NodeId,
 					NodeName:                  req.NodeId,
@@ -196,6 +198,7 @@ func setAgentControls() {
 	err = controls.RegisterControl(ctl.StartAgentUpgrade,
 		func(req ctl.StartAgentUpgradeRequest) error {
 			log.Info("Start Agent Upgrade")
+			appclient.SetUpgrade()
 			return host.StartAgentUpgrade(req)
 		})
 	if err != nil {

@@ -17,6 +17,7 @@ import {
   Row,
   RowData,
   RowModel,
+  RowSelectionOptions,
   RowSelectionState,
   SortingState,
   Table,
@@ -64,7 +65,8 @@ export interface TableProps<TData extends RowData> {
   manualSorting?: boolean;
   sortingState?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
-  enableRowSelection?: boolean;
+  enableRowSelection?: RowSelectionOptions<TData>['enableRowSelection'];
+  enableSubRowSelection?: RowSelectionOptions<TData>['enableSubRowSelection'];
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
   rowSelectionState?: RowSelectionState;
   getRowId?: TableOptions<TData>['getRowId'];
@@ -112,6 +114,7 @@ const CustomTable = <TData extends RowData>(
     sortingState,
     onSortingChange,
     enableRowSelection = false,
+    enableSubRowSelection,
     onRowSelectionChange,
     rowSelectionState,
     getRowId,
@@ -152,6 +155,7 @@ const CustomTable = <TData extends RowData>(
     enableSorting,
     getSubRows,
     enableRowSelection,
+    enableSubRowSelection,
     ...(enablePagination ? { getPaginationRowModel: getPaginationRowModel() } : {}),
     state: {
       ...(enablePagination && manualPagination
@@ -167,7 +171,7 @@ const CustomTable = <TData extends RowData>(
             pagination: internalPaginationState,
           }
         : {}),
-      ...(enableSorting && manualSorting
+      ...(enableSorting && sortingState
         ? {
             sorting: sortingState,
           }
@@ -189,7 +193,8 @@ const CustomTable = <TData extends RowData>(
     ...(enablePagination && !manualPagination
       ? { onPaginationChange: setInternalPaginationState }
       : {}),
-    ...(enableSorting && manualSorting ? { manualSorting: true, onSortingChange } : {}),
+    ...(enableSorting && manualSorting ? { manualSorting: true } : {}),
+    ...(enableSorting && onSortingChange ? { onSortingChange } : {}),
     ...(enableRowSelection
       ? {
           onRowSelectionChange,
@@ -360,7 +365,7 @@ function TableBody<TData>({
                     'bg-gray-50 dark:bg-gray-700': striped && row.index % 2 !== 0,
                     '!bg-gray-100 dark:!bg-gray-600': row.getIsSelected(),
                   },
-                  `hover:!bg-gray-100 dark:hover:!bg-gray-600`,
+                  `hover:!bg-gray-100 dark:hover:!bg-gray-700`,
                   'transition-colors',
                 ),
                 rowProps?.className ?? '',
