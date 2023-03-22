@@ -130,6 +130,8 @@ func setClusterAgentControls(k8sClusterName string) {
 	}
 	err = controls.RegisterControl(ctl.StartAgentUpgrade,
 		func(req ctl.StartAgentUpgradeRequest) error {
+			log.Info("Start Cluster Agent Upgrade")
+			appclient.SetUpgrade()
 			return kubernetes.StartClusterAgentUpgrade(req)
 		})
 	if err != nil {
@@ -196,6 +198,7 @@ func setAgentControls() {
 	err = controls.RegisterControl(ctl.StartAgentUpgrade,
 		func(req ctl.StartAgentUpgradeRequest) error {
 			log.Info("Start Agent Upgrade")
+			appclient.SetUpgrade()
 			return host.StartAgentUpgrade(req)
 		})
 	if err != nil {

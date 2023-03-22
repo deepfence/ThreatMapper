@@ -1,7 +1,7 @@
 [submodule "deepfence_agent/plugins/agent-plugins-grpc"]
 	path = deepfence_agent/plugins/agent-plugins-grpc
 	url = https://github.com/deepfence/agent-plugins-grpc
-	branch = package-scanner
+	branch = v2
 [submodule "deepfence_agent/plugins/package-scanner"]
 	path = deepfence_agent/plugins/package-scanner
 	url = https://github.com/deepfence/package-scanner
@@ -9,7 +9,7 @@
 [submodule "deepfence_agent/plugins/SecretScanner"]
 	path = deepfence_agent/plugins/SecretScanner
 	url = https://github.com/deepfence/SecretScanner
-	branch = kafka-rest
+	branch = v2
 [submodule "deepfence_agent/plugins/compliance"]
 	path = deepfence_agent/plugins/compliance
 	url = https://github.com/deepfence/compliance
