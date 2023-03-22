@@ -1,6 +1,7 @@
 import { ComponentProps, useCallback, useState } from 'react';
 import { SlidingModal, SlidingModalCloseButton } from 'ui-components';
 
+import { ConfigureScanModalProps } from '@/features/registries/components/ConfigureScanModal';
 import { Container } from '@/features/topology/data-components/node-details/Container';
 import { Host } from '@/features/topology/data-components/node-details/Host';
 
@@ -8,6 +9,7 @@ export const NodeDetailsStackedModal = ({
   open,
   onOpenChange,
   node,
+  onStartScanClick,
 }: {
   open: boolean;
   onOpenChange: ComponentProps<typeof SlidingModal>['onOpenChange'];
@@ -15,6 +17,7 @@ export const NodeDetailsStackedModal = ({
     nodeId: string;
     nodeType: string;
   };
+  onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
 }) => {
   const [stack, setStack] = useState<Array<typeof node>>([node]);
   const lastNode = stack[stack.length - 1];
@@ -34,6 +37,7 @@ export const NodeDetailsStackedModal = ({
       <SlidingModalCloseButton />
       {lastNode.nodeType === 'host' ? (
         <Host
+          onStartScanClick={onStartScanClick}
           nodeId={lastNode.nodeId}
           showBackBtn={showBackBtn}
           onGoBack={onGoBack}

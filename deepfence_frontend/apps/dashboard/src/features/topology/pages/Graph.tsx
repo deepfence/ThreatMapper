@@ -7,6 +7,10 @@ import { CircleSpinner, Dropdown, DropdownItem } from 'ui-components';
 
 import { getTopologyApiClient } from '@/api/api';
 import { ApiDocsGraphResult } from '@/api/generated';
+import {
+  ConfigureScanModal,
+  ConfigureScanModalProps,
+} from '@/features/registries/components/ConfigureScanModal';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { useG6raph } from '@/features/topology/hooks/useG6Graph';
 import {
@@ -78,6 +82,8 @@ const Graph = () => {
     y: number;
     model?: NodeModel;
   }>({ open: false, x: 0, y: 0 });
+  const [scanOptions, setScanOptions] =
+    useState<ConfigureScanModalProps['scanOptions']>();
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const { graph } = useG6raph(container, {}, {});
   const { dataDiffWithAction, isRefreshInProgress, ...graphDataManagerFunctions } =
@@ -227,8 +233,14 @@ const Graph = () => {
           onOpenChange={(open) => {
             if (!open) setClickedItem(undefined);
           }}
+          onStartScanClick={(options) => setScanOptions(options)}
         />
       ) : null}
+      <ConfigureScanModal
+        open={!!scanOptions}
+        onOpenChange={() => setScanOptions(undefined)}
+        scanOptions={scanOptions}
+      />
     </>
   );
 };

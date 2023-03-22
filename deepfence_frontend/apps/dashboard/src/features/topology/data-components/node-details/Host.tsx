@@ -4,6 +4,7 @@ import { CircleSpinner, SlidingModalContent, Tabs } from 'ui-components';
 
 import { getLookupApiClient } from '@/api/api';
 import { ModelHost } from '@/api/generated';
+import { ConfigureScanModalProps } from '@/features/registries/components/ConfigureScanModal';
 import { Header } from '@/features/topology/components/node-details/Header';
 import { Metadata } from '@/features/topology/components/node-details/Metadata';
 import {
@@ -52,11 +53,13 @@ export const Host = ({
   onGoBack,
   showBackBtn,
   onNodeClick,
+  onStartScanClick,
 }: {
   nodeId: string;
   onGoBack: () => void;
   showBackBtn: boolean;
   onNodeClick: (nodeId: string, nodeType: string) => void;
+  onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
 }) => {
   const fetcher = useFetcher<LoaderData>();
   const [tab, setTab] = useState('metadata');
@@ -86,6 +89,7 @@ export const Host = ({
 
   const header = (
     <Header
+      onStartScanClick={onStartScanClick}
       nodeId={nodeId}
       nodeType="host"
       onGoBack={onGoBack}

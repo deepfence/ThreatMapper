@@ -13,66 +13,67 @@ import {
   VulnerabilityScanConfigureForm,
 } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 
-export const ConfigureScanModal = ({
-  open,
-  wantAdvanceOptions,
-  setOpen,
-  scanType,
-  data,
-}: {
+export interface ConfigureScanModalProps {
   open: boolean;
-  wantAdvanceOptions: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<string>>;
-  scanType: string;
-  data: {
+  onOpenChange: (open: boolean) => void;
+  scanOptions?: {
+    showAdvancedOptions: boolean;
+    scanType: string;
     nodeIds: string[];
     nodeType: 'cluster' | 'host' | 'registry' | 'image' | 'imageTag';
     images?: string[];
   };
-}) => {
+}
+
+export const ConfigureScanModal = ({
+  open,
+  onOpenChange,
+  scanOptions,
+}: ConfigureScanModalProps) => {
+  if (!scanOptions) return null;
   let title = '';
 
-  if (scanType === VulnerabilityScanActionEnumType.SCAN_VULNERABILITY) {
-    title = `Configure vulnerability scan option`;
-  } else if (scanType === SecretScanActionEnumType.SCAN_SECRET) {
-    title = `Configure secret scan option`;
-  } else if (scanType === MalwareScanActionEnumType.SCAN_MALWARE) {
-    title = `Configure malware scan option`;
+  if (scanOptions.scanType === VulnerabilityScanActionEnumType.SCAN_VULNERABILITY) {
+    title = `Configure vulnerability scan`;
+  } else if (scanOptions.scanType === SecretScanActionEnumType.SCAN_SECRET) {
+    title = `Configure secret scan`;
+  } else if (scanOptions.scanType === MalwareScanActionEnumType.SCAN_MALWARE) {
+    title = `Configure malware scan`;
   }
 
   return (
-    <Modal open={open} width="w-full" title={title} onOpenChange={() => setOpen('')}>
-      {scanType === VulnerabilityScanActionEnumType.SCAN_VULNERABILITY && (
+    <Modal open={open} width="w-full" title={title} onOpenChange={onOpenChange}>
+      {scanOptions.scanType === VulnerabilityScanActionEnumType.SCAN_VULNERABILITY && (
         <VulnerabilityScanConfigureForm
-          wantAdvanceOptions={wantAdvanceOptions}
+          wantAdvanceOptions={scanOptions.showAdvancedOptions}
           data={{
-            nodeIds: data.nodeIds,
-            nodeType: data.nodeType,
-            images: data.images ?? [],
+            nodeIds: scanOptions.nodeIds,
+            nodeType: scanOptions.nodeType,
+            images: scanOptions.images ?? [],
           }}
-          onSuccess={() => setOpen('')}
+          onSuccess={() => onOpenChange(false)}
         />
       )}
-      {scanType === SecretScanActionEnumType.SCAN_SECRET && (
+      {scanOptions.scanType === SecretScanActionEnumType.SCAN_SECRET && (
         <SecretScanConfigureForm
-          wantAdvanceOptions={true}
+          wantAdvanceOptions={scanOptions.showAdvancedOptions}
           data={{
-            nodeIds: data.nodeIds,
-            nodeType: data.nodeType,
-            images: data.images ?? [],
+            nodeIds: scanOptions.nodeIds,
+            nodeType: scanOptions.nodeType,
+            images: scanOptions.images ?? [],
           }}
-          onSuccess={() => setOpen('')}
+          onSuccess={() => onOpenChange(false)}
         />
       )}
-      {scanType === MalwareScanActionEnumType.SCAN_MALWARE && (
+      {scanOptions.scanType === MalwareScanActionEnumType.SCAN_MALWARE && (
         <MalwareScanConfigureForm
-          wantAdvanceOptions={true}
+          wantAdvanceOptions={scanOptions.showAdvancedOptions}
           data={{
-            nodeIds: data.nodeIds,
-            nodeType: data.nodeType,
-            images: data.images ?? [],
+            nodeIds: scanOptions.nodeIds,
+            nodeType: scanOptions.nodeType,
+            images: scanOptions.images ?? [],
           }}
-          onSuccess={() => setOpen('')}
+          onSuccess={() => onOpenChange(false)}
         />
       )}
     </Modal>
