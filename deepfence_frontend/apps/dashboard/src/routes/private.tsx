@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, redirect } from 'react-router-dom';
 
 import { ErrorComponent } from '@/components/error/ErrorComponent';
 import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
@@ -57,6 +57,11 @@ import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
+import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
+import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
+import { module as topologyGraph } from '@/features/topology/pages/Graph';
+import { module as topologyTable } from '@/features/topology/pages/Table';
+import { module as topology } from '@/features/topology/pages/Topology';
 import { sbomApiLoader } from '@/features/vulnerabilities/api/sbomApiLoader';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
 import { module as runtimeBom } from '@/features/vulnerabilities/pages/RuntimeBom';
@@ -154,6 +159,39 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Dashboard' },
       },
       // registries
+      {
+        path: 'topology',
+        ...topology,
+        children: [
+          {
+            index: true,
+            loader: () => redirect('/topology/graph', 301),
+          },
+          {
+            path: 'table',
+            ...topologyTable,
+            meta: { title: 'Cloud Topology' },
+          },
+          {
+            path: 'graph',
+            ...topologyGraph,
+            meta: { title: 'Cloud Topology' },
+          },
+          {
+            path: 'node-details',
+            children: [
+              {
+                path: 'host/:nodeId',
+                ...nodeDetailsHost,
+              },
+              {
+                path: 'container/:nodeId',
+                ...nodeDetailsContainer,
+              },
+            ],
+          },
+        ],
+      },
       {
         path: 'registries',
         ...registries,

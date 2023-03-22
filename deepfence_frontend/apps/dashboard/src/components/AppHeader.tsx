@@ -1,7 +1,20 @@
 import cx from 'classnames';
 import { IconContext } from 'react-icons';
-import { HiLogout, HiMoon, HiOutlineBell } from 'react-icons/hi';
-import { Avatar, Dropdown, DropdownItem, DropdownSeparator } from 'ui-components';
+import {
+  HiChevronLeft,
+  HiLogout,
+  HiOutlineBell,
+  HiOutlineDesktopComputer,
+  HiOutlineMoon,
+  HiOutlineSun,
+} from 'react-icons/hi';
+import {
+  Avatar,
+  Dropdown,
+  DropdownItem,
+  DropdownSeparator,
+  DropdownSubMenu,
+} from 'ui-components';
 
 import NavIconDark from '@/assets/icon-nav-dark.svg';
 import NavIconLight from '@/assets/icon-nav-light.svg';
@@ -13,11 +26,14 @@ export interface DashboardHeaderProps {
   onSideNavExpandedChange: (expanded: boolean) => void;
 }
 
+const themeSelectedDropdownClassname = 'text-blue-500 dark:text-blue-300';
+const themeDropdownClassname = 'text-gray-700 dark:text-gray-400';
+
 export function AppHeader({
   sideNavExpanded,
   onSideNavExpandedChange,
 }: DashboardHeaderProps) {
-  const { toggleMode, mode } = useTheme();
+  const { setMode, userSelectedMode, mode } = useTheme();
 
   return (
     <header className="fixed top-0 px-2 bg-white dark:bg-gray-800 h-[64px] w-full border-b border-gray-200 dark:border-gray-700">
@@ -60,10 +76,63 @@ export function AppHeader({
             align="end"
             content={
               <>
-                <DropdownItem onClick={toggleMode}>
-                  <HiMoon />
-                  Toggle Theme
-                </DropdownItem>
+                <DropdownSubMenu
+                  triggerAsChild
+                  content={
+                    <>
+                      <DropdownItem
+                        onClick={() => {
+                          setMode('light');
+                        }}
+                        className={
+                          userSelectedMode === 'light'
+                            ? themeSelectedDropdownClassname
+                            : themeDropdownClassname
+                        }
+                      >
+                        <HiOutlineSun />
+                        Light
+                      </DropdownItem>
+                      <DropdownItem
+                        onClick={() => {
+                          setMode('dark');
+                        }}
+                        className={
+                          userSelectedMode === 'dark'
+                            ? themeSelectedDropdownClassname
+                            : themeDropdownClassname
+                        }
+                      >
+                        <HiOutlineMoon />
+                        Dark
+                      </DropdownItem>
+                      <DropdownItem
+                        onClick={() => {
+                          setMode(undefined);
+                        }}
+                        className={
+                          !userSelectedMode
+                            ? themeSelectedDropdownClassname
+                            : themeDropdownClassname
+                        }
+                      >
+                        <HiOutlineDesktopComputer />
+                        Device Theme
+                      </DropdownItem>
+                    </>
+                  }
+                >
+                  <DropdownItem onClick={(e) => e.preventDefault()}>
+                    <IconContext.Provider
+                      value={{
+                        className: 'w-4 h-4',
+                      }}
+                    >
+                      <HiChevronLeft />
+                    </IconContext.Provider>
+                    <span className="text-gray-700 dark:text-gray-400">Theme</span>
+                  </DropdownItem>
+                </DropdownSubMenu>
 
                 <DropdownSeparator />
                 <DropdownItem

@@ -1,17 +1,54 @@
-import type { Dispatch, FC, ReactNode, SetStateAction } from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import type { FC, ReactNode } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 export const THEME_LIGHT = 'light';
 export const THEME_DARK = 'dark';
 
-export type Mode = string | undefined | 'light' | 'dark';
+export type Mode = 'light' | 'dark';
 
 interface ThemeContextProps {
-  mode?: Mode;
-  toggleMode?: () => void | null;
+  mode: Mode;
+  userSelectedMode?: Mode;
+  setMode: (newMode?: Mode) => void | null;
 }
 
-export const ThemeContext = createContext<ThemeContextProps>({});
+const THEME_PREFRENCE_STORAGE_KEY = 'theme';
+
+function getCurrentThemeModeFromStorage(): Mode {
+  const themePrefrence = localStorage.getItem(THEME_PREFRENCE_STORAGE_KEY);
+  if (!themePrefrence || ![THEME_LIGHT, THEME_DARK].includes(themePrefrence)) {
+    // this means user has not set any explicit prefrence, so we use device theme
+    const deviceTheme =
+      !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? THEME_DARK
+        : THEME_LIGHT;
+    return deviceTheme;
+  }
+  return themePrefrence as Mode;
+}
+
+function getUserSelectedModeFromStorage(): Mode | undefined {
+  const themePrefrence = localStorage.getItem(THEME_PREFRENCE_STORAGE_KEY);
+  if ([THEME_LIGHT, THEME_DARK].includes(themePrefrence ?? '')) {
+    return themePrefrence as Mode;
+  }
+}
+
+const saveThemeModeToStorage = (newMode?: Mode) => {
+  if (!newMode) {
+    localStorage.removeItem(THEME_PREFRENCE_STORAGE_KEY);
+    return;
+  }
+  localStorage.setItem(THEME_PREFRENCE_STORAGE_KEY, newMode);
+};
+
+export const ThemeContext = createContext<ThemeContextProps>({
+  mode: getCurrentThemeModeFromStorage(),
+  userSelectedMode: getUserSelectedModeFromStorage(),
+  setMode: () => {
+    /** default */
+  },
+});
 
 interface ThemeProviderProps {
   children: ReactNode;
@@ -26,64 +63,34 @@ export function useTheme(): ThemeContextProps {
   return useContext(ThemeContext);
 }
 
-export const useThemeMode = (
-  usePreferences: boolean,
-): {
+export const useThemeMode = (): {
   mode: Mode;
-  setMode: Dispatch<SetStateAction<Mode>> | undefined;
-  toggleMode: (() => void) | undefined;
+  userSelectedMode?: Mode;
+  setMode: (newMode?: Mode) => void;
 } => {
-  if (!usePreferences)
-    return {
-      mode: undefined,
-      setMode: undefined,
-      toggleMode: undefined,
-    };
-  const [mode, setMode] = useState<Mode>(undefined);
+  const [themeMode, setThemeMode] = useState<{
+    mode: Mode;
+    userSelectedMode?: Mode;
+  }>({
+    mode: getCurrentThemeModeFromStorage(),
+    userSelectedMode: getUserSelectedModeFromStorage(),
+  });
 
-  const savePreference = (m: string) => localStorage.setItem('theme', m);
-
-  const toggleMode = () => {
-    if (!mode) {
-      return;
-    }
-    document.documentElement.classList.toggle('dark');
-    const newPreference = mode == 'dark' ? 'light' : 'dark';
-    setMode(newPreference);
-    savePreference(newPreference);
-  };
-
-  if (usePreferences) {
-    useEffect(() => {
-      // check system theme
-      const userPreference =
-        !!window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      /**
-       * Check user had applied theme choice, if so set the theme otherwise set system preference theme.
-       */
-      const userAppliedTheme = localStorage.getItem('theme');
-
-      if (!userAppliedTheme) {
-        const userMode = userPreference ? 'dark' : 'light';
-        if (userMode) {
-          setMode(userMode);
-        }
-      } else {
-        setMode(userAppliedTheme);
-      }
-    }, []);
-
-    useEffect(() => {
-      if (!mode) {
-        return;
-      }
-      if (mode != 'dark') {
-        document.documentElement.classList.remove('dark');
-      } else {
-        document.documentElement.classList.add('dark');
-      }
-    }, [mode]);
+  if (themeMode.mode === 'dark' && !document.documentElement.classList.contains('dark')) {
+    document.documentElement.classList.add('dark');
+  } else if (
+    themeMode.mode === 'light' &&
+    document.documentElement.classList.contains('dark')
+  ) {
+    document.documentElement.classList.remove('dark');
   }
 
-  return { mode, setMode, toggleMode };
+  const setMode = (newMode?: Mode) => {
+    saveThemeModeToStorage(newMode);
+    setThemeMode({
+      mode: getCurrentThemeModeFromStorage(),
+      userSelectedMode: getUserSelectedModeFromStorage(),
+    });
+  };
+  return { mode: themeMode.mode, userSelectedMode: themeMode.userSelectedMode, setMode };
 };
