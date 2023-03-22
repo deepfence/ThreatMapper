@@ -10,7 +10,7 @@ import { ApiDocsGraphResult } from '@/api/generated';
 import {
   ConfigureScanModal,
   ConfigureScanModalProps,
-} from '@/features/registries/components/ConfigureScanModal';
+} from '@/components/ConfigureScanModal';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { useG6raph } from '@/features/topology/hooks/useG6Graph';
 import {

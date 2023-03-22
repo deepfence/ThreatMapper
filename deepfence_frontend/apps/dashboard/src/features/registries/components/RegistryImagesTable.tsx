@@ -10,6 +10,7 @@ import {
 } from 'ui-components';
 
 import { ModelImageStub } from '@/api/generated';
+import { ConfigureScanModal } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { MalwareScanActionEnumType } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
 import { SecretScanActionEnumType } from '@/components/scan-configure-forms/SecretScanConfigureForm';
@@ -17,7 +18,6 @@ import { VulnerabilityScanActionEnumType } from '@/components/scan-configure-for
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
-import { ConfigureScanModal } from '@/features/registries/components/ConfigureScanModal';
 
 const PAGE_SIZE = 15;
 export const RegistryImagesTable = ({

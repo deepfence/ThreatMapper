@@ -8,6 +8,7 @@ import {
   SlidingModalHeader,
 } from 'ui-components';
 
+import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
 import { MalwareScanActionEnumType } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
 import { SecretScanActionEnumType } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { VulnerabilityScanActionEnumType } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
@@ -16,7 +17,6 @@ import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
-import { ConfigureScanModalProps } from '@/features/registries/components/ConfigureScanModal';
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
 
 const AvailableScansForNodeType: Record<string, string[]> = {

@@ -4,7 +4,7 @@ import { CircleSpinner, SlidingModalContent, Tabs } from 'ui-components';
 
 import { getLookupApiClient } from '@/api/api';
 import { ModelHost } from '@/api/generated';
-import { ConfigureScanModalProps } from '@/features/registries/components/ConfigureScanModal';
+import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
 import { Header } from '@/features/topology/components/node-details/Header';
 import { Metadata } from '@/features/topology/components/node-details/Metadata';
 import {
