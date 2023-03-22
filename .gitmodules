@@ -21,4 +21,4 @@
 [submodule "deepfence_agent/plugins/YaraHunter"]
 	path = deepfence_agent/plugins/YaraHunter
 	url = git@github.com:deepfence/YaraHunter.git
-	branch = v2-rc1
+	branch = v2-status
