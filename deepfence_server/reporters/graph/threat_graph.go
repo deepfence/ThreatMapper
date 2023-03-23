@@ -226,6 +226,8 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(filters ThreatFilters) (map[str
 				RETURN node, relationships
 				`, map[string]interface{}{}); err != nil {
 			}
+		} else {
+			continue
 		}
 
 		if err != nil {
