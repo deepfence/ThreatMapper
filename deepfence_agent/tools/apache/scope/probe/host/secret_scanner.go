@@ -2,13 +2,8 @@ package host
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
-	"reflect"
-	"strconv"
-	"strings"
 
 	"github.com/Jeffail/tunny"
 	log "github.com/sirupsen/logrus"
@@ -32,9 +27,6 @@ var (
 	mgmtConsoleUrl     string
 	deepfenceKey       string
 	scanDir            string
-
-	scanFilename       = getDfInstallDir() + "/var/log/fenced/secret-scan/secret_scan.log"
-	scanStatusFilename = getDfInstallDir() + "/var/log/fenced/secret-scan-log/secret_scan_log.log"
 )
 
 type secretScanParameters struct {
@@ -45,13 +37,6 @@ type secretScanParameters struct {
 }
 
 func init() {
-	var err error
-	scanConcurrency, err = strconv.Atoi(os.Getenv("SECRET_SCAN_CONCURRENCY"))
-	if err != nil {
-		scanConcurrency = defaultScanConcurrency
-	}
-	grpcScanWorkerPool = tunny.NewFunc(scanConcurrency,
-		getAndPublishSecretScanResultsWrapper)
 	mgmtConsoleUrl = os.Getenv("MGMT_CONSOLE_URL")
 	consolePort := os.Getenv("MGMT_CONSOLE_PORT")
 	if consolePort != "" && consolePort != "443" {
@@ -95,78 +80,15 @@ func StartSecretsScan(req ctl.StartSecretScanRequest) error {
 	if err != nil {
 		return err
 	}
-	go grpcScanWorkerPool.Process(secretScanParameters{
-		client:      ssClient,
-		req:         &greq,
-		controlArgs: req.BinArgs,
-	})
-	return nil
-}
 
-func getAndPublishSecretScanResultsWrapper(scanParametersInterface interface{}) interface{} {
-	scanParameters, ok := scanParametersInterface.(secretScanParameters)
-	if !ok {
-		fmt.Println("Error reading input from grpc API")
-		return nil
-	}
-	getAndPublishSecretScanResults(scanParameters.client, scanParameters.req,
-		scanParameters.controlArgs, scanParameters.hostName)
-	return nil
-}
-
-func getAndPublishSecretScanResults(client pb.SecretScannerClient, req *pb.FindRequest, controlArgs map[string]string, hostName string) {
-
-	res, err := client.FindSecretInfo(context.Background(), req)
-	if req.GetPath() != "" && err == nil && res != nil {
-		if scanDir == HostMountDir {
-			for _, secret := range res.Secrets {
-				secret.GetMatch().FullFilename = strings.Replace(secret.GetMatch().GetFullFilename(), HostMountDir, "", 1)
-			}
-		}
-	}
+	_, err = ssClient.FindSecretInfo(context.Background(), &greq)
 
 	if err != nil {
 		fmt.Println("FindSecretInfo error" + err.Error())
-		return
-	}
-
-	fmt.Println("Number of results received from SecretScanner for scan id:" + controlArgs["scan_id"] + " - " + strconv.Itoa(len(res.Secrets)))
-
-	for _, secret := range res.Secrets {
-		var secretScanDoc = make(map[string]interface{})
-		secretScanDoc["scan_id"] = controlArgs["scan_id"]
-		values := reflect.ValueOf(*secret)
-		typeOfS := values.Type()
-		for index := 0; index < values.NumField(); index++ {
-			if values.Field(index).CanInterface() {
-				secretScanDoc[typeOfS.Field(index).Name] = values.Field(index).Interface()
-			}
-		}
-		byteJson, err := json.Marshal(secretScanDoc)
-		if err != nil {
-			fmt.Println("Error marshalling json: ", err)
-			continue
-		}
-		err = writeScanDataToFile(string(byteJson), scanFilename)
-		if err != nil {
-			fmt.Println("Error in sending data to secretScanIndex:" + err.Error())
-		}
-	}
-}
-
-func writeScanDataToFile(secretScanMsg string, filename string) error {
-	err := os.MkdirAll(filepath.Dir(filename), 0755)
-	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-	if err != nil {
 		return err
 	}
 
-	defer f.Close()
-
-	secretScanMsg = strings.Replace(secretScanMsg, "\n", " ", -1)
-	if _, err = f.WriteString(secretScanMsg + "\n"); err != nil {
-		return err
-	}
+	fmt.Println("Secret scan start for" + req.BinArgs["scan_id"])
 	return nil
 }
 
