@@ -113,7 +113,7 @@ type ScanResult = {
 export type LoaderDataType = {
   error?: string;
   message?: string;
-  data: Awaited<ReturnType<typeof getScans>>;
+  data?: ScanResult;
 };
 
 const PAGE_SIZE = 15;
@@ -135,7 +135,7 @@ const getBenchmarkType = (searchParams: URLSearchParams) => {
 async function getScans(
   scanId: string,
   searchParams: URLSearchParams,
-): Promise<ScanResult> {
+): Promise<LoaderDataType> {
   const status = getStatusSearch(searchParams);
   const page = getPageFromSearchParams(searchParams);
   const order = getOrderFromSearchParams(searchParams);
@@ -192,7 +192,7 @@ async function getScans(
     ],
     errorHandler: async (r) => {
       const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400) {
+      if (r.status === 400 || r.status === 404) {
         const modelResponse: ApiDocsBadRequestResponse = await r.json();
         return error.set({
           message: modelResponse.message ?? '',
@@ -215,7 +215,7 @@ async function getScans(
     ],
     errorHandler: async (r) => {
       const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400) {
+      if (r.status === 400 || r.status === 404) {
         const modelResponse: ApiDocsBadRequestResponse = await r.json();
         return error.set({
           message: modelResponse.message,
@@ -223,12 +223,11 @@ async function getScans(
       }
     },
   });
-
   if (ApiError.isApiError(result)) {
-    throw result.value();
+    return result.value();
   }
   if (ApiError.isApiError(resultCounts)) {
-    throw resultCounts.value();
+    return resultCounts.value();
   }
 
   const totalStatus = Object.values(result.status_counts ?? {}).reduce((acc, value) => {
@@ -251,17 +250,19 @@ async function getScans(
   };
 
   return {
-    totalStatus,
-    statusCounts:
-      result.node_type === 'host' ? linuxComplianceStatus : clusterComplianceStatus,
-    nodeName: result.node_name,
-    nodeType: result.node_type,
-    nodeId: result.node_id,
-    timestamp: result.updated_at,
-    compliances: result.compliances ?? [],
-    pagination: {
-      currentPage: page,
-      totalRows: page * PAGE_SIZE + resultCounts.count,
+    data: {
+      totalStatus,
+      statusCounts:
+        result.node_type === 'host' ? linuxComplianceStatus : clusterComplianceStatus,
+      nodeName: result.node_name,
+      nodeType: result.node_type,
+      nodeId: result.node_id,
+      timestamp: result.updated_at,
+      compliances: result.compliances ?? [],
+      pagination: {
+        currentPage: page,
+        totalRows: page * PAGE_SIZE + resultCounts.count,
+      },
     },
   };
 }
@@ -270,7 +271,6 @@ const loader = async ({
   params,
   request,
 }: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
-  const scanType = params?.scanType ?? '';
   const scanId = params?.scanId ?? '';
 
   if (!scanId) {
@@ -474,12 +474,16 @@ const HistoryDropdown = () => {
       }
     >
       <DFAwait resolve={loaderData.data ?? []}>
-        {(resolvedData: LoaderDataType['data']) => {
+        {(resolvedData: LoaderDataType) => {
+          const { data } = resolvedData;
+          if (!data) {
+            return null;
+          }
           return (
             <Dropdown
               triggerAsChild
               onOpenChange={(open) => {
-                if (open) onHistoryClick(resolvedData.nodeType, resolvedData.nodeId);
+                if (open) onHistoryClick(data.nodeType, data.nodeId);
               }}
               content={
                 <>
@@ -745,7 +749,11 @@ const ScanResusltTable = () => {
     <>
       <Suspense fallback={<TableSkeleton columns={6} rows={10} size={'md'} />}>
         <DFAwait resolve={loaderData.data}>
-          {(resolvedData: LoaderDataType['data']) => {
+          {(resolvedData: LoaderDataType) => {
+            const { data } = resolvedData;
+            if (!data) {
+              return <NotFound />;
+            }
             return (
               <Form>
                 {Object.keys(rowSelectionState).length === 0 ? (
@@ -813,7 +821,7 @@ const ScanResusltTable = () => {
 
                 <Table
                   size="sm"
-                  data={resolvedData.compliances}
+                  data={data.compliances}
                   columns={columns}
                   enableRowSelection
                   rowSelectionState={rowSelectionState}
@@ -821,9 +829,9 @@ const ScanResusltTable = () => {
                   enablePagination
                   manualPagination
                   enableColumnResizing
-                  totalRows={resolvedData.pagination.totalRows}
+                  totalRows={data.pagination.totalRows}
                   pageSize={PAGE_SIZE}
-                  pageIndex={resolvedData.pagination.currentPage}
+                  pageIndex={data.pagination.currentPage}
                   enableSorting
                   manualSorting
                   sortingState={sort}
@@ -834,7 +842,7 @@ const ScanResusltTable = () => {
                     let newPageIndex = 0;
                     if (typeof updaterOrValue === 'function') {
                       newPageIndex = updaterOrValue({
-                        pageIndex: resolvedData.pagination.currentPage,
+                        pageIndex: data.pagination.currentPage,
                         pageSize: PAGE_SIZE,
                       }).pageIndex;
                     } else {
@@ -882,9 +890,166 @@ const ScanResusltTable = () => {
   );
 };
 
-const HeaderComponent = () => {
+const FilterComponent = () => {
   const elementToFocusOnClose = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const params = useParams() as {
+    nodeType: string;
+  };
+
+  let statuses: string[] = [];
+  if (params.nodeType === ACCOUNT_CONNECTOR.HOST) {
+    statuses = [STATUSES.INFO, STATUSES.PASS, STATUSES.WARN, STATUSES.NOTE];
+  } else {
+    statuses = [STATUSES.ALARM, STATUSES.INFO, STATUSES.OK, STATUSES.SKIP];
+  }
+
+  let benchmarks: string[] = [];
+  if (params.nodeType === ACCOUNT_CONNECTOR.HOST) {
+    benchmarks = complianceType.host;
+  } else {
+    benchmarks = complianceType.kubernetes_cluster;
+  }
+
+  return (
+    <Popover
+      triggerAsChild
+      elementToFocusOnCloseRef={elementToFocusOnClose}
+      content={
+        <div className="dark:text-white p-4 w-[300px]">
+          <div className="flex flex-col gap-y-6">
+            <fieldset>
+              <legend className="text-sm font-medium">Mask And Unmask</legend>
+              <div className="flex gap-x-4 mt-1">
+                <Checkbox
+                  label="Mask"
+                  checked={searchParams.getAll('mask').includes('true')}
+                  onCheckedChange={(state) => {
+                    if (state) {
+                      setSearchParams((prev) => {
+                        prev.append('mask', 'true');
+                        prev.delete('page');
+                        return prev;
+                      });
+                    } else {
+                      setSearchParams((prev) => {
+                        const prevStatuses = prev.getAll('mask');
+                        prev.delete('mask');
+                        prevStatuses
+                          .filter((mask) => mask !== 'true')
+                          .forEach((mask) => {
+                            prev.append('mask', mask);
+                          });
+                        prev.delete('mask');
+                        prev.delete('page');
+                        return prev;
+                      });
+                    }
+                  }}
+                />
+                <Checkbox
+                  label="Unmask"
+                  checked={searchParams.getAll('unmask').includes('true')}
+                  onCheckedChange={(state) => {
+                    if (state) {
+                      setSearchParams((prev) => {
+                        prev.append('unmask', 'true');
+                        prev.delete('page');
+                        return prev;
+                      });
+                    } else {
+                      setSearchParams((prev) => {
+                        const prevStatuses = prev.getAll('unmask');
+                        prev.delete('unmask');
+                        prevStatuses
+                          .filter((status) => status !== 'true')
+                          .forEach((status) => {
+                            prev.append('unmask', status);
+                          });
+                        prev.delete('unmask');
+                        prev.delete('page');
+                        return prev;
+                      });
+                    }
+                  }}
+                />
+              </div>
+            </fieldset>
+            <fieldset>
+              <Select
+                noPortal
+                name="benchmarkType"
+                label={'Benchmark Type'}
+                placeholder="Select Benchmark Type"
+                value={searchParams.getAll('benchmarkType')}
+                sizing="xs"
+                onChange={(value) => {
+                  setSearchParams((prev) => {
+                    prev.delete('benchmarkType');
+                    value.forEach((benchmarkType) => {
+                      prev.append('benchmarkType', benchmarkType);
+                    });
+                    prev.delete('page');
+                    return prev;
+                  });
+                }}
+              >
+                {benchmarks.map((status: string) => {
+                  return (
+                    <SelectItem value={status.toLowerCase()} key={status.toLowerCase()}>
+                      {status.toUpperCase()}
+                    </SelectItem>
+                  );
+                })}
+              </Select>
+            </fieldset>
+            <fieldset>
+              <Select
+                noPortal
+                name="status"
+                label={'Status'}
+                placeholder="Select Status"
+                value={searchParams.getAll('status')}
+                sizing="xs"
+                onChange={(value) => {
+                  setSearchParams((prev) => {
+                    prev.delete('status');
+                    value.forEach((language) => {
+                      prev.append('status', language);
+                    });
+                    prev.delete('page');
+                    return prev;
+                  });
+                }}
+              >
+                {statuses.map((status: string) => {
+                  return (
+                    <SelectItem value={status.toLowerCase()} key={status.toLowerCase()}>
+                      {status.toUpperCase()}
+                    </SelectItem>
+                  );
+                })}
+              </Select>
+            </fieldset>
+          </div>
+        </div>
+      }
+    >
+      <IconButton
+        size="xs"
+        outline
+        color="primary"
+        className="rounded-lg bg-transparent"
+        icon={<FiFilter />}
+      />
+    </Popover>
+  );
+};
+const HeaderComponent = () => {
+  const [searchParams] = useSearchParams();
+  const params = useParams() as {
+    nodeType: string;
+  };
   const loaderData = useLoaderData() as LoaderDataType;
   const isFilterApplied =
     searchParams.has('status') ||
@@ -896,11 +1061,11 @@ const HeaderComponent = () => {
     <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <Suspense fallback={<CircleSpinner size="xs" />}>
         <DFAwait resolve={loaderData.data ?? []}>
-          {(resolvedData: LoaderDataType['data']) => {
-            const { nodeType = 'unknown', nodeName } = resolvedData;
+          {(resolvedData: LoaderDataType) => {
+            const { data } = resolvedData;
 
             const _nodeType =
-              nodeType === 'host'
+              params.nodeType === ACCOUNT_CONNECTOR.LINUX
                 ? ACCOUNT_CONNECTOR.LINUX
                 : ACCOUNT_CONNECTOR.KUBERNETES;
             return (
@@ -919,9 +1084,11 @@ const HeaderComponent = () => {
                     </DFLink>
                   </BreadcrumbLink>
 
-                  <BreadcrumbLink>
-                    <span className="inherit cursor-auto">{nodeName}</span>
-                  </BreadcrumbLink>
+                  {data ? (
+                    <BreadcrumbLink>
+                      <span className="inherit cursor-auto">{data.nodeName}</span>
+                    </BreadcrumbLink>
+                  ) : null}
                 </Breadcrumb>
               </>
             );
@@ -933,9 +1100,12 @@ const HeaderComponent = () => {
           <span className="text-xs text-gray-500 dark:text-gray-200">
             <Suspense fallback={<CircleSpinner size="xs" />}>
               <DFAwait resolve={loaderData.data ?? []}>
-                {(resolvedData: LoaderDataType['data']) => {
-                  const { timestamp } = resolvedData;
-                  return formatMilliseconds(timestamp);
+                {(resolvedData: LoaderDataType) => {
+                  const { data } = resolvedData;
+                  if (!data) {
+                    return null;
+                  }
+                  return formatMilliseconds(data.timestamp);
                 }}
               </DFAwait>
             </Suspense>
@@ -949,184 +1119,7 @@ const HeaderComponent = () => {
           {isFilterApplied && (
             <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
           )}
-          <Popover
-            triggerAsChild
-            elementToFocusOnCloseRef={elementToFocusOnClose}
-            content={
-              <div className="dark:text-white p-4 w-[300px]">
-                <div className="flex flex-col gap-y-6">
-                  <fieldset>
-                    <legend className="text-sm font-medium">Mask And Unmask</legend>
-                    <div className="flex gap-x-4 mt-1">
-                      <Checkbox
-                        label="Mask"
-                        checked={searchParams.getAll('mask').includes('true')}
-                        onCheckedChange={(state) => {
-                          if (state) {
-                            setSearchParams((prev) => {
-                              prev.append('mask', 'true');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          } else {
-                            setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('mask');
-                              prev.delete('mask');
-                              prevStatuses
-                                .filter((mask) => mask !== 'true')
-                                .forEach((mask) => {
-                                  prev.append('mask', mask);
-                                });
-                              prev.delete('mask');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          }
-                        }}
-                      />
-                      <Checkbox
-                        label="Unmask"
-                        checked={searchParams.getAll('unmask').includes('true')}
-                        onCheckedChange={(state) => {
-                          if (state) {
-                            setSearchParams((prev) => {
-                              prev.append('unmask', 'true');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          } else {
-                            setSearchParams((prev) => {
-                              const prevStatuses = prev.getAll('unmask');
-                              prev.delete('unmask');
-                              prevStatuses
-                                .filter((status) => status !== 'true')
-                                .forEach((status) => {
-                                  prev.append('unmask', status);
-                                });
-                              prev.delete('unmask');
-                              prev.delete('page');
-                              return prev;
-                            });
-                          }
-                        }}
-                      />
-                    </div>
-                  </fieldset>
-                  <fieldset>
-                    <Suspense fallback={<CircleSpinner size="xs" />}>
-                      <DFAwait resolve={loaderData.data ?? []}>
-                        {(resolvedData: LoaderDataType['data']) => {
-                          const { nodeType = '' } = resolvedData;
-                          let benchmarks: string[] = [];
-                          if (nodeType === 'host') {
-                            benchmarks = complianceType.host;
-                          } else {
-                            benchmarks = complianceType.kubernetes_cluster;
-                          }
-                          return (
-                            <Select
-                              noPortal
-                              name="benchmarkType"
-                              label={'Benchmark Type'}
-                              placeholder="Select Benchmark Type"
-                              value={searchParams.getAll('benchmarkType')}
-                              sizing="xs"
-                              onChange={(value) => {
-                                setSearchParams((prev) => {
-                                  prev.delete('benchmarkType');
-                                  value.forEach((benchmarkType) => {
-                                    prev.append('benchmarkType', benchmarkType);
-                                  });
-                                  prev.delete('page');
-                                  return prev;
-                                });
-                              }}
-                            >
-                              {benchmarks.map((status: string) => {
-                                return (
-                                  <SelectItem
-                                    value={status.toLowerCase()}
-                                    key={status.toLowerCase()}
-                                  >
-                                    {status.toUpperCase()}
-                                  </SelectItem>
-                                );
-                              })}
-                            </Select>
-                          );
-                        }}
-                      </DFAwait>
-                    </Suspense>
-                  </fieldset>
-                  <fieldset>
-                    <Suspense fallback={<CircleSpinner size="xs" />}>
-                      <DFAwait resolve={loaderData.data ?? []}>
-                        {(resolvedData: LoaderDataType['data']) => {
-                          const { nodeType = '' } = resolvedData;
-                          let statuses: string[] = [];
-                          if (nodeType === 'host') {
-                            statuses = [
-                              STATUSES.INFO,
-                              STATUSES.PASS,
-                              STATUSES.WARN,
-                              STATUSES.NOTE,
-                            ];
-                          } else {
-                            statuses = [
-                              STATUSES.ALARM,
-                              STATUSES.INFO,
-                              STATUSES.OK,
-                              STATUSES.SKIP,
-                            ];
-                          }
-
-                          return (
-                            <Select
-                              noPortal
-                              name="status"
-                              label={'Status'}
-                              placeholder="Select Status"
-                              value={searchParams.getAll('status')}
-                              sizing="xs"
-                              onChange={(value) => {
-                                setSearchParams((prev) => {
-                                  prev.delete('status');
-                                  value.forEach((language) => {
-                                    prev.append('status', language);
-                                  });
-                                  prev.delete('page');
-                                  return prev;
-                                });
-                              }}
-                            >
-                              {statuses.map((status: string) => {
-                                return (
-                                  <SelectItem
-                                    value={status.toLowerCase()}
-                                    key={status.toLowerCase()}
-                                  >
-                                    {status.toUpperCase()}
-                                  </SelectItem>
-                                );
-                              })}
-                            </Select>
-                          );
-                        }}
-                      </DFAwait>
-                    </Suspense>
-                  </fieldset>
-                </div>
-              </div>
-            }
-          >
-            <IconButton
-              size="xs"
-              outline
-              color="primary"
-              className="rounded-lg bg-transparent"
-              icon={<FiFilter />}
-            />
-          </Popover>
+          <FilterComponent />
         </div>
       </div>
     </div>
@@ -1135,6 +1128,24 @@ const HeaderComponent = () => {
 
 const StatusCountComponent = ({ theme }: { theme: Mode }) => {
   const loaderData = useLoaderData() as LoaderDataType;
+  const params = useParams() as {
+    nodeType: string;
+  };
+  const statuses =
+    params.nodeType === ACCOUNT_CONNECTOR.HOST
+      ? [
+          POSTURE_STATUS_COLORS['info'],
+          POSTURE_STATUS_COLORS['pass'],
+          POSTURE_STATUS_COLORS['warn'],
+          POSTURE_STATUS_COLORS['note'],
+        ]
+      : [
+          POSTURE_STATUS_COLORS['alarm'],
+          POSTURE_STATUS_COLORS['info'],
+          POSTURE_STATUS_COLORS['ok'],
+          POSTURE_STATUS_COLORS['skip'],
+        ];
+
   return (
     <Card className="p-4 grid grid-flow-row-dense gap-y-8">
       <Suspense
@@ -1145,8 +1156,9 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
         }
       >
         <DFAwait resolve={loaderData.data}>
-          {(resolvedData: ScanResult) => {
-            const { totalStatus, statusCounts, nodeType } = resolvedData;
+          {(resolvedData: LoaderDataType) => {
+            const { data } = resolvedData;
+
             return (
               <>
                 <div className="grid grid-flow-col-dense gap-x-4">
@@ -1161,7 +1173,7 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                     </h4>
                     <div className="mt-2">
                       <span className="text-2xl text-gray-900 dark:text-gray-200">
-                        {totalStatus}
+                        {data?.totalStatus}
                       </span>
                       <h5 className="text-xs text-gray-500 dark:text-gray-200 mb-2">
                         Total count
@@ -1180,31 +1192,18 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                 <div className="h-[200px]">
                   <PostureResultChart
                     theme={theme}
-                    data={statusCounts}
+                    data={data?.statusCounts ?? {}}
                     eoption={{
                       series: [
                         {
-                          color:
-                            nodeType === 'host'
-                              ? [
-                                  POSTURE_STATUS_COLORS['info'],
-                                  POSTURE_STATUS_COLORS['pass'],
-                                  POSTURE_STATUS_COLORS['warn'],
-                                  POSTURE_STATUS_COLORS['note'],
-                                ]
-                              : [
-                                  POSTURE_STATUS_COLORS['alarm'],
-                                  POSTURE_STATUS_COLORS['info'],
-                                  POSTURE_STATUS_COLORS['ok'],
-                                  POSTURE_STATUS_COLORS['skip'],
-                                ],
+                          color: statuses,
                         },
                       ],
                     }}
                   />
                 </div>
                 <div>
-                  {Object.keys(statusCounts)?.map((key: string) => {
+                  {Object.keys(data?.statusCounts ?? {})?.map((key: string) => {
                     return (
                       <div key={key} className="flex items-center gap-2 p-1">
                         <div
@@ -1224,7 +1223,7 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                             'text-sm text-gray-900 dark:text-gray-200 ml-auto tabular-nums',
                           )}
                         >
-                          {statusCounts[key]}
+                          {data?.statusCounts[key]}
                         </span>
                       </div>
                     );
@@ -1236,6 +1235,22 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
         </DFAwait>
       </Suspense>
     </Card>
+  );
+};
+
+const NotFound = () => {
+  return (
+    <div className="flex flex-col items-center justify-center mt-40">
+      <div className="h-16 w-16">
+        <PostureIcon />
+      </div>
+      <span className="text-2xl font-medium text-gray-700 dark:text-white">
+        No Result Found
+      </span>
+      <span className="text-sm text-gray-500 dark:text-gray-400">
+        Scan your account to get compliance results
+      </span>
+    </div>
   );
 };
 const PostureScanResults = () => {

@@ -169,6 +169,10 @@ const ActionDropdown = ({
 }) => {
   const { navigate } = usePageNavigation();
 
+  const params = useParams() as {
+    nodeType: string;
+  };
+
   return (
     <>
       <Dropdown
@@ -180,7 +184,15 @@ const ActionDropdown = ({
               className="text-sm"
               onClick={() => {
                 if (isScanComplete) {
-                  navigate(`/posture/scan-results/${id}`);
+                  navigate(
+                    generatePath('/posture/scan-results/:nodeType/:scanId', {
+                      scanId: id,
+                      nodeType: params.nodeType,
+                    }),
+                    {
+                      replace: true,
+                    },
+                  );
                 }
               }}
             >
@@ -225,7 +237,7 @@ const ActionDropdown = ({
   );
 };
 
-const PostureTable = () => {
+const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [searchParams, setSearchParams] = useSearchParams();
   const columnHelper = createColumnHelper<ModelCloudNodeAccountInfo>();
@@ -236,7 +248,6 @@ const PostureTable = () => {
     show: false,
     nodeIds: [],
   });
-  const loaderData = useLoaderData() as LoaderDataType;
 
   const columns = useMemo(
     () => [
@@ -248,25 +259,21 @@ const PostureTable = () => {
       }),
       columnHelper.accessor('node_name', {
         cell: (cell) => {
-          const isScanComplete =
-            cell.row.original.last_scan_status?.toLowerCase() === 'complete';
           const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
-            if (isScanComplete) {
-              let redirectUrl = generatePath(`/posture/scan-results/:scanId`, {
-                scanId: cell.row.original.last_scan_id ?? '',
-              });
-              if (CLOUDS.includes(cell.row.original.cloud_provider ?? '')) {
-                redirectUrl = generatePath(
-                  `/posture/cloud/scan-results/:nodeType/:scanId`,
-                  {
-                    scanId: cell.row.original.last_scan_id ?? '',
-                    nodeType: cell.row.original.cloud_provider ?? '',
-                  },
-                );
-              }
-              return <DFLink to={redirectUrl}>{children}</DFLink>;
+            let redirectUrl = generatePath(`/posture/scan-results/:nodeType/:scanId`, {
+              scanId: cell.row.original.last_scan_id || 'dummy',
+              nodeType: cell.row.original.cloud_provider || 'dummy',
+            });
+            if (CLOUDS.includes(cell.row.original.cloud_provider ?? '')) {
+              redirectUrl = generatePath(
+                `/posture/cloud/scan-results/:nodeType/:scanId`,
+                {
+                  scanId: cell.row.original.last_scan_id ?? '',
+                  nodeType: cell.row.original.cloud_provider ?? '',
+                },
+              );
             }
-            return <>{children}</>;
+            return <DFLink to={redirectUrl}>{children}</DFLink>;
           };
           return (
             <WrapperComponent>
@@ -391,112 +398,103 @@ const PostureTable = () => {
         enableResizing: false,
       }),
     ],
-    [rowSelectionState, searchParams],
+    [rowSelectionState, searchParams, data?.accounts],
   );
+  const accounts = data?.accounts ?? [];
+  const totalRows = data?.totalRows ?? 0;
+  const currentPage = data?.currentPage ?? 0;
+  const cloudProvider = accounts[0]?.cloud_provider ?? '';
 
+  if (!cloudProvider) {
+    return null;
+  }
   return (
     <>
-      <Suspense fallback={<TableSkeleton columns={6} rows={10} size={'md'} />}>
-        <DFAwait resolve={loaderData.data}>
-          {(resolvedData: LoaderDataType['data']) => {
-            const accounts = resolvedData?.accounts ?? [];
-            const totalRows = resolvedData?.totalRows ?? 0;
-            const currentPage = resolvedData?.currentPage ?? 0;
-            const cloudProvider = accounts[0]?.cloud_provider ?? '';
-
-            if (!cloudProvider) {
-              return null;
-            }
-            return (
-              <div>
-                <Modal
-                  open={openScanConfigure.show}
-                  width="w-full"
-                  title="Configure your scan option"
-                  onOpenChange={() =>
+      <div>
+        <Modal
+          open={openScanConfigure.show}
+          width="w-full"
+          title="Configure your scan option"
+          onOpenChange={() =>
+            setOpenScanConfigure({
+              show: false,
+              nodeIds: [],
+            })
+          }
+        >
+          <div className="p-4 pt-0">
+            <PostureScanConfigureForm
+              wantAdvanceOptions={true}
+              onSuccess={() => {
+                setOpenScanConfigure({
+                  show: false,
+                  nodeIds: [],
+                });
+              }}
+              data={{
+                nodeType: getNodeTypeByProviderName(cloudProvider),
+                nodeIds: openScanConfigure.nodeIds,
+                images: [],
+              }}
+            />
+          </div>
+        </Modal>
+        <Form>
+          {Object.keys(rowSelectionState).length === 0 ? (
+            <div className="text-sm text-gray-400 font-medium mb-3 flex justify-between">
+              No rows selected
+            </div>
+          ) : (
+            <>
+              <div className="mb-1.5 flex gap-x-2">
+                <Button
+                  size="xs"
+                  color="normal"
+                  startIcon={<FaPlay />}
+                  className="text-blue-600 dark:text-blue-500"
+                  onClick={() =>
                     setOpenScanConfigure({
-                      show: false,
-                      nodeIds: [],
+                      show: true,
+                      nodeIds: Object.keys(rowSelectionState),
                     })
                   }
                 >
-                  <div className="p-4 pt-0">
-                    <PostureScanConfigureForm
-                      wantAdvanceOptions={true}
-                      onSuccess={() => {
-                        setOpenScanConfigure({
-                          show: false,
-                          nodeIds: [],
-                        });
-                      }}
-                      data={{
-                        nodeType: getNodeTypeByProviderName(cloudProvider),
-                        nodeIds: openScanConfigure.nodeIds,
-                        images: [],
-                      }}
-                    />
-                  </div>
-                </Modal>
-                <Form>
-                  {Object.keys(rowSelectionState).length === 0 ? (
-                    <div className="text-sm text-gray-400 font-medium mb-3 flex justify-between">
-                      No rows selected
-                    </div>
-                  ) : (
-                    <>
-                      <div className="mb-1.5 flex gap-x-2">
-                        <Button
-                          size="xs"
-                          color="normal"
-                          startIcon={<FaPlay />}
-                          className="text-blue-600 dark:text-blue-500"
-                          onClick={() =>
-                            setOpenScanConfigure({
-                              show: true,
-                              nodeIds: Object.keys(rowSelectionState),
-                            })
-                          }
-                        >
-                          Start scan
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </Form>
-                <Table
-                  size="sm"
-                  data={accounts ?? []}
-                  columns={columns}
-                  enableRowSelection
-                  enablePagination
-                  manualPagination
-                  totalRows={totalRows}
-                  pageIndex={currentPage}
-                  onPaginationChange={(updaterOrValue) => {
-                    let newPageIndex = 0;
-                    if (typeof updaterOrValue === 'function') {
-                      newPageIndex = updaterOrValue({
-                        pageIndex: currentPage,
-                        pageSize: PAGE_SIZE,
-                      }).pageIndex;
-                    } else {
-                      newPageIndex = updaterOrValue.pageIndex;
-                    }
-                    setSearchParams((prev) => {
-                      prev.set('page', String(newPageIndex));
-                      return prev;
-                    });
-                  }}
-                  pageSize={PAGE_SIZE}
-                  rowSelectionState={rowSelectionState}
-                  onRowSelectionChange={setRowSelectionState}
-                  getRowId={(row) => row.node_id ?? ''}
-                />
+                  Start scan
+                </Button>
               </div>
-            );
+            </>
+          )}
+        </Form>
+        <Table
+          size="sm"
+          data={accounts ?? []}
+          columns={columns}
+          enableRowSelection
+          enablePagination
+          manualPagination
+          totalRows={totalRows}
+          pageIndex={currentPage}
+          onPaginationChange={(updaterOrValue) => {
+            let newPageIndex = 0;
+            if (typeof updaterOrValue === 'function') {
+              newPageIndex = updaterOrValue({
+                pageIndex: currentPage,
+                pageSize: PAGE_SIZE,
+              }).pageIndex;
+            } else {
+              newPageIndex = updaterOrValue.pageIndex;
+            }
+            setSearchParams((prev) => {
+              prev.set('page', String(newPageIndex));
+              return prev;
+            });
           }}
-        </DFAwait>
-      </Suspense>
+          pageSize={PAGE_SIZE}
+          rowSelectionState={rowSelectionState}
+          onRowSelectionChange={setRowSelectionState}
+          getRowId={(row) => row.node_id ?? ''}
+        />
+      </div>
     </>
   );
 };
@@ -518,7 +516,6 @@ const RefreshApiButton = () => {
 
 const Accounts = () => {
   const elementToFocusOnClose = useRef(null);
-  const [showFilter, setShowFilter] = useState(false);
   const loaderData = useLoaderData() as LoaderDataType;
   const [searchParams, setSearchParams] = useSearchParams();
   const routeParams = useParams() as {
@@ -642,7 +639,13 @@ const Accounts = () => {
       </div>
 
       <div className="px-1 mt-2">
-        <PostureTable />
+        <Suspense fallback={<TableSkeleton columns={6} rows={10} size={'md'} />}>
+          <DFAwait resolve={loaderData.data}>
+            {(resolvedData: LoaderDataType['data']) => {
+              return <PostureTable data={resolvedData} />;
+            }}
+          </DFAwait>
+        </Suspense>
       </div>
     </div>
   );

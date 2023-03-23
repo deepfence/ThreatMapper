@@ -129,12 +129,14 @@ const ToggleControl = ({
   checked,
   controlId,
   nodeId,
+  nodeType,
   checkType,
   loading,
 }: {
   checked: boolean;
   controlId: string;
   nodeId: string;
+  nodeType: string;
   checkType: string;
   loading: boolean;
 }) => {
@@ -159,8 +161,9 @@ const ToggleControl = ({
           formData.append('controlId', controlId ?? '');
           fetcher.submit(formData, {
             method: 'post',
-            action: generatePath('/data-component/list/controls/:checkType', {
+            action: generatePath('/data-component/list/controls/:nodeType/:checkType', {
               checkType,
+              nodeType,
             }),
           });
         }}
@@ -171,10 +174,12 @@ const ToggleControl = ({
 export const ControlsTable = memo(
   ({
     nodeIds,
+    nodeType,
     tabs = [],
     defaultTab,
   }: {
     nodeIds: string[];
+    nodeType: string;
     tabs: TabsType[];
     defaultTab: string;
   }) => {
@@ -209,6 +214,7 @@ export const ControlsTable = memo(
             return (
               <ToggleControl
                 nodeId={nodeIds[0]}
+                nodeType={nodeType}
                 loading={isLoading}
                 checkType={selectedTab.toLowerCase()}
                 checked={!!info.row.original.enabled}
@@ -232,7 +238,7 @@ export const ControlsTable = memo(
 
     useEffect(() => {
       if (selectedTab) {
-        fetchControls(selectedTab.toLowerCase());
+        fetchControls(selectedTab.toLowerCase(), nodeType);
       }
     }, [selectedTab]);
 
@@ -375,7 +381,12 @@ export const PostureScanConfigureForm = ({
         <p className="text-red-500 text-sm py-3">{fetcherData.message}</p>
       )}
       {wantAdvanceOptions && (
-        <ControlsTable nodeIds={data.nodeIds} tabs={tabs} defaultTab={defaultTab} />
+        <ControlsTable
+          nodeIds={data.nodeIds}
+          tabs={tabs}
+          defaultTab={defaultTab}
+          nodeType={nodeType}
+        />
       )}
     </>
   );

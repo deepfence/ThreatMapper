@@ -1,10 +1,8 @@
 import cx from 'classnames';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { capitalize, omit, pick, startCase, truncate } from 'lodash-es';
+import { omit, pick, truncate } from 'lodash-es';
 import { Suspense, useState } from 'react';
-import { HiChevronDown } from 'react-icons/hi';
-import { IconContext } from 'react-icons/lib';
 import { LoaderFunctionArgs, useLoaderData, useSearchParams } from 'react-router-dom';
 import {
   Badge,

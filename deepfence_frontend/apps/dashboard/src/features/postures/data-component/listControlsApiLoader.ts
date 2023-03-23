@@ -7,7 +7,10 @@ import {
 import { toast } from 'sonner';
 
 import { getControlsApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse } from '@/api/generated';
+import {
+  ApiDocsBadRequestResponse,
+  ModelCloudNodeControlReqCloudProviderEnum,
+} from '@/api/generated';
 import { ModelCloudNodeComplianceControl } from '@/api/generated/models/ModelCloudNodeComplianceControl';
 import { ApiError, makeRequest } from '@/utils/api';
 
@@ -25,6 +28,11 @@ export const listControlsApiLoader = async ({
   params,
 }: LoaderFunctionArgs): Promise<ModelCloudNodeComplianceControl[]> => {
   const checkType = params.checkType;
+  const nodeType = params.nodeType;
+
+  if (!nodeType) {
+    throw new Error('Node Type is required');
+  }
 
   if (!checkType) {
     throw new Error('Check Type is required');
@@ -35,7 +43,7 @@ export const listControlsApiLoader = async ({
     apiArgs: [
       {
         modelCloudNodeControlReq: {
-          cloud_provider: 'aws',
+          cloud_provider: nodeType as ModelCloudNodeControlReqCloudProviderEnum,
           compliance_type: checkType,
           node_id: '',
         },
@@ -120,17 +128,18 @@ export const toggleControlApiAction = async ({
 export const useGetControlsList = (): {
   status: 'idle' | 'loading' | 'submitting';
   controls: ModelCloudNodeComplianceControl[];
-  load: (checkType: string) => void;
+  load: (checkType: string, nodeType: string) => void;
 } => {
   const fetcher = useFetcher<ModelCloudNodeComplianceControl[]>();
 
   return {
     status: fetcher.state,
     controls: fetcher.data ?? [],
-    load: (checkType: string) => {
+    load: (checkType: string, nodeType: string) => {
       fetcher.load(
-        generatePath('/data-component/list/controls/:checkType', {
+        generatePath('/data-component/list/controls/:nodeType/:checkType', {
           checkType,
+          nodeType,
         }),
       );
     },

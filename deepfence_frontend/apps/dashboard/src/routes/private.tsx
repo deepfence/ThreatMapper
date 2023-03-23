@@ -347,7 +347,7 @@ export const privateRoutes: CustomRouteObject[] = [
         ],
       },
       {
-        path: 'posture/scan-results/:scanId',
+        path: 'posture/scan-results/:nodeType/:scanId',
         ...postureScanResults,
         meta: { title: 'Posture Scans Results' },
         children: [
@@ -430,7 +430,7 @@ export const privateRoutes: CustomRouteObject[] = [
         action: registryConnectorActionApi,
       },
       {
-        path: 'list/controls/:checkType',
+        path: 'list/controls/:nodeType/:checkType',
         loader: listControlsApiLoader,
         action: toggleControlApiAction,
       },
