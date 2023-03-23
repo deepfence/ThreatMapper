@@ -71,7 +71,7 @@ func CommitFuncCloudCompliance(ns string, data []CloudCompliance) error {
 
 	if _, err = tx.Run(`
 		UNWIND $batch as row
-		MERGE (n:CloudCompliance{resource:row.resource, scan_id: row.scan_id, control_id: row.control_id})
+		MERGE (n:CloudCompliance{node_id: row.scan_id + "/" + row.control_id + "/" + COALESCE(row.resource, row.account_id, ""), resource:row.resource, scan_id: row.scan_id, control_id: row.control_id})
 		MERGE (m:CloudResource{node_id: row.resource})
 		SET n+= row
 		WITH n, m

@@ -101,6 +101,8 @@ export function getCloudComplianceApiClient() {
       cloudScannerApi.resultsCloudComplianceScan.bind(cloudScannerApi),
     resultCountCloudComplianceScan:
       cloudScannerApi.countResultsCloudComplianceScan.bind(cloudScannerApi),
+    listCloudComplianceScan:
+      cloudScannerApi.listCloudComplianceScan.bind(cloudScannerApi),
   };
 }
 
@@ -153,6 +155,7 @@ export function getSearchApiClient() {
     searchMalwareScanCount: searchApi.countMalwareScans.bind(searchApi),
 
     searchCompliances: searchApi.searchCompliances.bind(searchApi),
+    searchCloudCompliances: searchApi.searchCloudCompliances.bind(searchApi),
   };
 }
 

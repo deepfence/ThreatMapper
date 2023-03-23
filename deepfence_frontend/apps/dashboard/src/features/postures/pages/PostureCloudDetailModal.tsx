@@ -34,7 +34,7 @@ type LoaderDataType = {
 
 async function getCompliances(complianceId: string) {
   const result = await makeRequest({
-    apiFunction: getSearchApiClient().searchCompliances,
+    apiFunction: getSearchApiClient().searchCloudCompliances,
     apiArgs: [
       {
         searchSearchNodeReq: {
@@ -42,7 +42,7 @@ async function getCompliances(complianceId: string) {
             filters: {
               contains_filter: {
                 filter_in: {
-                  node_id: [complianceId],
+                  control_id: [complianceId],
                 },
               },
               order_filter: {
@@ -113,13 +113,13 @@ const Header = () => {
           {(compliane: LoaderDataType['data']) => {
             if (compliane === undefined) {
               return (
-                <div className="flex items-center p-4 justify-center">
+                <div className="flex items-center justify-center">
                   <h3 className="text-md text-gray-700 dark:text-gray-400">-</h3>
                 </div>
               );
             }
             return (
-              <div className="flex flex-col w-full p-4">
+              <div className="flex flex-col w-full overflow-auto">
                 <div className="flex gap-x-2 items-center">
                   <span className="w-5 h-5 text-gray-500 dark:text-white">
                     <PostureIcon />
@@ -168,13 +168,11 @@ const DetailsComponent = () => {
               'description',
               'status',
               'compliance_check_type',
-              'remediation_puppet',
-              'remediation_script',
             ];
             const fixed = pick<ModelCompliance>(compliance, pickBy);
             const others = omit<ModelCompliance>(compliance, pickBy);
             return (
-              <div className="text-gray-900 dark:text-gray-300">
+              <div className="text-gray-900 dark:text-gray-300 overflow-auto">
                 <section>
                   <button
                     className="flex mb-2 font-medium text-xs w-full"
@@ -186,7 +184,6 @@ const DetailsComponent = () => {
                       DETAILS
                     </span>
                   </button>
-
                   <>
                     <div>
                       <div
@@ -211,26 +208,12 @@ const DetailsComponent = () => {
                           },
                         )}
                       >
-                        <span className="text-xs text-gray-500 uppercase">Status</span>
+                        <span className="text-xs text-gray-500">Status</span>
                         <span className="text-md uppercase">{fixed.status ?? '-'}</span>
                       </div>
-                      <p className="text-sm pr-2 mb-2">{fixed.description}</p>
-                    </div>
-                    <div className="flex flex-col mt-4">
-                      <span className="text-left text-xs text-gray-500 uppercase">
-                        Remediation
-                      </span>
-                      <p className="whitespace-pre-wrap text-sm pr-2 mb-2">
-                        {fixed.remediation_puppet}
+                      <p className="text-sm pr-2 mb-2 text-justify">
+                        {fixed.description}
                       </p>
-                    </div>
-                    <div className="flex flex-col mt-4">
-                      <span className="text-left text-xs text-gray-500 uppercase">
-                        Remediation Script
-                      </span>
-                      <pre className="whitespace-pre-wrap text-sm pr-2 mb-2">
-                        {fixed.remediation_script}
-                      </pre>
                     </div>
                     <div className="mt-6 flex flex-wrap gap-y-4">
                       {getObjectKeys(others).map((key) => {
@@ -257,7 +240,7 @@ const DetailsComponent = () => {
   );
 };
 
-const PostureDetailModal = () => {
+const PostureCloudDetailModal = () => {
   const { navigate } = usePageNavigation();
   const [searchParams] = useSearchParams();
   return (
@@ -279,5 +262,5 @@ const PostureDetailModal = () => {
 
 export const module = {
   loader,
-  element: <PostureDetailModal />,
+  element: <PostureCloudDetailModal />,
 };

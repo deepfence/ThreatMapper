@@ -13,24 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { DetailedParent } from './DetailedParent';
-import {
-    DetailedParentFromJSON,
-    DetailedParentFromJSONTyped,
-    DetailedParentToJSON,
-} from './DetailedParent';
 import type { ReportMetadataRow } from './ReportMetadataRow';
 import {
     ReportMetadataRowFromJSON,
     ReportMetadataRowFromJSONTyped,
     ReportMetadataRowToJSON,
 } from './ReportMetadataRow';
-import type { ReportTable } from './ReportTable';
-import {
-    ReportTableFromJSON,
-    ReportTableFromJSONTyped,
-    ReportTableToJSON,
-} from './ReportTable';
 
 /**
  * 
@@ -88,12 +76,6 @@ export interface DetailedNodeSummary {
     metrics?: Array<object>;
     /**
      * 
-     * @type {Array<DetailedParent>}
-     * @memberof DetailedNodeSummary
-     */
-    parents?: Array<DetailedParent>;
-    /**
-     * 
      * @type {boolean}
      * @memberof DetailedNodeSummary
      */
@@ -116,12 +98,6 @@ export interface DetailedNodeSummary {
      * @memberof DetailedNodeSummary
      */
     stack?: boolean;
-    /**
-     * 
-     * @type {Array<ReportTable>}
-     * @memberof DetailedNodeSummary
-     */
-    tables?: Array<ReportTable>;
     /**
      * 
      * @type {string}
@@ -163,12 +139,10 @@ export function DetailedNodeSummaryFromJSONTyped(json: any, ignoreDiscriminator:
         'labelMinor': !exists(json, 'labelMinor') ? undefined : json['labelMinor'],
         'metadata': !exists(json, 'metadata') ? undefined : ((json['metadata'] as Array<any>).map(ReportMetadataRowFromJSON)),
         'metrics': !exists(json, 'metrics') ? undefined : json['metrics'],
-        'parents': !exists(json, 'parents') ? undefined : ((json['parents'] as Array<any>).map(DetailedParentFromJSON)),
         'pseudo': !exists(json, 'pseudo') ? undefined : json['pseudo'],
         'rank': !exists(json, 'rank') ? undefined : json['rank'],
         'shape': !exists(json, 'shape') ? undefined : json['shape'],
         'stack': !exists(json, 'stack') ? undefined : json['stack'],
-        'tables': !exists(json, 'tables') ? undefined : ((json['tables'] as Array<any>).map(ReportTableFromJSON)),
         'tag': !exists(json, 'tag') ? undefined : json['tag'],
         'type': !exists(json, 'type') ? undefined : json['type'],
     };
@@ -191,12 +165,10 @@ export function DetailedNodeSummaryToJSON(value?: DetailedNodeSummary | null): a
         'labelMinor': value.labelMinor,
         'metadata': value.metadata === undefined ? undefined : ((value.metadata as Array<any>).map(ReportMetadataRowToJSON)),
         'metrics': value.metrics,
-        'parents': value.parents === undefined ? undefined : ((value.parents as Array<any>).map(DetailedParentToJSON)),
         'pseudo': value.pseudo,
         'rank': value.rank,
         'shape': value.shape,
         'stack': value.stack,
-        'tables': value.tables === undefined ? undefined : ((value.tables as Array<any>).map(ReportTableToJSON)),
         'tag': value.tag,
         'type': value.type,
     };

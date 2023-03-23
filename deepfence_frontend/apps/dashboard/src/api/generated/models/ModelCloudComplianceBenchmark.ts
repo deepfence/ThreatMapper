@@ -16,55 +16,55 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ReportColumn
+ * @interface ModelCloudComplianceBenchmark
  */
-export interface ReportColumn {
+export interface ModelCloudComplianceBenchmark {
     /**
      * 
      * @type {string}
-     * @memberof ReportColumn
+     * @memberof ModelCloudComplianceBenchmark
      */
-    dataType?: string;
+    compliance_type?: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ModelCloudComplianceBenchmark
+     */
+    controls?: Array<string> | null;
     /**
      * 
      * @type {string}
-     * @memberof ReportColumn
+     * @memberof ModelCloudComplianceBenchmark
      */
     id?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ReportColumn
-     */
-    label?: string;
 }
 
 /**
- * Check if a given object implements the ReportColumn interface.
+ * Check if a given object implements the ModelCloudComplianceBenchmark interface.
  */
-export function instanceOfReportColumn(value: object): boolean {
+export function instanceOfModelCloudComplianceBenchmark(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function ReportColumnFromJSON(json: any): ReportColumn {
-    return ReportColumnFromJSONTyped(json, false);
+export function ModelCloudComplianceBenchmarkFromJSON(json: any): ModelCloudComplianceBenchmark {
+    return ModelCloudComplianceBenchmarkFromJSONTyped(json, false);
 }
 
-export function ReportColumnFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportColumn {
+export function ModelCloudComplianceBenchmarkFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelCloudComplianceBenchmark {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'dataType': !exists(json, 'dataType') ? undefined : json['dataType'],
+        'compliance_type': !exists(json, 'compliance_type') ? undefined : json['compliance_type'],
+        'controls': !exists(json, 'controls') ? undefined : json['controls'],
         'id': !exists(json, 'id') ? undefined : json['id'],
-        'label': !exists(json, 'label') ? undefined : json['label'],
     };
 }
 
-export function ReportColumnToJSON(value?: ReportColumn | null): any {
+export function ModelCloudComplianceBenchmarkToJSON(value?: ModelCloudComplianceBenchmark | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -73,9 +73,9 @@ export function ReportColumnToJSON(value?: ReportColumn | null): any {
     }
     return {
         
-        'dataType': value.dataType,
+        'compliance_type': value.compliance_type,
+        'controls': value.controls,
         'id': value.id,
-        'label': value.label,
     };
 }
 
