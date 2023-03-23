@@ -299,7 +299,6 @@ func record2struct(node dbtype.Node) AttackPathData {
 		for _, v := range collect_num_cve_.([]interface{}) {
 			collect_num_cve = append(collect_num_cve, v.(int64))
 		}
-
 		sum_sum_cve, _ = sum_sum_cve_.(int64)
 	}
 
@@ -309,7 +308,6 @@ func record2struct(node dbtype.Node) AttackPathData {
 		for _, v := range collect_num_secrets_.([]interface{}) {
 			collect_num_secrets = append(collect_num_secrets, v.(int64))
 		}
-
 		sum_sum_secrets = sum_sum_secrets_.(int64)
 	}
 

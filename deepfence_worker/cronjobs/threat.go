@@ -132,7 +132,8 @@ func computeThreatGraph(session neo4j.Session) error {
 	}
 
 	if _, err = tx.Run(`
-		MATCH (n:Node)
+		MATCH (n)
+		WHERE n:Node OR n:CloudResource
 		SET n.num_cve = COALESCE(n.num_cve, 0),
 		n.num_secrets = COALESCE(n.num_secrets, 0),
 		n.num_malware = COALESCE(n.num_malware, 0),
@@ -142,7 +143,8 @@ func computeThreatGraph(session neo4j.Session) error {
 	}
 
 	if _, err = tx.Run(`
-		MATCH (n:Node)
+		MATCH (n)
+		WHERE n:Node OR n:CloudResource
 		SET n.sum_cve = COALESCE(n.num_cve, 0),
 		n.sum_secrets = COALESCE(n.num_secrets, 0),
 		n.sum_malware = COALESCE(n.num_malware, 0),
@@ -152,22 +154,13 @@ func computeThreatGraph(session neo4j.Session) error {
 	}
 
 	if _, err = tx.Run(`
-		MATCH (n:Node) -[:HOSTS]-> (m)
+		MATCH (n) -[:HOSTS]-> (m)
+		WHERE n:Node OR n:CloudResource
 		SET n.sum_cve = n.sum_cve + COALESCE(m.num_cve, 0),
 		n.sum_secrets = n.sum_secrets + COALESCE(m.num_secrets, 0),
 		n.sum_malware = n.sum_malware + COALESCE(m.num_malware, 0),
 		n.sum_compliance = n.sum_compliance + COALESCE(m.num_compliance, 0),
 		n.sum_cloud_compliance = n.sum_cloud_compliance + COALESCE(m.num_cloud_compliance, 0)`, map[string]interface{}{}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run(`
-		MATCH (n:Node) -[:CONNECTED]->(m:Node)
-		SET n.sum_cve = COALESCE(n.sum_cve, 0) + COALESCE(m.sum_cve, m.num_cve, 0),
-		n.sum_secrets = COALESCE(n.sum_secrets, 0) + COALESCE(m.sum_secrets, m.num_secrets, 0),
-		n.sum_malware = COALESCE(n.sum_malware, 0) + COALESCE(m.sum_malware, m.num_malware, 0),
-		n.sum_compliance = COALESCE(n.sum_compliance, 0) + COALESCE(m.sum_compliance, m.num_compliance, 0),
-		n.sum_cloud_compliance = COALESCE(n.sum_cloud_compliance, 0) + COALESCE(m.sum_cloud_compliance, m.num_cloud_compliance, 0)`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
@@ -188,6 +181,7 @@ func computeThreatGraph(session neo4j.Session) error {
 
 	if _, err = tx.Run(`
 		MATCH (n:Node) -[:CONNECTS]->(m:Node)
+		WHERE n.depth = m.depth - 1
 		WITH n, m
 		SET n.sum_cve = COALESCE(n.sum_cve, 0) + COALESCE(m.sum_cve, m.num_cve, 0),
 		n.sum_malware = COALESCE(n.sum_malware, 0) + COALESCE(m.sum_malware, m.num_malware, 0) ,
