@@ -9,20 +9,25 @@ import {
   ModelNodeIdentifierNodeTypeEnum,
   ModelSecretScanTriggerReq,
 } from '@/api/generated';
-import { NodeType } from '@/features/onboard/pages/ChooseScan';
+import { SecretScanNodeTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 
-export enum SecretScanActionEnumType {
-  SCAN_SECRET = 'scan_secret',
-}
-
-type ScanConfigureFormProps = {
-  wantAdvanceOptions: boolean;
-  data: {
-    nodeIds: string[];
-    images: string[];
-    nodeType: NodeType | ('cluster' | 'host' | 'image' | 'registry' | 'imageTag');
-  };
+export type SecretScanConfigureFormProps = {
+  showAdvancedOptions: boolean;
+  data:
+    | {
+        nodeIds: string[];
+        nodeType:
+          | SecretScanNodeTypeEnum.host
+          | SecretScanNodeTypeEnum.kubernetes_cluster
+          | SecretScanNodeTypeEnum.registry
+          | SecretScanNodeTypeEnum.imageTag;
+      }
+    | {
+        nodeIds: string[];
+        images: string[];
+        nodeType: SecretScanNodeTypeEnum.image;
+      };
   onSuccess: (data?: { nodeType: string; bulkScanId: string }) => void;
 };
 
@@ -51,11 +56,11 @@ export const scanSecretApiAction = async ({
   let filter_in = null;
   let _nodeType = nodeType;
 
-  if (nodeType === 'imageTag') {
+  if (nodeType === SecretScanNodeTypeEnum.imageTag) {
     _nodeType = 'image';
-  } else if (nodeType === 'kubernetes_cluster') {
+  } else if (nodeType === SecretScanNodeTypeEnum.kubernetes_cluster) {
     _nodeType = 'cluster';
-  } else if (nodeType === 'image') {
+  } else if (nodeType === SecretScanNodeTypeEnum.image) {
     _nodeType = 'registry';
     if (imageTag !== '') {
       filter_in = {
@@ -67,7 +72,7 @@ export const scanSecretApiAction = async ({
         docker_image_name: _images,
       };
     }
-  } else if (nodeType === 'registry') {
+  } else if (nodeType === SecretScanNodeTypeEnum.registry) {
     if (imageTag !== '') {
       filter_in = {
         docker_image_tag: [imageTag],
@@ -129,8 +134,8 @@ export const scanSecretApiAction = async ({
 export const SecretScanConfigureForm = ({
   data,
   onSuccess,
-  wantAdvanceOptions,
-}: ScanConfigureFormProps) => {
+  showAdvancedOptions: wantAdvanceOptions,
+}: SecretScanConfigureFormProps) => {
   const [priorityScan, setPriorityScan] = useState(false);
   const [autoCheckandScan, setAutoCheckandScan] = useState(false);
   const [imageTag, setImageTag] = useState('latest');
@@ -156,7 +161,7 @@ export const SecretScanConfigureForm = ({
     >
       <input type="text" name="_nodeIds" hidden readOnly value={data.nodeIds.join(',')} />
       <input type="text" name="_nodeType" readOnly hidden value={data.nodeType} />
-      {data.images && (
+      {data.nodeType === SecretScanNodeTypeEnum.image && data.images && (
         <input type="text" name="_images" hidden readOnly value={data.images.join(',')} />
       )}
       {fetcherData?.message && (

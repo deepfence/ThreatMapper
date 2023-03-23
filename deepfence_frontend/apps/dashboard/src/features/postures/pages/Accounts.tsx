@@ -36,6 +36,7 @@ import { ApiDocsBadRequestResponse, ModelCloudNodeAccountInfo } from '@/api/gene
 import { DFLink } from '@/components/DFLink';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { PostureScanConfigureForm } from '@/components/scan-configure-forms/PostureScanConfigureForm';
+import { ComplianceScanNodeTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -43,18 +44,18 @@ import { getPageFromSearchParams } from '@/utils/table';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 // TODO: remove this once we have correct type from api
-const getNodeTypeByProviderName = (providerName: string) => {
+const getNodeTypeByProviderName = (providerName: string): ComplianceScanNodeTypeEnum => {
   switch (providerName) {
     case 'linux':
-      return 'host';
+      return ComplianceScanNodeTypeEnum.host;
     case 'aws':
-      return 'aws';
+      return ComplianceScanNodeTypeEnum.aws;
     case 'gcp':
-      return 'gcp';
+      return ComplianceScanNodeTypeEnum.gcp;
     case 'azure':
-      return 'azure';
+      return ComplianceScanNodeTypeEnum.azure;
     case 'kubernetes':
-      return 'kubernetes_cluster';
+      return ComplianceScanNodeTypeEnum.kubernetes_cluster;
     default:
       throw new Error('Invalid provider name');
   }

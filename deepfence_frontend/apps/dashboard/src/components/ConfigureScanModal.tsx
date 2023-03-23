@@ -1,28 +1,36 @@
 import { Modal } from 'ui-components';
 
 import {
-  MalwareScanActionEnumType,
   MalwareScanConfigureForm,
+  MalwareScanConfigureFormProps,
 } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
 import {
-  SecretScanActionEnumType,
   SecretScanConfigureForm,
+  SecretScanConfigureFormProps,
 } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import {
-  VulnerabilityScanActionEnumType,
   VulnerabilityScanConfigureForm,
+  VulnerabilityScanConfigureFormProps,
 } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
+import { ScanTypeEnum } from '@/types/common';
 
 export interface ConfigureScanModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  scanOptions?: {
-    showAdvancedOptions: boolean;
-    scanType: string;
-    nodeIds: string[];
-    nodeType: 'cluster' | 'host' | 'registry' | 'image' | 'imageTag';
-    images?: string[];
-  };
+  scanOptions?: { showAdvancedOptions: boolean } & (
+    | {
+        scanType: typeof ScanTypeEnum.VulnerabilityScan;
+        data: VulnerabilityScanConfigureFormProps['data'];
+      }
+    | {
+        scanType: typeof ScanTypeEnum.SecretScan;
+        data: SecretScanConfigureFormProps['data'];
+      }
+    | {
+        scanType: typeof ScanTypeEnum.MalwareScan;
+        data: MalwareScanConfigureFormProps['data'];
+      }
+  );
 }
 
 export const ConfigureScanModal = ({
@@ -33,46 +41,34 @@ export const ConfigureScanModal = ({
   if (!scanOptions) return null;
   let title = '';
 
-  if (scanOptions.scanType === VulnerabilityScanActionEnumType.SCAN_VULNERABILITY) {
+  if (scanOptions.scanType === ScanTypeEnum.VulnerabilityScan) {
     title = `Configure vulnerability scan`;
-  } else if (scanOptions.scanType === SecretScanActionEnumType.SCAN_SECRET) {
+  } else if (scanOptions.scanType === ScanTypeEnum.SecretScan) {
     title = `Configure secret scan`;
-  } else if (scanOptions.scanType === MalwareScanActionEnumType.SCAN_MALWARE) {
+  } else if (scanOptions.scanType === ScanTypeEnum.MalwareScan) {
     title = `Configure malware scan`;
   }
 
   return (
     <Modal open={open} width="w-full" title={title} onOpenChange={onOpenChange}>
-      {scanOptions.scanType === VulnerabilityScanActionEnumType.SCAN_VULNERABILITY && (
+      {scanOptions.scanType === ScanTypeEnum.VulnerabilityScan && (
         <VulnerabilityScanConfigureForm
-          wantAdvanceOptions={scanOptions.showAdvancedOptions}
-          data={{
-            nodeIds: scanOptions.nodeIds,
-            nodeType: scanOptions.nodeType,
-            images: scanOptions.images ?? [],
-          }}
+          showAdvancedOptions={scanOptions.showAdvancedOptions}
+          data={scanOptions.data}
           onSuccess={() => onOpenChange(false)}
         />
       )}
-      {scanOptions.scanType === SecretScanActionEnumType.SCAN_SECRET && (
+      {scanOptions.scanType === ScanTypeEnum.SecretScan && (
         <SecretScanConfigureForm
-          wantAdvanceOptions={scanOptions.showAdvancedOptions}
-          data={{
-            nodeIds: scanOptions.nodeIds,
-            nodeType: scanOptions.nodeType,
-            images: scanOptions.images ?? [],
-          }}
+          showAdvancedOptions={scanOptions.showAdvancedOptions}
+          data={scanOptions.data}
           onSuccess={() => onOpenChange(false)}
         />
       )}
-      {scanOptions.scanType === MalwareScanActionEnumType.SCAN_MALWARE && (
+      {scanOptions.scanType === ScanTypeEnum.MalwareScan && (
         <MalwareScanConfigureForm
-          wantAdvanceOptions={scanOptions.showAdvancedOptions}
-          data={{
-            nodeIds: scanOptions.nodeIds,
-            nodeType: scanOptions.nodeType,
-            images: scanOptions.images ?? [],
-          }}
+          showAdvancedOptions={scanOptions.showAdvancedOptions}
+          data={scanOptions.data}
           onSuccess={() => onOpenChange(false)}
         />
       )}

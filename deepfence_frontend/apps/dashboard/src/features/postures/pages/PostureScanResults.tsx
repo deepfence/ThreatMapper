@@ -53,7 +53,6 @@ import { getComplianceApiClient, getScanResultsApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
   ModelCompliance,
-  ModelScanResultsActionRequestScanTypeEnum,
   ModelScanResultsReq,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
@@ -64,7 +63,7 @@ import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
 import { PostureResultChart } from '@/features/postures/components/PostureResultChart';
 import { Mode, useTheme } from '@/theme/ThemeContext';
-import { PostureSeverityType } from '@/types/common';
+import { PostureSeverityType, ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -318,7 +317,7 @@ const action = async ({
           modelScanResultsActionRequest: {
             result_ids: [...ids],
             scan_id: _scanId,
-            scan_type: ModelScanResultsActionRequestScanTypeEnum.ComplianceScan,
+            scan_type: ScanTypeEnum.ComplianceScan,
           },
         },
       ],
@@ -346,7 +345,7 @@ const action = async ({
           modelScanResultsMaskRequest: {
             result_ids: [...ids],
             scan_id: _scanId,
-            scan_type: ModelScanResultsActionRequestScanTypeEnum.ComplianceScan,
+            scan_type: ScanTypeEnum.ComplianceScan,
           },
         },
       ],
@@ -454,7 +453,7 @@ const HistoryDropdown = () => {
       generatePath('/data-component/scan-history/:scanType/:nodeType/:nodeId', {
         nodeId: nodeId,
         nodeType: nodeType,
-        scanType: ModelScanResultsActionRequestScanTypeEnum.ComplianceScan,
+        scanType: ScanTypeEnum.ComplianceScan,
       }),
     );
   };
