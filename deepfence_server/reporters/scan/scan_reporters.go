@@ -608,7 +608,7 @@ func type2sev_field(scan_type utils.Neo4jScanType) string {
 	case utils.NEO4J_SECRET_SCAN:
 		return "level"
 	case utils.NEO4J_MALWARE_SCAN:
-		return "FileSeverity"
+		return "file_severity"
 	case utils.NEO4J_COMPLIANCE_SCAN:
 		return "status"
 	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
@@ -636,11 +636,12 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	}
 	defer tx.Close()
 
-	nres, err := tx.Run(`
-		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[r:DETECTED]-> (d)
-		WHERE r.masked = false
-		RETURN d.`+type2sev_field(scan_type)+`, COUNT(*)`,
-		map[string]interface{}{"scan_id": scan_id})
+	query := `
+	MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
+	WHERE r.masked = false
+	RETURN d.` + type2sev_field(scan_type) + `, COUNT(*)`
+
+	nres, err := tx.Run(query, map[string]interface{}{"scan_id": scan_id})
 	if err != nil {
 		return res, err
 	}
@@ -651,7 +652,9 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	}
 
 	for _, rec := range recs {
-		res[rec.Values[0].(string)] = int32(rec.Values[1].(int64))
+		if len(rec.Values) > 0 && rec.Values[0] != nil && rec.Values[1] != nil {
+			res[rec.Values[0].(string)] = int32(rec.Values[1].(int64))
+		}
 	}
 
 	return res, nil
