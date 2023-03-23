@@ -17,15 +17,11 @@ import {
   ActionEnumType,
   useGetControlsList,
 } from '@/features/postures/data-component/listControlsApiLoader';
+import { ComplianceScanNodeTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 
-export enum PostureScanActionEnumType {
-  SCAN_POSTURE = 'scan_posture',
-}
-export type ComplianceType = 'aws' | 'gcp' | 'azure' | 'host' | 'kubernetes_cluster';
-
 export const complianceType: {
-  [key in ComplianceType]: string[];
+  [key in ComplianceScanNodeTypeEnum]: string[];
 } = {
   aws: ['CIS', 'NIST', 'PCI', 'HIPAA', 'SOC2', 'GDPR'],
   gcp: ['CIS'],
@@ -38,7 +34,7 @@ type ScanConfigureFormProps = {
   data: {
     nodeIds: string[];
     images: string[];
-    nodeType: ComplianceType;
+    nodeType: ComplianceScanNodeTypeEnum;
   };
   onSuccess: (data?: { nodeType: string; bulkScanId: string }) => void;
 };
@@ -57,7 +53,11 @@ type TabsType = {
   value: string;
 };
 
-export const CLOUDS = ['aws', 'gcp', 'azure'];
+export const CLOUDS = [
+  ComplianceScanNodeTypeEnum.aws,
+  ComplianceScanNodeTypeEnum.azure,
+  ComplianceScanNodeTypeEnum.gcp,
+];
 
 export const scanPostureApiAction = async ({
   request,
@@ -68,9 +68,9 @@ export const scanPostureApiAction = async ({
   let nodeType = body._nodeType.toString();
   const checkTypes = body._checkTypes.toString();
 
-  if (nodeType === 'kubernetes_cluster') {
+  if (nodeType === ComplianceScanNodeTypeEnum.kubernetes_cluster) {
     nodeType = 'cluster';
-  } else if (CLOUDS.includes(nodeType)) {
+  } else if (CLOUDS.includes(nodeType as ComplianceScanNodeTypeEnum)) {
     nodeType = 'cloud_account';
   }
 

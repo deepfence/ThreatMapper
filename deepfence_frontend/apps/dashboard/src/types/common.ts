@@ -1,3 +1,5 @@
+import { ModelScanResultsActionRequestScanTypeEnum } from '@/api/generated';
+
 export type VulnerabilitySeverityType =
   | 'critical'
   | 'high'
@@ -15,3 +17,23 @@ export type PostureSeverityType =
   | 'pass'
   | 'warn'
   | 'note';
+
+export enum VulnerabilityScanNodeTypeEnum {
+  host = 'host',
+  kubernetes_cluster = 'kubernetes_cluster',
+  registry = 'registry',
+  image = 'image',
+  imageTag = 'imageTag',
+}
+
+export { VulnerabilityScanNodeTypeEnum as MalwareScanNodeTypeEnum };
+export { VulnerabilityScanNodeTypeEnum as SecretScanNodeTypeEnum };
+export { ModelScanResultsActionRequestScanTypeEnum as ScanTypeEnum };
+
+export enum ComplianceScanNodeTypeEnum {
+  aws = 'aws',
+  gcp = 'gcp',
+  azure = 'azure',
+  host = 'host',
+  kubernetes_cluster = 'kubernetes_cluster',
+}

@@ -8,21 +8,32 @@ import {
   SlidingModalHeader,
 } from 'ui-components';
 
-import { MalwareScanActionEnumType } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
-import { SecretScanActionEnumType } from '@/components/scan-configure-forms/SecretScanConfigureForm';
-import { VulnerabilityScanActionEnumType } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
+import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
-import { ConfigureScanModalProps } from '@/features/registries/components/ConfigureScanModal';
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
+import { ScanTypeEnum } from '@/types/common';
 
-const AvailableScansForNodeType: Record<string, string[]> = {
-  host: ['vulnerability', 'secret', 'malware', 'compliance'],
-  container: ['vulnerability', 'secret', 'malware'],
-  container_image: ['vulnerability', 'secret', 'malware'],
+const AvailableScansForNodeType: Record<string, ScanTypeEnum[]> = {
+  host: [
+    ScanTypeEnum.VulnerabilityScan,
+    ScanTypeEnum.SecretScan,
+    ScanTypeEnum.MalwareScan,
+    ScanTypeEnum.ComplianceScan,
+  ],
+  container: [
+    ScanTypeEnum.VulnerabilityScan,
+    ScanTypeEnum.SecretScan,
+    ScanTypeEnum.MalwareScan,
+  ],
+  container_image: [
+    ScanTypeEnum.VulnerabilityScan,
+    ScanTypeEnum.SecretScan,
+    ScanTypeEnum.MalwareScan,
+  ],
 };
 
 export const Header = ({
@@ -59,15 +70,17 @@ export const Header = ({
               align="end"
               content={
                 <>
-                  {availableScans.includes('vulnerability') ? (
+                  {availableScans.includes(ScanTypeEnum.VulnerabilityScan) ? (
                     <DropdownItem
                       onClick={(e) => {
                         e.preventDefault();
                         onStartScanClick({
-                          nodeIds: [nodeId],
-                          nodeType: nodeType as any,
-                          scanType: VulnerabilityScanActionEnumType.SCAN_VULNERABILITY,
+                          data: {
+                            nodeIds: [nodeId],
+                            nodeType: nodeType as any, // TODO
+                          },
                           showAdvancedOptions: false,
+                          scanType: ScanTypeEnum.VulnerabilityScan,
                         });
                       }}
                     >
@@ -77,14 +90,16 @@ export const Header = ({
                       <span>Start Vulnerability Scan</span>
                     </DropdownItem>
                   ) : null}
-                  {availableScans.includes('secret') ? (
+                  {availableScans.includes(ScanTypeEnum.SecretScan) ? (
                     <DropdownItem
                       onClick={(e) => {
                         e.preventDefault();
                         onStartScanClick({
-                          nodeIds: [nodeId],
-                          nodeType: nodeType as any,
-                          scanType: SecretScanActionEnumType.SCAN_SECRET,
+                          data: {
+                            nodeIds: [nodeId],
+                            nodeType: nodeType as any, // TODO
+                          },
+                          scanType: ScanTypeEnum.SecretScan,
                           showAdvancedOptions: false,
                         });
                       }}
@@ -95,14 +110,16 @@ export const Header = ({
                       <span>Start Secret Scan</span>
                     </DropdownItem>
                   ) : null}
-                  {availableScans.includes('malware') ? (
+                  {availableScans.includes(ScanTypeEnum.MalwareScan) ? (
                     <DropdownItem
                       onClick={(e) => {
                         e.preventDefault();
                         onStartScanClick({
-                          nodeIds: [nodeId],
-                          nodeType: nodeType as any,
-                          scanType: MalwareScanActionEnumType.SCAN_MALWARE,
+                          data: {
+                            nodeIds: [nodeId],
+                            nodeType: nodeType as any,
+                          },
+                          scanType: ScanTypeEnum.MalwareScan,
                           showAdvancedOptions: false,
                         });
                       }}
@@ -113,7 +130,7 @@ export const Header = ({
                       <span>Start Malware Scan</span>
                     </DropdownItem>
                   ) : null}
-                  {availableScans.includes('compliance') ? (
+                  {availableScans.includes(ScanTypeEnum.ComplianceScan) ? (
                     <DropdownItem>
                       <span className="h-6 w-6">
                         <PostureIcon />

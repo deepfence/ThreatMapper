@@ -52,11 +52,7 @@ import {
 } from 'ui-components';
 
 import { getScanResultsApiClient, getSecretApiClient } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelScanResultsActionRequestScanTypeEnum,
-  ModelScanResultsReq,
-} from '@/api/generated';
+import { ApiDocsBadRequestResponse, ModelScanResultsReq } from '@/api/generated';
 import { ModelSecret } from '@/api/generated/models/ModelSecret';
 import { DFLink } from '@/components/DFLink';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
@@ -64,7 +60,7 @@ import { SEVERITY_COLORS } from '@/constants/charts';
 import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
 import { SecretsResultChart } from '@/features/secrets/components/landing/SecretsResultChart';
 import { Mode, useTheme } from '@/theme/ThemeContext';
-import { SecretSeverityType } from '@/types/common';
+import { ScanTypeEnum, SecretSeverityType } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -258,7 +254,7 @@ const action = async ({
           modelScanResultsActionRequest: {
             result_ids: [...ids],
             scan_id: _scanId,
-            scan_type: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+            scan_type: ScanTypeEnum.SecretScan,
           },
         },
       ],
@@ -287,7 +283,7 @@ const action = async ({
             mask_across_hosts_and_images: mask === 'maskHostAndImages',
             result_ids: [...ids],
             scan_id: _scanId,
-            scan_type: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+            scan_type: ScanTypeEnum.SecretScan,
           },
         },
       ],
@@ -407,7 +403,7 @@ const HistoryDropdown = () => {
       generatePath('/data-component/scan-history/:scanType/:nodeType/:nodeId', {
         nodeId: nodeId,
         nodeType: nodeType,
-        scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+        scanType: ScanTypeEnum.SecretScan,
       }),
     );
   };

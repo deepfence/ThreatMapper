@@ -10,9 +10,8 @@ import {
 import {
   ApiDocsBadRequestResponse,
   ModelNodeIdentifierNodeTypeEnum,
-  ModelScanResultsActionRequestScanTypeEnum,
 } from '@/api/generated';
-import { ScanType } from '@/features/common/data-component/searchHostsApiLoader';
+import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 
 type ScanList = {
@@ -27,22 +26,19 @@ export type ApiLoaderDataType = {
 };
 
 async function getScanList(
-  scanType: ScanType,
+  scanType: ScanTypeEnum,
   nodeId: string,
   nodeType: string,
 ): Promise<ApiLoaderDataType> {
   const result = await makeRequest({
     apiFunction: {
-      [ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan]:
+      [ScanTypeEnum.VulnerabilityScan]:
         getVulnerabilityApiClient().listVulnerabilityScans,
-      [ModelScanResultsActionRequestScanTypeEnum.SecretScan]:
-        getSecretApiClient().listSecretScans,
-      [ModelScanResultsActionRequestScanTypeEnum.MalwareScan]:
-        getMalwareApiClient().listMalwareScans,
-      [ModelScanResultsActionRequestScanTypeEnum.CloudComplianceScan]:
+      [ScanTypeEnum.SecretScan]: getSecretApiClient().listSecretScans,
+      [ScanTypeEnum.MalwareScan]: getMalwareApiClient().listMalwareScans,
+      [ScanTypeEnum.CloudComplianceScan]:
         getCloudComplianceApiClient().listCloudComplianceScan,
-      [ModelScanResultsActionRequestScanTypeEnum.ComplianceScan]:
-        getComplianceApiClient().listComplianceScan,
+      [ScanTypeEnum.ComplianceScan]: getComplianceApiClient().listComplianceScan,
     }[scanType],
 
     apiArgs: [
@@ -105,9 +101,5 @@ export const scanHistoryApiLoader = async ({
     throw new Error('Scan Type, Node Type and Node Id are required');
   }
 
-  return await getScanList(
-    scanType as ModelScanResultsActionRequestScanTypeEnum,
-    nodeId,
-    nodeType,
-  );
+  return await getScanList(scanType as ScanTypeEnum, nodeId, nodeType);
 };

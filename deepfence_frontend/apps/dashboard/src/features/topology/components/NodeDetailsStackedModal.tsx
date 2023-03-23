@@ -1,7 +1,7 @@
 import { ComponentProps, useCallback, useState } from 'react';
 import { SlidingModal, SlidingModalCloseButton } from 'ui-components';
 
-import { ConfigureScanModalProps } from '@/features/registries/components/ConfigureScanModal';
+import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
 import { Container } from '@/features/topology/data-components/node-details/Container';
 import { Host } from '@/features/topology/data-components/node-details/Host';
 

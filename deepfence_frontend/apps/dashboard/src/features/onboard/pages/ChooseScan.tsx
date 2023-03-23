@@ -10,22 +10,11 @@ import LogoAzureRegistry from '@/assets/logo-azure-registry.svg';
 import LogoGoogle from '@/assets/logo-google.svg';
 import LogoK8 from '@/assets/logo-k8.svg';
 import LogoLinux from '@/assets/logo-linux.svg';
-import { MalwareScanActionEnumType } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
-import { PostureScanActionEnumType } from '@/components/scan-configure-forms/PostureScanConfigureForm';
-import { SecretScanActionEnumType } from '@/components/scan-configure-forms/SecretScanConfigureForm';
-import { VulnerabilityScanActionEnumType } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { OnboardConnectionNode } from '@/features/onboard/pages/connectors/MyConnectors';
 import { Mode, useTheme } from '@/theme/ThemeContext';
+import { ScanTypeEnum } from '@/types/common';
 import { usePageNavigation } from '@/utils/usePageNavigation';
-
-export type NodeType =
-  | 'aws'
-  | 'gcp'
-  | 'azure'
-  | 'host'
-  | 'kubernetes_cluster'
-  | 'registry';
 
 const getNodeDisplayText = (text: string) => {
   const splittedText = text.split(',');
@@ -48,31 +37,31 @@ type ScanTypeListProps = {
 
 const complianceScanData = {
   scanTitle: 'Compliance Scan',
-  scanType: PostureScanActionEnumType.SCAN_POSTURE,
+  scanType: ScanTypeEnum.ComplianceScan,
   description: `A few words about the compliance scan and why you need to use it.`,
   buttonText: 'Configure Compliance Scan',
 };
 
 const vulnerabilityScanData = {
   scanTitle: 'Vulnerability Scan',
-  scanType: VulnerabilityScanActionEnumType.SCAN_VULNERABILITY,
+  scanType: ScanTypeEnum.VulnerabilityScan,
   description: `A few words about the vulnerability scan and why you need to use it.`,
   buttonText: 'Configure Vulnerability Scan',
 };
 const secretScanData = {
   scanTitle: 'Secret Scan',
-  scanType: SecretScanActionEnumType.SCAN_SECRET,
+  scanType: ScanTypeEnum.SecretScan,
   description: `A few words about the secret scan and why you need to use it.`,
   buttonText: 'Configure Secret Scan',
 };
 const malwareScanData = {
   scanTitle: 'Malware Scan',
-  scanType: MalwareScanActionEnumType.SCAN_MALWARE,
+  scanType: ScanTypeEnum.MalwareScan,
   description: `A few words about the malwawre scan and why you need to use it.`,
   buttonText: 'Configure Malware Scan',
 };
 
-type PossibleScanMapType = Record<NodeType, ScanTypeListProps[]>;
+type PossibleScanMapType = Record<string, ScanTypeListProps[]>;
 
 const possibleScanMap: PossibleScanMapType = {
   aws: [complianceScanData],
@@ -92,7 +81,7 @@ const logoAndTextMap = (
   count: number,
   mode: Mode,
 ): Record<
-  NodeType,
+  string,
   {
     title: string;
     logo: string;
@@ -136,7 +125,7 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
   const { mode } = useTheme();
   const { navigate } = usePageNavigation();
 
-  const nodeType = state[0].urlType as NodeType;
+  const nodeType = state[0].urlType;
 
   return (
     <div className="flex w-fit p-3 pt-0 items-center mb-8">
@@ -186,11 +175,11 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
   );
 };
 
-const ScanType = ({ state }: { state: OnboardConnectionNode[] }) => {
+const ScanHeader = ({ state }: { state: OnboardConnectionNode[] }) => {
   const { navigate } = usePageNavigation();
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-      {possibleScanMap[state[0].urlType as NodeType].map(
+      {possibleScanMap[state[0].urlType].map(
         ({ scanTitle, scanType, description, buttonText }: ScanTypeListProps) => {
           return (
             <Card key={scanType} className="p-5">
@@ -251,7 +240,7 @@ const ChooseScan = () => {
         description="Choose from the below options to perform your first scan."
       />
       <SelectedAccount state={state} />
-      <ScanType state={state} />
+      <ScanHeader state={state} />
       <Button onClick={goBack} color="default" size="xs" className="mt-16">
         Go Back
       </Button>

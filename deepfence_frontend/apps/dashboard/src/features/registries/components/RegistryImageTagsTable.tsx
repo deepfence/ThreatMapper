@@ -17,31 +17,36 @@ import {
 } from 'ui-components';
 
 import { ModelContainerImage } from '@/api/generated';
-import { MalwareScanActionEnumType } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
-import { SecretScanActionEnumType } from '@/components/scan-configure-forms/SecretScanConfigureForm';
-import { VulnerabilityScanActionEnumType } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
+import {
+  ConfigureScanModal,
+  ConfigureScanModalProps,
+} from '@/components/ConfigureScanModal';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
-import { ConfigureScanModal } from '@/features/registries/components/ConfigureScanModal';
+import {
+  MalwareScanNodeTypeEnum,
+  ScanTypeEnum,
+  SecretScanNodeTypeEnum,
+  VulnerabilityScanNodeTypeEnum,
+} from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
 
 const PAGE_SIZE = 15;
 
 const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
-  const [openScanConfigure, setOpenScanConfigure] = useState('');
+  const [selectedScanType, setSelectedScanType] = useState<
+    | typeof ScanTypeEnum.VulnerabilityScan
+    | typeof ScanTypeEnum.SecretScan
+    | typeof ScanTypeEnum.MalwareScan
+  >();
 
   return (
     <>
       <ConfigureScanModal
-        open={openScanConfigure !== ''}
-        onOpenChange={() => setOpenScanConfigure('')}
-        scanOptions={{
-          showAdvancedOptions: true,
-          scanType: openScanConfigure,
-          nodeIds: ids,
-          nodeType: 'imageTag',
-        }}
+        open={!!selectedScanType}
+        onOpenChange={() => setSelectedScanType(undefined)}
+        scanOptions={selectedScanType ? getScanOptions(selectedScanType, ids) : undefined}
       />
       <Dropdown
         triggerAsChild={true}
@@ -49,26 +54,20 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
         content={
           <>
             <DropdownItem
-              onClick={() =>
-                setOpenScanConfigure(VulnerabilityScanActionEnumType.SCAN_VULNERABILITY)
-              }
+              onClick={() => setSelectedScanType(ScanTypeEnum.VulnerabilityScan)}
             >
               <div className="w-4 h-4">
                 <VulnerabilityIcon />
               </div>
               Scan for vulnerability
             </DropdownItem>
-            <DropdownItem
-              onClick={() => setOpenScanConfigure(SecretScanActionEnumType.SCAN_SECRET)}
-            >
+            <DropdownItem onClick={() => setSelectedScanType(ScanTypeEnum.SecretScan)}>
               <div className="w-4 h-4">
                 <SecretsIcon />
               </div>
               Scan for secret
             </DropdownItem>
-            <DropdownItem
-              onClick={() => setOpenScanConfigure(MalwareScanActionEnumType.SCAN_MALWARE)}
-            >
+            <DropdownItem onClick={() => setSelectedScanType(ScanTypeEnum.MalwareScan)}>
               <div className="w-4 h-4">
                 <MalwareIcon />
               </div>
@@ -102,7 +101,11 @@ export const RegistryImageTagsTable = ({
   const columnHelper = createColumnHelper<ModelContainerImage>();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
 
-  const [openScanConfigure, setOpenScanConfigure] = useState('');
+  const [selectedScanType, setSelectedScanType] = useState<
+    | typeof ScanTypeEnum.VulnerabilityScan
+    | typeof ScanTypeEnum.SecretScan
+    | typeof ScanTypeEnum.MalwareScan
+  >();
 
   const columns = useMemo(
     () => [
@@ -225,34 +228,30 @@ export const RegistryImageTagsTable = ({
           <div className="mb-2 w-[160px]">
             <Select
               placeholder="Select a scan"
-              value={openScanConfigure}
+              value={selectedScanType}
               sizing="xs"
               onChange={(value) => {
-                setOpenScanConfigure(value);
+                setSelectedScanType(
+                  value as
+                    | typeof ScanTypeEnum.VulnerabilityScan
+                    | typeof ScanTypeEnum.SecretScan
+                    | typeof ScanTypeEnum.MalwareScan,
+                );
               }}
             >
-              <SelectItem
-                value={VulnerabilityScanActionEnumType.SCAN_VULNERABILITY}
-                key={VulnerabilityScanActionEnumType.SCAN_VULNERABILITY}
-              >
+              <SelectItem value={ScanTypeEnum.VulnerabilityScan}>
                 <div className="w-4 h-4">
                   <VulnerabilityIcon />
                 </div>
                 Vulnerability
               </SelectItem>
-              <SelectItem
-                value={SecretScanActionEnumType.SCAN_SECRET}
-                key={SecretScanActionEnumType.SCAN_SECRET}
-              >
+              <SelectItem value={ScanTypeEnum.SecretScan}>
                 <div className="w-4 h-4">
                   <SecretsIcon />
                 </div>
                 Secret
               </SelectItem>
-              <SelectItem
-                value={MalwareScanActionEnumType.SCAN_MALWARE}
-                key={MalwareScanActionEnumType.SCAN_MALWARE}
-              >
+              <SelectItem value={ScanTypeEnum.MalwareScan}>
                 <div className="w-4 h-4">
                   <MalwareIcon />
                 </div>
@@ -264,14 +263,11 @@ export const RegistryImageTagsTable = ({
       )}
 
       <ConfigureScanModal
-        open={openScanConfigure !== ''}
-        onOpenChange={() => setOpenScanConfigure('')}
-        scanOptions={{
-          showAdvancedOptions: true,
-          scanType: openScanConfigure,
-          nodeIds: selectedIds,
-          nodeType: 'imageTag',
-        }}
+        open={!!selectedScanType}
+        onOpenChange={() => setSelectedScanType(undefined)}
+        scanOptions={
+          selectedScanType ? getScanOptions(selectedScanType, selectedIds) : undefined
+        }
       />
       <Table
         size="sm"
@@ -308,3 +304,43 @@ export const RegistryImageTagsTable = ({
     </>
   );
 };
+
+function getScanOptions(
+  scanType: ScanTypeEnum,
+  nodeIds: string[],
+): ConfigureScanModalProps['scanOptions'] {
+  if (scanType === ScanTypeEnum.VulnerabilityScan) {
+    return {
+      showAdvancedOptions: true,
+      scanType,
+      data: {
+        nodeIds,
+        nodeType: VulnerabilityScanNodeTypeEnum.imageTag,
+      },
+    };
+  }
+
+  if (scanType === ScanTypeEnum.SecretScan) {
+    return {
+      showAdvancedOptions: true,
+      scanType,
+      data: {
+        nodeIds,
+        nodeType: SecretScanNodeTypeEnum.imageTag,
+      },
+    };
+  }
+
+  if (scanType === ScanTypeEnum.MalwareScan) {
+    return {
+      showAdvancedOptions: true,
+      scanType,
+      data: {
+        nodeIds,
+        nodeType: MalwareScanNodeTypeEnum.imageTag,
+      },
+    };
+  }
+
+  throw new Error('invalid scan type');
+}

@@ -2,8 +2,7 @@ import cx from 'classnames';
 import { Suspense, useMemo, useRef, useState } from 'react';
 import { FaPlay, FaPlus } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
-import { HiChevronRight, HiDotsVertical, HiOutlineEye, HiRefresh } from 'react-icons/hi';
-import { IconContext } from 'react-icons/lib';
+import { HiChevronRight, HiRefresh } from 'react-icons/hi';
 import {
   Form,
   generatePath,
@@ -20,8 +19,6 @@ import {
   Button,
   Checkbox,
   createColumnHelper,
-  Dropdown,
-  DropdownItem,
   getRowSelectionColumn,
   IconButton,
   Modal,
@@ -39,6 +36,7 @@ import {
   CLOUDS,
   PostureScanConfigureForm,
 } from '@/components/scan-configure-forms/PostureScanConfigureForm';
+import { ComplianceScanNodeTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -46,18 +44,18 @@ import { getPageFromSearchParams } from '@/utils/table';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 // TODO: remove this once we have correct type from api
-const getNodeTypeByProviderName = (providerName: string) => {
+const getNodeTypeByProviderName = (providerName: string): ComplianceScanNodeTypeEnum => {
   switch (providerName) {
     case 'linux':
-      return 'host';
+      return ComplianceScanNodeTypeEnum.host;
     case 'aws':
-      return 'aws';
+      return ComplianceScanNodeTypeEnum.aws;
     case 'gcp':
-      return 'gcp';
+      return ComplianceScanNodeTypeEnum.gcp;
     case 'azure':
-      return 'azure';
+      return ComplianceScanNodeTypeEnum.azure;
     case 'kubernetes':
-      return 'kubernetes_cluster';
+      return ComplianceScanNodeTypeEnum.kubernetes_cluster;
     default:
       throw new Error('Invalid provider name');
   }
@@ -183,7 +181,12 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
               scanId: cell.row.original.last_scan_id || 'dummy',
               nodeType: cell.row.original.cloud_provider || 'dummy',
             });
-            if (CLOUDS.includes(cell.row.original.cloud_provider ?? '')) {
+            if (
+              cell.row.original.cloud_provider &&
+              CLOUDS.includes(
+                cell.row.original.cloud_provider as ComplianceScanNodeTypeEnum,
+              )
+            ) {
               redirectUrl = generatePath(
                 `/posture/cloud/scan-results/:nodeType/:scanId`,
                 {
