@@ -20,6 +20,8 @@ import type {
   IngestersCloudCompliance,
   ModelCloudComplianceScanResult,
   ModelComplianceScanStatusResp,
+  ModelScanListReq,
+  ModelScanListResp,
   ModelScanResultsReq,
   ModelScanStatusReq,
   SearchSearchCountResp,
@@ -35,6 +37,10 @@ import {
     ModelCloudComplianceScanResultToJSON,
     ModelComplianceScanStatusRespFromJSON,
     ModelComplianceScanStatusRespToJSON,
+    ModelScanListReqFromJSON,
+    ModelScanListReqToJSON,
+    ModelScanListRespFromJSON,
+    ModelScanListRespToJSON,
     ModelScanResultsReqFromJSON,
     ModelScanResultsReqToJSON,
     ModelScanStatusReqFromJSON,
@@ -53,6 +59,10 @@ export interface IngestCloudComplianceScanStatusRequest {
 
 export interface IngestCloudCompliancesRequest {
     ingestersCloudCompliance?: Array<IngestersCloudCompliance> | null;
+}
+
+export interface ListCloudComplianceScanRequest {
+    modelScanListReq?: ModelScanListReq;
 }
 
 export interface ResultsCloudComplianceScanRequest {
@@ -117,6 +127,22 @@ export interface CloudScannerApiInterface {
      * Ingest Cloud Compliances
      */
     ingestCloudCompliances(requestParameters: IngestCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Get Cloud Compliance Scans list for cloud node
+     * @summary Get Cloud Compliance Scans List
+     * @param {ModelScanListReq} [modelScanListReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof CloudScannerApiInterface
+     */
+    listCloudComplianceScanRaw(requestParameters: ListCloudComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanListResp>>;
+
+    /**
+     * Get Cloud Compliance Scans list for cloud node
+     * Get Cloud Compliance Scans List
+     */
+    listCloudComplianceScan(requestParameters: ListCloudComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanListResp>;
 
     /**
      * Get Cloud Compliance Scan results for cloud node
@@ -270,6 +296,45 @@ export class CloudScannerApi extends runtime.BaseAPI implements CloudScannerApiI
      */
     async ingestCloudCompliances(requestParameters: IngestCloudCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.ingestCloudCompliancesRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Get Cloud Compliance Scans list for cloud node
+     * Get Cloud Compliance Scans List
+     */
+    async listCloudComplianceScanRaw(requestParameters: ListCloudComplianceScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelScanListResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scan/list/cloud-compliance`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelScanListReqToJSON(requestParameters.modelScanListReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelScanListRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Cloud Compliance Scans list for cloud node
+     * Get Cloud Compliance Scans List
+     */
+    async listCloudComplianceScan(requestParameters: ListCloudComplianceScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelScanListResp> {
+        const response = await this.listCloudComplianceScanRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

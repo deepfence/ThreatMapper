@@ -28,10 +28,10 @@ import {
 export interface ModelComplianceScanResult {
     /**
      * 
-     * @type {string}
+     * @type {Array<string>}
      * @memberof ModelComplianceScanResult
      */
-    benchmark_type: string;
+    benchmark_type: Array<string> | null;
     /**
      * 
      * @type {number}

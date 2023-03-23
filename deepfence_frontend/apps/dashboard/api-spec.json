@@ -2979,6 +2979,58 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/scan/list/cloud-compliance": {
+      "post": {
+        "tags": ["Cloud Scanner"],
+        "summary": "Get Cloud Compliance Scans List",
+        "description": "Get Cloud Compliance Scans list for cloud node",
+        "operationId": "listCloudComplianceScan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanListReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelScanListResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/scan/list/compliance": {
       "post": {
         "tags": ["Compliance"],
@@ -7064,28 +7116,12 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/ReportMetricRow" }
           },
-          "parents": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/DetailedParent" }
-          },
           "pseudo": { "type": "boolean" },
           "rank": { "type": "string" },
           "shape": { "type": "string" },
           "stack": { "type": "boolean" },
-          "tables": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ReportTable" }
-          },
           "tag": { "type": "string" },
           "type": { "type": "string" }
-        }
-      },
-      "DetailedParent": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string" },
-          "label": { "type": "string" },
-          "topologyId": { "type": "string" }
         }
       },
       "DetailedTopologyConnectionSummaries": {
@@ -7710,17 +7746,33 @@
           "updated_at": { "type": "integer" }
         }
       },
-      "ModelCloudComplianceScanDetails": {
+      "ModelCloudComplianceBenchmark": {
         "type": "object",
         "properties": {
-          "account_id": { "type": "string" },
+          "compliance_type": { "type": "string" },
           "controls": {
             "type": "array",
             "items": { "type": "string" },
             "nullable": true
           },
+          "id": { "type": "string" }
+        }
+      },
+      "ModelCloudComplianceScanDetails": {
+        "type": "object",
+        "properties": {
+          "account_id": { "type": "string" },
+          "benchmarks": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelCloudComplianceBenchmark" },
+            "nullable": true
+          },
           "scan_id": { "type": "string" },
-          "scan_type": { "type": "string" }
+          "scan_types": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          }
         }
       },
       "ModelCloudComplianceScanResult": {
@@ -7741,7 +7793,11 @@
         ],
         "type": "object",
         "properties": {
-          "benchmark_type": { "type": "string" },
+          "benchmark_type": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "compliance_percentage": { "type": "number" },
           "compliances": {
             "type": "array",
@@ -7949,7 +8005,7 @@
       "ModelComplianceScanInfo": {
         "required": [
           "scan_id",
-          "benchmark_type",
+          "benchmark_types",
           "status",
           "updated_at",
           "node_id",
@@ -7958,7 +8014,11 @@
         ],
         "type": "object",
         "properties": {
-          "benchmark_type": { "type": "string" },
+          "benchmark_types": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "node_id": { "type": "string" },
           "node_type": { "type": "string" },
           "scan_id": { "type": "string" },
@@ -7989,7 +8049,11 @@
         ],
         "type": "object",
         "properties": {
-          "benchmark_type": { "type": "string" },
+          "benchmark_type": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "compliance_percentage": { "type": "number" },
           "compliances": {
             "type": "array",
@@ -9075,14 +9139,6 @@
       },
       "PostgresqlDbApiToken": { "type": "object" },
       "PostgresqlDbGetAuditLogsRow": { "type": "object" },
-      "ReportColumn": {
-        "type": "object",
-        "properties": {
-          "dataType": { "type": "string" },
-          "id": { "type": "string" },
-          "label": { "type": "string" }
-        }
-      },
       "ReportIDList": { "type": "array", "items": { "type": "string" } },
       "ReportMetadataRow": {
         "type": "object",
@@ -9100,36 +9156,6 @@
         "required": ["payload"],
         "type": "object",
         "properties": { "payload": { "type": "string" } }
-      },
-      "ReportRow": {
-        "type": "object",
-        "properties": {
-          "entries": {
-            "type": "object",
-            "additionalProperties": { "type": "string" },
-            "nullable": true
-          },
-          "id": { "type": "string" }
-        }
-      },
-      "ReportTable": {
-        "type": "object",
-        "properties": {
-          "columns": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ReportColumn" },
-            "nullable": true
-          },
-          "id": { "type": "string" },
-          "label": { "type": "string" },
-          "rows": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ReportRow" },
-            "nullable": true
-          },
-          "truncationCount": { "type": "integer" },
-          "type": { "type": "string" }
-        }
       },
       "ReportersContainsFilter": {
         "required": ["filter_in"],

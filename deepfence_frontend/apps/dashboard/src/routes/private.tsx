@@ -45,6 +45,8 @@ import { module as postureConnectorLayout } from '@/features/postures/layouts/Po
 import { module as postureAddAccounts } from '@/features/postures/pages/AccountAdd';
 import { module as postureAccounts } from '@/features/postures/pages/Accounts';
 import { module as posture } from '@/features/postures/pages/Posture';
+import { module as postureCloudDetails } from '@/features/postures/pages/PostureCloudDetailModal';
+import { module as postureCloudScanResults } from '@/features/postures/pages/PostureCloudScanResults';
 import { module as postureDetails } from '@/features/postures/pages/PostureDetailModal';
 import { module as postureScanResults } from '@/features/postures/pages/PostureScanResults';
 import { module as registryConnectorLayout } from '@/features/registries/layouts/RegistryConnectorLayout';
@@ -345,13 +347,25 @@ export const privateRoutes: CustomRouteObject[] = [
         ],
       },
       {
-        path: 'posture/scan-results/:scanId',
+        path: 'posture/scan-results/:nodeType/:scanId',
         ...postureScanResults,
         meta: { title: 'Posture Scans Results' },
         children: [
           {
             path: ':complianceId',
             ...postureDetails,
+            meta: { title: 'Posture Details' },
+          },
+        ],
+      },
+      {
+        path: 'posture/cloud/scan-results/:nodeType/:scanId',
+        ...postureCloudScanResults,
+        meta: { title: 'Posture Scans Results' },
+        children: [
+          {
+            path: ':complianceId',
+            ...postureCloudDetails,
             meta: { title: 'Posture Details' },
           },
         ],
@@ -416,7 +430,7 @@ export const privateRoutes: CustomRouteObject[] = [
         action: registryConnectorActionApi,
       },
       {
-        path: 'list/controls/:checkType',
+        path: 'list/controls/:nodeType/:checkType',
         loader: listControlsApiLoader,
         action: toggleControlApiAction,
       },

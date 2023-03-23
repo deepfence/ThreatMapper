@@ -49,10 +49,10 @@ import {
   TableSkeleton,
 } from 'ui-components';
 
-import { getComplianceApiClient, getScanResultsApiClient } from '@/api/api';
+import { getCloudComplianceApiClient, getScanResultsApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
-  ModelCompliance,
+  ModelCloudCompliance,
   ModelScanResultsActionRequestScanTypeEnum,
   ModelScanResultsReq,
 } from '@/api/generated';
@@ -103,7 +103,7 @@ type ScanResult = {
   nodeType: string;
   nodeId: string;
   timestamp: number;
-  compliances: ModelCompliance[];
+  compliances: ModelCloudCompliance[];
   pagination: {
     currentPage: number;
     totalRows: number;
@@ -132,6 +132,10 @@ const getBenchmarkType = (searchParams: URLSearchParams) => {
   return searchParams.getAll('benchmarkType');
 };
 
+const getServices = (searchParams: URLSearchParams) => {
+  return searchParams.getAll('services');
+};
+
 async function getScans(
   scanId: string,
   searchParams: URLSearchParams,
@@ -142,6 +146,7 @@ async function getScans(
   const mask = getMaskSearch(searchParams);
   const unmask = getUnmaskSearch(searchParams);
   const benchmarkTypes = getBenchmarkType(searchParams);
+  const services = getServices(searchParams);
 
   const scanResultsReq: ModelScanResultsReq = {
     fields_filter: {
@@ -173,6 +178,10 @@ async function getScans(
       benchmarkTypes;
   }
 
+  if (services.length) {
+    scanResultsReq.fields_filter.contains_filter.filter_in!['service'] = services;
+  }
+
   if (order) {
     scanResultsReq.fields_filter.order_filter.order_fields?.push({
       field_name: order.sortBy,
@@ -184,7 +193,7 @@ async function getScans(
   let resultCounts = null;
 
   result = await makeRequest({
-    apiFunction: getComplianceApiClient().resultComplianceScan,
+    apiFunction: getCloudComplianceApiClient().resultCloudComplianceScan,
     apiArgs: [
       {
         modelScanResultsReq: scanResultsReq,
@@ -201,7 +210,7 @@ async function getScans(
     },
   });
   resultCounts = await makeRequest({
-    apiFunction: getComplianceApiClient().resultCountComplianceScan,
+    apiFunction: getCloudComplianceApiClient().resultCountCloudComplianceScan,
     apiArgs: [
       {
         modelScanResultsReq: {
@@ -223,6 +232,7 @@ async function getScans(
       }
     },
   });
+
   if (ApiError.isApiError(result)) {
     return result.value();
   }
@@ -235,14 +245,7 @@ async function getScans(
     return acc;
   }, 0);
 
-  const linuxComplianceStatus = {
-    info: result.status_counts?.[STATUSES.INFO] ?? 0,
-    pass: result.status_counts?.[STATUSES.PASS] ?? 0,
-    warn: result.status_counts?.[STATUSES.WARN] ?? 0,
-    note: result.status_counts?.[STATUSES.NOTE] ?? 0,
-  };
-
-  const clusterComplianceStatus = {
+  const cloudComplianceStatus = {
     alarm: result.status_counts?.[STATUSES.ALARM] ?? 0,
     info: result.status_counts?.[STATUSES.INFO] ?? 0,
     ok: result.status_counts?.[STATUSES.OK] ?? 0,
@@ -252,8 +255,7 @@ async function getScans(
   return {
     data: {
       totalStatus,
-      statusCounts:
-        result.node_type === 'host' ? linuxComplianceStatus : clusterComplianceStatus,
+      statusCounts: cloudComplianceStatus,
       nodeName: result.node_name,
       nodeType: result.node_type,
       nodeId: result.node_id,
@@ -446,15 +448,18 @@ const HistoryDropdown = () => {
   const { navigate } = usePageNavigation();
   const fetcher = useFetcher<ApiLoaderDataType>();
   const loaderData = useLoaderData() as LoaderDataType;
-  const params = useParams();
+  const params = useParams() as {
+    scanId: string;
+    nodeType: string;
+  };
   const isScanHistoryLoading = fetcher.state === 'loading';
 
-  const onHistoryClick = (nodeType: string, nodeId: string) => {
+  const onHistoryClick = (nodeId: string) => {
     fetcher.load(
       generatePath('/data-component/scan-history/:scanType/:nodeType/:nodeId', {
         nodeId: nodeId,
-        nodeType: nodeType,
-        scanType: ModelScanResultsActionRequestScanTypeEnum.ComplianceScan,
+        nodeType: 'cloud_account',
+        scanType: ModelScanResultsActionRequestScanTypeEnum.CloudComplianceScan,
       }),
     );
   };
@@ -479,11 +484,12 @@ const HistoryDropdown = () => {
           if (!data) {
             return null;
           }
+
           return (
             <Dropdown
               triggerAsChild
               onOpenChange={(open) => {
-                if (open) onHistoryClick(data.nodeType, data.nodeId);
+                if (open) onHistoryClick(data.nodeId);
               }}
               content={
                 <>
@@ -494,9 +500,13 @@ const HistoryDropdown = () => {
                         key={item.scanId}
                         onClick={() => {
                           navigate(
-                            generatePath('/posture/scan-results/:scanId', {
-                              scanId: item.scanId,
-                            }),
+                            generatePath(
+                              '/posture/cloud/scan-results/:nodeType/:scanId',
+                              {
+                                scanId: item.scanId,
+                                nodeType: params.nodeType,
+                              },
+                            ),
                             {
                               replace: true,
                             },
@@ -629,10 +639,10 @@ const ActionDropdown = ({
     </>
   );
 };
-const ScanResusltTable = () => {
+const ScanResultTable = () => {
   const fetcher = useFetcher();
   const loaderData = useLoaderData() as LoaderDataType;
-  const columnHelper = createColumnHelper<ModelCompliance>();
+  const columnHelper = createColumnHelper<ModelCloudCompliance>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -641,17 +651,17 @@ const ScanResusltTable = () => {
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
-        size: 30,
+        size: 35,
         minSize: 30,
         maxSize: 40,
       }),
-      columnHelper.accessor('node_id', {
+      columnHelper.accessor('control_id', {
         enableSorting: false,
         enableResizing: false,
         cell: (info) => (
           <DFLink
             to={{
-              pathname: `./${info.getValue()}`,
+              pathname: `./${info.row.original.control_id}`,
               search: searchParams.toString(),
             }}
             className="flex items-center gap-x-2"
@@ -661,39 +671,47 @@ const ScanResusltTable = () => {
                 <PostureIcon />
               </div>
             </div>
-            <div className="truncate">{info.row.original.test_number}</div>
+            <div className="truncate">{info.row.original.control_id}</div>
           </DFLink>
         ),
-        header: () => 'Test ID',
-        minSize: 50,
-        size: 60,
-        maxSize: 65,
-      }),
-      columnHelper.accessor('test_category', {
-        enableSorting: false,
-        enableResizing: false,
-        cell: (info) => info.getValue(),
-        header: () => 'Category',
-        minSize: 80,
-        size: 90,
-        maxSize: 95,
+        header: () => 'Control ID',
+        minSize: 75,
+        size: 80,
+        maxSize: 85,
       }),
       columnHelper.accessor('compliance_check_type', {
         enableSorting: false,
         enableResizing: false,
         cell: (info) => info.getValue().toUpperCase(),
-        header: () => 'Check Type',
-        minSize: 60,
+        header: () => 'Benchmark Type',
+        minSize: 50,
         size: 60,
-        maxSize: 70,
+        maxSize: 65,
       }),
-
+      columnHelper.accessor('service', {
+        enableSorting: false,
+        enableResizing: false,
+        cell: (info) => info.getValue(),
+        header: () => 'Service',
+        minSize: 50,
+        size: 60,
+        maxSize: 65,
+      }),
+      columnHelper.accessor('resource', {
+        enableResizing: false,
+        enableSorting: false,
+        minSize: 115,
+        size: 120,
+        maxSize: 125,
+        header: () => 'Resource',
+        cell: (cell) => cell.getValue(),
+      }),
       columnHelper.accessor('description', {
         enableResizing: false,
         enableSorting: false,
-        minSize: 140,
-        size: 150,
-        maxSize: 160,
+        minSize: 115,
+        size: 120,
+        maxSize: 125,
         header: () => 'Description',
         cell: (cell) => cell.getValue(),
       }),
@@ -893,22 +911,19 @@ const ScanResusltTable = () => {
 const FilterComponent = () => {
   const elementToFocusOnClose = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
+
   const params = useParams() as {
     nodeType: string;
   };
 
-  let statuses: string[] = [];
-  if (params.nodeType === ACCOUNT_CONNECTOR.HOST) {
-    statuses = [STATUSES.INFO, STATUSES.PASS, STATUSES.WARN, STATUSES.NOTE];
-  } else {
-    statuses = [STATUSES.ALARM, STATUSES.INFO, STATUSES.OK, STATUSES.SKIP];
-  }
-
+  const nodeType = params.nodeType;
   let benchmarks: string[] = [];
-  if (params.nodeType === ACCOUNT_CONNECTOR.HOST) {
-    benchmarks = complianceType.host;
-  } else {
-    benchmarks = complianceType.kubernetes_cluster;
+  if (nodeType === ACCOUNT_CONNECTOR.AWS) {
+    benchmarks = complianceType.aws;
+  } else if (nodeType === ACCOUNT_CONNECTOR.GCP) {
+    benchmarks = complianceType.gcp;
+  } else if (nodeType === ACCOUNT_CONNECTOR.AZURE) {
+    benchmarks = complianceType.azure;
   }
 
   return (
@@ -1006,6 +1021,28 @@ const FilterComponent = () => {
             <fieldset>
               <Select
                 noPortal
+                name="services"
+                label={'Service Name'}
+                placeholder="Select Service Name"
+                value={searchParams.getAll('services')}
+                sizing="xs"
+                onChange={(value) => {
+                  setSearchParams((prev) => {
+                    prev.delete('services');
+                    value.forEach((service) => {
+                      prev.append('services', service);
+                    });
+                    prev.delete('page');
+                    return prev;
+                  });
+                }}
+              >
+                <SelectItem />
+              </Select>
+            </fieldset>
+            <fieldset>
+              <Select
+                noPortal
                 name="status"
                 label={'Status'}
                 placeholder="Select Status"
@@ -1022,13 +1059,15 @@ const FilterComponent = () => {
                   });
                 }}
               >
-                {statuses.map((status: string) => {
-                  return (
-                    <SelectItem value={status.toLowerCase()} key={status.toLowerCase()}>
-                      {status.toUpperCase()}
-                    </SelectItem>
-                  );
-                })}
+                {[STATUSES.ALARM, STATUSES.INFO, STATUSES.OK, STATUSES.SKIP].map(
+                  (status: string) => {
+                    return (
+                      <SelectItem value={status.toLowerCase()} key={status.toLowerCase()}>
+                        {status.toUpperCase()}
+                      </SelectItem>
+                    );
+                  },
+                )}
               </Select>
             </fieldset>
           </div>
@@ -1046,10 +1085,11 @@ const FilterComponent = () => {
   );
 };
 const HeaderComponent = () => {
-  const [searchParams] = useSearchParams();
   const params = useParams() as {
     nodeType: string;
   };
+
+  const [searchParams] = useSearchParams();
   const loaderData = useLoaderData() as LoaderDataType;
   const isFilterApplied =
     searchParams.has('status') ||
@@ -1063,11 +1103,15 @@ const HeaderComponent = () => {
         <DFAwait resolve={loaderData.data ?? []}>
           {(resolvedData: LoaderDataType) => {
             const { data } = resolvedData;
+            let _nodeType = '';
+            if (params.nodeType === ACCOUNT_CONNECTOR.HOST) {
+              _nodeType = ACCOUNT_CONNECTOR.LINUX;
+            } else if (params.nodeType === ACCOUNT_CONNECTOR.CLUSTER) {
+              _nodeType = ACCOUNT_CONNECTOR.KUBERNETES;
+            } else {
+              _nodeType = params.nodeType;
+            }
 
-            const _nodeType =
-              params.nodeType === ACCOUNT_CONNECTOR.LINUX
-                ? ACCOUNT_CONNECTOR.LINUX
-                : ACCOUNT_CONNECTOR.KUBERNETES;
             return (
               <>
                 <Breadcrumb separator={<HiChevronRight />} transparent>
@@ -1128,24 +1172,6 @@ const HeaderComponent = () => {
 
 const StatusCountComponent = ({ theme }: { theme: Mode }) => {
   const loaderData = useLoaderData() as LoaderDataType;
-  const params = useParams() as {
-    nodeType: string;
-  };
-  const statuses =
-    params.nodeType === ACCOUNT_CONNECTOR.HOST
-      ? [
-          POSTURE_STATUS_COLORS['info'],
-          POSTURE_STATUS_COLORS['pass'],
-          POSTURE_STATUS_COLORS['warn'],
-          POSTURE_STATUS_COLORS['note'],
-        ]
-      : [
-          POSTURE_STATUS_COLORS['alarm'],
-          POSTURE_STATUS_COLORS['info'],
-          POSTURE_STATUS_COLORS['ok'],
-          POSTURE_STATUS_COLORS['skip'],
-        ];
-
   return (
     <Card className="p-4 grid grid-flow-row-dense gap-y-8">
       <Suspense
@@ -1158,7 +1184,14 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
         <DFAwait resolve={loaderData.data}>
           {(resolvedData: LoaderDataType) => {
             const { data } = resolvedData;
-
+            if (!data) {
+              return (
+                <p className="text-gray-900 dark:text-gray-400 font-medium text-base">
+                  No record found
+                </p>
+              );
+            }
+            const { totalStatus, statusCounts = {} } = data;
             return (
               <>
                 <div className="grid grid-flow-col-dense gap-x-4">
@@ -1173,7 +1206,7 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                     </h4>
                     <div className="mt-2">
                       <span className="text-2xl text-gray-900 dark:text-gray-200">
-                        {data?.totalStatus}
+                        {totalStatus}
                       </span>
                       <h5 className="text-xs text-gray-500 dark:text-gray-200 mb-2">
                         Total count
@@ -1192,18 +1225,23 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                 <div className="h-[200px]">
                   <PostureResultChart
                     theme={theme}
-                    data={data?.statusCounts ?? {}}
+                    data={statusCounts}
                     eoption={{
                       series: [
                         {
-                          color: statuses,
+                          color: [
+                            POSTURE_STATUS_COLORS['alarm'],
+                            POSTURE_STATUS_COLORS['info'],
+                            POSTURE_STATUS_COLORS['ok'],
+                            POSTURE_STATUS_COLORS['skip'],
+                          ],
                         },
                       ],
                     }}
                   />
                 </div>
                 <div>
-                  {Object.keys(data?.statusCounts ?? {})?.map((key: string) => {
+                  {Object.keys(statusCounts)?.map((key: string) => {
                     return (
                       <div key={key} className="flex items-center gap-2 p-1">
                         <div
@@ -1223,7 +1261,7 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                             'text-sm text-gray-900 dark:text-gray-200 ml-auto tabular-nums',
                           )}
                         >
-                          {data?.statusCounts[key]}
+                          {statusCounts[key]}
                         </span>
                       </div>
                     );
@@ -1253,7 +1291,7 @@ const NotFound = () => {
     </div>
   );
 };
-const PostureScanResults = () => {
+const PostureCloudScanResults = () => {
   const { mode } = useTheme();
 
   return (
@@ -1263,7 +1301,7 @@ const PostureScanResults = () => {
         <div className="self-start grid gap-y-2">
           <StatusCountComponent theme={mode} />
         </div>
-        <ScanResusltTable />
+        <ScanResultTable />
       </div>
       <Outlet />
     </>
@@ -1273,5 +1311,5 @@ const PostureScanResults = () => {
 export const module = {
   action,
   loader,
-  element: <PostureScanResults />,
+  element: <PostureCloudScanResults />,
 };
