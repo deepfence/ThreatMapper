@@ -156,87 +156,6 @@ const loader = async ({
   });
 };
 
-const ActionDropdown = ({
-  icon,
-  id,
-  label,
-  isScanComplete,
-}: {
-  icon: React.ReactNode;
-  isScanComplete: boolean;
-  id: string;
-  label?: string;
-}) => {
-  const { navigate } = usePageNavigation();
-
-  const params = useParams() as {
-    nodeType: string;
-  };
-
-  return (
-    <>
-      <Dropdown
-        triggerAsChild={true}
-        align="end"
-        content={
-          <>
-            <DropdownItem
-              className="text-sm"
-              onClick={() => {
-                if (isScanComplete) {
-                  navigate(
-                    generatePath('/posture/scan-results/:nodeType/:scanId', {
-                      scanId: id,
-                      nodeType: params.nodeType,
-                    }),
-                    {
-                      replace: true,
-                    },
-                  );
-                }
-              }}
-            >
-              <span
-                className={cx(
-                  'flex items-center gap-x-2 text-gray-700 dark:text-gray-400',
-                  {
-                    'opacity-50 cursor-not-allowed': !isScanComplete,
-                  },
-                )}
-              >
-                <IconContext.Provider
-                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
-                >
-                  <HiOutlineEye />
-                </IconContext.Provider>
-                View scan
-              </span>
-            </DropdownItem>
-
-            <DropdownItem className="text-sm">
-              <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-                <IconContext.Provider
-                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
-                >
-                  <HiRefresh />
-                </IconContext.Provider>
-                Refresh data
-              </span>
-            </DropdownItem>
-          </>
-        }
-      >
-        <Button size="xs" color="normal" className="hover:bg-transparent">
-          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-            {icon}
-          </IconContext.Provider>
-          {label ? <span className="ml-2">{label}</span> : null}
-        </Button>
-      </Dropdown>
-    </>
-  );
-};
-
 const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [searchParams, setSearchParams] = useSearchParams();
@@ -375,27 +294,6 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
         minSize: 80,
         size: 100,
         maxSize: 120,
-      }),
-      columnHelper.display({
-        id: 'actions',
-        enableSorting: false,
-        cell: (cell) => {
-          const isScanComplete =
-            cell.row.original.last_scan_status?.toLowerCase() === 'complete';
-
-          return (
-            <ActionDropdown
-              icon={<HiDotsVertical />}
-              id={cell.row.original.last_scan_id ?? ''}
-              isScanComplete={isScanComplete}
-            />
-          );
-        },
-        header: () => '',
-        minSize: 40,
-        size: 40,
-        maxSize: 40,
-        enableResizing: false,
       }),
     ],
     [rowSelectionState, searchParams, data?.accounts],
