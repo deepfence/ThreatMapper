@@ -508,7 +508,7 @@ type ThreatFilters struct {
 	AwsFilter         CloudProviderFilter `json:"aws_filter" required:"true"`
 	GcpFilter         CloudProviderFilter `json:"gcp_filter" required:"true"`
 	AzureFilter       CloudProviderFilter `json:"azure_filter" required:"true"`
-	IssueType         string              `json:"type" required:"true" enum:"vulnerability,secret,malware,compliance,cloud_compliance"`
+	IssueType         string              `json:"type" required:"true" enum:"all,vulnerability,secret,malware,compliance,cloud_compliance"`
 	CloudResourceOnly bool                `json:"cloud_resource_only" required:"true"`
 }
 

@@ -25,7 +25,17 @@ func main() {
 	defer session.Close()
 
 	r, err := session.Run(`
-		CALL apoc.export.cypher.all(null,{writeNodeProperties:true, stream:true,format:'plain',ifNotExists:true,useOptimizations:{type: "UNWIND_BATCH", unwindBatchSize: 5000},cypherFromat:'updateStructure'})
+		CALL apoc.export.cypher.query("match (n:CloudResource) optional match (n) -[r]- () return *",
+		null,
+			{
+				writeNodeProperties:true,
+				stream:true,
+				format:'plain',
+				ifNotExists:true,
+				useOptimizations:{type: "UNWIND_BATCH", unwindBatchSize: 100},
+				cypherFromat:'updateStructure'
+			}
+		)
 		`,
 		map[string]interface{}{})
 	if err != nil {
@@ -37,7 +47,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	f, err := os.Create("/tmp/graphdb")
+	f, err := os.Create("/tmp/graphdb.cr")
 	if err != nil {
 		log.Fatal(err)
 	}
