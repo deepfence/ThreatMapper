@@ -348,6 +348,15 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				})
 				r.Get("/diagnostic-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.GetDiagnosticLogs))
 			})
+
+			// Reports
+			r.Route("/report", func(r chi.Router) {
+				r.Get("/", dfHandler.AuthHandler(ResourceReport, PermissionRead, dfHandler.ListReports))
+				r.Get("/{id}", dfHandler.AuthHandler(ResourceReport, PermissionRead, dfHandler.GetReport))
+				r.Post("/", dfHandler.AuthHandler(ResourceReport, PermissionGenerate, dfHandler.GenerateReport))
+				r.Delete("/{id}", dfHandler.AuthHandler(ResourceReport, PermissionDelete, dfHandler.DeleteReport))
+			})
+
 			// Integration
 			r.Route("/integration", func(r chi.Router) {
 				r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddIntegration))
@@ -358,13 +367,6 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				})
 			})
 
-			// Report
-			r.Route("/report", func(r chi.Router) {
-				r.Get("/", dfHandler.AuthHandler(ResourceReport, PermissionRead, doNothingHandler))
-				r.Get("/{id}", dfHandler.AuthHandler(ResourceReport, PermissionRead, doNothingHandler))
-				r.Post("/", dfHandler.AuthHandler(ResourceReport, PermissionGenerate, doNothingHandler))
-				r.Delete("/{id}", dfHandler.AuthHandler(ResourceReport, PermissionDelete, doNothingHandler))
-			})
 		})
 	})
 
