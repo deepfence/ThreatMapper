@@ -73,7 +73,7 @@ export const useGetCloudFilters = (
   useEffect(() => {
     if (scanId) {
       fetcher.load(
-        generatePath('/data-component/search/cloud/services/:scanId', {
+        generatePath('/data-component/search/cloud/filters/:scanId', {
           scanId,
         }),
       );

@@ -442,7 +442,7 @@ export const privateRoutes: CustomRouteObject[] = [
         action: toggleControlApiAction,
       },
       {
-        path: 'search/cloud/services/:scanId',
+        path: 'search/cloud/filters/:scanId',
         loader: searchCloudFiltersApiLoader,
       },
     ],
