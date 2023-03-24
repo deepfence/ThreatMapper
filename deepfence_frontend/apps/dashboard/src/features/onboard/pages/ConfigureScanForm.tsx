@@ -3,7 +3,7 @@ import { generatePath, Navigate, useLocation, useParams } from 'react-router-dom
 import { Button, Tooltip } from 'ui-components';
 
 import { MalwareScanConfigureForm } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
-import { PostureScanConfigureForm } from '@/components/scan-configure-forms/PostureScanConfigureForm';
+import { ComplianceScanConfigureForm } from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import { SecretScanConfigureForm } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { VulnerabilityScanConfigureForm } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
@@ -150,12 +150,11 @@ const ScanConfigureForm = () => {
         />
       )}
       {scanType === ScanTypeEnum.ComplianceScan && (
-        <PostureScanConfigureForm
-          wantAdvanceOptions={false}
+        <ComplianceScanConfigureForm
+          showAdvancedOptions={false}
           data={{
             nodeIds: state.map((node) => node.urlId),
             nodeType: state[0].urlType as ComplianceScanNodeTypeEnum,
-            images: [],
           }}
           onSuccess={(data) => {
             if (data) {

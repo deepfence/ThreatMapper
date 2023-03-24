@@ -19,6 +19,10 @@ import {
 
 import { getTopologyApiClient } from '@/api/api';
 import { ApiDocsGraphResult, DetailedNodeSummary } from '@/api/generated';
+import {
+  ConfigureScanModal,
+  ConfigureScanModalProps,
+} from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { TopologyAction } from '@/features/topology/types/graph';
@@ -71,6 +75,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
 };
 
 function TopologyCloudTable() {
+  const [scanOptions, setScanOptions] =
+    useState<ConfigureScanModalProps['scanOptions']>();
   const { isRefreshInProgress, treeData, action, ...graphDataManagerFunctions } =
     useTableDataManager();
   const graphDataManagerFunctionsRef = useRef(graphDataManagerFunctions);
@@ -256,16 +262,19 @@ function TopologyCloudTable() {
       />
       {clickedItem ? (
         <NodeDetailsStackedModal
-          onStartScanClick={() => {
-            /** TODO */
-          }}
           node={clickedItem}
           open={true}
           onOpenChange={(open) => {
             if (!open) setClickedItem(undefined);
           }}
+          onStartScanClick={(options) => setScanOptions(options)}
         />
       ) : null}
+      <ConfigureScanModal
+        open={!!scanOptions}
+        onOpenChange={() => setScanOptions(undefined)}
+        scanOptions={scanOptions}
+      />
     </>
   );
 }

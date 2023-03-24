@@ -29,11 +29,10 @@ export const complianceType: {
   host: ['HIPAA', 'GDPR', 'PCI', 'NIST'],
   kubernetes_cluster: ['NSA-CISA'],
 };
-type ScanConfigureFormProps = {
-  wantAdvanceOptions: boolean;
+export type ComplianceScanConfigureFormProps = {
+  showAdvancedOptions: boolean;
   data: {
     nodeIds: string[];
-    images: string[];
     nodeType: ComplianceScanNodeTypeEnum;
   };
   onSuccess: (data?: { nodeType: string; bulkScanId: string }) => void;
@@ -275,11 +274,11 @@ export const ControlsTable = memo(
   },
 );
 
-export const PostureScanConfigureForm = ({
-  wantAdvanceOptions,
+export const ComplianceScanConfigureForm = ({
+  showAdvancedOptions,
   onSuccess,
   data,
-}: ScanConfigureFormProps) => {
+}: ComplianceScanConfigureFormProps) => {
   const fetcher = useFetcher();
   const { nodeType, nodeIds } = data;
   const { state, data: fetcherData } = fetcher;
@@ -380,7 +379,7 @@ export const PostureScanConfigureForm = ({
       {fetcherData?.message && (
         <p className="text-red-500 text-sm py-3">{fetcherData.message}</p>
       )}
-      {wantAdvanceOptions && (
+      {showAdvancedOptions && (
         <ControlsTable
           nodeIds={data.nodeIds}
           tabs={tabs}
