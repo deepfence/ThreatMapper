@@ -971,6 +971,13 @@
         "summary": "Get Threat Graph",
         "description": "Retrieve the full threat graph associated with the account",
         "operationId": "getThreatGraph",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/GraphThreatFilters" }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -7104,6 +7111,7 @@
         "properties": {
           "adjacency": { "$ref": "#/components/schemas/ReportIDList" },
           "id": { "type": "string" },
+          "ids": { "type": "array", "items": { "type": "string" } },
           "image": { "type": "string" },
           "immediate_parent_id": { "type": "string" },
           "label": { "type": "string" },
@@ -7204,6 +7212,17 @@
         }
       },
       "FormDataMultipartFile": { "type": "string", "format": "binary", "nullable": true },
+      "GraphCloudProviderFilter": {
+        "required": ["account_ids"],
+        "type": "object",
+        "properties": {
+          "account_ids": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          }
+        }
+      },
       "GraphNodeInfo": {
         "required": [
           "node_id",
@@ -7252,6 +7271,33 @@
           },
           "secrets_count": { "type": "integer" },
           "vulnerability_count": { "type": "integer" }
+        }
+      },
+      "GraphThreatFilters": {
+        "required": [
+          "aws_filter",
+          "gcp_filter",
+          "azure_filter",
+          "type",
+          "cloud_resource_only"
+        ],
+        "type": "object",
+        "properties": {
+          "aws_filter": { "$ref": "#/components/schemas/GraphCloudProviderFilter" },
+          "azure_filter": { "$ref": "#/components/schemas/GraphCloudProviderFilter" },
+          "cloud_resource_only": { "type": "boolean" },
+          "gcp_filter": { "$ref": "#/components/schemas/GraphCloudProviderFilter" },
+          "type": {
+            "enum": [
+              "all",
+              "vulnerability",
+              "secret",
+              "malware",
+              "compliance",
+              "cloud_compliance"
+            ],
+            "type": "string"
+          }
         }
       },
       "GraphThreatGraph": {
@@ -7456,37 +7502,24 @@
       "IngestersMalware": {
         "type": "object",
         "properties": {
-          "@timestamp": { "type": "string", "format": "date-time" },
-          "Class": { "type": "string" },
-          "CompleteFilename": { "type": "string" },
-          "FileSevScore": { "type": "integer" },
-          "FileSeverity": { "type": "string" },
-          "ImageLayerId": { "type": "string" },
-          "Meta": { "type": "array", "items": { "type": "string" }, "nullable": true },
-          "MetaRules": { "$ref": "#/components/schemas/IngestersMalwareRule" },
-          "RuleName": { "type": "string" },
-          "SeverityScore": { "type": "integer" },
-          "StringsToMatch": {
+          "class": { "type": "string" },
+          "complete_filename": { "type": "string" },
+          "file_sev_score": { "type": "number" },
+          "file_severity": { "type": "string" },
+          "image_layer_id": { "type": "string" },
+          "masked": { "type": "boolean" },
+          "meta": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "meta_rules": { "$ref": "#/components/schemas/IngestersMetaRules" },
+          "rule_name": { "type": "string" },
+          "scan_id": { "type": "string" },
+          "severity_score": { "type": "integer" },
+          "strings_to_match": {
             "type": "array",
             "items": { "type": "string" },
             "nullable": true
           },
-          "Summary": { "type": "string" },
-          "masked": { "type": "boolean" },
-          "scan_id": { "type": "string" }
-        }
-      },
-      "IngestersMalwareRule": {
-        "type": "object",
-        "properties": {
-          "author": { "type": "string" },
-          "date": { "type": "string" },
-          "description": { "type": "string" },
-          "filetype": { "type": "string" },
-          "info": { "type": "string" },
-          "rule_id": { "type": "string" },
-          "rule_name": { "type": "string" },
-          "version": { "type": "string" }
+          "summary": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" }
         }
       },
       "IngestersMalwareScanStatus": {
@@ -7495,6 +7528,20 @@
           "@timestamp": { "type": "string", "format": "date-time" },
           "scan_id": { "type": "string" },
           "scan_status": { "type": "string" }
+        }
+      },
+      "IngestersMetaRules": {
+        "type": "object",
+        "properties": {
+          "author": { "type": "string" },
+          "date": { "type": "string" },
+          "description": { "type": "string" },
+          "filetype": { "type": "string" },
+          "info": { "type": "string" },
+          "reference": { "type": "string" },
+          "rule_id": { "type": "string" },
+          "rule_name": { "type": "string" },
+          "version": { "type": "string" }
         }
       },
       "IngestersReportIngestionData": {
@@ -8342,11 +8389,11 @@
       },
       "ModelMalware": {
         "required": [
-          "Class",
-          "CompleteFilename",
-          "FileSevScore",
-          "FileSeverity",
-          "ImageLayerId",
+          "class",
+          "complete_filename",
+          "file_sev_score",
+          "file_severity",
+          "image_layer_id",
           "node_id",
           "rule_id",
           "rule_name",
@@ -8354,27 +8401,27 @@
         ],
         "type": "object",
         "properties": {
-          "Class": { "type": "string" },
-          "CompleteFilename": { "type": "string" },
-          "FileSevScore": { "type": "integer" },
-          "FileSeverity": { "type": "string" },
-          "ImageLayerId": { "type": "string" },
-          "SeverityScore": { "type": "integer" },
-          "StringsToMatch": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
-          "Summary": { "type": "string" },
           "author": { "type": "string" },
+          "class": { "type": "string" },
+          "complete_filename": { "type": "string" },
           "date": { "type": "string" },
           "description": { "type": "string" },
+          "file_sev_score": { "type": "integer" },
+          "file_severity": { "type": "string" },
           "filetype": { "type": "string" },
+          "image_layer_id": { "type": "string" },
           "info": { "type": "string" },
           "masked": { "type": "boolean" },
           "node_id": { "type": "string" },
           "rule_id": { "type": "string" },
           "rule_name": { "type": "string" },
+          "severity_score": { "type": "integer" },
+          "strings_to_match": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "summary": { "type": "string" },
           "version": { "type": "string" }
         }
       },

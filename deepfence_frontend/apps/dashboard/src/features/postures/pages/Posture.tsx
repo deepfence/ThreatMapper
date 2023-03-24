@@ -31,7 +31,7 @@ const logoMap = (accountType: string, mode: Mode) => {
       icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
     },
     aws_org: {
-      label: 'AWS ORG',
+      label: 'AWS ORGANIZATION',
       icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
     },
     azure: {
@@ -126,7 +126,6 @@ const AccountSummary = () => {
               const {
                 name = '',
                 node_count,
-                node_label,
                 scan_count,
                 compliance_percentage = 0,
                 resource_count,
@@ -136,7 +135,7 @@ const AccountSummary = () => {
                 <Card key={name} className="p-4 flex flex-col gap-y-1">
                   <div className="flex items-center justify-between w-full">
                     <h4 className="text-gray-900 text-sm dark:text-white mr-4 uppercase">
-                      {name}
+                      {logoMap(name, mode).label}
                     </h4>
                     <div className="ml-auto">
                       <DFLink
@@ -156,9 +155,11 @@ const AccountSummary = () => {
                       </DFLink>
                     </div>
                   </div>
-                  <div className="mt-2 flex items-center gap-x-6">
+                  <div className="mt-2 flex gap-x-6">
                     <div className="pr-2 flex flex-col gap-y-2 border-r border-gray-200 dark:border-gray-700">
-                      <img src={account.icon} alt="logo" width={40} height={40} />
+                      <div className="flex basis-8 justify-center items-center">
+                        <img src={account.icon} alt="logo" height="auto" />
+                      </div>
                       <div className="flex flex-col gap-x-4">
                         <span
                           className={cx('text-md rounded-lg px-1 font-medium w-fit', {

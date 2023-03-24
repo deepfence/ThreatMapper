@@ -18,6 +18,7 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   GraphProviderThreatGraph,
+  GraphThreatFilters,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -26,7 +27,13 @@ import {
     ApiDocsFailureResponseToJSON,
     GraphProviderThreatGraphFromJSON,
     GraphProviderThreatGraphToJSON,
+    GraphThreatFiltersFromJSON,
+    GraphThreatFiltersToJSON,
 } from '../models';
+
+export interface GetThreatGraphRequest {
+    graphThreatFilters?: GraphThreatFilters;
+}
 
 /**
  * ThreatApi - interface
@@ -38,17 +45,18 @@ export interface ThreatApiInterface {
     /**
      * Retrieve the full threat graph associated with the account
      * @summary Get Threat Graph
+     * @param {GraphThreatFilters} [graphThreatFilters] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ThreatApiInterface
      */
-    getThreatGraphRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: GraphProviderThreatGraph; }>>;
+    getThreatGraphRaw(requestParameters: GetThreatGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: GraphProviderThreatGraph; }>>;
 
     /**
      * Retrieve the full threat graph associated with the account
      * Get Threat Graph
      */
-    getThreatGraph(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: GraphProviderThreatGraph; }>;
+    getThreatGraph(requestParameters: GetThreatGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: GraphProviderThreatGraph; }>;
 
 }
 
@@ -61,10 +69,12 @@ export class ThreatApi extends runtime.BaseAPI implements ThreatApiInterface {
      * Retrieve the full threat graph associated with the account
      * Get Threat Graph
      */
-    async getThreatGraphRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: GraphProviderThreatGraph; }>> {
+    async getThreatGraphRaw(requestParameters: GetThreatGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: GraphProviderThreatGraph; }>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
@@ -79,6 +89,7 @@ export class ThreatApi extends runtime.BaseAPI implements ThreatApiInterface {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: GraphThreatFiltersToJSON(requestParameters.graphThreatFilters),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => runtime.mapValues(jsonValue, GraphProviderThreatGraphFromJSON));
@@ -88,8 +99,8 @@ export class ThreatApi extends runtime.BaseAPI implements ThreatApiInterface {
      * Retrieve the full threat graph associated with the account
      * Get Threat Graph
      */
-    async getThreatGraph(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: GraphProviderThreatGraph; }> {
-        const response = await this.getThreatGraphRaw(initOverrides);
+    async getThreatGraph(requestParameters: GetThreatGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: GraphProviderThreatGraph; }> {
+        const response = await this.getThreatGraphRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

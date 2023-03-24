@@ -16,73 +16,79 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface IngestersMalwareRule
+ * @interface IngestersMetaRules
  */
-export interface IngestersMalwareRule {
+export interface IngestersMetaRules {
     /**
      * 
      * @type {string}
-     * @memberof IngestersMalwareRule
+     * @memberof IngestersMetaRules
      */
     author?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersMalwareRule
+     * @memberof IngestersMetaRules
      */
     date?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersMalwareRule
+     * @memberof IngestersMetaRules
      */
     description?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersMalwareRule
+     * @memberof IngestersMetaRules
      */
     filetype?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersMalwareRule
+     * @memberof IngestersMetaRules
      */
     info?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersMalwareRule
+     * @memberof IngestersMetaRules
+     */
+    reference?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof IngestersMetaRules
      */
     rule_id?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersMalwareRule
+     * @memberof IngestersMetaRules
      */
     rule_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof IngestersMalwareRule
+     * @memberof IngestersMetaRules
      */
     version?: string;
 }
 
 /**
- * Check if a given object implements the IngestersMalwareRule interface.
+ * Check if a given object implements the IngestersMetaRules interface.
  */
-export function instanceOfIngestersMalwareRule(value: object): boolean {
+export function instanceOfIngestersMetaRules(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function IngestersMalwareRuleFromJSON(json: any): IngestersMalwareRule {
-    return IngestersMalwareRuleFromJSONTyped(json, false);
+export function IngestersMetaRulesFromJSON(json: any): IngestersMetaRules {
+    return IngestersMetaRulesFromJSONTyped(json, false);
 }
 
-export function IngestersMalwareRuleFromJSONTyped(json: any, ignoreDiscriminator: boolean): IngestersMalwareRule {
+export function IngestersMetaRulesFromJSONTyped(json: any, ignoreDiscriminator: boolean): IngestersMetaRules {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -93,13 +99,14 @@ export function IngestersMalwareRuleFromJSONTyped(json: any, ignoreDiscriminator
         'description': !exists(json, 'description') ? undefined : json['description'],
         'filetype': !exists(json, 'filetype') ? undefined : json['filetype'],
         'info': !exists(json, 'info') ? undefined : json['info'],
+        'reference': !exists(json, 'reference') ? undefined : json['reference'],
         'rule_id': !exists(json, 'rule_id') ? undefined : json['rule_id'],
         'rule_name': !exists(json, 'rule_name') ? undefined : json['rule_name'],
         'version': !exists(json, 'version') ? undefined : json['version'],
     };
 }
 
-export function IngestersMalwareRuleToJSON(value?: IngestersMalwareRule | null): any {
+export function IngestersMetaRulesToJSON(value?: IngestersMetaRules | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -113,6 +120,7 @@ export function IngestersMalwareRuleToJSON(value?: IngestersMalwareRule | null):
         'description': value.description,
         'filetype': value.filetype,
         'info': value.info,
+        'reference': value.reference,
         'rule_id': value.rule_id,
         'rule_name': value.rule_name,
         'version': value.version,
