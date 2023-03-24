@@ -59,6 +59,7 @@ import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
+import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
 import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
@@ -160,7 +161,6 @@ export const privateRoutes: CustomRouteObject[] = [
         element: <Dashboard />,
         meta: { title: 'Dashboard' },
       },
-      // registries
       {
         path: 'topology',
         ...topology,
@@ -194,6 +194,12 @@ export const privateRoutes: CustomRouteObject[] = [
           },
         ],
       },
+      {
+        path: 'threatgraph',
+        ...threatGraph,
+        meta: { title: 'Threat Graph' },
+      },
+      // registries
       {
         path: 'registries',
         ...registries,
