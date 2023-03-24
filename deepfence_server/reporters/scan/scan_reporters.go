@@ -601,6 +601,57 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 	return res, common, nil
 }
 
+func GetFilters(ctx context.Context, having map[string]interface{}, detectedType string, filters []string) (map[string][]string, error) {
+	andQuery := "{"
+	index := 0
+	for key, _ := range having {
+		if index == 0 {
+			andQuery += fmt.Sprintf("%s:$%s", key, key)
+		} else {
+			andQuery += fmt.Sprintf(",%s:$%s", key, key)
+		}
+		index++
+	}
+	andQuery += "}"
+
+	res := make(map[string][]string)
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+	for _, filterField := range filters {
+		query := fmt.Sprintf(`
+		MATCH (n:%s%s)
+		RETURN distinct n.%s`,
+			detectedType, andQuery, filterField)
+		nres, err := tx.Run(query, having)
+		if err != nil {
+			return res, err
+		}
+
+		recs, err := nres.Collect()
+		if err != nil {
+			return res, err
+		}
+		for _, rec := range recs {
+			if len(rec.Values) > 0 && rec.Values[0] != nil {
+				res[filterField] = append(res[filterField], rec.Values[0].(string))
+			}
+		}
+	}
+	return res, nil
+}
+
 func type2sev_field(scan_type utils.Neo4jScanType) string {
 	switch scan_type {
 	case utils.NEO4J_VULNERABILITY_SCAN:

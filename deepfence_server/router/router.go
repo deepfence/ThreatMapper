@@ -293,6 +293,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				})
 			})
 
+			r.Route("/filters", func(r chi.Router) {
+				r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CloudComplianceFiltersHandler))
+				r.Post("/compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ComplianceFiltersHandler))
+			})
+
 			r.Route("/scan/results/action", func(r chi.Router) {
 				r.Post("/mask", dfHandler.AuthHandler(ResourceScanReport, PermissionWrite, dfHandler.ScanResultMaskHandler))
 				r.Post("/unmask", dfHandler.AuthHandler(ResourceScanReport, PermissionWrite, dfHandler.ScanResultUnmaskHandler))
