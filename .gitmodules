@@ -5,7 +5,7 @@
 [submodule "deepfence_agent/plugins/package-scanner"]
 	path = deepfence_agent/plugins/package-scanner
 	url = https://github.com/deepfence/package-scanner
-	branch = merge-vulnerability-mapper
+	branch = v2
 [submodule "deepfence_agent/plugins/SecretScanner"]
 	path = deepfence_agent/plugins/SecretScanner
 	url = https://github.com/deepfence/SecretScanner
@@ -21,4 +21,4 @@
 [submodule "deepfence_agent/plugins/YaraHunter"]
 	path = deepfence_agent/plugins/YaraHunter
 	url = git@github.com:deepfence/YaraHunter.git
-	branch = v2-rc1
+	branch = v2
