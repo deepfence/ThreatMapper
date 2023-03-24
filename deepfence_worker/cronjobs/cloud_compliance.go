@@ -13,9 +13,11 @@ import (
 )
 
 var BenchmarksAvailableMap = map[string][]string{
-	"aws":   {"cis", "nist", "pci", "gdpr", "hipaa", "soc_2"},
-	"gcp":   {"cis"},
-	"azure": {"cis", "nist", "pci", "hipaa"}}
+	"aws":        {"cis", "nist", "pci", "gdpr", "hipaa", "soc_2"},
+	"gcp":        {"cis"},
+	"azure":      {"cis", "nist", "pci", "hipaa"},
+	"kubernetes": {"nsa-cisa"},
+	"linux":      {"hipaa", "nist", "pci", "gdpr"}}
 
 type Benchmark struct {
 	BenchmarkId   string            `json:"benchmark_id"`
@@ -62,11 +64,11 @@ func AddCloudControls(msg *message.Message) error {
 			controlFilePath := fmt.Sprintf("%s/%s.json", cwd, benchmark)
 			controlsJson, err := os.ReadFile(controlFilePath)
 			if err != nil {
-				return fmt.Errorf("Error reading controls file %s: %s", controlFilePath, err.Error())
+				return fmt.Errorf("error reading controls file %s: %s", controlFilePath, err.Error())
 			}
 			var controlList []Control
 			if err := json.Unmarshal(controlsJson, &controlList); err != nil {
-				return fmt.Errorf("Error unmarshalling controls for compliance type %s: %s", benchmark, err.Error())
+				return fmt.Errorf("error unmarshalling controls for compliance type %s: %s", benchmark, err.Error())
 			}
 			var controlMap []map[string]interface{}
 			for _, control := range controlList {
@@ -102,19 +104,20 @@ func AddCloudControls(msg *message.Message) error {
 				return err
 			}
 			benchmarkFilePath := fmt.Sprintf("%s/%s_benchmarks.json", cwd, benchmark)
-			benchmarksJson, err := os.ReadFile(benchmarkFilePath)
-			if err != nil {
-				return fmt.Errorf("Error reading benchmarks file %s: %s", benchmarkFilePath, err.Error())
-			}
-			var benchmarkList []Benchmark
-			if err := json.Unmarshal(benchmarksJson, &benchmarkList); err != nil {
-				return fmt.Errorf("Error unmarshalling benchmarks for compliance type %s: %s", benchmark, err.Error())
-			}
-			var benchmarkMap []map[string]interface{}
-			for _, benchMark := range benchmarkList {
-				benchmarkMap = append(benchmarkMap, utils.ToMap(benchMark))
-			}
-			if _, err = tx.Run(`
+			if _, err := os.Stat(benchmarkFilePath); err == nil {
+				benchmarksJson, err := os.ReadFile(benchmarkFilePath)
+				if err != nil {
+					return fmt.Errorf("Error reading benchmarks file %s: %s", benchmarkFilePath, err.Error())
+				}
+				var benchmarkList []Benchmark
+				if err := json.Unmarshal(benchmarksJson, &benchmarkList); err != nil {
+					return fmt.Errorf("Error unmarshalling benchmarks for compliance type %s: %s", benchmark, err.Error())
+				}
+				var benchmarkMap []map[string]interface{}
+				for _, benchMark := range benchmarkList {
+					benchmarkMap = append(benchmarkMap, utils.ToMap(benchMark))
+				}
+				if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:CloudComplianceExecutable:CloudComplianceBenchmark{
 			node_id: row.benchmark_id,
@@ -135,13 +138,14 @@ func AddCloudControls(msg *message.Message) error {
 		WHERE benchmark_id = m.parent_control_hierarchy[-1]
 		MERGE (n) -[:INCLUDES]-> (m)
 		`,
-				map[string]interface{}{
-					"batch":     benchmarkMap,
-					"benchmark": benchmark,
-					"cloud":     cloud,
-					"cloudCap":  strings.ToUpper(cloud),
-				}); err != nil {
-				return err
+					map[string]interface{}{
+						"batch":     benchmarkMap,
+						"benchmark": benchmark,
+						"cloud":     cloud,
+						"cloudCap":  strings.ToUpper(cloud),
+					}); err != nil {
+					return err
+				}
 			}
 		}
 	}
