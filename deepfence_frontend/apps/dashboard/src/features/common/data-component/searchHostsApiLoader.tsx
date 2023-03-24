@@ -2,13 +2,9 @@ import { useEffect } from 'react';
 import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 
 import { getSearchApiClient } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelScanResultsActionRequestScanTypeEnum,
-} from '@/api/generated';
+import { ApiDocsBadRequestResponse } from '@/api/generated';
+import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
-
-export type ScanType = ModelScanResultsActionRequestScanTypeEnum;
 
 export type HostsListType = {
   nodeId: string;
@@ -23,13 +19,13 @@ export const searchHostsApiLoader = async ({
     throw new Error('Scan For is required');
   }
   let filterValue = '';
-  if (scanType === ModelScanResultsActionRequestScanTypeEnum.SecretScan) {
+  if (scanType === ScanTypeEnum.SecretScan) {
     filterValue = 'secrets_count';
-  } else if (scanType === ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan) {
+  } else if (scanType === ScanTypeEnum.VulnerabilityScan) {
     filterValue = 'vulnerabilities_count';
-  } else if (scanType === ModelScanResultsActionRequestScanTypeEnum.MalwareScan) {
+  } else if (scanType === ScanTypeEnum.MalwareScan) {
     filterValue = 'malwares_count';
-  } else if (scanType === ModelScanResultsActionRequestScanTypeEnum.ComplianceScan) {
+  } else if (scanType === ScanTypeEnum.ComplianceScan) {
     filterValue = 'compliances_count';
   }
 
@@ -95,7 +91,7 @@ export const searchHostsApiLoader = async ({
 export const useGetHostsList = ({
   scanType,
 }: {
-  scanType: ScanType;
+  scanType: ScanTypeEnum;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   hosts: HostsListType[];

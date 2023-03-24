@@ -2,7 +2,7 @@ import cx from 'classnames';
 import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, Step, Stepper, Typography } from 'ui-components';
 
-import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
+import { CopyToClipboard } from '@/components/CopyToClipboard';
 
 export const GCPConnectorForm = () => {
   const code = `
@@ -55,7 +55,7 @@ module "cloud-scanner_example_single-project" {
             >
               {code}
             </pre>
-            <CopyToClipboardIcon text={code} />
+            <CopyToClipboard data={code} asIcon />
           </Card>
         </div>
       </Step>
@@ -75,7 +75,7 @@ module "cloud-scanner_example_single-project" {
               >
                 terraform init
               </pre>
-              <CopyToClipboardIcon text={'terraform init'} className="top-4" />
+              <CopyToClipboard data={'terraform init'} className="top-4" asIcon />
             </div>
             <div className="relative">
               <pre
@@ -87,7 +87,7 @@ module "cloud-scanner_example_single-project" {
               >
                 terraform plan
               </pre>
-              <CopyToClipboardIcon text={'terraform plan'} className="top-0" />
+              <CopyToClipboard data={'terraform plan'} className="top-0" asIcon />
             </div>
             <div className="relative">
               <pre
@@ -99,7 +99,7 @@ module "cloud-scanner_example_single-project" {
               >
                 terraform apply
               </pre>
-              <CopyToClipboardIcon text={'terraform apply'} className="top-0" />
+              <CopyToClipboard data={'terraform apply'} className="top-0" asIcon />
             </div>
           </Card>
         </div>

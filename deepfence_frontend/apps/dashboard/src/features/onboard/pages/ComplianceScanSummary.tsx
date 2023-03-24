@@ -36,7 +36,7 @@ type ScanData = {
   accountName: string;
   accountType: string;
   benchmarkResults: Array<{
-    benchmarkType: string;
+    benchmarkType: string[];
     compliancePercentage: number;
     data: {
       total: number;
@@ -111,7 +111,9 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
         accountType: data[0].node_type,
         benchmarkResults: data.map((item) => {
           return {
-            benchmarkType: item.benchmark_type?.length ? item.benchmark_type : 'unknown',
+            benchmarkType: item.benchmark_type?.length
+              ? item.benchmark_type
+              : ['unknown'],
             compliancePercentage: item.compliance_percentage,
             data: {
               total: Object.keys(item.status_counts ?? {}).reduce((acc, severity) => {
@@ -138,7 +140,7 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
       accountType: data[0].node_type,
       benchmarkResults: data.map((item) => {
         return {
-          benchmarkType: item.benchmark_type?.length ? item.benchmark_type : 'unknown',
+          benchmarkType: item.benchmark_type?.length ? item.benchmark_type : ['unknown'],
           compliancePercentage: item.compliance_percentage,
           data: {
             total: Object.keys(item.status_counts ?? {}).reduce((acc, severity) => {
@@ -158,6 +160,7 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
   });
   const resultWithEmptySeverityAtEnd =
     resultNonEmptySeverityData.concat(resulEmptySeverityData);
+
   return resultWithEmptySeverityAtEnd;
 };
 
@@ -225,7 +228,9 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
         accountType: data[0].node_type,
         benchmarkResults: data.map((item) => {
           return {
-            benchmarkType: item.benchmark_type?.length ? item.benchmark_type : 'unknown',
+            benchmarkType: item.benchmark_type?.length
+              ? item.benchmark_type
+              : ['unknown'],
             compliancePercentage: item.compliance_percentage,
             data: {
               total: Object.keys(item.status_counts ?? {}).reduce((acc, severity) => {
@@ -256,7 +261,7 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
       accountType: data[0].node_type,
       benchmarkResults: data.map((item) => {
         return {
-          benchmarkType: item.benchmark_type?.length ? item.benchmark_type : 'unknown',
+          benchmarkType: item.benchmark_type?.length ? item.benchmark_type : ['unknown'],
           compliancePercentage: item.compliance_percentage,
           data: {
             total: Object.keys(item.status_counts ?? {}).reduce((acc, severity) => {
@@ -277,6 +282,7 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
 
   const resultWithEmptySeverityAtEnd =
     resultNonEmptySeverityData.concat(resulEmptySeverityData);
+
   return resultWithEmptySeverityAtEnd;
 };
 
@@ -448,14 +454,14 @@ const Scan = ({ scanData }: { scanData: ScanData }) => {
           {benchmarkResults.map((benchmarkResult, index) => {
             const { data, compliancePercentage, benchmarkType } = benchmarkResult;
             return (
-              <div key={benchmarkType}>
+              <div key={`benchmark${index}`}>
                 {index !== 0 ? (
                   <Separator className="mx-6 h-[1px] bg-gray-100 dark:bg-gray-700" />
                 ) : null}
                 <div className="flex flex-col p-4">
                   <div className="grid grid-cols-[3fr_2fr]">
                     <BenchmarkTypeAndPercentage
-                      type={benchmarkType}
+                      type={benchmarkType.toString()}
                       percentage={compliancePercentage}
                     />
                     <SeverityChart counts={data.counts ?? []} />

@@ -9,9 +9,12 @@ import { THEME_DARK, THEME_LIGHT, useTheme } from '@/theme/ThemeContext';
 
 const App = () => {
   const theme = useTheme();
-  const { toggleMode } = theme;
+  const { setMode, mode } = theme;
   return (
-    <Button onClick={() => toggleMode?.()} data-testid="button-theme-toggle">
+    <Button
+      onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+      data-testid="button-theme-toggle"
+    >
       Change Theme
     </Button>
   );

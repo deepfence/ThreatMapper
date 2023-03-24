@@ -2,15 +2,8 @@ package host
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
-	"reflect"
-	"strconv"
-	"strings"
-	"time"
 
 	"github.com/Jeffail/tunny"
 	log "github.com/sirupsen/logrus"
@@ -21,11 +14,9 @@ import (
 )
 
 const (
-	ebpfSocketPath          = "/tmp/secret-scanner.sock"
-	ssEbpfLogPath           = "/var/log/fenced/secretScanner.log"
-	defaultScanConcurrency  = 1
-	secretScanIndexName     = "secret-scan"
-	secretScanLogsIndexName = "secret-scan-logs"
+	ebpfSocketPath         = "/tmp/secret-scanner.sock"
+	ssEbpfLogPath          = "/var/log/fenced/secretScanner.log"
+	defaultScanConcurrency = 1
 )
 
 var certPath = "/etc/filebeat/filebeat.crt"
@@ -46,13 +37,6 @@ type secretScanParameters struct {
 }
 
 func init() {
-	var err error
-	scanConcurrency, err = strconv.Atoi(os.Getenv("SECRET_SCAN_CONCURRENCY"))
-	if err != nil {
-		scanConcurrency = defaultScanConcurrency
-	}
-	grpcScanWorkerPool = tunny.NewFunc(scanConcurrency,
-		getAndPublishSecretScanResultsWrapper)
 	mgmtConsoleUrl = os.Getenv("MGMT_CONSOLE_URL")
 	consolePort := os.Getenv("MGMT_CONSOLE_PORT")
 	if consolePort != "" && consolePort != "443" {
@@ -72,157 +56,39 @@ func StartSecretsScan(req ctl.StartSecretScanRequest) error {
 	var greq pb.FindRequest
 	switch req.NodeType {
 	case ctl.Container:
-		greq = pb.FindRequest{Input: &pb.FindRequest_Container{
-			Container: &pb.Container{Id: req.BinArgs["node_id"]},
-		}}
-	case ctl.Image:
-		splits := strings.Split(req.BinArgs["node_id"], ";")
-		if len(splits) != 2 {
-			return errors.New("image id format is incorrect")
+		greq = pb.FindRequest{
+			Input: &pb.FindRequest_Container{
+				Container: &pb.Container{Id: req.BinArgs["node_id"]},
+			},
+			ScanId: req.BinArgs["scan_id"],
 		}
-		greq = pb.FindRequest{Input: &pb.FindRequest_Image{
-			Image: &pb.DockerImage{Id: splits[0], Name: splits[1]},
-		}}
+	case ctl.Image:
+		greq = pb.FindRequest{
+			Input: &pb.FindRequest_Image{
+				Image: &pb.DockerImage{Id: req.BinArgs["node_id"], Name: req.BinArgs["image_name"]},
+			},
+			ScanId: req.BinArgs["scan_id"],
+		}
 	case ctl.Host:
-		greq = pb.FindRequest{Input: &pb.FindRequest_Path{Path: "/fenced/mnt/host"}}
+		greq = pb.FindRequest{
+			Input:  &pb.FindRequest_Path{Path: "/fenced/mnt/host"},
+			ScanId: req.BinArgs["scan_id"],
+		}
 	}
 
 	ssClient, err := newSecretScannerClient()
 	if err != nil {
 		return err
 	}
-	go grpcScanWorkerPool.Process(secretScanParameters{
-		client:      ssClient,
-		req:         &greq,
-		controlArgs: req.BinArgs,
-	})
-	return nil
-}
 
-func getAndPublishSecretScanResultsWrapper(scanParametersInterface interface{}) interface{} {
-	scanParameters, ok := scanParametersInterface.(secretScanParameters)
-	if !ok {
-		fmt.Println("Error reading input from grpc API")
-		return nil
-	}
-	getAndPublishSecretScanResults(scanParameters.client, scanParameters.req,
-		scanParameters.controlArgs, scanParameters.hostName)
-	return nil
-}
+	_, err = ssClient.FindSecretInfo(context.Background(), &greq)
 
-func getAndPublishSecretScanResults(client pb.SecretScannerClient, req *pb.FindRequest, controlArgs map[string]string, hostName string) {
-	var secretScanLogDoc = make(map[string]interface{})
-	secretScanLogDoc["scan_id"] = controlArgs["scan_id"]
-	secretScanLogDoc["scan_status"] = "IN_PROGRESS"
-	secretScanLogDoc["@timestamp"] = getCurrentTime()
-
-	byteJson, err := json.Marshal(secretScanLogDoc)
 	if err != nil {
-		fmt.Println("Error marshalling json: ", err)
-		return
-	}
-	// byteJson := formatToKafka(secretScanLogDoc)
-
-	err = writeScanDataToFile(string(byteJson), secretScanLogsIndexName)
-	if err != nil {
-		fmt.Println("Error in sending data to secretScanLogsIndex to mark in progress:" + err.Error())
-	}
-	res, err := client.FindSecretInfo(context.Background(), req)
-	if req.GetPath() != "" && err == nil && res != nil {
-		if scanDir == HostMountDir {
-			for _, secret := range res.Secrets {
-				secret.GetMatch().FullFilename = strings.Replace(secret.GetMatch().GetFullFilename(), HostMountDir, "", 1)
-			}
-		}
-	}
-	currTime := getCurrentTime()
-	if err != nil {
-		secretScanLogDoc["scan_status"] = "ERROR"
-		secretScanLogDoc["scan_message"] = err.Error()
-		secretScanLogDoc["@timestamp"] = currTime
-		byteJson, err = json.Marshal(secretScanLogDoc)
-		if err != nil {
-			fmt.Println("Error marshalling json: ", err)
-			return
-		}
-		// byteJson = formatToKafka(secretScanLogDoc)
-		writeScanDataToFile(string(byteJson), secretScanLogsIndexName)
-		return
-	} else {
-		fmt.Println("Number of results received from SecretScanner for scan id:" + controlArgs["scan_id"] + " - " + strconv.Itoa(len(res.Secrets)))
-	}
-	for _, secret := range res.Secrets {
-		var secretScanDoc = make(map[string]interface{})
-		secretScanDoc["masked"] = false
-		secretScanDoc["scan_id"] = controlArgs["scan_id"]
-		secretScanDoc["@timestamp"] = currTime
-		values := reflect.ValueOf(*secret)
-		typeOfS := values.Type()
-		for index := 0; index < values.NumField(); index++ {
-			if values.Field(index).CanInterface() {
-				secretScanDoc[typeOfS.Field(index).Name] = values.Field(index).Interface()
-			}
-		}
-		byteJson, err := json.Marshal(secretScanDoc)
-		if err != nil {
-			fmt.Println("Error marshalling json: ", err)
-			continue
-		}
-		// byteJson := formatToKafka(secretScanDoc)
-		err = writeScanDataToFile(string(byteJson), secretScanIndexName)
-		if err != nil {
-			fmt.Println("Error in sending data to secretScanIndex:" + err.Error())
-		}
-	}
-	if err == nil {
-		secretScanLogDoc["scan_status"] = "COMPLETE"
-	} else {
-		secretScanLogDoc["scan_status"] = "ERROR"
-		secretScanLogDoc["scan_message"] = err.Error()
-	}
-	secretScanLogDoc["@timestamp"] = currTime
-	byteJson, err = json.Marshal(secretScanLogDoc)
-	if err != nil {
-		fmt.Println("Error marshalling json: ", err)
-		return
-	}
-	// byteJson = formatToKafka(secretScanLogDoc)
-	err = writeScanDataToFile(string(byteJson), secretScanLogsIndexName)
-	if err != nil {
-		fmt.Println("Error in sending data to secretScanLogsIndex:" + err.Error())
-	}
-
-}
-
-func getTimestamp() int64 {
-	return time.Now().UTC().UnixNano() / 1000000
-}
-
-func getCurrentTime() string {
-	return time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z"
-}
-
-func writeScanDataToFile(secretScanMsg string, index string) error {
-	scanFilename := getDfInstallDir() + "/var/log/fenced/secret-scan/secret_scan.log"
-	scanStatusFilename := getDfInstallDir() + "/var/log/fenced/secret-scan-log/secret_scan_log.log"
-	files := map[string]string{
-		secretScanIndexName:     scanFilename,
-		secretScanLogsIndexName: scanStatusFilename,
-	}
-
-	filename := files[index]
-	err := os.MkdirAll(filepath.Dir(filename), 0755)
-	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-	if err != nil {
+		fmt.Println("FindSecretInfo error" + err.Error())
 		return err
 	}
 
-	defer f.Close()
-
-	secretScanMsg = strings.Replace(secretScanMsg, "\n", " ", -1)
-	if _, err = f.WriteString(secretScanMsg + "\n"); err != nil {
-		return err
-	}
+	fmt.Println("Secret scan start for" + req.BinArgs["scan_id"])
 	return nil
 }
 
@@ -236,12 +102,17 @@ func newSecretScannerClient() (pb.SecretScannerClient, error) {
 	return pb.NewSecretScannerClient(conn), nil
 }
 
-// func formatToKafka(data map[string]interface{}) []byte {
-// 	encoded, err := json.Marshal(&data)
-// 	if err != nil {
-// 		fmt.Println("Error in marshalling in progress secretScan data to json:" + err.Error())
-// 		return nil
-// 	}
-// 	value := "{\"value\":" + string(encoded) + "}"
-// 	return []byte("{\"records\":[" + value + "]}")
-// }
+func GetSecretScannerJobCount() int32 {
+	conn, err := grpc.Dial("unix://"+ebpfSocketPath, grpc.WithAuthority("dummy"),
+		grpc.WithInsecure())
+	if err != nil {
+		fmt.Printf("error in creating secret scanner client: %s\n", err.Error())
+		return 0
+	}
+	client := pb.NewScannersClient(conn)
+	jobReport, err := client.ReportJobsStatus(context.Background(), &pb.Empty{})
+	if err != nil {
+		return 0
+	}
+	return jobReport.RunningJobs
+}

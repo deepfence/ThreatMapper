@@ -16,48 +16,42 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ReportRow
+ * @interface ModelFiltersResult
  */
-export interface ReportRow {
+export interface ModelFiltersResult {
     /**
      * 
-     * @type {{ [key: string]: string; }}
-     * @memberof ReportRow
+     * @type {{ [key: string]: Array<string>; }}
+     * @memberof ModelFiltersResult
      */
-    entries?: { [key: string]: string; } | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof ReportRow
-     */
-    id?: string;
+    filters: { [key: string]: Array<string>; } | null;
 }
 
 /**
- * Check if a given object implements the ReportRow interface.
+ * Check if a given object implements the ModelFiltersResult interface.
  */
-export function instanceOfReportRow(value: object): boolean {
+export function instanceOfModelFiltersResult(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "filters" in value;
 
     return isInstance;
 }
 
-export function ReportRowFromJSON(json: any): ReportRow {
-    return ReportRowFromJSONTyped(json, false);
+export function ModelFiltersResultFromJSON(json: any): ModelFiltersResult {
+    return ModelFiltersResultFromJSONTyped(json, false);
 }
 
-export function ReportRowFromJSONTyped(json: any, ignoreDiscriminator: boolean): ReportRow {
+export function ModelFiltersResultFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelFiltersResult {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'entries': !exists(json, 'entries') ? undefined : json['entries'],
-        'id': !exists(json, 'id') ? undefined : json['id'],
+        'filters': json['filters'],
     };
 }
 
-export function ReportRowToJSON(value?: ReportRow | null): any {
+export function ModelFiltersResultToJSON(value?: ModelFiltersResult | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -66,8 +60,7 @@ export function ReportRowToJSON(value?: ReportRow | null): any {
     }
     return {
         
-        'entries': value.entries,
-        'id': value.id,
+        'filters': value.filters,
     };
 }
 

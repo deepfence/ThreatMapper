@@ -21,6 +21,7 @@ import type {
   ModelCompliance,
   ModelContainer,
   ModelContainerImage,
+  ModelFiltersResult,
   ModelHost,
   ModelMalware,
   ModelScanInfo,
@@ -43,6 +44,8 @@ import {
     ModelContainerToJSON,
     ModelContainerImageFromJSON,
     ModelContainerImageToJSON,
+    ModelFiltersResultFromJSON,
+    ModelFiltersResultToJSON,
     ModelHostFromJSON,
     ModelHostToJSON,
     ModelMalwareFromJSON,
@@ -379,6 +382,36 @@ export interface SearchApiInterface {
      * Count Vulnerability Scan results
      */
     countVulnerabilityScans(requestParameters: CountVulnerabilityScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Get all applicable filter values for cloud compliance
+     * @summary Get Cloud Compliance Filters
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    getCloudComplianceFiltersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelFiltersResult>>;
+
+    /**
+     * Get all applicable filter values for cloud compliance
+     * Get Cloud Compliance Filters
+     */
+    getCloudComplianceFilters(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelFiltersResult>;
+
+    /**
+     * Get all applicable filter values for compliance
+     * @summary Get Compliance Filters
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    getComplianceFiltersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelFiltersResult>>;
+
+    /**
+     * Get all applicable filter values for compliance
+     * Get Compliance Filters
+     */
+    getComplianceFilters(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelFiltersResult>;
 
     /**
      * Search across all the data associated with cloud-compliance scan
@@ -1099,6 +1132,78 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
      */
     async countVulnerabilityScans(requestParameters: CountVulnerabilityScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countVulnerabilityScansRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get all applicable filter values for cloud compliance
+     * Get Cloud Compliance Filters
+     */
+    async getCloudComplianceFiltersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelFiltersResult>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/filters/cloud-compliance`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelFiltersResultFromJSON(jsonValue));
+    }
+
+    /**
+     * Get all applicable filter values for cloud compliance
+     * Get Cloud Compliance Filters
+     */
+    async getCloudComplianceFilters(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelFiltersResult> {
+        const response = await this.getCloudComplianceFiltersRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get all applicable filter values for compliance
+     * Get Compliance Filters
+     */
+    async getComplianceFiltersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelFiltersResult>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/filters/compliance`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelFiltersResultFromJSON(jsonValue));
+    }
+
+    /**
+     * Get all applicable filter values for compliance
+     * Get Compliance Filters
+     */
+    async getComplianceFilters(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelFiltersResult> {
+        const response = await this.getComplianceFiltersRaw(initOverrides);
         return await response.value();
     }
 

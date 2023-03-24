@@ -3,7 +3,7 @@ package apiDocs
 import (
 	"net/http"
 
-	"github.com/weaveworks/scope/render/detailed"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/render/detailed"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
@@ -116,7 +116,7 @@ func (d *OpenApiDocs) AddGraphOperations() {
 
 	d.AddOperation("getThreatGraph", http.MethodPost, "/deepfence/graph/threat",
 		"Get Threat Graph", "Retrieve the full threat graph associated with the account",
-		http.StatusOK, []string{tagThreat}, bearerToken, nil, new(ThreatGraph))
+		http.StatusOK, []string{tagThreat}, bearerToken, new(ThreatFilters), new(ThreatGraph))
 }
 
 func (d *OpenApiDocs) AddLookupOperations() {
@@ -206,6 +206,14 @@ func (d *OpenApiDocs) AddSearchOperations() {
 	d.AddOperation("searchCloudComplianceScans", http.MethodPost, "/deepfence/search/cloud-compliance/scans",
 		"Search Cloud Compliance Scan results", "Search across all the data associated with cloud-compliance scan",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new([]ScanInfo))
+
+	d.AddOperation("getCloudComplianceFilters", http.MethodGet, "/deepfence/filters/cloud-compliance",
+		"Get Cloud Compliance Filters", "Get all applicable filter values for cloud compliance",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(FiltersReq), new(FiltersResult))
+
+	d.AddOperation("getComplianceFilters", http.MethodGet, "/deepfence/filters/compliance",
+		"Get Compliance Filters", "Get all applicable filter values for compliance",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(FiltersReq), new(FiltersResult))
 
 	// Count APIs
 	d.AddOperation("countHosts", http.MethodPost, "/deepfence/search/count/hosts",
@@ -418,6 +426,9 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("listMalwareScan", http.MethodPost, "/deepfence/scan/list/malware",
 		"Get Malware Scans List", "Get Malware Scans list on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanListReq), new(ScanListResp))
+	d.AddOperation("listCloudComplianceScan", http.MethodPost, "/deepfence/scan/list/cloud-compliance",
+		"Get Cloud Compliance Scans List", "Get Cloud Compliance Scans list for cloud node",
+		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanListReq), new(ScanListResp))
 
 	// Scans' Results
 	d.AddOperation("resultsVulnerabilityScans", http.MethodPost, "/deepfence/scan/results/vulnerability",

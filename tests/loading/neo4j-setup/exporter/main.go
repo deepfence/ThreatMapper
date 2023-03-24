@@ -46,7 +46,7 @@ func main() {
 		wg.Done()
 	}()
 
-	f, err := os.Open("/tmp/graphdb")
+	f, err := os.Open("/tmp/graphdb.cr")
 	if err != nil {
 		log.Fatal(err)
 	}

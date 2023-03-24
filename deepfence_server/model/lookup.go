@@ -35,16 +35,21 @@ func (KubernetesCluster) ExtendedField() string {
 }
 
 type RegularScanStatus struct {
-	VulnerabilitiesCount      int64  `json:"vulnerabilities_count"  required:"true"`
-	VulnerabilityScanStatus   string `json:"vulnerability_scan_status" required:"true"`
-	SecretsCount              int64  `json:"secrets_count" required:"true"`
-	SecretScanStatus          string `json:"secret_scan_status" required:"true"`
-	MalwaresCount             int64  `json:"malwares_count" required:"true"`
-	MalwareScanStatus         string `json:"malware_scan_status" required:"true"`
-	CompliancesCount          int64  `json:"compliances_count" required:"true"`
-	ComplianceScanStatus      string `json:"compliance_scan_status" required:"true"`
-	CloudCompliancesCount     int64  `json:"cloud_compliances_count" required:"true"`
-	CloudComplianceScanStatus string `json:"cloud_compliance_scan_status" required:"true"`
+	VulnerabilitiesCount        int64  `json:"vulnerabilities_count"  required:"true"`
+	VulnerabilityScanStatus     string `json:"vulnerability_scan_status" required:"true"`
+	VulnerabilityLatestScanId   string `json:"vulnerability_latest_scan_id" required:"true"`
+	SecretsCount                int64  `json:"secrets_count" required:"true"`
+	SecretScanStatus            string `json:"secret_scan_status" required:"true"`
+	SecretLatestScanId          string `json:"secret_latest_scan" required:"true"`
+	MalwaresCount               int64  `json:"malwares_count" required:"true"`
+	MalwareScanStatus           string `json:"malware_scan_status" required:"true"`
+	MalwareLatestScanId         string `json:"malware_latest_scan_id" required:"true"`
+	CompliancesCount            int64  `json:"compliances_count" required:"true"`
+	ComplianceScanStatus        string `json:"compliance_scan_status" required:"true"`
+	ComplianceLatestScanId      string `json:"compliance_latest_scan_id" required:"true"`
+	CloudCompliancesCount       int64  `json:"cloud_compliances_count" required:"true"`
+	CloudComplianceScanStatus   string `json:"cloud_compliance_scan_status" required:"true"`
+	CloudComplianceLatestScanId string `json:"cloud_compliance_latest scan_id" required:"true"`
 }
 
 type BasicNode struct {
@@ -240,6 +245,7 @@ type CloudResource struct {
 	ID   string `json:"node_id" required:"true"`
 	Name string `json:"node_name" required:"true"`
 	Type string `json:"node_type" required:"true"`
+	RegularScanStatus
 }
 
 func (CloudResource) NodeType() string {

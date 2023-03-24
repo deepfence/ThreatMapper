@@ -11,10 +11,10 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	reportUtils "github.com/deepfence/golang_deepfence_sdk/utils/report"
-	"github.com/weaveworks/scope/report"
 )
 
 var agent_report_ingesters map[directory.NamespaceID]*ingesters.Ingester[report.Report]

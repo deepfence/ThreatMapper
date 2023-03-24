@@ -9,6 +9,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"strings"
 )
 
 type AlreadyRunningScanError struct {
@@ -154,16 +155,17 @@ func AddNewScan(tx WriteDBTransaction,
 
 func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	scanId string,
-	benchmarkType string,
+	benchmarkTypes []string,
 	nodeId string,
 	nodeType string) error {
 
-	neo4jNodeType := "Node"
+	neo4jNodeType := "CloudNode"
 	scanType := utils.NEO4J_CLOUD_COMPLIANCE_SCAN
 	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) {
 		neo4jNodeType = "KubernetesCluster"
 		scanType = utils.NEO4J_COMPLIANCE_SCAN
 	} else if nodeType == controls.ResourceTypeToString(controls.Host) {
+		neo4jNodeType = "Node"
 		scanType = utils.NEO4J_COMPLIANCE_SCAN
 	}
 	res, err := tx.Run(fmt.Sprintf(`
@@ -191,13 +193,13 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:%s{node_id:$node_id})
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
-		AND n.benchmark_type = $benchmark_type
+		AND n.benchmark_types = $benchmark_types
 		RETURN n.node_id`, scanType, neo4jNodeType),
 		map[string]interface{}{
-			"node_id":        nodeId,
-			"complete":       utils.SCAN_STATUS_SUCCESS,
-			"failed":         utils.SCAN_STATUS_FAILED,
-			"benchmark_type": benchmarkType,
+			"node_id":         nodeId,
+			"complete":        utils.SCAN_STATUS_SUCCESS,
+			"failed":          utils.SCAN_STATUS_FAILED,
+			"benchmark_types": benchmarkTypes,
 		})
 	if err != nil {
 		return err
@@ -222,22 +224,22 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	internalReq, _ := json.Marshal(ctl.StartComplianceScanRequest{
 		NodeId:   nodeId,
 		NodeType: nt,
-		BinArgs:  map[string]string{"scan_id": scanId, "benchmark_type": benchmarkType},
+		BinArgs:  map[string]string{"scan_id": scanId, "benchmark_types": strings.Join(benchmarkTypes, ",")},
 	})
 	action, _ := json.Marshal("{}")
 	if nodeType == controls.ResourceTypeToString(controls.KubernetesCluster) || nodeType == controls.ResourceTypeToString(controls.Host) {
 		action, _ = json.Marshal(ctl.Action{ID: ctl.StartComplianceScan, RequestPayload: string(internalReq)})
 	}
 	if _, err = tx.Run(fmt.Sprintf(`
-		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, updated_at: TIMESTAMP(), benchmark_type: $benchmark_type, trigger_action: $action})
+		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, updated_at: TIMESTAMP(), benchmark_types: $benchmark_types, trigger_action: $action})
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCANNED]->(m)`, scanType, neo4jNodeType),
 		map[string]interface{}{
-			"scan_id":        scanId,
-			"status":         utils.SCAN_STATUS_STARTING,
-			"node_id":        nodeId,
-			"benchmark_type": benchmarkType,
-			"action":         string(action),
+			"scan_id":         scanId,
+			"status":          utils.SCAN_STATUS_STARTING,
+			"node_id":         nodeId,
+			"benchmark_types": benchmarkTypes,
+			"action":          string(action),
 		}); err != nil {
 		return err
 	}

@@ -125,7 +125,19 @@ var graphThreatSubCmd = &cobra.Command{
 	Short: "Get Threat graph",
 	Long:  `This subcommand retrieve the threat graph`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		issue_filter, _ := cmd.Flags().GetString("issue-filter")
+		if issue_filter == "" {
+			issue_filter = "all"
+		}
+
+		cloud_filter, _ := cmd.Flags().GetBool("cloud-only")
+
 		req := http.Client().ThreatApi.GetThreatGraph(context.Background())
+		req = req.GraphThreatFilters(deepfence_server_client.GraphThreatFilters{
+			Type:              issue_filter,
+			CloudResourceOnly: cloud_filter,
+		})
 		res, rh, err := http.Client().ThreatApi.GetThreatGraphExecute(req)
 
 		if err != nil {
@@ -149,4 +161,6 @@ func init() {
 	graphTopologySubCmd.PersistentFlags().String("root", "", "Root can be: ''/hosts/containers/pods/kubernetes")
 
 	graphCmd.AddCommand(graphThreatSubCmd)
+	graphThreatSubCmd.PersistentFlags().String("issue-filter", "", "vulnerability/malware/secrets/compliance/cloud_complaince/all")
+	graphThreatSubCmd.PersistentFlags().Bool("cloud-only", false, "vulnerability/malware/secrets/compliance/cloud_complaince/all")
 }

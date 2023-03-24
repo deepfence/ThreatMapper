@@ -2,26 +2,19 @@ import { useState } from 'react';
 import { generatePath, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Button, Tooltip } from 'ui-components';
 
-import {
-  MalwareScanActionEnumType,
-  MalwareScanConfigureForm,
-} from '@/components/scan-configure-forms/MalwareScanConfigureForm';
-import {
-  ComplianceType,
-  PostureScanActionEnumType,
-  PostureScanConfigureForm,
-} from '@/components/scan-configure-forms/PostureScanConfigureForm';
-import {
-  SecretScanActionEnumType,
-  SecretScanConfigureForm,
-} from '@/components/scan-configure-forms/SecretScanConfigureForm';
-import {
-  VulnerabilityScanActionEnumType,
-  VulnerabilityScanConfigureForm,
-} from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
+import { MalwareScanConfigureForm } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
+import { ComplianceScanConfigureForm } from '@/components/scan-configure-forms/PostureScanConfigureForm';
+import { SecretScanConfigureForm } from '@/components/scan-configure-forms/SecretScanConfigureForm';
+import { VulnerabilityScanConfigureForm } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
-import { NodeType } from '@/features/onboard/pages/ChooseScan';
 import { OnboardConnectionNode } from '@/features/onboard/pages/connectors/MyConnectors';
+import {
+  ComplianceScanNodeTypeEnum,
+  MalwareScanNodeTypeEnum,
+  ScanTypeEnum,
+  SecretScanNodeTypeEnum,
+  VulnerabilityScanNodeTypeEnum,
+} from '@/types/common';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 const SelectedAccountComponent = ({
@@ -59,13 +52,13 @@ const ScanConfigureForm = () => {
   const state = pageState as OnboardConnectionNode[];
 
   let title = '';
-  if (scanType === VulnerabilityScanActionEnumType.SCAN_VULNERABILITY) {
+  if (scanType === ScanTypeEnum.VulnerabilityScan) {
     title = 'Vulnerability';
-  } else if (scanType === SecretScanActionEnumType.SCAN_SECRET) {
+  } else if (scanType === ScanTypeEnum.SecretScan) {
     title = 'Secret';
-  } else if (scanType === MalwareScanActionEnumType.SCAN_MALWARE) {
+  } else if (scanType === ScanTypeEnum.MalwareScan) {
     title = 'Malware';
-  } else if (scanType === PostureScanActionEnumType.SCAN_POSTURE) {
+  } else if (scanType === ScanTypeEnum.ComplianceScan) {
     title = 'Posture';
   }
 
@@ -81,12 +74,12 @@ const ScanConfigureForm = () => {
           />
         }
       />
-      {scanType === VulnerabilityScanActionEnumType.SCAN_VULNERABILITY && (
+      {scanType === ScanTypeEnum.VulnerabilityScan && (
         <VulnerabilityScanConfigureForm
-          wantAdvanceOptions={false}
+          showAdvancedOptions={false}
           data={{
             nodeIds: state.map((node) => node.urlId),
-            nodeType: state[0].urlType as NodeType,
+            nodeType: state[0].urlType as VulnerabilityScanNodeTypeEnum,
             images: [],
           }}
           onSuccess={(data) => {
@@ -106,12 +99,12 @@ const ScanConfigureForm = () => {
           }}
         />
       )}
-      {scanType === SecretScanActionEnumType.SCAN_SECRET && (
+      {scanType === ScanTypeEnum.SecretScan && (
         <SecretScanConfigureForm
-          wantAdvanceOptions={false}
+          showAdvancedOptions={false}
           data={{
             nodeIds: state.map((node) => node.urlId),
-            nodeType: state[0].urlType as NodeType,
+            nodeType: state[0].urlType as SecretScanNodeTypeEnum,
             images: [],
           }}
           onSuccess={(data) => {
@@ -131,12 +124,12 @@ const ScanConfigureForm = () => {
           }}
         />
       )}
-      {scanType === MalwareScanActionEnumType.SCAN_MALWARE && (
+      {scanType === ScanTypeEnum.MalwareScan && (
         <MalwareScanConfigureForm
-          wantAdvanceOptions={false}
+          showAdvancedOptions={false}
           data={{
             nodeIds: state.map((node) => node.urlId),
-            nodeType: state[0].urlType as NodeType,
+            nodeType: state[0].urlType as MalwareScanNodeTypeEnum,
             images: [],
           }}
           onSuccess={(data) => {
@@ -156,13 +149,12 @@ const ScanConfigureForm = () => {
           }}
         />
       )}
-      {scanType === PostureScanActionEnumType.SCAN_POSTURE && (
-        <PostureScanConfigureForm
-          wantAdvanceOptions={false}
+      {scanType === ScanTypeEnum.ComplianceScan && (
+        <ComplianceScanConfigureForm
+          showAdvancedOptions={false}
           data={{
             nodeIds: state.map((node) => node.urlId),
-            nodeType: state[0].urlType as ComplianceType,
-            images: [],
+            nodeType: state[0].urlType as ComplianceScanNodeTypeEnum,
           }}
           onSuccess={(data) => {
             if (data) {

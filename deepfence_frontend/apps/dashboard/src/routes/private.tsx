@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, redirect } from 'react-router-dom';
 
 import { ErrorComponent } from '@/components/error/ErrorComponent';
 import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
@@ -45,6 +45,8 @@ import { module as postureConnectorLayout } from '@/features/postures/layouts/Po
 import { module as postureAddAccounts } from '@/features/postures/pages/AccountAdd';
 import { module as postureAccounts } from '@/features/postures/pages/Accounts';
 import { module as posture } from '@/features/postures/pages/Posture';
+import { module as postureCloudDetails } from '@/features/postures/pages/PostureCloudDetailModal';
+import { module as postureCloudScanResults } from '@/features/postures/pages/PostureCloudScanResults';
 import { module as postureDetails } from '@/features/postures/pages/PostureDetailModal';
 import { module as postureScanResults } from '@/features/postures/pages/PostureScanResults';
 import { module as registryConnectorLayout } from '@/features/registries/layouts/RegistryConnectorLayout';
@@ -57,6 +59,12 @@ import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
+import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
+import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
+import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
+import { module as topologyGraph } from '@/features/topology/pages/Graph';
+import { module as topologyTable } from '@/features/topology/pages/Table';
+import { module as topology } from '@/features/topology/pages/Topology';
 import { sbomApiLoader } from '@/features/vulnerabilities/api/sbomApiLoader';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
 import { module as runtimeBom } from '@/features/vulnerabilities/pages/RuntimeBom';
@@ -152,6 +160,44 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'dashboard',
         element: <Dashboard />,
         meta: { title: 'Dashboard' },
+      },
+      {
+        path: 'topology',
+        ...topology,
+        children: [
+          {
+            index: true,
+            loader: () => redirect('/topology/graph', 301),
+          },
+          {
+            path: 'table',
+            ...topologyTable,
+            meta: { title: 'Cloud Topology' },
+          },
+          {
+            path: 'graph',
+            ...topologyGraph,
+            meta: { title: 'Cloud Topology' },
+          },
+          {
+            path: 'node-details',
+            children: [
+              {
+                path: 'host/:nodeId',
+                ...nodeDetailsHost,
+              },
+              {
+                path: 'container/:nodeId',
+                ...nodeDetailsContainer,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: 'threatgraph',
+        ...threatGraph,
+        meta: { title: 'Threat Graph' },
       },
       // registries
       {
@@ -307,13 +353,25 @@ export const privateRoutes: CustomRouteObject[] = [
         ],
       },
       {
-        path: 'posture/scan-results/:scanId',
+        path: 'posture/scan-results/:nodeType/:scanId',
         ...postureScanResults,
         meta: { title: 'Posture Scans Results' },
         children: [
           {
             path: ':complianceId',
             ...postureDetails,
+            meta: { title: 'Posture Details' },
+          },
+        ],
+      },
+      {
+        path: 'posture/cloud/scan-results/:nodeType/:scanId',
+        ...postureCloudScanResults,
+        meta: { title: 'Posture Scans Results' },
+        children: [
+          {
+            path: ':complianceId',
+            ...postureCloudDetails,
             meta: { title: 'Posture Details' },
           },
         ],
@@ -378,7 +436,7 @@ export const privateRoutes: CustomRouteObject[] = [
         action: registryConnectorActionApi,
       },
       {
-        path: 'list/controls/:checkType',
+        path: 'list/controls/:nodeType/:checkType',
         loader: listControlsApiLoader,
         action: toggleControlApiAction,
       },

@@ -14,7 +14,7 @@ exports[`Component Table > should render a basic table > cells without border 5 
 
 exports[`Component Table > should render a basic table > row with hover state on normal table 1`] = `
 <tr
-  class="hover:!bg-gray-100 dark:hover:!bg-gray-600 transition-colors"
+  class="hover:!bg-gray-100 dark:hover:!bg-gray-700 transition-colors"
 >
   <td
     class="text-sm text-gray-900 dark:text-white px-4 truncate min-w-0 font-normal py-4"
@@ -48,7 +48,7 @@ exports[`Component Table > should render a striped table > cells should not have
 
 exports[`Component Table > should render a striped table > even rows should have darker background 1`] = `
 <tr
-  class="bg-gray-50 dark:bg-gray-700 hover:!bg-gray-100 dark:hover:!bg-gray-600 transition-colors"
+  class="bg-gray-50 dark:bg-gray-700 hover:!bg-gray-100 dark:hover:!bg-gray-700 transition-colors"
 >
   <td
     class="text-sm text-gray-900 dark:text-white px-4 truncate min-w-0 font-normal py-4"
@@ -73,7 +73,7 @@ exports[`Component Table > should render a striped table > even rows should have
 
 exports[`Component Table > should render a striped table > odd rows should have lighter background 1`] = `
 <tr
-  class="hover:!bg-gray-100 dark:hover:!bg-gray-600 transition-colors"
+  class="hover:!bg-gray-100 dark:hover:!bg-gray-700 transition-colors"
 >
   <td
     class="text-sm text-gray-900 dark:text-white px-4 truncate min-w-0 font-normal py-4"
@@ -98,7 +98,7 @@ exports[`Component Table > should render a striped table > odd rows should have 
 
 exports[`Component Table > should render a striped table > row with hover state on striped table 1`] = `
 <tr
-  class="bg-gray-50 dark:bg-gray-700 hover:!bg-gray-100 dark:hover:!bg-gray-600 transition-colors"
+  class="bg-gray-50 dark:bg-gray-700 hover:!bg-gray-100 dark:hover:!bg-gray-700 transition-colors"
 >
   <td
     class="text-sm text-gray-900 dark:text-white px-4 truncate min-w-0 font-normal py-4"
@@ -135,6 +135,6 @@ exports[`Component Table > should use getTrProps and getTdProps correctly > cell
 
 exports[`Component Table > should use getTrProps and getTdProps correctly > row with custom props0 1`] = `"<tr data-testid=\\"table-header-row\\"><th colspan=\\"1\\" class=\\"relative border-0 text-gray-500 dark:text-white border-b border-gray-200 dark:border-gray-700 text-xs font-semibold uppercase\\" style=\\"width: 150px;\\"><div class=\\"w-full h-full flex px-4 truncate p-4\\"><span class=\\"flex-1 truncate text-start\\">id</span></div></th><th colspan=\\"1\\" class=\\"relative border-0 text-gray-500 dark:text-white border-b border-gray-200 dark:border-gray-700 text-xs font-semibold uppercase\\" style=\\"width: 150px;\\"><div class=\\"w-full h-full flex px-4 truncate p-4\\"><span class=\\"flex-1 truncate text-start\\">name</span></div></th><th colspan=\\"1\\" class=\\"relative border-0 text-gray-500 dark:text-white border-b border-gray-200 dark:border-gray-700 text-xs font-semibold uppercase\\" style=\\"width: 150px;\\"><div class=\\"w-full h-full flex px-4 truncate p-4\\"><span class=\\"flex-1 truncate text-start\\">description</span></div></th></tr>"`;
 
-exports[`Component Table > should use getTrProps and getTdProps correctly > row with custom props1 1`] = `"<tr class=\\"hover:!bg-gray-100 dark:hover:!bg-gray-600 transition-colors bg-red-500\\"><td class=\\"text-sm dark:text-white px-4 truncate min-w-0 font-normal border-b border-gray-200 dark:border-gray-700 py-4 text-red-500\\" style=\\"width: 150px;\\">0</td><td class=\\"text-sm dark:text-white px-4 truncate min-w-0 font-normal border-b border-gray-200 dark:border-gray-700 py-4 text-red-500\\" style=\\"width: 150px;\\">Fruit 0</td><td class=\\"text-sm dark:text-white px-4 truncate min-w-0 font-normal border-b border-gray-200 dark:border-gray-700 py-4 text-red-500\\" style=\\"width: 150px;\\">Description for 0</td></tr>"`;
+exports[`Component Table > should use getTrProps and getTdProps correctly > row with custom props1 1`] = `"<tr class=\\"hover:!bg-gray-100 dark:hover:!bg-gray-700 transition-colors bg-red-500\\"><td class=\\"text-sm dark:text-white px-4 truncate min-w-0 font-normal border-b border-gray-200 dark:border-gray-700 py-4 text-red-500\\" style=\\"width: 150px;\\">0</td><td class=\\"text-sm dark:text-white px-4 truncate min-w-0 font-normal border-b border-gray-200 dark:border-gray-700 py-4 text-red-500\\" style=\\"width: 150px;\\">Fruit 0</td><td class=\\"text-sm dark:text-white px-4 truncate min-w-0 font-normal border-b border-gray-200 dark:border-gray-700 py-4 text-red-500\\" style=\\"width: 150px;\\">Description for 0</td></tr>"`;
 
-exports[`Component Table > should use getTrProps and getTdProps correctly > row with custom props2 1`] = `"<tr class=\\"hover:!bg-gray-100 dark:hover:!bg-gray-600 transition-colors bg-red-500\\"><td class=\\"text-sm dark:text-white px-4 truncate min-w-0 font-normal py-4 text-red-500\\" style=\\"width: 150px;\\">1</td><td class=\\"text-sm dark:text-white px-4 truncate min-w-0 font-normal py-4 text-red-500\\" style=\\"width: 150px;\\">Fruit 1</td><td class=\\"text-sm dark:text-white px-4 truncate min-w-0 font-normal py-4 text-red-500\\" style=\\"width: 150px;\\">Description for 1</td></tr>"`;
+exports[`Component Table > should use getTrProps and getTdProps correctly > row with custom props2 1`] = `"<tr class=\\"hover:!bg-gray-100 dark:hover:!bg-gray-700 transition-colors bg-red-500\\"><td class=\\"text-sm dark:text-white px-4 truncate min-w-0 font-normal py-4 text-red-500\\" style=\\"width: 150px;\\">1</td><td class=\\"text-sm dark:text-white px-4 truncate min-w-0 font-normal py-4 text-red-500\\" style=\\"width: 150px;\\">Fruit 1</td><td class=\\"text-sm dark:text-white px-4 truncate min-w-0 font-normal py-4 text-red-500\\" style=\\"width: 150px;\\">Description for 1</td></tr>"`;

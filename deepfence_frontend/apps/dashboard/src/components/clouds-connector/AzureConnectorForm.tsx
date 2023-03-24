@@ -2,7 +2,7 @@ import cx from 'classnames';
 import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, Step, Stepper, Typography } from 'ui-components';
 
-import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
+import { CopyToClipboard } from '@/components/CopyToClipboard';
 
 export const AzureConnectorForm = () => {
   const code = `provider "azurerm" {
@@ -49,7 +49,7 @@ export const AzureConnectorForm = () => {
             >
               {code}
             </pre>
-            <CopyToClipboardIcon text={code} />
+            <CopyToClipboard data={code} asIcon />
           </Card>
         </div>
       </Step>
@@ -69,7 +69,7 @@ export const AzureConnectorForm = () => {
               >
                 terraform init
               </pre>
-              <CopyToClipboardIcon text={'terraform init'} className="top-4" />
+              <CopyToClipboard data={'terraform init'} className="top-4" asIcon />
             </div>
             <div className="relative">
               <pre
@@ -81,7 +81,7 @@ export const AzureConnectorForm = () => {
               >
                 terraform plan
               </pre>
-              <CopyToClipboardIcon text={'terraform plan'} className="top-0" />
+              <CopyToClipboard data={'terraform plan'} className="top-0" asIcon />
             </div>
             <div className="relative">
               <pre
@@ -93,7 +93,7 @@ export const AzureConnectorForm = () => {
               >
                 terraform apply
               </pre>
-              <CopyToClipboardIcon text={'terraform apply'} className="top-0" />
+              <CopyToClipboard data={'terraform apply'} className="top-0" asIcon />
             </div>
           </Card>
         </div>

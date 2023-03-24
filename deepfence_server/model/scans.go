@@ -67,7 +67,7 @@ type ScanInfo struct {
 
 type ComplianceScanInfo struct {
 	ScanId         string           `json:"scan_id" required:"true"`
-	BenchmarkType  string           `json:"benchmark_type" required:"true"`
+	BenchmarkTypes []string         `json:"benchmark_types" required:"true"`
 	Status         string           `json:"status" required:"true"`
 	UpdatedAt      int64            `json:"updated_at" required:"true" format:"int64"`
 	NodeId         string           `json:"node_id" required:"true"`
@@ -181,6 +181,15 @@ type ScanResultsCommon struct {
 	UpdatedAt             int64  `json:"updated_at" required:"true" format:"int64"`
 }
 
+type FiltersReq struct {
+	RequiredFilters []string               `json:"filters" required:"true"`
+	Having          map[string]interface{} `json:"having"`
+}
+
+type FiltersResult struct {
+	Filters map[string][]string `json:"filters" required:"true"`
+}
+
 type SecretScanResult struct {
 	ScanResultsCommon
 	Secrets        []Secret         `json:"secrets" required:"true"`
@@ -206,7 +215,7 @@ type ComplianceScanResult struct {
 }
 
 type ComplianceAdditionalInfo struct {
-	BenchmarkType        string           `json:"benchmark_type" required:"true"`
+	BenchmarkTypes       []string         `json:"benchmark_type" required:"true"`
 	StatusCounts         map[string]int32 `json:"status_counts" required:"true"`
 	CompliancePercentage float64          `json:"compliance_percentage" required:"true"`
 }
@@ -291,11 +300,11 @@ func (Vulnerability) GetJsonCategory() string {
 
 type Malware struct {
 	// Malware + MalwareRule node in neo4j
-	Class            string   `json:"Class" required:"true"`
-	CompleteFilename string   `json:"CompleteFilename" required:"true"`
-	FileSevScore     int      `json:"FileSevScore" required:"true"`
-	FileSeverity     string   `json:"FileSeverity" required:"true"`
-	ImageLayerID     string   `json:"ImageLayerId" required:"true"`
+	Class            string   `json:"class" required:"true"`
+	CompleteFilename string   `json:"complete_filename" required:"true"`
+	FileSevScore     int      `json:"file_sev_score" required:"true"`
+	FileSeverity     string   `json:"file_severity" required:"true"`
+	ImageLayerID     string   `json:"image_layer_id" required:"true"`
 	NodeId           string   `json:"node_id" required:"true"`
 	RuleID           string   `json:"rule_id" required:"true"`
 	RuleName         string   `json:"rule_name" required:"true"`
@@ -305,9 +314,9 @@ type Malware struct {
 	Filetype         string   `json:"filetype"`
 	Info             string   `json:"info"`
 	Version          string   `json:"version"`
-	SeverityScore    int      `json:"SeverityScore"`
-	StringsToMatch   []string `json:"StringsToMatch"`
-	Summary          string   `json:"Summary"`
+	SeverityScore    int      `json:"severity_score"`
+	StringsToMatch   []string `json:"strings_to_match"`
+	Summary          string   `json:"summary"`
 	Masked           bool     `json:"masked" required:"true"`
 }
 

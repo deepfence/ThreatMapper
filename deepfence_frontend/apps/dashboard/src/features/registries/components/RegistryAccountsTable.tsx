@@ -28,14 +28,20 @@ import {
 
 import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelRegistryListResp } from '@/api/generated';
+import {
+  ConfigureScanModal,
+  ConfigureScanModalProps,
+} from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
-import { MalwareScanActionEnumType } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
-import { SecretScanActionEnumType } from '@/components/scan-configure-forms/SecretScanConfigureForm';
-import { VulnerabilityScanActionEnumType } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
-import { ConfigureScanModal } from '@/features/registries/components/ConfigureScanModal';
+import {
+  MalwareScanNodeTypeEnum,
+  ScanTypeEnum,
+  SecretScanNodeTypeEnum,
+  VulnerabilityScanNodeTypeEnum,
+} from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 
@@ -131,7 +137,11 @@ const DeleteConfirmationModal = ({
 
 const ActionDropdown = ({ id }: { id: string }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [openScanConfigure, setOpenScanConfigure] = useState('');
+  const [selectedScanType, setSelectedScanType] = useState<
+    | typeof ScanTypeEnum.VulnerabilityScan
+    | typeof ScanTypeEnum.SecretScan
+    | typeof ScanTypeEnum.MalwareScan
+  >();
 
   return (
     <>
@@ -141,14 +151,9 @@ const ActionDropdown = ({ id }: { id: string }) => {
         setShowDialog={setShowDeleteDialog}
       />
       <ConfigureScanModal
-        open={openScanConfigure !== ''}
-        setOpen={setOpenScanConfigure}
-        scanType={openScanConfigure}
-        wantAdvanceOptions={true}
-        data={{
-          nodeIds: [id],
-          nodeType: 'registry',
-        }}
+        open={!!selectedScanType}
+        onOpenChange={() => setSelectedScanType(undefined)}
+        scanOptions={selectedScanType ? getScanOptions(selectedScanType, id) : undefined}
       />
       <Dropdown
         triggerAsChild={true}
@@ -160,11 +165,7 @@ const ActionDropdown = ({ id }: { id: string }) => {
               content={
                 <>
                   <DropdownItem
-                    onClick={() =>
-                      setOpenScanConfigure(
-                        VulnerabilityScanActionEnumType.SCAN_VULNERABILITY,
-                      )
-                    }
+                    onClick={() => setSelectedScanType(ScanTypeEnum.VulnerabilityScan)}
                   >
                     <div className="w-4 h-4">
                       <VulnerabilityIcon />
@@ -172,9 +173,7 @@ const ActionDropdown = ({ id }: { id: string }) => {
                     Scan for vulnerability
                   </DropdownItem>
                   <DropdownItem
-                    onClick={() =>
-                      setOpenScanConfigure(SecretScanActionEnumType.SCAN_SECRET)
-                    }
+                    onClick={() => setSelectedScanType(ScanTypeEnum.SecretScan)}
                   >
                     <div className="w-4 h-4">
                       <SecretsIcon />
@@ -182,9 +181,7 @@ const ActionDropdown = ({ id }: { id: string }) => {
                     Scan for secret
                   </DropdownItem>
                   <DropdownItem
-                    onClick={() =>
-                      setOpenScanConfigure(MalwareScanActionEnumType.SCAN_MALWARE)
-                    }
+                    onClick={() => setSelectedScanType(ScanTypeEnum.MalwareScan)}
                   >
                     <div className="w-4 h-4">
                       <MalwareIcon />
@@ -311,3 +308,43 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
   );
   return <Table columns={columns} data={data} enableSorting size="sm" />;
 };
+
+function getScanOptions(
+  scanType: ScanTypeEnum,
+  id: string,
+): ConfigureScanModalProps['scanOptions'] {
+  if (scanType === ScanTypeEnum.VulnerabilityScan) {
+    return {
+      showAdvancedOptions: true,
+      scanType,
+      data: {
+        nodeIds: [id],
+        nodeType: VulnerabilityScanNodeTypeEnum.registry,
+      },
+    };
+  }
+
+  if (scanType === ScanTypeEnum.SecretScan) {
+    return {
+      showAdvancedOptions: true,
+      scanType,
+      data: {
+        nodeIds: [id],
+        nodeType: SecretScanNodeTypeEnum.registry,
+      },
+    };
+  }
+
+  if (scanType === ScanTypeEnum.MalwareScan) {
+    return {
+      showAdvancedOptions: true,
+      scanType,
+      data: {
+        nodeIds: [id],
+        nodeType: MalwareScanNodeTypeEnum.registry,
+      },
+    };
+  }
+
+  throw new Error('invalid scan type');
+}

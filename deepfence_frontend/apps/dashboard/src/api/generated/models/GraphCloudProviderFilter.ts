@@ -16,55 +16,42 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface DetailedParent
+ * @interface GraphCloudProviderFilter
  */
-export interface DetailedParent {
+export interface GraphCloudProviderFilter {
     /**
      * 
-     * @type {string}
-     * @memberof DetailedParent
+     * @type {Array<string>}
+     * @memberof GraphCloudProviderFilter
      */
-    id?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DetailedParent
-     */
-    label?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DetailedParent
-     */
-    topologyId?: string;
+    account_ids: Array<string> | null;
 }
 
 /**
- * Check if a given object implements the DetailedParent interface.
+ * Check if a given object implements the GraphCloudProviderFilter interface.
  */
-export function instanceOfDetailedParent(value: object): boolean {
+export function instanceOfGraphCloudProviderFilter(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "account_ids" in value;
 
     return isInstance;
 }
 
-export function DetailedParentFromJSON(json: any): DetailedParent {
-    return DetailedParentFromJSONTyped(json, false);
+export function GraphCloudProviderFilterFromJSON(json: any): GraphCloudProviderFilter {
+    return GraphCloudProviderFilterFromJSONTyped(json, false);
 }
 
-export function DetailedParentFromJSONTyped(json: any, ignoreDiscriminator: boolean): DetailedParent {
+export function GraphCloudProviderFilterFromJSONTyped(json: any, ignoreDiscriminator: boolean): GraphCloudProviderFilter {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'id': !exists(json, 'id') ? undefined : json['id'],
-        'label': !exists(json, 'label') ? undefined : json['label'],
-        'topologyId': !exists(json, 'topologyId') ? undefined : json['topologyId'],
+        'account_ids': json['account_ids'],
     };
 }
 
-export function DetailedParentToJSON(value?: DetailedParent | null): any {
+export function GraphCloudProviderFilterToJSON(value?: GraphCloudProviderFilter | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -73,9 +60,7 @@ export function DetailedParentToJSON(value?: DetailedParent | null): any {
     }
     return {
         
-        'id': value.id,
-        'label': value.label,
-        'topologyId': value.topologyId,
+        'account_ids': value.account_ids,
     };
 }
 

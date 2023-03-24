@@ -9,12 +9,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/telemetry"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	redis2 "github.com/redis/go-redis/v9"
-	"github.com/weaveworks/scope/report"
 )
 
 const (

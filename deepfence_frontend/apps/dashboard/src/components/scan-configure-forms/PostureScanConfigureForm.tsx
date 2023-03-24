@@ -17,15 +17,11 @@ import {
   ActionEnumType,
   useGetControlsList,
 } from '@/features/postures/data-component/listControlsApiLoader';
+import { ComplianceScanNodeTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 
-export enum PostureScanActionEnumType {
-  SCAN_POSTURE = 'scan_posture',
-}
-export type ComplianceType = 'aws' | 'gcp' | 'azure' | 'host' | 'kubernetes_cluster';
-
 export const complianceType: {
-  [key in ComplianceType]: string[];
+  [key in ComplianceScanNodeTypeEnum]: string[];
 } = {
   aws: ['CIS', 'NIST', 'PCI', 'HIPAA', 'SOC2', 'GDPR'],
   gcp: ['CIS'],
@@ -33,12 +29,11 @@ export const complianceType: {
   host: ['HIPAA', 'GDPR', 'PCI', 'NIST'],
   kubernetes_cluster: ['NSA-CISA'],
 };
-type ScanConfigureFormProps = {
-  wantAdvanceOptions: boolean;
+export type ComplianceScanConfigureFormProps = {
+  showAdvancedOptions: boolean;
   data: {
     nodeIds: string[];
-    images: string[];
-    nodeType: ComplianceType;
+    nodeType: ComplianceScanNodeTypeEnum;
   };
   onSuccess: (data?: { nodeType: string; bulkScanId: string }) => void;
 };
@@ -57,7 +52,11 @@ type TabsType = {
   value: string;
 };
 
-const clouds = ['aws', 'gcp', 'azure'];
+export const CLOUDS = [
+  ComplianceScanNodeTypeEnum.aws,
+  ComplianceScanNodeTypeEnum.azure,
+  ComplianceScanNodeTypeEnum.gcp,
+];
 
 export const scanPostureApiAction = async ({
   request,
@@ -68,9 +67,9 @@ export const scanPostureApiAction = async ({
   let nodeType = body._nodeType.toString();
   const checkTypes = body._checkTypes.toString();
 
-  if (nodeType === 'kubernetes_cluster') {
+  if (nodeType === ComplianceScanNodeTypeEnum.kubernetes_cluster) {
     nodeType = 'cluster';
-  } else if (clouds.includes(nodeType)) {
+  } else if (CLOUDS.includes(nodeType as ComplianceScanNodeTypeEnum)) {
     nodeType = 'cloud_account';
   }
 
@@ -129,12 +128,14 @@ const ToggleControl = ({
   checked,
   controlId,
   nodeId,
+  nodeType,
   checkType,
   loading,
 }: {
   checked: boolean;
   controlId: string;
   nodeId: string;
+  nodeType: string;
   checkType: string;
   loading: boolean;
 }) => {
@@ -159,8 +160,9 @@ const ToggleControl = ({
           formData.append('controlId', controlId ?? '');
           fetcher.submit(formData, {
             method: 'post',
-            action: generatePath('/data-component/list/controls/:checkType', {
+            action: generatePath('/data-component/list/controls/:nodeType/:checkType', {
               checkType,
+              nodeType,
             }),
           });
         }}
@@ -171,10 +173,12 @@ const ToggleControl = ({
 export const ControlsTable = memo(
   ({
     nodeIds,
+    nodeType,
     tabs = [],
     defaultTab,
   }: {
     nodeIds: string[];
+    nodeType: string;
     tabs: TabsType[];
     defaultTab: string;
   }) => {
@@ -209,6 +213,7 @@ export const ControlsTable = memo(
             return (
               <ToggleControl
                 nodeId={nodeIds[0]}
+                nodeType={nodeType}
                 loading={isLoading}
                 checkType={selectedTab.toLowerCase()}
                 checked={!!info.row.original.enabled}
@@ -232,7 +237,7 @@ export const ControlsTable = memo(
 
     useEffect(() => {
       if (selectedTab) {
-        fetchControls(selectedTab.toLowerCase());
+        fetchControls(selectedTab.toLowerCase(), nodeType);
       }
     }, [selectedTab]);
 
@@ -269,11 +274,11 @@ export const ControlsTable = memo(
   },
 );
 
-export const PostureScanConfigureForm = ({
-  wantAdvanceOptions,
+export const ComplianceScanConfigureForm = ({
+  showAdvancedOptions,
   onSuccess,
   data,
-}: ScanConfigureFormProps) => {
+}: ComplianceScanConfigureFormProps) => {
   const fetcher = useFetcher();
   const { nodeType, nodeIds } = data;
   const { state, data: fetcherData } = fetcher;
@@ -374,8 +379,13 @@ export const PostureScanConfigureForm = ({
       {fetcherData?.message && (
         <p className="text-red-500 text-sm py-3">{fetcherData.message}</p>
       )}
-      {wantAdvanceOptions && (
-        <ControlsTable nodeIds={data.nodeIds} tabs={tabs} defaultTab={defaultTab} />
+      {showAdvancedOptions && (
+        <ControlsTable
+          nodeIds={data.nodeIds}
+          tabs={tabs}
+          defaultTab={defaultTab}
+          nodeType={nodeType}
+        />
       )}
     </>
   );

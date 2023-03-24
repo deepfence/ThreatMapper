@@ -53,7 +53,6 @@ import { getScanResultsApiClient, getSearchApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
   ModelScanInfo,
-  ModelScanResultsActionRequestScanTypeEnum,
   SearchSearchScanReq,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
@@ -64,6 +63,7 @@ import { useGetContainerImagesList } from '@/features/common/data-component/sear
 import { useGetContainersList } from '@/features/common/data-component/searchContainersApiLoader';
 import { useGetHostsList } from '@/features/common/data-component/searchHostsApiLoader';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
+import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -344,7 +344,7 @@ const action = async ({
       apiArgs: [
         {
           scanId: scanId.toString(),
-          scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+          scanType: ScanTypeEnum.SecretScan,
         },
       ],
       errorHandler: async (r) => {
@@ -374,7 +374,7 @@ const action = async ({
       apiArgs: [
         {
           scanId: scanId.toString(),
-          scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+          scanType: ScanTypeEnum.SecretScan,
         },
       ],
       errorHandler: async (r) => {
@@ -599,15 +599,15 @@ const SecretScans = () => {
   const columnHelper = createColumnHelper<ScanResult>();
 
   const { hosts, status: listHostStatus } = useGetHostsList({
-    scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+    scanType: ScanTypeEnum.SecretScan,
   });
   const { containerImages, status: listContainerImageStatus } = useGetContainerImagesList(
     {
-      scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+      scanType: ScanTypeEnum.SecretScan,
     },
   );
   const { containers, status: listContainerStatus } = useGetContainersList({
-    scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+    scanType: ScanTypeEnum.SecretScan,
   });
   const { clusters, status: listClusterStatus } = useGetClustersList();
 

@@ -92,7 +92,7 @@ const ItemWrapper = forwardRef(
   ) => {
     if (expanded) return <div>{children}</div>;
     return (
-      <Tooltip placement="right" content={title} triggerAsChild>
+      <Tooltip placement="right" content={title} triggerAsChild delayDuration={100}>
         <div tabIndex={-1}>{children}</div>
       </Tooltip>
     );
