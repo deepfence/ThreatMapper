@@ -41,6 +41,7 @@
     "ariakit": "2.0.0-next.43",
     "classnames": "^2.3.2",
     "cva": "npm:class-variance-authority@^0.4.0",
+    "downshift": "^7.6.0",
     "lodash-es": "^4.17.21",
     "tailwind-merge": "^1.9.0",
     "tailwindcss-radix": "^2.7.0"
