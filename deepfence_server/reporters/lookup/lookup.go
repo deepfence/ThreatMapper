@@ -117,7 +117,7 @@ func GetContainerImagesReport(ctx context.Context, filter LookupFilter) ([]model
 		return nil, err
 	}
 
-	statuses, err := reporters_scan.GetScanStatuses[model.Container](ctx, filter.NodeIds)
+	statuses, err := reporters_scan.GetScanStatuses[model.ContainerImage](ctx, filter.NodeIds)
 	if err != nil {
 		return nil, err
 	}
@@ -139,6 +139,13 @@ func GetCloudResourcesReport(ctx context.Context, filter LookupFilter) ([]model.
 	entries, err := getGenericDirectNodeReport[model.CloudResource](ctx, filter)
 	if err != nil {
 		return nil, err
+	}
+	statuses, err := reporters_scan.GetScanStatuses[model.CloudResource](ctx, filter.NodeIds)
+	if err != nil {
+		return nil, err
+	}
+	for i := range entries {
+		entries[i].RegularScanStatus = statuses[i]
 	}
 	return entries, nil
 }

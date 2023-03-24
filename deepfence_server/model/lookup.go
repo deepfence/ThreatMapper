@@ -240,6 +240,7 @@ type CloudResource struct {
 	ID   string `json:"node_id" required:"true"`
 	Name string `json:"node_name" required:"true"`
 	Type string `json:"node_type" required:"true"`
+	RegularScanStatus
 }
 
 func (CloudResource) NodeType() string {

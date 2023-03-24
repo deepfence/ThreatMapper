@@ -417,16 +417,11 @@ func (ap AttackPaths) getNodeInfos() map[int64]ThreatNodeInfo {
 			}
 			Nodes[Node_id] = NodeInfo{
 				Node_id:                 Node_id,
-				Image_name:              "",
 				Name:                    Node_id,
 				Vulnerability_count:     vuln_count,
-				Vulnerability_scan_id:   "",
 				Secrets_count:           secrets_count,
-				Secrets_scan_id:         "",
 				Compliance_count:        compliance_count,
-				Compliance_scan_id:      "",
 				CloudCompliance_count:   cloud_compliance_count,
-				CloudCompliance_scan_id: "",
 			}
 		}
 		res[v.identity] = ThreatNodeInfo{
@@ -473,14 +468,9 @@ type ThreatNodeInfo struct {
 
 type NodeInfo struct {
 	Node_id                 string `json:"node_id" required:"true"`
-	Image_name              string `json:"image_name" required:"true"`
 	Name                    string `json:"name" required:"true"`
 	Vulnerability_count     int64  `json:"vulnerability_count" required:"true"`
-	Vulnerability_scan_id   string `json:"vulnerability_scan_id" required:"true"`
 	Secrets_count           int64  `json:"secrets_count" required:"true"`
-	Secrets_scan_id         string `json:"secrets_scan_id" required:"true"`
 	Compliance_count        int64  `json:"compliance_count" required:"true"`
-	Compliance_scan_id      string `json:"compliance_scan_id" required:"true"`
 	CloudCompliance_count   int64  `json:"cloud_compliance_count" required:"true"`
-	CloudCompliance_scan_id string `json:"cloud_compliance_scan_id" required:"true"`
 }
