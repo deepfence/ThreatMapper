@@ -139,6 +139,14 @@ func extractResourceNodeIds(ids []interface{}) []NodeID {
 	return res
 }
 
+var (
+	topology_cloud_resource_types = []string{
+		"aws_ec2_instance","aws_eks_cluster","aws_s3_bucket","aws_lambda_function",
+		"aws_ecs_task","aws_ecs_cluster","aws_ecr_repository","aws_ecrpublic_repository",
+		"aws_ecs_task","aws_rds_db_instance","aws_rds_db_cluster","aws_ec2_application_load_balancer",
+		"aws_ec2_classic_load_balancer","aws_ec2_network_load_balancer"}
+)
+
 func (nc *neo4jTopologyReporter) GetCloudServices(
 	tx neo4j.Transaction,
 	cloud_provider []string,
@@ -147,11 +155,8 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 
 	res := map[NodeID][]ResourceStub{}
 	r, err := tx.Run(`
-		MATCH (s:CloudResource) WHERE s.resource_id IN
-		['aws_ec2_instance','aws_eks_cluster','aws_s3_bucket','aws_lambda_function',
-		'aws_ecs_task','aws_ecs_cluster','aws_ecr_repository','aws_ecrpublic_repository',
-		'aws_ecs_task','aws_rds_db_instance','aws_rds_db_cluster','aws_ec2_application_load_balancer',
-		'aws_ec2_classic_load_balancer','aws_ec2_network_load_balancer']
+		MATCH (s:CloudResource) 
+		WHERE s.resource_id IN $resource_types
 		AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
 		AND CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END `+
 		reporters.ParseFieldFilters2CypherWhereConditions("s", fieldfilters, false)+`
@@ -159,6 +164,7 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 		filterNil(map[string]interface{}{
 			"providers": cloud_provider,
 			"regions":   cloud_regions,
+			"resource_types": topology_cloud_resource_types,
 		}))
 
 	if err != nil {
@@ -254,6 +260,27 @@ func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]Node
 		res = append(res, NodeStub{NodeID(record.Values[0].(string)), record.Values[0].(string)})
 	}
 
+	r, err = tx.Run(`
+		MATCH (n:CloudResource)
+		WHERE n.resource_id IN $resource_types
+		RETURN n.cloud_provider`,
+		filterNil(map[string]interface{}{
+			"resource_types": topology_cloud_resource_types,
+	}),)
+
+	if err != nil {
+		return res, err
+	}
+	records, err = r.Collect()
+
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		res = append(res, NodeStub{NodeID(record.Values[0].(string)), record.Values[0].(string)})
+	}
+
 	return res, nil
 }
 
@@ -288,8 +315,12 @@ func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_pro
 	r, err = tx.Run(`
 		MATCH (n:CloudResource)
 		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
+		AND n.resource_id IN $resource_types
 		RETURN n.cloud_provider, n.region`,
-		filterNil(map[string]interface{}{"providers": cloud_provider}))
+		filterNil(map[string]interface{}{
+			"providers": cloud_provider,
+			"resource_types": topology_cloud_resource_types,
+	}),)
 
 	if err != nil {
 		return res, err
