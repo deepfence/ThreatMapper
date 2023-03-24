@@ -106,20 +106,21 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 		var config map[string]interface{}
 		var filters map[string][]string
 
-		err = json.Unmarshal(integration.Config, config)
+		err = json.Unmarshal(integration.Config, &config)
 		if err != nil {
 			log.Error().Msgf(err.Error())
 			respondError(&InternalServerError{err}, w)
 			return
 		}
 
-		err = json.Unmarshal(integration.Filters, filters)
+		err = json.Unmarshal(integration.Filters, &filters)
 		if err != nil {
 			log.Error().Msgf(err.Error())
 			respondError(&InternalServerError{err}, w)
 			return
 		}
 		newIntegration := model.IntegrationListResp{
+			ID:               integration.ID,
 			IntegrationType:  integration.IntegrationType,
 			NotificationType: integration.Resource,
 			Config:           config,

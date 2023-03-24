@@ -557,5 +557,5 @@ func (d *OpenApiDocs) AddIntegrationOperations() {
 		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationListReq), new([]IntegrationListResp))
 	d.AddOperation("deleteIntegration", http.MethodDelete, "/deepfence/integration/{integration_id}",
 		"Delete Integration", "Delete integration",
-		http.StatusOK, []string{tagIntegration}, bearerToken, nil, nil)
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
 }

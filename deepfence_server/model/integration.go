@@ -10,6 +10,10 @@ import (
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 )
 
+type IntegrationIDPathReq struct {
+	IntegrationID string `path:"integration_id" validate:"required" required:"true"`
+}
+
 // IntegrationAddReq is the request body for adding a new integration
 type IntegrationAddReq struct {
 	Config           map[string]interface{} `json:"config"`
@@ -73,6 +77,7 @@ type IntegrationListReq struct {
 }
 
 type IntegrationListResp struct {
+	ID               int32                  `json:"id"`
 	IntegrationType  string                 `json:"integration_type"`
 	NotificationType string                 `json:"notification_type"`
 	Config           map[string]interface{} `json:"config"`
