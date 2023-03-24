@@ -887,7 +887,7 @@ func (h *Handler) CloudComplianceFiltersHandler(w http.ResponseWriter, r *http.R
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
 	}
-	httpext.JSON(w, http.StatusOK, res)
+	httpext.JSON(w, http.StatusOK, model.FiltersResult{Filters: res})
 }
 
 func (h *Handler) ComplianceFiltersHandler(w http.ResponseWriter, r *http.Request) {
@@ -903,7 +903,7 @@ func (h *Handler) ComplianceFiltersHandler(w http.ResponseWriter, r *http.Reques
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
 	}
-	httpext.JSON(w, http.StatusOK, res)
+	httpext.JSON(w, http.StatusOK, model.FiltersResult{Filters: res})
 }
 
 func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) ([]T, model.ScanResultsCommon, error) {
