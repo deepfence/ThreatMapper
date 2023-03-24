@@ -16,7 +16,7 @@ import {
 import { getSearchApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ModelSecret } from '@/api/generated/models/ModelSecret';
-import { CopyToClipboardAsJson } from '@/components/CopyToClipboardIcon';
+import { CopyToClipboard } from '@/components/CopyToClipboard';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { ApiError, makeRequest } from '@/utils/api';
 import { getObjectKeys } from '@/utils/array';
@@ -140,7 +140,7 @@ const Header = () => {
                     })}
                     size="sm"
                   />
-                  <CopyToClipboardAsJson data={secret} />
+                  <CopyToClipboard data={secret} />
                 </div>
                 <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7">
                   {dayjs(secret?.updated_at).fromNow()}

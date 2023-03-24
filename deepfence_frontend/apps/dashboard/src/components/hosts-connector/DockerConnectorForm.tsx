@@ -1,13 +1,10 @@
 import cx from 'classnames';
 import { HiViewGridAdd } from 'react-icons/hi';
-import { Button, Card, Step, Stepper, Typography } from 'ui-components';
+import { Card, Step, Stepper, Typography } from 'ui-components';
 
-import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
-import { usePageNavigation } from '@/utils/usePageNavigation';
+import { CopyToClipboard } from '@/components/CopyToClipboard';
 
 export const DockerConnectorForm = () => {
-  const { navigate } = usePageNavigation();
-
   const code = `
 docker run -dit \\
 --cpus=".2" \\
@@ -57,7 +54,7 @@ deepfenceio/deepfence_agent_ce:latest`;
             >
               {code}
             </pre>
-            <CopyToClipboardIcon text={code} />
+            <CopyToClipboard data={code} asIcon />
           </Card>
         </div>
       </Step>
