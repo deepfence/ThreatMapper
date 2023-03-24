@@ -15,7 +15,7 @@ import {
 
 import { getSearchApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelCloudCompliance } from '@/api/generated';
-import { CopyToClipboardAsJson } from '@/components/CopyToClipboardIcon';
+import { CopyToClipboard } from '@/components/CopyToClipboard';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { STATUSES } from '@/features/postures/pages/PostureScanResults';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -42,7 +42,7 @@ async function getCompliances(complianceId: string) {
             filters: {
               contains_filter: {
                 filter_in: {
-                  control_id: [complianceId],
+                  node_id: [complianceId],
                 },
               },
               order_filter: {
@@ -131,7 +131,7 @@ const Header = () => {
                     label={compliane?.compliance_check_type?.toUpperCase()}
                     size="sm"
                   />
-                  <CopyToClipboardAsJson data={compliane} />
+                  <CopyToClipboard data={compliane} />
                 </div>
                 <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7">
                   {dayjs(compliane.updated_at).fromNow() || '-'}

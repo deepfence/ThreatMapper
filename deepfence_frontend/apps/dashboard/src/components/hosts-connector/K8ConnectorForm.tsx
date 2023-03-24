@@ -11,7 +11,7 @@ import {
   Typography,
 } from 'ui-components';
 
-import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
+import { CopyToClipboard } from '@/components/CopyToClipboard';
 import { containsWhiteSpace } from '@/utils/validator';
 
 const containerRuntimeDropdown = [
@@ -254,11 +254,12 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
                   helm repo add deepfence
                   https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
                 </pre>
-                <CopyToClipboardIcon
-                  text={
+                <CopyToClipboard
+                  data={
                     'helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper'
                   }
                   className="top-4"
+                  asIcon
                 />
               </div>
               <div className="relative">
@@ -271,7 +272,7 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
                 >
                   helm repo update
                 </pre>
-                <CopyToClipboardIcon text={'helm repo update'} className="top-0" />
+                <CopyToClipboard data={'helm repo update'} className="top-0" asIcon />
               </div>
               <div className="relative">
                 <pre
@@ -283,7 +284,7 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
                 >
                   {instruction}
                 </pre>
-                <CopyToClipboardIcon text={instruction} className="top-0" />
+                <CopyToClipboard data={instruction} className="top-0" asIcon />
               </div>
             </Card>
           </div>
