@@ -40,6 +40,12 @@ export interface DetailedNodeSummary {
     id?: string;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof DetailedNodeSummary
+     */
+    ids?: Array<string>;
+    /**
+     * 
      * @type {string}
      * @memberof DetailedNodeSummary
      */
@@ -133,6 +139,7 @@ export function DetailedNodeSummaryFromJSONTyped(json: any, ignoreDiscriminator:
         
         'adjacency': !exists(json, 'adjacency') ? undefined : json['adjacency'],
         'id': !exists(json, 'id') ? undefined : json['id'],
+        'ids': !exists(json, 'ids') ? undefined : json['ids'],
         'image': !exists(json, 'image') ? undefined : json['image'],
         'immediate_parent_id': !exists(json, 'immediate_parent_id') ? undefined : json['immediate_parent_id'],
         'label': !exists(json, 'label') ? undefined : json['label'],
@@ -159,6 +166,7 @@ export function DetailedNodeSummaryToJSON(value?: DetailedNodeSummary | null): a
         
         'adjacency': value.adjacency,
         'id': value.id,
+        'ids': value.ids,
         'image': value.image,
         'immediate_parent_id': value.immediate_parent_id,
         'label': value.label,

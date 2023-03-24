@@ -1,10 +1,8 @@
 import cx from 'classnames';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { capitalize, omit, pick, startCase, truncate } from 'lodash-es';
-import { Suspense, useState } from 'react';
-import { HiChevronDown } from 'react-icons/hi';
-import { IconContext } from 'react-icons/lib';
+import { omit, pick, truncate } from 'lodash-es';
+import { Suspense } from 'react';
 import { LoaderFunctionArgs, useLoaderData, useSearchParams } from 'react-router-dom';
 import {
   Badge,
@@ -86,9 +84,7 @@ async function getSecrets(secretId: string) {
       data: undefined,
     };
   }
-  const res = result[0];
-
-  return res;
+  return result[0];
 }
 const loader = async ({
   params,
@@ -159,7 +155,6 @@ const Header = () => {
 };
 
 const DetailsComponent = () => {
-  const [openDetails, setOpenDetails] = useState(true);
   const loaderData = useLoaderData() as LoaderDataType;
 
   return (
@@ -171,7 +166,7 @@ const DetailsComponent = () => {
               return (
                 <div className="flex items-center p-4 justify-center">
                   <h3 className="text-md text-gray-900 dark:text-gray-400">
-                    No secret found
+                    No details found
                   </h3>
                 </div>
               );
@@ -183,71 +178,49 @@ const DetailsComponent = () => {
             return (
               <div className="text-gray-900 dark:text-gray-300">
                 <section>
-                  <button
-                    className="flex mb-2 font-medium text-xs w-full"
-                    onClick={() => {
-                      setOpenDetails(!openDetails);
-                    }}
-                  >
-                    <span className="tracking-wider dark:text-white">DETAILS</span>
-                    <IconContext.Provider
-                      value={{
-                        className: cx(
-                          'h-4 w-4 text-gray-900 dark:text-gray-300 ml-auto',
+                  <h3 className="flex mb-2 font-medium text-sm w-full racking-wider dark:text-white">
+                    DETAILS
+                  </h3>
+                  <>
+                    <div>
+                      <div
+                        className={cx(
+                          'flex flex-col float-left',
+                          'p-2 mr-4 w-fit rounded-lg items-center',
                           {
-                            'rotate-0': openDetails === true,
-                            '-rotate-90': openDetails === false,
+                            'bg-[#de425b]/20 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
+                              fixed?.level?.toLowerCase() === 'critical',
+                            'bg-[#f58055]/20 dark:bg-[#f58055/20 text-[#f58055] dark:text-[#f58055]':
+                              fixed?.level?.toLowerCase() === 'high',
+                            'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
+                              fixed?.level?.toLowerCase() === 'medium',
+                            'bg-[#d6e184]/20 dark:bg-[#d6e184]/10 text-yellow-300 dark:text-[#d6e184]':
+                              fixed?.level?.toLowerCase() === 'low',
+                            'bg-[#9CA3AF]/10 dark:bg-[#9CA3AF]/10 text-gray-400 dark:text-[#9CA3AF]':
+                              fixed?.level?.toLowerCase() === 'unknown',
                           },
-                        ),
-                      }}
-                    >
-                      <HiChevronDown />
-                    </IconContext.Provider>
-                  </button>
-                  {openDetails ? (
-                    <>
-                      <div>
-                        <div
-                          className={cx(
-                            'flex flex-col float-left',
-                            'p-2 mr-4 w-fit rounded-lg items-center',
-                            {
-                              'bg-[#de425b]/20 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
-                                fixed?.level?.toLowerCase() === 'critical',
-                              'bg-[#f58055]/20 dark:bg-[#f58055/20 text-[#f58055] dark:text-[#f58055]':
-                                fixed?.level?.toLowerCase() === 'high',
-                              'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
-                                fixed?.level?.toLowerCase() === 'medium',
-                              'bg-[#d6e184]/20 dark:bg-[#d6e184]/10 text-yellow-300 dark:text-[#d6e184]':
-                                fixed?.level?.toLowerCase() === 'low',
-                              'bg-[#9CA3AF]/10 dark:bg-[#9CA3AF]/10 text-gray-400 dark:text-[#9CA3AF]':
-                                fixed?.level?.toLowerCase() === 'unknown',
-                            },
-                          )}
-                        >
-                          <span className="text-xs text-gray-500">CVSS score</span>
-                          <span className="text-md">{fixed.score || '-'}</span>
-                        </div>
-                        <p className="text-sm pr-2 mb-2 text-justify">{fixed.name}</p>
-                        <span className="mt-2 text-sm pr-2">{fixed.full_filename}</span>
+                        )}
+                      >
+                        <span className="text-xs text-gray-500">CVSS score</span>
+                        <span className="text-md">{fixed.score || '-'}</span>
                       </div>
-                      <div className="mt-6 flex flex-wrap gap-y-4 gap-x-8">
-                        {getObjectKeys(others).map((key) => {
-                          const label = capitalize(
-                            startCase(startCase(key)).toLowerCase(),
-                          );
-                          return (
-                            <div key={key} className="flex flex-col">
-                              <span className="text-xs text-gray-500">{label}</span>
-                              <span className="text-sm">
-                                {others[key] === '' ? '-' : others[key]?.toString()}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </>
-                  ) : null}
+                      <p className="text-sm pr-2 mb-2 text-justify">{fixed.name}</p>
+                      <span className="mt-2 text-sm pr-2">{fixed.full_filename}</span>
+                    </div>
+                    <div className="mt-6 flex flex-wrap gap-y-4">
+                      {getObjectKeys(others).map((key) => {
+                        const label = key.replaceAll('_', ' ').toUpperCase();
+                        return (
+                          <div key={key} className="flex flex-col grow basis-1/2 px-2">
+                            <span className="text-xs text-gray-500">{label}</span>
+                            <span className="text-sm">
+                              {others[key] === '' ? '-' : others[key]?.toString()}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
                 </section>
               </div>
             );
