@@ -324,13 +324,6 @@ func ParseECSServiceNodeID(ecsServiceNodeID string) (cluster, serviceName string
 	return cluster, serviceName, true
 }
 
-// ExtractHostID extracts the host id from Node
-func ExtractHostID(m Node) string {
-	hostNodeID, _ := m.Latest.Lookup(HostNodeID)
-	hostID, _ := ParseHostNodeID(hostNodeID)
-	return hostID
-}
-
 // IsLoopback ascertains if an address comes from a loopback interface.
 func IsLoopback(address string) bool {
 	ip := net.ParseIP(address)

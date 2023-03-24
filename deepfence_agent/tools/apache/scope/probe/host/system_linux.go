@@ -3,7 +3,6 @@ package host
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -60,7 +59,7 @@ var GetKernelReleaseAndVersion = func() (string, string, error) {
 
 // GetLoad returns the current load averages as metrics.
 var GetLoad = func(now time.Time) report.Metrics {
-	buf, err := ioutil.ReadFile("/proc/loadavg")
+	buf, err := os.ReadFile("/proc/loadavg")
 	if err != nil {
 		return nil
 	}
@@ -79,7 +78,7 @@ var GetLoad = func(now time.Time) report.Metrics {
 
 // GetUptime returns the uptime of the host.
 var GetUptime = func() (time.Duration, error) {
-	buf, err := ioutil.ReadFile("/proc/uptime")
+	buf, err := os.ReadFile("/proc/uptime")
 	if err != nil {
 		return 0, err
 	}

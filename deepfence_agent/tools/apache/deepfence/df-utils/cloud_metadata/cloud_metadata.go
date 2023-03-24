@@ -68,7 +68,7 @@ func GetAWSFargateMetadata(onlyValidate bool) (CloudMetadata, error) {
 
 	cluster := strings.Split(strings.Split(result.Cluster, ":cluster/")[0], ":")
 	if len(cluster) > 0 {
-		awsFargateMetadata.ID = cluster[len(cluster)-1]
+		awsFargateMetadata.InstanceID = cluster[len(cluster)-1]
 	}
 	awsFargateMetadata.TaskARN = result.TaskARN
 	awsFargateMetadata.Family = result.Family
@@ -142,8 +142,8 @@ func GetAWSMetadata(onlyValidate bool) (CloudMetadata, error) {
 		var instanceIdentity AWSInstanceIdentity
 		err = json.Unmarshal([]byte(httpResp), &instanceIdentity)
 		if err == nil {
-			fmt.Println(instanceIdentity)
-			awsMetadata.ID = instanceIdentity.InstanceID
+			awsMetadata.AccountID = instanceIdentity.AccountID
+			awsMetadata.InstanceID = instanceIdentity.InstanceID
 			awsMetadata.InstanceType = instanceIdentity.InstanceType
 			awsMetadata.Zone = instanceIdentity.AvailabilityZone
 			awsMetadata.Region = instanceIdentity.Region
@@ -235,7 +235,7 @@ func GetGoogleCloudMetadata(onlyValidate bool) (CloudMetadata, error) {
 			accountID = strSplit[len(strSplit)-2]
 		}
 	}
-	gcpMetadata = CloudMetadata{CloudProvider: "gcp", ID: accountID, Label: "Google Cloud", InstanceID: strconv.FormatInt(gcMetadataAll.ID, 10), Hostname: gcMetadataAll.Hostname, Name: gcMetadataAll.Name, Zone: gcMetadataAll.Zone, Region: region, MachineType: gcMetadataAll.MachineType}
+	gcpMetadata = CloudMetadata{CloudProvider: "gcp", AccountID: accountID, Label: "Google Cloud", InstanceID: strconv.FormatInt(gcMetadataAll.ID, 10), Hostname: gcMetadataAll.Hostname, Name: gcMetadataAll.Name, Zone: gcMetadataAll.Zone, Region: region, InstanceType: gcMetadataAll.MachineType}
 	var privateIP []string
 	var publicIP []string
 	for _, nwInterface := range gcMetadataAll.NetworkInterfaces {
@@ -275,7 +275,7 @@ func GetAzureMetadata(onlyValidate bool) (CloudMetadata, error) {
 	if err != nil {
 		return azureMetadata, err
 	}
-	azureMetadata = CloudMetadata{CloudProvider: "azure", ID: azureMetadataAll.Compute.SubscriptionID, Label: "Azure", VmID: azureMetadataAll.Compute.VMID, Name: azureMetadataAll.Compute.Name, VMSize: azureMetadataAll.Compute.VMSize, Region: azureMetadataAll.Compute.Location, Zone: azureMetadataAll.Compute.Zone, OsType: azureMetadataAll.Compute.OsType, SKU: azureMetadataAll.Compute.Sku, ResourceGroupName: azureMetadataAll.Compute.ResourceGroupName}
+	azureMetadata = CloudMetadata{CloudProvider: "azure", AccountID: azureMetadataAll.Compute.SubscriptionID, Label: "Azure", InstanceID: azureMetadataAll.Compute.VMID, Name: azureMetadataAll.Compute.Name, InstanceType: azureMetadataAll.Compute.VMSize, Region: azureMetadataAll.Compute.Location, Zone: azureMetadataAll.Compute.Zone, OsType: azureMetadataAll.Compute.OsType, SKU: azureMetadataAll.Compute.Sku, ResourceGroupName: azureMetadataAll.Compute.ResourceGroupName}
 	var privateIP []string
 	var publicIP []string
 	for _, iface := range azureMetadataAll.Network.Interface {
@@ -318,7 +318,7 @@ func GetDigitalOceanMetadata(onlyValidate bool) (CloudMetadata, error) {
 		err = verifyIfDigitalOcean(digitalOceanMetadataAll.DropletID)
 		return digitalOceanMetadata, err
 	}
-	digitalOceanMetadata = CloudMetadata{CloudProvider: "digital_ocean", Label: "DigitalOcean", VmID: strconv.Itoa(digitalOceanMetadataAll.DropletID), Name: digitalOceanMetadataAll.Hostname, Region: digitalOceanMetadataAll.Region}
+	digitalOceanMetadata = CloudMetadata{CloudProvider: "digital_ocean", Label: "DigitalOcean", InstanceID: strconv.Itoa(digitalOceanMetadataAll.DropletID), Name: digitalOceanMetadataAll.Hostname, Region: digitalOceanMetadataAll.Region}
 	var privateIP []string
 	var publicIP []string
 	for _, iface := range digitalOceanMetadataAll.Interfaces.Private {
@@ -343,7 +343,7 @@ func GetSoftlayerMetadata(onlyValidate bool) (CloudMetadata, error) {
 	if err != nil {
 		return softlayerMetadata, err
 	}
-	softlayerMetadata.ID = httpResp
+	softlayerMetadata.InstanceID = httpResp
 	httpResp, err = GetHTTPResponse(client, "GET", fmt.Sprintf("%s/%s", softlayerMetadataBaseUrl, "getHostname.txt"), nil, nil)
 	if err == nil {
 		softlayerMetadata.Hostname = httpResp
@@ -424,6 +424,7 @@ type CloudMetadata struct {
 	CloudProvider     string   `json:"cloud_provider"`
 	TaskARN           string   `json:"task_arn,omitempty"`
 	Family            string   `json:"family,omitempty"`
+	AccountID         string   `json:"account_id,omitempty"`
 	InstanceID        string   `json:"instance_id,omitempty"`
 	PublicIP          []string `json:"public_ip"`
 	PrivateIP         []string `json:"private_ip"`
@@ -431,16 +432,12 @@ type CloudMetadata struct {
 	InstanceType      string   `json:"instance_type,omitempty"`
 	Hostname          string   `json:"hostname,omitempty"`
 	KernelId          string   `json:"kernel_id,omitempty"`
-	ID                string   `json:"id,omitempty"`
 	Label             string   `json:"label,omitempty"`
 	DataCenter        string   `json:"data_center,omitempty"`
 	Domain            string   `json:"domain,omitempty"`
 	Region            string   `json:"region,omitempty"`
 	Zone              string   `json:"zone,omitempty"`
 	Name              string   `json:"name,omitempty"`
-	MachineType       string   `json:"machine_type,omitempty"`
-	VmID              string   `json:"vm_id,omitempty"`
-	VMSize            string   `json:"vm_size,omitempty"`
 	OsType            string   `json:"os_type,omitempty"`
 	SKU               string   `json:"sku,omitempty"`
 	ResourceGroupName string   `json:"resource_group_name,omitempty"`

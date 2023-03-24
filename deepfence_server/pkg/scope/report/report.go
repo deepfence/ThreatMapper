@@ -13,11 +13,6 @@ const (
 	Container         = "container"
 	Pod               = "pod"
 	Service           = "service"
-	Deployment        = "deployment"
-	ReplicaSet        = "replica_set"
-	DaemonSet         = "daemon_set"
-	StatefulSet       = "stateful_set"
-	CronJob           = "cron_job"
 	Namespace         = "namespace"
 	ContainerImage    = "container_image"
 	CloudProvider     = "cloud_provider"
@@ -25,7 +20,6 @@ const (
 	Host              = "host"
 	Overlay           = "overlay"
 	KubernetesCluster = "kubernetes_cluster"
-	Job               = "job"
 
 	// Shapes used for different nodes
 	Circle         = "circle"
@@ -247,15 +241,34 @@ var topologyNames = []string{
 	KubernetesCluster,
 	Pod,
 	Service,
-	Deployment,
-	ReplicaSet,
-	DaemonSet,
-	StatefulSet,
-	CronJob,
 	Namespace,
 	Host,
 	Overlay,
-	Job,
+}
+
+type TopologySets map[string]Sets
+
+type Parents map[string]Parent
+
+func MakeParents() Parents {
+	return map[string]Parent{}
+}
+
+func (t Parents) Merge(o Parents) {
+	for k, v := range o {
+		t[k] = v
+	}
+}
+
+type Parent struct {
+	CloudProvider     string `json:"cloud_provider,omitempty"`
+	CloudRegion       string `json:"cloud_region,omitempty"`
+	KubernetesCluster string `json:"kubernetes_cluster,omitempty"`
+	Host              string `json:"host,omitempty"`
+	Container         string `json:"container,omitempty"`
+	ContainerImage    string `json:"container_image,omitempty"`
+	Namespace         string `json:"namespace,omitempty"`
+	Pod               string `json:"pod,omitempty"`
 }
 
 // Report is the core data type. It's produced by probes, and consumed and
@@ -268,92 +281,93 @@ type Report struct {
 	// Endpoint nodes are individual (address, port) tuples on each host.
 	// They come from inspecting active connections and can (theoretically)
 	// be traced back to a process. Edges are present.
-	Endpoint Topology
+	Endpoint          Topology
+	EndpointAdjacency map[string][]string
+	EndpointParents   Parents
 
 	// Process nodes are processes on each host. Edges are not present.
-	Process Topology
+	Process          Topology
+	ProcessAdjacency map[string][]string
+	ProcessParents   Parents
 
 	// Container nodes represent all Docker containers on hosts running probes.
 	// Metadata includes things like containter id, name, image id etc.
 	// Edges are not present.
-	Container Topology
+	Container          Topology
+	ContainerAdjacency map[string][]string
+	ContainerParents   Parents
+	ContainerSets      TopologySets
 
 	// CloudProvider nodes represent all cloud providers.
 	// Metadata includes things like name etc. Edges are not
 	// present.
-	CloudProvider Topology
+	CloudProvider          Topology
+	CloudProviderAdjacency map[string][]string
+	CloudProviderParents   Parents
 
 	// CloudRegion nodes represent all cloud regions.
 	// Metadata includes things like name etc. Edges are not
 	// present.
-	CloudRegion Topology
+	CloudRegion          Topology
+	CloudRegionAdjacency map[string][]string
+	CloudRegionParents   Parents
 
 	// KubernetesCluster nodes represent all Kubernetes clusters.
 	// Metadata includes things like cluster id, name etc. Edges are not
 	// present.
-	KubernetesCluster Topology
+	KubernetesCluster          Topology
+	KubernetesClusterAdjacency map[string][]string
+	KubernetesClusterParents   Parents
 
 	// Pod nodes represent all Kubernetes pods running on hosts running probes.
 	// Metadata includes things like pod id, name etc. Edges are not
 	// present.
-	Pod Topology
+	Pod          Topology
+	PodAdjacency map[string][]string
+	PodParents   Parents
 
 	// Service nodes represent all Kubernetes services running on hosts running probes.
 	// Metadata includes things like service id, name etc. Edges are not
 	// present.
-	Service Topology
-
-	// Deployment nodes represent all Kubernetes deployments running on hosts running probes.
-	// Metadata includes things like deployment id, name etc. Edges are not
-	// present.
-	Deployment Topology
-
-	// ReplicaSet nodes represent all Kubernetes ReplicaSets running on hosts running probes.
-	// Metadata includes things like ReplicaSet id, name etc. Edges are not
-	// present.
-	ReplicaSet Topology
-
-	// DaemonSet nodes represent all Kubernetes DaemonSets running on hosts running probes.
-	// Metadata includes things like DaemonSet id, name etc. Edges are not
-	// present.
-	DaemonSet Topology
-
-	// StatefulSet nodes represent all Kubernetes Stateful Sets running on hosts running probes.
-	// Metadata includes things like Stateful Set id, name, etc. Edges are not
-	// present.
-	StatefulSet Topology
-
-	// CronJob nodes represent all Kubernetes Cron Jobs running on hosts running probes.
-	// Metadata includes things like Cron Job id, name, etc. Edges are not
-	// present.
-	CronJob Topology
+	Service          Topology
+	ServiceAdjacency map[string][]string
+	ServiceParents   Parents
 
 	// Namespace nodes represent all Kubernetes Namespaces running on hosts running probes.
 	// Metadata includes things like Namespace id, name, etc. Edges are not
 	// present.
-	Namespace Topology
+	Namespace          Topology
+	NamespaceAdjacency map[string][]string
+	NamespaceParents   Parents
 
 	// ContainerImages nodes represent all Docker containers images on
 	// hosts running probes. Metadata includes things like image id, name etc.
 	// Edges are not present.
-	ContainerImage Topology
+	ContainerImage          Topology
+	ContainerImageAdjacency map[string][]string
+	ContainerImageParents   Parents
 
 	// Host nodes are physical hosts that run probes. Metadata includes things
 	// like operating system, load, etc. The information is scraped by the
 	// probes with each published report. Edges are not present.
-	Host Topology
+	Host          Topology
+	HostAdjacency map[string][]string
+	HostParents   Parents
 
 	// Overlay nodes are active peers in any software-defined network that's
 	// overlaid on the infrastructure. The information is scraped by polling
 	// their status endpoints. Edges are present.
-	Overlay Topology
-
-	// Job represent all Kubernetes Job on hosts running probes.
-	Job Topology
+	Overlay          Topology
+	OverlayAdjacency map[string][]string
+	OverlayParents   Parents
+	OverlaySets      TopologySets
 
 	DNS DNSRecords `json:"DNS,omitempty" deepequal:"nil==empty"`
 	// Backwards-compatibility for an accident in commit 951629a / release 1.11.6.
 	BugDNS DNSRecords `json:"nodes,omitempty"`
+
+	// Sampling data for this report.
+	Sampling Sampling
 
 	// Window is the amount of time that this report purports to represent.
 	// Windows must be carefully merged. They should only be added when
@@ -377,79 +391,52 @@ type Report struct {
 // MakeReport makes a clean report, ready to Merge() other reports into.
 func MakeReport() Report {
 	return Report{
-		Endpoint: MakeTopology(),
-
-		Process: MakeTopology().
-			WithShape(Square).
-			WithLabel("process", "processes"),
-
-		Container: MakeTopology().
-			WithShape(Hexagon).
-			WithLabel("container", "containers"),
-
-		ContainerImage: MakeTopology().
-			WithShape(Hexagon).
-			WithLabel("image", "images"),
-
-		Host: MakeTopology().
-			WithShape(Circle).
-			WithLabel("host", "hosts"),
-
-		CloudProvider: MakeTopology().
-			WithShape(Circle).
-			WithLabel("cloud provider", "cloud providers"),
-
-		CloudRegion: MakeTopology().
-			WithShape(Circle).
-			WithLabel("cloud region", "cloud regions"),
-
-		KubernetesCluster: MakeTopology().
-			WithShape(KubernetesCluster).
-			WithLabel("kubernetes cluster", "kubernetes clusters"),
-
-		Pod: MakeTopology().
-			WithShape(Pod).
-			WithLabel("pod", "pods"),
-
-		Service: MakeTopology().
-			WithShape(Heptagon).
-			WithLabel("service", "services"),
-
-		Deployment: MakeTopology().
-			WithShape(Heptagon).
-			WithLabel("deployment", "deployments"),
-
-		ReplicaSet: MakeTopology().
-			WithShape(Triangle).
-			WithLabel("replica set", "replica sets"),
-
-		DaemonSet: MakeTopology().
-			WithShape(Pentagon).
-			WithLabel("daemonset", "daemonsets"),
-
-		StatefulSet: MakeTopology().
-			WithShape(Octagon).
-			WithLabel("stateful set", "stateful sets"),
-
-		CronJob: MakeTopology().
-			WithShape(Triangle).
-			WithLabel("cron job", "cron jobs"),
-
-		Namespace: MakeTopology(),
-
-		Overlay: MakeTopology().
-			WithShape(Circle).
-			WithLabel("peer", "peers"),
-
-		Job: MakeTopology().
-			WithShape(DottedTriangle).
-			WithLabel("job", "jobs"),
-
 		DNS: DNSRecords{},
 
-		Window: 0,
-		ID:     fmt.Sprintf("%d", rand.Int63()),
+		Sampling: Sampling{},
+		Window:   0,
+		ID:       fmt.Sprintf("%d", rand.Int63()),
 	}
+}
+
+// Copy returns a value copy of the report.
+func (r Report) Copy() Report {
+	newReport := Report{
+		TS:       r.TS,
+		DNS:      r.DNS.Copy(),
+		Sampling: r.Sampling,
+		Window:   r.Window,
+		Shortcut: r.Shortcut,
+		ID:       fmt.Sprintf("%d", rand.Int63()),
+	}
+	newReport.WalkPairedTopologies(&r, func(newTopology, oldTopology *Topology) {
+		*newTopology = oldTopology.Copy()
+	})
+	return newReport
+}
+
+// UnsafeMerge merges another Report into the receiver. The original is modified.
+func (r *Report) UnsafeMerge(other Report) {
+	// Merged report has the earliest non-zero timestamp
+	if !other.TS.IsZero() && (r.TS.IsZero() || other.TS.Before(r.TS)) {
+		r.TS = other.TS
+	}
+	r.DNS = r.DNS.Merge(other.DNS)
+	r.Sampling = r.Sampling.Merge(other.Sampling)
+	r.Window = r.Window + other.Window
+	r.WalkPairedTopologies(&other, func(ourTopology, theirTopology *Topology) {
+		ourTopology.UnsafeMerge(*theirTopology)
+	})
+}
+
+// UnsafeUnMerge removes any information from r that would be added by merging other.
+// The original is modified.
+func (r *Report) UnsafeUnMerge(other Report) {
+	// TODO: DNS, Sampling, Plugins
+	r.Window = r.Window - other.Window
+	r.WalkPairedTopologies(&other, func(ourTopology, theirTopology *Topology) {
+		ourTopology.UnsafeUnMerge(*theirTopology)
+	})
 }
 
 // WalkTopologies iterates through the Topologies of the report,
@@ -498,47 +485,49 @@ func (r *Report) topology(name string) *Topology {
 		return &r.Pod
 	case Service:
 		return &r.Service
-	case Deployment:
-		return &r.Deployment
-	case ReplicaSet:
-		return &r.ReplicaSet
-	case DaemonSet:
-		return &r.DaemonSet
-	case StatefulSet:
-		return &r.StatefulSet
-	case CronJob:
-		return &r.CronJob
 	case Namespace:
 		return &r.Namespace
 	case Host:
 		return &r.Host
 	case Overlay:
 		return &r.Overlay
-	case Job:
-		return &r.Job
 	}
 	return nil
 }
 
-// Summary returns a human-readable string summarising the contents, for diagnostic purposes
-func (r Report) Summary() string {
-	ret := ""
-	if len(r.Host.Nodes) == 1 {
-		for k := range r.Host.Nodes {
-			ret = k + ": "
-		}
+// Topology returns one of the report's topologies, selected by name.
+func (r Report) Topology(name string) (Topology, bool) {
+	if t := r.topology(name); t != nil {
+		return *t, true
 	}
-	count := 0
-	r.WalkNamedTopologies(func(n string, t *Topology) {
-		if len(t.Nodes) > 0 {
-			count++
-			if count > 1 {
-				ret = ret + ", "
-			}
-			ret = ret + fmt.Sprintf("%s:%d", n, len(t.Nodes))
-		}
-	})
-	return ret
+	return Topology{}, false
+}
+
+// Sampling describes how the packet data sources for this report were
+// sampled. It can be used to calculate effective sample rates. We can't
+// just put the rate here, because that can't be accurately merged. Counts
+// in e.g. edge metadata structures have already been adjusted to
+// compensate for the sample rate.
+type Sampling struct {
+	Count uint64 // observed and processed
+	Total uint64 // observed overall
+}
+
+// Rate returns the effective sampling rate.
+func (s Sampling) Rate() float64 {
+	if s.Total <= 0 {
+		return 1.0
+	}
+	return float64(s.Count) / float64(s.Total)
+}
+
+// Merge combines two sampling structures via simple addition and returns the
+// result. The original is not modified.
+func (s Sampling) Merge(other Sampling) Sampling {
+	return Sampling{
+		Count: s.Count + other.Count,
+		Total: s.Total + other.Total,
+	}
 }
 
 const (

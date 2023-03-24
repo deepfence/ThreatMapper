@@ -15,7 +15,8 @@ MODE=""
 TOPOLOGY_IP=""
 TOPOLOGY_PORT=""
 if [ $# -eq 0 ]; then
-  MODE="topology"
+  echo "mode not set"
+  exit 1
 else
   MODE="$1"
   TOPOLOGY_IP="$2"
@@ -55,10 +56,6 @@ if [[ "$MODE" == "discovery" ]]; then
   else
     exec -a deepfence-discovery /home/deepfence/deepfence_exe --mode=probe --probe-only --weave=false --probe.no-controls=true --probe.log.level="$probe_log_level" --probe.spy.interval=5s --probe.publish.interval=10s --probe.docker.interval=10s --probe.docker=true --probe.cri=false --probe.insecure=true --probe.processes="$PROBE_PROCESSES" --probe.endpoint.report="$PROBE_CONNECTIONS" "http://$TOPOLOGY_IP:8004"
   fi
-elif [[ "$MODE" == "topology" ]]; then
-  app_log_level=${LOG_LEVEL:-info}
-  export DF_PROG_NAME="topology"
-  exec -a deepfence-topology /home/deepfence/deepfence_exe --mode=app --weave=false --app.externalUI=true --app.log.level="$app_log_level"
 elif [[ "$MODE" == "cluster-agent" ]]; then
   envsubst '${SCOPE_HOSTNAME}:${MGMT_CONSOLE_URL}:${MGMT_CONSOLE_PORT}' </home/deepfence/supervisord-temp.conf >/home/deepfence/supervisord.conf
   unlink /var/run/supervisor.sock 2>/dev/null

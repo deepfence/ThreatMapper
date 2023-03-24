@@ -16,10 +16,10 @@ func (topologyTagger) Name() string { return "Topology" }
 
 // Tag implements Tagger
 func (topologyTagger) Tag(r report.Report) (report.Report, error) {
-	r.WalkNamedTopologies(func(name string, t *report.Topology) {
-		for _, node := range t.Nodes {
-			t.ReplaceNode(node.WithTopology(name))
-		}
-	})
+	//r.WalkNamedTopologies(func(name string, t *report.Topology) {
+	//	for _, node := range *t {
+	//		t.ReplaceNode(node.WithTopology(name))
+	//	}
+	//})
 	return r, nil
 }

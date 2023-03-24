@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -12,7 +11,6 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/weaveworks/common/mtime"
 	"github.com/weaveworks/scope/report"
 )
 
@@ -52,7 +50,8 @@ type Container interface {
 	Image() string
 	PID() int
 	Hostname() string
-	GetNode() report.Node
+	GetNode() report.Metadata
+	GetParent() report.Parent
 	State() string
 	StateString() string
 	HasTTY() bool
@@ -71,7 +70,8 @@ type container struct {
 	pendingStats           [60]docker.Stats
 	numPending             int
 	hostID                 string
-	baseNode               report.Node
+	baseNode               report.Metadata
+	baseParent             report.Parent
 	noCommandLineArguments bool
 	noEnvironmentVariables bool
 }
@@ -84,7 +84,7 @@ func NewContainer(c *docker.Container, hostID string, noCommandLineArguments boo
 		noCommandLineArguments: noCommandLineArguments,
 		noEnvironmentVariables: noEnvironmentVariables,
 	}
-	result.baseNode = result.getBaseNode()
+	result.baseNode, result.baseParent = result.getBaseNode()
 	return result
 }
 
@@ -374,63 +374,58 @@ func (c *container) getSanitizedCommand() string {
 	return result
 }
 
-func (c *container) getBaseNode() report.Node {
-	result := report.MakeNodeWith(report.MakeContainerNodeID(c.ID()), map[string]string{
-		ContainerID:       c.ID(),
-		ContainerCreated:  c.container.Created.Format(time.RFC3339Nano),
-		ContainerCommand:  c.getSanitizedCommand(),
-		ImageID:           c.Image(),
-		ContainerHostname: c.Hostname(),
-	}).WithParent(report.ContainerImage, report.MakeContainerImageNodeID(c.Image()))
-	result = result.AddPrefixPropertyList(LabelPrefix, c.container.Config.Labels)
-	if !c.noEnvironmentVariables {
-		result = result.AddPrefixPropertyList(EnvPrefix, c.env())
+func (c *container) getBaseNode() (report.Metadata, report.Parent) {
+	result := report.Metadata{
+		Timestamp:              time.Now().UTC().Format(time.RFC3339Nano),
+		NodeID:                 c.ID(),
+		NodeName:               strings.TrimPrefix(c.container.Name, "/") + " / " + c.Hostname(),
+		NodeType:               report.Container,
+		HostName:               c.Hostname(),
+		DockerContainerCreated: c.container.Created.Format(time.RFC3339Nano),
+		DockerContainerCommand: c.getSanitizedCommand(),
+		DockerImageID:          c.Image(),
+		DockerLabels:           &c.container.Config.Labels,
 	}
-	return result
+	parents := report.Parent{
+		Host:           c.Hostname(),
+		ContainerImage: c.Image(),
+	}
+	if !c.noEnvironmentVariables {
+		dockerEnv := c.env()
+		result.DockerEnv = &dockerEnv
+	}
+	return result, parents
 }
 
-func (c *container) GetNode() report.Node {
+func (c *container) GetParent() report.Parent {
+	return c.baseParent
+}
+
+func (c *container) GetNode() report.Metadata {
 	c.RLock()
 	defer c.RUnlock()
-	latest := map[string]string{
-		ContainerName:       strings.TrimPrefix(c.container.Name, "/"),
-		ContainerState:      c.StateString(),
-		ContainerStateHuman: c.State(),
-	}
+	c.baseNode.Timestamp = time.Now().UTC().Format(time.RFC3339Nano)
+	c.baseNode.DockerContainerState = c.StateString()
+	c.baseNode.DockerContainerStateHuman = c.State()
 
 	if !c.container.State.Paused && c.container.State.Running {
-		uptimeSeconds := int(mtime.Now().Sub(c.container.State.StartedAt) / time.Second)
+		uptimeSeconds := int(time.Now().Sub(c.container.State.StartedAt) / time.Second)
 		networkMode := ""
 		if c.container.HostConfig != nil {
 			networkMode = c.container.HostConfig.NetworkMode
 		}
-		latest[ContainerUptime] = strconv.Itoa(uptimeSeconds)
-		//latest[ContainerRestartCount] = strconv.Itoa(c.container.RestartCount)
-		latest[ContainerNetworkMode] = networkMode
+		c.baseNode.Uptime = uptimeSeconds
+		c.baseNode.DockerContainerNetworkMode = networkMode
 	}
-
-	result := c.baseNode.WithLatests(latest)
-	result = result.WithMetrics(c.metrics())
-	return result
-}
-
-// ExtractContainerIPs returns the list of container IPs given a Node from the Container topology.
-func ExtractContainerIPs(nmd report.Node) []string {
-	v, _ := nmd.Sets.Lookup(ContainerIPs)
-	return []string(v)
-}
-
-// ExtractContainerIPsWithScopes returns the list of container IPs, prepended
-// with scopes, given a Node from the Container topology.
-func ExtractContainerIPsWithScopes(nmd report.Node) []string {
-	v, _ := nmd.Sets.Lookup(ContainerIPsWithScopes)
-	return []string(v)
+	metrics := c.metrics()
+	c.baseNode.Metrics = &metrics
+	return c.baseNode
 }
 
 // ContainerIsStopped checks if the docker container is in one of our "stopped" states
 func ContainerIsStopped(c Container) bool {
 	state := c.StateString()
-	return (state != report.StateRunning && state != report.StateRestarting && state != report.StatePaused)
+	return state != report.StateRunning && state != report.StateRestarting && state != report.StatePaused
 }
 
 // splitImageName returns parts of the full image name (image name, image tag).

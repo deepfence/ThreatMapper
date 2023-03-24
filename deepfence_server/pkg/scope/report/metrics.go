@@ -5,6 +5,18 @@ import (
 	"time"
 )
 
+type MetricRow struct {
+	ID         string
+	Label      string
+	Format     string
+	Group      string
+	Value      float64
+	ValueEmpty bool
+	Priority   float64
+	URL        string
+	Metric     *Metric
+}
+
 // Metrics is a string->metric map.
 type Metrics map[string]Metric
 

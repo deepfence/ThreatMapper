@@ -220,33 +220,7 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 			nodes[host] = detailed.NodeSummary{
 				ImmediateParentID: string(cr),
 				BasicNodeSummary:  nodeStubToSummary(host_stub),
-				Metrics: []report.MetricRow{
-					{ID: report.HostCPUUsage, Metric: &report.Metric{}, Label: "CPU", Value: 0.0, Format: report.PercentFormat, Priority: 1},
-					{ID: report.HostMemoryUsage, Metric: &report.Metric{}, Label: "Memory", Value: 0.0, Format: report.FilesizeFormat, Priority: 2},
-					{ID: report.Load1, Metric: &report.Metric{}, Label: "Load (1m)", Value: 0.0, Format: report.DefaultFormat, Group: "load", Priority: 11},
-				},
-				Metadata: []report.MetadataRow{
-					{ID: report.KernelVersion, Label: "Kernel version", Value: report.FromLatest, Priority: 1},
-					{ID: report.Uptime, Label: "Uptime", Value: report.FromLatest, Priority: 2},
-					{ID: report.HostName, Label: "Hostname", Value: host, Priority: 11},
-					{ID: report.OS, Label: "OS", Value: report.FromLatest, Priority: 12},
-					{ID: report.HostLocalNetworks, Label: "Local networks", Value: report.FromSets, Priority: 13},
-					{ID: report.InterfaceNames, Label: "Interface Names", Value: report.FromLatest, Priority: 15},
-					//PublicIpAddr:   {ID: PublicIpAddr, Label: "Public IP Address", Value: report.FromLatest, Priority: 16},
-					{ID: report.ProbeId, Label: "Probe ID", Value: report.FromLatest, Priority: 17},
-					//ScopeVersion:  {ID: ScopeVersion, Label: "Scope version", Value: report.FromLatest, Priority: 14},
-					{ID: report.InterfaceIPs, Label: "All Interface IP's", Value: report.FromLatest, Priority: 21},
-					{ID: report.CloudProvider, Label: "Cloud Provider", Value: report.FromLatest, Priority: 22},
-					{ID: report.CloudRegion, Label: "Cloud Region", Value: report.FromLatest, Priority: 23},
-					{ID: report.CloudMetadata, Label: "Cloud Metadata", Value: report.FromLatest, Priority: 24},
-					{ID: report.KubernetesClusterId, Label: "Kubernetes Cluster Id", Value: report.FromLatest, Priority: 25},
-					{ID: report.KubernetesClusterName, Label: "Kubernetes Cluster Name", Value: report.FromLatest, Priority: 26},
-					{ID: report.UserDfndTags, Label: "User Defined Tags", Value: report.FromLatest, Priority: 27},
-					{ID: report.AgentVersion, Label: "Sensor Version", Value: report.FromLatest, Priority: 28},
-					{ID: report.IsUiVm, Label: "UI vm", Value: "yes", Priority: 29},
-					{ID: report.AgentRunning, Label: "Sensor", Value: "yes", Priority: 33},
-				},
-				Type: report.Host,
+				Type:              report.Host,
 			}
 		}
 	}

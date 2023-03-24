@@ -1,10 +1,10 @@
+//go:build linux
 // +build linux
 
 package endpoint
 
 import (
 	"net"
-	"strconv"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -306,25 +306,31 @@ func makeFilter(ports mapPortToPids) (filter func(uint16) bool, count int) {
 	return func(port uint16) bool { return (port % modulus) == 0 }, count
 }
 
+type extra struct {
+	PID             int
+	HostNodeID      string
+	ConnectionCount int
+}
+
 // tuple is canonicalised - always opened from-to
 func (t *connectionTracker) addConnection(rpt *report.Report, hostNodeID string, ft fourTuple, fromPid, toPid uint, namespaceID uint32, connectionCount int) {
-	extraToNode := map[string]string{}
-	extraFromNode := map[string]string{}
+	extraToNode := extra{PID: -1}
+	extraFromNode := extra{PID: -1}
 	if fromPid > 0 {
-		extraFromNode = map[string]string{
-			process.PID:       strconv.FormatUint(uint64(fromPid), 10),
-			report.HostNodeID: hostNodeID,
+		extraFromNode = extra{
+			PID:        int(fromPid),
+			HostNodeID: hostNodeID,
 		}
 	}
 	if toPid > 0 {
-		extraToNode = map[string]string{
-			process.PID:       strconv.FormatUint(uint64(toPid), 10),
-			report.HostNodeID: hostNodeID,
+		extraToNode = extra{
+			PID:        int(toPid),
+			HostNodeID: hostNodeID,
 		}
 	}
 	if connectionCount > 1 {
 		// Tell the app we have elided several connections to a common IP and port onto this one
-		extraFromNode[report.ConnectionCount] = strconv.Itoa(connectionCount)
+		extraFromNode.ConnectionCount = connectionCount
 	}
 	var (
 		fromAddr = net.IP(ft.fromAddr[:])
@@ -332,17 +338,21 @@ func (t *connectionTracker) addConnection(rpt *report.Report, hostNodeID string,
 		toAddr   = net.IP(ft.toAddr[:])
 		toNode   = t.makeEndpointNode(namespaceID, toAddr, ft.toPort, extraToNode)
 	)
-	rpt.Endpoint.AddNode(fromNode.WithAdjacent(toNode.ID))
+	rpt.Endpoint.AddNode(fromNode)
+	rpt.EndpointAdjacency[fromNode.NodeID] = append(rpt.EndpointAdjacency[fromNode.NodeID], toNode.NodeID)
 	rpt.Endpoint.AddNode(toNode)
 	t.addDNS(rpt, fromAddr.String())
 	t.addDNS(rpt, toAddr.String())
 }
 
-func (t *connectionTracker) makeEndpointNode(namespaceID uint32, addr net.IP, port uint16, extra map[string]string) report.Node {
-	node := report.MakeNodeWith(report.MakeEndpointNodeIDB(t.conf.HostID, namespaceID, addr, port), nil)
-	if len(extra) > 0 {
-		node = node.WithLatests(extra)
+func (t *connectionTracker) makeEndpointNode(namespaceID uint32, addr net.IP, port uint16, extra extra) report.Metadata {
+	node := report.Metadata{
+		Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
+		NodeID:    report.MakeEndpointNodeIDB(t.conf.HostID, namespaceID, addr, port),
 	}
+	node.Pid = extra.PID
+	node.HostName = extra.HostNodeID
+	node.ConnectionCount = extra.ConnectionCount
 	return node
 }
 

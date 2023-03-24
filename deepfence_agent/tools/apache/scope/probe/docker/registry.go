@@ -1,18 +1,18 @@
 package docker
 
 import (
-	scopeHostname "github.com/weaveworks/scope/common/hostname"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	scopeHostname "github.com/weaveworks/scope/common/hostname"
 
 	"github.com/armon/go-radix"
 	dfUtils "github.com/deepfence/df-utils"
 	docker_client "github.com/fsouza/go-dockerclient"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/weaveworks/scope/probe/controls"
 	"github.com/weaveworks/scope/report"
 )
 
@@ -54,7 +54,7 @@ type Registry interface {
 }
 
 // ContainerUpdateWatcher is the type of functions that get called when containers are updated.
-type ContainerUpdateWatcher func(report.Node)
+type ContainerUpdateWatcher func(metadata report.Metadata, parent report.Parent)
 
 type UserDefinedTags struct {
 	tags map[string][]string
@@ -67,21 +67,19 @@ type registry struct {
 	interval               time.Duration
 	collectStats           bool
 	client                 Client
-	pipes                  controls.PipeClient
 	hostID                 string
-	handlerRegistry        *controls.HandlerRegistry
 	noCommandLineArguments bool
 	noEnvironmentVariables bool
 
-	watchers        []ContainerUpdateWatcher
-	containers      *radix.Tree
-	containersByPID map[int]Container
-	images          map[string]docker_client.APIImages
-	networks        []docker_client.Network
-	pipeIDToexecID  map[string]string
+	watchers                 []ContainerUpdateWatcher
+	containers               *radix.Tree
+	containersByPID          map[int]Container
+	images                   map[string]docker_client.APIImages
+	networks                 []docker_client.Network
+	pipeIDToexecID           map[string]string
 	userDefinedContainerTags UserDefinedTags
 	userDefinedImageTags     UserDefinedTags
-	isUIvm                   string
+	isConsoleVm              bool
 	kubernetesClusterId      string
 	kubernetesClusterName    string
 }
@@ -108,10 +106,8 @@ func newDockerClient(endpoint string) (Client, error) {
 // RegistryOptions are used to initialize the Registry
 type RegistryOptions struct {
 	Interval               time.Duration
-	Pipes                  controls.PipeClient
 	CollectStats           bool
 	HostID                 string
-	HandlerRegistry        *controls.HandlerRegistry
 	DockerEndpoint         string
 	NoCommandLineArguments bool
 	NoEnvironmentVariables bool
@@ -123,10 +119,6 @@ func NewRegistry(options RegistryOptions) (Registry, error) {
 	if err != nil {
 		return nil, err
 	}
-	isUIvm := "false"
-	if dfUtils.IsThisHostUIMachine() {
-		isUIvm = "true"
-	}
 
 	r := &registry{
 		containers:      radix.New(),
@@ -135,11 +127,9 @@ func NewRegistry(options RegistryOptions) (Registry, error) {
 		pipeIDToexecID:  map[string]string{},
 
 		client:                 client,
-		pipes:                  options.Pipes,
 		interval:               options.Interval,
 		collectStats:           options.CollectStats,
 		hostID:                 options.HostID,
-		handlerRegistry:        options.HandlerRegistry,
 		quit:                   make(chan chan struct{}),
 		noCommandLineArguments: options.NoCommandLineArguments,
 		noEnvironmentVariables: options.NoEnvironmentVariables,
@@ -149,62 +139,17 @@ func NewRegistry(options RegistryOptions) (Registry, error) {
 		userDefinedImageTags: UserDefinedTags{
 			tags: make(map[string][]string),
 		},
-		isUIvm:                isUIvm,
+		isConsoleVm:           dfUtils.IsThisHostUIMachine(),
 		kubernetesClusterId:   os.Getenv(k8sClusterId),
 		kubernetesClusterName: os.Getenv(k8sClusterName),
 	}
 	hostName = scopeHostname.Get()
-	r.registerControls()
 	go r.loop()
-	go r.updateUserDefinedTags(&r.userDefinedContainerTags, nodeTypeContainer)
-	go r.updateUserDefinedTags(&r.userDefinedImageTags, nodeTypeContainerImage)
 	return r, nil
-}
-
-func (r *registry) updateUserDefinedTags(userDefinedTags *UserDefinedTags, nodeType string) {
-	consoleServer := os.Getenv("CONSOLE_SERVER")
-	fileBeatCertPath := os.Getenv("FILEBEAT_CERT_PATH")
-	deepfenceKey := os.Getenv("DEEPFENCE_KEY")
-	if consoleServer == "" {
-		log.Error("CONSOLE_SERVER env is empty")
-		return
-	}
-	if fileBeatCertPath == "" {
-		log.Error("FILEBEAT_CERT_PATH env is empty")
-		return
-	}
-	// Set for the first time
-	tags, err := dfUtils.GetUserDefinedTagsForGivenHost(hostName, nodeType, consoleServer, fileBeatCertPath, deepfenceKey)
-	for err != nil {
-		log.Error(err.Error())
-		time.Sleep(2 * time.Minute)
-		tags, err = dfUtils.GetUserDefinedTagsForGivenHost(hostName, nodeType, consoleServer, fileBeatCertPath, deepfenceKey)
-	}
-	userDefinedTags.Lock()
-	userDefinedTags.tags = tags
-	userDefinedTags.Unlock()
-
-	// Then update it every few hours
-	ticker := time.NewTicker(12 * time.Hour)
-	for {
-		select {
-		case <-ticker.C:
-			tags, err := dfUtils.GetUserDefinedTagsForGivenHost(hostName, nodeType, consoleServer, fileBeatCertPath, deepfenceKey)
-			for err != nil {
-				log.Error(err.Error())
-				time.Sleep(5 * time.Minute)
-				tags, err = dfUtils.GetUserDefinedTagsForGivenHost(hostName, nodeType, consoleServer, fileBeatCertPath, deepfenceKey)
-			}
-			userDefinedTags.Lock()
-			userDefinedTags.tags = tags
-			userDefinedTags.Unlock()
-		}
-	}
 }
 
 // Stop stops the Docker registry's event subscriber.
 func (r *registry) Stop() {
-	r.deregisterControls()
 	ch := make(chan struct{})
 	r.quit <- ch
 	<-ch
@@ -416,7 +361,7 @@ func (r *registry) updateContainerState(containerID string) {
 	// Trigger anyone watching for updates
 	node := c.GetNode()
 	for _, f := range r.watchers {
-		f(node)
+		f(node, c.GetParent())
 	}
 
 	// And finally, ensure we gather stats for it
@@ -453,22 +398,29 @@ func (r *registry) sendDeletedUpdate(containerID string) {
 	if !ok {
 		tags = []string{}
 	}
-	latest := map[string]string{
-		ContainerID:    containerID,
-		ContainerState: report.StateDeleted,
-		UserDfndTags:   strings.Join(tags, ","),
-		IsUiVm:         r.isUIvm,
+	metadata := report.Metadata{
+		Timestamp:             time.Now().UTC().Format(time.RFC3339Nano),
+		NodeID:                containerID,
+		NodeName:              containerID,
+		NodeType:              nodeTypeContainer,
+		DockerContainerState:  report.StateDeleted,
+		UserDefinedTags:       tags,
+		IsConsoleVm:           r.isConsoleVm,
+		KubernetesClusterName: r.kubernetesClusterName,
+		KubernetesClusterId:   r.kubernetesClusterId,
+		HostName:              hostName,
 	}
-	if r.kubernetesClusterName != "" {
-		latest[k8sClusterName] = r.kubernetesClusterName
+	parent := report.Parent{
+		KubernetesCluster: r.kubernetesClusterId,
+		Host:              hostName,
+		Container:         "",
+		ContainerImage:    "",
+		Namespace:         "",
+		Pod:               "",
 	}
-	if r.kubernetesClusterId != "" {
-		latest[k8sClusterId] = r.kubernetesClusterId
-	}
-	node := report.MakeNodeWith(report.MakeContainerNodeID(containerID), latest)
 	// Trigger anyone watching for updates
 	for _, f := range r.watchers {
-		f(node)
+		f(metadata, parent)
 	}
 }
 

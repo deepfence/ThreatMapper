@@ -9,6 +9,40 @@ type DNSRecord struct {
 // DNSRecords contains all address->name mappings for a report
 type DNSRecords map[string]DNSRecord
 
+// Copy makes a copy of the DNSRecords
+func (r DNSRecords) Copy() DNSRecords {
+	if r == nil {
+		return nil
+	}
+	cp := make(DNSRecords, len(r))
+	for k, v := range r {
+		cp[k] = v
+	}
+	return cp
+}
+
+// Merge merges the other object into this one, and returns the result object.
+// The original is not modified.
+func (r DNSRecords) Merge(other DNSRecords) DNSRecords {
+	if len(other) > len(r) {
+		r, other = other, r
+	}
+	cp := r.Copy()
+	for k, v := range other {
+		if v2, ok := cp[k]; ok {
+			fMerged, fUnchanged := v.Forward.Merge(v2.Forward)
+			rMerged, rUnchanged := v.Reverse.Merge(v2.Reverse)
+			if fUnchanged && rUnchanged {
+				continue
+			}
+			cp[k] = DNSRecord{Forward: fMerged, Reverse: rMerged}
+		} else {
+			cp[k] = v
+		}
+	}
+	return cp
+}
+
 // FirstMatch returns the first DNS name where match() returns true
 func (r DNSRecords) FirstMatch(id string, match func(name string) string) (string, string) {
 	_, addr, _, ok := ParseEndpointNodeID(id)
