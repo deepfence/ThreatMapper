@@ -42,6 +42,11 @@ p, standard-user, diagnosis, generate
 p, admin, diagnosis, read
 p, standard-user, diagnosis, read
 
+p, admin, report, generate
+p, standard-user, report, generate
+p, admin, report, read
+p, standard-user, report, read
+
 p, admin, container-registry, start
 p, admin, container-registry, stop
 p, admin, container-registry, read
