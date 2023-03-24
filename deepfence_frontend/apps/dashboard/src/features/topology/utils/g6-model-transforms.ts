@@ -14,7 +14,7 @@ function enhanceApiNode(apiNode: DetailedNodeSummary): EnhancedDetailedNodeSumma
     id: apiNode.id!,
     label: apiNode.type === 'process' ? getShortLabel(apiNode.label) : apiNode.label,
     df_data: apiNode,
-    img: getNodeImage(apiNode.type ?? ''),
+    img: getNodeImage(apiNode.type ?? '', apiNode.label),
   };
 }
 

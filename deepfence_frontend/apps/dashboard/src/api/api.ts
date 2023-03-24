@@ -14,6 +14,7 @@ import {
   ScanResultsApi,
   SearchApi,
   SecretScanApi,
+  ThreatApi,
   TopologyApi,
   UserApi,
   VulnerabilityApi,
@@ -204,5 +205,13 @@ export function getLookupApiClient() {
     lookupProcess: lookupApi.getProcesses.bind(lookupApi),
     lookupKubernetesClusters: lookupApi.getKubernetesClusters.bind(lookupApi),
     lookupCloudResources: lookupApi.getCloudResources.bind(lookupApi),
+  };
+}
+
+export function getThreatGraphApiClient() {
+  const threatGraphApi = new ThreatApi(configuration);
+
+  return {
+    getThreatGraph: threatGraphApi.getThreatGraph.bind(threatGraphApi),
   };
 }
