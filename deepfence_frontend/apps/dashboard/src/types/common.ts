@@ -32,6 +32,7 @@ export { ModelScanResultsActionRequestScanTypeEnum as ScanTypeEnum };
 
 export enum ComplianceScanNodeTypeEnum {
   aws = 'aws',
+  aws_org = 'aws_org',
   gcp = 'gcp',
   azure = 'azure',
   host = 'host',

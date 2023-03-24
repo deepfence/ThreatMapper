@@ -157,6 +157,8 @@ export function getSearchApiClient() {
 
     searchCompliances: searchApi.searchCompliances.bind(searchApi),
     searchCloudCompliances: searchApi.searchCloudCompliances.bind(searchApi),
+
+    getCloudComplianceFilters: searchApi.getCloudComplianceFilters.bind(searchApi),
   };
 }
 
