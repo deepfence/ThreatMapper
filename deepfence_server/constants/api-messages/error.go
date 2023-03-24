@@ -10,5 +10,5 @@ const (
 
 // Integration errors
 const (
-	ErrIntegrationExists = "integration with this name already exists"
+	ErrIntegrationExists = "integration with this configuration already exists"
 )

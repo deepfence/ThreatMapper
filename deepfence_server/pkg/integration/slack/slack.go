@@ -19,6 +19,7 @@ type Slack struct {
 
 type Config struct {
 	WebhookURL string `json:"webhook_url"`
+	Channel    string `json:"channel"`
 }
 
 type Payload struct {

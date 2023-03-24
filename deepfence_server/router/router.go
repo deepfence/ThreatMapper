@@ -343,23 +343,23 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				})
 				r.Get("/diagnostic-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.GetDiagnosticLogs))
 			})
-		})
+			// Integration
+			r.Route("/integration", func(r chi.Router) {
+				r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddIntegration))
+				r.Get("/", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GetIntegrations))
+				r.Route("/{integration_id}", func(r chi.Router) {
+					r.Delete("/", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteIntegration))
+					r.Put("/", dfHandler.AuthHandler(ResourceIntegration, PermissionUpdate, doNothingHandler))
+				})
+			})
 
-		// Integration
-		r.Route("/integrations", func(r chi.Router) {
-			r.Get("/", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, doNothingHandler))
-			r.Get("/{id}", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, doNothingHandler))
-			r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddIntegration))
-			r.Put("/{id}", dfHandler.AuthHandler(ResourceIntegration, PermissionUpdate, doNothingHandler))
-			r.Delete("/{id}", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, doNothingHandler))
-		})
-
-		// Report
-		r.Route("/reports", func(r chi.Router) {
-			r.Get("/", dfHandler.AuthHandler(ResourceReport, PermissionRead, doNothingHandler))
-			r.Get("/{id}", dfHandler.AuthHandler(ResourceReport, PermissionRead, doNothingHandler))
-			r.Post("/", dfHandler.AuthHandler(ResourceReport, PermissionGenerate, doNothingHandler))
-			r.Delete("/{id}", dfHandler.AuthHandler(ResourceReport, PermissionDelete, doNothingHandler))
+			// Report
+			r.Route("/report", func(r chi.Router) {
+				r.Get("/", dfHandler.AuthHandler(ResourceReport, PermissionRead, doNothingHandler))
+				r.Get("/{id}", dfHandler.AuthHandler(ResourceReport, PermissionRead, doNothingHandler))
+				r.Post("/", dfHandler.AuthHandler(ResourceReport, PermissionGenerate, doNothingHandler))
+				r.Delete("/{id}", dfHandler.AuthHandler(ResourceReport, PermissionDelete, doNothingHandler))
+			})
 		})
 	})
 
