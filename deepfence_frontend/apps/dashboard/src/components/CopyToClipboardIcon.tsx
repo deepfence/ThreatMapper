@@ -42,18 +42,15 @@ export const CopyToClipboardAsJson = ({
   const [copied, setCopied] = useState(false);
 
   const onCopy = useCallback(() => {
-    navigator?.clipboard
-      ?.writeText(JSON.stringify(data))
-      .then((val) => {
-        copyToClipboard(val as unknown as string);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 5000);
-      })
-      .catch((error) => {
-        console.log(error);
-        setCopied(false);
-      });
-  }, []);
+    try {
+      copyToClipboard(JSON.stringify(data));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 5000);
+    } catch (error) {
+      console.log(error);
+      setCopied(false);
+    }
+  }, [data]);
 
   return (
     <button

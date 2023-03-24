@@ -14,7 +14,7 @@ import {
 } from 'ui-components';
 
 import { getSearchApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelCompliance } from '@/api/generated';
+import { ApiDocsBadRequestResponse, ModelCloudCompliance } from '@/api/generated';
 import { CopyToClipboardAsJson } from '@/components/CopyToClipboardIcon';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { STATUSES } from '@/features/postures/pages/PostureScanResults';
@@ -29,7 +29,7 @@ dayjs.extend(relativeTime);
 type LoaderDataType = {
   error?: string;
   message?: string;
-  data?: ModelCompliance;
+  data?: ModelCloudCompliance;
 };
 
 async function getCompliances(complianceId: string) {
@@ -125,7 +125,7 @@ const Header = () => {
                     <PostureIcon />
                   </span>
                   <span className="text-md text-gray-900 dark:text-white truncate">
-                    {truncate(compliane.test_number ?? '')}
+                    {truncate(compliane.control_id ?? '')}
                   </span>
                   <Badge
                     label={compliane?.compliance_check_type?.toUpperCase()}
@@ -169,8 +169,8 @@ const DetailsComponent = () => {
               'status',
               'compliance_check_type',
             ];
-            const fixed = pick<ModelCompliance>(compliance, pickBy);
-            const others = omit<ModelCompliance>(compliance, pickBy);
+            const fixed = pick<ModelCloudCompliance>(compliance, pickBy);
+            const others = omit<ModelCloudCompliance>(compliance, pickBy);
             return (
               <div className="text-gray-900 dark:text-gray-300 overflow-auto">
                 <section>

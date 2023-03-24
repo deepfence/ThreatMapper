@@ -176,6 +176,7 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
       }),
       columnHelper.accessor('node_name', {
         cell: (cell) => {
+          const isNeverScan = cell.row.original.last_scan_status?.toLowerCase() === '';
           const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
             let redirectUrl = generatePath(`/posture/scan-results/:nodeType/:scanId`, {
               scanId: cell.row.original.last_scan_id || 'dummy',
@@ -195,7 +196,11 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
                 },
               );
             }
-            return <DFLink to={redirectUrl}>{children}</DFLink>;
+            return isNeverScan ? (
+              <span>{children}</span>
+            ) : (
+              <DFLink to={redirectUrl}>{children}</DFLink>
+            );
           };
           return (
             <WrapperComponent>
@@ -246,21 +251,22 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
       columnHelper.accessor('last_scan_status', {
         cell: (info) => {
           const value = info.getValue();
-          const unknowStatus =
+          const isNeverScan = info.row.original.last_scan_status?.toLowerCase() === '';
+          const isScanning =
             value?.toLowerCase() !== 'complete' &&
             value?.toLowerCase() !== 'error' &&
-            value;
-
+            !isNeverScan;
+          const status = isNeverScan ? 'NEVER SCANNED' : value?.toUpperCase();
           return (
             <Badge
-              label={value?.toUpperCase() || 'UNKNOWN'}
+              label={status}
               className={cx('text-md rounded-lg font-medium text-center w-fit px-2', {
                 'bg-[#0E9F6E]/20 dark:bg-[#0E9F6E]/20 text-[#0E9F6E] dark:text-[#0E9F6E]':
                   value?.toLowerCase() === 'complete',
                 'bg-[#de425b]/30 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
                   value?.toLowerCase() === 'error',
                 'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-                  unknowStatus,
+                  isScanning,
               })}
               size="sm"
             />
