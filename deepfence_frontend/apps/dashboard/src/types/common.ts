@@ -37,3 +37,9 @@ export enum ComplianceScanNodeTypeEnum {
   host = 'host',
   kubernetes_cluster = 'kubernetes_cluster',
 }
+
+export enum ScanStatusEnum {
+  complete = 'COMPLETE',
+  error = 'ERROR',
+  neverScanned = 'NEVER_SCANNED',
+}
