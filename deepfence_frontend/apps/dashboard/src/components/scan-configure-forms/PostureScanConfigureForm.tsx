@@ -24,6 +24,7 @@ export const complianceType: {
   [key in ComplianceScanNodeTypeEnum]: string[];
 } = {
   aws: ['CIS', 'NIST', 'PCI', 'HIPAA', 'SOC2', 'GDPR'],
+  aws_org: ['CIS', 'NIST', 'PCI', 'HIPAA', 'SOC2', 'GDPR'],
   gcp: ['CIS'],
   azure: ['CIS', 'NIST', 'HIPAA'],
   host: ['HIPAA', 'GDPR', 'PCI', 'NIST'],
