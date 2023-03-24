@@ -53,7 +53,6 @@ import { getCloudComplianceApiClient, getScanResultsApiClient } from '@/api/api'
 import {
   ApiDocsBadRequestResponse,
   ModelCloudCompliance,
-  ModelScanResultsActionRequestScanTypeEnum,
   ModelScanResultsReq,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
@@ -64,7 +63,7 @@ import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
 import { PostureResultChart } from '@/features/postures/components/PostureResultChart';
 import { Mode, useTheme } from '@/theme/ThemeContext';
-import { PostureSeverityType } from '@/types/common';
+import { PostureSeverityType, ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -320,7 +319,7 @@ const action = async ({
           modelScanResultsActionRequest: {
             result_ids: [...ids],
             scan_id: _scanId,
-            scan_type: ModelScanResultsActionRequestScanTypeEnum.ComplianceScan,
+            scan_type: ScanTypeEnum.CloudComplianceScan,
           },
         },
       ],
@@ -348,7 +347,7 @@ const action = async ({
           modelScanResultsMaskRequest: {
             result_ids: [...ids],
             scan_id: _scanId,
-            scan_type: ModelScanResultsActionRequestScanTypeEnum.ComplianceScan,
+            scan_type: ScanTypeEnum.CloudComplianceScan,
           },
         },
       ],
@@ -459,7 +458,7 @@ const HistoryDropdown = () => {
       generatePath('/data-component/scan-history/:scanType/:nodeType/:nodeId', {
         nodeId: nodeId,
         nodeType: 'cloud_account',
-        scanType: ModelScanResultsActionRequestScanTypeEnum.CloudComplianceScan,
+        scanType: ScanTypeEnum.CloudComplianceScan,
       }),
     );
   };
@@ -661,7 +660,7 @@ const ScanResultTable = () => {
         cell: (info) => (
           <DFLink
             to={{
-              pathname: `./${info.row.original.control_id}`,
+              pathname: `./${info.row.original.node_id}`,
               search: searchParams.toString(),
             }}
             className="flex items-center gap-x-2"
