@@ -18,6 +18,12 @@ export type PostureSeverityType =
   | 'warn'
   | 'note';
 
+export type AllSeverityType =
+  | VulnerabilitySeverityType
+  | SecretSeverityType
+  | MalwareSeverityType
+  | PostureSeverityType;
+
 export enum VulnerabilityScanNodeTypeEnum {
   host = 'host',
   kubernetes_cluster = 'kubernetes_cluster',

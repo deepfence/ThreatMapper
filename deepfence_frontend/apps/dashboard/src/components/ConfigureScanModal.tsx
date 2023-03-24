@@ -5,6 +5,10 @@ import {
   MalwareScanConfigureFormProps,
 } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
 import {
+  ComplianceScanConfigureForm,
+  ComplianceScanConfigureFormProps,
+} from '@/components/scan-configure-forms/PostureScanConfigureForm';
+import {
   SecretScanConfigureForm,
   SecretScanConfigureFormProps,
 } from '@/components/scan-configure-forms/SecretScanConfigureForm';
@@ -30,6 +34,14 @@ export interface ConfigureScanModalProps {
         scanType: typeof ScanTypeEnum.MalwareScan;
         data: MalwareScanConfigureFormProps['data'];
       }
+    | {
+        scanType: typeof ScanTypeEnum.ComplianceScan;
+        data: ComplianceScanConfigureFormProps['data'];
+      }
+    | {
+        scanType: typeof ScanTypeEnum.CloudComplianceScan;
+        data: ComplianceScanConfigureFormProps['data'];
+      }
   );
 }
 
@@ -47,6 +59,11 @@ export const ConfigureScanModal = ({
     title = `Configure secret scan`;
   } else if (scanOptions.scanType === ScanTypeEnum.MalwareScan) {
     title = `Configure malware scan`;
+  } else if (
+    scanOptions.scanType === ScanTypeEnum.ComplianceScan ||
+    scanOptions.scanType === ScanTypeEnum.CloudComplianceScan
+  ) {
+    title = `Configure compliance scan`;
   }
 
   return (
@@ -67,6 +84,14 @@ export const ConfigureScanModal = ({
       )}
       {scanOptions.scanType === ScanTypeEnum.MalwareScan && (
         <MalwareScanConfigureForm
+          showAdvancedOptions={scanOptions.showAdvancedOptions}
+          data={scanOptions.data}
+          onSuccess={() => onOpenChange(false)}
+        />
+      )}
+      {(scanOptions.scanType === ScanTypeEnum.ComplianceScan ||
+        scanOptions.scanType === ScanTypeEnum.CloudComplianceScan) && (
+        <ComplianceScanConfigureForm
           showAdvancedOptions={scanOptions.showAdvancedOptions}
           data={scanOptions.data}
           onSuccess={() => onOpenChange(false)}

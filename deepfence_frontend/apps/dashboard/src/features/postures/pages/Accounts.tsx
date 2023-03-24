@@ -34,7 +34,7 @@ import { DFLink } from '@/components/DFLink';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import {
   CLOUDS,
-  PostureScanConfigureForm,
+  ComplianceScanConfigureForm,
 } from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import { ComplianceScanNodeTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -330,8 +330,8 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
           }
         >
           <div className="p-4 pt-0">
-            <PostureScanConfigureForm
-              wantAdvanceOptions={true}
+            <ComplianceScanConfigureForm
+              showAdvancedOptions={true}
               onSuccess={() => {
                 setOpenScanConfigure({
                   show: false,
@@ -341,7 +341,6 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
               data={{
                 nodeType: getNodeTypeByProviderName(cloudProvider),
                 nodeIds: openScanConfigure.nodeIds,
-                images: [],
               }}
             />
           </div>
