@@ -16,6 +16,8 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
+var ErrUnknownReportType = errors.New("unknown report type")
+
 func fileExt(reportType utils.ReportType) string {
 	switch reportType {
 	case utils.ReportXLSX:
@@ -39,6 +41,16 @@ func putOpts(reportType utils.ReportType) minio.PutObjectOptions {
 		return minio.PutObjectOptions{ContentType: "application/pdf"}
 	}
 	return minio.PutObjectOptions{}
+}
+
+func generateReport(session neo4j.Session, params utils.ReportParams) (string, error) {
+	switch utils.ReportType(params.ReportType) {
+	case utils.ReportPDF:
+		return generatePDF(session, params)
+	case utils.ReportXLSX:
+		return generateXLSX(session, params)
+	}
+	return "", ErrUnknownReportType
 }
 
 func GenerateReport(msg *message.Message) error {
@@ -81,14 +93,7 @@ func GenerateReport(msg *message.Message) error {
 	defer tx.Close()
 
 	// generate report file
-	var localReport string
-
-	switch utils.ReportType(params.ReportType) {
-	case utils.ReportPDF:
-		localReport, err = generatePDF(session, params)
-	case utils.ReportXLSX:
-		localReport, err = generateXLSX(session, params)
-	}
+	localReport, err := generateReport(session, params)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to generate report with params %+v", params)
 		return nil
@@ -117,7 +122,7 @@ func GenerateReport(msg *message.Message) error {
 
 	// update url in neo4j report node
 	query := `
-	MATCH (n:REPORT{report_id:$uid}) 
+	MATCH (n:Report{report_id:$uid}) 
 	SET n.url=$url, n.updated_at=TIMESTAMP(), n.status = $status
 	RETURN n
 	`
