@@ -251,6 +251,14 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		}
 	}
 
+	NodeIDs2strings := func(arr []reporters_graph.NodeID) []string {
+		res := []string{}
+		for i := range arr {
+			res = append(res, string(arr[i]))
+		}
+		return res
+	}
+
 	for cp, crs := range graph.CloudServices {
 		for _, cr_stub := range crs {
 			cr := string(cr_stub.ID)
@@ -258,6 +266,7 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 				ImmediateParentID: string(cp),
 				BasicNodeSummary:  nodeStubToSummary(cr_stub.NodeStub),
 				Type:              cr_stub.ResourceType,
+				IDs:               NodeIDs2strings(cr_stub.IDs),
 			}
 		}
 	}

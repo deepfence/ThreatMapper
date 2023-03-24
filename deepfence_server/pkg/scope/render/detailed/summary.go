@@ -26,6 +26,7 @@ type NodeSummary struct {
 	Adjacency         report.IDList        `json:"adjacency,omitempty"`
 	ImmediateParentID string               `json:"immediate_parent_id"`
 	Type              string               `json:"type"`
+	IDs               []string             `json:"ids,omitempty"`
 }
 
 // NodeSummaries is a set of NodeSummaries indexed by ID.

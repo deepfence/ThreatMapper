@@ -32,8 +32,9 @@ type NodeStub struct {
 
 type ResourceStub struct {
 	NodeStub
-	ResourceType string `json:"resource-type"`
-	AccountId    string `json:"account_id"`
+	ResourceType string   `json:"resource-type"`
+	AccountId    string   `json:"account_id"`
+	IDs          []NodeID `json:"ids"`
 }
 
 func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]ConnectionSummary, error) {
@@ -91,7 +92,7 @@ func (nc *neo4jTopologyReporter) GetNonPublicCloudResources(tx neo4j.Transaction
 		AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
 		AND CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END `+
 		reporters.ParseFieldFilters2CypherWhereConditions("s", fieldfilters, false)+`
-		RETURN s.node_id,s.cloud_provider,s.region,s.account_id,s.resource_id`,
+		RETURN collect(s.node_id),s.cloud_provider,s.region,s.account_id,s.node_type`,
 		filterNil(map[string]interface{}{
 			"providers": cloud_provider,
 			"services":  cloud_services,
@@ -111,7 +112,7 @@ func (nc *neo4jTopologyReporter) GetNonPublicCloudResources(tx neo4j.Transaction
 		if record.Values[0] == nil || record.Values[1] == nil {
 			continue
 		}
-		node_id := NodeID(record.Values[0].(string))
+		node_ids := extractResourceNodeIds(record.Values[0].([]interface{}))
 		region := NodeID(record.Values[2].(string))
 		account_id := NodeID(record.Values[3].(string))
 		resource_id := NodeID(record.Values[4].(string))
@@ -120,10 +121,22 @@ func (nc *neo4jTopologyReporter) GetNonPublicCloudResources(tx neo4j.Transaction
 			res[key] = []ResourceStub{}
 		}
 
-		res[key] = append(res[key], ResourceStub{NodeStub: NodeStub{node_id, record.Values[0].(string)}, ResourceType: string(resource_id), AccountId: string(account_id)})
+		res[key] = append(res[key], ResourceStub{
+			IDs:          node_ids,
+			ResourceType: string(resource_id),
+			AccountId:    string(account_id),
+		})
 	}
 	return res, nil
 
+}
+
+func extractResourceNodeIds(ids []interface{}) []NodeID {
+	res := []NodeID{}
+	for i := range ids {
+		res = append(res, NodeID(ids[i].(string)))
+	}
+	return res
 }
 
 func (nc *neo4jTopologyReporter) GetCloudServices(
@@ -142,7 +155,7 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 		AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
 		AND CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END `+
 		reporters.ParseFieldFilters2CypherWhereConditions("s", fieldfilters, false)+`
-		RETURN s.region, s.resource_id`,
+		RETURN collect(s.node_id), s.region, s.resource_id`,
 		filterNil(map[string]interface{}{
 			"providers": cloud_provider,
 			"regions":   cloud_regions,
@@ -158,10 +171,15 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 	}
 
 	for _, record := range records {
-		region := record.Values[0].(string)
-		service := record.Values[1].(string)
+		node_ids := extractResourceNodeIds(record.Values[0].([]interface{}))
+		region := record.Values[1].(string)
+		service := record.Values[2].(string)
 
-		res[NodeID(region)] = append(res[NodeID(region)], ResourceStub{NodeStub: NodeStub{NodeID(service), service}, ResourceType: service})
+		res[NodeID(region)] = append(res[NodeID(region)],
+			ResourceStub{
+				IDs:          node_ids,
+				ResourceType: service,
+			})
 	}
 	return res, nil
 
@@ -176,7 +194,7 @@ func (nc *neo4jTopologyReporter) GetPublicCloudResources(tx neo4j.Transaction, c
 		AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
 		AND CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END`+
 		reporters.ParseFieldFilters2CypherWhereConditions("s", fieldfilters, false)+`
-		RETURN s.node_id,s.cloud_provider,s.region,s.account_id,s.resource_id`,
+		RETURN collect(s.node_id),s.cloud_provider,s.region,s.account_id,s.resource_id`,
 		filterNil(map[string]interface{}{
 			"providers": cloud_provider,
 			"services":  cloud_services,
@@ -196,7 +214,7 @@ func (nc *neo4jTopologyReporter) GetPublicCloudResources(tx neo4j.Transaction, c
 		if record.Values[0] == nil || record.Values[1] == nil {
 			continue
 		}
-		node_id := NodeID(record.Values[0].(string))
+		node_ids := extractResourceNodeIds(record.Values[0].([]interface{}))
 		region := NodeID(record.Values[2].(string))
 		account_id := NodeID(record.Values[3].(string))
 		resource_id := NodeID(record.Values[4].(string))
@@ -205,7 +223,11 @@ func (nc *neo4jTopologyReporter) GetPublicCloudResources(tx neo4j.Transaction, c
 			res[key] = []ResourceStub{}
 		}
 
-		res[key] = append(res[key], ResourceStub{NodeStub: NodeStub{node_id, record.Values[0].(string)}, ResourceType: string(resource_id), AccountId: string(account_id)})
+		res[key] = append(res[key], ResourceStub{
+			IDs:          node_ids,
+			ResourceType: string(resource_id),
+			AccountId:    string(account_id),
+		})
 	}
 	return res, nil
 
