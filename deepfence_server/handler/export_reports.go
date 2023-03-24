@@ -75,13 +75,13 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	defer tx.Close()
 
 	query := `
-	CREATE (n:REPORT{created_at:TIMESTAMP(), type:$type, report_id:$uid, status:$status, filters:$filters, duration:$duration})
+	CREATE (n:Report{created_at:TIMESTAMP(), type:$type, report_id:$uid, status:$status, filters:$filters, duration:$duration})
 	RETURN n`
 	vars := map[string]interface{}{
 		"type":     req.ReportType,
 		"uid":      report_id,
 		"status":   utils.SCAN_STATUS_STARTING,
-		"filters":  req.Filters,
+		"filters":  req.Filters.String(),
 		"duration": req.Duration,
 	}
 
