@@ -14,6 +14,7 @@ import (
 type ScanStatus struct {
 	Status string
 	Count  int64
+	Id     string
 }
 
 func getScanStatuses[T reporters.Cypherable](tx neo4j.Transaction, scanType utils.Neo4jScanType, nodeIds []string) ([]ScanStatus, error) {
@@ -26,7 +27,7 @@ func getScanStatuses[T reporters.Cypherable](tx neo4j.Transaction, scanType util
 	WITH n, min(s.updated_at) as latest
 	MATCH (n) <-[:SCANNED]- (s:` + string(scanType) + `{updated_at: latest})
 	OPTIONAL MATCH (s) -[:DETECTED]-> (v)
-	RETURN n.node_id, s.status, count(v)
+	RETURN n.node_id, s.status, count(v), s.node_id
 	ORDER BY n.node_id`
 
 	log.Info().Msgf("query: %s", query)
@@ -48,6 +49,7 @@ func getScanStatuses[T reporters.Cypherable](tx neo4j.Transaction, scanType util
 		statuses[rec.Values[0].(string)] = ScanStatus{
 			Status: rec.Values[1].(string),
 			Count:  rec.Values[2].(int64),
+			Id:     rec.Values[3].(string),
 		}
 	}
 
