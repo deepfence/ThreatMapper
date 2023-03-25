@@ -286,88 +286,74 @@ type Report struct {
 	EndpointParents   Parents
 
 	// Process nodes are processes on each host. Edges are not present.
-	Process          Topology
-	ProcessAdjacency map[string][]string
-	ProcessParents   Parents
+	Process        Topology
+	ProcessParents Parents
 
 	// Container nodes represent all Docker containers on hosts running probes.
 	// Metadata includes things like containter id, name, image id etc.
 	// Edges are not present.
-	Container          Topology
-	ContainerAdjacency map[string][]string
-	ContainerParents   Parents
-	ContainerSets      TopologySets
+	Container        Topology
+	ContainerParents Parents
+	ContainerSets    TopologySets
 
 	// CloudProvider nodes represent all cloud providers.
 	// Metadata includes things like name etc. Edges are not
 	// present.
-	CloudProvider          Topology
-	CloudProviderAdjacency map[string][]string
-	CloudProviderParents   Parents
+	CloudProvider        Topology
+	CloudProviderParents Parents
 
 	// CloudRegion nodes represent all cloud regions.
 	// Metadata includes things like name etc. Edges are not
 	// present.
-	CloudRegion          Topology
-	CloudRegionAdjacency map[string][]string
-	CloudRegionParents   Parents
+	CloudRegion        Topology
+	CloudRegionParents Parents
 
 	// KubernetesCluster nodes represent all Kubernetes clusters.
 	// Metadata includes things like cluster id, name etc. Edges are not
 	// present.
-	KubernetesCluster          Topology
-	KubernetesClusterAdjacency map[string][]string
-	KubernetesClusterParents   Parents
+	KubernetesCluster        Topology
+	KubernetesClusterParents Parents
 
 	// Pod nodes represent all Kubernetes pods running on hosts running probes.
 	// Metadata includes things like pod id, name etc. Edges are not
 	// present.
-	Pod          Topology
-	PodAdjacency map[string][]string
-	PodParents   Parents
+	Pod        Topology
+	PodParents Parents
 
 	// Service nodes represent all Kubernetes services running on hosts running probes.
 	// Metadata includes things like service id, name etc. Edges are not
 	// present.
-	Service          Topology
-	ServiceAdjacency map[string][]string
-	ServiceParents   Parents
+	Service        Topology
+	ServiceParents Parents
 
 	// Namespace nodes represent all Kubernetes Namespaces running on hosts running probes.
 	// Metadata includes things like Namespace id, name, etc. Edges are not
 	// present.
-	Namespace          Topology
-	NamespaceAdjacency map[string][]string
-	NamespaceParents   Parents
+	Namespace        Topology
+	NamespaceParents Parents
 
 	// ContainerImages nodes represent all Docker containers images on
 	// hosts running probes. Metadata includes things like image id, name etc.
 	// Edges are not present.
-	ContainerImage          Topology
-	ContainerImageAdjacency map[string][]string
-	ContainerImageParents   Parents
+	ContainerImage        Topology
+	ContainerImageParents Parents
 
 	// Host nodes are physical hosts that run probes. Metadata includes things
 	// like operating system, load, etc. The information is scraped by the
 	// probes with each published report. Edges are not present.
-	Host          Topology
-	HostAdjacency map[string][]string
-	HostParents   Parents
+	Host        Topology
+	HostParents Parents
 
 	// Overlay nodes are active peers in any software-defined network that's
 	// overlaid on the infrastructure. The information is scraped by polling
 	// their status endpoints. Edges are present.
-	Overlay          Topology
-	OverlayAdjacency map[string][]string
-	OverlayParents   Parents
-	OverlaySets      TopologySets
+	Overlay        Topology
+	OverlayParents Parents
+	OverlaySets    TopologySets
 
 	DNS DNSRecords `json:"DNS,omitempty" deepequal:"nil==empty"`
 	// Backwards-compatibility for an accident in commit 951629a / release 1.11.6.
 	BugDNS DNSRecords `json:"nodes,omitempty"`
-
-	// Sampling data for this report.
-	Sampling Sampling
 
 	// Window is the amount of time that this report purports to represent.
 	// Windows must be carefully merged. They should only be added when
@@ -391,11 +377,9 @@ type Report struct {
 // MakeReport makes a clean report, ready to Merge() other reports into.
 func MakeReport() Report {
 	return Report{
-		DNS: DNSRecords{},
-
-		Sampling: Sampling{},
-		Window:   0,
-		ID:       fmt.Sprintf("%d", rand.Int63()),
+		DNS:    DNSRecords{},
+		Window: 0,
+		ID:     fmt.Sprintf("%d", rand.Int63()),
 	}
 }
 
@@ -404,7 +388,6 @@ func (r Report) Copy() Report {
 	newReport := Report{
 		TS:       r.TS,
 		DNS:      r.DNS.Copy(),
-		Sampling: r.Sampling,
 		Window:   r.Window,
 		Shortcut: r.Shortcut,
 		ID:       fmt.Sprintf("%d", rand.Int63()),
@@ -422,7 +405,6 @@ func (r *Report) UnsafeMerge(other Report) {
 		r.TS = other.TS
 	}
 	r.DNS = r.DNS.Merge(other.DNS)
-	r.Sampling = r.Sampling.Merge(other.Sampling)
 	r.Window = r.Window + other.Window
 	r.WalkPairedTopologies(&other, func(ourTopology, theirTopology *Topology) {
 		ourTopology.UnsafeMerge(*theirTopology)
