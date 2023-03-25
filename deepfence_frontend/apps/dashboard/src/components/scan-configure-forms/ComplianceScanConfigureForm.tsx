@@ -333,7 +333,7 @@ export const ComplianceScanConfigureForm = ({
   return (
     <>
       <fetcher.Form
-        className="mt-6 flex gap-4 mb-6"
+        className="flex gap-4 mb-6"
         method="post"
         action="/data-component/scan/posture"
       >
