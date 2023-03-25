@@ -115,6 +115,7 @@ export function getRegistriesApiClient() {
     getRegistrySummaryByType: registriesApi.getSummaryByType.bind(registriesApi),
     listRegistries: registriesApi.listRegistry.bind(registriesApi),
     addRegistry: registriesApi.addRegistry.bind(registriesApi),
+    addRegistryGCR: registriesApi.addRegistryGCR.bind(registriesApi),
     deleteRegistry: registriesApi.deleteRegistry.bind(registriesApi),
     listImages: registriesApi.listImages.bind(registriesApi),
     countImages: registriesApi.countImages.bind(registriesApi),

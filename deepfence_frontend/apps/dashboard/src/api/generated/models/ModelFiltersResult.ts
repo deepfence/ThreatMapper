@@ -42,7 +42,6 @@ export function ModelFiltersResultFromJSON(json: any): ModelFiltersResult {
 }
 
 export function ModelFiltersResultFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelFiltersResult {
-    debugger
     if ((json === undefined) || (json === null)) {
         return json;
     }
