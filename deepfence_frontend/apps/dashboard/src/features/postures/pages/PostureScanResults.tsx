@@ -57,7 +57,7 @@ import {
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
-import { complianceType } from '@/components/scan-configure-forms/PostureScanConfigureForm';
+import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';

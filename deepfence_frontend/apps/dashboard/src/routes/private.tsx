@@ -1,8 +1,8 @@
 import { Outlet, redirect } from 'react-router-dom';
 
 import { ErrorComponent } from '@/components/error/ErrorComponent';
+import { scanPostureApiAction } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
-import { scanPostureApiAction } from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
