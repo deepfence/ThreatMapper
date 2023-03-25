@@ -965,6 +965,110 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/filters/cloud-compliance": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Get Cloud Compliance Filters",
+        "description": "Get all applicable filter values for cloud compliance",
+        "operationId": "getCloudComplianceFilters",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelFiltersReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelFiltersResult" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/filters/compliance": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Get Compliance Filters",
+        "description": "Get all applicable filter values for compliance",
+        "operationId": "getComplianceFilters",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelFiltersReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelFiltersResult" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/graph/threat": {
       "post": {
         "tags": ["Threat"],
@@ -7226,30 +7330,20 @@
       "GraphNodeInfo": {
         "required": [
           "node_id",
-          "image_name",
           "name",
           "vulnerability_count",
-          "vulnerability_scan_id",
           "secrets_count",
-          "secrets_scan_id",
           "compliance_count",
-          "compliance_scan_id",
-          "cloud_compliance_count",
-          "cloud_compliance_scan_id"
+          "cloud_compliance_count"
         ],
         "type": "object",
         "properties": {
           "cloud_compliance_count": { "type": "integer" },
-          "cloud_compliance_scan_id": { "type": "string" },
           "compliance_count": { "type": "integer" },
-          "compliance_scan_id": { "type": "string" },
-          "image_name": { "type": "string" },
           "name": { "type": "string" },
           "node_id": { "type": "string" },
           "secrets_count": { "type": "integer" },
-          "secrets_scan_id": { "type": "string" },
-          "vulnerability_count": { "type": "integer" },
-          "vulnerability_scan_id": { "type": "string" }
+          "vulnerability_count": { "type": "integer" }
         }
       },
       "GraphProviderThreatGraph": {
@@ -8002,12 +8096,36 @@
         }
       },
       "ModelCloudResource": {
-        "required": ["node_id", "node_name", "node_type"],
+        "required": [
+          "node_id",
+          "node_name",
+          "node_type",
+          "vulnerabilities_count",
+          "vulnerability_scan_status",
+          "secrets_count",
+          "secret_scan_status",
+          "malwares_count",
+          "malware_scan_status",
+          "compliances_count",
+          "compliance_scan_status",
+          "cloud_compliances_count",
+          "cloud_compliance_scan_status"
+        ],
         "type": "object",
         "properties": {
+          "cloud_compliance_scan_status": { "type": "string" },
+          "cloud_compliances_count": { "type": "integer" },
+          "compliance_scan_status": { "type": "string" },
+          "compliances_count": { "type": "integer" },
+          "malware_scan_status": { "type": "string" },
+          "malwares_count": { "type": "integer" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
-          "node_type": { "type": "string" }
+          "node_type": { "type": "string" },
+          "secret_scan_status": { "type": "string" },
+          "secrets_count": { "type": "integer" },
+          "vulnerabilities_count": { "type": "integer" },
+          "vulnerability_scan_status": { "type": "string" }
         }
       },
       "ModelCompliance": {
@@ -8257,6 +8375,25 @@
         "required": ["offset", "size"],
         "type": "object",
         "properties": { "offset": { "type": "integer" }, "size": { "type": "integer" } }
+      },
+      "ModelFiltersReq": {
+        "required": ["filters"],
+        "type": "object",
+        "properties": {
+          "filters": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "having": { "type": "object", "additionalProperties": {}, "nullable": true }
+        }
+      },
+      "ModelFiltersResult": {
+        "required": ["filters"],
+        "type": "object",
+        "properties": {
+          "filters": {
+            "type": "object",
+            "additionalProperties": { "type": "array", "items": { "type": "string" } },
+            "nullable": true
+          }
+        }
       },
       "ModelHost": {
         "required": [

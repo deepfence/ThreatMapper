@@ -24,6 +24,42 @@ export interface ModelCloudResource {
      * @type {string}
      * @memberof ModelCloudResource
      */
+    cloud_compliance_scan_status: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelCloudResource
+     */
+    cloud_compliances_count: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudResource
+     */
+    compliance_scan_status: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelCloudResource
+     */
+    compliances_count: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudResource
+     */
+    malware_scan_status: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelCloudResource
+     */
+    malwares_count: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudResource
+     */
     node_id: string;
     /**
      * 
@@ -37,6 +73,30 @@ export interface ModelCloudResource {
      * @memberof ModelCloudResource
      */
     node_type: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudResource
+     */
+    secret_scan_status: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelCloudResource
+     */
+    secrets_count: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelCloudResource
+     */
+    vulnerabilities_count: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudResource
+     */
+    vulnerability_scan_status: string;
 }
 
 /**
@@ -44,9 +104,19 @@ export interface ModelCloudResource {
  */
 export function instanceOfModelCloudResource(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "cloud_compliance_scan_status" in value;
+    isInstance = isInstance && "cloud_compliances_count" in value;
+    isInstance = isInstance && "compliance_scan_status" in value;
+    isInstance = isInstance && "compliances_count" in value;
+    isInstance = isInstance && "malware_scan_status" in value;
+    isInstance = isInstance && "malwares_count" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "node_type" in value;
+    isInstance = isInstance && "secret_scan_status" in value;
+    isInstance = isInstance && "secrets_count" in value;
+    isInstance = isInstance && "vulnerabilities_count" in value;
+    isInstance = isInstance && "vulnerability_scan_status" in value;
 
     return isInstance;
 }
@@ -61,9 +131,19 @@ export function ModelCloudResourceFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
+        'cloud_compliance_scan_status': json['cloud_compliance_scan_status'],
+        'cloud_compliances_count': json['cloud_compliances_count'],
+        'compliance_scan_status': json['compliance_scan_status'],
+        'compliances_count': json['compliances_count'],
+        'malware_scan_status': json['malware_scan_status'],
+        'malwares_count': json['malwares_count'],
         'node_id': json['node_id'],
         'node_name': json['node_name'],
         'node_type': json['node_type'],
+        'secret_scan_status': json['secret_scan_status'],
+        'secrets_count': json['secrets_count'],
+        'vulnerabilities_count': json['vulnerabilities_count'],
+        'vulnerability_scan_status': json['vulnerability_scan_status'],
     };
 }
 
@@ -76,9 +156,19 @@ export function ModelCloudResourceToJSON(value?: ModelCloudResource | null): any
     }
     return {
         
+        'cloud_compliance_scan_status': value.cloud_compliance_scan_status,
+        'cloud_compliances_count': value.cloud_compliances_count,
+        'compliance_scan_status': value.compliance_scan_status,
+        'compliances_count': value.compliances_count,
+        'malware_scan_status': value.malware_scan_status,
+        'malwares_count': value.malwares_count,
         'node_id': value.node_id,
         'node_name': value.node_name,
         'node_type': value.node_type,
+        'secret_scan_status': value.secret_scan_status,
+        'secrets_count': value.secrets_count,
+        'vulnerabilities_count': value.vulnerabilities_count,
+        'vulnerability_scan_status': value.vulnerability_scan_status,
     };
 }
 
