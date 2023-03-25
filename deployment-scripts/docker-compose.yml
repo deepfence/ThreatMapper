@@ -380,7 +380,7 @@ services:
   
   deepfence-yara-hunter:
     container_name: deepfence-yara-hunter
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_malware_scanner_ce:${DF_IMG_TAG:-1.4.0}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_malware_scanner_ce:${DF_IMG_TAG:-1.5.0}
     ulimits:
       core: 0
     restart: always
