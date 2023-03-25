@@ -66,6 +66,7 @@ export * from './ModelContainer';
 export * from './ModelContainerImage';
 export * from './ModelDownloadReportResponse';
 export * from './ModelFetchWindow';
+export * from './ModelFiltersReq';
 export * from './ModelFiltersResult';
 export * from './ModelHost';
 export * from './ModelImageStub';

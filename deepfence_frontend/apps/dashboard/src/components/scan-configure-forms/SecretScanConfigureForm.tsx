@@ -155,7 +155,7 @@ export const SecretScanConfigureForm = ({
 
   return (
     <fetcher.Form
-      className="flex flex-col px-6 py-2 mb-4"
+      className="flex flex-col py-2 mb-4"
       method="post"
       action="/data-component/scan/secret"
     >

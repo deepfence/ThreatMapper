@@ -966,11 +966,18 @@
       }
     },
     "/deepfence/filters/cloud-compliance": {
-      "get": {
+      "post": {
         "tags": ["Search"],
         "summary": "Get Cloud Compliance Filters",
         "description": "Get all applicable filter values for cloud compliance",
         "operationId": "getCloudComplianceFilters",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelFiltersReq" }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -1011,11 +1018,18 @@
       }
     },
     "/deepfence/filters/compliance": {
-      "get": {
+      "post": {
         "tags": ["Search"],
         "summary": "Get Compliance Filters",
         "description": "Get all applicable filter values for compliance",
         "operationId": "getComplianceFilters",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelFiltersReq" }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -8088,39 +8102,29 @@
           "node_type",
           "vulnerabilities_count",
           "vulnerability_scan_status",
-          "vulnerability_latest_scan_id",
           "secrets_count",
           "secret_scan_status",
-          "secret_latest_scan",
           "malwares_count",
           "malware_scan_status",
-          "malware_latest_scan_id",
           "compliances_count",
           "compliance_scan_status",
-          "compliance_latest_scan_id",
           "cloud_compliances_count",
-          "cloud_compliance_scan_status",
-          "cloud_compliance_latest scan_id"
+          "cloud_compliance_scan_status"
         ],
         "type": "object",
         "properties": {
-          "cloud_compliance_latest scan_id": { "type": "string" },
           "cloud_compliance_scan_status": { "type": "string" },
           "cloud_compliances_count": { "type": "integer" },
-          "compliance_latest_scan_id": { "type": "string" },
           "compliance_scan_status": { "type": "string" },
           "compliances_count": { "type": "integer" },
-          "malware_latest_scan_id": { "type": "string" },
           "malware_scan_status": { "type": "string" },
           "malwares_count": { "type": "integer" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "node_type": { "type": "string" },
-          "secret_latest_scan": { "type": "string" },
           "secret_scan_status": { "type": "string" },
           "secrets_count": { "type": "integer" },
           "vulnerabilities_count": { "type": "integer" },
-          "vulnerability_latest_scan_id": { "type": "string" },
           "vulnerability_scan_status": { "type": "string" }
         }
       },
@@ -8286,33 +8290,25 @@
           "host_name",
           "vulnerabilities_count",
           "vulnerability_scan_status",
-          "vulnerability_latest_scan_id",
           "secrets_count",
           "secret_scan_status",
-          "secret_latest_scan",
           "malwares_count",
           "malware_scan_status",
-          "malware_latest_scan_id",
           "compliances_count",
           "compliance_scan_status",
-          "compliance_latest_scan_id",
           "cloud_compliances_count",
-          "cloud_compliance_scan_status",
-          "cloud_compliance_latest scan_id"
+          "cloud_compliance_scan_status"
         ],
         "type": "object",
         "properties": {
-          "cloud_compliance_latest scan_id": { "type": "string" },
           "cloud_compliance_scan_status": { "type": "string" },
           "cloud_compliances_count": { "type": "integer" },
-          "compliance_latest_scan_id": { "type": "string" },
           "compliance_scan_status": { "type": "string" },
           "compliances_count": { "type": "integer" },
           "docker_container_name": { "type": "string" },
           "docker_labels": { "$ref": "#/components/schemas/ModelMetadata" },
           "host_name": { "type": "string" },
           "image": { "$ref": "#/components/schemas/ModelContainerImage" },
-          "malware_latest_scan_id": { "type": "string" },
           "malware_scan_status": { "type": "string" },
           "malwares_count": { "type": "integer" },
           "metadata": { "$ref": "#/components/schemas/ModelMetadata" },
@@ -8324,11 +8320,9 @@
             "items": { "$ref": "#/components/schemas/ModelProcess" },
             "nullable": true
           },
-          "secret_latest_scan": { "type": "string" },
           "secret_scan_status": { "type": "string" },
           "secrets_count": { "type": "integer" },
           "vulnerabilities_count": { "type": "integer" },
-          "vulnerability_latest_scan_id": { "type": "string" },
           "vulnerability_scan_status": { "type": "string" }
         }
       },
@@ -8343,43 +8337,33 @@
           "metadata",
           "vulnerabilities_count",
           "vulnerability_scan_status",
-          "vulnerability_latest_scan_id",
           "secrets_count",
           "secret_scan_status",
-          "secret_latest_scan",
           "malwares_count",
           "malware_scan_status",
-          "malware_latest_scan_id",
           "compliances_count",
           "compliance_scan_status",
-          "compliance_latest_scan_id",
           "cloud_compliances_count",
-          "cloud_compliance_scan_status",
-          "cloud_compliance_latest scan_id"
+          "cloud_compliance_scan_status"
         ],
         "type": "object",
         "properties": {
-          "cloud_compliance_latest scan_id": { "type": "string" },
           "cloud_compliance_scan_status": { "type": "string" },
           "cloud_compliances_count": { "type": "integer" },
-          "compliance_latest_scan_id": { "type": "string" },
           "compliance_scan_status": { "type": "string" },
           "compliances_count": { "type": "integer" },
           "docker_image_name": { "type": "string" },
           "docker_image_size": { "type": "string" },
           "docker_image_tag": { "type": "string" },
-          "malware_latest_scan_id": { "type": "string" },
           "malware_scan_status": { "type": "string" },
           "malwares_count": { "type": "integer" },
           "metadata": { "$ref": "#/components/schemas/ModelMetadata" },
           "metrics": { "$ref": "#/components/schemas/ModelComputeMetrics" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
-          "secret_latest_scan": { "type": "string" },
           "secret_scan_status": { "type": "string" },
           "secrets_count": { "type": "integer" },
           "vulnerabilities_count": { "type": "integer" },
-          "vulnerability_latest_scan_id": { "type": "string" },
           "vulnerability_scan_status": { "type": "string" }
         }
       },
@@ -8391,6 +8375,14 @@
         "required": ["offset", "size"],
         "type": "object",
         "properties": { "offset": { "type": "integer" }, "size": { "type": "integer" } }
+      },
+      "ModelFiltersReq": {
+        "required": ["filters"],
+        "type": "object",
+        "properties": {
+          "filters": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "having": { "type": "object", "additionalProperties": {}, "nullable": true }
+        }
       },
       "ModelFiltersResult": {
         "required": ["filters"],
@@ -8420,27 +8412,20 @@
           "metrics",
           "vulnerabilities_count",
           "vulnerability_scan_status",
-          "vulnerability_latest_scan_id",
           "secrets_count",
           "secret_scan_status",
-          "secret_latest_scan",
           "malwares_count",
           "malware_scan_status",
-          "malware_latest_scan_id",
           "compliances_count",
           "compliance_scan_status",
-          "compliance_latest_scan_id",
           "cloud_compliances_count",
-          "cloud_compliance_scan_status",
-          "cloud_compliance_latest scan_id"
+          "cloud_compliance_scan_status"
         ],
         "type": "object",
         "properties": {
-          "cloud_compliance_latest scan_id": { "type": "string" },
           "cloud_compliance_scan_status": { "type": "string" },
           "cloud_compliances_count": { "type": "integer" },
           "cloud_metadata": { "$ref": "#/components/schemas/ModelMetadata" },
-          "compliance_latest_scan_id": { "type": "string" },
           "compliance_scan_status": { "type": "string" },
           "compliances_count": { "type": "integer" },
           "container_images": {
@@ -8457,7 +8442,6 @@
           "interfaceNames": { "type": "string" },
           "interface_ips": { "type": "string" },
           "kernel_version": { "type": "string" },
-          "malware_latest_scan_id": { "type": "string" },
           "malware_scan_status": { "type": "string" },
           "malwares_count": { "type": "integer" },
           "metrics": { "$ref": "#/components/schemas/ModelComputeMetrics" },
@@ -8473,12 +8457,10 @@
             "items": { "$ref": "#/components/schemas/ModelProcess" },
             "nullable": true
           },
-          "secret_latest_scan": { "type": "string" },
           "secret_scan_status": { "type": "string" },
           "secrets_count": { "type": "integer" },
           "uptime": { "type": "string" },
           "vulnerabilities_count": { "type": "integer" },
-          "vulnerability_latest_scan_id": { "type": "string" },
           "vulnerability_scan_status": { "type": "string" }
         }
       },

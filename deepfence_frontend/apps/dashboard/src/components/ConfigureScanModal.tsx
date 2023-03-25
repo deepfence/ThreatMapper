@@ -1,13 +1,13 @@
 import { Modal } from 'ui-components';
 
 import {
+  ComplianceScanConfigureForm,
+  ComplianceScanConfigureFormProps,
+} from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import {
   MalwareScanConfigureForm,
   MalwareScanConfigureFormProps,
 } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
-import {
-  ComplianceScanConfigureForm,
-  ComplianceScanConfigureFormProps,
-} from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import {
   SecretScanConfigureForm,
   SecretScanConfigureFormProps,
@@ -68,35 +68,37 @@ export const ConfigureScanModal = ({
 
   return (
     <Modal open={open} width="w-full" title={title} onOpenChange={onOpenChange}>
-      {scanOptions.scanType === ScanTypeEnum.VulnerabilityScan && (
-        <VulnerabilityScanConfigureForm
-          showAdvancedOptions={scanOptions.showAdvancedOptions}
-          data={scanOptions.data}
-          onSuccess={() => onOpenChange(false)}
-        />
-      )}
-      {scanOptions.scanType === ScanTypeEnum.SecretScan && (
-        <SecretScanConfigureForm
-          showAdvancedOptions={scanOptions.showAdvancedOptions}
-          data={scanOptions.data}
-          onSuccess={() => onOpenChange(false)}
-        />
-      )}
-      {scanOptions.scanType === ScanTypeEnum.MalwareScan && (
-        <MalwareScanConfigureForm
-          showAdvancedOptions={scanOptions.showAdvancedOptions}
-          data={scanOptions.data}
-          onSuccess={() => onOpenChange(false)}
-        />
-      )}
-      {(scanOptions.scanType === ScanTypeEnum.ComplianceScan ||
-        scanOptions.scanType === ScanTypeEnum.CloudComplianceScan) && (
-        <ComplianceScanConfigureForm
-          showAdvancedOptions={scanOptions.showAdvancedOptions}
-          data={scanOptions.data}
-          onSuccess={() => onOpenChange(false)}
-        />
-      )}
+      <div className="p-6">
+        {scanOptions.scanType === ScanTypeEnum.VulnerabilityScan && (
+          <VulnerabilityScanConfigureForm
+            showAdvancedOptions={scanOptions.showAdvancedOptions}
+            data={scanOptions.data}
+            onSuccess={() => onOpenChange(false)}
+          />
+        )}
+        {scanOptions.scanType === ScanTypeEnum.SecretScan && (
+          <SecretScanConfigureForm
+            showAdvancedOptions={scanOptions.showAdvancedOptions}
+            data={scanOptions.data}
+            onSuccess={() => onOpenChange(false)}
+          />
+        )}
+        {scanOptions.scanType === ScanTypeEnum.MalwareScan && (
+          <MalwareScanConfigureForm
+            showAdvancedOptions={scanOptions.showAdvancedOptions}
+            data={scanOptions.data}
+            onSuccess={() => onOpenChange(false)}
+          />
+        )}
+        {(scanOptions.scanType === ScanTypeEnum.ComplianceScan ||
+          scanOptions.scanType === ScanTypeEnum.CloudComplianceScan) && (
+          <ComplianceScanConfigureForm
+            showAdvancedOptions={scanOptions.showAdvancedOptions}
+            data={scanOptions.data}
+            onSuccess={() => onOpenChange(false)}
+          />
+        )}
+      </div>
     </Modal>
   );
 };

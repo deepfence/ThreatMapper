@@ -57,10 +57,11 @@ import {
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
-import { complianceType } from '@/components/scan-configure-forms/PostureScanConfigureForm';
+import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
+import { useGetCloudFilters } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { PostureResultChart } from '@/features/postures/components/PostureResultChart';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { PostureSeverityType, ScanTypeEnum } from '@/types/common';
@@ -913,7 +914,16 @@ const FilterComponent = () => {
 
   const params = useParams() as {
     nodeType: string;
+    scanId: string;
   };
+
+  if (!params.scanId) {
+    console.warn('No scan id found');
+  }
+  const {
+    status,
+    filters: { services, statuses },
+  } = useGetCloudFilters(params.scanId);
 
   const nodeType = params.nodeType;
   let benchmarks: string[] = [];
@@ -1018,26 +1028,36 @@ const FilterComponent = () => {
               </Select>
             </fieldset>
             <fieldset>
-              <Select
-                noPortal
-                name="services"
-                label={'Service Name'}
-                placeholder="Select Service Name"
-                value={searchParams.getAll('services')}
-                sizing="xs"
-                onChange={(value) => {
-                  setSearchParams((prev) => {
-                    prev.delete('services');
-                    value.forEach((service) => {
-                      prev.append('services', service);
+              {status === 'loading' ? (
+                <CircleSpinner size="xs" />
+              ) : (
+                <Select
+                  noPortal
+                  name="services"
+                  label={'Service Name'}
+                  placeholder="Select Service Name"
+                  value={searchParams.getAll('services')}
+                  sizing="xs"
+                  onChange={(value) => {
+                    setSearchParams((prev) => {
+                      prev.delete('services');
+                      value.forEach((service) => {
+                        prev.append('services', service);
+                      });
+                      prev.delete('page');
+                      return prev;
                     });
-                    prev.delete('page');
-                    return prev;
-                  });
-                }}
-              >
-                <SelectItem />
-              </Select>
+                  }}
+                >
+                  {services.map((service: string) => {
+                    return (
+                      <SelectItem value={service} key={service}>
+                        {service}
+                      </SelectItem>
+                    );
+                  })}
+                </Select>
+              )}
             </fieldset>
             <fieldset>
               <Select
@@ -1058,15 +1078,13 @@ const FilterComponent = () => {
                   });
                 }}
               >
-                {[STATUSES.ALARM, STATUSES.INFO, STATUSES.OK, STATUSES.SKIP].map(
-                  (status: string) => {
-                    return (
-                      <SelectItem value={status.toLowerCase()} key={status.toLowerCase()}>
-                        {status.toUpperCase()}
-                      </SelectItem>
-                    );
-                  },
-                )}
+                {statuses.map((status: string) => {
+                  return (
+                    <SelectItem value={status.toLowerCase()} key={status.toLowerCase()}>
+                      {status.toUpperCase()}
+                    </SelectItem>
+                  );
+                })}
               </Select>
             </fieldset>
           </div>
@@ -1092,6 +1110,7 @@ const HeaderComponent = () => {
   const loaderData = useLoaderData() as LoaderDataType;
   const isFilterApplied =
     searchParams.has('status') ||
+    searchParams.has('services') ||
     searchParams.has('mask') ||
     searchParams.has('unmask') ||
     searchParams.has('benchmarkType');
