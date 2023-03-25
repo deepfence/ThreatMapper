@@ -63,11 +63,9 @@ func (t *connectionTracker) useProcfs() {
 
 // ReportConnections calls trackers according to the configuration.
 func (t *connectionTracker) ReportConnections(rpt *report.Report) {
-	hostNodeID := report.MakeHostNodeID(t.conf.HostID)
-
 	if t.ebpfTracker != nil {
 		if !t.ebpfTracker.isDead() {
-			t.performEbpfTrack(rpt, hostNodeID)
+			t.performEbpfTrack(rpt, t.conf.HostID)
 			return
 		}
 
@@ -87,7 +85,7 @@ func (t *connectionTracker) ReportConnections(rpt *report.Report) {
 			err := t.ebpfTracker.restart()
 			if err == nil {
 				feedEBPFInitialState(t.conf, t.ebpfTracker)
-				t.performEbpfTrack(rpt, hostNodeID)
+				t.performEbpfTrack(rpt, t.conf.HostID)
 				return
 			}
 			log.Warnf("could not restart ebpf tracker, falling back to proc scanning: %v", err)
@@ -104,7 +102,7 @@ func (t *connectionTracker) ReportConnections(rpt *report.Report) {
 	})
 
 	if t.conf.WalkProc && t.conf.Scanner != nil {
-		t.performWalkProc(rpt, hostNodeID, seenTuples)
+		t.performWalkProc(rpt, t.conf.HostID, seenTuples)
 	}
 }
 
@@ -172,7 +170,7 @@ func feedEBPFInitialState(conf ReporterConfig, ebpfTracker *EbpfTracker) {
 		}
 	})
 
-	ebpfTracker.feedInitialConnections(conns, seenTuples, processesWaitingInAccept, report.MakeHostNodeID(conf.HostID))
+	ebpfTracker.feedInitialConnections(conns, seenTuples, processesWaitingInAccept, conf.HostID)
 }
 
 type pidPair struct {
@@ -347,12 +345,12 @@ func (t *connectionTracker) addConnection(rpt *report.Report, hostNodeID string,
 
 func (t *connectionTracker) makeEndpointNode(namespaceID uint32, addr net.IP, port uint16, extra extra) report.Metadata {
 	node := report.Metadata{
-		Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
-		NodeID:    report.MakeEndpointNodeIDB(t.conf.HostID, namespaceID, addr, port),
+		Timestamp:       time.Now().UTC().Format(time.RFC3339Nano),
+		NodeID:          report.MakeEndpointNodeIDB(t.conf.HostID, namespaceID, addr, port),
+		Pid:             extra.PID,
+		HostName:        extra.HostNodeID,
+		ConnectionCount: extra.ConnectionCount,
 	}
-	node.Pid = extra.PID
-	node.HostName = extra.HostNodeID
-	node.ConnectionCount = extra.ConnectionCount
 	return node
 }
 

@@ -120,30 +120,6 @@ func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, get
 	respondWith(ctx, w, http.StatusOK, GraphResult{Nodes: newTopo, Edges: newConnections})
 }
 
-func nodeStubToMetadata(stub reporters_graph.NodeStub) []report.MetadataRow {
-	return []report.MetadataRow{
-		{
-			ID:       "id",
-			Label:    "ID",
-			Value:    string(stub.ID),
-			Priority: 1,
-		},
-		{
-			ID:       "label",
-			Label:    "Label",
-			Value:    stub.Name,
-			Priority: 2,
-		},
-	}
-}
-
-func nodeStubToSummary(stub reporters_graph.NodeStub) detailed.BasicNodeSummary {
-	return detailed.BasicNodeSummary{
-		ID:    string(stub.ID),
-		Label: stub.Name,
-	}
-}
-
 func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, region_filter, kubernetes_filter, host_filter []string) (detailed.NodeSummaries, detailed.TopologyConnectionSummaries) {
 	nodes := detailed.NodeSummaries{}
 	edges := detailed.TopologyConnectionSummaries{}
@@ -186,8 +162,9 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 	for _, cp_stub := range graph.Providers {
 		cp := string(cp_stub.ID)
 		nodes[cp] = detailed.NodeSummary{
+			ID:                string(cp_stub.ID),
+			Label:             cp_stub.Name,
 			ImmediateParentID: "",
-			BasicNodeSummary:  nodeStubToSummary(cp_stub),
 			Type:              report.CloudProvider,
 		}
 	}
@@ -196,8 +173,9 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		for _, cr_stub := range crs {
 			cr := string(cr_stub.ID)
 			nodes[cr] = detailed.NodeSummary{
+				ID:                string(cr_stub.ID),
+				Label:             cr_stub.Name,
 				ImmediateParentID: string(cp),
-				BasicNodeSummary:  nodeStubToSummary(cr_stub),
 				Type:              report.KubernetesCluster,
 			}
 		}
@@ -207,8 +185,9 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		for _, cr_stub := range crs {
 			cr := string(cr_stub.ID)
 			nodes[cr] = detailed.NodeSummary{
+				ID:                string(cr_stub.ID),
+				Label:             cr_stub.Name,
 				ImmediateParentID: string(cp),
-				BasicNodeSummary:  nodeStubToSummary(cr_stub),
 				Type:              report.CloudRegion,
 			}
 		}
@@ -218,8 +197,9 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		for _, host_stub := range n {
 			host := string(host_stub.ID)
 			nodes[host] = detailed.NodeSummary{
+				ID:                string(host_stub.ID),
+				Label:             host_stub.Name,
 				ImmediateParentID: string(cr),
-				BasicNodeSummary:  nodeStubToSummary(host_stub),
 				Type:              report.Host,
 			}
 		}
@@ -237,8 +217,9 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		for _, cr_stub := range crs {
 			cr := string(cr_stub.ID)
 			nodes[cr] = detailed.NodeSummary{
+				ID:                string(cr_stub.ID),
+				Label:             cr_stub.Name,
 				ImmediateParentID: string(cp),
-				BasicNodeSummary:  nodeStubToSummary(cr_stub.NodeStub),
 				Type:              cr_stub.ResourceType,
 				IDs:               NodeIDs2strings(cr_stub.IDs),
 			}
@@ -246,29 +227,26 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 	}
 
 	nodes["in-the-internet"] = detailed.NodeSummary{
+		ID:                "in-the-internet",
+		Label:             "The Internet",
 		ImmediateParentID: "",
-		BasicNodeSummary: detailed.BasicNodeSummary{
-			ID:    "in-the-internet",
-			Label: "The Internet",
-		},
-		Type: "pseudo",
+		Type:              "pseudo",
 	}
 
 	nodes["out-the-internet"] = detailed.NodeSummary{
+		ID:                "out-the-internet",
+		Label:             "The Internet",
 		ImmediateParentID: "",
-		BasicNodeSummary: detailed.BasicNodeSummary{
-			ID:    "out-the-internet",
-			Label: "The Internet",
-		},
-		Type: "pseudo",
+		Type:              "pseudo",
 	}
 
 	for h, n := range graph.Processes {
 		for _, id_stub := range n {
 			id := string(id_stub.ID)
 			nodes[id] = detailed.NodeSummary{
+				ID:                string(id_stub.ID),
+				Label:             id_stub.Name,
 				ImmediateParentID: string(h),
-				BasicNodeSummary:  nodeStubToSummary(id_stub),
 				Type:              report.Process,
 			}
 		}
@@ -278,8 +256,9 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		for _, id_stub := range n {
 			id := string(id_stub.ID)
 			nodes[id] = detailed.NodeSummary{
+				ID:                string(id_stub.ID),
+				Label:             id_stub.Name,
 				ImmediateParentID: string(h),
-				BasicNodeSummary:  nodeStubToSummary(id_stub),
 				Type:              report.Pod,
 			}
 		}
@@ -289,8 +268,9 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		for _, id_stub := range n {
 			id := string(id_stub.ID)
 			nodes[id] = detailed.NodeSummary{
+				ID:                string(id_stub.ID),
+				Label:             id_stub.Name,
 				ImmediateParentID: string(h),
-				BasicNodeSummary:  nodeStubToSummary(id_stub),
 				Type:              report.Container,
 			}
 		}

@@ -24,7 +24,7 @@ type reportCache struct {
 
 // Reporter generates Reports containing the Process topology.
 type Reporter struct {
-	scope                  string
+	hostID                 string
 	walker                 Walker
 	jiffies                Jiffies
 	noCommandLineArguments bool
@@ -48,10 +48,10 @@ func StartOpenFilesTracing() *InfoTracer {
 }
 
 // NewReporter makes a new Reporter.
-func NewReporter(walker Walker, scope string, jiffies Jiffies, noCommandLineArguments, trackProcDeploads bool) *Reporter {
+func NewReporter(walker Walker, hostID string, jiffies Jiffies, noCommandLineArguments, trackProcDeploads bool) *Reporter {
 
 	r := &Reporter{
-		scope:                  scope,
+		hostID:                 hostID,
 		walker:                 walker,
 		jiffies:                jiffies,
 		noCommandLineArguments: noCommandLineArguments,
@@ -120,7 +120,7 @@ func (r *Reporter) processTopology() (report.Topology, error) {
 
 	err = r.walker.Walk(func(p, prev Process) {
 		pidstr := strconv.Itoa(p.PID)
-		nodeID := report.MakeProcessNodeID(r.scope, pidstr)
+		nodeID := report.MakeProcessNodeID(r.hostID, pidstr)
 		node := report.Metadata{
 			Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
 			NodeID:    nodeID,

@@ -4,6 +4,15 @@ import (
 	"reflect"
 )
 
+type MetadataRow struct {
+	ID       string      `json:"id"`
+	Label    string      `json:"label"`
+	Value    interface{} `json:"value"`
+	Priority float64     `json:"priority,omitempty"`
+	Datatype string      `json:"dataType,omitempty"`
+	Truncate int         `json:"truncate,omitempty"`
+}
+
 type Topology map[string]Metadata
 
 func MakeTopology() Topology {
