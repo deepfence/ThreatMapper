@@ -248,6 +248,10 @@ var topologyNames = []string{
 
 type TopologySets map[string]Sets
 
+func MakeTopologySets() map[string]Sets {
+	return map[string]Sets{}
+}
+
 type Parents map[string]Parent
 
 func MakeParents() Parents {
@@ -299,8 +303,7 @@ type Report struct {
 	// CloudProvider nodes represent all cloud providers.
 	// Metadata includes things like name etc. Edges are not
 	// present.
-	CloudProvider        Topology
-	CloudProviderParents Parents
+	CloudProvider Topology
 
 	// CloudRegion nodes represent all cloud regions.
 	// Metadata includes things like name etc. Edges are not
@@ -377,6 +380,44 @@ type Report struct {
 // MakeReport makes a clean report, ready to Merge() other reports into.
 func MakeReport() Report {
 	return Report{
+		Endpoint:          MakeTopology(),
+		EndpointAdjacency: make(map[string][]string),
+		EndpointParents:   MakeParents(),
+
+		Process:        MakeTopology(),
+		ProcessParents: MakeParents(),
+
+		Container:        MakeTopology(),
+		ContainerParents: MakeParents(),
+		ContainerSets:    MakeTopologySets(),
+
+		CloudProvider: MakeTopology(),
+
+		CloudRegion:        MakeTopology(),
+		CloudRegionParents: MakeParents(),
+
+		KubernetesCluster:        MakeTopology(),
+		KubernetesClusterParents: MakeParents(),
+
+		Pod:        MakeTopology(),
+		PodParents: MakeParents(),
+
+		Service:        MakeTopology(),
+		ServiceParents: MakeParents(),
+
+		Namespace:        MakeTopology(),
+		NamespaceParents: MakeParents(),
+
+		ContainerImage:        MakeTopology(),
+		ContainerImageParents: MakeParents(),
+
+		Host:        MakeTopology(),
+		HostParents: MakeParents(),
+
+		Overlay:        MakeTopology(),
+		OverlayParents: MakeParents(),
+		OverlaySets:    MakeTopologySets(),
+
 		DNS:    DNSRecords{},
 		Window: 0,
 		ID:     fmt.Sprintf("%d", rand.Int63()),
