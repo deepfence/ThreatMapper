@@ -256,6 +256,11 @@ export const Combobox: React.FC<ComboboxProps> = ({
                       e.stopPropagation();
                       removeSelectedItem(selectedItemForRender);
                     }}
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
+                      removeSelectedItem(selectedItemForRender);
+                    }}
+                    role="button"
                   >
                     &#10005;
                   </span>
