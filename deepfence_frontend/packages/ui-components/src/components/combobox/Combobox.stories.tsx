@@ -1,25 +1,25 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { useState } from 'react';
-import {  Combobox } from '@/components/combobox/Combobox';
+import { Combobox } from '@/components/combobox/Combobox';
 
 export default {
   title: 'Components/combobox',
   component: Combobox,
 } as ComponentMeta<typeof Combobox>;
 
-
-
 const MultiSelectCombo: ComponentStory<typeof Combobox> = (args) => {
   const [value, setValue] = useState<any>();
-  console.log("value98",value);
-  
+  console.log('value98', value);
+
   return (
-    <Combobox {...args} onChange={(value:any) => {
-      setValue(value);
-    }}/>
+    <Combobox
+      {...args}
+      onChange={(value: any) => {
+        setValue(value);
+      }}
+    />
   );
 };
-
 
 export const Default = MultiSelectCombo.bind({});
 Default.args = {
@@ -62,10 +62,9 @@ Default.args = {
       value: 9,
     },
   ],
-  label:"Select",
-  placeholder:"Select a Book"
+  label: 'Select',
+  placeholder: 'Select a Book',
 };
-
 
 export const multipleSelect = MultiSelectCombo.bind({});
 multipleSelect.args = {
@@ -109,6 +108,6 @@ multipleSelect.args = {
       value: 9,
     },
   ],
-  label:"Select",
-  placeholder:"Select a Book"
+  label: 'Select',
+  placeholder: 'Select a Book',
 };
