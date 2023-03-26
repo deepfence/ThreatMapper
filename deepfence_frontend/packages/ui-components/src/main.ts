@@ -33,7 +33,6 @@ export {
 } from '@/components/modal/SlidingModal';
 export { Popover } from '@/components/popover/Popover';
 export { default as Radio } from '@/components/radio/Radio';
-//TODO: need to refactor the names
 export { Select, SelectItem } from '@/components/select/Select';
 export { Combobox } from '@/components/combobox/Combobox';
 export { default as Separator } from '@/components/separator/Separator';
