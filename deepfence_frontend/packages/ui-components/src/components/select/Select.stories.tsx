@@ -1,114 +1,116 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { useState } from 'react';
-import {  MultipleComboBox } from '@/components/select/Select';
+import { AiOutlineMail } from 'react-icons/ai';
+
+import { Select, SelectItem } from '@/components/select/Select';
 
 export default {
-  title: 'Components/select',
-  component: MultipleComboBox,
-} as ComponentMeta<typeof MultipleComboBox>;
+  title: 'Components/Select',
+  component: Select,
+} as ComponentMeta<typeof Select>;
 
-
-
-const MultiSelectCombo: ComponentStory<typeof MultipleComboBox> = (args) => {
-  const [value, setValue] = useState<any>();
-  console.log("value98",value);
-  
+const Template: ComponentStory<typeof Select<string>> = (args) => {
+  const [value, setValue] = useState<string | undefined>();
+  // TODO problem. somehow first value always gets selected.
   return (
-    <MultipleComboBox {...args} onChange={(value) => {
-      setValue(value);
-    }}/>
+    <Select
+      {...args}
+      value={value}
+      name="fruit"
+      onChange={(value) => {
+        setValue(value);
+      }}
+      label="Fruit"
+      placeholder="Select a fruit"
+    >
+      <SelectItem value="Apple" />
+      <SelectItem value="Banana" />
+      <SelectItem value="Grape" />
+      <SelectItem value="Orange" />
+      <SelectItem value="Papaya" />
+      <SelectItem value="Watermalon" />
+      <SelectItem value="Guava" />
+      <SelectItem value="Tomato" />
+      <SelectItem value="Blueberries" />
+      <SelectItem value="Pear" />
+      <SelectItem value="Pineapple" />
+    </Select>
   );
 };
 
+export const Default = Template.bind({});
+Default.args = {};
 
-export const Default = MultiSelectCombo.bind({});
-Default.args = {
-  name: 'Fruits',
-  options: [
-    {
-      label: 'To Kill a Mockingbird1',
-      value: 1,
-    },
-    {
-      label: 'War and Peace',
-      value: 2,
-    },
-    {
-      label: 'The Idiot',
-      value: 3,
-    },
-    {
-      label: 'To Kill a Mockingbird14',
-      value: 4,
-    },
-    {
-      label: 'War and Peace5',
-      value: 5,
-    },
-    {
-      label: 'The Idiot6',
-      value: 6,
-    },
-    {
-      label: 'To Kill a Mockingbird17',
-      value: 7,
-    },
-    {
-      label: 'War and Peace8',
-      value: 8,
-    },
-    {
-      label: 'The Idiot9',
-      value: 9,
-    },
-  ],
-  label:"Select",
-  placeholder:"Select a Book"
+const PreCompItem = () => {
+  return <div>Citrus</div>;
+};
+const PreComp: ComponentStory<typeof Select<string>> = (args) => {
+  const [value, setValue] = useState<string | undefined>();
+  // TODO problem. somehow first value always gets selected.
+  return (
+    <Select
+      {...args}
+      value={value}
+      name="fruit"
+      onChange={(value) => {
+        setValue(value);
+      }}
+      label="Fruit"
+      placeholder="Select a fruit"
+      prefixComponent={<PreCompItem />}
+    >
+      <SelectItem value="Apple" />
+      <SelectItem value="Banana" />
+      <SelectItem value="Grape" />
+      <SelectItem value="Orange" />
+      <SelectItem value="Papaya" />
+      <SelectItem value="Watermalon" />
+      <SelectItem value="Guava" />
+      <SelectItem value="Tomato" />
+      <SelectItem value="Blueberries" />
+      <SelectItem value="Pear" />
+      <SelectItem value="Pineapple" />
+    </Select>
+  );
 };
 
+export const WithPrefixComponent = PreComp.bind({});
 
-export const multipleSelect = MultiSelectCombo.bind({});
-multipleSelect.args = {
-  multiSelect: true,
-  name: 'Fruits',
-  options: [
-    {
-      label: 'To Kill a Mockingbird1',
-      value: 1,
-    },
-    {
-      label: 'War and Peace',
-      value: 2,
-    },
-    {
-      label: 'The Idiot',
-      value: 3,
-    },
-    {
-      label: 'To Kill a Mockingbird14',
-      value: 4,
-    },
-    {
-      label: 'War and Peace5',
-      value: 5,
-    },
-    {
-      label: 'The Idiot6',
-      value: 6,
-    },
-    {
-      label: 'To Kill a Mockingbird17',
-      value: 7,
-    },
-    {
-      label: 'War and Peace8',
-      value: 8,
-    },
-    {
-      label: 'The Idiot9',
-      value: 9,
-    },
-  ],
-  label:"Select",
-  placeholder:"Select a Book"
+export const WithPrefixComponentXS = PreComp.bind({});
+WithPrefixComponentXS.args = {
+  sizing: 'xs',
+};
+
+const TemplateMulti: ComponentStory<typeof Select<string[]>> = (args) => {
+  const [value, setValue] = useState<string[] | undefined>([]);
+  return (
+    <Select
+      {...args}
+      value={value}
+      name="fruit"
+      onChange={(value) => {
+        setValue(value);
+      }}
+      label="Fruit"
+      placeholder="Select some fruits"
+    >
+      <SelectItem value="Apple" />
+      <SelectItem value="Banana" />
+      <SelectItem value="Grape" />
+      <SelectItem value="Orange" />
+      <SelectItem value="Papaya" />
+      <SelectItem value="Watermalon" />
+      <SelectItem value="Guava" />
+      <SelectItem value="Tomato" />
+      <SelectItem value="Blueberries" />
+      <SelectItem value="Pear" />
+      <SelectItem value="Pineapple" />
+    </Select>
+  );
+};
+
+export const MultiSelect = TemplateMulti.bind({});
+MultiSelect.args = {
+  startIcon: <AiOutlineMail />,
+  sizing: 'xs',
 };
