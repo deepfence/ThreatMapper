@@ -122,9 +122,8 @@ const SIZE_DEFAULT = 'sm';
 const SelectStateContext = React.createContext<SelectState | null>(null);
 
 
-export const MultipleComboBox: React.FC<SelectProps> = ({options=[],value=[],label=null, required=false,url,multiSelect=false,onChange,...props}) => {
-  console.log("multiSelect",multiSelect);
-  
+export const MultipleComboBox: React.FC<SelectProps> = ({options=[],value=[],label=null, required=false,url,multiSelect=false,onChange,sizing = SIZE_DEFAULT,
+  color = COLOR_DEFAULT,className = '',...props}) => {
     const [optionsList, setOptionsList]= React.useState(options);
     const [inputValue, setInputValue] = React.useState('')
     const [selectedItems, setSelectedItems] =
@@ -266,7 +265,7 @@ export const MultipleComboBox: React.FC<SelectProps> = ({options=[],value=[],lab
           </LabelPrimitive.Root>
         )}
           
-          <div className="shadow-sm bg-white inline-flex gap-2 items-center flex-wrap p-1.5">
+          <div  className={twMerge(cx(`${classes.color[color]}`,"shadow-sm bg-white inline-flex gap-2 items-center flex-wrap p-1.5"))}>
             {multiSelect && selectedItems.map(function renderSelectedItem(
               selectedItemForRender,
               index,
@@ -296,8 +295,19 @@ export const MultipleComboBox: React.FC<SelectProps> = ({options=[],value=[],lab
             <div className="flex gap-0.5 grow">
               <input
                 placeholder="Best book ever"
-                className="w-full"
                 {...inputProps}
+                className={twMerge(
+                  cx(
+                    'w-full bg-gray-50 dark:bg-gray-700',
+                    'block text-left',
+                    'focus:outline-none select-none overscroll-contain',
+                    `${classes.color[color]}`,
+                    `${classes.size[sizing]}`,
+                    `${Typography.weight.normal}`,
+                    `${Typography.leading.none}`,
+                    className,
+                  ),
+                )}
               />
               <button
                 aria-label="toggle menu"
