@@ -1,8 +1,9 @@
-import cx from 'classnames';
-import React, { useEffect, useRef } from 'react';
 import * as LabelPrimitive from '@radix-ui/react-label';
+import cx from 'classnames';
+import { useCombobox, UseComboboxInterface, useMultipleSelection } from 'downshift';
+import React, { useEffect, useRef } from 'react';
 import { twMerge } from 'tailwind-merge';
-import { useMultipleSelection, useCombobox, UseComboboxInterface } from 'downshift';
+
 import { Typography } from '@/components/typography/Typography';
 
 export type SizeType = 'xs' | 'sm' | 'md';

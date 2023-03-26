@@ -13,6 +13,7 @@ export { default as Button } from '@/components/button/Button';
 export { default as IconButton } from '@/components/button/IconButton';
 export { Card } from '@/components/card/Card';
 export { Checkbox } from '@/components/checkbox/Checkbox';
+export { Combobox } from '@/components/combobox/Combobox';
 export {
   Dropdown,
   DropdownItem,
@@ -34,7 +35,6 @@ export {
 export { Popover } from '@/components/popover/Popover';
 export { default as Radio } from '@/components/radio/Radio';
 export { Select, SelectItem } from '@/components/select/Select';
-export { Combobox } from '@/components/combobox/Combobox';
 export { default as Separator } from '@/components/separator/Separator';
 export { CircleSpinner } from '@/components/spinner/CircleSpinner';
 export { Step, Stepper } from '@/components/stepper/Stepper';

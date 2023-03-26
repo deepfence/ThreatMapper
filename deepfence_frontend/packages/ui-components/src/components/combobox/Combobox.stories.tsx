@@ -1,5 +1,6 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { useState } from 'react';
+
 import { Combobox } from '@/components/combobox/Combobox';
 
 export default {
