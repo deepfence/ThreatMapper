@@ -12,7 +12,7 @@ export type Option = { value: string|number; label: string; disabled?: boolean; 
 type Value = Option | Option[];
 type MutableValue<T extends Value = Value> = T extends string ? string : T;
 
-export interface SelectProps<T extends Value = Value> {
+export interface ComboboxProps<T extends Value = Value> {
   multiSelect?:boolean;
   defaultValue?: T;
   label?: React.ReactNode;
@@ -59,7 +59,7 @@ const COLOR_DEFAULT = 'default';
 const SIZE_DEFAULT = 'sm';
 
 
-export const MultipleComboBox: React.FC<SelectProps> = ({options=[],value=[],label=null, required=false,url,multiSelect=false,onChange,sizing = SIZE_DEFAULT,
+export const Combobox: React.FC<ComboboxProps> = ({options=[],value=[],label=null, required=false,url,multiSelect=false,onChange,sizing = SIZE_DEFAULT,
   color = COLOR_DEFAULT,className = ''}) => {
     const [optionsList, setOptionsList]= React.useState(options);
     const [inputValue, setInputValue] = React.useState('')

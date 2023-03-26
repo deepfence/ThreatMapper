@@ -1,20 +1,20 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { useState } from 'react';
-import {  MultipleComboBox } from '@/components/combobox/Select';
+import {  Combobox } from '@/components/combobox/Combobox';
 
 export default {
   title: 'Components/combobox',
-  component: MultipleComboBox,
-} as ComponentMeta<typeof MultipleComboBox>;
+  component: Combobox,
+} as ComponentMeta<typeof Combobox>;
 
 
 
-const MultiSelectCombo: ComponentStory<typeof MultipleComboBox> = (args) => {
+const MultiSelectCombo: ComponentStory<typeof Combobox> = (args) => {
   const [value, setValue] = useState<any>();
   console.log("value98",value);
   
   return (
-    <MultipleComboBox {...args} onChange={(value) => {
+    <Combobox {...args} onChange={(value:any) => {
       setValue(value);
     }}/>
   );
