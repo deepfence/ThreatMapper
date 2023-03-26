@@ -1,17 +1,15 @@
 
 import cx from 'classnames';
-import React, { useContext, useEffect, useMemo ,useRef} from 'react';
+import React, { useEffect ,useRef } from 'react';
 import * as LabelPrimitive from '@radix-ui/react-label';
-import { IconContext } from 'react-icons';
-import { HiOutlineChevronDown } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
-import {useMultipleSelection,useCombobox} from 'downshift';
+import {useMultipleSelection,useCombobox,UseComboboxInterface} from 'downshift';
 import { Typography } from '@/components/typography/Typography';
 
 export type SizeType = 'xs' | 'sm' | 'md';
 export type ColorType = 'default' | 'error' | 'success';
-
-type Value = string | string[];
+export type Option = { value: string|number; label: string; disabled?: boolean; id?: string | number };
+type Value = Option | Option[];
 type MutableValue<T extends Value = Value> = T extends string ? string : T;
 
 export interface SelectProps<T extends Value = Value> {
@@ -31,69 +29,10 @@ export interface SelectProps<T extends Value = Value> {
   className?: string;
   prefixComponent?: React.ReactNode;
   noPortal?: boolean;
-  options: { value: string|number; label: string; disabled?: boolean; id?: string | number }[];
+  options: Option[];
   required?:boolean;
   url?:string;
 }
-
-type IconProps = {
-  icon: React.ReactNode;
-  name?: string;
-  color?: ColorType;
-  sizing?: SizeType;
-};
-
-export const LeftIcon = ({
-  icon,
-  color = COLOR_DEFAULT,
-  sizing = SIZE_DEFAULT,
-  name,
-}: IconProps) => {
-  return (
-    <span
-      className={cx(
-        'pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3',
-      )}
-      data-testid={`ariakit-select-icon-${name}`}
-    >
-      <IconContext.Provider
-        value={{
-          className: cx(`${classes.color[color]}`, {
-            'w-[18px] h-[18px]': sizing === 'sm',
-            'w-[20px] h-[20px]': sizing === 'md',
-          }),
-        }}
-      >
-        {icon}
-      </IconContext.Provider>
-    </span>
-  );
-};
-
-const SelectArrow = ({
-  color = COLOR_DEFAULT,
-  sizing = SIZE_DEFAULT,
-}: Omit<IconProps, 'icon'>) => {
-  return (
-    <span
-      className={cx(
-        'pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3',
-        `${classes.color[color]}`,
-      )}
-    >
-      <IconContext.Provider
-        value={{
-          className: cx(`${classes.color[color]}`, {
-            'w-[18px] h-[18px]': sizing === 'sm',
-            'w-[20px] h-[20px]': sizing === 'md',
-          }),
-        }}
-      >
-        <HiOutlineChevronDown />
-      </IconContext.Provider>
-    </span>
-  );
-};
 
 export const classes = {
   color: {
@@ -119,11 +58,9 @@ export const classes = {
 const COLOR_DEFAULT = 'default';
 const SIZE_DEFAULT = 'sm';
 
-const SelectStateContext = React.createContext<SelectState | null>(null);
-
 
 export const MultipleComboBox: React.FC<SelectProps> = ({options=[],value=[],label=null, required=false,url,multiSelect=false,onChange,sizing = SIZE_DEFAULT,
-  color = COLOR_DEFAULT,className = '',...props}) => {
+  color = COLOR_DEFAULT,className = ''}) => {
     const [optionsList, setOptionsList]= React.useState(options);
     const [inputValue, setInputValue] = React.useState('')
     const [selectedItems, setSelectedItems] =
@@ -136,9 +73,10 @@ export const MultipleComboBox: React.FC<SelectProps> = ({options=[],value=[],lab
       },
       [selectedItems, inputValue,optionsList],
     )
+    const selectedItemsList = Array.isArray(selectedItems)?selectedItems:[];
     const {getSelectedItemProps, getDropdownProps, removeSelectedItem} =
       useMultipleSelection({
-        selectedItems,
+        selectedItems:selectedItemsList||[],
         onStateChange({selectedItems: newSelectedItems, type}) {
           switch (type) {
             case useMultipleSelection.stateChangeTypes
@@ -148,8 +86,8 @@ export const MultipleComboBox: React.FC<SelectProps> = ({options=[],value=[],lab
             case useMultipleSelection.stateChangeTypes.DropdownKeyDownBackspace:
             case useMultipleSelection.stateChangeTypes
               .FunctionRemoveSelectedItem:
-              setSelectedItems(newSelectedItems);
-              onChange(newSelectedItems);
+              setSelectedItems(newSelectedItems||[]);
+              onChange(newSelectedItems||[]);
               break
             default:
               break
@@ -158,12 +96,12 @@ export const MultipleComboBox: React.FC<SelectProps> = ({options=[],value=[],lab
       })
       const multpleSelectComboProps={
         items,
-        itemToString(item) {
+        itemToString(item:Option) {
           return item ? item.label : ''
         },
         defaultHighlightedIndex: 0, // after selection, highlight the first item.
         selectedItem: null,
-        stateReducer(state, actionAndChanges) {
+        stateReducer(state:any, actionAndChanges:any) {
           const {changes, type} = actionAndChanges
   
           switch (type) {
@@ -182,12 +120,14 @@ export const MultipleComboBox: React.FC<SelectProps> = ({options=[],value=[],lab
           inputValue: newInputValue,
           type,
           selectedItem: newSelectedItem,
-        }) {
+        }:{inputValue: string,
+          type:any,
+          selectedItem:Option}) {
           switch (type) {
             case useCombobox.stateChangeTypes.InputKeyDownEnter:
             case useCombobox.stateChangeTypes.ItemClick:
             case useCombobox.stateChangeTypes.InputBlur:
-              if (newSelectedItem) {
+              if (newSelectedItem && Array.isArray(selectedItems)) {
                 setSelectedItems([...selectedItems, newSelectedItem])
                 onChange([...selectedItems, newSelectedItem]);
               }
@@ -203,11 +143,11 @@ export const MultipleComboBox: React.FC<SelectProps> = ({options=[],value=[],lab
         },
       }
       const singleSelectComboProps={
-        onInputValueChange(node) {
+        onInputValueChange(node:any) {
           onChange(node.selectedItem)
         },
         items,
-        itemToString(item) {
+        itemToString(item:Option) {
           return item ? item.label : ''
         },
       }
@@ -251,6 +191,8 @@ export const MultipleComboBox: React.FC<SelectProps> = ({options=[],value=[],lab
     };
     console.log(optionsList, );
     const inputProps = multiSelect?{...getInputProps(getDropdownProps({preventKeyAction: isOpen}))}: {...getInputProps()}
+    console.log("selectedItems98",selectedItems);
+    
     return (
       <div className="w-[592px]">
         <div className="flex flex-col gap-1">
@@ -266,7 +208,7 @@ export const MultipleComboBox: React.FC<SelectProps> = ({options=[],value=[],lab
         )}
           
           <div  className={twMerge(cx(`${classes.color[color]}`,"shadow-sm bg-white inline-flex gap-2 items-center flex-wrap p-1.5"))}>
-            {multiSelect && selectedItems.map(function renderSelectedItem(
+            {multiSelect && Array.isArray(selectedItems)&&selectedItems.map(function renderSelectedItem(
               selectedItemForRender,
               index,
             ) {
