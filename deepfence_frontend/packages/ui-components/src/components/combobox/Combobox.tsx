@@ -261,6 +261,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
                       removeSelectedItem(selectedItemForRender);
                     }}
                     role="button"
+                    tabIndex={0}
                   >
                     &#10005;
                   </span>
