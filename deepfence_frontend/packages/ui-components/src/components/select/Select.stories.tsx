@@ -10,7 +10,7 @@ export default {
 
 
 const MultiSelectCombo: ComponentStory<typeof MultipleComboBox> = (args) => {
-  const [value, setValue] = useState<string | undefined>();
+  const [value, setValue] = useState<any>();
   console.log("value98",value);
   
   return (

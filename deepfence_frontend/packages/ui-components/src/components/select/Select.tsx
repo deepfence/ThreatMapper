@@ -160,7 +160,7 @@ export const MultipleComboBox: React.FC<SelectProps> = ({options=[],value=[],lab
       highlightedIndex,
       getItemProps,
       selectedItem,
-    } = useCombobox(multiSelect?multpleSelectComboProps:singleSelectComboProps)
+    } = useCombobox(multiSelect?multpleSelectComboProps as any:singleSelectComboProps)
 
     const getOptions = ()=>{
       if(!url) return;
