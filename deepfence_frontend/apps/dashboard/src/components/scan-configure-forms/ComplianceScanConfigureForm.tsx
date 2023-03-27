@@ -316,13 +316,13 @@ export const ComplianceScanConfigureForm = ({
 
   useEffect(() => {
     let data = undefined;
-    if (fetcherData?.success) {
+    if (fetcherData?.success && state === 'idle') {
       if (fetcher.data) {
         data = fetcher.data.data;
       }
       onSuccess(data);
     }
-  }, [fetcherData]);
+  }, [fetcherData, state]);
 
   const onCheckTypeSelection = (name: string) => {
     setTabs((prevTabs) => {
@@ -379,8 +379,8 @@ export const ComplianceScanConfigureForm = ({
         <input type="text" name="_nodeType" readOnly hidden value={nodeType} />
 
         <Button
-          disabled={state === 'loading'}
-          loading={state === 'loading'}
+          disabled={state !== 'idle'}
+          loading={state !== 'idle'}
           size="sm"
           color="primary"
           type="submit"
