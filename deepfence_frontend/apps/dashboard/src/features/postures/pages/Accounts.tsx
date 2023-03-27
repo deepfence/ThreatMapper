@@ -172,24 +172,20 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
         cell: (cell) => {
           const isNeverScan = cell.row.original.last_scan_status?.toLowerCase() === '';
           const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
-            let redirectUrl = generatePath(`/posture/scan-results/:nodeType/:scanId`, {
-              scanId: cell.row.original.last_scan_id || 'dummy',
-              nodeType: cell.row.original.cloud_provider || 'dummy',
-            });
+            let path = '/posture/scan-results/:nodeType/:scanId';
+
             if (
               cell.row.original.cloud_provider &&
               CLOUDS.includes(
                 cell.row.original.cloud_provider as ComplianceScanNodeTypeEnum,
               )
             ) {
-              redirectUrl = generatePath(
-                `/posture/cloud/scan-results/:nodeType/:scanId`,
-                {
-                  scanId: cell.row.original.last_scan_id ?? '',
-                  nodeType: cell.row.original.cloud_provider ?? '',
-                },
-              );
+              path = '/posture/cloud/scan-results/:nodeType/:scanId';
             }
+            const redirectUrl = generatePath(`${path}`, {
+              scanId: cell.row.original.last_scan_id ?? '',
+              nodeType: cell.row.original.cloud_provider ?? '',
+            });
             return isNeverScan ? (
               <span>{children}</span>
             ) : (

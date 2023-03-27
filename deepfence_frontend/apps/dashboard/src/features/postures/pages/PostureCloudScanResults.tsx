@@ -53,18 +53,24 @@ import { getCloudComplianceApiClient, getScanResultsApiClient } from '@/api/api'
 import {
   ApiDocsBadRequestResponse,
   ModelCloudCompliance,
+  ModelComplianceScanInfo,
   ModelScanResultsReq,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import {
+  NoIssueFound,
+  ScanStatusInError,
+  ScanStatusInProgress,
+} from '@/components/ScanStatusMessage';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
 import { useGetCloudFilters } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { PostureResultChart } from '@/features/postures/components/PostureResultChart';
 import { Mode, useTheme } from '@/theme/ThemeContext';
-import { PostureSeverityType, ScanTypeEnum } from '@/types/common';
+import { PostureSeverityType, ScanStatusEnum, ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -100,8 +106,6 @@ type ScanResult = {
   totalStatus: number;
   statusCounts: { [key: string]: number };
   nodeName: string;
-  nodeType: string;
-  nodeId: string;
   timestamp: number;
   compliances: ModelCloudCompliance[];
   pagination: {
@@ -112,6 +116,7 @@ type ScanResult = {
 
 export type LoaderDataType = {
   error?: string;
+  scanStatusResult?: ModelComplianceScanInfo;
   message?: string;
   data?: ScanResult;
 };
@@ -140,6 +145,50 @@ async function getScans(
   scanId: string,
   searchParams: URLSearchParams,
 ): Promise<LoaderDataType> {
+  // status api
+  const statusResult = await makeRequest({
+    apiFunction: getCloudComplianceApiClient().statusCloudComplianceScan,
+    apiArgs: [
+      {
+        modelScanStatusReq: {
+          scan_ids: [scanId],
+          bulk_scan_id: '',
+        },
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<LoaderDataType>({
+        message: '',
+      });
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message,
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(statusResult)) {
+    return statusResult.value();
+  }
+  const statuses = statusResult?.statuses?.[0];
+
+  if (!statusResult || !statuses || !statuses.scan_id) {
+    throw new Error('Scan status not found');
+  }
+
+  const scanStatus = statuses.status;
+
+  const isScanRunning =
+    scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;
+  const isScanError = scanStatus === ScanStatusEnum.error;
+
+  if (isScanRunning || isScanError) {
+    return {
+      scanStatusResult: statuses,
+    };
+  }
   const status = getStatusSearch(searchParams);
   const page = getPageFromSearchParams(searchParams);
   const order = getOrderFromSearchParams(searchParams);
@@ -253,12 +302,11 @@ async function getScans(
   };
 
   return {
+    scanStatusResult: statuses,
     data: {
       totalStatus,
-      statusCounts: cloudComplianceStatus,
       nodeName: result.node_name,
-      nodeType: result.node_type,
-      nodeId: result.node_id,
+      statusCounts: cloudComplianceStatus,
       timestamp: result.updated_at,
       compliances: result.compliances ?? [],
       pagination: {
@@ -480,16 +528,17 @@ const HistoryDropdown = () => {
     >
       <DFAwait resolve={loaderData.data ?? []}>
         {(resolvedData: LoaderDataType) => {
-          const { data } = resolvedData;
-          if (!data) {
-            return null;
+          const { scanStatusResult } = resolvedData;
+          const { scan_id, node_id, node_type } = scanStatusResult ?? {};
+          if (!scan_id || !node_id || !node_type) {
+            throw new Error('Scan id, node id or node type is missing');
           }
 
           return (
             <Dropdown
               triggerAsChild
               onOpenChange={(open) => {
-                if (open) onHistoryClick(data.nodeId);
+                if (open) onHistoryClick(node_id);
               }}
               content={
                 <>
@@ -516,8 +565,7 @@ const HistoryDropdown = () => {
                         <span
                           className={twMerge(
                             cx('flex items-center text-gray-700 dark:text-gray-400', {
-                              'text-blue-600 dark:text-blue-500':
-                                item.scanId === params.scanId,
+                              'text-blue-600 dark:text-blue-500': item.scanId === scan_id,
                             }),
                           )}
                         >
@@ -768,9 +816,30 @@ const ScanResultTable = () => {
       <Suspense fallback={<TableSkeleton columns={6} rows={10} size={'md'} />}>
         <DFAwait resolve={loaderData.data}>
           {(resolvedData: LoaderDataType) => {
-            const { data } = resolvedData;
+            const { data, scanStatusResult } = resolvedData;
+
+            if (scanStatusResult?.status === ScanStatusEnum.error) {
+              return <ScanStatusInError />;
+            } else if (
+              scanStatusResult?.status !== ScanStatusEnum.error &&
+              scanStatusResult?.status !== ScanStatusEnum.complete
+            ) {
+              return <ScanStatusInProgress LogoIcon={PostureIcon} />;
+            } else if (
+              scanStatusResult?.status === ScanStatusEnum.complete &&
+              data &&
+              data.compliances.length === 0
+            ) {
+              return (
+                <NoIssueFound
+                  LogoIcon={PostureIcon}
+                  scanType={ScanTypeEnum.CloudComplianceScan}
+                />
+              );
+            }
+
             if (!data) {
-              return <NotFound />;
+              return null;
             }
             return (
               <Form>
@@ -1102,10 +1171,6 @@ const FilterComponent = () => {
   );
 };
 const HeaderComponent = () => {
-  const params = useParams() as {
-    nodeType: string;
-  };
-
   const [searchParams] = useSearchParams();
   const loaderData = useLoaderData() as LoaderDataType;
   const isFilterApplied =
@@ -1120,14 +1185,12 @@ const HeaderComponent = () => {
       <Suspense fallback={<CircleSpinner size="xs" />}>
         <DFAwait resolve={loaderData.data ?? []}>
           {(resolvedData: LoaderDataType) => {
-            const { data } = resolvedData;
-            let _nodeType = '';
-            if (params.nodeType === ACCOUNT_CONNECTOR.HOST) {
-              _nodeType = ACCOUNT_CONNECTOR.LINUX;
-            } else if (params.nodeType === ACCOUNT_CONNECTOR.CLUSTER) {
-              _nodeType = ACCOUNT_CONNECTOR.KUBERNETES;
-            } else {
-              _nodeType = params.nodeType;
+            const { scanStatusResult, data } = resolvedData;
+
+            const { scan_id, node_type, updated_at } = scanStatusResult ?? {};
+
+            if (!scan_id || !node_type || !updated_at) {
+              throw new Error('Scan id, node type or updated_at is missing');
             }
 
             return (
@@ -1139,10 +1202,10 @@ const HeaderComponent = () => {
                   <BreadcrumbLink>
                     <DFLink
                       to={generatePath('/posture/accounts/:nodeType', {
-                        nodeType: _nodeType,
+                        nodeType: node_type,
                       })}
                     >
-                      {_nodeType}
+                      {node_type}
                     </DFLink>
                   </BreadcrumbLink>
 
@@ -1152,38 +1215,28 @@ const HeaderComponent = () => {
                     </BreadcrumbLink>
                   ) : null}
                 </Breadcrumb>
+                <div className="ml-auto flex items-center gap-x-4">
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-500 dark:text-gray-200">
+                      {formatMilliseconds(updated_at)}
+                    </span>
+                    <span className="text-gray-400 text-[10px]">Last scan</span>
+                  </div>
+
+                  <HistoryDropdown />
+
+                  <div className="relative">
+                    {isFilterApplied && (
+                      <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
+                    )}
+                    <FilterComponent />
+                  </div>
+                </div>
               </>
             );
           }}
         </DFAwait>
       </Suspense>
-      <div className="ml-auto flex items-center gap-x-4">
-        <div className="flex flex-col">
-          <span className="text-xs text-gray-500 dark:text-gray-200">
-            <Suspense fallback={<CircleSpinner size="xs" />}>
-              <DFAwait resolve={loaderData.data ?? []}>
-                {(resolvedData: LoaderDataType) => {
-                  const { data } = resolvedData;
-                  if (!data) {
-                    return null;
-                  }
-                  return formatMilliseconds(data.timestamp);
-                }}
-              </DFAwait>
-            </Suspense>
-          </span>
-          <span className="text-gray-400 text-[10px]">Last scan</span>
-        </div>
-
-        <HistoryDropdown />
-
-        <div className="relative">
-          {isFilterApplied && (
-            <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
-          )}
-          <FilterComponent />
-        </div>
-      </div>
     </div>
   );
 };
@@ -1202,14 +1255,8 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
         <DFAwait resolve={loaderData.data}>
           {(resolvedData: LoaderDataType) => {
             const { data } = resolvedData;
-            if (!data) {
-              return (
-                <p className="text-gray-900 dark:text-gray-400 font-medium text-base">
-                  No record found
-                </p>
-              );
-            }
-            const { totalStatus, statusCounts = {} } = data;
+            const statusCounts = data?.statusCounts ?? {};
+
             return (
               <>
                 <div className="grid grid-flow-col-dense gap-x-4">
@@ -1224,7 +1271,7 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                     </h4>
                     <div className="mt-2">
                       <span className="text-2xl text-gray-900 dark:text-gray-200">
-                        {totalStatus}
+                        {data?.totalStatus}
                       </span>
                       <h5 className="text-xs text-gray-500 dark:text-gray-200 mb-2">
                         Total count
@@ -1294,21 +1341,6 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
   );
 };
 
-const NotFound = () => {
-  return (
-    <div className="flex flex-col items-center justify-center mt-40">
-      <div className="h-16 w-16">
-        <PostureIcon />
-      </div>
-      <span className="text-2xl font-medium text-gray-700 dark:text-white">
-        No Result Found
-      </span>
-      <span className="text-sm text-gray-500 dark:text-gray-400">
-        Scan your account to get compliance results
-      </span>
-    </div>
-  );
-};
 const PostureCloudScanResults = () => {
   const { mode } = useTheme();
 
