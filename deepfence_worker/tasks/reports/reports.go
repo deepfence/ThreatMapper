@@ -93,7 +93,7 @@ func GenerateReport(msg *message.Message) error {
 	defer tx.Close()
 
 	// generate report file
-	localReport, err := generateReport(session, params)
+	localReportPath, err := generateReport(session, params)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to generate report with params %+v", params)
 		return nil
@@ -107,13 +107,16 @@ func GenerateReport(msg *message.Message) error {
 	}
 
 	report := path.Join("report", reportFileName(params))
-	res, err := mc.UploadLocalFile(ctx, report, localReport, putOpts(utils.ReportType(params.ReportType)))
+	res, err := mc.UploadLocalFile(ctx, report, localReportPath, putOpts(utils.ReportType(params.ReportType)))
 	if err != nil {
 		log.Error().Err(err).Msg("failed to upload file to minio")
 		return nil
 	}
 
-	url, err := mc.ExposeFile(ctx, res.Key, false, 10*time.Hour, url.Values{})
+	cd := url.Values{
+		"response-content-disposition": []string{"attachment; filename=\"" + reportFileName(params) + "\""},
+	}
+	url, err := mc.ExposeFile(ctx, res.Key, false, 10*time.Hour, cd)
 	if err != nil {
 		log.Error().Err(err)
 		return err
