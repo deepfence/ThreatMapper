@@ -112,7 +112,6 @@ func (r *Reporter) Report() (report.Report, error) {
 
 func (r *Reporter) processTopology() (report.Topology, error) {
 	t := report.MakeTopology()
-	now := time.Now()
 	deltaTotal, maxCPU, err := r.jiffies()
 	if err != nil {
 		return t, err
@@ -122,13 +121,16 @@ func (r *Reporter) processTopology() (report.Topology, error) {
 		pidstr := strconv.Itoa(p.PID)
 		nodeID := report.MakeProcessNodeID(r.hostID, pidstr)
 		node := report.Metadata{
-			Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
-			NodeID:    nodeID,
-			NodeName:  p.Name,
-			NodeType:  report.Process,
-			HostName:  r.hostName,
-			Pid:       p.PID,
-			Threads:   p.Threads,
+			Timestamp:      time.Now().UTC().Format(time.RFC3339Nano),
+			NodeID:         nodeID,
+			NodeName:       p.Name,
+			NodeType:       report.Process,
+			HostName:       r.hostName,
+			Pid:            p.PID,
+			Threads:        p.Threads,
+			MemoryMax:      p.RSSBytesLimit,
+			MemoryUsage:    p.RSSBytes,
+			OpenFilesCount: p.OpenFilesCount,
 		}
 		if r.ptracer != nil {
 			paths, err := r.ptracer.GetOpenFileList(pidstr)
@@ -149,16 +151,11 @@ func (r *Reporter) processTopology() (report.Topology, error) {
 		} else {
 			node.Ppid = -1
 		}
-
-		var metrics = report.Metrics{
-			MemoryUsage:    report.MakeSingletonMetric(now, float64(p.RSSBytes)).WithMax(float64(p.RSSBytesLimit)),
-			OpenFilesCount: report.MakeSingletonMetric(now, float64(p.OpenFilesCount)).WithMax(float64(p.OpenFilesLimit)),
-		}
 		if deltaTotal > 0 {
 			cpuUsage := float64(p.Jiffies-prev.Jiffies) / float64(deltaTotal) * 100.
-			metrics[CPUUsage] = report.MakeSingletonMetric(now, cpuUsage).WithMax(maxCPU)
+			node.CpuMax = maxCPU
+			node.CpuUsage = cpuUsage
 		}
-		node.Metrics = &metrics
 
 		t.AddNode(node)
 	})

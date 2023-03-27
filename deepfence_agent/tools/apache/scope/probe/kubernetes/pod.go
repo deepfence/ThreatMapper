@@ -91,12 +91,12 @@ func (p *pod) GetNode() (report.Metadata, report.Parent) {
 		KubernetesIP:              p.Status.PodIP,
 		KubernetesIsInHostNetwork: p.Pod.Spec.HostNetwork,
 		KubernetesNamespace:       p.Namespace(),
-		HostName:                  p.Node.Name,
+		HostName:                  p.NodeName(),
 	}
 	parent := report.Parent{
 		CloudProvider:     cloudProviderNodeId,
 		KubernetesCluster: kubernetesClusterId,
-		Host:              p.Node.Name,
+		Host:              p.NodeName(),
 		Namespace:         kubernetesClusterId + "-" + p.GetNamespace(),
 	}
 	return node, parent

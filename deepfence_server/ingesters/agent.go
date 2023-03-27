@@ -289,7 +289,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 				continue
 			}
 		}
-		if n.Pid >= 0 {
+		if n.Pid != -1 {
 			adjacency, ok := rpt.EndpointAdjacency[n.NodeID]
 			if !ok {
 				continue
@@ -322,9 +322,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			}
 		}
 	}
-	if len(inbound_edges) > 0 {
-		endpoint_edges_batch = append(endpoint_edges_batch, map[string]interface{}{"source": "in-the-internet", "edges": inbound_edges})
-	}
+	endpoint_edges_batch = append(endpoint_edges_batch, map[string]interface{}{"source": "in-the-internet", "edges": inbound_edges})
 
 	process_batch := make([]map[string]interface{}, 0, len(rpt.Process))
 	process_edges_batch := map[string][]string{}

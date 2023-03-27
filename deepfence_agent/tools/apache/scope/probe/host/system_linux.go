@@ -125,12 +125,12 @@ var GetCPUUsagePercent = func() (float64, float64) {
 }
 
 // GetMemoryUsageBytes returns the bytes memory usage and max
-var GetMemoryUsageBytes = func() (float64, float64) {
+var GetMemoryUsageBytes = func() (uint64, uint64) {
 	meminfo, err := linuxproc.ReadMemInfo(ProcMemInfo)
 	if err != nil {
-		return 0.0, 0.0
+		return 0, 0
 	}
 
 	used := meminfo.MemTotal - meminfo.MemFree - meminfo.Buffers - meminfo.Cached
-	return float64(used * kb), float64(meminfo.MemTotal * kb)
+	return used * kb, meminfo.MemTotal * kb
 }

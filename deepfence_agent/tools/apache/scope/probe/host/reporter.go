@@ -146,20 +146,21 @@ func (r *Reporter) updateHostDetailsEveryMinute() {
 }
 
 type HostDetailsMetrics struct {
-	Metrics report.Metrics
+	CpuMax      float64
+	CpuUsage    float64
+	MemoryMax   uint64
+	MemoryUsage uint64
 	sync.RWMutex
 }
 
 func (r *Reporter) updateHostDetailsMetrics() {
-	now := time.Now()
-	metrics := GetLoad(now)
-	cpuUsage, max := GetCPUUsagePercent()
-	metrics[report.HostCPUUsage] = report.MakeSingletonMetric(now, cpuUsage).WithMax(max)
-	memoryUsage, max := GetMemoryUsageBytes()
-	metrics[report.HostMemoryUsage] = report.MakeSingletonMetric(now, memoryUsage).WithMax(max)
-
+	cpuUsage, cpuMax := GetCPUUsagePercent()
+	memoryUsage, memoryMax := GetMemoryUsageBytes()
 	r.hostDetailsMetrics.Lock()
-	r.hostDetailsMetrics.Metrics = metrics
+	r.hostDetailsMetrics.CpuMax = cpuMax
+	r.hostDetailsMetrics.CpuUsage = cpuUsage
+	r.hostDetailsMetrics.MemoryMax = memoryMax
+	r.hostDetailsMetrics.MemoryUsage = memoryUsage
 	r.hostDetailsMetrics.Unlock()
 }
 
@@ -318,7 +319,10 @@ func (r *Reporter) Report() (report.Report, error) {
 	r.hostDetailsMinute.RUnlock()
 
 	r.hostDetailsMetrics.RLock()
-	metrics := r.hostDetailsMetrics.Metrics
+	cpuMax := r.hostDetailsMetrics.CpuMax
+	cpuUsage := r.hostDetailsMetrics.CpuUsage
+	memoryMax := r.hostDetailsMetrics.MemoryMax
+	memoryUsage := r.hostDetailsMetrics.MemoryUsage
 	r.hostDetailsMetrics.RUnlock()
 
 	rep.CloudProvider.AddNode(
@@ -367,7 +371,10 @@ func (r *Reporter) Report() (report.Report, error) {
 			AvailabilityZone:    cloudMetadata.Zone,
 			KernelId:            cloudMetadata.KernelId,
 			ResourceGroup:       cloudMetadata.ResourceGroupName,
-			Metrics:             &metrics,
+			CpuMax:              cpuMax,
+			CpuUsage:            cpuUsage,
+			MemoryMax:           memoryMax,
+			MemoryUsage:         memoryUsage,
 			KubernetesClusterId: r.k8sClusterId,
 		},
 	)

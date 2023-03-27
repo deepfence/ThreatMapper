@@ -300,25 +300,21 @@ func (c *container) NetworkInfo(localAddrs []net.IP) report.Sets {
 	return s
 }
 
-func (c *container) memoryUsageMetric(stats []docker.Stats) report.Metric {
-	var max float64
-	samples := make([]report.Sample, len(stats))
-	for i, s := range stats {
-		samples[i].Timestamp = s.Read
-		// This code adapted from
-		// https://github.com/docker/cli/blob/5931fb4276be0afdd6e5ed338d1b2b4b9b5ec8e5/cli/command/container/stats_helpers.go
-		// so that Scope numbers match Docker numbers. Page cache is intentionally excluded.
-		samples[i].Value = float64(s.MemoryStats.Usage - s.MemoryStats.Stats.Cache)
-		if float64(s.MemoryStats.Limit) > max {
-			max = float64(s.MemoryStats.Limit)
-		}
+func (c *container) memoryUsageMetric(stats []docker.Stats) (uint64, uint64) {
+	var max uint64
+	if len(stats) == 0 {
+		return 0, 0
 	}
-	return report.MakeMetric(samples).WithMax(max)
+	s := stats[len(stats)-1]
+	if s.MemoryStats.Limit > max {
+		max = s.MemoryStats.Limit
+	}
+	return s.MemoryStats.Usage - s.MemoryStats.Stats.Cache, max
 }
 
-func (c *container) cpuPercentMetric(stats []docker.Stats) report.Metric {
+func (c *container) cpuPercentMetric(stats []docker.Stats) (float64, float64) {
 	if len(stats) < 2 {
-		return report.MakeMetric(nil)
+		return 0.0, 0.0
 	}
 
 	samples := make([]report.Sample, len(stats)-1)
@@ -335,23 +331,21 @@ func (c *container) cpuPercentMetric(stats []docker.Stats) report.Metric {
 		samples[i].Value = cpuPercent
 		previous = s
 	}
-	return report.MakeMetric(samples).WithMax(100.0)
+	return samples[len(samples)-1].Value, 100.0
 }
 
-func (c *container) metrics() report.Metrics {
+func (c *container) metrics() (uint64, uint64, float64, float64) {
 	if c.numPending == 0 {
-		return report.Metrics{}
+		return 0, 0, 0, 0
 	}
 	pendingStats := c.pendingStats[:c.numPending]
-	result := report.Metrics{
-		MemoryUsage:   c.memoryUsageMetric(pendingStats),
-		CPUTotalUsage: c.cpuPercentMetric(pendingStats),
-	}
+	memoryUsage, memoryMax := c.memoryUsageMetric(pendingStats)
+	cpuUsage, cpuMax := c.cpuPercentMetric(pendingStats)
 
 	// leave one stat to help with relative metrics
 	c.pendingStats[0] = c.pendingStats[c.numPending-1]
 	c.numPending = 1
-	return result
+	return memoryUsage, memoryMax, cpuUsage, cpuMax
 }
 
 func (c *container) env() map[string]string {
@@ -417,8 +411,7 @@ func (c *container) GetNode() report.Metadata {
 		c.baseNode.Uptime = uptimeSeconds
 		c.baseNode.DockerContainerNetworkMode = networkMode
 	}
-	metrics := c.metrics()
-	c.baseNode.Metrics = &metrics
+	c.baseNode.MemoryUsage, c.baseNode.MemoryMax, c.baseNode.CpuUsage, c.baseNode.CpuMax = c.metrics()
 	return c.baseNode
 }
 
