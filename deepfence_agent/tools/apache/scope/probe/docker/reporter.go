@@ -170,6 +170,7 @@ func (r *Reporter) containerImageTopology() report.Topology {
 
 		if len(image.RepoTags) > 0 {
 			imageFullName := image.RepoTags[0]
+			node.NodeName = imageFullName
 			node.ImageNameWithTag = imageFullName
 			node.ImageName = ImageNameWithoutTag(imageFullName)
 			node.ImageTag = ImageNameTag(imageFullName)
@@ -181,7 +182,10 @@ func (r *Reporter) containerImageTopology() report.Topology {
 			if !ok {
 				tags = []string{}
 			}
+		} else {
+			node.NodeName = imageID
 		}
+
 		node.UserDefinedTags = tags
 		node.DockerImageLabels = &image.Labels
 		result.AddNode(node)

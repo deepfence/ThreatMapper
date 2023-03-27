@@ -92,6 +92,7 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
+
 	rpt := report.MakeReport()
 	err = sonic.Unmarshal(data, &rpt)
 

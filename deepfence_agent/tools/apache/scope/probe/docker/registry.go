@@ -27,8 +27,6 @@ const (
 	UnpauseEvent           = "unpause"
 	NetworkConnectEvent    = "network:connect"
 	NetworkDisconnectEvent = "network:disconnect"
-	nodeTypeContainer      = "container"
-	nodeTypeContainerImage = "container_image"
 )
 
 // Vars exported for testing.
@@ -402,7 +400,7 @@ func (r *registry) sendDeletedUpdate(containerID string) {
 		Timestamp:             time.Now().UTC().Format(time.RFC3339Nano),
 		NodeID:                containerID,
 		NodeName:              containerID,
-		NodeType:              nodeTypeContainer,
+		NodeType:              report.Container,
 		DockerContainerState:  report.StateDeleted,
 		UserDefinedTags:       tags,
 		IsConsoleVm:           r.isConsoleVm,

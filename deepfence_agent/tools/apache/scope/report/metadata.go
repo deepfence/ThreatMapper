@@ -91,8 +91,8 @@ type Metadata struct {
 	UserDefinedTags []string `json:"user_defined_tags,omitempty"`
 	CpuMax          float64  `json:"cpu_max,omitempty"`
 	CpuUsage        float64  `json:"cpu_usage,omitempty"`
-	MemoryMax       uint64   `json:"memory_max,omitempty"`
-	MemoryUsage     uint64   `json:"memory_usage,omitempty"`
+	MemoryMax       int64    `json:"memory_max,omitempty"`
+	MemoryUsage     int64    `json:"memory_usage,omitempty"`
 	OpenFilesCount  int      `json:"open_files_count,omitempty"`
 
 	// host
@@ -122,9 +122,9 @@ type Metadata struct {
 	ContainerName              string             `json:"container_name,omitempty"`
 	ContainerCount             int                `json:"container_count,omitempty"`
 
-	ImageName              string             `json:"image_name,omitempty"`
-	ImageNameWithTag       string             `json:"image_name_with_tag,omitempty"`
-	ImageTag               string             `json:"image_tag,omitempty"`
+	ImageName              string             `json:"docker_image_name,omitempty"`
+	ImageNameWithTag       string             `json:"docker_image_name_with_tag,omitempty"`
+	ImageTag               string             `json:"docker_image_tag,omitempty"`
 	DockerImageSize        string             `json:"docker_image_size,omitempty"`
 	DockerImageCreatedAt   string             `json:"docker_image_created_at,omitempty"`
 	DockerImageVirtualSize string             `json:"docker_image_virtual_size,omitempty"`

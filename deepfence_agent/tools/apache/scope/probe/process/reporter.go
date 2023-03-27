@@ -128,8 +128,8 @@ func (r *Reporter) processTopology() (report.Topology, error) {
 			HostName:       r.hostName,
 			Pid:            p.PID,
 			Threads:        p.Threads,
-			MemoryMax:      p.RSSBytesLimit,
-			MemoryUsage:    p.RSSBytes,
+			MemoryMax:      int64(p.RSSBytesLimit),
+			MemoryUsage:    int64(p.RSSBytes),
 			OpenFilesCount: p.OpenFilesCount,
 		}
 		if r.ptracer != nil {

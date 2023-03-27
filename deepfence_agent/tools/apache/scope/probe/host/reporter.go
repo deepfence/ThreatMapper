@@ -148,8 +148,8 @@ func (r *Reporter) updateHostDetailsEveryMinute() {
 type HostDetailsMetrics struct {
 	CpuMax      float64
 	CpuUsage    float64
-	MemoryMax   uint64
-	MemoryUsage uint64
+	MemoryMax   int64
+	MemoryUsage int64
 	sync.RWMutex
 }
 
