@@ -155,7 +155,7 @@ export const SecretScanConfigureForm = ({
 
   return (
     <fetcher.Form
-      className="flex flex-col py-2 mb-4"
+      className="flex flex-col mb-4 min-w-[380px]"
       method="post"
       action="/data-component/scan/secret"
     >
@@ -171,11 +171,15 @@ export const SecretScanConfigureForm = ({
         {wantAdvanceOptions && (
           <h6 className={'text-md font-medium dark:text-white'}>Advanced Options</h6>
         )}
-
+        {!wantAdvanceOptions && (
+          <p className="text-gray-900 dark:text-white text-sm pr-3">
+            You can start secret scanning to find for any secrets
+          </p>
+        )}
         <Button
           disabled={state === 'loading'}
           loading={state === 'loading'}
-          size="sm"
+          size="xs"
           color="primary"
           className="ml-auto"
           type="submit"
@@ -183,7 +187,7 @@ export const SecretScanConfigureForm = ({
           Start Scan
         </Button>
       </div>
-      {wantAdvanceOptions && (
+      {wantAdvanceOptions ? (
         <div className="flex flex-col gap-y-6">
           <Checkbox
             name="priorityScan"
@@ -224,7 +228,7 @@ export const SecretScanConfigureForm = ({
             }}
           />
         </div>
-      )}
+      ) : null}
     </fetcher.Form>
   );
 };
