@@ -245,7 +245,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 
 	for _, n := range rpt.Host {
 		hosts = append(hosts, map[string]interface{}{"node_id": n.NodeID})
-		host_batch = append(host_batch, utils.StructToMap(n))
+		host_batch = append(host_batch, metadataToMap(n))
 	}
 
 	for nodeId, parent := range rpt.HostParents {
@@ -255,7 +255,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	}
 
 	for _, n := range rpt.KubernetesCluster {
-		kubernetes_batch = append(kubernetes_batch, utils.StructToMap(n))
+		kubernetes_batch = append(kubernetes_batch, metadataToMap(n))
 	}
 
 	processes_to_keep := map[string]struct{}{}
@@ -330,7 +330,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		if _, ok := processes_to_keep[n.NodeID]; !ok {
 			continue
 		}
-		process_batch = append(process_batch, utils.StructToMap(n))
+		process_batch = append(process_batch, metadataToMap(n))
 		process_edges_batch[n.HostName] = append(process_edges_batch[n.HostName], n.NodeID)
 	}
 
@@ -340,7 +340,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		if n.HostName == "" {
 			continue
 		}
-		container_batch = append(container_batch, utils.StructToMap(n))
+		container_batch = append(container_batch, metadataToMap(n))
 		container_edges_batch[n.HostName] = append(container_edges_batch[n.HostName], n.NodeID)
 	}
 
@@ -350,7 +350,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		if n.HostName == "" {
 			continue
 		}
-		container_image_batch = append(container_image_batch, utils.StructToMap(n))
+		container_image_batch = append(container_image_batch, metadataToMap(n))
 		container_image_edges_batch[n.HostName] = append(container_image_edges_batch[n.HostName], n.NodeID)
 	}
 
@@ -367,7 +367,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 				n.HostName = val
 			}
 		}
-		pod_batch = append(pod_batch, utils.StructToMap(n))
+		pod_batch = append(pod_batch, metadataToMap(n))
 		pod_edges_batch[n.KubernetesClusterId] = append(pod_edges_batch[n.KubernetesClusterId], n.NodeID)
 	}
 
@@ -711,4 +711,15 @@ func extractPidFromNodeID(hni string) string {
 		return hni[middle+1:]
 	}
 	return hni
+}
+
+func metadataToMap(n report.Metadata) map[string]interface{} {
+	// TODO: only primitive types or arrays can be ingested in neo4j
+	n.InterfaceIps = nil
+	n.DockerLabels = nil
+	n.DockerEnv = nil
+	n.DockerImageLabels = nil
+	n.KubernetesLabels = nil
+	metadata := utils.StructToMap(n)
+	return metadata
 }
