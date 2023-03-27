@@ -6,14 +6,13 @@ import (
 
 // NodeSummary is summary information about a Node.
 type NodeSummary struct {
-	ID                string           `json:"id"`
-	Label             string           `json:"label"`
-	Metadata          report.Metadata  `json:"metadata,omitempty"`
-	Metrics           report.MetricRow `json:"metrics,omitempty"`
-	Adjacency         report.IDList    `json:"adjacency,omitempty"`
-	ImmediateParentID string           `json:"immediate_parent_id"`
-	Type              string           `json:"type"`
-	IDs               []string         `json:"ids,omitempty"`
+	ID                string          `json:"id"`
+	Label             string          `json:"label"`
+	Metadata          report.Metadata `json:"metadata,omitempty"`
+	Adjacency         report.IDList   `json:"adjacency,omitempty"`
+	ImmediateParentID string          `json:"immediate_parent_id"`
+	Type              string          `json:"type"`
+	IDs               []string        `json:"ids,omitempty"`
 }
 
 // NodeSummaries is a set of NodeSummaries indexed by ID.

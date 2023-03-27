@@ -11,8 +11,6 @@ import (
 
 	linuxproc "github.com/c9s/goprocinfo/linux"
 
-	"github.com/weaveworks/scope/report"
-
 	"golang.org/x/sys/unix"
 )
 
@@ -58,23 +56,23 @@ var GetKernelReleaseAndVersion = func() (string, string, error) {
 }
 
 // GetLoad returns the current load averages as metrics.
-var GetLoad = func(now time.Time) report.Metrics {
-	buf, err := os.ReadFile("/proc/loadavg")
-	if err != nil {
-		return nil
-	}
-	toks := strings.Fields(string(buf))
-	if len(toks) < 3 {
-		return nil
-	}
-	one, err := strconv.ParseFloat(toks[0], 64)
-	if err != nil {
-		return nil
-	}
-	return report.Metrics{
-		Load1: report.MakeSingletonMetric(now, one),
-	}
-}
+//var GetLoad = func(now time.Time) report.Metrics {
+//	buf, err := os.ReadFile("/proc/loadavg")
+//	if err != nil {
+//		return nil
+//	}
+//	toks := strings.Fields(string(buf))
+//	if len(toks) < 3 {
+//		return nil
+//	}
+//	one, err := strconv.ParseFloat(toks[0], 64)
+//	if err != nil {
+//		return nil
+//	}
+//	return report.Metrics{
+//		Load1: report.MakeSingletonMetric(now, one),
+//	}
+//}
 
 // GetUptime returns the uptime of the host.
 var GetUptime = func() (time.Duration, error) {

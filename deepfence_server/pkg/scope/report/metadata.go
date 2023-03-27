@@ -89,7 +89,11 @@ type Metadata struct {
 	Uptime          int      `json:"uptime,omitempty"`
 	Pseudo          bool     `json:"pseudo"`
 	UserDefinedTags []string `json:"user_defined_tags,omitempty"`
-	Metrics         *Metrics `json:"metrics,omitempty"`
+	CpuMax          float64  `json:"cpu_max,omitempty"`
+	CpuUsage        float64  `json:"cpu_usage,omitempty"`
+	MemoryMax       uint64   `json:"memory_max,omitempty"`
+	MemoryUsage     uint64   `json:"memory_usage,omitempty"`
+	OpenFilesCount  int      `json:"open_files_count,omitempty"`
 
 	// host
 	Version        string             `json:"version,omitempty"`
