@@ -24,7 +24,7 @@ func getScanStatuses[T reporters.Cypherable](tx neo4j.Transaction, scanType util
 	query := `
 	MATCH (n:` + dummy.NodeType() + `) <-[:SCANNED]- (s:` + string(scanType) + `)
 	WHERE n.node_id IN $ids
-	WITH n, min(s.updated_at) as latest
+	WITH n, max(s.updated_at) as latest
 	MATCH (n) <-[:SCANNED]- (s:` + string(scanType) + `{updated_at: latest})
 	OPTIONAL MATCH (s) -[:DETECTED]-> (v)
 	RETURN n.node_id, s.status, count(v), s.node_id
@@ -111,7 +111,7 @@ func GetScanStatuses[T reporters.Cypherable](ctx context.Context, node_ids []str
 			SecretLatestScanId:          secrets_status[i].Id,
 			MalwaresCount:               malware_status[i].Count,
 			MalwareScanStatus:           malware_status[i].Status,
-			MalwareLatestScanId:         malware_status[i].Status,
+			MalwareLatestScanId:         malware_status[i].Id,
 			CompliancesCount:            compliance_status[i].Count,
 			ComplianceScanStatus:        compliance_status[i].Status,
 			ComplianceLatestScanId:      compliance_status[i].Id,
