@@ -25,3 +25,4 @@
 [submodule "deepfence_agent/plugins/yara-rules"]
 	path = deepfence_agent/plugins/yara-rules
 	url = https://github.com/deepfence/yara-rules
+	branch = main
