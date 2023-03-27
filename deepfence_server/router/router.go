@@ -199,6 +199,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/compliance/scans", dfHandler.SearchComplianceScans)
 				r.Post("/cloud-compliance/scans", dfHandler.SearchCloudComplianceScans)
 
+				r.Post("/cloud-nodes", dfHandler.SearchCloudNodes)
+
 				r.Route("/count", func(r chi.Router) {
 					r.Post("/hosts", dfHandler.SearchHostsCount)
 					r.Post("/containers", dfHandler.SearchContainersCount)
