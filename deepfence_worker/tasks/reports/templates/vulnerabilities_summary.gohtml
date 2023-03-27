@@ -1,0 +1,26 @@
+{{define "vulnerabilities-summary"}}
+<h3>Summary</h3>
+<div class="summary-report-table" style="width: 100%;">
+    <table style="table-layout: fixed; word-break: break-all;">
+        <tr>
+            <th style="width: 400px;">Name</th>
+            <th style="background: #db2547; color: white;">Critical</th>
+            <th style="background: #e08a25; color: white;">High</th>
+            <th style="background: #e7d135; color: white;">Medium</th>
+            <th style="background: #0576c9; color: white;">low</th>
+            <th>Total</th>
+        </tr>
+        {{ range $key, $value := .NodeWiseSeverityCountData.NodeSeverityCount }}
+        <tr>
+            <td style="width: 400px;"><a href="#{{$key}}">{{$key}}</a></td>
+            <td>{{ $value.critical }}</td>
+            <td>{{ $value.high }}</td>
+            <td>{{ $value.medium }}</td>
+            <td>{{ $value.low }}</td>
+            <td>{{ $value.total }}</td>
+        </tr>
+        {{ end }}
+    </table>
+</div>
+<div class="page-break"></div>
+{{end}}
