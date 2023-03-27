@@ -1,6 +1,7 @@
 package reports
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/url"
@@ -30,7 +31,7 @@ func fileExt(reportType utils.ReportType) string {
 
 func reportFileName(params utils.ReportParams) string {
 	list := []string{params.Filters.ScanType, params.Filters.NodeType, params.ReportID}
-	return strings.Join(list, "_") + "." + fileExt(utils.ReportType(params.ReportType))
+	return strings.Join(list, "_") + fileExt(utils.ReportType(params.ReportType))
 }
 
 func putOpts(reportType utils.ReportType) minio.PutObjectOptions {
@@ -43,12 +44,12 @@ func putOpts(reportType utils.ReportType) minio.PutObjectOptions {
 	return minio.PutObjectOptions{}
 }
 
-func generateReport(session neo4j.Session, params utils.ReportParams) (string, error) {
+func generateReport(ctx context.Context, session neo4j.Session, params utils.ReportParams) (string, error) {
 	switch utils.ReportType(params.ReportType) {
 	case utils.ReportPDF:
-		return generatePDF(session, params)
+		return generatePDF(ctx, session, params)
 	case utils.ReportXLSX:
-		return generateXLSX(session, params)
+		return generateXLSX(ctx, session, params)
 	}
 	return "", ErrUnknownReportType
 }
@@ -92,12 +93,16 @@ func GenerateReport(msg *message.Message) error {
 	}
 	defer tx.Close()
 
-	// generate report file
-	localReportPath, err := generateReport(session, params)
+	// generate reportName
+	localReportPath, err := generateReport(ctx, session, params)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to generate report with params %+v", params)
 		return nil
 	}
+	log.Info().Msgf("report file path %s", localReportPath)
+	// defer func() {
+	// 	os.RemoveAll(filepath.Dir(localReportPath))
+	// }()
 
 	// upload file to minio
 	mc, err := directory.MinioClient(ctx)
@@ -106,8 +111,8 @@ func GenerateReport(msg *message.Message) error {
 		return nil
 	}
 
-	report := path.Join("report", reportFileName(params))
-	res, err := mc.UploadLocalFile(ctx, report, localReportPath, putOpts(utils.ReportType(params.ReportType)))
+	reportName := path.Join("report", reportFileName(params))
+	res, err := mc.UploadLocalFile(ctx, reportName, localReportPath, putOpts(utils.ReportType(params.ReportType)))
 	if err != nil {
 		log.Error().Err(err).Msg("failed to upload file to minio")
 		return nil
