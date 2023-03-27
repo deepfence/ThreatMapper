@@ -20,6 +20,7 @@ import (
 type SearchFilter struct {
 	InFieldFilter []string                `json:"in_field_filter" required:"true"` // Fields to return
 	Filters       reporters.FieldsFilters `json:"filters" required:"true"`
+	Window        model.FetchWindow       `json:"window" required:"true"`
 }
 
 type SearchNodeReq struct {
@@ -136,13 +137,20 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 	defer tx.Close()
 
 	query := `
-		MATCH (n:` + string(scan_type) + `)` +
-		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(scan_filter.Filters), true) +
-		` MATCH (n:` + string(scan_type) + `) -[:SCANNED]-> (m)` +
+		MATCH (:` + string(scan_type) + `) -[:SCANNED]-> (m)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(resource_filter.Filters), true) +
-		` WITH DISTINCT m, max(n.updated_at) as latest
-	    MATCH (n:` + string(scan_type) + `{updated_at:latest}) -[:SCANNED]-> (m)` +
-		` RETURN n.node_id as scan_id, n.status, n.updated_at, m.node_id, labels(m) as node_type, m.node_name` +
+		`
+	    WITH distinct m
+		CALL {
+	    WITH m
+		MATCH (n:` + string(scan_type) + `) -[:SCANNED]-> (m)` +
+		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(scan_filter.Filters), true) +
+		` 
+	    RETURN n
+	    ORDER BY n.updated_at` +
+		scan_filter.Window.FetchWindow2CypherQuery() +
+		`}
+	    RETURN n.node_id as scan_id, n.status, n.updated_at, m.node_id, labels(m) as node_type, m.node_name` +
 		reporters.OrderFilter2CypherCondition("n", scan_filter.Filters.OrderFilter) +
 		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
