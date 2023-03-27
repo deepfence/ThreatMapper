@@ -3,6 +3,7 @@ package ingesters
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -714,12 +715,56 @@ func extractPidFromNodeID(hni string) string {
 }
 
 func metadataToMap(n report.Metadata) map[string]interface{} {
-	// TODO: only primitive types or arrays can be ingested in neo4j
+	var interfaceIps map[string]string
+	if n.InterfaceIps != nil {
+		interfaceIps = *n.InterfaceIps
+	}
 	n.InterfaceIps = nil
+
+	var dockerLabels map[string]string
+	if n.DockerLabels != nil {
+		dockerLabels = *n.DockerLabels
+	}
 	n.DockerLabels = nil
+
+	var dockerEnv map[string]string
+	if n.DockerEnv != nil {
+		dockerEnv = *n.DockerEnv
+	}
 	n.DockerEnv = nil
+
+	var dockerImageLabels map[string]string
+	if n.DockerImageLabels != nil {
+		dockerImageLabels = *n.DockerImageLabels
+	}
 	n.DockerImageLabels = nil
+
+	var kubernetesLabels map[string]string
+	if n.KubernetesLabels != nil {
+		kubernetesLabels = *n.KubernetesLabels
+	}
 	n.KubernetesLabels = nil
+
+	// convert struct to map
 	metadata := utils.StructToMap(n)
+
+	if interfaceIps != nil {
+		interfaceIpJson, err := json.Marshal(interfaceIps)
+		if err == nil {
+			metadata["interface_ips"] = string(interfaceIpJson)
+		}
+	}
+	for k, v := range dockerLabels {
+		metadata["docker_label_"+k] = v
+	}
+	for k, v := range dockerEnv {
+		metadata["docker_env_"+k] = v
+	}
+	for k, v := range dockerImageLabels {
+		metadata["docker_image_label_"+k] = v
+	}
+	for k, v := range kubernetesLabels {
+		metadata["kubernetes_labels_"+k] = v
+	}
 	return metadata
 }

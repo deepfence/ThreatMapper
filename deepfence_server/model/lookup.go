@@ -68,11 +68,15 @@ type Host struct {
 	Pods            []Pod            `json:"pods" required:"true"`
 	ContainerImages []ContainerImage `json:"container_images" required:"true"`
 	Metadata        Metadata         `json:"cloud_metadata" required:"true" nested_json:"true"`
-	InterfaceNames  string           `json:"interfaceNames" required:"true"`
+	InterfaceNames  []string         `json:"interface_names" required:"true"`
 	InterfaceIps    string           `json:"interface_ips" required:"true"`
 	KernelVersion   string           `json:"kernel_version" required:"true"`
 	Uptime          string           `json:"uptime" required:"true"`
 	Metrics         ComputeMetrics   `json:"metrics" required:"true"`
+	Version         string           `json:"version" required:"true"`
+	AgentRunning    string           `json:"agent_running" required:"true"`
+	IsConsoleVm     bool             `json:"is_console_vm" required:"true"`
+	LocalCIDRs      []string         `json:"local_cidr" required:"true"`
 	RegularScanStatus
 }
 
@@ -128,9 +132,8 @@ type Connection struct {
 type Pod struct {
 	ID         string         `json:"node_id" required:"true"`
 	NodeName   string         `json:"node_name" required:"true"`
-	Name       string         `json:"kubernetes_name" required:"true"`
 	Namespace  string         `json:"kubernetes_namespace" required:"true"`
-	Host       string         `json:"host_node_id" required:"true"`
+	Host       string         `json:"host_name" required:"true"`
 	Metrics    ComputeMetrics `json:"metrics" required:"true"`
 	Containers []Container    `json:"containers" required:"true"`
 	Processes  []Process      `json:"processes" required:"true" required:"true"`
@@ -184,11 +187,11 @@ func (Container) GetJsonCategory() string {
 
 type Process struct {
 	ID           string         `json:"node_id" required:"true"`
-	Name         string         `json:"name" required:"true"`
-	PID          string         `json:"pid" required:"true"`
+	Name         string         `json:"node_name" required:"true"`
+	PID          int            `json:"pid" required:"true"`
 	Command      string         `json:"cmdline" required:"true"`
-	PPID         string         `json:"ppid" required:"true"`
-	ThreadNumber string         `json:"threads" required:"true"`
+	PPID         int            `json:"ppid" required:"true"`
+	ThreadNumber int            `json:"threads" required:"true"`
 	Metrics      ComputeMetrics `json:"metrics" required:"true"`
 	Metadata     Metadata       `json:"metadata" required:"true" nested_json:"true"`
 }
