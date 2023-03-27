@@ -22,6 +22,7 @@ import {
 import {
   ActionFunctionArgs,
   Form,
+  generatePath,
   LoaderFunctionArgs,
   useFetcher,
   useLoaderData,
@@ -638,16 +639,19 @@ const SecretScans = () => {
       columnHelper.accessor('node_name', {
         enableSorting: false,
         cell: (info) => {
-          const isScanComplete = info.row.original.status?.toLowerCase() === 'complete';
+          const isNeverScan = info.row.original.status?.toLowerCase() === '';
           const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
-            if (isScanComplete) {
-              return (
-                <DFLink to={`/secret/scan-results/${info.row.original.scan_id}`}>
-                  {children}
-                </DFLink>
-              );
-            }
-            return <>{children}</>;
+            return isNeverScan ? (
+              <>{children}</>
+            ) : (
+              <DFLink
+                to={generatePath(`/secret/scan-results/:scanId`, {
+                  scanId: info.row.original.scan_id,
+                })}
+              >
+                {children}
+              </DFLink>
+            );
           };
           return (
             <WrapperComponent>
