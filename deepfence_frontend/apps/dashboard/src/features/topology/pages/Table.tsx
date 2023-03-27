@@ -35,6 +35,7 @@ import {
   NodeType,
 } from '@/features/topology/utils/topology-data';
 import { ApiError, makeRequest } from '@/utils/api';
+import { ScanTypeEnum } from '@/types/common';
 
 interface ActionData {
   data: ApiDocsGraphResult;

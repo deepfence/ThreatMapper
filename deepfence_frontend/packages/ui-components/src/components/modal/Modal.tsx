@@ -88,7 +88,7 @@ export const Modal: FC<ModalProps> = ({
   children,
   footer,
   elementToFocusOnCloseRef,
-  width = 'w-4/12', // 33.333333%
+  width = '',
   open,
   ...rest
 }) => {
