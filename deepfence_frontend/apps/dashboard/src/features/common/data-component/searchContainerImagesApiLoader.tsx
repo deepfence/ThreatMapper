@@ -52,6 +52,10 @@ export const searchContainerImagesApiLoader = async ({
               },
             },
             in_field_filter: ['node_id', 'docker_image_name', 'docker_image_tag'],
+            window: {
+              offset: 0,
+              size: 0,
+            },
           },
           window: {
             offset: 0,

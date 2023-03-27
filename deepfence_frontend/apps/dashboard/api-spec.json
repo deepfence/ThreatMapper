@@ -7927,6 +7927,7 @@
           "node_type",
           "scan_id",
           "updated_at",
+          "created_at",
           "benchmark_type",
           "status_counts",
           "compliance_percentage",
@@ -7945,6 +7946,7 @@
             "items": { "$ref": "#/components/schemas/ModelCloudCompliance" },
             "nullable": true
           },
+          "created_at": { "type": "integer", "format": "int64" },
           "docker_container_name": { "type": "string" },
           "docker_image_name": { "type": "string" },
           "host_name": { "type": "string" },
@@ -8183,6 +8185,7 @@
           "benchmark_types",
           "status",
           "updated_at",
+          "created_at",
           "node_id",
           "node_type",
           "severity_counts"
@@ -8194,6 +8197,7 @@
             "items": { "type": "string" },
             "nullable": true
           },
+          "created_at": { "type": "integer", "format": "int64" },
           "node_id": { "type": "string" },
           "node_type": { "type": "string" },
           "scan_id": { "type": "string" },
@@ -8217,6 +8221,7 @@
           "node_type",
           "scan_id",
           "updated_at",
+          "created_at",
           "benchmark_type",
           "status_counts",
           "compliance_percentage",
@@ -8235,6 +8240,7 @@
             "items": { "$ref": "#/components/schemas/ModelCompliance" },
             "nullable": true
           },
+          "created_at": { "type": "integer", "format": "int64" },
           "docker_container_name": { "type": "string" },
           "docker_image_name": { "type": "string" },
           "host_name": { "type": "string" },
@@ -8613,11 +8619,13 @@
           "node_type",
           "scan_id",
           "updated_at",
+          "created_at",
           "malwares",
           "severity_counts"
         ],
         "type": "object",
         "properties": {
+          "created_at": { "type": "integer", "format": "int64" },
           "docker_container_name": { "type": "string" },
           "docker_image_name": { "type": "string" },
           "host_name": { "type": "string" },
@@ -8923,6 +8931,7 @@
           "scan_id",
           "status",
           "updated_at",
+          "created_at",
           "node_id",
           "node_type",
           "severity_counts",
@@ -8930,6 +8939,7 @@
         ],
         "type": "object",
         "properties": {
+          "created_at": { "type": "integer", "format": "int64" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "node_type": { "type": "string" },
@@ -9110,11 +9120,13 @@
           "node_type",
           "scan_id",
           "updated_at",
+          "created_at",
           "secrets",
           "severity_counts"
         ],
         "type": "object",
         "properties": {
+          "created_at": { "type": "integer", "format": "int64" },
           "docker_container_name": { "type": "string" },
           "docker_image_name": { "type": "string" },
           "host_name": { "type": "string" },
@@ -9316,11 +9328,13 @@
           "node_type",
           "scan_id",
           "updated_at",
+          "created_at",
           "vulnerabilities",
           "severity_counts"
         ],
         "type": "object",
         "properties": {
+          "created_at": { "type": "integer", "format": "int64" },
           "docker_container_name": { "type": "string" },
           "docker_image_name": { "type": "string" },
           "host_name": { "type": "string" },
@@ -9444,7 +9458,7 @@
         }
       },
       "SearchSearchFilter": {
-        "required": ["in_field_filter", "filters"],
+        "required": ["in_field_filter", "filters", "window"],
         "type": "object",
         "properties": {
           "filters": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
@@ -9452,7 +9466,8 @@
             "type": "array",
             "items": { "type": "string" },
             "nullable": true
-          }
+          },
+          "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
       "SearchSearchNodeReq": {

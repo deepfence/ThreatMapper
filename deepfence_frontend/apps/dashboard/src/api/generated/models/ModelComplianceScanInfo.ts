@@ -27,6 +27,12 @@ export interface ModelComplianceScanInfo {
     benchmark_types: Array<string> | null;
     /**
      * 
+     * @type {number}
+     * @memberof ModelComplianceScanInfo
+     */
+    created_at: number;
+    /**
+     * 
      * @type {string}
      * @memberof ModelComplianceScanInfo
      */
@@ -69,6 +75,7 @@ export interface ModelComplianceScanInfo {
 export function instanceOfModelComplianceScanInfo(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "benchmark_types" in value;
+    isInstance = isInstance && "created_at" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_type" in value;
     isInstance = isInstance && "scan_id" in value;
@@ -90,6 +97,7 @@ export function ModelComplianceScanInfoFromJSONTyped(json: any, ignoreDiscrimina
     return {
         
         'benchmark_types': json['benchmark_types'],
+        'created_at': json['created_at'],
         'node_id': json['node_id'],
         'node_type': json['node_type'],
         'scan_id': json['scan_id'],
@@ -109,6 +117,7 @@ export function ModelComplianceScanInfoToJSON(value?: ModelComplianceScanInfo | 
     return {
         
         'benchmark_types': value.benchmark_types,
+        'created_at': value.created_at,
         'node_id': value.node_id,
         'node_type': value.node_type,
         'scan_id': value.scan_id,

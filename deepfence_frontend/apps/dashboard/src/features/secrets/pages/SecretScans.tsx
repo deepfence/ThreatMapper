@@ -207,6 +207,10 @@ async function getScans(
         match_filter: { filter_in: {} },
       },
       in_field_filter: null,
+      window: {
+        offset: 0,
+        size: 0,
+      },
     },
     scan_filters: {
       filters: {
@@ -215,6 +219,10 @@ async function getScans(
         match_filter: { filter_in: { ...languageFilters } },
       },
       in_field_filter: null,
+      window: {
+        offset: 0,
+        size: 1,
+      },
     },
     window: { offset: page * PAGE_SIZE, size: PAGE_SIZE },
   };
@@ -224,6 +232,13 @@ async function getScans(
       {
         field_name: order.sortBy,
         descending: order.descending,
+      },
+    ];
+  } else {
+    scanRequestParams.scan_filters.filters.order_filter.order_fields = [
+      {
+        field_name: 'updated_at',
+        descending: true,
       },
     ];
   }
