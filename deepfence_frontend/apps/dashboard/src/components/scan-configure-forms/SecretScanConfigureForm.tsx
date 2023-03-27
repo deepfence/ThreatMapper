@@ -179,7 +179,7 @@ export const SecretScanConfigureForm = ({
         <Button
           disabled={state !== 'idle'}
           loading={state !== 'idle'}
-          size="sm"
+          size="xs"
           color="primary"
           className="ml-auto"
           type="submit"

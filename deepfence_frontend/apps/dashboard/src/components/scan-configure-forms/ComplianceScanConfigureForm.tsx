@@ -386,7 +386,7 @@ export const ComplianceScanConfigureForm = ({
         <Button
           disabled={state !== 'idle'}
           loading={state !== 'idle'}
-          size="sm"
+          size="xs"
           color="primary"
           type="submit"
           className="ml-auto "
