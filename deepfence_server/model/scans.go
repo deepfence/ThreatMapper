@@ -181,6 +181,15 @@ type ScanResultsCommon struct {
 	UpdatedAt             int64  `json:"updated_at" required:"true" format:"int64"`
 }
 
+type FiltersReq struct {
+	RequiredFilters []string               `json:"filters" required:"true"`
+	Having          map[string]interface{} `json:"having"`
+}
+
+type FiltersResult struct {
+	Filters map[string][]string `json:"filters" required:"true"`
+}
+
 type SecretScanResult struct {
 	ScanResultsCommon
 	Secrets        []Secret         `json:"secrets" required:"true"`

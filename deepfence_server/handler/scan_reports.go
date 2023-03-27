@@ -874,6 +874,38 @@ func (h *Handler) CountCloudComplianceScanResultsHandler(w http.ResponseWriter, 
 	})
 }
 
+func (h *Handler) CloudComplianceFiltersHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.FiltersReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(err, w)
+	}
+	res, err := reporters_scan.GetFilters(r.Context(), req.Having, utils.ScanTypeDetectedNode[utils.NEO4J_CLOUD_COMPLIANCE_SCAN], req.RequiredFilters)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(err, w)
+	}
+	httpext.JSON(w, http.StatusOK, model.FiltersResult{Filters: res})
+}
+
+func (h *Handler) ComplianceFiltersHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.FiltersReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(err, w)
+	}
+	res, err := reporters_scan.GetFilters(r.Context(), req.Having, utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN], req.RequiredFilters)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(err, w)
+	}
+	httpext.JSON(w, http.StatusOK, model.FiltersResult{Filters: res})
+}
+
 func listScanResultsHandler[T any](w http.ResponseWriter, r *http.Request, scan_type utils.Neo4jScanType) ([]T, model.ScanResultsCommon, error) {
 	defer r.Body.Close()
 	var req model.ScanResultsReq

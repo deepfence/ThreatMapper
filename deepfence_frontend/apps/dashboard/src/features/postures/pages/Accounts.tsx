@@ -21,7 +21,6 @@ import {
   createColumnHelper,
   getRowSelectionColumn,
   IconButton,
-  Modal,
   Popover,
   RowSelectionState,
   Table,
@@ -30,13 +29,11 @@ import {
 
 import { getCloudNodesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelCloudNodeAccountInfo } from '@/api/generated';
+import { ConfigureScanModal } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
-import {
-  CLOUDS,
-  PostureScanConfigureForm,
-} from '@/components/scan-configure-forms/PostureScanConfigureForm';
-import { ComplianceScanNodeTypeEnum } from '@/types/common';
+import { CLOUDS } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import { ComplianceScanNodeTypeEnum, ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -158,13 +155,10 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [searchParams, setSearchParams] = useSearchParams();
   const columnHelper = createColumnHelper<ModelCloudNodeAccountInfo>();
-  const [openScanConfigure, setOpenScanConfigure] = useState<{
-    show: boolean;
-    nodeIds: string[];
-  }>({
-    show: false,
-    nodeIds: [],
-  });
+  const [selectedScanType, setSelectedScanType] = useState<
+    typeof ScanTypeEnum.ComplianceScan | typeof ScanTypeEnum.CloudComplianceScan
+  >();
+  const [scanNodeIds, setScanNodeIds] = useState<string[]>();
 
   const columns = useMemo(
     () => [
@@ -290,10 +284,13 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
               if (!info.row.original.node_id) {
                 throw new Error('Node id is required to start scan');
               }
-              setOpenScanConfigure({
-                show: true,
-                nodeIds: [info.row.original.node_id],
-              });
+              const scanType = CLOUDS.includes(
+                info.row.original.cloud_provider as ComplianceScanNodeTypeEnum,
+              )
+                ? ScanTypeEnum.CloudComplianceScan
+                : ScanTypeEnum.ComplianceScan;
+              setSelectedScanType(scanType);
+              setScanNodeIds([info.row.original.node_id]);
             }}
           >
             Start scan
@@ -318,34 +315,24 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
   return (
     <>
       <div>
-        <Modal
-          open={openScanConfigure.show}
-          width="w-full"
-          title="Configure your scan option"
-          onOpenChange={() =>
-            setOpenScanConfigure({
-              show: false,
-              nodeIds: [],
-            })
+        <ConfigureScanModal
+          open={!!selectedScanType}
+          onOpenChange={() => setSelectedScanType(undefined)}
+          scanOptions={
+            selectedScanType
+              ? {
+                  showAdvancedOptions: true,
+                  scanType: CLOUDS.includes(cloudProvider as ComplianceScanNodeTypeEnum)
+                    ? ScanTypeEnum.CloudComplianceScan
+                    : ScanTypeEnum.ComplianceScan,
+                  data: {
+                    nodeIds: scanNodeIds ?? [],
+                    nodeType: getNodeTypeByProviderName(cloudProvider),
+                  },
+                }
+              : undefined
           }
-        >
-          <div className="p-4 pt-0">
-            <PostureScanConfigureForm
-              wantAdvanceOptions={true}
-              onSuccess={() => {
-                setOpenScanConfigure({
-                  show: false,
-                  nodeIds: [],
-                });
-              }}
-              data={{
-                nodeType: getNodeTypeByProviderName(cloudProvider),
-                nodeIds: openScanConfigure.nodeIds,
-                images: [],
-              }}
-            />
-          </div>
-        </Modal>
+        />
         <Form>
           {Object.keys(rowSelectionState).length === 0 ? (
             <div className="text-sm text-gray-400 font-medium mb-3 flex justify-between">
@@ -359,12 +346,15 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
                   color="normal"
                   startIcon={<FaPlay />}
                   className="text-blue-600 dark:text-blue-500"
-                  onClick={() =>
-                    setOpenScanConfigure({
-                      show: true,
-                      nodeIds: Object.keys(rowSelectionState),
-                    })
-                  }
+                  onClick={() => {
+                    const scanType = CLOUDS.includes(
+                      cloudProvider as ComplianceScanNodeTypeEnum,
+                    )
+                      ? ScanTypeEnum.CloudComplianceScan
+                      : ScanTypeEnum.ComplianceScan;
+                    setSelectedScanType(scanType);
+                    setScanNodeIds(Object.keys(rowSelectionState));
+                  }}
                 >
                   Start scan
                 </Button>

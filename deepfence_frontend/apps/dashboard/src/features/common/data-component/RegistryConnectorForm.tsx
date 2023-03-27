@@ -40,9 +40,10 @@ type FormProps = {
 
 const getRequestBodyByRegistryType = (
   registryType: string,
-  formData: FormData,
+  body: {
+    [k: string]: FormDataEntryValue;
+  },
 ): ModelRegistryAddReq => {
-  const body = Object.fromEntries(formData);
   let requestParams: ModelRegistryAddReq = {
     name: '',
     registry_type: '',
@@ -188,30 +189,62 @@ export const registryConnectorActionApi = async ({
   if (!registryType) {
     throw new Error('Registry Type is required');
   }
-  const r = await makeRequest({
-    apiFunction: getRegistriesApiClient().addRegistry,
-    apiArgs: [
-      {
-        modelRegistryAddReq: getRequestBodyByRegistryType(registryType, formData),
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<ActionReturnType>({
-        success: false,
-      });
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message ?? '',
+
+  const formBody = Object.fromEntries(formData);
+
+  if (RegistryType.google_container_registry) {
+    const r = await makeRequest({
+      apiFunction: getRegistriesApiClient().addRegistryGCR,
+      apiArgs: [
+        {
+          name: formBody.registryName.toString(),
+          registryUrl: formBody.registryUrl.toString(),
+          serviceAccountJson: formData.get('authFile') as Blob,
+        },
+      ],
+      errorHandler: async (r) => {
+        const error = new ApiError<ActionReturnType>({
           success: false,
         });
-      }
-    },
-  });
+        if (r.status === 400) {
+          const modelResponse: ApiDocsBadRequestResponse = await r.json();
+          return error.set({
+            message: modelResponse.message ?? '',
+            success: false,
+          });
+        }
+      },
+    });
+    if (ApiError.isApiError(r)) {
+      return r.value();
+    }
+  } else {
+    const r = await makeRequest({
+      apiFunction: getRegistriesApiClient().addRegistry,
+      apiArgs: [
+        {
+          modelRegistryAddReq: getRequestBodyByRegistryType(registryType, formBody),
+        },
+      ],
+      errorHandler: async (r) => {
+        const error = new ApiError<ActionReturnType>({
+          success: false,
+        });
+        if (r.status === 400) {
+          const modelResponse: ApiDocsBadRequestResponse = await r.json();
+          return error.set({
+            message: modelResponse.message ?? '',
+            success: false,
+          });
+        }
+      },
+    });
 
-  if (ApiError.isApiError(r)) {
-    return r.value();
+    if (ApiError.isApiError(r)) {
+      return r.value();
+    }
   }
+
   toast('Registry added successfully');
   return {
     success: true,
@@ -232,7 +265,11 @@ export const RegistryConnectorForm = ({
   }, [fetcher]);
 
   return (
-    <fetcher.Form method="post" action={'/data-component/registries/add-connector'}>
+    <fetcher.Form
+      method="post"
+      action={'/data-component/registries/add-connector'}
+      encType="multipart/form-data"
+    >
       {registryType === RegistryType.docker_hub && (
         <DockerRegistryConnectorForm errorMessage={fetcher?.data?.message ?? ''} />
       )}

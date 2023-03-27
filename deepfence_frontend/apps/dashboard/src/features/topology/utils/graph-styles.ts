@@ -1,9 +1,23 @@
 import { truncate } from 'lodash-es';
 
-import { DetailedNodeSummary } from '@/api/generated';
+import AWSLogo from '@/assets/topology/aws.png';
+import AWSEc2ALBLogo from '@/assets/topology/aws_ec2_application_load_balancer.png';
+import AWSEc2CLBLogo from '@/assets/topology/aws_ec2_classic_load_balancer.png';
+import AWSEc2InstanceLogo from '@/assets/topology/aws_ec2_instance.png';
+import AWSEc2NLBLogo from '@/assets/topology/aws_ec2_network_load_balancer.png';
+import AWSECRRepositoryLogo from '@/assets/topology/aws_ecr_repository.png';
+import AWSECSClusterLogo from '@/assets/topology/aws_ecs_cluster.png';
+import AWSECSTaskLogo from '@/assets/topology/aws_ecs_task.png';
+import AWSLambdaFunctionLogo from '@/assets/topology/aws_lambda_function.png';
+import AWSRDSDBClusterLogo from '@/assets/topology/aws_rds_db_cluster.png';
+import AWSRDSDBInstanceLogo from '@/assets/topology/aws_rds_db_instance.png';
+import AWSS3BucketLogo from '@/assets/topology/aws_s3_bucket.png';
+import AzureLogo from '@/assets/topology/azure.png';
 import CloudLogo from '@/assets/topology/cloud.png';
 import CloudRegionLogo from '@/assets/topology/cloud-region.png';
 import ContainerLogo from '@/assets/topology/container.png';
+import DigitalOceanLogo from '@/assets/topology/digital_ocean.png';
+import GCPLogo from '@/assets/topology/gcp.png';
 import HostLogo from '@/assets/topology/host.png';
 import KubernetesClusterLogo from '@/assets/topology/kubernetes-cluster.png';
 import PodLogo from '@/assets/topology/pod.png';
@@ -120,24 +134,71 @@ export const onNodeHover = (item: G6Node, enter: boolean) => {
     }
   }
 };
+export const getNodeImage = (
+  nodeType: string,
+  nodeLabel?: string,
+): string | undefined => {
+  const path = getNodeImagePath(nodeType, nodeLabel);
+  if (path) {
+    return getImageFullPath(path);
+  }
+};
 
-export const getNodeImage = (nodeType: string): string | undefined => {
+const getNodeImagePath = (nodeType: string, nodeLabel?: string): string | undefined => {
   if (nodeType === 'cloud_provider') {
-    return getImageFullPath(CloudLogo);
+    if (nodeLabel && nodeLabel === 'aws') {
+      return AWSLogo;
+    } else if (nodeLabel && nodeLabel === 'digital_ocean') {
+      return DigitalOceanLogo;
+    } else if (nodeLabel && nodeLabel === 'azure') {
+      return AzureLogo;
+    } else if (nodeLabel && nodeLabel === 'gcp') {
+      return GCPLogo;
+    }
+    return CloudLogo;
   } else if (nodeType === 'pseudo') {
-    return getImageFullPath(TheInternetLogo);
+    return TheInternetLogo;
   } else if (nodeType === 'cloud_region') {
-    return getImageFullPath(CloudRegionLogo);
+    return CloudRegionLogo;
   } else if (nodeType === 'host') {
-    return getImageFullPath(HostLogo);
+    return HostLogo;
   } else if (nodeType === 'kubernetes_cluster') {
-    return getImageFullPath(KubernetesClusterLogo);
+    return KubernetesClusterLogo;
   } else if (nodeType === 'container') {
-    return getImageFullPath(ContainerLogo);
+    return ContainerLogo;
   } else if (nodeType === 'pod') {
-    return getImageFullPath(PodLogo);
+    return PodLogo;
   } else if (nodeType === 'process') {
-    return getImageFullPath(ProcessLogo);
+    return ProcessLogo;
+  } else if (nodeType.startsWith('aws_')) {
+    if (nodeType === 'aws_ec2_instance') {
+      return AWSEc2InstanceLogo;
+    } else if (nodeType === 'aws_eks_cluster') {
+      return KubernetesClusterLogo;
+    } else if (nodeType === 'aws_s3_bucket') {
+      return AWSS3BucketLogo;
+    } else if (nodeType === 'aws_lambda_function') {
+      return AWSLambdaFunctionLogo;
+    } else if (nodeType === 'aws_ecs_task') {
+      return AWSECSTaskLogo;
+    } else if (nodeType === 'aws_ecs_cluster') {
+      return AWSECSClusterLogo;
+    } else if (
+      nodeType === 'aws_ecr_repository' ||
+      nodeType === 'aws_ecrpublic_repository'
+    ) {
+      return AWSECRRepositoryLogo;
+    } else if (nodeType === 'aws_rds_db_instance') {
+      return AWSRDSDBInstanceLogo;
+    } else if (nodeType === 'aws_rds_db_cluster') {
+      return AWSRDSDBClusterLogo;
+    } else if (nodeType === 'aws_ec2_application_load_balancer') {
+      return AWSEc2ALBLogo;
+    } else if (nodeType === 'aws_ec2_classic_load_balancer') {
+      return AWSEc2CLBLogo;
+    } else if (nodeType === 'aws_ec2_network_load_balancer') {
+      return AWSEc2NLBLogo;
+    }
   }
 };
 

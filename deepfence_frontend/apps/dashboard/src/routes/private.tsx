@@ -1,12 +1,13 @@
 import { Outlet, redirect } from 'react-router-dom';
 
 import { ErrorComponent } from '@/components/error/ErrorComponent';
+import { scanPostureApiAction } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
-import { scanPostureApiAction } from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
+import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { searchClustersApiLoader } from '@/features/common/data-component/searchClustersApiLoader';
 import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
 import { searchContainersApiLoader } from '@/features/common/data-component/searchContainersApiLoader';
@@ -59,6 +60,7 @@ import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
+import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
 import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
@@ -160,7 +162,6 @@ export const privateRoutes: CustomRouteObject[] = [
         element: <Dashboard />,
         meta: { title: 'Dashboard' },
       },
-      // registries
       {
         path: 'topology',
         ...topology,
@@ -194,6 +195,12 @@ export const privateRoutes: CustomRouteObject[] = [
           },
         ],
       },
+      {
+        path: 'threatgraph',
+        ...threatGraph,
+        meta: { title: 'Threat Graph' },
+      },
+      // registries
       {
         path: 'registries',
         ...registries,
@@ -433,6 +440,10 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'list/controls/:nodeType/:checkType',
         loader: listControlsApiLoader,
         action: toggleControlApiAction,
+      },
+      {
+        path: 'search/cloud/filters/:scanId',
+        loader: searchCloudFiltersApiLoader,
       },
     ],
   },

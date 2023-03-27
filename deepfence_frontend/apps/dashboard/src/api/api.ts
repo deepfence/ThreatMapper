@@ -14,6 +14,7 @@ import {
   ScanResultsApi,
   SearchApi,
   SecretScanApi,
+  ThreatApi,
   TopologyApi,
   UserApi,
   VulnerabilityApi,
@@ -114,6 +115,7 @@ export function getRegistriesApiClient() {
     getRegistrySummaryByType: registriesApi.getSummaryByType.bind(registriesApi),
     listRegistries: registriesApi.listRegistry.bind(registriesApi),
     addRegistry: registriesApi.addRegistry.bind(registriesApi),
+    addRegistryGCR: registriesApi.addRegistryGCR.bind(registriesApi),
     deleteRegistry: registriesApi.deleteRegistry.bind(registriesApi),
     listImages: registriesApi.listImages.bind(registriesApi),
     countImages: registriesApi.countImages.bind(registriesApi),
@@ -156,6 +158,8 @@ export function getSearchApiClient() {
 
     searchCompliances: searchApi.searchCompliances.bind(searchApi),
     searchCloudCompliances: searchApi.searchCloudCompliances.bind(searchApi),
+
+    getCloudComplianceFilters: searchApi.getCloudComplianceFilters.bind(searchApi),
   };
 }
 
@@ -204,5 +208,13 @@ export function getLookupApiClient() {
     lookupProcess: lookupApi.getProcesses.bind(lookupApi),
     lookupKubernetesClusters: lookupApi.getKubernetesClusters.bind(lookupApi),
     lookupCloudResources: lookupApi.getCloudResources.bind(lookupApi),
+  };
+}
+
+export function getThreatGraphApiClient() {
+  const threatGraphApi = new ThreatApi(configuration);
+
+  return {
+    getThreatGraph: threatGraphApi.getThreatGraph.bind(threatGraphApi),
   };
 }
