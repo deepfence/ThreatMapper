@@ -67,7 +67,7 @@ export const ConfigureScanModal = ({
   }
 
   return (
-    <Modal open={open} width="w-full" title={title} onOpenChange={onOpenChange}>
+    <Modal open={open} title={title} onOpenChange={onOpenChange}>
       <div className="p-6">
         {scanOptions.scanType === ScanTypeEnum.VulnerabilityScan && (
           <VulnerabilityScanConfigureForm

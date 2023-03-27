@@ -59,6 +59,7 @@ type ScanInfo struct {
 	ScanId         string           `json:"scan_id" required:"true"`
 	Status         string           `json:"status" required:"true"`
 	UpdatedAt      int64            `json:"updated_at" required:"true" format:"int64"`
+	CreatedAt      int64            `json:"created_at" required:"true" format:"int64"`
 	NodeId         string           `json:"node_id" required:"true"`
 	NodeType       string           `json:"node_type" required:"true"`
 	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
@@ -70,6 +71,7 @@ type ComplianceScanInfo struct {
 	BenchmarkTypes []string         `json:"benchmark_types" required:"true"`
 	Status         string           `json:"status" required:"true"`
 	UpdatedAt      int64            `json:"updated_at" required:"true" format:"int64"`
+	CreatedAt      int64            `json:"created_at" required:"true" format:"int64"`
 	NodeId         string           `json:"node_id" required:"true"`
 	NodeType       string           `json:"node_type" required:"true"`
 	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
@@ -179,6 +181,7 @@ type ScanResultsCommon struct {
 	NodeType              string `json:"node_type" required:"true"`
 	ScanID                string `json:"scan_id" required:"true"`
 	UpdatedAt             int64  `json:"updated_at" required:"true" format:"int64"`
+	CreatedAt             int64  `json:"created_at" required:"true" format:"int64"`
 }
 
 type FiltersReq struct {

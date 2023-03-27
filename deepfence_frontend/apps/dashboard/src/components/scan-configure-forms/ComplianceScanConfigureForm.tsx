@@ -267,7 +267,12 @@ export const ControlsTable = memo(
                 onValueChange={(v) => setSelectedTab(v)}
               >
                 {isLoading && controlsList.length === 0 ? (
-                  <TableSkeleton columns={3} rows={10} size={'md'} />
+                  <TableSkeleton
+                    columns={3}
+                    rows={10}
+                    size={'md'}
+                    className={'w-screen'}
+                  />
                 ) : (
                   <Table
                     size="sm"
