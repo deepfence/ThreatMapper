@@ -964,14 +964,14 @@ const FilterComponent = () => {
   };
 
   let statuses: string[] = [];
-  if (params.nodeType === ACCOUNT_CONNECTOR.HOST) {
+  if (params.nodeType === ACCOUNT_CONNECTOR.LINUX) {
     statuses = [STATUSES.INFO, STATUSES.PASS, STATUSES.WARN, STATUSES.NOTE];
   } else {
     statuses = [STATUSES.ALARM, STATUSES.INFO, STATUSES.OK, STATUSES.SKIP];
   }
 
   let benchmarks: string[] = [];
-  if (params.nodeType === ACCOUNT_CONNECTOR.HOST) {
+  if (params.nodeType === ACCOUNT_CONNECTOR.LINUX) {
     benchmarks = complianceType.host;
   } else {
     benchmarks = complianceType.kubernetes_cluster;
@@ -1191,7 +1191,7 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
     nodeType: string;
   };
   const statuses =
-    params.nodeType === ACCOUNT_CONNECTOR.HOST
+    params.nodeType === ACCOUNT_CONNECTOR.LINUX
       ? [
           POSTURE_STATUS_COLORS['info'],
           POSTURE_STATUS_COLORS['pass'],
