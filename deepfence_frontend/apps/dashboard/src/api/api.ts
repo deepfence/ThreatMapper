@@ -8,6 +8,7 @@ import {
   ComplianceApi,
   Configuration,
   ControlsApi,
+  DiagnosisApi,
   LookupApi,
   MalwareScanApi,
   RegistryApi,
@@ -216,5 +217,17 @@ export function getThreatGraphApiClient() {
 
   return {
     getThreatGraph: threatGraphApi.getThreatGraph.bind(threatGraphApi),
+  };
+}
+
+export function getDiagnosisApiClient() {
+  const diagnosisApi = new DiagnosisApi(configuration);
+
+  return {
+    generateAgentDiagnosticLogs:
+      diagnosisApi.generateAgentDiagnosticLogs.bind(diagnosisApi),
+    generateConsoleDiagnosticLogs:
+      diagnosisApi.generateConsoleDiagnosticLogs.bind(diagnosisApi),
+    getDiagnosticLogs: diagnosisApi.getDiagnosticLogs.bind(diagnosisApi),
   };
 }

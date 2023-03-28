@@ -60,6 +60,9 @@ import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
+import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
+import { module as settings } from '@/features/settings/pages/Settings';
+import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
 import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
@@ -382,6 +385,23 @@ export const privateRoutes: CustomRouteObject[] = [
         ...postureAccounts,
         meta: { title: 'Posture Accounts' },
       },
+      {
+        path: 'settings',
+        ...settings,
+        meta: { title: 'Settings' },
+        children: [
+          {
+            path: 'diagnostic-logs',
+            ...diagnosticLogs,
+            meta: { title: 'Diagnostic Logs' },
+          },
+          {
+            path: 'user-management',
+            ...userManagement,
+            meta: { title: 'User Management' },
+          },
+        ],
+      },
     ],
   },
   {
@@ -411,10 +431,18 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'search/hosts/:scanType',
         loader: searchHostsApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
       },
       {
         path: 'search/clusters',
         loader: searchClustersApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
       },
       {
         path: 'scan/vulnerability',

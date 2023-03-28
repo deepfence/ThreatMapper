@@ -40,7 +40,7 @@ const tabListCva = cva(
   {
     variants: {
       underline: {
-        true: ['gap-x-6 border-b', 'border-gray-200 dark:border-gray-700'],
+        true: ['gap-x-4 border-b', 'border-gray-200 dark:border-gray-700'],
       },
       tab: {
         true: [
