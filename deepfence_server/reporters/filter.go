@@ -28,7 +28,7 @@ type OrderSpec struct {
 
 type CompareFilter struct {
 	FieldName   string `json:"field_name" required:"true"`
-	FieldValue  interface{}
+	FieldValue  uint64
 	GreaterThan bool `json:"greater_than" required:"true"`
 }
 
@@ -84,7 +84,7 @@ func compareFilter2CypherConditions(cypherNodeName string, filters []CompareFilt
 		if !filter.GreaterThan {
 			compareOperator = "<"
 		}
-		conditions = append(conditions, fmt.Sprintf("%s.%s %s %s", cypherNodeName, filter.FieldName, compareOperator, filter.FieldValue))
+		conditions = append(conditions, fmt.Sprintf("%s.%s %s %v", cypherNodeName, filter.FieldName, compareOperator, filter.FieldValue))
 	}
 	return conditions
 }
