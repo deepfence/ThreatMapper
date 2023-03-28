@@ -27,9 +27,9 @@ type OrderSpec struct {
 }
 
 type CompareFilter struct {
-	FieldName   string `json:"field_name" required:"true"`
-	FieldValue  string
-	GreaterThan bool `json:"greater_than" required:"true"`
+	FieldName   string      `json:"field_name" required:"true"`
+	FieldValue  interface{} `json:"field_value" required:"true"`
+	GreaterThan bool        `json:"greater_than" required:"true"`
 }
 
 type OrderFilter struct {
