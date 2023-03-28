@@ -25,7 +25,8 @@ var (
 		"templates/base.gohtml",
 		"templates/header.gohtml",
 		"templates/applied_filters.gohtml",
-		"templates/vulnerabilities_summary.gohtml",
+		"templates/vulnerabilities_summary_table.gohtml",
+		"templates/vulnerabilities_nodes_table.gohtml",
 	}
 
 	templates = template.Must(template.ParseFS(content, templateFiles...))

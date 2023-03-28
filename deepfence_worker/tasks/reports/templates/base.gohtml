@@ -260,9 +260,10 @@
 </head>
 
 <body>
-  {{template "header" .}}
-  {{template "applied_filters" .}}
-  {{template "vulnerabilities-summary" .}}
+  {{ template "header" . }}
+  {{ template "applied_filters" . }}
+  {{ template "vulnerabilities-summary-table" . }}
+  {{ template "vulnerabilities-nodes-table" . }}
   <!-- {% block content %}
     <div class="content">
     </div>
