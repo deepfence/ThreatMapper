@@ -74,7 +74,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
 
   if (
     actionType === ACTION_TYPE.AGENT_LOGS &&
-    (nodeIds.length === 0 || clusterIds.length === 0)
+    nodeIds.length === 0 &&
+    clusterIds.length === 0
   ) {
     return 'Please select at least one host/cluster';
   }
@@ -90,9 +91,9 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
       };
     });
 
-    const _clusters = nodeIds.map((node) => {
+    const _clusters = clusterIds.map((cluster) => {
       return {
-        node_id: node,
+        node_id: cluster,
         node_type: DiagnosisNodeIdentifierNodeTypeEnum.Cluster,
       };
     });
