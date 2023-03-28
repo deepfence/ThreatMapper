@@ -394,7 +394,7 @@ func nodeType2Neo4jType(node_type string) string {
 	return "unknown"
 }
 
-func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_ids []model.NodeIdentifier, fw model.FetchWindow, scanStatus []string) (model.ScanListResp, error) {
+func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_ids []model.NodeIdentifier, ff reporters.FieldsFilters, fw model.FetchWindow, scanStatus []string) (model.ScanListResp, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return model.ScanListResp{}, err
@@ -421,7 +421,7 @@ func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_ids [
 	for i := range node_ids {
 		query := `
 			MATCH (m:` + string(scan_type) + `) -[:SCANNED]-> (n:` + nodeType2Neo4jType(node_ids[i].NodeType) + `{node_id: $node_id})
-			` + statusQuery + `
+			` + statusQuery + reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(ff), len(scanStatus) == 0) + `
 			RETURN m.node_id, m.status, m.updated_at, n.node_id, n.node_name, labels(n) as node_type
 			ORDER BY m.updated_at ` + fw.FetchWindow2CypherQuery()
 		fmt.Printf("list query %v\n", query)
