@@ -73,7 +73,7 @@ const MenuItems: Array<{
   {
     title: 'Settings',
     Icon: SettingsIcon,
-    to: '/settings/diagnosis-logs',
+    to: '/settings/diagnostic-logs',
   },
 ];
 

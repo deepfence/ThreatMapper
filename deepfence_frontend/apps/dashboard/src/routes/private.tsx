@@ -60,7 +60,7 @@ import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
-import { module as diagnosisLogs } from '@/features/settings/pages/DiagnosisLogs';
+import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
 import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
@@ -391,9 +391,9 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Settings' },
         children: [
           {
-            path: 'diagnosis-logs',
-            ...diagnosisLogs,
-            meta: { title: 'Diagnosis Logs' },
+            path: 'diagnostic-logs',
+            ...diagnosticLogs,
+            meta: { title: 'Diagnostic Logs' },
           },
           {
             path: 'user-management',
@@ -431,10 +431,18 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'search/hosts/:scanType',
         loader: searchHostsApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
       },
       {
         path: 'search/clusters',
         loader: searchClustersApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
       },
       {
         path: 'scan/vulnerability',
