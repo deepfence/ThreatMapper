@@ -8,14 +8,6 @@ import (
 	"github.com/weaveworks/scope/report"
 )
 
-// These constants are keys used in node metadata
-const (
-	Name        = report.KubernetesName
-	Namespace   = report.KubernetesNamespace
-	Created     = report.KubernetesCreated
-	LabelPrefix = "kubernetes_labels_"
-)
-
 // Meta represents a metadata information about a Kubernetes object
 type Meta interface {
 	UID() string

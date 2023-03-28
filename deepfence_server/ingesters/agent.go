@@ -341,6 +341,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		if n.HostName == "" {
 			continue
 		}
+		n.DockerContainerName = n.NodeName
 		container_batch = append(container_batch, metadataToMap(n))
 		container_edges_batch[n.HostName] = append(container_edges_batch[n.HostName], n.NodeID)
 	}

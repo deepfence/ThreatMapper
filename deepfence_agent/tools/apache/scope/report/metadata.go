@@ -82,7 +82,7 @@ type Metadata struct {
 	PrivateIP        []string `json:"private_ip,omitempty"`
 	AvailabilityZone string   `json:"availability_zone,omitempty"`
 	KernelId         string   `json:"kernel_id,omitempty"`
-	CloudRegion      string   `json:"region,omitempty"`
+	CloudRegion      string   `json:"cloud_region,omitempty"`
 	ResourceGroup    string   `json:"resource_group,omitempty"`
 
 	// common
@@ -108,6 +108,7 @@ type Metadata struct {
 	LocalCIDRs     []string           `json:"local_cidr,omitempty"`
 
 	// docker
+	DockerContainerName        string             `json:"docker_container_name,omitempty"`
 	DockerContainerCommand     string             `json:"docker_container_command,omitempty"`
 	DockerContainerState       string             `json:"docker_container_state,omitempty"`
 	DockerContainerStateHuman  string             `json:"docker_container_state_human,omitempty"`
@@ -131,16 +132,11 @@ type Metadata struct {
 	DockerImageID          string             `json:"docker_image_id,omitempty"`
 	DockerImageLabels      *map[string]string `json:"docker_image_labels,omitempty"`
 
-	// pod
-	PodCount int    `json:"pod_count,omitempty"`
-	PodName  string `json:"pod_name,omitempty"`
-
 	// process
 	Pid       int       `json:"pid,omitempty"`
 	Cmdline   string    `json:"cmdline,omitempty"`
 	Ppid      int       `json:"ppid,omitempty"`
 	Threads   int       `json:"threads,omitempty"`
-	Process   string    `json:"process,omitempty"`
 	OpenFiles *[]string `json:"open_files,omitempty"`
 
 	// endpoint

@@ -15,12 +15,6 @@ import (
 	"github.com/weaveworks/scope/report"
 )
 
-// Keys for use in Node
-const (
-	k8sClusterId   = report.KubernetesClusterId
-	k8sClusterName = report.KubernetesClusterName
-)
-
 // Reporter generate Reports containing Container and ContainerImage topologies
 type Reporter struct {
 	registry              Registry
@@ -40,8 +34,8 @@ func NewReporter(registry Registry, hostID string, probeID string, probe *probe.
 		probeID:               probeID,
 		isConsoleVm:           dfUtils.IsThisHostUIMachine(),
 		probe:                 probe,
-		kubernetesClusterName: os.Getenv(k8sClusterName),
-		kubernetesClusterId:   os.Getenv(k8sClusterId),
+		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
+		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
 	}
 	registry.WatchContainerUpdates(reporter.ContainerUpdated)
 	return reporter
@@ -208,6 +202,7 @@ func (r *Reporter) overlayTopology() (report.Topology, report.TopologySets) {
 	node := report.Metadata{
 		Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
 		NodeID:    overlayNodeId,
+		NodeType:  report.Overlay,
 		HostName:  r.hostID,
 	}
 	overlaySets := report.TopologySets{overlayNodeId: report.MakeSets().Add(report.HostLocalNetworks, report.MakeStringSet(subnets...))}

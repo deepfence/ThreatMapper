@@ -493,9 +493,9 @@ func (nc *neo4jTopologyReporter) getPods(tx neo4j.Transaction, hosts []string, f
 	r, err := tx.Run(`
 		MATCH (n:Pod)
 		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, true)+`
-		MATCH (m:Node{node_id:n.host_node_id})
+		MATCH (m:Node{node_id:n.host_name})
 		WHERE CASE WHEN $hosts IS NULL THEN [1] ELSE m.host_name IN $hosts END
-		RETURN m.host_name, n.node_id, n.kubernetes_name`,
+		RETURN m.host_name, n.node_id, n.node_name`,
 		filterNil(map[string]interface{}{"hosts": hosts}))
 	if err != nil {
 		return res, err

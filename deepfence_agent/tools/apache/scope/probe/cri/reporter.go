@@ -13,12 +13,6 @@ import (
 	"github.com/weaveworks/scope/report"
 )
 
-const (
-	k8sClusterId   = report.KubernetesClusterId
-	k8sClusterName = report.KubernetesClusterName
-	IsUiVm         = "is_ui_vm"
-)
-
 // Reporter generate Reports containing Container and ContainerImage topologies
 type Reporter struct {
 	isConsoleVm           bool
@@ -36,8 +30,8 @@ func NewReporter(cri client.RuntimeServiceClient, hostID string, criImageClient 
 		cri:                   cri,
 		criImageClient:        criImageClient,
 		isConsoleVm:           dfUtils.IsThisHostUIMachine(),
-		kubernetesClusterName: os.Getenv(k8sClusterName),
-		kubernetesClusterId:   os.Getenv(k8sClusterId),
+		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
+		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
 	}
 
 	return reporter
@@ -109,12 +103,12 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 		DockerImageID:             imageID,
 		ImageNameWithTag:          imageName + ":" + imageTag,
 		IsConsoleVm:               r.isConsoleVm,
-		KubernetesClusterName:     k8sClusterName,
-		KubernetesClusterId:       k8sClusterId,
+		KubernetesClusterName:     r.kubernetesClusterName,
+		KubernetesClusterId:       r.kubernetesClusterId,
 		DockerLabels:              &c.Labels,
 	}
 	parent := report.Parent{
-		KubernetesCluster: k8sClusterId,
+		KubernetesCluster: r.kubernetesClusterId,
 		Host:              r.hostID,
 		ContainerImage:    imageID,
 	}

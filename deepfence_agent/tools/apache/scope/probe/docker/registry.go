@@ -138,8 +138,8 @@ func NewRegistry(options RegistryOptions) (Registry, error) {
 			tags: make(map[string][]string),
 		},
 		isConsoleVm:           dfUtils.IsThisHostUIMachine(),
-		kubernetesClusterId:   os.Getenv(k8sClusterId),
-		kubernetesClusterName: os.Getenv(k8sClusterName),
+		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
+		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
 	}
 	hostName = scopeHostname.Get()
 	go r.loop()
@@ -411,10 +411,6 @@ func (r *registry) sendDeletedUpdate(containerID string) {
 	parent := report.Parent{
 		KubernetesCluster: r.kubernetesClusterId,
 		Host:              hostName,
-		Container:         "",
-		ContainerImage:    "",
-		Namespace:         "",
-		Pod:               "",
 	}
 	// Trigger anyone watching for updates
 	for _, f := range r.watchers {
