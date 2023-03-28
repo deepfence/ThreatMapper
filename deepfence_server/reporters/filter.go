@@ -26,14 +26,21 @@ type OrderSpec struct {
 	Descending bool   `json:"descending" required:"true"`
 }
 
+type CompareFilter struct {
+	FieldName   string `json:"field_name" required:"true"`
+	FieldValue  interface{}
+	GreaterThan bool `json:"greater_than" required:"true"`
+}
+
 type OrderFilter struct {
 	OrderFields []OrderSpec `json:"order_fields" required:"true"`
 }
 
 type FieldsFilters struct {
-	ContainsFilter ContainsFilter `json:"contains_filter" required:"true"`
-	MatchFilter    MatchFilter    `json:"match_filter" required:"true"`
-	OrderFilter    OrderFilter    `json:"order_filter" required:"true"`
+	ContainsFilter ContainsFilter  `json:"contains_filter" required:"true"`
+	MatchFilter    MatchFilter     `json:"match_filter" required:"true"`
+	OrderFilter    OrderFilter     `json:"order_filter" required:"true"`
+	CompareFilters []CompareFilter `json:"compare_filter" required:"true"`
 }
 
 func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilter) []string {
@@ -66,6 +73,18 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 
 			conditions = append(conditions, fmt.Sprintf("%s.%s IN [%s]", cypherNodeName, k, strings.Join(values, ",")))
 		}
+	}
+	return conditions
+}
+
+func compareFilter2CypherConditions(cypherNodeName string, filters []CompareFilter) []string {
+	var conditions []string
+	for _, filter := range filters {
+		compareOperator := ">"
+		if !filter.GreaterThan {
+			compareOperator = "<"
+		}
+		conditions = append(conditions, fmt.Sprintf("%s.%s %s %s", cypherNodeName, filter.FieldName, compareOperator, filter.FieldValue))
 	}
 	return conditions
 }
@@ -128,6 +147,8 @@ func ParseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.O
 	conditions = append(conditions, matchFilter2CypherConditions(cypherNodeName, f.MatchFilter)...)
 
 	conditions = append(conditions, orderFilter2CypherWhere(cypherNodeName, f.OrderFilter)...)
+
+	conditions = append(conditions, compareFilter2CypherConditions(cypherNodeName, f.CompareFilters)...)
 
 	if len(conditions) == 0 {
 		return ""
