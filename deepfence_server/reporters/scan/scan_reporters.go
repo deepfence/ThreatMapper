@@ -839,7 +839,9 @@ func GetCloudComplianceStats(ctx context.Context, scanId string, neo4jCompliance
 		totalStatusCount += statusCount
 	}
 	additionalInfo.StatusCounts = res
-	additionalInfo.CompliancePercentage = float64(positiveStatusCount) * 100 / float64(totalStatusCount)
+	if totalStatusCount > 0 {
+		additionalInfo.CompliancePercentage = float64(positiveStatusCount) * 100 / float64(totalStatusCount)
+	}
 
 	return additionalInfo, nil
 }
