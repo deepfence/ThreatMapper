@@ -261,9 +261,11 @@
 
 <body>
   {{ template "header" . }}
-  {{ template "applied_filters" . }}
-  {{ template "vulnerabilities-summary-table" . }}
+  {{ template "applied-filters" . }}
+  {{ template "summary-table" . }}
   {{ template "vulnerabilities-nodes-table" . }}
+  {{ template "secrets-nodes-table" . }}
+  {{ template "malwares-nodes-table" . }}
   <!-- {% block content %}
     <div class="content">
     </div>

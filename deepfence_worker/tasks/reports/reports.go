@@ -18,6 +18,8 @@ import (
 )
 
 var ErrUnknownReportType = errors.New("unknown report type")
+var ErrUnknownScanType = errors.New("unknown scan type")
+var ErrNotImplemented = errors.New("not implemented")
 
 func fileExt(reportType utils.ReportType) string {
 	switch reportType {
