@@ -298,7 +298,7 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
         maxSize: 120,
       }),
     ],
-    [rowSelectionState, searchParams, data?.accounts],
+    [rowSelectionState, searchParams, data],
   );
   const accounts = data?.accounts ?? [];
   const totalRows = data?.totalRows ?? 0;
