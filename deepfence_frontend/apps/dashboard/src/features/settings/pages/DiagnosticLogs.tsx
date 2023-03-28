@@ -38,26 +38,26 @@ type LoaderDataType = {
   message?: string;
   data?: DiagnosisGetDiagnosticLogsResponse;
 };
-const getDiagnosisLogs = async (): Promise<LoaderDataType> => {
-  const diagnosisLogsPromise = await makeRequest({
+const getDiagnosticLogs = async (): Promise<LoaderDataType> => {
+  const diagnosticLogsPromise = await makeRequest({
     apiFunction: getDiagnosisApiClient().getDiagnosticLogs,
     apiArgs: [],
   });
 
-  if (ApiError.isApiError(diagnosisLogsPromise)) {
+  if (ApiError.isApiError(diagnosticLogsPromise)) {
     return {
-      message: 'Error in getting diagnosis logs',
+      message: 'Error in getting diagnostic logs',
     };
   }
 
   return {
-    data: diagnosisLogsPromise,
+    data: diagnosticLogsPromise,
   };
 };
 
 const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
   return typedDefer({
-    data: getDiagnosisLogs(),
+    data: getDiagnosticLogs(),
   });
 };
 
