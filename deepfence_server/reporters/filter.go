@@ -2,6 +2,7 @@ package reporters
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/samber/mo"
@@ -84,7 +85,7 @@ func compareFilter2CypherConditions(cypherNodeName string, filters []CompareFilt
 		if !filter.GreaterThan {
 			compareOperator = "<"
 		}
-		conditions = append(conditions, fmt.Sprintf("%s.%s %s %v", cypherNodeName, filter.FieldName, compareOperator, filter.FieldValue))
+		conditions = append(conditions, fmt.Sprintf("%s.%s %s %s", cypherNodeName, filter.FieldName, compareOperator, strconv.FormatUint(filter.FieldValue, 10)))
 	}
 	return conditions
 }
