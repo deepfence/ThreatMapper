@@ -63,6 +63,7 @@ import { module as secretScans } from '@/features/secrets/pages/SecretScans';
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
 import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
+import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
 import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
@@ -472,6 +473,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'search/cloud/filters/:scanId',
         loader: searchCloudFiltersApiLoader,
+      },
+      {
+        path: 'threat-graph/details-modal',
+        ...threatGraphDetailModal,
       },
     ],
   },

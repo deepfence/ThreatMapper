@@ -52,6 +52,10 @@ export const searchHostsApiLoader = async ({
               },
             },
             in_field_filter: null,
+            window: {
+              offset: 0,
+              size: 0,
+            },
           },
           window: {
             offset: 0,
