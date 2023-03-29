@@ -65,6 +65,7 @@ import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
+import { module as topologyGraphAction } from '@/features/topology/data-components/Graph';
 import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
 import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
@@ -477,6 +478,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'threat-graph/details-modal',
         ...threatGraphDetailModal,
+      },
+      {
+        path: 'topology/graph',
+        ...topologyGraphAction,
       },
     ],
   },

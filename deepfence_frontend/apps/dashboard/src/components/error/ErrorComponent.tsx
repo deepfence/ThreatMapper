@@ -1,7 +1,10 @@
 import { IconContext } from 'react-icons';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
+import { useRouteError } from 'react-router-dom';
 
 export const ErrorComponent = () => {
+  const error = useRouteError();
+  console.error(error);
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <IconContext.Provider
