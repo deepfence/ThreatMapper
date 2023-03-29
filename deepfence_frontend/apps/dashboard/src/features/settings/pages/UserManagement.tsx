@@ -83,7 +83,7 @@ const UserManagement = () => {
           <DFAwait resolve={loaderData.data}>
             {(resolvedData: LoaderDataType) => {
               const { data, message } = resolvedData;
-              const logs = data ?? [];
+              const users = data ?? [];
 
               return (
                 <div>
@@ -95,7 +95,7 @@ const UserManagement = () => {
                   ) : (
                     <Table
                       size="sm"
-                      data={logs}
+                      data={users}
                       columns={columns}
                       enablePagination
                       pageSize={5}
