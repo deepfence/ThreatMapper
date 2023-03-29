@@ -66,9 +66,9 @@ type Host struct {
 	Pods             []Pod            `json:"pods" required:"true"`
 	ContainerImages  []ContainerImage `json:"container_images" required:"true"`
 	InterfaceNames   []string         `json:"interface_names" required:"true"`
-	InterfaceIps     string           `json:"interface_ips" required:"true"`
+	InterfaceIps     []string         `json:"interface_ips" required:"true"`
 	KernelVersion    string           `json:"kernel_version" required:"true"`
-	Uptime           string           `json:"uptime" required:"true"`
+	Uptime           int              `json:"uptime" required:"true"`
 	Version          string           `json:"version" required:"true"`
 	AgentRunning     string           `json:"agent_running" required:"true"`
 	IsConsoleVm      bool             `json:"is_console_vm" required:"true"`
@@ -179,11 +179,11 @@ type Container struct {
 	DockerContainerState       string         `json:"docker_container_state,omitempty"`
 	DockerContainerStateHuman  string         `json:"docker_container_state_human,omitempty"`
 	DockerContainerNetworkMode string         `json:"docker_container_network_mode,omitempty"`
-	DockerContainerUptime      int            `json:"docker_container_uptime,omitempty"`
 	DockerContainerNetworks    string         `json:"docker_container_networks,omitempty"`
 	DockerContainerIps         []string       `json:"docker_container_ips,omitempty"`
 	DockerContainerCreated     string         `json:"docker_container_created,omitempty"`
 	DockerContainerPorts       string         `json:"docker_container_ports,omitempty"`
+	Uptime                     string         `json:"uptime" required:"true"`
 	CpuMax                     float64        `json:"cpu_max,omitempty"`
 	CpuUsage                   float64        `json:"cpu_usage,omitempty"`
 	MemoryMax                  int64          `json:"memory_max,omitempty"`

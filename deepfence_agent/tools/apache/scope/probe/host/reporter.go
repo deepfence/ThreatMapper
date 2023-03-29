@@ -20,7 +20,6 @@ var (
 	AgentVersionNo           = "v1.4.2"
 	agentCommitID            = "Unknown"
 	agentBuildTime           = "0"
-	agentRunning             = "yes"
 	DockerSocketPath         = os.Getenv("DOCKER_SOCKET_PATH")
 	ContainerdSocketPath     = os.Getenv("CONTAINERD_SOCKET_PATH")
 	CrioSocketPath           = os.Getenv("CRIO_SOCKET_PATH")
@@ -372,7 +371,7 @@ func (r *Reporter) Report() (report.Report, error) {
 			UserDefinedTags:     userDefinedTags,
 			Version:             r.AgentVersion,
 			IsConsoleVm:         r.IsConsoleVm,
-			AgentRunning:        agentRunning,
+			AgentRunning:        true,
 			LocalCIDRs:          localCIDRs,
 			CloudProvider:       cloudProvider,
 			CloudRegion:         cloudMetadata.Region,

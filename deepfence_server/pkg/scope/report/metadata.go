@@ -97,7 +97,7 @@ type Metadata struct {
 
 	// host
 	Version        string   `json:"version,omitempty"`
-	AgentRunning   string   `json:"agent_running,omitempty"`
+	AgentRunning   bool     `json:"agent_running,omitempty"`
 	KernelVersion  string   `json:"kernel_version,omitempty"`
 	HostName       string   `json:"host_name,omitempty"`
 	Os             string   `json:"os,omitempty"`
@@ -114,7 +114,6 @@ type Metadata struct {
 	DockerContainerState       string   `json:"docker_container_state,omitempty"`
 	DockerContainerStateHuman  string   `json:"docker_container_state_human,omitempty"`
 	DockerContainerNetworkMode string   `json:"docker_container_network_mode,omitempty"`
-	DockerContainerUptime      int      `json:"docker_container_uptime,omitempty"`
 	DockerContainerNetworks    string   `json:"docker_container_networks,omitempty"`
 	DockerContainerIps         []string `json:"docker_container_ips,omitempty"`
 	DockerContainerCreated     string   `json:"docker_container_created,omitempty"`

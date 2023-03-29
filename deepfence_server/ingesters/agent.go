@@ -245,13 +245,13 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 
 	for _, n := range rpt.Host {
 		hosts = append(hosts, map[string]interface{}{"node_id": n.NodeID})
-		host_batch = append(host_batch, metadataToMap(n))
-	}
-
-	for nodeId, parent := range rpt.HostParents {
-		if parent.KubernetesCluster != "" {
-			kubernetes_edges_batch[parent.KubernetesCluster] = append(kubernetes_edges_batch[parent.KubernetesCluster], nodeId)
+		metadataMap := metadataToMap(n)
+		if n.KubernetesClusterId == "" {
+			metadataMap["kubernetes_cluster_id"] = ""
+		} else {
+			kubernetes_edges_batch[n.KubernetesClusterId] = append(kubernetes_edges_batch[n.KubernetesClusterId], n.NodeID)
 		}
+		host_batch = append(host_batch, metadataMap)
 	}
 
 	for _, n := range rpt.KubernetesCluster {
