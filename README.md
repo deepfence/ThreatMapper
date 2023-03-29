@@ -96,7 +96,7 @@ You [deploy the Management Console first](https://community.deepfence.io/docs/th
 sudo sysctl -w vm.max_map_count=262144 # see https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html
 
 wget https://github.com/deepfence/ThreatMapper/raw/master/deployment-scripts/docker-compose.yml
-docker-compose -f docker-compose.yml up --detach
+docker compose up -d
 ```
 
 Once the Management Console is up and running, you can [register an admin account and obtain an API key](https://community.deepfence.io/docs/threatmapper/console/initial-configuration).  
@@ -105,7 +105,7 @@ Once the Management Console is up and running, you can [register an admin accoun
 
 ThreatMapper [Cloud Scanner tasks](https://community.deepfence.io/docs/threatmapper/cloudscanner/) are responsible for querying the cloud provider APIs to gather configuration and identify deviations from compliance benchmarks. 
 
-The task is deployed using a Terraform module. The ThreatMapper Management Console will present a basic configuration that may be deployed with Terraform, or you can refer to the expert configurations to fine-tune the deployment ([AWS](https://github.com/deepfence/terraform-aws-cloud-scanner), [Azure](https://github.com/deepfence/terraform-azure-cloud-scanner), [GCP](https://github.com/deepfence/terraform-gcp-cloud-scanner).
+The task is deployed using a Terraform module. The ThreatMapper Management Console will present a basic configuration that may be deployed with Terraform, or you can refer to the expert configurations to fine-tune the deployment ([AWS](https://github.com/deepfence/terraform-aws-cloud-scanner), [Azure](https://github.com/deepfence/terraform-azure-cloud-scanner), [GCP](https://github.com/deepfence/terraform-gcp-cloud-scanner)).
 
 ### Sensor Agents
 
