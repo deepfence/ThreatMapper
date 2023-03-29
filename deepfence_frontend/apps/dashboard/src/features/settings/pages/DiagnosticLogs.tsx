@@ -1,4 +1,5 @@
 import { Suspense, useMemo, useState } from 'react';
+import { HiDownload } from 'react-icons/hi';
 import {
   ActionFunctionArgs,
   Form,
@@ -31,6 +32,7 @@ import { useGetHostsList } from '@/features/common/data-component/searchHostsApi
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
+import { download } from '@/utils/download';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
@@ -189,21 +191,25 @@ const ConsoleDiagnosticLogsTable = () => {
       }),
       columnHelper.accessor('url_link', {
         cell: (cell) => {
+          const url = cell.row.original.url_link;
+          if (cell.row.original.message !== '' || !url) {
+            return 'No logs';
+          }
           return (
-            <DFLink
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                const a = document.createElement('a');
-                a.href = cell.row.original.url_link ?? '';
-                a.click();
+            <Button
+              size="xs"
+              color="normal"
+              startIcon={<HiDownload />}
+              className="text-blue-600 dark:text-blue-500"
+              onClick={() => {
+                download(url);
               }}
             >
-              Click to download
-            </DFLink>
+              Download Logs
+            </Button>
           );
         },
-        header: () => 'Downlload',
+        header: () => 'Download',
         minSize: 75,
         size: 80,
         maxSize: 85,
@@ -272,10 +278,23 @@ const AgentDiagnosticLogsTable = () => {
       }),
       columnHelper.accessor('url_link', {
         cell: (cell) => {
-          if (cell.row.original.message === '') {
+          const url = cell.row.original.url_link;
+          if (cell.row.original.message !== '' || !url) {
             return 'No logs';
           }
-          return <DFLink>Click to download</DFLink>;
+          return (
+            <Button
+              size="xs"
+              color="normal"
+              startIcon={<HiDownload />}
+              className="text-blue-600 dark:text-blue-500"
+              onClick={() => {
+                download(url);
+              }}
+            >
+              Download Logs
+            </Button>
+          );
         },
         header: () => 'Download',
         minSize: 75,
