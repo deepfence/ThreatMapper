@@ -135,7 +135,7 @@ func (r *Reporter) processTopology() (report.Topology, error) {
 		if r.ptracer != nil {
 			paths, err := r.ptracer.GetOpenFileList(pidstr)
 			if err == nil {
-				node.OpenFiles = &paths
+				node.OpenFiles = paths
 			}
 		}
 		if p.Cmdline != "" {

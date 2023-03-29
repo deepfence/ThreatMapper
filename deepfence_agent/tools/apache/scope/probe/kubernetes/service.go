@@ -61,7 +61,7 @@ func (s *service) GetNode() (report.Metadata, report.Parent) {
 		for _, ing := range s.Status.LoadBalancer.Ingress {
 			ingressIp = append(ingressIp, ing.IP)
 		}
-		node.KubernetesIngressIP = &ingressIp
+		node.KubernetesIngressIP = ingressIp
 	}
 	if s.Spec.LoadBalancerIP != "" {
 		node.KubernetesPublicIP = s.Spec.LoadBalancerIP
@@ -71,7 +71,7 @@ func (s *service) GetNode() (report.Metadata, report.Parent) {
 		for i, p := range s.Spec.Ports {
 			ports[i] = p.Port
 		}
-		node.KubernetesPorts = &ports
+		node.KubernetesPorts = ports
 	}
 	parent := report.Parent{
 		CloudProvider:     cloudProviderNodeId,
