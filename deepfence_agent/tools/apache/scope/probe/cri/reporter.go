@@ -2,6 +2,7 @@ package cri
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"strings"
 	"time"
@@ -89,13 +90,20 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 		imageID = trimImageID(c.Image.GetImage())
 		imageName, imageTag = docker.ParseImageDigest(c.ImageRef)
 	}
+	var dockerLabels string
+	podName := c.Labels["io.kubernetes.pod.name"]
+	podUid := c.Labels["io.kubernetes.pod.uid"]
+	dockerLabelsJson, err := json.Marshal(c.Labels)
+	if err == nil {
+		dockerLabels = string(dockerLabelsJson)
+	}
 	metadata := report.Metadata{
 		Timestamp:                 time.Now().UTC().Format(time.RFC3339Nano),
 		NodeType:                  report.Container,
 		NodeID:                    c.Id,
 		NodeName:                  c.Metadata.Name + " / " + r.hostID,
 		HostName:                  r.hostID,
-		ContainerName:             c.Metadata.Name,
+		DockerContainerName:       c.Metadata.Name,
 		DockerContainerState:      getState(c),
 		DockerContainerStateHuman: getState(c),
 		ImageName:                 imageName,
@@ -105,12 +113,14 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 		IsConsoleVm:               r.isConsoleVm,
 		KubernetesClusterName:     r.kubernetesClusterName,
 		KubernetesClusterId:       r.kubernetesClusterId,
-		DockerLabels:              &c.Labels,
+		DockerLabels:              dockerLabels,
+		PodName:                   podName,
 	}
 	parent := report.Parent{
 		KubernetesCluster: r.kubernetesClusterId,
 		Host:              r.hostID,
 		ContainerImage:    imageID,
+		Pod:               podUid,
 	}
 	return metadata, parent
 }

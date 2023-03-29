@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"encoding/json"
 	"net"
 	"os"
 	"strings"
@@ -181,7 +182,10 @@ func (r *Reporter) containerImageTopology() report.Topology {
 		}
 
 		node.UserDefinedTags = tags
-		node.DockerImageLabels = &image.Labels
+		dockerImageLabels, err := json.Marshal(image.Labels)
+		if err == nil {
+			node.DockerImageLabels = string(dockerImageLabels)
+		}
 		result.AddNode(node)
 	})
 

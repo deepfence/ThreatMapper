@@ -1,6 +1,7 @@
 package host
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
@@ -115,7 +116,8 @@ type UserDefinedTags struct {
 type HostDetailsEveryMinute struct {
 	Uptime         int
 	InterfaceNames []string
-	InterfaceIPs   map[string]string
+	InterfaceIPs   []string
+	InterfaceIPMap string
 	LocalCIDRs     []string
 	sync.RWMutex
 }
@@ -129,7 +131,12 @@ func (r *Reporter) updateHostDetailsEveryMinute() {
 			localCIDRs = append(localCIDRs, localNet.String())
 		}
 	}
-	interfaceIPs := getInterfaceIPs()
+	interfaceIPMap, interfaceIPs := getInterfaceIPs()
+	var interfaceIPMapStr string
+	interfaceIPMapJson, err := json.Marshal(interfaceIPMap)
+	if err == nil {
+		interfaceIPMapStr = string(interfaceIPMapJson)
+	}
 	var uptime int
 	uptimeObj, err := GetUptime()
 	if err != nil {
@@ -142,6 +149,7 @@ func (r *Reporter) updateHostDetailsEveryMinute() {
 	r.hostDetailsMinute.InterfaceNames = interfaceNames
 	r.hostDetailsMinute.LocalCIDRs = localCIDRs
 	r.hostDetailsMinute.InterfaceIPs = interfaceIPs
+	r.hostDetailsMinute.InterfaceIPMap = interfaceIPMapStr
 	r.hostDetailsMinute.Unlock()
 }
 
@@ -249,8 +257,9 @@ func (*Reporter) Name() string { return "Host" }
 // GetLocalNetworks is exported for mocking
 var GetLocalNetworks = report.GetLocalNetworks
 
-func getInterfaceIpMaskMap(systemInterfaces []net.Interface) map[string]string {
+func getInterfaceIpMaskMap(systemInterfaces []net.Interface) (map[string]string, []string) {
 	interfaceIpMaskMap := map[string]string{}
+	interfaceIps := []string{}
 	for _, systemInterface := range systemInterfaces {
 		interfaceAddrs, err := systemInterface.Addrs()
 		if err != nil {
@@ -268,18 +277,19 @@ func getInterfaceIpMaskMap(systemInterfaces []net.Interface) map[string]string {
 			}
 		}
 		if interfaceIP != "" && interfaceMask != "" {
+			interfaceIps = append(interfaceIps, interfaceIP)
 			interfaceIpMaskMap[interfaceIP] = interfaceMask
 		}
 	}
-	return interfaceIpMaskMap
+	return interfaceIpMaskMap, interfaceIps
 }
 
 // Report implements Reporter.
 
-func getInterfaceIPs() map[string]string {
+func getInterfaceIPs() (map[string]string, []string) {
 	systemInterfaces, err := net.Interfaces()
 	if err != nil {
-		return map[string]string{}
+		return map[string]string{}, []string{}
 	}
 	return getInterfaceIpMaskMap(systemInterfaces)
 }
@@ -316,6 +326,7 @@ func (r *Reporter) Report() (report.Report, error) {
 	localCIDRs := r.hostDetailsMinute.LocalCIDRs
 	interfaceNames := r.hostDetailsMinute.InterfaceNames
 	interfaceIPs := r.hostDetailsMinute.InterfaceIPs
+	interfaceIPMap := r.hostDetailsMinute.InterfaceIPMap
 	r.hostDetailsMinute.RUnlock()
 
 	r.hostDetailsMetrics.RLock()
@@ -356,7 +367,8 @@ func (r *Reporter) Report() (report.Report, error) {
 			KernelVersion:       r.KernelVersion,
 			Uptime:              uptime,
 			InterfaceNames:      interfaceNames,
-			InterfaceIps:        &interfaceIPs,
+			InterfaceIps:        interfaceIPs,
+			InterfaceIpMap:      interfaceIPMap,
 			UserDefinedTags:     userDefinedTags,
 			Version:             r.AgentVersion,
 			IsConsoleVm:         r.IsConsoleVm,

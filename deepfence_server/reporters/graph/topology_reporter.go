@@ -526,11 +526,11 @@ func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts, pods
 		MATCH (n:Node)
 		WHERE n.active = true
 		AND (CASE WHEN $hosts IS NULL THEN [1] ELSE n.host_name IN $hosts END
-		OR CASE WHEN $pods IS NULL THEN [1] ELSE n.`+"`docker_label_io.kubernetes.pod.name`"+`IN $pods END)
+		OR CASE WHEN $pods IS NULL THEN [1] ELSE n.pod_name IN $pods END)
 		WITH n
 		MATCH (n)-[:HOSTS]->(m:Container)
 		`+reporters.ParseFieldFilters2CypherWhereConditions("m", fieldfilters, true)+`
-		RETURN coalesce(n.`+"`docker_label_io.kubernetes.pod.name`"+`, n.node_id), m.node_id, m.docker_container_name`,
+		RETURN coalesce(n.pod_name, n.node_id), m.node_id, m.docker_container_name`,
 		filterNil(map[string]interface{}{"hosts": hosts, "pods": pods}))
 	if err != nil {
 		return res, err

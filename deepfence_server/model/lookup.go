@@ -184,7 +184,6 @@ type Container struct {
 	DockerContainerIps         []string       `json:"docker_container_ips,omitempty"`
 	DockerContainerCreated     string         `json:"docker_container_created,omitempty"`
 	DockerContainerPorts       string         `json:"docker_container_ports,omitempty"`
-	ContainerCount             int            `json:"container_count,omitempty"`
 	CpuMax                     float64        `json:"cpu_max,omitempty"`
 	CpuUsage                   float64        `json:"cpu_usage,omitempty"`
 	MemoryMax                  int64          `json:"memory_max,omitempty"`
@@ -239,14 +238,15 @@ func (Process) GetJsonCategory() string {
 }
 
 type ContainerImage struct {
-	ID                     string `json:"node_id" required:"true"`
-	NodeName               string `json:"node_name" required:"true"`
-	Name                   string `json:"docker_image_name" required:"true"`
-	Tag                    string `json:"docker_image_tag" required:"true"`
-	Size                   string `json:"docker_image_size" required:"true"`
-	DockerImageCreatedAt   string `json:"docker_image_created_at,omitempty"`
-	DockerImageVirtualSize string `json:"docker_image_virtual_size,omitempty"`
-	DockerImageID          string `json:"docker_image_id,omitempty"`
+	ID                     string   `json:"node_id" required:"true"`
+	NodeName               string   `json:"node_name" required:"true"`
+	Name                   string   `json:"docker_image_name" required:"true"`
+	Tag                    string   `json:"docker_image_tag" required:"true"`
+	Size                   string   `json:"docker_image_size" required:"true"`
+	DockerImageCreatedAt   string   `json:"docker_image_created_at,omitempty"`
+	DockerImageVirtualSize string   `json:"docker_image_virtual_size,omitempty"`
+	DockerImageID          string   `json:"docker_image_id,omitempty"`
+	Metadata               Metadata `json:"metadata" required:"true" nested_json:"true"`
 	RegularScanStatus
 }
 

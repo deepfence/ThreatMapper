@@ -83,7 +83,8 @@ func (p *pod) GetNode() (report.Metadata, report.Parent) {
 	node := report.Metadata{
 		Timestamp:                 time.Now().UTC().Format(time.RFC3339Nano),
 		NodeID:                    p.UID(),
-		NodeName:                  p.Name(),
+		NodeName:                  p.Name() + " / " + p.Namespace() + " / " + kubernetesClusterName,
+		PodName:                   p.Name(),
 		NodeType:                  report.Pod,
 		KubernetesClusterName:     kubernetesClusterName,
 		KubernetesClusterId:       kubernetesClusterId,

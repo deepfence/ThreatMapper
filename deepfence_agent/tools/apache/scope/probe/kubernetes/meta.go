@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	"encoding/json"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -44,12 +45,16 @@ func (m meta) Labels() map[string]string {
 
 // MetaNode gets the node metadata
 func (m meta) MetaNode(id string, nodeType string) report.Metadata {
-	labels := m.Labels()
+	var labels string
+	labelsJson, err := json.Marshal(m.Labels())
+	if err == nil {
+		labels = string(labelsJson)
+	}
 	return report.Metadata{
 		NodeID:              id,
 		NodeName:            m.Name(),
 		NodeType:            nodeType,
-		KubernetesLabels:    &labels,
+		KubernetesLabels:    labels,
 		KubernetesCreated:   m.Created(),
 		KubernetesNamespace: m.Namespace(),
 	}
@@ -82,13 +87,17 @@ func (m namespaceMeta) Labels() map[string]string {
 // MetaNode gets the node metadata
 // For namespaces, ObjectMeta.Namespace is not set
 func (m namespaceMeta) MetaNode(id string, nodeType string) report.Metadata {
-	labels := m.Labels()
+	var labels string
+	labelsJson, err := json.Marshal(m.Labels())
+	if err == nil {
+		labels = string(labelsJson)
+	}
 	return report.Metadata{
 		Timestamp:         time.Now().UTC().Format(time.RFC3339Nano),
 		NodeID:            id,
 		NodeType:          nodeType,
 		NodeName:          m.Name() + " / " + kubernetesClusterName,
-		KubernetesLabels:  &labels,
+		KubernetesLabels:  labels,
 		KubernetesCreated: m.Created(),
 	}
 }

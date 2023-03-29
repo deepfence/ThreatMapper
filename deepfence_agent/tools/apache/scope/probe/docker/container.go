@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net"
@@ -367,24 +368,37 @@ func (c *container) getSanitizedCommand() string {
 }
 
 func (c *container) getBaseNode() (report.Metadata, report.Parent) {
+	containerName := strings.TrimPrefix(c.container.Name, "/")
+	var dockerLabels string
+	podName := c.container.Config.Labels["io.kubernetes.pod.name"]
+	podUid := c.container.Config.Labels["io.kubernetes.pod.uid"]
+	dockerLabelsJson, err := json.Marshal(c.container.Config.Labels)
+	if err == nil {
+		dockerLabels = string(dockerLabelsJson)
+	}
 	result := report.Metadata{
 		Timestamp:              time.Now().UTC().Format(time.RFC3339Nano),
 		NodeID:                 c.ID(),
-		NodeName:               strings.TrimPrefix(c.container.Name, "/") + " / " + c.Hostname(),
+		NodeName:               containerName + " / " + c.Hostname(),
 		NodeType:               report.Container,
 		HostName:               c.Hostname(),
+		DockerContainerName:    containerName,
 		DockerContainerCreated: c.container.Created.Format(time.RFC3339Nano),
 		DockerContainerCommand: c.getSanitizedCommand(),
 		DockerImageID:          c.Image(),
-		DockerLabels:           &c.container.Config.Labels,
+		DockerLabels:           dockerLabels,
+		PodName:                podName,
 	}
 	parents := report.Parent{
 		Host:           c.Hostname(),
 		ContainerImage: c.Image(),
+		Pod:            podUid,
 	}
 	if !c.noEnvironmentVariables {
-		dockerEnv := c.env()
-		result.DockerEnv = &dockerEnv
+		dockerEnvJson, err := json.Marshal(c.env())
+		if err == nil {
+			result.DockerEnv = string(dockerEnvJson)
+		}
 	}
 	return result, parents
 }

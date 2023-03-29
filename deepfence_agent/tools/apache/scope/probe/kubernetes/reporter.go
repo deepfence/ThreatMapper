@@ -127,31 +127,6 @@ func (Tagger) Name() string { return "K8s" }
 
 // Tag adds pod parents to container nodes.
 func (r *Tagger) Tag(rpt report.Report) (report.Report, error) {
-	for id, n := range rpt.Container {
-		if n.DockerLabels == nil {
-			continue
-		}
-		uid, ok := (*n.DockerLabels)["io.kubernetes.pod.uid"]
-		if !ok {
-			continue
-		}
-		if !strings.Contains(uid, "-") {
-			// Check if pod UUID is in correct format
-			// Check tools/apache/scope/probe/kubernetes/pod.go#L47-L52 - func (p *pod) UID()
-			continue
-		}
-
-		// Tag the pause containers with "does-not-make-connections"
-		//if isPauseContainer(n, rpt) {
-		//	n = n.WithLatest(report.DoesNotMakeConnections, time.Now(), "")
-		//}
-		parents, ok := rpt.ContainerParents[id]
-		if !ok {
-			parents = report.Parent{}
-		}
-		parents.Pod = uid
-		rpt.ContainerParents[id] = parents
-	}
 	return rpt, nil
 }
 
