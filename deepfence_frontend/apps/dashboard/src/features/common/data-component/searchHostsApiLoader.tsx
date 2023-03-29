@@ -88,6 +88,7 @@ export const searchHostsApiLoader = async ({
     return {
       nodeId: res.node_id,
       hostName: res.host_name,
+      nodeName: res.node_name,
     };
   });
 };
@@ -95,7 +96,7 @@ export const searchHostsApiLoader = async ({
 export const useGetHostsList = ({
   scanType,
 }: {
-  scanType: ScanTypeEnum;
+  scanType: ScanTypeEnum | 'none';
 }): {
   status: 'idle' | 'loading' | 'submitting';
   hosts: HostsListType[];
