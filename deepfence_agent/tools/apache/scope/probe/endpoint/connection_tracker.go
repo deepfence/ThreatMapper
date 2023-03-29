@@ -337,7 +337,7 @@ func (t *connectionTracker) addConnection(rpt *report.Report, hostNodeID string,
 		toNode   = t.makeEndpointNode(namespaceID, toAddr, ft.toPort, extraToNode)
 	)
 	rpt.Endpoint.AddNode(fromNode)
-	rpt.EndpointAdjacency[fromNode.NodeID] = append(rpt.EndpointAdjacency[fromNode.NodeID], toNode.NodeID)
+	rpt.EndpointAdjacency.AddAdjacency(fromNode.NodeID, toNode.NodeID)
 	rpt.Endpoint.AddNode(toNode)
 	t.addDNS(rpt, fromAddr.String())
 	t.addDNS(rpt, toAddr.String())

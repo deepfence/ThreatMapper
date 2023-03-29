@@ -62,7 +62,9 @@ func (r *Reporter) Report() (report.Report, error) {
 	}
 
 	result := report.MakeReport()
-	result.Container, result.ContainerSets, result.ContainerParents = r.containerTopology(localAddrs)
+	var containerSets report.Sets
+	result.Container, containerSets, result.ContainerParents = r.containerTopology(localAddrs)
+	result.ContainerSets.AddSet(r.hostID, containerSets)
 	result.ContainerImage, result.ContainerImageParents = r.containerImageTopology()
 	result.Overlay, result.OverlaySets = r.overlayTopology()
 	return result, nil
@@ -83,9 +85,9 @@ func getLocalIPs() ([]string, []net.IP, error) {
 	return ips, addrs, nil
 }
 
-func (r *Reporter) containerTopology(localAddrs []net.IP) (report.Topology, report.TopologySets, report.Parents) {
+func (r *Reporter) containerTopology(localAddrs []net.IP) (report.Topology, report.Sets, report.Parents) {
 	result := report.MakeTopology()
-	containerSets := report.TopologySets{}
+	containerSets := report.MakeSets()
 	parents := report.Parents{}
 	nodes := []report.Metadata{}
 	r.registry.WalkContainers(func(c Container) {
@@ -126,8 +128,8 @@ func (r *Reporter) containerTopology(localAddrs []net.IP) (report.Topology, repo
 			if node.NodeID == "" {
 				continue
 			}
-			networkInfo, isInHostNamespace := networkInfo(node.NodeID)
-			containerSets[node.NodeID] = networkInfo
+			var isInHostNamespace bool
+			containerSets, isInHostNamespace = networkInfo(node.NodeID)
 			tags, ok := containerImageTags[node.NodeID]
 			if !ok {
 				tags = []string{}

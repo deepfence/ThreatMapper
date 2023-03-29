@@ -295,6 +295,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 				continue
 			}
 			if len(adjacency) == 0 {
+				// Handle inbound from internet
 				inbound_edges = append(inbound_edges,
 					map[string]string{"destination": hostName, "left_pid": "0", "right_pid": strconv.Itoa(n.Pid)})
 			} else {

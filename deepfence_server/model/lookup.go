@@ -141,14 +141,13 @@ type Connection struct {
 }
 
 type Pod struct {
-	ID         string         `json:"node_id" required:"true"`
-	NodeName   string         `json:"node_name" required:"true"`
-	Namespace  string         `json:"kubernetes_namespace" required:"true"`
-	Host       string         `json:"host_name" required:"true"`
-	Metrics    ComputeMetrics `json:"metrics" required:"true"`
-	Containers []Container    `json:"containers" required:"true"`
-	Processes  []Process      `json:"processes" required:"true" required:"true"`
-	Metadata   Metadata       `json:"metadata" required:"true" nested_json:"true"`
+	ID         string      `json:"node_id" required:"true"`
+	NodeName   string      `json:"node_name" required:"true"`
+	Namespace  string      `json:"kubernetes_namespace" required:"true"`
+	Host       string      `json:"host_name" required:"true"`
+	Containers []Container `json:"containers" required:"true"`
+	Processes  []Process   `json:"processes" required:"true" required:"true"`
+	Metadata   Metadata    `json:"metadata" required:"true" nested_json:"true"`
 }
 
 func (Pod) NodeType() string {
@@ -264,11 +263,6 @@ func (ContainerImage) GetCategory() string {
 
 func (ContainerImage) GetJsonCategory() string {
 	return ""
-}
-
-type ComputeMetrics struct {
-	CPUPercent float32 `json:"cpu_percent" required:"true"`
-	MemoryMB   float32 `json:"memory_mb" required:"true"`
 }
 
 type CloudResource struct {

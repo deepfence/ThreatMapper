@@ -246,16 +246,38 @@ var topologyNames = []string{
 	Overlay,
 }
 
+type TopologyAdjacency map[string]IDList
+
+func (t TopologyAdjacency) AddAdjacency(nodeId string, id string) {
+	if _, ok := t[nodeId]; !ok {
+		t[nodeId] = MakeIDList(id)
+	} else {
+		t[nodeId].Add(id)
+	}
+}
+
+func MakeTopologyAdjacency() TopologyAdjacency {
+	return map[string]IDList{}
+}
+
 type TopologySets map[string]Sets
 
-func MakeTopologySets() map[string]Sets {
+func MakeTopologySets() TopologySets {
 	return map[string]Sets{}
+}
+
+func (p TopologySets) AddSet(nodeId string, sets Sets) {
+	p[nodeId] = sets
 }
 
 type Parents map[string]Parent
 
 func MakeParents() Parents {
 	return map[string]Parent{}
+}
+
+func (p Parents) AddParent(nodeId string, parents Parent) {
+	p[nodeId] = parents
 }
 
 func (t Parents) Merge(o Parents) {
@@ -286,7 +308,7 @@ type Report struct {
 	// They come from inspecting active connections and can (theoretically)
 	// be traced back to a process. Edges are present.
 	Endpoint          Topology
-	EndpointAdjacency map[string][]string
+	EndpointAdjacency TopologyAdjacency
 	EndpointParents   Parents
 
 	// Process nodes are processes on each host. Edges are not present.
@@ -381,7 +403,7 @@ type Report struct {
 func MakeReport() Report {
 	return Report{
 		Endpoint:          MakeTopology(),
-		EndpointAdjacency: make(map[string][]string),
+		EndpointAdjacency: MakeTopologyAdjacency(),
 		EndpointParents:   MakeParents(),
 
 		Process:        MakeTopology(),
