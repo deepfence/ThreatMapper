@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -90,22 +89,18 @@ func GenerateReport(msg *message.Message) error {
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return nil
-	}
-	defer tx.Close()
+	updateReportState(ctx, session, params.ReportID, "", utils.SCAN_STATUS_INPROGRESS)
 
 	// generate reportName
 	localReportPath, err := generateReport(ctx, session, params)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to generate report with params %+v", params)
+		updateReportState(ctx, session, params.ReportID, "", utils.SCAN_STATUS_FAILED)
 		return nil
 	}
 	log.Info().Msgf("report file path %s", localReportPath)
 	defer func() {
-		os.RemoveAll(filepath.Dir(localReportPath))
+		os.Remove(localReportPath)
 	}()
 
 	// upload file to minio
@@ -134,6 +129,18 @@ func GenerateReport(msg *message.Message) error {
 	}
 	log.Info().Msgf("exposed report URL: %s", url)
 
+	updateReportState(ctx, session, params.ReportID, url, utils.SCAN_STATUS_SUCCESS)
+
+	return nil
+}
+
+func updateReportState(ctx context.Context, session neo4j.Session, reportId, url, status string) {
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	defer tx.Close()
+
 	// update url in neo4j report node
 	query := `
 	MATCH (n:Report{report_id:$uid}) 
@@ -141,18 +148,16 @@ func GenerateReport(msg *message.Message) error {
 	RETURN n
 	`
 	vars := map[string]interface{}{
-		"uid":    params.ReportID,
+		"uid":    reportId,
 		"url":    url,
-		"status": utils.SCAN_STATUS_SUCCESS,
+		"status": status,
 	}
 	_, err = tx.Run(query, vars)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		return nil
 	}
 
 	if err := tx.Commit(); err != nil {
 		log.Error().Err(err).Msg("failed to commit tx")
 	}
-	return nil
 }
