@@ -1,20 +1,20 @@
 import * as LabelPrimitive from '@radix-ui/react-label';
 import cx from 'classnames';
-import { useCombobox, UseComboboxInterface, useMultipleSelection } from 'downshift';
-import React, { useEffect, useRef } from 'react';
+import { useCombobox, useMultipleSelection } from 'downshift';
+import React, { useContext, useEffect, useMemo, useRef } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { Typography } from '@/components/typography/Typography';
 
 export type SizeType = 'xs' | 'sm' | 'md';
 export type ColorType = 'default' | 'error' | 'success';
-export type Option = {
-  value: string | number;
-  label: string;
-  disabled?: boolean;
-  id?: string | number;
-};
-type Value = Option | Option[];
+// export type Option = {
+//   value: string | number;
+//   label: string;
+//   disabled?: boolean;
+//   id?: string | number;
+// };
+type Value = string | string[];
 type MutableValue<T extends Value = Value> = T extends string ? string : T;
 
 export interface ComboboxProps<T extends Value = Value> {
@@ -34,7 +34,6 @@ export interface ComboboxProps<T extends Value = Value> {
   className?: string;
   prefixComponent?: React.ReactNode;
   noPortal?: boolean;
-  options: Option[];
   required?: boolean;
   url?: string;
 }
@@ -62,9 +61,8 @@ export const classes = {
 
 const COLOR_DEFAULT = 'default';
 const SIZE_DEFAULT = 'sm';
-
+const SelectItemsContext = React.createContext<string | string[]>([]);
 export const Combobox: React.FC<ComboboxProps> = ({
-  options = [],
   value = [],
   label = null,
   required = false,
@@ -74,8 +72,9 @@ export const Combobox: React.FC<ComboboxProps> = ({
   sizing = SIZE_DEFAULT,
   color = COLOR_DEFAULT,
   className = '',
+  ...props
 }) => {
-  const [optionsList, setOptionsList] = React.useState(options);
+  const [optionsList, setOptionsList] = React.useState<string[]>([]);
   const [inputValue, setInputValue] = React.useState('');
   const [selectedItems, setSelectedItems] = React.useState(value);
   const items = React.useMemo(() => {
@@ -85,9 +84,9 @@ export const Combobox: React.FC<ComboboxProps> = ({
       (item) =>
         Array.isArray(selectedItems) &&
         !selectedItems.find(
-          (selectedItem) => item.label.toLowerCase() == selectedItem.label.toLowerCase(),
+          (selectedItem) => item.toLowerCase() == selectedItem.toLowerCase(),
         ) &&
-        item.label.toLowerCase().includes(lowerCasedInputValue),
+        item.toLowerCase().includes(lowerCasedInputValue),
     );
   }, [selectedItems, inputValue, optionsList]);
   const selectedItemsList = Array.isArray(selectedItems) ? selectedItems : [];
@@ -95,6 +94,8 @@ export const Combobox: React.FC<ComboboxProps> = ({
     useMultipleSelection({
       selectedItems: selectedItemsList || [],
       onStateChange({ selectedItems: newSelectedItems, type }) {
+        console.log('newSelectedItems', newSelectedItems);
+
         switch (type) {
           case useMultipleSelection.stateChangeTypes.SelectedItemKeyDownBackspace:
           case useMultipleSelection.stateChangeTypes.SelectedItemKeyDownDelete:
@@ -110,12 +111,12 @@ export const Combobox: React.FC<ComboboxProps> = ({
     });
   const multpleSelectComboProps = {
     items,
-    itemToString(item: Option) {
-      return item ? item.label : '';
+    itemToString(item: string) {
+      return item ? item : '';
     },
     defaultHighlightedIndex: 0, // after selection, highlight the first item.
     selectedItem: null,
-    stateReducer(state: any, actionAndChanges: any) {
+    stateReducer(state: unknown, actionAndChanges: any) {
       const { changes, type } = actionAndChanges;
 
       switch (type) {
@@ -137,7 +138,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
     }: {
       inputValue: string;
       type: any;
-      selectedItem: Option;
+      selectedItem: string;
     }) {
       switch (type) {
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
@@ -163,8 +164,8 @@ export const Combobox: React.FC<ComboboxProps> = ({
       onChange(node.selectedItem);
     },
     items,
-    itemToString(item: Option) {
-      return item ? item.label : '';
+    itemToString(item: string) {
+      return item ? item : '';
     },
   };
   const {
@@ -184,11 +185,7 @@ export const Combobox: React.FC<ComboboxProps> = ({
     if (!url) return;
     // const response = await fetch(url);
     // const data = await response.json();
-    const list = [
-      { value: 10, label: 'book10' },
-      { value: 11, label: 'book11' },
-      { value: 12, label: 'book12' },
-    ];
+    const list = ['book10', 'book11', 'book12', 'book13', 'book14', 'book15'];
 
     if (Array.isArray(list)) {
       setOptionsList((optionsList) => [...optionsList, ...list]);
@@ -217,94 +214,98 @@ export const Combobox: React.FC<ComboboxProps> = ({
   console.log('selectedItems98', selectedItems);
 
   return (
-    <div className="w-[592px]">
-      <div className="flex flex-col gap-1">
-        {label && (
-          <LabelPrimitive.Root
-            className="text-sm font-medium text-gray-900 dark:text-white w-fit"
-            {...getLabelProps()}
-          >
-            {required && <span>*</span>}
-            {label}
-          </LabelPrimitive.Root>
-        )}
-
-        <div
-          className={twMerge(
-            cx(
-              `${classes.color[color]}`,
-              'shadow-sm bg-white inline-flex gap-2 items-center flex-wrap p-1.5',
-            ),
-          )}
-        >
-          {multiSelect &&
-            Array.isArray(selectedItems) &&
-            selectedItems.map(function renderSelectedItem(selectedItemForRender, index) {
-              return (
-                <span
-                  className="bg-gray-100 rounded-md px-1 focus:bg-red-400"
-                  key={`selected-item-${index}`}
-                  {...getSelectedItemProps({
-                    selectedItem: selectedItemForRender,
-                    index,
-                  })}
-                >
-                  {selectedItemForRender.label}
-                  <span
-                    className="px-1 cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeSelectedItem(selectedItemForRender);
-                    }}
-                    onKeyDown={(e) => {
-                      e.stopPropagation();
-                      removeSelectedItem(selectedItemForRender);
-                    }}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    &#10005;
-                  </span>
-                </span>
-              );
-            })}
-          <div className="flex gap-0.5 grow">
-            <input
-              placeholder="Best book ever"
-              {...inputProps}
-              className={twMerge(
-                cx(
-                  'w-full bg-gray-50 dark:bg-gray-700',
-                  'block text-left',
-                  'focus:outline-none select-none overscroll-contain',
-                  `${classes.color[color]}`,
-                  `${classes.size[sizing]}`,
-                  `${Typography.weight.normal}`,
-                  `${Typography.leading.none}`,
-                  className,
-                ),
-              )}
-            />
-            <button
-              aria-label="toggle menu"
-              className="px-2"
-              type="button"
-              {...getToggleButtonProps()}
+    <SelectItemsContext.Provider value={selectedItems}>
+      <div className="w-[592px]">
+        <div className="flex flex-col gap-1">
+          {label && (
+            <LabelPrimitive.Root
+              className="text-sm font-medium text-gray-900 dark:text-white w-fit"
+              {...getLabelProps()}
             >
-              &#8595;
-            </button>
+              {required && <span>*</span>}
+              {label}
+            </LabelPrimitive.Root>
+          )}
+
+          <div
+            className={twMerge(
+              cx(
+                `${classes.color[color]}`,
+                'shadow-sm bg-white inline-flex gap-2 items-center flex-wrap p-1.5',
+              ),
+            )}
+          >
+            {multiSelect &&
+              Array.isArray(selectedItems) &&
+              selectedItems.map(function renderSelectedItem(
+                selectedItemForRender,
+                index,
+              ) {
+                return (
+                  <span
+                    className="bg-gray-100 rounded-md px-1 focus:bg-red-400"
+                    key={`selected-item-${index}`}
+                    {...getSelectedItemProps({
+                      selectedItem: selectedItemForRender,
+                      index,
+                    })}
+                  >
+                    {selectedItemForRender}
+                    <span
+                      className="px-1 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeSelectedItem(selectedItemForRender);
+                      }}
+                      onKeyDown={(e) => {
+                        e.stopPropagation();
+                        removeSelectedItem(selectedItemForRender);
+                      }}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      &#10005;
+                    </span>
+                  </span>
+                );
+              })}
+            <div className="flex gap-0.5 grow">
+              <input
+                placeholder="Best book ever"
+                {...inputProps}
+                className={twMerge(
+                  cx(
+                    'w-full bg-gray-50 dark:bg-gray-700',
+                    'block text-left',
+                    'focus:outline-none select-none overscroll-contain',
+                    `${classes.color[color]}`,
+                    `${classes.size[sizing]}`,
+                    `${Typography.weight.normal}`,
+                    `${Typography.leading.none}`,
+                    className,
+                  ),
+                )}
+              />
+              <button
+                aria-label="toggle menu"
+                className="px-2"
+                type="button"
+                {...getToggleButtonProps()}
+              >
+                &#8595;
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      <ul
-        className={`absolute w-inherit bg-white mt-1 shadow-md max-h-80 overflow-scroll p-0 ${
-          !(isOpen && items.length) && 'hidden'
-        }`}
-        {...getMenuProps()}
-        ref={optionsListRef}
-        onScroll={() => onScroll()}
-      >
-        {isOpen &&
+        <ul
+          className={`absolute w-inherit bg-white mt-1 shadow-md max-h-80 overflow-scroll p-0 ${
+            !isOpen && 'hidden'
+          }`}
+          ref={optionsListRef}
+          {...getMenuProps()}
+          onScroll={() => onScroll()}
+        >
+          {/* {isOpen &&
           items.map((item, index) => (
             <li
               className={cx(
@@ -317,8 +318,58 @@ export const Combobox: React.FC<ComboboxProps> = ({
             >
               <span className="text-sm text-gray-700">{item.label}</span>
             </li>
-          ))}
-      </ul>
-    </div>
+          ))} */}
+          {isOpen &&
+            React.Children.map(props.children, (child, index) => {
+              if (React.isValidElement(child)) {
+                console.log(child.props.value);
+                return React.cloneElement(
+                  child as React.ReactElement<{
+                    value: 'text';
+                    key: string;
+                  }>,
+                  {
+                    test: 'test',
+                    key: `${child.props.value}${index}`,
+                    ...getItemProps({ item: child.props.value, index }),
+                  },
+                );
+              }
+            })}
+        </ul>
+      </div>
+    </SelectItemsContext.Provider>
+  );
+};
+
+export const SelectItem = (props: { value: string; className?: string }) => {
+  const selectItemsContext = useContext(SelectItemsContext);
+  const isSelected = useMemo(() => {
+    if (Array.isArray(selectItemsContext) && props?.value) {
+      return selectItemsContext.includes(props.value);
+    } else if (selectItemsContext === props?.value) {
+      return true;
+    }
+    return false;
+  }, [selectItemsContext, props.value]);
+
+  const classes = twMerge(
+    cx(
+      'flex px-4 py-2 items-center gap-3 text-gray-500 dark:text-gray-300 cursor-pointer',
+      'focus:outline-none dark:focus:bg-gray-600 focus:bg-gray-100',
+      'data-active-item:dark:bg-gray-600 data-active-item:bg-gray-100',
+      'data-focus-visible:dark:bg-gray-600 data-focus-visible:bg-gray-100',
+      Typography.size.sm,
+      Typography.weight.medium,
+      {
+        [`text-blue-600 dark:text-blue-400 ${Typography.weight.semibold}`]: isSelected,
+      },
+    ),
+    props?.className,
+  );
+  return (
+    <li {...props} className={classes} data-testid={`selectitem-${props.value}`}>
+      <span className="text-sm text-gray-700">{props.value}</span>
+    </li>
   );
 };
