@@ -352,9 +352,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			// Reports
 			r.Route("/report", func(r chi.Router) {
 				r.Get("/", dfHandler.AuthHandler(ResourceReport, PermissionRead, dfHandler.ListReports))
-				r.Get("/{id}", dfHandler.AuthHandler(ResourceReport, PermissionRead, dfHandler.GetReport))
+				r.Get("/{report_id}", dfHandler.AuthHandler(ResourceReport, PermissionRead, dfHandler.GetReport))
 				r.Post("/", dfHandler.AuthHandler(ResourceReport, PermissionGenerate, dfHandler.GenerateReport))
-				r.Delete("/{id}", dfHandler.AuthHandler(ResourceReport, PermissionDelete, dfHandler.DeleteReport))
+				r.Delete("/{report_id}", dfHandler.AuthHandler(ResourceReport, PermissionDelete, dfHandler.DeleteReport))
 			})
 
 			// Integration

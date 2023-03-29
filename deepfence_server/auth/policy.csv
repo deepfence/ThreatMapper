@@ -46,6 +46,9 @@ p, admin, report, generate
 p, standard-user, report, generate
 p, admin, report, read
 p, standard-user, report, read
+p, read-only-user, report, read
+p, admin, report, delete
+p, standard-user, report, delete
 
 p, admin, container-registry, start
 p, admin, container-registry, stop

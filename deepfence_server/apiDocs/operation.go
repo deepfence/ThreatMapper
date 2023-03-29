@@ -567,3 +567,18 @@ func (d *OpenApiDocs) AddIntegrationOperations() {
 		"Delete Integration", "Delete integration",
 		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
 }
+
+func (d *OpenApiDocs) AddReportsOperations() {
+	d.AddOperation("generateReport", http.MethodPost, "/deepfence/report",
+		"Generate Report", "generate report for given type and filters",
+		http.StatusOK, []string{tagReports}, bearerToken, new(GenerateReportReq), new(GenerateReportResp))
+	d.AddOperation("listReports", http.MethodGet, "/deepfence/report",
+		"List Reports", "List all the available reports",
+		http.StatusOK, []string{tagReports}, bearerToken, nil, new([]ExportReport))
+	d.AddOperation("getReport", http.MethodGet, "/deepfence/report/{report_id}",
+		"Get Report", "get report by report_id",
+		http.StatusOK, []string{tagReports}, bearerToken, new(ReportReq), new(ExportReport))
+	d.AddOperation("deleteReport", http.MethodDelete, "/deepfence/report/{report_id}",
+		"Delete Report", "delete report for given report_id",
+		http.StatusOK, []string{tagReports}, bearerToken, new(ReportReq), nil)
+}

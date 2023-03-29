@@ -29,6 +29,7 @@ const (
 	tagRegistry          = "Registry"
 	tagInternal          = "Internal"
 	tagIntegration       = "Integration"
+	tagReports           = "Reports"
 
 	securityName = "bearer_token"
 )
