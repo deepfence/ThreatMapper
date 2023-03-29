@@ -41,6 +41,7 @@ export function getUserApiClient() {
   const userApi = new UserApi(configuration);
   return {
     registerUser: userApi.registerUser.bind(userApi),
+    getUsers: userApi.getUsers.bind(userApi),
   };
 }
 
