@@ -89,13 +89,13 @@ func GenerateReport(msg *message.Message) error {
 	}
 	defer session.Close()
 
-	updateReportState(ctx, session, params.ReportID, "", utils.SCAN_STATUS_INPROGRESS)
+	updateReportState(ctx, session, params.ReportID, "", "", utils.SCAN_STATUS_INPROGRESS)
 
 	// generate reportName
 	localReportPath, err := generateReport(ctx, session, params)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to generate report with params %+v", params)
-		updateReportState(ctx, session, params.ReportID, "", utils.SCAN_STATUS_FAILED)
+		updateReportState(ctx, session, params.ReportID, "", "", utils.SCAN_STATUS_FAILED)
 		return nil
 	}
 	log.Info().Msgf("report file path %s", localReportPath)
@@ -129,12 +129,12 @@ func GenerateReport(msg *message.Message) error {
 	}
 	log.Info().Msgf("exposed report URL: %s", url)
 
-	updateReportState(ctx, session, params.ReportID, url, utils.SCAN_STATUS_SUCCESS)
+	updateReportState(ctx, session, params.ReportID, url, res.Key, utils.SCAN_STATUS_SUCCESS)
 
 	return nil
 }
 
-func updateReportState(ctx context.Context, session neo4j.Session, reportId, url, status string) {
+func updateReportState(ctx context.Context, session neo4j.Session, reportId, url, path, status string) {
 	tx, err := session.BeginTransaction()
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -144,13 +144,14 @@ func updateReportState(ctx context.Context, session neo4j.Session, reportId, url
 	// update url in neo4j report node
 	query := `
 	MATCH (n:Report{report_id:$uid}) 
-	SET n.url=$url, n.updated_at=TIMESTAMP(), n.status = $status
+	SET n.url=$url, n.updated_at=TIMESTAMP(), n.status = $status, n.storage_path = $path
 	RETURN n
 	`
 	vars := map[string]interface{}{
 		"uid":    reportId,
 		"url":    url,
 		"status": status,
+		"path":   path,
 	}
 	_, err = tx.Run(query, vars)
 	if err != nil {
