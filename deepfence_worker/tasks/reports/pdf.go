@@ -6,14 +6,9 @@ import (
 	"embed"
 	"html/template"
 	"os"
-	"time"
 
 	"github.com/Masterminds/sprig/v3"
 	wkhtmltopdf "github.com/SebastiaanKlippert/go-wkhtmltopdf"
-	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	rptScans "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
-	rptSearch "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -28,21 +23,6 @@ var (
 	templates = template.Must(
 		template.New("").Funcs(sprig.FuncMap()).ParseFS(content, templateFiles...))
 )
-
-type Info struct {
-	Title          string
-	StartTime      string
-	EndTime        string
-	AppliedFilters utils.ReportFilters
-	NodeWiseData   NodeWiseData
-}
-
-type NodeWiseData struct {
-	SeverityCount     map[string]map[string]int32
-	VulnerabilityData map[string][]model.Vulnerability
-	SecretData        map[string][]model.Secret
-	MalwareData       map[string][]model.Malware
-}
 
 func generatePDF(ctx context.Context, session neo4j.Session, params utils.ReportParams) (string, error) {
 
@@ -59,7 +39,7 @@ func generatePDF(ctx context.Context, session neo4j.Session, params utils.Report
 	case "malware":
 		buffer, err = malware(ctx, session, params)
 	case "compliance":
-		return "", ErrNotImplemented
+		buffer, err = compliance(ctx, session, params)
 	default:
 		return "", ErrUnknownScanType
 	}
@@ -104,59 +84,10 @@ func generatePDF(ctx context.Context, session neo4j.Session, params utils.Report
 
 func vulnerability(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
 
-	filters := rptSearch.SearchScanReq{
-		NodeFilter: rptSearch.SearchFilter{
-			Filters: reporters.FieldsFilters{
-				ContainsFilter: reporters.ContainsFilter{
-					FieldsValues: map[string][]interface{}{
-						"node_type": {params.Filters.NodeType},
-					},
-				},
-			},
-		},
-	}
-
-	scans, err := rptSearch.SearchScansReport(ctx, filters, utils.NEO4J_VULNERABILITY_SCAN)
+	data, err := getVulnerabilityData(ctx, session, params)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to get vulnerabilities info")
 		return nil, err
-	}
-
-	log.Info().Msgf("vulnerability scan info: %+v", scans)
-
-	levelFilter := reporters.FieldsFilters{}
-
-	if len(params.Filters.SeverityOrCheckType) > 0 {
-		levelFilter = reporters.FieldsFilters{
-			MatchFilter: reporters.MatchFilter{
-				FieldsValues: map[string][]interface{}{
-					"cve_severity": utils.StringArrayToInterfaceArray(params.Filters.SeverityOrCheckType),
-				},
-			},
-		}
-	}
-
-	nodeWiseData := NodeWiseData{
-		SeverityCount:     make(map[string]map[string]int32),
-		VulnerabilityData: make(map[string][]model.Vulnerability),
-	}
-
-	for _, s := range scans {
-		result, _, err := rptScans.GetScanResults[model.Vulnerability](
-			ctx, utils.NEO4J_VULNERABILITY_SCAN, s.ScanId, levelFilter, model.FetchWindow{})
-		if err != nil {
-			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
-			continue
-		}
-		nodeWiseData.SeverityCount[s.NodeId] = s.SeverityCounts
-		nodeWiseData.VulnerabilityData[s.NodeId] = result
-	}
-
-	data := Info{
-		Title:          "Deepfence",
-		StartTime:      time.Now().Format("09-07-2017"),
-		EndTime:        time.Now().Format("09-07-2017"),
-		AppliedFilters: params.Filters,
-		NodeWiseData:   nodeWiseData,
 	}
 
 	// render html
@@ -172,59 +103,10 @@ func vulnerability(ctx context.Context, session neo4j.Session, params utils.Repo
 
 func secret(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
 
-	filters := rptSearch.SearchScanReq{
-		NodeFilter: rptSearch.SearchFilter{
-			Filters: reporters.FieldsFilters{
-				ContainsFilter: reporters.ContainsFilter{
-					FieldsValues: map[string][]interface{}{
-						"node_type": {params.Filters.NodeType},
-					},
-				},
-			},
-		},
-	}
-
-	scans, err := rptSearch.SearchScansReport(ctx, filters, utils.NEO4J_SECRET_SCAN)
+	data, err := getSecretData(ctx, session, params)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to get secret info")
 		return nil, err
-	}
-
-	log.Info().Msgf("secret scan info: %+v", scans)
-
-	levelFilter := reporters.FieldsFilters{}
-
-	if len(params.Filters.SeverityOrCheckType) > 0 {
-		levelFilter = reporters.FieldsFilters{
-			MatchFilter: reporters.MatchFilter{
-				FieldsValues: map[string][]interface{}{
-					"level": utils.StringArrayToInterfaceArray(params.Filters.SeverityOrCheckType),
-				},
-			},
-		}
-	}
-
-	nodeWiseData := NodeWiseData{
-		SeverityCount: make(map[string]map[string]int32),
-		SecretData:    make(map[string][]model.Secret),
-	}
-
-	for _, s := range scans {
-		result, _, err := rptScans.GetScanResults[model.Secret](
-			ctx, utils.NEO4J_SECRET_SCAN, s.ScanId, levelFilter, model.FetchWindow{})
-		if err != nil {
-			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
-			continue
-		}
-		nodeWiseData.SeverityCount[s.NodeId] = s.SeverityCounts
-		nodeWiseData.SecretData[s.NodeId] = result
-	}
-
-	data := Info{
-		Title:          "Deepfence",
-		StartTime:      time.Now().Format("09-07-2017"),
-		EndTime:        time.Now().Format("09-07-2017"),
-		AppliedFilters: params.Filters,
-		NodeWiseData:   nodeWiseData,
 	}
 
 	// render html
@@ -240,61 +122,29 @@ func secret(ctx context.Context, session neo4j.Session, params utils.ReportParam
 
 func malware(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
 
-	filters := rptSearch.SearchScanReq{
-		NodeFilter: rptSearch.SearchFilter{
-			Filters: reporters.FieldsFilters{
-				ContainsFilter: reporters.ContainsFilter{
-					FieldsValues: map[string][]interface{}{
-						"node_type": {params.Filters.NodeType},
-					},
-				},
-			},
-		},
-	}
-
-	scans, err := rptSearch.SearchScansReport(ctx, filters, utils.NEO4J_MALWARE_SCAN)
+	data, err := getMalwareData(ctx, session, params)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to get malware info")
+		return nil, err
+	}
+	// render html
+	var rendered bytes.Buffer
+	err = templates.ExecuteTemplate(&rendered, "base.gohtml", data)
+	if err != nil {
+		log.Error().Err(err)
 		return nil, err
 	}
 
-	log.Info().Msgf("malware scan info: %+v", scans)
+	return &rendered, nil
+}
 
-	levelFilter := reporters.FieldsFilters{}
+func compliance(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
 
-	if len(params.Filters.SeverityOrCheckType) > 0 {
-		levelFilter = reporters.FieldsFilters{
-			MatchFilter: reporters.MatchFilter{
-				FieldsValues: map[string][]interface{}{
-					"file_severity": utils.StringArrayToInterfaceArray(params.Filters.SeverityOrCheckType),
-				},
-			},
-		}
+	data, err := getComplianceData(ctx, session, params)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get compliance info")
+		return nil, err
 	}
-
-	nodeWiseData := NodeWiseData{
-		SeverityCount: make(map[string]map[string]int32),
-		MalwareData:   make(map[string][]model.Malware),
-	}
-
-	for _, s := range scans {
-		result, _, err := rptScans.GetScanResults[model.Malware](
-			ctx, utils.NEO4J_MALWARE_SCAN, s.ScanId, levelFilter, model.FetchWindow{})
-		if err != nil {
-			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
-			continue
-		}
-		nodeWiseData.SeverityCount[s.NodeId] = s.SeverityCounts
-		nodeWiseData.MalwareData[s.NodeId] = result
-	}
-
-	data := Info{
-		Title:          "Deepfence",
-		StartTime:      time.Now().Format("09-07-2017"),
-		EndTime:        time.Now().Format("09-07-2017"),
-		AppliedFilters: params.Filters,
-		NodeWiseData:   nodeWiseData,
-	}
-
 	// render html
 	var rendered bytes.Buffer
 	err = templates.ExecuteTemplate(&rendered, "base.gohtml", data)
