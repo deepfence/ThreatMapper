@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useMatches, useSearchParams } from 'react-router-dom';
 import { Tooltip } from 'ui-components';
 
 import { CloudIcon } from '@/components/icons/cloud';
@@ -12,6 +12,7 @@ import { K8sIcon } from '@/components/icons/k8s';
 import { NamespaceIcon } from '@/components/icons/namespace';
 import { PodIcon } from '@/components/icons/pod';
 import { TableIcon } from '@/components/icons/table';
+import { TopologyViewType } from '@/features/topology/types/graph';
 
 export const TopologyHeader = () => {
   return (
@@ -24,36 +25,34 @@ export const TopologyHeader = () => {
           <ResourceSelectorButton
             icon={<CloudIcon />}
             name="Clouds"
-            link=""
             count={10}
-            active
+            type="cloud"
           />
-          <ResourceSelectorButton icon={<HostIcon />} name="Hosts" link="" count={38} />
+          <ResourceSelectorButton
+            icon={<HostIcon />}
+            name="Hosts"
+            type="host"
+            count={38}
+          />
           <ResourceSelectorButton
             icon={<K8sIcon />}
             name="Kubernetes Clusters"
-            link=""
             count={3}
+            type="kubernetes"
           />
           <ResourceSelectorButton
             icon={<ContainerIcon />}
             name="Containers"
-            link=""
             count={87}
+            type="container"
           />
+          <ResourceSelectorButton icon={<PodIcon />} name="Pods" type="pod" count={23} />
+          <ResourceSelectorButton icon={<NamespaceIcon />} name="Namespaces" count={7} />
           <ResourceSelectorButton
             icon={<ImageIcon />}
             name="Container Images"
-            link=""
-            count={334}
+            count={5}
           />
-          <ResourceSelectorButton
-            icon={<NamespaceIcon />}
-            name="Namespaces"
-            link=""
-            count={4}
-          />
-          <ResourceSelectorButton icon={<PodIcon />} name="Pods" link="" count={23} />
         </div>
         <div>
           <ViewSwitcher />
@@ -66,30 +65,40 @@ export const TopologyHeader = () => {
 const ResourceSelectorButton = ({
   icon,
   name,
-  link,
   count,
-  active = false,
+  type,
 }: {
   icon: ReactNode;
   name: string;
-  link: string;
   count: number;
-  active?: boolean;
+  type?: TopologyViewType;
 }) => {
+  const matches = useMatches();
+
+  const currentPathName = matches[matches.length - 1]?.pathname ?? '';
+  const [searchParams] = useSearchParams();
+  const isActive =
+    searchParams.get('type') === type || (!searchParams.get('type') && type === 'cloud');
   return (
     <Link
-      to={link}
+      to={currentPathName + (type ? `?type=${type}` : '')}
       className={classNames(
-        'flex gap-1 items-center text-base font-medium rounded-lg h-full px-2 shrink justify-end min-w-0',
+        'flex gap-1 items-center text-base font-medium rounded-lg h-full px-2 shrink justify-end min-w-0 relative',
         {
-          ['text-gray-700 dark:text-gray-400']: !active,
-          ['text-blue-600 dark:text-blue-500']: active,
+          ['text-gray-700 dark:text-gray-400']: !type,
+          ['text-blue-600 dark:text-blue-500']: !!type,
         },
       )}
+      onClick={(e) => {
+        if (!type) e.preventDefault();
+      }}
     >
       <div className="h-6 w-6 shrink-0">{icon}</div>
       <div className="shrink">{count}</div>
       <div className="font-normal truncate">{name}</div>
+      {isActive && (
+        <div className="h-1 rounded-lg bg-blue-500 absolute -bottom-1 right-2 left-3" />
+      )}
     </Link>
   );
 };
