@@ -463,7 +463,7 @@ func (nc *neo4jTopologyReporter) getProcesses(tx neo4j.Transaction, hosts []stri
 		MATCH (n:Node)
 		WHERE n.host_name IN $hosts WITH n
 		MATCH (n)-[:HOSTS]->(m:Process)
-		RETURN n.node_id, m.node_id, m.name`,
+		RETURN n.node_id, m.node_id, m.node_name`,
 		map[string]interface{}{"hosts": hosts})
 	if err != nil {
 		return res, err

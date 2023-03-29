@@ -70,7 +70,7 @@ type Host struct {
 	KernelVersion    string           `json:"kernel_version" required:"true"`
 	Uptime           int              `json:"uptime" required:"true"`
 	Version          string           `json:"version" required:"true"`
-	AgentRunning     string           `json:"agent_running" required:"true"`
+	AgentRunning     bool             `json:"agent_running" required:"true"`
 	IsConsoleVm      bool             `json:"is_console_vm" required:"true"`
 	LocalCIDRs       []string         `json:"local_cidr" required:"true"`
 	Os               string           `json:"os" required:"true"`
@@ -183,7 +183,7 @@ type Container struct {
 	DockerContainerIps         []string       `json:"docker_container_ips,omitempty"`
 	DockerContainerCreated     string         `json:"docker_container_created,omitempty"`
 	DockerContainerPorts       string         `json:"docker_container_ports,omitempty"`
-	Uptime                     string         `json:"uptime" required:"true"`
+	Uptime                     int            `json:"uptime" required:"true"`
 	CpuMax                     float64        `json:"cpu_max,omitempty"`
 	CpuUsage                   float64        `json:"cpu_usage,omitempty"`
 	MemoryMax                  int64          `json:"memory_max,omitempty"`

@@ -17,25 +17,10 @@ import (
 
 // These constants are keys used in node metadata
 const (
-	ContainerName          = report.DockerContainerName
-	ContainerCommand       = report.DockerContainerCommand
 	ContainerPorts         = report.DockerContainerPorts
-	ContainerCreated       = report.DockerContainerCreated
 	ContainerNetworks      = report.DockerContainerNetworks
 	ContainerIPs           = report.DockerContainerIPs
-	ContainerHostname      = report.DockerContainerHostname
 	ContainerIPsWithScopes = report.DockerContainerIPsWithScopes
-	ContainerState         = report.DockerContainerState
-	ContainerStateHuman    = report.DockerContainerStateHuman
-	ContainerUptime        = report.DockerContainerUptime
-	//ContainerRestartCount  = report.DockerContainerRestartCount
-	ContainerNetworkMode = report.DockerContainerNetworkMode
-
-	MemoryUsage   = "docker_memory_usage"
-	CPUTotalUsage = "docker_cpu_total_usage"
-
-	LabelPrefix = report.DockerLabelPrefix
-	EnvPrefix   = report.DockerEnvPrefix
 )
 
 // StatsGatherer gathers container stats
@@ -379,9 +364,9 @@ func (c *container) getBaseNode() (report.Metadata, report.Parent) {
 	result := report.Metadata{
 		Timestamp:              time.Now().UTC().Format(time.RFC3339Nano),
 		NodeID:                 c.ID(),
-		NodeName:               containerName + " / " + c.Hostname(),
+		NodeName:               containerName + " / " + c.hostID,
 		NodeType:               report.Container,
-		HostName:               c.Hostname(),
+		HostName:               c.hostID,
 		DockerContainerName:    containerName,
 		DockerContainerCreated: c.container.Created.Format(time.RFC3339Nano),
 		DockerContainerCommand: c.getSanitizedCommand(),
@@ -390,7 +375,7 @@ func (c *container) getBaseNode() (report.Metadata, report.Parent) {
 		PodName:                podName,
 	}
 	parents := report.Parent{
-		Host:           c.Hostname(),
+		Host:           c.hostID,
 		ContainerImage: c.Image(),
 		Pod:            podUid,
 	}

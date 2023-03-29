@@ -6,8 +6,6 @@ import (
 	"sync"
 	"time"
 
-	scopeHostname "github.com/weaveworks/scope/common/hostname"
-
 	"github.com/armon/go-radix"
 	dfUtils "github.com/deepfence/df-utils"
 	docker_client "github.com/fsouza/go-dockerclient"
@@ -33,7 +31,6 @@ const (
 var (
 	NewDockerClientStub = newDockerClient
 	NewContainerStub    = NewContainer
-	hostName            string
 )
 
 // Registry keeps track of running docker containers and their images
@@ -141,7 +138,6 @@ func NewRegistry(options RegistryOptions) (Registry, error) {
 		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
 		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
 	}
-	hostName = scopeHostname.Get()
 	go r.loop()
 	return r, nil
 }
@@ -406,11 +402,11 @@ func (r *registry) sendDeletedUpdate(containerID string) {
 		IsConsoleVm:           r.isConsoleVm,
 		KubernetesClusterName: r.kubernetesClusterName,
 		KubernetesClusterId:   r.kubernetesClusterId,
-		HostName:              hostName,
+		HostName:              r.hostID,
 	}
 	parent := report.Parent{
 		KubernetesCluster: r.kubernetesClusterId,
-		Host:              hostName,
+		Host:              r.hostID,
 	}
 	// Trigger anyone watching for updates
 	for _, f := range r.watchers {

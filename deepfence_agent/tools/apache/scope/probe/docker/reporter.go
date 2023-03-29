@@ -62,8 +62,8 @@ func (r *Reporter) Report() (report.Report, error) {
 	}
 
 	result := report.MakeReport()
-	result.Container, result.ContainerSets = r.containerTopology(localAddrs)
-	result.ContainerImage = r.containerImageTopology()
+	result.Container, result.ContainerSets, result.ContainerParents = r.containerTopology(localAddrs)
+	result.ContainerImage, result.ContainerImageParents = r.containerImageTopology()
 	result.Overlay, result.OverlaySets = r.overlayTopology()
 	return result, nil
 }
@@ -83,11 +83,13 @@ func getLocalIPs() ([]string, []net.IP, error) {
 	return ips, addrs, nil
 }
 
-func (r *Reporter) containerTopology(localAddrs []net.IP) (report.Topology, report.TopologySets) {
+func (r *Reporter) containerTopology(localAddrs []net.IP) (report.Topology, report.TopologySets, report.Parents) {
 	result := report.MakeTopology()
 	containerSets := report.TopologySets{}
+	parents := report.Parents{}
 	nodes := []report.Metadata{}
 	r.registry.WalkContainers(func(c Container) {
+		parents[c.ID()] = c.GetParent()
 		nodes = append(nodes, c.GetNode())
 	})
 
@@ -145,12 +147,12 @@ func (r *Reporter) containerTopology(localAddrs []net.IP) (report.Topology, repo
 		}
 	}
 
-	return result, containerSets
+	return result, containerSets, parents
 }
 
-func (r *Reporter) containerImageTopology() report.Topology {
+func (r *Reporter) containerImageTopology() (report.Topology, report.Parents) {
 	result := report.MakeTopology()
-
+	parents := report.Parents{}
 	imageTagsMap := r.registry.GetImageTags()
 	r.registry.WalkImages(func(image docker_client.APIImages) {
 		imageID := trimImageID(image.ID)
@@ -161,6 +163,9 @@ func (r *Reporter) containerImageTopology() report.Topology {
 			DockerImageSize:        humanize.Bytes(uint64(image.Size)),
 			DockerImageVirtualSize: humanize.Bytes(uint64(image.VirtualSize)),
 			DockerImageCreatedAt:   time.Unix(image.Created, 0).Format("2006-01-02T15:04:05") + "Z",
+			HostName:               r.hostID,
+			KubernetesClusterId:    r.kubernetesClusterId,
+			KubernetesClusterName:  r.kubernetesClusterName,
 		}
 
 		if len(image.RepoTags) > 0 {
@@ -187,9 +192,13 @@ func (r *Reporter) containerImageTopology() report.Topology {
 			node.DockerImageLabels = string(dockerImageLabels)
 		}
 		result.AddNode(node)
+		parents[node.NodeID] = report.Parent{
+			KubernetesCluster: r.kubernetesClusterId,
+			Host:              r.hostID,
+		}
 	})
 
-	return result
+	return result, parents
 }
 
 func (r *Reporter) overlayTopology() (report.Topology, report.TopologySets) {
