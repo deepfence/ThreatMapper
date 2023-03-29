@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"net/url"
+	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -102,9 +104,9 @@ func GenerateReport(msg *message.Message) error {
 		return nil
 	}
 	log.Info().Msgf("report file path %s", localReportPath)
-	// defer func() {
-	// 	os.RemoveAll(filepath.Dir(localReportPath))
-	// }()
+	defer func() {
+		os.RemoveAll(filepath.Dir(localReportPath))
+	}()
 
 	// upload file to minio
 	mc, err := directory.MinioClient(ctx)
@@ -114,14 +116,16 @@ func GenerateReport(msg *message.Message) error {
 	}
 
 	reportName := path.Join("report", reportFileName(params))
-	res, err := mc.UploadLocalFile(ctx, reportName, localReportPath, putOpts(utils.ReportType(params.ReportType)))
+	res, err := mc.UploadLocalFile(ctx, reportName,
+		localReportPath, putOpts(utils.ReportType(params.ReportType)))
 	if err != nil {
 		log.Error().Err(err).Msg("failed to upload file to minio")
 		return nil
 	}
 
 	cd := url.Values{
-		"response-content-disposition": []string{"attachment; filename=\"" + reportFileName(params) + "\""},
+		"response-content-disposition": []string{
+			"attachment; filename=\"" + reportFileName(params) + "\""},
 	}
 	url, err := mc.ExposeFile(ctx, res.Key, false, 10*time.Hour, cd)
 	if err != nil {
