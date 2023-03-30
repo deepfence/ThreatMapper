@@ -3,13 +3,14 @@ package cronjobs
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"os"
-	"strings"
 )
 
 var BenchmarksAvailableMap = map[string][]string{
@@ -77,24 +78,20 @@ func AddCloudControls(msg *message.Message) error {
 			if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:CloudComplianceExecutable:CloudComplianceControl{
-			node_id: row.parent_control_breadcrumb + row.control_id,
-			control_id: row.control_id,
-			type: 'control',
-			description: row.description,
-			title: row.title,
-			documentation: row.documentation,
-			service: $cloudCap,
-			cloud_provider: $cloud,
-			category: 'Compliance',
-			compliance_type: $benchmark,
-			parent_control_hierarchy: row.parent_control_hierarchy,
-			parent_control_breadcrumb: row.parent_control_breadcrumb,
-			category_hierarchy: row.category_hierarchy,
-			category_breadcrumb: row.category_breadcrumb,
-			executable: row.executable
+			node_id: row.parent_control_breadcrumb + row.control_id
 		})
 		ON CREATE
-			SET n.active = true`,
+			SET n.active = true,
+			n.benchmark_id = row.benchmark_id,
+			n.type = 'benchmark',
+			n.description = row.description,
+			n.title = row.title,
+			n.documentation = row.documentation,
+			n.service = $cloudCap,
+			n.cloud_provider = $cloud,
+			n.category = 'Compliance',
+			n.compliance_type = $benchmark,
+			n.executable = false`,
 				map[string]interface{}{
 					"batch":     controlMap,
 					"benchmark": benchmark,
@@ -120,18 +117,18 @@ func AddCloudControls(msg *message.Message) error {
 				if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:CloudComplianceExecutable:CloudComplianceBenchmark{
-			node_id: row.benchmark_id,
-			benchmark_id: row.benchmark_id,
-			type: 'benchmark',
-			description: row.description,
-			title: row.title,
-			documentation: row.documentation,
-			service: $cloudCap,
-			cloud_provider: $cloud,
-			category: 'Compliance',
-			compliance_type: $benchmark,
-			executable: false
+			node_id: row.benchmark_id
 		})
+		ON CREATE SET n.benchmark_id = row.benchmark_id,
+			n.type = 'benchmark',
+			n.description = row.description,
+			n.title = row.title,
+			n.documentation = row.documentation,
+			n.service = $cloudCap,
+			n.cloud_provider = $cloud,
+			n.category = 'Compliance',
+			n.compliance_type = $benchmark,
+			n.executable = false
 		WITH n, row.children AS children, row.benchmark_id AS benchmark_id
 		UNWIND children AS childControl
 		MATCH (m:CloudComplianceExecutable{control_id: childControl})

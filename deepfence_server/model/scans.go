@@ -102,9 +102,10 @@ type ComplianceScanStatusResp struct {
 }
 
 type ScanListReq struct {
-	ScanStatus []string         `json:"scan_status"`
-	NodeIds    []NodeIdentifier `json:"node_ids" required:"true"`
-	Window     FetchWindow      `json:"window"  required:"true"`
+	ScanStatus   []string                `json:"scan_status"`
+	NodeIds      []NodeIdentifier        `json:"node_ids" required:"true"`
+	FieldsFilter reporters.FieldsFilters `json:"fields_filter" required:"true"`
+	Window       FetchWindow             `json:"window"  required:"true"`
 }
 
 type ScanListResp struct {

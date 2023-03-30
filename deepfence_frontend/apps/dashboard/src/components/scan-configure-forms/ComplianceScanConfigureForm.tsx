@@ -267,7 +267,12 @@ export const ControlsTable = memo(
                 onValueChange={(v) => setSelectedTab(v)}
               >
                 {isLoading && controlsList.length === 0 ? (
-                  <TableSkeleton columns={3} rows={10} size={'md'} />
+                  <TableSkeleton
+                    columns={3}
+                    rows={10}
+                    size={'md'}
+                    className={'w-screen'}
+                  />
                 ) : (
                   <Table
                     size="sm"
@@ -316,13 +321,13 @@ export const ComplianceScanConfigureForm = ({
 
   useEffect(() => {
     let data = undefined;
-    if (fetcherData?.success) {
+    if (fetcherData?.success && state === 'idle') {
       if (fetcher.data) {
         data = fetcher.data.data;
       }
       onSuccess(data);
     }
-  }, [fetcherData]);
+  }, [fetcherData, state]);
 
   const onCheckTypeSelection = (name: string) => {
     setTabs((prevTabs) => {
@@ -379,9 +384,9 @@ export const ComplianceScanConfigureForm = ({
         <input type="text" name="_nodeType" readOnly hidden value={nodeType} />
 
         <Button
-          disabled={state === 'loading'}
-          loading={state === 'loading'}
-          size="sm"
+          disabled={state !== 'idle'}
+          loading={state !== 'idle'}
+          size="xs"
           color="primary"
           type="submit"
           className="ml-auto "
