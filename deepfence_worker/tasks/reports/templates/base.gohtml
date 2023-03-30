@@ -262,10 +262,16 @@
 <body>
   {{ template "header" . }}
   {{ template "applied-filters" . }}
-  {{ template "summary-table" . }}
+  {{ if not .NodeWiseData.ComplianceData  }}
+    {{ template "summary-table" . }}
+  {{ end }}
+  {{ if .NodeWiseData.ComplianceData  }}
+    {{ template "compliance-summary-table" . }}
+  {{ end }}
   {{ template "vulnerabilities-nodes-table" . }}
   {{ template "secrets-nodes-table" . }}
   {{ template "malwares-nodes-table" . }}
+  {{ template "compliance-nodes-table" . }}
   <!-- {% block content %}
     <div class="content">
     </div>
