@@ -7,8 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
-	"github.com/weaveworks/scope/common/hostname"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -17,6 +15,9 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
+	"github.com/weaveworks/scope/common/hostname"
 )
 
 type PktDirection string
@@ -41,44 +42,6 @@ func RemoveLastCharacter(s string) string {
 	return string(r[:len(r)-1])
 }
 
-func GetUserDefinedTagsForGivenHost(hostName string, nodeType string, consoleServer string, certPath string, deepfenceKey string) (map[string][]string, error) {
-	type TagsResponse struct {
-		NodeName string   `json:"node_name"`
-		Tags     []string `json:"tags"`
-	}
-	tags := make(map[string][]string)
-	url := fmt.Sprintf("%s/df-api/user-defined-tags", consoleServer) // https://1.1.1.1/df-api/user-defined-tags
-	var jsonStr = []byte(fmt.Sprintf(`{"host_name":"%s","node_type":"%s"}`, hostName, nodeType))
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-	if err != nil {
-		return tags, err
-	}
-	req.Header.Add("deepfence-key", deepfenceKey)
-	req.Header.Add("Content-Type", "application/json")
-	httpClient, err := BuildHttpClientWithCert(certPath)
-	if err != nil {
-		return tags, err
-	}
-	resp, err := httpClient.Do(req)
-	if err != nil {
-		return tags, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return tags, errors.New(resp.Status)
-	}
-	decoder := json.NewDecoder(resp.Body)
-	var tagsResponse []TagsResponse
-	err = decoder.Decode(&tagsResponse)
-	if err != nil {
-		return tags, err
-	}
-	for _, tagResp := range tagsResponse {
-		tags[tagResp.NodeName] = tagResp.Tags
-	}
-	return tags, nil
-}
-
 func BuildHttpClientWithCert(certPath string) (*http.Client, error) {
 	// Set up our own certificate pool
 	tlsConfig := &tls.Config{RootCAs: x509.NewCertPool(), InsecureSkipVerify: true}
@@ -89,7 +52,7 @@ func BuildHttpClientWithCert(certPath string) (*http.Client, error) {
 	client := &http.Client{Transport: transport}
 
 	// Load our trusted certificate path
-	pemData, err := ioutil.ReadFile(certPath)
+	pemData, err := os.ReadFile(certPath)
 	if err != nil {
 		return nil, err
 	}
@@ -195,11 +158,11 @@ type k8sNodeInfo struct {
 }
 
 func getK8sCaCert() ([]byte, []byte, error) {
-	caCert, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
+	caCert, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
 	if err != nil {
 		return nil, nil, err
 	}
-	caToken, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/token")
+	caToken, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/token")
 	return caCert, caToken, err
 }
 

@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/armon/go-metrics"
-	"github.com/weaveworks/go-checkpoint"
 	"github.com/weaveworks/scope/probe/common"
 
 	metrics_prom "github.com/armon/go-metrics/prometheus"
@@ -25,22 +24,17 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/weaveworks/common/logging"
-	"github.com/weaveworks/common/sanitize"
 	"github.com/weaveworks/common/signals"
 	"github.com/weaveworks/common/tracing"
 	"github.com/weaveworks/scope/common/hostname"
-	"github.com/weaveworks/scope/common/weave"
 	"github.com/weaveworks/scope/probe"
 	"github.com/weaveworks/scope/probe/appclient"
-	"github.com/weaveworks/scope/probe/awsecs"
 	"github.com/weaveworks/scope/probe/controls"
 	"github.com/weaveworks/scope/probe/cri"
 	"github.com/weaveworks/scope/probe/docker"
 	"github.com/weaveworks/scope/probe/endpoint"
 	"github.com/weaveworks/scope/probe/host"
 	"github.com/weaveworks/scope/probe/kubernetes"
-	"github.com/weaveworks/scope/probe/overlay"
-	"github.com/weaveworks/scope/probe/plugins"
 	"github.com/weaveworks/scope/probe/process"
 	"github.com/weaveworks/scope/report"
 )
@@ -53,41 +47,6 @@ const (
 
 	authCheckPeriod = time.Second * 10
 )
-
-var (
-	pluginAPIVersion = "1"
-)
-
-func checkNewScopeVersion(flags probeFlags) {
-	checkpointFlags := makeBaseCheckpointFlags()
-	if flags.kubernetesEnabled {
-		checkpointFlags["kubernetes_enabled"] = "true"
-	}
-	if flags.ecsEnabled {
-		checkpointFlags["ecs_enabled"] = "true"
-	}
-
-	go func() {
-		handleResponse := func(r *checkpoint.CheckResponse, err error) {
-			if err != nil {
-				log.Errorf("Error checking version: %v", err)
-			} else if r.Outdated {
-				log.Infof("Scope version %s is available; please update at %s",
-					r.CurrentVersion, r.CurrentDownloadURL)
-			}
-		}
-
-		// Start background version checking
-		params := checkpoint.CheckParams{
-			Product: "deepfence-discovery",
-			Version: version,
-			Flags:   checkpointFlags,
-		}
-		resp, err := checkpoint.Check(&params)
-		handleResponse(resp, err)
-		checkpoint.CheckInterval(&params, versionCheckPeriod, handleResponse)
-	}()
-}
 
 func maybeExportProfileData(flags probeFlags) {
 	if flags.httpListen != "" {
@@ -278,31 +237,6 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		hostID   = hostName // TODO(pb): we should sanitize the hostname
 	)
 	log.Infof("probe starting, version %s, ID %s", version, probeID)
-	//checkNewScopeVersion(flags)
-	handlerRegistry := controls.NewDefaultHandlerRegistry()
-	//clientFactory := func(hostname string, url url.URL) (appclient.AppClient, error) {
-	//	token := flags.token
-	//	if url.User != nil {
-	//		token = url.User.Username()
-	//		url.User = nil // erase credentials, as we use a special header
-	//	}
-
-	//	if flags.basicAuth {
-	//		token = base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", flags.username, flags.password)))
-	//	}
-
-	//	probeConfig := appclient.ProbeConfig{
-	//		BasicAuth:    flags.basicAuth,
-	//		Token:        token,
-	//		ProbeVersion: version,
-	//		ProbeID:      probeID,
-	//		Insecure:     flags.insecure,
-	//	}
-	//	return appclient.NewAppClient(
-	//		probeConfig, hostname, url,
-	//		xfer.ControlHandlerFunc(handlerRegistry.HandleControlRequest),
-	//	)
-	//}
 
 	if flags.kubernetesEnabled {
 		// If KUBERNETES_SERVICE_HOST env is not there, get it from kube-proxy container in this host
@@ -368,7 +302,6 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 
 	var clients interface {
 		probe.ReportPublisher
-		controls.PipeClient
 	}
 	if flags.printOnStdout {
 		if len(targets) > 0 {
@@ -418,29 +351,6 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		//}
 		//defer resolver.Stop()
 
-		//if flags.weaveEnabled && flags.weaveHostname != "" {
-		//	dockerBridgeIP, err := network.GetFirstAddressOf(flags.dockerBridge)
-		//	if err != nil {
-		//		log.Errorf("Error getting docker bridge ip: %v", err)
-		//	} else {
-		//		weaveDNSLookup := appclient.LookupUsing(dockerBridgeIP + ":53")
-		//		weaveTargets, err := appclient.ParseTargets([]string{flags.weaveHostname})
-		//		if err != nil {
-		//			log.Errorf("Failed to parse weave targets: %v", err)
-		//		} else {
-		//			weaveResolver, err := appclient.NewResolver(appclient.ResolverConfig{
-		//				Targets: weaveTargets,
-		//				Lookup:  weaveDNSLookup,
-		//				Set:     multiClients.Set,
-		//			})
-		//			if err != nil {
-		//				log.Errorf("Failed to create weave resolver: %v", err)
-		//			} else {
-		//				defer weaveResolver.Stop()
-		//			}
-		//		}
-		//	}
-		//}
 		clients = multiClients
 	}
 
@@ -449,7 +359,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	var processCache *process.CachingWalker
 
 	if flags.kubernetesRole != kubernetesRoleCluster {
-		hostReporter, cloudProvider, cloudRegion := host.NewReporter(hostID, hostName, probeID, version, clients, handlerRegistry)
+		hostReporter, cloudProvider, cloudRegion := host.NewReporter(hostID, hostName, probeID, version)
 		defer hostReporter.Stop()
 		p.AddReporter(hostReporter)
 		p.AddTagger(host.NewTagger(hostID, cloudProvider, cloudRegion))
@@ -496,10 +406,8 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		}
 		options := docker.RegistryOptions{
 			Interval:               flags.dockerInterval,
-			Pipes:                  clients,
 			CollectStats:           true,
 			HostID:                 hostID,
-			HandlerRegistry:        handlerRegistry,
 			DockerEndpoint:         os.Getenv("DOCKER_SOCKET_PATH"),
 			NoCommandLineArguments: flags.noCommandLineArguments,
 			NoEnvironmentVariables: flags.noEnvironmentVariables,
@@ -507,7 +415,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		if registry, err := docker.NewRegistry(options); err == nil {
 			defer registry.Stop()
 			if flags.procEnabled {
-				p.AddTagger(docker.NewTagger(registry, processCache))
+				p.AddTagger(docker.NewTagger(registry, hostID, processCache))
 			}
 			p.AddReporter(docker.NewReporter(registry, hostID, probeID, p))
 		} else {
@@ -527,7 +435,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	if flags.kubernetesEnabled && flags.kubernetesRole != kubernetesRoleHost {
 		if client, err := kubernetes.NewClient(flags.kubernetesClientConfig); err == nil {
 			defer client.Stop()
-			reporter := kubernetes.NewReporter(client, clients, probeID, hostID, p, handlerRegistry, flags.kubernetesNodeName)
+			reporter := kubernetes.NewReporter(client, probeID, hostID, p, flags.kubernetesNodeName)
 			defer reporter.Stop()
 			p.AddReporter(reporter)
 			go client.InitCNIPlugin()
@@ -542,44 +450,6 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 
 	if flags.kubernetesEnabled {
 		p.AddTagger(&kubernetes.Tagger{})
-	}
-
-	if flags.ecsEnabled {
-		reporter := awsecs.Make(flags.ecsCacheSize, flags.ecsCacheExpiry, flags.ecsClusterRegion, handlerRegistry, probeID)
-		defer reporter.Stop()
-		p.AddReporter(reporter)
-		p.AddTagger(reporter)
-	}
-
-	if flags.weaveEnabled {
-		client := weave.NewClient(sanitize.URL("http://", 6784, "")(flags.weaveAddr))
-		weave, err := overlay.NewWeave(hostID, client)
-		if err != nil {
-			log.Errorf("Weave: failed to start client: %v", err)
-		} else {
-			defer weave.Stop()
-			p.AddTagger(weave)
-			p.AddReporter(weave)
-		}
-	}
-
-	if flags.pluginsRoot != "" {
-		pluginRegistry, err := plugins.NewRegistry(
-			flags.pluginsRoot,
-			pluginAPIVersion,
-			map[string]string{
-				"probe_id":    probeID,
-				"api_version": pluginAPIVersion,
-			},
-			handlerRegistry,
-			p,
-		)
-		if err != nil {
-			log.Errorf("plugins: problem loading: %v", err)
-		} else {
-			defer pluginRegistry.Close()
-			p.AddReporter(pluginRegistry)
-		}
 	}
 
 	maybeExportProfileData(flags)

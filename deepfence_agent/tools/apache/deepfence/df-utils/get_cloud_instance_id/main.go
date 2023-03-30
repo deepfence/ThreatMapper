@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/deepfence/df-utils/cloud_metadata"
 )
 
@@ -43,7 +44,5 @@ func main() {
 	cloudMetadata := GetCloudMetadata()
 	if cloudMetadata.InstanceID != "" {
 		fmt.Print(cloudMetadata.InstanceID)
-	} else if cloudMetadata.VmID != "" {
-		fmt.Print(cloudMetadata.VmID)
 	}
 }

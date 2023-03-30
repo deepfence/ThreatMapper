@@ -12,7 +12,6 @@ import (
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
 	"github.com/klauspost/compress/gzip"
 	"github.com/sirupsen/logrus"
-	"github.com/weaveworks/scope/common/xfer"
 	"github.com/weaveworks/scope/probe/common"
 	"github.com/weaveworks/scope/probe/controls"
 	"github.com/weaveworks/scope/probe/host"
@@ -35,16 +34,6 @@ func NewOpenapiClient() (*OpenapiClient, error) {
 	res.publishInterval.Store(10)
 
 	return res, err
-}
-
-// PipeClose implements MultiAppClient
-func (OpenapiClient) PipeClose(appID string, pipeID string) error {
-	panic("unimplemented")
-}
-
-// PipeConnection implements MultiAppClient
-func (OpenapiClient) PipeConnection(appID string, pipeID string, pipe xfer.Pipe) error {
-	panic("unimplemented")
 }
 
 // Publish implements MultiAppClient

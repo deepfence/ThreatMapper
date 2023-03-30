@@ -7,7 +7,6 @@ import (
 
 	"github.com/armon/go-metrics"
 	log "github.com/sirupsen/logrus"
-	"github.com/weaveworks/common/mtime"
 	"golang.org/x/time/rate"
 
 	"github.com/weaveworks/scope/report"
@@ -187,7 +186,7 @@ func (p *Probe) report() report.Report {
 	}
 
 	result := report.MakeReport()
-	result.TS = mtime.Now()
+	result.TS = time.Now()
 	for i := 0; i < cap(reports); i++ {
 		result.UnsafeMerge(<-reports)
 	}
@@ -231,7 +230,7 @@ ForLoop:
 
 	if p.noControls {
 		rpt.WalkTopologies(func(t *report.Topology) {
-			t.Controls = report.Controls{}
+			//t.Controls = report.Controls{}
 		})
 	}
 	return rpt, count
@@ -239,7 +238,7 @@ ForLoop:
 
 func (p *Probe) publishLoop() {
 	defer p.done.Done()
-	startTime := mtime.Now()
+	startTime := time.Now()
 	publishCount := 0
 	var lastFullReport report.Report
 
@@ -256,8 +255,8 @@ func (p *Probe) publishLoop() {
 			if !fullReport {
 				rpt.UnsafeUnMerge(lastFullReport)
 			}
-			rpt.Window = mtime.Now().Sub(startTime)
-			startTime = mtime.Now()
+			rpt.Window = time.Now().Sub(startTime)
+			startTime = time.Now()
 			err = p.publisher.Publish(rpt)
 			if err == nil {
 				if fullReport {
