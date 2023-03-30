@@ -191,22 +191,13 @@ const ConsoleDiagnosticLogsTable = () => {
       }),
       columnHelper.accessor('url_link', {
         cell: (cell) => {
-          const url = cell.row.original.url_link;
-          if (cell.row.original.message !== '' || !url) {
+          if (cell.row.original.message !== '') {
             return 'No logs';
           }
           return (
-            <Button
-              size="xs"
-              color="normal"
-              startIcon={<HiDownload />}
-              className="text-blue-600 dark:text-blue-500"
-              onClick={() => {
-                download(url);
-              }}
-            >
-              Download Logs
-            </Button>
+            <DFLink href={cell.row.original.url_link ?? ''} download target={'_blank'}>
+              Click to download
+            </DFLink>
           );
         },
         header: () => 'Download',
@@ -278,22 +269,13 @@ const AgentDiagnosticLogsTable = () => {
       }),
       columnHelper.accessor('url_link', {
         cell: (cell) => {
-          const url = cell.row.original.url_link;
-          if (cell.row.original.message !== '' || !url) {
+          if (cell.row.original.message !== '') {
             return 'No logs';
           }
           return (
-            <Button
-              size="xs"
-              color="normal"
-              startIcon={<HiDownload />}
-              className="text-blue-600 dark:text-blue-500"
-              onClick={() => {
-                download(url);
-              }}
-            >
-              Download Logs
-            </Button>
+            <DFLink href={cell.row.original.url_link ?? ''} download target={'_blank'}>
+              Click to download
+            </DFLink>
           );
         },
         header: () => 'Download',
