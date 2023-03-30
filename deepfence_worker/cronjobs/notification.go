@@ -49,10 +49,9 @@ func SendNotifications(msg *message.Message) error {
 }
 
 func processIntegration[T any](msg *message.Message, integrationRow postgresql_db.Integration) error {
-	log.Info().Msgf("Processing for integration : +%v", integrationRow)
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
-	last30sTimeStamp := time.Now().Unix() - 30
+	last30sTimeStamp := time.Now().UnixMilli() - 30000
 	ff := reporters.FieldsFilters{CompareFilters: []reporters.CompareFilter{{FieldName: "updated_at", GreaterThan: true, FieldValue: strconv.FormatInt(last30sTimeStamp, 10)}}}
 	list, err := reporters_scan.GetScansList(ctx, utils.DetectedNodeScanType[integrationRow.Resource], []model.NodeIdentifier{}, ff, model.FetchWindow{}, []string{"COMPLETE"})
 	if err != nil {
