@@ -27,15 +27,15 @@ The following instructions explain how to get started with a docker-based instal
 3. Execute the following command to install and start the latest build of the Console
 
     ```bash
-    docker-compose -f docker-compose.yml up -d
+    docker compose up -d
     ```
 
     :::tip
     Alternatively, to install a named [tagged release](https://github.com/deepfence/ThreatMapper/releases), specify the release tag as follows:
 
     ```bash
-    wget https://github.com/deepfence/ThreatMapper/raw/release-1.4/deployment-scripts/docker-compose.yml
-    env DF_IMG_TAG=1.5.0 docker-compose -f docker-compose.yml up -d
+    wget https://github.com/deepfence/ThreatMapper/raw/release-1.5/deployment-scripts/docker-compose.yml
+    env DF_IMG_TAG=1.5.0 docker compose up -d
     ```
     :::
 
@@ -46,12 +46,12 @@ Now proceed to the [Initial Configuration](initial-configuration).
 The simplest way to upgrade is to shut the console down and restart it with the upgraded containers.  The disk volumes with user configuration and scan results will persist across the upgrade process:
 
 ```bash
-docker-compose -f docker-compose.yml down
+docker compose down
 
 # refresh the docker-compose file
 rm docker-compose.yml
-wget https://github.com/deepfence/ThreatMapper/raw/release-1.4/deployment-scripts/docker-compose.yml
-env DF_IMG_TAG=1.5.0 docker-compose -f docker-compose.yml up -d
+wget https://github.com/deepfence/ThreatMapper/raw/release-1.5/deployment-scripts/docker-compose.yml
+env DF_IMG_TAG=1.5.0 docker compose up -d
 ```
 
 ### Remove the ThreatMapper Management Console
@@ -59,7 +59,7 @@ env DF_IMG_TAG=1.5.0 docker-compose -f docker-compose.yml up -d
 Remove the ThreatMapper Management Console as follows:
 
 ```bash
-docker-compose -f docker-compose.yml down
+docker compose down
 ```
 
 You can then prune the images and volumes if they are no longer required:
