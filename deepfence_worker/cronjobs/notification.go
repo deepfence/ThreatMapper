@@ -11,6 +11,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"strconv"
 	"time"
 )
 
@@ -52,7 +53,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	last30sTimeStamp := time.Now().Unix() - 30
-	ff := reporters.FieldsFilters{CompareFilters: []reporters.CompareFilter{{FieldName: "updated_at", GreaterThan: true, FieldValue: last30sTimeStamp}}}
+	ff := reporters.FieldsFilters{CompareFilters: []reporters.CompareFilter{{FieldName: "updated_at", GreaterThan: true, FieldValue: strconv.FormatInt(last30sTimeStamp, 10)}}}
 	list, err := reporters_scan.GetScansList(ctx, utils.DetectedNodeScanType[integrationRow.Resource], []model.NodeIdentifier{}, ff, model.FetchWindow{}, []string{"COMPLETE"})
 	if err != nil {
 		return err
