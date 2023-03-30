@@ -25,6 +25,12 @@ import {
     ModelNodeIdentifierFromJSONTyped,
     ModelNodeIdentifierToJSON,
 } from './ModelNodeIdentifier';
+import type { ReportersFieldsFilters } from './ReportersFieldsFilters';
+import {
+    ReportersFieldsFiltersFromJSON,
+    ReportersFieldsFiltersFromJSONTyped,
+    ReportersFieldsFiltersToJSON,
+} from './ReportersFieldsFilters';
 
 /**
  * 
@@ -32,6 +38,12 @@ import {
  * @interface ModelScanListReq
  */
 export interface ModelScanListReq {
+    /**
+     * 
+     * @type {ReportersFieldsFilters}
+     * @memberof ModelScanListReq
+     */
+    fields_filter: ReportersFieldsFilters;
     /**
      * 
      * @type {Array<ModelNodeIdentifier>}
@@ -57,6 +69,7 @@ export interface ModelScanListReq {
  */
 export function instanceOfModelScanListReq(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "fields_filter" in value;
     isInstance = isInstance && "node_ids" in value;
     isInstance = isInstance && "window" in value;
 
@@ -73,6 +86,7 @@ export function ModelScanListReqFromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
         
+        'fields_filter': ReportersFieldsFiltersFromJSON(json['fields_filter']),
         'node_ids': (json['node_ids'] === null ? null : (json['node_ids'] as Array<any>).map(ModelNodeIdentifierFromJSON)),
         'scan_status': !exists(json, 'scan_status') ? undefined : json['scan_status'],
         'window': ModelFetchWindowFromJSON(json['window']),
@@ -88,6 +102,7 @@ export function ModelScanListReqToJSON(value?: ModelScanListReq | null): any {
     }
     return {
         
+        'fields_filter': ReportersFieldsFiltersToJSON(value.fields_filter),
         'node_ids': (value.node_ids === null ? null : (value.node_ids as Array<any>).map(ModelNodeIdentifierToJSON)),
         'scan_status': value.scan_status,
         'window': ModelFetchWindowToJSON(value.window),

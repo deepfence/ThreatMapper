@@ -15,6 +15,8 @@ import { searchHostsApiLoader } from '@/features/common/data-component/searchHos
 import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
 import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
+import { module as integrationsLayout } from '@/features/integrations/layouts/IntegrationsLayout';
+import { module as addIntegration } from '@/features/integrations/pages/IntegrationAdd';
 import { module as integrations } from '@/features/integrations/pages/Integrations';
 import { module as malware } from '@/features/malwares/pages/Malware';
 import { module as malwareDetails } from '@/features/malwares/pages/MalwareDetailModal';
@@ -160,7 +162,7 @@ export const privateRoutes: CustomRouteObject[] = [
     path: '/',
     loader: dashboardLoader,
     element: <DashboardLayout />,
-    errorElement: <ErrorComponent />,
+    // errorElement: <ErrorComponent />,
     children: [
       {
         path: 'dashboard',
@@ -242,6 +244,18 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'integrations',
         ...integrations,
         meta: { title: 'Integrations' },
+      },
+      {
+        path: 'integrations/notifications/add',
+        ...integrationsLayout,
+        meta: { title: 'Add Notifications' },
+        children: [
+          {
+            path: ':integrationType',
+            ...addIntegration,
+            meta: { title: 'Add Integration' },
+          },
+        ],
       },
       // vulnerability
       {
