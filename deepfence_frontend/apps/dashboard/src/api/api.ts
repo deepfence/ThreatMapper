@@ -241,5 +241,6 @@ export function getIntegrationApiClient() {
   return {
     addIntegration: integrationApi.addIntegration.bind(integrationApi),
     listIntegration: integrationApi.listIntegration.bind(integrationApi),
+    deleteIntegration: integrationApi.deleteIntegration.bind(integrationApi),
   };
 }
