@@ -34,7 +34,7 @@ The following instructions explain how to get started with a docker-based instal
     Alternatively, to install a named [tagged release](https://github.com/deepfence/ThreatMapper/releases), specify the release tag as follows:
 
     ```bash
-    wget https://github.com/deepfence/ThreatMapper/raw/release-1.4/deployment-scripts/docker-compose.yml
+    wget https://github.com/deepfence/ThreatMapper/raw/release-1.5/deployment-scripts/docker-compose.yml
     env DF_IMG_TAG=1.5.0 docker compose up -d
     ```
     :::
@@ -50,7 +50,7 @@ docker compose down
 
 # refresh the docker-compose file
 rm docker-compose.yml
-wget https://github.com/deepfence/ThreatMapper/raw/release-1.4/deployment-scripts/docker-compose.yml
+wget https://github.com/deepfence/ThreatMapper/raw/release-1.5/deployment-scripts/docker-compose.yml
 env DF_IMG_TAG=1.5.0 docker compose up -d
 ```
 
