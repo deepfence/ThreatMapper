@@ -17,6 +17,16 @@ var RegistryTypes = []string{
 	ACR, DOCKER_HUB, DOCKER_PRIVATE, ECR, GCR, GITLAB, HARBOR, JFROG, QUAY,
 }
 
+// Integration related consts
+const (
+	Slack     = "slack"
+	HTTP      = "http_endpoint"
+	Teams     = "teams"
+	Splunk    = "splunk"
+	S3        = "s3"
+	PagerDuty = "pagerduty"
+)
+
 const (
 	Password       = "password"
 	WebhookURL     = "webhook_url"
