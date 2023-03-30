@@ -8,6 +8,7 @@ import {
   ComplianceApi,
   Configuration,
   ControlsApi,
+  DiagnosisApi,
   LookupApi,
   MalwareScanApi,
   RegistryApi,
@@ -46,9 +47,11 @@ export function getUserApiClient() {
 export function getTopologyApiClient() {
   const topologyApi = new TopologyApi(configuration);
   return {
+    getCloudTopologyGraph: topologyApi.getTopologyGraph.bind(topologyApi),
     getHostsTopologyGraph: topologyApi.getHostsTopologyGraph.bind(topologyApi),
     getKubernetesTopologyGraph: topologyApi.getKubernetesTopologyGraph.bind(topologyApi),
-    getCloudTopologyGraph: topologyApi.getTopologyGraph.bind(topologyApi),
+    getContainersTopologyGraph: topologyApi.getContainersTopologyGraph.bind(topologyApi),
+    getPodsTopologyGraph: topologyApi.getPodsTopologyGraph.bind(topologyApi),
   };
 }
 
@@ -115,6 +118,7 @@ export function getRegistriesApiClient() {
     getRegistrySummaryByType: registriesApi.getSummaryByType.bind(registriesApi),
     listRegistries: registriesApi.listRegistry.bind(registriesApi),
     addRegistry: registriesApi.addRegistry.bind(registriesApi),
+    addRegistryGCR: registriesApi.addRegistryGCR.bind(registriesApi),
     deleteRegistry: registriesApi.deleteRegistry.bind(registriesApi),
     listImages: registriesApi.listImages.bind(registriesApi),
     countImages: registriesApi.countImages.bind(registriesApi),
@@ -157,6 +161,8 @@ export function getSearchApiClient() {
 
     searchCompliances: searchApi.searchCompliances.bind(searchApi),
     searchCloudCompliances: searchApi.searchCloudCompliances.bind(searchApi),
+
+    getCloudComplianceFilters: searchApi.getCloudComplianceFilters.bind(searchApi),
   };
 }
 
@@ -213,5 +219,17 @@ export function getThreatGraphApiClient() {
 
   return {
     getThreatGraph: threatGraphApi.getThreatGraph.bind(threatGraphApi),
+  };
+}
+
+export function getDiagnosisApiClient() {
+  const diagnosisApi = new DiagnosisApi(configuration);
+
+  return {
+    generateAgentDiagnosticLogs:
+      diagnosisApi.generateAgentDiagnosticLogs.bind(diagnosisApi),
+    generateConsoleDiagnosticLogs:
+      diagnosisApi.generateConsoleDiagnosticLogs.bind(diagnosisApi),
+    getDiagnosticLogs: diagnosisApi.getDiagnosticLogs.bind(diagnosisApi),
   };
 }

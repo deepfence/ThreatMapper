@@ -13,6 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ModelFetchWindow } from './ModelFetchWindow';
+import {
+    ModelFetchWindowFromJSON,
+    ModelFetchWindowFromJSONTyped,
+    ModelFetchWindowToJSON,
+} from './ModelFetchWindow';
 import type { ReportersFieldsFilters } from './ReportersFieldsFilters';
 import {
     ReportersFieldsFiltersFromJSON,
@@ -38,6 +44,12 @@ export interface SearchSearchFilter {
      * @memberof SearchSearchFilter
      */
     in_field_filter: Array<string> | null;
+    /**
+     * 
+     * @type {ModelFetchWindow}
+     * @memberof SearchSearchFilter
+     */
+    window: ModelFetchWindow;
 }
 
 /**
@@ -47,6 +59,7 @@ export function instanceOfSearchSearchFilter(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "filters" in value;
     isInstance = isInstance && "in_field_filter" in value;
+    isInstance = isInstance && "window" in value;
 
     return isInstance;
 }
@@ -63,6 +76,7 @@ export function SearchSearchFilterFromJSONTyped(json: any, ignoreDiscriminator: 
         
         'filters': ReportersFieldsFiltersFromJSON(json['filters']),
         'in_field_filter': json['in_field_filter'],
+        'window': ModelFetchWindowFromJSON(json['window']),
     };
 }
 
@@ -77,6 +91,7 @@ export function SearchSearchFilterToJSON(value?: SearchSearchFilter | null): any
         
         'filters': ReportersFieldsFiltersToJSON(value.filters),
         'in_field_filter': value.in_field_filter,
+        'window': ModelFetchWindowToJSON(value.window),
     };
 }
 

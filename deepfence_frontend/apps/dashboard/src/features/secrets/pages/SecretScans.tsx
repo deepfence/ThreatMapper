@@ -22,6 +22,7 @@ import {
 import {
   ActionFunctionArgs,
   Form,
+  generatePath,
   LoaderFunctionArgs,
   useFetcher,
   useLoaderData,
@@ -207,6 +208,10 @@ async function getScans(
         match_filter: { filter_in: {} },
       },
       in_field_filter: null,
+      window: {
+        offset: 0,
+        size: 0,
+      },
     },
     scan_filters: {
       filters: {
@@ -215,6 +220,10 @@ async function getScans(
         match_filter: { filter_in: { ...languageFilters } },
       },
       in_field_filter: null,
+      window: {
+        offset: 0,
+        size: 1,
+      },
     },
     window: { offset: page * PAGE_SIZE, size: PAGE_SIZE },
   };
@@ -224,6 +233,13 @@ async function getScans(
       {
         field_name: order.sortBy,
         descending: order.descending,
+      },
+    ];
+  } else {
+    scanRequestParams.scan_filters.filters.order_filter.order_fields = [
+      {
+        field_name: 'updated_at',
+        descending: true,
       },
     ];
   }
@@ -638,16 +654,19 @@ const SecretScans = () => {
       columnHelper.accessor('node_name', {
         enableSorting: false,
         cell: (info) => {
-          const isScanComplete = info.row.original.status?.toLowerCase() === 'complete';
+          const isNeverScan = info.row.original.status?.toLowerCase() === '';
           const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
-            if (isScanComplete) {
-              return (
-                <DFLink to={`/secret/scan-results/${info.row.original.scan_id}`}>
-                  {children}
-                </DFLink>
-              );
-            }
-            return <>{children}</>;
+            return isNeverScan ? (
+              <>{children}</>
+            ) : (
+              <DFLink
+                to={generatePath(`/secret/scan-results/:scanId`, {
+                  scanId: info.row.original.scan_id,
+                })}
+              >
+                {children}
+              </DFLink>
+            );
           };
           return (
             <WrapperComponent>

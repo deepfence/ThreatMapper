@@ -10,6 +10,12 @@ bin/SecretScanner: ./SecretScanner/**/*.go
 	cp $(PWD)/SecretScanner/SecretScanner $(PWD)/bin/secret-scanner/
 	cp $(PWD)/SecretScanner/config.yaml $(PWD)/bin/secret-scanner/
 
+bin/YaraHunter: ./YaraHunter/**/*.go
+	(cd YaraHunter && make)
+	-mkdir $(PWD)/bin/yara-hunter/
+	cp $(PWD)/YaraHunter/YaraHunter $(PWD)/bin/yara-hunter/
+	cp $(PWD)/YaraHunter/config.yaml $(PWD)/bin/yara-hunter/
+
 bin/package-scanner:
 	(cd package-scanner && make)
 	cp $(PWD)/package-scanner/package-scanner $(PWD)/bin

@@ -1,6 +1,7 @@
 import cx from 'classnames';
 import { useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
+import { FaPlay } from 'react-icons/fa';
 import { HiDotsVertical } from 'react-icons/hi';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -11,8 +12,6 @@ import {
   DropdownItem,
   getRowSelectionColumn,
   RowSelectionState,
-  Select,
-  SelectItem,
   Table,
 } from 'ui-components';
 
@@ -225,40 +224,47 @@ export const RegistryImageTagsTable = ({
         <div className="text-sm text-gray-400 font-medium py-2.5">No rows selected</div>
       ) : (
         <>
-          <div className="mb-2 w-[160px]">
-            <Select
-              placeholder="Select a scan"
-              value={selectedScanType}
-              sizing="xs"
-              onChange={(value) => {
-                setSelectedScanType(
-                  value as
-                    | typeof ScanTypeEnum.VulnerabilityScan
-                    | typeof ScanTypeEnum.SecretScan
-                    | typeof ScanTypeEnum.MalwareScan,
-                );
-              }}
+          <Dropdown
+            triggerAsChild={true}
+            align="start"
+            content={
+              <>
+                <DropdownItem
+                  onClick={() => setSelectedScanType(ScanTypeEnum.VulnerabilityScan)}
+                >
+                  <div className="w-4 h-4">
+                    <VulnerabilityIcon />
+                  </div>
+                  Start Vulnerability Scan
+                </DropdownItem>
+                <DropdownItem
+                  onClick={() => setSelectedScanType(ScanTypeEnum.SecretScan)}
+                >
+                  <div className="w-4 h-4">
+                    <SecretsIcon />
+                  </div>
+                  Start Secret Scan
+                </DropdownItem>
+                <DropdownItem
+                  onClick={() => setSelectedScanType(ScanTypeEnum.MalwareScan)}
+                >
+                  <div className="w-4 h-4">
+                    <MalwareIcon />
+                  </div>
+                  Start Malware Scan
+                </DropdownItem>
+              </>
+            }
+          >
+            <Button
+              size="xs"
+              color="normal"
+              startIcon={<FaPlay />}
+              className="text-blue-600 dark:text-blue-500"
             >
-              <SelectItem value={ScanTypeEnum.VulnerabilityScan}>
-                <div className="w-4 h-4">
-                  <VulnerabilityIcon />
-                </div>
-                Vulnerability
-              </SelectItem>
-              <SelectItem value={ScanTypeEnum.SecretScan}>
-                <div className="w-4 h-4">
-                  <SecretsIcon />
-                </div>
-                Secret
-              </SelectItem>
-              <SelectItem value={ScanTypeEnum.MalwareScan}>
-                <div className="w-4 h-4">
-                  <MalwareIcon />
-                </div>
-                Malware
-              </SelectItem>
-            </Select>
-          </div>
+              Start scan
+            </Button>
+          </Dropdown>
         </>
       )}
 

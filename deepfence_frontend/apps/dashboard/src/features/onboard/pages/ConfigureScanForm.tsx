@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { generatePath, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Button, Tooltip } from 'ui-components';
 
+import { ComplianceScanConfigureForm } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { MalwareScanConfigureForm } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
-import { ComplianceScanConfigureForm } from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import { SecretScanConfigureForm } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { VulnerabilityScanConfigureForm } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
@@ -58,7 +58,10 @@ const ScanConfigureForm = () => {
     title = 'Secret';
   } else if (scanType === ScanTypeEnum.MalwareScan) {
     title = 'Malware';
-  } else if (scanType === ScanTypeEnum.ComplianceScan) {
+  } else if (
+    scanType === ScanTypeEnum.ComplianceScan ||
+    scanType === ScanTypeEnum.CloudComplianceScan
+  ) {
     title = 'Posture';
   }
 
@@ -149,7 +152,8 @@ const ScanConfigureForm = () => {
           }}
         />
       )}
-      {scanType === ScanTypeEnum.ComplianceScan && (
+      {(scanType === ScanTypeEnum.ComplianceScan ||
+        scanType === ScanTypeEnum.CloudComplianceScan) && (
         <ComplianceScanConfigureForm
           showAdvancedOptions={false}
           data={{
@@ -164,7 +168,7 @@ const ScanConfigureForm = () => {
                   '/onboard/scan/view-summary/running/:nodeType/:scanType/:bulkScanId',
                   {
                     nodeType,
-                    scanType: 'compliance',
+                    scanType: 'compliance', // TODO: change this compliance and cloud compliance
                     bulkScanId,
                   },
                 ),

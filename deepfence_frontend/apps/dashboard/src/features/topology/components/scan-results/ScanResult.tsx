@@ -1,3 +1,4 @@
+import { isNil } from 'lodash-es';
 import { IconContext } from 'react-icons';
 import {
   HiOutlineExclamationCircle,
@@ -6,15 +7,20 @@ import {
 } from 'react-icons/hi';
 import { generatePath } from 'react-router-dom';
 
-import { ModelScanListResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { POSTURE_STATUS_COLORS, SEVERITY_COLORS } from '@/constants/charts';
 import { ScanResultChart } from '@/features/topology/components/scan-results/ScanResultChart';
-import { LoaderData } from '@/features/topology/data-components/node-details/Host';
+import { ScanSummary } from '@/features/topology/types/node-details';
 import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum } from '@/types/common';
 import { sortBySeverity } from '@/utils/array';
 import { formatToRelativeTimeFromNow } from '@/utils/date';
+import {
+  isNeverScanned,
+  isScanComplete,
+  isScanFailed,
+  isScanInProgress,
+} from '@/utils/scan';
 
 const getSeriesOption = (counts: {
   [x: string]: number;
@@ -35,31 +41,6 @@ const getSeriesOption = (counts: {
       };
     }),
     'name',
-  );
-};
-
-const isScanNeverRun = (scanResult: ModelScanListResp | null) => {
-  const scanStatus = scanResult?.scans_info?.[0]?.status;
-  return scanResult?.scans_info?.length === 0 || !scanStatus;
-};
-
-const isScanRunAnError = (scanResult: ModelScanListResp | null) => {
-  const scanStatus = scanResult?.scans_info?.[0]?.status;
-  return !!scanStatus && scanStatus === 'ERROR';
-};
-
-const isScanCompleted = (scanResult: ModelScanListResp | null) => {
-  const scanStatus = scanResult?.scans_info?.[0]?.status;
-  return !!scanStatus && scanStatus === 'COMPLETE';
-};
-
-const isScanInProgress = (scanResult: ModelScanListResp | null) => {
-  const scanStatus = scanResult?.scans_info?.[0]?.status;
-  return (
-    !!scanStatus &&
-    !isScanCompleted(scanResult) &&
-    !isScanRunAnError(scanResult) &&
-    !isScanNeverRun(scanResult)
   );
 };
 
@@ -163,15 +144,17 @@ const ScanStatusNeverScanned = () => {
 };
 
 const ScanResultComponent = ({
-  result,
+  status,
+  scanSummary,
   type,
 }: {
-  result: ModelScanListResp | null;
+  status: string;
+  scanSummary?: ScanSummary | null;
   type: ScanTypeEnum;
 }) => {
   const { mode } = useTheme();
-  const secretCounts = {
-    ...(result?.scans_info?.[0]?.severity_counts ?? {}),
+  const severityCounts = {
+    ...(scanSummary?.counts ?? {}),
   };
   return (
     <div>
@@ -179,23 +162,23 @@ const ScanResultComponent = ({
         <ScanResultHeading
           type={type}
           scanId={
-            !isScanNeverRun(result) && result?.scans_info?.[0]?.scan_id
-              ? result?.scans_info?.[0]?.scan_id
+            !isNeverScanned(status) && scanSummary?.scanId
+              ? scanSummary.scanId
               : undefined
           }
           timestamp={
-            !isScanNeverRun(result) && result?.scans_info?.[0]?.updated_at
-              ? result?.scans_info?.[0]?.updated_at
+            !isNeverScanned(status) && scanSummary?.timestamp
+              ? scanSummary.timestamp
               : undefined
           }
         />
         <div className="h-[150px]">
-          {isScanCompleted(result) && (
-            <ScanResultChart data={getSeriesOption(secretCounts)} theme={mode} />
+          {isScanComplete(status) && (
+            <ScanResultChart data={getSeriesOption(severityCounts)} theme={mode} />
           )}
-          {isScanRunAnError(result) && <ScanStatusError />}
-          {isScanNeverRun(result) && <ScanStatusNeverScanned />}
-          {isScanInProgress(result) && <ScanStatusInProgress />}
+          {isScanFailed(status) && <ScanStatusError />}
+          {isNeverScanned(status) && <ScanStatusNeverScanned />}
+          {isScanInProgress(status) && <ScanStatusInProgress />}
         </div>
       </>
     </div>
@@ -203,25 +186,54 @@ const ScanResultComponent = ({
 };
 
 export const ScanResult = ({
-  scanResults,
+  vulnerabilityScanStatus,
+  secretScanStatus,
+  malwareScanStatus,
+  complianceScanStatus,
+  vulnerabilityScanSummary,
+  secretScanSummary,
+  malwareScanSummary,
+  complianceScanSummary,
 }: {
-  scanResults: LoaderData['scanResults'] | undefined;
+  vulnerabilityScanStatus?: string;
+  secretScanStatus?: string;
+  malwareScanStatus?: string;
+  complianceScanStatus?: string;
+  vulnerabilityScanSummary?: ScanSummary | null;
+  secretScanSummary?: ScanSummary | null;
+  malwareScanSummary?: ScanSummary | null;
+  complianceScanSummary?: ScanSummary | null;
 }) => {
-  if (!scanResults) {
-    return null;
-  }
-  const { vulnerabilityResult, secretResult, malwareResult, complianceResult } =
-    scanResults;
-
   return (
     <div className="flex flex-col space-y-2">
-      <ScanResultComponent
-        result={vulnerabilityResult}
-        type={ScanTypeEnum.VulnerabilityScan}
-      />
-      <ScanResultComponent result={secretResult} type={ScanTypeEnum.SecretScan} />
-      <ScanResultComponent result={malwareResult} type={ScanTypeEnum.MalwareScan} />
-      <ScanResultComponent result={complianceResult} type={ScanTypeEnum.ComplianceScan} />
+      {!isNil(vulnerabilityScanStatus) && (
+        <ScanResultComponent
+          status={vulnerabilityScanStatus}
+          scanSummary={vulnerabilityScanSummary}
+          type={ScanTypeEnum.VulnerabilityScan}
+        />
+      )}
+      {!isNil(secretScanStatus) && (
+        <ScanResultComponent
+          status={secretScanStatus}
+          scanSummary={secretScanSummary}
+          type={ScanTypeEnum.SecretScan}
+        />
+      )}
+      {!isNil(malwareScanStatus) && (
+        <ScanResultComponent
+          status={malwareScanStatus}
+          scanSummary={malwareScanSummary}
+          type={ScanTypeEnum.MalwareScan}
+        />
+      )}
+      {!isNil(complianceScanStatus) && (
+        <ScanResultComponent
+          status={complianceScanStatus}
+          scanSummary={complianceScanSummary}
+          type={ScanTypeEnum.ComplianceScan}
+        />
+      )}
     </div>
   );
 };

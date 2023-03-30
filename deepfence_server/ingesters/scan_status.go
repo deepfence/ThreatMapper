@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"strings"
 )
 
 type AlreadyRunningScanError struct {
@@ -99,7 +100,7 @@ func AddNewScan(tx WriteDBTransaction,
 	}
 
 	if _, err = tx.Run(fmt.Sprintf(`
-		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, trigger_action: $action, updated_at: TIMESTAMP()})
+		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, trigger_action: $action, updated_at: TIMESTAMP(), created_at: TIMESTAMP()})
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCANNED]->(m)`, scan_type, controls.ResourceTypeToNeo4j(node_type)),
 		map[string]interface{}{
@@ -231,7 +232,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		action, _ = json.Marshal(ctl.Action{ID: ctl.StartComplianceScan, RequestPayload: string(internalReq)})
 	}
 	if _, err = tx.Run(fmt.Sprintf(`
-		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, updated_at: TIMESTAMP(), benchmark_types: $benchmark_types, trigger_action: $action})
+		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, updated_at: TIMESTAMP(), benchmark_types: $benchmark_types, trigger_action: $action, created_at:TIMESTAMP()})
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCANNED]->(m)`, scanType, neo4jNodeType),
 		map[string]interface{}{

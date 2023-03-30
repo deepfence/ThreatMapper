@@ -38,8 +38,15 @@ export { ModelScanResultsActionRequestScanTypeEnum as ScanTypeEnum };
 
 export enum ComplianceScanNodeTypeEnum {
   aws = 'aws',
+  aws_org = 'aws_org',
   gcp = 'gcp',
   azure = 'azure',
   host = 'host',
   kubernetes_cluster = 'kubernetes_cluster',
+}
+
+export enum ScanStatusEnum {
+  complete = 'COMPLETE',
+  error = 'ERROR',
+  neverScanned = 'NEVER_SCANNED',
 }

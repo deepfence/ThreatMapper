@@ -56,20 +56,12 @@ COPY supervisord.conf /home/deepfence/supervisord-temp.conf
 COPY run_discovery.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
 COPY plugins/bin /home/deepfence/bin
-
-
+COPY plugins/yara-rules /home/deepfence/bin/yara-hunter/yara-rules
 
 COPY --from=build /usr/local/bin/syft /usr/local/bin/syft
-COPY --from=malware_build  /home/deepfence/usr/YaraHunter /home/deepfence/usr/YaraHunter
-COPY --from=malware_build  /home/deepfence/usr /home/deepfence/usr
-COPY --from=malware_build /home/deepfence/usr/config.yaml /home/deepfence/usr/yara-hunter/config.yaml
-COPY --from=malware_build /usr/local/yara /usr/local/yara
 COPY --from=malware_build /usr/local/yara/lib /usr/local/lib
 
-
-
-RUN mkdir -p /home/deepfence/bin/yara-hunter \
-    && apt-get update --allow-insecure-repositories \
+RUN apt-get update --allow-insecure-repositories \
     && apt-get -qq -y --no-install-recommends install libjansson4 libssl1.1 libmagic1 bash curl python3-pip \
     && rm -rf /usr/local/bin/compliance_check/*.go \
     && chmod 700 /usr/local/bin/getCloudInstanceId \

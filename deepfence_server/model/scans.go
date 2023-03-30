@@ -59,6 +59,7 @@ type ScanInfo struct {
 	ScanId         string           `json:"scan_id" required:"true"`
 	Status         string           `json:"status" required:"true"`
 	UpdatedAt      int64            `json:"updated_at" required:"true" format:"int64"`
+	CreatedAt      int64            `json:"created_at" required:"true" format:"int64"`
 	NodeId         string           `json:"node_id" required:"true"`
 	NodeType       string           `json:"node_type" required:"true"`
 	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
@@ -70,6 +71,7 @@ type ComplianceScanInfo struct {
 	BenchmarkTypes []string         `json:"benchmark_types" required:"true"`
 	Status         string           `json:"status" required:"true"`
 	UpdatedAt      int64            `json:"updated_at" required:"true" format:"int64"`
+	CreatedAt      int64            `json:"created_at" required:"true" format:"int64"`
 	NodeId         string           `json:"node_id" required:"true"`
 	NodeType       string           `json:"node_type" required:"true"`
 	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
@@ -100,9 +102,10 @@ type ComplianceScanStatusResp struct {
 }
 
 type ScanListReq struct {
-	ScanStatus []string         `json:"scan_status"`
-	NodeIds    []NodeIdentifier `json:"node_ids" required:"true"`
-	Window     FetchWindow      `json:"window"  required:"true"`
+	ScanStatus   []string                `json:"scan_status"`
+	NodeIds      []NodeIdentifier        `json:"node_ids" required:"true"`
+	FieldsFilter reporters.FieldsFilters `json:"fields_filter" required:"true"`
+	Window       FetchWindow             `json:"window"  required:"true"`
 }
 
 type ScanListResp struct {
@@ -179,6 +182,7 @@ type ScanResultsCommon struct {
 	NodeType              string `json:"node_type" required:"true"`
 	ScanID                string `json:"scan_id" required:"true"`
 	UpdatedAt             int64  `json:"updated_at" required:"true" format:"int64"`
+	CreatedAt             int64  `json:"created_at" required:"true" format:"int64"`
 }
 
 type FiltersReq struct {

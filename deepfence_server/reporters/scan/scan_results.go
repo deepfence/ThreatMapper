@@ -24,7 +24,7 @@ func getScanStatuses[T reporters.Cypherable](tx neo4j.Transaction, scanType util
 	query := `
 	MATCH (n:` + dummy.NodeType() + `) <-[:SCANNED]- (s:` + string(scanType) + `)
 	WHERE n.node_id IN $ids
-	WITH n, min(s.updated_at) as latest
+	WITH n, max(s.updated_at) as latest
 	MATCH (n) <-[:SCANNED]- (s:` + string(scanType) + `{updated_at: latest})
 	OPTIONAL MATCH (s) -[:DETECTED]-> (v)
 	RETURN n.node_id, s.status, count(v), s.node_id
@@ -103,16 +103,21 @@ func GetScanStatuses[T reporters.Cypherable](ctx context.Context, node_ids []str
 
 	for i := range node_ids {
 		res = append(res, model.RegularScanStatus{
-			VulnerabilitiesCount:      vuln_status[i].Count,
-			VulnerabilityScanStatus:   vuln_status[i].Status,
-			SecretsCount:              secrets_status[i].Count,
-			SecretScanStatus:          secrets_status[i].Status,
-			MalwaresCount:             malware_status[i].Count,
-			MalwareScanStatus:         malware_status[i].Status,
-			CompliancesCount:          compliance_status[i].Count,
-			ComplianceScanStatus:      compliance_status[i].Status,
-			CloudCompliancesCount:     cloud_compliance_status[i].Count,
-			CloudComplianceScanStatus: cloud_compliance_status[i].Status,
+			VulnerabilitiesCount:        vuln_status[i].Count,
+			VulnerabilityScanStatus:     vuln_status[i].Status,
+			VulnerabilityLatestScanId:   vuln_status[i].Id,
+			SecretsCount:                secrets_status[i].Count,
+			SecretScanStatus:            secrets_status[i].Status,
+			SecretLatestScanId:          secrets_status[i].Id,
+			MalwaresCount:               malware_status[i].Count,
+			MalwareScanStatus:           malware_status[i].Status,
+			MalwareLatestScanId:         malware_status[i].Id,
+			CompliancesCount:            compliance_status[i].Count,
+			ComplianceScanStatus:        compliance_status[i].Status,
+			ComplianceLatestScanId:      compliance_status[i].Id,
+			CloudCompliancesCount:       cloud_compliance_status[i].Count,
+			CloudComplianceScanStatus:   cloud_compliance_status[i].Status,
+			CloudComplianceLatestScanId: cloud_compliance_status[i].Id,
 		})
 	}
 

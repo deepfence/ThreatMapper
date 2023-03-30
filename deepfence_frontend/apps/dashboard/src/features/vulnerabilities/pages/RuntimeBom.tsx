@@ -49,6 +49,10 @@ async function getScans(searchParams: URLSearchParams): Promise<{
         },
       },
       in_field_filter: null,
+      window: {
+        offset: 0,
+        size: 0,
+      },
     },
     scan_filters: {
       filters: {
@@ -70,6 +74,10 @@ async function getScans(searchParams: URLSearchParams): Promise<{
         },
       },
       in_field_filter: null,
+      window: {
+        offset: 0,
+        size: 0,
+      },
     },
     window: {
       offset: page * PAGE_SIZE,

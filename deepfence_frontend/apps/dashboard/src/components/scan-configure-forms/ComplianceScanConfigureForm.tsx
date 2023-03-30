@@ -24,6 +24,7 @@ export const complianceType: {
   [key in ComplianceScanNodeTypeEnum]: string[];
 } = {
   aws: ['CIS', 'NIST', 'PCI', 'HIPAA', 'SOC2', 'GDPR'],
+  aws_org: ['CIS', 'NIST', 'PCI', 'HIPAA', 'SOC2', 'GDPR'],
   gcp: ['CIS'],
   azure: ['CIS', 'NIST', 'HIPAA'],
   host: ['HIPAA', 'GDPR', 'PCI', 'NIST'],
@@ -189,6 +190,18 @@ export const ControlsTable = memo(
 
     const columnHelper = createColumnHelper<ModelCloudNodeComplianceControl>();
 
+    // TODO: remove this once we have correct type from api
+    const _nodeType = useMemo(() => {
+      switch (nodeType) {
+        case ComplianceScanNodeTypeEnum.host:
+          return 'linux';
+        case ComplianceScanNodeTypeEnum.kubernetes_cluster:
+          return 'kubernetes';
+        default:
+          return nodeType;
+      }
+    }, [nodeType]);
+
     const columns = useMemo(
       () => [
         columnHelper.accessor('category_hierarchy', {
@@ -213,7 +226,7 @@ export const ControlsTable = memo(
             return (
               <ToggleControl
                 nodeId={nodeIds[0]}
-                nodeType={nodeType}
+                nodeType={_nodeType}
                 loading={isLoading}
                 checkType={selectedTab.toLowerCase()}
                 checked={!!info.row.original.enabled}
@@ -237,7 +250,7 @@ export const ControlsTable = memo(
 
     useEffect(() => {
       if (selectedTab) {
-        fetchControls(selectedTab.toLowerCase(), nodeType);
+        fetchControls(selectedTab.toLowerCase(), _nodeType);
       }
     }, [selectedTab]);
 
@@ -254,7 +267,12 @@ export const ControlsTable = memo(
                 onValueChange={(v) => setSelectedTab(v)}
               >
                 {isLoading && controlsList.length === 0 ? (
-                  <TableSkeleton columns={3} rows={10} size={'md'} />
+                  <TableSkeleton
+                    columns={3}
+                    rows={10}
+                    size={'md'}
+                    className={'w-screen'}
+                  />
                 ) : (
                   <Table
                     size="sm"
@@ -303,13 +321,13 @@ export const ComplianceScanConfigureForm = ({
 
   useEffect(() => {
     let data = undefined;
-    if (fetcherData?.success) {
+    if (fetcherData?.success && state === 'idle') {
       if (fetcher.data) {
         data = fetcher.data.data;
       }
       onSuccess(data);
     }
-  }, [fetcherData]);
+  }, [fetcherData, state]);
 
   const onCheckTypeSelection = (name: string) => {
     setTabs((prevTabs) => {
@@ -333,7 +351,7 @@ export const ComplianceScanConfigureForm = ({
   return (
     <>
       <fetcher.Form
-        className="mt-6 flex gap-4 mb-6"
+        className="flex gap-4 mb-6"
         method="post"
         action="/data-component/scan/posture"
       >
@@ -366,9 +384,9 @@ export const ComplianceScanConfigureForm = ({
         <input type="text" name="_nodeType" readOnly hidden value={nodeType} />
 
         <Button
-          disabled={state === 'loading'}
-          loading={state === 'loading'}
-          size="sm"
+          disabled={state !== 'idle'}
+          loading={state !== 'idle'}
+          size="xs"
           color="primary"
           type="submit"
           className="ml-auto "

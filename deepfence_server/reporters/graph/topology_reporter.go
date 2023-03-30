@@ -594,6 +594,10 @@ type ThreatFilters struct {
 	CloudResourceOnly bool                `json:"cloud_resource_only" required:"true"`
 }
 
+const (
+	root_node_id = ""
+)
+
 func (nc *neo4jTopologyReporter) getContainerGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
 	res := RenderedGraph{}
 
@@ -609,9 +613,14 @@ func (nc *neo4jTopologyReporter) getContainerGraph(ctx context.Context, filters 
 	}
 	defer tx.Close()
 
-	res.Containers, err = nc.getContainers(tx, nil, nil, mo.Some(filters.FieldFilter))
+	tmp, err := nc.getContainers(tx, nil, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
+	}
+	// Regroup all hosts into one root host
+	res.Containers = map[NodeID][]NodeStub{}
+	for _, containers := range tmp {
+		res.Containers[root_node_id] = append(res.Containers[root_node_id], containers...)
 	}
 
 	return res, nil
@@ -638,9 +647,14 @@ func (nc *neo4jTopologyReporter) getPodGraph(ctx context.Context, filters Topolo
 	if err != nil {
 		return res, err
 	}
-	res.Pods, err = nc.getPods(tx, nil, mo.Some(filters.FieldFilter))
+	tmp, err := nc.getPods(tx, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
+	}
+	// Regroup all hosts into one root host
+	res.Pods = map[NodeID][]NodeStub{}
+	for _, pods := range tmp {
+		res.Pods[root_node_id] = append(res.Pods[root_node_id], pods...)
 	}
 	res.Containers, err = nc.getContainers(tx, []string{}, pod_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
@@ -673,9 +687,14 @@ func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters
 	if err != nil {
 		return res, err
 	}
-	res.Kubernetes, err = nc.getCloudKubernetes(tx, nil, mo.Some(filters.FieldFilter))
+	tmp, err := nc.getCloudKubernetes(tx, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
+	}
+	// Regroup all providers into one root provider
+	res.Kubernetes = map[NodeID][]NodeStub{}
+	for _, kubs := range tmp {
+		res.Kubernetes[root_node_id] = append(res.Kubernetes[root_node_id], kubs...)
 	}
 	res.Hosts, err = nc.getHosts(tx, []string{}, []string{}, kubernetes_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
@@ -715,9 +734,14 @@ func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters Topol
 	if err != nil {
 		return res, err
 	}
-	res.Hosts, err = nc.getHosts(tx, nil, nil, nil, mo.Some(filters.FieldFilter))
+	tmp, err := nc.getHosts(tx, nil, nil, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
+	}
+	// Regroup all regions into one root region
+	res.Hosts = map[NodeID][]NodeStub{}
+	for _, hosts := range tmp {
+		res.Hosts[root_node_id] = append(res.Hosts[root_node_id], hosts...)
 	}
 	res.Processes, err = nc.getProcesses(tx, host_filter)
 	if err != nil {

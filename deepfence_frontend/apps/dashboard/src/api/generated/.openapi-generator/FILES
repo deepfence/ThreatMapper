@@ -85,6 +85,8 @@ models/ModelContainer.ts
 models/ModelContainerImage.ts
 models/ModelDownloadReportResponse.ts
 models/ModelFetchWindow.ts
+models/ModelFiltersReq.ts
+models/ModelFiltersResult.ts
 models/ModelHost.ts
 models/ModelImageStub.ts
 models/ModelInitAgentReq.ts

@@ -42,6 +42,13 @@ const complianceScanData = {
   buttonText: 'Configure Compliance Scan',
 };
 
+const cloudComplianceScanData = {
+  scanTitle: 'Compliance Scan',
+  scanType: ScanTypeEnum.CloudComplianceScan,
+  description: `A few words about the compliance scan and why you need to use it.`,
+  buttonText: 'Configure Compliance Scan',
+};
+
 const vulnerabilityScanData = {
   scanTitle: 'Vulnerability Scan',
   scanType: ScanTypeEnum.VulnerabilityScan,
@@ -64,9 +71,9 @@ const malwareScanData = {
 type PossibleScanMapType = Record<string, ScanTypeListProps[]>;
 
 const possibleScanMap: PossibleScanMapType = {
-  aws: [complianceScanData],
-  gcp: [complianceScanData],
-  azure: [complianceScanData],
+  aws: [cloudComplianceScanData],
+  gcp: [cloudComplianceScanData],
+  azure: [cloudComplianceScanData],
   host: [vulnerabilityScanData, complianceScanData, secretScanData, malwareScanData],
   kubernetes_cluster: [
     vulnerabilityScanData,

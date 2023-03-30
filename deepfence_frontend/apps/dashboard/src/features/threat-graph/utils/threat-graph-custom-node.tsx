@@ -1,6 +1,8 @@
 import { IGroup, NodeConfig, registerNode } from '@antv/g6';
 import { truncate } from 'lodash-es';
 
+import { GraphNodeInfo } from '@/api/generated';
+
 export type ThreatGraphNodeModelConfig = NodeConfig & {
   id: string;
   label: string;
@@ -11,6 +13,7 @@ export type ThreatGraphNodeModelConfig = NodeConfig & {
   vulnerabilityCount: number;
   img: string;
   nonInteractive: boolean;
+  nodes?: { [key: string]: GraphNodeInfo } | null;
 };
 
 registerNode(

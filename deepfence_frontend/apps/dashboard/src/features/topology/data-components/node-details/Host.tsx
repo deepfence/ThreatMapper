@@ -9,7 +9,7 @@ import {
   getSecretApiClient,
   getVulnerabilityApiClient,
 } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelHost, ModelScanListResp } from '@/api/generated';
+import { ModelHost } from '@/api/generated';
 import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
 import { Header } from '@/features/topology/components/node-details/Header';
 import { Metadata } from '@/features/topology/components/node-details/Metadata';
@@ -19,161 +19,174 @@ import {
   ProcessTable,
 } from '@/features/topology/components/node-details/SummaryTables';
 import { ScanResult } from '@/features/topology/components/scan-results/ScanResult';
+import { ScanSummary } from '@/features/topology/types/node-details';
 import { ApiError, makeRequest } from '@/utils/api';
 
 export type LoaderData = {
   hostData: ModelHost;
-  scanResults: {
-    vulnerabilityResult: ModelScanListResp | null;
-    secretResult: ModelScanListResp | null;
-    malwareResult: ModelScanListResp | null;
-    complianceResult: ModelScanListResp | null;
+  vulnerabilityScanCounts: Awaited<ReturnType<typeof getVulnerabilityScanCounts>>;
+  secretScanCounts: Awaited<ReturnType<typeof getSecretScanCounts>>;
+  malwareScanCounts: Awaited<ReturnType<typeof getMalwareScanCounts>>;
+  complianceScanCounts: Awaited<ReturnType<typeof getComplianceScanCounts>>;
+};
+
+const getVulnerabilityScanCounts = async (
+  vulnerabilityScanId?: string,
+): Promise<ScanSummary | null> => {
+  if (!vulnerabilityScanId || !vulnerabilityScanId.length) {
+    return null;
+  }
+  const vulnerabilityScanResults = await makeRequest({
+    apiFunction: getVulnerabilityApiClient().resultVulnerabilityScan,
+    apiArgs: [
+      {
+        modelScanResultsReq: {
+          scan_id: vulnerabilityScanId,
+          window: {
+            offset: 0,
+            size: 1,
+          },
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: {
+              filter_in: {},
+            },
+            order_filter: { order_fields: [] },
+          },
+        },
+      },
+    ],
+  });
+  if (ApiError.isApiError(vulnerabilityScanResults)) {
+    console.error(vulnerabilityScanResults);
+    throw new Error("Couldn't get vulnerability scan results");
+  }
+  return {
+    scanId: vulnerabilityScanId,
+    timestamp: vulnerabilityScanResults.created_at,
+    counts: vulnerabilityScanResults.severity_counts ?? {},
   };
 };
 
-const getScanResults = async (nodeId: string) => {
-  const vulnerabilityResultPromise = await makeRequest({
-    apiFunction: getVulnerabilityApiClient().listVulnerabilityScans,
-    apiArgs: [
-      {
-        modelScanListReq: {
-          node_ids: [
-            {
-              node_id: nodeId,
-              node_type: 'host',
-            },
-          ],
-          window: {
-            offset: 0,
-            size: 1,
-          },
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400 || r.status === 404) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
-  });
-  const secretResultPromise = await makeRequest({
-    apiFunction: getSecretApiClient().listSecretScans,
-    apiArgs: [
-      {
-        modelScanListReq: {
-          node_ids: [
-            {
-              node_id: nodeId,
-              node_type: 'host',
-            },
-          ],
-          window: {
-            offset: 0,
-            size: 1,
-          },
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400 || r.status === 404) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
-  });
-  const malwareResultPromise = await makeRequest({
-    apiFunction: getMalwareApiClient().listMalwareScans,
-    apiArgs: [
-      {
-        modelScanListReq: {
-          node_ids: [
-            {
-              node_id: nodeId,
-              node_type: 'host',
-            },
-          ],
-          window: {
-            offset: 0,
-            size: 1,
-          },
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400 || r.status === 404) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
-  });
-
-  const complianceResultPromise = await makeRequest({
-    apiFunction: getComplianceApiClient().listComplianceScan,
-    apiArgs: [
-      {
-        modelScanListReq: {
-          node_ids: [
-            {
-              node_id: nodeId,
-              node_type: 'host',
-            },
-          ],
-          window: {
-            offset: 0,
-            size: 1,
-          },
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400 || r.status === 404) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
-  });
-
-  const [vulnerabilityResult, secretResult, malwareResult, complianceResult] =
-    await Promise.all([
-      vulnerabilityResultPromise,
-      secretResultPromise,
-      malwareResultPromise,
-      complianceResultPromise,
-    ]);
-
-  if (
-    ApiError.isApiError(vulnerabilityResult) ||
-    ApiError.isApiError(secretResult) ||
-    ApiError.isApiError(malwareResult) ||
-    ApiError.isApiError(complianceResult)
-  ) {
-    // TODO: handle error cases
-    return {
-      vulnerabilityResult: null,
-      secretResult: null,
-      malwareResult: null,
-      complianceResult: null,
-    };
+const getSecretScanCounts = async (
+  secretScanId?: string,
+): Promise<ScanSummary | null> => {
+  if (!secretScanId || !secretScanId.length) {
+    return null;
   }
-
+  const secretScanResults = await makeRequest({
+    apiFunction: getSecretApiClient().resultSecretScan,
+    apiArgs: [
+      {
+        modelScanResultsReq: {
+          scan_id: secretScanId,
+          window: {
+            offset: 0,
+            size: 1,
+          },
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: {
+              filter_in: {},
+            },
+            order_filter: { order_fields: [] },
+          },
+        },
+      },
+    ],
+  });
+  if (ApiError.isApiError(secretScanResults)) {
+    console.error(secretScanResults);
+    throw new Error("Couldn't get secret scan results");
+  }
   return {
-    vulnerabilityResult,
-    secretResult,
-    malwareResult,
-    complianceResult,
+    scanId: secretScanId,
+    timestamp: secretScanResults.created_at,
+    counts: secretScanResults.severity_counts ?? {},
+  };
+};
+
+const getMalwareScanCounts = async (
+  malwareScanId?: string,
+): Promise<ScanSummary | null> => {
+  if (!malwareScanId || !malwareScanId.length) {
+    return null;
+  }
+  const malwareScanResults = await makeRequest({
+    apiFunction: getMalwareApiClient().resultMalwareScan,
+    apiArgs: [
+      {
+        modelScanResultsReq: {
+          scan_id: malwareScanId,
+          window: {
+            offset: 0,
+            size: 1,
+          },
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: {
+              filter_in: {},
+            },
+            order_filter: { order_fields: [] },
+          },
+        },
+      },
+    ],
+  });
+  if (ApiError.isApiError(malwareScanResults)) {
+    console.error(malwareScanResults);
+    throw new Error("Couldn't get malware scan results");
+  }
+  return {
+    scanId: malwareScanId,
+    timestamp: malwareScanResults.created_at,
+    counts: malwareScanResults.severity_counts ?? {},
+  };
+};
+
+const getComplianceScanCounts = async (
+  complianceScanId?: string,
+): Promise<ScanSummary | null> => {
+  if (!complianceScanId || !complianceScanId.length) {
+    return null;
+  }
+  const complianceScanResults = await makeRequest({
+    apiFunction: getComplianceApiClient().resultComplianceScan,
+    apiArgs: [
+      {
+        modelScanResultsReq: {
+          scan_id: complianceScanId,
+          window: {
+            offset: 0,
+            size: 1,
+          },
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: {
+              filter_in: {},
+            },
+            order_filter: { order_fields: [] },
+          },
+        },
+      },
+    ],
+  });
+  if (ApiError.isApiError(complianceScanResults)) {
+    console.error(complianceScanResults);
+    throw new Error("Couldn't get posture scan results");
+  }
+  return {
+    scanId: complianceScanId,
+    timestamp: complianceScanResults.created_at,
+    counts: complianceScanResults.status_counts ?? {},
   };
 };
 
@@ -199,15 +212,20 @@ const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
       },
     ],
   });
-  if (ApiError.isApiError(lookupResult)) {
+  if (ApiError.isApiError(lookupResult) || !lookupResult.length) {
     throw new Error(`Failed to load host: ${nodeId}`);
   }
 
-  const scanResults = await getScanResults(nodeId);
-
   return {
     hostData: lookupResult[0],
-    scanResults,
+    vulnerabilityScanCounts: await getVulnerabilityScanCounts(
+      lookupResult[0].vulnerability_latest_scan_id,
+    ),
+    secretScanCounts: await getSecretScanCounts(lookupResult[0].secret_latest_scan),
+    malwareScanCounts: await getMalwareScanCounts(lookupResult[0].malware_latest_scan_id),
+    complianceScanCounts: await getComplianceScanCounts(
+      lookupResult[0].compliance_latest_scan_id,
+    ),
   };
 };
 
@@ -315,7 +333,18 @@ export const Host = ({
               </>
             )}
             {tab === 'scan-results' && (
-              <ScanResult scanResults={fetcher.data?.scanResults} />
+              <ScanResult
+                vulnerabilityScanStatus={
+                  fetcher.data?.hostData?.vulnerability_scan_status
+                }
+                secretScanStatus={fetcher.data?.hostData?.secret_scan_status}
+                malwareScanStatus={fetcher.data?.hostData?.malware_scan_status}
+                complianceScanStatus={fetcher.data?.hostData?.compliance_scan_status}
+                vulnerabilityScanSummary={fetcher.data?.vulnerabilityScanCounts}
+                secretScanSummary={fetcher.data?.secretScanCounts}
+                malwareScanSummary={fetcher.data?.malwareScanCounts}
+                complianceScanSummary={fetcher.data?.complianceScanCounts}
+              />
             )}
           </div>
         </Tabs>
