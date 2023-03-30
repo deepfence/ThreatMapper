@@ -1,10 +1,11 @@
+//go:build linux
 // +build linux
 
 package endpoint
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sync"
 	"time"
@@ -67,7 +68,7 @@ func newConntrackFlowWalker(useConntrack bool, procRoot string, bufferSize int, 
 var IsConntrackSupported = func(procRoot string) error {
 	// Make sure events are enabled, the conntrack CLI doesn't verify it
 	f := filepath.Join(procRoot, eventsPath)
-	contents, err := ioutil.ReadFile(f)
+	contents, err := os.ReadFile(f)
 	if err != nil {
 		return err
 	}

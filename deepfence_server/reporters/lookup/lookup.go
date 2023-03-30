@@ -2,6 +2,7 @@ package reporters_lookup
 
 import (
 	"context"
+	"errors"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -31,6 +32,10 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 	statuses, err := reporters_scan.GetScanStatuses[model.Host](ctx, filter.NodeIds)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(hosts) != len(statuses) {
+		return nil, errors.New("hosts and statuses mismatch")
 	}
 
 	for i := range hosts {
@@ -88,6 +93,10 @@ func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Cont
 		return nil, err
 	}
 
+	if len(containers) != len(statuses) {
+		return nil, errors.New("containers and statuses mismatch")
+	}
+
 	for i := range containers {
 		containers[i].RegularScanStatus = statuses[i]
 	}
@@ -121,6 +130,11 @@ func GetContainerImagesReport(ctx context.Context, filter LookupFilter) ([]model
 	if err != nil {
 		return nil, err
 	}
+
+	if len(images) != len(statuses) {
+		return nil, errors.New("images and statuses mismatch")
+	}
+
 	for i := range images {
 		images[i].RegularScanStatus = statuses[i]
 	}
@@ -143,6 +157,9 @@ func GetCloudResourcesReport(ctx context.Context, filter LookupFilter) ([]model.
 	statuses, err := reporters_scan.GetScanStatuses[model.CloudResource](ctx, filter.NodeIds)
 	if err != nil {
 		return nil, err
+	}
+	if len(entries) != len(statuses) {
+		return nil, errors.New("cloud resources and statuses mismatch")
 	}
 	for i := range entries {
 		entries[i].RegularScanStatus = statuses[i]

@@ -21,7 +21,7 @@ replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/ag
 require (
 	github.com/ThreeDotsLabs/watermill v1.2.0
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.2
-	github.com/bytedance/sonic v1.8.5
+	github.com/bytedance/sonic v1.8.6
 	github.com/casbin/casbin/v2 v2.65.2
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230310063137-b653517c5502
@@ -31,6 +31,7 @@ require (
 	github.com/go-playground/pkg/v5 v5.15.2
 	github.com/go-playground/validator/v10 v10.12.0
 	github.com/google/uuid v1.3.0
+	github.com/k-sone/critbitgo v1.4.0
 	github.com/lestrrat-go/jwx/v2 v2.0.9
 	github.com/minio/minio-go/v7 v7.0.49
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.7

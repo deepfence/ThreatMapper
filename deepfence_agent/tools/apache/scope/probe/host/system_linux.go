@@ -3,7 +3,6 @@ package host
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -11,8 +10,6 @@ import (
 	"time"
 
 	linuxproc "github.com/c9s/goprocinfo/linux"
-
-	"github.com/weaveworks/scope/report"
 
 	"golang.org/x/sys/unix"
 )
@@ -59,27 +56,27 @@ var GetKernelReleaseAndVersion = func() (string, string, error) {
 }
 
 // GetLoad returns the current load averages as metrics.
-var GetLoad = func(now time.Time) report.Metrics {
-	buf, err := ioutil.ReadFile("/proc/loadavg")
-	if err != nil {
-		return nil
-	}
-	toks := strings.Fields(string(buf))
-	if len(toks) < 3 {
-		return nil
-	}
-	one, err := strconv.ParseFloat(toks[0], 64)
-	if err != nil {
-		return nil
-	}
-	return report.Metrics{
-		Load1: report.MakeSingletonMetric(now, one),
-	}
-}
+//var GetLoad = func(now time.Time) report.Metrics {
+//	buf, err := os.ReadFile("/proc/loadavg")
+//	if err != nil {
+//		return nil
+//	}
+//	toks := strings.Fields(string(buf))
+//	if len(toks) < 3 {
+//		return nil
+//	}
+//	one, err := strconv.ParseFloat(toks[0], 64)
+//	if err != nil {
+//		return nil
+//	}
+//	return report.Metrics{
+//		Load1: report.MakeSingletonMetric(now, one),
+//	}
+//}
 
 // GetUptime returns the uptime of the host.
 var GetUptime = func() (time.Duration, error) {
-	buf, err := ioutil.ReadFile("/proc/uptime")
+	buf, err := os.ReadFile("/proc/uptime")
 	if err != nil {
 		return 0, err
 	}
@@ -126,12 +123,12 @@ var GetCPUUsagePercent = func() (float64, float64) {
 }
 
 // GetMemoryUsageBytes returns the bytes memory usage and max
-var GetMemoryUsageBytes = func() (float64, float64) {
+var GetMemoryUsageBytes = func() (int64, int64) {
 	meminfo, err := linuxproc.ReadMemInfo(ProcMemInfo)
 	if err != nil {
-		return 0.0, 0.0
+		return 0, 0
 	}
 
 	used := meminfo.MemTotal - meminfo.MemFree - meminfo.Buffers - meminfo.Cached
-	return float64(used * kb), float64(meminfo.MemTotal * kb)
+	return int64(used * kb), int64(meminfo.MemTotal * kb)
 }

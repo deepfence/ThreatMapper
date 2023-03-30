@@ -1,20 +1,12 @@
 package kubernetes
 
 import (
+	"encoding/json"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/weaveworks/scope/report"
-)
-
-// These constants are keys used in node metadata
-const (
-	Name            = report.KubernetesName
-	Namespace       = report.KubernetesNamespace
-	Created         = report.KubernetesCreated
-	LabelPrefix     = "kubernetes_labels_"
-	VolumeClaimName = report.KubernetesVolumeClaim
 )
 
 // Meta represents a metadata information about a Kubernetes object
@@ -24,7 +16,7 @@ type Meta interface {
 	Namespace() string
 	Created() string
 	Labels() map[string]string
-	MetaNode(id string) report.Node
+	MetaNode(id string, nodeType string) report.Metadata
 }
 
 type meta struct {
@@ -52,12 +44,20 @@ func (m meta) Labels() map[string]string {
 }
 
 // MetaNode gets the node metadata
-func (m meta) MetaNode(id string) report.Node {
-	return report.MakeNodeWith(id, map[string]string{
-		Name:      m.Name(),
-		Namespace: m.Namespace(),
-		Created:   m.Created(),
-	}).AddPrefixPropertyList(LabelPrefix, m.Labels())
+func (m meta) MetaNode(id string, nodeType string) report.Metadata {
+	var labels string
+	labelsJson, err := json.Marshal(m.Labels())
+	if err == nil {
+		labels = string(labelsJson)
+	}
+	return report.Metadata{
+		NodeID:              id,
+		NodeName:            m.Name(),
+		NodeType:            nodeType,
+		KubernetesLabels:    labels,
+		KubernetesCreated:   m.Created(),
+		KubernetesNamespace: m.Namespace(),
+	}
 }
 
 type namespaceMeta struct {
@@ -86,9 +86,18 @@ func (m namespaceMeta) Labels() map[string]string {
 
 // MetaNode gets the node metadata
 // For namespaces, ObjectMeta.Namespace is not set
-func (m namespaceMeta) MetaNode(id string) report.Node {
-	return report.MakeNodeWith(id, map[string]string{
-		Name:    m.Name(),
-		Created: m.Created(),
-	}).AddPrefixPropertyList(LabelPrefix, m.Labels())
+func (m namespaceMeta) MetaNode(id string, nodeType string) report.Metadata {
+	var labels string
+	labelsJson, err := json.Marshal(m.Labels())
+	if err == nil {
+		labels = string(labelsJson)
+	}
+	return report.Metadata{
+		Timestamp:         time.Now().UTC().Format(time.RFC3339Nano),
+		NodeID:            id,
+		NodeType:          nodeType,
+		NodeName:          m.Name() + " / " + kubernetesClusterName,
+		KubernetesLabels:  labels,
+		KubernetesCreated: m.Created(),
+	}
 }

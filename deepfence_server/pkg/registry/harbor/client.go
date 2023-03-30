@@ -140,11 +140,10 @@ func getImageWithTags(repo Repository, artifacts []Artifact) []model.ContainerIm
 		}
 		for _, tag := range artifact.Tags {
 			tt := model.ContainerImage{
-				ID:      model.DigestToID(artifact.Digest),
-				Name:    repo.Name,
-				Tag:     tag.Name,
-				Size:    fmt.Sprint(artifact.Size),
-				Metrics: model.ComputeMetrics{},
+				ID:   model.DigestToID(artifact.Digest),
+				Name: repo.Name,
+				Tag:  tag.Name,
+				Size: fmt.Sprint(artifact.Size),
 				Metadata: model.Metadata{
 					"last_pushed":   tag.PushTime,
 					"digest":        artifact.Digest,
