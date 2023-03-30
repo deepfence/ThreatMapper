@@ -1,9 +1,16 @@
 package cronjobs
 
 import (
+	"encoding/json"
 	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"time"
 )
 
 func SendNotifications(msg *message.Message) error {
@@ -19,8 +26,38 @@ func SendNotifications(msg *message.Message) error {
 		return err
 	}
 
-	for _, row := range integrations {
-		log.Error().Msgf("Processing for integration : +%v", row, err)
+	for _, integrationRow := range integrations {
+		log.Info().Msgf("Processing for integration : +%v", integrationRow, err)
+		last30sTimeStamp := time.Now().Unix() - 30
+		ff := reporters.FieldsFilters{CompareFilters: []reporters.CompareFilter{{FieldName: "updated_at", GreaterThan: true, FieldValue: last30sTimeStamp}}}
+		list, err := reporters_scan.GetScansList(postgresCtx, utils.DetectedNodeScanType[integrationRow.Resource], []model.NodeIdentifier{}, ff, model.FetchWindow{}, []string{"COMPLETE"})
+		if err != nil {
+			return err
+		}
+		for _, scan := range list.ScansInfo {
+			results, _, err := reporters_scan.GetScanResults(postgresCtx, utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId, reporters.FieldsFilters{}, model.FetchWindow{})
+			iByte, err := json.Marshal(integrationRow)
+			if err != nil {
+				log.Error().Msgf("Error Processing for integration json marshall integrationRow: +%v", integrationRow, err)
+				return err
+			}
+			integrationModel, err := integration.GetIntegration(integrationRow.IntegrationType, iByte)
+			if err != nil {
+				log.Error().Msgf("Error Processing for integration GetIntegration: +%v", integrationRow, err)
+				return err
+			}
+			messageByte, err := json.Marshal(results)
+			if err != nil {
+				log.Error().Msgf("Error Processing for integration json marshall results: +%v", integrationRow, err)
+				return err
+			}
+			err = integrationModel.SendNotification(string(messageByte))
+			if err != nil {
+				log.Error().Msgf("Error Sending Notification: +%v", integrationRow, err)
+				return err
+			}
+			log.Info().Msgf("Sent %d messages in notification", len(results))
+		}
 	}
 	return nil
 }

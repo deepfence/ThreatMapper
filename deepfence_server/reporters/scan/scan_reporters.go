@@ -417,39 +417,59 @@ func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_ids [
 		statusQuery = "WHERE m.status IN $scan_status"
 	}
 
-	scans_info := []model.ScanInfo{}
+	var scansInfo []model.ScanInfo
 	for i := range node_ids {
 		query := `
 			MATCH (m:` + string(scan_type) + `) -[:SCANNED]-> (n:` + nodeType2Neo4jType(node_ids[i].NodeType) + `{node_id: $node_id})
 			` + statusQuery + reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(ff), len(scanStatus) == 0) + `
 			RETURN m.node_id, m.status, m.updated_at, n.node_id, n.node_name, labels(n) as node_type
 			ORDER BY m.updated_at ` + fw.FetchWindow2CypherQuery()
-		fmt.Printf("list query %v\n", query)
-		res, err := tx.Run(query,
-			map[string]interface{}{"node_id": node_ids[i].NodeId, "scan_status": scanStatus})
+		temp, err := processScansListQuery(query, node_ids[i].NodeId, scanStatus, tx)
 		if err != nil {
 			return model.ScanListResp{}, err
 		}
-
-		recs, err := res.Collect()
+		scansInfo = append(scansInfo, temp...)
+	}
+	if len(node_ids) == 0 {
+		query := `
+			MATCH (m:` + string(scan_type) + `) -[:SCANNED]-> (n)
+			` + statusQuery + reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(ff), len(scanStatus) == 0) + `
+			RETURN m.node_id, m.status, m.updated_at, n.node_id, n.node_name, labels(n) as node_type
+			ORDER BY m.updated_at ` + fw.FetchWindow2CypherQuery()
+		temp, err := processScansListQuery(query, "", scanStatus, tx)
 		if err != nil {
-			return model.ScanListResp{}, reporters.NotFoundErr
+			return model.ScanListResp{}, err
 		}
-
-		for _, rec := range recs {
-			tmp := model.ScanInfo{
-				ScanId:    rec.Values[0].(string),
-				Status:    rec.Values[1].(string),
-				UpdatedAt: rec.Values[2].(int64),
-				NodeId:    rec.Values[3].(string),
-				NodeName:  rec.Values[4].(string),
-				NodeType:  Labels2NodeType(rec.Values[5].([]interface{})),
-			}
-			scans_info = append(scans_info, tmp)
-		}
+		scansInfo = append(scansInfo, temp...)
+	}
+	return model.ScanListResp{ScansInfo: scansInfo}, nil
+}
+func processScansListQuery(query string, nodeId string, scanStatus []string, tx neo4j.Transaction) ([]model.ScanInfo, error) {
+	fmt.Printf("list query %v\n", query)
+	var scansInfo []model.ScanInfo
+	res, err := tx.Run(query,
+		map[string]interface{}{"node_id": nodeId, "scan_status": scanStatus})
+	if err != nil {
+		return scansInfo, err
 	}
 
-	return model.ScanListResp{ScansInfo: scans_info}, nil
+	recs, err := res.Collect()
+	if err != nil {
+		return scansInfo, reporters.NotFoundErr
+	}
+
+	for _, rec := range recs {
+		tmp := model.ScanInfo{
+			ScanId:    rec.Values[0].(string),
+			Status:    rec.Values[1].(string),
+			UpdatedAt: rec.Values[2].(int64),
+			NodeId:    rec.Values[3].(string),
+			NodeName:  rec.Values[4].(string),
+			NodeType:  Labels2NodeType(rec.Values[5].([]interface{})),
+		}
+		scansInfo = append(scansInfo, tmp)
+	}
+	return scansInfo, nil
 }
 
 func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4jScanType, nodeId string) (model.CloudComplianceScanListResp, error) {
