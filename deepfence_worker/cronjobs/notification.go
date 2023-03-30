@@ -26,6 +26,7 @@ func SendNotifications(msg *message.Message) error {
 
 	integrations, err := pgClient.GetIntegrations(postgresCtx)
 	if err != nil {
+		log.Error().Msgf("Error in getting postgresCtx", err)
 		return err
 	}
 
