@@ -15,9 +15,7 @@ import (
 )
 
 func SendNotifications(msg *message.Message) error {
-
-	postgresCtx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
-	//postgresCtx := directory.NewGlobalContext()
+	postgresCtx := directory.NewGlobalContext()
 	pgClient, err := directory.PostgresClient(postgresCtx)
 	if err != nil {
 		return err
