@@ -2,6 +2,7 @@ package reports
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -56,6 +57,10 @@ func levelFilter(key string, value []string) reporters.FieldsFilters {
 	return reporters.FieldsFilters{}
 }
 
+func timeNow() string {
+	return time.Now().Format(time.RFC822)
+}
+
 func getVulnerabilityData(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*Info, error) {
 	scans, err := rptSearch.SearchScansReport(ctx, nodeTypeFilter(params.Filters.NodeType), utils.NEO4J_VULNERABILITY_SCAN)
 	if err != nil {
@@ -78,14 +83,17 @@ func getVulnerabilityData(ctx context.Context, session neo4j.Session, params uti
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
 			continue
 		}
+		sort.Slice(result[:], func(i, j int) bool {
+			return result[i].Cve_severity < result[j].Cve_severity
+		})
 		nodeWiseData.SeverityCount[s.NodeId] = s.SeverityCounts
 		nodeWiseData.VulnerabilityData[s.NodeId] = result
 	}
 
 	data := Info{
 		Title:          "Deepfence",
-		StartTime:      time.Now().Format("09-07-2017"),
-		EndTime:        time.Now().Format("09-07-2017"),
+		StartTime:      timeNow(),
+		EndTime:        timeNow(),
 		AppliedFilters: params.Filters,
 		NodeWiseData:   nodeWiseData,
 	}
@@ -115,14 +123,17 @@ func getSecretData(ctx context.Context, session neo4j.Session, params utils.Repo
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
 			continue
 		}
+		sort.Slice(result[:], func(i, j int) bool {
+			return result[i].Level < result[j].Level
+		})
 		nodeWiseData.SeverityCount[s.NodeId] = s.SeverityCounts
 		nodeWiseData.SecretData[s.NodeId] = result
 	}
 
 	data := Info{
 		Title:          "Deepfence",
-		StartTime:      time.Now().Format("09-07-2017"),
-		EndTime:        time.Now().Format("09-07-2017"),
+		StartTime:      timeNow(),
+		EndTime:        timeNow(),
 		AppliedFilters: params.Filters,
 		NodeWiseData:   nodeWiseData,
 	}
@@ -152,14 +163,17 @@ func getMalwareData(ctx context.Context, session neo4j.Session, params utils.Rep
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
 			continue
 		}
+		sort.Slice(result[:], func(i, j int) bool {
+			return result[i].FileSeverity < result[j].FileSeverity
+		})
 		nodeWiseData.SeverityCount[s.NodeId] = s.SeverityCounts
 		nodeWiseData.MalwareData[s.NodeId] = result
 	}
 
 	data := Info{
 		Title:          "Deepfence",
-		StartTime:      time.Now().Format("09-07-2017"),
-		EndTime:        time.Now().Format("09-07-2017"),
+		StartTime:      timeNow(),
+		EndTime:        timeNow(),
 		AppliedFilters: params.Filters,
 		NodeWiseData:   nodeWiseData,
 	}
@@ -189,19 +203,20 @@ func getComplianceData(ctx context.Context, session neo4j.Session, params utils.
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
 			continue
 		}
+		sort.Slice(result[:], func(i, j int) bool {
+			return result[i].ComplianceCheckType < result[j].ComplianceCheckType
+		})
 		nodeWiseData.SeverityCount[s.NodeId] = s.SeverityCounts
 		nodeWiseData.ComplianceData[s.NodeId] = result
 	}
 
 	data := Info{
 		Title:          "Deepfence",
-		StartTime:      time.Now().Format("09-07-2017"),
-		EndTime:        time.Now().Format("09-07-2017"),
+		StartTime:      timeNow(),
+		EndTime:        timeNow(),
 		AppliedFilters: params.Filters,
 		NodeWiseData:   nodeWiseData,
 	}
-
-	log.Info().Msgf("compliance node-wise data %+v", nodeWiseData)
 
 	return &data, nil
 }
