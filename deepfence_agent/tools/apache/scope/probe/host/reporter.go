@@ -15,7 +15,7 @@ import (
 	"github.com/weaveworks/scope/report"
 )
 
-// Agent version to dispay in metadata
+// Agent version to display in metadata
 var (
 	AgentVersionNo           = "v1.4.2"
 	agentCommitID            = "Unknown"

@@ -246,7 +246,48 @@ var topologyNames = []string{
 	Overlay,
 }
 
+var topologyAdjacencyNames = []string{
+	Endpoint,
+}
+
+var topologyParentNames = []string{
+	Endpoint,
+	Process,
+	Container,
+	ContainerImage,
+	CloudRegion,
+	KubernetesCluster,
+	Pod,
+	Service,
+	Namespace,
+	Host,
+	Overlay,
+}
+
+var topologySetNames = []string{
+	Container,
+	Overlay,
+}
+
 type TopologyAdjacency map[string]IDList
+
+func (t TopologyAdjacency) Copy() TopologyAdjacency {
+	newTopologyAdjacency := MakeTopologyAdjacency()
+	for k, v := range t {
+		newTopologyAdjacency[k] = v
+	}
+	return newTopologyAdjacency
+}
+
+func (t TopologyAdjacency) UnsafeMerge(o TopologyAdjacency) {
+	for k, v := range o {
+		t[k] = v
+	}
+}
+
+func (t TopologyAdjacency) UnsafeUnMerge(o TopologyAdjacency) {
+
+}
 
 func (t TopologyAdjacency) AddAdjacency(nodeId string, id string) {
 	if _, ok := t[nodeId]; !ok {
@@ -270,6 +311,24 @@ func (p TopologySets) AddSet(nodeId string, sets Sets) {
 	p[nodeId] = sets
 }
 
+func (t TopologySets) Copy() TopologySets {
+	newTopologySets := MakeTopologySets()
+	for k, v := range t {
+		newTopologySets[k] = v
+	}
+	return newTopologySets
+}
+
+func (t TopologySets) UnsafeMerge(o TopologySets) {
+	for k, v := range o {
+		t[k] = v
+	}
+}
+
+func (t TopologySets) UnsafeUnMerge(o TopologySets) {
+
+}
+
 type Parents map[string]Parent
 
 func MakeParents() Parents {
@@ -284,6 +343,24 @@ func (t Parents) Merge(o Parents) {
 	for k, v := range o {
 		t[k] = v
 	}
+}
+
+func (t Parents) Copy() Parents {
+	newParents := MakeParents()
+	for k, v := range t {
+		newParents[k] = v
+	}
+	return newParents
+}
+
+func (t Parents) UnsafeMerge(o Parents) {
+	for k, v := range o {
+		t[k] = v
+	}
+}
+
+func (t Parents) UnsafeUnMerge(o Parents) {
+
 }
 
 type Parent struct {
@@ -458,6 +535,15 @@ func (r Report) Copy() Report {
 	newReport.WalkPairedTopologies(&r, func(newTopology, oldTopology *Topology) {
 		*newTopology = oldTopology.Copy()
 	})
+	newReport.WalkPairedAdjacencies(&r, func(newAdjacency *TopologyAdjacency, oldAdjacency *TopologyAdjacency) {
+		*newAdjacency = oldAdjacency.Copy()
+	})
+	r.WalkPairedParents(&r, func(newParents *Parents, oldParents *Parents) {
+		*newParents = oldParents.Copy()
+	})
+	r.WalkPairedSets(&r, func(newSets *TopologySets, oldSets *TopologySets) {
+		*newSets = oldSets.Copy()
+	})
 	return newReport
 }
 
@@ -472,6 +558,15 @@ func (r *Report) UnsafeMerge(other Report) {
 	r.WalkPairedTopologies(&other, func(ourTopology, theirTopology *Topology) {
 		ourTopology.UnsafeMerge(*theirTopology)
 	})
+	r.WalkPairedAdjacencies(&other, func(ourAdjacency *TopologyAdjacency, theirAdjacency *TopologyAdjacency) {
+		ourAdjacency.UnsafeMerge(*theirAdjacency)
+	})
+	r.WalkPairedParents(&other, func(ourParents *Parents, theirParents *Parents) {
+		ourParents.UnsafeMerge(*theirParents)
+	})
+	r.WalkPairedSets(&other, func(ourSets *TopologySets, theirSets *TopologySets) {
+		ourSets.UnsafeMerge(*theirSets)
+	})
 }
 
 // UnsafeUnMerge removes any information from r that would be added by merging other.
@@ -481,6 +576,15 @@ func (r *Report) UnsafeUnMerge(other Report) {
 	r.Window = r.Window - other.Window
 	r.WalkPairedTopologies(&other, func(ourTopology, theirTopology *Topology) {
 		ourTopology.UnsafeUnMerge(*theirTopology)
+	})
+	r.WalkPairedAdjacencies(&other, func(ourAdjacency *TopologyAdjacency, theirAdjacency *TopologyAdjacency) {
+		ourAdjacency.UnsafeUnMerge(*theirAdjacency)
+	})
+	r.WalkPairedParents(&other, func(ourParents *Parents, theirParents *Parents) {
+		ourParents.UnsafeUnMerge(*theirParents)
+	})
+	r.WalkPairedSets(&other, func(ourSets *TopologySets, theirSets *TopologySets) {
+		ourSets.UnsafeUnMerge(*theirSets)
 	})
 }
 
@@ -505,6 +609,30 @@ func (r *Report) WalkNamedTopologies(f func(string, *Topology)) {
 func (r *Report) WalkPairedTopologies(o *Report, f func(*Topology, *Topology)) {
 	for _, name := range topologyNames {
 		f(r.topology(name), o.topology(name))
+	}
+}
+
+// WalkPairedAdjacencies iterates through the TopologyAdjacency of this and another report,
+// potentially modifying one or both.
+func (r *Report) WalkPairedAdjacencies(o *Report, f func(*TopologyAdjacency, *TopologyAdjacency)) {
+	for _, name := range topologyAdjacencyNames {
+		f(r.topologyAdjacency(name), o.topologyAdjacency(name))
+	}
+}
+
+// WalkPairedParents iterates through the Parents of this and another report,
+// potentially modifying one or both.
+func (r *Report) WalkPairedParents(o *Report, f func(*Parents, *Parents)) {
+	for _, name := range topologyParentNames {
+		f(r.topologyParent(name), o.topologyParent(name))
+	}
+}
+
+// WalkPairedSets iterates through the TopologySets of this and another report,
+// potentially modifying one or both.
+func (r *Report) WalkPairedSets(o *Report, f func(*TopologySets, *TopologySets)) {
+	for _, name := range topologySetNames {
+		f(r.topologySet(name), o.topologySet(name))
 	}
 }
 
@@ -536,6 +664,52 @@ func (r *Report) topology(name string) *Topology {
 		return &r.Host
 	case Overlay:
 		return &r.Overlay
+	}
+	return nil
+}
+
+func (r *Report) topologyAdjacency(name string) *TopologyAdjacency {
+	switch name {
+	case Endpoint:
+		return &r.EndpointAdjacency
+	}
+	return nil
+}
+
+func (r *Report) topologyParent(name string) *Parents {
+	switch name {
+	case Endpoint:
+		return &r.EndpointParents
+	case Process:
+		return &r.ProcessParents
+	case Container:
+		return &r.ContainerParents
+	case ContainerImage:
+		return &r.ContainerImageParents
+	case CloudRegion:
+		return &r.CloudRegionParents
+	case KubernetesCluster:
+		return &r.KubernetesClusterParents
+	case Pod:
+		return &r.PodParents
+	case Service:
+		return &r.ServiceParents
+	case Namespace:
+		return &r.NamespaceParents
+	case Host:
+		return &r.HostParents
+	case Overlay:
+		return &r.OverlayParents
+	}
+	return nil
+}
+
+func (r *Report) topologySet(name string) *TopologySets {
+	switch name {
+	case Container:
+		return &r.ContainerSets
+	case Overlay:
+		return &r.OverlaySets
 	}
 	return nil
 }
