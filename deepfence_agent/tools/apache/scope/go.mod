@@ -48,7 +48,6 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.1
 	github.com/typetypetype/conntrack v1.0.0
-	github.com/ugorji/go/codec v1.2.11
 	github.com/vishvananda/netlink v1.1.1-0.20210330154013-f5de75959ad5
 	github.com/vishvananda/netns v0.0.0-20211101163701-50045581ed74
 	github.com/weaveworks/common v0.0.0-20230315122012-918bab8e5f88
