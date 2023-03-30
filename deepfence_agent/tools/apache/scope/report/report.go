@@ -298,13 +298,13 @@ func (t TopologyAdjacency) AddAdjacency(nodeId string, id string) {
 }
 
 func MakeTopologyAdjacency() TopologyAdjacency {
-	return map[string]IDList{}
+	return make(map[string]IDList)
 }
 
 type TopologySets map[string]Sets
 
 func MakeTopologySets() TopologySets {
-	return map[string]Sets{}
+	return make(map[string]Sets)
 }
 
 func (p TopologySets) AddSet(nodeId string, sets Sets) {
@@ -332,7 +332,7 @@ func (t TopologySets) UnsafeUnMerge(o TopologySets) {
 type Parents map[string]Parent
 
 func MakeParents() Parents {
-	return map[string]Parent{}
+	return make(map[string]Parent)
 }
 
 func (p Parents) AddParent(nodeId string, parents Parent) {
@@ -538,10 +538,10 @@ func (r Report) Copy() Report {
 	newReport.WalkPairedAdjacencies(&r, func(newAdjacency *TopologyAdjacency, oldAdjacency *TopologyAdjacency) {
 		*newAdjacency = oldAdjacency.Copy()
 	})
-	r.WalkPairedParents(&r, func(newParents *Parents, oldParents *Parents) {
+	newReport.WalkPairedParents(&r, func(newParents *Parents, oldParents *Parents) {
 		*newParents = oldParents.Copy()
 	})
-	r.WalkPairedSets(&r, func(newSets *TopologySets, oldSets *TopologySets) {
+	newReport.WalkPairedSets(&r, func(newSets *TopologySets, oldSets *TopologySets) {
 		*newSets = oldSets.Copy()
 	})
 	return newReport
