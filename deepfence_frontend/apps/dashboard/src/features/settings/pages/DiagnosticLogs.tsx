@@ -189,21 +189,16 @@ const ConsoleDiagnosticLogsTable = () => {
       }),
       columnHelper.accessor('url_link', {
         cell: (cell) => {
+          if (cell.row.original.message !== '') {
+            return 'No logs';
+          }
           return (
-            <DFLink
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                const a = document.createElement('a');
-                a.href = cell.row.original.url_link ?? '';
-                a.click();
-              }}
-            >
+            <DFLink href={cell.row.original.url_link ?? ''} download target={'_blank'}>
               Click to download
             </DFLink>
           );
         },
-        header: () => 'Downlload',
+        header: () => 'Download',
         minSize: 75,
         size: 80,
         maxSize: 85,
@@ -272,10 +267,14 @@ const AgentDiagnosticLogsTable = () => {
       }),
       columnHelper.accessor('url_link', {
         cell: (cell) => {
-          if (cell.row.original.message === '') {
+          if (cell.row.original.message !== '') {
             return 'No logs';
           }
-          return <DFLink>Click to download</DFLink>;
+          return (
+            <DFLink href={cell.row.original.url_link ?? ''} download target={'_blank'}>
+              Click to download
+            </DFLink>
+          );
         },
         header: () => 'Download',
         minSize: 75,

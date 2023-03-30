@@ -13,7 +13,7 @@
 [submodule "deepfence_agent/plugins/compliance"]
 	path = deepfence_agent/plugins/compliance
 	url = https://github.com/deepfence/compliance
-	branch = main
+	branch = v2
 [submodule "golang_deepfence_sdk"]
 	path = golang_deepfence_sdk
 	url = git@github.com:deepfence/golang_deepfence_sdk.git
