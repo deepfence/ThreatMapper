@@ -1,7 +1,6 @@
 package cronjobs
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -33,33 +32,35 @@ func SendNotifications(msg *message.Message) error {
 	for _, integrationRow := range integrations {
 		switch integrationRow.Resource {
 		case utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN]:
-			err = processIntegration[model.Vulnerability](postgresCtx, integrationRow)
+			err = processIntegration[model.Vulnerability](msg, integrationRow)
 		case utils.ScanTypeDetectedNode[utils.NEO4J_SECRET_SCAN]:
-			err = processIntegration[model.Secret](postgresCtx, integrationRow)
+			err = processIntegration[model.Secret](msg, integrationRow)
 		case utils.ScanTypeDetectedNode[utils.NEO4J_MALWARE_SCAN]:
-			err = processIntegration[model.Malware](postgresCtx, integrationRow)
+			err = processIntegration[model.Malware](msg, integrationRow)
 		case utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN]:
-			err = processIntegration[model.Compliance](postgresCtx, integrationRow)
+			err = processIntegration[model.Compliance](msg, integrationRow)
 			if err != nil {
 				return err
 			}
 			integrationRow.Resource = utils.ScanTypeDetectedNode[utils.NEO4J_CLOUD_COMPLIANCE_SCAN]
-			err = processIntegration[model.CloudCompliance](postgresCtx, integrationRow)
+			err = processIntegration[model.CloudCompliance](msg, integrationRow)
 		}
 	}
 	return err
 }
 
-func processIntegration[T any](postgresCtx context.Context, integrationRow postgresql_db.Integration) error {
+func processIntegration[T any](msg *message.Message, integrationRow postgresql_db.Integration) error {
 	log.Info().Msgf("Processing for integration : +%v", integrationRow)
+	namespace := msg.Metadata.Get(directory.NamespaceKey)
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	last30sTimeStamp := time.Now().Unix() - 30
 	ff := reporters.FieldsFilters{CompareFilters: []reporters.CompareFilter{{FieldName: "updated_at", GreaterThan: true, FieldValue: last30sTimeStamp}}}
-	list, err := reporters_scan.GetScansList(postgresCtx, utils.DetectedNodeScanType[integrationRow.Resource], []model.NodeIdentifier{}, ff, model.FetchWindow{}, []string{"COMPLETE"})
+	list, err := reporters_scan.GetScansList(ctx, utils.DetectedNodeScanType[integrationRow.Resource], []model.NodeIdentifier{}, ff, model.FetchWindow{}, []string{"COMPLETE"})
 	if err != nil {
 		return err
 	}
 	for _, scan := range list.ScansInfo {
-		results, _, err := reporters_scan.GetScanResults[T](postgresCtx, utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId, reporters.FieldsFilters{}, model.FetchWindow{})
+		results, _, err := reporters_scan.GetScanResults[T](ctx, utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId, reporters.FieldsFilters{}, model.FetchWindow{})
 		iByte, err := json.Marshal(integrationRow)
 		if err != nil {
 			log.Error().Msgf("Error Processing for integration json marshall integrationRow: +%v", integrationRow, err)
