@@ -1,5 +1,4 @@
 import { Suspense, useMemo, useState } from 'react';
-import { HiDownload } from 'react-icons/hi';
 import {
   ActionFunctionArgs,
   Form,
@@ -32,7 +31,6 @@ import { useGetHostsList } from '@/features/common/data-component/searchHostsApi
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
-import { download } from '@/utils/download';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
