@@ -201,5 +201,7 @@ func getComplianceData(ctx context.Context, session neo4j.Session, params utils.
 		NodeWiseData:   nodeWiseData,
 	}
 
+	log.Info().Msgf("compliance node-wise data %+v", nodeWiseData)
+
 	return &data, nil
 }
