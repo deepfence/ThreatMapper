@@ -84,6 +84,14 @@ var lookupCmd = &cobra.Command{
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
+		case "cloud-resource":
+			req := http.Client().LookupApi.GetCloudResources(context.Background())
+			req = req.LookupLookupFilter(filters)
+			res, rh, err := http.Client().LookupApi.GetCloudResourcesExecute(req)
+			if err != nil {
+				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
+			}
+			output.Out(res)
 		default:
 			log.Fatal().Msgf("Unsupported type:%s", root)
 		}

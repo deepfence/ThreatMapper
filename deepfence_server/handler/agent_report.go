@@ -9,11 +9,12 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/bytedance/sonic"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	reportUtils "github.com/deepfence/golang_deepfence_sdk/utils/report"
-	"github.com/weaveworks/scope/report"
 )
 
 var agent_report_ingesters map[directory.NamespaceID]*ingesters.Ingester[report.Report]
@@ -66,7 +67,7 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 
 	var rawReport reportUtils.RawReport
 
-	err = json.Unmarshal(data, &rawReport)
+	err = sonic.Unmarshal(data, &rawReport)
 	if err != nil {
 		log.Error().Msgf("Error unmarshal: %v", err)
 		respondWith(ctx, w, http.StatusBadRequest, err)
@@ -91,8 +92,9 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
+
 	rpt := report.MakeReport()
-	err = json.Unmarshal(data, &rpt)
+	err = sonic.Unmarshal(data, &rpt)
 
 	//if err := codec.NewDecoderBytes([]byte(rawReport.GetPayload()), &codec.JsonHandle{}).Decode(&rpt); err != nil {
 	if err != nil {

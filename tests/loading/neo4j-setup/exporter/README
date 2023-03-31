@@ -1,0 +1,4 @@
+Add the following to docker-compose:
+
+- NEO4J_apoc_import_file_enabled: true
+

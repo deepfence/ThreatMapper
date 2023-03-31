@@ -327,6 +327,10 @@ func initializeDatabase() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = model.SetScanResultsDeletionSetting(ctx, pgClient)
+	if err != nil {
+		return nil, err
+	}
 	return jwtSecret, nil
 }
 
@@ -342,6 +346,7 @@ func initializeOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
 	openApiDocs.AddDiagnosisOperations()
 	openApiDocs.AddCloudNodeOperations()
 	openApiDocs.AddRegistryOperations()
+	openApiDocs.AddIntegrationOperations()
 }
 
 func initializeInternalOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {

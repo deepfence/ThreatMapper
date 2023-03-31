@@ -21,22 +21,28 @@ import { exists, mapValues } from '../runtime';
 export interface ModelRegistryListResp {
     /**
      * 
-     * @type {Date}
+     * @type {number}
      * @memberof ModelRegistryListResp
      */
-    created_at?: Date;
+    created_at?: number;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof ModelRegistryListResp
      */
-    id?: string;
+    id?: number;
     /**
      * 
      * @type {string}
      * @memberof ModelRegistryListResp
      */
     name?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelRegistryListResp
+     */
+    node_id?: string;
     /**
      * 
      * @type {any}
@@ -51,10 +57,10 @@ export interface ModelRegistryListResp {
     registry_type?: string;
     /**
      * 
-     * @type {Date}
+     * @type {number}
      * @memberof ModelRegistryListResp
      */
-    updated_at?: Date;
+    updated_at?: number;
 }
 
 /**
@@ -76,12 +82,13 @@ export function ModelRegistryListRespFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
-        'created_at': !exists(json, 'created_at') ? undefined : (new Date(json['created_at'])),
+        'created_at': !exists(json, 'created_at') ? undefined : json['created_at'],
         'id': !exists(json, 'id') ? undefined : json['id'],
         'name': !exists(json, 'name') ? undefined : json['name'],
+        'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
         'non_secret': !exists(json, 'non_secret') ? undefined : json['non_secret'],
         'registry_type': !exists(json, 'registry_type') ? undefined : json['registry_type'],
-        'updated_at': !exists(json, 'updated_at') ? undefined : (new Date(json['updated_at'])),
+        'updated_at': !exists(json, 'updated_at') ? undefined : json['updated_at'],
     };
 }
 
@@ -94,12 +101,13 @@ export function ModelRegistryListRespToJSON(value?: ModelRegistryListResp | null
     }
     return {
         
-        'created_at': value.created_at === undefined ? undefined : (value.created_at.toISOString()),
+        'created_at': value.created_at,
         'id': value.id,
         'name': value.name,
+        'node_id': value.node_id,
         'non_secret': value.non_secret,
         'registry_type': value.registry_type,
-        'updated_at': value.updated_at === undefined ? undefined : (value.updated_at.toISOString()),
+        'updated_at': value.updated_at,
     };
 }
 

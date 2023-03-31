@@ -21,13 +21,14 @@ import (
 )
 
 type config struct {
-	Debug                 bool     `default:"false"`
-	Mode                  string   `default:"worker" required:"true"`
-	MetricsPort           string   `default:"8181" split_words:"true"`
-	KafkaBrokers          []string `default:"deepfence-kafka-broker:9092" required:"true" split_words:"true"`
-	KafkaTopicPartitions  int32    `default:"1" split_words:"true"`
-	KafkaTopicReplicas    int16    `default:"1" split_words:"true"`
-	KafkaTopicRetentionMs string   `default:"86400000" split_words:"true"`
+	Debug                     bool     `default:"false"`
+	Mode                      string   `default:"worker" required:"true"`
+	MetricsPort               string   `default:"8181" split_words:"true"`
+	KafkaBrokers              []string `default:"deepfence-kafka-broker:9092" required:"true" split_words:"true"`
+	KafkaTopicPartitions      int32    `default:"1" split_words:"true"`
+	KafkaTopicReplicas        int16    `default:"1" split_words:"true"`
+	KafkaTopicRetentionMs     string   `default:"86400000" split_words:"true"`
+	KafkaTopicPartitionsTasks int32    `default:"3" split_words:"true"`
 }
 
 func main() {

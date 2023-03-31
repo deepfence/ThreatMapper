@@ -86,8 +86,8 @@ services:
     environment:
       <<: *common-creds
       NEO4J_dbms_memory_pagecache_size: 2600m
-      NEO4J_dbms_memory_heap_initial__size: 3800m
-      NEO4J_dbms_memory_heap_max__size: 3800m
+      NEO4J_dbms_memory_heap_initial__size: 4000m
+      NEO4J_dbms_memory_heap_max__size: 4000m
       NEO4JLABS_PLUGINS: '["apoc"]'
     ports:
       - "0.0.0.0:7474:7474"
@@ -192,6 +192,7 @@ services:
       - "8080:8080"
       - "127.0.0.1:8081:8081"
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
       - /etc/docker/certs.d:/etc/docker/certs.d:ro
     logging:
       driver: "json-file"
@@ -218,6 +219,48 @@ services:
     volumes:
       - /etc/docker/certs.d:/etc/docker/certs.d:ro
       - /var/run/docker.sock:/var/run/docker.sock
+
+  # deepfence-worker-2:
+  #   container_name: deepfence-worker-2
+  #   image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-1.4.1}
+  #   ulimits:
+  #     core: 0
+  #   restart: on-failure
+  #   networks:
+  #     - deepfence_net
+  #   depends_on:
+  #     - deepfence-redis
+  #     - deepfence-postgres
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "1g"
+  #   environment:
+  #     <<: *common-creds
+  #   volumes:
+  #     - /etc/docker/certs.d:/etc/docker/certs.d:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock
+
+  # deepfence-worker-3:
+  #   container_name: deepfence-worker-3
+  #   image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-1.4.1}
+  #   ulimits:
+  #     core: 0
+  #   restart: on-failure
+  #   networks:
+  #     - deepfence_net
+  #   depends_on:
+  #     - deepfence-redis
+  #     - deepfence-postgres
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "1g"
+  #   environment:
+  #     <<: *common-creds
+  #   volumes:
+  #     - /etc/docker/certs.d:/etc/docker/certs.d:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock
 
   deepfence-scheduler:
     container_name: deepfence-scheduler
@@ -303,7 +346,6 @@ services:
       - "0.0.0.0:16686:16686"
     networks:
       - deepfence_net
-
 
 volumes:
   deepfence_data:

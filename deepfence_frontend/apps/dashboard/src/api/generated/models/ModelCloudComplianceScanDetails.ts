@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ModelCloudComplianceBenchmark } from './ModelCloudComplianceBenchmark';
+import {
+    ModelCloudComplianceBenchmarkFromJSON,
+    ModelCloudComplianceBenchmarkFromJSONTyped,
+    ModelCloudComplianceBenchmarkToJSON,
+} from './ModelCloudComplianceBenchmark';
+
 /**
  * 
  * @export
@@ -27,10 +34,10 @@ export interface ModelCloudComplianceScanDetails {
     account_id?: string;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<ModelCloudComplianceBenchmark>}
      * @memberof ModelCloudComplianceScanDetails
      */
-    controls?: Array<string> | null;
+    benchmarks?: Array<ModelCloudComplianceBenchmark> | null;
     /**
      * 
      * @type {string}
@@ -39,10 +46,10 @@ export interface ModelCloudComplianceScanDetails {
     scan_id?: string;
     /**
      * 
-     * @type {string}
+     * @type {Array<string>}
      * @memberof ModelCloudComplianceScanDetails
      */
-    scan_type?: string;
+    scan_types?: Array<string> | null;
 }
 
 /**
@@ -65,9 +72,9 @@ export function ModelCloudComplianceScanDetailsFromJSONTyped(json: any, ignoreDi
     return {
         
         'account_id': !exists(json, 'account_id') ? undefined : json['account_id'],
-        'controls': !exists(json, 'controls') ? undefined : json['controls'],
+        'benchmarks': !exists(json, 'benchmarks') ? undefined : (json['benchmarks'] === null ? null : (json['benchmarks'] as Array<any>).map(ModelCloudComplianceBenchmarkFromJSON)),
         'scan_id': !exists(json, 'scan_id') ? undefined : json['scan_id'],
-        'scan_type': !exists(json, 'scan_type') ? undefined : json['scan_type'],
+        'scan_types': !exists(json, 'scan_types') ? undefined : json['scan_types'],
     };
 }
 
@@ -81,9 +88,9 @@ export function ModelCloudComplianceScanDetailsToJSON(value?: ModelCloudComplian
     return {
         
         'account_id': value.account_id,
-        'controls': value.controls,
+        'benchmarks': value.benchmarks === undefined ? undefined : (value.benchmarks === null ? null : (value.benchmarks as Array<any>).map(ModelCloudComplianceBenchmarkToJSON)),
         'scan_id': value.scan_id,
-        'scan_type': value.scan_type,
+        'scan_types': value.scan_types,
     };
 }
 

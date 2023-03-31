@@ -68,7 +68,7 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 	res, err := tx.Run(fmt.Sprintf(`
 		MATCH (m:%s) -[:SCANNED]-> (n)
 		WHERE m.node_id IN $scan_ids
-		RETURN m.node_id, m.status, n.node_id, labels(n) as node_type, m.updated_at`, scan_type),
+		RETURN m.node_id, m.status, n.node_id, n.node_name, labels(n) as node_type, m.updated_at`, scan_type),
 		map[string]interface{}{"scan_ids": scan_ids})
 	if err != nil {
 		return model.ScanStatusResp{}, err
@@ -85,8 +85,9 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 			ScanId:    rec.Values[0].(string),
 			Status:    rec.Values[1].(string),
 			NodeId:    rec.Values[2].(string),
-			NodeType:  Labels2NodeType(rec.Values[3].([]interface{})),
-			UpdatedAt: rec.Values[4].(int64),
+			NodeName:  rec.Values[3].(string),
+			NodeType:  Labels2NodeType(rec.Values[4].([]interface{})),
+			UpdatedAt: rec.Values[5].(int64),
 		}
 		statuses[rec.Values[0].(string)] = info
 	}
@@ -116,9 +117,9 @@ func GetComplianceScanStatus(ctx context.Context, scanType utils.Neo4jScanType, 
 	defer tx.Close()
 
 	res, err := tx.Run(fmt.Sprintf(`
-		MATCH (m:%s) -[:SCANNED]-> (n:Node)
+		MATCH (m:%s) -[:SCANNED]-> (n:CloudNode)
 		WHERE m.node_id IN $scan_ids
-		RETURN m.node_id, m.benchmark_type, m.status, n.node_id, m.updated_at`, scanType),
+		RETURN m.node_id, m.benchmark_types, m.status, n.node_id, m.updated_at`, scanType),
 		map[string]interface{}{"scan_ids": scanIds})
 	if err != nil {
 		return scanResponse, err
@@ -130,13 +131,17 @@ func GetComplianceScanStatus(ctx context.Context, scanType utils.Neo4jScanType, 
 	}
 
 	for _, rec := range recs {
+		var benchmarkTypes []string
+		for _, rVal := range rec.Values[1].([]interface{}) {
+			benchmarkTypes = append(benchmarkTypes, rVal.(string))
+		}
 		tmp := model.ComplianceScanInfo{
-			ScanId:        rec.Values[0].(string),
-			BenchmarkType: rec.Values[1].(string),
-			Status:        rec.Values[2].(string),
-			NodeId:        rec.Values[3].(string),
-			NodeType:      controls.ResourceTypeToString(controls.CloudAccount),
-			UpdatedAt:     rec.Values[4].(int64),
+			ScanId:         rec.Values[0].(string),
+			BenchmarkTypes: benchmarkTypes,
+			Status:         rec.Values[2].(string),
+			NodeId:         rec.Values[3].(string),
+			NodeType:       controls.ResourceTypeToString(controls.CloudAccount),
+			UpdatedAt:      rec.Values[4].(int64),
 		}
 		scanResponse.Statuses = append(scanResponse.Statuses, tmp)
 	}
@@ -350,7 +355,7 @@ func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdenti
 	defer tx.Close()
 
 	nres, err := tx.Run(`
-		MATCH (n:Node)
+		MATCH (n:CloudNode)
 		WHERE n.cloud_provider IN $node_ids
 		RETURN n.node_id`,
 		map[string]interface{}{"node_ids": NodeIdentifierToIdList(cloudProviderIds)})
@@ -383,11 +388,13 @@ func nodeType2Neo4jType(node_type string) string {
 		return "Node"
 	case "cluster":
 		return "KubernetesCluster"
+	case "cloud_account":
+		return "CloudNode"
 	}
 	return "unknown"
 }
 
-func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_ids []model.NodeIdentifier, fw model.FetchWindow, scanStatus []string) (model.ScanListResp, error) {
+func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_ids []model.NodeIdentifier, ff reporters.FieldsFilters, fw model.FetchWindow, scanStatus []string) (model.ScanListResp, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return model.ScanListResp{}, err
@@ -410,38 +417,59 @@ func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_ids [
 		statusQuery = "WHERE m.status IN $scan_status"
 	}
 
-	scans_info := []model.ScanInfo{}
+	var scansInfo []model.ScanInfo
 	for i := range node_ids {
 		query := `
 			MATCH (m:` + string(scan_type) + `) -[:SCANNED]-> (n:` + nodeType2Neo4jType(node_ids[i].NodeType) + `{node_id: $node_id})
-			` + statusQuery + `
-			RETURN m.node_id, m.status, m.updated_at, n.node_id, labels(n) as node_type
+			` + statusQuery + reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(ff), len(scanStatus) == 0) + `
+			RETURN m.node_id, m.status, m.updated_at, n.node_id, n.node_name, labels(n) as node_type
 			ORDER BY m.updated_at ` + fw.FetchWindow2CypherQuery()
-		fmt.Printf("list query %v\n", query)
-		res, err := tx.Run(query,
-			map[string]interface{}{"node_id": node_ids[i].NodeId, "scan_status": scanStatus})
+		temp, err := processScansListQuery(query, node_ids[i].NodeId, scanStatus, tx)
 		if err != nil {
 			return model.ScanListResp{}, err
 		}
-
-		recs, err := res.Collect()
+		scansInfo = append(scansInfo, temp...)
+	}
+	if len(node_ids) == 0 {
+		query := `
+			MATCH (m:` + string(scan_type) + `) -[:SCANNED]-> (n)
+			` + statusQuery + reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(ff), len(scanStatus) == 0) + `
+			RETURN m.node_id, m.status, m.updated_at, n.node_id, n.node_name, labels(n) as node_type
+			ORDER BY m.updated_at ` + fw.FetchWindow2CypherQuery()
+		temp, err := processScansListQuery(query, "", scanStatus, tx)
 		if err != nil {
-			return model.ScanListResp{}, reporters.NotFoundErr
+			return model.ScanListResp{}, err
 		}
-
-		for _, rec := range recs {
-			tmp := model.ScanInfo{
-				ScanId:    rec.Values[0].(string),
-				Status:    rec.Values[1].(string),
-				UpdatedAt: rec.Values[2].(int64),
-				NodeId:    rec.Values[3].(string),
-				NodeType:  Labels2NodeType(rec.Values[4].([]interface{})),
-			}
-			scans_info = append(scans_info, tmp)
-		}
+		scansInfo = append(scansInfo, temp...)
+	}
+	return model.ScanListResp{ScansInfo: scansInfo}, nil
+}
+func processScansListQuery(query string, nodeId string, scanStatus []string, tx neo4j.Transaction) ([]model.ScanInfo, error) {
+	fmt.Printf("list query %v\n", query)
+	var scansInfo []model.ScanInfo
+	res, err := tx.Run(query,
+		map[string]interface{}{"node_id": nodeId, "scan_status": scanStatus})
+	if err != nil {
+		return scansInfo, err
 	}
 
-	return model.ScanListResp{ScansInfo: scans_info}, nil
+	recs, err := res.Collect()
+	if err != nil {
+		return scansInfo, reporters.NotFoundErr
+	}
+
+	for _, rec := range recs {
+		tmp := model.ScanInfo{
+			ScanId:    rec.Values[0].(string),
+			Status:    rec.Values[1].(string),
+			UpdatedAt: rec.Values[2].(int64),
+			NodeId:    rec.Values[3].(string),
+			NodeName:  rec.Values[4].(string),
+			NodeType:  Labels2NodeType(rec.Values[5].([]interface{})),
+		}
+		scansInfo = append(scansInfo, tmp)
+	}
+	return scansInfo, nil
 }
 
 func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4jScanType, nodeId string) (model.CloudComplianceScanListResp, error) {
@@ -463,9 +491,9 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 	defer tx.Close()
 
 	res, err := tx.Run(`
-		MATCH (m:`+string(scanType)+`) -[:SCANNED]-> (:Node{node_id: $node_id})
+		MATCH (m:`+string(scanType)+`) -[:SCANNED]-> (:CloudNode{node_id: $node_id})
 		WHERE NOT m.status = $complete AND NOT m.status = $failed AND NOT m.status = $in_progress
-		RETURN m.node_id, m.benchmark_type, m.status, m.updated_at ORDER BY m.updated_at`,
+		RETURN m.node_id, m.benchmark_types, m.status, m.updated_at ORDER BY m.updated_at`,
 		map[string]interface{}{"node_id": nodeId, "complete": utils.SCAN_STATUS_SUCCESS, "failed": utils.SCAN_STATUS_FAILED, "in_progress": utils.SCAN_STATUS_INPROGRESS})
 	if err != nil {
 		return model.CloudComplianceScanListResp{}, err
@@ -478,13 +506,17 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 
 	scansInfo := []model.ComplianceScanInfo{}
 	for _, rec := range recs {
+		var benchmarkTypes []string
+		for _, rVal := range rec.Values[1].([]interface{}) {
+			benchmarkTypes = append(benchmarkTypes, rVal.(string))
+		}
 		tmp := model.ComplianceScanInfo{
-			ScanId:        rec.Values[0].(string),
-			BenchmarkType: rec.Values[1].(string),
-			Status:        rec.Values[2].(string),
-			UpdatedAt:     rec.Values[3].(int64),
-			NodeId:        nodeId,
-			NodeType:      controls.ResourceTypeToString(controls.CloudAccount),
+			ScanId:         rec.Values[0].(string),
+			BenchmarkTypes: benchmarkTypes,
+			Status:         rec.Values[2].(string),
+			UpdatedAt:      rec.Values[3].(int64),
+			NodeId:         nodeId,
+			NodeType:       controls.ResourceTypeToString(controls.CloudAccount),
 		}
 		scansInfo = append(scansInfo, tmp)
 	}
@@ -573,7 +605,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 
 	ncommonres, err := tx.Run(`
 		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[:SCANNED]-> (n)
-		RETURN n`,
+		RETURN n{.*, scan_id: m.node_id, updated_at:m.updated_at, created_at:m.created_at}`,
 		map[string]interface{}{"scan_id": scan_id})
 	if err != nil {
 		return res, common, err
@@ -584,9 +616,60 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 		return res, common, err
 	}
 
-	utils.FromMap(rec.Values[0].(neo4j.Node).Props, &common)
+	utils.FromMap(rec.Values[0].(map[string]interface{}), &common)
 
 	return res, common, nil
+}
+
+func GetFilters(ctx context.Context, having map[string]interface{}, detectedType string, filters []string) (map[string][]string, error) {
+	andQuery := "{"
+	index := 0
+	for key, _ := range having {
+		if index == 0 {
+			andQuery += fmt.Sprintf("%s:$%s", key, key)
+		} else {
+			andQuery += fmt.Sprintf(",%s:$%s", key, key)
+		}
+		index++
+	}
+	andQuery += "}"
+
+	res := make(map[string][]string)
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+	for _, filterField := range filters {
+		query := fmt.Sprintf(`
+		MATCH (n:%s%s)
+		RETURN distinct n.%s`,
+			detectedType, andQuery, filterField)
+		nres, err := tx.Run(query, having)
+		if err != nil {
+			return res, err
+		}
+
+		recs, err := nres.Collect()
+		if err != nil {
+			return res, err
+		}
+		for _, rec := range recs {
+			if len(rec.Values) > 0 && rec.Values[0] != nil {
+				res[filterField] = append(res[filterField], rec.Values[0].(string))
+			}
+		}
+	}
+	return res, nil
 }
 
 func type2sev_field(scan_type utils.Neo4jScanType) string {
@@ -598,6 +681,8 @@ func type2sev_field(scan_type utils.Neo4jScanType) string {
 	case utils.NEO4J_MALWARE_SCAN:
 		return "file_severity"
 	case utils.NEO4J_COMPLIANCE_SCAN:
+		return "status"
+	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
 		return "status"
 	}
 	return "error_sev_field_unknown"
@@ -622,11 +707,12 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	}
 	defer tx.Close()
 
-	nres, err := tx.Run(`
-		MATCH (m:`+string(scan_type)+`{node_id: $scan_id}) -[r:DETECTED]-> (d)
-		WHERE r.masked = false
-		RETURN d.`+type2sev_field(scan_type),
-		map[string]interface{}{"scan_id": scan_id})
+	query := `
+	MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
+	WHERE r.masked = false
+	RETURN d.` + type2sev_field(scan_type) + `, COUNT(*)`
+
+	nres, err := tx.Run(query, map[string]interface{}{"scan_id": scan_id})
 	if err != nil {
 		return res, err
 	}
@@ -636,15 +722,17 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 		return res, err
 	}
 
-	for i := range recs {
-		res[recs[i].Values[0].(string)] += 1
+	for _, rec := range recs {
+		if len(rec.Values) > 0 && rec.Values[0] != nil && rec.Values[1] != nil {
+			res[rec.Values[0].(string)] = int32(rec.Values[1].(int64))
+		}
 	}
 
 	return res, nil
 }
 
 func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, resultIds []string) ([]model.ScanResultBasicNode, error) {
-	var res []model.ScanResultBasicNode
+	res := make([]model.ScanResultBasicNode, 0)
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return res, err
@@ -679,21 +767,11 @@ func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, re
 	tempRes := make(map[string][]model.BasicNode)
 	for _, rec := range recs {
 		hostName := reporters.Neo4jGetStringRecord(rec, "node.host_name", "")
-		containerName := reporters.Neo4jGetStringRecord(rec, "node.docker_container_name", "")
-		imageName := reporters.Neo4jGetStringRecord(rec, "node.docker_image_name", "")
-		imageTag := reporters.Neo4jGetStringRecord(rec, "node.docker_image_tag", "")
-		var name string
+		nodeName := reporters.Neo4jGetStringRecord(rec, "node.node_name", "")
 		nodeType := reporters.Neo4jGetStringRecord(rec, "node.node_type", "")
-		if nodeType == "container_image" {
-			name = imageName + ":" + imageTag
-		} else if nodeType == "container" {
-			name = containerName
-		} else {
-			name = hostName
-		}
 		node := model.BasicNode{
 			NodeId:   reporters.Neo4jGetStringRecord(rec, "node.node_id", ""),
-			Name:     name,
+			Name:     nodeName,
 			NodeType: nodeType,
 			HostName: hostName,
 		}
@@ -712,7 +790,7 @@ func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, re
 	return res, nil
 }
 
-func GetCloudComplianceStats(ctx context.Context, scanId string) (model.ComplianceAdditionalInfo, error) {
+func GetCloudComplianceStats(ctx context.Context, scanId string, neo4jComplianceType utils.Neo4jScanType) (model.ComplianceAdditionalInfo, error) {
 	res := map[string]int32{}
 	additionalInfo := model.ComplianceAdditionalInfo{StatusCounts: res, CompliancePercentage: 0.0}
 	driver, err := directory.Neo4jClient(ctx)
@@ -733,8 +811,8 @@ func GetCloudComplianceStats(ctx context.Context, scanId string) (model.Complian
 	defer tx.Close()
 
 	benchRes, err := tx.Run(`
-		MATCH (m:`+string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN)+`{node_id: $scan_id})
-		RETURN m.benchmark_type`,
+		MATCH (m:`+string(neo4jComplianceType)+`{node_id: $scan_id})
+		RETURN m.benchmark_types`,
 		map[string]interface{}{"scan_id": scanId})
 	if err != nil {
 		return additionalInfo, err
@@ -745,11 +823,19 @@ func GetCloudComplianceStats(ctx context.Context, scanId string) (model.Complian
 		return additionalInfo, err
 	}
 
-	additionalInfo.BenchmarkType = benchRec.Values[0].(string)
+	var benchmarkTypes []string
+	for _, rVal := range benchRec.Values[0].([]interface{}) {
+		benchmarkTypes = append(benchmarkTypes, rVal.(string))
+	}
+	additionalInfo.BenchmarkTypes = benchmarkTypes
 
+	cloudComplianceFields := ""
+	if neo4jComplianceType == utils.NEO4J_CLOUD_COMPLIANCE_SCAN {
+		cloudComplianceFields = "DISTINCT d.control_id AS control_id, d.resource AS resource,"
+	}
 	nres, err := tx.Run(`
-		MATCH (m:`+string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN)+`{node_id: $scan_id}) -[:DETECTED]-> (d)
-		WITH DISTINCT d.control_id AS control_id, d.resource AS resource, d.status AS status
+		MATCH (m:`+string(neo4jComplianceType)+`{node_id: $scan_id}) -[:DETECTED]-> (d)
+		WITH `+cloudComplianceFields+` d.status AS status
 		RETURN status, COUNT(status)`,
 		map[string]interface{}{"scan_id": scanId})
 	if err != nil {
@@ -767,13 +853,15 @@ func GetCloudComplianceStats(ctx context.Context, scanId string) (model.Complian
 		status := recs[i].Values[0].(string)
 		statusCount := int32(recs[i].Values[1].(int64))
 		res[status] = statusCount
-		if status == "info" || status == "ok" {
+		if status == "info" || status == "ok" || status == "pass" {
 			positiveStatusCount += statusCount
 		}
 		totalStatusCount += statusCount
 	}
 	additionalInfo.StatusCounts = res
-	additionalInfo.CompliancePercentage = float64(positiveStatusCount) * 100 / float64(totalStatusCount)
+	if totalStatusCount > 0 {
+		additionalInfo.CompliancePercentage = float64(positiveStatusCount) * 100 / float64(totalStatusCount)
+	}
 
 	return additionalInfo, nil
 }
@@ -823,7 +911,7 @@ func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 
 	neo_res, err := tx.Run(`
 		MATCH (m:Bulk`+string(scan_type)+`{node_id:$scan_id}) -[:BATCH]-> (d:`+string(scan_type)+`) -[:SCANNED]-> (n)
-		RETURN d.node_id as scan_id, d.status as status, n.node_id as node_id, labels(n) as node_type, d.updated_at`,
+		RETURN d.node_id as scan_id, d.status as status, n.node_id as node_id, n.node_name, labels(n) as node_type, d.updated_at`,
 		map[string]interface{}{"scan_id": scan_id})
 	if err != nil {
 		return scan_ids, err
@@ -839,8 +927,9 @@ func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 			ScanId:    rec.Values[0].(string),
 			Status:    rec.Values[1].(string),
 			NodeId:    rec.Values[2].(string),
-			NodeType:  Labels2NodeType(rec.Values[3].([]interface{})),
-			UpdatedAt: rec.Values[4].(int64),
+			NodeName:  rec.Values[3].(string),
+			NodeType:  Labels2NodeType(rec.Values[4].([]interface{})),
+			UpdatedAt: rec.Values[5].(int64),
 		}
 		scan_ids.Statuses[rec.Values[0].(string)] = info
 	}
@@ -861,6 +950,8 @@ func Labels2NodeType(labels []interface{}) string {
 			return "cluster"
 		} else if str == "RegistryAccount" {
 			return "registry"
+		} else if str == "CloudNode" {
+			return "cloud_account"
 		}
 	}
 	return "unknown"
@@ -872,42 +963,51 @@ func GetComplianceBulkScans(ctx context.Context, scanType utils.Neo4jScanType, s
 	}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
+		log.Error().Msgf("Neo4j client init failed: %+v", err)
 		return scanIds, err
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
+		log.Error().Msgf("Neo4j session creation failed: %+v", err)
 		return scanIds, err
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction()
 	if err != nil {
+		log.Error().Msgf("Failed to begin new neo4j transaction: %+v", err)
 		return scanIds, err
 	}
 	defer tx.Close()
 
 	neo_res, err := tx.Run(`
-		MATCH (m:Bulk`+string(scanType)+`{node_id:$scan_id}) -[:BATCH]-> (d:`+string(scanType)+`) -[:SCANNED]-> (n:Node)
-		RETURN d.node_id, d.benchmark_type, d.status, n.node_id, d.updated_at`,
+		MATCH (m:Bulk`+string(scanType)+`{node_id:$scan_id}) -[:BATCH]-> (d:`+string(scanType)+`) -[:SCANNED]-> (n:CloudNode)
+		RETURN d.node_id, d.benchmark_types, d.status, n.node_id, d.updated_at`,
 		map[string]interface{}{"scan_id": scanId})
 	if err != nil {
+		log.Error().Msgf("Compliance bulk scans status query failed: %+v", err)
 		return scanIds, err
 	}
 
 	recs, err := neo_res.Collect()
 	if err != nil {
+		log.Error().Msgf("Compliance bulk scan neo4j result collection failed: %+v", err)
 		return scanIds, err
 	}
 
 	for _, rec := range recs {
+		var benchmarkTypes []string
+		for _, rVal := range rec.Values[1].([]interface{}) {
+			benchmarkTypes = append(benchmarkTypes, rVal.(string))
+		}
 		tmp := model.ComplianceScanInfo{
-			ScanId:        rec.Values[0].(string),
-			BenchmarkType: rec.Values[1].(string),
-			Status:        rec.Values[2].(string),
-			NodeId:        rec.Values[3].(string),
-			NodeType:      controls.ResourceTypeToString(controls.CloudAccount),
-			UpdatedAt:     rec.Values[4].(int64),
+			ScanId:         rec.Values[0].(string),
+			BenchmarkTypes: benchmarkTypes,
+			Status:         rec.Values[2].(string),
+			NodeId:         rec.Values[3].(string),
+			NodeType:       controls.ResourceTypeToString(controls.CloudAccount),
+			UpdatedAt:      rec.Values[4].(int64),
 		}
 		scanIds.Statuses = append(scanIds.Statuses, tmp)
 	}

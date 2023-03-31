@@ -12,7 +12,7 @@ export const DashboardLayout = () => {
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
       <main className="flex pt-[64px]">
         <SideNavigation expanded={sideNavExpanded} />
-        <div className="overflow-auto h-full w-full">
+        <div className="overflow-auto h-[calc(100vh_-_64px)] w-full">
           <Outlet />
         </div>
       </main>

@@ -21,6 +21,12 @@ import { exists, mapValues } from '../runtime';
 export interface ModelScanInfo {
     /**
      * 
+     * @type {number}
+     * @memberof ModelScanInfo
+     */
+    created_at: number;
+    /**
+     * 
      * @type {string}
      * @memberof ModelScanInfo
      */
@@ -68,6 +74,7 @@ export interface ModelScanInfo {
  */
 export function instanceOfModelScanInfo(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "created_at" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "node_type" in value;
@@ -89,6 +96,7 @@ export function ModelScanInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
     }
     return {
         
+        'created_at': json['created_at'],
         'node_id': json['node_id'],
         'node_name': json['node_name'],
         'node_type': json['node_type'],
@@ -108,6 +116,7 @@ export function ModelScanInfoToJSON(value?: ModelScanInfo | null): any {
     }
     return {
         
+        'created_at': value.created_at,
         'node_id': value.node_id,
         'node_name': value.node_name,
         'node_type': value.node_type,

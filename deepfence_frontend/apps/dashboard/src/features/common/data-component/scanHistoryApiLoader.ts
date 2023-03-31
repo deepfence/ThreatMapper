@@ -1,12 +1,17 @@
 import { LoaderFunctionArgs } from 'react-router-dom';
 
-import { getSecretApiClient, getVulnerabilityApiClient } from '@/api/api';
+import {
+  getCloudComplianceApiClient,
+  getComplianceApiClient,
+  getMalwareApiClient,
+  getSecretApiClient,
+  getVulnerabilityApiClient,
+} from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
   ModelNodeIdentifierNodeTypeEnum,
-  ModelScanResultsActionRequestScanTypeEnum,
 } from '@/api/generated';
-import { ScanType } from '@/features/common/data-component/searchHostsApiLoader';
+import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 
 type ScanList = {
@@ -21,22 +26,19 @@ export type ApiLoaderDataType = {
 };
 
 async function getScanList(
-  scanType: ScanType,
+  scanType: ScanTypeEnum,
   nodeId: string,
   nodeType: string,
 ): Promise<ApiLoaderDataType> {
   const result = await makeRequest({
     apiFunction: {
-      [ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan]:
+      [ScanTypeEnum.VulnerabilityScan]:
         getVulnerabilityApiClient().listVulnerabilityScans,
-      [ModelScanResultsActionRequestScanTypeEnum.SecretScan]:
-        getSecretApiClient().listSecretScans,
-      [ModelScanResultsActionRequestScanTypeEnum.MalwareScan]:
-        getSecretApiClient().listSecretScans,
-      [ModelScanResultsActionRequestScanTypeEnum.CloudComplianceScan]:
-        getSecretApiClient().listSecretScans,
-      [ModelScanResultsActionRequestScanTypeEnum.ComplianceScan]:
-        getSecretApiClient().listSecretScans,
+      [ScanTypeEnum.SecretScan]: getSecretApiClient().listSecretScans,
+      [ScanTypeEnum.MalwareScan]: getMalwareApiClient().listMalwareScans,
+      [ScanTypeEnum.CloudComplianceScan]:
+        getCloudComplianceApiClient().listCloudComplianceScan,
+      [ScanTypeEnum.ComplianceScan]: getComplianceApiClient().listComplianceScan,
     }[scanType],
 
     apiArgs: [
@@ -99,9 +101,5 @@ export const scanHistoryApiLoader = async ({
     throw new Error('Scan Type, Node Type and Node Id are required');
   }
 
-  return await getScanList(
-    scanType as ModelScanResultsActionRequestScanTypeEnum,
-    nodeId,
-    nodeType,
-  );
+  return await getScanList(scanType as ScanTypeEnum, nodeId, nodeType);
 };

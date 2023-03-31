@@ -12,7 +12,7 @@ import { IconContext } from 'react-icons';
 import { FiFilter } from 'react-icons/fi';
 import {
   HiArchive,
-  HiArrowSmLeft,
+  HiChevronRight,
   HiClock,
   HiDotsVertical,
   HiDownload,
@@ -22,6 +22,7 @@ import {
 import {
   ActionFunctionArgs,
   Form,
+  generatePath,
   LoaderFunctionArgs,
   useFetcher,
   useLoaderData,
@@ -32,6 +33,8 @@ import {
 import { toast } from 'sonner';
 import {
   Badge,
+  Breadcrumb,
+  BreadcrumbLink,
   Button,
   CircleSpinner,
   createColumnHelper,
@@ -47,15 +50,10 @@ import {
 } from 'ui-components';
 import { Checkbox, SelectItem } from 'ui-components';
 
-import {
-  getScanResultsApiClient,
-  getSearchApiClient,
-  getTopologyApiClient,
-} from '@/api/api';
+import { getScanResultsApiClient, getSearchApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
   ModelScanInfo,
-  ModelScanResultsActionRequestScanTypeEnum,
   SearchSearchScanReq,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
@@ -66,6 +64,7 @@ import { useGetContainerImagesList } from '@/features/common/data-component/sear
 import { useGetContainersList } from '@/features/common/data-component/searchContainersApiLoader';
 import { useGetHostsList } from '@/features/common/data-component/searchHostsApiLoader';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
+import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -106,10 +105,6 @@ export type LoaderDataType = {
   error?: string;
   message?: string;
   data: Awaited<ReturnType<typeof getScans>>;
-  clusters?: {
-    clusterId: string;
-    clusterName: string;
-  }[];
 };
 
 const getStatusSearch = (searchParams: URLSearchParams) => {
@@ -130,62 +125,6 @@ const getLanguagesSearch = (searchParams: URLSearchParams) => {
 const getClustersSearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('clusters');
 };
-
-async function getClusters(): Promise<LoaderDataType['clusters']> {
-  const result = await makeRequest({
-    apiFunction: getTopologyApiClient().getKubernetesTopologyGraph,
-    apiArgs: [
-      {
-        graphTopologyFilters: {
-          cloud_filter: [],
-          field_filters: {
-            contains_filter: { filter_in: null },
-            order_filter: null as any,
-            match_filter: {
-              filter_in: {},
-            },
-          },
-          host_filter: [],
-          kubernetes_filter: [],
-          pod_filter: [],
-          region_filter: [],
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
-  });
-  if (ApiError.isApiError(result)) {
-    throw result.value();
-  }
-
-  if (result === null) {
-    return [];
-  }
-  const clusters = Object.keys(result.nodes)
-    .map((key) => result.nodes[key])
-    .filter((node) => {
-      return node.type === 'kubernetes_cluster';
-    })
-    .sort((a, b) => {
-      return (a.label ?? a.id ?? '').localeCompare(b.label ?? b.id ?? '');
-    });
-  return clusters.map((res) => {
-    return {
-      clusterId: res.id ?? 'N/A',
-      clusterName: res.label ?? 'N/A',
-    };
-  });
-}
 
 async function getScans(
   nodeTypes: NodeTypeEnum[],
@@ -269,6 +208,10 @@ async function getScans(
         match_filter: { filter_in: {} },
       },
       in_field_filter: null,
+      window: {
+        offset: 0,
+        size: 0,
+      },
     },
     scan_filters: {
       filters: {
@@ -277,6 +220,10 @@ async function getScans(
         match_filter: { filter_in: { ...languageFilters } },
       },
       in_field_filter: null,
+      window: {
+        offset: 0,
+        size: 1,
+      },
     },
     window: { offset: page * PAGE_SIZE, size: PAGE_SIZE },
   };
@@ -286,6 +233,13 @@ async function getScans(
       {
         field_name: order.sortBy,
         descending: order.descending,
+      },
+    ];
+  } else {
+    scanRequestParams.scan_filters.filters.order_filter.order_fields = [
+      {
+        field_name: 'updated_at',
+        descending: true,
       },
     ];
   }
@@ -384,7 +338,6 @@ const loader = async ({
 
   return typedDefer({
     data: getScans(nodeType as NodeTypeEnum[], searchParams),
-    clusters: getClusters(),
   });
 };
 
@@ -407,7 +360,7 @@ const action = async ({
       apiArgs: [
         {
           scanId: scanId.toString(),
-          scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+          scanType: ScanTypeEnum.SecretScan,
         },
       ],
       errorHandler: async (r) => {
@@ -437,7 +390,7 @@ const action = async ({
       apiArgs: [
         {
           scanId: scanId.toString(),
-          scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+          scanType: ScanTypeEnum.SecretScan,
         },
       ],
       errorHandler: async (r) => {
@@ -542,7 +495,7 @@ const DeleteConfirmationModal = ({
 
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center">
+      <div className="grid place-items-center p-6">
         <IconContext.Provider
           value={{
             className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
@@ -662,15 +615,15 @@ const SecretScans = () => {
   const columnHelper = createColumnHelper<ScanResult>();
 
   const { hosts, status: listHostStatus } = useGetHostsList({
-    scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+    scanType: ScanTypeEnum.SecretScan,
   });
   const { containerImages, status: listContainerImageStatus } = useGetContainerImagesList(
     {
-      scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+      scanType: ScanTypeEnum.SecretScan,
     },
   );
   const { containers, status: listContainerStatus } = useGetContainersList({
-    scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+    scanType: ScanTypeEnum.SecretScan,
   });
   const { clusters, status: listClusterStatus } = useGetClustersList();
 
@@ -698,24 +651,27 @@ const SecretScans = () => {
         size: 120,
         maxSize: 130,
       }),
-      columnHelper.accessor('node_id', {
+      columnHelper.accessor('node_name', {
         enableSorting: false,
         cell: (info) => {
-          const isScanComplete = info.row.original.status?.toLowerCase() === 'complete';
+          const isNeverScan = info.row.original.status?.toLowerCase() === '';
           const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
-            if (isScanComplete) {
-              return (
-                <DFLink to={`/secret/scan-results/${info.row.original.scan_id}`}>
-                  {children}
-                </DFLink>
-              );
-            }
-            return <>{children}</>;
+            return isNeverScan ? (
+              <>{children}</>
+            ) : (
+              <DFLink
+                to={generatePath(`/secret/scan-results/:scanId`, {
+                  scanId: info.row.original.scan_id,
+                })}
+              >
+                {children}
+              </DFLink>
+            );
           };
           return (
             <WrapperComponent>
               <div className="flex items-center gap-x-2 truncate">
-                <span className="truncate capitalize">{info.getValue()}</span>
+                <span className="truncate">{info.getValue()}</span>
               </div>
             </WrapperComponent>
           );
@@ -903,21 +859,15 @@ const SecretScans = () => {
   return (
     <div>
       <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-        <DFLink
-          to={'/secret'}
-          className="flex hover:no-underline items-center justify-center mr-2"
-        >
-          <IconContext.Provider
-            value={{
-              className: 'w-5 h-5 text-blue-600 dark:text-blue-500 ',
-            }}
-          >
-            <HiArrowSmLeft />
-          </IconContext.Provider>
-        </DFLink>
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-          SECRET SCANS
-        </span>
+        <Breadcrumb separator={<HiChevronRight />} transparent>
+          <BreadcrumbLink>
+            <DFLink to={'/secret'}>SECRETS</DFLink>
+          </BreadcrumbLink>
+          <BreadcrumbLink>
+            <span className="inherit cursor-auto">SECRET SCANS</span>
+          </BreadcrumbLink>
+        </Breadcrumb>
+
         <span className="ml-2">
           {navigation.state === 'loading' ? <CircleSpinner size="xs" /> : null}
         </span>

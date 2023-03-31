@@ -36,7 +36,7 @@ type ScanData = {
   accountName: string;
   accountType: string;
   benchmarkResults: Array<{
-    benchmarkType: string;
+    benchmarkType: string[];
     compliancePercentage: number;
     data: {
       total: number;
@@ -111,7 +111,9 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
         accountType: data[0].node_type,
         benchmarkResults: data.map((item) => {
           return {
-            benchmarkType: item.benchmark_type?.length ? item.benchmark_type : 'unknown',
+            benchmarkType: item.benchmark_type?.length
+              ? item.benchmark_type
+              : ['unknown'],
             compliancePercentage: item.compliance_percentage,
             data: {
               total: Object.keys(item.status_counts ?? {}).reduce((acc, severity) => {
@@ -138,7 +140,7 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
       accountType: data[0].node_type,
       benchmarkResults: data.map((item) => {
         return {
-          benchmarkType: item.benchmark_type?.length ? item.benchmark_type : 'unknown',
+          benchmarkType: item.benchmark_type?.length ? item.benchmark_type : ['unknown'],
           compliancePercentage: item.compliance_percentage,
           data: {
             total: Object.keys(item.status_counts ?? {}).reduce((acc, severity) => {
@@ -158,6 +160,7 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
   });
   const resultWithEmptySeverityAtEnd =
     resultNonEmptySeverityData.concat(resulEmptySeverityData);
+
   return resultWithEmptySeverityAtEnd;
 };
 
@@ -199,28 +202,35 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
     accNonEmpty: [],
     accEmpty: [],
   };
+
   responses.forEach((response) => {
     if (ApiError.isApiError(response)) {
       // TODO: handle any one request has an error on this bulk request
       return initial.err.push(response);
     } else {
-      if (isEmpty(response.status_counts)) {
+      if (isEmpty(response.status_counts || response.status_counts === null)) {
         initial.accEmpty.push(response);
       } else {
         initial.accNonEmpty.push(response);
       }
     }
   });
-  const groupedNonEmptySevirityData = groupBy(initial.accNonEmpty, 'node_id');
-  const resultNonEmptySeverityData = Object.keys(groupedNonEmptySevirityData).map(
+
+  let groupedNonEmptySeverityData = groupBy(initial.accNonEmpty, 'node_id');
+  if (groupedNonEmptySeverityData.length) {
+    groupedNonEmptySeverityData = {};
+  }
+  const resultNonEmptySeverityData = Object.keys(groupedNonEmptySeverityData).map(
     (key) => {
-      const data = groupedNonEmptySevirityData[key];
+      const data = groupedNonEmptySeverityData[key];
       return {
         accountName: data[0].node_name,
         accountType: data[0].node_type,
         benchmarkResults: data.map((item) => {
           return {
-            benchmarkType: item.benchmark_type?.length ? item.benchmark_type : 'unknown',
+            benchmarkType: item.benchmark_type?.length
+              ? item.benchmark_type
+              : ['unknown'],
             compliancePercentage: item.compliance_percentage,
             data: {
               total: Object.keys(item.status_counts ?? {}).reduce((acc, severity) => {
@@ -239,15 +249,19 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
       };
     },
   );
-  const groupedEmptySevirityData = groupBy(initial.accEmpty, 'node_id');
-  const resulEmptySeverityData = Object.keys(groupedEmptySevirityData).map((key) => {
-    const data = groupedNonEmptySevirityData[key];
+  let groupedEmptySeverityData = groupBy(initial.accEmpty, 'node_id');
+  if (groupedNonEmptySeverityData.length) {
+    groupedEmptySeverityData = {};
+  }
+
+  const resulEmptySeverityData = Object.keys(groupedEmptySeverityData).map((key) => {
+    const data = groupedEmptySeverityData[key];
     return {
       accountName: data[0].node_name,
       accountType: data[0].node_type,
       benchmarkResults: data.map((item) => {
         return {
-          benchmarkType: item.benchmark_type?.length ? item.benchmark_type : 'unknown',
+          benchmarkType: item.benchmark_type?.length ? item.benchmark_type : ['unknown'],
           compliancePercentage: item.compliance_percentage,
           data: {
             total: Object.keys(item.status_counts ?? {}).reduce((acc, severity) => {
@@ -265,8 +279,10 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
       }),
     };
   });
+
   const resultWithEmptySeverityAtEnd =
     resultNonEmptySeverityData.concat(resulEmptySeverityData);
+
   return resultWithEmptySeverityAtEnd;
 };
 
@@ -438,14 +454,14 @@ const Scan = ({ scanData }: { scanData: ScanData }) => {
           {benchmarkResults.map((benchmarkResult, index) => {
             const { data, compliancePercentage, benchmarkType } = benchmarkResult;
             return (
-              <div key={benchmarkType}>
+              <div key={`benchmark${index}`}>
                 {index !== 0 ? (
                   <Separator className="mx-6 h-[1px] bg-gray-100 dark:bg-gray-700" />
                 ) : null}
                 <div className="flex flex-col p-4">
                   <div className="grid grid-cols-[3fr_2fr]">
                     <BenchmarkTypeAndPercentage
-                      type={benchmarkType}
+                      type={benchmarkType.toString()}
                       percentage={compliancePercentage}
                     />
                     <SeverityChart counts={data.counts ?? []} />

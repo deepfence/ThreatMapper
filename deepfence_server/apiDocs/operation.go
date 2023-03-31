@@ -3,9 +3,9 @@ package apiDocs
 import (
 	"net/http"
 
-	"github.com/weaveworks/scope/render/detailed"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/render/detailed"
 
-	. "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
+	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/model"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
@@ -116,7 +116,7 @@ func (d *OpenApiDocs) AddGraphOperations() {
 
 	d.AddOperation("getThreatGraph", http.MethodPost, "/deepfence/graph/threat",
 		"Get Threat Graph", "Retrieve the full threat graph associated with the account",
-		http.StatusOK, []string{tagThreat}, bearerToken, nil, new(ThreatGraph))
+		http.StatusOK, []string{tagThreat}, bearerToken, new(ThreatFilters), new(ThreatGraph))
 }
 
 func (d *OpenApiDocs) AddLookupOperations() {
@@ -147,6 +147,10 @@ func (d *OpenApiDocs) AddLookupOperations() {
 	d.AddOperation("getRegistryAccount", http.MethodPost, "/deepfence/lookup/registryaccount",
 		"Get Images in Registry", "List all the images present in the given registry",
 		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]RegistryAccount))
+
+	d.AddOperation("getCloudResources", http.MethodPost, "/deepfence/lookup/cloud-resources",
+		"Get Cloud Resources", "Retrieve the cloud resources",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]CloudResource))
 }
 
 func (d *OpenApiDocs) AddSearchOperations() {
@@ -169,7 +173,7 @@ func (d *OpenApiDocs) AddSearchOperations() {
 
 	d.AddOperation("searchSecrets", http.MethodPost, "/deepfence/search/secrets",
 		"Search Secrets", "Search across all the data associated with secrets",
-		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]SecretRule))
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Secret))
 
 	d.AddOperation("searchMalwares", http.MethodPost, "/deepfence/search/malwares",
 		"Search Malwares", "Search across all the data associated with malwares",
@@ -202,6 +206,14 @@ func (d *OpenApiDocs) AddSearchOperations() {
 	d.AddOperation("searchCloudComplianceScans", http.MethodPost, "/deepfence/search/cloud-compliance/scans",
 		"Search Cloud Compliance Scan results", "Search across all the data associated with cloud-compliance scan",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new([]ScanInfo))
+
+	d.AddOperation("getCloudComplianceFilters", http.MethodPost, "/deepfence/filters/cloud-compliance",
+		"Get Cloud Compliance Filters", "Get all applicable filter values for cloud compliance",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(FiltersReq), new(FiltersResult))
+
+	d.AddOperation("getComplianceFilters", http.MethodPost, "/deepfence/filters/compliance",
+		"Get Compliance Filters", "Get all applicable filter values for compliance",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(FiltersReq), new(FiltersResult))
 
 	// Count APIs
 	d.AddOperation("countHosts", http.MethodPost, "/deepfence/search/count/hosts",
@@ -273,6 +285,18 @@ func (d *OpenApiDocs) AddControlsOperations() {
 	d.AddOperation("upgradeAgentVersion", http.MethodPost, "/deepfence/controls/agent-upgrade",
 		"Schedule new agent version upgrade", "Schedule new agent version upgrade",
 		http.StatusOK, []string{tagControls}, bearerToken, new(AgentUpgrade), nil)
+
+	d.AddOperation("getCloudNodeControls", http.MethodPost, "/deepfence/controls/cloud-node",
+		"Fetch Cloud Node Controls", "Fetch controls for a cloud node",
+		http.StatusOK, []string{tagControls}, bearerToken, new(CloudNodeControlReq), new(CloudNodeControlResp))
+
+	d.AddOperation("enableCloudNodeControls", http.MethodPost, "/deepfence/controls/cloud-node/enable",
+		"Enable Cloud Node Controls", "Enable controls for a cloud node",
+		http.StatusOK, []string{tagControls}, bearerToken, new(CloudNodeEnableDisableReq), nil)
+
+	d.AddOperation("disableCloudNodeControls", http.MethodPost, "/deepfence/controls/cloud-node/disable",
+		"Disable Cloud Node Controls", "Disable controls for a cloud node",
+		http.StatusOK, []string{tagControls}, bearerToken, new(CloudNodeEnableDisableReq), nil)
 }
 
 func (d *OpenApiDocs) AddCloudNodeOperations() {
@@ -284,7 +308,7 @@ func (d *OpenApiDocs) AddCloudNodeOperations() {
 		"List Cloud Node Accounts", "List Cloud Node Accounts registered with the console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeAccountsListReq), new(CloudNodeAccountsListResp))
 
-	d.AddOperation("listCloudProviders", http.MethodPost, "/deepfence/cloud-node/list/providers",
+	d.AddOperation("listCloudProviders", http.MethodGet, "/deepfence/cloud-node/list/providers",
 		"List Cloud Node Providers", "List Cloud Node Providers registered with the console",
 		http.StatusOK, []string{tagCloudNodes}, bearerToken, new(CloudNodeProvidersListReq), new(CloudNodeProvidersListResp))
 }
@@ -381,7 +405,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusOK, []string{tagSecretScan}, bearerToken, new(ScanStatusReq), new(ScanStatusResp))
 	d.AddOperation("statusComplianceScan", http.MethodPost, "/deepfence/scan/status/compliance",
 		"Get Compliance Scan Status", "Get Compliance Scan Status on agent or registry",
-		http.StatusOK, []string{tagCompliance}, bearerToken, new(ScanStatusReq), new(ComplianceScanStatusResp))
+		http.StatusOK, []string{tagCompliance}, bearerToken, new(ScanStatusReq), new(ScanStatusResp))
 	d.AddOperation("statusMalwareScan", http.MethodPost, "/deepfence/scan/status/malware",
 		"Get Malware Scan Status", "Get Malware Scan status on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanStatusReq), new(ScanStatusResp))
@@ -402,6 +426,9 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("listMalwareScan", http.MethodPost, "/deepfence/scan/list/malware",
 		"Get Malware Scans List", "Get Malware Scans list on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanListReq), new(ScanListResp))
+	d.AddOperation("listCloudComplianceScan", http.MethodPost, "/deepfence/scan/list/cloud-compliance",
+		"Get Cloud Compliance Scans List", "Get Cloud Compliance Scans list for cloud node",
+		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanListReq), new(ScanListResp))
 
 	// Scans' Results
 	d.AddOperation("resultsVulnerabilityScans", http.MethodPost, "/deepfence/scan/results/vulnerability",
@@ -475,16 +502,19 @@ func (d *OpenApiDocs) AddScansOperations() {
 func (d *OpenApiDocs) AddDiagnosisOperations() {
 	d.AddOperation("diagnosticNotification", http.MethodGet, "/deepfence/diagnosis/notification",
 		"Get Diagnostic Notification", "Get Diagnostic Notification",
-		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new([]DiagnosticNotification))
+		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new([]diagnosis.DiagnosticNotification))
 	d.AddOperation("generateConsoleDiagnosticLogs", http.MethodPost, "/deepfence/diagnosis/console-logs",
 		"Generate Console Diagnostic Logs", "Generate Console Diagnostic Logs",
-		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(GenerateDiagnosticLogsRequest), nil)
+		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(diagnosis.GenerateConsoleDiagnosticLogsRequest), nil)
 	d.AddOperation("generateAgentDiagnosticLogs", http.MethodPost, "/deepfence/diagnosis/agent-logs",
 		"Generate Agent Diagnostic Logs", "Generate Agent Diagnostic Logs",
-		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(GenerateDiagnosticLogsRequest), nil)
+		http.StatusAccepted, []string{tagDiagnosis}, bearerToken, new(diagnosis.GenerateAgentDiagnosticLogsRequest), nil)
+	d.AddOperation("updateAgentDiagnosticLogsStatus", http.MethodPut, "/deepfence/diagnosis/agent-logs/status/{node_id}",
+		"Update Agent Diagnostic Logs Status", "Update agent diagnostic logs status",
+		http.StatusNoContent, []string{tagDiagnosis}, bearerToken, new(diagnosis.DiagnosticLogsStatus), nil)
 	d.AddOperation("getDiagnosticLogs", http.MethodGet, "/deepfence/diagnosis/diagnostic-logs",
 		"Get Diagnostic Logs", "Get diagnostic logs download url links",
-		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, nil)
+		http.StatusOK, []string{tagDiagnosis}, bearerToken, nil, new(diagnosis.GetDiagnosticLogsResponse))
 }
 
 func (d *OpenApiDocs) AddRegistryOperations() {
@@ -494,13 +524,46 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 	d.AddOperation("addRegistry", http.MethodPost, "/deepfence/registryaccount",
 		"Add Registry", "Add a new supported registry",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryAddReq), nil)
+	d.AddOperation("addRegistryGCR", http.MethodPost, "/deepfence/registryaccount/gcr",
+		"Add Google Container Registry", "Add a Google Container registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryGCRAddReq), nil)
+	d.AddOperation("updateRegistry", http.MethodPut, "/deepfence/registryaccount/{registry_id}",
+		"Update Registry", "Update registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryUpdateReq), nil)
 	d.AddOperation("deleteRegistry", http.MethodDelete, "/deepfence/registryaccount/{registry_id}",
-		"Add Registry", "Delete registry",
-		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryDeleteReq), nil)
-	d.AddOperation("listImages", http.MethodGet, "/deepfence/registryaccount/{registry_id}/images",
+		"Delete Registry", "Delete registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryIDPathReq), nil)
+	d.AddOperation("getSummaryAll", http.MethodGet, "/deepfence/registryaccount/summary",
+		"Get All Registries Summary By Type", "get summary of all registries scans, images and tags by registry type",
+		http.StatusOK, []string{tagRegistry}, bearerToken, nil, new(RegistrySummaryAllResp))
+	d.AddOperation("getSummaryByType", http.MethodGet, "/deepfence/registryaccount/{registry_type}/summary-by-type",
+		"Get Registry Summary By Type", "get summary of registries scans, images and tags by registry type",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryTypeReq), new(Summary))
+	d.AddOperation("getRegistrySummary", http.MethodGet, "/deepfence/registryaccount/{registry_id}/summary",
+		"Get Registry Summary", "get summary of registry scans, images and tags",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryIDPathReq), new(Summary))
+	d.AddOperation("listImages", http.MethodPost, "/deepfence/registryaccount/images",
 		"List Registry Images", "list images from a given registry",
-		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImagesReq), new([]ContainerImageWithTags))
-	d.AddOperation("listImageTags", http.MethodGet, "/deepfence/registryaccount/{registry_id}/images/{image_name}/tags",
-		"List Image Tags", "list image tags for a given image and registry",
-		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImageTagsReq), new([]ContainerImage))
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImagesReq), new([]ContainerImage))
+	d.AddOperation("listImageStubs", http.MethodPost, "/deepfence/registryaccount/stubs",
+		"List Image Stubs", "list image tags for a given image and registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImageStubsReq), new([]ImageStub))
+	d.AddOperation("CountImages", http.MethodPost, "/deepfence/registryaccount/count/images",
+		"Count Registry Images", "count of images from a given registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImagesReq), new(RegistryCountResp))
+	d.AddOperation("CountImageStubs", http.MethodPost, "/deepfence/registryaccount/count/stubs",
+		"Count Image Stubs", "count of image tags for a given image and registry",
+		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImageStubsReq), new(RegistryCountResp))
+}
+
+func (d *OpenApiDocs) AddIntegrationOperations() {
+	d.AddOperation("addIntegration", http.MethodPost, "/deepfence/integration",
+		"Add Integration", "Add a new supported integration",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationAddReq), nil)
+	d.AddOperation("listIntegration", http.MethodGet, "/deepfence/integration",
+		"List Integrations", "List all the added Integrations",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationListReq), new([]IntegrationListResp))
+	d.AddOperation("deleteIntegration", http.MethodDelete, "/deepfence/integration/{integration_id}",
+		"Delete Integration", "Delete integration",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
 }

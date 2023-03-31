@@ -18,10 +18,8 @@ const option: EChartsOption = {
   },
   series: [
     {
-      name: 'Secrets',
       type: 'pie',
       radius: ['70%', '90%'],
-      bottom: '10%',
       avoidLabelOverlap: true,
       label: {
         show: false,
@@ -51,7 +49,7 @@ export const SecretsResultChart = ({
 
   option.dataset = {
     source: Object.keys(data).map((key) => ({
-      Secret: key,
+      Secrets: key,
       value: data[key],
     })),
   };

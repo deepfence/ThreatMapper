@@ -1,11 +1,14 @@
 package cronjobs
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill/message"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -13,15 +16,43 @@ import (
 )
 
 const (
-	dbReportCleanUpTimeout   = time.Minute * 2
-	dbRegistryCleanUpTimeout = time.Minute * 30
-	dbScanTimeout            = time.Minute * 2
-	dbUpgradeTimeout         = time.Minute * 5
+	diagnosticLogsCleanUpTimeout           = time.Hour * 6
+	dbReportCleanUpTimeout                 = time.Minute * 2
+	dbRegistryCleanUpTimeout               = time.Minute * 30
+	dbScanTimeout                          = time.Minute * 2
+	dbUpgradeTimeout                       = time.Minute * 5
+	defaultDBScannedResourceCleanUpTimeout = time.Hour * 24 * 30
 )
+
+func getResourceCleanUpTimeout(ctx context.Context) time.Duration {
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return defaultDBScannedResourceCleanUpTimeout
+	}
+	s := model.Setting{}
+	aes, err := s.GetSettingByKey(ctx, pgClient, model.InactiveNodesDeleteScanResultsKey)
+	if err != nil {
+		return defaultDBScannedResourceCleanUpTimeout
+	}
+	var sValue directory.SettingValue
+	err = json.Unmarshal(aes.Value, &sValue)
+	if err != nil {
+		return defaultDBScannedResourceCleanUpTimeout
+	}
+
+	if t, ok := sValue.Value.(int); ok {
+		return time.Hour * 24 * time.Duration(t)
+	}
+
+	return defaultDBScannedResourceCleanUpTimeout
+}
 
 func CleanUpDB(msg *message.Message) error {
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
+
+	dbScannedResourceCleanUpTimeout := getResourceCleanUpTimeout(ctx)
+
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -29,55 +60,123 @@ func CleanUpDB(msg *message.Message) error {
 	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
-	if err != nil {
-		return err
-	}
-	defer tx.Close()
-
-	if _, err = tx.Run(`
+	// Set inactives
+	if _, err = session.Run(`
 		MATCH (n:Node)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		SET n.agent_running=false`,
+		AND exists((n) <-[:SCANNED]-())
+		WITH n LIMIT 100000
+		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = session.Run(`
 		MATCH (n:ContainerImage)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		DETACH DELETE n`,
+		AND exists((n) <-[:SCANNED]-())
+		WITH n LIMIT 100000
+		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbRegistryCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = session.Run(`
 		MATCH (n:Container)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		DETACH DELETE n`,
+		AND exists((n) <-[:SCANNED]-())
+		WITH n LIMIT 100000
+		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = session.Run(`
+		MATCH (n:KubernetesCluster)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND exists((n) <-[:SCANNED]-())
+		WITH n LIMIT 100000
+		SET n.active=false`,
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		return err
+	}
+
+	// Delete old with no data
+	if _, err = session.Run(`
+		MATCH (n:Node)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND NOT exists((n) <-[:SCANNED]-())
+		OR n.updated_at < TIMESTAMP()-$old_time_ms
+		WITH n LIMIT 100000
+		DETACH DELETE n`,
+		map[string]interface{}{
+			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
+			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+		}); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:ContainerImage)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND NOT exists((n) <-[:SCANNED]-())
+		OR n.updated_at < TIMESTAMP()-$old_time_ms
+		WITH n LIMIT 100000
+		DETACH DELETE n`,
+		map[string]interface{}{
+			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
+			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+		}); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:Container)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND NOT exists((n) <-[:SCANNED]-())
+		OR n.updated_at < TIMESTAMP()-$old_time_ms
+		WITH n LIMIT 100000
+		DETACH DELETE n`,
+		map[string]interface{}{
+			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
+			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+		}); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:KubernetesCluster)
+		WHERE n.updated_at < TIMESTAMP()-$old_time_ms
+		WITH n LIMIT 100000
+		DETACH DELETE n`,
+		map[string]interface{}{
+			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+		}); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
 		MATCH (n:Pod)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		WITH n LIMIT 100000
 		DETACH DELETE n`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = session.Run(`
 		MATCH (n:Process)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		WITH n LIMIT 100000
 		DETACH DELETE n`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = session.Run(`
 		MATCH (n) -[:SCANNED]-> (:Node)
 		WHERE n.retries >= 3
+		WITH n LIMIT 100000
 		SET n.status = $new_status`,
 		map[string]interface{}{
 			"time_ms":    dbScanTimeout.Milliseconds(),
@@ -86,9 +185,10 @@ func CleanUpDB(msg *message.Message) error {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err = session.Run(`
 		MATCH (:AgentVersion) -[n:SCHEDULED]-> (:Node)
 		WHERE n.retries >= 3
+		WITH n LIMIT 100000
 		SET n.status = $new_status`,
 		map[string]interface{}{
 			"time_ms":    dbUpgradeTimeout.Milliseconds(),
@@ -97,7 +197,34 @@ func CleanUpDB(msg *message.Message) error {
 		return err
 	}
 
-	return tx.Commit()
+	if _, err = session.Run(`
+		MATCH (n:AgentDiagnosticLogs)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND NOT exists((n)-[:SCHEDULEDLOGS]->())
+		OR n.updated_at < TIMESTAMP()-$old_time_ms
+		WITH n LIMIT 100000
+		DETACH DELETE n`,
+		map[string]interface{}{
+			"time_ms":     diagnosticLogsCleanUpTimeout.Milliseconds(),
+			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+		}); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:CloudResource)
+		WHERE n.updated_at < TIMESTAMP()-$old_time_ms
+		AND NOT exists((n) <-[:SCANNED]-())
+		WITH n LIMIT 100000
+		DETACH DELETE n`,
+		map[string]interface{}{
+			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
+			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+		}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func RetryScansDB(msg *message.Message) error {
@@ -122,6 +249,20 @@ func RetryScansDB(msg *message.Message) error {
 		AND n.updated_at < TIMESTAMP()-$time_ms
 		AND n.retries < 3
 		SET n.retries = n.retries + 1, n.status=$new_status`,
+		map[string]interface{}{
+			"time_ms":    dbScanTimeout.Milliseconds(),
+			"old_status": utils.SCAN_STATUS_INPROGRESS,
+			"new_status": utils.SCAN_STATUS_STARTING,
+		}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run(`
+		MATCH (a:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n)
+		WHERE a.status = $old_status
+		AND a.updated_at < TIMESTAMP()-$time_ms
+		AND a.retries < 3
+		SET a.retries = a.retries + 1, a.status=$new_status`,
 		map[string]interface{}{
 			"time_ms":    dbScanTimeout.Milliseconds(),
 			"old_status": utils.SCAN_STATUS_INPROGRESS,
@@ -180,20 +321,27 @@ func ApplyGraphDBStartup(msg *message.Message) error {
 	session.Run("CREATE CONSTRAINT ON (n:AgentVersion) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:KubernetesCluster) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:ContainerImage) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:ImageStub) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Node) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Container) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Pod) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Process) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
-	session.Run("CREATE CONSTRAINT ON (n:KCluster) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
-	session.Run("CREATE CONSTRAINT ON (n:Secret) ASSERT n.rule_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:Secret) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:SecretRule) ASSERT n.rule_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Malware) ASSERT n.malware_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:MalwareRule) ASSERT n.rule_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Vulnerability) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:VulnerabilityStub) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:SecurityGroup) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:CloudNode) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:CloudResource) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:RegistryAccount) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:Compliance) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:CloudCompliance) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:AgentDiagnosticLogs) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:CloudComplianceExecutable) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:CloudComplianceControl) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:CloudComplianceBenchmark) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_SECRET_SCAN), map[string]interface{}{})
 	session.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_VULNERABILITY_SCAN), map[string]interface{}{})
 	session.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_COMPLIANCE_SCAN), map[string]interface{}{})
@@ -209,5 +357,27 @@ func ApplyGraphDBStartup(msg *message.Message) error {
 	session.Run("MERGE (n:Node{node_id:'out-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
 	session.Run("MERGE (n:Node{node_id:'deepfence-console-cron', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
 
+	// Indexes for fast searching & ordering
+	addIndexOnIssuesCount(session, "ContainerImage")
+	addIndexOnIssuesCount(session, "Container")
+
 	return nil
+}
+
+func addIndexOnIssuesCount(session neo4j.Session, node_type string) {
+	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByVulnerabilitiesCount FOR (n:%s) ON (n.vulnerabilities_count)",
+		node_type, node_type),
+		map[string]interface{}{})
+	session.Run(fmt.Sprintf("CREATE INDEX %sOrderBySecretsCount FOR (n:%s) ON (n.vulnerabilities_count)",
+		node_type, node_type),
+		map[string]interface{}{})
+	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByMalwaresCount FOR (n:%s) ON (n.secrets_count)",
+		node_type, node_type),
+		map[string]interface{}{})
+	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByCompliancesCount FOR (n:%s) ON (n.compliances_count)",
+		node_type, node_type),
+		map[string]interface{}{})
+	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByCloudCompliancesCount FOR (n:%s) ON (n.cloud_compliances_count)",
+		node_type, node_type),
+		map[string]interface{}{})
 }

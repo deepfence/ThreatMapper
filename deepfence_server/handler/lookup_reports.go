@@ -17,6 +17,7 @@ func (h *Handler) GetHosts(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
 	}
 
 	err = httpext.JSON(w, http.StatusOK, hosts)
@@ -34,6 +35,7 @@ func (h *Handler) GetContainers(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
 	}
 
 	err = httpext.JSON(w, http.StatusOK, hosts)
@@ -51,6 +53,7 @@ func (h *Handler) GetProcesses(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
 	}
 
 	err = httpext.JSON(w, http.StatusOK, hosts)
@@ -68,6 +71,7 @@ func (h *Handler) GetKubernetesClusters(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
 	}
 
 	err = httpext.JSON(w, http.StatusOK, clusters)
@@ -85,6 +89,7 @@ func (h *Handler) GetContainerImages(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
 	}
 
 	err = httpext.JSON(w, http.StatusOK, hosts)
@@ -102,6 +107,7 @@ func (h *Handler) GetPods(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
 	}
 
 	err = httpext.JSON(w, http.StatusOK, hosts)
@@ -119,6 +125,25 @@ func (h *Handler) GetRegistryAccount(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
+	}
+
+	err = httpext.JSON(w, http.StatusOK, registry)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+func (h *Handler) GetCloudResources(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters_lookup.LookupFilter
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+
+	registry, err := reporters_lookup.GetCloudResourcesReport(r.Context(), req)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		http.Error(w, "Error processing request body", http.StatusBadRequest)
+		return
 	}
 
 	err = httpext.JSON(w, http.StatusOK, registry)

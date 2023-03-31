@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelSecretRule } from './ModelSecretRule';
+import type { ModelSecret } from './ModelSecret';
 import {
-    ModelSecretRuleFromJSON,
-    ModelSecretRuleFromJSONTyped,
-    ModelSecretRuleToJSON,
-} from './ModelSecretRule';
+    ModelSecretFromJSON,
+    ModelSecretFromJSONTyped,
+    ModelSecretToJSON,
+} from './ModelSecret';
 
 /**
  * 
@@ -26,6 +26,12 @@ import {
  * @interface ModelSecretScanResult
  */
 export interface ModelSecretScanResult {
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelSecretScanResult
+     */
+    created_at: number;
     /**
      * 
      * @type {string}
@@ -76,10 +82,10 @@ export interface ModelSecretScanResult {
     scan_id: string;
     /**
      * 
-     * @type {Array<ModelSecretRule>}
+     * @type {Array<ModelSecret>}
      * @memberof ModelSecretScanResult
      */
-    secrets: Array<ModelSecretRule> | null;
+    secrets: Array<ModelSecret> | null;
     /**
      * 
      * @type {{ [key: string]: number; }}
@@ -99,6 +105,7 @@ export interface ModelSecretScanResult {
  */
 export function instanceOfModelSecretScanResult(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "created_at" in value;
     isInstance = isInstance && "docker_container_name" in value;
     isInstance = isInstance && "docker_image_name" in value;
     isInstance = isInstance && "host_name" in value;
@@ -124,6 +131,7 @@ export function ModelSecretScanResultFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
+        'created_at': json['created_at'],
         'docker_container_name': json['docker_container_name'],
         'docker_image_name': json['docker_image_name'],
         'host_name': json['host_name'],
@@ -132,7 +140,7 @@ export function ModelSecretScanResultFromJSONTyped(json: any, ignoreDiscriminato
         'node_name': json['node_name'],
         'node_type': json['node_type'],
         'scan_id': json['scan_id'],
-        'secrets': (json['secrets'] === null ? null : (json['secrets'] as Array<any>).map(ModelSecretRuleFromJSON)),
+        'secrets': (json['secrets'] === null ? null : (json['secrets'] as Array<any>).map(ModelSecretFromJSON)),
         'severity_counts': json['severity_counts'],
         'updated_at': json['updated_at'],
     };
@@ -147,6 +155,7 @@ export function ModelSecretScanResultToJSON(value?: ModelSecretScanResult | null
     }
     return {
         
+        'created_at': value.created_at,
         'docker_container_name': value.docker_container_name,
         'docker_image_name': value.docker_image_name,
         'host_name': value.host_name,
@@ -155,7 +164,7 @@ export function ModelSecretScanResultToJSON(value?: ModelSecretScanResult | null
         'node_name': value.node_name,
         'node_type': value.node_type,
         'scan_id': value.scan_id,
-        'secrets': (value.secrets === null ? null : (value.secrets as Array<any>).map(ModelSecretRuleToJSON)),
+        'secrets': (value.secrets === null ? null : (value.secrets as Array<any>).map(ModelSecretToJSON)),
         'severity_counts': value.severity_counts,
         'updated_at': value.updated_at,
     };

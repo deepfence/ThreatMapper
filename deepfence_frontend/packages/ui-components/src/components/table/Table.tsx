@@ -17,6 +17,7 @@ import {
   Row,
   RowData,
   RowModel,
+  RowSelectionOptions,
   RowSelectionState,
   SortingState,
   Table,
@@ -64,7 +65,8 @@ export interface TableProps<TData extends RowData> {
   manualSorting?: boolean;
   sortingState?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
-  enableRowSelection?: boolean;
+  enableRowSelection?: RowSelectionOptions<TData>['enableRowSelection'];
+  enableSubRowSelection?: RowSelectionOptions<TData>['enableSubRowSelection'];
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
   rowSelectionState?: RowSelectionState;
   getRowId?: TableOptions<TData>['getRowId'];
@@ -74,6 +76,7 @@ export interface TableProps<TData extends RowData> {
   getTdProps?: (cell: Cell<TData, unknown>) => React.ComponentProps<'td'>;
   getTrProps?: (row: Row<TData>, rowIdx: number) => React.ComponentProps<'tr'>;
   getSubRows?: (originalRow: TData, index: number) => TData[] | undefined;
+  noDataText?: string;
 }
 
 interface TableContextValues<TData extends RowData> {
@@ -112,6 +115,7 @@ const CustomTable = <TData extends RowData>(
     sortingState,
     onSortingChange,
     enableRowSelection = false,
+    enableSubRowSelection,
     onRowSelectionChange,
     rowSelectionState,
     getRowId,
@@ -121,6 +125,7 @@ const CustomTable = <TData extends RowData>(
     getTrProps,
     expanded,
     onExpandedChange,
+    noDataText = 'No data',
   } = props;
   const TableContext = createTableContext<TData>();
 
@@ -152,6 +157,7 @@ const CustomTable = <TData extends RowData>(
     enableSorting,
     getSubRows,
     enableRowSelection,
+    enableSubRowSelection,
     ...(enablePagination ? { getPaginationRowModel: getPaginationRowModel() } : {}),
     state: {
       ...(enablePagination && manualPagination
@@ -167,7 +173,7 @@ const CustomTable = <TData extends RowData>(
             pagination: internalPaginationState,
           }
         : {}),
-      ...(enableSorting && manualSorting
+      ...(enableSorting && sortingState
         ? {
             sorting: sortingState,
           }
@@ -189,7 +195,8 @@ const CustomTable = <TData extends RowData>(
     ...(enablePagination && !manualPagination
       ? { onPaginationChange: setInternalPaginationState }
       : {}),
-    ...(enableSorting && manualSorting ? { manualSorting: true, onSortingChange } : {}),
+    ...(enableSorting && manualSorting ? { manualSorting: true } : {}),
+    ...(enableSorting && onSortingChange ? { onSortingChange } : {}),
     ...(enableRowSelection
       ? {
           onRowSelectionChange,
@@ -226,7 +233,20 @@ const CustomTable = <TData extends RowData>(
           cellSpacing="0"
         >
           <TableHead headerGroups={headerGroups} size={size} />
-          <TableBody rowModel={rowModel} size={size} />
+          {rowModel.rows.length ? (
+            <TableBody rowModel={rowModel} size={size} />
+          ) : (
+            <tbody>
+              <tr>
+                <td
+                  colSpan={table.getVisibleLeafColumns().length}
+                  className="p-4 text-center text-gray-500 dark:text-gray-400"
+                >
+                  {noDataText}
+                </td>
+              </tr>
+            </tbody>
+          )}
         </table>
       </div>
       {enablePagination ? (
@@ -360,7 +380,7 @@ function TableBody<TData>({
                     'bg-gray-50 dark:bg-gray-700': striped && row.index % 2 !== 0,
                     '!bg-gray-100 dark:!bg-gray-600': row.getIsSelected(),
                   },
-                  `hover:!bg-gray-100 dark:hover:!bg-gray-600`,
+                  `hover:!bg-gray-100 dark:hover:!bg-gray-700`,
                   'transition-colors',
                 ),
                 rowProps?.className ?? '',

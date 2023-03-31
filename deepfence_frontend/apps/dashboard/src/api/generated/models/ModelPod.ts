@@ -82,6 +82,12 @@ export interface ModelPod {
     node_id: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelPod
+     */
+    node_name: string;
+    /**
+     * 
      * @type {Array<ModelProcess>}
      * @memberof ModelPod
      */
@@ -100,6 +106,7 @@ export function instanceOfModelPod(value: object): boolean {
     isInstance = isInstance && "metadata" in value;
     isInstance = isInstance && "metrics" in value;
     isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "processes" in value;
 
     return isInstance;
@@ -122,6 +129,7 @@ export function ModelPodFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'metadata': json['metadata'],
         'metrics': ModelComputeMetricsFromJSON(json['metrics']),
         'node_id': json['node_id'],
+        'node_name': json['node_name'],
         'processes': (json['processes'] === null ? null : (json['processes'] as Array<any>).map(ModelProcessFromJSON)),
     };
 }
@@ -142,6 +150,7 @@ export function ModelPodToJSON(value?: ModelPod | null): any {
         'metadata': value.metadata,
         'metrics': ModelComputeMetricsToJSON(value.metrics),
         'node_id': value.node_id,
+        'node_name': value.node_name,
         'processes': (value.processes === null ? null : (value.processes as Array<any>).map(ModelProcessToJSON)),
     };
 }

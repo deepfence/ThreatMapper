@@ -7,11 +7,13 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	dockerClient "github.com/docker/docker/client"
@@ -32,8 +34,8 @@ func NewDockerConsoleDiagnosisHandler() (*DockerConsoleDiagnosisHandler, error) 
 	return &DockerConsoleDiagnosisHandler{dockerCli: dockerCli}, nil
 }
 
-func (d *DockerConsoleDiagnosisHandler) GenerateDiagnosticLogs(tail string) error {
-	zipFile, err := CreateTempFile("deepfence-console-logs-*.zip")
+func (d *DockerConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.Context, tail string) error {
+	zipFile, err := os.Create(fmt.Sprintf("/tmp/deepfence-console-logs-%s.zip", time.Now().Format("2006-01-02-15-04-05")))
 	if err != nil {
 		return err
 	}
@@ -42,7 +44,6 @@ func (d *DockerConsoleDiagnosisHandler) GenerateDiagnosticLogs(tail string) erro
 		os.RemoveAll(zipFile.Name())
 	}()
 	zipWriter := zip.NewWriter(zipFile)
-	ctx := context.Background()
 
 	containerFilters := filters.NewArgs()
 	containers := d.getContainers(ctx, types.ContainerListOptions{
@@ -72,8 +73,8 @@ func (d *DockerConsoleDiagnosisHandler) GenerateDiagnosticLogs(tail string) erro
 	if err != nil {
 		return err
 	}
-	filePath := path.Join("/diagnosis/console-diagnosis", filepath.Base(zipFile.Name()))
-	_, err = mc.UploadLocalFile(ctx, filePath, zipFile.Name(), minio.PutObjectOptions{ContentType: "application/zip"})
+	_, err = mc.UploadLocalFile(ctx, diagnosis.ConsoleDiagnosisFileServerPrefix+filepath.Base(zipFile.Name()), zipFile.Name(),
+		minio.PutObjectOptions{ContentType: "application/zip"})
 	if err != nil {
 		return err
 	}
@@ -99,7 +100,7 @@ func (d *DockerConsoleDiagnosisHandler) addContainerLogs(ctx context.Context, co
 	if err != nil {
 		return err
 	}
-	if _, err := zipFileWriter.Write(logBytes); err != nil {
+	if _, err := zipFileWriter.Write(utils.StripAnsi(logBytes)); err != nil {
 		return err
 	}
 	if strings.Contains(containerName, "router") {
@@ -128,11 +129,16 @@ func (d *DockerConsoleDiagnosisHandler) getContainers(ctx context.Context, optio
 }
 
 func (d *DockerConsoleDiagnosisHandler) CopyFromContainer(ctx context.Context, containerId string, containerName string, srcPath string, zipWriter *zip.Writer) error {
-
 	tarStream, _, err := d.dockerCli.CopyFromContainer(ctx, containerId, srcPath)
 	if err != nil {
 		return err
 	}
+
+	_, err = zipWriter.Create(containerName + "/")
+	if err != nil {
+		return err
+	}
+
 	tr := tar.NewReader(tarStream)
 	for {
 		hdr, err := tr.Next()
@@ -142,20 +148,24 @@ func (d *DockerConsoleDiagnosisHandler) CopyFromContainer(ctx context.Context, c
 		if err != nil {
 			return err
 		}
+		if hdr.FileInfo().IsDir() {
+			_, err = zipWriter.Create(containerName + "/" + hdr.Name + "/")
+			if err != nil {
+				return err
+			}
+			continue
+		}
+
 		logBytes, err := io.ReadAll(tr)
 		if err != nil {
 			return err
 		}
-		if hdr.FileInfo().IsDir() {
-			hdr.Name = containerName
-		} else {
-			hdr.Name = containerName + "/" + hdr.Name
-		}
-		zipFileWriter, err := zipWriter.Create(hdr.Name)
+
+		zipFileWriter, err := zipWriter.Create(containerName + "/" + hdr.Name)
 		if err != nil {
 			return err
 		}
-		if _, err := zipFileWriter.Write(logBytes); err != nil {
+		if _, err := zipFileWriter.Write(utils.StripAnsi(logBytes)); err != nil {
 			return err
 		}
 	}

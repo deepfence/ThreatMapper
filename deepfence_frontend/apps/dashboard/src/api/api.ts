@@ -7,11 +7,15 @@ import {
   CloudScannerApi,
   ComplianceApi,
   Configuration,
+  ControlsApi,
+  DiagnosisApi,
+  LookupApi,
   MalwareScanApi,
   RegistryApi,
   ScanResultsApi,
   SearchApi,
   SecretScanApi,
+  ThreatApi,
   TopologyApi,
   UserApi,
   VulnerabilityApi,
@@ -43,15 +47,11 @@ export function getUserApiClient() {
 export function getTopologyApiClient() {
   const topologyApi = new TopologyApi(configuration);
   return {
+    getCloudTopologyGraph: topologyApi.getTopologyGraph.bind(topologyApi),
     getHostsTopologyGraph: topologyApi.getHostsTopologyGraph.bind(topologyApi),
     getKubernetesTopologyGraph: topologyApi.getKubernetesTopologyGraph.bind(topologyApi),
-  };
-}
-
-export function getCloudNodesApiClient() {
-  const cloudNodesApi = new CloudNodesApi(configuration);
-  return {
-    listCloudNodeAccount: cloudNodesApi.listCloudNodeAccount.bind(cloudNodesApi),
+    getContainersTopologyGraph: topologyApi.getContainersTopologyGraph.bind(topologyApi),
+    getPodsTopologyGraph: topologyApi.getPodsTopologyGraph.bind(topologyApi),
   };
 }
 
@@ -90,6 +90,9 @@ export function getComplianceApiClient() {
     startComplianceScan: complianceApi.startComplianceScan.bind(complianceApi),
     statusComplianceScan: complianceApi.statusComplianceScan.bind(complianceApi),
     resultComplianceScan: complianceApi.resultsComplianceScan.bind(complianceApi),
+    resultCountComplianceScan:
+      complianceApi.countResultsComplianceScan.bind(complianceApi),
+    listComplianceScan: complianceApi.listComplianceScan.bind(complianceApi),
   };
 }
 
@@ -100,23 +103,38 @@ export function getCloudComplianceApiClient() {
       cloudScannerApi.statusCloudComplianceScan.bind(cloudScannerApi),
     resultCloudComplianceScan:
       cloudScannerApi.resultsCloudComplianceScan.bind(cloudScannerApi),
+    resultCountCloudComplianceScan:
+      cloudScannerApi.countResultsCloudComplianceScan.bind(cloudScannerApi),
+    listCloudComplianceScan:
+      cloudScannerApi.listCloudComplianceScan.bind(cloudScannerApi),
   };
 }
 
 export function getRegistriesApiClient() {
   const registriesApi = new RegistryApi(configuration);
   return {
+    getRegistriesSummary: registriesApi.getSummaryAll.bind(registriesApi),
+    getRegistrySummary: registriesApi.getRegistrySummary.bind(registriesApi),
+    getRegistrySummaryByType: registriesApi.getSummaryByType.bind(registriesApi),
     listRegistries: registriesApi.listRegistry.bind(registriesApi),
     addRegistry: registriesApi.addRegistry.bind(registriesApi),
+    addRegistryGCR: registriesApi.addRegistryGCR.bind(registriesApi),
+    deleteRegistry: registriesApi.deleteRegistry.bind(registriesApi),
+    listImages: registriesApi.listImages.bind(registriesApi),
+    countImages: registriesApi.countImages.bind(registriesApi),
+    countImageStubs: registriesApi.countImageStubs.bind(registriesApi),
+    listImageStubs: registriesApi.listImageStubs.bind(registriesApi),
   };
 }
 
-export function getMalwareScanApiClient() {
+export function getMalwareApiClient() {
   const malwareApi = new MalwareScanApi(configuration);
   return {
     startMalwareScan: malwareApi.startMalwareScan.bind(malwareApi),
     resultMalwareScan: malwareApi.resultsMalwareScan.bind(malwareApi),
+    resultCountMalwareScan: malwareApi.countResultsMalwareScan.bind(malwareApi),
     statusMalwareScan: malwareApi.statusMalwareScan.bind(malwareApi),
+    listMalwareScans: malwareApi.listMalwareScan.bind(malwareApi),
   };
 }
 
@@ -135,6 +153,16 @@ export function getSearchApiClient() {
     searchSecrets: searchApi.searchSecrets.bind(searchApi),
     searchSecretsCount: searchApi.countSecrets.bind(searchApi),
     searchSecretScanCount: searchApi.countSecretsScans.bind(searchApi),
+
+    searchMalwaresScan: searchApi.searchMalwareScans.bind(searchApi),
+    searchMalwares: searchApi.searchMalwares.bind(searchApi),
+    searchMalwaresCount: searchApi.countMalwares.bind(searchApi),
+    searchMalwareScanCount: searchApi.countMalwareScans.bind(searchApi),
+
+    searchCompliances: searchApi.searchCompliances.bind(searchApi),
+    searchCloudCompliances: searchApi.searchCloudCompliances.bind(searchApi),
+
+    getCloudComplianceFilters: searchApi.getCloudComplianceFilters.bind(searchApi),
   };
 }
 
@@ -151,5 +179,57 @@ export function getScanResultsApiClient() {
     unmaskScanResult: scanResultsApi.unmaskScanResult.bind(scanResultsApi),
     getAllNodesInScanResults:
       scanResultsApi.getAllNodesInScanResults.bind(scanResultsApi),
+  };
+}
+
+export function getControlsApiClient() {
+  const controlsApi = new ControlsApi(configuration);
+
+  return {
+    listControls: controlsApi.getCloudNodeControls.bind(controlsApi),
+    enableControl: controlsApi.enableCloudNodeControls.bind(controlsApi),
+    disableControl: controlsApi.disableCloudNodeControls.bind(controlsApi),
+  };
+}
+
+export function getCloudNodesApiClient() {
+  const cloudNodesApi = new CloudNodesApi(configuration);
+
+  return {
+    listCloudNodeAccount: cloudNodesApi.listCloudNodeAccount.bind(cloudNodesApi),
+    listCloudProviders: cloudNodesApi.listCloudProviders.bind(cloudNodesApi),
+  };
+}
+
+export function getLookupApiClient() {
+  const lookupApi = new LookupApi(configuration);
+  return {
+    lookupHost: lookupApi.getHosts.bind(lookupApi),
+    lookupContainer: lookupApi.getContainers.bind(lookupApi),
+    lookupImage: lookupApi.getContainerImages.bind(lookupApi),
+    lookupPod: lookupApi.getPods.bind(lookupApi),
+    lookupProcess: lookupApi.getProcesses.bind(lookupApi),
+    lookupKubernetesClusters: lookupApi.getKubernetesClusters.bind(lookupApi),
+    lookupCloudResources: lookupApi.getCloudResources.bind(lookupApi),
+  };
+}
+
+export function getThreatGraphApiClient() {
+  const threatGraphApi = new ThreatApi(configuration);
+
+  return {
+    getThreatGraph: threatGraphApi.getThreatGraph.bind(threatGraphApi),
+  };
+}
+
+export function getDiagnosisApiClient() {
+  const diagnosisApi = new DiagnosisApi(configuration);
+
+  return {
+    generateAgentDiagnosticLogs:
+      diagnosisApi.generateAgentDiagnosticLogs.bind(diagnosisApi),
+    generateConsoleDiagnosticLogs:
+      diagnosisApi.generateConsoleDiagnosticLogs.bind(diagnosisApi),
+    getDiagnosticLogs: diagnosisApi.getDiagnosticLogs.bind(diagnosisApi),
   };
 }

@@ -2,13 +2,8 @@ import { useEffect } from 'react';
 import { generatePath, useFetcher } from 'react-router-dom';
 
 import { getTopologyApiClient } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelScanResultsActionRequestScanTypeEnum,
-} from '@/api/generated';
+import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ApiError, makeRequest } from '@/utils/api';
-
-export type ScanType = ModelScanResultsActionRequestScanTypeEnum;
 
 export type ClustersListType = {
   clusterId: string;

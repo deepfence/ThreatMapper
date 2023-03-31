@@ -1,7 +1,13 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, redirect } from 'react-router-dom';
 
 import { ErrorComponent } from '@/components/error/ErrorComponent';
+import { scanPostureApiAction } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
+import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
+import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
+import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
+import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { searchClustersApiLoader } from '@/features/common/data-component/searchClustersApiLoader';
 import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
 import { searchContainersApiLoader } from '@/features/common/data-component/searchContainersApiLoader';
@@ -10,6 +16,10 @@ import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
 import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
 import { module as integrations } from '@/features/integrations/pages/Integrations';
+import { module as malware } from '@/features/malwares/pages/Malware';
+import { module as malwareDetails } from '@/features/malwares/pages/MalwareDetailModal';
+import { module as malwareScanResults } from '@/features/malwares/pages/MalwareScanResults';
+import { module as malwareScans } from '@/features/malwares/pages/MalwareScans';
 import {
   ConnectorsLayout,
   connectorsLoader,
@@ -18,31 +28,49 @@ import {
   OnboardLayout,
   rootOnboardLoader,
 } from '@/features/onboard/layouts/OnboardLayout';
-import { AmazonECRConnector } from '@/features/onboard/pages/AmazonECRConnector';
-import { AWSConnector } from '@/features/onboard/pages/AWSConnector';
-import { AzureConnector } from '@/features/onboard/pages/AzureConnector';
 import { module as chooseScan } from '@/features/onboard/pages/ChooseScan';
-import { module as complianceScanConfigure } from '@/features/onboard/pages/ComplianceScanConfigure';
 import { module as complianceScanSummary } from '@/features/onboard/pages/ComplianceScanSummary';
+import { module as configureScanForm } from '@/features/onboard/pages/ConfigureScanForm';
+import { module as connector } from '@/features/onboard/pages/Connector';
 import { AddConnector } from '@/features/onboard/pages/connectors/AddConnectors';
 import { module as myConnectors } from '@/features/onboard/pages/connectors/MyConnectors';
-import { DockerConnector } from '@/features/onboard/pages/DockerConnector';
-import { module as dockerRegistryConnector } from '@/features/onboard/pages/DockerRegistryConnector';
-import { GCPConnector } from '@/features/onboard/pages/GCPConnector';
-import { K8sConnector } from '@/features/onboard/pages/K8sConnector';
-import { LinuxConnector } from '@/features/onboard/pages/LinuxConnector';
-import { module as malwareScanConfigure } from '@/features/onboard/pages/MalwareScanConfigure';
 import { module as malwareScanSumary } from '@/features/onboard/pages/MalwareScanSummary';
 import { module as scanInProgress } from '@/features/onboard/pages/ScanInProgress';
-import { module as secretScanConfigure } from '@/features/onboard/pages/SecretScanConfigure';
 import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanSummary';
-import { module as vulnerabilityScanConfigure } from '@/features/onboard/pages/VulnerabilityScanConfigure';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
-import { Registries } from '@/features/registries/pages/Registries';
+import {
+  listControlsApiLoader,
+  toggleControlApiAction,
+} from '@/features/postures/data-component/listControlsApiLoader';
+import { module as postureConnectorLayout } from '@/features/postures/layouts/PostureConnectorLayout';
+import { module as postureAddAccounts } from '@/features/postures/pages/AccountAdd';
+import { module as postureAccounts } from '@/features/postures/pages/Accounts';
+import { module as posture } from '@/features/postures/pages/Posture';
+import { module as postureCloudDetails } from '@/features/postures/pages/PostureCloudDetailModal';
+import { module as postureCloudScanResults } from '@/features/postures/pages/PostureCloudScanResults';
+import { module as postureDetails } from '@/features/postures/pages/PostureDetailModal';
+import { module as postureScanResults } from '@/features/postures/pages/PostureScanResults';
+import { module as registryConnectorLayout } from '@/features/registries/layouts/RegistryConnectorLayout';
+import { module as registries } from '@/features/registries/pages/Registries';
+import { module as registryAccounts } from '@/features/registries/pages/RegistryAccounts';
+import { module as registryAdd } from '@/features/registries/pages/RegistryAdd';
+import { module as registryImages } from '@/features/registries/pages/RegistryImages';
+import { module as registryImageTags } from '@/features/registries/pages/RegistryImageTags';
 import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
+import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
+import { module as settings } from '@/features/settings/pages/Settings';
+import { module as userManagement } from '@/features/settings/pages/UserManagement';
+import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
+import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
+import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
+import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
+import { module as topologyAction } from '@/features/topology/data-components/topologyAction';
+import { module as topologyGraph } from '@/features/topology/pages/Graph';
+import { module as topologyTable } from '@/features/topology/pages/Table';
+import { module as topology } from '@/features/topology/pages/Topology';
 import { sbomApiLoader } from '@/features/vulnerabilities/api/sbomApiLoader';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
 import { module as runtimeBom } from '@/features/vulnerabilities/pages/RuntimeBom';
@@ -81,44 +109,8 @@ export const privateRoutes: CustomRouteObject[] = [
         element: <Outlet />,
         children: [
           {
-            path: 'cloud/aws',
-            element: <AWSConnector />,
-            meta: { title: 'Connect AWS Account' },
-          },
-          {
-            path: 'cloud/gcp',
-            element: <GCPConnector />,
-            meta: { title: 'Connect GCP Account' },
-          },
-          {
-            path: 'cloud/azure',
-            element: <AzureConnector />,
-            meta: { title: 'Connect Azure Account' },
-          },
-          {
-            path: 'host/k8s',
-            element: <K8sConnector />,
-            meta: { title: 'Connect K8S Cluster' },
-          },
-          {
-            path: 'host/docker',
-            element: <DockerConnector />,
-            meta: { title: 'Connect Docker Container' },
-          },
-          {
-            path: 'host/linux',
-            element: <LinuxConnector />,
-            meta: { title: 'Connect Linux Machine' },
-          },
-          {
-            path: 'registry-amazon-ecr',
-            element: <AmazonECRConnector />,
-            meta: { title: 'Connect ECR Registry' },
-          },
-          {
-            path: 'registry-docker',
-            ...dockerRegistryConnector,
-            meta: { title: 'Docker Container Registry' },
+            path: ':connectorType',
+            ...connector,
           },
         ],
       },
@@ -131,24 +123,9 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Choose scan type' },
           },
           {
-            path: 'configure/compliance/:controls?',
-            ...complianceScanConfigure,
-            meta: { title: 'Configure Compliance Scan' },
-          },
-          {
-            path: 'configure/vulnerability',
-            ...vulnerabilityScanConfigure,
-            meta: { title: 'Configure Vulnerability Scan' },
-          },
-          {
-            path: 'configure/secret',
-            ...secretScanConfigure,
-            meta: { title: 'Configure Secret Scan' },
-          },
-          {
-            path: 'configure/malware',
-            ...malwareScanConfigure,
-            meta: { title: 'Configure Malware Scan' },
+            path: 'configure/:scanType',
+            ...configureScanForm,
+            meta: { title: 'Configure Scan' },
           },
           {
             path: 'view-summary/compliance/:nodeType/:bulkScanId',
@@ -191,10 +168,76 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Dashboard' },
       },
       {
+        path: 'topology',
+        ...topology,
+        children: [
+          {
+            index: true,
+            loader: () => redirect('/topology/graph', 301),
+          },
+          {
+            path: 'table',
+            ...topologyTable,
+            meta: { title: 'Cloud Topology' },
+          },
+          {
+            path: 'graph',
+            ...topologyGraph,
+            meta: { title: 'Cloud Topology' },
+          },
+          {
+            path: 'node-details',
+            children: [
+              {
+                path: 'host/:nodeId',
+                ...nodeDetailsHost,
+              },
+              {
+                path: 'container/:nodeId',
+                ...nodeDetailsContainer,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: 'threatgraph',
+        ...threatGraph,
+        meta: { title: 'Threat Graph' },
+      },
+      // registries
+      {
         path: 'registries',
-        element: <Registries />,
+        ...registries,
         meta: { title: 'Registries' },
       },
+      {
+        path: 'registries/:account',
+        ...registryAccounts,
+        meta: { title: 'Registry Account' },
+      },
+      {
+        path: 'registries/add',
+        ...registryConnectorLayout,
+        children: [
+          {
+            path: ':account',
+            ...registryAdd,
+            meta: { title: 'Registry Add Account' },
+          },
+        ],
+      },
+      {
+        path: 'registries/images/:account/:nodeId',
+        ...registryImages,
+        meta: { title: 'Registries Images' },
+      },
+      {
+        path: 'registries/imagetags/:account/:nodeId/:imageId',
+        ...registryImageTags,
+        meta: { title: 'Registries Image Tags' },
+      },
+      // integrations
       {
         path: 'integrations',
         ...integrations,
@@ -275,6 +318,92 @@ export const privateRoutes: CustomRouteObject[] = [
           },
         ],
       },
+      // malware
+      {
+        path: 'malware',
+        ...malware,
+        meta: { title: 'Malware' },
+      },
+      {
+        path: 'malware/scans',
+        ...malwareScans,
+        meta: { title: 'Malware Scans' },
+      },
+      {
+        path: 'malware/scan-results/:scanId',
+        ...malwareScanResults,
+        meta: { title: 'Malware Scan Results' },
+        children: [
+          {
+            path: ':malwareId',
+            ...malwareDetails,
+            meta: { title: 'Malware Details' },
+          },
+        ],
+      },
+      // posture
+      {
+        path: 'posture',
+        ...posture,
+        meta: { title: 'Posture' },
+      },
+      {
+        path: 'posture/add-connection',
+        ...postureConnectorLayout,
+        children: [
+          {
+            path: ':account',
+            ...postureAddAccounts,
+            meta: { title: 'Posture Add Account' },
+          },
+        ],
+      },
+      {
+        path: 'posture/scan-results/:nodeType/:scanId',
+        ...postureScanResults,
+        meta: { title: 'Posture Scans Results' },
+        children: [
+          {
+            path: ':complianceId',
+            ...postureDetails,
+            meta: { title: 'Posture Details' },
+          },
+        ],
+      },
+      {
+        path: 'posture/cloud/scan-results/:nodeType/:scanId',
+        ...postureCloudScanResults,
+        meta: { title: 'Posture Scans Results' },
+        children: [
+          {
+            path: ':complianceId',
+            ...postureCloudDetails,
+            meta: { title: 'Posture Details' },
+          },
+        ],
+      },
+      {
+        path: 'posture/accounts/:nodeType',
+        ...postureAccounts,
+        meta: { title: 'Posture Accounts' },
+      },
+      {
+        path: 'settings',
+        ...settings,
+        meta: { title: 'Settings' },
+        children: [
+          {
+            path: 'diagnostic-logs',
+            ...diagnosticLogs,
+            meta: { title: 'Diagnostic Logs' },
+          },
+          {
+            path: 'user-management',
+            ...userManagement,
+            meta: { title: 'User Management' },
+          },
+        ],
+      },
     ],
   },
   {
@@ -304,10 +433,55 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'search/hosts/:scanType',
         loader: searchHostsApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
       },
       {
         path: 'search/clusters',
         loader: searchClustersApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
+      },
+      {
+        path: 'scan/vulnerability',
+        action: scanVulnerabilityApiAction,
+      },
+      {
+        path: 'scan/secret',
+        action: scanSecretApiAction,
+      },
+      {
+        path: 'scan/malware',
+        action: scanMalwareApiAction,
+      },
+      {
+        path: 'scan/posture',
+        action: scanPostureApiAction,
+      },
+      {
+        path: 'registries/add-connector',
+        action: registryConnectorActionApi,
+      },
+      {
+        path: 'list/controls/:nodeType/:checkType',
+        loader: listControlsApiLoader,
+        action: toggleControlApiAction,
+      },
+      {
+        path: 'search/cloud/filters/:scanId',
+        loader: searchCloudFiltersApiLoader,
+      },
+      {
+        path: 'threat-graph/details-modal',
+        ...threatGraphDetailModal,
+      },
+      {
+        path: 'topology',
+        ...topologyAction,
       },
     ],
   },

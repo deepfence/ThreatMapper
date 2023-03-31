@@ -52,10 +52,34 @@ import {
 export interface ModelHost {
     /**
      * 
+     * @type {string}
+     * @memberof ModelHost
+     */
+    cloud_compliance_latest_scan_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelHost
+     */
+    cloud_compliance_scan_status: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelHost
+     */
+    cloud_compliances_count: number;
+    /**
+     * 
      * @type {{ [key: string]: any; }}
      * @memberof ModelHost
      */
     cloud_metadata: { [key: string]: any; };
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelHost
+     */
+    compliance_latest_scan_id: string;
     /**
      * 
      * @type {string}
@@ -91,6 +115,30 @@ export interface ModelHost {
      * @type {string}
      * @memberof ModelHost
      */
+    interfaceNames: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelHost
+     */
+    interface_ips: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelHost
+     */
+    kernel_version: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelHost
+     */
+    malware_latest_scan_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelHost
+     */
     malware_scan_status: string;
     /**
      * 
@@ -112,6 +160,12 @@ export interface ModelHost {
     node_id: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelHost
+     */
+    node_name: string;
+    /**
+     * 
      * @type {Array<ModelPod>}
      * @memberof ModelHost
      */
@@ -127,6 +181,12 @@ export interface ModelHost {
      * @type {string}
      * @memberof ModelHost
      */
+    secret_latest_scan: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelHost
+     */
     secret_scan_status: string;
     /**
      * 
@@ -136,10 +196,22 @@ export interface ModelHost {
     secrets_count: number;
     /**
      * 
+     * @type {string}
+     * @memberof ModelHost
+     */
+    uptime: string;
+    /**
+     * 
      * @type {number}
      * @memberof ModelHost
      */
     vulnerabilities_count: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelHost
+     */
+    vulnerability_latest_scan_id: string;
     /**
      * 
      * @type {string}
@@ -153,21 +225,33 @@ export interface ModelHost {
  */
 export function instanceOfModelHost(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "cloud_compliance_latest_scan_id" in value;
+    isInstance = isInstance && "cloud_compliance_scan_status" in value;
+    isInstance = isInstance && "cloud_compliances_count" in value;
     isInstance = isInstance && "cloud_metadata" in value;
+    isInstance = isInstance && "compliance_latest_scan_id" in value;
     isInstance = isInstance && "compliance_scan_status" in value;
     isInstance = isInstance && "compliances_count" in value;
     isInstance = isInstance && "container_images" in value;
     isInstance = isInstance && "containers" in value;
     isInstance = isInstance && "host_name" in value;
+    isInstance = isInstance && "interfaceNames" in value;
+    isInstance = isInstance && "interface_ips" in value;
+    isInstance = isInstance && "kernel_version" in value;
+    isInstance = isInstance && "malware_latest_scan_id" in value;
     isInstance = isInstance && "malware_scan_status" in value;
     isInstance = isInstance && "malwares_count" in value;
     isInstance = isInstance && "metrics" in value;
     isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "pods" in value;
     isInstance = isInstance && "processes" in value;
+    isInstance = isInstance && "secret_latest_scan" in value;
     isInstance = isInstance && "secret_scan_status" in value;
     isInstance = isInstance && "secrets_count" in value;
+    isInstance = isInstance && "uptime" in value;
     isInstance = isInstance && "vulnerabilities_count" in value;
+    isInstance = isInstance && "vulnerability_latest_scan_id" in value;
     isInstance = isInstance && "vulnerability_scan_status" in value;
 
     return isInstance;
@@ -183,21 +267,33 @@ export function ModelHostFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     }
     return {
         
+        'cloud_compliance_latest_scan_id': json['cloud_compliance_latest scan_id'],
+        'cloud_compliance_scan_status': json['cloud_compliance_scan_status'],
+        'cloud_compliances_count': json['cloud_compliances_count'],
         'cloud_metadata': json['cloud_metadata'],
+        'compliance_latest_scan_id': json['compliance_latest_scan_id'],
         'compliance_scan_status': json['compliance_scan_status'],
         'compliances_count': json['compliances_count'],
         'container_images': (json['container_images'] === null ? null : (json['container_images'] as Array<any>).map(ModelContainerImageFromJSON)),
         'containers': (json['containers'] === null ? null : (json['containers'] as Array<any>).map(ModelContainerFromJSON)),
         'host_name': json['host_name'],
+        'interfaceNames': json['interfaceNames'],
+        'interface_ips': json['interface_ips'],
+        'kernel_version': json['kernel_version'],
+        'malware_latest_scan_id': json['malware_latest_scan_id'],
         'malware_scan_status': json['malware_scan_status'],
         'malwares_count': json['malwares_count'],
         'metrics': ModelComputeMetricsFromJSON(json['metrics']),
         'node_id': json['node_id'],
+        'node_name': json['node_name'],
         'pods': (json['pods'] === null ? null : (json['pods'] as Array<any>).map(ModelPodFromJSON)),
         'processes': (json['processes'] === null ? null : (json['processes'] as Array<any>).map(ModelProcessFromJSON)),
+        'secret_latest_scan': json['secret_latest_scan'],
         'secret_scan_status': json['secret_scan_status'],
         'secrets_count': json['secrets_count'],
+        'uptime': json['uptime'],
         'vulnerabilities_count': json['vulnerabilities_count'],
+        'vulnerability_latest_scan_id': json['vulnerability_latest_scan_id'],
         'vulnerability_scan_status': json['vulnerability_scan_status'],
     };
 }
@@ -211,21 +307,33 @@ export function ModelHostToJSON(value?: ModelHost | null): any {
     }
     return {
         
+        'cloud_compliance_latest scan_id': value.cloud_compliance_latest_scan_id,
+        'cloud_compliance_scan_status': value.cloud_compliance_scan_status,
+        'cloud_compliances_count': value.cloud_compliances_count,
         'cloud_metadata': value.cloud_metadata,
+        'compliance_latest_scan_id': value.compliance_latest_scan_id,
         'compliance_scan_status': value.compliance_scan_status,
         'compliances_count': value.compliances_count,
         'container_images': (value.container_images === null ? null : (value.container_images as Array<any>).map(ModelContainerImageToJSON)),
         'containers': (value.containers === null ? null : (value.containers as Array<any>).map(ModelContainerToJSON)),
         'host_name': value.host_name,
+        'interfaceNames': value.interfaceNames,
+        'interface_ips': value.interface_ips,
+        'kernel_version': value.kernel_version,
+        'malware_latest_scan_id': value.malware_latest_scan_id,
         'malware_scan_status': value.malware_scan_status,
         'malwares_count': value.malwares_count,
         'metrics': ModelComputeMetricsToJSON(value.metrics),
         'node_id': value.node_id,
+        'node_name': value.node_name,
         'pods': (value.pods === null ? null : (value.pods as Array<any>).map(ModelPodToJSON)),
         'processes': (value.processes === null ? null : (value.processes as Array<any>).map(ModelProcessToJSON)),
+        'secret_latest_scan': value.secret_latest_scan,
         'secret_scan_status': value.secret_scan_status,
         'secrets_count': value.secrets_count,
+        'uptime': value.uptime,
         'vulnerabilities_count': value.vulnerabilities_count,
+        'vulnerability_latest_scan_id': value.vulnerability_latest_scan_id,
         'vulnerability_scan_status': value.vulnerability_scan_status,
     };
 }

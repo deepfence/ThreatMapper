@@ -9,11 +9,11 @@ import (
 var (
 	clientHostID     = "client.host.com"
 	clientHostName   = clientHostID
-	clientHostNodeID = report.MakeHostNodeID(clientHostID)
+	clientHostNodeID = clientHostID
 	clientAddress    = "10.10.10.20"
 	serverHostID     = "server.host.com"
 	serverHostName   = serverHostID
-	serverHostNodeID = report.MakeHostNodeID(serverHostID)
+	serverHostNodeID = serverHostID
 	serverAddress    = "10.10.10.1"
 	unknownHostID    = ""              // by definition, we don't know it
 	unknownAddress   = "172.16.93.112" // will be a pseudonode, no corresponding host

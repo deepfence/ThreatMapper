@@ -4,19 +4,15 @@ import (
 	"bytes"
 	"context"
 	"encoding/base64"
-	"encoding/json"
-	"errors"
 	"net/url"
-	"os"
-	"strings"
+	"sync/atomic"
 	"time"
 
+	"github.com/bytedance/sonic"
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
-	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	oahttp "github.com/deepfence/golang_deepfence_sdk/utils/http"
 	"github.com/klauspost/compress/gzip"
 	"github.com/sirupsen/logrus"
-	"github.com/weaveworks/scope/common/xfer"
+	"github.com/weaveworks/scope/probe/common"
 	"github.com/weaveworks/scope/probe/controls"
 	"github.com/weaveworks/scope/probe/host"
 	"github.com/weaveworks/scope/report"
@@ -25,59 +21,24 @@ import (
 type OpenapiClient struct {
 	client               *openapi.APIClient
 	stopControlListening chan struct{}
+	publishInterval      atomic.Int32
 }
-
-var (
-	ConnError = errors.New("Connection error")
-)
 
 func NewOpenapiClient() (*OpenapiClient, error) {
-
-	url := os.Getenv("MGMT_CONSOLE_URL")
-	if url == "" {
-		return nil, errors.New("MGMT_CONSOLE_URL not set")
-	}
-	port := os.Getenv("MGMT_CONSOLE_PORT")
-	if port == "" {
-		return nil, errors.New("MGMT_CONSOLE_PORT not set")
-	}
-
-	api_token := os.Getenv("DEEPFENCE_KEY")
-	if strings.Trim(api_token, "\"") == "" && oahttp.IsConsoleAgent(url) {
-		logrus.Infof("fetch console agent token")
-		var err error
-		if api_token, err = oahttp.GetConsoleApiToken(url); err != nil {
-			return nil, err
-		}
-	} else if api_token == "" {
-		return nil, errors.New("DEEPFENCE_KEY not set")
-	}
-
-	https_client := oahttp.NewHttpsConsoleClient(url, port)
-	err := https_client.APITokenAuthenticate(api_token)
-	if err != nil {
-		return nil, ConnError
-	}
-
-	return &OpenapiClient{
-		client:               https_client.Client(),
+	httpsClient, err := common.NewClient()
+	res := &OpenapiClient{
+		client:               httpsClient,
 		stopControlListening: make(chan struct{}),
-	}, err
-}
+		publishInterval:      atomic.Int32{},
+	}
+	res.publishInterval.Store(10)
 
-// PipeClose implements MultiAppClient
-func (OpenapiClient) PipeClose(appID string, pipeID string) error {
-	panic("unimplemented")
-}
-
-// PipeConnection implements MultiAppClient
-func (OpenapiClient) PipeConnection(appID string, pipeID string, pipe xfer.Pipe) error {
-	panic("unimplemented")
+	return res, err
 }
 
 // Publish implements MultiAppClient
 func (oc OpenapiClient) Publish(r report.Report) error {
-	buf, err := json.Marshal(r)
+	buf, err := sonic.Marshal(r)
 	if err != nil {
 		return err
 	}
@@ -105,6 +66,10 @@ func (oc OpenapiClient) Publish(r report.Report) error {
 	return nil
 }
 
+func (ct *OpenapiClient) PublishInterval() int32 {
+	return ct.publishInterval.Load()
+}
+
 // Set implements MultiAppClient
 func (OpenapiClient) Set(hostname string, urls []url.URL) {
 	panic("unimplemented")
@@ -119,26 +84,55 @@ const (
 	MAX_AGENT_WORKLOAD = 2
 )
 
+func GetScannersWorkloads() int32 {
+	res := int32(0)
+	res += host.GetSecretScannerJobCount()
+	res += host.GetMalwareScannerJobCount()
+	//TODO: Add more scanners workfload
+	return res
+}
+
+var upgrade atomic.Bool
+
+func SetUpgrade() {
+	upgrade.Store(true)
+}
+
+func getUpgradeWorkload() int32 {
+	if upgrade.Load() {
+		return MAX_AGENT_WORKLOAD
+	}
+	return 0
+}
+
+func getMaxAllocatable() int32 {
+	workload := MAX_AGENT_WORKLOAD - GetScannersWorkloads() - getUpgradeWorkload()
+	if workload <= 0 {
+		workload = 0
+	}
+	logrus.Infof("Workload: %v\n", workload)
+	return workload
+}
+
 func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent bool) error {
-	workload_allocator := ctl.NewWorkloadAllocator(MAX_AGENT_WORKLOAD)
 	if isClusterAgent {
 
 	} else {
 		req := ct.client.ControlsApi.GetAgentInitControls(context.Background())
 		req = req.ModelInitAgentReq(
 			*openapi.NewModelInitAgentReq(
-				workload_allocator.MaxAllocable(),
+				getMaxAllocatable(),
 				nodeId,
 				host.AgentVersionNo,
 			),
 		)
 		ctl, _, err := ct.client.ControlsApi.GetAgentInitControlsExecute(req)
 
+		ct.publishInterval.Store(ctl.Beatrate)
+
 		if err != nil {
 			return err
 		}
-
-		workload_allocator.Reserve(int32(len(ctl.Commands)))
 
 		for _, action := range ctl.Commands {
 			logrus.Infof("Init execute :%v", action.Id)
@@ -146,15 +140,13 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 			if err != nil {
 				logrus.Errorf("Control %v failed: %v\n", action, err)
 			}
-			// TODO: call when work truly completes
-			workload_allocator.Free()
 		}
 	}
 
 	if isClusterAgent {
 		go func() {
 			req := ct.client.ControlsApi.GetKubernetesClusterControls(context.Background())
-			agentId := openapi.NewModelAgentId(workload_allocator.MaxAllocable(), nodeId)
+			agentId := openapi.NewModelAgentId(getMaxAllocatable(), nodeId)
 			req = req.ModelAgentId(*agentId)
 			for {
 				select {
@@ -162,7 +154,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 				case <-ct.stopControlListening:
 					break
 				}
-				agentId.SetAvailableWorkload(workload_allocator.MaxAllocable())
+				agentId.SetAvailableWorkload(getMaxAllocatable())
 				req = req.ModelAgentId(*agentId)
 				ctl, _, err := ct.client.ControlsApi.GetKubernetesClusterControlsExecute(req)
 				if err != nil {
@@ -170,7 +162,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 					continue
 				}
 
-				workload_allocator.Reserve(int32(len(ctl.Commands)))
+				ct.publishInterval.Store(ctl.Beatrate)
 
 				for _, action := range ctl.Commands {
 					logrus.Infof("Execute :%v", action.Id)
@@ -178,15 +170,13 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 					if err != nil {
 						logrus.Errorf("Control %v failed: %v\n", action, err)
 					}
-					// TODO: call when work truly completes
-					workload_allocator.Free()
 				}
 			}
 		}()
 	} else {
 		go func() {
 			req := ct.client.ControlsApi.GetAgentControls(context.Background())
-			agentId := openapi.NewModelAgentId(workload_allocator.MaxAllocable(), nodeId)
+			agentId := openapi.NewModelAgentId(getMaxAllocatable(), nodeId)
 			req = req.ModelAgentId(*agentId)
 			for {
 				select {
@@ -194,7 +184,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 				case <-ct.stopControlListening:
 					break
 				}
-				agentId.SetAvailableWorkload(workload_allocator.MaxAllocable())
+				agentId.SetAvailableWorkload(getMaxAllocatable())
 				req = req.ModelAgentId(*agentId)
 				ctl, _, err := ct.client.ControlsApi.GetAgentControlsExecute(req)
 				if err != nil {
@@ -202,7 +192,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 					continue
 				}
 
-				workload_allocator.Reserve(int32(len(ctl.Commands)))
+				ct.publishInterval.Store(ctl.Beatrate)
 
 				for _, action := range ctl.Commands {
 					logrus.Infof("Execute :%v", action.Id)
@@ -210,8 +200,6 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 					if err != nil {
 						logrus.Errorf("Control %v failed: %v\n", action, err)
 					}
-					// TODO: call when work truly completes
-					workload_allocator.Free()
 				}
 			}
 		}()

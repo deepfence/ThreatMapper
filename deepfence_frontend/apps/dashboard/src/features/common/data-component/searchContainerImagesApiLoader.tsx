@@ -2,11 +2,8 @@ import { useEffect } from 'react';
 import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 
 import { getSearchApiClient } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelScanResultsActionRequestScanTypeEnum,
-} from '@/api/generated';
-import { ScanType } from '@/features/common/data-component/searchHostsApiLoader';
+import { ApiDocsBadRequestResponse } from '@/api/generated';
+import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 
 export type ContainerImagesListType = {
@@ -22,13 +19,13 @@ export const searchContainerImagesApiLoader = async ({
     throw new Error('Scan For is required');
   }
   let filterValue = '';
-  if (scanType === ModelScanResultsActionRequestScanTypeEnum.SecretScan) {
+  if (scanType === ScanTypeEnum.SecretScan) {
     filterValue = 'secrets_count';
-  } else if (scanType === ModelScanResultsActionRequestScanTypeEnum.VulnerabilityScan) {
+  } else if (scanType === ScanTypeEnum.VulnerabilityScan) {
     filterValue = 'vulnerabilities_count';
-  } else if (scanType === ModelScanResultsActionRequestScanTypeEnum.MalwareScan) {
+  } else if (scanType === ScanTypeEnum.MalwareScan) {
     filterValue = 'malwares_count';
-  } else if (scanType === ModelScanResultsActionRequestScanTypeEnum.ComplianceScan) {
+  } else if (scanType === ScanTypeEnum.ComplianceScan) {
     filterValue = 'compliances_count';
   }
 
@@ -55,6 +52,10 @@ export const searchContainerImagesApiLoader = async ({
               },
             },
             in_field_filter: ['node_id', 'docker_image_name', 'docker_image_tag'],
+            window: {
+              offset: 0,
+              size: 0,
+            },
           },
           window: {
             offset: 0,
@@ -92,7 +93,7 @@ export const searchContainerImagesApiLoader = async ({
 export const useGetContainerImagesList = ({
   scanType,
 }: {
-  scanType: ScanType;
+  scanType: ScanTypeEnum;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   containerImages: ContainerImagesListType[];

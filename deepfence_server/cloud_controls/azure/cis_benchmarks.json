@@ -1,0 +1,589 @@
+[
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200",
+    "description": "The CIS Microsoft Azure Foundations Security Benchmark provides prescriptive guidance for establishing a secure baseline configuration for Microsoft Azure.",
+    "title": "CIS v2.0.0",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure",
+      "type": "Benchmark"
+    },
+    "documentation": "To obtain the latest version of the official guide, please visit http://benchmarks.cisecurity.org.\n\n## Overview\n\nThe CIS Microsoft Azure Foundations Security Benchmark provides prescriptive guidance for establishing a secure baseline configuration for Microsoft Azure.\n\n## Profiles\n\n### Level 1\n\nItems in this profile intend to:\n- be practical and prudent;\n- provide security focused best practice hardening of a technology; and\n- limit impact to the utility of the technology beyond acceptable means.\n\n### Level 2 (extends Level 1)\n\nThis profile extends the \"Level 1\" profile. Items in this profile exhibit one or more of the following characteristics:\n- are intended for environments or use cases where security is more critical than manageability and usability\n- acts as defense in depth measure\n- may impact the utility or performance of the technology\n- may include additional licensing, cost, or addition of third party software.\n",
+    "children": [
+      "azure_compliance.benchmark.cis_v200_1",
+      "azure_compliance.benchmark.cis_v200_2",
+      "azure_compliance.benchmark.cis_v200_3",
+      "azure_compliance.benchmark.cis_v200_4",
+      "azure_compliance.benchmark.cis_v200_5",
+      "azure_compliance.benchmark.cis_v200_6",
+      "azure_compliance.benchmark.cis_v200_7",
+      "azure_compliance.benchmark.cis_v200_8",
+      "azure_compliance.benchmark.cis_v200_9",
+      "azure_compliance.benchmark.cis_v200_10"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_1",
+    "description": "",
+    "title": "1 Identity and Access Management",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "1",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/ActiveDirectory",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers security recommendations to set identity and access management policies on an Azure Subscription. Identity and Access Management policies are the first step towards a defense-in-depth approach to securing an Azure Cloud Platform environment.\n\nMany of the recommendations from this section are marked as \"Manual\" while the existing Azure CLI and Azure AD PowerShell support through the Azure AD Graph are being depreciated. It is now recommended to use the new Microsoft Graph in replacement of Azure AD Graph for PowerShell and API level access. From a security posture standpoint, these recommendations are still very important and should not be discounted because they are \"Manual.\" As automation capability using Rest API is developed for this Benchmark, the related recommendations will be updated with the respective audit and remediation steps and changed to an \"automated\" assessment status.\n\nIf any problems are encountered running Azure CLI or PowerShell methodologies, please refer to the Overview for this benchmark where you will find additional detail on permission and required cmdlets.",
+    "children": [
+      "azure_compliance.benchmark.cis_v200_1_1",
+      "azure_compliance.benchmark.cis_v200_1_2",
+      "azure_compliance.control.cis_v200_1_3",
+      "azure_compliance.control.cis_v200_1_4",
+      "azure_compliance.control.cis_v200_1_5",
+      "azure_compliance.control.cis_v200_1_6",
+      "azure_compliance.control.cis_v200_1_7",
+      "azure_compliance.control.cis_v200_1_8",
+      "azure_compliance.control.cis_v200_1_9",
+      "azure_compliance.control.cis_v200_1_10",
+      "azure_compliance.control.cis_v200_1_11",
+      "azure_compliance.control.cis_v200_1_12",
+      "azure_compliance.control.cis_v200_1_13",
+      "azure_compliance.control.cis_v200_1_14",
+      "azure_compliance.control.cis_v200_1_15",
+      "azure_compliance.control.cis_v200_1_16",
+      "azure_compliance.control.cis_v200_1_17",
+      "azure_compliance.control.cis_v200_1_18",
+      "azure_compliance.control.cis_v200_1_19",
+      "azure_compliance.control.cis_v200_1_20",
+      "azure_compliance.control.cis_v200_1_21",
+      "azure_compliance.control.cis_v200_1_22",
+      "azure_compliance.control.cis_v200_1_23",
+      "azure_compliance.control.cis_v200_1_24",
+      "azure_compliance.control.cis_v200_1_25"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_1_1",
+    "description": "",
+    "title": "1.1 Security Defaults",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "1.1",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/ActiveDirectory",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThe Azure \"Security Defaults\" recommendations represent an entry-level set of recommendations which will be relevant to organizations and tenants that are either just starting to use Azure as an IaaS solution, or are only utilizing a bare minimum feature set such as the freely licensed tier of Azure Active Directory. Security Defaults recommendations are intended to ensure that these entry-level use cases are still capable of establishing a strong baseline of secure configuration.",
+    "children": [
+      "azure_compliance.control.cis_v200_1_1_1",
+      "azure_compliance.control.cis_v200_1_1_2",
+      "azure_compliance.control.cis_v200_1_1_3",
+      "azure_compliance.control.cis_v200_1_1_4"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_1_2",
+    "description": "",
+    "title": "1.2 Conditional Access",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "1.2",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/ActiveDirectory",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nFor most Azure tenants, and certainly for organizations with a significant use of Azure Active Directory, Conditional Access policies are recommended and preferred. To use conditional access policies, a licensing plan is required, and Security Defaults must be disabled.\n\nConditional Access requires one of the following plans:\n\n- Azure Active Directory Premium P1 or P2\n- Microsoft 365 Business Premium\n- Microsoft 365 E3 or E5\n- Microsoft 365 F1, F3, F5 Security and F5 Security + Compliance\n- Enterprise Mobility \u0026 Security E3 or E5.",
+    "children": [
+      "azure_compliance.control.cis_v200_1_2_1",
+      "azure_compliance.control.cis_v200_1_2_2",
+      "azure_compliance.control.cis_v200_1_2_3",
+      "azure_compliance.control.cis_v200_1_2_4",
+      "azure_compliance.control.cis_v200_1_2_5",
+      "azure_compliance.control.cis_v200_1_2_6"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_2",
+    "description": "",
+    "title": "2 Microsoft Defender",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "2",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/SecurityCenter",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers recommendations to consider for tenant-wide security policies and plans related to Microsoft Defender. Please note that because Microsoft Defender products require additional licensing, all Microsoft Defender plan recommendations in subsection 2.1 are assigned as “Level 2.”\n\nMicrosoft Defender products addressed in this section include:\n\n- Microsoft Defender for Cloud\n- Microsoft Defender for IoT\n- Microsoft Defender External Attack Surface Management",
+    "children": [
+      "azure_compliance.benchmark.cis_v200_2_1",
+      "azure_compliance.benchmark.cis_v200_2_2",
+      "azure_compliance.benchmark.cis_v200_2_3"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_2_1",
+    "description": "",
+    "title": "2.1 Microsoft Defender for Cloud",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "2",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/SecurityCenter",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis subsection is dedicated to providing guidance on Microsoft Defender for Cloud product plans. This guidance is intended to ensure that - at a minimum - the protective measures offered by these plans are being considered. Organizations may find that they have existing products or services that provide the same utility as some Microsoft Defender for Cloud products. Security and Administrative personnel need to make the determination on their organization's behalf regarding which - if any - of these recommendations are relevant to their organization's needs. In consideration of the above, and because of the potential for increased cost and complexity, please be aware that all Defender Plan recommendations are profiled as \"Level 2\" recommendations.\n",
+    "children": [
+      "azure_compliance.control.cis_v200_2_1_1",
+      "azure_compliance.control.cis_v200_2_1_2",
+      "azure_compliance.control.cis_v200_2_1_3",
+      "azure_compliance.control.cis_v200_2_1_4",
+      "azure_compliance.control.cis_v200_2_1_5",
+      "azure_compliance.control.cis_v200_2_1_6",
+      "azure_compliance.control.cis_v200_2_1_7",
+      "azure_compliance.control.cis_v200_2_1_8",
+      "azure_compliance.control.cis_v200_2_1_9",
+      "azure_compliance.control.cis_v200_2_1_10",
+      "azure_compliance.control.cis_v200_2_1_11",
+      "azure_compliance.control.cis_v200_2_1_12",
+      "azure_compliance.control.cis_v200_2_1_13",
+      "azure_compliance.control.cis_v200_2_1_14",
+      "azure_compliance.control.cis_v200_2_1_15",
+      "azure_compliance.control.cis_v200_2_1_16",
+      "azure_compliance.control.cis_v200_2_1_17",
+      "azure_compliance.control.cis_v200_2_1_18",
+      "azure_compliance.control.cis_v200_2_1_19",
+      "azure_compliance.control.cis_v200_2_1_20",
+      "azure_compliance.control.cis_v200_2_1_21",
+      "azure_compliance.control.cis_v200_2_1_22"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_2_2",
+    "description": "",
+    "title": "2.2 Microsoft Defender for IoT",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "2",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/SecurityCenter",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers requirements for Microsoft Defender for IoT\n",
+    "children": [
+      "azure_compliance.control.cis_v200_2_2_1"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_3",
+    "description": "",
+    "title": "3 Storage Accounts",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "3",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/Storage",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers security recommendations to follow to set storage account policies on an Azure Subscription. An Azure storage account provides a unique namespace to store and access Azure Storage data objects.\n",
+    "children": [
+      "azure_compliance.control.cis_v200_3_1",
+      "azure_compliance.control.cis_v200_3_2",
+      "azure_compliance.control.cis_v200_3_3",
+      "azure_compliance.control.cis_v200_3_4",
+      "azure_compliance.control.cis_v200_3_5",
+      "azure_compliance.control.cis_v200_3_6",
+      "azure_compliance.control.cis_v200_3_7",
+      "azure_compliance.control.cis_v200_3_8",
+      "azure_compliance.control.cis_v200_3_9",
+      "azure_compliance.control.cis_v200_3_10",
+      "azure_compliance.control.cis_v200_3_11",
+      "azure_compliance.control.cis_v200_3_12",
+      "azure_compliance.control.cis_v200_3_13",
+      "azure_compliance.control.cis_v200_3_14",
+      "azure_compliance.control.cis_v200_3_15"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_4",
+    "description": "",
+    "title": "4 Database Services",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "4",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers security recommendations to follow to set general database services policies on an Azure Subscription. Subsections will address specific database types.\n",
+    "children": [
+      "azure_compliance.benchmark.cis_v200_4_1",
+      "azure_compliance.benchmark.cis_v200_4_2",
+      "azure_compliance.benchmark.cis_v200_4_3",
+      "azure_compliance.benchmark.cis_v200_4_4",
+      "azure_compliance.benchmark.cis_v200_4_5"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_4_1",
+    "description": "",
+    "title": "4.1 SQL Server - Auditing",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "4.1",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/SQL",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nAuditing for Azure SQL Servers and SQL Databases tracks database events and writes them to an audit log Azure storage account, Log Analytics workspace or Event Hubs. Auditing helps to maintain regulatory compliance, understand database activity, and gain insight into discrepancies and anomalies that could indicate business concerns or suspected security violations. Auditing enables and facilitates adherence to compliance standards, although it doesn't guarantee compliance.\n\nThe Default SQL Server Auditing profile set for SQL server is inherited by all the SQL Databases which are part of the SQL server.\n",
+    "children": [
+      "azure_compliance.control.cis_v200_4_1_1",
+      "azure_compliance.control.cis_v200_4_1_2",
+      "azure_compliance.control.cis_v200_4_1_3",
+      "azure_compliance.control.cis_v200_4_1_4",
+      "azure_compliance.control.cis_v200_4_1_5",
+      "azure_compliance.control.cis_v200_4_1_6"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_4_2",
+    "description": "",
+    "title": "4.2 SQL Server - Microsoft Defender for SQL",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "4.2",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/SQL",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nMicrosoft Defender for SQL provides a layer of security which enables customers to detect and respond to potential threats as they occur through security alerts on anomalous activities. Users will receive an alert upon suspicious database activities, potential vulnerabilities, and SQL injection attacks, as well as anomalous database access patterns. SQL Server Threat Detection alerts provide details of suspicious activity and recommend action on how to investigate and mitigate the threat.\n\nMicrosoft Defender for SQL may incur additional cost per SQL server.\n",
+    "children": [
+      "azure_compliance.control.cis_v200_4_2_1",
+      "azure_compliance.control.cis_v200_4_2_2",
+      "azure_compliance.control.cis_v200_4_2_3",
+      "azure_compliance.control.cis_v200_4_2_4",
+      "azure_compliance.control.cis_v200_4_2_5"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_4_3",
+    "description": "",
+    "title": "4.3 PostgreSQL Database Server",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "4.3",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section groups security best practices/recommendations for Azure PostgreSQL Database Servers.",
+    "children": [
+      "azure_compliance.control.cis_v200_4_3_1",
+      "azure_compliance.control.cis_v200_4_3_2",
+      "azure_compliance.control.cis_v200_4_3_3",
+      "azure_compliance.control.cis_v200_4_3_4",
+      "azure_compliance.control.cis_v200_4_3_5",
+      "azure_compliance.control.cis_v200_4_3_6",
+      "azure_compliance.control.cis_v200_4_3_7",
+      "azure_compliance.control.cis_v200_4_3_8"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_4_4",
+    "description": "",
+    "title": "4.4 MySQL Database",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "4.4",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/SQL",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section groups security best practices/recommendations for Azure MySQL Database Servers.\n",
+    "children": [
+      "azure_compliance.control.cis_v200_4_4_1",
+      "azure_compliance.control.cis_v200_4_4_2",
+      "azure_compliance.control.cis_v200_4_4_3",
+      "azure_compliance.control.cis_v200_4_4_4"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_4_5",
+    "description": "",
+    "title": "4.5 Cosmos DB",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "4",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/SQL",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section groups security best practices/recommendations for Azure Cosmos DB Database Servers.",
+    "children": [
+      "azure_compliance.control.cis_v200_4_5_1",
+      "azure_compliance.control.cis_v200_4_5_2",
+      "azure_compliance.control.cis_v200_4_5_3"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_5",
+    "description": "",
+    "title": "5 Logging and Monitoring",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "5",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers security recommendations to follow to set logging and monitoring policies on an Azure Subscription.\n",
+    "children": [
+      "azure_compliance.benchmark.cis_v200_5_1",
+      "azure_compliance.benchmark.cis_v200_5_2",
+      "azure_compliance.benchmark.cis_v200_5_3",
+      "azure_compliance.control.cis_v200_5_4",
+      "azure_compliance.benchmark.cis_v200_5_5"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_5_1",
+    "description": "",
+    "title": "5.1 Configuring Diagnostic Settings",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "5",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThe Azure Diagnostic Settings capture control/management activities performed on a subscription or Azure AD Tenant. By default, the Azure Portal retains activity logs only for 90 days. The Diagnostic Settings define the type of events that are stored or streamed and the outputs—storage account, log analytics workspace, event hub, and others. The Diagnostic Settings, if configured properly, can ensure that all logs are retained for longer duration. This section has recommendations for correctly configuring the Diagnostic Settings so that all logs captured are retained for longer periods.\n\n### Azure Subscriptions\n\nWhen configuring Diagnostic Settings, you may choose to export in one of four ways in which you need to ensure appropriate data retention. The options are Log Analytics, Event Hub, Storage Account, and Partner Solutions. It is important to ensure you are aware and have set retention as your organization sees fit.\n\n### Azure AD Logs\n\nIn order to retain sign in logs, user account changes, application provisioning logs, or other logs that are visible to only on the Tenant in Azure AD, separate Diagnostic settings must be specified.\n\n### Deployment by Policy\n\nDeploying Azure diagnostics should ideally be done by policy to ensure a consistent configuration, Microsoft provide a full set of policies for all diagnostic capable resource types in their github repository. If you chose to deploy by policy, it is best to route the diagnostics to a Log Analytics Workspace so that they can be used in Azure Monitor or Azure Sentinel. Be aware that this has a cost attached to it. Future versions of the CIS Azure Foundations Benchmark will aim to cover the use of policy in greater detail.\n",
+    "children": [
+      "azure_compliance.control.cis_v200_5_1_1",
+      "azure_compliance.control.cis_v200_5_1_2",
+      "azure_compliance.control.cis_v200_5_1_3",
+      "azure_compliance.control.cis_v200_5_1_4",
+      "azure_compliance.control.cis_v200_5_1_5",
+      "azure_compliance.control.cis_v200_5_1_6",
+      "azure_compliance.control.cis_v200_5_1_7"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_5_2",
+    "description": "",
+    "title": "5.2 Monitoring using Activity Log Alerts",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "5",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/Monitor",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThe recommendations provided in this section are intended to provide entry-level alerting for crucial activities on a tenant account. These recommended activities should be tuned to your needs. By default, each of these Activity Log Alerts tends to guide the reader to alerting at the \"Subscription-wide\" level which will capture and alert on rules triggered by all resources and resource groups contained within a subscription. This is not an ideal rule set for Alerting within larger and more complex organizations.\n\nWhile this section provides recommendations for the creation of **Activity Log Alerts** specifically, Microsoft Azure supports four different types of alerts:\n\n- Metric Alerts\n- Log Alerts\n- Activity Log Alerts\n- Smart Detection Alerts\n\nAll Azure services (Microsoft provided or otherwise) that can generate alerts are assigned a \"Resource provider namespace\" when they are registered in an Azure tenant. The recommendations in this section are in no way exhaustive of the plethora of available \"Providers\" or \"Resource Types.\" The Resource Providers that are registered in your Azure Tenant can be located in your Subscription. Each registered Provider in your environment **may** have available \"Conditions\" to raise alerts via Activity Log Alerts. These providers should be considered for inclusion in Activity Log Alert rules of your own making.\n\nTo view the registered resource providers in your Subscription(s), use this guide:\n\n- [https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-providers-and-types](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-providers-and-types)\n\nIf you wish to create custom alerting rules for Activity Log Alerts or other alert types, please refer to Microsoft documentation:\n\n- [https://docs.microsoft.com/en-us/azure/azure-monitor/alerts/alerts-create-new-alert-rule](https://docs.microsoft.com/en-us/azure/azure-monitor/alerts/alerts-create-new-alert-rule)",
+    "children": [
+      "azure_compliance.control.cis_v200_5_2_1",
+      "azure_compliance.control.cis_v200_5_2_2",
+      "azure_compliance.control.cis_v200_5_2_3",
+      "azure_compliance.control.cis_v200_5_2_4",
+      "azure_compliance.control.cis_v200_5_2_5",
+      "azure_compliance.control.cis_v200_5_2_6",
+      "azure_compliance.control.cis_v200_5_2_7",
+      "azure_compliance.control.cis_v200_5_2_8",
+      "azure_compliance.control.cis_v200_5_2_9",
+      "azure_compliance.control.cis_v200_5_2_10"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_5_3",
+    "description": "",
+    "title": "5.3 Configuring Application Insights",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "5",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/Monitor",
+      "type": "Benchmark"
+    },
+    "documentation": "## Description\n\nConfiguring Application Insights\n",
+    "children": [
+      "azure_compliance.control.cis_v200_5_3_1"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_5_5",
+    "description": "The use of Basic or Free SKUs in Azure whilst cost effective have significant limitations in terms of what can be monitored and what support can be realized from Microsoft. Typically, these SKU's do not have a service SLA and Microsoft will usually refuse to provide support for them. Consequently Basic/Free SKUs should never be used for production workloads.",
+    "title": "5.5 Ensure that SKU Basic/Consumption is not used on artifacts that need to be monitored (Particularly for Production Workloads)",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_item_id": "5.5",
+      "cis_level": "2",
+      "cis_section_id": "5",
+      "cis_type": "automated",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/Monitor"
+    },
+    "documentation": "## Description\n\nThe use of Basic or Free SKUs in Azure whilst cost effective have significant limitations in terms of what can be monitored and what support can be realized from Microsoft. Typically, these SKU’s do not have a service SLA and Microsoft will usually refuse to provide support for them. Consequently Basic/Free SKUs should never be used for production workloads.\n\nTypically, production workloads need to be monitored and should have an SLA with Microsoft, using Basic SKUs for any deployed product will mean that that these capabilities do not exist.\n\nThe following resource types should use standard SKUs as a minimum.\n- Public IP Addresses\n- Network Load Balancers\n- REDIS Cache\n- SQL PaaS Databases\n- VPN Gateways\n\n## Remediation\n\nEach artifact has its own process for upgrading from basic to standard SKU's and this should be followed if required.\n\n### Default Value\n\nPolicy should enforce standard SKUs for the following artifacts:\n- Public IP Addresses\n- Network Load Balancers\n- REDIS Cache\n- SQL PaaS Databases\n- VPN Gateways\n",
+    "children": [
+      "azure_compliance.control.network_lb_no_basic_sku",
+      "azure_compliance.control.network_public_ip_no_basic_sku",
+      "azure_compliance.control.network_virtual_network_gateway_no_basic_sku",
+      "azure_compliance.control.redis_cache_no_basic_sku"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_6",
+    "description": "",
+    "title": "6 Networking",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "6",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/Network",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers security recommendations to follow in order to set networking policies on an Azure subscription.\n",
+    "children": [
+      "azure_compliance.control.cis_v200_6_1",
+      "azure_compliance.control.cis_v200_6_2",
+      "azure_compliance.control.cis_v200_6_3",
+      "azure_compliance.control.cis_v200_6_4",
+      "azure_compliance.control.cis_v200_6_5",
+      "azure_compliance.control.cis_v200_6_6",
+      "azure_compliance.control.cis_v200_6_7"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_7",
+    "description": "",
+    "title": "7 Virtual Machines",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "7",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/Compute",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers security recommendations to follow for the configuration of Virtual Machines on an Azure subscription.\n",
+    "children": [
+      "azure_compliance.control.cis_v200_7_1",
+      "azure_compliance.control.cis_v200_7_2",
+      "azure_compliance.control.cis_v200_7_3",
+      "azure_compliance.control.cis_v200_7_4",
+      "azure_compliance.control.cis_v200_7_5",
+      "azure_compliance.control.cis_v200_7_6",
+      "azure_compliance.control.cis_v200_7_7"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_8",
+    "description": "",
+    "title": "8 Key Vault",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "8",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers security recommendations to follow for the configuration and use of Azure Key Vault.",
+    "children": [
+      "azure_compliance.control.cis_v200_8_1",
+      "azure_compliance.control.cis_v200_8_2",
+      "azure_compliance.control.cis_v200_8_3",
+      "azure_compliance.control.cis_v200_8_4",
+      "azure_compliance.control.cis_v200_8_5",
+      "azure_compliance.control.cis_v200_8_6",
+      "azure_compliance.control.cis_v200_8_7",
+      "azure_compliance.control.cis_v200_8_8"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_9",
+    "description": "",
+    "title": "9 AppService",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "9",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure/AppService",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers security recommendations for Azure AppService.\n",
+    "children": [
+      "azure_compliance.control.cis_v200_9_1",
+      "azure_compliance.control.cis_v200_9_2",
+      "azure_compliance.control.cis_v200_9_3",
+      "azure_compliance.control.cis_v200_9_4",
+      "azure_compliance.control.cis_v200_9_5",
+      "azure_compliance.control.cis_v200_9_6",
+      "azure_compliance.control.cis_v200_9_7",
+      "azure_compliance.control.cis_v200_9_8",
+      "azure_compliance.control.cis_v200_9_9",
+      "azure_compliance.control.cis_v200_9_10",
+      "azure_compliance.control.cis_v200_9_11"
+    ]
+  },
+  {
+    "benchmark_id": "azure_compliance.benchmark.cis_v200_10",
+    "description": "",
+    "title": "10 Miscellaneous",
+    "tags": {
+      "category": "Compliance",
+      "cis": "true",
+      "cis_section_id": "10",
+      "cis_version": "v2.0.0",
+      "plugin": "azure",
+      "service": "Azure",
+      "type": "Benchmark"
+    },
+    "documentation": "## Overview\n\nThis section covers security recommendations for Miscellaneous.",
+    "children": [
+      "azure_compliance.control.cis_v200_10_1"
+    ]
+  }
+]

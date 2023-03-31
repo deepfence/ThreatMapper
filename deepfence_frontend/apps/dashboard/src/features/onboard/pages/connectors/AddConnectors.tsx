@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useMemo } from 'react';
 import { IconContext } from 'react-icons';
 import { HiOutlineArrowCircleRight } from 'react-icons/hi';
+import { generatePath } from 'react-router-dom';
 import { Button, Card, Tabs, Typography } from 'ui-components';
 
 import LogoAws from '@/assets/logo-aws.svg';
@@ -13,10 +14,15 @@ import LogoAzureRegistry from '@/assets/logo-azure-registry.svg';
 import LogoCloudConnector from '@/assets/logo-cloud-connector.svg';
 import LogoDocker from '@/assets/logo-docker.svg';
 import LogoGoogle from '@/assets/logo-google.svg';
+import LogoHarbor from '@/assets/logo-harbor.svg';
 import LogoHostConnector from '@/assets/logo-host-connector.svg';
+import LogoJFrog from '@/assets/logo-jfrog.svg';
 import LogoK8 from '@/assets/logo-k8.svg';
 import LogoLinux from '@/assets/logo-linux.svg';
+import LogoQuay from '@/assets/logo-quay.svg';
 import LogoRegistryConnector from '@/assets/logo-registry-connector.svg';
+import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
+import { RegistryType } from '@/features/common/data-component/RegistryConnectorForm';
 import { connectorLayoutTabs } from '@/features/onboard/layouts/ConnectorsLayout';
 import { useTheme } from '@/theme/ThemeContext';
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -30,7 +36,11 @@ interface CardConnectProps {
 const CardConnect = ({ label, path, icon }: CardConnectProps) => {
   const { navigate } = usePageNavigation();
   const handleSelection = () => {
-    navigate(`../../instructions/${path}`);
+    navigate(
+      generatePath(`../../instructions/:connectorType`, {
+        connectorType: path,
+      }),
+    );
   };
 
   return (
@@ -65,17 +75,17 @@ const Cloud = () => {
     {
       icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
       label: 'Amazon Web Services (AWS)',
-      path: 'cloud/aws',
+      path: ACCOUNT_CONNECTOR.AWS,
     },
     {
       icon: LogoGoogle,
       label: 'Google Cloud Platform',
-      path: 'cloud/gcp',
+      path: ACCOUNT_CONNECTOR.GCP,
     },
     {
       icon: LogoAzure,
       label: 'Microsoft Azure',
-      path: 'cloud/azure',
+      path: ACCOUNT_CONNECTOR.AZURE,
     },
   ];
   return (
@@ -125,17 +135,17 @@ const Host = () => {
     {
       icon: LogoK8,
       label: 'Kubernetes Clusters',
-      path: 'host/k8s',
+      path: ACCOUNT_CONNECTOR.KUBERNETES,
     },
     {
       icon: LogoDocker,
       label: 'Docker Container',
-      path: 'host/docker',
+      path: ACCOUNT_CONNECTOR.DOCKER,
     },
     {
       icon: LogoLinux,
       label: 'Linux Bare-Metal/VM',
-      path: 'host/linux',
+      path: ACCOUNT_CONNECTOR.LINUX,
     },
   ];
 
@@ -190,47 +200,47 @@ const Registries = () => {
     {
       icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
       label: 'Amazon Elastic Container Registry',
-      path: 'registry-amazon-ecr',
+      path: RegistryType.ecr,
     },
     {
       icon: LogoAzureRegistry,
       label: 'Azure Container Registry',
-      path: 'registry-azure',
+      path: RegistryType.azure_container_registry,
     },
     {
       icon: LogoGoogle,
       label: 'Container Registry | Google Cloud',
-      path: 'registry-linux',
+      path: RegistryType.google_container_registry,
     },
     {
-      icon: LogoGoogle,
+      icon: LogoDocker,
       label: 'Docker Container Registry',
-      path: 'registry-docker',
+      path: RegistryType.docker_hub,
     },
     {
       icon: LogoAzureRegistry,
       label: 'Docker Container Registry | Self Hosted',
-      path: 'registry-docker-selfhosted',
+      path: RegistryType.docker_private_registry,
     },
     {
-      icon: LogoGoogle,
+      icon: LogoQuay,
       label: 'Quay Container Registry',
-      path: 'registry-quay',
+      path: RegistryType.quay,
     },
     {
-      icon: LogoGoogle,
+      icon: LogoHarbor,
       label: 'Harbor Container Registry',
-      path: 'registry-harbor',
+      path: RegistryType.harbor,
     },
     {
-      icon: LogoGoogle,
+      icon: LogoJFrog,
       label: 'Smarter Docker Registry | JFrog',
-      path: 'registry-jfrog',
+      path: RegistryType.jfrog_container_registry,
     },
     {
       icon: LogoGoogle,
       label: 'GitLab Container Registry',
-      path: 'registry-gitlab',
+      path: RegistryType.gitlab,
     },
   ];
   const onShowAll = () => {

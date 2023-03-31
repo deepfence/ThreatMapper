@@ -7,7 +7,6 @@ import (
 
 	"github.com/armon/go-metrics"
 	log "github.com/sirupsen/logrus"
-	"github.com/weaveworks/common/mtime"
 	"golang.org/x/time/rate"
 
 	"github.com/weaveworks/scope/report"
@@ -21,6 +20,7 @@ const (
 // ReportPublisher publishes reports, probably to a remote collector.
 type ReportPublisher interface {
 	Publish(r report.Report) error
+	PublishInterval() int32
 }
 
 // Probe sits there, generating and publishing reports.
@@ -129,7 +129,7 @@ func (p *Probe) Stop() error {
 // bypassing the spy tick
 func (p *Probe) Publish(rpt report.Report) {
 	rpt = p.tag(rpt)
-	p.shortcutReports <- rpt
+	p.spiedReports <- rpt
 }
 
 func (p *Probe) spyLoop() {
@@ -186,7 +186,7 @@ func (p *Probe) report() report.Report {
 	}
 
 	result := report.MakeReport()
-	result.TS = mtime.Now()
+	result.TS = time.Now()
 	for i := 0; i < cap(reports); i++ {
 		result.UnsafeMerge(<-reports)
 	}
@@ -230,7 +230,7 @@ ForLoop:
 
 	if p.noControls {
 		rpt.WalkTopologies(func(t *report.Topology) {
-			t.Controls = report.Controls{}
+			//t.Controls = report.Controls{}
 		})
 	}
 	return rpt, count
@@ -238,15 +238,14 @@ ForLoop:
 
 func (p *Probe) publishLoop() {
 	defer p.done.Done()
-	startTime := mtime.Now()
-	pubTick := time.Tick(p.publishInterval)
+	startTime := time.Now()
 	publishCount := 0
 	var lastFullReport report.Report
 
 	for {
 		var err error
 		select {
-		case <-pubTick:
+		case <-time.After(time.Second * time.Duration(p.publisher.PublishInterval())):
 			rpt, count := p.drainAndSanitise(report.MakeReport(), p.spiedReports)
 			if count == 0 {
 				continue // No data has been collected - don't bother publishing.
@@ -256,8 +255,8 @@ func (p *Probe) publishLoop() {
 			if !fullReport {
 				rpt.UnsafeUnMerge(lastFullReport)
 			}
-			rpt.Window = mtime.Now().Sub(startTime)
-			startTime = mtime.Now()
+			rpt.Window = time.Now().Sub(startTime)
+			startTime = time.Now()
 			err = p.publisher.Publish(rpt)
 			if err == nil {
 				if fullReport {
@@ -269,9 +268,9 @@ func (p *Probe) publishLoop() {
 				publishCount = 0
 			}
 
-		case rpt := <-p.shortcutReports:
-			rpt, _ = p.drainAndSanitise(rpt, p.shortcutReports)
-			err = p.publisher.Publish(rpt)
+		//case rpt := <-p.shortcutReports:
+		//	rpt, _ = p.drainAndSanitise(rpt, p.shortcutReports)
+		//	err = p.publisher.Publish(rpt)
 
 		case <-p.quit:
 			return

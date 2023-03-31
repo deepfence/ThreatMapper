@@ -138,7 +138,7 @@ func prepareAgentReleases(ctx context.Context, tags_to_ingest []string) (map[str
 			key = res.Key
 		}
 
-		url, err := minio.ExposeFile(ctx, key, 10*time.Hour, url2.Values{})
+		url, err := minio.ExposeFile(ctx, key, false, 10*time.Hour, url2.Values{})
 		if err != nil {
 			log.Error().Err(err)
 			continue

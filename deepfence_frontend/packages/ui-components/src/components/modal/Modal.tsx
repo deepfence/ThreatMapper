@@ -88,7 +88,7 @@ export const Modal: FC<ModalProps> = ({
   children,
   footer,
   elementToFocusOnCloseRef,
-  width = 'w-4/12', // 33.333333%
+  width = '',
   open,
   ...rest
 }) => {
@@ -127,7 +127,7 @@ export const Modal: FC<ModalProps> = ({
             onCloseAutoFocus={() => elementToFocusOnCloseRef?.current?.focus()}
           >
             <ModalHeader title={title} />
-            <div className="p-6 overflow-y-auto h-full">{children}</div>
+            <div className="overflow-y-auto h-full">{children}</div>
             <ModalFooter>{footer}</ModalFooter>
           </DialogPrimitive.Content>
         </DialogPrimitive.Overlay>

@@ -21,10 +21,12 @@ import type {
   ModelCompliance,
   ModelContainer,
   ModelContainerImage,
+  ModelFiltersReq,
+  ModelFiltersResult,
   ModelHost,
   ModelMalware,
   ModelScanInfo,
-  ModelSecretRule,
+  ModelSecret,
   ModelVulnerability,
   SearchSearchCountResp,
   SearchSearchNodeReq,
@@ -43,14 +45,18 @@ import {
     ModelContainerToJSON,
     ModelContainerImageFromJSON,
     ModelContainerImageToJSON,
+    ModelFiltersReqFromJSON,
+    ModelFiltersReqToJSON,
+    ModelFiltersResultFromJSON,
+    ModelFiltersResultToJSON,
     ModelHostFromJSON,
     ModelHostToJSON,
     ModelMalwareFromJSON,
     ModelMalwareToJSON,
     ModelScanInfoFromJSON,
     ModelScanInfoToJSON,
-    ModelSecretRuleFromJSON,
-    ModelSecretRuleToJSON,
+    ModelSecretFromJSON,
+    ModelSecretToJSON,
     ModelVulnerabilityFromJSON,
     ModelVulnerabilityToJSON,
     SearchSearchCountRespFromJSON,
@@ -111,6 +117,14 @@ export interface CountVulnerabilitiesRequest {
 
 export interface CountVulnerabilityScansRequest {
     searchSearchScanReq?: SearchSearchScanReq;
+}
+
+export interface GetCloudComplianceFiltersRequest {
+    modelFiltersReq?: ModelFiltersReq;
+}
+
+export interface GetComplianceFiltersRequest {
+    modelFiltersReq?: ModelFiltersReq;
 }
 
 export interface SearchCloudComplianceScansRequest {
@@ -381,6 +395,38 @@ export interface SearchApiInterface {
     countVulnerabilityScans(requestParameters: CountVulnerabilityScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
+     * Get all applicable filter values for cloud compliance
+     * @summary Get Cloud Compliance Filters
+     * @param {ModelFiltersReq} [modelFiltersReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    getCloudComplianceFiltersRaw(requestParameters: GetCloudComplianceFiltersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelFiltersResult>>;
+
+    /**
+     * Get all applicable filter values for cloud compliance
+     * Get Cloud Compliance Filters
+     */
+    getCloudComplianceFilters(requestParameters: GetCloudComplianceFiltersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelFiltersResult>;
+
+    /**
+     * Get all applicable filter values for compliance
+     * @summary Get Compliance Filters
+     * @param {ModelFiltersReq} [modelFiltersReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    getComplianceFiltersRaw(requestParameters: GetComplianceFiltersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelFiltersResult>>;
+
+    /**
+     * Get all applicable filter values for compliance
+     * Get Compliance Filters
+     */
+    getComplianceFilters(requestParameters: GetComplianceFiltersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelFiltersResult>;
+
+    /**
      * Search across all the data associated with cloud-compliance scan
      * @summary Search Cloud Compliance Scan results
      * @param {SearchSearchScanReq} [searchSearchScanReq] 
@@ -532,13 +578,13 @@ export interface SearchApiInterface {
      * @throws {RequiredError}
      * @memberof SearchApiInterface
      */
-    searchSecretsRaw(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecretRule>>>;
+    searchSecretsRaw(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecret>>>;
 
     /**
      * Search across all the data associated with secrets
      * Search Secrets
      */
-    searchSecrets(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecretRule>>;
+    searchSecrets(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecret>>;
 
     /**
      * Search across all the data associated with secrets scan
@@ -1103,6 +1149,84 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
+     * Get all applicable filter values for cloud compliance
+     * Get Cloud Compliance Filters
+     */
+    async getCloudComplianceFiltersRaw(requestParameters: GetCloudComplianceFiltersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelFiltersResult>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/filters/cloud-compliance`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelFiltersReqToJSON(requestParameters.modelFiltersReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelFiltersResultFromJSON(jsonValue));
+    }
+
+    /**
+     * Get all applicable filter values for cloud compliance
+     * Get Cloud Compliance Filters
+     */
+    async getCloudComplianceFilters(requestParameters: GetCloudComplianceFiltersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelFiltersResult> {
+        const response = await this.getCloudComplianceFiltersRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get all applicable filter values for compliance
+     * Get Compliance Filters
+     */
+    async getComplianceFiltersRaw(requestParameters: GetComplianceFiltersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelFiltersResult>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/filters/compliance`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelFiltersReqToJSON(requestParameters.modelFiltersReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelFiltersResultFromJSON(jsonValue));
+    }
+
+    /**
+     * Get all applicable filter values for compliance
+     * Get Compliance Filters
+     */
+    async getComplianceFilters(requestParameters: GetComplianceFiltersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelFiltersResult> {
+        const response = await this.getComplianceFiltersRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Search across all the data associated with cloud-compliance scan
      * Search Cloud Compliance Scan results
      */
@@ -1457,7 +1581,7 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
      * Search across all the data associated with secrets
      * Search Secrets
      */
-    async searchSecretsRaw(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecretRule>>> {
+    async searchSecretsRaw(requestParameters: SearchSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecret>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1480,14 +1604,14 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
             body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelSecretRuleFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelSecretFromJSON));
     }
 
     /**
      * Search across all the data associated with secrets
      * Search Secrets
      */
-    async searchSecrets(requestParameters: SearchSecretsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecretRule>> {
+    async searchSecrets(requestParameters: SearchSecretsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecret>> {
         const response = await this.searchSecretsRaw(requestParameters, initOverrides);
         return await response.value();
     }

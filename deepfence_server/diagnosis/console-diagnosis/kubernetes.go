@@ -7,11 +7,12 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/diagnosis"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -81,8 +82,8 @@ func NewKubernetesConsoleDiagnosisHandler() (*KubernetesConsoleDiagnosisHandler,
 	}, nil
 }
 
-func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(tail string) error {
-	zipFile, err := CreateTempFile("deepfence-console-logs-*.zip")
+func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(ctx context.Context, tail string) error {
+	zipFile, err := os.Create(fmt.Sprintf("/tmp/deepfence-console-logs-%s.zip", time.Now().Format("2006-01-02-15-04-05")))
 	if err != nil {
 		return err
 	}
@@ -91,7 +92,6 @@ func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(tail string) 
 		os.RemoveAll(zipFile.Name())
 	}()
 	zipWriter := zip.NewWriter(zipFile)
-	ctx := context.Background()
 
 	labelSelector := "app=deepfence-console"
 	options := metaV1.ListOptions{LabelSelector: labelSelector}
@@ -122,8 +122,8 @@ func (k *KubernetesConsoleDiagnosisHandler) GenerateDiagnosticLogs(tail string) 
 	if err != nil {
 		return err
 	}
-	filePath := path.Join("/diagnosis/console-diagnosis", filepath.Base(zipFile.Name()))
-	_, err = mc.UploadLocalFile(ctx, filePath, zipFile.Name(), minio.PutObjectOptions{ContentType: "application/zip"})
+	_, err = mc.UploadLocalFile(ctx, diagnosis.ConsoleDiagnosisFileServerPrefix+filepath.Base(zipFile.Name()), zipFile.Name(),
+		minio.PutObjectOptions{ContentType: "application/zip"})
 	if err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func (k *KubernetesConsoleDiagnosisHandler) addPodLogs(ctx context.Context, pod 
 	if err != nil {
 		return err
 	}
-	if _, err := zipFileWriter.Write(logBytes); err != nil {
+	if _, err := zipFileWriter.Write(utils.StripAnsi(logBytes)); err != nil {
 		return err
 	}
 
@@ -187,7 +187,27 @@ func (k *KubernetesConsoleDiagnosisHandler) CopyFromPod(pod *apiv1.Pod, srcPath 
 				// here number 3 has been used to cut some nested path values in tar writer
 				// like if path is /tmp/some1/some2/some3 then dir structure in tar will be /some2/some3
 				fileName := strings.Join(strings.Split(filepath.ToSlash(file), "/")[3:], "/")
+				if fileName == "" {
+					return nil
+				}
 
+				// create directories
+				var tmpFilePath string
+				dirs := strings.Split(fileName, "/")
+				if len(dirs) > 1 {
+					dirs = dirs[:len(dirs)-1]
+					for _, dir := range dirs {
+						tmpFilePath += dir + "/"
+						if tmpFilePath != "/" {
+							_, err = zipWriter.Create(tmpFilePath)
+							if err != nil {
+								return err
+							}
+						}
+					}
+				}
+
+				// create file
 				zipFileWriter, err := zipWriter.Create(fileName)
 				if err != nil {
 					return err

@@ -1,6 +1,6 @@
 import { IconContext } from 'react-icons';
 import { HiArrowRight, HiDocumentSearch, HiSwitchHorizontal } from 'react-icons/hi';
-import { Navigate, useLocation } from 'react-router-dom';
+import { generatePath, Navigate, useLocation } from 'react-router-dom';
 import { Button, Card, Separator, Tooltip, Typography } from 'ui-components';
 
 import LogoAws from '@/assets/logo-aws.svg';
@@ -13,9 +13,8 @@ import LogoLinux from '@/assets/logo-linux.svg';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { OnboardConnectionNode } from '@/features/onboard/pages/connectors/MyConnectors';
 import { Mode, useTheme } from '@/theme/ThemeContext';
+import { ScanTypeEnum } from '@/types/common';
 import { usePageNavigation } from '@/utils/usePageNavigation';
-
-type NodeType = 'aws' | 'gcp' | 'azure' | 'host' | 'kubernetes_cluster' | 'registry';
 
 const getNodeDisplayText = (text: string) => {
   const splittedText = text.split(',');
@@ -38,36 +37,43 @@ type ScanTypeListProps = {
 
 const complianceScanData = {
   scanTitle: 'Compliance Scan',
-  scanType: 'compliance',
+  scanType: ScanTypeEnum.ComplianceScan,
+  description: `A few words about the compliance scan and why you need to use it.`,
+  buttonText: 'Configure Compliance Scan',
+};
+
+const cloudComplianceScanData = {
+  scanTitle: 'Compliance Scan',
+  scanType: ScanTypeEnum.CloudComplianceScan,
   description: `A few words about the compliance scan and why you need to use it.`,
   buttonText: 'Configure Compliance Scan',
 };
 
 const vulnerabilityScanData = {
   scanTitle: 'Vulnerability Scan',
-  scanType: 'vulnerability',
+  scanType: ScanTypeEnum.VulnerabilityScan,
   description: `A few words about the vulnerability scan and why you need to use it.`,
   buttonText: 'Configure Vulnerability Scan',
 };
 const secretScanData = {
   scanTitle: 'Secret Scan',
-  scanType: 'secret',
+  scanType: ScanTypeEnum.SecretScan,
   description: `A few words about the secret scan and why you need to use it.`,
   buttonText: 'Configure Secret Scan',
 };
 const malwareScanData = {
   scanTitle: 'Malware Scan',
-  scanType: 'malware',
+  scanType: ScanTypeEnum.MalwareScan,
   description: `A few words about the malwawre scan and why you need to use it.`,
   buttonText: 'Configure Malware Scan',
 };
 
-type PossibleScanMapType = Record<NodeType, ScanTypeListProps[]>;
+type PossibleScanMapType = Record<string, ScanTypeListProps[]>;
 
 const possibleScanMap: PossibleScanMapType = {
-  aws: [complianceScanData],
-  gcp: [complianceScanData],
-  azure: [complianceScanData],
+  aws: [cloudComplianceScanData],
+  gcp: [cloudComplianceScanData],
+  azure: [cloudComplianceScanData],
   host: [vulnerabilityScanData, complianceScanData, secretScanData, malwareScanData],
   kubernetes_cluster: [
     vulnerabilityScanData,
@@ -82,7 +88,7 @@ const logoAndTextMap = (
   count: number,
   mode: Mode,
 ): Record<
-  NodeType,
+  string,
   {
     title: string;
     logo: string;
@@ -126,7 +132,7 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
   const { mode } = useTheme();
   const { navigate } = usePageNavigation();
 
-  const nodeType = state[0].urlType as NodeType;
+  const nodeType = state[0].urlType;
 
   return (
     <div className="flex w-fit p-3 pt-0 items-center mb-8">
@@ -176,11 +182,11 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
   );
 };
 
-const ScanType = ({ state }: { state: OnboardConnectionNode[] }) => {
+const ScanHeader = ({ state }: { state: OnboardConnectionNode[] }) => {
   const { navigate } = usePageNavigation();
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
-      {possibleScanMap[state[0].urlType as NodeType].map(
+      {possibleScanMap[state[0].urlType].map(
         ({ scanTitle, scanType, description, buttonText }: ScanTypeListProps) => {
           return (
             <Card key={scanType} className="p-5">
@@ -204,9 +210,14 @@ const ScanType = ({ state }: { state: OnboardConnectionNode[] }) => {
                 className="mt-2 w-full"
                 endIcon={<HiArrowRight />}
                 onClick={() => {
-                  navigate(`/onboard/scan/configure/${scanType}`, {
-                    state,
-                  });
+                  navigate(
+                    generatePath('/onboard/scan/configure/:scanType', {
+                      scanType,
+                    }),
+                    {
+                      state,
+                    },
+                  );
                 }}
               >
                 {buttonText}
@@ -236,7 +247,7 @@ const ChooseScan = () => {
         description="Choose from the below options to perform your first scan."
       />
       <SelectedAccount state={state} />
-      <ScanType state={state} />
+      <ScanHeader state={state} />
       <Button onClick={goBack} color="default" size="xs" className="mt-16">
         Go Back
       </Button>

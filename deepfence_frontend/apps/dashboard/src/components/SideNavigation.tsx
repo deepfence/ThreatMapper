@@ -73,7 +73,7 @@ const MenuItems: Array<{
   {
     title: 'Settings',
     Icon: SettingsIcon,
-    to: '/settings',
+    to: '/settings/diagnostic-logs',
   },
 ];
 
@@ -92,7 +92,7 @@ const ItemWrapper = forwardRef(
   ) => {
     if (expanded) return <div>{children}</div>;
     return (
-      <Tooltip placement="right" content={title} triggerAsChild>
+      <Tooltip placement="right" content={title} triggerAsChild delayDuration={100}>
         <div tabIndex={-1}>{children}</div>
       </Tooltip>
     );

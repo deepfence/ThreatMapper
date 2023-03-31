@@ -36,12 +36,6 @@ export interface IngestersCompliance {
      * @type {string}
      * @memberof IngestersCompliance
      */
-    compliance_node_type?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof IngestersCompliance
-     */
     description?: string;
     /**
      * 
@@ -49,6 +43,18 @@ export interface IngestersCompliance {
      * @memberof IngestersCompliance
      */
     masked?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof IngestersCompliance
+     */
+    node_id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof IngestersCompliance
+     */
+    node_type?: string;
     /**
      * 
      * @type {string}
@@ -144,9 +150,10 @@ export function IngestersComplianceFromJSONTyped(json: any, ignoreDiscriminator:
         
         'timestamp': !exists(json, '@timestamp') ? undefined : json['@timestamp'],
         'compliance_check_type': !exists(json, 'compliance_check_type') ? undefined : json['compliance_check_type'],
-        'compliance_node_type': !exists(json, 'compliance_node_type') ? undefined : json['compliance_node_type'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'masked': !exists(json, 'masked') ? undefined : json['masked'],
+        'node_id': !exists(json, 'node_id') ? undefined : json['node_id'],
+        'node_type': !exists(json, 'node_type') ? undefined : json['node_type'],
         'remediation_ansible': !exists(json, 'remediation_ansible') ? undefined : json['remediation_ansible'],
         'remediation_puppet': !exists(json, 'remediation_puppet') ? undefined : json['remediation_puppet'],
         'remediation_script': !exists(json, 'remediation_script') ? undefined : json['remediation_script'],
@@ -173,9 +180,10 @@ export function IngestersComplianceToJSON(value?: IngestersCompliance | null): a
         
         '@timestamp': value.timestamp,
         'compliance_check_type': value.compliance_check_type,
-        'compliance_node_type': value.compliance_node_type,
         'description': value.description,
         'masked': value.masked,
+        'node_id': value.node_id,
+        'node_type': value.node_type,
         'remediation_ansible': value.remediation_ansible,
         'remediation_puppet': value.remediation_puppet,
         'remediation_script': value.remediation_script,

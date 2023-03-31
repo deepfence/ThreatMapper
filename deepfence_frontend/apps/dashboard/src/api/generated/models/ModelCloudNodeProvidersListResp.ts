@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ModelPostureProvider } from './ModelPostureProvider';
+import {
+    ModelPostureProviderFromJSON,
+    ModelPostureProviderFromJSONTyped,
+    ModelPostureProviderToJSON,
+} from './ModelPostureProvider';
+
 /**
  * 
  * @export
@@ -21,10 +28,10 @@ import { exists, mapValues } from '../runtime';
 export interface ModelCloudNodeProvidersListResp {
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<ModelPostureProvider>}
      * @memberof ModelCloudNodeProvidersListResp
      */
-    providers: Array<string> | null;
+    providers: Array<ModelPostureProvider> | null;
 }
 
 /**
@@ -47,7 +54,7 @@ export function ModelCloudNodeProvidersListRespFromJSONTyped(json: any, ignoreDi
     }
     return {
         
-        'providers': json['providers'],
+        'providers': (json['providers'] === null ? null : (json['providers'] as Array<any>).map(ModelPostureProviderFromJSON)),
     };
 }
 
@@ -60,7 +67,7 @@ export function ModelCloudNodeProvidersListRespToJSON(value?: ModelCloudNodeProv
     }
     return {
         
-        'providers': value.providers,
+        'providers': (value.providers === null ? null : (value.providers as Array<any>).map(ModelPostureProviderToJSON)),
     };
 }
 

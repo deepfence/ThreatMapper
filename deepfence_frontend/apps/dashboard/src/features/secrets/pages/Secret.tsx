@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Await, useLoaderData } from 'react-router-dom';
+import { useLoaderData } from 'react-router-dom';
 
 import { getSearchApiClient, getSecretApiClient } from '@/api/api';
 import {
@@ -42,6 +42,10 @@ async function getTop5SecretData(nodeType: 'image' | 'host' | 'container') {
               },
             },
             in_field_filter: [],
+            window: {
+              offset: 0,
+              size: 0,
+            },
           },
           window: {
             offset: 0,

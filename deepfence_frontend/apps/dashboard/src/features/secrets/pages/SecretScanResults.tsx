@@ -5,9 +5,9 @@ import { FaHistory } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import {
   HiArchive,
-  HiArrowSmLeft,
   HiBell,
   HiChevronLeft,
+  HiChevronRight,
   HiDotsVertical,
   HiEye,
   HiEyeOff,
@@ -29,6 +29,8 @@ import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 import {
   Badge,
+  Breadcrumb,
+  BreadcrumbLink,
   Button,
   Card,
   Checkbox,
@@ -52,17 +54,22 @@ import {
 import { getScanResultsApiClient, getSecretApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
-  ModelScanResultsActionRequestScanTypeEnum,
+  ModelScanInfo,
   ModelScanResultsReq,
-  ModelSecretRule,
 } from '@/api/generated';
+import { ModelSecret } from '@/api/generated/models/ModelSecret';
 import { DFLink } from '@/components/DFLink';
+import {
+  NoIssueFound,
+  ScanStatusInError,
+  ScanStatusInProgress,
+} from '@/components/ScanStatusMessage';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
 import { SecretsResultChart } from '@/features/secrets/components/landing/SecretsResultChart';
 import { Mode, useTheme } from '@/theme/ThemeContext';
-import { SecretSeverityType } from '@/types/common';
+import { ScanStatusEnum, ScanTypeEnum, SecretSeverityType } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -87,11 +94,8 @@ enum ActionEnumType {
 type ScanResult = {
   totalSeverity: number;
   severityCounts: { [key: string]: number };
-  hostName: string;
-  nodeType: string;
-  nodeId: string;
   timestamp: number;
-  tableData: ModelSecretRule[];
+  tableData: ModelSecret[];
   pagination: {
     currentPage: number;
     totalRows: number;
@@ -100,32 +104,77 @@ type ScanResult = {
 
 export type LoaderDataType = {
   error?: string;
+  scanStatusResult?: ModelScanInfo;
   message?: string;
-  data: ScanResult;
+  data?: ScanResult;
 };
 
 const PAGE_SIZE = 15;
 
 const getSeveritySearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('level');
+  return searchParams.getAll('severity');
 };
 const getMaskSearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('mask');
 };
-const getUnmaskySearch = (searchParams: URLSearchParams) => {
+const getUnmaskSearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('unmask');
 };
 
 async function getScans(
   scanId: string,
   searchParams: URLSearchParams,
-): Promise<ScanResult> {
+): Promise<LoaderDataType> {
+  // status api
+  const statusResult = await makeRequest({
+    apiFunction: getSecretApiClient().statusSecretScan,
+    apiArgs: [
+      {
+        modelScanStatusReq: {
+          scan_ids: [scanId],
+          bulk_scan_id: '',
+        },
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<LoaderDataType>({
+        message: '',
+      });
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message,
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(statusResult)) {
+    return statusResult.value();
+  }
+
+  if (!statusResult || !statusResult?.statuses?.[scanId]) {
+    throw new Error('Scan status not found');
+  }
+
+  const scanStatus = statusResult?.statuses?.[scanId].status;
+
+  const isScanRunning =
+    scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;
+  const isScanError = scanStatus === ScanStatusEnum.error;
+
+  if (isScanRunning || isScanError) {
+    return {
+      scanStatusResult: statusResult.statuses[scanId],
+    };
+  }
+
   const severity = getSeveritySearch(searchParams);
   const page = getPageFromSearchParams(searchParams);
   const order = getOrderFromSearchParams(searchParams);
 
   const mask = getMaskSearch(searchParams);
-  const unmask = getUnmaskySearch(searchParams);
+  const unmask = getUnmaskSearch(searchParams);
 
   const scanResultsReq: ModelScanResultsReq = {
     fields_filter: {
@@ -200,22 +249,22 @@ async function getScans(
   }
 
   return {
-    totalSeverity,
-    severityCounts: {
-      critical: result.severity_counts?.['critical'] ?? 0,
-      high: result.severity_counts?.['high'] ?? 0,
-      medium: result.severity_counts?.['medium'] ?? 0,
-      low: result.severity_counts?.['low'] ?? 0,
-      unknown: result.severity_counts?.['unknown'] ?? 0,
-    },
-    hostName: result.host_name,
-    nodeType: result.node_type,
-    nodeId: result.node_id,
-    timestamp: result.updated_at,
-    tableData: result.secrets ?? [],
-    pagination: {
-      currentPage: page,
-      totalRows: page * PAGE_SIZE + resultCounts.count,
+    scanStatusResult: statusResult.statuses[scanId],
+    data: {
+      totalSeverity,
+      severityCounts: {
+        critical: result.severity_counts?.['critical'] ?? 0,
+        high: result.severity_counts?.['high'] ?? 0,
+        medium: result.severity_counts?.['medium'] ?? 0,
+        low: result.severity_counts?.['low'] ?? 0,
+        unknown: result.severity_counts?.['unknown'] ?? 0,
+      },
+      timestamp: result.updated_at,
+      tableData: result.secrets ?? [],
+      pagination: {
+        currentPage: page,
+        totalRows: page * PAGE_SIZE + resultCounts.count,
+      },
     },
   };
 }
@@ -256,7 +305,7 @@ const action = async ({
           modelScanResultsActionRequest: {
             result_ids: [...ids],
             scan_id: _scanId,
-            scan_type: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+            scan_type: ScanTypeEnum.SecretScan,
           },
         },
       ],
@@ -285,7 +334,7 @@ const action = async ({
             mask_across_hosts_and_images: mask === 'maskHostAndImages',
             result_ids: [...ids],
             scan_id: _scanId,
-            scan_type: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+            scan_type: ScanTypeEnum.SecretScan,
           },
         },
       ],
@@ -360,7 +409,7 @@ const DeleteConfirmationModal = ({
 
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center">
+      <div className="grid place-items-center p-6">
         <IconContext.Provider
           value={{
             className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
@@ -405,7 +454,7 @@ const HistoryDropdown = () => {
       generatePath('/data-component/scan-history/:scanType/:nodeType/:nodeId', {
         nodeId: nodeId,
         nodeType: nodeType,
-        scanType: ModelScanResultsActionRequestScanTypeEnum.SecretScan,
+        scanType: ScanTypeEnum.SecretScan,
       }),
     );
   };
@@ -425,12 +474,17 @@ const HistoryDropdown = () => {
       }
     >
       <DFAwait resolve={loaderData.data ?? []}>
-        {(resolvedData: LoaderDataType['data']) => {
+        {(resolvedData: LoaderDataType) => {
+          const { scanStatusResult } = resolvedData;
+          const { scan_id, node_id, node_type } = scanStatusResult ?? {};
+          if (!scan_id || !node_id || !node_type) {
+            throw new Error('Scan id, node id or node type is missing');
+          }
           return (
             <Dropdown
               triggerAsChild
               onOpenChange={(open) => {
-                if (open) onHistoryClick(resolvedData.nodeType, resolvedData.nodeId);
+                if (open) onHistoryClick(node_type, node_id);
               }}
               content={
                 <>
@@ -453,8 +507,7 @@ const HistoryDropdown = () => {
                         <span
                           className={twMerge(
                             cx('flex items-center text-gray-700 dark:text-gray-400', {
-                              'text-blue-600 dark:text-blue-500':
-                                item.scanId === params.scanId,
+                              'text-blue-600 dark:text-blue-500': item.scanId === scan_id,
                             }),
                           )}
                         >
@@ -576,7 +629,7 @@ const UnMaskDropdown = ({ ids }: { ids: string[] }) => {
               >
                 <HiEye />
               </IconContext.Provider>
-              Unmask {ids.length > 1 ? 'secret' : 'secrets'} across hosts and images
+              Unmask {ids.length > 1 ? 'secrets' : 'secret'} across hosts and images
             </span>
           </DropdownItem>
         </>
@@ -749,7 +802,7 @@ const ActionDropdown = ({
 const SecretTable = () => {
   const fetcher = useFetcher();
   const loaderData = useLoaderData() as LoaderDataType;
-  const columnHelper = createColumnHelper<LoaderDataType['data']['tableData'][number]>();
+  const columnHelper = createColumnHelper<ModelSecret>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -758,8 +811,8 @@ const SecretTable = () => {
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
-        size: 50,
-        minSize: 30,
+        size: 20,
+        minSize: 20,
         maxSize: 50,
       }),
       columnHelper.accessor('node_id', {
@@ -780,23 +833,23 @@ const SecretTable = () => {
           </DFLink>
         ),
         header: () => 'ID',
-        minSize: 100,
-        size: 120,
-        maxSize: 130,
+        minSize: 50,
+        size: 60,
+        maxSize: 65,
       }),
       columnHelper.accessor('full_filename', {
         cell: (info) => info.getValue(),
         header: () => 'Filename',
-        minSize: 100,
-        size: 200,
-        maxSize: 210,
+        minSize: 80,
+        size: 90,
+        maxSize: 110,
       }),
       columnHelper.accessor('matched_content', {
         cell: (info) => info.getValue(),
         header: () => 'Matched Content',
-        minSize: 100,
-        size: 200,
-        maxSize: 210,
+        minSize: 50,
+        size: 60,
+        maxSize: 65,
       }),
       columnHelper.accessor('level', {
         cell: (info) => (
@@ -818,9 +871,9 @@ const SecretTable = () => {
           />
         ),
         header: () => 'Severity',
-        minSize: 90,
-        size: 100,
-        maxSize: 110,
+        minSize: 30,
+        size: 40,
+        maxSize: 65,
       }),
       columnHelper.accessor('name', {
         enableSorting: false,
@@ -828,9 +881,9 @@ const SecretTable = () => {
           return info.getValue();
         },
         header: () => 'Rule Name',
-        minSize: 200,
-        size: 250,
-        maxSize: 260,
+        minSize: 80,
+        size: 90,
+        maxSize: 110,
       }),
       columnHelper.accessor('signature_to_match', {
         enableSorting: false,
@@ -838,9 +891,9 @@ const SecretTable = () => {
           return info.getValue() || 'unknown';
         },
         header: () => 'Signature to match',
-        minSize: 200,
-        size: 250,
-        maxSize: 260,
+        minSize: 70,
+        size: 80,
+        maxSize: 100,
       }),
       columnHelper.display({
         id: 'actions',
@@ -852,9 +905,9 @@ const SecretTable = () => {
           />
         ),
         header: () => '',
-        minSize: 40,
-        size: 40,
-        maxSize: 40,
+        minSize: 20,
+        size: 20,
+        maxSize: 20,
         enableResizing: false,
       }),
     ];
@@ -882,7 +935,29 @@ const SecretTable = () => {
     <>
       <Suspense fallback={<TableSkeleton columns={6} rows={10} size={'md'} />}>
         <DFAwait resolve={loaderData.data}>
-          {(resolvedData: LoaderDataType['data']) => {
+          {(resolvedData: LoaderDataType) => {
+            const { data, scanStatusResult } = resolvedData;
+
+            if (scanStatusResult?.status === ScanStatusEnum.error) {
+              return <ScanStatusInError />;
+            } else if (
+              scanStatusResult?.status !== ScanStatusEnum.error &&
+              scanStatusResult?.status !== ScanStatusEnum.complete
+            ) {
+              return <ScanStatusInProgress LogoIcon={SecretsIcon} />;
+            } else if (
+              scanStatusResult?.status === ScanStatusEnum.complete &&
+              data &&
+              data.tableData.length === 0
+            ) {
+              return (
+                <NoIssueFound LogoIcon={SecretsIcon} scanType={ScanTypeEnum.SecretScan} />
+              );
+            }
+
+            if (!data) {
+              return null;
+            }
             return (
               <Form>
                 {selectedIds.length === 0 ? (
@@ -923,7 +998,7 @@ const SecretTable = () => {
 
                 <Table
                   size="sm"
-                  data={resolvedData.tableData}
+                  data={data.tableData}
                   columns={columns}
                   enableRowSelection
                   rowSelectionState={rowSelectionState}
@@ -931,9 +1006,9 @@ const SecretTable = () => {
                   enablePagination
                   manualPagination
                   enableColumnResizing
-                  totalRows={resolvedData.pagination.totalRows}
+                  totalRows={data.pagination.totalRows}
                   pageSize={PAGE_SIZE}
-                  pageIndex={resolvedData.pagination.currentPage}
+                  pageIndex={data.pagination.currentPage}
                   getRowId={(row) => `${row.node_id}`}
                   enableSorting
                   manualSorting
@@ -961,7 +1036,7 @@ const SecretTable = () => {
                     let newPageIndex = 0;
                     if (typeof updaterOrValue === 'function') {
                       newPageIndex = updaterOrValue({
-                        pageIndex: resolvedData.pagination.currentPage,
+                        pageIndex: data.pagination.currentPage,
                         pageSize: PAGE_SIZE,
                       }).pageIndex;
                     } else {
@@ -998,167 +1073,171 @@ const HeaderComponent = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const loaderData = useLoaderData() as LoaderDataType;
   const isFilterApplied =
-    searchParams.has('level') || searchParams.has('mask') || searchParams.has('unmask');
+    searchParams.has('severity') ||
+    searchParams.has('mask') ||
+    searchParams.has('unmask');
 
   return (
     <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <Suspense fallback={<CircleSpinner size="xs" />}>
         <DFAwait resolve={loaderData.data ?? []}>
-          {(resolvedData: LoaderDataType['data']) => {
-            const { nodeType, hostName } = resolvedData;
+          {(resolvedData: LoaderDataType) => {
+            const { scanStatusResult } = resolvedData;
+
+            const { scan_id, node_type, updated_at, node_name } = scanStatusResult ?? {};
+
+            if (!scan_id || !node_type || !updated_at) {
+              throw new Error('Scan id, node type or updated_at is missing');
+            }
+
             return (
               <>
-                <DFLink
-                  to={`/secret/scans?nodeType=${nodeType}`}
-                  className="flex hover:no-underline items-center justify-center  mr-2"
-                >
-                  <IconContext.Provider
-                    value={{
-                      className: 'w-5 h-5 text-blue-600 dark:text-blue-500 ',
-                    }}
-                  >
-                    <HiArrowSmLeft />
-                  </IconContext.Provider>
-                </DFLink>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                  SECRET SCAN RESULTS - {nodeType} / {hostName}
-                </span>
+                <Breadcrumb separator={<HiChevronRight />} transparent>
+                  <BreadcrumbLink>
+                    <DFLink to={'/secret'}>SECRETS</DFLink>
+                  </BreadcrumbLink>
+                  <BreadcrumbLink>
+                    <DFLink to={`/secret/scans?nodeType=${node_type}`}>
+                      {node_type}
+                    </DFLink>
+                  </BreadcrumbLink>
+                  <BreadcrumbLink>
+                    <span className="inherit cursor-auto">{node_name}</span>
+                  </BreadcrumbLink>
+                </Breadcrumb>
+                <div className="ml-auto flex items-center gap-x-4">
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-500 dark:text-gray-200">
+                      {formatMilliseconds(updated_at)}
+                    </span>
+                    <span className="text-gray-400 text-[10px]">Last scan</span>
+                  </div>
+                  <div className="ml-auto">
+                    <HistoryDropdown />
+                  </div>
+
+                  <div className="relative">
+                    {isFilterApplied && (
+                      <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
+                    )}
+                    <Popover
+                      triggerAsChild
+                      elementToFocusOnCloseRef={elementToFocusOnClose}
+                      content={
+                        <div className="ml-auto w-[300px]">
+                          <div className="dark:text-white p-4">
+                            <div className="flex flex-col gap-y-6">
+                              <fieldset>
+                                <legend className="text-sm font-medium">
+                                  Mask And Unmask
+                                </legend>
+                                <div className="flex gap-x-4 mt-1">
+                                  <Checkbox
+                                    label="Mask"
+                                    checked={searchParams.getAll('mask').includes('true')}
+                                    onCheckedChange={(state) => {
+                                      if (state) {
+                                        setSearchParams((prev) => {
+                                          prev.append('mask', 'true');
+                                          prev.delete('page');
+                                          return prev;
+                                        });
+                                      } else {
+                                        setSearchParams((prev) => {
+                                          const prevStatuses = prev.getAll('mask');
+                                          prev.delete('mask');
+                                          prevStatuses
+                                            .filter((mask) => mask !== 'true')
+                                            .forEach((mask) => {
+                                              prev.append('mask', mask);
+                                            });
+                                          prev.delete('mask');
+                                          prev.delete('page');
+                                          return prev;
+                                        });
+                                      }
+                                    }}
+                                  />
+                                  <Checkbox
+                                    label="Unmask"
+                                    checked={searchParams
+                                      .getAll('unmask')
+                                      .includes('true')}
+                                    onCheckedChange={(state) => {
+                                      if (state) {
+                                        setSearchParams((prev) => {
+                                          prev.append('unmask', 'true');
+                                          prev.delete('page');
+                                          return prev;
+                                        });
+                                      } else {
+                                        setSearchParams((prev) => {
+                                          const prevStatuses = prev.getAll('unmask');
+                                          prev.delete('unmask');
+                                          prevStatuses
+                                            .filter((status) => status !== 'true')
+                                            .forEach((status) => {
+                                              prev.append('unmask', status);
+                                            });
+                                          prev.delete('unmask');
+                                          prev.delete('page');
+                                          return prev;
+                                        });
+                                      }
+                                    }}
+                                  />
+                                </div>
+                              </fieldset>
+                              <fieldset>
+                                <Select
+                                  noPortal
+                                  name="severity"
+                                  label={'Severity'}
+                                  placeholder="Select Severity"
+                                  value={searchParams.getAll('severity')}
+                                  sizing="xs"
+                                  onChange={(value) => {
+                                    setSearchParams((prev) => {
+                                      prev.delete('severity');
+                                      value.forEach((severity) => {
+                                        prev.append('severity', severity);
+                                      });
+                                      prev.delete('page');
+                                      return prev;
+                                    });
+                                  }}
+                                >
+                                  {['critical', 'high', 'medium', 'low', 'unknown'].map(
+                                    (severity: string) => {
+                                      return (
+                                        <SelectItem value={severity} key={severity}>
+                                          {capitalize(severity)}
+                                        </SelectItem>
+                                      );
+                                    },
+                                  )}
+                                </Select>
+                              </fieldset>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    >
+                      <IconButton
+                        size="xs"
+                        outline
+                        color="primary"
+                        className="rounded-lg bg-transparent"
+                        icon={<FiFilter />}
+                      />
+                    </Popover>
+                  </div>
+                </div>
               </>
             );
           }}
         </DFAwait>
       </Suspense>
-      <div className="ml-auto flex items-center gap-x-4">
-        <div className="flex flex-col">
-          <span className="text-xs text-gray-500 dark:text-gray-200">
-            <Suspense fallback={<CircleSpinner size="xs" />}>
-              <DFAwait resolve={loaderData.data ?? []}>
-                {(resolvedData: LoaderDataType['data']) => {
-                  const { timestamp } = resolvedData;
-                  return formatMilliseconds(timestamp);
-                }}
-              </DFAwait>
-            </Suspense>
-          </span>
-          <span className="text-gray-400 text-[10px]">Last scan</span>
-        </div>
-        <div className="ml-auto">
-          <HistoryDropdown />
-        </div>
-
-        <div className="relative">
-          {isFilterApplied && (
-            <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
-          )}
-          <Popover
-            triggerAsChild
-            elementToFocusOnCloseRef={elementToFocusOnClose}
-            content={
-              <div className="ml-auto w-[300px]">
-                <div className="dark:text-white p-4">
-                  <div className="flex flex-col gap-y-6">
-                    <fieldset>
-                      <legend className="text-sm font-medium">Mask And Unmask</legend>
-                      <div className="flex gap-x-4 mt-1">
-                        <Checkbox
-                          label="Mask"
-                          checked={searchParams.getAll('mask').includes('true')}
-                          onCheckedChange={(state) => {
-                            if (state) {
-                              setSearchParams((prev) => {
-                                prev.append('mask', 'true');
-                                prev.delete('page');
-                                return prev;
-                              });
-                            } else {
-                              setSearchParams((prev) => {
-                                const prevStatuses = prev.getAll('mask');
-                                prev.delete('mask');
-                                prevStatuses
-                                  .filter((mask) => mask !== 'true')
-                                  .forEach((mask) => {
-                                    prev.append('mask', mask);
-                                  });
-                                prev.delete('mask');
-                                prev.delete('page');
-                                return prev;
-                              });
-                            }
-                          }}
-                        />
-                        <Checkbox
-                          label="Unmask"
-                          checked={searchParams.getAll('unmask').includes('true')}
-                          onCheckedChange={(state) => {
-                            if (state) {
-                              setSearchParams((prev) => {
-                                prev.append('unmask', 'true');
-                                prev.delete('page');
-                                return prev;
-                              });
-                            } else {
-                              setSearchParams((prev) => {
-                                const prevStatuses = prev.getAll('unmask');
-                                prev.delete('unmask');
-                                prevStatuses
-                                  .filter((status) => status !== 'true')
-                                  .forEach((status) => {
-                                    prev.append('unmask', status);
-                                  });
-                                prev.delete('unmask');
-                                prev.delete('page');
-                                return prev;
-                              });
-                            }
-                          }}
-                        />
-                      </div>
-                    </fieldset>
-                    <fieldset>
-                      <Select
-                        noPortal
-                        name="level"
-                        label={'Severity'}
-                        placeholder="Select Severity"
-                        value={searchParams.getAll('level')}
-                        sizing="xs"
-                        onChange={(value) => {
-                          setSearchParams((prev) => {
-                            prev.delete('level');
-                            value.forEach((language) => {
-                              prev.append('level', language);
-                            });
-                            prev.delete('page');
-                            return prev;
-                          });
-                        }}
-                      >
-                        {['critical', 'high', 'medium', 'low', 'unknown'].map(
-                          (severity: string) => {
-                            return (
-                              <SelectItem value={severity} key={severity}>
-                                {capitalize(severity)}
-                              </SelectItem>
-                            );
-                          },
-                        )}
-                      </Select>
-                    </fieldset>
-                  </div>
-                </div>
-              </div>
-            }
-          >
-            <IconButton
-              size="xs"
-              outline
-              color="primary"
-              className="rounded-lg bg-transparent"
-              icon={<FiFilter />}
-            />
-          </Popover>
-        </div>
-      </div>
     </div>
   );
 };
@@ -1174,8 +1253,9 @@ const SeverityCountComponent = ({ theme }: { theme: Mode }) => {
         }
       >
         <DFAwait resolve={loaderData.data}>
-          {(resolvedData: ScanResult) => {
-            const { totalSeverity, severityCounts } = resolvedData;
+          {(resolvedData: LoaderDataType) => {
+            const { data } = resolvedData;
+            const severityCounts = data?.severityCounts ?? {};
             return (
               <>
                 <div className="grid grid-flow-col-dense gap-x-4">
@@ -1190,7 +1270,7 @@ const SeverityCountComponent = ({ theme }: { theme: Mode }) => {
                     </h4>
                     <div className="mt-2">
                       <span className="text-2xl text-gray-900 dark:text-gray-200">
-                        {totalSeverity}
+                        {data?.totalSeverity}
                       </span>
                       <h5 className="text-xs text-gray-500 dark:text-gray-200 mb-2">
                         Total count
