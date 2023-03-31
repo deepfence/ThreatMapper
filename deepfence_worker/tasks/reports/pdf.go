@@ -33,15 +33,15 @@ func generatePDF(ctx context.Context, session neo4j.Session, params utils.Report
 
 	switch params.Filters.ScanType {
 	case "vulnerability":
-		buffer, err = vulnerability(ctx, session, params)
+		buffer, err = vulnerabilityPDF(ctx, session, params)
 	case "secret":
-		buffer, err = secret(ctx, session, params)
+		buffer, err = secretPDF(ctx, session, params)
 	case "malware":
-		buffer, err = malware(ctx, session, params)
+		buffer, err = malwarePDF(ctx, session, params)
 	case "compliance":
-		buffer, err = compliance(ctx, session, params)
+		buffer, err = compliancePDF(ctx, session, params)
 	case "cloud_compliance":
-		buffer, err = cloudCompliance(ctx, session, params)
+		buffer, err = cloudCompliancePDF(ctx, session, params)
 	default:
 		return "", ErrUnknownScanType
 	}
@@ -69,7 +69,7 @@ func generatePDF(ctx context.Context, session neo4j.Session, params utils.Report
 	}
 
 	// create a temp file to hold pdf report
-	temp, err := os.CreateTemp("", "report-*"+reportFileName(params))
+	temp, err := os.CreateTemp("", "report-*-"+reportFileName(params))
 	if err != nil {
 		return "", err
 	}
@@ -84,7 +84,7 @@ func generatePDF(ctx context.Context, session neo4j.Session, params utils.Report
 	return temp.Name(), nil
 }
 
-func vulnerability(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
+func vulnerabilityPDF(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
 
 	data, err := getVulnerabilityData(ctx, session, params)
 	if err != nil {
@@ -103,7 +103,7 @@ func vulnerability(ctx context.Context, session neo4j.Session, params utils.Repo
 	return &rendered, nil
 }
 
-func secret(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
+func secretPDF(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
 
 	data, err := getSecretData(ctx, session, params)
 	if err != nil {
@@ -122,7 +122,7 @@ func secret(ctx context.Context, session neo4j.Session, params utils.ReportParam
 	return &rendered, nil
 }
 
-func malware(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
+func malwarePDF(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
 
 	data, err := getMalwareData(ctx, session, params)
 	if err != nil {
@@ -140,7 +140,7 @@ func malware(ctx context.Context, session neo4j.Session, params utils.ReportPara
 	return &rendered, nil
 }
 
-func compliance(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
+func compliancePDF(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
 
 	data, err := getComplianceData(ctx, session, params)
 	if err != nil {
@@ -158,7 +158,7 @@ func compliance(ctx context.Context, session neo4j.Session, params utils.ReportP
 	return &rendered, nil
 }
 
-func cloudCompliance(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
+func cloudCompliancePDF(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
 
 	data, err := getCloudComplianceData(ctx, session, params)
 	if err != nil {
