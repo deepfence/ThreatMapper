@@ -101,5 +101,3 @@ export type TopologyAction =
   | {
       type: 'refresh';
     };
-
-export type TopologyViewType = 'cloud' | 'kubernetes' | 'host' | 'pod' | 'container';
