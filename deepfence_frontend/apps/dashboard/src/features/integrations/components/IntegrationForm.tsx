@@ -22,33 +22,25 @@ type IntegrationTypeProps = {
 
 export const IntegrationType = {
   slack: 'slack',
+  pagerDuty: 'pager-duty',
+  email: 'email',
+  httpEndpoint: 'http-endpoint',
+  microsoftTeams: 'microsoft-teams',
 } as const;
 
-const TextInputUrl = () => {
+const TextInputType = ({ label, name }: { label: string; name: string }) => {
   return (
     <TextInput
       className="w-full"
-      label="Webhook Url"
+      label={label}
       type={'text'}
       sizing="sm"
-      name="url"
-      placeholder="Webhook Url"
+      name={name}
+      placeholder={label}
     />
   );
 };
 
-const TextInputChannel = () => {
-  return (
-    <TextInput
-      className="w-full"
-      label="Channel Name"
-      type={'text'}
-      sizing="sm"
-      name="channelName"
-      placeholder="Channel Name"
-    />
-  );
-};
 const Filters = ({ notificationType }: { notificationType: ScanTypeEnum }) => {
   // host
   const { hosts, status: listHostStatus } = useGetHostsList({
@@ -232,30 +224,54 @@ export const IntegrationForm = ({ integrationType }: IntegrationTypeProps) => {
 
   return (
     <Form method="post">
-      {integrationType === IntegrationType.slack && (
-        <Card className="w-full relative p-5 flex flex-col gap-y-4">
-          <TextInputUrl />
-          <TextInputChannel />
-          <NotificationType />
-          <input
-            type="text"
-            name="_actionType"
-            readOnly
-            hidden
-            value={ActionEnumType.ADD}
-          />
+      <Card className="w-full relative p-5 flex flex-col gap-y-4">
+        {integrationType === IntegrationType.slack && (
+          <>
+            <TextInputType name="url" label="Webhook Url" />
+            <TextInputType name="channelName" label="Channel Name" />
+          </>
+        )}
+        {integrationType === IntegrationType.pagerDuty && (
+          <>
+            <TextInputType name="integrationKey" label="Integration key" />
+            <TextInputType name="apiKey" label="Api key" />
+          </>
+        )}
+        {integrationType === IntegrationType.email && (
+          <>
+            <TextInputType name="email" label="Email id" />
+          </>
+        )}
+        {integrationType === IntegrationType.httpEndpoint && (
+          <>
+            <TextInputType name="apiUrl" label="API url" />
+            <TextInputType name="authorizationKey" label="Authorization key" />
+          </>
+        )}
+        {integrationType === IntegrationType.microsoftTeams && (
+          <>
+            <TextInputType name="url" label="Webhook Url" />
+          </>
+        )}
 
-          {actionData?.message && (
-            <p className="text-red-500 text-sm">{actionData.message}</p>
-          )}
+        <NotificationType />
+        <input
+          type="text"
+          name="_actionType"
+          readOnly
+          hidden
+          value={ActionEnumType.ADD}
+        />
+        {actionData?.message && (
+          <p className="text-red-500 text-sm">{actionData.message}</p>
+        )}
 
-          <div className="flex mt-2 w-full">
-            <Button color="primary" className="w-full" size="xs" type="submit">
-              Subscribe
-            </Button>
-          </div>
-        </Card>
-      )}
+        <div className="flex mt-2 w-full">
+          <Button color="primary" className="w-full" size="xs" type="submit">
+            Subscribe
+          </Button>
+        </div>
+      </Card>
     </Form>
   );
 };

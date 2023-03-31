@@ -14,9 +14,8 @@ import {
   FaSearchengin,
   FaSlack,
 } from 'react-icons/fa';
-import { HiArrowSmRight, HiChevronRight } from 'react-icons/hi';
-import { generatePath, Outlet } from 'react-router-dom';
-import { Breadcrumb, BreadcrumbLink, Card } from 'ui-components';
+import { HiArrowSmRight } from 'react-icons/hi';
+import { Card } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 
