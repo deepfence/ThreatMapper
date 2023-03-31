@@ -42,7 +42,7 @@ func (i *IntegrationAddReq) IntegrationExists(ctx context.Context, pgClient *pos
 		}
 		// compare the config
 		found = reflect.DeepEqual(config, i.Config)
-		if found {
+		if found && i.NotificationType == integration.Resource {
 			return true, nil
 		}
 	}
