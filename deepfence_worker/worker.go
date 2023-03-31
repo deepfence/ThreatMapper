@@ -202,6 +202,8 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 
 	worker.AddNoPublisherHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
 
+	worker.AddNoPublisherHandler(utils.SendNotificationTask, cronjobs.SendNotifications)
+
 	log.Info().Msg("Starting the consumer")
 	if err = worker.Run(context.Background()); err != nil {
 		cancel()

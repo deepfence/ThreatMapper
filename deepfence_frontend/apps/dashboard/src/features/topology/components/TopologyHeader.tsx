@@ -12,7 +12,8 @@ import { K8sIcon } from '@/components/icons/k8s';
 import { NamespaceIcon } from '@/components/icons/namespace';
 import { PodIcon } from '@/components/icons/pod';
 import { TableIcon } from '@/components/icons/table';
-import { TopologyViewType } from '@/features/topology/types/graph';
+import { TopologyViewTypes } from '@/features/topology/data-components/topologyAction';
+import { NodeType } from '@/features/topology/utils/topology-data';
 
 export const TopologyHeader = () => {
   return (
@@ -26,27 +27,32 @@ export const TopologyHeader = () => {
             icon={<CloudIcon />}
             name="Clouds"
             count={10}
-            type="cloud"
+            type={NodeType.cloud_provider}
           />
           <ResourceSelectorButton
             icon={<HostIcon />}
             name="Hosts"
-            type="host"
+            type={NodeType.host}
             count={38}
           />
           <ResourceSelectorButton
             icon={<K8sIcon />}
             name="Kubernetes Clusters"
             count={3}
-            type="kubernetes"
+            type={NodeType.kubernetes_cluster}
           />
           <ResourceSelectorButton
             icon={<ContainerIcon />}
             name="Containers"
             count={87}
-            type="container"
+            type={NodeType.container}
           />
-          <ResourceSelectorButton icon={<PodIcon />} name="Pods" type="pod" count={23} />
+          <ResourceSelectorButton
+            icon={<PodIcon />}
+            name="Pods"
+            type={NodeType.pod}
+            count={23}
+          />
           <ResourceSelectorButton icon={<NamespaceIcon />} name="Namespaces" count={7} />
           <ResourceSelectorButton
             icon={<ImageIcon />}
@@ -71,14 +77,15 @@ const ResourceSelectorButton = ({
   icon: ReactNode;
   name: string;
   count: number;
-  type?: TopologyViewType;
+  type?: (typeof TopologyViewTypes)[number];
 }) => {
   const matches = useMatches();
 
   const currentPathName = matches[matches.length - 1]?.pathname ?? '';
   const [searchParams] = useSearchParams();
   const isActive =
-    searchParams.get('type') === type || (!searchParams.get('type') && type === 'cloud');
+    searchParams.get('type') === type ||
+    (!searchParams.get('type') && type === NodeType.cloud_provider);
   return (
     <Link
       to={currentPathName + (type ? `?type=${type}` : '')}
@@ -105,6 +112,7 @@ const ResourceSelectorButton = ({
 
 const ViewSwitcher = () => {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const isGraphView = location.pathname.endsWith('graph');
   return (
@@ -116,7 +124,7 @@ const ViewSwitcher = () => {
         delayDuration={200}
       >
         <Link
-          to="/topology/graph"
+          to={`/topology/graph?${searchParams.toString()}`}
           type="button"
           className={classNames(
             'flex items-center text-lg font-semibold rounded-l-lg h-full px-2 border-2 border-blue-600 dark:border-blue-600',
@@ -138,7 +146,7 @@ const ViewSwitcher = () => {
         delayDuration={200}
       >
         <Link
-          to="/topology/table"
+          to={`/topology/table?${searchParams.toString()}`}
           type="button"
           className={classNames(
             'flex items-center text-lg font-semibold rounded-r-lg h-full px-2 border-2 border-blue-600 dark:border-blue-600',

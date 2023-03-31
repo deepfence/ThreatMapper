@@ -1,25 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiArrowsExpand } from 'react-icons/hi';
-import { ActionFunctionArgs, useFetcher, useSearchParams } from 'react-router-dom';
+import { useFetcher, useSearchParams } from 'react-router-dom';
 import { useInterval, useMeasure } from 'react-use';
 import { CircleSpinner, Dropdown, DropdownItem } from 'ui-components';
 
-import { getTopologyApiClient } from '@/api/api';
-import { ApiDocsGraphResult } from '@/api/generated';
 import {
   ConfigureScanModal,
   ConfigureScanModalProps,
 } from '@/components/ConfigureScanModal';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
+import { TopologyActionData } from '@/features/topology/data-components/topologyAction';
 import { useG6raph } from '@/features/topology/hooks/useG6Graph';
-import type { TopologyViewType } from '@/features/topology/types/graph';
-import {
-  G6GraphEvent,
-  G6Node,
-  NodeModel,
-  TopologyAction,
-} from '@/features/topology/types/graph';
+import { G6GraphEvent, G6Node, NodeModel } from '@/features/topology/types/graph';
 import {
   focusItem,
   itemExpands,
@@ -31,71 +24,8 @@ import {
   getTopologyDiff,
   GraphStorageManager,
 } from '@/features/topology/utils/topology-data';
-import { ApiError, makeRequest } from '@/utils/api';
 
-interface ActionData {
-  data: ApiDocsGraphResult;
-  action?: TopologyAction;
-}
-
-const ViewTypes: Array<TopologyViewType> = [
-  'cloud',
-  'kubernetes',
-  'host',
-  'pod',
-  'container',
-];
-const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
-  const formData = await request.formData();
-  const action = JSON.parse(
-    (formData.get('action') as string) ?? 'undefined',
-  ) as ActionData['action'];
-  const filters = JSON.parse(formData.get('filters') as string) as ReturnType<
-    GraphStorageManager['getFilters']
-  >;
-  const url = new URL(request.url);
-  let type = url.searchParams.get('type') ?? 'cloud';
-  if (!ViewTypes.includes(type as TopologyViewType)) {
-    type = 'cloud';
-  }
-
-  const apiFuncMap: {
-    [x in TopologyViewType]: ReturnType<
-      typeof getTopologyApiClient
-    >['getCloudTopologyGraph'];
-  } = {
-    cloud: getTopologyApiClient().getCloudTopologyGraph,
-    host: getTopologyApiClient().getHostsTopologyGraph,
-    kubernetes: getTopologyApiClient().getKubernetesTopologyGraph,
-    pod: getTopologyApiClient().getPodsTopologyGraph,
-    container: getTopologyApiClient().getContainersTopologyGraph,
-  };
-  const graphData = await makeRequest({
-    apiFunction: apiFuncMap[type as TopologyViewType],
-    apiArgs: [
-      {
-        graphTopologyFilters: {
-          ...filters,
-          field_filters: {
-            contains_filter: { filter_in: {} },
-            match_filter: { filter_in: {} },
-            order_filter: { order_fields: [] },
-          },
-        },
-      },
-    ],
-  });
-
-  if (ApiError.isApiError(graphData)) {
-    throw new Error('unknown response');
-  }
-  return {
-    data: graphData,
-    action: action,
-  };
-};
-
-export const Graph = () => {
+export const TopologyGraph = () => {
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
   const [clickedItem, setClickedItem] = useState<{
     nodeId: string;
@@ -274,12 +204,12 @@ function useGraphDataManager() {
   const [searchParams] = useSearchParams();
   const [dataDiffWithAction, setDataDiffWithAction] = useState<{
     diff?: ReturnType<typeof getTopologyDiff>;
-    action?: ActionData['action'];
+    action?: TopologyActionData['action'];
   }>({});
   const [storageManager] = useState(new GraphStorageManager());
 
-  const fetcher = useFetcher<ActionData>();
-  const getDataUpdates = (action: ActionData['action']): void => {
+  const fetcher = useFetcher<TopologyActionData>();
+  const getDataUpdates = (action: TopologyActionData['action']): void => {
     if (fetcher.state !== 'idle') return;
     if (action?.type === 'expandNode')
       storageManager.addNodeToFilters({
@@ -298,7 +228,7 @@ function useGraphDataManager() {
       },
       {
         method: 'post',
-        action: `/data-component/topology/graph?${searchParams.toString()}`,
+        action: `/data-component/topology?${searchParams.toString()}`,
       },
     );
   };
@@ -316,7 +246,3 @@ function useGraphDataManager() {
     isRefreshInProgress: fetcher.state !== 'idle',
   };
 }
-
-export const module = {
-  action,
-};
