@@ -53,6 +53,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<TopologyActionDa
             contains_filter: { filter_in: {} },
             match_filter: { filter_in: {} },
             order_filter: { order_fields: [] },
+            compare_filter: null,
           },
         },
       },

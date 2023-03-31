@@ -72,6 +72,7 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
         contains_filter: { filter_in: {} },
         order_filter: { order_fields: [] },
         match_filter: { filter_in: {} },
+        compare_filter: null,
       },
       in_field_filter: null,
       window: {
