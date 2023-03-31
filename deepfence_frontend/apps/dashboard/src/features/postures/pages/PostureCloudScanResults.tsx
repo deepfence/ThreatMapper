@@ -10,17 +10,19 @@ import {
   HiDotsVertical,
   HiEye,
   HiEyeOff,
-  HiOutlineExclamationCircle
+  HiOutlineExclamationCircle,
 } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import {
-  ActionFunctionArgs, Form, generatePath,
+  ActionFunctionArgs,
+  Form,
+  generatePath,
   LoaderFunctionArgs,
   Outlet,
   useFetcher,
   useLoaderData,
   useParams,
-  useSearchParams
+  useSearchParams,
 } from 'react-router-dom';
 import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
@@ -44,7 +46,7 @@ import {
   SelectItem,
   SortingState,
   Table,
-  TableSkeleton
+  TableSkeleton,
 } from 'ui-components';
 
 import { getCloudComplianceApiClient, getScanResultsApiClient } from '@/api/api';
@@ -52,7 +54,7 @@ import {
   ApiDocsBadRequestResponse,
   ModelCloudCompliance,
   ModelComplianceScanInfo,
-  ModelScanResultsReq
+  ModelScanResultsReq,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
@@ -60,7 +62,7 @@ import { complianceType } from '@/components/scan-configure-forms/ComplianceScan
 import {
   NoIssueFound,
   ScanStatusInError,
-  ScanStatusInProgress
+  ScanStatusInProgress,
 } from '@/components/ScanStatusMessage';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { POSTURE_STATUS_COLORS } from '@/constants/charts';
@@ -76,7 +78,7 @@ import { DFAwait } from '@/utils/suspense';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
-  useSortingState
+  useSortingState,
 } from '@/utils/table';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
