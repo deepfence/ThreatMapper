@@ -433,7 +433,7 @@ function MyConnectorsTable({ data }: LoaderData) {
       <RefreshButton />
       <Table
         size="sm"
-        data={[]}
+        data={data}
         noDataText="No connectors found"
         columns={columns}
         expanded={expandedState}
