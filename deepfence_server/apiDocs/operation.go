@@ -555,3 +555,15 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 		"Count Image Stubs", "count of image tags for a given image and registry",
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryImageStubsReq), new(RegistryCountResp))
 }
+
+func (d *OpenApiDocs) AddIntegrationOperations() {
+	d.AddOperation("addIntegration", http.MethodPost, "/deepfence/integration",
+		"Add Integration", "Add a new supported integration",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationAddReq), nil)
+	d.AddOperation("listIntegration", http.MethodGet, "/deepfence/integration",
+		"List Integrations", "List all the added Integrations",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationListReq), new([]IntegrationListResp))
+	d.AddOperation("deleteIntegration", http.MethodDelete, "/deepfence/integration/{integration_id}",
+		"Delete Integration", "Delete integration",
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
+}

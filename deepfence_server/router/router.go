@@ -32,6 +32,7 @@ const (
 	PermissionStop     = "stop"
 	PermissionGenerate = "generate"
 	PermissionRegister = "register"
+	PermissionUpdate   = "update"
 
 	//	API RBAC Resources
 
@@ -44,6 +45,8 @@ const (
 	ResourceDiagnosis   = "diagnosis"
 	ResourceCloudNode   = "cloud-node"
 	ResourceRegistry    = "container-registry"
+	ResourceIntegration = "integration"
+	ResourceReport      = "report"
 )
 
 // func telemetryInjector(next http.Handler) http.Handler {
@@ -345,10 +348,31 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				})
 				r.Get("/diagnostic-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.GetDiagnosticLogs))
 			})
+			// Integration
+			r.Route("/integration", func(r chi.Router) {
+				r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddIntegration))
+				r.Get("/", dfHandler.AuthHandler(ResourceIntegration, PermissionRead, dfHandler.GetIntegrations))
+				r.Route("/{integration_id}", func(r chi.Router) {
+					r.Delete("/", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteIntegration))
+					r.Put("/", dfHandler.AuthHandler(ResourceIntegration, PermissionUpdate, doNothingHandler))
+				})
+			})
+
+			// Report
+			r.Route("/report", func(r chi.Router) {
+				r.Get("/", dfHandler.AuthHandler(ResourceReport, PermissionRead, doNothingHandler))
+				r.Get("/{id}", dfHandler.AuthHandler(ResourceReport, PermissionRead, doNothingHandler))
+				r.Post("/", dfHandler.AuthHandler(ResourceReport, PermissionGenerate, doNothingHandler))
+				r.Delete("/{id}", dfHandler.AuthHandler(ResourceReport, PermissionDelete, doNothingHandler))
+			})
 		})
 	})
 
 	return nil
+}
+
+func doNothingHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }
 
 func newAuthorizationHandler() (*casbin.Enforcer, error) {

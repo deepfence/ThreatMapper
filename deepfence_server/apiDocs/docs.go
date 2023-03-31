@@ -28,6 +28,7 @@ const (
 	tagDiagnosis         = "Diagnosis"
 	tagRegistry          = "Registry"
 	tagInternal          = "Internal"
+	tagIntegration       = "Integration"
 
 	securityName = "bearer_token"
 )
