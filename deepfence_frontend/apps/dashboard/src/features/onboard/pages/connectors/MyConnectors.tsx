@@ -78,7 +78,7 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
           cloud_filter: [],
           field_filters: {
             contains_filter: { filter_in: null },
-            order_filter: null as any,
+            order_filter: { order_fields: [] },
             match_filter: {
               filter_in: {},
             },
@@ -99,7 +99,7 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
           cloud_filter: [],
           field_filters: {
             contains_filter: { filter_in: null },
-            order_filter: null as any,
+            order_filter: { order_fields: [] },
             match_filter: {
               filter_in: {},
             },
@@ -433,7 +433,8 @@ function MyConnectorsTable({ data }: LoaderData) {
       <RefreshButton />
       <Table
         size="sm"
-        data={data}
+        data={[]}
+        noDataText="No connectors found"
         columns={columns}
         expanded={expandedState}
         onExpandedChange={setExpandedState}
