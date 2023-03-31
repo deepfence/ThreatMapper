@@ -40,6 +40,8 @@ func generatePDF(ctx context.Context, session neo4j.Session, params utils.Report
 		buffer, err = malware(ctx, session, params)
 	case "compliance":
 		buffer, err = compliance(ctx, session, params)
+	case "cloud_compliance":
+		buffer, err = cloudCompliance(ctx, session, params)
 	default:
 		return "", ErrUnknownScanType
 	}
@@ -143,6 +145,24 @@ func compliance(ctx context.Context, session neo4j.Session, params utils.ReportP
 	data, err := getComplianceData(ctx, session, params)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get compliance info")
+		return nil, err
+	}
+	// render html
+	var rendered bytes.Buffer
+	err = templates.ExecuteTemplate(&rendered, "base.gohtml", data)
+	if err != nil {
+		log.Error().Err(err)
+		return nil, err
+	}
+
+	return &rendered, nil
+}
+
+func cloudCompliance(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*bytes.Buffer, error) {
+
+	data, err := getCloudComplianceData(ctx, session, params)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get cloud compliance info")
 		return nil, err
 	}
 	// render html

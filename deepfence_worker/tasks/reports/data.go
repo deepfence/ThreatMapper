@@ -23,11 +23,12 @@ type Info struct {
 }
 
 type NodeWiseData struct {
-	SeverityCount     map[string]map[string]int32
-	VulnerabilityData map[string][]model.Vulnerability
-	SecretData        map[string][]model.Secret
-	MalwareData       map[string][]model.Malware
-	ComplianceData    map[string][]model.Compliance
+	SeverityCount       map[string]map[string]int32
+	VulnerabilityData   map[string][]model.Vulnerability
+	SecretData          map[string][]model.Secret
+	MalwareData         map[string][]model.Malware
+	ComplianceData      map[string][]model.Compliance
+	CloudComplianceData map[string][]model.CloudCompliance
 }
 
 func nodeTypeFilter(nodeType string) rptSearch.SearchScanReq {
@@ -91,7 +92,7 @@ func getVulnerabilityData(ctx context.Context, session neo4j.Session, params uti
 	}
 
 	data := Info{
-		Title:          "Deepfence",
+		Title:          "Vulnerability Scan Report",
 		StartTime:      timeNow(),
 		EndTime:        timeNow(),
 		AppliedFilters: params.Filters,
@@ -131,7 +132,7 @@ func getSecretData(ctx context.Context, session neo4j.Session, params utils.Repo
 	}
 
 	data := Info{
-		Title:          "Deepfence",
+		Title:          "Secrets Scan Report",
 		StartTime:      timeNow(),
 		EndTime:        timeNow(),
 		AppliedFilters: params.Filters,
@@ -171,7 +172,7 @@ func getMalwareData(ctx context.Context, session neo4j.Session, params utils.Rep
 	}
 
 	data := Info{
-		Title:          "Deepfence",
+		Title:          "Malware Scan Report",
 		StartTime:      timeNow(),
 		EndTime:        timeNow(),
 		AppliedFilters: params.Filters,
@@ -211,7 +212,47 @@ func getComplianceData(ctx context.Context, session neo4j.Session, params utils.
 	}
 
 	data := Info{
-		Title:          "Deepfence",
+		Title:          "Compliance Scan Report",
+		StartTime:      timeNow(),
+		EndTime:        timeNow(),
+		AppliedFilters: params.Filters,
+		NodeWiseData:   nodeWiseData,
+	}
+
+	return &data, nil
+}
+
+func getCloudComplianceData(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*Info, error) {
+	scans, err := rptSearch.SearchScansReport(ctx, nodeTypeFilter(params.Filters.NodeType), utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Info().Msgf("cloud compliance scan info: %+v", scans)
+
+	severityFilter := levelFilter("file_severity", params.Filters.SeverityOrCheckType)
+
+	nodeWiseData := NodeWiseData{
+		SeverityCount:       make(map[string]map[string]int32),
+		CloudComplianceData: make(map[string][]model.CloudCompliance),
+	}
+
+	for _, s := range scans {
+		result, _, err := rptScans.GetScanResults[model.CloudCompliance](
+			ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
+		if err != nil {
+			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
+			continue
+		}
+		sort.Slice(result[:], func(i, j int) bool {
+			return result[i].ComplianceCheckType < result[j].ComplianceCheckType
+		})
+		nodeWiseData.SeverityCount[s.NodeId] = s.SeverityCounts
+		nodeWiseData.CloudComplianceData[s.NodeId] = result
+	}
+
+	data := Info{
+		Title:          "Cloud Compliance Scan Report",
 		StartTime:      timeNow(),
 		EndTime:        timeNow(),
 		AppliedFilters: params.Filters,
