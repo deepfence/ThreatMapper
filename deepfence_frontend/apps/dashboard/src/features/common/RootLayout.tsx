@@ -4,7 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { AppHeader } from '@/components/AppHeader';
 import { getSideNavigationState, SideNavigation } from '@/components/SideNavigation';
 
-export const DashboardLayout = () => {
+export const RootLayout = () => {
   const [sideNavExpanded, setSideNavExpanded] = useState(
     getSideNavigationState() === 'open' ? true : false,
   );

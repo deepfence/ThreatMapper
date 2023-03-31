@@ -2,7 +2,7 @@ import { LoaderFunctionArgs, redirect } from 'react-router-dom';
 
 import { requireLogin } from '@/utils/api';
 
-export const dashboardLoader = async ({ request }: LoaderFunctionArgs) => {
+export const authenticatedRootLoader = async ({ request }: LoaderFunctionArgs) => {
   await requireLogin();
   const url = new URL(request.url);
   if (url.pathname !== '/') {

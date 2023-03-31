@@ -5,6 +5,7 @@ import { scanPostureApiAction } from '@/components/scan-configure-forms/Complian
 import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
 import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
+import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
 import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
@@ -12,8 +13,7 @@ import { searchClustersApiLoader } from '@/features/common/data-component/search
 import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
 import { searchContainersApiLoader } from '@/features/common/data-component/searchContainersApiLoader';
 import { searchHostsApiLoader } from '@/features/common/data-component/searchHostsApiLoader';
-import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
-import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
+import { RootLayout } from '@/features/common/RootLayout';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
 import { module as integrations } from '@/features/integrations/pages/Integrations';
 import { module as malware } from '@/features/malwares/pages/Malware';
@@ -158,8 +158,8 @@ export const privateRoutes: CustomRouteObject[] = [
   },
   {
     path: '/',
-    loader: dashboardLoader,
-    element: <DashboardLayout />,
+    loader: authenticatedRootLoader,
+    element: <RootLayout />,
     errorElement: <ErrorComponent />,
     children: [
       {
