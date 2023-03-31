@@ -150,6 +150,6 @@ func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
 
 	err = model.DeleteIntegration(ctx, pgClient, int32(idInt))
 
-	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: "registry deleted successfully"})
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationDeleted})
 
 }
