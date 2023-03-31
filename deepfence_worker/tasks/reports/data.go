@@ -190,7 +190,7 @@ func getComplianceData(ctx context.Context, session neo4j.Session, params utils.
 
 	log.Info().Msgf("compliance scan info: %+v", scans)
 
-	severityFilter := levelFilter("file_severity", params.Filters.SeverityOrCheckType)
+	severityFilter := levelFilter("compliance_check_type", params.Filters.SeverityOrCheckType)
 
 	nodeWiseData := NodeWiseData{
 		SeverityCount:  make(map[string]map[string]int32),
@@ -230,7 +230,7 @@ func getCloudComplianceData(ctx context.Context, session neo4j.Session, params u
 
 	log.Info().Msgf("cloud compliance scan info: %+v", scans)
 
-	severityFilter := levelFilter("file_severity", params.Filters.SeverityOrCheckType)
+	severityFilter := levelFilter("compliance_check_type", params.Filters.SeverityOrCheckType)
 
 	nodeWiseData := NodeWiseData{
 		SeverityCount:       make(map[string]map[string]int32),

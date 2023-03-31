@@ -5,7 +5,11 @@
         <tr>
             <th>Scan Type</th>
             <th>Node Type</th>
-            <th>Severity/CheckType</th>
+            {{ if (or .NodeWiseData.ComplianceData .NodeWiseData.CloudComplianceData )}}
+            <th>Check Type</th>
+            {{ else }}
+            <th>Severity</th>
+            {{ end }}
         </tr>
         <tr>
             <th> {{ .AppliedFilters.ScanType }}</th>

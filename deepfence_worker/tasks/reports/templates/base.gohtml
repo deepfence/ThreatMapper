@@ -255,7 +255,6 @@
       font-weight: normal;
     }
 
-    /*  end of this is for nodewise vulnerability table */
   </style>
 </head>
 
@@ -271,11 +270,21 @@
   {{ if .NodeWiseData.CloudComplianceData }}
     {{ template "cloud-compliance-summary-table" . }}
   {{ end }}
-  {{ template "vulnerabilities-nodes-table" . }}
-  {{ template "secrets-nodes-table" . }}
-  {{ template "malwares-nodes-table" . }}
-  {{ template "compliance-nodes-table" . }}
-  {{ template "cloud-compliance-nodes-table" . }}
+  {{ if .NodeWiseData.VulnerabilityData }}
+    {{ template "vulnerabilities-nodes-table" . }}
+  {{ end }}
+  {{ if .NodeWiseData.SecretData }}
+    {{ template "secrets-nodes-table" . }}
+  {{ end }}
+  {{ if .NodeWiseData.MalwareData }}
+    {{ template "malwares-nodes-table" . }}
+  {{ end }}
+  {{ if .NodeWiseData.ComplianceData }}
+    {{ template "compliance-nodes-table" . }}
+  {{ end }}
+  {{ if .NodeWiseData.CloudComplianceData }}
+    {{ template "cloud-compliance-nodes-table" . }}
+  {{ end }}
   <!-- {% block content %}
     <div class="content">
     </div>
