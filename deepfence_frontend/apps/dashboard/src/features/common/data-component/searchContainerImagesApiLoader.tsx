@@ -50,6 +50,7 @@ export const searchContainerImagesApiLoader = async ({
               match_filter: {
                 filter_in: {},
               },
+              compare_filter: null,
             },
             in_field_filter: ['node_id', 'docker_image_name', 'docker_image_tag'],
             window: {

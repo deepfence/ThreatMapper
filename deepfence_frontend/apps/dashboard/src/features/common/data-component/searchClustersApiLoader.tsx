@@ -23,6 +23,7 @@ export const searchClustersApiLoader = async (): Promise<ClustersListType[]> => 
             match_filter: {
               filter_in: {},
             },
+            compare_filter: null,
           },
           host_filter: [],
           kubernetes_filter: [],

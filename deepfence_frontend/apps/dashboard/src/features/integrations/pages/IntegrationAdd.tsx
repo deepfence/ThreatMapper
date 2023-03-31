@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 
 import { getIntegrationApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelIntegrationListResp } from '@/api/generated';
+import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 
@@ -19,10 +20,20 @@ type LoaderDataType = {
   data?: ModelIntegrationListResp[];
 };
 
+const CLOUD_TRAIL_ALERT = 'cloudtrial_alert';
+
 export enum ActionEnumType {
   DELETE = 'delete',
   ADD = 'add',
 }
+const API_SCAN_TYPE_MAP: {
+  [key: string]: string;
+} = {
+  [ScanTypeEnum.VulnerabilityScan]: 'vulnerability',
+  [ScanTypeEnum.SecretScan]: 'secret',
+  [ScanTypeEnum.MalwareScan]: 'malware',
+  [ScanTypeEnum.ComplianceScan]: 'compliance',
+};
 
 const getIntegrations = async (): Promise<LoaderDataType> => {
   const integrationPromise = await makeRequest({
@@ -80,7 +91,7 @@ const action = async ({
 } | null> => {
   const _integrationType = params.integrationType?.toString();
   const formData = await request.formData();
-  const _notificationType = formData.get('_notificationType')?.toString();
+  let _notificationType = formData.get('_notificationType')?.toString();
   const _actionType = formData.get('_actionType')?.toString();
 
   if (!_actionType) {
@@ -100,6 +111,34 @@ const action = async ({
         message: 'Notification Type is required',
       };
     }
+
+    if (_notificationType === 'CloudTrail Alert') {
+      _notificationType = CLOUD_TRAIL_ALERT;
+    } else {
+      _notificationType = API_SCAN_TYPE_MAP[_notificationType];
+    }
+
+    // filters
+    const hostFilter = formData.getAll('hostFilter')?.toString();
+    const imageFilter = formData.getAll('imageFilter')?.toString();
+    const clusterFilter = formData.getAll('clusterFilter')?.toString();
+    const statusFilter = formData.getAll('statusFilter')?.toString();
+
+    const _filters = {};
+
+    if (hostFilter) {
+      // TODO Add filters
+    }
+    if (imageFilter) {
+      // TODO Add filters
+    }
+    if (clusterFilter) {
+      // TODO Add filters
+    }
+    if (statusFilter) {
+      // TODO Add filters
+    }
+
     const r = await makeRequest({
       apiFunction: getIntegrationApiClient().addIntegration,
       apiArgs: [
@@ -111,6 +150,7 @@ const action = async ({
               formData,
               _integrationType as IntegrationType,
             ),
+            filters: _filters,
           },
         },
       ],
@@ -128,9 +168,7 @@ const action = async ({
       },
     });
     if (ApiError.isApiError(r)) {
-      return {
-        message: 'Error in adding integrations',
-      };
+      return r.value();
     }
     toast('Integration added successfully');
   } else if (_actionType === ActionEnumType.DELETE) {

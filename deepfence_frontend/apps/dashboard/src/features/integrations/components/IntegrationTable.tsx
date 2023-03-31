@@ -1,7 +1,7 @@
 import { Suspense, useMemo, useState } from 'react';
 import { HiArchive, HiDotsVertical, HiOutlineExclamationCircle } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
-import { useActionData, useFetcher, useLoaderData } from 'react-router-dom';
+import { useFetcher, useLoaderData, useParams } from 'react-router-dom';
 import {
   Button,
   createColumnHelper,
@@ -31,8 +31,14 @@ const DeleteConfirmationModal = ({
   id: string;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<{
+    deleteSuccess: boolean;
+    message: string;
+  }>();
 
+  if (fetcher.data?.deleteSuccess) {
+    setShowDialog(false);
+  }
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <div className="grid place-items-center p-6">
@@ -48,6 +54,11 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
         </h3>
+
+        {fetcher.data?.message ? (
+          <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
+        ) : null}
+
         <div className="flex items-center justify-right gap-4">
           <Button size="xs" onClick={() => setShowDialog(false)}>
             No, cancel
@@ -62,7 +73,6 @@ const DeleteConfirmationModal = ({
               fetcher.submit(formData, {
                 method: 'post',
               });
-              setShowDialog(false);
             }}
           >
             Yes, I&apos;m sure
@@ -82,11 +92,7 @@ const ActionDropdown = ({
   id: string;
   label?: string;
 }) => {
-  const actionData = useActionData() as {
-    onDeleteSuccess: boolean;
-  };
-
-  const [showDeleteDialog, setShowDeleteDialog] = useState(actionData.onDeleteSuccess);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   return (
     <>
@@ -137,9 +143,9 @@ export const IntegrationTable = () => {
       columnHelper.accessor('id', {
         cell: (cell) => cell.getValue(),
         header: () => 'ID',
-        minSize: 75,
-        size: 80,
-        maxSize: 85,
+        minSize: 35,
+        size: 40,
+        maxSize: 45,
       }),
       columnHelper.accessor('integration_type', {
         cell: (cell) => cell.getValue(),
@@ -195,13 +201,20 @@ export const IntegrationTable = () => {
         <DFAwait resolve={loaderData.data}>
           {(resolvedData: LoaderDataType) => {
             const { data = [], message } = resolvedData;
+            const params = useParams() as {
+              integrationType: string;
+            };
+
+            const tableData = data.filter(
+              (integration) => params.integrationType === integration.integration_type,
+            );
 
             return (
               <div>
                 {message ? (
                   <p className="text-red-500 text-sm">{message}</p>
                 ) : (
-                  <Table size="sm" data={data} columns={columns} enablePagination />
+                  <Table size="sm" data={tableData} columns={columns} enablePagination />
                 )}
               </div>
             );
