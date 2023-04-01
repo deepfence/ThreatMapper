@@ -9,4 +9,4 @@
   --probe.publish.interval=10s \
   --probe.insecure=true \
   --probe.token="$DEEPFENCE_KEY" \
-  "https://$TOPOLOGY_IP:$TOPOLOGY_PORT"
+  "https://$MGMT_CONSOLE_URL:$MGMT_CONSOLE_PORT"
