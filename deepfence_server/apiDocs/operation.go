@@ -216,6 +216,10 @@ func (d *OpenApiDocs) AddSearchOperations() {
 		http.StatusOK, []string{tagSearch}, bearerToken, new(FiltersReq), new(FiltersResult))
 
 	// Count APIs
+	d.AddOperation("countNodes", http.MethodGet, "/deepfence/search/count/nodes",
+		"Count nodes", "Count hosts, containers, pods, k8s clusters, images",
+		http.StatusOK, []string{tagSearch}, bearerToken, nil, new(NodeCountResp))
+
 	d.AddOperation("countHosts", http.MethodPost, "/deepfence/search/count/hosts",
 		"Count hosts", "Count across all the data associated with hosts",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))

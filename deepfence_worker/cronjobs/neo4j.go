@@ -200,7 +200,6 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:AgentDiagnosticLogs)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		AND NOT exists((n)-[:SCHEDULEDLOGS]->())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
 		WITH n LIMIT 100000
 		DETACH DELETE n`,
