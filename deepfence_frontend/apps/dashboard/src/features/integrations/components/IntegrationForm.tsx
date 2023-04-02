@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   CircleSpinner,
+  Radio,
   Select,
   SelectItem,
   TextInput,
@@ -35,14 +36,29 @@ export const IntegrationType = {
   elasticsearch: 'elasticsearch',
   googleChronicle: 'google-chronicle',
   awsSecurityHub: 'aws-security-hub',
+  jira: 'jira',
 } as const;
 
-const SeimType = [
-  'splunk',
-  'sumo-logic',
-  'elasticsearch',
-  'google-chronicle',
-  'aws-security-hub',
+const UserActivityIntegration: string[] = [
+  IntegrationType.splunk,
+  IntegrationType.sumoLogic,
+  IntegrationType.elasticsearch,
+  IntegrationType.googleChronicle,
+  IntegrationType.awsSecurityHub,
+  IntegrationType.jira,
+];
+
+const CloudTrailIntegration: string[] = [
+  IntegrationType.slack,
+  IntegrationType.pagerDuty,
+  IntegrationType.email,
+  IntegrationType.httpEndpoint,
+  IntegrationType.microsoftTeams,
+  IntegrationType.splunk,
+  IntegrationType.sumoLogic,
+  IntegrationType.elasticsearch,
+  IntegrationType.googleChronicle,
+  IntegrationType.awsSecurityHub,
 ];
 
 const TextInputType = ({ label, name }: { label: string; name: string }) => {
@@ -66,7 +82,11 @@ const isUserActivityNotification = (notificationType: string) => {
   return notificationType && notificationType === 'User Activities';
 };
 
-const Filters = ({ notificationType }: { notificationType: ScanTypeEnum }) => {
+const isTicketingIntegration = (integrationType: string) => {
+  return integrationType && integrationType === IntegrationType.jira;
+};
+
+const NodeFilters = ({ notificationType }: { notificationType: ScanTypeEnum }) => {
   // host
   const { hosts, status: listHostStatus } = useGetHostsList({
     scanType: notificationType,
@@ -240,9 +260,12 @@ const NotificationType = () => {
         <SelectItem value={ScanTypeEnum.SecretScan}>Secret</SelectItem>
         <SelectItem value={ScanTypeEnum.MalwareScan}>Malware</SelectItem>
         <SelectItem value={ScanTypeEnum.ComplianceScan}>Compliance</SelectItem>
-        <SelectItem value={CLOUD_TRAIL_ALERT}>CloudTrail Alert</SelectItem>
 
-        {SeimType.includes(integrationType) ? (
+        {CloudTrailIntegration.includes(integrationType) && (
+          <SelectItem value={CLOUD_TRAIL_ALERT}>CloudTrail Alert</SelectItem>
+        )}
+
+        {UserActivityIntegration.includes(integrationType) ? (
           <SelectItem value={USER_ACTIVITIES}>User Activities</SelectItem>
         ) : null}
       </Select>
@@ -250,7 +273,7 @@ const NotificationType = () => {
       {notificationType &&
       !isCloudTrailNotification(notificationType) &&
       !isUserActivityNotification(notificationType) ? (
-        <Filters notificationType={notificationType as ScanTypeEnum} />
+        <NodeFilters notificationType={notificationType as ScanTypeEnum} />
       ) : null}
 
       {isCloudTrailNotification(notificationType) && <>Add Cloud trails here</>}
@@ -268,6 +291,9 @@ export const IntegrationForm = ({ integrationType }: IntegrationTypeProps) => {
   const actionData = useActionData() as {
     message: string;
   };
+
+  // for jira
+  const [authType, setAuthType] = useState('apiToken');
 
   return (
     <Form method="post">
@@ -346,7 +372,39 @@ export const IntegrationForm = ({ integrationType }: IntegrationTypeProps) => {
           </>
         )}
 
-        <NotificationType />
+        {integrationType === IntegrationType.jira && (
+          <>
+            <TextInputType name="url" label="Endpoint Url" />
+            <Radio
+              name="authType"
+              direction="row"
+              value={authType}
+              options={[
+                {
+                  label: 'API Token',
+                  value: 'apiToken',
+                },
+                {
+                  label: 'Password',
+                  value: 'password',
+                },
+              ]}
+              onValueChange={(value) => {
+                setAuthType(value);
+              }}
+            />
+            <TextInputType
+              name="authType"
+              label={authType === 'password' ? 'Password' : 'Token'}
+            />
+            <TextInputType name="email" label="Email" />
+            <TextInputType name="accessKey" label="Project Key" />
+            <TextInputType name="task" label="Task Name" />
+            <TextInputType name="assigne" label="Assigne" />
+          </>
+        )}
+
+        {!isTicketingIntegration(integrationType) && <NotificationType />}
 
         <input
           type="text"

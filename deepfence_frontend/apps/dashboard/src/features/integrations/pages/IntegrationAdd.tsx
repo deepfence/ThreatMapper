@@ -126,6 +126,7 @@ const action = async ({
     const imageFilter = formData.getAll('imageFilter')?.toString();
     const clusterFilter = formData.getAll('clusterFilter')?.toString();
     const statusFilter = formData.getAll('statusFilter')?.toString();
+    const intervalFilter = formData.get('interval')?.toString();
 
     const _filters = {};
 
@@ -139,6 +140,9 @@ const action = async ({
       // TODO Add filters
     }
     if (statusFilter) {
+      // TODO Add filters
+    }
+    if (intervalFilter) {
       // TODO Add filters
     }
 
