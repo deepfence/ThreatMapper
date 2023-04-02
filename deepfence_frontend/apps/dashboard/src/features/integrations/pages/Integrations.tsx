@@ -161,10 +161,10 @@ const IntegrationsData = [
         icon: (
           <IconContext.Provider
             value={{
-              className: 'w-10 h-10 text-blue-400',
+              className: 'w-10 h-10 text-yellow-400',
             }}
           >
-            <FaGoogle />
+            <FaAws />
           </IconContext.Provider>
         ),
         path: '/integrations/seim/add/aws-security-hub',
