@@ -20,7 +20,8 @@ type LoaderDataType = {
   data?: ModelIntegrationListResp[];
 };
 
-const CLOUD_TRAIL_ALERT = 'cloudtrial_alert';
+export const CLOUD_TRAIL_ALERT = 'CloudTrail Alert';
+export const USER_ACTIVITIES = 'User Activities';
 
 export enum ActionEnumType {
   DELETE = 'delete',
@@ -113,7 +114,9 @@ const action = async ({
     }
 
     if (_notificationType === 'CloudTrail Alert') {
-      _notificationType = CLOUD_TRAIL_ALERT;
+      _notificationType = 'cloudtrial_alert';
+    } else if (_notificationType === 'User Activities') {
+      _notificationType = 'user_activities';
     } else {
       _notificationType = API_SCAN_TYPE_MAP[_notificationType];
     }

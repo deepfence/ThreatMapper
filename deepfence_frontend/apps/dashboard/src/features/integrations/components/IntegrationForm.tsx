@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Form, useActionData } from 'react-router-dom';
+import { Form, useActionData, useParams } from 'react-router-dom';
 import {
   Button,
   Card,
@@ -14,7 +14,11 @@ import { useGetContainerImagesList } from '@/features/common/data-component/sear
 import { useGetHostsList } from '@/features/common/data-component/searchHostsApiLoader';
 import { ScanTypeEnum } from '@/types/common';
 
-import { ActionEnumType } from '../pages/IntegrationAdd';
+import {
+  ActionEnumType,
+  CLOUD_TRAIL_ALERT,
+  USER_ACTIVITIES,
+} from '../pages/IntegrationAdd';
 
 type IntegrationTypeProps = {
   integrationType: string;
@@ -26,7 +30,20 @@ export const IntegrationType = {
   email: 'email',
   httpEndpoint: 'http-endpoint',
   microsoftTeams: 'microsoft-teams',
+  splunk: 'splunk',
+  sumoLogic: 'sumo-logic',
+  elasticsearch: 'elasticsearch',
+  googleChronicle: 'google-chronicle',
+  awsSecurityHub: 'aws-security-hub',
 } as const;
+
+const SeimType = [
+  'splunk',
+  'sumo-logic',
+  'elasticsearch',
+  'google-chronicle',
+  'aws-security-hub',
+];
 
 const TextInputType = ({ label, name }: { label: string; name: string }) => {
   return (
@@ -39,6 +56,14 @@ const TextInputType = ({ label, name }: { label: string; name: string }) => {
       placeholder={label}
     />
   );
+};
+
+const isCloudTrailNotification = (notificationType: string) => {
+  return notificationType && notificationType === 'CloudTrail Alert';
+};
+
+const isUserActivityNotification = (notificationType: string) => {
+  return notificationType && notificationType === 'User Activities';
 };
 
 const Filters = ({ notificationType }: { notificationType: ScanTypeEnum }) => {
@@ -181,8 +206,20 @@ const Filters = ({ notificationType }: { notificationType: ScanTypeEnum }) => {
     </div>
   );
 };
+// const TicketingFilters = () => {
+//   return null;
+// };
 const NotificationType = () => {
   const [notificationType, setNotificationType] = useState<ScanTypeEnum | string>('');
+
+  const { integrationType } = useParams() as {
+    integrationType: string;
+  };
+
+  if (!integrationType) {
+    console.warn('Notification Type is required to get scan resource type');
+    return null;
+  }
 
   return (
     <div className="w-full">
@@ -203,15 +240,25 @@ const NotificationType = () => {
         <SelectItem value={ScanTypeEnum.SecretScan}>Secret</SelectItem>
         <SelectItem value={ScanTypeEnum.MalwareScan}>Malware</SelectItem>
         <SelectItem value={ScanTypeEnum.ComplianceScan}>Compliance</SelectItem>
-        <SelectItem value={'CloudTrail Alert'}>CloudTrail Alert</SelectItem>
+        <SelectItem value={CLOUD_TRAIL_ALERT}>CloudTrail Alert</SelectItem>
+
+        {SeimType.includes(integrationType) ? (
+          <SelectItem value={USER_ACTIVITIES}>User Activities</SelectItem>
+        ) : null}
       </Select>
 
-      {notificationType && notificationType !== 'CloudTrail Alert' ? (
+      {notificationType &&
+      !isCloudTrailNotification(notificationType) &&
+      !isUserActivityNotification(notificationType) ? (
         <Filters notificationType={notificationType as ScanTypeEnum} />
       ) : null}
 
-      {notificationType && notificationType === 'CloudTrail Alert' && (
-        <>Add Cloud trails here</>
+      {isCloudTrailNotification(notificationType) && <>Add Cloud trails here</>}
+
+      {isUserActivityNotification(notificationType) && (
+        <div className="mt-3">
+          <TextInputType name="interval" label="Enter interval" />
+        </div>
       )}
     </div>
   );
@@ -254,7 +301,53 @@ export const IntegrationForm = ({ integrationType }: IntegrationTypeProps) => {
           </>
         )}
 
+        {integrationType === IntegrationType.splunk && (
+          <>
+            <TextInputType name="url" label="Endpoint Url" />
+            <TextInputType name="token" label="Receiver Token" />
+          </>
+        )}
+
+        {integrationType === IntegrationType.sumoLogic && (
+          <>
+            <TextInputType name="url" label="Endpoint Url" />
+          </>
+        )}
+
+        {integrationType === IntegrationType.elasticsearch && (
+          <>
+            <TextInputType name="url" label="Endpoint Url" />
+            <TextInputType name="index" label="Index" />
+            <TextInputType name="docType" label="Doc Type" />
+            <TextInputType name="authKey" label="Auth Key" />
+          </>
+        )}
+
+        {integrationType === IntegrationType.googleChronicle && (
+          <>
+            <TextInputType name="url" label="Api Url" />
+            <TextInputType name="authKey" label="Auth Key" />
+          </>
+        )}
+
+        {integrationType === IntegrationType.httpEndpoint && (
+          <>
+            <TextInputType name="accessKey" label="Access Key" />
+            <TextInputType name="secretKey" label="Secret Key" />
+            <TextInputType name="region" label="Region" />
+          </>
+        )}
+
+        {integrationType === IntegrationType.awsSecurityHub && (
+          <>
+            <TextInputType name="accessKey" label="Access Key" />
+            <TextInputType name="secretKey" label="Secret Key" />
+            <TextInputType name="region" label="Region" />
+          </>
+        )}
+
         <NotificationType />
+
         <input
           type="text"
           name="_actionType"
