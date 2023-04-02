@@ -16,6 +16,7 @@ import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
 import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
 import { module as integrationsLayout } from '@/features/integrations/layouts/IntegrationsLayout';
+import { module as downloadReport } from '@/features/integrations/pages/DownloadReport';
 import { module as addIntegration } from '@/features/integrations/pages/IntegrationAdd';
 import { module as integrations } from '@/features/integrations/pages/Integrations';
 import { module as malware } from '@/features/malwares/pages/Malware';
@@ -162,7 +163,7 @@ export const privateRoutes: CustomRouteObject[] = [
     path: '/',
     loader: dashboardLoader,
     element: <DashboardLayout />,
-    // errorElement: <ErrorComponent />,
+    errorElement: <ErrorComponent />,
     children: [
       {
         path: 'dashboard',
@@ -292,6 +293,12 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Add Integration' },
           },
         ],
+      },
+      // report
+      {
+        path: 'integrations/download/report',
+        ...downloadReport,
+        meta: { title: 'Download Report' },
       },
       // vulnerability
       {

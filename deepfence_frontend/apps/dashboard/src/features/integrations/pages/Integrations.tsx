@@ -238,6 +238,9 @@ const Integrations = () => {
         <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
           INTEGRATIONS
         </span>
+        <DFLink className="ml-auto uppercase text-xs" to="/integrations/download/report">
+          Report Download
+        </DFLink>
       </div>
       <div className="flex flex-col space-y-8 my-2">
         {IntegrationsData.map((integration) => {
