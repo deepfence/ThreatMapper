@@ -281,6 +281,18 @@ export const privateRoutes: CustomRouteObject[] = [
           },
         ],
       },
+      {
+        path: 'integrations/archival/add',
+        ...integrationsLayout,
+        meta: { title: 'Add Notifications' },
+        children: [
+          {
+            path: ':integrationType',
+            ...addIntegration,
+            meta: { title: 'Add Integration' },
+          },
+        ],
+      },
       // vulnerability
       {
         path: 'vulnerability',

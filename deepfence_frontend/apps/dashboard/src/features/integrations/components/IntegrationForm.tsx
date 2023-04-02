@@ -37,6 +37,7 @@ export const IntegrationType = {
   googleChronicle: 'google-chronicle',
   awsSecurityHub: 'aws-security-hub',
   jira: 'jira',
+  s3: 's3',
 } as const;
 
 const UserActivityIntegration: string[] = [
@@ -46,6 +47,7 @@ const UserActivityIntegration: string[] = [
   IntegrationType.googleChronicle,
   IntegrationType.awsSecurityHub,
   IntegrationType.jira,
+  IntegrationType.s3,
 ];
 
 const CloudTrailIntegration: string[] = [
@@ -86,7 +88,11 @@ const isTicketingIntegration = (integrationType: string) => {
   return integrationType && integrationType === IntegrationType.jira;
 };
 
-const NodeFilters = ({ notificationType }: { notificationType: ScanTypeEnum }) => {
+const isArchivalIntegration = (integrationType: string) => {
+  return integrationType && integrationType === IntegrationType.s3;
+};
+
+const AdvancedFilters = ({ notificationType }: { notificationType: ScanTypeEnum }) => {
   // host
   const { hosts, status: listHostStatus } = useGetHostsList({
     scanType: notificationType,
@@ -226,9 +232,7 @@ const NodeFilters = ({ notificationType }: { notificationType: ScanTypeEnum }) =
     </div>
   );
 };
-// const TicketingFilters = () => {
-//   return null;
-// };
+
 const NotificationType = () => {
   const [notificationType, setNotificationType] = useState<ScanTypeEnum | string>('');
 
@@ -272,8 +276,10 @@ const NotificationType = () => {
 
       {notificationType &&
       !isCloudTrailNotification(notificationType) &&
-      !isUserActivityNotification(notificationType) ? (
-        <NodeFilters notificationType={notificationType as ScanTypeEnum} />
+      !isUserActivityNotification(notificationType) &&
+      !isTicketingIntegration(integrationType) &&
+      !isArchivalIntegration(integrationType) ? (
+        <AdvancedFilters notificationType={notificationType as ScanTypeEnum} />
       ) : null}
 
       {isCloudTrailNotification(notificationType) && <>Add Cloud trails here</>}
@@ -404,7 +410,17 @@ export const IntegrationForm = ({ integrationType }: IntegrationTypeProps) => {
           </>
         )}
 
-        {!isTicketingIntegration(integrationType) && <NotificationType />}
+        {integrationType === IntegrationType.s3 && (
+          <>
+            <TextInputType name="name" label="Bucket Name" />
+            <TextInputType name="folder" label={'Folder'} />
+            <TextInputType name="accessKey" label="Access Key" />
+            <TextInputType name="secretKey" label="Secret Key" />
+            <TextInputType name="region" label="Region" />
+          </>
+        )}
+
+        <NotificationType />
 
         <input
           type="text"
