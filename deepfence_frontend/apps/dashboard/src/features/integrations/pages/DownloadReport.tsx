@@ -156,7 +156,7 @@ const DownloadForm = () => {
 
         {resource === 'Compliance' ? <ComplianceForm /> : null}
 
-        {resource === 'Vulnerability' ? <CommomForm /> : null}
+        {resource !== 'Compliance' ? <CommomForm /> : null}
 
         <Select
           label="Select Duration"
