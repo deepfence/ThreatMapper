@@ -573,16 +573,16 @@ func (d *OpenApiDocs) AddIntegrationOperations() {
 }
 
 func (d *OpenApiDocs) AddReportsOperations() {
-	d.AddOperation("generateReport", http.MethodPost, "/deepfence/report",
+	d.AddOperation("generateReport", http.MethodPost, "/deepfence/reports",
 		"Generate Report", "generate report for given type and filters",
 		http.StatusOK, []string{tagReports}, bearerToken, new(GenerateReportReq), new(GenerateReportResp))
-	d.AddOperation("listReports", http.MethodGet, "/deepfence/report",
+	d.AddOperation("listReports", http.MethodGet, "/deepfence/reports",
 		"List Reports", "List all the available reports",
 		http.StatusOK, []string{tagReports}, bearerToken, nil, new([]ExportReport))
-	d.AddOperation("getReport", http.MethodGet, "/deepfence/report/{report_id}",
+	d.AddOperation("getReport", http.MethodGet, "/deepfence/reports/{report_id}",
 		"Get Report", "get report by report_id",
 		http.StatusOK, []string{tagReports}, bearerToken, new(ReportReq), new(ExportReport))
-	d.AddOperation("deleteReport", http.MethodDelete, "/deepfence/report/{report_id}",
+	d.AddOperation("deleteReport", http.MethodDelete, "/deepfence/reports/{report_id}",
 		"Delete Report", "delete report for given report_id",
 		http.StatusOK, []string{tagReports}, bearerToken, new(ReportReq), nil)
 }
