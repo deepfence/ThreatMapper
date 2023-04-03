@@ -5,8 +5,8 @@ import (
 )
 
 type GenerateReportReq struct {
-	ReportType string              `json:"report_type" validate:"required" required:"true"`
-	Duration   int                 `json:"duration"`
+	ReportType string              `json:"report_type" validate:"required" required:"true" enum:"pdf,xlsx"`
+	Duration   int                 `json:"duration" enum:"0,1,7,30,60,90,180"`
 	Filters    utils.ReportFilters `json:"filters"`
 }
 
