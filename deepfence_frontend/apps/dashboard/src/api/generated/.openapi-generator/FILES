@@ -159,6 +159,7 @@ models/SearchSearchCountResp.ts
 models/SearchSearchFilter.ts
 models/SearchSearchNodeReq.ts
 models/SearchSearchScanReq.ts
+models/UtilsAdvancedReportFilters.ts
 models/UtilsReportFilters.ts
 models/UtilsScanSbomRequest.ts
 models/index.ts

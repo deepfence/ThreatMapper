@@ -8011,6 +8011,7 @@
           "kubernetes_cluster_batch",
           "process_edges_batch",
           "container_edges_batch",
+          "container_process_edge_batch",
           "pod_edges_batch",
           "endpoint_edges_batch",
           "container_image_edge_batch",
@@ -8035,6 +8036,11 @@
             "nullable": true
           },
           "container_image_edge_batch": {
+            "type": "array",
+            "items": { "type": "object", "additionalProperties": {} },
+            "nullable": true
+          },
+          "container_process_edge_batch": {
             "type": "array",
             "items": { "type": "object", "additionalProperties": {} },
             "nullable": true
@@ -8815,9 +8821,12 @@
         "required": ["report_type"],
         "type": "object",
         "properties": {
-          "duration": { "type": "integer" },
+          "duration": {
+            "enum": ["0", "1", "7", "30", "60", "90", "180"],
+            "type": "integer"
+          },
           "filters": { "$ref": "#/components/schemas/UtilsReportFilters" },
-          "report_type": { "type": "string" }
+          "report_type": { "enum": ["pdf", "xlsx"], "type": "string" }
         }
       },
       "ModelGenerateReportResp": {
@@ -10029,12 +10038,59 @@
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
-      "UtilsReportFilters": {
+      "UtilsAdvancedReportFilters": {
         "type": "object",
         "properties": {
-          "node_type": { "type": "string" },
-          "scan_type": { "type": "string" },
+          "account_id": { "type": "string" },
+          "host_name": { "type": "string" },
+          "kubernetes_cluster_name": { "type": "string" },
+          "masked": { "type": "boolean" },
+          "scan_status": { "type": "string" }
+        }
+      },
+      "UtilsReportFilters": {
+        "required": ["scan_type", "node_type"],
+        "type": "object",
+        "properties": {
+          "advanced_report_filters": {
+            "$ref": "#/components/schemas/UtilsAdvancedReportFilters"
+          },
+          "include_dead_nodes": { "type": "boolean" },
+          "node_type": {
+            "enum": [
+              "host",
+              "container",
+              "container_image",
+              "linux",
+              "aws",
+              "gcp",
+              "azure"
+            ],
+            "type": "string"
+          },
+          "scan_type": {
+            "enum": [
+              "vulnerability",
+              "secret",
+              "malware",
+              "compliance",
+              "cloud_compliance"
+            ],
+            "type": "string"
+          },
           "severity_or_check_type": {
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low",
+              "cis",
+              "gdpr",
+              "nist",
+              "hipaa",
+              "pci",
+              "soc2"
+            ],
             "type": "array",
             "items": { "type": "string" },
             "nullable": true

@@ -138,5 +138,6 @@ export * from './SearchSearchCountResp';
 export * from './SearchSearchFilter';
 export * from './SearchSearchNodeReq';
 export * from './SearchSearchScanReq';
+export * from './UtilsAdvancedReportFilters';
 export * from './UtilsReportFilters';
 export * from './UtilsScanSbomRequest';

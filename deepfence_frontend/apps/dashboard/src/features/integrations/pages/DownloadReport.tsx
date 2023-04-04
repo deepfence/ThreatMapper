@@ -37,7 +37,15 @@ import {
 } from 'ui-components';
 
 import { getReportsApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelCloudNodeAccountInfo } from '@/api/generated';
+import {
+  ApiDocsBadRequestResponse,
+  ModelCloudNodeAccountInfo,
+  ModelGenerateReportReqDurationEnum,
+  ModelGenerateReportReqReportTypeEnum,
+  UtilsReportFiltersNodeTypeEnum,
+  UtilsReportFiltersScanTypeEnum,
+  UtilsReportFiltersSeverityOrCheckTypeEnum,
+} from '@/api/generated';
 import { ModelExportReport } from '@/api/generated/models/ModelExportReport';
 import { DFLink } from '@/components/DFLink';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
@@ -62,14 +70,15 @@ enum ActionEnumType {
   DELETE = 'delete',
   ADD = 'add',
 }
-const DURATION: { [k: string]: number } = {
-  'Last 1 Day': 1,
-  'Last 7 Days': 7,
-  'Last 30 Days': 30,
-  'Last 60 Days': 60,
-  'Last 90 Days': 90,
-  'Last 180 Days': 100,
-  'All Documents': 99999,
+const DURATION: { [k: string]: ModelGenerateReportReqDurationEnum } = {
+  'Last 0 Day': ModelGenerateReportReqDurationEnum.NUMBER_0,
+  'Last 1 Day': ModelGenerateReportReqDurationEnum.NUMBER_1,
+  'Last 7 Days': ModelGenerateReportReqDurationEnum.NUMBER_7,
+  'Last 30 Days': ModelGenerateReportReqDurationEnum.NUMBER_30,
+  'Last 60 Days': ModelGenerateReportReqDurationEnum.NUMBER_60,
+  'Last 90 Days': ModelGenerateReportReqDurationEnum.NUMBER_90,
+  'Last 180 Days': ModelGenerateReportReqDurationEnum.NUMBER_180,
+  'All Documents': 99999 as ModelGenerateReportReqDurationEnum,
 };
 type LoaderDataType = {
   data: ReturnType<typeof getReportList>;
@@ -120,21 +129,41 @@ const action = async ({
   if (_actionType === ActionEnumType.ADD) {
     const severity = formData.getAll('severity[]');
     const body = Object.fromEntries(formData);
-    const duration = DURATION[body.duration.toString()];
+
+    const duration = body.duration as keyof typeof DURATION;
+
+    const reportType =
+      body.downloadType as keyof typeof ModelGenerateReportReqReportTypeEnum;
+    const _reportType: ModelGenerateReportReqReportTypeEnum =
+      ModelGenerateReportReqReportTypeEnum[reportType];
+
+    const resource = body.resource as keyof typeof UtilsReportFiltersScanTypeEnum;
+    const _resource: UtilsReportFiltersScanTypeEnum =
+      UtilsReportFiltersScanTypeEnum[resource];
+
+    const nodeType = body.nodeType as keyof typeof UtilsReportFiltersNodeTypeEnum;
+    const _nodeType: UtilsReportFiltersNodeTypeEnum =
+      UtilsReportFiltersNodeTypeEnum[nodeType];
+    debugger;
     const r = await makeRequest({
       apiFunction: getReportsApiClient().generateReport,
       apiArgs: [
         {
           modelGenerateReportReq: {
-            duration: duration,
+            duration: DURATION[duration],
 
             filters: {
-              scan_type: body.resource.toString().toLowerCase(),
-              node_type: body.nodeType.toString().toLowerCase(),
-              severity_or_check_type: severity.map((sev) => sev.toString().toLowerCase()),
+              scan_type: _resource,
+              node_type: _nodeType,
+              severity_or_check_type: severity.map(
+                (sev) =>
+                  sev
+                    .toString()
+                    .toLowerCase() as UtilsReportFiltersSeverityOrCheckTypeEnum,
+              ),
             },
 
-            report_type: body.downloadType.toString().toLowerCase(),
+            report_type: _reportType,
           },
         },
       ],
@@ -781,7 +810,7 @@ const CommomForm = ({
         placeholder="Select Node Type"
         sizing="xs"
       >
-        {['Host', 'Container', 'Container Image', 'Pod'].map((resource) => {
+        {Object.keys(UtilsReportFiltersNodeTypeEnum).map((resource) => {
           return (
             <SelectItem value={resource} key={resource}>
               {resource}
@@ -838,7 +867,7 @@ const DownloadForm = () => {
           placeholder="Select resource"
           sizing="xs"
         >
-          {['Vulnerability', 'Secret', 'Malware', 'Compliance'].map((resource) => {
+          {Object.keys(UtilsReportFiltersScanTypeEnum).map((resource, index) => {
             return (
               <SelectItem value={resource} key={resource}>
                 {resource}
@@ -900,7 +929,7 @@ const DownloadForm = () => {
           placeholder="Download Type"
           sizing="xs"
         >
-          {['XLSX', 'PDF'].map((resource) => {
+          {Object.keys(ModelGenerateReportReqReportTypeEnum).map((resource) => {
             return (
               <SelectItem value={resource} key={resource}>
                 {resource}

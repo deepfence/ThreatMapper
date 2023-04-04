@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { UtilsAdvancedReportFilters } from './UtilsAdvancedReportFilters';
+import {
+    UtilsAdvancedReportFiltersFromJSON,
+    UtilsAdvancedReportFiltersFromJSONTyped,
+    UtilsAdvancedReportFiltersToJSON,
+} from './UtilsAdvancedReportFilters';
+
 /**
  * 
  * @export
@@ -21,29 +28,78 @@ import { exists, mapValues } from '../runtime';
 export interface UtilsReportFilters {
     /**
      * 
-     * @type {string}
+     * @type {UtilsAdvancedReportFilters}
      * @memberof UtilsReportFilters
      */
-    node_type?: string;
+    advanced_report_filters?: UtilsAdvancedReportFilters;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UtilsReportFilters
+     */
+    include_dead_nodes?: boolean;
     /**
      * 
      * @type {string}
      * @memberof UtilsReportFilters
      */
-    scan_type?: string;
+    node_type: UtilsReportFiltersNodeTypeEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof UtilsReportFilters
+     */
+    scan_type: UtilsReportFiltersScanTypeEnum;
     /**
      * 
      * @type {Array<string>}
      * @memberof UtilsReportFilters
      */
-    severity_or_check_type?: Array<string> | null;
+    severity_or_check_type?: UtilsReportFiltersSeverityOrCheckTypeEnum;
 }
+
+
+/**
+ * @export
+ */
+export const UtilsReportFiltersNodeTypeEnum = {
+    Host: 'host',
+    Container: 'container',
+    ContainerImage: 'container_image',
+    Linux: 'linux',
+    Aws: 'aws',
+    Gcp: 'gcp',
+    Azure: 'azure'
+} as const;
+export type UtilsReportFiltersNodeTypeEnum = typeof UtilsReportFiltersNodeTypeEnum[keyof typeof UtilsReportFiltersNodeTypeEnum];
+
+/**
+ * @export
+ */
+export const UtilsReportFiltersScanTypeEnum = {
+    Vulnerability: 'vulnerability',
+    Secret: 'secret',
+    Malware: 'malware',
+    Compliance: 'compliance',
+    CloudCompliance: 'cloud_compliance'
+} as const;
+export type UtilsReportFiltersScanTypeEnum = typeof UtilsReportFiltersScanTypeEnum[keyof typeof UtilsReportFiltersScanTypeEnum];
+
+/**
+ * @export
+ */
+export const UtilsReportFiltersSeverityOrCheckTypeEnum = {
+} as const;
+export type UtilsReportFiltersSeverityOrCheckTypeEnum = typeof UtilsReportFiltersSeverityOrCheckTypeEnum[keyof typeof UtilsReportFiltersSeverityOrCheckTypeEnum];
+
 
 /**
  * Check if a given object implements the UtilsReportFilters interface.
  */
 export function instanceOfUtilsReportFilters(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "node_type" in value;
+    isInstance = isInstance && "scan_type" in value;
 
     return isInstance;
 }
@@ -58,8 +114,10 @@ export function UtilsReportFiltersFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
-        'node_type': !exists(json, 'node_type') ? undefined : json['node_type'],
-        'scan_type': !exists(json, 'scan_type') ? undefined : json['scan_type'],
+        'advanced_report_filters': !exists(json, 'advanced_report_filters') ? undefined : UtilsAdvancedReportFiltersFromJSON(json['advanced_report_filters']),
+        'include_dead_nodes': !exists(json, 'include_dead_nodes') ? undefined : json['include_dead_nodes'],
+        'node_type': json['node_type'],
+        'scan_type': json['scan_type'],
         'severity_or_check_type': !exists(json, 'severity_or_check_type') ? undefined : json['severity_or_check_type'],
     };
 }
@@ -73,6 +131,8 @@ export function UtilsReportFiltersToJSON(value?: UtilsReportFilters | null): any
     }
     return {
         
+        'advanced_report_filters': UtilsAdvancedReportFiltersToJSON(value.advanced_report_filters),
+        'include_dead_nodes': value.include_dead_nodes,
         'node_type': value.node_type,
         'scan_type': value.scan_type,
         'severity_or_check_type': value.severity_or_check_type,

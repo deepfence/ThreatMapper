@@ -48,6 +48,12 @@ export interface IngestersReportIngestionData {
      * @type {Array<{ [key: string]: any; }>}
      * @memberof IngestersReportIngestionData
      */
+    container_process_edge_batch: Array<{ [key: string]: any; }> | null;
+    /**
+     * 
+     * @type {Array<{ [key: string]: any; }>}
+     * @memberof IngestersReportIngestionData
+     */
     endpoint_edges_batch: Array<{ [key: string]: any; }> | null;
     /**
      * 
@@ -108,6 +114,7 @@ export function instanceOfIngestersReportIngestionData(value: object): boolean {
     isInstance = isInstance && "container_edges_batch" in value;
     isInstance = isInstance && "container_image_batch" in value;
     isInstance = isInstance && "container_image_edge_batch" in value;
+    isInstance = isInstance && "container_process_edge_batch" in value;
     isInstance = isInstance && "endpoint_edges_batch" in value;
     isInstance = isInstance && "host_batch" in value;
     isInstance = isInstance && "hosts" in value;
@@ -135,6 +142,7 @@ export function IngestersReportIngestionDataFromJSONTyped(json: any, ignoreDiscr
         'container_edges_batch': json['container_edges_batch'],
         'container_image_batch': json['container_image_batch'],
         'container_image_edge_batch': json['container_image_edge_batch'],
+        'container_process_edge_batch': json['container_process_edge_batch'],
         'endpoint_edges_batch': json['endpoint_edges_batch'],
         'host_batch': json['host_batch'],
         'hosts': json['hosts'],
@@ -160,6 +168,7 @@ export function IngestersReportIngestionDataToJSON(value?: IngestersReportIngest
         'container_edges_batch': value.container_edges_batch,
         'container_image_batch': value.container_image_batch,
         'container_image_edge_batch': value.container_image_edge_batch,
+        'container_process_edge_batch': value.container_process_edge_batch,
         'endpoint_edges_batch': value.endpoint_edges_batch,
         'host_batch': value.host_batch,
         'hosts': value.hosts,

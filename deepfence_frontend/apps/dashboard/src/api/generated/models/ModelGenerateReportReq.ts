@@ -31,7 +31,7 @@ export interface ModelGenerateReportReq {
      * @type {number}
      * @memberof ModelGenerateReportReq
      */
-    duration?: number;
+    duration?: ModelGenerateReportReqDurationEnum;
     /**
      * 
      * @type {UtilsReportFilters}
@@ -43,8 +43,33 @@ export interface ModelGenerateReportReq {
      * @type {string}
      * @memberof ModelGenerateReportReq
      */
-    report_type: string;
+    report_type: ModelGenerateReportReqReportTypeEnum;
 }
+
+
+/**
+ * @export
+ */
+export const ModelGenerateReportReqDurationEnum = {
+    NUMBER_0: 0,
+    NUMBER_1: 1,
+    NUMBER_7: 7,
+    NUMBER_30: 30,
+    NUMBER_60: 60,
+    NUMBER_90: 90,
+    NUMBER_180: 180
+} as const;
+export type ModelGenerateReportReqDurationEnum = typeof ModelGenerateReportReqDurationEnum[keyof typeof ModelGenerateReportReqDurationEnum];
+
+/**
+ * @export
+ */
+export const ModelGenerateReportReqReportTypeEnum = {
+    Pdf: 'pdf',
+    Xlsx: 'xlsx'
+} as const;
+export type ModelGenerateReportReqReportTypeEnum = typeof ModelGenerateReportReqReportTypeEnum[keyof typeof ModelGenerateReportReqReportTypeEnum];
+
 
 /**
  * Check if a given object implements the ModelGenerateReportReq interface.
