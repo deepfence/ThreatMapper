@@ -2,6 +2,7 @@ package integration
 
 import (
 	"errors"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/elasticsearch"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	httpendpoint "github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/http-endpoint"
@@ -27,6 +28,8 @@ func GetIntegration(integrationType string, b []byte) (Integration, error) {
 		return s3.New(b)
 	case constants.Splunk:
 		return splunk.New(b)
+	case constants.ElasticSearch:
+		return elasticsearch.New(b)
 	default:
 		return nil, errors.New("invalid integration type")
 	}
