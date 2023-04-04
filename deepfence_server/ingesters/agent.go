@@ -432,7 +432,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 	if _, err := tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:Container{node_id:row.node_id})
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true`,
+		SET n+= row, n.updated_at = TIMESTAMP(), n.active = row.docker_container_state <> "deleted"`,
 		map[string]interface{}{"batch": batches.Container_batch}); err != nil {
 		return err
 	}
