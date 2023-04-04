@@ -21,10 +21,10 @@ import { exists, mapValues } from '../runtime';
 export interface IngestersReportIngestionData {
     /**
      * 
-     * @type {Array<{ [key: string]: string; }>}
+     * @type {Array<{ [key: string]: any; }>}
      * @memberof IngestersReportIngestionData
      */
-    container_batch: Array<{ [key: string]: string; }> | null;
+    container_batch: Array<{ [key: string]: any; }> | null;
     /**
      * 
      * @type {Array<{ [key: string]: any; }>}
@@ -33,10 +33,10 @@ export interface IngestersReportIngestionData {
     container_edges_batch: Array<{ [key: string]: any; }> | null;
     /**
      * 
-     * @type {Array<{ [key: string]: string; }>}
+     * @type {Array<{ [key: string]: any; }>}
      * @memberof IngestersReportIngestionData
      */
-    container_image_batch: Array<{ [key: string]: string; }> | null;
+    container_image_batch: Array<{ [key: string]: any; }> | null;
     /**
      * 
      * @type {Array<{ [key: string]: any; }>}
@@ -51,22 +51,22 @@ export interface IngestersReportIngestionData {
     endpoint_edges_batch: Array<{ [key: string]: any; }> | null;
     /**
      * 
-     * @type {Array<{ [key: string]: string; }>}
+     * @type {Array<{ [key: string]: any; }>}
      * @memberof IngestersReportIngestionData
      */
-    host_batch: Array<{ [key: string]: string; }> | null;
+    host_batch: Array<{ [key: string]: any; }> | null;
     /**
      * 
-     * @type {Array<{ [key: string]: string; }>}
+     * @type {Array<{ [key: string]: any; }>}
      * @memberof IngestersReportIngestionData
      */
-    hosts: Array<{ [key: string]: string; }> | null;
+    hosts: Array<{ [key: string]: any; }> | null;
     /**
      * 
-     * @type {Array<{ [key: string]: string; }>}
+     * @type {Array<{ [key: string]: any; }>}
      * @memberof IngestersReportIngestionData
      */
-    kubernetes_cluster_batch: Array<{ [key: string]: string; }> | null;
+    kubernetes_cluster_batch: Array<{ [key: string]: any; }> | null;
     /**
      * 
      * @type {Array<{ [key: string]: any; }>}
@@ -75,10 +75,10 @@ export interface IngestersReportIngestionData {
     kubernetes_cluster_edge_batch: Array<{ [key: string]: any; }> | null;
     /**
      * 
-     * @type {Array<{ [key: string]: string; }>}
+     * @type {Array<{ [key: string]: any; }>}
      * @memberof IngestersReportIngestionData
      */
-    pod_batch: Array<{ [key: string]: string; }> | null;
+    pod_batch: Array<{ [key: string]: any; }> | null;
     /**
      * 
      * @type {Array<{ [key: string]: any; }>}
@@ -87,10 +87,10 @@ export interface IngestersReportIngestionData {
     pod_edges_batch: Array<{ [key: string]: any; }> | null;
     /**
      * 
-     * @type {Array<{ [key: string]: string; }>}
+     * @type {Array<{ [key: string]: any; }>}
      * @memberof IngestersReportIngestionData
      */
-    process_batch: Array<{ [key: string]: string; }> | null;
+    process_batch: Array<{ [key: string]: any; }> | null;
     /**
      * 
      * @type {Array<{ [key: string]: any; }>}

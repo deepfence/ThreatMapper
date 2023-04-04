@@ -163,7 +163,7 @@ export const privateRoutes: CustomRouteObject[] = [
     path: '/',
     loader: dashboardLoader,
     element: <DashboardLayout />,
-    errorElement: <ErrorComponent />,
+    // errorElement: <ErrorComponent />,
     children: [
       {
         path: 'dashboard',

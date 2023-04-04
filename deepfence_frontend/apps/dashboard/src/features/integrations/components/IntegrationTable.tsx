@@ -198,9 +198,9 @@ export const IntegrationTable = () => {
   return (
     <>
       <Suspense fallback={<TableSkeleton columns={4} rows={5} size={'sm'} />}>
-        <DFAwait resolve={loaderData.data}>
+        <DFAwait resolve={loaderData?.data}>
           {(resolvedData: LoaderDataType) => {
-            const { data = [], message } = resolvedData;
+            const { data = [], message } = resolvedData ?? {};
             const params = useParams() as {
               integrationType: string;
             };

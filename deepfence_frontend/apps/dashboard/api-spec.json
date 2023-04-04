@@ -3227,6 +3227,201 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/reports": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "List Reports",
+        "description": "List all the available reports",
+        "operationId": "listReports",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelExportReport" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      },
+      "post": {
+        "tags": ["Reports"],
+        "summary": "Generate Report",
+        "description": "generate report for given type and filters",
+        "operationId": "generateReport",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelGenerateReportReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelGenerateReportResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/reports/{report_id}": {
+      "delete": {
+        "tags": ["Reports"],
+        "summary": "Delete Report",
+        "description": "delete report for given report_id",
+        "operationId": "deleteReport",
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      },
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Get Report",
+        "description": "get report by report_id",
+        "operationId": "getReport",
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelExportReport" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/scan/list/cloud-compliance": {
       "post": {
         "tags": ["Cloud Scanner"],
@@ -5875,6 +6070,51 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/search/count/nodes": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Count nodes",
+        "description": "Count hosts, containers, pods, k8s clusters, images",
+        "operationId": "countNodes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchNodeCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/search/count/secret/scans": {
       "post": {
         "tags": ["Search"],
@@ -7353,23 +7593,9 @@
           "adjacency": { "$ref": "#/components/schemas/ReportIDList" },
           "id": { "type": "string" },
           "ids": { "type": "array", "items": { "type": "string" } },
-          "image": { "type": "string" },
           "immediate_parent_id": { "type": "string" },
           "label": { "type": "string" },
-          "labelMinor": { "type": "string" },
-          "metadata": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ReportMetadataRow" }
-          },
-          "metrics": {
-            "type": "array",
-            "items": { "$ref": "#/components/schemas/ReportMetricRow" }
-          },
-          "pseudo": { "type": "boolean" },
-          "rank": { "type": "string" },
-          "shape": { "type": "string" },
-          "stack": { "type": "boolean" },
-          "tag": { "type": "string" },
+          "metadata": { "$ref": "#/components/schemas/ReportMetadata" },
           "type": { "type": "string" }
         }
       },
@@ -7795,7 +8021,7 @@
         "properties": {
           "container_batch": {
             "type": "array",
-            "items": { "type": "object", "additionalProperties": { "type": "string" } },
+            "items": { "type": "object", "additionalProperties": {} },
             "nullable": true
           },
           "container_edges_batch": {
@@ -7805,7 +8031,7 @@
           },
           "container_image_batch": {
             "type": "array",
-            "items": { "type": "object", "additionalProperties": { "type": "string" } },
+            "items": { "type": "object", "additionalProperties": {} },
             "nullable": true
           },
           "container_image_edge_batch": {
@@ -7820,17 +8046,17 @@
           },
           "host_batch": {
             "type": "array",
-            "items": { "type": "object", "additionalProperties": { "type": "string" } },
+            "items": { "type": "object", "additionalProperties": {} },
             "nullable": true
           },
           "hosts": {
             "type": "array",
-            "items": { "type": "object", "additionalProperties": { "type": "string" } },
+            "items": { "type": "object", "additionalProperties": {} },
             "nullable": true
           },
           "kubernetes_cluster_batch": {
             "type": "array",
-            "items": { "type": "object", "additionalProperties": { "type": "string" } },
+            "items": { "type": "object", "additionalProperties": {} },
             "nullable": true
           },
           "kubernetes_cluster_edge_batch": {
@@ -7840,7 +8066,7 @@
           },
           "pod_batch": {
             "type": "array",
-            "items": { "type": "object", "additionalProperties": { "type": "string" } },
+            "items": { "type": "object", "additionalProperties": {} },
             "nullable": true
           },
           "pod_edges_batch": {
@@ -7850,7 +8076,7 @@
           },
           "process_batch": {
             "type": "array",
-            "items": { "type": "object", "additionalProperties": { "type": "string" } },
+            "items": { "type": "object", "additionalProperties": {} },
             "nullable": true
           },
           "process_edges_batch": {
@@ -8422,14 +8648,6 @@
           }
         }
       },
-      "ModelComputeMetrics": {
-        "required": ["cpu_percent", "memory_mb"],
-        "type": "object",
-        "properties": {
-          "cpu_percent": { "type": "number" },
-          "memory_mb": { "type": "number" }
-        }
-      },
       "ModelContainer": {
         "required": [
           "node_id",
@@ -8437,10 +8655,9 @@
           "docker_container_name",
           "image",
           "processes",
-          "metrics",
-          "metadata",
           "docker_labels",
           "host_name",
+          "uptime",
           "vulnerabilities_count",
           "vulnerability_scan_status",
           "vulnerability_latest_scan_id",
@@ -8465,15 +8682,25 @@
           "compliance_latest_scan_id": { "type": "string" },
           "compliance_scan_status": { "type": "string" },
           "compliances_count": { "type": "integer" },
+          "cpu_max": { "type": "number" },
+          "cpu_usage": { "type": "number" },
+          "docker_container_command": { "type": "string" },
+          "docker_container_created": { "type": "string" },
+          "docker_container_ips": { "type": "array", "items": { "type": "string" } },
           "docker_container_name": { "type": "string" },
+          "docker_container_network_mode": { "type": "string" },
+          "docker_container_networks": { "type": "string" },
+          "docker_container_ports": { "type": "string" },
+          "docker_container_state": { "type": "string" },
+          "docker_container_state_human": { "type": "string" },
           "docker_labels": { "$ref": "#/components/schemas/ModelMetadata" },
           "host_name": { "type": "string" },
           "image": { "$ref": "#/components/schemas/ModelContainerImage" },
           "malware_latest_scan_id": { "type": "string" },
           "malware_scan_status": { "type": "string" },
           "malwares_count": { "type": "integer" },
-          "metadata": { "$ref": "#/components/schemas/ModelMetadata" },
-          "metrics": { "$ref": "#/components/schemas/ModelComputeMetrics" },
+          "memory_max": { "type": "integer" },
+          "memory_usage": { "type": "integer" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "processes": {
@@ -8484,6 +8711,7 @@
           "secret_latest_scan": { "type": "string" },
           "secret_scan_status": { "type": "string" },
           "secrets_count": { "type": "integer" },
+          "uptime": { "type": "integer" },
           "vulnerabilities_count": { "type": "integer" },
           "vulnerability_latest_scan_id": { "type": "string" },
           "vulnerability_scan_status": { "type": "string" }
@@ -8496,7 +8724,6 @@
           "docker_image_name",
           "docker_image_tag",
           "docker_image_size",
-          "metrics",
           "metadata",
           "vulnerabilities_count",
           "vulnerability_scan_status",
@@ -8522,14 +8749,16 @@
           "compliance_latest_scan_id": { "type": "string" },
           "compliance_scan_status": { "type": "string" },
           "compliances_count": { "type": "integer" },
+          "docker_image_created_at": { "type": "string" },
+          "docker_image_id": { "type": "string" },
           "docker_image_name": { "type": "string" },
           "docker_image_size": { "type": "string" },
           "docker_image_tag": { "type": "string" },
+          "docker_image_virtual_size": { "type": "string" },
           "malware_latest_scan_id": { "type": "string" },
           "malware_scan_status": { "type": "string" },
           "malwares_count": { "type": "integer" },
           "metadata": { "$ref": "#/components/schemas/ModelMetadata" },
-          "metrics": { "$ref": "#/components/schemas/ModelComputeMetrics" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "secret_latest_scan": { "type": "string" },
@@ -8543,6 +8772,20 @@
       "ModelDownloadReportResponse": {
         "type": "object",
         "properties": { "url_link": { "type": "string" } }
+      },
+      "ModelExportReport": {
+        "type": "object",
+        "properties": {
+          "created_at": { "type": "integer" },
+          "duration": { "type": "integer" },
+          "filters": { "type": "string" },
+          "report_id": { "type": "string" },
+          "status": { "type": "string" },
+          "storage_path": { "type": "string" },
+          "type": { "type": "string" },
+          "updated_at": { "type": "integer" },
+          "url": { "type": "string" }
+        }
       },
       "ModelFetchWindow": {
         "required": ["offset", "size"],
@@ -8568,6 +8811,19 @@
           }
         }
       },
+      "ModelGenerateReportReq": {
+        "required": ["report_type"],
+        "type": "object",
+        "properties": {
+          "duration": { "type": "integer" },
+          "filters": { "$ref": "#/components/schemas/UtilsReportFilters" },
+          "report_type": { "type": "string" }
+        }
+      },
+      "ModelGenerateReportResp": {
+        "type": "object",
+        "properties": { "report_id": { "type": "string" } }
+      },
       "ModelHost": {
         "required": [
           "node_id",
@@ -8577,12 +8833,17 @@
           "processes",
           "pods",
           "container_images",
-          "cloud_metadata",
-          "interfaceNames",
+          "interface_names",
           "interface_ips",
           "kernel_version",
           "uptime",
-          "metrics",
+          "version",
+          "agent_running",
+          "is_console_vm",
+          "local_cidr",
+          "os",
+          "cloud_provider",
+          "cloud_region",
           "vulnerabilities_count",
           "vulnerability_scan_status",
           "vulnerability_latest_scan_id",
@@ -8601,10 +8862,13 @@
         ],
         "type": "object",
         "properties": {
+          "agent_running": { "type": "boolean" },
+          "availability_zone": { "type": "string" },
           "cloud_compliance_latest scan_id": { "type": "string" },
           "cloud_compliance_scan_status": { "type": "string" },
           "cloud_compliances_count": { "type": "integer" },
-          "cloud_metadata": { "$ref": "#/components/schemas/ModelMetadata" },
+          "cloud_provider": { "type": "string" },
+          "cloud_region": { "type": "string" },
           "compliance_latest_scan_id": { "type": "string" },
           "compliance_scan_status": { "type": "string" },
           "compliances_count": { "type": "integer" },
@@ -8618,30 +8882,56 @@
             "items": { "$ref": "#/components/schemas/ModelContainer" },
             "nullable": true
           },
+          "cpu_max": { "type": "number" },
+          "cpu_usage": { "type": "number" },
           "host_name": { "type": "string" },
-          "interfaceNames": { "type": "string" },
-          "interface_ips": { "type": "string" },
+          "instance_id": { "type": "string" },
+          "instance_type": { "type": "string" },
+          "interface_ips": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "interface_names": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "is_console_vm": { "type": "boolean" },
+          "kernel_id": { "type": "string" },
           "kernel_version": { "type": "string" },
+          "local_cidr": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "local_networks": { "type": "array", "items": { "type": "string" } },
           "malware_latest_scan_id": { "type": "string" },
           "malware_scan_status": { "type": "string" },
           "malwares_count": { "type": "integer" },
-          "metrics": { "$ref": "#/components/schemas/ModelComputeMetrics" },
+          "memory_max": { "type": "integer" },
+          "memory_usage": { "type": "integer" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
+          "os": { "type": "string" },
           "pods": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelPod" },
             "nullable": true
           },
+          "private_ip": { "type": "array", "items": { "type": "string" } },
           "processes": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelProcess" },
             "nullable": true
           },
+          "public_ip": { "type": "array", "items": { "type": "string" } },
+          "resource_group": { "type": "string" },
           "secret_latest_scan": { "type": "string" },
           "secret_scan_status": { "type": "string" },
           "secrets_count": { "type": "integer" },
-          "uptime": { "type": "string" },
+          "uptime": { "type": "integer" },
+          "version": { "type": "string" },
           "vulnerabilities_count": { "type": "integer" },
           "vulnerability_latest_scan_id": { "type": "string" },
           "vulnerability_scan_status": { "type": "string" }
@@ -8715,16 +9005,14 @@
         }
       },
       "ModelKubernetesCluster": {
-        "required": ["node_id", "node_name", "containers", "cloud_metadata", "metrics"],
+        "required": ["node_id", "node_name", "hosts"],
         "type": "object",
         "properties": {
-          "cloud_metadata": { "$ref": "#/components/schemas/ModelMetadata" },
-          "containers": {
+          "hosts": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelHost" },
             "nullable": true
           },
-          "metrics": { "$ref": "#/components/schemas/ModelComputeMetrics" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" }
         }
@@ -8882,10 +9170,8 @@
         "required": [
           "node_id",
           "node_name",
-          "kubernetes_name",
           "kubernetes_namespace",
-          "host_node_id",
-          "metrics",
+          "host_name",
           "containers",
           "processes",
           "metadata"
@@ -8897,11 +9183,9 @@
             "items": { "$ref": "#/components/schemas/ModelContainer" },
             "nullable": true
           },
-          "host_node_id": { "type": "string" },
-          "kubernetes_name": { "type": "string" },
+          "host_name": { "type": "string" },
           "kubernetes_namespace": { "type": "string" },
           "metadata": { "$ref": "#/components/schemas/ModelMetadata" },
-          "metrics": { "$ref": "#/components/schemas/ModelComputeMetrics" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "processes": {
@@ -8923,26 +9207,20 @@
         }
       },
       "ModelProcess": {
-        "required": [
-          "node_id",
-          "name",
-          "pid",
-          "cmdline",
-          "ppid",
-          "threads",
-          "metrics",
-          "metadata"
-        ],
+        "required": ["node_id", "node_name", "pid", "cmdline", "ppid", "threads"],
         "type": "object",
         "properties": {
           "cmdline": { "type": "string" },
-          "metadata": { "$ref": "#/components/schemas/ModelMetadata" },
-          "metrics": { "$ref": "#/components/schemas/ModelComputeMetrics" },
-          "name": { "type": "string" },
+          "cpu_max": { "type": "number" },
+          "cpu_usage": { "type": "number" },
+          "memory_max": { "type": "integer" },
+          "memory_usage": { "type": "integer" },
           "node_id": { "type": "string" },
-          "pid": { "type": "string" },
-          "ppid": { "type": "string" },
-          "threads": { "type": "string" }
+          "node_name": { "type": "string" },
+          "open_files_count": { "type": "integer" },
+          "pid": { "type": "integer" },
+          "ppid": { "type": "integer" },
+          "threads": { "type": "integer" }
         }
       },
       "ModelRegisterInvitedUserRequest": {
@@ -9543,18 +9821,82 @@
       "PostgresqlDbApiToken": { "type": "object" },
       "PostgresqlDbGetAuditLogsRow": { "type": "object" },
       "ReportIDList": { "type": "array", "items": { "type": "string" } },
-      "ReportMetadataRow": {
+      "ReportMetadata": {
         "type": "object",
         "properties": {
-          "dataType": { "type": "string" },
-          "id": { "type": "string" },
-          "label": { "type": "string" },
-          "priority": { "type": "number" },
-          "truncate": { "type": "integer" },
-          "value": { "type": "string" }
+          "agent_running": { "type": "boolean" },
+          "availability_zone": { "type": "string" },
+          "cloud_provider": { "type": "string" },
+          "cloud_region": { "type": "string" },
+          "cmdline": { "type": "string" },
+          "connection_count": { "type": "integer" },
+          "copy_of": { "type": "string" },
+          "cpu_max": { "type": "number" },
+          "cpu_usage": { "type": "number" },
+          "docker_container_command": { "type": "string" },
+          "docker_container_created": { "type": "string" },
+          "docker_container_ips": { "type": "array", "items": { "type": "string" } },
+          "docker_container_name": { "type": "string" },
+          "docker_container_network_mode": { "type": "string" },
+          "docker_container_networks": { "type": "string" },
+          "docker_container_ports": { "type": "string" },
+          "docker_container_state": { "type": "string" },
+          "docker_container_state_human": { "type": "string" },
+          "docker_env": { "type": "string" },
+          "docker_image_created_at": { "type": "string" },
+          "docker_image_id": { "type": "string" },
+          "docker_image_labels": { "type": "string" },
+          "docker_image_name": { "type": "string" },
+          "docker_image_name_with_tag": { "type": "string" },
+          "docker_image_size": { "type": "string" },
+          "docker_image_tag": { "type": "string" },
+          "docker_image_virtual_size": { "type": "string" },
+          "docker_label": { "type": "string" },
+          "host_name": { "type": "string" },
+          "instance_id": { "type": "string" },
+          "instance_type": { "type": "string" },
+          "interface_ip_map": { "type": "string" },
+          "interface_ips": { "type": "array", "items": { "type": "string" } },
+          "interface_names": { "type": "array", "items": { "type": "string" } },
+          "is_console_vm": { "type": "boolean" },
+          "kernel_id": { "type": "string" },
+          "kernel_version": { "type": "string" },
+          "kubernetes_cluster_id": { "type": "string" },
+          "kubernetes_cluster_name": { "type": "string" },
+          "kubernetes_created": { "type": "string" },
+          "kubernetes_ingress_ip": { "type": "array", "items": { "type": "string" } },
+          "kubernetes_ip": { "type": "string" },
+          "kubernetes_is_in_host_network": { "type": "boolean" },
+          "kubernetes_labels": { "type": "string" },
+          "kubernetes_namespace": { "type": "string" },
+          "kubernetes_ports": { "type": "array", "items": { "type": "integer" } },
+          "kubernetes_public_ip": { "type": "string" },
+          "kubernetes_state": { "type": "string" },
+          "kubernetes_type": { "type": "string" },
+          "local_cidr": { "type": "array", "items": { "type": "string" } },
+          "local_networks": { "type": "array", "items": { "type": "string" } },
+          "memory_max": { "type": "integer" },
+          "memory_usage": { "type": "integer" },
+          "node_id": { "type": "string" },
+          "node_name": { "type": "string" },
+          "node_type": { "type": "string" },
+          "open_files": { "type": "array", "items": { "type": "string" } },
+          "open_files_count": { "type": "integer" },
+          "os": { "type": "string" },
+          "pid": { "type": "integer" },
+          "pod_name": { "type": "string" },
+          "ppid": { "type": "integer" },
+          "private_ip": { "type": "array", "items": { "type": "string" } },
+          "pseudo": { "type": "boolean" },
+          "public_ip": { "type": "array", "items": { "type": "string" } },
+          "resource_group": { "type": "string" },
+          "threads": { "type": "integer" },
+          "timestamp": { "type": "string" },
+          "uptime": { "type": "integer" },
+          "user_defined_tags": { "type": "array", "items": { "type": "string" } },
+          "version": { "type": "string" }
         }
       },
-      "ReportMetricRow": { "type": "object" },
       "ReportRawReport": {
         "required": ["payload"],
         "type": "object",
@@ -9624,6 +9966,27 @@
           "field_name": { "type": "string" }
         }
       },
+      "SearchNodeCountResp": {
+        "required": [
+          "cloud_provider",
+          "host",
+          "container",
+          "container_image",
+          "pod",
+          "kubernetes_cluster",
+          "namespace"
+        ],
+        "type": "object",
+        "properties": {
+          "cloud_provider": { "type": "integer" },
+          "container": { "type": "integer" },
+          "container_image": { "type": "integer" },
+          "host": { "type": "integer" },
+          "kubernetes_cluster": { "type": "integer" },
+          "namespace": { "type": "integer" },
+          "pod": { "type": "integer" }
+        }
+      },
       "SearchSearchCountResp": {
         "required": ["count", "categories"],
         "type": "object",
@@ -9664,6 +10027,18 @@
           "node_filters": { "$ref": "#/components/schemas/SearchSearchFilter" },
           "scan_filters": { "$ref": "#/components/schemas/SearchSearchFilter" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
+        }
+      },
+      "UtilsReportFilters": {
+        "type": "object",
+        "properties": {
+          "node_type": { "type": "string" },
+          "scan_type": { "type": "string" },
+          "severity_or_check_type": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          }
         }
       },
       "UtilsScanSbomRequest": {

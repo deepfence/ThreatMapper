@@ -77,7 +77,14 @@ const getConfigBodyNotificationType = (
         webhook_url: formBody.url,
         channel: formBody.channelName,
       };
-
+    case IntegrationType.s3:
+      return {
+        s3_bucket_name: formBody.name,
+        aws_access_key: formBody.accessKey,
+        aws_secret_key: formBody.secretKey,
+        s3_folder_name: formBody.folder,
+        aws_region: formBody.region,
+      };
     default:
       break;
   }
