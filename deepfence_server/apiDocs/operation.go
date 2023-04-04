@@ -216,6 +216,10 @@ func (d *OpenApiDocs) AddSearchOperations() {
 		http.StatusOK, []string{tagSearch}, bearerToken, new(FiltersReq), new(FiltersResult))
 
 	// Count APIs
+	d.AddOperation("countNodes", http.MethodGet, "/deepfence/search/count/nodes",
+		"Count nodes", "Count hosts, containers, pods, k8s clusters, images",
+		http.StatusOK, []string{tagSearch}, bearerToken, nil, new(NodeCountResp))
+
 	d.AddOperation("countHosts", http.MethodPost, "/deepfence/search/count/hosts",
 		"Count hosts", "Count across all the data associated with hosts",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
@@ -566,4 +570,19 @@ func (d *OpenApiDocs) AddIntegrationOperations() {
 	d.AddOperation("deleteIntegration", http.MethodDelete, "/deepfence/integration/{integration_id}",
 		"Delete Integration", "Delete integration",
 		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
+}
+
+func (d *OpenApiDocs) AddReportsOperations() {
+	d.AddOperation("generateReport", http.MethodPost, "/deepfence/reports",
+		"Generate Report", "generate report for given type and filters",
+		http.StatusOK, []string{tagReports}, bearerToken, new(GenerateReportReq), new(GenerateReportResp))
+	d.AddOperation("listReports", http.MethodGet, "/deepfence/reports",
+		"List Reports", "List all the available reports",
+		http.StatusOK, []string{tagReports}, bearerToken, nil, new([]ExportReport))
+	d.AddOperation("getReport", http.MethodGet, "/deepfence/reports/{report_id}",
+		"Get Report", "get report by report_id",
+		http.StatusOK, []string{tagReports}, bearerToken, new(ReportReq), new(ExportReport))
+	d.AddOperation("deleteReport", http.MethodDelete, "/deepfence/reports/{report_id}",
+		"Delete Report", "delete report for given report_id",
+		http.StatusOK, []string{tagReports}, bearerToken, new(ReportReq), nil)
 }

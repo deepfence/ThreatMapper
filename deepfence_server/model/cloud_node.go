@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"fmt"
+
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -377,6 +378,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		scanType = utils.NEO4J_COMPLIANCE_SCAN
 		res, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s)
+		WHERE n.pseudo=false
 		WITH n.node_id AS node_id, n.node_name AS node_name, n.updated_at AS updated_at
 		UNWIND node_id AS x
 		OPTIONAL MATCH (n:%s{node_id: x})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c:Compliance)

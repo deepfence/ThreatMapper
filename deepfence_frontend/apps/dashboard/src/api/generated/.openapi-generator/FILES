@@ -6,6 +6,7 @@ apis/CloudScannerApi.ts
 apis/ComplianceApi.ts
 apis/ControlsApi.ts
 apis/DiagnosisApi.ts
+apis/IntegrationApi.ts
 apis/InternalApi.ts
 apis/LookupApi.ts
 apis/MalwareScanApi.ts
@@ -90,6 +91,8 @@ models/ModelFiltersResult.ts
 models/ModelHost.ts
 models/ModelImageStub.ts
 models/ModelInitAgentReq.ts
+models/ModelIntegrationAddReq.ts
+models/ModelIntegrationListResp.ts
 models/ModelInviteUserRequest.ts
 models/ModelInviteUserResponse.ts
 models/ModelKubernetesCluster.ts
@@ -142,6 +145,7 @@ models/ModelVulnerabilityScanResult.ts
 models/ModelVulnerabilityScanTriggerReq.ts
 models/ReportMetadataRow.ts
 models/ReportRawReport.ts
+models/ReportersCompareFilter.ts
 models/ReportersContainsFilter.ts
 models/ReportersFieldsFilters.ts
 models/ReportersMatchFilter.ts

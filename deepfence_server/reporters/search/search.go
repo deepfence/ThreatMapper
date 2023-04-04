@@ -39,6 +39,73 @@ type SearchCountResp struct {
 	Categories map[string]int32 `json:"categories" required:"true"`
 }
 
+type NodeCountResp struct {
+	CloudProviders    int64 `json:"cloud_provider" required:"true"`
+	Host              int64 `json:"host" required:"true"`
+	Container         int64 `json:"container" required:"true"`
+	ContainerImage    int64 `json:"container_image" required:"true"`
+	Pod               int64 `json:"pod" required:"true"`
+	KubernetesCluster int64 `json:"kubernetes_cluster" required:"true"`
+	Namespace         int64 `json:"namespace" required:"true"`
+}
+
+func CountNodes(ctx context.Context) (NodeCountResp, error) {
+	res := NodeCountResp{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session, err := driver.Session(neo4j.AccessModeRead)
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	query := `
+		MATCH (n) 
+		WHERE (n:Node OR n:Container OR n:ContainerImage OR n:KubernetesCluster OR n:Pod)
+		AND n.pseudo=false
+		RETURN labels(n), count(labels(n)), count(distinct n.cloud_provider), count(distinct n.kubernetes_namespace);`
+	r, err := tx.Run(query,
+		map[string]interface{}{})
+	if err != nil {
+		return res, err
+	}
+	recs, err := r.Collect()
+	if err != nil {
+		return res, err
+	}
+	for _, rec := range recs {
+		neo4jNodeTypes := rec.Values[0].([]interface{})
+		count := rec.Values[1].(int64)
+		for _, neo4jNodeType := range neo4jNodeTypes {
+			switch neo4jNodeType {
+			case "Node":
+				res.Host = count
+				res.CloudProviders = rec.Values[2].(int64)
+			case "Container":
+				res.Container = count
+			case "ContainerImage":
+				res.ContainerImage = count
+			case "KubernetesCluster":
+				res.KubernetesCluster = count
+			case "Pod":
+				res.Pod = count
+				res.Namespace = rec.Values[3].(int64)
+			}
+		}
+	}
+
+	return res, nil
+}
+
 func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
 	res := []T{}
 	var dummy T

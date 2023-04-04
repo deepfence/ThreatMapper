@@ -51,6 +51,7 @@ async function getCompliances(complianceId: string) {
               match_filter: {
                 filter_in: {},
               },
+              compare_filter: null,
             },
             in_field_filter: null,
             window: {

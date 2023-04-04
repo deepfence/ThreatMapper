@@ -7,6 +7,7 @@ export * from './CloudScannerApi';
 export * from './ComplianceApi';
 export * from './ControlsApi';
 export * from './DiagnosisApi';
+export * from './IntegrationApi';
 export * from './InternalApi';
 export * from './LookupApi';
 export * from './MalwareScanApi';

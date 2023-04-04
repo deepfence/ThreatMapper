@@ -21,11 +21,11 @@ replace github.com/deepfence/agent-plugins-grpc => ../deepfence_agent/plugins/ag
 require (
 	github.com/ThreeDotsLabs/watermill v1.2.0
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.2
-	github.com/aws/aws-sdk-go v1.44.225
+	github.com/aws/aws-sdk-go v1.44.232
 	github.com/bytedance/sonic v1.8.5
 	github.com/casbin/casbin/v2 v2.65.2
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230310063137-b653517c5502
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230330091304-8f99282832d7
 	github.com/docker/docker v23.0.1+incompatible
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/jwtauth/v5 v5.1.0
@@ -151,7 +151,7 @@ require (
 	golang.org/x/time v0.3.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.29.0 // indirect
+	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

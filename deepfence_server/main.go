@@ -347,6 +347,7 @@ func initializeOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
 	openApiDocs.AddCloudNodeOperations()
 	openApiDocs.AddRegistryOperations()
 	openApiDocs.AddIntegrationOperations()
+	openApiDocs.AddReportsOperations()
 }
 
 func initializeInternalOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {

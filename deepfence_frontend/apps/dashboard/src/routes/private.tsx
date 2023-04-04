@@ -15,6 +15,9 @@ import { searchContainersApiLoader } from '@/features/common/data-component/sear
 import { searchHostsApiLoader } from '@/features/common/data-component/searchHostsApiLoader';
 import { RootLayout } from '@/features/common/RootLayout';
 import { module as dashboard } from '@/features/dashboard/pages/Dashboard';
+import { module as integrationsLayout } from '@/features/integrations/layouts/IntegrationsLayout';
+import { module as downloadReport } from '@/features/integrations/pages/DownloadReport';
+import { module as addIntegration } from '@/features/integrations/pages/IntegrationAdd';
 import { module as integrations } from '@/features/integrations/pages/Integrations';
 import { module as malware } from '@/features/malwares/pages/Malware';
 import { module as malwareDetails } from '@/features/malwares/pages/MalwareDetailModal';
@@ -242,6 +245,60 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'integrations',
         ...integrations,
         meta: { title: 'Integrations' },
+      },
+      {
+        path: 'integrations/notifications/add',
+        ...integrationsLayout,
+        meta: { title: 'Add Notifications' },
+        children: [
+          {
+            path: ':integrationType',
+            ...addIntegration,
+            meta: { title: 'Add Integration' },
+          },
+        ],
+      },
+      {
+        path: 'integrations/seim/add',
+        ...integrationsLayout,
+        meta: { title: 'Add Notifications' },
+        children: [
+          {
+            path: ':integrationType',
+            ...addIntegration,
+            meta: { title: 'Add Integration' },
+          },
+        ],
+      },
+      {
+        path: 'integrations/ticketing/add',
+        ...integrationsLayout,
+        meta: { title: 'Add Notifications' },
+        children: [
+          {
+            path: ':integrationType',
+            ...addIntegration,
+            meta: { title: 'Add Integration' },
+          },
+        ],
+      },
+      {
+        path: 'integrations/archival/add',
+        ...integrationsLayout,
+        meta: { title: 'Add Notifications' },
+        children: [
+          {
+            path: ':integrationType',
+            ...addIntegration,
+            meta: { title: 'Add Integration' },
+          },
+        ],
+      },
+      // report
+      {
+        path: 'integrations/download/report',
+        ...downloadReport,
+        meta: { title: 'Download Report' },
       },
       // vulnerability
       {

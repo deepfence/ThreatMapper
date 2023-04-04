@@ -32,7 +32,7 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i, err := integration.GetIntegration(req.IntegrationType, b)
+	_, err = integration.GetIntegration(req.IntegrationType, b)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(&BadDecoding{err}, w)
@@ -59,12 +59,12 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check if integration is valid
-	err = i.SendNotification("validating integration")
+	/*err = i.SendNotification("validating integration")
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(&ValidatorError{err}, w)
 		return
-	}
+	}*/
 
 	user, statusCode, _, _, err := h.GetUserFromJWT(r.Context())
 	if err != nil {

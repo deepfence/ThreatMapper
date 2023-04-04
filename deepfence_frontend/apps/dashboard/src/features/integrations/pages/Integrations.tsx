@@ -47,6 +47,7 @@ const IntegrationsData = [
             <FaSlack />
           </IconContext.Provider>
         ),
+        path: '/integrations/notifications/add/slack',
       },
       {
         name: 'Microsoft Teams',
@@ -59,6 +60,7 @@ const IntegrationsData = [
             <FaMicrosoft />
           </IconContext.Provider>
         ),
+        path: '/integrations/notifications/add/microsoft-teams',
       },
       {
         name: 'Page Duty',
@@ -71,6 +73,7 @@ const IntegrationsData = [
             <FaMagento />
           </IconContext.Provider>
         ),
+        path: '/integrations/notifications/add/pager-duty',
       },
       {
         name: 'HTTP Endpoint',
@@ -83,6 +86,7 @@ const IntegrationsData = [
             <FaMixer />
           </IconContext.Provider>
         ),
+        path: '/integrations/notifications/add/http-endpoint',
       },
     ],
   },
@@ -111,6 +115,7 @@ const IntegrationsData = [
             <FaReact />
           </IconContext.Provider>
         ),
+        path: '/integrations/seim/add/splunk',
       },
       {
         name: 'Elasticsearch',
@@ -123,6 +128,7 @@ const IntegrationsData = [
             <FaSearchengin />
           </IconContext.Provider>
         ),
+        path: '/integrations/seim/add/elasticsearch',
       },
       {
         name: 'Sumo Logic',
@@ -135,6 +141,7 @@ const IntegrationsData = [
             <FaInstalod />
           </IconContext.Provider>
         ),
+        path: '/integrations/seim/add/sumo-logic',
       },
       {
         name: 'Google Chronicle',
@@ -147,6 +154,20 @@ const IntegrationsData = [
             <FaGoogle />
           </IconContext.Provider>
         ),
+        path: '/integrations/seim/add/google-chronicle',
+      },
+      {
+        name: 'AWS Security Hub',
+        icon: (
+          <IconContext.Provider
+            value={{
+              className: 'w-10 h-10 text-yellow-400',
+            }}
+          >
+            <FaAws />
+          </IconContext.Provider>
+        ),
+        path: '/integrations/seim/add/aws-security-hub',
       },
     ],
   },
@@ -175,6 +196,7 @@ const IntegrationsData = [
             <FaCopyright />
           </IconContext.Provider>
         ),
+        path: '/integrations/ticketing/add/jira',
       },
     ],
   },
@@ -203,6 +225,7 @@ const IntegrationsData = [
             <FaAws />
           </IconContext.Provider>
         ),
+        path: '/integrations/archival/add/s3',
       },
     ],
   },
@@ -210,66 +233,79 @@ const IntegrationsData = [
 
 const Integrations = () => {
   return (
-    <div className="flex flex-col space-y-8">
-      {IntegrationsData.map((integration) => {
-        return (
-          <section key={integration.name} className="flex flex-col">
-            <div className="flex items-center pl-2 mb-2 text-gray-700">
-              <IconContext.Provider
-                value={{
-                  className: 'w-4 h-4 text-gray-700',
-                }}
-              >
-                {integration.icon}
-              </IconContext.Provider>
-              <h2 className="px-4 tracking-wider text-gary-900 dark:text-gray-200 font-semibold">
-                {integration.name.toUpperCase()}
-              </h2>
-            </div>
-            <div className="pl-2 flex flex-wrap gap-4">
-              {integration?.types?.map((type) => {
-                return (
-                  <Card key={type.name} className="p-4 flex flex-col shrink-0 gap-y-1">
-                    <div className="flex items-center justify-between w-full">
-                      <h4 className="text-gray-900 text-md dark:text-white mr-4">
-                        {type.name}
-                      </h4>
-                      <div className="ml-auto">
-                        <DFLink to={'/'} className="flex items-center hover:no-underline">
-                          <span className="text-xs text-blue-600 dark:text-blue-500">
-                            Configure
-                          </span>
-                          <IconContext.Provider
-                            value={{
-                              className: 'text-blue-600 dark:text-blue-500 ',
-                            }}
+    <>
+      <div className="flex p-2 pl-2 w-full shadow bg-white dark:bg-gray-800">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+          INTEGRATIONS
+        </span>
+        <DFLink className="ml-auto uppercase text-xs" to="/integrations/download/report">
+          Report Download
+        </DFLink>
+      </div>
+      <div className="flex flex-col space-y-8 my-2">
+        {IntegrationsData.map((integration) => {
+          return (
+            <section key={integration.name} className="flex flex-col">
+              <div className="flex items-center pl-2 mb-2 text-gray-700">
+                <IconContext.Provider
+                  value={{
+                    className: 'w-4 h-4 text-gray-700',
+                  }}
+                >
+                  {integration.icon}
+                </IconContext.Provider>
+                <h2 className="px-4 tracking-wider text-gary-900 dark:text-gray-200 font-semibold">
+                  {integration.name.toUpperCase()}
+                </h2>
+              </div>
+              <div className="pl-2 flex flex-wrap gap-4">
+                {integration?.types?.map((type) => {
+                  return (
+                    <Card key={type.name} className="p-4 flex flex-col shrink-0 gap-y-1">
+                      <div className="flex items-center justify-between w-full">
+                        <h4 className="text-gray-900 text-md dark:text-white mr-4">
+                          {type.name}
+                        </h4>
+                        <div className="ml-auto">
+                          <DFLink
+                            to={type.path ?? '#'}
+                            className="flex items-center hover:no-underline"
                           >
-                            <HiArrowSmRight />
-                          </IconContext.Provider>
-                        </DFLink>
+                            <span className="text-xs text-blue-600 dark:text-blue-500">
+                              Configure
+                            </span>
+                            <IconContext.Provider
+                              value={{
+                                className: 'text-blue-600 dark:text-blue-500 ',
+                              }}
+                            >
+                              <HiArrowSmRight />
+                            </IconContext.Provider>
+                          </DFLink>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-x-6">
-                      <div className="p-4 flex border-r border-gray-200 dark:border-gray-700 w-20 h-20">
-                        {type.icon}
+                      <div className="flex items-center gap-x-6">
+                        <div className="p-4 flex border-r border-gray-200 dark:border-gray-700 w-20 h-20">
+                          {type.icon}
+                        </div>
+                        <div className="flex flex-col gap-x-4">
+                          <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">
+                            23
+                          </span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">
+                            Connections
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex flex-col gap-x-4">
-                        <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">
-                          23
-                        </span>
-                        <span className="text-xs text-gray-400 dark:text-gray-500">
-                          Connections
-                        </span>
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          </section>
-        );
-      })}
-    </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    </>
   );
 };
 

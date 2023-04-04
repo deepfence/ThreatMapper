@@ -2008,6 +2008,143 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/integration": {
+      "get": {
+        "tags": ["Integration"],
+        "summary": "List Integrations",
+        "description": "List all the added Integrations",
+        "operationId": "listIntegration",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelIntegrationListResp" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      },
+      "post": {
+        "tags": ["Integration"],
+        "summary": "Add Integration",
+        "description": "Add a new supported integration",
+        "operationId": "addIntegration",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelIntegrationAddReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/integration/{integration_id}": {
+      "delete": {
+        "tags": ["Integration"],
+        "summary": "Delete Integration",
+        "description": "Delete integration",
+        "operationId": "deleteIntegration",
+        "parameters": [
+          {
+            "name": "integration_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/internal/console-api-token": {
       "get": {
         "tags": ["Internal"],
@@ -8527,6 +8664,33 @@
           "version": { "type": "string" }
         }
       },
+      "ModelIntegrationAddReq": {
+        "type": "object",
+        "properties": {
+          "config": { "type": "object", "additionalProperties": {}, "nullable": true },
+          "filters": {
+            "type": "object",
+            "additionalProperties": { "type": "array", "items": { "type": "string" } },
+            "nullable": true
+          },
+          "integration_type": { "type": "string" },
+          "notification_type": { "type": "string" }
+        }
+      },
+      "ModelIntegrationListResp": {
+        "type": "object",
+        "properties": {
+          "config": { "type": "object", "additionalProperties": {}, "nullable": true },
+          "filters": {
+            "type": "object",
+            "additionalProperties": { "type": "array", "items": { "type": "string" } },
+            "nullable": true
+          },
+          "id": { "type": "integer" },
+          "integration_type": { "type": "string" },
+          "notification_type": { "type": "string" }
+        }
+      },
       "ModelInviteUserRequest": {
         "required": ["email", "role", "action"],
         "type": "object",
@@ -8954,9 +9118,10 @@
         }
       },
       "ModelScanListReq": {
-        "required": ["node_ids", "window"],
+        "required": ["node_ids", "fields_filter", "window"],
         "type": "object",
         "properties": {
+          "fields_filter": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
           "node_ids": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
@@ -9395,6 +9560,15 @@
         "type": "object",
         "properties": { "payload": { "type": "string" } }
       },
+      "ReportersCompareFilter": {
+        "required": ["field_name", "field_value", "greater_than"],
+        "type": "object",
+        "properties": {
+          "field_name": { "type": "string" },
+          "field_value": {},
+          "greater_than": { "type": "boolean" }
+        }
+      },
       "ReportersContainsFilter": {
         "required": ["filter_in"],
         "type": "object",
@@ -9407,9 +9581,14 @@
         }
       },
       "ReportersFieldsFilters": {
-        "required": ["contains_filter", "match_filter", "order_filter"],
+        "required": ["contains_filter", "match_filter", "order_filter", "compare_filter"],
         "type": "object",
         "properties": {
+          "compare_filter": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ReportersCompareFilter" },
+            "nullable": true
+          },
           "contains_filter": { "$ref": "#/components/schemas/ReportersContainsFilter" },
           "match_filter": { "$ref": "#/components/schemas/ReportersMatchFilter" },
           "order_filter": { "$ref": "#/components/schemas/ReportersOrderFilter" }

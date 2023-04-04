@@ -44,6 +44,14 @@ async function getScanList(
     apiArgs: [
       {
         modelScanListReq: {
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: { filter_in: {} },
+            order_filter: { order_fields: [] },
+            compare_filter: null,
+          },
           node_ids: [
             {
               node_id: nodeId.toString(),
