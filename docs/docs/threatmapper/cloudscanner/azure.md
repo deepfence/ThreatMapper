@@ -4,15 +4,38 @@ title: Microsoft Azure
 
 # Configuring Cloud Scanner for Microsoft Azure
 
-https://registry.terraform.io/modules/deepfence/cloud-scanner/azure/latest/examples/single-subscription#usage
-
-Cloud Scanner is deployed as a task within your Azure infrastructure. The ThreatMapper console provides a simple terraform script to perform the deployment.
-
-| ![Compliance Install - Microsoft Azure](../img/compliance-install-azure.jpg) |
-| :--: |
-| Compliance Install - Microsoft Azure |
+Cloud Scanner is deployed as a task within your Azure infrastructure.
 
 You need to configure Terraform with the appropriate resources and inputs for your particular scenario, and you will need to provide the IP address or DNS name for the ThreatMapper management console and an API key.
+
+Copy and paste the following into a new file cloud-scanner.tf. Edit the fields: region, mgmt-console-url and deepfence-key.
+```shell
+provider "azurerm" {
+  features {}
+  subscription_id = "<SUBSCRIPTION_ID eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX>"
+}
+
+module "cloud-scanner_example_single-subscription" {
+  source              = "deepfence/cloud-scanner/azure//examples/single-subscription"
+  version             = "0.2.0"
+  mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
+  mgmt-console-port   = "443"
+  deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+  name                = "deepfence-cloud-scanner"
+}
+
+variable "image" {
+  type        = string
+  default     = "quay.io/deepfenceio/cloud-scanner:1.5.0"
+}
+```
+
+Then run
+```shell
+terraform init
+terraform plan
+terraform apply
+```
 
 For full details, refer to the `examples` provided in the GitHub repository: https://github.com/deepfence/terraform-azure-cloud-scanner
 

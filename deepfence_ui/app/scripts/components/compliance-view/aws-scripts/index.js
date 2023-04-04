@@ -99,7 +99,7 @@ export const AwsTerraFormScript = withRouter(props => {
               {regionValue && (
                 <div style={{ marginBottom: '20px' }}>
                   <a
-                    href={`https://${regionValue}.console.aws.amazon.com/cloudformation/home?region=${regionValue}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner`}
+                    href={`https://${regionValue}.console.aws.amazon.com/cloudformation/home?region=${regionValue}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:1.5.0`}
                     disabled={regionValue === undefined}
                     target="_blank"
                     rel="noreferrer"
@@ -108,7 +108,7 @@ export const AwsTerraFormScript = withRouter(props => {
                   </a>
                   <br/>
                   <a
-                    href={`https://${regionValue}.console.aws.amazon.com/cloudformation/home?region=${regionValue}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner-Org`}
+                    href={`https://${regionValue}.console.aws.amazon.com/cloudformation/home?region=${regionValue}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner-Org&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:1.5.0`}
                     disabled={regionValue === undefined}
                     target="_blank"
                     rel="noreferrer"

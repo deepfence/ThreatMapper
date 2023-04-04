@@ -24,7 +24,7 @@ Log in to the AWS management console account and open the following url link to 
 
 ## Terraform
 
-Cloud Scanner is deployed as a task within your AWS infrastructure. The ThreatMapper console provides a simple terraform script to perform the deployment.
+Cloud Scanner is deployed as a task within your AWS infrastructure.
 
 You need to configure Terraform with the appropriate resources and inputs for your particular scenario, and you will need to provide the IP address or DNS name for the ThreatMapper management console and an API key.
 

@@ -6,13 +6,45 @@ title: Google Compute Platform
 
 https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage
 
-Cloud Scanner is deployed as a task within your Google Cloud Platform instance. The ThreatMapper console provides a simple terraform script to perform the deployment.
-
-| ![Compliance Install - Google Compute Platform](../img/compliance-install-gcp.jpg) |
-| :--: |
-| Compliance Install - Google Compute Platform |
+Cloud Scanner is deployed as a task within your Google Cloud Platform instance.
 
 You need to configure Terraform with the appropriate resources and inputs for your particular scenario, and you will need to provide the IP address or DNS name for the ThreatMapper management console and an API key.
+
+Copy and paste the following into a new file cloud-scanner.tf. Edit the fields: region, mgmt-console-url and deepfence-key.
+```shell
+provider "google" {
+   project = "<PROJECT_ID>; ex. dev1-123456"
+   region  = "<REGION_ID>; ex. asia-east1"
+}
+
+provider "google-beta" {
+   project = "<PROJECT_ID> ex. dev1-123456"
+   region  = "<REGION_ID>; ex. asia-east1"
+}
+
+module "cloud-scanner_example_single-project" {
+  source              = "deepfence/cloud-scanner/gcp//examples/single-project"
+  version             = "0.2.0"
+  mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
+  mgmt-console-port   = "443"
+  deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+  name                = "deepfence-cloud-scanner"
+  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:latest"
+}
+
+variable "image" {
+  type        = string
+  default     = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:1.5.0"
+}
+```
+
+Then run
+```shell
+terraform init
+terraform plan
+terraform apply
+```
+
 
 For full details, refer to the `examples` provided in the GitHub repository: https://github.com/deepfence/terraform-gcp-cloud-scanner
 
