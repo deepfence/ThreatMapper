@@ -202,13 +202,11 @@ func CleanUpDB(msg *message.Message) error {
 		MATCH (n:AgentDiagnosticLogs)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
-		OR n.status = $error_status
 		WITH n LIMIT 100000
 		DETACH DELETE n`,
 		map[string]interface{}{
-			"time_ms":      diagnosticLogsCleanUpTimeout.Milliseconds(),
-			"old_time_ms":  dbScannedResourceCleanUpTimeout.Milliseconds(),
-			"error_status": utils.SCAN_STATUS_FAILED,
+			"time_ms":     diagnosticLogsCleanUpTimeout.Milliseconds(),
+			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
 		}); err != nil {
 		return err
 	}

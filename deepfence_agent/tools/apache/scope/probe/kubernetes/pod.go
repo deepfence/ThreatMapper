@@ -22,16 +22,18 @@ type Pod interface {
 type pod struct {
 	*apiv1.Pod
 	Meta
-	parents report.Sets
-	Node    *apiv1.Node
+	parents  report.Sets
+	Node     *apiv1.Node
+	HostName string
 }
 
 // NewPod creates a new Pod
-func NewPod(p *apiv1.Pod) Pod {
+func NewPod(p *apiv1.Pod, hostName string) Pod {
 	return &pod{
-		Pod:     p,
-		Meta:    meta{p.ObjectMeta},
-		parents: report.MakeSets(),
+		Pod:      p,
+		Meta:     meta{p.ObjectMeta},
+		parents:  report.MakeSets(),
+		HostName: hostName,
 	}
 }
 
@@ -92,12 +94,12 @@ func (p *pod) GetNode() (report.Metadata, report.Parent) {
 		KubernetesIP:              p.Status.PodIP,
 		KubernetesIsInHostNetwork: p.Pod.Spec.HostNetwork,
 		KubernetesNamespace:       p.Namespace(),
-		HostName:                  p.NodeName(),
+		HostName:                  p.HostName,
 	}
 	parent := report.Parent{
 		CloudProvider:     cloudProviderNodeId,
 		KubernetesCluster: kubernetesClusterId,
-		Host:              p.NodeName(),
+		Host:              p.HostName,
 		Namespace:         kubernetesClusterId + "-" + p.GetNamespace(),
 	}
 	return node, parent
