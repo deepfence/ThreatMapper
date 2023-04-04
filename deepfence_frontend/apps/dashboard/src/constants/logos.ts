@@ -1,3 +1,4 @@
+import { SearchNodeCountResp } from '@/api/generated';
 import LogoAws from '@/assets/logo-aws.svg';
 import LogoAWS from '@/assets/logo-aws.svg';
 import LogoAwsWhite from '@/assets/logo-aws-white.svg';
@@ -11,6 +12,13 @@ import LogoJFrog from '@/assets/logo-jfrog.svg';
 import LogoK8 from '@/assets/logo-k8.svg';
 import LogoLinux from '@/assets/logo-linux.svg';
 import LogoQuay from '@/assets/logo-quay.svg';
+import { CloudIcon } from '@/components/icons/cloud';
+import { ContainerIcon } from '@/components/icons/container';
+import { HostIcon } from '@/components/icons/host';
+import { ImageIcon } from '@/components/icons/image';
+import { K8sIcon } from '@/components/icons/k8s';
+import { NamespaceIcon } from '@/components/icons/namespace';
+import { PodIcon } from '@/components/icons/pod';
 import { Mode } from '@/theme/ThemeContext';
 import { RegistryType } from '@/types/common';
 
@@ -31,11 +39,11 @@ export const getPostureLogo = (accountType: string, mode: Mode) => {
     },
     azure: {
       label: 'Azure',
-      icon: LogoGoogle,
+      icon: LogoAzure,
     },
     gcp: {
       label: 'GCP',
-      icon: LogoAzure,
+      icon: LogoGoogle,
     },
     kubernetes: {
       label: 'Kubernetes',
@@ -86,3 +94,17 @@ export const getRegistryLogo = (registryType: keyof typeof RegistryType, mode: M
     name,
   };
 };
+
+export function getNodesIcon(nodeType: keyof SearchNodeCountResp) {
+  const map: Record<typeof nodeType, () => JSX.Element> = {
+    cloud_provider: CloudIcon,
+    container: ContainerIcon,
+    host: HostIcon,
+    container_image: ImageIcon,
+    kubernetes_cluster: K8sIcon,
+    namespace: NamespaceIcon,
+    pod: PodIcon,
+  };
+
+  return map[nodeType];
+}
