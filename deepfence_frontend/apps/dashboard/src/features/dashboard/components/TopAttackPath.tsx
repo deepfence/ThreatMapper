@@ -1,8 +1,4 @@
-import {
-  HiArrowSmRight,
-  HiOutlineChevronRight,
-  HiSwitchHorizontal,
-} from 'react-icons/hi';
+import { HiOutlineChevronRight, HiSwitchHorizontal } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import { Button, Card, Separator } from 'ui-components';
 

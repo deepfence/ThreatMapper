@@ -1,147 +1,99 @@
 import cx from 'classnames';
-import { IconContext } from 'react-icons';
-import { HiOutlineChevronRight, HiViewGrid } from 'react-icons/hi';
+import { Suspense } from 'react';
+import { HiOutlineChevronRight } from 'react-icons/hi';
+import { useLoaderData, useNavigate } from 'react-router-dom';
 import { Button, Card, Separator } from 'ui-components';
 
-import LogoAws from '@/assets/logo-aws.svg';
-import LogoAwsWhite from '@/assets/logo-aws-white.svg';
-import LogoAzure from '@/assets/logo-azure.svg';
-import LogoDocker from '@/assets/logo-docker.svg';
-import LogoGitlab from '@/assets/logo-gitlab.svg';
-import LogoGoogle from '@/assets/logo-google.svg';
-import LogoHarbor from '@/assets/logo-harbor.svg';
-import LogoJfrog from '@/assets/logo-jfrog.svg';
-import LogoQuay from '@/assets/logo-quay.svg';
-import { Mode, useTheme } from '@/theme/ThemeContext';
+import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
+import { getRegistryLogo } from '@/constants/logos';
+import { DashboardLoaderData } from '@/features/dashboard/pages/Dashboard';
+import { useTheme } from '@/theme/ThemeContext';
+import { RegistryType } from '@/types/common';
+import { abbreviateNumber } from '@/utils/number';
+import { DFAwait } from '@/utils/suspense';
 
-const color_low = '#0080ff';
-
-const getIcon = (theme: Mode): { [k: string]: string } => {
-  return {
-    aws: theme === 'dark' ? LogoAwsWhite : LogoAws,
-    azure: LogoAzure,
-    gcp: LogoGoogle,
-    docker: LogoDocker,
-    harbor: LogoHarbor,
-    jfrog: LogoJfrog,
-    gitlab: LogoGitlab,
-    quay: LogoQuay,
-  };
+const RegistriesSkeleton = () => {
+  return (
+    <div className={cx('flex flex-col gap-1 w-full')}>
+      <div className="bg-gray-200 dark:bg-gray-600 h-6 animate-pulse w-2/3" />
+      <div className="flex items-center gap-x-4">
+        <div className="w-10 h-10 mr-2 bg-gray-200 dark:bg-gray-600 animate-pulse rounded-full" />
+        <div className="flex flex-col">
+          {[1].map((k) => (
+            <div key={k} className="flex flex-col gap-1">
+              <span className="h-7 bg-gray-200 dark:bg-gray-600 animate-pulse w-8" />
+              <span className="h-4 bg-gray-200 dark:bg-gray-600 animate-pulse w-16" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 };
-
-const CONNECTORS = [
-  {
-    label: 'AWS',
-    id: 'aws',
-    percent: '93%',
-    accounts: 6,
-    color: color_low,
-  },
-  {
-    label: 'GCP',
-    id: 'gcp',
-    percent: '93%',
-    accounts: 6,
-    color: color_low,
-  },
-  {
-    label: 'Azure',
-    id: 'azure',
-    percent: '93%',
-    accounts: 6,
-    color: color_low,
-  },
-  {
-    label: 'Quay',
-    id: 'quay',
-    percent: '93%',
-    accounts: 6,
-    color: color_low,
-  },
-  {
-    label: 'Docker',
-    id: 'docker',
-    percent: '93%',
-    accounts: 6,
-    color: color_low,
-  },
-  {
-    label: 'Docker Hub',
-    id: 'docker',
-    percent: '93%',
-    accounts: 6,
-    color: color_low,
-  },
-  {
-    label: 'Harbor',
-    id: 'harbor',
-    percent: '93%',
-    accounts: 6,
-    color: color_low,
-  },
-  {
-    label: 'GitLab',
-    id: 'gitlab',
-    percent: '93%',
-    accounts: 6,
-    color: color_low,
-  },
-  {
-    label: 'JFrog',
-    id: 'jfrog',
-    percent: '93%',
-    accounts: 6,
-    color: color_low,
-  },
-];
 
 export const Registries = () => {
   const { mode } = useTheme();
+  const navigate = useNavigate();
+  const loaderData = useLoaderData() as DashboardLoaderData;
   return (
     <Card className="p-2">
       <div className="flex flex-row items-center gap-2 pb-2">
-        <IconContext.Provider
-          value={{
-            className: 'w-4 h-4 text-blue-700',
-          }}
-        >
-          <HiViewGrid />
-        </IconContext.Provider>
+        <div className="w-5 h-5 text-blue-700 dark:text-blue-300">
+          <RegistryIcon />
+        </div>
         <span className="text-base font-medium">Registries</span>
-        <div className="flex ml-auto">
-          <Button color="normal" size="xs">
-            More&nbsp;
+        <div className="flex ml-auto gap-1">
+          <Button
+            color="normal"
+            size="xs"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/registries');
+            }}
+          >
+            Go to Registries&nbsp;
             <HiOutlineChevronRight />
           </Button>
         </div>
       </div>
       <Separator />
-      <div className="mt-4 grid grid-cols-3 gap-4">
-        {CONNECTORS.map((connector) => {
-          return (
-            <div
-              className={cx('flex flex-col gap-x-6 w-full pl-4 py-4')}
-              key={connector.label}
-            >
-              <h4 className="text-md text-gray-500 dark:text-gray-400">
-                {connector.label}
-              </h4>
-              <div className="flex items-center gap-x-4">
-                <div className="p-4 pl-0 flex w-14 h-14">
-                  <img src={getIcon(mode)[connector.id]} alt="Deefence Logo" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">
-                    {connector.accounts}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    Registries
-                  </span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+      <div className="p-4 grid grid-cols-3 gap-x-4 gap-y-6">
+        <Suspense
+          fallback={[1, 2, 3, 4, 5, 6, 7, 8, 9].map((idx) => {
+            return <RegistriesSkeleton key={idx} />;
+          })}
+        >
+          <DFAwait resolve={loaderData.registries}>
+            {(registries: DashboardLoaderData['registries']) => {
+              return registries.map((registry) => {
+                const { icon, name } = getRegistryLogo(
+                  registry.type as unknown as keyof typeof RegistryType,
+                  mode,
+                );
+                return (
+                  <div className={cx('flex flex-col w-full')} key={registry.type}>
+                    <h4 className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                      {name}
+                    </h4>
+                    <div className="flex items-center gap-x-4">
+                      <div className="p-2 flex w-14 h-14">
+                        <img src={icon} alt="Registry logo" className="w-full" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">
+                          {abbreviateNumber(registry.registries ?? 0)}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          Registries
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              });
+            }}
+          </DFAwait>
+        </Suspense>
       </div>
     </Card>
   );

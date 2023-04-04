@@ -11,6 +11,12 @@ import {
 } from 'react-icons/hi';
 import { Card } from 'ui-components';
 
+import { getCloudNodesApiClient, getRegistriesApiClient } from '@/api/api';
+import {
+  ApiDocsBadRequestResponse,
+  ModelCloudNodeProvidersListResp,
+  ModelSummary,
+} from '@/api/generated';
 import { Posture } from '@/features/dashboard/components/Posture';
 import { Registries } from '@/features/dashboard/components/Registries';
 import { RuntimeIncidents } from '@/features/dashboard/components/RuntimeIncidents';
@@ -18,6 +24,77 @@ import { TopAttackPaths } from '@/features/dashboard/components/TopAttackPath';
 import { TopRisksMalware } from '@/features/dashboard/components/TopRisksMalware';
 import { TopRisksSecret } from '@/features/dashboard/components/TopRisksSecret';
 import { TopRisksVulnerability } from '@/features/dashboard/components/TopRisksVulnerability';
+import { RegistryType } from '@/types/common';
+import { ApiError, makeRequest } from '@/utils/api';
+import { typedDefer, TypedDeferredData } from '@/utils/router';
+
+async function getCloudNodeProviders(): Promise<ModelCloudNodeProvidersListResp> {
+  const result = await makeRequest({
+    apiFunction: getCloudNodesApiClient().listCloudProviders,
+    apiArgs: [],
+  });
+
+  if (ApiError.isApiError(result)) {
+    throw result.value();
+  }
+
+  if (!result.providers) {
+    result.providers = [];
+  }
+  return result;
+}
+interface RegistryResponseType extends ModelSummary {
+  type: string;
+}
+
+async function getRegistriesSummary(): Promise<RegistryResponseType[]> {
+  const result = await makeRequest({
+    apiFunction: getRegistriesApiClient().getRegistriesSummary,
+    apiArgs: [],
+    errorHandler: async (r) => {
+      const error = new ApiError<{ message?: string }>({});
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message,
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(result)) {
+    throw result.value();
+  }
+  if (result === null) {
+    // TODO: handle this case with 404 status maybe
+    throw new Error('Error getting registries');
+  }
+  type Keys = keyof typeof RegistryType;
+  type ReponseType = { [K in Keys]: RegistryResponseType };
+  const response: RegistryResponseType[] = [];
+  for (const [key, value] of Object.entries(result as ReponseType)) {
+    response.push({
+      registries: value.registries,
+      images: value.images,
+      tags: value.tags,
+      type: key,
+    });
+  }
+
+  return response;
+}
+
+export type DashboardLoaderData = {
+  cloudProviders: ModelCloudNodeProvidersListResp;
+  registries: RegistryResponseType[];
+};
+
+const loader = async (): Promise<TypedDeferredData<DashboardLoaderData>> => {
+  return typedDefer({
+    cloudProviders: getCloudNodeProviders(),
+    registries: getRegistriesSummary(),
+  });
+};
 
 const COUNTS_DATA = [
   {
@@ -119,7 +196,7 @@ const COUNTS_DATA = [
     ),
   },
 ];
-export const Dashboard = () => {
+const Dashboard = () => {
   return (
     <div className="overflow-auto">
       <div className="grid grid-cols-[3fr_1fr] p-2 gap-2">
@@ -159,4 +236,9 @@ export const Dashboard = () => {
       </div>
     </div>
   );
+};
+
+export const module = {
+  element: <Dashboard />,
+  loader,
 };

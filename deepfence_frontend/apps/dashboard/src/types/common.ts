@@ -50,3 +50,15 @@ export enum ScanStatusEnum {
   error = 'ERROR',
   neverScanned = 'NEVER_SCANNED',
 }
+
+export const RegistryType = {
+  azure_container_registry: 'azure_container_registry',
+  docker_hub: 'docker_hub',
+  docker_private_registry: 'docker_private_registry',
+  ecr: 'ecr',
+  gitlab: 'gitlab',
+  google_container_registry: 'google_container_registry',
+  harbor: 'harbor',
+  jfrog_container_registry: 'jfrog_container_registry',
+  quay: 'quay',
+} as const;

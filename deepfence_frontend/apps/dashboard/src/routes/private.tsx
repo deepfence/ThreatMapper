@@ -14,7 +14,7 @@ import { searchContainerImagesApiLoader } from '@/features/common/data-component
 import { searchContainersApiLoader } from '@/features/common/data-component/searchContainersApiLoader';
 import { searchHostsApiLoader } from '@/features/common/data-component/searchHostsApiLoader';
 import { RootLayout } from '@/features/common/RootLayout';
-import { Dashboard } from '@/features/dashboard/pages/Dashboard';
+import { module as dashboard } from '@/features/dashboard/pages/Dashboard';
 import { module as integrations } from '@/features/integrations/pages/Integrations';
 import { module as malware } from '@/features/malwares/pages/Malware';
 import { module as malwareDetails } from '@/features/malwares/pages/MalwareDetailModal';
@@ -164,7 +164,7 @@ export const privateRoutes: CustomRouteObject[] = [
     children: [
       {
         path: 'dashboard',
-        element: <Dashboard />,
+        ...dashboard,
         meta: { title: 'Dashboard' },
       },
       {

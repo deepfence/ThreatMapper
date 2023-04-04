@@ -22,9 +22,9 @@ import LogoLinux from '@/assets/logo-linux.svg';
 import LogoQuay from '@/assets/logo-quay.svg';
 import LogoRegistryConnector from '@/assets/logo-registry-connector.svg';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
-import { RegistryType } from '@/features/common/data-component/RegistryConnectorForm';
 import { connectorLayoutTabs } from '@/features/onboard/layouts/ConnectorsLayout';
 import { useTheme } from '@/theme/ThemeContext';
+import { RegistryType } from '@/types/common';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 interface CardConnectProps {
