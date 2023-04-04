@@ -203,6 +203,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/cloud-compliance/scans", dfHandler.SearchCloudComplianceScans)
 
 				r.Route("/count", func(r chi.Router) {
+					r.Get("/nodes", dfHandler.NodeCount)
 					r.Post("/hosts", dfHandler.SearchHostsCount)
 					r.Post("/containers", dfHandler.SearchContainersCount)
 					r.Post("/images", dfHandler.SearchContainerImagesCount)
@@ -348,6 +349,15 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				})
 				r.Get("/diagnostic-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.GetDiagnosticLogs))
 			})
+
+			// Reports
+			r.Route("/reports", func(r chi.Router) {
+				r.Get("/", dfHandler.AuthHandler(ResourceReport, PermissionRead, dfHandler.ListReports))
+				r.Get("/{report_id}", dfHandler.AuthHandler(ResourceReport, PermissionRead, dfHandler.GetReport))
+				r.Post("/", dfHandler.AuthHandler(ResourceReport, PermissionGenerate, dfHandler.GenerateReport))
+				r.Delete("/{report_id}", dfHandler.AuthHandler(ResourceReport, PermissionDelete, dfHandler.DeleteReport))
+			})
+
 			// Integration
 			r.Route("/integration", func(r chi.Router) {
 				r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddIntegration))
@@ -358,13 +368,6 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				})
 			})
 
-			// Report
-			r.Route("/report", func(r chi.Router) {
-				r.Get("/", dfHandler.AuthHandler(ResourceReport, PermissionRead, doNothingHandler))
-				r.Get("/{id}", dfHandler.AuthHandler(ResourceReport, PermissionRead, doNothingHandler))
-				r.Post("/", dfHandler.AuthHandler(ResourceReport, PermissionGenerate, doNothingHandler))
-				r.Delete("/{id}", dfHandler.AuthHandler(ResourceReport, PermissionDelete, doNothingHandler))
-			})
 		})
 	})
 

@@ -32,7 +32,7 @@ func GetAgentActions(ctx context.Context, nodeId string, work_num_to_extract int
 		actions = append(actions, scan_actions...)
 	}
 
-	diagnosticLogActions, scan_err := ExtractAgentDiagnosticLogRequests(ctx, nodeId, work_num_to_extract)
+	diagnosticLogActions, scan_err := ExtractAgentDiagnosticLogRequests(ctx, nodeId, controls.Host, work_num_to_extract)
 	work_num_to_extract -= len(diagnosticLogActions)
 	if scan_err == nil {
 		actions = append(actions, diagnosticLogActions...)
@@ -100,7 +100,7 @@ func GetPendingAgentScans(ctx context.Context, nodeId string) ([]controls.Action
 
 }
 
-func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeId string, max_work int) ([]controls.Action, error) {
+func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeId string, nodeType controls.ScanResource, max_work int) ([]controls.Action, error) {
 	res := []controls.Action{}
 	if len(nodeId) == 0 {
 		return res, errors.New("Missing node_id")
@@ -122,7 +122,7 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeId string, max_w
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n{node_id:$id})
-		WHERE (n:Node OR n:KubernetesCluster) 
+		WHERE (n:`+controls.ResourceTypeToNeo4j(nodeType)+`) 
 		AND s.status = '`+utils.SCAN_STATUS_STARTING+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work

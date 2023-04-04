@@ -155,7 +155,7 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		if target == "internet" {
 			target = "out-the-internet"
 		}
-		log.Info().Msgf("%v -> %v\n", source, target)
+		//log.Info().Msgf("%v -> %v\n", source, target)
 		edges[source+target] = detailed.ConnectionSummary{Source: source, Target: target}
 	}
 

@@ -696,7 +696,7 @@ func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters
 	for _, kubs := range tmp {
 		res.Kubernetes[root_node_id] = append(res.Kubernetes[root_node_id], kubs...)
 	}
-	res.Hosts, err = nc.getHosts(tx, []string{}, []string{}, kubernetes_filter, mo.None[reporters.FieldsFilters]())
+	res.Hosts, err = nc.getHosts(tx, nil, []string{}, kubernetes_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}

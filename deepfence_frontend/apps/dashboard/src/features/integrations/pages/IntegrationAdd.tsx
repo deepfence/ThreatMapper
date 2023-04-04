@@ -16,8 +16,7 @@ type ActionReturnType = {
 };
 
 type LoaderDataType = {
-  message?: string;
-  data?: ModelIntegrationListResp[];
+  data: ReturnType<typeof getIntegrations>;
 };
 
 export const CLOUD_TRAIL_ALERT = 'CloudTrail Alert';
@@ -36,7 +35,10 @@ const API_SCAN_TYPE_MAP: {
   [ScanTypeEnum.ComplianceScan]: 'compliance',
 };
 
-const getIntegrations = async (): Promise<LoaderDataType> => {
+const getIntegrations = async (): Promise<{
+  message?: string;
+  data?: ModelIntegrationListResp[];
+}> => {
   const integrationPromise = await makeRequest({
     apiFunction: getIntegrationApiClient().listIntegration,
     apiArgs: [],

@@ -100,7 +100,7 @@ func setClusterAgentControls(k8sClusterName string) {
 		func(req ctl.SendAgentDiagnosticLogsRequest) error {
 			log.Info("Generate Cluster Agent Diagnostic Logs")
 			return controls.SendAgentDiagnosticLogs(req,
-				[]string{"/var/log/compliance/compliance-status"},
+				[]string{"/var/log/supervisor", "/var/log/compliance/compliance-status"},
 				[]string{})
 		})
 	if err != nil {

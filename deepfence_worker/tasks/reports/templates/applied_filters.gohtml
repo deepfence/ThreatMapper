@@ -1,0 +1,21 @@
+{{define "applied-filters"}}
+<h4>Applied filters</h4>
+<div class="summary-report-table" style="width: 100%;">
+    <table style="table-layout: fixed; word-break: break-word;">
+        <tr>
+            <th>Scan Type</th>
+            <th>Node Type</th>
+            {{ if (or .NodeWiseData.ComplianceData .NodeWiseData.CloudComplianceData )}}
+            <th>Check Type</th>
+            {{ else }}
+            <th>Severity</th>
+            {{ end }}
+        </tr>
+        <tr>
+            <th> {{ .AppliedFilters.ScanType }}</th>
+            <th> {{ .AppliedFilters.NodeType }}</th>
+            <th> {{ .AppliedFilters.SeverityOrCheckType }}</th>
+        </tr>
+    </table>
+</div>
+{{end}}
