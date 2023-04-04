@@ -166,6 +166,10 @@ export const privateRoutes: CustomRouteObject[] = [
     errorElement: <ErrorComponent />,
     children: [
       {
+        index: true,
+        loader: () => redirect('/dashboard', 302),
+      },
+      {
         path: 'dashboard',
         ...dashboard,
         meta: { title: 'Dashboard' },

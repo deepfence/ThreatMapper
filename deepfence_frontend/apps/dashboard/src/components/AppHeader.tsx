@@ -19,6 +19,7 @@ import {
 import NavIconDark from '@/assets/icon-nav-dark.svg';
 import NavIconLight from '@/assets/icon-nav-light.svg';
 import LogoDeepfenceDarkBlue from '@/assets/logo-deepfence-dark-blue.svg';
+import { DFLink } from '@/components/DFLink';
 import { useTheme } from '@/theme/ThemeContext';
 
 export interface DashboardHeaderProps {
@@ -55,13 +56,15 @@ export function AppHeader({
               height="24"
             />
           </button>
-          <img
-            src={LogoDeepfenceDarkBlue}
-            alt="Deefence Logo"
-            width="40"
-            height="40"
-            className="m-auto mr-6"
-          />
+          <DFLink to="/" className="flex items-center">
+            <img
+              src={LogoDeepfenceDarkBlue}
+              alt="Deefence Logo"
+              width="40"
+              height="40"
+              className="m-auto mr-6"
+            />
+          </DFLink>
         </div>
         <div className="flex items-center gap-4">
           <IconContext.Provider
