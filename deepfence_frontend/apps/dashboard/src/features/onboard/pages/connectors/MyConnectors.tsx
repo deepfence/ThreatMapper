@@ -82,6 +82,7 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
             match_filter: {
               filter_in: {},
             },
+            compare_filter: null,
           },
           host_filter: [],
           kubernetes_filter: [],
@@ -103,6 +104,7 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
             match_filter: {
               filter_in: {},
             },
+            compare_filter: null,
           },
           host_filter: [],
           kubernetes_filter: [],

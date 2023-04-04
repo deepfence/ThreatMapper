@@ -47,6 +47,7 @@ async function getScans(searchParams: URLSearchParams): Promise<{
         order_filter: {
           order_fields: [],
         },
+        compare_filter: null,
       },
       in_field_filter: null,
       window: {
@@ -72,6 +73,7 @@ async function getScans(searchParams: URLSearchParams): Promise<{
             },
           ],
         },
+        compare_filter: null,
       },
       in_field_filter: null,
       window: {

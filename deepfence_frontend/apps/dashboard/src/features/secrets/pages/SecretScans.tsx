@@ -206,6 +206,7 @@ async function getScans(
         contains_filter: { filter_in: { ...nodeFilters } },
         order_filter: { order_fields: [] },
         match_filter: { filter_in: {} },
+        compare_filter: null,
       },
       in_field_filter: null,
       window: {
@@ -218,6 +219,7 @@ async function getScans(
         contains_filter: { filter_in: { ...scanFilters } },
         order_filter: { order_fields: [] },
         match_filter: { filter_in: { ...languageFilters } },
+        compare_filter: null,
       },
       in_field_filter: null,
       window: {

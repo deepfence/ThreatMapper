@@ -9,6 +9,7 @@ import {
   Configuration,
   ControlsApi,
   DiagnosisApi,
+  IntegrationApi,
   LookupApi,
   MalwareScanApi,
   RegistryApi,
@@ -231,5 +232,15 @@ export function getDiagnosisApiClient() {
     generateConsoleDiagnosticLogs:
       diagnosisApi.generateConsoleDiagnosticLogs.bind(diagnosisApi),
     getDiagnosticLogs: diagnosisApi.getDiagnosticLogs.bind(diagnosisApi),
+  };
+}
+
+export function getIntegrationApiClient() {
+  const integrationApi = new IntegrationApi(configuration);
+
+  return {
+    addIntegration: integrationApi.addIntegration.bind(integrationApi),
+    listIntegration: integrationApi.listIntegration.bind(integrationApi),
+    deleteIntegration: integrationApi.deleteIntegration.bind(integrationApi),
   };
 }

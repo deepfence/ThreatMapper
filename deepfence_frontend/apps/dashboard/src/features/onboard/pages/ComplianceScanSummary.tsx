@@ -68,6 +68,7 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
               match_filter: {
                 filter_in: {},
               },
+              compare_filter: null,
             },
             scan_id: scanId,
             window: {
@@ -181,6 +182,7 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
               match_filter: {
                 filter_in: {},
               },
+              compare_filter: null,
             },
             scan_id: scanId,
             window: {
