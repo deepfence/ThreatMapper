@@ -65,7 +65,7 @@ func CleanUpDB(msg *message.Message) error {
 		MATCH (n:Node)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND exists((n) <-[:SCANNED]-())
-		AND n.node_id NOT IN ["in-the-internet", "out-the-internet"]
+		AND NOT n.node_id IN ["in-the-internet", "out-the-internet"]
 		WITH n LIMIT 100000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
