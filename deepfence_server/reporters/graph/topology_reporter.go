@@ -45,6 +45,7 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 	r, err := tx.Run(`
 	MATCH (n:Node) -[r:CONNECTS]-> (m:Node)
 	WHERE n.active = true
+	AND   m.active = true
 	WITH CASE WHEN coalesce(n.kubernetes_cluster_id, '') <> '' THEN n.kubernetes_cluster_id ELSE n.cloud_region END AS left_region, n, m, r, CASE WHEN coalesce(m.kubernetes_cluster_id, '') <> '' THEN m.kubernetes_cluster_id ELSE m.cloud_region END AS right_region
 	RETURN n.cloud_provider, left_region, n.node_id, r.left_pid, m.cloud_provider, right_region, m.node_id, r.right_pid`, nil)
 

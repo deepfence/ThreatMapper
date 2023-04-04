@@ -65,6 +65,7 @@ func CleanUpDB(msg *message.Message) error {
 		MATCH (n:Node)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND exists((n) <-[:SCANNED]-())
+		AND n.node_id NOT IN ["in-the-internet", "out-the-internet"]
 		WITH n LIMIT 100000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
@@ -354,8 +355,8 @@ func ApplyGraphDBStartup(msg *message.Message) error {
 	session.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:Bulk%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_CLOUD_COMPLIANCE_SCAN), map[string]interface{}{})
 	session.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:Bulk%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_MALWARE_SCAN), map[string]interface{}{})
 
-	session.Run("MERGE (n:Node{node_id:'in-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
-	session.Run("MERGE (n:Node{node_id:'out-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
+	session.Run("MERGE (n:Node{node_id:'in-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0, active: true})", map[string]interface{}{})
+	session.Run("MERGE (n:Node{node_id:'out-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0, active: true})", map[string]interface{}{})
 	session.Run("MERGE (n:Node{node_id:'deepfence-console-cron', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
 
 	// Indexes for fast searching & ordering
