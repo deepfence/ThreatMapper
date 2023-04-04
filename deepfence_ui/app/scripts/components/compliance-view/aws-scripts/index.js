@@ -162,15 +162,21 @@ export const AwsTerraFormScript = withRouter(props => {
                   }}
                 >
                   <pre style={{ color: 'white' }}>{`provider "aws" {
-region = "<AWS-REGION>; eg. us-east-1"
+  region = "<AWS-REGION>; eg. us-east-1"
 }
 
-module "cloud-scanner_example_single-account-ecs" {
-source                        = "deepfence/cloud-scanner/aws//examples/single-account-ecs"
-version                       = "0.1.0"
-mgmt-console-url              = "<Console URL> eg. XXX.XXX.XX.XXX"
-mgmt-console-port             = "443"
-deepfence-key                 = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+module "deepfence-cloud-scanner_example_single-account" {
+  source                        = "deepfence/cloud-scanner/aws//examples/single-account-ecs"
+  version                       = "0.3.0"
+  mgmt-console-url              = "<Console URL> eg. XXX.XXX.XX.XXX"
+  mgmt-console-port             = "443"
+  deepfence-key                 = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+  name                          = "deepfence-cloud-scanner"
+}
+
+variable "image" {
+  type        = string
+  default     = "quay.io/deepfenceio/cloud-scanner:1.5.0"
 }
 `}</pre>
                 </div>

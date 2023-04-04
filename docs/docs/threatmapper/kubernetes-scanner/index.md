@@ -21,6 +21,7 @@ helm show readme deepfence-k8s-scanner/deepfence-k8s-scanner
 
 ```shell
 helm install deepfence-k8s-scanner deepfence-k8s-scanner/deepfence-k8s-scanner \
+    --set image.tag="1.5.0" \
     --set managementConsoleUrl="40.40.40.40" \
     --set deepfenceKey="xxxxx" \
     --set clusterName="prod-cluster" \

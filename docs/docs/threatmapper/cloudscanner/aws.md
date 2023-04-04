@@ -10,31 +10,51 @@ title: AWS
 
 Log in to the AWS management console account and open the following url link to deploy Cloud Scanner using CloudFormation in `us-east-1` region.
 
-[https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner-)
+[Deploy across multiple AWS accounts or AWS organization](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:1.5.0)
 
 (Template URL: https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template)
 
 ### Single Account Deployment
 
-Open one of the following url links to deploy Cloud Scanner using CloudFormation in `us-east-1` region.
+Log in to the AWS management console account and open the following url link to deploy Cloud Scanner using CloudFormation in `us-east-1` region.
 
-[Deploy across multiple AWS accounts or AWS organization](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacksets/create)
-
-[Deploy on a single AWS account](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner)
+[Deploy on a single AWS account](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:1.5.0)
 
 (Template URL: https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template)
 
 ## Terraform
 
-https://registry.terraform.io/modules/deepfence/cloud-scanner/aws/latest/examples/single-account-ecs#usage
-
 Cloud Scanner is deployed as a task within your AWS infrastructure. The ThreatMapper console provides a simple terraform script to perform the deployment.
 
-| ![Compliance Install - AWS](../img/compliance-install-aws.jpg) |
-| :--: |
-| Compliance Install - AWS |
-
 You need to configure Terraform with the appropriate resources and inputs for your particular scenario, and you will need to provide the IP address or DNS name for the ThreatMapper management console and an API key.
+
+Copy and paste the following into a new file cloud-scanner.tf. Edit the fields: region, mgmt-console-url and deepfence-key.
+```shell
+provider "aws" {
+  region = "<AWS-REGION>; eg. us-east-1"
+}
+
+module "deepfence-cloud-scanner_example_single-account" {
+  source                        = "deepfence/cloud-scanner/aws//examples/single-account-ecs"
+  version                       = "0.3.0"
+  mgmt-console-url              = "<Console URL> eg. XXX.XXX.XX.XXX"
+  mgmt-console-port             = "443"
+  deepfence-key                 = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+  name                          = "deepfence-cloud-scanner"
+}
+
+variable "image" {
+  type        = string
+  default     = "quay.io/deepfenceio/cloud-scanner:1.5.0"
+}
+```
+
+Then run
+```shell
+terraform init
+terraform plan
+terraform apply
+```
 
 For full details, refer to the `examples` provided in the GitHub repository: https://github.com/deepfence/terraform-aws-cloud-scanner
 
