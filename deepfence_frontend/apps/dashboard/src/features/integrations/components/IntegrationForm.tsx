@@ -92,16 +92,24 @@ const isArchivalIntegration = (integrationType: string) => {
   return integrationType && integrationType === IntegrationType.s3;
 };
 
-const AdvancedFilters = ({ notificationType }: { notificationType: ScanTypeEnum }) => {
+const API_SCAN_TYPE_MAP: {
+  [key: string]: ScanTypeEnum;
+} = {
+  Vulnerability: ScanTypeEnum.VulnerabilityScan,
+  Secret: ScanTypeEnum.SecretScan,
+  Malware: ScanTypeEnum.MalwareScan,
+  Compliance: ScanTypeEnum.ComplianceScan,
+};
+const AdvancedFilters = ({ notificationType }: { notificationType: string }) => {
   // host
   const { hosts, status: listHostStatus } = useGetHostsList({
-    scanType: notificationType,
+    scanType: API_SCAN_TYPE_MAP[notificationType],
   });
   const [selectedHosts, setSelectedHosts] = useState([]);
 
   // images
   const { containerImages, status: listImagesStatus } = useGetContainerImagesList({
-    scanType: notificationType,
+    scanType: API_SCAN_TYPE_MAP[notificationType],
   });
   const [selectedImages, setSelectedImages] = useState([]);
 
@@ -260,10 +268,10 @@ const NotificationType = () => {
         placeholder="Select notification type"
         sizing="xs"
       >
-        <SelectItem value={ScanTypeEnum.VulnerabilityScan}>Vulnerability</SelectItem>
-        <SelectItem value={ScanTypeEnum.SecretScan}>Secret</SelectItem>
-        <SelectItem value={ScanTypeEnum.MalwareScan}>Malware</SelectItem>
-        <SelectItem value={ScanTypeEnum.ComplianceScan}>Compliance</SelectItem>
+        <SelectItem value={'Vulnerability'}>Vulnerability</SelectItem>
+        <SelectItem value={'Secret'}>Secret</SelectItem>
+        <SelectItem value={'Malware'}>Malware</SelectItem>
+        <SelectItem value={'Compliance'}>Compliance</SelectItem>
 
         {CloudTrailIntegration.includes(integrationType) && (
           <SelectItem value={CLOUD_TRAIL_ALERT}>CloudTrail Alert</SelectItem>
@@ -279,7 +287,7 @@ const NotificationType = () => {
       !isUserActivityNotification(notificationType) &&
       !isTicketingIntegration(integrationType) &&
       !isArchivalIntegration(integrationType) ? (
-        <AdvancedFilters notificationType={notificationType as ScanTypeEnum} />
+        <AdvancedFilters notificationType={notificationType} />
       ) : null}
 
       {isCloudTrailNotification(notificationType) && <>Add Cloud trails here</>}

@@ -26,14 +26,6 @@ export enum ActionEnumType {
   DELETE = 'delete',
   ADD = 'add',
 }
-const API_SCAN_TYPE_MAP: {
-  [key: string]: string;
-} = {
-  [ScanTypeEnum.VulnerabilityScan]: 'vulnerability',
-  [ScanTypeEnum.SecretScan]: 'secret',
-  [ScanTypeEnum.MalwareScan]: 'malware',
-  [ScanTypeEnum.ComplianceScan]: 'compliance',
-};
 
 const getIntegrations = async (): Promise<{
   message?: string;
@@ -51,12 +43,7 @@ const getIntegrations = async (): Promise<{
   }
 
   return {
-    data: integrationPromise.map((integration) => {
-      return {
-        ...integration,
-        ...integration.config,
-      };
-    }),
+    data: integrationPromise,
   };
 };
 
@@ -127,7 +114,7 @@ const action = async ({
     } else if (_notificationType === 'User Activities') {
       _notificationType = 'user_activities';
     } else {
-      _notificationType = API_SCAN_TYPE_MAP[_notificationType];
+      _notificationType = _notificationType.toLowerCase();
     }
 
     // filters

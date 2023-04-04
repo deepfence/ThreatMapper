@@ -1,10 +1,11 @@
 import cx from 'classnames';
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   HiArchive,
   HiChevronRight,
   HiDotsVertical,
+  HiDownload,
   HiOutlineExclamationCircle,
 } from 'react-icons/hi';
 import {
@@ -36,7 +37,7 @@ import {
 } from 'ui-components';
 
 import { getReportsApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse } from '@/api/generated';
+import { ApiDocsBadRequestResponse, ModelCloudNodeAccountInfo } from '@/api/generated';
 import { ModelExportReport } from '@/api/generated/models/ModelExportReport';
 import { DFLink } from '@/components/DFLink';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
@@ -45,10 +46,15 @@ import { useGetClustersList } from '@/features/common/data-component/searchClust
 import { useGetContainerImagesList } from '@/features/common/data-component/searchContainerImagesApiLoader';
 import { useGetContainersList } from '@/features/common/data-component/searchContainersApiLoader';
 import { useGetHostsList } from '@/features/common/data-component/searchHostsApiLoader';
+import {
+  getAccounts,
+  getNodeTypeByProviderName,
+} from '@/features/postures/pages/Accounts';
 import { ActionReturnType } from '@/features/registries/components/RegistryAccountsTable';
 import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
+import { download } from '@/utils/download';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
@@ -66,11 +72,13 @@ const DURATION: { [k: string]: number } = {
   'All Documents': 99999,
 };
 type LoaderDataType = {
-  message?: string;
-  data?: ModelExportReport[];
+  data: ReturnType<typeof getReportList>;
 };
 
-const getReportList = async (): Promise<LoaderDataType> => {
+const getReportList = async (): Promise<{
+  message?: string;
+  data?: ModelExportReport[];
+}> => {
   const reportsPromise = await makeRequest({
     apiFunction: getReportsApiClient().listReports,
     apiArgs: [],
@@ -279,6 +287,19 @@ const ActionDropdown = ({
             <DropdownItem
               className="text-sm"
               onClick={() => {
+                download(data.url ?? '');
+              }}
+            >
+              <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
+                <IconContext.Provider value={{ className: '' }}>
+                  <HiDownload />
+                </IconContext.Provider>
+                Download
+              </span>
+            </DropdownItem>
+            <DropdownItem
+              className="text-sm"
+              onClick={() => {
                 setShowDeleteDialog(true);
               }}
             >
@@ -384,7 +405,7 @@ export const ReportTable = () => {
     <>
       <Suspense fallback={<TableSkeleton columns={4} rows={5} size={'sm'} />}>
         <DFAwait resolve={loaderData.data}>
-          {(resolvedData: LoaderDataType) => {
+          {(resolvedData: { message?: string; data?: ModelExportReport[] }) => {
             const { data = [], message } = resolvedData;
 
             return (
@@ -403,7 +424,7 @@ export const ReportTable = () => {
   );
 };
 
-const getProviderNodeList = (nodeType: string) => {
+const getBenchmarkList = (nodeType: string) => {
   switch (nodeType) {
     case 'AWS':
       return complianceType.aws;
@@ -418,8 +439,7 @@ const getProviderNodeList = (nodeType: string) => {
       return [];
   }
 };
-const isCloudAccount = (provider: string) =>
-  ['AWS', 'Google', 'Azure'].includes(provider);
+const isCloudAccount = (provider: string) => ['AWS', 'GCP', 'Azure'].includes(provider);
 
 const AdvancedFilter = ({
   resourceType,
@@ -444,14 +464,28 @@ const AdvancedFilter = ({
     scanType: ScanTypeEnum.SecretScan,
   });
   const { clusters, status: listClusterStatus } = useGetClustersList();
+  const [cloudAccounts, setCloudAccounts] = useState<ModelCloudNodeAccountInfo[]>([]);
+  const [selectedCloudAccounts, setSelectedCloudAccounts] = useState([]);
 
   const [maskedType, setMaskedType] = useState([]);
 
-  console.log('ppp', provider);
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      const data = await getAccounts(
+        getNodeTypeByProviderName(provider.toLowerCase()),
+        new URLSearchParams(),
+      );
+      setCloudAccounts(data.accounts);
+    };
+    if (isCloudAccount(provider)) {
+      fetchAccounts();
+    }
+  }, [resourceType, provider]);
+
   return (
     <>
       {resourceType && provider ? (
-        <div className="text-gray-700 dark:text-gray-400 text-xs uppercase font-semibold">
+        <div className="text-gray-700 dark:text-gray-400 text-xs uppercase font-bold pt-4">
           Advanced Filter(Optional)
         </div>
       ) : null}
@@ -488,7 +522,27 @@ const AdvancedFilter = ({
             )}
           </div>
         </>
-      ) : null}
+      ) : (
+        <Select
+          value={selectedCloudAccounts}
+          name="nodeIds[]"
+          onChange={(value) => {
+            setSelectedCloudAccounts(value);
+          }}
+          placeholder="Select accounts"
+          label="Select Account (Optional)"
+          sizing="xs"
+          className="mt-2"
+        >
+          {cloudAccounts.map((account) => {
+            return (
+              <SelectItem value={account.node_id} key={account.node_id}>
+                {account.node_name}
+              </SelectItem>
+            );
+          })}
+        </Select>
+      )}
 
       {resourceType &&
       provider &&
@@ -692,7 +746,7 @@ const ComplianceForm = ({
             label="Select Check Type"
             sizing="xs"
           >
-            {getProviderNodeList(provider)?.map((provider) => {
+            {getBenchmarkList(provider)?.map((provider) => {
               return (
                 <SelectItem value={provider} key={provider}>
                   {provider}
