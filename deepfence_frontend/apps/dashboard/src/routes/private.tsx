@@ -60,8 +60,10 @@ import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
+import { module as changePassword } from '@/features/settings/pages/ChangePassword';
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
 import { module as settings } from '@/features/settings/pages/Settings';
+import { module as userAdd } from '@/features/settings/pages/UserAdd';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
@@ -401,6 +403,16 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'user-management',
             ...userManagement,
             meta: { title: 'User Management' },
+          },
+          {
+            path: 'user-management/edit/:userId',
+            ...userAdd,
+            meta: { title: 'Edit User Account' },
+          },
+          {
+            path: 'user-management/change-password',
+            ...changePassword,
+            meta: { title: 'Change Password For Current User' },
           },
         ],
       },
