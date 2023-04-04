@@ -13,12 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelComputeMetrics } from './ModelComputeMetrics';
-import {
-    ModelComputeMetricsFromJSON,
-    ModelComputeMetricsFromJSONTyped,
-    ModelComputeMetricsToJSON,
-} from './ModelComputeMetrics';
 import type { ModelContainer } from './ModelContainer';
 import {
     ModelContainerFromJSON,
@@ -49,13 +43,7 @@ export interface ModelPod {
      * @type {string}
      * @memberof ModelPod
      */
-    host_node_id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelPod
-     */
-    kubernetes_name: string;
+    host_name: string;
     /**
      * 
      * @type {string}
@@ -68,12 +56,6 @@ export interface ModelPod {
      * @memberof ModelPod
      */
     metadata: { [key: string]: any; };
-    /**
-     * 
-     * @type {ModelComputeMetrics}
-     * @memberof ModelPod
-     */
-    metrics: ModelComputeMetrics;
     /**
      * 
      * @type {string}
@@ -100,11 +82,9 @@ export interface ModelPod {
 export function instanceOfModelPod(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "containers" in value;
-    isInstance = isInstance && "host_node_id" in value;
-    isInstance = isInstance && "kubernetes_name" in value;
+    isInstance = isInstance && "host_name" in value;
     isInstance = isInstance && "kubernetes_namespace" in value;
     isInstance = isInstance && "metadata" in value;
-    isInstance = isInstance && "metrics" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "processes" in value;
@@ -123,11 +103,9 @@ export function ModelPodFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     return {
         
         'containers': (json['containers'] === null ? null : (json['containers'] as Array<any>).map(ModelContainerFromJSON)),
-        'host_node_id': json['host_node_id'],
-        'kubernetes_name': json['kubernetes_name'],
+        'host_name': json['host_name'],
         'kubernetes_namespace': json['kubernetes_namespace'],
         'metadata': json['metadata'],
-        'metrics': ModelComputeMetricsFromJSON(json['metrics']),
         'node_id': json['node_id'],
         'node_name': json['node_name'],
         'processes': (json['processes'] === null ? null : (json['processes'] as Array<any>).map(ModelProcessFromJSON)),
@@ -144,11 +122,9 @@ export function ModelPodToJSON(value?: ModelPod | null): any {
     return {
         
         'containers': (value.containers === null ? null : (value.containers as Array<any>).map(ModelContainerToJSON)),
-        'host_node_id': value.host_node_id,
-        'kubernetes_name': value.kubernetes_name,
+        'host_name': value.host_name,
         'kubernetes_namespace': value.kubernetes_namespace,
         'metadata': value.metadata,
-        'metrics': ModelComputeMetricsToJSON(value.metrics),
         'node_id': value.node_id,
         'node_name': value.node_name,
         'processes': (value.processes === null ? null : (value.processes as Array<any>).map(ModelProcessToJSON)),

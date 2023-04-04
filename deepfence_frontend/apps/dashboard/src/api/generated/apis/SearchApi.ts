@@ -28,6 +28,7 @@ import type {
   ModelScanInfo,
   ModelSecret,
   ModelVulnerability,
+  SearchNodeCountResp,
   SearchSearchCountResp,
   SearchSearchNodeReq,
   SearchSearchScanReq,
@@ -59,6 +60,8 @@ import {
     ModelSecretToJSON,
     ModelVulnerabilityFromJSON,
     ModelVulnerabilityToJSON,
+    SearchNodeCountRespFromJSON,
+    SearchNodeCountRespToJSON,
     SearchSearchCountRespFromJSON,
     SearchSearchCountRespToJSON,
     SearchSearchNodeReqFromJSON,
@@ -329,6 +332,21 @@ export interface SearchApiInterface {
      * Count Malwares
      */
     countMalwares(requestParameters: CountMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Count hosts, containers, pods, k8s clusters, images
+     * @summary Count nodes
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countNodesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchNodeCountResp>>;
+
+    /**
+     * Count hosts, containers, pods, k8s clusters, images
+     * Count nodes
+     */
+    countNodes(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchNodeCountResp>;
 
     /**
      * Count across all the data associated with secrets
@@ -989,6 +1007,42 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
      */
     async countMalwares(requestParameters: CountMalwaresRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countMalwaresRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Count hosts, containers, pods, k8s clusters, images
+     * Count nodes
+     */
+    async countNodesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchNodeCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/nodes`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchNodeCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Count hosts, containers, pods, k8s clusters, images
+     * Count nodes
+     */
+    async countNodes(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchNodeCountResp> {
+        const response = await this.countNodesRaw(initOverrides);
         return await response.value();
     }
 

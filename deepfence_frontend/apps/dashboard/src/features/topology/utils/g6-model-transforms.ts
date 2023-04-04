@@ -35,7 +35,7 @@ export function convertApiNodesDiffToModelNodesDiff(
       if (!parentId?.length) {
         parentId = 'root';
       }
-      if (!node.pseudo || parentId === 'root') {
+      if (node.type !== 'pseudo' || parentId === 'root') {
         if (!enhancedDiff[parentId])
           enhancedDiff[parentId] = createEmptyEnhancedNodeDiff();
         enhancedDiff[parentId].add.push(enhancedNode);

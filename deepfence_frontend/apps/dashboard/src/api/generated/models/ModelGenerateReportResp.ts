@@ -16,50 +16,41 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelComputeMetrics
+ * @interface ModelGenerateReportResp
  */
-export interface ModelComputeMetrics {
+export interface ModelGenerateReportResp {
     /**
      * 
-     * @type {number}
-     * @memberof ModelComputeMetrics
+     * @type {string}
+     * @memberof ModelGenerateReportResp
      */
-    cpu_percent: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelComputeMetrics
-     */
-    memory_mb: number;
+    report_id?: string;
 }
 
 /**
- * Check if a given object implements the ModelComputeMetrics interface.
+ * Check if a given object implements the ModelGenerateReportResp interface.
  */
-export function instanceOfModelComputeMetrics(value: object): boolean {
+export function instanceOfModelGenerateReportResp(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "cpu_percent" in value;
-    isInstance = isInstance && "memory_mb" in value;
 
     return isInstance;
 }
 
-export function ModelComputeMetricsFromJSON(json: any): ModelComputeMetrics {
-    return ModelComputeMetricsFromJSONTyped(json, false);
+export function ModelGenerateReportRespFromJSON(json: any): ModelGenerateReportResp {
+    return ModelGenerateReportRespFromJSONTyped(json, false);
 }
 
-export function ModelComputeMetricsFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelComputeMetrics {
+export function ModelGenerateReportRespFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelGenerateReportResp {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'cpu_percent': json['cpu_percent'],
-        'memory_mb': json['memory_mb'],
+        'report_id': !exists(json, 'report_id') ? undefined : json['report_id'],
     };
 }
 
-export function ModelComputeMetricsToJSON(value?: ModelComputeMetrics | null): any {
+export function ModelGenerateReportRespToJSON(value?: ModelGenerateReportResp | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -68,8 +59,7 @@ export function ModelComputeMetricsToJSON(value?: ModelComputeMetrics | null): a
     }
     return {
         
-        'cpu_percent': value.cpu_percent,
-        'memory_mb': value.memory_mb,
+        'report_id': value.report_id,
     };
 }
 

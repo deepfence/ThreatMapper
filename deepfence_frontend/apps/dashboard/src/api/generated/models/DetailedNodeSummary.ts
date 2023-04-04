@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ReportMetadataRow } from './ReportMetadataRow';
+import type { ReportMetadata } from './ReportMetadata';
 import {
-    ReportMetadataRowFromJSON,
-    ReportMetadataRowFromJSONTyped,
-    ReportMetadataRowToJSON,
-} from './ReportMetadataRow';
+    ReportMetadataFromJSON,
+    ReportMetadataFromJSONTyped,
+    ReportMetadataToJSON,
+} from './ReportMetadata';
 
 /**
  * 
@@ -49,12 +49,6 @@ export interface DetailedNodeSummary {
      * @type {string}
      * @memberof DetailedNodeSummary
      */
-    image?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DetailedNodeSummary
-     */
     immediate_parent_id?: string;
     /**
      * 
@@ -64,52 +58,10 @@ export interface DetailedNodeSummary {
     label?: string;
     /**
      * 
-     * @type {string}
+     * @type {ReportMetadata}
      * @memberof DetailedNodeSummary
      */
-    labelMinor?: string;
-    /**
-     * 
-     * @type {Array<ReportMetadataRow>}
-     * @memberof DetailedNodeSummary
-     */
-    metadata?: Array<ReportMetadataRow>;
-    /**
-     * 
-     * @type {Array<object>}
-     * @memberof DetailedNodeSummary
-     */
-    metrics?: Array<object>;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof DetailedNodeSummary
-     */
-    pseudo?: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof DetailedNodeSummary
-     */
-    rank?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof DetailedNodeSummary
-     */
-    shape?: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof DetailedNodeSummary
-     */
-    stack?: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof DetailedNodeSummary
-     */
-    tag?: string;
+    metadata?: ReportMetadata;
     /**
      * 
      * @type {string}
@@ -140,17 +92,9 @@ export function DetailedNodeSummaryFromJSONTyped(json: any, ignoreDiscriminator:
         'adjacency': !exists(json, 'adjacency') ? undefined : json['adjacency'],
         'id': !exists(json, 'id') ? undefined : json['id'],
         'ids': !exists(json, 'ids') ? undefined : json['ids'],
-        'image': !exists(json, 'image') ? undefined : json['image'],
         'immediate_parent_id': !exists(json, 'immediate_parent_id') ? undefined : json['immediate_parent_id'],
         'label': !exists(json, 'label') ? undefined : json['label'],
-        'labelMinor': !exists(json, 'labelMinor') ? undefined : json['labelMinor'],
-        'metadata': !exists(json, 'metadata') ? undefined : ((json['metadata'] as Array<any>).map(ReportMetadataRowFromJSON)),
-        'metrics': !exists(json, 'metrics') ? undefined : json['metrics'],
-        'pseudo': !exists(json, 'pseudo') ? undefined : json['pseudo'],
-        'rank': !exists(json, 'rank') ? undefined : json['rank'],
-        'shape': !exists(json, 'shape') ? undefined : json['shape'],
-        'stack': !exists(json, 'stack') ? undefined : json['stack'],
-        'tag': !exists(json, 'tag') ? undefined : json['tag'],
+        'metadata': !exists(json, 'metadata') ? undefined : ReportMetadataFromJSON(json['metadata']),
         'type': !exists(json, 'type') ? undefined : json['type'],
     };
 }
@@ -167,17 +111,9 @@ export function DetailedNodeSummaryToJSON(value?: DetailedNodeSummary | null): a
         'adjacency': value.adjacency,
         'id': value.id,
         'ids': value.ids,
-        'image': value.image,
         'immediate_parent_id': value.immediate_parent_id,
         'label': value.label,
-        'labelMinor': value.labelMinor,
-        'metadata': value.metadata === undefined ? undefined : ((value.metadata as Array<any>).map(ReportMetadataRowToJSON)),
-        'metrics': value.metrics,
-        'pseudo': value.pseudo,
-        'rank': value.rank,
-        'shape': value.shape,
-        'stack': value.stack,
-        'tag': value.tag,
+        'metadata': ReportMetadataToJSON(value.metadata),
         'type': value.type,
     };
 }
