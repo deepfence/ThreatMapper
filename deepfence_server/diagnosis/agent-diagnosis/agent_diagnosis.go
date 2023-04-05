@@ -60,9 +60,6 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 	if err != nil {
 		return err
 	}
-	if err != nil {
-		return err
-	}
 	rec, err := res.Collect()
 	if err != nil {
 		return err
