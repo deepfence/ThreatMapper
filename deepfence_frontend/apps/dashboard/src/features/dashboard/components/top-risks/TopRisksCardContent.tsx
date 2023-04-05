@@ -20,9 +20,7 @@ export const TopRisksCardContentsSkeleton = () => {
             );
           })}
         </div>
-        <h6 className={`ml-2 mt-8 mb-6 text-sm font-normal`}>
-          Most Vulnerable Running Assets
-        </h6>
+        <h6 className={`ml-2 mt-8 mb-6 text-sm font-normal`}>Most Affected Resources</h6>
         <div className="flex mt-2 items-center gap-4">
           <div className={`h-[140px] basis-[140px] rounded-full ${skeletonBg}`}></div>
           <div className="flex flex-col gap-y-2 flex-1 truncate">
@@ -133,10 +131,7 @@ export const TopRisksCardContent = ({
             );
           })}
         </div>
-        {/* <Separator /> */}
-        <h6 className={`ml-2 mt-8 mb-6 text-sm font-normal`}>
-          Most Vulnerable Running Assets
-        </h6>
+        <h6 className={`ml-2 mt-8 mb-6 text-sm font-normal`}>Most Affected Resources</h6>
         <div className="flex mt-2 items-center gap-4">
           <div className="h-[140px] basis-[140px]">
             <TopRisksDonutChart theme={mode} severityBreakdown={data.severityBreakdown} />
