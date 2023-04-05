@@ -9,6 +9,7 @@ import {
   useParams,
 } from 'react-router-dom';
 import { ActionFunction, redirect } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
   Button,
   Card,
@@ -86,6 +87,7 @@ export const action: ActionFunction = async ({
   if (ApiError.isApiError(r)) {
     return r.value();
   }
+  toast.success('User details updated successfully');
   throw redirect('/settings/user-management', 302);
 };
 

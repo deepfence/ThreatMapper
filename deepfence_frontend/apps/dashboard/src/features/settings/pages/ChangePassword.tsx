@@ -2,6 +2,7 @@ import { IconContext } from 'react-icons';
 import { HiArrowSmLeft } from 'react-icons/hi';
 import { Link, useFetcher } from 'react-router-dom';
 import { ActionFunction, redirect } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Button, Card, TextInput, Typography } from 'ui-components';
 
 import { getUserApiClient } from '@/api/api';
@@ -65,6 +66,7 @@ export const action: ActionFunction = async ({
   if (ApiError.isApiError(r)) {
     return r.value();
   }
+  toast.success('Password changed successfully');
   throw redirect('/settings/user-management', 302);
 };
 
