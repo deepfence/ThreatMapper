@@ -1,14 +1,14 @@
+import { IconContext } from 'react-icons';
+import { HiArrowSmLeft } from 'react-icons/hi';
 import { Link, useFetcher } from 'react-router-dom';
 import { ActionFunction, redirect } from 'react-router-dom';
 import { Button, Card, TextInput, Typography } from 'ui-components';
 
 import { getUserApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
+import { DFLink } from '@/components/DFLink';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { ApiError, makeRequest } from '@/utils/api';
-import { DFLink } from '@/components/DFLink';
-import { IconContext } from 'react-icons';
-import { HiArrowSmLeft } from 'react-icons/hi';
 
 export type changePasswordActionReturnType = {
   error?: string;

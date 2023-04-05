@@ -413,7 +413,7 @@ export const privateRoutes: CustomRouteObject[] = [
           {
             path: 'user-management/change-password',
             ...changePassword,
-            meta: { title: 'Change Password For Current User' },
+            meta: { title: 'Change your password' },
           },
           {
             path: 'user-management/invite-user',
