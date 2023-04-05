@@ -457,12 +457,12 @@ func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getProcesses(tx neo4j.Transaction, hosts []string) (map[NodeID][]NodeStub, error) {
+func (nc *neo4jTopologyReporter) getProcesses(tx neo4j.Transaction, hosts, containers []string) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(`
 		MATCH (n:Node)
-		WHERE n.host_name IN $hosts WITH n
+		WHERE n.node_id IN $hosts WITH n
 		MATCH (n)-[:HOSTS]->(m:Process)
 		RETURN n.node_id, m.node_id, m.node_name`,
 		map[string]interface{}{"hosts": hosts})
@@ -470,6 +470,34 @@ func (nc *neo4jTopologyReporter) getProcesses(tx neo4j.Transaction, hosts []stri
 		return res, err
 	}
 	records, err := r.Collect()
+
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		host_id := NodeID(record.Values[0].(string))
+		process_id := NodeID(record.Values[1].(string))
+		process_name := record.Values[2].(string)
+		if _, present := res[host_id]; !present {
+			res[host_id] = []NodeStub{}
+		}
+		res[host_id] = append(res[host_id], NodeStub{ID: process_id, Name: process_name})
+	}
+
+	// Note that this code is overwritting
+	// previous parents in `res` and thus needs to be done
+	// in that specific order
+	r, err = tx.Run(`
+		MATCH (n:Container)
+		WHERE n.node_id IN $containers WITH n
+		MATCH (n)-[:HOSTS]->(m:Process)
+		RETURN n.node_id, m.node_id, m.node_name`,
+		map[string]interface{}{"containers": containers})
+	if err != nil {
+		return res, err
+	}
+	records, err = r.Collect()
 
 	if err != nil {
 		return res, err
@@ -581,6 +609,7 @@ type TopologyFilters struct {
 	KubernetesFilter []string                `json:"kubernetes_filter" required:"true"`
 	HostFilter       []string                `json:"host_filter" required:"true"`
 	PodFilter        []string                `json:"pod_filter" required:"true"`
+	ContainerFilter  []string                `json:"container_filter" required:"true"`
 	FieldFilter      reporters.FieldsFilters `json:"field_filters" required:"true"`
 }
 
@@ -623,6 +652,11 @@ func (nc *neo4jTopologyReporter) getContainerGraph(ctx context.Context, filters 
 	res.Containers = map[NodeID][]NodeStub{}
 	for _, containers := range tmp {
 		res.Containers[root_node_id] = append(res.Containers[root_node_id], containers...)
+	}
+
+	res.Processes, err = nc.getProcesses(tx, []string{}, filters.ContainerFilter)
+	if err != nil {
+		return res, err
 	}
 
 	return res, nil
@@ -745,7 +779,7 @@ func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters Topol
 	for _, hosts := range tmp {
 		res.Hosts[root_node_id] = append(res.Hosts[root_node_id], hosts...)
 	}
-	res.Processes, err = nc.getProcesses(tx, host_filter)
+	res.Processes, err = nc.getProcesses(tx, host_filter, []string{})
 	if err != nil {
 		return res, err
 	}
@@ -769,6 +803,7 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyF
 	kubernetes_filter := filters.KubernetesFilter
 	host_filter := filters.HostFilter
 	pod_filter := filters.PodFilter
+	container_filter := filters.ContainerFilter
 
 	session, err := nc.driver.Session(neo4j.AccessModeRead)
 	if err != nil {
@@ -803,7 +838,7 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyF
 	if err != nil {
 		return res, err
 	}
-	res.Processes, err = nc.getProcesses(tx, host_filter)
+	res.Processes, err = nc.getProcesses(tx, host_filter, container_filter)
 	if err != nil {
 		return res, err
 	}
