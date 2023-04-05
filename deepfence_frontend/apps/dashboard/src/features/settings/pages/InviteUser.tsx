@@ -27,7 +27,7 @@ export type inviteUserActionReturnType = {
   invite_expiry_hours?: number;
 };
 
-export const inviteUserAction: ActionFunction = async ({
+export const action: ActionFunction = async ({
   request,
 }): Promise<inviteUserActionReturnType> => {
   const formData = await request.formData();
@@ -166,5 +166,5 @@ const InviteUser = () => {
 
 export const module = {
   element: <InviteUser />,
-  action: inviteUserAction,
+  action,
 };

@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react';
+import { Suspense } from 'react';
 import { IconContext } from 'react-icons';
 import { HiArrowSmLeft } from 'react-icons/hi';
 import {
@@ -8,6 +8,7 @@ import {
   useLoaderData,
   useParams,
 } from 'react-router-dom';
+import { ActionFunction, redirect } from 'react-router-dom';
 import {
   Button,
   Card,
@@ -15,22 +16,78 @@ import {
   Select,
   SelectItem,
   TextInput,
-  Typography,
 } from 'ui-components';
 
 import { getUserApiClient } from '@/api/api';
-import { ModelUpdateUserIdRequestRoleEnum } from '@/api/generated';
+import {
+  ApiDocsBadRequestResponse,
+  ModelUpdateUserIdRequestRoleEnum,
+} from '@/api/generated';
 import { ModelUser } from '@/api/generated/models/ModelUser';
 import { DFLink } from '@/components/DFLink';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
-import {
-  UpdateActionReturnType,
-  userAddAction,
-} from '@/features/settings/pages/actions/userAddAction';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 import { usePageNavigation } from '@/utils/usePageNavigation';
+
+export type UpdateActionReturnType = {
+  error?: string;
+  fieldErrors?: {
+    firstName?: string;
+    lastName?: string;
+    role?: string;
+    status?: string;
+  };
+};
+
+export const action: ActionFunction = async ({
+  request,
+}): Promise<UpdateActionReturnType> => {
+  const formData = await request.formData();
+  // add console_url which is the origin of request
+  formData.append('consoleUrl', window.location.origin);
+  const body = Object.fromEntries(formData);
+
+  const r = await makeRequest({
+    apiFunction: getUserApiClient().updateUser,
+    apiArgs: [
+      {
+        id: Number(body.id),
+        modelUpdateUserIdRequest: {
+          first_name: body.firstName as string,
+          last_name: body.lastName as string,
+          role: body.role as ModelUpdateUserIdRequestRoleEnum,
+          is_active: body.status === 'true',
+        },
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<UpdateActionReturnType>({});
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          fieldErrors: {
+            firstName: modelResponse.error_fields?.first_name as string,
+            lastName: modelResponse.error_fields?.last_name as string,
+            status: modelResponse.error_fields?.is_active as string,
+            role: modelResponse.error_fields?.role as string,
+          },
+        });
+      } else if (r.status === 403) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          error: modelResponse.message,
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(r)) {
+    return r.value();
+  }
+  throw redirect('/settings/user-management', 302);
+};
 
 type LoaderDataType = {
   message?: string;
@@ -63,7 +120,6 @@ const UserAdd = () => {
   const loaderData = useLoaderData() as LoaderDataType;
   const fetcher = useFetcher<UpdateActionReturnType>();
   const { data } = fetcher;
-  const { navigate } = usePageNavigation();
   const { userId } = useParams() as {
     userId: string;
   };
@@ -104,12 +160,8 @@ const UserAdd = () => {
                       sizing="sm"
                       className="w-3/4 min-[200px] max-w-xs"
                       defaultValue={user.data?.first_name}
+                      helperText={data?.fieldErrors?.firstName}
                     />
-                    {data?.fieldErrors?.firstName && (
-                      <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
-                        {data?.fieldErrors?.firstName}
-                      </p>
-                    )}
                     <TextInput
                       label="Last Name"
                       type={'text'}
@@ -119,12 +171,8 @@ const UserAdd = () => {
                       className="w-3/4 min-[200px] max-w-xs"
                       color={data?.fieldErrors?.lastName ? 'error' : 'default'}
                       defaultValue={user.data?.last_name}
+                      helperText={data?.fieldErrors?.lastName}
                     />
-                    {data?.fieldErrors?.lastName && (
-                      <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
-                        {data?.fieldErrors?.lastName}
-                      </p>
-                    )}
                     <Select
                       defaultValue={user.data?.role}
                       name="role"
@@ -132,6 +180,7 @@ const UserAdd = () => {
                       placeholder="admin"
                       sizing="xs"
                       className="w-3/4 min-[200px] max-w-xs relative pl-3"
+                      helperText={data?.fieldErrors?.role}
                     >
                       <SelectItem
                         value={ModelUpdateUserIdRequestRoleEnum['StandardUser']}
@@ -154,6 +203,7 @@ const UserAdd = () => {
                       sizing="xs"
                       className="w-3/4 min-[200px] max-w-xs relative pl-3"
                       defaultValue={user.data?.is_active ? 'Active' : 'inActive'}
+                      helperText={data?.fieldErrors?.status}
                     >
                       <SelectItem value="true">Active</SelectItem>
                       <SelectItem value="false">InActive</SelectItem>
@@ -182,5 +232,5 @@ const UserAdd = () => {
 export const module = {
   element: <UserAdd />,
   loader,
-  action: userAddAction,
+  action,
 };

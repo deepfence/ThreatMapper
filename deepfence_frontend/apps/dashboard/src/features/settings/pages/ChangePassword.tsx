@@ -19,7 +19,7 @@ export type changePasswordActionReturnType = {
   };
 };
 
-export const changePasswordAction: ActionFunction = async ({
+export const action: ActionFunction = async ({
   request,
 }): Promise<changePasswordActionReturnType> => {
   const formData = await request.formData();
@@ -98,12 +98,8 @@ const ChangePassword = () => {
               color={data?.fieldErrors?.old_password ? 'error' : 'default'}
               sizing="sm"
               className="w-3/4 min-[200px] max-w-xs"
+              helperText={data?.fieldErrors?.old_password}
             />
-            {data?.fieldErrors?.old_password && (
-              <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
-                {data?.fieldErrors?.old_password}
-              </p>
-            )}
             <TextInput
               label="New Password"
               type={'password'}
@@ -112,12 +108,8 @@ const ChangePassword = () => {
               sizing="sm"
               className="w-3/4 min-[200px] max-w-xs"
               color={data?.fieldErrors?.new_password ? 'error' : 'default'}
+              helperText={data?.fieldErrors?.new_password}
             />
-            {data?.fieldErrors?.new_password && (
-              <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
-                {data?.fieldErrors?.new_password}
-              </p>
-            )}
             <TextInput
               label="Confirm Password"
               type={'password'}
@@ -126,12 +118,8 @@ const ChangePassword = () => {
               sizing="sm"
               className="w-3/4 min-[200px] max-w-xs"
               color={data?.fieldErrors?.confirm_password ? 'error' : 'default'}
+              helperText={data?.fieldErrors?.confirm_password}
             />
-            {data?.fieldErrors?.confirm_password && (
-              <p className={`mt-1.5 ${Typography.size.sm} text-red-500`}>
-                {data?.fieldErrors?.confirm_password}
-              </p>
-            )}
             <span className="flex flex-row gap-8 pt-2">
               <Link to="/settings/user-management">
                 <Button color="danger" className="w-36" size="xs">
@@ -151,5 +139,5 @@ const ChangePassword = () => {
 
 export const module = {
   element: <ChangePassword />,
-  action: changePasswordAction,
+  action,
 };
