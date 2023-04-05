@@ -143,9 +143,7 @@ const ThreatGraphHeader = () => {
   const elementToFocusOnClose = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const isFilterApplied =
-    searchParams.get('cloud_only') === 'true' || searchParams.get('type') !== 'all';
-
+  const isFilterApplied = searchParams.get('type') && searchParams.get('type') !== 'all';
   return (
     <div className="flex py-1 px-2 w-full shadow bg-white dark:bg-gray-800 justify-between items-center">
       <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
