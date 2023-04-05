@@ -144,6 +144,8 @@ const action = async ({
     const nodeType = body.nodeType as keyof typeof UtilsReportFiltersNodeTypeEnum;
     const _nodeType: UtilsReportFiltersNodeTypeEnum =
       UtilsReportFiltersNodeTypeEnum[nodeType];
+
+    const t = body.deadNodes === 'on';
     debugger;
     const r = await makeRequest({
       apiFunction: getReportsApiClient().generateReport,
@@ -151,10 +153,17 @@ const action = async ({
         {
           modelGenerateReportReq: {
             duration: DURATION[duration],
-
             filters: {
-              scan_type: _resource,
+              advanced_report_filters: {
+                masked: body.mask.toString().toLowerCase() === 'masked',
+                // account_id: 'string',
+                // host_name: 'string',
+                // kubernetes_cluster_name: 'string',
+                // scan_status: 'string',
+              },
+              include_dead_nodes: body.deadNodes === 'on',
               node_type: _nodeType,
+              scan_type: _resource,
               severity_or_check_type: severity.map(
                 (sev) =>
                   sev
@@ -496,7 +505,7 @@ const AdvancedFilter = ({
   const [cloudAccounts, setCloudAccounts] = useState<ModelCloudNodeAccountInfo[]>([]);
   const [selectedCloudAccounts, setSelectedCloudAccounts] = useState([]);
 
-  const [maskedType, setMaskedType] = useState([]);
+  const [maskedType, setMaskedType] = useState('');
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -713,7 +722,7 @@ const AdvancedFilter = ({
       {provider && (
         <Select
           value={maskedType}
-          name="mask[]"
+          name="mask"
           onChange={(value) => {
             setMaskedType(value);
           }}
@@ -911,8 +920,7 @@ const DownloadForm = () => {
         <Switch
           label="Include Dead Nodes"
           size="sm"
-          name="selectAll"
-          value="all"
+          name="deadNodes"
           onCheckedChange={setIncludeDeadNodes}
           checked={deadNodes}
         />
