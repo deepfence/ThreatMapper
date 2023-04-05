@@ -118,7 +118,7 @@ const loader = async ({
     data: getUser(Number(params.userId)),
   });
 };
-const UserAdd = () => {
+const EditUser = () => {
   const loaderData = useLoaderData() as LoaderDataType;
   const fetcher = useFetcher<UpdateActionReturnType>();
   const { data } = fetcher;
@@ -232,7 +232,7 @@ const UserAdd = () => {
 };
 
 export const module = {
-  element: <UserAdd />,
+  element: <EditUser />,
   loader,
   action,
 };
