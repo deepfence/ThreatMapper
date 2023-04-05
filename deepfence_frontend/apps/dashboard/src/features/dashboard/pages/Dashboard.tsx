@@ -24,7 +24,6 @@ import { TopRisksVulnerability } from '@/features/dashboard/components/TopRisksV
 import { RegistryType } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
-import { sleep } from '@/utils/timers';
 
 async function getCloudNodeProviders(): Promise<ModelCloudNodeProvidersListResp> {
   const result = await makeRequest({
