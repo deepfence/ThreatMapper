@@ -1,6 +1,9 @@
 package model
 
-import "strconv"
+import (
+	"context"
+	"strconv"
+)
 
 const (
 	DefaultUserGroup = "default"
@@ -9,6 +12,12 @@ const (
 type ErrorResponse struct {
 	Message     string            `json:"message" required:"true"`
 	ErrorFields map[string]string `json:"error_fields"`
+}
+
+type LoginResponse struct {
+	ResponseAccessToken
+	OnboardingRequired  bool `json:"onboarding_required" required:"true"`
+	PasswordInvalidated bool `json:"password_invalidated" required:"true"`
 }
 
 type ResponseAccessToken struct {
@@ -26,4 +35,8 @@ func (fw FetchWindow) FetchWindow2CypherQuery() string {
 		return ""
 	}
 	return ` SKIP ` + strconv.Itoa(fw.Offset) + ` LIMIT ` + strconv.Itoa(fw.Size)
+}
+
+func IsOnboardingRequired(ctx context.Context) bool {
+	return false
 }

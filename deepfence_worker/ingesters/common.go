@@ -2,6 +2,7 @@ package ingesters
 
 import (
 	"encoding/json"
+
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -73,7 +74,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			MATCH (n) -[:DETECTED]- (m)
 			WITH n, count(m) as count
 			MATCH (n) -[:SCANNED]- (r)
-			SET r.`+status_count_field(ts)+` = count, r.`+status_scan_field(ts)+`=n.scan_status`,
+			SET r.`+status_count_field(ts)+` = count`,
 			map[string]interface{}{"batch": statusesToMaps(data)}); err != nil {
 			log.Error().Msgf("Error while updating scan status: %+v", err)
 			return err

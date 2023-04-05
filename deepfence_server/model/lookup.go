@@ -141,13 +141,17 @@ type Connection struct {
 }
 
 type Pod struct {
-	ID         string      `json:"node_id" required:"true"`
-	NodeName   string      `json:"node_name" required:"true"`
-	Namespace  string      `json:"kubernetes_namespace" required:"true"`
-	Host       string      `json:"host_name" required:"true"`
-	Containers []Container `json:"containers" required:"true"`
-	Processes  []Process   `json:"processes" required:"true" required:"true"`
-	Metadata   Metadata    `json:"metadata" required:"true" nested_json:"true"`
+	ID                        string      `json:"node_id" required:"true"`
+	NodeName                  string      `json:"node_name" required:"true"`
+	Namespace                 string      `json:"kubernetes_namespace" required:"true"`
+	Host                      string      `json:"host_name" required:"true"`
+	Containers                []Container `json:"containers" required:"true"`
+	Processes                 []Process   `json:"processes" required:"true"`
+	KubernetesClusterName     string      `json:"kubernetes_cluster_name" required:"true"`
+	KubernetesClusterId       string      `json:"kubernetes_cluster_id" required:"true"`
+	KubernetesState           string      `json:"kubernetes_state"`
+	KubernetesIP              string      `json:"kubernetes_ip"`
+	KubernetesIsInHostNetwork string      `json:"kubernetes_is_in_host_network"`
 }
 
 func (Pod) NodeType() string {

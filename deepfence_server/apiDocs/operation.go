@@ -21,7 +21,7 @@ import (
 func (d *OpenApiDocs) AddUserAuthOperations() {
 	d.AddOperation("registerUser", http.MethodPost, "/deepfence/user/register",
 		"Register User", "First user registration. Further users needs to be invited.",
-		http.StatusOK, []string{tagUser}, nil, new(UserRegisterRequest), new(ResponseAccessToken))
+		http.StatusOK, []string{tagUser}, nil, new(UserRegisterRequest), new(LoginResponse))
 	d.AddOperation("authToken", http.MethodPost, "/deepfence/auth/token",
 		"Get Access Token for API Token", "Get access token for programmatic API access, by providing API Token",
 		http.StatusOK, []string{tagAuthentication}, nil, new(ApiAuthRequest), new(ResponseAccessToken))
@@ -30,7 +30,7 @@ func (d *OpenApiDocs) AddUserAuthOperations() {
 		http.StatusOK, []string{tagAuthentication}, bearerToken, nil, new(ResponseAccessToken))
 	d.AddOperation("login", http.MethodPost, "/deepfence/user/login",
 		"Login API", "Login API",
-		http.StatusOK, []string{tagAuthentication}, nil, new(LoginRequest), new(ResponseAccessToken))
+		http.StatusOK, []string{tagAuthentication}, nil, new(LoginRequest), new(LoginResponse))
 	d.AddOperation("logout", http.MethodPost, "/deepfence/user/logout",
 		"Logout API", "Logout API",
 		http.StatusNoContent, []string{tagAuthentication}, bearerToken, nil, nil)
@@ -82,7 +82,7 @@ func (d *OpenApiDocs) AddUserOperations() {
 		http.StatusOK, []string{tagUser}, bearerToken, new(InviteUserRequest), new(InviteUserResponse))
 	d.AddOperation("registerInvitedUser", http.MethodPost, "/deepfence/user/invite/register",
 		"Register Invited User", "Register invited user",
-		http.StatusOK, []string{tagUser}, nil, new(RegisterInvitedUserRequest), new(ResponseAccessToken))
+		http.StatusOK, []string{tagUser}, nil, new(RegisterInvitedUserRequest), new(LoginResponse))
 
 	d.AddOperation("getUserActivityLogs", http.MethodGet, "/deepfence/user-activity-log",
 		"Get activity logs for all users", "Get activity logs for all users",
@@ -585,4 +585,8 @@ func (d *OpenApiDocs) AddReportsOperations() {
 	d.AddOperation("deleteReport", http.MethodDelete, "/deepfence/reports/{report_id}",
 		"Delete Report", "delete report for given report_id",
 		http.StatusOK, []string{tagReports}, bearerToken, new(ReportReq), nil)
+}
+
+func (d *OpenApiDocs) AddSettingsOperations() {
+
 }
