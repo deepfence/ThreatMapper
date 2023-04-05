@@ -62,6 +62,7 @@ import { module as secretScanResults } from '@/features/secrets/pages/SecretScan
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
 import { module as changePassword } from '@/features/settings/pages/ChangePassword';
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
+import { module as inviteUser } from '@/features/settings/pages/InviteUser';
 import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userAdd } from '@/features/settings/pages/UserAdd';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
@@ -413,6 +414,11 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'user-management/change-password',
             ...changePassword,
             meta: { title: 'Change Password For Current User' },
+          },
+          {
+            path: 'user-management/invite-user',
+            ...inviteUser,
+            meta: { title: 'Invite User' },
           },
         ],
       },

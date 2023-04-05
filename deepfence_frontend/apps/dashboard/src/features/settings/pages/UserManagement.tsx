@@ -94,8 +94,8 @@ const UserManagement = () => {
       columnHelper.accessor('id', {
         cell: (cell) => cell.getValue(),
         header: () => 'ID',
-        minSize: 75,
-        size: 80,
+        minSize: 30,
+        size: 30,
         maxSize: 85,
       }),
       columnHelper.accessor('first_name', {
@@ -141,10 +141,10 @@ const UserManagement = () => {
                       userId: String(cell.row.original.id),
                     }),
                   );
-                  console.log('test update', cell.row.original);
                 }}
               />
               <FaTrashAlt
+                className="text-red-500"
                 onClick={() => {
                   setShowDeleteDialog(true);
                   setSelectedUserId(String(cell.row.original.id));
@@ -154,8 +154,8 @@ const UserManagement = () => {
           );
         },
         header: () => 'Actions',
-        minSize: 75,
-        size: 80,
+        minSize: 30,
+        size: 30,
         maxSize: 85,
       }),
     ];
@@ -166,11 +166,6 @@ const UserManagement = () => {
   return (
     <SettingsTab value="user-management">
       <div className="h-full mt-2 p-2">
-        <div className="flex justify-end">
-          <Link to="/settings/user-management/change-password">
-            <Button color="primary">Change Password</Button>
-          </Link>
-        </div>
         <Suspense fallback={<TableSkeleton columns={6} rows={5} size={'sm'} />}>
           <DFAwait resolve={loaderData.data}>
             {(resolvedData: LoaderDataType) => {
@@ -179,9 +174,23 @@ const UserManagement = () => {
 
               return (
                 <div>
-                  <h3 className="py-2 font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
-                    User Accounts
-                  </h3>
+                  <div className="flex justify-between m-2">
+                    <h3 className="py-2 font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
+                      User Accounts
+                    </h3>
+                    <div className="flex justify-end gap-2">
+                      <Link to="/settings/user-management/change-password">
+                        <Button color="primary" size="sm">
+                          Change Password
+                        </Button>
+                      </Link>
+                      <Link to="/settings/user-management/invite-user">
+                        <Button color="primary" size="sm">
+                          Invite User
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
                   {selectedUserId && (
                     <DeleteConfirmationModal
                       showDialog={showDeleteDialog}
@@ -198,6 +207,8 @@ const UserManagement = () => {
                       columns={columns}
                       enablePagination
                       pageSize={5}
+                      enableColumnResizing
+                      enableSorting
                     />
                   )}
                 </div>

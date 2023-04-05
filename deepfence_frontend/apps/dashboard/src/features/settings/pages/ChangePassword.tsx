@@ -6,6 +6,9 @@ import { getUserApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { ApiError, makeRequest } from '@/utils/api';
+import { DFLink } from '@/components/DFLink';
+import { IconContext } from 'react-icons';
+import { HiArrowSmLeft } from 'react-icons/hi';
 
 export type changePasswordActionReturnType = {
   error?: string;
@@ -68,12 +71,23 @@ export const changePasswordAction: ActionFunction = async ({
 const ChangePassword = () => {
   const fetcher = useFetcher<changePasswordActionReturnType>();
   const { data } = fetcher;
-  console.log('data98', data);
-
   return (
     <>
       <SettingsTab value="user-management">
-        <span className="flex ml-5 mt-5">User Profile</span>
+        <DFLink
+          to="/settings/user-management"
+          className="shrink-0 flex items-center justify-start hover:no-underline active:no-underline focus:no-underline ml-auto mr-2 mt-2"
+        >
+          <IconContext.Provider
+            value={{
+              className: 'text-blue-600 dark:text-blue-500 ',
+            }}
+          >
+            <HiArrowSmLeft />
+          </IconContext.Provider>
+          <span className="text text-blue-600 dark:text-blue-500">Back</span>
+        </DFLink>
+        <span className="flex ml-10 mt-2 dark:text-white ">User Profile</span>
         <Card className="flex-col p-5 mt-2 ml-10 gap-y-4">
           <fetcher.Form method="post" className="flex flex-col gap-y-3">
             <TextInput

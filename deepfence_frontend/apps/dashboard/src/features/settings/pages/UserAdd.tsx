@@ -1,4 +1,6 @@
 import { Suspense, useState } from 'react';
+import { IconContext } from 'react-icons';
+import { HiArrowSmLeft } from 'react-icons/hi';
 import {
   Link,
   LoaderFunctionArgs,
@@ -19,6 +21,7 @@ import {
 import { getUserApiClient } from '@/api/api';
 import { ModelUpdateUserIdRequestRoleEnum } from '@/api/generated';
 import { ModelUser } from '@/api/generated/models/ModelUser';
+import { DFLink } from '@/components/DFLink';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import {
   UpdateActionReturnType,
@@ -34,8 +37,6 @@ type LoaderDataType = {
   data?: ModelUser;
 };
 const getUser = async (userId: number): Promise<LoaderDataType> => {
-  console.log('userId', userId);
-
   const usersPromise = await makeRequest({
     apiFunction: getUserApiClient().getUser,
     apiArgs: [{ id: userId }],
@@ -70,18 +71,27 @@ const UserAdd = () => {
   if (!userId) {
     throw new Error('User ID is required');
   }
-  console.log('loaderData.data?.first_name', loaderData.data);
-
   return (
     <>
       <SettingsTab value="user-management">
-        <span className="flex ml-5 mt-5">User Profile</span>
+        <DFLink
+          to="/settings/user-management"
+          className="shrink-0 flex items-center justify-start hover:no-underline active:no-underline focus:no-underline ml-auto mr-2 mt-2"
+        >
+          <IconContext.Provider
+            value={{
+              className: 'text-blue-600 dark:text-blue-500 ',
+            }}
+          >
+            <HiArrowSmLeft />
+          </IconContext.Provider>
+          <span className="text text-blue-600 dark:text-blue-500">Back</span>
+        </DFLink>
+        <span className="flex ml-10 mt-2 dark:text-white ">User Profile</span>
         <Card className="flex-col p-5 mt-2 ml-10 gap-y-4">
           <Suspense fallback={<CircleSpinner size="xs" />}>
             <DFAwait resolve={loaderData.data}>
               {(user: LoaderDataType) => {
-                console.log('user', user.data);
-
                 return (
                   <fetcher.Form method="post" className="flex flex-col gap-y-3">
                     <TextInput type="hidden" name="id" value={user.data?.id} />
