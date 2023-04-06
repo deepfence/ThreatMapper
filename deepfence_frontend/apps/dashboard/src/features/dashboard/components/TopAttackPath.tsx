@@ -2,7 +2,7 @@ import { HiOutlineChevronRight } from 'react-icons/hi';
 import { Button, Card, Separator } from 'ui-components';
 
 import { ThreatGraphIcon } from '@/components/sideNavigation/icons/ThreatGraph';
-import { DagreGraph } from '@/features/vulnerabilities/components/landing/DagreGraph';
+import { ThreatGraphComponent } from '@/features/threat-graph/components/ThreatGraph';
 
 export const TopAttackPaths = () => {
   return (
@@ -20,8 +20,8 @@ export const TopAttackPaths = () => {
         </div>
       </div>
       <Separator />
-      <div className="flex items-center justify-center max-h-[300px]">
-        <DagreGraph />
+      <div className="flex items-center justify-center h-[380px]">
+        <ThreatGraphComponent />
       </div>
     </Card>
   );
