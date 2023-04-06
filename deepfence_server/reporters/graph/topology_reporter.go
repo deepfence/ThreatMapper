@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"reflect"
 	"sort"
+	"strconv"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -69,7 +70,7 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 			buf.WriteByte(';')
 			buf.WriteString(edge.Values[2].(string))
 			buf.WriteByte(';')
-			buf.WriteString(edge.Values[3].(string))
+			buf.WriteString(strconv.Itoa(int(edge.Values[3].(int64))))
 			src := buf.String()
 			buf.Reset()
 			buf.WriteString(edge.Values[4].(string))
@@ -78,7 +79,7 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 			buf.WriteByte(';')
 			buf.WriteString(edge.Values[6].(string))
 			buf.WriteByte(';')
-			buf.WriteString(edge.Values[7].(string))
+			buf.WriteString(strconv.Itoa(int(edge.Values[7].(int64))))
 			target := buf.String()
 			res = append(res, ConnectionSummary{Source: src, Target: target})
 		}

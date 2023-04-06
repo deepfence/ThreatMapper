@@ -278,7 +278,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	//endpoint_batch := []map[string]string{}
 	//endpoint_edges := []map[string]string{}
 	// Handle inbound from internet
-	inbound_edges := []map[string]string{}
+	inbound_edges := []map[string]interface{}{}
 
 	for _, n := range rpt.Endpoint {
 		hostName := n.HostName
@@ -299,9 +299,9 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			if len(adjacency) == 0 {
 				// Handle inbound from internet
 				inbound_edges = append(inbound_edges,
-					map[string]string{"destination": hostName, "left_pid": "0", "right_pid": strconv.Itoa(n.Pid)})
+					map[string]interface{}{"destination": hostName, "left_pid": 0, "right_pid": n.Pid})
 			} else {
-				edges := make([]map[string]string, 0, len(adjacency))
+				edges := make([]map[string]interface{}, 0, len(adjacency))
 				for _, i := range adjacency {
 					if n.NodeID != i {
 						ip, port := extractIPPortFromEndpointID(i)
@@ -313,11 +313,11 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 							if ok {
 								rightpid := extractPidFromNodeID(right_ippid)
 								edges = append(edges,
-									map[string]string{"destination": host, "left_pid": strconv.Itoa(n.Pid), "right_pid": rightpid})
+									map[string]interface{}{"destination": host, "left_pid": n.Pid, "right_pid": rightpid})
 							}
 						} else {
 							edges = append(edges,
-								map[string]string{"destination": "out-the-internet", "left_pid": strconv.Itoa(n.Pid), "right_pid": "0"})
+								map[string]interface{}{"destination": "out-the-internet", "left_pid": n.Pid, "right_pid": 0})
 						}
 					}
 				}
@@ -726,12 +726,16 @@ func extractIPPortFromEndpointID(node_id string) (string, string) {
 	return node_id[first+1 : second], node_id[second+1:]
 }
 
-func extractPidFromNodeID(hni string) string {
+func extractPidFromNodeID(hni string) int {
 	middle := strings.IndexByte(hni, ';')
 	if middle > 0 {
-		return hni[middle+1:]
+		num, err := strconv.Atoi(hni[middle+1:])
+		if err != nil {
+			return 0
+		}
+		return num
 	}
-	return hni
+	return 0
 }
 
 func metadataToMap(n report.Metadata) map[string]interface{} {

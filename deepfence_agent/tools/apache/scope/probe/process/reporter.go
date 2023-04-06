@@ -127,6 +127,7 @@ func (r *Reporter) processTopology() (report.Topology, error) {
 			NodeType:       report.Process,
 			HostName:       r.hostName,
 			Pid:            p.PID,
+			Ppid:           p.PPID,
 			Threads:        p.Threads,
 			MemoryMax:      int64(p.RSSBytesLimit),
 			MemoryUsage:    int64(p.RSSBytes),
