@@ -3,6 +3,10 @@ package model
 // "nested_json" fields are string json maps
 // that can be unmarshalled on the fly
 
+type Identifiable interface {
+	id() string
+}
+
 type PresentationContext struct {
 	MetadataOrder map[string]int    `json:"metadata_order" required:"true"`
 	IDToLabels    map[string]string `json:"id_to_labels" required:"true"`
@@ -30,6 +34,10 @@ func (KubernetesCluster) GetJsonCategory() string {
 
 func (KubernetesCluster) ExtendedField() string {
 	return ""
+}
+
+func (kc KubernetesCluster) id() string {
+	return kc.ID
 }
 
 type RegularScanStatus struct {
@@ -91,6 +99,26 @@ type Host struct {
 	RegularScanStatus
 }
 
+func (Host) NodeType() string {
+	return "Node"
+}
+
+func (Host) ExtendedField() string {
+	return ""
+}
+
+func (Host) GetCategory() string {
+	return ""
+}
+
+func (Host) GetJsonCategory() string {
+	return ""
+}
+
+func (h Host) id() string {
+	return h.ID
+}
+
 type RegistryAccount struct {
 	ID              string           `json:"node_id" required:"true"`
 	Name            string           `json:"host_name" required:"true"`
@@ -113,20 +141,8 @@ func (RegistryAccount) GetJsonCategory() string {
 	return ""
 }
 
-func (Host) NodeType() string {
-	return "Node"
-}
-
-func (Host) ExtendedField() string {
-	return ""
-}
-
-func (Host) GetCategory() string {
-	return ""
-}
-
-func (Host) GetJsonCategory() string {
-	return ""
+func (ra RegistryAccount) id() string {
+	return ra.ID
 }
 
 type EndpointID struct {
@@ -170,6 +186,10 @@ func (Pod) GetJsonCategory() string {
 	return ""
 }
 
+func (p Pod) id() string {
+	return p.ID
+}
+
 type Container struct {
 	ID                         string         `json:"node_id" required:"true"`
 	NodeName                   string         `json:"node_name" required:"true"`
@@ -210,6 +230,10 @@ func (Container) GetJsonCategory() string {
 	return ""
 }
 
+func (c Container) id() string {
+	return c.ID
+}
+
 type Process struct {
 	ID             string  `json:"node_id" required:"true"`
 	Name           string  `json:"node_name" required:"true"`
@@ -238,6 +262,10 @@ func (Process) GetCategory() string {
 
 func (Process) GetJsonCategory() string {
 	return ""
+}
+
+func (p Process) id() string {
+	return p.ID
 }
 
 type ContainerImage struct {
@@ -269,6 +297,10 @@ func (ContainerImage) GetJsonCategory() string {
 	return ""
 }
 
+func (ci ContainerImage) id() string {
+	return ci.ID
+}
+
 type CloudResource struct {
 	ID   string `json:"node_id" required:"true"`
 	Name string `json:"node_name" required:"true"`
@@ -290,4 +322,16 @@ func (CloudResource) GetJsonCategory() string {
 
 func (CloudResource) ExtendedField() string {
 	return ""
+}
+
+func (cr CloudResource) id() string {
+	return cr.ID
+}
+
+func ExtractNodeIDs[T Identifiable](entries []T) []string {
+	res := []string{}
+	for i := range entries {
+		res = append(res, entries[i].id())
+	}
+	return res
 }

@@ -2,7 +2,6 @@ package reporters_lookup
 
 import (
 	"context"
-	"errors"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -29,13 +28,14 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 		return nil, err
 	}
 
-	statuses, err := reporters_scan.GetScanStatuses[model.Host](ctx, filter.NodeIds)
-	if err != nil {
-		return nil, err
+	host_ids := filter.NodeIds
+	if len(host_ids) == 0 {
+		host_ids = model.ExtractNodeIDs(hosts)
 	}
 
-	if len(hosts) != len(statuses) {
-		return nil, errors.New("hosts and statuses mismatch")
+	statuses, err := reporters_scan.GetScanStatuses[model.Host](ctx, host_ids)
+	if err != nil {
+		return nil, err
 	}
 
 	for i := range hosts {
@@ -88,13 +88,14 @@ func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Cont
 		return nil, err
 	}
 
-	statuses, err := reporters_scan.GetScanStatuses[model.Container](ctx, filter.NodeIds)
-	if err != nil {
-		return nil, err
+	container_ids := filter.NodeIds
+	if len(container_ids) == 0 {
+		container_ids = model.ExtractNodeIDs(containers)
 	}
 
-	if len(containers) != len(statuses) {
-		return nil, errors.New("containers and statuses mismatch")
+	statuses, err := reporters_scan.GetScanStatuses[model.Container](ctx, container_ids)
+	if err != nil {
+		return nil, err
 	}
 
 	for i := range containers {
@@ -126,13 +127,14 @@ func GetContainerImagesReport(ctx context.Context, filter LookupFilter) ([]model
 		return nil, err
 	}
 
-	statuses, err := reporters_scan.GetScanStatuses[model.ContainerImage](ctx, filter.NodeIds)
-	if err != nil {
-		return nil, err
+	images_ids := filter.NodeIds
+	if len(images_ids) == 0 {
+		images_ids = model.ExtractNodeIDs(images)
 	}
 
-	if len(images) != len(statuses) {
-		return nil, errors.New("images and statuses mismatch")
+	statuses, err := reporters_scan.GetScanStatuses[model.ContainerImage](ctx, images_ids)
+	if err != nil {
+		return nil, err
 	}
 
 	for i := range images {
@@ -154,13 +156,17 @@ func GetCloudResourcesReport(ctx context.Context, filter LookupFilter) ([]model.
 	if err != nil {
 		return nil, err
 	}
-	statuses, err := reporters_scan.GetScanStatuses[model.CloudResource](ctx, filter.NodeIds)
+
+	entries_ids := filter.NodeIds
+	if len(entries_ids) == 0 {
+		entries_ids = model.ExtractNodeIDs(entries)
+	}
+
+	statuses, err := reporters_scan.GetScanStatuses[model.CloudResource](ctx, entries_ids)
 	if err != nil {
 		return nil, err
 	}
-	if len(entries) != len(statuses) {
-		return nil, errors.New("cloud resources and statuses mismatch")
-	}
+
 	for i := range entries {
 		entries[i].RegularScanStatus = statuses[i]
 	}
