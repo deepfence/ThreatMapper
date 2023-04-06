@@ -164,6 +164,7 @@ const EditUser = () => {
                       className="w-3/4 max-w-xs"
                       defaultValue={user.data?.first_name}
                       helperText={data?.fieldErrors?.firstName}
+                      required
                     />
                     <TextInput
                       label="Last Name"
@@ -175,6 +176,7 @@ const EditUser = () => {
                       color={data?.fieldErrors?.lastName ? 'error' : 'default'}
                       defaultValue={user.data?.last_name}
                       helperText={data?.fieldErrors?.lastName}
+                      required
                     />
                     <div className="w-3/4 max-w-xs">
                       <Select
