@@ -215,14 +215,14 @@ const EditUser = () => {
                         <SelectItem value="false">InActive</SelectItem>
                       </Select>
                     </div>
+                    <Button color="primary" className="w-3/4 max-w-xs pl-3" type="submit">
+                      Submit
+                    </Button>
                     <Link to="/settings/user-management">
                       <Button color="danger" className="w-3/4 max-w-xs pl-3">
                         Cancel
                       </Button>
                     </Link>
-                    <Button color="primary" className="w-3/4 max-w-xs pl-3" type="submit">
-                      Submit
-                    </Button>
                   </fetcher.Form>
                 );
               }}

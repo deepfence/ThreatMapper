@@ -127,11 +127,6 @@ const ChangePassword = () => {
               helperText={data?.fieldErrors?.confirm_password}
               required
             />
-            <Link to="/settings/user-management">
-              <Button color="danger" className="w-3/4 max-w-xs pl-3" size="xs">
-                Cancel
-              </Button>
-            </Link>
             <Button
               color="primary"
               className="w-3/4 max-w-xs pl-3"
@@ -140,6 +135,11 @@ const ChangePassword = () => {
             >
               Change Password
             </Button>
+            <Link to="/settings/user-management">
+              <Button color="danger" className="w-3/4 max-w-xs pl-3" size="xs">
+                Cancel
+              </Button>
+            </Link>
           </fetcher.Form>
         </Card>
       </SettingsTab>
