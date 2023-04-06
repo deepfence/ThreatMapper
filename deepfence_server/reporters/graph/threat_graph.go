@@ -151,15 +151,15 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(filters ThreatFilters) (map[str
 		MATCH (n:CloudResource)
 		WHERE n.depth IS NOT NULL
 		AND (
-			CASE WHEN $type = 'vulnerability' or $type = 'all' THEN n.num_cve > 0 ELSE false END
+			CASE WHEN $type = 'vulnerability' or $type = 'all' THEN n.vulnerabilities_count > 0 ELSE false END
 			OR
-			CASE WHEN $type = 'secret' or $type = 'all' THEN n.num_secrets > 0 ELSE false END
+			CASE WHEN $type = 'secret' or $type = 'all' THEN n.secrets_count > 0 ELSE false END
 			OR
-			CASE WHEN $type = 'malware' or $type = 'all' THEN n.num_malware > 0 ELSE false END
+			CASE WHEN $type = 'malware' or $type = 'all' THEN n.malwares_count > 0 ELSE false END
 			OR
-			CASE WHEN $type = 'compliance' or $type = 'all' THEN n.num_compliance > 0 ELSE false END
+			CASE WHEN $type = 'compliance' or $type = 'all' THEN n.compliances_count > 0 ELSE false END
 			OR 
-			CASE WHEN $type = 'cloud_compliance' or $type = 'all' THEN n.num_cloud_compliance > 0 ELSE false END
+			CASE WHEN $type = 'cloud_compliance' or $type = 'all' THEN n.cloud_compliances_count > 0 ELSE false END
 		)
 		WITH n, n.cloud_provider as provider
 		WHERE CASE WHEN size($aws_ids) = 0 OR provider <> 'aws' then true ELSE n.account_id IN $aws_ids END
@@ -181,15 +181,15 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(filters ThreatFilters) (map[str
 		MATCH (n:Node)
 		WHERE n.depth IS NOT NULL
 		AND (
-			CASE WHEN $type = 'vulnerability' or $type = 'all' THEN n.num_cve > 0 ELSE false END
+			CASE WHEN $type = 'vulnerability' or $type = 'all' THEN n.vulnerabilities_count > 0 ELSE false END
 			OR
-			CASE WHEN $type = 'secret' or $type = 'all' THEN n.num_secrets > 0 ELSE false END
+			CASE WHEN $type = 'secret' or $type = 'all' THEN n.secrets_count > 0 ELSE false END
 			OR
-			CASE WHEN $type = 'malware' or $type = 'all' THEN n.num_malware > 0 ELSE false END
+			CASE WHEN $type = 'malware' or $type = 'all' THEN n.malwares_count > 0 ELSE false END
 			OR
-			CASE WHEN $type = 'compliance' or $type = 'all' THEN n.num_compliance > 0 ELSE false END
+			CASE WHEN $type = 'compliance' or $type = 'all' THEN n.compliances_count > 0 ELSE false END
 			OR 
-			CASE WHEN $type = 'cloud_compliance' or $type = 'all' THEN n.num_cloud_compliance > 0 ELSE false END
+			CASE WHEN $type = 'cloud_compliance' or $type = 'all' THEN n.cloud_compliances_count > 0 ELSE false END
 		)
 		SET n:ThreatNode
 	`, map[string]interface{}{
@@ -207,7 +207,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(filters ThreatFilters) (map[str
 			if res, err = tx.Run(`
 				CALL apoc.nodes.group(['ThreatCloudResource','ThreatNode'], ['node_type', 'depth', 'cloud_provider'],
 				[{`+"`*`"+`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum', sum_cloud_compliance: 'sum',
-				node_id:'collect', num_cve: 'collect', num_secrets:'collect', num_compliance:'collect', num_cloud_compliance: 'collect'},
+				node_id:'collect', vulnerabilities_count: 'collect', secrets_count:'collect', compliances_count:'collect', cloud_compliances_count: 'collect'},
 				{`+"`*`"+`: 'count'}], {selfRels: false})
 				YIELD node, relationships
 				WHERE apoc.any.property(node, 'cloud_provider') = '`+cloud_provider+`'
@@ -218,7 +218,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(filters ThreatFilters) (map[str
 			if res, err = tx.Run(`
 				CALL apoc.nodes.group(['ThreatNode'], ['node_type', 'depth', 'cloud_provider'],
 				[{`+"`*`"+`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum', sum_cloud_compliance: 'sum',
-				node_id:'collect', num_cve: 'collect', num_secrets:'collect', num_compliance:'collect', num_cloud_compliance:'collect'},
+				node_id:'collect', vulnerabilities_count: 'collect', secrets_count:'collect', compliances_count:'collect', cloud_compliances_count:'collect'},
 				{`+"`*`"+`: 'count'}], {selfRels: false})
 				YIELD node, relationships
 				WHERE NOT apoc.any.property(node, 'cloud_provider') IN ['aws', 'gcp', 'azure']
@@ -416,12 +416,12 @@ func (ap AttackPaths) getNodeInfos() map[int64]ThreatNodeInfo {
 				cloud_compliance_count = v.collect_num_cloud_compliance[i]
 			}
 			Nodes[Node_id] = NodeInfo{
-				Node_id:                 Node_id,
-				Name:                    Node_id,
-				Vulnerability_count:     vuln_count,
-				Secrets_count:           secrets_count,
-				Compliance_count:        compliance_count,
-				CloudCompliance_count:   cloud_compliance_count,
+				Node_id:               Node_id,
+				Name:                  Node_id,
+				Vulnerability_count:   vuln_count,
+				Secrets_count:         secrets_count,
+				Compliance_count:      compliance_count,
+				CloudCompliance_count: cloud_compliance_count,
 			}
 		}
 		res[v.identity] = ThreatNodeInfo{
@@ -467,10 +467,10 @@ type ThreatNodeInfo struct {
 }
 
 type NodeInfo struct {
-	Node_id                 string `json:"node_id" required:"true"`
-	Name                    string `json:"name" required:"true"`
-	Vulnerability_count     int64  `json:"vulnerability_count" required:"true"`
-	Secrets_count           int64  `json:"secrets_count" required:"true"`
-	Compliance_count        int64  `json:"compliance_count" required:"true"`
-	CloudCompliance_count   int64  `json:"cloud_compliance_count" required:"true"`
+	Node_id               string `json:"node_id" required:"true"`
+	Name                  string `json:"name" required:"true"`
+	Vulnerability_count   int64  `json:"vulnerability_count" required:"true"`
+	Secrets_count         int64  `json:"secrets_count" required:"true"`
+	Compliance_count      int64  `json:"compliance_count" required:"true"`
+	CloudCompliance_count int64  `json:"cloud_compliance_count" required:"true"`
 }
