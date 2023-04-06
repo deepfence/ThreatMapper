@@ -1,7 +1,7 @@
 import { Suspense, useCallback, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
-import { HiOutlineExclamationCircle } from 'react-icons/hi';
+import { HiDotsVertical, HiOutlineExclamationCircle } from 'react-icons/hi';
 import {
   ActionFunctionArgs,
   generatePath,
@@ -10,7 +10,15 @@ import {
   useLoaderData,
 } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button, createColumnHelper, Modal, Table, TableSkeleton } from 'ui-components';
+import {
+  Button,
+  createColumnHelper,
+  Dropdown,
+  DropdownItem,
+  Modal,
+  Table,
+  TableSkeleton,
+} from 'ui-components';
 
 import { getUserApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
@@ -85,8 +93,71 @@ export const action = async ({
     success: true,
   };
 };
-const UserManagement = () => {
+const ActionDropdown = ({ id }: { id: string }) => {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { navigate } = usePageNavigation();
+
+  return (
+    <>
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          userId={id}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
+      <Dropdown
+        triggerAsChild={true}
+        align="end"
+        content={
+          <>
+            <DropdownItem
+              className="text-sm"
+              onClick={() => {
+                navigate(
+                  generatePath('/settings/user-management/edit/:userId', {
+                    userId: id,
+                  }),
+                );
+              }}
+            >
+              <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
+                <IconContext.Provider
+                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
+                >
+                  <FaPencilAlt />
+                </IconContext.Provider>
+                Edit
+              </span>
+            </DropdownItem>
+            <DropdownItem
+              className="text-sm"
+              onClick={() => {
+                setShowDeleteDialog(true);
+              }}
+            >
+              <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
+                <IconContext.Provider
+                  value={{ className: 'text-red-700 dark:text-red-400' }}
+                >
+                  <FaTrashAlt className="text-red-500" />
+                </IconContext.Provider>
+                Delete
+              </span>
+            </DropdownItem>
+          </>
+        }
+      >
+        <Button size="xs" color="normal" className="hover:bg-transparent">
+          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
+            <HiDotsVertical />
+          </IconContext.Provider>
+        </Button>
+      </Dropdown>
+    </>
+  );
+};
+const UserManagement = () => {
   const columnHelper = createColumnHelper<ModelUser>();
   const loaderData = useLoaderData() as LoaderDataType;
   const columns = useMemo(() => {
@@ -128,41 +199,23 @@ const UserManagement = () => {
       }),
       columnHelper.display({
         id: 'actions',
+        enableSorting: false,
         cell: (cell) => {
           if (!cell.row.original.id) {
-            throw new Error('User id not found');
+            throw new Error('Registry Account node id not found');
           }
-          return (
-            <span className="flex gap-4">
-              <FaPencilAlt
-                onClick={() => {
-                  navigate(
-                    generatePath('/settings/user-management/edit/:userId', {
-                      userId: String(cell.row.original.id),
-                    }),
-                  );
-                }}
-              />
-              <FaTrashAlt
-                className="text-red-500"
-                onClick={() => {
-                  setShowDeleteDialog(true);
-                  setSelectedUserId(String(cell.row.original.id));
-                }}
-              />
-            </span>
-          );
+          return <ActionDropdown id={cell.row.original.id.toString()} />;
         },
-        header: () => 'Actions',
-        minSize: 30,
-        size: 30,
-        maxSize: 85,
+        header: () => '',
+        minSize: 20,
+        size: 20,
+        maxSize: 20,
+        enableResizing: false,
       }),
     ];
     return columns;
   }, []);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
   return (
     <SettingsTab value="user-management">
       <div className="h-full mt-2 p-2">
@@ -191,13 +244,7 @@ const UserManagement = () => {
                       </Link>
                     </div>
                   </div>
-                  {selectedUserId && (
-                    <DeleteConfirmationModal
-                      showDialog={showDeleteDialog}
-                      userId={selectedUserId}
-                      setShowDialog={setShowDeleteDialog}
-                    />
-                  )}
+
                   {message ? (
                     <p className="text-red-500 text-sm">{message}</p>
                   ) : (
