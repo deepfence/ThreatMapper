@@ -202,7 +202,7 @@ const UserManagement = () => {
         enableSorting: false,
         cell: (cell) => {
           if (!cell.row.original.id) {
-            throw new Error('Registry Account node id not found');
+            throw new Error('User id not found');
           }
           return <ActionDropdown id={cell.row.original.id.toString()} />;
         },
