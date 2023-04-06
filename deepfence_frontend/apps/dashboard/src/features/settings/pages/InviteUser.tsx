@@ -113,24 +113,25 @@ const InviteUser = () => {
               required
               helperText={data?.fieldErrors?.email}
             />
-            <Select
-              name="role"
-              label={'Role'}
-              placeholder="admin"
-              sizing="xs"
-              className="w-3/4 max-w-xs pl-3"
-              helperText={data?.fieldErrors?.role}
-            >
-              <SelectItem value={ModelUpdateUserIdRequestRoleEnum['Admin']}>
-                admin
-              </SelectItem>
-              <SelectItem value={ModelUpdateUserIdRequestRoleEnum['StandardUser']}>
-                User
-              </SelectItem>
-              <SelectItem value={ModelUpdateUserIdRequestRoleEnum['ReadOnlyUser']}>
-                read only user
-              </SelectItem>
-            </Select>
+            <div className="w-3/4 max-w-xs">
+              <Select
+                name="role"
+                label={'Role'}
+                placeholder="admin"
+                sizing="xs"
+                helperText={data?.fieldErrors?.role}
+              >
+                <SelectItem value={ModelUpdateUserIdRequestRoleEnum['Admin']}>
+                  admin
+                </SelectItem>
+                <SelectItem value={ModelUpdateUserIdRequestRoleEnum['StandardUser']}>
+                  User
+                </SelectItem>
+                <SelectItem value={ModelUpdateUserIdRequestRoleEnum['ReadOnlyUser']}>
+                  read only user
+                </SelectItem>
+              </Select>
+            </div>
             <Button
               color="primary"
               className="w-3/4 max-w-xs pl-3"
