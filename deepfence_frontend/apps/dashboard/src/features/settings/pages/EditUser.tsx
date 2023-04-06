@@ -176,41 +176,43 @@ const EditUser = () => {
                       defaultValue={user.data?.last_name}
                       helperText={data?.fieldErrors?.lastName}
                     />
-                    <Select
-                      defaultValue={user.data?.role}
-                      name="role"
-                      label={'Role'}
-                      placeholder="admin"
-                      sizing="xs"
-                      className="w-3/4 max-w-xs relative pl-3"
-                      helperText={data?.fieldErrors?.role}
-                    >
-                      <SelectItem
-                        value={ModelUpdateUserIdRequestRoleEnum['StandardUser']}
+                    <div className="w-3/4 max-w-xs">
+                      <Select
+                        defaultValue={user.data?.role}
+                        name="role"
+                        label={'Role'}
+                        placeholder="admin"
+                        sizing="xs"
+                        helperText={data?.fieldErrors?.role}
                       >
-                        User
-                      </SelectItem>
-                      <SelectItem value={ModelUpdateUserIdRequestRoleEnum['Admin']}>
-                        admin
-                      </SelectItem>
-                      <SelectItem
-                        value={ModelUpdateUserIdRequestRoleEnum['ReadOnlyUser']}
+                        <SelectItem
+                          value={ModelUpdateUserIdRequestRoleEnum['StandardUser']}
+                        >
+                          User
+                        </SelectItem>
+                        <SelectItem value={ModelUpdateUserIdRequestRoleEnum['Admin']}>
+                          admin
+                        </SelectItem>
+                        <SelectItem
+                          value={ModelUpdateUserIdRequestRoleEnum['ReadOnlyUser']}
+                        >
+                          read only user
+                        </SelectItem>
+                      </Select>
+                    </div>
+                    <div className="w-3/4 max-w-xs">
+                      <Select
+                        name="status"
+                        label={'Status'}
+                        placeholder="Active"
+                        sizing="xs"
+                        defaultValue={user.data?.is_active ? 'Active' : 'inActive'}
+                        helperText={data?.fieldErrors?.status}
                       >
-                        read only user
-                      </SelectItem>
-                    </Select>
-                    <Select
-                      name="status"
-                      label={'Status'}
-                      placeholder="Active"
-                      sizing="xs"
-                      className="w-3/4 max-w-xs relative pl-3"
-                      defaultValue={user.data?.is_active ? 'Active' : 'inActive'}
-                      helperText={data?.fieldErrors?.status}
-                    >
-                      <SelectItem value="true">Active</SelectItem>
-                      <SelectItem value="false">InActive</SelectItem>
-                    </Select>
+                        <SelectItem value="true">Active</SelectItem>
+                        <SelectItem value="false">InActive</SelectItem>
+                      </Select>
+                    </div>
                     <Link to="/settings/user-management">
                       <Button color="danger" className="w-3/4 max-w-xs pl-3">
                         Cancel
