@@ -103,6 +103,7 @@ const ChangePassword = () => {
               sizing="sm"
               className="w-3/4 min-[200px] max-w-xs"
               helperText={data?.fieldErrors?.old_password}
+              required
             />
             <TextInput
               label="New Password"
@@ -113,6 +114,7 @@ const ChangePassword = () => {
               className="w-3/4 min-[200px] max-w-xs"
               color={data?.fieldErrors?.new_password ? 'error' : 'default'}
               helperText={data?.fieldErrors?.new_password}
+              required
             />
             <TextInput
               label="Confirm Password"
@@ -123,6 +125,7 @@ const ChangePassword = () => {
               className="w-3/4 min-[200px] max-w-xs"
               color={data?.fieldErrors?.confirm_password ? 'error' : 'default'}
               helperText={data?.fieldErrors?.confirm_password}
+              required
             />
             <span className="flex flex-row gap-8 pt-2">
               <Link to="/settings/user-management">
