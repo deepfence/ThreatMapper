@@ -9,22 +9,6 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-func status_scan_field(ts utils.Neo4jScanType) string {
-	switch ts {
-	case utils.NEO4J_SECRET_SCAN:
-		return "secret_scan_status"
-	case utils.NEO4J_VULNERABILITY_SCAN:
-		return "vulnerability_scan_status"
-	case utils.NEO4J_MALWARE_SCAN:
-		return "malware_scan_status"
-	case utils.NEO4J_COMPLIANCE_SCAN:
-		return "compliance_scan_status"
-	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
-		return "cloud_compliance_scan_status"
-	}
-	return "unknown"
-}
-
 func status_count_field(ts utils.Neo4jScanType) string {
 	switch ts {
 	case utils.NEO4J_SECRET_SCAN:

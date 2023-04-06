@@ -2,6 +2,7 @@ package controls
 
 import (
 	"context"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -45,9 +46,11 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeId, cloudProvider, 
 	}
 
 	for _, rec := range records {
-		var categoryHierarchy []string
-		for _, rVal := range rec.Values[4].([]interface{}) {
-			categoryHierarchy = append(categoryHierarchy, rVal.(string))
+		categoryHierarchy := []string{}
+		if rec.Values[4] != nil {
+			for _, rVal := range rec.Values[4].([]interface{}) {
+				categoryHierarchy = append(categoryHierarchy, rVal.(string))
+			}
 		}
 		control := model.CloudNodeComplianceControl{
 			ControlId:         rec.Values[0].(string),

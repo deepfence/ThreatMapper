@@ -64,15 +64,13 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 func fillContainers(ctx context.Context, containers []model.Container) ([]model.Container, error) {
 	for i := range containers {
 		processes, err := getContainerProcesses(ctx, containers[i])
-		if err != nil {
-			return nil, err
+		if err == nil {
+			containers[i].Processes = processes
 		}
-		containers[i].Processes = processes
 		images, err := getContainerContainerImages(ctx, containers[i])
-		if err != nil || len(images) != 1 {
-			return nil, err
+		if err == nil && len(images) > 0 {
+			containers[i].ContainerImage = images[0]
 		}
-		containers[i].ContainerImage = images[0]
 	}
 	return containers, nil
 }
