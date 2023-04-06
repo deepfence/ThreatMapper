@@ -5,7 +5,6 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -33,11 +32,6 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 		host_ids = model.ExtractNodeIDs(hosts)
 	}
 
-	statuses, err := reporters_scan.GetScanStatuses[model.Host](ctx, host_ids)
-	if err != nil {
-		return nil, err
-	}
-
 	for i := range hosts {
 		processes, err := getHostProcesses(ctx, hosts[i])
 		if err != nil {
@@ -56,7 +50,6 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 			return nil, err
 		}
 		hosts[i].ContainerImages = container_images
-		hosts[i].RegularScanStatus = statuses[i]
 	}
 	return hosts, nil
 }
@@ -91,15 +84,6 @@ func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Cont
 		container_ids = model.ExtractNodeIDs(containers)
 	}
 
-	statuses, err := reporters_scan.GetScanStatuses[model.Container](ctx, container_ids)
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range containers {
-		containers[i].RegularScanStatus = statuses[i]
-	}
-
 	return containers, nil
 }
 
@@ -130,14 +114,6 @@ func GetContainerImagesReport(ctx context.Context, filter LookupFilter) ([]model
 		images_ids = model.ExtractNodeIDs(images)
 	}
 
-	statuses, err := reporters_scan.GetScanStatuses[model.ContainerImage](ctx, images_ids)
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range images {
-		images[i].RegularScanStatus = statuses[i]
-	}
 	return images, nil
 }
 
@@ -160,14 +136,6 @@ func GetCloudResourcesReport(ctx context.Context, filter LookupFilter) ([]model.
 		entries_ids = model.ExtractNodeIDs(entries)
 	}
 
-	statuses, err := reporters_scan.GetScanStatuses[model.CloudResource](ctx, entries_ids)
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range entries {
-		entries[i].RegularScanStatus = statuses[i]
-	}
 	return entries, nil
 }
 

@@ -9,22 +9,6 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-func status_count_field(ts utils.Neo4jScanType) string {
-	switch ts {
-	case utils.NEO4J_SECRET_SCAN:
-		return "secrets_count"
-	case utils.NEO4J_VULNERABILITY_SCAN:
-		return "vulnerabilities_count"
-	case utils.NEO4J_MALWARE_SCAN:
-		return "malwares_count"
-	case utils.NEO4J_COMPLIANCE_SCAN:
-		return "compliances_count"
-	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
-		return "cloud_compliances_count"
-	}
-	return "unknown"
-}
-
 func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data []Status) error {
 	return func(ns string, data []Status) error {
 		ctx := directory.NewContextWithNameSpace(directory.NamespaceID(ns))
@@ -53,12 +37,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 		if _, err = tx.Run(`
 			UNWIND $batch as row
 			MERGE (n:`+string(ts)+`{node_id: row.scan_id})
-			SET n.status = row.scan_status, n.scan_message = row.scan_message, n.updated_at = TIMESTAMP()
-			WITH n
-			MATCH (n) -[:DETECTED]- (m)
-			WITH n, count(m) as count
-			MATCH (n) -[:SCANNED]- (r)
-			SET r.`+status_count_field(ts)+` = count`,
+			SET n.status = row.scan_status, n.scan_message = row.scan_message, n.updated_at = TIMESTAMP()`,
 			map[string]interface{}{"batch": statusesToMaps(data)}); err != nil {
 			log.Error().Msgf("Error while updating scan status: %+v", err)
 			return err
