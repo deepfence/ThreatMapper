@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import Button from '@/components/button/Button';
 import { Modal } from '@/components/modal/Modal';
-import { renderUI } from '@/tests/utils';
+import { renderUI, waitFor } from '@/tests/utils';
 
 /**
  * Why user-event???
@@ -64,7 +64,9 @@ describe(`Component Modal`, () => {
 
     // triggerer focus back
     const openBtnForModalAfterClose = getByTestId('button-trigger-id');
-    expect(openBtnForModalAfterClose).toHaveFocus();
+    await waitFor(() => {
+      expect(openBtnForModalAfterClose).toHaveFocus();
+    });
   });
 
   it(`open modal with header and footer`, async () => {
