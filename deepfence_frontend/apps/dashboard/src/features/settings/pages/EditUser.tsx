@@ -193,12 +193,12 @@ const EditUser = () => {
                           User
                         </SelectItem>
                         <SelectItem value={ModelUpdateUserIdRequestRoleEnum['Admin']}>
-                          admin
+                          Admin
                         </SelectItem>
                         <SelectItem
                           value={ModelUpdateUserIdRequestRoleEnum['ReadOnlyUser']}
                         >
-                          read only user
+                          Read only user
                         </SelectItem>
                       </Select>
                     </div>

@@ -127,16 +127,19 @@ const ChangePassword = () => {
               helperText={data?.fieldErrors?.confirm_password}
               required
             />
-            <span className="flex flex-row gap-8 pt-2">
-              <Link to="/settings/user-management">
-                <Button color="danger" className="w-36" size="xs">
-                  Cancel
-                </Button>
-              </Link>
-              <Button color="primary" className="w-36" type="submit" size="xs">
-                Change Password
+            <Link to="/settings/user-management">
+              <Button color="danger" className="w-3/4 max-w-xs pl-3" size="xs">
+                Cancel
               </Button>
-            </span>
+            </Link>
+            <Button
+              color="primary"
+              className="w-3/4 max-w-xs pl-3"
+              type="submit"
+              size="xs"
+            >
+              Change Password
+            </Button>
           </fetcher.Form>
         </Card>
       </SettingsTab>
