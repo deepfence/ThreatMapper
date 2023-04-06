@@ -3,6 +3,7 @@ package slack
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -18,9 +19,28 @@ func New(b []byte) (*Slack, error) {
 	return &s, nil
 }
 
+func (s Slack) FormatMessage(message []map[string]interface{}) string {
+	entiremsg := "*" + s.NotificationType + "*\n\n"
+	for k, v := range message {
+		entiremsg = entiremsg + fmt.Sprintf("#%d\n", k)
+		for key, val := range v {
+			entiremsg = fmt.Sprintf("%s:%s", key, val)
+		}
+		entiremsg = entiremsg + "\n"
+	}
+	return entiremsg
+}
+
 func (s Slack) SendNotification(message string) error {
+	// formatting : unmarshal into payload
+	var msg []map[string]interface{}
+	err := json.Unmarshal([]byte(message), &msg)
+	if err != nil {
+		return err
+	}
+	m := s.FormatMessage(msg)
 	payload := Payload{
-		Text: message,
+		Text: m,
 	}
 
 	payloadBytes, err := json.Marshal(payload)
