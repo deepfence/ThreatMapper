@@ -69,6 +69,8 @@ export const action: ActionFunction = async ({
     return r.value();
   }
   if (body.intent == ModelInviteUserRequestActionEnum['GetInviteLink']) {
+    r.invite_url && navigator.clipboard.writeText(r.invite_url);
+    toast.success('User Invite URL copied!!!');
     return r;
   }
   toast.success('User Invite Sent successfully');
@@ -81,22 +83,24 @@ const InviteUser = () => {
   return (
     <>
       <SettingsTab value="user-management">
-        <DFLink
-          to="/settings/user-management"
-          className="shrink-0 flex items-center justify-start hover:no-underline active:no-underline focus:no-underline ml-auto mr-2 mt-2"
-        >
-          <IconContext.Provider
-            value={{
-              className: 'text-blue-600 dark:text-blue-500 ',
-            }}
+        <div className="flex">
+          <DFLink
+            to="/settings/user-management"
+            className="shrink-0 flex items-center justify-start hover:no-underline active:no-underline focus:no-underline ml-5 mr-2 mt-2"
           >
-            <HiArrowSmLeft />
-          </IconContext.Provider>
-          <span className="text text-blue-600 dark:text-blue-500">Back</span>
-        </DFLink>
+            <IconContext.Provider
+              value={{
+                className: 'text-blue-600 dark:text-blue-500 ',
+              }}
+            >
+              <HiArrowSmLeft />
+            </IconContext.Provider>
+            <span className="text text-blue-600 dark:text-blue-500">Back</span>
+          </DFLink>
 
-        <span className="flex ml-5 mt-5 dark:text-white ">User Profile</span>
-        <Card className="flex-col p-5 mt-2 ml-10 gap-y-4">
+          <span className="flex ml-2 mt-2 dark:text-white ">User Profile</span>
+        </div>
+        <Card className="flex-col p-5 mt-2 ml-5 gap-y-4">
           <fetcher.Form method="post" className="flex flex-col gap-y-3">
             <TextInput
               label="Emial"
@@ -109,13 +113,12 @@ const InviteUser = () => {
               required
               helperText={data?.fieldErrors?.email}
             />
-
             <Select
               name="role"
               label={'Role'}
               placeholder="admin"
               sizing="xs"
-              className="w-3/4 min-[200px] max-w-xs relative pl-3"
+              className="w-3/4 max-w-xs pl-3"
               helperText={data?.fieldErrors?.role}
             >
               <SelectItem value={ModelUpdateUserIdRequestRoleEnum['Admin']}>
@@ -130,7 +133,7 @@ const InviteUser = () => {
             </Select>
             <Button
               color="primary"
-              className="w-3/4 min-[200px] max-w-xs relative pl-3"
+              className="w-3/4 max-w-xs pl-3"
               size="sm"
               type="submit"
               name="intent"
@@ -141,7 +144,7 @@ const InviteUser = () => {
 
             <Button
               color="primary"
-              className="w-3/4 min-[200px] max-w-xs relative pl-3"
+              className="w-3/4 max-w-xs pl-3"
               type="submit"
               size="sm"
               name="intent"
@@ -149,15 +152,15 @@ const InviteUser = () => {
             >
               Get an invite link
             </Button>
-            {data?.invite_url && (
-              <p
-                className={`mt-1.5 w-3/4 min-[200px] max-w-xs ${Typography.size.sm} text-green-500`}
-              >
-                Invite URL:{data?.invite_url}, invite will expire after{' '}
-                {data?.invite_expiry_hours} hours
-              </p>
-            )}
           </fetcher.Form>
+          {data?.invite_url && (
+            <p
+              className={`mt-1.5 w-3/4 max-w-xs ${Typography.size.sm} text-green-500 relative`}
+            >
+              Invite URL:{data?.invite_url}, invite will expire after{' '}
+              {data?.invite_expiry_hours} hours
+            </p>
+          )}
         </Card>
       </SettingsTab>
     </>

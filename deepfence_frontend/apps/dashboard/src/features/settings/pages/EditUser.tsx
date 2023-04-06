@@ -30,7 +30,6 @@ import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export type UpdateActionReturnType = {
   error?: string;
@@ -132,21 +131,23 @@ const EditUser = () => {
   return (
     <>
       <SettingsTab value="user-management">
-        <DFLink
-          to="/settings/user-management"
-          className="shrink-0 flex items-center justify-start hover:no-underline active:no-underline focus:no-underline ml-auto mr-2 mt-2"
-        >
-          <IconContext.Provider
-            value={{
-              className: 'text-blue-600 dark:text-blue-500 ',
-            }}
+        <div className="flex">
+          <DFLink
+            to="/settings/user-management"
+            className="shrink-0 flex items-center justify-start hover:no-underline active:no-underline focus:no-underline mr-2 mt-2 ml-5"
           >
-            <HiArrowSmLeft />
-          </IconContext.Provider>
-          <span className="text text-blue-600 dark:text-blue-500">Back</span>
-        </DFLink>
-        <span className="flex ml-10 mt-2 dark:text-white ">User Profile</span>
-        <Card className="flex-col p-5 mt-2 ml-10 gap-y-4">
+            <IconContext.Provider
+              value={{
+                className: 'text-blue-600 dark:text-blue-500 ',
+              }}
+            >
+              <HiArrowSmLeft />
+            </IconContext.Provider>
+            <span className="text text-blue-600 dark:text-blue-500">Back</span>
+          </DFLink>
+          <span className="flex ml-2 mt-2 dark:text-white ">User Profile</span>
+        </div>
+        <Card className="flex-col p-5 mt-2 ml-5 gap-y-4">
           <Suspense fallback={<CircleSpinner size="xs" />}>
             <DFAwait resolve={loaderData.data}>
               {(user: LoaderDataType) => {
@@ -160,7 +161,7 @@ const EditUser = () => {
                       name="firstName"
                       color={data?.fieldErrors?.firstName ? 'error' : 'default'}
                       sizing="sm"
-                      className="w-3/4 min-[200px] max-w-xs"
+                      className="w-3/4 max-w-xs"
                       defaultValue={user.data?.first_name}
                       helperText={data?.fieldErrors?.firstName}
                     />
@@ -170,7 +171,7 @@ const EditUser = () => {
                       placeholder="Last Name"
                       name="lastName"
                       sizing="sm"
-                      className="w-3/4 min-[200px] max-w-xs"
+                      className="w-3/4 max-w-xs"
                       color={data?.fieldErrors?.lastName ? 'error' : 'default'}
                       defaultValue={user.data?.last_name}
                       helperText={data?.fieldErrors?.lastName}
@@ -181,7 +182,7 @@ const EditUser = () => {
                       label={'Role'}
                       placeholder="admin"
                       sizing="xs"
-                      className="w-3/4 min-[200px] max-w-xs relative pl-3"
+                      className="w-3/4 max-w-xs relative pl-3"
                       helperText={data?.fieldErrors?.role}
                     >
                       <SelectItem
@@ -203,23 +204,21 @@ const EditUser = () => {
                       label={'Status'}
                       placeholder="Active"
                       sizing="xs"
-                      className="w-3/4 min-[200px] max-w-xs relative pl-3"
+                      className="w-3/4 max-w-xs relative pl-3"
                       defaultValue={user.data?.is_active ? 'Active' : 'inActive'}
                       helperText={data?.fieldErrors?.status}
                     >
                       <SelectItem value="true">Active</SelectItem>
                       <SelectItem value="false">InActive</SelectItem>
                     </Select>
-                    <span className="flex flex-row gap-8 ">
-                      <Link to="/settings/user-management">
-                        <Button color="danger" className="w-36">
-                          Cancel
-                        </Button>
-                      </Link>
-                      <Button color="primary" className="w-36" type="submit">
-                        Submit
+                    <Link to="/settings/user-management">
+                      <Button color="danger" className="w-3/4 max-w-xs pl-3">
+                        Cancel
                       </Button>
-                    </span>
+                    </Link>
+                    <Button color="primary" className="w-3/4 max-w-xs pl-3" type="submit">
+                      Submit
+                    </Button>
                   </fetcher.Form>
                 );
               }}

@@ -3,7 +3,7 @@ import { HiArrowSmLeft } from 'react-icons/hi';
 import { Link, useFetcher } from 'react-router-dom';
 import { ActionFunction, redirect } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button, Card, TextInput, Typography } from 'ui-components';
+import { Button, Card, TextInput } from 'ui-components';
 
 import { getUserApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
@@ -76,21 +76,23 @@ const ChangePassword = () => {
   return (
     <>
       <SettingsTab value="user-management">
-        <DFLink
-          to="/settings/user-management"
-          className="shrink-0 flex items-center justify-start hover:no-underline active:no-underline focus:no-underline ml-auto mr-2 mt-2"
-        >
-          <IconContext.Provider
-            value={{
-              className: 'text-blue-600 dark:text-blue-500 ',
-            }}
+        <div className="flex">
+          <DFLink
+            to="/settings/user-management"
+            className="shrink-0 flex items-center justify-start hover:no-underline active:no-underline focus:no-underline ml-5 mr-2 mt-2"
           >
-            <HiArrowSmLeft />
-          </IconContext.Provider>
-          <span className="text text-blue-600 dark:text-blue-500">Back</span>
-        </DFLink>
-        <span className="flex ml-10 mt-2 dark:text-white ">User Profile</span>
-        <Card className="flex-col p-5 mt-2 ml-10 gap-y-4">
+            <IconContext.Provider
+              value={{
+                className: 'text-blue-600 dark:text-blue-500 ',
+              }}
+            >
+              <HiArrowSmLeft />
+            </IconContext.Provider>
+            <span className="text text-blue-600 dark:text-blue-500">Back</span>
+          </DFLink>
+          <span className="flex ml-2 mt-2 dark:text-white ">User Profile</span>
+        </div>
+        <Card className="flex-col p-5 mt-2 ml-5 gap-y-4">
           <fetcher.Form method="post" className="flex flex-col gap-y-3">
             <TextInput
               label="Old Password"
