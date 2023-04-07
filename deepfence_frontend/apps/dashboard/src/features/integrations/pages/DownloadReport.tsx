@@ -145,8 +145,31 @@ const action = async ({
     const _nodeType: UtilsReportFiltersNodeTypeEnum =
       UtilsReportFiltersNodeTypeEnum[nodeType];
 
-    const t = body.deadNodes === 'on';
-    debugger;
+    const scan_status = body.status.toString();
+    const account_id = body.accountId.toString();
+    const host_name = body.nodeIds.toString();
+
+    const advanced_report_filters: {
+      masked: boolean;
+      account_id?: string;
+      host_name?: string;
+      kubernetes_cluster_name?: string;
+      scan_status?: string;
+    } = {
+      masked: body.mask.toString().toLowerCase() === 'masked',
+    };
+    if (account_id) {
+      advanced_report_filters.account_id = account_id;
+    }
+
+    if (host_name) {
+      advanced_report_filters.host_name = host_name;
+    }
+
+    if (scan_status) {
+      advanced_report_filters.scan_status = scan_status;
+    }
+
     const r = await makeRequest({
       apiFunction: getReportsApiClient().generateReport,
       apiArgs: [
@@ -154,21 +177,12 @@ const action = async ({
           modelGenerateReportReq: {
             duration: DURATION[duration],
             filters: {
-              advanced_report_filters: {
-                masked: body.mask.toString().toLowerCase() === 'masked',
-                // account_id: 'string',
-                // host_name: 'string',
-                // kubernetes_cluster_name: 'string',
-                // scan_status: 'string',
-              },
+              advanced_report_filters: advanced_report_filters,
               include_dead_nodes: body.deadNodes === 'on',
               node_type: _nodeType,
               scan_type: _resource,
-              severity_or_check_type: severity.map(
-                (sev) =>
-                  sev
-                    .toString()
-                    .toLowerCase() as UtilsReportFiltersSeverityOrCheckTypeEnum,
+              severity_or_check_type: (severity as string[]).map((sev) =>
+                sev.toLowerCase(),
               ),
             },
 
@@ -477,7 +491,8 @@ const getBenchmarkList = (nodeType: string) => {
       return [];
   }
 };
-const isCloudAccount = (provider: string) => ['AWS', 'GCP', 'Azure'].includes(provider);
+const isCloudAccount = (provider: string) =>
+  provider === 'Aws' || provider === 'Azure' || provider === 'Gcp';
 
 const AdvancedFilter = ({
   resourceType,
@@ -486,7 +501,7 @@ const AdvancedFilter = ({
   resourceType: string;
   provider: string;
 }) => {
-  const [selectedHosts, setSelectedHosts] = useState([]);
+  const [selectedHosts, setSelectedHosts] = useState('');
   const [selectedContainerImages, setSelectedContainerImages] = useState([]);
   const [_containers, setContainers] = useState([]);
   const { hosts, status: listHostStatus } = useGetHostsList({
@@ -506,6 +521,7 @@ const AdvancedFilter = ({
   const [selectedCloudAccounts, setSelectedCloudAccounts] = useState([]);
 
   const [maskedType, setMaskedType] = useState('');
+  const [status, setStatus] = useState('');
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -528,42 +544,43 @@ const AdvancedFilter = ({
         </div>
       ) : null}
       {resourceType &&
-      provider &&
-      resourceType === 'Compliance' &&
-      !isCloudAccount(provider) ? (
-        <>
-          <div>
-            {listHostStatus !== 'idle' ? (
-              <div className="py-6">
-                <CircleSpinner size="sm" />
-              </div>
-            ) : (
-              <Select
-                value={selectedHosts}
-                name="nodeIds[]"
-                onChange={(value) => {
-                  setSelectedHosts(value);
-                }}
-                placeholder="Select host"
-                label="Select host (Optional)"
-                sizing="xs"
-                className="mt-2"
-              >
-                {hosts.map((host) => {
-                  return (
-                    <SelectItem value={host.nodeId} key={host.nodeId}>
-                      {host.hostName}
-                    </SelectItem>
-                  );
-                })}
-              </Select>
-            )}
-          </div>
-        </>
-      ) : (
+        provider &&
+        resourceType === UtilsReportFiltersScanTypeEnum.Compliance &&
+        !isCloudAccount(provider) && (
+          <>
+            <div>
+              {listHostStatus !== 'idle' ? (
+                <div className="py-6">
+                  <CircleSpinner size="sm" />
+                </div>
+              ) : (
+                <Select
+                  value={selectedHosts}
+                  name="nodeIds[]"
+                  onChange={(value) => {
+                    setSelectedHosts(value);
+                  }}
+                  placeholder="Select host"
+                  label="Select host (Optional)"
+                  sizing="xs"
+                  className="mt-2"
+                >
+                  {hosts.map((host) => {
+                    return (
+                      <SelectItem value={host.nodeId} key={host.nodeId}>
+                        {host.hostName}
+                      </SelectItem>
+                    );
+                  })}
+                </Select>
+              )}
+            </div>
+          </>
+        )}
+      {resourceType && provider && isCloudAccount(provider) && (
         <Select
           value={selectedCloudAccounts}
-          name="nodeIds[]"
+          name="accountId"
           onChange={(value) => {
             setSelectedCloudAccounts(value);
           }}
@@ -584,7 +601,7 @@ const AdvancedFilter = ({
 
       {resourceType &&
       provider &&
-      resourceType !== 'Compliance' &&
+      resourceType !== UtilsReportFiltersScanTypeEnum.Compliance &&
       provider === 'Host' ? (
         <>
           <div>
@@ -595,7 +612,7 @@ const AdvancedFilter = ({
             ) : (
               <Select
                 value={selectedHosts}
-                name="nodeIds[]"
+                name="nodeIds"
                 onChange={(value) => {
                   setSelectedHosts(value);
                 }}
@@ -619,7 +636,7 @@ const AdvancedFilter = ({
 
       {resourceType &&
       provider &&
-      resourceType !== 'Compliance' &&
+      resourceType !== UtilsReportFiltersScanTypeEnum.Compliance &&
       provider === 'Container Image' ? (
         <>
           <div>
@@ -654,7 +671,7 @@ const AdvancedFilter = ({
 
       {resourceType &&
       provider &&
-      resourceType !== 'Compliance' &&
+      resourceType !== UtilsReportFiltersScanTypeEnum.Compliance &&
       provider === 'Container' ? (
         <>
           <div>
@@ -687,7 +704,10 @@ const AdvancedFilter = ({
         </>
       ) : null}
 
-      {resourceType && provider && resourceType !== 'Compliance' && provider === 'Pod' ? (
+      {resourceType &&
+      provider &&
+      resourceType !== UtilsReportFiltersScanTypeEnum.Compliance &&
+      provider === 'Pod' ? (
         <>
           <div>
             {listClusterStatus !== 'idle' ? (
@@ -739,6 +759,24 @@ const AdvancedFilter = ({
           })}
         </Select>
       )}
+      <Select
+        value={status}
+        name="status"
+        onChange={(value) => {
+          setStatus(value);
+        }}
+        placeholder="Select Status"
+        label="Select Status (Optional)"
+        sizing="xs"
+      >
+        {['COMPLETE', 'ERROR']?.map((provider) => {
+          return (
+            <SelectItem value={provider} key={provider}>
+              {provider}
+            </SelectItem>
+          );
+        })}
+      </Select>
     </>
   );
 };
@@ -885,9 +923,13 @@ const DownloadForm = () => {
           })}
         </Select>
 
-        {resource === 'Compliance' ? <ComplianceForm setProvider={setProvider} /> : null}
+        {resource === UtilsReportFiltersScanTypeEnum.Compliance ? (
+          <ComplianceForm setProvider={setProvider} />
+        ) : null}
 
-        {resource !== 'Compliance' ? <CommomForm setProvider={setProvider} /> : null}
+        {resource !== UtilsReportFiltersScanTypeEnum.Compliance ? (
+          <CommomForm setProvider={setProvider} />
+        ) : null}
 
         <Select
           label="Select Duration"
