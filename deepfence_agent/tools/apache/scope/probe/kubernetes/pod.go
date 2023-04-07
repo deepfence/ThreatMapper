@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/weaveworks/scope/report"
@@ -82,6 +83,11 @@ func (p *pod) VolumeClaimNames() []string {
 }
 
 func (p *pod) GetNode() (report.Metadata, report.Parent) {
+	var labelsStr string
+	labels, err := json.Marshal(p.Labels())
+	if err == nil {
+		labelsStr = string(labels)
+	}
 	node := report.Metadata{
 		Timestamp:                 time.Now().UTC().Format(time.RFC3339Nano),
 		NodeID:                    p.UID(),
@@ -95,6 +101,8 @@ func (p *pod) GetNode() (report.Metadata, report.Parent) {
 		KubernetesIsInHostNetwork: p.Pod.Spec.HostNetwork,
 		KubernetesNamespace:       p.Namespace(),
 		HostName:                  p.HostName,
+		KubernetesCreated:         p.Created(),
+		KubernetesLabels:          labelsStr,
 	}
 	parent := report.Parent{
 		CloudProvider:     cloudProviderNodeId,

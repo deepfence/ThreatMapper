@@ -150,17 +150,20 @@ type Connection struct {
 }
 
 type Pod struct {
-	ID                        string      `json:"node_id" required:"true"`
-	NodeName                  string      `json:"node_name" required:"true"`
-	Namespace                 string      `json:"kubernetes_namespace" required:"true"`
-	Host                      string      `json:"host_name" required:"true"`
-	Containers                []Container `json:"containers" required:"true"`
-	Processes                 []Process   `json:"processes" required:"true"`
-	KubernetesClusterName     string      `json:"kubernetes_cluster_name" required:"true"`
-	KubernetesClusterId       string      `json:"kubernetes_cluster_id" required:"true"`
-	KubernetesState           string      `json:"kubernetes_state" required:"true"`
-	KubernetesIP              string      `json:"kubernetes_ip" required:"true"`
-	KubernetesIsInHostNetwork string      `json:"kubernetes_is_in_host_network" required:"true"`
+	ID                        string                 `json:"node_id" required:"true"`
+	NodeName                  string                 `json:"node_name" required:"true"`
+	Namespace                 string                 `json:"kubernetes_namespace" required:"true"`
+	PodName                   string                 `json:"pod_name" required:"true"`
+	Host                      string                 `json:"host_name" required:"true"`
+	Containers                []Container            `json:"containers" required:"true"`
+	Processes                 []Process              `json:"processes" required:"true"`
+	KubernetesClusterName     string                 `json:"kubernetes_cluster_name" required:"true"`
+	KubernetesClusterId       string                 `json:"kubernetes_cluster_id" required:"true"`
+	KubernetesState           string                 `json:"kubernetes_state" required:"true"`
+	KubernetesIP              string                 `json:"kubernetes_ip" required:"true"`
+	KubernetesIsInHostNetwork bool                   `json:"kubernetes_is_in_host_network" required:"true"`
+	KubernetesLabels          map[string]interface{} `json:"kubernetes_labels" required:"true" nested_json:"true"`
+	KubernetesCreated         string                 `json:"kubernetes_created" required:"true"`
 }
 
 func (Pod) NodeType() string {
