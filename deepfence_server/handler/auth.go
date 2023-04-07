@@ -137,7 +137,11 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_LOGIN, u, true)
 
-	httpext.JSON(w, http.StatusOK, accessTokenResponse)
+	httpext.JSON(w, http.StatusOK, model.LoginResponse{
+		ResponseAccessToken: *accessTokenResponse,
+		OnboardingRequired:  model.IsOnboardingRequired(ctx),
+		PasswordInvalidated: u.PasswordInvalidated,
+	})
 }
 
 func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {

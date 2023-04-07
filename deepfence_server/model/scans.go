@@ -337,7 +337,7 @@ func (v Malware) GetCategory() string {
 }
 
 func (Malware) GetJsonCategory() string {
-	return "FileSeverity"
+	return "file_severity"
 }
 
 type Compliance struct {

@@ -5,10 +5,11 @@
         <tr>
             <th>Scan Type</th>
             <th>Node Type</th>
-            {{ if (or .NodeWiseData.ComplianceData .NodeWiseData.CloudComplianceData )}}
-            <th>Check Type</th>
-            {{ else }}
+            {{ $scan_types := list "vulnerability" "secret" "malware" }}
+            {{ if mustHas .ScanType $scan_types }}
             <th>Severity</th>
+            {{ else }}
+            <th>Check Type</th>
             {{ end }}
         </tr>
         <tr>

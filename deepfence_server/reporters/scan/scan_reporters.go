@@ -444,6 +444,7 @@ func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_ids [
 	}
 	return model.ScanListResp{ScansInfo: scansInfo}, nil
 }
+
 func processScansListQuery(query string, nodeId string, scanStatus []string, tx neo4j.Transaction) ([]model.ScanInfo, error) {
 	fmt.Printf("list query %v\n", query)
 	var scansInfo []model.ScanInfo

@@ -65,7 +65,7 @@ func (t *connectionTracker) useProcfs() {
 func (t *connectionTracker) ReportConnections(rpt *report.Report) {
 	if t.ebpfTracker != nil {
 		if !t.ebpfTracker.isDead() {
-			t.performEbpfTrack(rpt, t.conf.HostID)
+			t.performEbpfTrack(rpt, t.conf.HostName)
 			return
 		}
 
@@ -85,7 +85,7 @@ func (t *connectionTracker) ReportConnections(rpt *report.Report) {
 			err := t.ebpfTracker.restart()
 			if err == nil {
 				feedEBPFInitialState(t.conf, t.ebpfTracker)
-				t.performEbpfTrack(rpt, t.conf.HostID)
+				t.performEbpfTrack(rpt, t.conf.HostName)
 				return
 			}
 			log.Warnf("could not restart ebpf tracker, falling back to proc scanning: %v", err)
@@ -102,7 +102,7 @@ func (t *connectionTracker) ReportConnections(rpt *report.Report) {
 	})
 
 	if t.conf.WalkProc && t.conf.Scanner != nil {
-		t.performWalkProc(rpt, t.conf.HostID, seenTuples)
+		t.performWalkProc(rpt, t.conf.HostName, seenTuples)
 	}
 }
 
@@ -170,7 +170,7 @@ func feedEBPFInitialState(conf ReporterConfig, ebpfTracker *EbpfTracker) {
 		}
 	})
 
-	ebpfTracker.feedInitialConnections(conns, seenTuples, processesWaitingInAccept, conf.HostID)
+	ebpfTracker.feedInitialConnections(conns, seenTuples, processesWaitingInAccept, conf.HostName)
 }
 
 type pidPair struct {
@@ -346,7 +346,7 @@ func (t *connectionTracker) addConnection(rpt *report.Report, hostNodeID string,
 func (t *connectionTracker) makeEndpointNode(namespaceID uint32, addr net.IP, port uint16, extra extra) report.Metadata {
 	node := report.Metadata{
 		Timestamp:       time.Now().UTC().Format(time.RFC3339Nano),
-		NodeID:          report.MakeEndpointNodeIDB(t.conf.HostID, namespaceID, addr, port),
+		NodeID:          report.MakeEndpointNodeIDB(t.conf.HostName, namespaceID, addr, port),
 		Pid:             extra.PID,
 		HostName:        extra.HostNodeID,
 		ConnectionCount: extra.ConnectionCount,

@@ -64,6 +64,9 @@ var graphTopologySubCmd = &cobra.Command{
 		pod_filter, _ := cmd.Flags().GetString("pod-filter")
 		pod_entries := strings.Split(pod_filter, ",")
 
+		container_filter, _ := cmd.Flags().GetString("container-filter")
+		container_entries := strings.Split(container_filter, ",")
+
 		var field_filters deepfence_server_client.ReportersFieldsFilters
 		fields_contains_filter, _ := cmd.Flags().GetString("fields-contain")
 		if len(fields_contains_filter) != 0 {
@@ -81,6 +84,7 @@ var graphTopologySubCmd = &cobra.Command{
 			RegionFilter:     region_entries,
 			KubernetesFilter: k8s_entries,
 			PodFilter:        pod_entries,
+			ContainerFilter:  container_entries,
 			FieldFilters:     field_filters,
 		}
 
@@ -156,6 +160,7 @@ func init() {
 	graphTopologySubCmd.PersistentFlags().String("provider-filter", "", "CSV provider filter")
 	graphTopologySubCmd.PersistentFlags().String("kubernetes-filter", "", "CSV k8s filter")
 	graphTopologySubCmd.PersistentFlags().String("pod-filter", "", "CSV pod filter")
+	graphTopologySubCmd.PersistentFlags().String("container-filter", "", "CSV container filter")
 	graphTopologySubCmd.PersistentFlags().String("fields-contain", "", "CSV fields filter containing values, e.g. (blah=boo,foo=bar)")
 
 	graphTopologySubCmd.PersistentFlags().String("root", "", "Root can be: ''/hosts/containers/pods/kubernetes")

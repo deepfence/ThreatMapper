@@ -137,6 +137,7 @@ type ReportIngestionData struct {
 
 	Process_edges_batch           []map[string]interface{} `json:"process_edges_batch" required:"true"`
 	Container_edges_batch         []map[string]interface{} `json:"container_edges_batch" required:"true"`
+	Container_process_edges_batch []map[string]interface{} `json:"container_process_edge_batch" required:"true"`
 	Pod_edges_batch               []map[string]interface{} `json:"pod_edges_batch" required:"true"`
 	Endpoint_edges_batch          []map[string]interface{} `json:"endpoint_edges_batch" required:"true"`
 	Container_image_edge_batch    []map[string]interface{} `json:"container_image_edge_batch" required:"true"`
@@ -166,6 +167,7 @@ func (nd *ReportIngestionData) merge(other *ReportIngestionData) {
 	nd.Pod_batch = append(nd.Pod_batch, other.Pod_batch...)
 	nd.Kubernetes_cluster_batch = append(nd.Kubernetes_cluster_batch, other.Kubernetes_cluster_batch...)
 	nd.Process_edges_batch = append(nd.Process_edges_batch, other.Process_edges_batch...)
+	nd.Container_process_edges_batch = append(nd.Container_process_edges_batch, other.Container_process_edges_batch...)
 	nd.Container_edges_batch = append(nd.Container_edges_batch, other.Container_edges_batch...)
 	nd.Pod_edges_batch = append(nd.Pod_edges_batch, other.Pod_edges_batch...)
 	nd.Endpoint_edges_batch = append(nd.Endpoint_edges_batch, other.Endpoint_edges_batch...)
@@ -276,7 +278,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	//endpoint_batch := []map[string]string{}
 	//endpoint_edges := []map[string]string{}
 	// Handle inbound from internet
-	inbound_edges := []map[string]string{}
+	inbound_edges := []map[string]interface{}{}
 
 	for _, n := range rpt.Endpoint {
 		hostName := n.HostName
@@ -297,9 +299,9 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			if len(adjacency) == 0 {
 				// Handle inbound from internet
 				inbound_edges = append(inbound_edges,
-					map[string]string{"destination": hostName, "left_pid": "0", "right_pid": strconv.Itoa(n.Pid)})
+					map[string]interface{}{"destination": hostName, "left_pid": 0, "right_pid": n.Pid})
 			} else {
-				edges := make([]map[string]string, 0, len(adjacency))
+				edges := make([]map[string]interface{}, 0, len(adjacency))
 				for _, i := range adjacency {
 					if n.NodeID != i {
 						ip, port := extractIPPortFromEndpointID(i)
@@ -311,11 +313,11 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 							if ok {
 								rightpid := extractPidFromNodeID(right_ippid)
 								edges = append(edges,
-									map[string]string{"destination": host, "left_pid": strconv.Itoa(n.Pid), "right_pid": rightpid})
+									map[string]interface{}{"destination": host, "left_pid": n.Pid, "right_pid": rightpid})
 							}
 						} else {
 							edges = append(edges,
-								map[string]string{"destination": "out-the-internet", "left_pid": strconv.Itoa(n.Pid), "right_pid": "0"})
+								map[string]interface{}{"destination": "out-the-internet", "left_pid": n.Pid, "right_pid": 0})
 						}
 					}
 				}
@@ -327,12 +329,18 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 
 	process_batch := make([]map[string]interface{}, 0, len(rpt.Process))
 	process_edges_batch := map[string][]string{}
+	container_process_edges_batch := map[string][]string{}
 	for _, n := range rpt.Process {
 		if _, ok := processes_to_keep[n.NodeID]; !ok {
 			continue
 		}
 		process_batch = append(process_batch, metadataToMap(n))
 		process_edges_batch[n.HostName] = append(process_edges_batch[n.HostName], n.NodeID)
+		if parent, has := rpt.ProcessParents[n.NodeID]; has {
+			if len(parent.Container) != 0 {
+				container_process_edges_batch[parent.Container] = append(container_process_edges_batch[parent.Container], n.NodeID)
+			}
+		}
 	}
 
 	container_batch := make([]map[string]interface{}, 0, len(rpt.Container))
@@ -384,6 +392,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 
 		Process_edges_batch:           concatMaps(process_edges_batch),
 		Container_edges_batch:         concatMaps(container_edges_batch),
+		Container_process_edges_batch: concatMaps(container_process_edges_batch),
 		Pod_edges_batch:               concatMaps(pod_edges_batch),
 		Container_image_edge_batch:    concatMaps(container_image_edges_batch),
 		Kubernetes_cluster_edge_batch: concatMaps(kubernetes_edges_batch),
@@ -432,7 +441,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 	if _, err := tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:Container{node_id:row.node_id})
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true`,
+		SET n+= row, n.updated_at = TIMESTAMP(), n.active = row.docker_container_state <> "deleted"`,
 		map[string]interface{}{"batch": batches.Container_batch}); err != nil {
 		return err
 	}
@@ -474,6 +483,17 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 	//if _, err = tx.Run("UNWIND $batch as row MERGE (n:TEndpoint{node_id:row.node_id}) SET n+= row", map[string]interface{}{"batch": batches.Endpoint_batch}); err != nil {
 	//return err
 	//}
+
+	if _, err = tx.Run(`
+		UNWIND $batch as row
+		MATCH (n:Container{node_id: row.source})
+		WITH n, row
+		UNWIND row.destinations as dest
+		MATCH (m:Process{node_id: dest})
+		MERGE (n)-[:HOSTS]->(m)`,
+		map[string]interface{}{"batch": batches.Container_process_edges_batch}); err != nil {
+		return err
+	}
 
 	if _, err = tx.Run(`
 		UNWIND $batch as row
@@ -706,12 +726,16 @@ func extractIPPortFromEndpointID(node_id string) (string, string) {
 	return node_id[first+1 : second], node_id[second+1:]
 }
 
-func extractPidFromNodeID(hni string) string {
+func extractPidFromNodeID(hni string) int {
 	middle := strings.IndexByte(hni, ';')
 	if middle > 0 {
-		return hni[middle+1:]
+		num, err := strconv.Atoi(hni[middle+1:])
+		if err != nil {
+			return 0
+		}
+		return num
 	}
-	return hni
+	return 0
 }
 
 func metadataToMap(n report.Metadata) map[string]interface{} {

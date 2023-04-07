@@ -1,5 +1,5 @@
 {{ define "vulnerabilities-nodes-table" }}
-{{ range $key, $value := .NodeWiseData.VulnerabilityData }}
+{{ range $key, $value := .NodeWiseData.ScanData }}
 <div id="{{ $key }}">
     <h3> {{ $key }} - Details</h3>
     <br>
@@ -14,7 +14,7 @@
             <th style="background: #0576c9; color: white;">Summary</th>
             <th style="width: 40px; background: #0576c9; color: white;">Link</th>
         </tr>
-        {{ range $i, $v := $value }}
+        {{ range $i, $v := $value.ScanResults }}
         <tr>
             <td style="width: 40px">{{ add1 $i }}</td>
             <td style="width: 150px">{{ $v.Cve_id }}</td>

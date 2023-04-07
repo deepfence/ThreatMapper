@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package endpoint
@@ -40,6 +41,6 @@ func (r *Reporter) Report() (report.Report, error) {
 	rpt := report.MakeReport()
 
 	r.connectionTracker.ReportConnections(&rpt)
-	r.natMapper.applyNAT(rpt, r.conf.HostID)
+	r.natMapper.applyNAT(rpt, r.conf.HostName)
 	return rpt, nil
 }

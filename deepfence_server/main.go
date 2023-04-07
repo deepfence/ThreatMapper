@@ -348,6 +348,7 @@ func initializeOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
 	openApiDocs.AddRegistryOperations()
 	openApiDocs.AddIntegrationOperations()
 	openApiDocs.AddReportsOperations()
+	openApiDocs.AddSettingsOperations()
 }
 
 func initializeInternalOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
