@@ -36,12 +36,14 @@ var (
 	AccessTokenExpiry  = time.Minute * 30
 	RefreshTokenExpiry = time.Hour * 24
 	ErrorMessage       = map[string]string{
-		"first_name": "should only contain alphabets, numbers, space and hyphen",
-		"last_name":  "should only contain alphabets, numbers, space and hyphen",
-		"company":    "should only contain alphabets, numbers and valid characters",
-		"api_token":  "api_token must be UUID",
-		"email":      "invalid email address",
-		"password":   "should contain at least one upper case, lower case, digit and special character",
+		"first_name":   "should only contain alphabets, numbers, space and hyphen",
+		"last_name":    "should only contain alphabets, numbers, space and hyphen",
+		"company":      "should only contain alphabets, numbers and valid characters",
+		"api_token":    "api_token must be UUID",
+		"email":        "invalid email address",
+		"old_password": "incorrect old password",
+		"new_password": "should contain at least one upper case, lower case, digit and special character",
+		"password":     "should contain at least one upper case, lower case, digit and special character",
 	}
 	CompanyRegex  = regexp.MustCompile("^[A-Za-z][a-zA-Z0-9-\\s@\\.#&!]+$")
 	UserNameRegex = regexp.MustCompile("^[A-Za-z][A-Za-z .'-]+$")
