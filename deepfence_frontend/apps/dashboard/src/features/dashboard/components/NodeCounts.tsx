@@ -41,8 +41,8 @@ const CountWithIcon = ({
       className="py-2 basis-full flex flex-col h-full cursor-pointer hover:bg-gray-50 hover:dark:bg-gray-700/20 pl-2 justify-center"
     >
       <div
-        className={cx('border-r dark:border-gray-700 pr-4 ', {
-          'border-none': type === 'namespace',
+        className={cx('w-full border-r dark:border-gray-700 pr-4 ', {
+          'border-none': type === 'container_image',
         })}
       >
         <div className="font-light flex text-gray-700 dark:text-white items-center">
