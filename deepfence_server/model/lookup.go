@@ -55,21 +55,21 @@ type Host struct {
 	Processes                 []Process        `json:"processes" required:"true"`
 	Pods                      []Pod            `json:"pods" required:"true"`
 	ContainerImages           []ContainerImage `json:"container_images" required:"true"`
-	InterfaceNames            []string         `json:"interface_names" required:"true"`
-	InterfaceIps              []string         `json:"interface_ips" required:"true"`
+	InterfaceNames            []interface{}    `json:"interface_names" required:"true"`
+	InterfaceIps              []interface{}    `json:"interface_ips" required:"true"`
 	KernelVersion             string           `json:"kernel_version" required:"true"`
 	Uptime                    int              `json:"uptime" required:"true"`
 	Version                   string           `json:"version" required:"true"`
 	AgentRunning              bool             `json:"agent_running" required:"true"`
 	IsConsoleVm               bool             `json:"is_console_vm" required:"true"`
-	LocalCIDRs                []string         `json:"local_cidr" required:"true"`
+	LocalCIDRs                []interface{}    `json:"local_cidr" required:"true"`
 	Os                        string           `json:"os" required:"true"`
-	LocalNetworks             []string         `json:"local_networks" required:"true"`
+	LocalNetworks             []interface{}    `json:"local_networks" required:"true"`
 	InstanceID                string           `json:"instance_id" required:"true"`
 	CloudProvider             string           `json:"cloud_provider" required:"true"`
 	InstanceType              string           `json:"instance_type" required:"true"`
-	PublicIP                  []string         `json:"public_ip" required:"true"`
-	PrivateIP                 []string         `json:"private_ip" required:"true"`
+	PublicIP                  []interface{}    `json:"public_ip" required:"true"`
+	PrivateIP                 []interface{}    `json:"private_ip" required:"true"`
 	AvailabilityZone          string           `json:"availability_zone" required:"true"`
 	KernelId                  string           `json:"kernel_id" required:"true"`
 	CloudRegion               string           `json:"cloud_region" required:"true"`
@@ -196,7 +196,7 @@ type Container struct {
 	DockerContainerStateHuman  string                 `json:"docker_container_state_human" required:"true"`
 	DockerContainerNetworkMode string                 `json:"docker_container_network_mode" required:"true"`
 	DockerContainerNetworks    string                 `json:"docker_container_networks" required:"true"`
-	DockerContainerIps         []string               `json:"docker_container_ips" required:"true"`
+	DockerContainerIps         []interface{}          `json:"docker_container_ips" required:"true"`
 	DockerContainerCreated     string                 `json:"docker_container_created" required:"true"`
 	DockerContainerPorts       string                 `json:"docker_container_ports" required:"true"`
 	Uptime                     int                    `json:"uptime" required:"true"`
