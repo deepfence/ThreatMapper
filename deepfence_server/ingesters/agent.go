@@ -139,6 +139,7 @@ type ReportIngestionData struct {
 	Container_edges_batch         []map[string]interface{} `json:"container_edges_batch" required:"true"`
 	Container_process_edges_batch []map[string]interface{} `json:"container_process_edge_batch" required:"true"`
 	Pod_edges_batch               []map[string]interface{} `json:"pod_edges_batch" required:"true"`
+	Pod_host_edges_batch          []map[string]interface{} `json:"pod_host_edges_batch" required:"true"`
 	Endpoint_edges_batch          []map[string]interface{} `json:"endpoint_edges_batch" required:"true"`
 	Container_image_edge_batch    []map[string]interface{} `json:"container_image_edge_batch" required:"true"`
 	Kubernetes_cluster_edge_batch []map[string]interface{} `json:"kubernetes_cluster_edge_batch" required:"true"`
@@ -248,9 +249,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	for _, n := range rpt.Host {
 		hosts = append(hosts, map[string]interface{}{"node_id": n.NodeID})
 		metadataMap := metadataToMap(n)
-		if n.KubernetesClusterId == "" {
-			metadataMap["kubernetes_cluster_id"] = ""
-		} else {
+		if n.KubernetesClusterId != "" {
 			kubernetes_edges_batch[n.KubernetesClusterId] = append(kubernetes_edges_batch[n.KubernetesClusterId], n.NodeID)
 		}
 		host_batch = append(host_batch, metadataMap)
@@ -367,6 +366,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	// Therefore, it cannot rely on any previously computed data
 	pod_batch := make([]map[string]interface{}, 0, len(rpt.Pod))
 	pod_edges_batch := map[string][]string{}
+	pod_host_edges_batch := map[string][]string{}
 	for _, n := range rpt.Pod {
 		if n.KubernetesClusterId == "" {
 			continue
@@ -378,6 +378,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		}
 		pod_batch = append(pod_batch, metadataToMap(n))
 		pod_edges_batch[n.KubernetesClusterId] = append(pod_edges_batch[n.KubernetesClusterId], n.NodeID)
+		pod_host_edges_batch[n.HostName] = append(pod_host_edges_batch[n.HostName], n.NodeID)
 	}
 
 	return ReportIngestionData{
@@ -394,6 +395,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		Container_edges_batch:         concatMaps(container_edges_batch),
 		Container_process_edges_batch: concatMaps(container_process_edges_batch),
 		Pod_edges_batch:               concatMaps(pod_edges_batch),
+		Pod_host_edges_batch:          concatMaps(pod_host_edges_batch),
 		Container_image_edge_batch:    concatMaps(container_image_edges_batch),
 		Kubernetes_cluster_edge_batch: concatMaps(kubernetes_edges_batch),
 
@@ -536,6 +538,17 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 		MATCH (m:Pod{node_id: dest})
 		MERGE (n)-[:HOSTS]->(m)`,
 		map[string]interface{}{"batch": batches.Pod_edges_batch}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run(`
+		UNWIND $batch as row
+		MATCH (n:Node{node_id: row.source})
+		WITH n, row
+		UNWIND row.destinations as dest
+		MATCH (m:Pod{node_id: dest})
+		MERGE (n)-[:HOSTS]->(m)`,
+		map[string]interface{}{"batch": batches.Pod_host_edges_batch}); err != nil {
 		return err
 	}
 

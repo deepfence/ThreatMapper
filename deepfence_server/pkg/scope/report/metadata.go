@@ -70,8 +70,8 @@ func (m Metadata) WithID(id string) Metadata {
 
 type Metadata struct {
 	NodeID    string `json:"node_id"`
-	NodeType  string `json:"node_type,omitempty"`
-	NodeName  string `json:"node_name,omitempty"`
+	NodeType  string `json:"node_type"`
+	NodeName  string `json:"node_name"`
 	Timestamp string `json:"timestamp"`
 
 	// cloud metadata
@@ -154,7 +154,7 @@ type Metadata struct {
 	KubernetesType            string   `json:"kubernetes_type,omitempty"`
 	KubernetesPorts           []int32  `json:"kubernetes_ports,omitempty"`
 	KubernetesClusterId       string   `json:"kubernetes_cluster_id,omitempty"`
-	KubernetesClusterName     string   `json:"kubernetes_cluster_name,omitempty"`
+	KubernetesClusterName     string   `json:"kubernetes_cluster_name"`
 }
 
 func (m Metadata) Merge(n Metadata) Metadata {

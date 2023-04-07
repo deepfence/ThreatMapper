@@ -27,45 +27,52 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 		return nil, err
 	}
 
-	host_ids := filter.NodeIds
-	if len(host_ids) == 0 {
-		host_ids = model.ExtractNodeIDs(hosts)
+	getProcesses := false
+	getContainerImages := false
+	getContainers := false
+	getPods := false
+	if len(filter.InFieldFilter) == 0 {
+		getProcesses = true
+		getContainerImages = true
+		getContainers = true
+		getPods = true
+	} else {
+		getProcesses = utils.InSlice("processes", filter.InFieldFilter)
+		getContainerImages = utils.InSlice("container_images", filter.InFieldFilter)
+		getContainers = utils.InSlice("containers", filter.InFieldFilter)
+		getPods = utils.InSlice("pods", filter.InFieldFilter)
 	}
 
 	for i := range hosts {
-		processes, err := getHostProcesses(ctx, hosts[i])
-		if err != nil {
-			return nil, err
+		if getProcesses == true {
+			processes, err := getHostProcesses(ctx, hosts[i])
+			if err == nil {
+				hosts[i].Processes = processes
+			}
 		}
-		hosts[i].Processes = processes
 
-		containers, err := getHostContainers(ctx, hosts[i])
-		if err != nil {
-			return nil, err
+		if getContainers == true {
+			containers, err := getHostContainers(ctx, hosts[i])
+			if err == nil {
+				hosts[i].Containers = containers
+			}
 		}
-		hosts[i].Containers = containers
 
-		container_images, err := getHostContainerImages(ctx, hosts[i])
-		if err != nil {
-			return nil, err
+		if getContainerImages == true {
+			containerImages, err := getHostContainerImages(ctx, hosts[i])
+			if err == nil {
+				hosts[i].ContainerImages = containerImages
+			}
 		}
-		hosts[i].ContainerImages = container_images
+
+		if getPods == true {
+			pods, err := getHostPods(ctx, hosts[i])
+			if err == nil {
+				hosts[i].Pods = pods
+			}
+		}
 	}
 	return hosts, nil
-}
-
-func fillContainers(ctx context.Context, containers []model.Container) ([]model.Container, error) {
-	for i := range containers {
-		processes, err := getContainerProcesses(ctx, containers[i])
-		if err == nil {
-			containers[i].Processes = processes
-		}
-		images, err := getContainerContainerImages(ctx, containers[i])
-		if err == nil && len(images) > 0 {
-			containers[i].ContainerImage = images[0]
-		}
-	}
-	return containers, nil
 }
 
 func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Container, error) {
@@ -74,14 +81,29 @@ func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Cont
 		return nil, err
 	}
 
-	containers, err = fillContainers(ctx, containers)
-	if err != nil {
-		return nil, err
+	getProcesses := false
+	getContainerImages := false
+	if len(filter.InFieldFilter) == 0 {
+		getProcesses = true
+		getContainerImages = true
+	} else {
+		getProcesses = utils.InSlice("processes", filter.InFieldFilter)
+		getContainerImages = utils.InSlice("image", filter.InFieldFilter)
 	}
 
-	container_ids := filter.NodeIds
-	if len(container_ids) == 0 {
-		container_ids = model.ExtractNodeIDs(containers)
+	for i := range containers {
+		if getProcesses == true {
+			processes, err := getContainerProcesses(ctx, containers[i])
+			if err == nil {
+				containers[i].Processes = processes
+			}
+		}
+		if getContainerImages == true {
+			images, err := getContainerContainerImages(ctx, containers[i])
+			if err == nil && len(images) > 0 {
+				containers[i].ContainerImage = images[0]
+			}
+		}
 	}
 
 	return containers, nil
@@ -109,11 +131,6 @@ func GetContainerImagesReport(ctx context.Context, filter LookupFilter) ([]model
 		return nil, err
 	}
 
-	images_ids := filter.NodeIds
-	if len(images_ids) == 0 {
-		images_ids = model.ExtractNodeIDs(images)
-	}
-
 	return images, nil
 }
 
@@ -129,11 +146,6 @@ func GetCloudResourcesReport(ctx context.Context, filter LookupFilter) ([]model.
 	entries, err := getGenericDirectNodeReport[model.CloudResource](ctx, filter)
 	if err != nil {
 		return nil, err
-	}
-
-	entries_ids := filter.NodeIds
-	if len(entries_ids) == 0 {
-		entries_ids = model.ExtractNodeIDs(entries)
 	}
 
 	return entries, nil
@@ -300,7 +312,15 @@ func getHostContainers(ctx context.Context, host model.Host) ([]model.Container,
 	if err != nil {
 		return nil, err
 	}
-	return fillContainers(ctx, containers)
+	return containers, err
+}
+
+func getHostPods(ctx context.Context, host model.Host) ([]model.Pod, error) {
+	return getIndirectFromIDs[model.Pod](ctx, `
+		MATCH (n:Node) -[:HOSTS]-> (m:Pod)
+		WHERE n.node_id IN $ids
+		RETURN m`,
+		[]string{host.ID})
 }
 
 func getHostContainerImages(ctx context.Context, host model.Host) ([]model.ContainerImage, error) {
