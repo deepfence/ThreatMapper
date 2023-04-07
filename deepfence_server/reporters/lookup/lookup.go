@@ -399,16 +399,16 @@ func getContainerContainerImages(ctx context.Context, container model.Container)
 
 func getContainerImageContainers(ctx context.Context, image model.ContainerImage) ([]model.Container, error) {
 	return getIndirectFromIDs[model.Container](ctx, `
-		MATCH (n:ContainerImage)
-		WHERE n.node_id in $ids
-		RETURN n`,
+		MATCH (m:ContainerImage)
+		WHERE m.node_id in $ids
+		RETURN m`,
 		[]string{image.ID})
 }
 
 func getClusterHosts(ctx context.Context, cluster model.KubernetesCluster) ([]model.Host, error) {
 	return getIndirectFromIDs[model.Host](ctx, `
-		MATCH (m:KubernetesCluster) -[:INSTANCIATE]-> (n:Node)
-		WHERE m.node_id IN $ids
-		RETURN n`,
+		MATCH (n:KubernetesCluster) -[:INSTANCIATE]-> (m:Node)
+		WHERE n.node_id IN $ids
+		RETURN m`,
 		[]string{cluster.ID})
 }
