@@ -131,6 +131,22 @@ func GetContainerImagesReport(ctx context.Context, filter LookupFilter) ([]model
 		return nil, err
 	}
 
+	getContainers := false
+	if len(filter.InFieldFilter) == 0 {
+		getContainers = true
+	} else {
+		getContainers = utils.InSlice("image", filter.InFieldFilter)
+	}
+
+	for i := range images {
+		if getContainers == true {
+			containers, err := getContainerImageContainers(ctx, images[i])
+			if err == nil {
+				images[i].Containers = containers
+			}
+		}
+	}
+
 	return images, nil
 }
 
@@ -139,6 +155,23 @@ func GetKubernetesClustersReport(ctx context.Context, filter LookupFilter) ([]mo
 	if err != nil {
 		return nil, err
 	}
+
+	getHosts := false
+	if len(filter.InFieldFilter) == 0 {
+		getHosts = true
+	} else {
+		getHosts = utils.InSlice("hosts", filter.InFieldFilter)
+	}
+
+	for i := range clusters {
+		if getHosts == true {
+			hosts, err := getClusterHosts(ctx, clusters[i])
+			if err == nil {
+				clusters[i].Hosts = hosts
+			}
+		}
+	}
+
 	return clusters, nil
 }
 
@@ -362,4 +395,20 @@ func getContainerContainerImages(ctx context.Context, container model.Container)
 		MATCH (m:ContainerImage{node_id:n.docker_image_id})
 		RETURN m`,
 		[]string{container.ID})
+}
+
+func getContainerImageContainers(ctx context.Context, image model.ContainerImage) ([]model.Container, error) {
+	return getIndirectFromIDs[model.Container](ctx, `
+		MATCH (n:ContainerImage)
+		WHERE n.node_id in $ids
+		RETURN n`,
+		[]string{image.ID})
+}
+
+func getClusterHosts(ctx context.Context, cluster model.KubernetesCluster) ([]model.Host, error) {
+	return getIndirectFromIDs[model.Host](ctx, `
+		MATCH (m:KubernetesCluster) -[:INSTANCIATE]-> (n:Node)
+		WHERE m.node_id IN $ids
+		RETURN n`,
+		[]string{cluster.ID})
 }
