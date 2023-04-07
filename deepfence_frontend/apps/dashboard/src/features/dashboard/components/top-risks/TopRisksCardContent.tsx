@@ -1,3 +1,5 @@
+import classNames from 'classnames';
+
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { TopRisksDonutChart } from '@/features/dashboard/components/top-risks/TopRisksDonutChart';
 import { DashboardLoaderData } from '@/features/dashboard/pages/Dashboard';
@@ -10,7 +12,7 @@ export const TopRisksCardContentsSkeleton = () => {
   return (
     <div className="mt-4">
       <div className="h-full dark:text-white">
-        <div className="flex justify-center my-4 divide-x dark:divide-gray-700">
+        <div className="flex justify-center my-8 divide-x dark:divide-gray-700">
           {[1, 2, 3, 4, 5].map((idx) => {
             return (
               <div key={idx} className="flex flex-col font-light px-4">
@@ -20,7 +22,7 @@ export const TopRisksCardContentsSkeleton = () => {
             );
           })}
         </div>
-        <h6 className={`ml-2 mt-8 mb-6 text-sm font-normal`}>Most Affected Resources</h6>
+        <h6 className={`ml-2 mt-8 mb-4 text-sm font-normal`}>Most Affected Resources</h6>
         <div className="flex mt-2 items-center gap-4">
           <div className={`h-[140px] basis-[140px] rounded-full ${skeletonBg}`}></div>
           <div className="flex flex-col gap-y-2 flex-1 truncate">
@@ -33,53 +35,6 @@ export const TopRisksCardContentsSkeleton = () => {
                 </div>
               );
             })}
-          </div>
-        </div>
-        <div className={`flex justify-center gap-4 mt-4 mb-4 text-xs`}>
-          <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-            <div
-              className="h-3 w-4 rounded-sm"
-              style={{
-                backgroundColor: SEVERITY_COLORS['critical'],
-              }}
-            ></div>
-            <span>Critical</span>
-          </div>
-          <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-            <div
-              className="h-3 w-4 rounded-sm"
-              style={{
-                backgroundColor: SEVERITY_COLORS['high'],
-              }}
-            ></div>
-            <span>High</span>
-          </div>
-          <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-            <div
-              className="h-3 w-4 rounded-sm"
-              style={{
-                backgroundColor: SEVERITY_COLORS['medium'],
-              }}
-            ></div>
-            <span>Medium</span>
-          </div>
-          <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-            <div
-              className="h-3 w-4 rounded-sm"
-              style={{
-                backgroundColor: SEVERITY_COLORS['low'],
-              }}
-            ></div>
-            <span>Low</span>
-          </div>
-          <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-            <div
-              className="h-3 w-4 rounded-sm"
-              style={{
-                backgroundColor: SEVERITY_COLORS['unknown'],
-              }}
-            ></div>
-            <span>Unknown</span>
           </div>
         </div>
       </div>
@@ -96,42 +51,66 @@ export const TopRisksCardContent = ({
   return (
     <div className="mt-4">
       <div className="h-full dark:text-white">
-        <div className="flex justify-center my-4 divide-x dark:divide-gray-700">
+        <div className="flex justify-center my-8 divide-x dark:divide-gray-700">
           {[
             {
               label: 'Total',
               count: data.total,
+              color: null,
             },
             {
               label: 'Critical',
               count: data.severityBreakdown.critical,
+              color: SEVERITY_COLORS['critical'],
             },
             {
               label: 'High',
               count: data.severityBreakdown.high,
+              color: SEVERITY_COLORS['high'],
             },
             {
               label: 'Medium',
               count: data.severityBreakdown.medium,
+              color: SEVERITY_COLORS['medium'],
             },
             {
               label: 'Low',
               count: data.severityBreakdown.low,
+              color: SEVERITY_COLORS['low'],
             },
             {
               label: 'Unknown',
               count: data.severityBreakdown.unknown,
+              color: SEVERITY_COLORS['unknown'],
             },
-          ].map(({ count, label }) => {
+          ].map(({ count, label, color }) => {
             return (
               <div key={label} className="flex flex-col font-light px-4">
-                <span className="text-2xl">{abbreviateNumber(count)}</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
+                <span
+                  className={classNames('flex items-center gap-2 text-2xl', {
+                    ['text-4xl']: label === 'Total',
+                  })}
+                >
+                  {color && (
+                    <div
+                      className="h-3 w-3 rounded-full"
+                      style={{
+                        backgroundColor: color,
+                      }}
+                    ></div>
+                  )}
+                  {abbreviateNumber(count)}
+                </span>
+                {label !== 'Total' && (
+                  <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                    {label}
+                  </span>
+                )}
               </div>
             );
           })}
         </div>
-        <h6 className={`ml-2 mt-8 mb-6 text-sm font-normal`}>Most Affected Resources</h6>
+        <h6 className={`ml-2 mt-8 mb-4 text-sm font-normal`}>Most Affected Resources</h6>
         <div className="flex mt-2 items-center gap-4">
           <div className="h-[140px] basis-[140px]">
             <TopRisksDonutChart theme={mode} severityBreakdown={data.severityBreakdown} />
@@ -191,53 +170,6 @@ export const TopRisksCardContent = ({
                 </div>
               );
             })}
-          </div>
-        </div>
-        <div className={`flex justify-center gap-4 mt-4 mb-4 text-xs`}>
-          <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-            <div
-              className="h-3 w-4 rounded-sm"
-              style={{
-                backgroundColor: SEVERITY_COLORS['critical'],
-              }}
-            ></div>
-            <span>Critical</span>
-          </div>
-          <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-            <div
-              className="h-3 w-4 rounded-sm"
-              style={{
-                backgroundColor: SEVERITY_COLORS['high'],
-              }}
-            ></div>
-            <span>High</span>
-          </div>
-          <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-            <div
-              className="h-3 w-4 rounded-sm"
-              style={{
-                backgroundColor: SEVERITY_COLORS['medium'],
-              }}
-            ></div>
-            <span>Medium</span>
-          </div>
-          <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-            <div
-              className="h-3 w-4 rounded-sm"
-              style={{
-                backgroundColor: SEVERITY_COLORS['low'],
-              }}
-            ></div>
-            <span>Low</span>
-          </div>
-          <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-            <div
-              className="h-3 w-4 rounded-sm"
-              style={{
-                backgroundColor: SEVERITY_COLORS['unknown'],
-              }}
-            ></div>
-            <span>Unknown</span>
           </div>
         </div>
       </div>
