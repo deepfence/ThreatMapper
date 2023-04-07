@@ -5,6 +5,8 @@ import { NavLink } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
 import { Tooltip } from 'ui-components';
 
+import LogoDeepfenceDarkBlue from '@/assets/logo-deepfence-dark-blue.svg';
+import { DFLink } from '@/components/DFLink';
 import { DashboardIcon } from '@/components/sideNavigation/icons/Dashboard';
 import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
@@ -106,22 +108,36 @@ export function SideNavigation({ expanded }: SideNavigationRootProps) {
   return (
     <NavigationMenu.Root
       orientation="vertical"
-      className={classNames(
-        'overflow-x-hidden overflow-y-auto shrink-0',
-        'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700',
-        'transition-[width]',
-        'sticky left-0 top-[64px] scrolling-touch',
-        {
-          ['p-3']: expanded,
-          ['px-2.5 py-3']: !expanded,
-        },
+      className={twMerge(
+        classNames(
+          'overflow-x-hidden overflow-y-auto shrink-0',
+          'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700',
+          'transition-[width]',
+          'fixed left-0 top-0 py-3 px-3 z-10 scrolling-touch',
+          {
+            ['px-2.5']: !expanded,
+          },
+        ),
       )}
       style={{
         width: expanded ? '240px' : '60px',
-        height: 'calc(100vh - 64px)',
+        height: '100vh',
       }}
     >
       <NavigationMenu.List className={classNames('flex flex-col gap-1.5')}>
+        <NavigationMenu.Item>
+          <NavigationMenu.Link asChild>
+            <DFLink to="/" className="flex">
+              <img
+                src={LogoDeepfenceDarkBlue}
+                alt="Deefence Logo"
+                width="40"
+                height="40"
+                className="m-auto py-3"
+              />
+            </DFLink>
+          </NavigationMenu.Link>
+        </NavigationMenu.Item>
         {MenuItems.map((menuItem) => {
           const linkClass = classNames(
             'text-base font-medium text-gray-900 dark:text-white rounded-xl p-2 block',

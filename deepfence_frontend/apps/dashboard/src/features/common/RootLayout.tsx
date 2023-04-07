@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 
@@ -9,17 +10,23 @@ export const RootLayout = () => {
     getSideNavigationState() === 'open' ? true : false,
   );
   return (
-    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
-      <main className="flex pt-[64px]">
-        <SideNavigation expanded={sideNavExpanded} />
-        <div className="overflow-auto h-[calc(100vh_-_64px)] w-full">
-          <Outlet />
-        </div>
-      </main>
+    <div className="bg-white min-h-screen dark:bg-gray-900 isolate">
       <AppHeader
         sideNavExpanded={sideNavExpanded}
         onSideNavExpandedChange={(state) => setSideNavExpanded(state)}
       />
+      <SideNavigation expanded={sideNavExpanded} />
+      <main
+        className={classNames(
+          'pt-[64px] h-screen overflow-auto transition-[margin-left]',
+          {
+            'ml-[60px]': !sideNavExpanded,
+            'ml-[240px]': sideNavExpanded,
+          },
+        )}
+      >
+        <Outlet />
+      </main>
     </div>
   );
 };
