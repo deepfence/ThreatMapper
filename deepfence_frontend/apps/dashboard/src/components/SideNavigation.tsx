@@ -5,6 +5,7 @@ import { NavLink } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
 import { Tooltip } from 'ui-components';
 
+import DeepfenceBackground from '@/assets/df-background.jpg';
 import LogoDeepfenceDarkBlue from '@/assets/logo-deepfence-dark-blue.svg';
 import { DFLink } from '@/components/DFLink';
 import { DashboardIcon } from '@/components/sideNavigation/icons/Dashboard';
@@ -122,6 +123,7 @@ export function SideNavigation({ expanded }: SideNavigationRootProps) {
       style={{
         width: expanded ? '240px' : '60px',
         height: '100vh',
+        background: `url(${DeepfenceBackground})`,
       }}
     >
       <NavigationMenu.List className={classNames('flex flex-col gap-1.5')}>
@@ -133,18 +135,19 @@ export function SideNavigation({ expanded }: SideNavigationRootProps) {
                 alt="Deefence Logo"
                 width="40"
                 height="40"
-                className="m-auto py-3"
+                className="m-auto pt-2 pb-6"
               />
             </DFLink>
           </NavigationMenu.Link>
         </NavigationMenu.Item>
         {MenuItems.map((menuItem) => {
           const linkClass = classNames(
-            'text-base font-medium text-gray-900 dark:text-white rounded-xl p-2 block',
-            'hover:bg-gray-100 dark:hover:bg-gray-700',
+            'text-base font-medium text-gray-100 rounded-xl p-2 block',
+            'hover:bg-gray-100/25',
             'flex gap-3 whitespace-nowrap',
             'group',
-            'focus:outline-none focus:ring-1 focus:ring-blue-400 dark:focus:ring-blue-700',
+            'animate-colors',
+            'focus:outline-none focus:ring-1 focus:ring-gray-400',
             {
               ['w-fit']: !expanded,
             },
@@ -157,37 +160,19 @@ export function SideNavigation({ expanded }: SideNavigationRootProps) {
                   <NavLink
                     to={menuItem.to}
                     className={({ isActive }) =>
-                      isActive
-                        ? twMerge(
-                            linkClass,
-                            'bg-gray-100 dark:bg-gray-700 text-blue-600 dark:text-blue-500',
-                          )
-                        : linkClass
+                      isActive ? twMerge(linkClass, 'bg-gray-100/25') : linkClass
                     }
                   >
-                    {({ isActive }) => {
-                      return (
-                        <>
-                          <div
-                            className={twMerge(
-                              classNames(
-                                'w-6 h-6 group-hover:text-gray-900 dark:group-hover:text-white shrink-0',
-                                {
-                                  ['text-blue-600 dark:text-blue-500 group-hover:text-blue-600 dark:group-hover:text-blue-500']:
-                                    isActive,
-                                  ['text-gray-500 dark:text-gray-400']: !isActive,
-                                },
-                              ),
-                            )}
-                          >
-                            <menuItem.Icon />
-                          </div>
-                          {expanded && (
-                            <div className="overflow-hidden flex-1">{menuItem.title}</div>
-                          )}
-                        </>
-                      );
-                    }}
+                    <div
+                      className={twMerge(
+                        classNames('w-6 h-6 text-gray-100 shrink-0', {}),
+                      )}
+                    >
+                      <menuItem.Icon />
+                    </div>
+                    {expanded && (
+                      <div className="overflow-hidden flex-1">{menuItem.title}</div>
+                    )}
                   </NavLink>
                 </ItemWrapper>
               </NavigationMenu.Link>
