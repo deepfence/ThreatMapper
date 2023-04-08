@@ -507,11 +507,28 @@ const HistoryDropdown = () => {
                       >
                         <span
                           className={twMerge(
-                            cx('flex items-center text-gray-700 dark:text-gray-400', {
-                              'text-blue-600 dark:text-blue-500': item.scanId === scan_id,
-                            }),
+                            cx(
+                              'flex items-center text-gray-700 dark:text-gray-400 gap-x-4',
+                              {
+                                'text-blue-600 dark:text-blue-500':
+                                  item.scanId === scan_id,
+                              },
+                            ),
                           )}
                         >
+                          <Badge
+                            label={item.status}
+                            className={cx({
+                              'bg-green-100 dark:bg-green-600/10 text-green-600 dark:text-green-400':
+                                item.status.toLowerCase() === 'complete',
+                              'bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400':
+                                item.status.toLowerCase() === 'error',
+                              'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
+                                item.status.toLowerCase() !== 'complete' &&
+                                item.status.toLowerCase() !== 'error',
+                            })}
+                            size="sm"
+                          />
                           {formatMilliseconds(item.updatedAt)}
                         </span>
                       </DropdownItem>
