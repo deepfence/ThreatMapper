@@ -8,5 +8,5 @@ If you need to ingest 500k, set a NUM to 5 and 5 ingestion at 100k will be perfo
 ## Usage:
 
 ```
-NUM = 5 go run ./main.go
+DF_CONSOLE=ip DF_NEO4J_PASS=pass go run ./main.go -image_num=1000 -host_num=1000 -container_num=1000 -vuln_num=1000 -aws_lambda_num=1000
 ```
