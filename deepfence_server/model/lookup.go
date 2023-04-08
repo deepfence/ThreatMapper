@@ -55,21 +55,21 @@ type Host struct {
 	Processes                 []Process        `json:"processes" required:"true"`
 	Pods                      []Pod            `json:"pods" required:"true"`
 	ContainerImages           []ContainerImage `json:"container_images" required:"true"`
-	InterfaceNames            []string         `json:"interface_names" required:"true"`
-	InterfaceIps              []string         `json:"interface_ips" required:"true"`
+	InterfaceNames            []interface{}    `json:"interface_names" required:"true"`
+	InterfaceIps              []interface{}    `json:"interface_ips" required:"true"`
 	KernelVersion             string           `json:"kernel_version" required:"true"`
 	Uptime                    int              `json:"uptime" required:"true"`
 	Version                   string           `json:"version" required:"true"`
 	AgentRunning              bool             `json:"agent_running" required:"true"`
 	IsConsoleVm               bool             `json:"is_console_vm" required:"true"`
-	LocalCIDRs                []string         `json:"local_cidr" required:"true"`
+	LocalCIDRs                []interface{}    `json:"local_cidr" required:"true"`
 	Os                        string           `json:"os" required:"true"`
-	LocalNetworks             []string         `json:"local_networks" required:"true"`
+	LocalNetworks             []interface{}    `json:"local_networks" required:"true"`
 	InstanceID                string           `json:"instance_id" required:"true"`
 	CloudProvider             string           `json:"cloud_provider" required:"true"`
 	InstanceType              string           `json:"instance_type" required:"true"`
-	PublicIP                  []string         `json:"public_ip" required:"true"`
-	PrivateIP                 []string         `json:"private_ip" required:"true"`
+	PublicIP                  []interface{}    `json:"public_ip" required:"true"`
+	PrivateIP                 []interface{}    `json:"private_ip" required:"true"`
 	AvailabilityZone          string           `json:"availability_zone" required:"true"`
 	KernelId                  string           `json:"kernel_id" required:"true"`
 	CloudRegion               string           `json:"cloud_region" required:"true"`
@@ -150,17 +150,20 @@ type Connection struct {
 }
 
 type Pod struct {
-	ID                        string      `json:"node_id" required:"true"`
-	NodeName                  string      `json:"node_name" required:"true"`
-	Namespace                 string      `json:"kubernetes_namespace" required:"true"`
-	Host                      string      `json:"host_name" required:"true"`
-	Containers                []Container `json:"containers" required:"true"`
-	Processes                 []Process   `json:"processes" required:"true"`
-	KubernetesClusterName     string      `json:"kubernetes_cluster_name" required:"true"`
-	KubernetesClusterId       string      `json:"kubernetes_cluster_id" required:"true"`
-	KubernetesState           string      `json:"kubernetes_state" required:"true"`
-	KubernetesIP              string      `json:"kubernetes_ip" required:"true"`
-	KubernetesIsInHostNetwork string      `json:"kubernetes_is_in_host_network" required:"true"`
+	ID                        string                 `json:"node_id" required:"true"`
+	NodeName                  string                 `json:"node_name" required:"true"`
+	Namespace                 string                 `json:"kubernetes_namespace" required:"true"`
+	PodName                   string                 `json:"pod_name" required:"true"`
+	Host                      string                 `json:"host_name" required:"true"`
+	Containers                []Container            `json:"containers" required:"true"`
+	Processes                 []Process              `json:"processes" required:"true"`
+	KubernetesClusterName     string                 `json:"kubernetes_cluster_name" required:"true"`
+	KubernetesClusterId       string                 `json:"kubernetes_cluster_id" required:"true"`
+	KubernetesState           string                 `json:"kubernetes_state" required:"true"`
+	KubernetesIP              string                 `json:"kubernetes_ip" required:"true"`
+	KubernetesIsInHostNetwork bool                   `json:"kubernetes_is_in_host_network" required:"true"`
+	KubernetesLabels          map[string]interface{} `json:"kubernetes_labels" required:"true" nested_json:"true"`
+	KubernetesCreated         string                 `json:"kubernetes_created" required:"true"`
 }
 
 func (Pod) NodeType() string {
@@ -184,35 +187,35 @@ func (p Pod) id() string {
 }
 
 type Container struct {
-	ID                         string         `json:"node_id" required:"true"`
-	NodeName                   string         `json:"node_name" required:"true"`
-	Name                       string         `json:"docker_container_name" required:"true"`
-	ContainerImage             ContainerImage `json:"image" required:"true"`
-	Processes                  []Process      `json:"processes" required:"true"`
-	DockerLabels               Metadata       `json:"docker_labels" required:"true" nested_json:"true"`
-	HostName                   string         `json:"host_name" required:"true"`
-	DockerContainerCommand     string         `json:"docker_container_command" required:"true"`
-	DockerContainerState       string         `json:"docker_container_state" required:"true"`
-	DockerContainerStateHuman  string         `json:"docker_container_state_human" required:"true"`
-	DockerContainerNetworkMode string         `json:"docker_container_network_mode" required:"true"`
-	DockerContainerNetworks    string         `json:"docker_container_networks" required:"true"`
-	DockerContainerIps         []string       `json:"docker_container_ips" required:"true"`
-	DockerContainerCreated     string         `json:"docker_container_created" required:"true"`
-	DockerContainerPorts       string         `json:"docker_container_ports" required:"true"`
-	Uptime                     int            `json:"uptime" required:"true"`
-	CpuMax                     float64        `json:"cpu_max" required:"true"`
-	CpuUsage                   float64        `json:"cpu_usage" required:"true"`
-	MemoryMax                  int64          `json:"memory_max" required:"true"`
-	MemoryUsage                int64          `json:"memory_usage" required:"true"`
-	VulnerabilitiesCount       int64          `json:"vulnerabilities_count" required:"true"`
-	VulnerabilityScanStatus    string         `json:"vulnerability_scan_status" required:"true"`
-	VulnerabilityLatestScanId  string         `json:"vulnerability_latest_scan_id" required:"true"`
-	SecretsCount               int64          `json:"secrets_count" required:"true"`
-	SecretScanStatus           string         `json:"secret_scan_status" required:"true"`
-	SecretLatestScanId         string         `json:"secret_latest_scan_id" required:"true"`
-	MalwaresCount              int64          `json:"malwares_count" required:"true"`
-	MalwareScanStatus          string         `json:"malware_scan_status" required:"true"`
-	MalwareLatestScanId        string         `json:"malware_latest_scan_id" required:"true"`
+	ID                         string                 `json:"node_id" required:"true"`
+	NodeName                   string                 `json:"node_name" required:"true"`
+	Name                       string                 `json:"docker_container_name" required:"true"`
+	ContainerImage             ContainerImage         `json:"image" required:"true"`
+	Processes                  []Process              `json:"processes" required:"true"`
+	DockerLabels               map[string]interface{} `json:"docker_labels" required:"true" nested_json:"true"`
+	HostName                   string                 `json:"host_name" required:"true"`
+	DockerContainerCommand     string                 `json:"docker_container_command" required:"true"`
+	DockerContainerState       string                 `json:"docker_container_state" required:"true"`
+	DockerContainerStateHuman  string                 `json:"docker_container_state_human" required:"true"`
+	DockerContainerNetworkMode string                 `json:"docker_container_network_mode" required:"true"`
+	DockerContainerNetworks    string                 `json:"docker_container_networks" required:"true"`
+	DockerContainerIps         []interface{}          `json:"docker_container_ips" required:"true"`
+	DockerContainerCreated     string                 `json:"docker_container_created" required:"true"`
+	DockerContainerPorts       string                 `json:"docker_container_ports" required:"true"`
+	Uptime                     int                    `json:"uptime" required:"true"`
+	CpuMax                     float64                `json:"cpu_max" required:"true"`
+	CpuUsage                   float64                `json:"cpu_usage" required:"true"`
+	MemoryMax                  int64                  `json:"memory_max" required:"true"`
+	MemoryUsage                int64                  `json:"memory_usage" required:"true"`
+	VulnerabilitiesCount       int64                  `json:"vulnerabilities_count" required:"true"`
+	VulnerabilityScanStatus    string                 `json:"vulnerability_scan_status" required:"true"`
+	VulnerabilityLatestScanId  string                 `json:"vulnerability_latest_scan_id" required:"true"`
+	SecretsCount               int64                  `json:"secrets_count" required:"true"`
+	SecretScanStatus           string                 `json:"secret_scan_status" required:"true"`
+	SecretLatestScanId         string                 `json:"secret_latest_scan_id" required:"true"`
+	MalwaresCount              int64                  `json:"malwares_count" required:"true"`
+	MalwareScanStatus          string                 `json:"malware_scan_status" required:"true"`
+	MalwareLatestScanId        string                 `json:"malware_latest_scan_id" required:"true"`
 }
 
 func (Container) NodeType() string {
@@ -270,24 +273,25 @@ func (p Process) id() string {
 }
 
 type ContainerImage struct {
-	ID                        string   `json:"node_id" required:"true"`
-	NodeName                  string   `json:"node_name" required:"true"`
-	Name                      string   `json:"docker_image_name" required:"true"`
-	Tag                       string   `json:"docker_image_tag" required:"true"`
-	Size                      string   `json:"docker_image_size" required:"true"`
-	DockerImageCreatedAt      string   `json:"docker_image_created_at" required:"true"`
-	DockerImageVirtualSize    string   `json:"docker_image_virtual_size" required:"true"`
-	DockerImageID             string   `json:"docker_image_id" required:"true"`
-	Metadata                  Metadata `json:"metadata" required:"true" nested_json:"true"`
-	VulnerabilitiesCount      int64    `json:"vulnerabilities_count" required:"true"`
-	VulnerabilityScanStatus   string   `json:"vulnerability_scan_status" required:"true"`
-	VulnerabilityLatestScanId string   `json:"vulnerability_latest_scan_id" required:"true"`
-	SecretsCount              int64    `json:"secrets_count" required:"true"`
-	SecretScanStatus          string   `json:"secret_scan_status" required:"true"`
-	SecretLatestScanId        string   `json:"secret_latest_scan_id" required:"true"`
-	MalwaresCount             int64    `json:"malwares_count" required:"true"`
-	MalwareScanStatus         string   `json:"malware_scan_status" required:"true"`
-	MalwareLatestScanId       string   `json:"malware_latest_scan_id" required:"true"`
+	ID                        string      `json:"node_id" required:"true"`
+	NodeName                  string      `json:"node_name" required:"true"`
+	Name                      string      `json:"docker_image_name" required:"true"`
+	Tag                       string      `json:"docker_image_tag" required:"true"`
+	Size                      string      `json:"docker_image_size" required:"true"`
+	DockerImageCreatedAt      string      `json:"docker_image_created_at" required:"true"`
+	DockerImageVirtualSize    string      `json:"docker_image_virtual_size" required:"true"`
+	DockerImageID             string      `json:"docker_image_id" required:"true"`
+	Metadata                  Metadata    `json:"metadata" required:"true" nested_json:"true"`
+	VulnerabilitiesCount      int64       `json:"vulnerabilities_count" required:"true"`
+	VulnerabilityScanStatus   string      `json:"vulnerability_scan_status" required:"true"`
+	VulnerabilityLatestScanId string      `json:"vulnerability_latest_scan_id" required:"true"`
+	SecretsCount              int64       `json:"secrets_count" required:"true"`
+	SecretScanStatus          string      `json:"secret_scan_status" required:"true"`
+	SecretLatestScanId        string      `json:"secret_latest_scan_id" required:"true"`
+	MalwaresCount             int64       `json:"malwares_count" required:"true"`
+	MalwareScanStatus         string      `json:"malware_scan_status" required:"true"`
+	MalwareLatestScanId       string      `json:"malware_latest_scan_id" required:"true"`
+	Containers                []Container `json:"containers" required:"true"`
 }
 
 func (ContainerImage) NodeType() string {

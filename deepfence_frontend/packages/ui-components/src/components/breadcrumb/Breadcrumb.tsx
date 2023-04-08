@@ -13,6 +13,7 @@ type BreadcrumbLinkType = {
   icon?: React.ReactNode;
   isLast?: boolean;
   separator?: React.ReactNode;
+  className?: string;
 };
 
 type BreadCrumbProps = {
@@ -25,7 +26,7 @@ type BreadCrumbProps = {
 export const BreadcrumbLink = React.forwardRef<
   React.ElementRef<'button'>,
   BreadcrumbLinkType
->(({ asChild, children, icon, isLast, separator, ...props }, forwardedRef) => {
+>(({ asChild, children, icon, isLast, separator, className, ...props }, forwardedRef) => {
   const Comp = asChild ? Slot : 'button';
   return (
     <Comp
@@ -35,6 +36,7 @@ export const BreadcrumbLink = React.forwardRef<
           `inline-flex items-center leading-[21px] item-center`,
           'outline-none focus-visible:outline-none focus:ring-1 focus-visible:ring-gray-400',
           `text-gray-700 dark:text-gray-400 ${Typography.size.sm}`,
+          className,
         ),
       )}
       ref={forwardedRef}

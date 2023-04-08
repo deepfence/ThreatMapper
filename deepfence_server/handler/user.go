@@ -436,7 +436,8 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	passwordValid, err := user.CompareHashAndPassword(ctx, pgClient, req.OldPassword)
 	if err != nil || !passwordValid {
-		respondWithErrorCode(errors.New("password is incorrect"), w, http.StatusBadRequest)
+		respondError(&ValidatorError{
+			errors.New("Key: 'UpdateUserPasswordRequest.OldPassword' Error:incorrect old password")}, w)
 		return
 	}
 	err = user.SetPassword(req.NewPassword)
