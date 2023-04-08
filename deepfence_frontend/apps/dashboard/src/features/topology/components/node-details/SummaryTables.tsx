@@ -42,13 +42,13 @@ export const ProcessTable = ({ processes }: { processes: ModelProcess[] }) => {
           {(showAll ? sortedData : first5Rows).map((process) => {
             return (
               <tr key={process.pid} className={tableRowClass}>
-                <td className={twMerge(tableBodyCellClass, '')}>{process.name}</td>
+                <td className={twMerge(tableBodyCellClass, '')}>{process.node_name}</td>
                 <td className={twMerge(tableBodyCellClass, '')}>{process.pid}</td>
                 <td className={twMerge(tableBodyCellClass, 'text-right')}>
-                  {process.metrics.cpu_percent}
+                  {process.cpu_usage}
                 </td>
                 <td className={twMerge(tableBodyCellClass, 'text-right')}>
-                  {process.metrics.memory_mb}
+                  {process.memory_usage}
                 </td>
               </tr>
             );
@@ -113,10 +113,10 @@ export const ContainerTable = ({
                   {container.docker_container_name}
                 </td>
                 <td className={twMerge(tableBodyCellClass, 'text-right')}>
-                  {container.metrics.cpu_percent}
+                  {container.cpu_usage}
                 </td>
                 <td className={twMerge(tableBodyCellClass, 'text-right')}>
-                  {container.metrics.memory_mb}
+                  {container.memory_usage}
                 </td>
               </tr>
             );

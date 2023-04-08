@@ -13,13 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelComputeMetrics } from './ModelComputeMetrics';
-import {
-    ModelComputeMetricsFromJSON,
-    ModelComputeMetricsFromJSONTyped,
-    ModelComputeMetricsToJSON,
-} from './ModelComputeMetrics';
-
 /**
  * 
  * @export
@@ -67,6 +60,18 @@ export interface ModelContainerImage {
      * @type {string}
      * @memberof ModelContainerImage
      */
+    docker_image_created_at?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainerImage
+     */
+    docker_image_id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainerImage
+     */
     docker_image_name: string;
     /**
      * 
@@ -80,6 +85,12 @@ export interface ModelContainerImage {
      * @memberof ModelContainerImage
      */
     docker_image_tag: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainerImage
+     */
+    docker_image_virtual_size?: string;
     /**
      * 
      * @type {string}
@@ -104,12 +115,6 @@ export interface ModelContainerImage {
      * @memberof ModelContainerImage
      */
     metadata: { [key: string]: any; };
-    /**
-     * 
-     * @type {ModelComputeMetrics}
-     * @memberof ModelContainerImage
-     */
-    metrics: ModelComputeMetrics;
     /**
      * 
      * @type {string}
@@ -178,7 +183,6 @@ export function instanceOfModelContainerImage(value: object): boolean {
     isInstance = isInstance && "malware_scan_status" in value;
     isInstance = isInstance && "malwares_count" in value;
     isInstance = isInstance && "metadata" in value;
-    isInstance = isInstance && "metrics" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "secret_latest_scan" in value;
@@ -207,14 +211,16 @@ export function ModelContainerImageFromJSONTyped(json: any, ignoreDiscriminator:
         'compliance_latest_scan_id': json['compliance_latest_scan_id'],
         'compliance_scan_status': json['compliance_scan_status'],
         'compliances_count': json['compliances_count'],
+        'docker_image_created_at': !exists(json, 'docker_image_created_at') ? undefined : json['docker_image_created_at'],
+        'docker_image_id': !exists(json, 'docker_image_id') ? undefined : json['docker_image_id'],
         'docker_image_name': json['docker_image_name'],
         'docker_image_size': json['docker_image_size'],
         'docker_image_tag': json['docker_image_tag'],
+        'docker_image_virtual_size': !exists(json, 'docker_image_virtual_size') ? undefined : json['docker_image_virtual_size'],
         'malware_latest_scan_id': json['malware_latest_scan_id'],
         'malware_scan_status': json['malware_scan_status'],
         'malwares_count': json['malwares_count'],
         'metadata': json['metadata'],
-        'metrics': ModelComputeMetricsFromJSON(json['metrics']),
         'node_id': json['node_id'],
         'node_name': json['node_name'],
         'secret_latest_scan': json['secret_latest_scan'],
@@ -241,14 +247,16 @@ export function ModelContainerImageToJSON(value?: ModelContainerImage | null): a
         'compliance_latest_scan_id': value.compliance_latest_scan_id,
         'compliance_scan_status': value.compliance_scan_status,
         'compliances_count': value.compliances_count,
+        'docker_image_created_at': value.docker_image_created_at,
+        'docker_image_id': value.docker_image_id,
         'docker_image_name': value.docker_image_name,
         'docker_image_size': value.docker_image_size,
         'docker_image_tag': value.docker_image_tag,
+        'docker_image_virtual_size': value.docker_image_virtual_size,
         'malware_latest_scan_id': value.malware_latest_scan_id,
         'malware_scan_status': value.malware_scan_status,
         'malwares_count': value.malwares_count,
         'metadata': value.metadata,
-        'metrics': ModelComputeMetricsToJSON(value.metrics),
         'node_id': value.node_id,
         'node_name': value.node_name,
         'secret_latest_scan': value.secret_latest_scan,

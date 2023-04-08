@@ -116,7 +116,7 @@ export const Container = ({
               <>
                 <Metadata
                   data={{
-                    ...fetcher.data?.containerData.metadata,
+                    ...fetcher.data?.containerData.docker_labels, // TODO
                   }}
                 />
                 <Metadata
