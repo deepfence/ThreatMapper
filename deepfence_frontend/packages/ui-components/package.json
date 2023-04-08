@@ -62,7 +62,7 @@
     "@storybook/testing-library": "^0.0.13",
     "@storybook/theming": "^6.5.16",
     "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
+    "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
     "@types/lodash-es": "^4.17.6",
     "@types/react": "^18.0.27",
