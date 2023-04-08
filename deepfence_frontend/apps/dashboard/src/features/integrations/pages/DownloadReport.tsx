@@ -44,7 +44,6 @@ import {
   ModelGenerateReportReqReportTypeEnum,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
-  UtilsReportFiltersSeverityOrCheckTypeEnum,
 } from '@/api/generated';
 import { ModelExportReport } from '@/api/generated/models/ModelExportReport';
 import { DFLink } from '@/components/DFLink';
@@ -65,6 +64,23 @@ import { formatMilliseconds } from '@/utils/date';
 import { download } from '@/utils/download';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
+
+const nonComplianceNode = (resourceType: string) => {
+  if (resourceType === 'CloudCompliance') {
+    return {
+      Aws: UtilsReportFiltersNodeTypeEnum.Aws,
+      Azure: UtilsReportFiltersNodeTypeEnum.Azure,
+      Gcp: UtilsReportFiltersNodeTypeEnum.Gcp,
+      Linux: UtilsReportFiltersNodeTypeEnum.Linux,
+    };
+  }
+  return {
+    Host: UtilsReportFiltersNodeTypeEnum.Host,
+    Container: UtilsReportFiltersNodeTypeEnum.Container,
+    ContainerImage: UtilsReportFiltersNodeTypeEnum.ContainerImage,
+    Cluster: 'cluster',
+  };
+};
 
 enum ActionEnumType {
   DELETE = 'delete',
@@ -502,6 +518,7 @@ const AdvancedFilter = ({
   provider: string;
 }) => {
   const [selectedHosts, setSelectedHosts] = useState('');
+  const [selectedCluster, setSelectedCluster] = useState('');
   const [selectedContainerImages, setSelectedContainerImages] = useState([]);
   const [_containers, setContainers] = useState([]);
   const { hosts, status: listHostStatus } = useGetHostsList({
@@ -543,40 +560,7 @@ const AdvancedFilter = ({
           Advanced Filter(Optional)
         </div>
       ) : null}
-      {resourceType &&
-        provider &&
-        resourceType === UtilsReportFiltersScanTypeEnum.Compliance &&
-        !isCloudAccount(provider) && (
-          <>
-            <div>
-              {listHostStatus !== 'idle' ? (
-                <div className="py-6">
-                  <CircleSpinner size="sm" />
-                </div>
-              ) : (
-                <Select
-                  value={selectedHosts}
-                  name="nodeIds[]"
-                  onChange={(value) => {
-                    setSelectedHosts(value);
-                  }}
-                  placeholder="Select host"
-                  label="Select host (Optional)"
-                  sizing="xs"
-                  className="mt-2"
-                >
-                  {hosts.map((host) => {
-                    return (
-                      <SelectItem value={host.nodeId} key={host.nodeId}>
-                        {host.hostName}
-                      </SelectItem>
-                    );
-                  })}
-                </Select>
-              )}
-            </div>
-          </>
-        )}
+
       {resourceType && provider && isCloudAccount(provider) && (
         <Select
           value={selectedCloudAccounts}
@@ -599,10 +583,7 @@ const AdvancedFilter = ({
         </Select>
       )}
 
-      {resourceType &&
-      provider &&
-      resourceType !== UtilsReportFiltersScanTypeEnum.Compliance &&
-      provider === 'Host' ? (
+      {resourceType && provider && provider === 'Host' ? (
         <>
           <div>
             {listHostStatus !== 'idle' ? (
@@ -612,7 +593,7 @@ const AdvancedFilter = ({
             ) : (
               <Select
                 value={selectedHosts}
-                name="nodeIds"
+                name="hostId"
                 onChange={(value) => {
                   setSelectedHosts(value);
                 }}
@@ -634,10 +615,7 @@ const AdvancedFilter = ({
         </>
       ) : null}
 
-      {resourceType &&
-      provider &&
-      resourceType !== UtilsReportFiltersScanTypeEnum.Compliance &&
-      provider === 'Container Image' ? (
+      {resourceType && provider && provider === 'ContainerImage' ? (
         <>
           <div>
             {listContainerImageStatus !== 'idle' ? (
@@ -647,7 +625,7 @@ const AdvancedFilter = ({
             ) : (
               <Select
                 value={selectedContainerImages}
-                name="nodeIds[]"
+                name="containerImage[]"
                 onChange={(value) => {
                   setSelectedContainerImages(value);
                 }}
@@ -682,7 +660,7 @@ const AdvancedFilter = ({
             ) : (
               <Select
                 value={_containers}
-                name="nodeIds[]"
+                name="containers[]"
                 onChange={(value) => {
                   setContainers(value);
                 }}
@@ -707,7 +685,7 @@ const AdvancedFilter = ({
       {resourceType &&
       provider &&
       resourceType !== UtilsReportFiltersScanTypeEnum.Compliance &&
-      provider === 'Pod' ? (
+      provider === 'Cluster' ? (
         <>
           <div>
             {listClusterStatus !== 'idle' ? (
@@ -716,10 +694,10 @@ const AdvancedFilter = ({
               </div>
             ) : (
               <Select
-                value={_containers}
+                value={selectedCluster}
                 name="nodeIds[]"
                 onChange={(value) => {
-                  setContainers(value);
+                  setSelectedCluster(value);
                 }}
                 placeholder="Select Clusters"
                 label="Select Clusters"
@@ -838,8 +816,10 @@ const ComplianceForm = ({
 
 const CommomForm = ({
   setProvider,
+  resource,
 }: {
   setProvider: React.Dispatch<React.SetStateAction<string>>;
+  resource: string;
 }) => {
   const [severity, setSeverity] = useState([]);
   const [nodeType, setNodeType] = useState('');
@@ -857,7 +837,7 @@ const CommomForm = ({
         placeholder="Select Node Type"
         sizing="xs"
       >
-        {Object.keys(UtilsReportFiltersNodeTypeEnum).map((resource) => {
+        {Object.keys(nonComplianceNode(resource)).map((resource) => {
           return (
             <SelectItem value={resource} key={resource}>
               {resource}
@@ -928,7 +908,7 @@ const DownloadForm = () => {
         ) : null}
 
         {resource !== UtilsReportFiltersScanTypeEnum.Compliance ? (
-          <CommomForm setProvider={setProvider} />
+          <CommomForm setProvider={setProvider} resource={resource} />
         ) : null}
 
         <Select
