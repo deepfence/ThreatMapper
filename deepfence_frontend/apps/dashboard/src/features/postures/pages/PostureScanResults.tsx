@@ -57,6 +57,7 @@ import {
   ModelScanResultsReq,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { FilterHeader } from '@/components/forms/FilterHeader';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import {
@@ -978,13 +979,20 @@ const FilterComponent = () => {
     benchmarks = complianceType.kubernetes_cluster;
   }
 
+  const onResetFilters = () => {
+    setSearchParams(() => {
+      return {};
+    });
+  };
+
   return (
     <Popover
       triggerAsChild
       elementToFocusOnCloseRef={elementToFocusOnClose}
       content={
-        <div className="dark:text-white p-4 w-[300px]">
-          <div className="flex flex-col gap-y-6">
+        <div className="dark:text-white w-[300px]">
+          <FilterHeader onReset={onResetFilters} />
+          <div className="flex flex-col gap-y-6 p-4">
             <fieldset>
               <legend className="text-sm font-medium">Mask And Unmask</legend>
               <div className="flex gap-x-4 mt-1">

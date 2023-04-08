@@ -31,6 +31,7 @@ import { getCloudNodesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelCloudNodeAccountInfo } from '@/api/generated';
 import { ConfigureScanModal } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
+import { FilterHeader } from '@/components/forms/FilterHeader';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { CLOUDS } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { ComplianceScanNodeTypeEnum, ScanTypeEnum } from '@/types/common';
@@ -417,6 +418,12 @@ const Accounts = () => {
   const { navigate } = usePageNavigation();
   const isFilterApplied = searchParams.has('');
 
+  const onResetFilters = () => {
+    setSearchParams(() => {
+      return {};
+    });
+  };
+
   return (
     <div>
       <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
@@ -456,8 +463,9 @@ const Accounts = () => {
               triggerAsChild
               elementToFocusOnCloseRef={elementToFocusOnClose}
               content={
-                <div className="dark:text-white p-4 w-[300px]">
-                  <div className="flex flex-col gap-y-6">
+                <div className="dark:text-white w-[300px]">
+                  <FilterHeader onReset={onResetFilters} />
+                  <div className="flex flex-col gap-y-6 p-4">
                     <fieldset>
                       <legend className="text-sm font-medium">Active</legend>
                       <div className="flex gap-x-4 mt-1">

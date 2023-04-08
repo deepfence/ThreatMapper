@@ -25,6 +25,7 @@ import {
   ModelRegistryImagesReq,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { FilterHeader } from '@/components/forms/FilterHeader';
 import { RegistryImageTagsTable } from '@/features/registries/components/RegistryImageTagsTable';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -178,6 +179,12 @@ const HeaderComponent = () => {
     searchParams.has('secretScanStatus') ||
     searchParams.has('malwareScanStatus');
 
+  const onResetFilters = () => {
+    setSearchParams(() => {
+      return {};
+    });
+  };
+
   return (
     <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <Breadcrumb separator={<HiChevronRight />} transparent>
@@ -218,8 +225,9 @@ const HeaderComponent = () => {
             triggerAsChild
             elementToFocusOnCloseRef={elementToFocusOnClose}
             content={
-              <div className="dark:text-white p-4">
-                <Form className="flex flex-col gap-y-6">
+              <div className="dark:text-white">
+                <FilterHeader onReset={onResetFilters} />
+                <Form className="flex flex-col gap-y-6  p-4">
                   <fieldset>
                     <legend className="text-sm font-medium">
                       Vulnerability Scan Status
