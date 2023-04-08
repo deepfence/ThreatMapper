@@ -312,10 +312,13 @@ export const Host = ({
               <Metadata
                 data={{
                   kernel_version: fetcher.data?.hostData?.kernel_version ?? '-',
-                  interface_ips: fetcher.data?.hostData?.interface_ips ?? '-',
-                  interface_names: fetcher.data?.hostData?.interfaceNames ?? '-',
-                  uptime: fetcher.data?.hostData?.uptime ?? '-',
-                  ...fetcher.data?.hostData.cloud_metadata,
+                  interface_ips: fetcher.data?.hostData?.interface_ips?.join(', ') ?? '-',
+                  interface_names:
+                    fetcher.data?.hostData?.interface_names?.join(', ') ?? '-',
+                  uptime: fetcher.data?.hostData?.uptime
+                    ? String(fetcher.data?.hostData?.uptime)
+                    : '-',
+                  cloud_provider: fetcher.data?.hostData.cloud_provider ?? '-',
                 }}
               />
             )}

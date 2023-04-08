@@ -10,6 +10,7 @@ import { SEVERITY_COLORS } from '@/constants/charts';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { VulnerabilitySeverityType } from '@/types/common';
 import { getObjectKeys } from '@/utils/array';
+import { abbreviateNumber } from '@/utils/number';
 
 type ChartData = Array<{
   label: string;
@@ -120,7 +121,7 @@ export const VulnerabilitiesCountsCard = ({
           <div className="flex-1 pt-4">
             <div className="flex flex-col align-center justify-center">
               <div className="text-[2.5rem] text-gray-900 dark:text-gray-200 font-light text-center">
-                {data.total}
+                {abbreviateNumber(data.total)}
               </div>
               <div className="text-base text-gray-400 dark:text-gray-500 text-center">
                 {title}
@@ -140,7 +141,7 @@ export const VulnerabilitiesCountsCard = ({
                         }}
                       ></div>
                       <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">
-                        {data.severityBreakdown[severity]}
+                        {abbreviateNumber(data.severityBreakdown[severity])}
                       </span>
                     </div>
                     <span className="text-xs capitalize text-gray-400 dark:text-gray-500">

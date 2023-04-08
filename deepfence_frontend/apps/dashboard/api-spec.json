@@ -7012,7 +7012,7 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ModelResponseAccessToken" }
+                "schema": { "$ref": "#/components/schemas/ModelLoginResponse" }
               }
             }
           },
@@ -7063,7 +7063,7 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ModelResponseAccessToken" }
+                "schema": { "$ref": "#/components/schemas/ModelLoginResponse" }
               }
             }
           },
@@ -7197,7 +7197,7 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ModelResponseAccessToken" }
+                "schema": { "$ref": "#/components/schemas/ModelLoginResponse" }
               }
             }
           },
@@ -7806,11 +7806,17 @@
           "kubernetes_filter",
           "host_filter",
           "pod_filter",
+          "container_filter",
           "field_filters"
         ],
         "type": "object",
         "properties": {
           "cloud_filter": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
+          "container_filter": {
             "type": "array",
             "items": { "type": "string" },
             "nullable": true
@@ -8013,6 +8019,7 @@
           "container_edges_batch",
           "container_process_edge_batch",
           "pod_edges_batch",
+          "pod_host_edges_batch",
           "endpoint_edges_batch",
           "container_image_edge_batch",
           "kubernetes_cluster_edge_batch",
@@ -8076,6 +8083,11 @@
             "nullable": true
           },
           "pod_edges_batch": {
+            "type": "array",
+            "items": { "type": "object", "additionalProperties": {} },
+            "nullable": true
+          },
+          "pod_host_edges_batch": {
             "type": "array",
             "items": { "type": "object", "additionalProperties": {} },
             "nullable": true
@@ -8471,42 +8483,18 @@
           "node_id",
           "node_name",
           "node_type",
-          "vulnerabilities_count",
-          "vulnerability_scan_status",
-          "vulnerability_latest_scan_id",
-          "secrets_count",
-          "secret_scan_status",
-          "secret_latest_scan",
-          "malwares_count",
-          "malware_scan_status",
-          "malware_latest_scan_id",
-          "compliances_count",
-          "compliance_scan_status",
-          "compliance_latest_scan_id",
           "cloud_compliances_count",
           "cloud_compliance_scan_status",
-          "cloud_compliance_latest scan_id"
+          "cloud_compliance_latest_scan_id"
         ],
         "type": "object",
         "properties": {
-          "cloud_compliance_latest scan_id": { "type": "string" },
+          "cloud_compliance_latest_scan_id": { "type": "string" },
           "cloud_compliance_scan_status": { "type": "string" },
           "cloud_compliances_count": { "type": "integer" },
-          "compliance_latest_scan_id": { "type": "string" },
-          "compliance_scan_status": { "type": "string" },
-          "compliances_count": { "type": "integer" },
-          "malware_latest_scan_id": { "type": "string" },
-          "malware_scan_status": { "type": "string" },
-          "malwares_count": { "type": "integer" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
-          "node_type": { "type": "string" },
-          "secret_latest_scan": { "type": "string" },
-          "secret_scan_status": { "type": "string" },
-          "secrets_count": { "type": "integer" },
-          "vulnerabilities_count": { "type": "integer" },
-          "vulnerability_latest_scan_id": { "type": "string" },
-          "vulnerability_scan_status": { "type": "string" }
+          "node_type": { "type": "string" }
         }
       },
       "ModelCompliance": {
@@ -8663,43 +8651,47 @@
           "processes",
           "docker_labels",
           "host_name",
+          "docker_container_command",
+          "docker_container_state",
+          "docker_container_state_human",
+          "docker_container_network_mode",
+          "docker_container_networks",
+          "docker_container_ips",
+          "docker_container_created",
+          "docker_container_ports",
           "uptime",
+          "cpu_max",
+          "cpu_usage",
+          "memory_max",
+          "memory_usage",
           "vulnerabilities_count",
           "vulnerability_scan_status",
           "vulnerability_latest_scan_id",
           "secrets_count",
           "secret_scan_status",
-          "secret_latest_scan",
+          "secret_latest_scan_id",
           "malwares_count",
           "malware_scan_status",
-          "malware_latest_scan_id",
-          "compliances_count",
-          "compliance_scan_status",
-          "compliance_latest_scan_id",
-          "cloud_compliances_count",
-          "cloud_compliance_scan_status",
-          "cloud_compliance_latest scan_id"
+          "malware_latest_scan_id"
         ],
         "type": "object",
         "properties": {
-          "cloud_compliance_latest scan_id": { "type": "string" },
-          "cloud_compliance_scan_status": { "type": "string" },
-          "cloud_compliances_count": { "type": "integer" },
-          "compliance_latest_scan_id": { "type": "string" },
-          "compliance_scan_status": { "type": "string" },
-          "compliances_count": { "type": "integer" },
           "cpu_max": { "type": "number" },
           "cpu_usage": { "type": "number" },
           "docker_container_command": { "type": "string" },
           "docker_container_created": { "type": "string" },
-          "docker_container_ips": { "type": "array", "items": { "type": "string" } },
+          "docker_container_ips": { "type": "array", "items": {}, "nullable": true },
           "docker_container_name": { "type": "string" },
           "docker_container_network_mode": { "type": "string" },
           "docker_container_networks": { "type": "string" },
           "docker_container_ports": { "type": "string" },
           "docker_container_state": { "type": "string" },
           "docker_container_state_human": { "type": "string" },
-          "docker_labels": { "$ref": "#/components/schemas/ModelMetadata" },
+          "docker_labels": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
           "host_name": { "type": "string" },
           "image": { "$ref": "#/components/schemas/ModelContainerImage" },
           "malware_latest_scan_id": { "type": "string" },
@@ -8714,7 +8706,7 @@
             "items": { "$ref": "#/components/schemas/ModelProcess" },
             "nullable": true
           },
-          "secret_latest_scan": { "type": "string" },
+          "secret_latest_scan_id": { "type": "string" },
           "secret_scan_status": { "type": "string" },
           "secrets_count": { "type": "integer" },
           "uptime": { "type": "integer" },
@@ -8730,31 +8722,28 @@
           "docker_image_name",
           "docker_image_tag",
           "docker_image_size",
+          "docker_image_created_at",
+          "docker_image_virtual_size",
+          "docker_image_id",
           "metadata",
           "vulnerabilities_count",
           "vulnerability_scan_status",
           "vulnerability_latest_scan_id",
           "secrets_count",
           "secret_scan_status",
-          "secret_latest_scan",
+          "secret_latest_scan_id",
           "malwares_count",
           "malware_scan_status",
           "malware_latest_scan_id",
-          "compliances_count",
-          "compliance_scan_status",
-          "compliance_latest_scan_id",
-          "cloud_compliances_count",
-          "cloud_compliance_scan_status",
-          "cloud_compliance_latest scan_id"
+          "containers"
         ],
         "type": "object",
         "properties": {
-          "cloud_compliance_latest scan_id": { "type": "string" },
-          "cloud_compliance_scan_status": { "type": "string" },
-          "cloud_compliances_count": { "type": "integer" },
-          "compliance_latest_scan_id": { "type": "string" },
-          "compliance_scan_status": { "type": "string" },
-          "compliances_count": { "type": "integer" },
+          "containers": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelContainer" },
+            "nullable": true
+          },
           "docker_image_created_at": { "type": "string" },
           "docker_image_id": { "type": "string" },
           "docker_image_name": { "type": "string" },
@@ -8767,7 +8756,7 @@
           "metadata": { "$ref": "#/components/schemas/ModelMetadata" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
-          "secret_latest_scan": { "type": "string" },
+          "secret_latest_scan_id": { "type": "string" },
           "secret_scan_status": { "type": "string" },
           "secrets_count": { "type": "integer" },
           "vulnerabilities_count": { "type": "integer" },
@@ -8851,31 +8840,37 @@
           "is_console_vm",
           "local_cidr",
           "os",
+          "local_networks",
+          "instance_id",
           "cloud_provider",
+          "instance_type",
+          "public_ip",
+          "private_ip",
+          "availability_zone",
+          "kernel_id",
           "cloud_region",
+          "resource_group",
+          "cpu_max",
+          "cpu_usage",
+          "memory_max",
+          "memory_usage",
           "vulnerabilities_count",
           "vulnerability_scan_status",
           "vulnerability_latest_scan_id",
           "secrets_count",
           "secret_scan_status",
-          "secret_latest_scan",
+          "secret_latest_scan_id",
           "malwares_count",
           "malware_scan_status",
           "malware_latest_scan_id",
           "compliances_count",
           "compliance_scan_status",
-          "compliance_latest_scan_id",
-          "cloud_compliances_count",
-          "cloud_compliance_scan_status",
-          "cloud_compliance_latest scan_id"
+          "compliance_latest_scan_id"
         ],
         "type": "object",
         "properties": {
           "agent_running": { "type": "boolean" },
           "availability_zone": { "type": "string" },
-          "cloud_compliance_latest scan_id": { "type": "string" },
-          "cloud_compliance_scan_status": { "type": "string" },
-          "cloud_compliances_count": { "type": "integer" },
           "cloud_provider": { "type": "string" },
           "cloud_region": { "type": "string" },
           "compliance_latest_scan_id": { "type": "string" },
@@ -8896,25 +8891,13 @@
           "host_name": { "type": "string" },
           "instance_id": { "type": "string" },
           "instance_type": { "type": "string" },
-          "interface_ips": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
-          "interface_names": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
+          "interface_ips": { "type": "array", "items": {}, "nullable": true },
+          "interface_names": { "type": "array", "items": {}, "nullable": true },
           "is_console_vm": { "type": "boolean" },
           "kernel_id": { "type": "string" },
           "kernel_version": { "type": "string" },
-          "local_cidr": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
-          "local_networks": { "type": "array", "items": { "type": "string" } },
+          "local_cidr": { "type": "array", "items": {}, "nullable": true },
+          "local_networks": { "type": "array", "items": {}, "nullable": true },
           "malware_latest_scan_id": { "type": "string" },
           "malware_scan_status": { "type": "string" },
           "malwares_count": { "type": "integer" },
@@ -8928,15 +8911,15 @@
             "items": { "$ref": "#/components/schemas/ModelPod" },
             "nullable": true
           },
-          "private_ip": { "type": "array", "items": { "type": "string" } },
+          "private_ip": { "type": "array", "items": {}, "nullable": true },
           "processes": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelProcess" },
             "nullable": true
           },
-          "public_ip": { "type": "array", "items": { "type": "string" } },
+          "public_ip": { "type": "array", "items": {}, "nullable": true },
           "resource_group": { "type": "string" },
-          "secret_latest_scan": { "type": "string" },
+          "secret_latest_scan_id": { "type": "string" },
           "secret_scan_status": { "type": "string" },
           "secrets_count": { "type": "integer" },
           "uptime": { "type": "integer" },
@@ -9031,6 +9014,21 @@
         "type": "object",
         "properties": { "email": { "type": "string" }, "password": { "type": "string" } }
       },
+      "ModelLoginResponse": {
+        "required": [
+          "access_token",
+          "refresh_token",
+          "onboarding_required",
+          "password_invalidated"
+        ],
+        "type": "object",
+        "properties": {
+          "access_token": { "type": "string" },
+          "onboarding_required": { "type": "boolean" },
+          "password_invalidated": { "type": "boolean" },
+          "refresh_token": { "type": "string" }
+        }
+      },
       "ModelMalware": {
         "required": [
           "class",
@@ -9060,11 +9058,7 @@
           "rule_id": { "type": "string" },
           "rule_name": { "type": "string" },
           "severity_score": { "type": "integer" },
-          "strings_to_match": {
-            "type": "array",
-            "items": { "type": "string" },
-            "nullable": true
-          },
+          "strings_to_match": { "type": "array", "items": {}, "nullable": true },
           "summary": { "type": "string" },
           "version": { "type": "string" }
         }
@@ -9180,10 +9174,17 @@
           "node_id",
           "node_name",
           "kubernetes_namespace",
+          "pod_name",
           "host_name",
           "containers",
           "processes",
-          "metadata"
+          "kubernetes_cluster_name",
+          "kubernetes_cluster_id",
+          "kubernetes_state",
+          "kubernetes_ip",
+          "kubernetes_is_in_host_network",
+          "kubernetes_labels",
+          "kubernetes_created"
         ],
         "type": "object",
         "properties": {
@@ -9193,10 +9194,21 @@
             "nullable": true
           },
           "host_name": { "type": "string" },
+          "kubernetes_cluster_id": { "type": "string" },
+          "kubernetes_cluster_name": { "type": "string" },
+          "kubernetes_created": { "type": "string" },
+          "kubernetes_ip": { "type": "string" },
+          "kubernetes_is_in_host_network": { "type": "boolean" },
+          "kubernetes_labels": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
           "kubernetes_namespace": { "type": "string" },
-          "metadata": { "$ref": "#/components/schemas/ModelMetadata" },
+          "kubernetes_state": { "type": "string" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
+          "pod_name": { "type": "string" },
           "processes": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelProcess" },
@@ -9216,7 +9228,19 @@
         }
       },
       "ModelProcess": {
-        "required": ["node_id", "node_name", "pid", "cmdline", "ppid", "threads"],
+        "required": [
+          "node_id",
+          "node_name",
+          "pid",
+          "cmdline",
+          "ppid",
+          "threads",
+          "cpu_max",
+          "cpu_usage",
+          "memory_max",
+          "memory_usage",
+          "open_files_count"
+        ],
         "type": "object",
         "properties": {
           "cmdline": { "type": "string" },
@@ -9745,7 +9769,7 @@
           "node_id": { "type": "string" },
           "parsed_attack_vector": { "type": "string" },
           "updated_at": { "type": "integer" },
-          "urls": { "type": "array", "items": { "type": "string" }, "nullable": true }
+          "urls": { "type": "array", "items": {}, "nullable": true }
         }
       },
       "ModelVulnerabilityScanConfigLanguage": {
@@ -10041,11 +10065,11 @@
       "UtilsAdvancedReportFilters": {
         "type": "object",
         "properties": {
-          "account_id": { "type": "string" },
-          "host_name": { "type": "string" },
-          "kubernetes_cluster_name": { "type": "string" },
-          "masked": { "type": "boolean" },
-          "scan_status": { "type": "string" }
+          "account_id": { "type": "array", "items": { "type": "string" } },
+          "host_name": { "type": "array", "items": { "type": "string" } },
+          "kubernetes_cluster_name": { "type": "array", "items": { "type": "string" } },
+          "masked": { "type": "array", "items": { "type": "boolean" } },
+          "scan_status": { "type": "array", "items": { "type": "string" } }
         }
       },
       "UtilsReportFilters": {
@@ -10061,6 +10085,7 @@
               "host",
               "container",
               "container_image",
+              "pod",
               "linux",
               "aws",
               "gcp",

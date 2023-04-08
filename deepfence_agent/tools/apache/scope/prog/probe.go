@@ -234,7 +234,6 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	var (
 		probeID  = strconv.FormatInt(rand.Int63(), 16)
 		hostName = hostname.Get()
-		hostID   = hostName // TODO(pb): we should sanitize the hostname
 	)
 	log.Infof("probe starting, version %s, ID %s", version, probeID)
 
@@ -325,7 +324,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 			if flags.kubernetesRole == kubernetesRoleCluster {
 				err = multiClients.StartControlsWatching(k8sClusterId, true)
 			} else {
-				err = multiClients.StartControlsWatching(hostname.Get(), false)
+				err = multiClients.StartControlsWatching(hostName, false)
 			}
 			if err == nil {
 				break
@@ -359,15 +358,15 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	var processCache *process.CachingWalker
 
 	if flags.kubernetesRole != kubernetesRoleCluster {
-		hostReporter, cloudProvider, cloudRegion := host.NewReporter(hostID, hostName, probeID, version)
+		hostReporter, cloudProvider, cloudRegion := host.NewReporter(hostName, probeID, version)
 		defer hostReporter.Stop()
 		p.AddReporter(hostReporter)
-		p.AddTagger(host.NewTagger(hostID, cloudProvider, cloudRegion))
+		p.AddTagger(host.NewTagger(hostName, cloudProvider, cloudRegion))
 
 		if flags.procEnabled {
 			processCache = process.NewCachingWalker(process.NewWalker(flags.procRoot, false))
 			p.AddTicker(processCache)
-			p.AddReporter(process.NewReporter(processCache, hostID, process.GetDeltaTotalJiffies, flags.noCommandLineArguments, flags.trackProcDeploads))
+			p.AddReporter(process.NewReporter(processCache, hostName, process.GetDeltaTotalJiffies, flags.noCommandLineArguments, flags.trackProcDeploads))
 		}
 
 		if flags.endpointEnabled {
@@ -379,7 +378,6 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 			}
 
 			endpointReporter := endpoint.NewReporter(endpoint.ReporterConfig{
-				HostID:       hostID,
 				HostName:     hostName,
 				SpyProcs:     flags.spyProcs,
 				UseConntrack: flags.useConntrack,
@@ -407,7 +405,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		options := docker.RegistryOptions{
 			Interval:               flags.dockerInterval,
 			CollectStats:           true,
-			HostID:                 hostID,
+			HostID:                 hostName,
 			DockerEndpoint:         os.Getenv("DOCKER_SOCKET_PATH"),
 			NoCommandLineArguments: flags.noCommandLineArguments,
 			NoEnvironmentVariables: flags.noEnvironmentVariables,
@@ -415,9 +413,9 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		if registry, err := docker.NewRegistry(options); err == nil {
 			defer registry.Stop()
 			if flags.procEnabled {
-				p.AddTagger(docker.NewTagger(registry, hostID, processCache))
+				p.AddTagger(docker.NewTagger(registry, hostName, processCache))
 			}
-			p.AddReporter(docker.NewReporter(registry, hostID, probeID, p))
+			p.AddReporter(docker.NewReporter(registry, hostName, probeID, p))
 		} else {
 			log.Errorf("Docker: failed to start registry: %v", err)
 		}
@@ -428,14 +426,14 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		if err != nil {
 			log.Errorf("CRI: failed to start registry: %v", err)
 		} else {
-			p.AddReporter(cri.NewReporter(runtimeClient, hostID, imageClient))
+			p.AddReporter(cri.NewReporter(runtimeClient, hostName, imageClient))
 		}
 	}
 
 	if flags.kubernetesEnabled && flags.kubernetesRole != kubernetesRoleHost {
-		if client, err := kubernetes.NewClient(flags.kubernetesClientConfig); err == nil {
+		if client, err := kubernetes.NewClient(flags.kubernetesClientConfig, hostName); err == nil {
 			defer client.Stop()
-			reporter := kubernetes.NewReporter(client, probeID, hostID, p, flags.kubernetesNodeName)
+			reporter := kubernetes.NewReporter(client, probeID, hostName, p, flags.kubernetesNodeName)
 			defer reporter.Stop()
 			p.AddReporter(reporter)
 			go client.InitCNIPlugin()

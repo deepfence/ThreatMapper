@@ -1,6 +1,7 @@
 package kubernetes
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/weaveworks/scope/report"
@@ -22,16 +23,18 @@ type Pod interface {
 type pod struct {
 	*apiv1.Pod
 	Meta
-	parents report.Sets
-	Node    *apiv1.Node
+	parents  report.Sets
+	Node     *apiv1.Node
+	HostName string
 }
 
 // NewPod creates a new Pod
-func NewPod(p *apiv1.Pod) Pod {
+func NewPod(p *apiv1.Pod, hostName string) Pod {
 	return &pod{
-		Pod:     p,
-		Meta:    meta{p.ObjectMeta},
-		parents: report.MakeSets(),
+		Pod:      p,
+		Meta:     meta{p.ObjectMeta},
+		parents:  report.MakeSets(),
+		HostName: hostName,
 	}
 }
 
@@ -80,6 +83,11 @@ func (p *pod) VolumeClaimNames() []string {
 }
 
 func (p *pod) GetNode() (report.Metadata, report.Parent) {
+	var labelsStr string
+	labels, err := json.Marshal(p.Labels())
+	if err == nil {
+		labelsStr = string(labels)
+	}
 	node := report.Metadata{
 		Timestamp:                 time.Now().UTC().Format(time.RFC3339Nano),
 		NodeID:                    p.UID(),
@@ -92,12 +100,14 @@ func (p *pod) GetNode() (report.Metadata, report.Parent) {
 		KubernetesIP:              p.Status.PodIP,
 		KubernetesIsInHostNetwork: p.Pod.Spec.HostNetwork,
 		KubernetesNamespace:       p.Namespace(),
-		HostName:                  p.NodeName(),
+		HostName:                  p.HostName,
+		KubernetesCreated:         p.Created(),
+		KubernetesLabels:          labelsStr,
 	}
 	parent := report.Parent{
 		CloudProvider:     cloudProviderNodeId,
 		KubernetesCluster: kubernetesClusterId,
-		Host:              p.NodeName(),
+		Host:              p.HostName,
 		Namespace:         kubernetesClusterId + "-" + p.GetNamespace(),
 	}
 	return node, parent

@@ -76,7 +76,7 @@ type Metadata struct {
 
 	// cloud metadata
 	InstanceID       string   `json:"instance_id,omitempty"`
-	CloudProvider    string   `json:"cloud_provider"`
+	CloudProvider    string   `json:"cloud_provider,omitempty"`
 	InstanceType     string   `json:"instance_type,omitempty"`
 	PublicIP         []string `json:"public_ip,omitempty"`
 	PrivateIP        []string `json:"private_ip,omitempty"`
@@ -154,7 +154,7 @@ type Metadata struct {
 	KubernetesType            string   `json:"kubernetes_type,omitempty"`
 	KubernetesPorts           []int32  `json:"kubernetes_ports,omitempty"`
 	KubernetesClusterId       string   `json:"kubernetes_cluster_id,omitempty"`
-	KubernetesClusterName     string   `json:"kubernetes_cluster_name,omitempty"`
+	KubernetesClusterName     string   `json:"kubernetes_cluster_name"`
 }
 
 func (m Metadata) Merge(n Metadata) Metadata {

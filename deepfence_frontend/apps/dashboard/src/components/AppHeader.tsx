@@ -1,8 +1,9 @@
-import cx from 'classnames';
+import classNames from 'classnames';
 import { IconContext } from 'react-icons';
 import {
   HiChevronLeft,
   HiLogout,
+  HiMenu,
   HiOutlineBell,
   HiOutlineDesktopComputer,
   HiOutlineMoon,
@@ -14,11 +15,9 @@ import {
   DropdownItem,
   DropdownSeparator,
   DropdownSubMenu,
+  IconButton,
 } from 'ui-components';
 
-import NavIconDark from '@/assets/icon-nav-dark.svg';
-import NavIconLight from '@/assets/icon-nav-light.svg';
-import LogoDeepfenceDarkBlue from '@/assets/logo-deepfence-dark-blue.svg';
 import { useTheme } from '@/theme/ThemeContext';
 
 export interface DashboardHeaderProps {
@@ -33,34 +32,36 @@ export function AppHeader({
   sideNavExpanded,
   onSideNavExpandedChange,
 }: DashboardHeaderProps) {
-  const { setMode, userSelectedMode, mode } = useTheme();
+  const { setMode, userSelectedMode } = useTheme();
 
   return (
-    <header className="fixed top-0 px-2 bg-white dark:bg-gray-800 h-[64px] w-full border-b border-gray-200 dark:border-gray-700">
+    <header
+      className={classNames(
+        'fixed z-10 top-0 px-2 bg-white dark:bg-gray-800 h-[64px] w-full border-b border-gray-200 dark:border-gray-700',
+      )}
+    >
       <div className="h-full flex items-center">
-        <div className="mr-auto flex gap-4">
-          <button
+        <div
+          className={classNames('mr-auto pl-2 flex gap-4 transition-[margin-left]', {
+            ['ml-[64px]']: !sideNavExpanded,
+            ['ml-[240px]']: sideNavExpanded,
+          })}
+        >
+          <IconButton
+            className="rounded-md p-1 bg-transparent"
             onClick={() => {
               onSideNavExpandedChange(!sideNavExpanded);
             }}
-            className={cx(
-              'outline-none focus:ring-0 focus-visible:ring-2 dark:focus-visible:ring-blue-700',
-              'p-2 rounded-md',
-            )}
-          >
-            <img
-              src={mode === 'dark' ? NavIconDark : NavIconLight}
-              alt="Nav Icon"
-              width="24"
-              height="24"
-            />
-          </button>
-          <img
-            src={LogoDeepfenceDarkBlue}
-            alt="Deefence Logo"
-            width="40"
-            height="40"
-            className="m-auto mr-6"
+            icon={
+              <IconContext.Provider
+                value={{
+                  className: 'w-8 h-8 text-gray-500 dark:text-gray-400',
+                }}
+              >
+                <HiMenu />
+              </IconContext.Provider>
+            }
+            size="xs"
           />
         </div>
         <div className="flex items-center gap-4">

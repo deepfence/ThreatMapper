@@ -5,6 +5,7 @@ import { scanPostureApiAction } from '@/components/scan-configure-forms/Complian
 import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
 import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
+import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
 import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
@@ -12,9 +13,8 @@ import { searchClustersApiLoader } from '@/features/common/data-component/search
 import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
 import { searchContainersApiLoader } from '@/features/common/data-component/searchContainersApiLoader';
 import { searchHostsApiLoader } from '@/features/common/data-component/searchHostsApiLoader';
-import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
-import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
-import { Dashboard } from '@/features/dashboard/pages/Dashboard';
+import { RootLayout } from '@/features/common/RootLayout';
+import { module as dashboard } from '@/features/dashboard/pages/Dashboard';
 import { module as integrationsLayout } from '@/features/integrations/layouts/IntegrationsLayout';
 import { module as downloadReport } from '@/features/integrations/pages/DownloadReport';
 import { module as addIntegration } from '@/features/integrations/pages/IntegrationAdd';
@@ -63,10 +63,14 @@ import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
+import { module as changePassword } from '@/features/settings/pages/ChangePassword';
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
+import { module as editUser } from '@/features/settings/pages/EditUser';
+import { module as inviteUser } from '@/features/settings/pages/InviteUser';
 import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
+import { module as threatGraphAction } from '@/features/threat-graph/data-components/threatGraphAction';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
 import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
@@ -161,13 +165,17 @@ export const privateRoutes: CustomRouteObject[] = [
   },
   {
     path: '/',
-    loader: dashboardLoader,
-    element: <DashboardLayout />,
+    loader: authenticatedRootLoader,
+    element: <RootLayout />,
     errorElement: <ErrorComponent />,
     children: [
       {
+        index: true,
+        loader: () => redirect('/dashboard', 302),
+      },
+      {
         path: 'dashboard',
-        element: <Dashboard />,
+        ...dashboard,
         meta: { title: 'Dashboard' },
       },
       {
@@ -459,6 +467,21 @@ export const privateRoutes: CustomRouteObject[] = [
             ...userManagement,
             meta: { title: 'User Management' },
           },
+          {
+            path: 'user-management/edit/:userId',
+            ...editUser,
+            meta: { title: 'Edit User Account' },
+          },
+          {
+            path: 'user-management/change-password',
+            ...changePassword,
+            meta: { title: 'Change your password' },
+          },
+          {
+            path: 'user-management/invite-user',
+            ...inviteUser,
+            meta: { title: 'Invite User' },
+          },
         ],
       },
     ],
@@ -539,6 +562,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'topology',
         ...topologyAction,
+      },
+      {
+        path: 'threat-graph',
+        ...threatGraphAction,
       },
     ],
   },

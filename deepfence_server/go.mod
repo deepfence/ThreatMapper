@@ -22,11 +22,11 @@ require (
 	github.com/ThreeDotsLabs/watermill v1.2.0
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.2.2
 	github.com/aws/aws-sdk-go v1.44.232
-	github.com/bytedance/sonic v1.8.5
-	github.com/casbin/casbin/v2 v2.65.2
+	github.com/bytedance/sonic v1.8.7
+	github.com/casbin/casbin/v2 v2.66.2
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230330091304-8f99282832d7
-	github.com/docker/docker v23.0.1+incompatible
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230406134345-d30bf6ca120b
+	github.com/docker/docker v23.0.2+incompatible
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/jwtauth/v5 v5.1.0
 	github.com/go-playground/pkg/v5 v5.15.2

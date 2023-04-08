@@ -34,6 +34,12 @@ export interface GraphTopologyFilters {
     cloud_filter: Array<string> | null;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof GraphTopologyFilters
+     */
+    container_filter: Array<string> | null;
+    /**
+     * 
      * @type {ReportersFieldsFilters}
      * @memberof GraphTopologyFilters
      */
@@ -70,6 +76,7 @@ export interface GraphTopologyFilters {
 export function instanceOfGraphTopologyFilters(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "cloud_filter" in value;
+    isInstance = isInstance && "container_filter" in value;
     isInstance = isInstance && "field_filters" in value;
     isInstance = isInstance && "host_filter" in value;
     isInstance = isInstance && "kubernetes_filter" in value;
@@ -90,6 +97,7 @@ export function GraphTopologyFiltersFromJSONTyped(json: any, ignoreDiscriminator
     return {
         
         'cloud_filter': json['cloud_filter'],
+        'container_filter': json['container_filter'],
         'field_filters': ReportersFieldsFiltersFromJSON(json['field_filters']),
         'host_filter': json['host_filter'],
         'kubernetes_filter': json['kubernetes_filter'],
@@ -108,6 +116,7 @@ export function GraphTopologyFiltersToJSON(value?: GraphTopologyFilters | null):
     return {
         
         'cloud_filter': value.cloud_filter,
+        'container_filter': value.container_filter,
         'field_filters': ReportersFieldsFiltersToJSON(value.field_filters),
         'host_filter': value.host_filter,
         'kubernetes_filter': value.kubernetes_filter,

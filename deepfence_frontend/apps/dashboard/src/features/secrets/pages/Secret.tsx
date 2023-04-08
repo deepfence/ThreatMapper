@@ -14,7 +14,7 @@ import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
-async function getTop5SecretData(nodeType: 'image' | 'host' | 'container') {
+async function getTop5SecretAssetsData(nodeType: 'image' | 'host' | 'container') {
   const top5Nodes = await makeRequest({
     apiFunction: {
       [ModelNodeIdentifierNodeTypeEnum.Image]: getSearchApiClient().searchContainerImages,
@@ -72,6 +72,7 @@ async function getTop5SecretData(nodeType: 'image' | 'host' | 'container') {
             order_filter: { order_fields: [] },
             compare_filter: null,
           },
+          scan_status: ['COMPLETE'],
           node_ids: top5Nodes.map((node) => {
             return {
               node_id: node.node_id,
@@ -125,9 +126,9 @@ type LoaderData = {
 
 const loader = async (): Promise<TypedDeferredData<LoaderData>> => {
   return typedDefer({
-    imageSeverityResults: getTop5SecretData('image'),
-    hostSeverityResults: getTop5SecretData('host'),
-    containerSeverityResults: getTop5SecretData('container'),
+    imageSeverityResults: getTop5SecretAssetsData('image'),
+    hostSeverityResults: getTop5SecretAssetsData('host'),
+    containerSeverityResults: getTop5SecretAssetsData('container'),
   });
 };
 

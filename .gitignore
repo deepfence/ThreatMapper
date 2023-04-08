@@ -26,6 +26,8 @@ _testmain.go
 .idea
 .DS_Store
 .vscode
+dev
+dev2
 !/deepfence_frontend/.vscode/
 deepfence_frontend/console_version.txt
 deepfence_frontend/product_version.txt

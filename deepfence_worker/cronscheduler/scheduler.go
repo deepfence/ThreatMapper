@@ -36,47 +36,47 @@ func (s *Scheduler) addJobs() error {
 	log.Info().Msg("Register cronjobs")
 	var err error
 	// Documentation: https://pkg.go.dev/github.com/robfig/cron#hdr-Usage
-	_, err = s.cron.AddFunc("@every 30s", s.enqeueTask(sdkUtils.TriggerConsoleActionsTask))
+	_, err = s.cron.AddFunc("@every 30s", s.enqueueTask(sdkUtils.TriggerConsoleActionsTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 120s", s.enqeueTask(sdkUtils.CleanUpGraphDBTask))
+	_, err = s.cron.AddFunc("@every 120s", s.enqueueTask(sdkUtils.CleanUpGraphDBTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 120s", s.enqeueTask(sdkUtils.ComputeThreatTask))
+	_, err = s.cron.AddFunc("@every 120s", s.enqueueTask(sdkUtils.ComputeThreatTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 120s", s.enqeueTask(sdkUtils.RetryFailedScansTask))
+	_, err = s.cron.AddFunc("@every 120s", s.enqueueTask(sdkUtils.RetryFailedScansTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 10m", s.enqeueTask(sdkUtils.RetryFailedUpgradesTask))
+	_, err = s.cron.AddFunc("@every 10m", s.enqueueTask(sdkUtils.RetryFailedUpgradesTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 10m", s.enqeueTask(sdkUtils.CleanUpPostgresqlTask))
+	_, err = s.cron.AddFunc("@every 10m", s.enqueueTask(sdkUtils.CleanUpPostgresqlTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 60m", s.enqeueTask(sdkUtils.CleanupDiagnosisLogs))
+	_, err = s.cron.AddFunc("@every 60m", s.enqueueTask(sdkUtils.CleanupDiagnosisLogs))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 60m", s.enqeueTask(sdkUtils.CheckAgentUpgradeTask))
+	_, err = s.cron.AddFunc("@every 60m", s.enqueueTask(sdkUtils.CheckAgentUpgradeTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 300s", s.enqeueTask(sdkUtils.SyncRegistryTask))
+	_, err = s.cron.AddFunc("@every 300s", s.enqueueTask(sdkUtils.SyncRegistryTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 10m", s.enqeueTask(sdkUtils.CloudComplianceTask))
+	_, err = s.cron.AddFunc("@every 10m", s.enqueueTask(sdkUtils.CloudComplianceTask))
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 30s", s.enqeueTask(sdkUtils.SendNotificationTask))
+	_, err = s.cron.AddFunc("@every 30s", s.enqueueTask(sdkUtils.SendNotificationTask))
 	if err != nil {
 		return err
 	}
@@ -85,16 +85,16 @@ func (s *Scheduler) addJobs() error {
 
 func (s *Scheduler) startImmediately() {
 	log.Info().Msg("Start immediate cronjobs")
-	s.enqeueTask(sdkUtils.SetUpGraphDBTask)()
-	s.enqeueTask(sdkUtils.CheckAgentUpgradeTask)()
-	s.enqeueTask(sdkUtils.SyncRegistryTask)()
+	s.enqueueTask(sdkUtils.SetUpGraphDBTask)()
+	s.enqueueTask(sdkUtils.CheckAgentUpgradeTask)()
+	s.enqueueTask(sdkUtils.SyncRegistryTask)()
 }
 
 func (s *Scheduler) Run() {
 	s.cron.Run()
 }
 
-func (s *Scheduler) enqeueTask(task string) func() {
+func (s *Scheduler) enqueueTask(task string) func() {
 	log.Info().Msgf("Registering task: %s", task)
 	return func() {
 		log.Info().Msgf("Enqueuing task: %s", task)

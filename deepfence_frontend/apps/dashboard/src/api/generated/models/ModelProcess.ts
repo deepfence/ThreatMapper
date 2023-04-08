@@ -30,25 +30,25 @@ export interface ModelProcess {
      * @type {number}
      * @memberof ModelProcess
      */
-    cpu_max?: number;
+    cpu_max: number;
     /**
      * 
      * @type {number}
      * @memberof ModelProcess
      */
-    cpu_usage?: number;
+    cpu_usage: number;
     /**
      * 
      * @type {number}
      * @memberof ModelProcess
      */
-    memory_max?: number;
+    memory_max: number;
     /**
      * 
      * @type {number}
      * @memberof ModelProcess
      */
-    memory_usage?: number;
+    memory_usage: number;
     /**
      * 
      * @type {string}
@@ -66,7 +66,7 @@ export interface ModelProcess {
      * @type {number}
      * @memberof ModelProcess
      */
-    open_files_count?: number;
+    open_files_count: number;
     /**
      * 
      * @type {number}
@@ -93,8 +93,13 @@ export interface ModelProcess {
 export function instanceOfModelProcess(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "cmdline" in value;
+    isInstance = isInstance && "cpu_max" in value;
+    isInstance = isInstance && "cpu_usage" in value;
+    isInstance = isInstance && "memory_max" in value;
+    isInstance = isInstance && "memory_usage" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
+    isInstance = isInstance && "open_files_count" in value;
     isInstance = isInstance && "pid" in value;
     isInstance = isInstance && "ppid" in value;
     isInstance = isInstance && "threads" in value;
@@ -113,13 +118,13 @@ export function ModelProcessFromJSONTyped(json: any, ignoreDiscriminator: boolea
     return {
         
         'cmdline': json['cmdline'],
-        'cpu_max': !exists(json, 'cpu_max') ? undefined : json['cpu_max'],
-        'cpu_usage': !exists(json, 'cpu_usage') ? undefined : json['cpu_usage'],
-        'memory_max': !exists(json, 'memory_max') ? undefined : json['memory_max'],
-        'memory_usage': !exists(json, 'memory_usage') ? undefined : json['memory_usage'],
+        'cpu_max': json['cpu_max'],
+        'cpu_usage': json['cpu_usage'],
+        'memory_max': json['memory_max'],
+        'memory_usage': json['memory_usage'],
         'node_id': json['node_id'],
         'node_name': json['node_name'],
-        'open_files_count': !exists(json, 'open_files_count') ? undefined : json['open_files_count'],
+        'open_files_count': json['open_files_count'],
         'pid': json['pid'],
         'ppid': json['ppid'],
         'threads': json['threads'],

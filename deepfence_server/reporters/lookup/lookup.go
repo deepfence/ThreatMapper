@@ -2,11 +2,9 @@ package reporters_lookup
 
 import (
 	"context"
-	"errors"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -29,52 +27,68 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 		return nil, err
 	}
 
-	statuses, err := reporters_scan.GetScanStatuses[model.Host](ctx, filter.NodeIds)
-	if err != nil {
-		return nil, err
+	getProcesses := false
+	getContainerImages := false
+	getContainers := false
+	getPods := false
+	if len(filter.InFieldFilter) == 0 {
+		getProcesses = true
+		getContainerImages = true
+		getContainers = true
+		getPods = true
+	} else {
+		getProcesses = utils.InSlice("processes", filter.InFieldFilter)
+		getContainerImages = utils.InSlice("container_images", filter.InFieldFilter)
+		getContainers = utils.InSlice("containers", filter.InFieldFilter)
+		getPods = utils.InSlice("pods", filter.InFieldFilter)
 	}
 
-	if len(hosts) != len(statuses) {
-		return nil, errors.New("hosts and statuses mismatch")
+	hostIds := make([]string, len(hosts))
+	hostIdIndex := make(map[string]int)
+	for i, host := range hosts {
+		hostIds[i] = host.ID
+		hostIdIndex[host.ID] = i
 	}
 
-	for i := range hosts {
-		processes, err := getHostProcesses(ctx, hosts[i])
-		if err != nil {
-			return nil, err
+	var index int
+	if getProcesses == true {
+		processes, matched, err := getHostProcesses(ctx, hostIds)
+		if err == nil {
+			for _, process := range processes {
+				index = hostIdIndex[matched[process.ID]]
+				hosts[index].Processes = append(hosts[index].Processes, process)
+			}
 		}
-		hosts[i].Processes = processes
-
-		containers, err := getHostContainers(ctx, hosts[i])
-		if err != nil {
-			return nil, err
-		}
-		hosts[i].Containers = containers
-
-		container_images, err := getHostContainerImages(ctx, hosts[i])
-		if err != nil {
-			return nil, err
-		}
-		hosts[i].ContainerImages = container_images
-		hosts[i].RegularScanStatus = statuses[i]
 	}
+	if getContainers == true {
+		containers, matched, err := getHostContainers(ctx, hostIds)
+		if err == nil {
+			for _, container := range containers {
+				index = hostIdIndex[matched[container.ID]]
+				hosts[index].Containers = append(hosts[index].Containers, container)
+			}
+		}
+	}
+	if getContainerImages == true {
+		containerImages, matched, err := getHostContainerImages(ctx, hostIds)
+		if err == nil {
+			for _, containerImage := range containerImages {
+				index = hostIdIndex[matched[containerImage.ID]]
+				hosts[index].ContainerImages = append(hosts[index].ContainerImages, containerImage)
+			}
+		}
+	}
+	if getPods == true {
+		pods, matched, err := getHostPods(ctx, hostIds)
+		if err == nil {
+			for _, pod := range pods {
+				index = hostIdIndex[matched[pod.ID]]
+				hosts[index].Pods = append(hosts[index].Pods, pod)
+			}
+		}
+	}
+
 	return hosts, nil
-}
-
-func fillContainers(ctx context.Context, containers []model.Container) ([]model.Container, error) {
-	for i := range containers {
-		processes, err := getContainerProcesses(ctx, containers[i])
-		if err != nil {
-			return nil, err
-		}
-		containers[i].Processes = processes
-		images, err := getContainerContainerImages(ctx, containers[i])
-		if err != nil || len(images) != 1 {
-			return nil, err
-		}
-		containers[i].ContainerImage = images[0]
-	}
-	return containers, nil
 }
 
 func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Container, error) {
@@ -83,22 +97,39 @@ func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Cont
 		return nil, err
 	}
 
-	containers, err = fillContainers(ctx, containers)
-	if err != nil {
-		return nil, err
+	getProcesses := false
+	getContainerImages := false
+	if len(filter.InFieldFilter) == 0 {
+		getProcesses = true
+		getContainerImages = true
+	} else {
+		getProcesses = utils.InSlice("processes", filter.InFieldFilter)
+		getContainerImages = utils.InSlice("image", filter.InFieldFilter)
 	}
 
-	statuses, err := reporters_scan.GetScanStatuses[model.Container](ctx, filter.NodeIds)
-	if err != nil {
-		return nil, err
+	containerIds := make([]string, len(containers))
+	containerIdIndex := make(map[string]int)
+	for i, container := range containers {
+		containerIds[i] = container.ID
+		containerIdIndex[container.ID] = i
 	}
 
-	if len(containers) != len(statuses) {
-		return nil, errors.New("containers and statuses mismatch")
+	var index int
+	if getProcesses == true {
+		processes, matched, err := getContainerProcesses(ctx, containerIds)
+		if err == nil {
+			for _, process := range processes {
+				index = containerIdIndex[matched[process.ID]]
+				containers[index].Processes = append(containers[index].Processes, process)
+			}
+		}
 	}
-
-	for i := range containers {
-		containers[i].RegularScanStatus = statuses[i]
+	if getContainerImages == true {
+		images, matched, err := getContainerContainerImages(ctx, containerIds)
+		if err == nil && len(images) > 0 {
+			index = containerIdIndex[matched[images[0].ID]]
+			containers[index].ContainerImage = images[0]
+		}
 	}
 
 	return containers, nil
@@ -126,18 +157,31 @@ func GetContainerImagesReport(ctx context.Context, filter LookupFilter) ([]model
 		return nil, err
 	}
 
-	statuses, err := reporters_scan.GetScanStatuses[model.ContainerImage](ctx, filter.NodeIds)
-	if err != nil {
-		return nil, err
+	getContainers := false
+	if len(filter.InFieldFilter) == 0 {
+		getContainers = true
+	} else {
+		getContainers = utils.InSlice("image", filter.InFieldFilter)
 	}
 
-	if len(images) != len(statuses) {
-		return nil, errors.New("images and statuses mismatch")
+	imagesIds := make([]string, len(images))
+	imageIdIndex := make(map[string]int)
+	for i, image := range images {
+		imagesIds[i] = image.ID
+		imageIdIndex[image.ID] = i
 	}
 
-	for i := range images {
-		images[i].RegularScanStatus = statuses[i]
+	var index int
+	if getContainers == true {
+		containers, matched, err := getContainerImageContainers(ctx, imagesIds)
+		if err == nil {
+			for _, container := range containers {
+				index = imageIdIndex[matched[container.ID]]
+				images[index].Containers = append(images[index].Containers, container)
+			}
+		}
 	}
+
 	return images, nil
 }
 
@@ -146,6 +190,32 @@ func GetKubernetesClustersReport(ctx context.Context, filter LookupFilter) ([]mo
 	if err != nil {
 		return nil, err
 	}
+
+	getHosts := false
+	if len(filter.InFieldFilter) == 0 {
+		getHosts = true
+	} else {
+		getHosts = utils.InSlice("hosts", filter.InFieldFilter)
+	}
+
+	clusterIds := make([]string, len(clusters))
+	clusterIdIndex := make(map[string]int)
+	for i, cluster := range clusters {
+		clusterIds[i] = cluster.ID
+		clusterIdIndex[cluster.ID] = i
+	}
+
+	var index int
+	if getHosts == true {
+		hosts, matched, err := getClusterHosts(ctx, clusterIds)
+		if err == nil {
+			for _, host := range hosts {
+				index = clusterIdIndex[matched[host.ID]]
+				clusters[index].Hosts = append(clusters[index].Hosts, host)
+			}
+		}
+	}
+
 	return clusters, nil
 }
 
@@ -154,16 +224,7 @@ func GetCloudResourcesReport(ctx context.Context, filter LookupFilter) ([]model.
 	if err != nil {
 		return nil, err
 	}
-	statuses, err := reporters_scan.GetScanStatuses[model.CloudResource](ctx, filter.NodeIds)
-	if err != nil {
-		return nil, err
-	}
-	if len(entries) != len(statuses) {
-		return nil, errors.New("cloud resources and statuses mismatch")
-	}
-	for i := range entries {
-		entries[i].RegularScanStatus = statuses[i]
-	}
+
 	return entries, nil
 }
 
@@ -173,13 +234,31 @@ func GetRegistryAccountReport(ctx context.Context, filter LookupFilter) ([]model
 		return nil, err
 	}
 
-	for i := range registry {
-		container_images, err := getRegistryImages(ctx, registry[i])
-		if err != nil {
-			return nil, err
-		}
-		registry[i].ContainerImages = container_images
+	getImages := false
+	if len(filter.InFieldFilter) == 0 {
+		getImages = true
+	} else {
+		getImages = utils.InSlice("container_images", filter.InFieldFilter)
 	}
+
+	registryIds := make([]string, len(registry))
+	registryIdIndex := make(map[string]int)
+	for i, r := range registry {
+		registryIds[i] = r.ID
+		registryIdIndex[r.ID] = i
+	}
+
+	var index int
+	if getImages == true {
+		images, matched, err := getRegistryImages(ctx, registryIds)
+		if err == nil {
+			for _, image := range images {
+				index = registryIdIndex[matched[image.ID]]
+				registry[index].ContainerImages = append(registry[index].ContainerImages, image)
+			}
+		}
+	}
+
 	return registry, nil
 }
 
@@ -268,36 +347,37 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 	return res, nil
 }
 
-func getIndirectFromIDs[T any](ctx context.Context, query string, ids []string) ([]T, error) {
+func getIndirectFromIDs[T any](ctx context.Context, query string, ids []string) ([]T, map[string]string, error) {
 	res := []T{}
+	matchedId := make(map[string]string)
 
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return res, err
+		return res, matchedId, err
 	}
 
 	session, err := driver.Session(neo4j.AccessModeRead)
 	if err != nil {
-		return res, err
+		return res, matchedId, err
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction()
 	if err != nil {
-		return res, err
+		return res, matchedId, err
 	}
 	defer tx.Close()
 
 	r, err := tx.Run(query, map[string]interface{}{"ids": ids})
 
 	if err != nil {
-		return res, err
+		return res, matchedId, err
 	}
 
 	recs, err := r.Collect()
 
 	if err != nil {
-		return res, err
+		return res, matchedId, err
 	}
 
 	for _, rec := range recs {
@@ -313,61 +393,92 @@ func getIndirectFromIDs[T any](ctx context.Context, query string, ids []string) 
 		}
 		var node T
 		utils.FromMap(da.Props, &node)
+
+		n_data, has := rec.Get("n.node_id")
+		if !has {
+			log.Warn().Msgf("Missing n.node_id")
+			continue
+		}
+		var matchedNodeId string
+		if matchedNodeId, ok = n_data.(string); !ok {
+			continue
+		}
+		matchedId[da.Props["node_id"].(string)] = matchedNodeId
 		res = append(res, node)
 	}
 
-	return res, nil
+	return res, matchedId, nil
 }
 
-func getHostContainers(ctx context.Context, host model.Host) ([]model.Container, error) {
-	containers, err := getIndirectFromIDs[model.Container](ctx, `
+func getHostContainers(ctx context.Context, ids []string) ([]model.Container, map[string]string, error) {
+	return getIndirectFromIDs[model.Container](ctx, `
 		MATCH (n:Node) -[:HOSTS]-> (m:Container)
 		WHERE n.node_id IN $ids
-		RETURN m`,
-		[]string{host.ID})
-	if err != nil {
-		return nil, err
-	}
-	return fillContainers(ctx, containers)
+		RETURN m, n.node_id`,
+		ids)
 }
 
-func getHostContainerImages(ctx context.Context, host model.Host) ([]model.ContainerImage, error) {
+func getHostPods(ctx context.Context, ids []string) ([]model.Pod, map[string]string, error) {
+	return getIndirectFromIDs[model.Pod](ctx, `
+		MATCH (n:Node) -[:HOSTS]-> (m:Pod)
+		WHERE n.node_id IN $ids
+		RETURN m, n.node_id`,
+		ids)
+}
+
+func getHostContainerImages(ctx context.Context, ids []string) ([]model.ContainerImage, map[string]string, error) {
 	return getIndirectFromIDs[model.ContainerImage](ctx, `
 		MATCH (n:Node) -[:HOSTS]-> (m:ContainerImage)
 		WHERE n.node_id IN $ids
-		RETURN m`,
-		[]string{host.ID})
+		RETURN m, n.node_id`,
+		ids)
 }
 
-func getRegistryImages(ctx context.Context, registry model.RegistryAccount) ([]model.ContainerImage, error) {
+func getRegistryImages(ctx context.Context, ids []string) ([]model.ContainerImage, map[string]string, error) {
 	return getIndirectFromIDs[model.ContainerImage](ctx, `
 		MATCH (n:RegistryAccount) -[:HOSTS]-> (m:ContainerImage)
 		WHERE n.node_id IN $ids
-		RETURN m`,
-		[]string{registry.ID})
+		RETURN m, n.node_id`,
+		ids)
 }
 
-func getHostProcesses(ctx context.Context, host model.Host) ([]model.Process, error) {
+func getHostProcesses(ctx context.Context, ids []string) ([]model.Process, map[string]string, error) {
 	return getIndirectFromIDs[model.Process](ctx, `
 		MATCH (n:Node) -[:HOSTS]-> (m:Process)
 		WHERE n.node_id IN $ids
-		RETURN m`,
-		[]string{host.ID})
+		RETURN m, n.node_id`,
+		ids)
 }
 
-func getContainerProcesses(ctx context.Context, container model.Container) ([]model.Process, error) {
+func getContainerProcesses(ctx context.Context, ids []string) ([]model.Process, map[string]string, error) {
 	return getIndirectFromIDs[model.Process](ctx, `
 		MATCH (n:Container) -[:HOSTS]-> (m:Process)
 		WHERE n.node_id IN $ids
-		RETURN m`,
-		[]string{container.ID})
+		RETURN m, n.node_id`,
+		ids)
 }
 
-func getContainerContainerImages(ctx context.Context, container model.Container) ([]model.ContainerImage, error) {
+func getContainerContainerImages(ctx context.Context, ids []string) ([]model.ContainerImage, map[string]string, error) {
 	return getIndirectFromIDs[model.ContainerImage](ctx, `
 		MATCH (n:Container) 
 		WHERE n.node_id IN $ids
 		MATCH (m:ContainerImage{node_id:n.docker_image_id})
-		RETURN m`,
-		[]string{container.ID})
+		RETURN m, n.node_id`,
+		ids)
+}
+
+func getContainerImageContainers(ctx context.Context, ids []string) ([]model.Container, map[string]string, error) {
+	return getIndirectFromIDs[model.Container](ctx, `
+		MATCH (n:Container)
+		WHERE n.docker_image_id in $ids
+		RETURN n, n.docker_image_id`,
+		ids)
+}
+
+func getClusterHosts(ctx context.Context, ids []string) ([]model.Host, map[string]string, error) {
+	return getIndirectFromIDs[model.Host](ctx, `
+		MATCH (n:KubernetesCluster) -[:INSTANCIATE]-> (m:Node)
+		WHERE n.node_id IN $ids
+		RETURN m, n.node_id`,
+		ids)
 }

@@ -31,14 +31,14 @@ func (h *Handler) GetContainers(w http.ResponseWriter, r *http.Request) {
 	var req reporters_lookup.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters_lookup.GetContainersReport(r.Context(), req)
+	containers, err := reporters_lookup.GetContainersReport(r.Context(), req)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
 		return
 	}
 
-	err = httpext.JSON(w, http.StatusOK, hosts)
+	err = httpext.JSON(w, http.StatusOK, containers)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -49,14 +49,14 @@ func (h *Handler) GetProcesses(w http.ResponseWriter, r *http.Request) {
 	var req reporters_lookup.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters_lookup.GetProcessesReport(r.Context(), req)
+	processes, err := reporters_lookup.GetProcessesReport(r.Context(), req)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
 		return
 	}
 
-	err = httpext.JSON(w, http.StatusOK, hosts)
+	err = httpext.JSON(w, http.StatusOK, processes)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -85,14 +85,14 @@ func (h *Handler) GetContainerImages(w http.ResponseWriter, r *http.Request) {
 	var req reporters_lookup.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters_lookup.GetContainerImagesReport(r.Context(), req)
+	images, err := reporters_lookup.GetContainerImagesReport(r.Context(), req)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
 		return
 	}
 
-	err = httpext.JSON(w, http.StatusOK, hosts)
+	err = httpext.JSON(w, http.StatusOK, images)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -103,14 +103,14 @@ func (h *Handler) GetPods(w http.ResponseWriter, r *http.Request) {
 	var req reporters_lookup.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	hosts, err := reporters_lookup.GetPodsReport(r.Context(), req)
+	pods, err := reporters_lookup.GetPodsReport(r.Context(), req)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
 		return
 	}
 
-	err = httpext.JSON(w, http.StatusOK, hosts)
+	err = httpext.JSON(w, http.StatusOK, pods)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -139,14 +139,14 @@ func (h *Handler) GetCloudResources(w http.ResponseWriter, r *http.Request) {
 	var req reporters_lookup.LookupFilter
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	registry, err := reporters_lookup.GetCloudResourcesReport(r.Context(), req)
+	resources, err := reporters_lookup.GetCloudResourcesReport(r.Context(), req)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
 		return
 	}
 
-	err = httpext.JSON(w, http.StatusOK, registry)
+	err = httpext.JSON(w, http.StatusOK, resources)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}

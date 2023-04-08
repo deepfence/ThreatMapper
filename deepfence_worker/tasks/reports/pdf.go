@@ -32,15 +32,15 @@ func generatePDF(ctx context.Context, session neo4j.Session, params utils.Report
 	)
 
 	switch params.Filters.ScanType {
-	case "vulnerability":
+	case VULNERABILITY:
 		buffer, err = vulnerabilityPDF(ctx, session, params)
-	case "secret":
+	case SECRET:
 		buffer, err = secretPDF(ctx, session, params)
-	case "malware":
+	case MALWARE:
 		buffer, err = malwarePDF(ctx, session, params)
-	case "compliance":
+	case COMPLIANCE:
 		buffer, err = compliancePDF(ctx, session, params)
-	case "cloud_compliance":
+	case CLOUD_COMPLIANCE:
 		buffer, err = cloudCompliancePDF(ctx, session, params)
 	default:
 		return "", ErrUnknownScanType

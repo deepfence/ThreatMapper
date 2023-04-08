@@ -198,7 +198,6 @@ func (r *Reporter) updateHostDetails(cloudProvider string) {
 // Reporter generates Reports containing the host topology.
 type Reporter struct {
 	sync.RWMutex
-	hostID             string
 	hostName           string
 	probeID            string
 	version            string
@@ -217,7 +216,7 @@ type Reporter struct {
 
 // NewReporter returns a Reporter which produces a report containing host
 // topology for this host.
-func NewReporter(hostID, hostName, probeID, version string) (*Reporter, string, string) {
+func NewReporter(hostName, probeID, version string) (*Reporter, string, string) {
 	kernelRelease, kernelVersion, _ := GetKernelReleaseAndVersion()
 	kernel := fmt.Sprintf("%s %s", kernelRelease, kernelVersion)
 	isConsoleVm := false
@@ -225,7 +224,6 @@ func NewReporter(hostID, hostName, probeID, version string) (*Reporter, string, 
 		isConsoleVm = true
 	}
 	r := &Reporter{
-		hostID:         hostID,
 		hostName:       hostName,
 		probeID:        probeID,
 		version:        version,

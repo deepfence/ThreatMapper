@@ -138,7 +138,11 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, accessTokenResponse)
+	httpext.JSON(w, http.StatusOK, model.LoginResponse{
+		ResponseAccessToken: *accessTokenResponse,
+		OnboardingRequired:  model.IsOnboardingRequired(ctx),
+		PasswordInvalidated: user.PasswordInvalidated,
+	})
 }
 
 func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
@@ -221,7 +225,11 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 	createdUser.PasswordHash = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, createdUser, true)
 
-	httpext.JSON(w, http.StatusOK, accessTokenResponse)
+	httpext.JSON(w, http.StatusOK, model.LoginResponse{
+		ResponseAccessToken: *accessTokenResponse,
+		OnboardingRequired:  model.IsOnboardingRequired(ctx),
+		PasswordInvalidated: user.PasswordInvalidated,
+	})
 }
 
 func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
@@ -428,7 +436,8 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	passwordValid, err := user.CompareHashAndPassword(ctx, pgClient, req.OldPassword)
 	if err != nil || !passwordValid {
-		respondWithErrorCode(errors.New("password is incorrect"), w, http.StatusBadRequest)
+		respondError(&ValidatorError{
+			errors.New("Key: 'UpdateUserPasswordRequest.OldPassword' Error:incorrect old password")}, w)
 		return
 	}
 	err = user.SetPassword(req.NewPassword)

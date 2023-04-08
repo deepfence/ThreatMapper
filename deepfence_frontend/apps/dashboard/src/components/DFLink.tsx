@@ -25,12 +25,14 @@ const ALink = forwardRef<HTMLAnchorElement, LinkProps>(
 ALink.displayName = 'DFLink.AAnchor';
 
 type DFLinkProps = ComponentPropsWithRef<typeof AAnchor | typeof ALink>;
-export const DFLink = (props: DFLinkProps) => {
-  return 'href' in props ? (
-    <AAnchor {...(props as AnchorProps)} />
-  ) : (
-    <ALink {...(props as LinkProps)} />
-  );
-};
+export const DFLink = forwardRef<HTMLAnchorElement, DFLinkProps>(
+  (props: DFLinkProps, ref) => {
+    return 'href' in props ? (
+      <AAnchor {...(props as AnchorProps)} ref={ref} />
+    ) : (
+      <ALink {...(props as LinkProps)} ref={ref} />
+    );
+  },
+);
 
 DFLink.displayName = 'DFLink';

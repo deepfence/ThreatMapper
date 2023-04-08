@@ -265,25 +265,25 @@ func (Secret) GetJsonCategory() string {
 }
 
 type Vulnerability struct {
-	NodeId                     string   `json:"node_id" required:"true"`
-	Cve_id                     string   `json:"cve_id" required:"true"`
-	Cve_type                   string   `json:"cve_type" required:"true"`
-	Cve_severity               string   `json:"cve_severity" required:"true"`
-	Cve_caused_by_package      string   `json:"cve_caused_by_package" required:"true"`
-	Cve_caused_by_package_path string   `json:"cve_caused_by_package_path" required:"true"`
-	Cve_container_layer        string   `json:"cve_container_layer" required:"true"`
-	Cve_fixed_in               string   `json:"cve_fixed_in" required:"true"`
-	Cve_link                   string   `json:"cve_link" required:"true"`
-	Cve_description            string   `json:"cve_description" required:"true"`
-	Cve_cvss_score             float64  `json:"cve_cvss_score" required:"true"`
-	Cve_overall_score          float64  `json:"cve_overall_score" required:"true"`
-	Cve_attack_vector          string   `json:"cve_attack_vector" required:"true"`
-	URLs                       []string `json:"urls" required:"true"`
-	ExploitPOC                 string   `json:"exploit_poc" required:"true"`
-	Masked                     bool     `json:"masked" required:"true"`
-	UpdatedAt                  int64    `json:"updated_at" required:"true"`
-	ParsedAttackVector         string   `json:"parsed_attack_vector" required:"true"`
-	HasLiveConnection          bool     `json:"has_live_connection" required:"true"`
+	NodeId                     string        `json:"node_id" required:"true"`
+	Cve_id                     string        `json:"cve_id" required:"true"`
+	Cve_type                   string        `json:"cve_type" required:"true"`
+	Cve_severity               string        `json:"cve_severity" required:"true"`
+	Cve_caused_by_package      string        `json:"cve_caused_by_package" required:"true"`
+	Cve_caused_by_package_path string        `json:"cve_caused_by_package_path" required:"true"`
+	Cve_container_layer        string        `json:"cve_container_layer" required:"true"`
+	Cve_fixed_in               string        `json:"cve_fixed_in" required:"true"`
+	Cve_link                   string        `json:"cve_link" required:"true"`
+	Cve_description            string        `json:"cve_description" required:"true"`
+	Cve_cvss_score             float64       `json:"cve_cvss_score" required:"true"`
+	Cve_overall_score          float64       `json:"cve_overall_score" required:"true"`
+	Cve_attack_vector          string        `json:"cve_attack_vector" required:"true"`
+	URLs                       []interface{} `json:"urls" required:"true"`
+	ExploitPOC                 string        `json:"exploit_poc" required:"true"`
+	Masked                     bool          `json:"masked" required:"true"`
+	UpdatedAt                  int64         `json:"updated_at" required:"true"`
+	ParsedAttackVector         string        `json:"parsed_attack_vector" required:"true"`
+	HasLiveConnection          bool          `json:"has_live_connection" required:"true"`
 }
 
 func (Vulnerability) NodeType() string {
@@ -304,24 +304,24 @@ func (Vulnerability) GetJsonCategory() string {
 
 type Malware struct {
 	// Malware + MalwareRule node in neo4j
-	Class            string   `json:"class" required:"true"`
-	CompleteFilename string   `json:"complete_filename" required:"true"`
-	FileSevScore     int      `json:"file_sev_score" required:"true"`
-	FileSeverity     string   `json:"file_severity" required:"true"`
-	ImageLayerID     string   `json:"image_layer_id" required:"true"`
-	NodeId           string   `json:"node_id" required:"true"`
-	RuleID           string   `json:"rule_id" required:"true"`
-	RuleName         string   `json:"rule_name" required:"true"`
-	Author           string   `json:"author"`
-	Date             string   `json:"date"`
-	Description      string   `json:"description"`
-	Filetype         string   `json:"filetype"`
-	Info             string   `json:"info"`
-	Version          string   `json:"version"`
-	SeverityScore    int      `json:"severity_score"`
-	StringsToMatch   []string `json:"strings_to_match"`
-	Summary          string   `json:"summary"`
-	Masked           bool     `json:"masked" required:"true"`
+	Class            string        `json:"class" required:"true"`
+	CompleteFilename string        `json:"complete_filename" required:"true"`
+	FileSevScore     int           `json:"file_sev_score" required:"true"`
+	FileSeverity     string        `json:"file_severity" required:"true"`
+	ImageLayerID     string        `json:"image_layer_id" required:"true"`
+	NodeId           string        `json:"node_id" required:"true"`
+	RuleID           string        `json:"rule_id" required:"true"`
+	RuleName         string        `json:"rule_name" required:"true"`
+	Author           string        `json:"author"`
+	Date             string        `json:"date"`
+	Description      string        `json:"description"`
+	Filetype         string        `json:"filetype"`
+	Info             string        `json:"info"`
+	Version          string        `json:"version"`
+	SeverityScore    int           `json:"severity_score"`
+	StringsToMatch   []interface{} `json:"strings_to_match"`
+	Summary          string        `json:"summary"`
+	Masked           bool          `json:"masked" required:"true"`
 }
 
 func (Malware) NodeType() string {
@@ -337,7 +337,7 @@ func (v Malware) GetCategory() string {
 }
 
 func (Malware) GetJsonCategory() string {
-	return "FileSeverity"
+	return "file_severity"
 }
 
 type Compliance struct {

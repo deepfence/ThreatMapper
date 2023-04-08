@@ -21,34 +21,34 @@ import { exists, mapValues } from '../runtime';
 export interface UtilsAdvancedReportFilters {
     /**
      * 
-     * @type {string}
+     * @type {Array<string>}
      * @memberof UtilsAdvancedReportFilters
      */
-    account_id?: string;
+    account_id?: Array<string>;
     /**
      * 
-     * @type {string}
+     * @type {Array<string>}
      * @memberof UtilsAdvancedReportFilters
      */
-    host_name?: string;
+    host_name?: Array<string>;
     /**
      * 
-     * @type {string}
+     * @type {Array<string>}
      * @memberof UtilsAdvancedReportFilters
      */
-    kubernetes_cluster_name?: string;
+    kubernetes_cluster_name?: Array<string>;
     /**
      * 
-     * @type {boolean}
+     * @type {Array<boolean>}
      * @memberof UtilsAdvancedReportFilters
      */
-    masked?: boolean;
+    masked?: Array<boolean>;
     /**
      * 
-     * @type {string}
+     * @type {Array<string>}
      * @memberof UtilsAdvancedReportFilters
      */
-    scan_status?: string;
+    scan_status?: Array<string>;
 }
 
 /**

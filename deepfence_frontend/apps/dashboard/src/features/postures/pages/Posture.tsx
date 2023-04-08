@@ -7,52 +7,13 @@ import { Card } from 'ui-components';
 
 import { getCloudNodesApiClient } from '@/api/api';
 import { ModelCloudNodeProvidersListResp } from '@/api/generated';
-import LogoAws from '@/assets/logo-aws.svg';
-import LogoAwsWhite from '@/assets/logo-aws-white.svg';
-import LogoAzure from '@/assets/logo-azure.svg';
-import LogoGoogle from '@/assets/logo-google.svg';
-import LogoK8 from '@/assets/logo-k8.svg';
-import LogoLinux from '@/assets/logo-linux.svg';
 import { DFLink } from '@/components/DFLink';
-import { Mode, useTheme } from '@/theme/ThemeContext';
+import { getPostureLogo } from '@/constants/logos';
+import { useTheme } from '@/theme/ThemeContext';
 import { ApiError, makeRequest } from '@/utils/api';
+import { abbreviateNumber, formatPercentage } from '@/utils/number';
 import { typedDefer } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
-
-const logoMap = (accountType: string, mode: Mode) => {
-  const map: {
-    [k: string]: {
-      label: string;
-      icon: string;
-    };
-  } = {
-    aws: {
-      label: 'AWS',
-      icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
-    },
-    aws_org: {
-      label: 'AWS ORGANIZATION',
-      icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
-    },
-    azure: {
-      label: 'Azure',
-      icon: LogoGoogle,
-    },
-    gcp: {
-      label: 'GCP',
-      icon: LogoAzure,
-    },
-    kubernetes: {
-      label: 'KUBERNETES',
-      icon: LogoK8,
-    },
-    linux: {
-      label: 'HOSTS',
-      icon: LogoLinux,
-    },
-  };
-  return map[accountType];
-};
 
 export type LoaderDataType = {
   error?: string;
@@ -130,12 +91,12 @@ const AccountSummary = () => {
                 compliance_percentage = 0,
                 resource_count,
               } = provider;
-              const account = logoMap(name, mode);
+              const account = getPostureLogo(name, mode);
               return (
                 <Card key={name} className="p-4 flex flex-col gap-y-1">
                   <div className="flex items-center justify-between w-full">
                     <h4 className="text-gray-900 text-sm dark:text-white mr-4 uppercase">
-                      {logoMap(name, mode).label}
+                      {account.label}
                     </h4>
                     <div className="ml-auto">
                       <DFLink
@@ -160,7 +121,7 @@ const AccountSummary = () => {
                       <div className="flex basis-8 justify-center items-center">
                         <img src={account.icon} alt="logo" height="auto" />
                       </div>
-                      <div className="flex flex-col gap-x-4">
+                      <div className="flex flex-col items-center">
                         <span
                           className={cx('text-md rounded-lg px-1 font-medium w-fit', {
                             'bg-[#de425b]/30 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
@@ -172,7 +133,9 @@ const AccountSummary = () => {
                             'text-gray-700 dark:text-gray-400': !compliance_percentage,
                           })}
                         >
-                          {compliance_percentage.toFixed(2)}%
+                          {formatPercentage(compliance_percentage, {
+                            maximumFractionDigits: 1,
+                          })}
                         </span>
                         <span className="text-xs text-gray-400 dark:text-gray-500">
                           Compliance
@@ -181,7 +144,7 @@ const AccountSummary = () => {
                     </div>
                     <div className="flex flex-col">
                       <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
-                        {node_count}
+                        {abbreviateNumber(node_count ?? 0)}
                       </span>
                       <span className="text-xs text-gray-400 dark:text-gray-500">
                         {name === 'host' ? 'Hosts' : 'Accounts'}
@@ -189,7 +152,7 @@ const AccountSummary = () => {
                     </div>
                     <div className="flex flex-col">
                       <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
-                        {resource_count}
+                        {abbreviateNumber(resource_count ?? 0)}
                       </span>
                       <span className="text-xs text-gray-400 dark:text-gray-500">
                         Resources
@@ -198,7 +161,7 @@ const AccountSummary = () => {
 
                     <div className="flex flex-col">
                       <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
-                        {scan_count}
+                        {abbreviateNumber(scan_count ?? 0)}
                       </span>
                       <span className="text-xs text-gray-400 dark:text-gray-500">
                         Scans

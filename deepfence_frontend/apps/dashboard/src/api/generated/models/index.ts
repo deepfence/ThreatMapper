@@ -79,6 +79,7 @@ export * from './ModelInviteUserRequest';
 export * from './ModelInviteUserResponse';
 export * from './ModelKubernetesCluster';
 export * from './ModelLoginRequest';
+export * from './ModelLoginResponse';
 export * from './ModelMalware';
 export * from './ModelMalwareScanResult';
 export * from './ModelMalwareScanTriggerReq';

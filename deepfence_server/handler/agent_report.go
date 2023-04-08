@@ -93,6 +93,8 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//os.WriteFile("/tmp/report-"+time.Now().Format("2006-01-02-15-04-05")+".json", data, 0644)
+
 	rpt := report.MakeReport()
 	err = sonic.Unmarshal(data, &rpt)
 
