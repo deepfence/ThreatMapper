@@ -11,7 +11,7 @@ import {
   SlidingModalFooter,
   SlidingModalHeader,
 } from '@/components/modal/SlidingModal';
-import { renderUI, waitFor } from '@/tests/utils';
+import { renderUI } from '@/tests/utils';
 
 /**
  * Why user-event???
@@ -64,9 +64,7 @@ describe(`Component SlidingModal`, () => {
 
     // triggerer focus back
     const openBtnForModalAfterClose = getByTestId('button-trigger-id');
-    await waitFor(() => {
-      expect(openBtnForModalAfterClose).toHaveFocus();
-    });
+    expect(openBtnForModalAfterClose).toHaveFocus();
   });
 
   it(`open sliding modal with header and footer`, async () => {
