@@ -569,7 +569,8 @@ const HistoryDropdown = () => {
                               'bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400':
                                 item.status.toLowerCase() === 'error',
                               'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-                                item.status.toLowerCase() === 'in_progress',
+                                item.status.toLowerCase() !== 'complete' &&
+                                item.status.toLowerCase() !== 'error',
                             })}
                             size="sm"
                           />
