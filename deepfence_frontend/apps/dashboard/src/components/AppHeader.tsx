@@ -18,9 +18,8 @@ import {
   IconButton,
 } from 'ui-components';
 
+import { logoutAction } from '@/features/auth/data-components/logoutAction';
 import { useTheme } from '@/theme/ThemeContext';
-import storage from '@/utils/storage';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export interface DashboardHeaderProps {
   sideNavExpanded: boolean;
@@ -35,8 +34,6 @@ export function AppHeader({
   onSideNavExpandedChange,
 }: DashboardHeaderProps) {
   const { setMode, userSelectedMode } = useTheme();
-
-  const { navigate } = usePageNavigation();
   return (
     <header
       className={classNames(
@@ -141,8 +138,7 @@ export function AppHeader({
                 <DropdownSeparator />
                 <DropdownItem
                   onClick={() => {
-                    storage.clearAuth();
-                    navigate('/auth/login');
+                    logoutAction();
                   }}
                   className="text-red-700 dark:text-red-500"
                 >

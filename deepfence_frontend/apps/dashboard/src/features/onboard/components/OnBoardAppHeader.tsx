@@ -20,20 +20,17 @@ import {
 } from 'ui-components';
 
 import LogoDeepfenceDarkBlue from '@/assets/logo-deepfence-dark-blue.svg';
+import { logoutAction } from '@/features/auth/data-components/logoutAction';
 import { useTheme } from '@/theme/ThemeContext';
-import storage from '@/utils/storage';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 const themeSelectedDropdownClassname = 'text-blue-500 dark:text-blue-300';
 const themeDropdownClassname = 'text-gray-700 dark:text-gray-400';
 
 export const OnboardAppHeader = () => {
-  const { navigate } = usePageNavigation();
   const { setMode, userSelectedMode } = useTheme();
 
   const logout = () => {
-    storage.clearAuth();
-    navigate('/auth/login');
+    logoutAction();
   };
 
   return (

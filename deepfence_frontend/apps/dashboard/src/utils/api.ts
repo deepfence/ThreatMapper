@@ -102,7 +102,7 @@ async function refreshAccessTokenIfPossible(): Promise<boolean> {
   return true;
 }
 
-function redirectToLogin() {
+export function redirectToLogin() {
   return redirect('/auth/login');
 }
 

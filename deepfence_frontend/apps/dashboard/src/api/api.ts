@@ -34,6 +34,7 @@ export function getAuthenticationApiClient() {
   const authenticationApi = new AuthenticationApi(configuration);
   return {
     login: authenticationApi.login.bind(authenticationApi),
+    logout: authenticationApi.logout.bind(authenticationApi),
     refreshAccessToken: authenticationApi.authTokenRefresh.bind(authenticationApi),
   };
 }
