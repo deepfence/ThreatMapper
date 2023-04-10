@@ -19,6 +19,7 @@ import type {
   ApiDocsFailureResponse,
   ModelApiAuthRequest,
   ModelLoginRequest,
+  ModelLoginResponse,
   ModelResponseAccessToken,
 } from '../models';
 import {
@@ -30,6 +31,8 @@ import {
     ModelApiAuthRequestToJSON,
     ModelLoginRequestFromJSON,
     ModelLoginRequestToJSON,
+    ModelLoginResponseFromJSON,
+    ModelLoginResponseToJSON,
     ModelResponseAccessTokenFromJSON,
     ModelResponseAccessTokenToJSON,
 } from '../models';
@@ -88,13 +91,13 @@ export interface AuthenticationApiInterface {
      * @throws {RequiredError}
      * @memberof AuthenticationApiInterface
      */
-    loginRaw(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>>;
+    loginRaw(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelLoginResponse>>;
 
     /**
      * Login API
      * Login API
      */
-    login(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken>;
+    login(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelLoginResponse>;
 
     /**
      * Logout API
@@ -189,7 +192,7 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
      * Login API
      * Login API
      */
-    async loginRaw(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>> {
+    async loginRaw(requestParameters: LoginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelLoginResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -204,14 +207,14 @@ export class AuthenticationApi extends runtime.BaseAPI implements Authentication
             body: ModelLoginRequestToJSON(requestParameters.modelLoginRequest),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelResponseAccessTokenFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelLoginResponseFromJSON(jsonValue));
     }
 
     /**
      * Login API
      * Login API
      */
-    async login(requestParameters: LoginRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken> {
+    async login(requestParameters: LoginRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelLoginResponse> {
         const response = await this.loginRaw(requestParameters, initOverrides);
         return await response.value();
     }

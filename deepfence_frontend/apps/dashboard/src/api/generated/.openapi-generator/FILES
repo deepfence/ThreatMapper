@@ -100,6 +100,7 @@ models/ModelInviteUserRequest.ts
 models/ModelInviteUserResponse.ts
 models/ModelKubernetesCluster.ts
 models/ModelLoginRequest.ts
+models/ModelLoginResponse.ts
 models/ModelMalware.ts
 models/ModelMalwareScanResult.ts
 models/ModelMalwareScanTriggerReq.ts
@@ -159,6 +160,7 @@ models/SearchSearchCountResp.ts
 models/SearchSearchFilter.ts
 models/SearchSearchNodeReq.ts
 models/SearchSearchScanReq.ts
+models/UtilsAdvancedReportFilters.ts
 models/UtilsReportFilters.ts
 models/UtilsScanSbomRequest.ts
 models/index.ts

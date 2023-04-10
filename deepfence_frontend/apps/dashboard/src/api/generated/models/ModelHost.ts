@@ -55,25 +55,7 @@ export interface ModelHost {
      * @type {string}
      * @memberof ModelHost
      */
-    availability_zone?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelHost
-     */
-    cloud_compliance_latest_scan_id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelHost
-     */
-    cloud_compliance_scan_status: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelHost
-     */
-    cloud_compliances_count: number;
+    availability_zone: string;
     /**
      * 
      * @type {string}
@@ -121,13 +103,13 @@ export interface ModelHost {
      * @type {number}
      * @memberof ModelHost
      */
-    cpu_max?: number;
+    cpu_max: number;
     /**
      * 
      * @type {number}
      * @memberof ModelHost
      */
-    cpu_usage?: number;
+    cpu_usage: number;
     /**
      * 
      * @type {string}
@@ -139,25 +121,25 @@ export interface ModelHost {
      * @type {string}
      * @memberof ModelHost
      */
-    instance_id?: string;
+    instance_id: string;
     /**
      * 
      * @type {string}
      * @memberof ModelHost
      */
-    instance_type?: string;
+    instance_type: string;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<any>}
      * @memberof ModelHost
      */
-    interface_ips: Array<string> | null;
+    interface_ips: Array<any> | null;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<any>}
      * @memberof ModelHost
      */
-    interface_names: Array<string> | null;
+    interface_names: Array<any> | null;
     /**
      * 
      * @type {boolean}
@@ -169,7 +151,7 @@ export interface ModelHost {
      * @type {string}
      * @memberof ModelHost
      */
-    kernel_id?: string;
+    kernel_id: string;
     /**
      * 
      * @type {string}
@@ -178,16 +160,16 @@ export interface ModelHost {
     kernel_version: string;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<any>}
      * @memberof ModelHost
      */
-    local_cidr: Array<string> | null;
+    local_cidr: Array<any> | null;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<any>}
      * @memberof ModelHost
      */
-    local_networks?: Array<string>;
+    local_networks: Array<any> | null;
     /**
      * 
      * @type {string}
@@ -211,13 +193,13 @@ export interface ModelHost {
      * @type {number}
      * @memberof ModelHost
      */
-    memory_max?: number;
+    memory_max: number;
     /**
      * 
      * @type {number}
      * @memberof ModelHost
      */
-    memory_usage?: number;
+    memory_usage: number;
     /**
      * 
      * @type {string}
@@ -244,10 +226,10 @@ export interface ModelHost {
     pods: Array<ModelPod> | null;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<any>}
      * @memberof ModelHost
      */
-    private_ip?: Array<string>;
+    private_ip: Array<any> | null;
     /**
      * 
      * @type {Array<ModelProcess>}
@@ -256,22 +238,22 @@ export interface ModelHost {
     processes: Array<ModelProcess> | null;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<any>}
      * @memberof ModelHost
      */
-    public_ip?: Array<string>;
+    public_ip: Array<any> | null;
     /**
      * 
      * @type {string}
      * @memberof ModelHost
      */
-    resource_group?: string;
+    resource_group: string;
     /**
      * 
      * @type {string}
      * @memberof ModelHost
      */
-    secret_latest_scan: string;
+    secret_latest_scan_id: string;
     /**
      * 
      * @type {string}
@@ -322,9 +304,7 @@ export interface ModelHost {
 export function instanceOfModelHost(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "agent_running" in value;
-    isInstance = isInstance && "cloud_compliance_latest_scan_id" in value;
-    isInstance = isInstance && "cloud_compliance_scan_status" in value;
-    isInstance = isInstance && "cloud_compliances_count" in value;
+    isInstance = isInstance && "availability_zone" in value;
     isInstance = isInstance && "cloud_provider" in value;
     isInstance = isInstance && "cloud_region" in value;
     isInstance = isInstance && "compliance_latest_scan_id" in value;
@@ -332,21 +312,32 @@ export function instanceOfModelHost(value: object): boolean {
     isInstance = isInstance && "compliances_count" in value;
     isInstance = isInstance && "container_images" in value;
     isInstance = isInstance && "containers" in value;
+    isInstance = isInstance && "cpu_max" in value;
+    isInstance = isInstance && "cpu_usage" in value;
     isInstance = isInstance && "host_name" in value;
+    isInstance = isInstance && "instance_id" in value;
+    isInstance = isInstance && "instance_type" in value;
     isInstance = isInstance && "interface_ips" in value;
     isInstance = isInstance && "interface_names" in value;
     isInstance = isInstance && "is_console_vm" in value;
+    isInstance = isInstance && "kernel_id" in value;
     isInstance = isInstance && "kernel_version" in value;
     isInstance = isInstance && "local_cidr" in value;
+    isInstance = isInstance && "local_networks" in value;
     isInstance = isInstance && "malware_latest_scan_id" in value;
     isInstance = isInstance && "malware_scan_status" in value;
     isInstance = isInstance && "malwares_count" in value;
+    isInstance = isInstance && "memory_max" in value;
+    isInstance = isInstance && "memory_usage" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "os" in value;
     isInstance = isInstance && "pods" in value;
+    isInstance = isInstance && "private_ip" in value;
     isInstance = isInstance && "processes" in value;
-    isInstance = isInstance && "secret_latest_scan" in value;
+    isInstance = isInstance && "public_ip" in value;
+    isInstance = isInstance && "resource_group" in value;
+    isInstance = isInstance && "secret_latest_scan_id" in value;
     isInstance = isInstance && "secret_scan_status" in value;
     isInstance = isInstance && "secrets_count" in value;
     isInstance = isInstance && "uptime" in value;
@@ -369,10 +360,7 @@ export function ModelHostFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     return {
         
         'agent_running': json['agent_running'],
-        'availability_zone': !exists(json, 'availability_zone') ? undefined : json['availability_zone'],
-        'cloud_compliance_latest_scan_id': json['cloud_compliance_latest scan_id'],
-        'cloud_compliance_scan_status': json['cloud_compliance_scan_status'],
-        'cloud_compliances_count': json['cloud_compliances_count'],
+        'availability_zone': json['availability_zone'],
         'cloud_provider': json['cloud_provider'],
         'cloud_region': json['cloud_region'],
         'compliance_latest_scan_id': json['compliance_latest_scan_id'],
@@ -380,32 +368,32 @@ export function ModelHostFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'compliances_count': json['compliances_count'],
         'container_images': (json['container_images'] === null ? null : (json['container_images'] as Array<any>).map(ModelContainerImageFromJSON)),
         'containers': (json['containers'] === null ? null : (json['containers'] as Array<any>).map(ModelContainerFromJSON)),
-        'cpu_max': !exists(json, 'cpu_max') ? undefined : json['cpu_max'],
-        'cpu_usage': !exists(json, 'cpu_usage') ? undefined : json['cpu_usage'],
+        'cpu_max': json['cpu_max'],
+        'cpu_usage': json['cpu_usage'],
         'host_name': json['host_name'],
-        'instance_id': !exists(json, 'instance_id') ? undefined : json['instance_id'],
-        'instance_type': !exists(json, 'instance_type') ? undefined : json['instance_type'],
+        'instance_id': json['instance_id'],
+        'instance_type': json['instance_type'],
         'interface_ips': json['interface_ips'],
         'interface_names': json['interface_names'],
         'is_console_vm': json['is_console_vm'],
-        'kernel_id': !exists(json, 'kernel_id') ? undefined : json['kernel_id'],
+        'kernel_id': json['kernel_id'],
         'kernel_version': json['kernel_version'],
         'local_cidr': json['local_cidr'],
-        'local_networks': !exists(json, 'local_networks') ? undefined : json['local_networks'],
+        'local_networks': json['local_networks'],
         'malware_latest_scan_id': json['malware_latest_scan_id'],
         'malware_scan_status': json['malware_scan_status'],
         'malwares_count': json['malwares_count'],
-        'memory_max': !exists(json, 'memory_max') ? undefined : json['memory_max'],
-        'memory_usage': !exists(json, 'memory_usage') ? undefined : json['memory_usage'],
+        'memory_max': json['memory_max'],
+        'memory_usage': json['memory_usage'],
         'node_id': json['node_id'],
         'node_name': json['node_name'],
         'os': json['os'],
         'pods': (json['pods'] === null ? null : (json['pods'] as Array<any>).map(ModelPodFromJSON)),
-        'private_ip': !exists(json, 'private_ip') ? undefined : json['private_ip'],
+        'private_ip': json['private_ip'],
         'processes': (json['processes'] === null ? null : (json['processes'] as Array<any>).map(ModelProcessFromJSON)),
-        'public_ip': !exists(json, 'public_ip') ? undefined : json['public_ip'],
-        'resource_group': !exists(json, 'resource_group') ? undefined : json['resource_group'],
-        'secret_latest_scan': json['secret_latest_scan'],
+        'public_ip': json['public_ip'],
+        'resource_group': json['resource_group'],
+        'secret_latest_scan_id': json['secret_latest_scan_id'],
         'secret_scan_status': json['secret_scan_status'],
         'secrets_count': json['secrets_count'],
         'uptime': json['uptime'],
@@ -427,9 +415,6 @@ export function ModelHostToJSON(value?: ModelHost | null): any {
         
         'agent_running': value.agent_running,
         'availability_zone': value.availability_zone,
-        'cloud_compliance_latest scan_id': value.cloud_compliance_latest_scan_id,
-        'cloud_compliance_scan_status': value.cloud_compliance_scan_status,
-        'cloud_compliances_count': value.cloud_compliances_count,
         'cloud_provider': value.cloud_provider,
         'cloud_region': value.cloud_region,
         'compliance_latest_scan_id': value.compliance_latest_scan_id,
@@ -462,7 +447,7 @@ export function ModelHostToJSON(value?: ModelHost | null): any {
         'processes': (value.processes === null ? null : (value.processes as Array<any>).map(ModelProcessToJSON)),
         'public_ip': value.public_ip,
         'resource_group': value.resource_group,
-        'secret_latest_scan': value.secret_latest_scan,
+        'secret_latest_scan_id': value.secret_latest_scan_id,
         'secret_scan_status': value.secret_scan_status,
         'secrets_count': value.secrets_count,
         'uptime': value.uptime,
