@@ -126,9 +126,11 @@ func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Cont
 	}
 	if getContainerImages == true {
 		images, matched, err := getContainerContainerImages(ctx, containerIds)
-		if err == nil && len(images) > 0 {
-			index = containerIdIndex[matched[images[0].ID]]
-			containers[index].ContainerImage = images[0]
+		if err == nil {
+			for _, image := range images {
+				index = containerIdIndex[matched[image.ID]]
+				containers[index].ContainerImage = image
+			}
 		}
 	}
 

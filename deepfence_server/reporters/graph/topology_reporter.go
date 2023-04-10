@@ -178,12 +178,14 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 
 	res := map[NodeID][]ResourceStub{}
 	r, err := tx.Run(`
-		MATCH (s:CloudResource)
-		WHERE s.node_type IN $resource_types
-		AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
-		AND CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END `+
+		MATCH (cp: CloudProvider)
+		WHERE CASE WHEN $providers IS NULL THEN true ELSE cp.node_id IN $providers END
+		MATCH (cp) -[:HOSTS]-> (cr: CloudRegion)
+		WHERE CASE WHEN $regions IS NULL THEN true ELSE cr.node_id IN $regions END
+		MATCH (cr) -[:HOSTS]-> (s:CloudResource)
+		WHERE s.node_type IN $resource_types `+
 		reporters.ParseFieldFilters2CypherWhereConditions("s", fieldfilters, false)+`
-		RETURN collect(s.node_id), s.region, s.node_type`,
+		RETURN collect(s.node_id), s.cloud_region, s.node_type`,
 		filterNil(map[string]interface{}{
 			"providers":      cloud_provider,
 			"regions":        cloud_regions,
@@ -221,6 +223,11 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 func (nc *neo4jTopologyReporter) GetPublicCloudResources(tx neo4j.Transaction, cloud_provider []string, cloud_regions []string, cloud_services []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
 	res := map[NodeID][]ResourceStub{}
 	r, err := tx.Run(`
+		MATCH (cp: CloudProvider)
+		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE cp.node_id IN $providers END
+		MATCH (cp) -[:HOSTS]-> (cr: CloudRegion)
+		WHERE CASE WHEN $regions IS NULL THEN [1] ELSE cr.node_id IN $regions END
+		MATCH (cr) -[:HOSTS]-> (s:CloudResource)
 		MATCH (s:CloudResource)
 		WHERE s.depth IS NOT NULL
 		AND CASE WHEN $services IS NULL THEN [1] ELSE s.node_type IN $services END
@@ -273,36 +280,14 @@ func (nc *neo4jTopologyReporter) GetPublicCloudResources(tx neo4j.Transaction, c
 func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]NodeStub, error) {
 	res := []NodeStub{}
 	r, err := tx.Run(`
-		MATCH (n:Node)
+		MATCH (n:CloudProvider)
 		WHERE n.active = true
-		AND n.cloud_provider <> 'internet'
-		RETURN n.cloud_provider`, nil)
+		RETURN n.node_id`, nil)
 
 	if err != nil {
 		return res, err
 	}
 	records, err := r.Collect()
-
-	if err != nil {
-		return res, err
-	}
-
-	for _, record := range records {
-		res = append(res, NodeStub{NodeID(record.Values[0].(string)), record.Values[0].(string)})
-	}
-
-	r, err = tx.Run(`
-		MATCH (n:CloudResource)
-		WHERE n.node_type IN $resource_types
-		RETURN n.cloud_provider`,
-		filterNil(map[string]interface{}{
-			"resource_types": topology_cloud_resource_types,
-		}))
-
-	if err != nil {
-		return res, err
-	}
-	records, err = r.Collect()
 
 	if err != nil {
 		return res, err
@@ -318,11 +303,11 @@ func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]Node
 func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_provider []string) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 	r, err := tx.Run(`
-		MATCH (n:Node)
+		MATCH (cr:CloudProvider)
+		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE cr.node_id IN $providers END
+		MATCH (cr) -[:HOSTS]-> (n:CloudRegion)
 		WHERE n.active = true
-		AND n.kubernetes_cluster_id = ""
-		AND CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
-		RETURN n.cloud_provider, n.cloud_region`,
+		RETURN cr.node_id, n.node_id`,
 		filterNil(map[string]interface{}{"providers": cloud_provider}))
 
 	if err != nil {
@@ -343,44 +328,17 @@ func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_pro
 		res[provider] = append(res[provider], NodeStub{ID: region, Name: string(region)})
 	}
 
-	r, err = tx.Run(`
-		MATCH (n:CloudResource)
-		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
-		AND n.node_type IN $resource_types
-		RETURN n.cloud_provider, n.region`,
-		filterNil(map[string]interface{}{
-			"providers":      cloud_provider,
-			"resource_types": topology_cloud_resource_types,
-		}))
-
-	if err != nil {
-		return res, err
-	}
-	records, err = r.Collect()
-
-	if err != nil {
-		return res, err
-	}
-
-	for _, record := range records {
-		provider := NodeID(record.Values[0].(string))
-		region := NodeID(record.Values[1].(string))
-		if _, present := res[provider]; !present {
-			res[provider] = []NodeStub{}
-		}
-		res[provider] = append(res[provider], NodeStub{ID: region, Name: string(region)})
-	}
-
 	return res, nil
 }
 
 func (nc *neo4jTopologyReporter) getCloudKubernetes(tx neo4j.Transaction, cloud_provider []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 	r, err := tx.Run(`
-		MATCH (n:KubernetesCluster) -[:INSTANCIATE]-> (m:Node)
+		MATCH (cr:CloudProvider)
+		WHERE CASE WHEN $providers IS NULL THEN true ELSE cr.node_id IN $providers END
+		MATCH (cr) -[:HOSTS]-> (n:KubernetesCluster)
 		WHERE n.active = true
-		WITH DISTINCT m.cloud_provider as cloud_provider, n
-		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE cloud_provider IN $providers END
+		WITH DISTINCT cr.node_id as cloud_provider, n
 		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
 		RETURN cloud_provider, n.node_id, n.node_name`,
 		filterNil(map[string]interface{}{"providers": cloud_provider}))
@@ -420,22 +378,50 @@ func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, 
 	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(`
-		MATCH (n:Node)
-		WITH coalesce(n.kubernetes_cluster_id, '') <> '' AS is_kub, n
+		MATCH (cp: CloudProvider)
+		WHERE CASE WHEN $providers IS NULL THEN true ELSE cp.node_id IN $providers END
+		MATCH (cp) -[:HOSTS]-> (cr: CloudRegion)
+		WHERE CASE WHEN $regions IS NULL THEN true ELSE cr.node_id IN $regions END
+		MATCH (cr) -[:HOSTS]-> (n:Node)
 		WHERE n.active = true
-		AND CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
-		AND CASE WHEN is_kub THEN
-		    CASE WHEN $kubernetes IS NULL THEN [1] ELSE n.kubernetes_cluster_id IN $kubernetes END
-		ELSE
-		    CASE WHEN $regions IS NULL THEN [1] ELSE n.cloud_region IN $regions END
-		END
+		AND n.kubernetes_cluster_id = ''
 		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
-		RETURN n.cloud_provider, CASE WHEN is_kub THEN n.kubernetes_cluster_id ELSE n.cloud_region END, n.node_id`,
-		filterNil(map[string]interface{}{"providers": cloud_provider, "regions": cloud_regions, "kubernetes": cloud_kubernetes}))
+		RETURN n.cloud_provider, n.cloud_region, n.node_id`,
+		filterNil(map[string]interface{}{"providers": cloud_provider, "regions": cloud_regions}))
 	if err != nil {
 		return res, err
 	}
 	records, err := r.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		//provider := record.Values[0].(string)
+		if record.Values[1] == nil || record.Values[2] == nil {
+			continue
+		}
+		parent := NodeID(record.Values[1].(string))
+		host_id := NodeID(record.Values[2].(string))
+		if _, present := res[parent]; !present {
+			res[parent] = []NodeStub{}
+		}
+
+		res[parent] = append(res[parent], NodeStub{ID: host_id, Name: string(host_id)})
+	}
+
+	r, err = tx.Run(`
+		MATCH (k:KubernetesCluster) -[:INSTANCIATE]-> (n:Node)
+		WHERE CASE WHEN $kubernetes IS NULL THEN true ELSE k.node_id IN $kubernetes END
+		AND n.active = true
+		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
+		RETURN n.cloud_provider, n.kubernetes_cluster_id, n.node_id`,
+		filterNil(map[string]interface{}{"kubernetes": cloud_kubernetes}))
+	if err != nil {
+		return res, err
+	}
+
+	records, err = r.Collect()
 
 	if err != nil {
 		return res, err
@@ -446,13 +432,13 @@ func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, 
 		if record.Values[1] == nil || record.Values[2] == nil {
 			continue
 		}
-		region := NodeID(record.Values[1].(string))
+		parent := NodeID(record.Values[1].(string))
 		host_id := NodeID(record.Values[2].(string))
-		if _, present := res[region]; !present {
-			res[region] = []NodeStub{}
+		if _, present := res[parent]; !present {
+			res[parent] = []NodeStub{}
 		}
 
-		res[region] = append(res[region], NodeStub{ID: host_id, Name: string(host_id)})
+		res[parent] = append(res[parent], NodeStub{ID: host_id, Name: string(host_id)})
 	}
 
 	return res, nil

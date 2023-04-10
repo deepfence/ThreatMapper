@@ -2,7 +2,9 @@ package integration
 
 import (
 	"errors"
+	awssecurityhub "github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/aws-security-hub"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/elasticsearch"
+	googlechronicle "github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/google-chronicle"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	httpendpoint "github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/http-endpoint"
@@ -30,6 +32,10 @@ func GetIntegration(integrationType string, b []byte) (Integration, error) {
 		return splunk.New(b)
 	case constants.ElasticSearch:
 		return elasticsearch.New(b)
+	case constants.GoogleChronicle:
+		return googlechronicle.New(b)
+	case constants.AwsSecurityHub:
+		return awssecurityhub.New(b)
 	default:
 		return nil, errors.New("invalid integration type")
 	}

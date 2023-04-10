@@ -12,6 +12,22 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
+var (
+	console_ip   string
+	console_pass string
+)
+
+func init() {
+	console_ip = os.Getenv("DF_CONSOLE")
+	if console_ip == "" {
+		log.Fatal("Missing DF_CONSOLE")
+	}
+	console_pass = os.Getenv("DF_NEO4J_PASS")
+	if console_pass == "" {
+		log.Fatal("Missing DF_NEO4J_PASS")
+	}
+}
+
 func populate(base map[string]interface{}, n, tt int) []map[string]interface{} {
 
 	entries := []map[string]interface{}{}
@@ -45,28 +61,28 @@ func random(min, max int) int {
 func main() {
 	var image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lambda_num int
 
-	flag.IntVar(&image_num, "image_num", 0, "Number of images to generate")
-	flag.IntVar(&host_num, "host_num", 0, "Number of hosts to generate")
-	flag.IntVar(&container_num, "container_num", 0, "Number of containers to generate")
-	flag.IntVar(&vuln_num, "vuln_num", 0, "Number of vulns to generate")
-	flag.IntVar(&vuln_scan_num, "vuln_scan_num", 0, "Number of vuln_scans to generate")
-	flag.IntVar(&aws_lambda_num, "aws_lambda_num", 0, "Number of lambda to generate")
+	flag.IntVar(&image_num, "image_num", 0, "Number of round of images to generate")
+	flag.IntVar(&host_num, "host_num", 0, "Number of round of hosts to generate")
+	flag.IntVar(&container_num, "container_num", 0, "Number of round of containers to generate")
+	flag.IntVar(&vuln_num, "vuln_num", 0, "Number of round of vulns to generate")
+	flag.IntVar(&vuln_scan_num, "vuln_scan_num", 0, "Number of round of vuln_scans to generate")
+	flag.IntVar(&aws_lambda_num, "aws_lambda_num", 0, "Number of round of lambda to generate")
+
+	flag.Parse()
 
 	apply(image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lambda_num)
 }
 
 const (
 	max_batch_images              = 100_000
-	max_batch_hosts               = 100
+	max_batch_hosts               = 1000
 	max_batch_containers          = 100_000
 	max_batch_vulenrabilities     = 1000
 	max_batch_vulenrability_scans = 100_000
 	max_batch_aws_lambda          = 100_000
 )
 
-func apply(image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lambda_num int) {
-
-	image_rounds := image_num / max_batch_images
+func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan_rounds, aws_lambda_rounds int) {
 
 	images := [][]map[string]interface{}{}
 	for round := 0; round < image_rounds; round += 1 {
@@ -87,8 +103,6 @@ func apply(image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lamb
 
 		images = append(images, populate(base_image, max_batch_images, round))
 	}
-
-	hosts_rounds := host_num / max_batch_hosts
 
 	hosts := [][]map[string]interface{}{}
 	for round := 0; round < hosts_rounds; round += 1 {
@@ -126,8 +140,6 @@ func apply(image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lamb
 		hosts = append(hosts, populate(base_host, max_batch_hosts, round))
 	}
 
-	containers_rounds := container_num / max_batch_containers
-
 	containers := [][]map[string]interface{}{}
 	for round := 0; round < containers_rounds; round += 1 {
 		base_container := map[string]interface{}{
@@ -156,8 +168,6 @@ func apply(image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lamb
 
 		containers = append(containers, populate(base_container, max_batch_containers, round))
 	}
-
-	vuln_rounds := vuln_num / max_batch_vulenrabilities
 
 	vulnerabilities := [][]map[string]interface{}{}
 	for round := 0; round < vuln_rounds; round += 1 {
@@ -206,8 +216,6 @@ func apply(image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lamb
 		vulnerabilities = append(vulnerabilities, populate(base_vulnerability, max_batch_vulenrabilities, round))
 	}
 
-	vuln_scan_rounds := vuln_num / max_batch_vulenrability_scans
-
 	vulnerability_scans := [][]map[string]interface{}{}
 	for round := 0; round < vuln_scan_rounds; round += 1 {
 		base_vulnerability_scan := map[string]interface{}{
@@ -221,27 +229,20 @@ func apply(image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lamb
 		vulnerability_scans = append(vulnerability_scans, populate(base_vulnerability_scan, max_batch_vulenrability_scans, round))
 	}
 
-	aws_lambda_rounds := aws_lambda_num / max_batch_aws_lambda
-
 	aws_lambdas := [][]map[string]interface{}{}
 	for round := 0; round < aws_lambda_rounds; round += 1 {
 		base_aws_lambda := map[string]interface{}{
-			"node_id": "arn:lambda",
+			"node_id":        "arn:lambda",
+			"cloud_provider": "aws",
+			"cloud_region":   "us-east-1",
+			"node_type":      "aws_lambda_function",
 		}
 
 		aws_lambdas = append(aws_lambdas, populate(base_aws_lambda, max_batch_aws_lambda, round))
 	}
 
-	fmt.Println("Data ready to be ingested")
+	log.Println("Data ready to be ingested")
 
-	console_ip := os.Getenv("DF_CONSOLE")
-	if console_ip == "" {
-		log.Fatal("Missing DF_CONSOLE")
-	}
-	console_pass := os.Getenv("DF_NEO4J_PASS")
-	if console_ip == "" {
-		log.Fatal("Missing DF_CONSOLE")
-	}
 	tc, err := neo4j.NewDriver("bolt://"+console_ip+":7687", neo4j.BasicAuth("neo4j", console_pass, ""))
 	if err != nil {
 		log.Fatal(err)
@@ -254,7 +255,11 @@ func apply(image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lamb
 
 	defer session.Close()
 
+	log.Println("Starting ingestion")
+
 	for i := range images {
+
+		log.Printf("Processing %v / %v\n", i, len(images))
 		_, err = session.Run(`
 		UNWIND $images as row
 		MERGE (n:ContainerImage{node_id:row.node_id})
@@ -265,18 +270,28 @@ func apply(image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lamb
 		}
 	}
 
+	log.Println("images done")
+
 	for i := range hosts {
+		log.Printf("Processing %v / %v\n", i, len(hosts))
 		_, err = session.Run(`
 		UNWIND $hosts as row
+		MERGE (cp:CloudProvider{node_id: row.cloud_provider})
+		MERGE (cr:CloudRegion{node_id: row.cloud_region})
+		MERGE (cp) -[:HOSTS]-> (cr)
 		MERGE (n:Node{node_id:row.node_id})
-		SET n += row`,
+		MERGE (cr) -[:HOSTS]-> (n)
+		SET n += row, cp.active = true, cr.active = true, n.active = true`,
 			map[string]interface{}{"hosts": hosts[i]})
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
+	log.Println("hosts done")
+
 	for i := range containers {
+		log.Printf("Processing %v / %v\n", i, len(containers))
 		_, err = session.Run(`
 		UNWIND $containers as row
 		MERGE (n:Container{node_id:row.node_id})
@@ -287,7 +302,10 @@ func apply(image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lamb
 		}
 	}
 
+	log.Println("containers done")
+
 	for i := range vulnerabilities {
+		log.Printf("Processing %v / %v\n", i, len(vulnerabilities))
 		_, err = session.Run(`
 		UNWIND $vulnerabilities as row
 		MERGE (n:Vulnerability{node_id:row.node_id})
@@ -299,6 +317,7 @@ func apply(image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lamb
 	}
 
 	for i := range vulnerability_scans {
+		log.Printf("Processing %v / %v\n", i, len(vulnerability_scans))
 		_, err = session.Run(`
 		UNWIND $vulnerability_scans as row
 		MERGE (n:VulnerabilityScan{node_id:row.node_id})
@@ -309,18 +328,25 @@ func apply(image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lamb
 		}
 	}
 
+	log.Println("vulnerabilities done")
+
 	for i := range aws_lambdas {
+		log.Printf("Processing %v / %v\n", i, len(aws_lambdas))
 		_, err = session.Run(`
 		UNWIND $batch as row
+		MERGE (cp:CloudProvider{node_id: row.cloud_provider})
+		MERGE (cr:CloudRegion{node_id: row.cloud_region})
+		MERGE (cp) -[:HOSTS]-> (cr)
 		MERGE (n:CloudResource{node_id:row.node_id})
-		SET n += row`,
+		MERGE (cr) -[:HOSTS] -> (n)
+		SET n += row, cp.active = true, cr.active = true, n.active = true`,
 			map[string]interface{}{"batch": aws_lambdas[i]})
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	fmt.Printf("Added all nodes\n")
+	log.Println("Added all nodes")
 
 	link_host_container_image := [][]map[string]string{}
 	for n := 0; n < hosts_rounds; n += 1 {
@@ -335,6 +361,7 @@ func apply(image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lamb
 	}
 
 	for i := range link_host_container_image {
+		log.Printf("Processing %v / %v\n", i, len(link_host_container_image))
 		_, err = session.Run(`
 		UNWIND $links as row
 		MATCH (n:Node{node_id:row.left})
@@ -360,6 +387,7 @@ func apply(image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lamb
 	}
 
 	for i := range link_host_container {
+		log.Printf("Processing %v / %v\n", i, len(link_host_container))
 		_, err = session.Run(`
 		UNWIND $links as row
 		MATCH (n:Node{node_id:row.left})
@@ -408,6 +436,7 @@ func apply(image_num, host_num, container_num, vuln_num, vuln_scan_num, aws_lamb
 	}
 
 	for i := range link_vuln_scan {
+		log.Printf("Processing %v / %v\n", i, len(link_vuln_scan))
 		_, err = session.Run(`
 		UNWIND $links as row
 		MATCH (n:VulnerabilityScan{node_id:row.left})

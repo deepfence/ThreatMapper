@@ -434,8 +434,12 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 
 	if _, err := tx.Run(`
 		UNWIND $batch as row
+		MERGE (cp:CloudProvider{node_id:row.cloud_provider})
+		MERGE (cr:CloudRegion{node_id:row.cloud_region})
+		MERGE (cp) -[:HOSTS]-> (cr)
 		MERGE (n:Node{node_id:row.node_id})
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true`,
+		MERGE (cr) -[:HOSTS]-> (n)
+		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true, cp.active = true, cr.active = true`,
 		map[string]interface{}{"batch": batches.Host_batch}); err != nil {
 		return err
 	}
@@ -469,7 +473,9 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 	if _, err := tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:KubernetesCluster{node_id:row.node_id})
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true, n.node_type = 'cluster'`,
+		MERGE (cp:CloudProvider{node_id:row.cloud_provider})
+		MERGE (cp) -[:HOSTS]-> (n)
+		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true, n.node_type = 'cluster', cp.active = true`,
 		map[string]interface{}{"batch": batches.Kubernetes_cluster_batch}); err != nil {
 		return err
 	}
