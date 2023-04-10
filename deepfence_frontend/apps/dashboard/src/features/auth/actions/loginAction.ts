@@ -55,5 +55,10 @@ export const loginAction: ActionFunction = async ({
     accessToken: r.access_token,
     refreshToken: r.refresh_token,
   });
+
+  if (!r.onboarding_required) {
+    throw redirect('/dashboard', 302);
+  }
+
   throw redirect('/onboard', 302);
 };

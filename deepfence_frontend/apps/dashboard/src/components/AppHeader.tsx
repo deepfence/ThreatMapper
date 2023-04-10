@@ -19,6 +19,8 @@ import {
 } from 'ui-components';
 
 import { useTheme } from '@/theme/ThemeContext';
+import storage from '@/utils/storage';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export interface DashboardHeaderProps {
   sideNavExpanded: boolean;
@@ -34,6 +36,7 @@ export function AppHeader({
 }: DashboardHeaderProps) {
   const { setMode, userSelectedMode } = useTheme();
 
+  const { navigate } = usePageNavigation();
   return (
     <header
       className={classNames(
@@ -138,7 +141,8 @@ export function AppHeader({
                 <DropdownSeparator />
                 <DropdownItem
                   onClick={() => {
-                    /**TODO */
+                    storage.clearAuth();
+                    navigate('/auth/login');
                   }}
                   className="text-red-700 dark:text-red-500"
                 >
