@@ -121,13 +121,19 @@ export class GraphStorageManager {
   private diff?: ApiDiff;
   private filters: Pick<
     GraphTopologyFilters,
-    'cloud_filter' | 'host_filter' | 'kubernetes_filter' | 'pod_filter' | 'region_filter'
+    | 'cloud_filter'
+    | 'host_filter'
+    | 'kubernetes_filter'
+    | 'pod_filter'
+    | 'region_filter'
+    | 'container_filter'
   > = {
     cloud_filter: [],
     host_filter: [],
     kubernetes_filter: [],
     pod_filter: [],
     region_filter: [],
+    container_filter: [],
   };
   constructor() {
     this.getApiData = this.getApiData.bind(this);
@@ -215,6 +221,10 @@ export class GraphStorageManager {
         this.filters.pod_filter?.push(nodeId);
         break;
       }
+      case NodeType.container: {
+        this.filters.container_filter?.push(nodeId);
+        break;
+      }
     }
   }
   removeNodeFromFilters({ nodeId, nodeType }: { nodeId: string; nodeType: string }) {
@@ -270,10 +280,32 @@ export class GraphStorageManager {
       }
       case NodeType.host: {
         remove(this.filters.host_filter ?? [], (id) => id === nodeId);
+        this.findChildrenIdsOfType({
+          parentId: nodeId,
+          findType: NodeType.container,
+        }).forEach((containerId) => {
+          this.removeNodeFromFilters({
+            nodeId: containerId,
+            nodeType: NodeType.container,
+          });
+        });
         break;
       }
       case NodeType.pod: {
         remove(this.filters.pod_filter ?? [], (id) => id === nodeId);
+        this.findChildrenIdsOfType({
+          parentId: nodeId,
+          findType: NodeType.container,
+        }).forEach((containerId) => {
+          this.removeNodeFromFilters({
+            nodeId: containerId,
+            nodeType: NodeType.container,
+          });
+        });
+        break;
+      }
+      case NodeType.container: {
+        remove(this.filters.container_filter ?? [], (id) => id === nodeId);
         break;
       }
     }
@@ -287,7 +319,8 @@ export class GraphStorageManager {
       (nodeType === NodeType.kubernetes_cluster &&
         this.filters.kubernetes_filter?.includes(nodeId)) ||
       (nodeType === NodeType.host && this.filters.host_filter?.includes(nodeId)) ||
-      (nodeType === NodeType.pod && this.filters.pod_filter?.includes(nodeId))
+      (nodeType === NodeType.pod && this.filters.pod_filter?.includes(nodeId)) ||
+      (nodeType === NodeType.container && this.filters.container_filter?.includes(nodeId))
     );
   }
   getTreeData({

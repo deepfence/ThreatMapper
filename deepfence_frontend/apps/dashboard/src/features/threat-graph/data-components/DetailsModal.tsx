@@ -23,12 +23,19 @@ import { getScanLink } from '@/utils/scan';
 
 const action = async ({
   request,
-}: ActionFunctionArgs): Promise<(ModelHost | ModelCloudResource)[]> => {
+}: ActionFunctionArgs): Promise<{
+  nodeType: string;
+  nodeData: (ModelHost | ModelCloudResource)[];
+}> => {
   const formData = await request.formData();
   const nodeIds = formData.getAll('nodeIds') as string[];
-  const nodeType = formData.get('nodeType');
-  if (!nodeIds?.length || !nodeType) {
-    return [];
+  const nodeType = formData.get('nodeType')?.toString();
+  if (!nodeType) throw new Error('No nodeType');
+  if (!nodeIds?.length) {
+    return {
+      nodeType,
+      nodeData: [],
+    };
   }
   if (nodeType === 'host') {
     const hostLookupResult = await makeRequest({
@@ -49,7 +56,10 @@ const action = async ({
     if (ApiError.isApiError(hostLookupResult)) {
       throw new Error('Error getting hostLookupResult');
     }
-    return hostLookupResult;
+    return {
+      nodeType,
+      nodeData: hostLookupResult,
+    };
   } else {
     const cloudResourceLookup = await makeRequest({
       apiFunction: getLookupApiClient().lookupCloudResources,
@@ -69,7 +79,10 @@ const action = async ({
     if (ApiError.isApiError(cloudResourceLookup)) {
       throw new Error('Error getting cloudResourceLookup');
     }
-    return cloudResourceLookup;
+    return {
+      nodeType,
+      nodeData: cloudResourceLookup,
+    };
   }
 };
 
@@ -106,17 +119,33 @@ export const DetailsModal = ({
 
   const data = useMemo(() => {
     if (!fetcher.data) return null;
-    if (!fetcher.data.length) return [];
+    if (!fetcher.data.nodeData.length) return [];
     return Object.keys(nodes ?? {}).map((nodeId) => {
       const node = nodes![nodeId];
-      const nodeData = fetcher.data?.find((item) => item.node_id === node.node_id);
+      const nodeData = fetcher.data?.nodeData.find(
+        (item) => item.node_id === node.node_id,
+      );
+      const nodeType = fetcher.data?.nodeType;
+      if (nodeType === 'host') {
+        return {
+          ...node,
+          latest_vulnerability_scan_id: (nodeData as ModelHost)
+            ?.vulnerability_latest_scan_id,
+          latest_secret_scan_id: (nodeData as ModelHost)?.secret_latest_scan_id,
+          latest_malware_scan_id: (nodeData as ModelHost)?.malware_latest_scan_id,
+          latest_compliance_scan_id: (nodeData as ModelHost)?.compliance_latest_scan_id,
+          latest_cloud_compliance_scan_id: undefined,
+        };
+      }
+
       return {
         ...node,
-        latest_vulnerability_scan_id: nodeData?.vulnerability_latest_scan_id,
-        latest_secret_scan_id: nodeData?.secret_latest_scan,
-        latest_malware_scan_id: nodeData?.malware_latest_scan_id,
-        latest_compliance_scan_id: nodeData?.compliance_latest_scan_id,
-        latest_cloud_compliance_scan_id: nodeData?.cloud_compliance_latest_scan_id,
+        latest_cloud_compliance_scan_id: (nodeData as ModelCloudResource)
+          ?.cloud_compliance_latest_scan_id,
+        latest_vulnerability_scan_id: undefined,
+        latest_secret_scan_id: undefined,
+        latest_malware_scan_id: undefined,
+        latest_compliance_scan_id: undefined,
       };
     });
   }, [fetcher.data, nodes]);
