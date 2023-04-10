@@ -19,13 +19,15 @@ var RegistryTypes = []string{
 
 // Integration related consts
 const (
-	Slack         = "slack"
-	HTTP          = "http_endpoint"
-	Teams         = "teams"
-	Splunk        = "splunk"
-	S3            = "s3"
-	PagerDuty     = "pagerduty"
-	ElasticSearch = "elasticsearch"
+	Slack           = "slack"
+	HTTP            = "http_endpoint"
+	Teams           = "teams"
+	Splunk          = "splunk"
+	S3              = "s3"
+	PagerDuty       = "pagerduty"
+	ElasticSearch   = "elasticsearch"
+	GoogleChronicle = "googlechronicle"
+	AwsSecurityHub  = "aws_security_hub"
 )
 
 const (
