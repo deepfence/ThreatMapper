@@ -75,7 +75,7 @@ func main() {
 
 const (
 	max_batch_images              = 100_000
-	max_batch_hosts               = 100
+	max_batch_hosts               = 1000
 	max_batch_containers          = 100_000
 	max_batch_vulenrabilities     = 1000
 	max_batch_vulenrability_scans = 100_000
@@ -232,7 +232,10 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 	aws_lambdas := [][]map[string]interface{}{}
 	for round := 0; round < aws_lambda_rounds; round += 1 {
 		base_aws_lambda := map[string]interface{}{
-			"node_id": "arn:lambda",
+			"node_id":        "arn:lambda",
+			"cloud_provider": "aws",
+			"cloud_region":   "us-east-1",
+			"node_type":      "aws_lambda_function",
 		}
 
 		aws_lambdas = append(aws_lambdas, populate(base_aws_lambda, max_batch_aws_lambda, round))
@@ -273,8 +276,12 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 		log.Printf("Processing %v / %v\n", i, len(hosts))
 		_, err = session.Run(`
 		UNWIND $hosts as row
+		MERGE (cp:CloudProvider{node_id: row.cloud_provider})
+		MERGE (cr:CloudRegion{node_id: row.cloud_region})
+		MERGE (cp) -[:HOSTS]-> (cr)
 		MERGE (n:Node{node_id:row.node_id})
-		SET n += row`,
+		MERGE (cr) -[:HOSTS]-> (n)
+		SET n += row, cp.active = true, cr.active = true, n.active = true`,
 			map[string]interface{}{"hosts": hosts[i]})
 		if err != nil {
 			log.Fatal(err)
@@ -327,8 +334,12 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 		log.Printf("Processing %v / %v\n", i, len(aws_lambdas))
 		_, err = session.Run(`
 		UNWIND $batch as row
+		MERGE (cp:CloudProvider{node_id: row.cloud_provider})
+		MERGE (cr:CloudRegion{node_id: row.cloud_region})
+		MERGE (cp) -[:HOSTS]-> (cr)
 		MERGE (n:CloudResource{node_id:row.node_id})
-		SET n += row`,
+		MERGE (cr) -[:HOSTS] -> (n)
+		SET n += row, cp.active = true, cr.active = true, n.active = true`,
 			map[string]interface{}{"batch": aws_lambdas[i]})
 		if err != nil {
 			log.Fatal(err)

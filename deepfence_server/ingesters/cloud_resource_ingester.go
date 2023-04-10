@@ -108,8 +108,13 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 	// Add everything
 	_, err = tx.Run(`
 		UNWIND $batch as row
+		WITH row, COALESCE(row.region, 'global') as cloud_region
+		MERGE (cp:CloudProvider{node_id:row.cloud_provider})
+		MERGE (cr:CloudRegion{node_id:cloud_region})
+		MERGE (cp) -[:HOSTS]-> (cr)
 		MERGE (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
-		SET n+=row, n.node_type = row.resource_id, n.cloud_region = COALESCE(row.region, 'global'), n.updated_at = TIMESTAMP()`,
+		MERGE (cr) -[:HOSTS]-> (n)
+		SET n+=row, n.node_type = row.resource_id, n.cloud_region = cloud_region, n.updated_at = TIMESTAMP(), cp.active = true, cr.active = true, n.active = true`,
 		map[string]interface{}{
 			"batch": batch,
 		},

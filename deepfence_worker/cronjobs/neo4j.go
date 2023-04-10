@@ -224,6 +224,40 @@ func CleanUpDB(msg *message.Message) error {
 		return err
 	}
 
+	if _, err = session.Run(`
+		MATCH (n:CloudRegion) -[:HOSTS]-> (m)
+		WHERE m.active = true
+		WITH count(m) as c, n
+		SET n.active = c <> 0`,
+		map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:CloudProvider) -[:HOSTS]-> (m)
+		WHERE m.active = true
+		WITH count(m) as c, n
+		SET n.active = c <> 0`,
+		map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:CloudRegion)
+		WHERE not (n) -[:HOSTS]-> ()
+		DELETE n`,
+		map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:CloudProvider)
+		WHERE not (n) -[:HOSTS]-> ()
+		DELETE n`,
+		map[string]interface{}{}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -318,6 +352,8 @@ func ApplyGraphDBStartup(msg *message.Message) error {
 	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
+	session.Run("CREATE CONSTRAINT ON (n:CloudProvider) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
+	session.Run("CREATE CONSTRAINT ON (n:CloudRegion) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:AgentVersion) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:KubernetesCluster) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
 	session.Run("CREATE CONSTRAINT ON (n:ContainerImage) ASSERT n.node_id IS UNIQUE", map[string]interface{}{})
