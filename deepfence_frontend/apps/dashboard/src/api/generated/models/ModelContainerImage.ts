@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ModelContainer } from './ModelContainer';
+import {
+    ModelContainerFromJSON,
+    ModelContainerFromJSONTyped,
+    ModelContainerToJSON,
+} from './ModelContainer';
+
 /**
  * 
  * @export
@@ -21,52 +28,22 @@ import { exists, mapValues } from '../runtime';
 export interface ModelContainerImage {
     /**
      * 
-     * @type {string}
+     * @type {Array<ModelContainer>}
      * @memberof ModelContainerImage
      */
-    cloud_compliance_latest_scan_id: string;
+    containers: Array<ModelContainer> | null;
     /**
      * 
      * @type {string}
      * @memberof ModelContainerImage
      */
-    cloud_compliance_scan_status: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelContainerImage
-     */
-    cloud_compliances_count: number;
+    docker_image_created_at: string;
     /**
      * 
      * @type {string}
      * @memberof ModelContainerImage
      */
-    compliance_latest_scan_id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelContainerImage
-     */
-    compliance_scan_status: string;
-    /**
-     * 
-     * @type {number}
-     * @memberof ModelContainerImage
-     */
-    compliances_count: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelContainerImage
-     */
-    docker_image_created_at?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelContainerImage
-     */
-    docker_image_id?: string;
+    docker_image_id: string;
     /**
      * 
      * @type {string}
@@ -90,7 +67,7 @@ export interface ModelContainerImage {
      * @type {string}
      * @memberof ModelContainerImage
      */
-    docker_image_virtual_size?: string;
+    docker_image_virtual_size: string;
     /**
      * 
      * @type {string}
@@ -132,7 +109,7 @@ export interface ModelContainerImage {
      * @type {string}
      * @memberof ModelContainerImage
      */
-    secret_latest_scan: string;
+    secret_latest_scan_id: string;
     /**
      * 
      * @type {string}
@@ -170,22 +147,20 @@ export interface ModelContainerImage {
  */
 export function instanceOfModelContainerImage(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "cloud_compliance_latest_scan_id" in value;
-    isInstance = isInstance && "cloud_compliance_scan_status" in value;
-    isInstance = isInstance && "cloud_compliances_count" in value;
-    isInstance = isInstance && "compliance_latest_scan_id" in value;
-    isInstance = isInstance && "compliance_scan_status" in value;
-    isInstance = isInstance && "compliances_count" in value;
+    isInstance = isInstance && "containers" in value;
+    isInstance = isInstance && "docker_image_created_at" in value;
+    isInstance = isInstance && "docker_image_id" in value;
     isInstance = isInstance && "docker_image_name" in value;
     isInstance = isInstance && "docker_image_size" in value;
     isInstance = isInstance && "docker_image_tag" in value;
+    isInstance = isInstance && "docker_image_virtual_size" in value;
     isInstance = isInstance && "malware_latest_scan_id" in value;
     isInstance = isInstance && "malware_scan_status" in value;
     isInstance = isInstance && "malwares_count" in value;
     isInstance = isInstance && "metadata" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
-    isInstance = isInstance && "secret_latest_scan" in value;
+    isInstance = isInstance && "secret_latest_scan_id" in value;
     isInstance = isInstance && "secret_scan_status" in value;
     isInstance = isInstance && "secrets_count" in value;
     isInstance = isInstance && "vulnerabilities_count" in value;
@@ -205,25 +180,20 @@ export function ModelContainerImageFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
-        'cloud_compliance_latest_scan_id': json['cloud_compliance_latest scan_id'],
-        'cloud_compliance_scan_status': json['cloud_compliance_scan_status'],
-        'cloud_compliances_count': json['cloud_compliances_count'],
-        'compliance_latest_scan_id': json['compliance_latest_scan_id'],
-        'compliance_scan_status': json['compliance_scan_status'],
-        'compliances_count': json['compliances_count'],
-        'docker_image_created_at': !exists(json, 'docker_image_created_at') ? undefined : json['docker_image_created_at'],
-        'docker_image_id': !exists(json, 'docker_image_id') ? undefined : json['docker_image_id'],
+        'containers': (json['containers'] === null ? null : (json['containers'] as Array<any>).map(ModelContainerFromJSON)),
+        'docker_image_created_at': json['docker_image_created_at'],
+        'docker_image_id': json['docker_image_id'],
         'docker_image_name': json['docker_image_name'],
         'docker_image_size': json['docker_image_size'],
         'docker_image_tag': json['docker_image_tag'],
-        'docker_image_virtual_size': !exists(json, 'docker_image_virtual_size') ? undefined : json['docker_image_virtual_size'],
+        'docker_image_virtual_size': json['docker_image_virtual_size'],
         'malware_latest_scan_id': json['malware_latest_scan_id'],
         'malware_scan_status': json['malware_scan_status'],
         'malwares_count': json['malwares_count'],
         'metadata': json['metadata'],
         'node_id': json['node_id'],
         'node_name': json['node_name'],
-        'secret_latest_scan': json['secret_latest_scan'],
+        'secret_latest_scan_id': json['secret_latest_scan_id'],
         'secret_scan_status': json['secret_scan_status'],
         'secrets_count': json['secrets_count'],
         'vulnerabilities_count': json['vulnerabilities_count'],
@@ -241,12 +211,7 @@ export function ModelContainerImageToJSON(value?: ModelContainerImage | null): a
     }
     return {
         
-        'cloud_compliance_latest scan_id': value.cloud_compliance_latest_scan_id,
-        'cloud_compliance_scan_status': value.cloud_compliance_scan_status,
-        'cloud_compliances_count': value.cloud_compliances_count,
-        'compliance_latest_scan_id': value.compliance_latest_scan_id,
-        'compliance_scan_status': value.compliance_scan_status,
-        'compliances_count': value.compliances_count,
+        'containers': (value.containers === null ? null : (value.containers as Array<any>).map(ModelContainerToJSON)),
         'docker_image_created_at': value.docker_image_created_at,
         'docker_image_id': value.docker_image_id,
         'docker_image_name': value.docker_image_name,
@@ -259,7 +224,7 @@ export function ModelContainerImageToJSON(value?: ModelContainerImage | null): a
         'metadata': value.metadata,
         'node_id': value.node_id,
         'node_name': value.node_name,
-        'secret_latest_scan': value.secret_latest_scan,
+        'secret_latest_scan_id': value.secret_latest_scan_id,
         'secret_scan_status': value.secret_scan_status,
         'secrets_count': value.secrets_count,
         'vulnerabilities_count': value.vulnerabilities_count,

@@ -225,7 +225,7 @@ const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
     vulnerabilityScanCounts: await getVulnerabilityScanCounts(
       lookupResult[0].vulnerability_latest_scan_id,
     ),
-    secretScanCounts: await getSecretScanCounts(lookupResult[0].secret_latest_scan),
+    secretScanCounts: await getSecretScanCounts(lookupResult[0].secret_latest_scan_id),
     malwareScanCounts: await getMalwareScanCounts(lookupResult[0].malware_latest_scan_id),
     complianceScanCounts: await getComplianceScanCounts(
       lookupResult[0].compliance_latest_scan_id,

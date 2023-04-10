@@ -49,13 +49,49 @@ export interface ModelPod {
      * @type {string}
      * @memberof ModelPod
      */
-    kubernetes_namespace: string;
+    kubernetes_cluster_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelPod
+     */
+    kubernetes_cluster_name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelPod
+     */
+    kubernetes_created: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelPod
+     */
+    kubernetes_ip: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ModelPod
+     */
+    kubernetes_is_in_host_network: boolean;
     /**
      * 
      * @type {{ [key: string]: any; }}
      * @memberof ModelPod
      */
-    metadata: { [key: string]: any; };
+    kubernetes_labels: { [key: string]: any; } | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelPod
+     */
+    kubernetes_namespace: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelPod
+     */
+    kubernetes_state: string;
     /**
      * 
      * @type {string}
@@ -68,6 +104,12 @@ export interface ModelPod {
      * @memberof ModelPod
      */
     node_name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelPod
+     */
+    pod_name: string;
     /**
      * 
      * @type {Array<ModelProcess>}
@@ -83,10 +125,17 @@ export function instanceOfModelPod(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "containers" in value;
     isInstance = isInstance && "host_name" in value;
+    isInstance = isInstance && "kubernetes_cluster_id" in value;
+    isInstance = isInstance && "kubernetes_cluster_name" in value;
+    isInstance = isInstance && "kubernetes_created" in value;
+    isInstance = isInstance && "kubernetes_ip" in value;
+    isInstance = isInstance && "kubernetes_is_in_host_network" in value;
+    isInstance = isInstance && "kubernetes_labels" in value;
     isInstance = isInstance && "kubernetes_namespace" in value;
-    isInstance = isInstance && "metadata" in value;
+    isInstance = isInstance && "kubernetes_state" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
+    isInstance = isInstance && "pod_name" in value;
     isInstance = isInstance && "processes" in value;
 
     return isInstance;
@@ -104,10 +153,17 @@ export function ModelPodFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         
         'containers': (json['containers'] === null ? null : (json['containers'] as Array<any>).map(ModelContainerFromJSON)),
         'host_name': json['host_name'],
+        'kubernetes_cluster_id': json['kubernetes_cluster_id'],
+        'kubernetes_cluster_name': json['kubernetes_cluster_name'],
+        'kubernetes_created': json['kubernetes_created'],
+        'kubernetes_ip': json['kubernetes_ip'],
+        'kubernetes_is_in_host_network': json['kubernetes_is_in_host_network'],
+        'kubernetes_labels': json['kubernetes_labels'],
         'kubernetes_namespace': json['kubernetes_namespace'],
-        'metadata': json['metadata'],
+        'kubernetes_state': json['kubernetes_state'],
         'node_id': json['node_id'],
         'node_name': json['node_name'],
+        'pod_name': json['pod_name'],
         'processes': (json['processes'] === null ? null : (json['processes'] as Array<any>).map(ModelProcessFromJSON)),
     };
 }
@@ -123,10 +179,17 @@ export function ModelPodToJSON(value?: ModelPod | null): any {
         
         'containers': (value.containers === null ? null : (value.containers as Array<any>).map(ModelContainerToJSON)),
         'host_name': value.host_name,
+        'kubernetes_cluster_id': value.kubernetes_cluster_id,
+        'kubernetes_cluster_name': value.kubernetes_cluster_name,
+        'kubernetes_created': value.kubernetes_created,
+        'kubernetes_ip': value.kubernetes_ip,
+        'kubernetes_is_in_host_network': value.kubernetes_is_in_host_network,
+        'kubernetes_labels': value.kubernetes_labels,
         'kubernetes_namespace': value.kubernetes_namespace,
-        'metadata': value.metadata,
+        'kubernetes_state': value.kubernetes_state,
         'node_id': value.node_id,
         'node_name': value.node_name,
+        'pod_name': value.pod_name,
         'processes': (value.processes === null ? null : (value.processes as Array<any>).map(ModelProcessToJSON)),
     };
 }

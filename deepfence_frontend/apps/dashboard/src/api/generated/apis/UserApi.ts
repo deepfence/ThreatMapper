@@ -19,11 +19,11 @@ import type {
   ApiDocsFailureResponse,
   ModelInviteUserRequest,
   ModelInviteUserResponse,
+  ModelLoginResponse,
   ModelMessageResponse,
   ModelPasswordResetRequest,
   ModelPasswordResetVerifyRequest,
   ModelRegisterInvitedUserRequest,
-  ModelResponseAccessToken,
   ModelUpdateUserIdRequest,
   ModelUpdateUserPasswordRequest,
   ModelUpdateUserRequest,
@@ -39,6 +39,8 @@ import {
     ModelInviteUserRequestToJSON,
     ModelInviteUserResponseFromJSON,
     ModelInviteUserResponseToJSON,
+    ModelLoginResponseFromJSON,
+    ModelLoginResponseToJSON,
     ModelMessageResponseFromJSON,
     ModelMessageResponseToJSON,
     ModelPasswordResetRequestFromJSON,
@@ -47,8 +49,6 @@ import {
     ModelPasswordResetVerifyRequestToJSON,
     ModelRegisterInvitedUserRequestFromJSON,
     ModelRegisterInvitedUserRequestToJSON,
-    ModelResponseAccessTokenFromJSON,
-    ModelResponseAccessTokenToJSON,
     ModelUpdateUserIdRequestFromJSON,
     ModelUpdateUserIdRequestToJSON,
     ModelUpdateUserPasswordRequestFromJSON,
@@ -240,13 +240,13 @@ export interface UserApiInterface {
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    registerInvitedUserRaw(requestParameters: RegisterInvitedUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>>;
+    registerInvitedUserRaw(requestParameters: RegisterInvitedUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelLoginResponse>>;
 
     /**
      * Register invited user
      * Register Invited User
      */
-    registerInvitedUser(requestParameters: RegisterInvitedUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken>;
+    registerInvitedUser(requestParameters: RegisterInvitedUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelLoginResponse>;
 
     /**
      * First user registration. Further users needs to be invited.
@@ -256,13 +256,13 @@ export interface UserApiInterface {
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    registerUserRaw(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>>;
+    registerUserRaw(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelLoginResponse>>;
 
     /**
      * First user registration. Further users needs to be invited.
      * Register User
      */
-    registerUser(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken>;
+    registerUser(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelLoginResponse>;
 
     /**
      * Reset user\'s API Tokens
@@ -668,7 +668,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Register invited user
      * Register Invited User
      */
-    async registerInvitedUserRaw(requestParameters: RegisterInvitedUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>> {
+    async registerInvitedUserRaw(requestParameters: RegisterInvitedUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelLoginResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -683,14 +683,14 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
             body: ModelRegisterInvitedUserRequestToJSON(requestParameters.modelRegisterInvitedUserRequest),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelResponseAccessTokenFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelLoginResponseFromJSON(jsonValue));
     }
 
     /**
      * Register invited user
      * Register Invited User
      */
-    async registerInvitedUser(requestParameters: RegisterInvitedUserRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken> {
+    async registerInvitedUser(requestParameters: RegisterInvitedUserRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelLoginResponse> {
         const response = await this.registerInvitedUserRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -699,7 +699,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * First user registration. Further users needs to be invited.
      * Register User
      */
-    async registerUserRaw(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>> {
+    async registerUserRaw(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelLoginResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -714,14 +714,14 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
             body: ModelUserRegisterRequestToJSON(requestParameters.modelUserRegisterRequest),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelResponseAccessTokenFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelLoginResponseFromJSON(jsonValue));
     }
 
     /**
      * First user registration. Further users needs to be invited.
      * Register User
      */
-    async registerUser(requestParameters: RegisterUserRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken> {
+    async registerUser(requestParameters: RegisterUserRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelLoginResponse> {
         const response = await this.registerUserRaw(requestParameters, initOverrides);
         return await response.value();
     }
