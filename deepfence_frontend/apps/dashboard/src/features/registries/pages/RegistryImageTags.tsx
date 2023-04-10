@@ -54,6 +54,7 @@ const getMalwareScanStatus = (searchParams: URLSearchParams) => {
 
 async function getTags(
   nodeId: string,
+  imageId: string,
   searchParams: URLSearchParams,
 ): Promise<{
   tags: ModelContainerImage[];
@@ -67,7 +68,9 @@ async function getTags(
 
   const imageTagsRequest: ModelRegistryImagesReq = {
     image_filter: {
-      filter_in: {},
+      filter_in: {
+        docker_image_name: [imageId],
+      },
     },
     registry_id: nodeId,
     window: {
@@ -149,19 +152,19 @@ const loader = async ({
   params,
   request,
 }: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataTypeForImageTags>> => {
-  const { account, nodeId } = params as {
+  const { account, nodeId, imageId } = params as {
     account: string;
     nodeId: string;
     imageId: string;
   };
 
-  if (!account || !nodeId) {
+  if (!account || !nodeId || !imageId) {
     throw new Error('Account Type, Node Id and Image Id are required');
   }
   const searchParams = new URL(request.url).searchParams;
 
   return typedDefer({
-    tableData: getTags(nodeId, searchParams),
+    tableData: getTags(nodeId, imageId, searchParams),
   });
 };
 
