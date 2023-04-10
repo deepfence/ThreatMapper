@@ -164,6 +164,9 @@ const action = async ({
     const masked = formData.getAll('mask[]');
     const status = formData.getAll('status[]');
     const hostIds = formData.getAll('hostIds[]');
+    const containerImages = formData.getAll('containerImages[]');
+    const containers = formData.getAll('containers[]');
+    const clusterIds = formData.getAll('clusterIds[]');
     const accountIds = formData.getAll('accountIds[]');
     const interval = formData.get('interval'); // send this when backend is ready to support
 
@@ -179,6 +182,9 @@ const action = async ({
       masked?: boolean[];
       account_id?: string[];
       host_name?: string[];
+      image_name?: string[];
+      container_name?: string[];
+      pod_name?: string[];
       kubernetes_cluster_name?: string[];
       scan_status?: string[];
     } = {};
@@ -188,6 +194,18 @@ const action = async ({
 
     if (hostIds.length > 0) {
       advanced_report_filters.host_name = hostIds as string[];
+    }
+
+    if (containerImages.length > 0) {
+      advanced_report_filters.image_name = containerImages as string[];
+    }
+
+    if (containers.length > 0) {
+      advanced_report_filters.container_name = containers as string[];
+    }
+
+    if (clusterIds.length > 0) {
+      advanced_report_filters.pod_name = clusterIds as string[];
     }
 
     if (status.length > 0) {
@@ -236,7 +254,7 @@ const action = async ({
         message: 'Error in adding integrations',
       };
     }
-    toast('Generate Report has been triggerred');
+    toast('Generate Report has started');
     return {
       success: true,
     };
@@ -637,12 +655,12 @@ const AdvancedFilter = ({
             ) : (
               <Select
                 value={selectedContainerImages}
-                name="containerImage[]"
+                name="containerImages[]"
                 onChange={(value) => {
                   setSelectedContainerImages(value);
                 }}
-                placeholder="Select Container Image"
-                label="Select Image"
+                placeholder="Select Container Images"
+                label="Select Images"
                 sizing="xs"
                 className="mt-2"
               >
