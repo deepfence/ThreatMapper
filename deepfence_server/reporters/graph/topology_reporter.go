@@ -15,6 +15,10 @@ import (
 	"github.com/samber/mo"
 )
 
+const (
+	cloud_resource_limit = 1000
+)
+
 type TopologyReporter interface {
 	Graph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error)
 	HostGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error)
@@ -183,6 +187,7 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 		MATCH (cp) -[:HOSTS]-> (cr: CloudRegion)
 		WHERE CASE WHEN $regions IS NULL THEN true ELSE cr.node_id IN $regions END
 		MATCH (cr) -[:HOSTS]-> (s:CloudResource)
+		WITH s LIMIT `+strconv.Itoa(cloud_resource_limit)+`
 		WHERE s.node_type IN $resource_types `+
 		reporters.ParseFieldFilters2CypherWhereConditions("s", fieldfilters, false)+`
 		RETURN collect(s.node_id), s.cloud_region, s.node_type`,
