@@ -3,7 +3,6 @@ import { toast } from 'sonner';
 
 import { getIntegrationApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelIntegrationListResp } from '@/api/generated';
-import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 
@@ -47,7 +46,7 @@ const getIntegrations = async (): Promise<{
   };
 };
 
-const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
+export const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
   return typedDefer({
     data: getIntegrations(),
   });

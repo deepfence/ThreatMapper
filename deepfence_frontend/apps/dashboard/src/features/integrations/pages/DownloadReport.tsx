@@ -515,7 +515,7 @@ const getBenchmarkList = (nodeType: string) => {
     case 'Linux':
       return complianceType.host;
     default:
-      console.error('Provider type should be match');
+      console.error('Provider type should be matched');
       return [];
   }
 };
