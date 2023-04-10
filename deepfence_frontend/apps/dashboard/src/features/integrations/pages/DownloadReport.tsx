@@ -44,6 +44,7 @@ import {
   ModelGenerateReportReqReportTypeEnum,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
+  UtilsReportFiltersSeverityOrCheckTypeEnum,
 } from '@/api/generated';
 import { ModelExportReport } from '@/api/generated/models/ModelExportReport';
 import { DFLink } from '@/components/DFLink';
@@ -78,7 +79,6 @@ const nonComplianceNode = (resourceType: string) => {
     Host: UtilsReportFiltersNodeTypeEnum.Host,
     Container: UtilsReportFiltersNodeTypeEnum.Container,
     ContainerImage: UtilsReportFiltersNodeTypeEnum.ContainerImage,
-    Cluster: 'cluster',
   };
 };
 
@@ -161,29 +161,41 @@ const action = async ({
     const _nodeType: UtilsReportFiltersNodeTypeEnum =
       UtilsReportFiltersNodeTypeEnum[nodeType];
 
-    const scan_status = body.status.toString();
-    const account_id = body.accountId.toString();
-    const host_name = body.nodeIds.toString();
+    const masked = formData.getAll('mask[]');
+    const status = formData.getAll('status[]');
+    const hostIds = formData.getAll('hostIds[]');
+    const accountIds = formData.getAll('accountIds[]');
+    const interval = formData.get('interval'); // send this when backend is ready to support
+
+    const _masked: boolean[] = [];
+    if (masked.includes('Masked')) {
+      _masked.push(true);
+    }
+    if (masked.includes('Unmasked')) {
+      _masked.push(false);
+    }
 
     const advanced_report_filters: {
-      masked: boolean;
-      account_id?: string;
-      host_name?: string;
-      kubernetes_cluster_name?: string;
-      scan_status?: string;
-    } = {
-      masked: body.mask.toString().toLowerCase() === 'masked',
-    };
-    if (account_id) {
-      advanced_report_filters.account_id = account_id;
+      masked?: boolean[];
+      account_id?: string[];
+      host_name?: string[];
+      kubernetes_cluster_name?: string[];
+      scan_status?: string[];
+    } = {};
+    if (accountIds.length > 0) {
+      advanced_report_filters.account_id = accountIds as string[];
     }
 
-    if (host_name) {
-      advanced_report_filters.host_name = host_name;
+    if (hostIds.length > 0) {
+      advanced_report_filters.host_name = hostIds as string[];
     }
 
-    if (scan_status) {
-      advanced_report_filters.scan_status = scan_status;
+    if (status.length > 0) {
+      advanced_report_filters.scan_status = status as string[];
+    }
+
+    if (_masked.length > 0) {
+      advanced_report_filters.masked = _masked;
     }
 
     const r = await makeRequest({
@@ -199,7 +211,7 @@ const action = async ({
               scan_type: _resource,
               severity_or_check_type: (severity as string[]).map((sev) =>
                 sev.toLowerCase(),
-              ),
+              ) as UtilsReportFiltersSeverityOrCheckTypeEnum,
             },
 
             report_type: _reportType,
@@ -224,7 +236,7 @@ const action = async ({
         message: 'Error in adding integrations',
       };
     }
-    toast('Report download has been triggerred');
+    toast('Generate Report has been triggerred');
     return {
       success: true,
     };
@@ -358,7 +370,7 @@ const ActionDropdown = ({
                 download(data.url ?? '');
               }}
             >
-              <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
+              <span className="flex items-center gap-x-2">
                 <IconContext.Provider value={{ className: '' }}>
                   <HiDownload />
                 </IconContext.Provider>
@@ -494,7 +506,7 @@ export const ReportTable = () => {
 
 const getBenchmarkList = (nodeType: string) => {
   switch (nodeType) {
-    case 'AWS':
+    case 'Aws':
       return complianceType.aws;
     case 'Google':
       return complianceType.gcp;
@@ -517,8 +529,8 @@ const AdvancedFilter = ({
   resourceType: string;
   provider: string;
 }) => {
-  const [selectedHosts, setSelectedHosts] = useState('');
-  const [selectedCluster, setSelectedCluster] = useState('');
+  const [selectedHosts, setSelectedHosts] = useState([]);
+  const [selectedCluster, setSelectedCluster] = useState([]);
   const [selectedContainerImages, setSelectedContainerImages] = useState([]);
   const [_containers, setContainers] = useState([]);
   const { hosts, status: listHostStatus } = useGetHostsList({
@@ -537,8 +549,8 @@ const AdvancedFilter = ({
   const [cloudAccounts, setCloudAccounts] = useState<ModelCloudNodeAccountInfo[]>([]);
   const [selectedCloudAccounts, setSelectedCloudAccounts] = useState([]);
 
-  const [maskedType, setMaskedType] = useState('');
-  const [status, setStatus] = useState('');
+  const [maskedType, setMaskedType] = useState([]);
+  const [status, setStatus] = useState([]);
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -554,17 +566,17 @@ const AdvancedFilter = ({
   }, [resourceType, provider]);
 
   return (
-    <>
+    <div className="flex flex-col gap-y-4 pt-0 bg-slate-100 dark:bg-slate-700 p-5">
       {resourceType && provider ? (
-        <div className="text-gray-700 dark:text-gray-400 text-xs uppercase font-bold pt-4">
-          Advanced Filter(Optional)
+        <div className="text-gray-700 dark:text-gray-100 text-xs uppercase font-bold pt-4">
+          Advanced Filter (Optional)
         </div>
       ) : null}
 
       {resourceType && provider && isCloudAccount(provider) && (
         <Select
           value={selectedCloudAccounts}
-          name="accountId"
+          name="accountIds[]"
           onChange={(value) => {
             setSelectedCloudAccounts(value);
           }}
@@ -593,7 +605,7 @@ const AdvancedFilter = ({
             ) : (
               <Select
                 value={selectedHosts}
-                name="hostId"
+                name="hostIds[]"
                 onChange={(value) => {
                   setSelectedHosts(value);
                 }}
@@ -647,10 +659,7 @@ const AdvancedFilter = ({
         </>
       ) : null}
 
-      {resourceType &&
-      provider &&
-      resourceType !== UtilsReportFiltersScanTypeEnum.Compliance &&
-      provider === 'Container' ? (
+      {resourceType && provider && provider === 'Container' ? (
         <>
           <div>
             {listContainerStatus !== 'idle' ? (
@@ -682,10 +691,7 @@ const AdvancedFilter = ({
         </>
       ) : null}
 
-      {resourceType &&
-      provider &&
-      resourceType !== UtilsReportFiltersScanTypeEnum.Compliance &&
-      provider === 'Cluster' ? (
+      {resourceType && provider && resourceType !== 'CloudCompliance' ? (
         <>
           <div>
             {listClusterStatus !== 'idle' ? (
@@ -695,12 +701,12 @@ const AdvancedFilter = ({
             ) : (
               <Select
                 value={selectedCluster}
-                name="nodeIds[]"
+                name="clusterIds[]"
                 onChange={(value) => {
                   setSelectedCluster(value);
                 }}
                 placeholder="Select Clusters"
-                label="Select Clusters"
+                label="Select Clusters(Optional)"
                 sizing="xs"
                 className="mt-2"
               >
@@ -720,7 +726,7 @@ const AdvancedFilter = ({
       {provider && (
         <Select
           value={maskedType}
-          name="mask"
+          name="mask[]"
           onChange={(value) => {
             setMaskedType(value);
           }}
@@ -739,7 +745,7 @@ const AdvancedFilter = ({
       )}
       <Select
         value={status}
-        name="status"
+        name="status[]"
         onChange={(value) => {
           setStatus(value);
         }}
@@ -755,15 +761,16 @@ const AdvancedFilter = ({
           );
         })}
       </Select>
-    </>
+    </div>
   );
 };
-const ComplianceForm = ({
+const CloudComplianceForm = ({
   setProvider,
+  provider,
 }: {
   setProvider: React.Dispatch<React.SetStateAction<string>>;
+  provider: string;
 }) => {
-  const [provider, _setProvider] = useState('');
   const [benchmarkType, setBenchmarkType] = useState('');
 
   return (
@@ -773,13 +780,12 @@ const ComplianceForm = ({
         value={provider}
         name="nodeType"
         onChange={(value) => {
-          _setProvider(value);
           setProvider(value);
         }}
         placeholder="Select Provider"
         sizing="xs"
       >
-        {['AWS', 'Google', 'Azure', 'Linux'].map((resource) => {
+        {['Aws', 'Google', 'Azure', 'Linux'].map((resource) => {
           return (
             <SelectItem value={resource} key={resource}>
               {resource}
@@ -817,21 +823,21 @@ const ComplianceForm = ({
 const CommomForm = ({
   setProvider,
   resource,
+  provider,
 }: {
   setProvider: React.Dispatch<React.SetStateAction<string>>;
   resource: string;
+  provider: string;
 }) => {
   const [severity, setSeverity] = useState([]);
-  const [nodeType, setNodeType] = useState('');
 
   return (
     <>
       <Select
         label="Select Node Type"
-        value={nodeType}
+        value={provider}
         name="nodeType"
         onChange={(value) => {
-          setNodeType(value);
           setProvider(value);
         }}
         placeholder="Select Node Type"
@@ -876,7 +882,7 @@ const DownloadForm = () => {
 
   return (
     <Form method="post">
-      <Card className="w-full relative p-5 flex flex-col pt-8 gap-y-4">
+      <Card className="">
         <input
           type="text"
           name="_actionType"
@@ -884,93 +890,102 @@ const DownloadForm = () => {
           hidden
           value={ActionEnumType.ADD}
         />
-        <Select
-          label="Select Resource"
-          value={resource}
-          name="resource"
-          onChange={(value) => {
-            setResource(value);
-          }}
-          placeholder="Select resource"
-          sizing="xs"
-        >
-          {Object.keys(UtilsReportFiltersScanTypeEnum).map((resource, index) => {
-            return (
-              <SelectItem value={resource} key={resource}>
-                {resource}
-              </SelectItem>
-            );
-          })}
-        </Select>
+        <div className="p-5 gap-y-4 flex flex-col">
+          <Select
+            label="Select Resource"
+            value={resource}
+            name="resource"
+            onChange={(value) => {
+              setResource(value);
+              setProvider('');
+            }}
+            placeholder="Select resource"
+            sizing="xs"
+          >
+            {Object.keys(UtilsReportFiltersScanTypeEnum).map((resource) => {
+              return (
+                <SelectItem value={resource} key={resource}>
+                  {resource}
+                </SelectItem>
+              );
+            })}
+          </Select>
 
-        {resource === UtilsReportFiltersScanTypeEnum.Compliance ? (
-          <ComplianceForm setProvider={setProvider} />
-        ) : null}
+          {resource === 'CloudCompliance' ? (
+            <CloudComplianceForm setProvider={setProvider} provider={provider} />
+          ) : null}
 
-        {resource !== UtilsReportFiltersScanTypeEnum.Compliance ? (
-          <CommomForm setProvider={setProvider} resource={resource} />
-        ) : null}
+          {resource !== 'CloudCompliance' ? (
+            <CommomForm
+              setProvider={setProvider}
+              resource={resource}
+              provider={provider}
+            />
+          ) : null}
 
-        <Select
-          label="Select Duration"
-          value={duration}
-          name="duration"
-          onChange={(value) => {
-            setDuration(value);
-          }}
-          placeholder="Select Duration"
-          sizing="xs"
-        >
-          {Object.keys(DURATION).map((resource) => {
-            return (
-              <SelectItem value={resource} key={resource}>
-                {resource}
-              </SelectItem>
-            );
-          })}
-        </Select>
+          <Select
+            label="Select Duration"
+            value={duration}
+            name="duration"
+            onChange={(value) => {
+              setDuration(value);
+            }}
+            placeholder="Select Duration"
+            sizing="xs"
+          >
+            {Object.keys(DURATION).map((resource) => {
+              return (
+                <SelectItem value={resource} key={resource}>
+                  {resource}
+                </SelectItem>
+              );
+            })}
+          </Select>
 
-        <TextInput
-          className="w-full"
-          label={'Schedule Interval In Days'}
-          type={'text'}
-          sizing="sm"
-          name={'interval'}
-          placeholder={'Interval'}
-        />
+          <TextInput
+            className="w-full"
+            label={'Schedule Interval In Days'}
+            type={'text'}
+            sizing="sm"
+            name={'interval'}
+            placeholder={'Interval'}
+          />
 
-        <Switch
-          label="Include Dead Nodes"
-          size="sm"
-          name="deadNodes"
-          onCheckedChange={setIncludeDeadNodes}
-          checked={deadNodes}
-        />
+          <Switch
+            label="Include Dead Nodes"
+            size="sm"
+            name="deadNodes"
+            onCheckedChange={setIncludeDeadNodes}
+            checked={deadNodes}
+          />
+        </div>
 
         <AdvancedFilter provider={provider} resourceType={resource} />
 
-        <Select
-          label="Select Download Type"
-          value={downloadType}
-          name="downloadType"
-          onChange={(value) => {
-            setDownloadType(value);
-          }}
-          placeholder="Download Type"
-          sizing="xs"
-        >
-          {Object.keys(ModelGenerateReportReqReportTypeEnum).map((resource) => {
-            return (
-              <SelectItem value={resource} key={resource}>
-                {resource}
-              </SelectItem>
-            );
-          })}
-        </Select>
+        <div className="p-5 gap-y-4 flex flex-col">
+          <Select
+            label="Select Download Type"
+            value={downloadType}
+            name="downloadType"
+            onChange={(value) => {
+              setDownloadType(value);
+            }}
+            placeholder="Download Type"
+            sizing="xs"
+          >
+            {Object.keys(ModelGenerateReportReqReportTypeEnum).map((resource) => {
+              return (
+                <SelectItem value={resource} key={resource}>
+                  {resource}
+                </SelectItem>
+              );
+            })}
+          </Select>
 
-        <Button size="xs" color="primary" className="mt-2">
-          Download
-        </Button>
+          <Button size="xs" color="primary" className="mt-2">
+            Generate Report
+          </Button>
+        </div>
       </Card>
     </Form>
   );
