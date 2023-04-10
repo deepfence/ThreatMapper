@@ -389,9 +389,9 @@ func ApplyGraphDBStartup(msg *message.Message) error {
 	session.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:Bulk%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_CLOUD_COMPLIANCE_SCAN), map[string]interface{}{})
 	session.Run(fmt.Sprintf("CREATE CONSTRAINT ON (n:Bulk%s) ASSERT n.node_id IS UNIQUE", utils.NEO4J_MALWARE_SCAN), map[string]interface{}{})
 
-	session.Run("MERGE (n:Node{node_id:'in-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0, active: true})", map[string]interface{}{})
-	session.Run("MERGE (n:Node{node_id:'out-the-internet', cloud_provider:'internet', cloud_region: 'internet', depth: 0, active: true})", map[string]interface{}{})
-	session.Run("MERGE (n:Node{node_id:'deepfence-console-cron', cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
+	session.Run("MERGE (n:Node{node_id:'in-the-internet', node_name:'The Internet (Inbound)', pseudo: true, cloud_provider:'internet', cloud_region: 'internet', depth: 0, active: true})", map[string]interface{}{})
+	session.Run("MERGE (n:Node{node_id:'out-the-internet', node_name:'The Internet (Outbound)', pseudo: true, cloud_provider:'internet', cloud_region: 'internet', depth: 0, active: true})", map[string]interface{}{})
+	session.Run("MERGE (n:Node{node_id:'deepfence-console-cron', node_name:'Console', pseudo: true, cloud_provider:'internet', cloud_region: 'internet', depth: 0})", map[string]interface{}{})
 
 	// Indexes for fast searching & ordering
 	addIndexOnIssuesCount(session, "ContainerImage")

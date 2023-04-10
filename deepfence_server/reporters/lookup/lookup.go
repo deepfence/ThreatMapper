@@ -27,20 +27,17 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 		return nil, err
 	}
 
-	getProcesses := false
-	getContainerImages := false
-	getContainers := false
-	getPods := false
-	if len(filter.InFieldFilter) == 0 {
-		getProcesses = true
-		getContainerImages = true
-		getContainers = true
-		getPods = true
-	} else {
+	getProcesses := true
+	getContainerImages := true
+	getContainers := true
+	getPods := true
+	getConnections := true
+	if len(filter.InFieldFilter) > 0 {
 		getProcesses = utils.InSlice("processes", filter.InFieldFilter)
 		getContainerImages = utils.InSlice("container_images", filter.InFieldFilter)
 		getContainers = utils.InSlice("containers", filter.InFieldFilter)
 		getPods = utils.InSlice("pods", filter.InFieldFilter)
+		getConnections = utils.InSlice("connections", filter.InFieldFilter)
 	}
 
 	hostIds := make([]string, len(hosts))
@@ -87,6 +84,27 @@ func GetHostsReport(ctx context.Context, filter LookupFilter) ([]model.Host, err
 			}
 		}
 	}
+	if getConnections == true {
+		inboundConnections, outboundConnections, err := getNodeConnections[model.Host](ctx, hostIds)
+		if err == nil {
+			for _, conn := range inboundConnections {
+				index = hostIdIndex[conn.FromNodeId]
+				hosts[index].InboundConnections = append(hosts[index].InboundConnections, model.Connection{
+					NodeName: conn.NodeName,
+					NodeId:   conn.NodeId,
+					Count:    conn.Count,
+				})
+			}
+			for _, conn := range outboundConnections {
+				index = hostIdIndex[conn.FromNodeId]
+				hosts[index].OutboundConnections = append(hosts[index].OutboundConnections, model.Connection{
+					NodeName: conn.NodeName,
+					NodeId:   conn.NodeId,
+					Count:    conn.Count,
+				})
+			}
+		}
+	}
 
 	return hosts, nil
 }
@@ -97,12 +115,9 @@ func GetContainersReport(ctx context.Context, filter LookupFilter) ([]model.Cont
 		return nil, err
 	}
 
-	getProcesses := false
-	getContainerImages := false
-	if len(filter.InFieldFilter) == 0 {
-		getProcesses = true
-		getContainerImages = true
-	} else {
+	getProcesses := true
+	getContainerImages := true
+	if len(filter.InFieldFilter) > 0 {
 		getProcesses = utils.InSlice("processes", filter.InFieldFilter)
 		getContainerImages = utils.InSlice("image", filter.InFieldFilter)
 	}
@@ -159,10 +174,8 @@ func GetContainerImagesReport(ctx context.Context, filter LookupFilter) ([]model
 		return nil, err
 	}
 
-	getContainers := false
-	if len(filter.InFieldFilter) == 0 {
-		getContainers = true
-	} else {
+	getContainers := true
+	if len(filter.InFieldFilter) > 0 {
 		getContainers = utils.InSlice("image", filter.InFieldFilter)
 	}
 
@@ -193,10 +206,8 @@ func GetKubernetesClustersReport(ctx context.Context, filter LookupFilter) ([]mo
 		return nil, err
 	}
 
-	getHosts := false
-	if len(filter.InFieldFilter) == 0 {
-		getHosts = true
-	} else {
+	getHosts := true
+	if len(filter.InFieldFilter) > 0 {
 		getHosts = utils.InSlice("hosts", filter.InFieldFilter)
 	}
 
@@ -236,10 +247,8 @@ func GetRegistryAccountReport(ctx context.Context, filter LookupFilter) ([]model
 		return nil, err
 	}
 
-	getImages := false
-	if len(filter.InFieldFilter) == 0 {
-		getImages = true
-	} else {
+	getImages := true
+	if len(filter.InFieldFilter) > 0 {
 		getImages = utils.InSlice("container_images", filter.InFieldFilter)
 	}
 
@@ -347,6 +356,62 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 	}
 
 	return res, nil
+}
+
+func getNodeConnections[T reporters.Cypherable](ctx context.Context, ids []string) ([]model.ConnectionQueryResp, []model.ConnectionQueryResp, error) {
+	inbound := []model.ConnectionQueryResp{}
+	outbound := []model.ConnectionQueryResp{}
+	var dummy T
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return inbound, outbound, err
+	}
+
+	session, err := driver.Session(neo4j.AccessModeRead)
+	if err != nil {
+		return inbound, outbound, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return inbound, outbound, err
+	}
+	defer tx.Close()
+
+	query := `
+			MATCH (n:` + dummy.NodeType() + `)-[c:CONNECTS]-(m) 
+			WHERE n.node_id in $ids
+			RETURN n.node_id,m.node_id,m.node_name,count(c),(startNode(c) = n)`
+	r, err := tx.Run(query, map[string]interface{}{"ids": ids})
+	if err != nil {
+		return inbound, outbound, err
+	}
+
+	recs, err := r.Collect()
+	if err != nil {
+		return inbound, outbound, err
+	}
+
+	for _, rec := range recs {
+		connection := model.ConnectionQueryResp{
+			FromNodeId: rec.Values[0].(string),
+			NodeId:     rec.Values[1].(string),
+			Count:      rec.Values[3].(int64),
+		}
+		if rec.Values[2] == nil {
+			connection.NodeName = connection.NodeId
+		} else {
+			connection.NodeName = rec.Values[2].(string)
+		}
+		isOutbound := rec.Values[4].(bool)
+		if isOutbound {
+			outbound = append(outbound, connection)
+		} else {
+			inbound = append(inbound, connection)
+		}
+	}
+	return inbound, outbound, nil
 }
 
 func getIndirectFromIDs[T any](ctx context.Context, query string, ids []string) ([]T, map[string]string, error) {

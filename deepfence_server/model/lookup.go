@@ -47,6 +47,19 @@ type BasicNode struct {
 	HostName string `json:"host_name" required:"true"`
 }
 
+type Connection struct {
+	NodeName string `json:"node_name"`
+	NodeId   string `json:"node_id"`
+	Count    int64  `json:"count"`
+}
+
+type ConnectionQueryResp struct {
+	FromNodeId string `json:"from_node_id"`
+	NodeName   string `json:"node_name"`
+	NodeId     string `json:"node_id"`
+	Count      int64  `json:"count"`
+}
+
 type Host struct {
 	ID                        string           `json:"node_id" required:"true"`
 	HostName                  string           `json:"host_name" required:"true"`
@@ -90,6 +103,8 @@ type Host struct {
 	CompliancesCount          int64            `json:"compliances_count" required:"true"`
 	ComplianceScanStatus      string           `json:"compliance_scan_status" required:"true"`
 	ComplianceLatestScanId    string           `json:"compliance_latest_scan_id" required:"true"`
+	InboundConnections        []Connection     `json:"inbound_connections" required:"true"`
+	OutboundConnections       []Connection     `json:"outbound_connections" required:"true"`
 }
 
 func (Host) NodeType() string {
@@ -141,12 +156,6 @@ func (ra RegistryAccount) id() string {
 type EndpointID struct {
 	Endpoint string `json:"endpoint" required:"true"`
 	Type     string `json:"type" required:"true"`
-}
-
-type Connection struct {
-	RemoteEndpoint EndpointID `json:"remote_endpoint" required:"true"`
-	Port           int16      `json:"port" required:"true"`
-	ActiveCount    int        `json:"active_count" required:"true"`
 }
 
 type Pod struct {
