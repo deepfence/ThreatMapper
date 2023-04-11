@@ -352,6 +352,7 @@ func (h *Handler) GetUserByUserID(w http.ResponseWriter, r *http.Request) {
 	userId, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		respondError(&BadDecoding{err}, w)
+		return
 	}
 	user, statusCode, _, _, err := model.GetUserByID(userId)
 	if err != nil {
@@ -407,6 +408,7 @@ func (h *Handler) UpdateUserByUserID(w http.ResponseWriter, r *http.Request) {
 	userId, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		respondError(&BadDecoding{err}, w)
+		return
 	}
 	user, statusCode, ctx, pgClient, err := model.GetUserByID(userId)
 	if err != nil {

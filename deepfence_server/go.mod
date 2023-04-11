@@ -34,17 +34,17 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/k-sone/critbitgo v1.4.0
 	github.com/lestrrat-go/jwx/v2 v2.0.9
-	github.com/minio/minio-go/v7 v7.0.49
+	github.com/minio/minio-go/v7 v7.0.51
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.7
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
-	github.com/redis/go-redis/v9 v9.0.2
+	github.com/redis/go-redis/v9 v9.0.3
 	github.com/riandyrn/otelchi v0.5.1
 	github.com/rs/zerolog v1.29.0
 	github.com/samber/mo v1.8.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/swaggest/openapi-go v0.2.29
-	github.com/twmb/franz-go v1.13.1
+	github.com/twmb/franz-go v1.13.2
 	github.com/ugorji/go/codec v1.2.11
 	go.opentelemetry.io/otel v1.14.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.14.0
@@ -105,7 +105,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.16.3 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/leodido/go-urn v1.2.2 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.1 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect

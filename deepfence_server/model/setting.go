@@ -24,10 +24,26 @@ type SettingValue struct {
 }
 
 type Setting struct {
-	ID            int64
-	Key           string
-	Value         *SettingValue
-	IsVisibleOnUi bool
+	ID            int64         `json:"id"`
+	Key           string        `json:"key"`
+	Value         *SettingValue `json:"value"`
+	IsVisibleOnUi bool          `json:"is_visible_on_ui"`
+}
+
+type SettingsResponse struct {
+	ID          int64       `json:"id" required:"true"`
+	Key         string      `json:"key" required:"true"`
+	Label       string      `json:"label" required:"true"`
+	Value       interface{} `json:"value" required:"true"`
+	Description string      `json:"description" required:"true"`
+}
+
+type SettingUpdateRequest struct {
+	ID          int64       `json:"id" validate:"required" required:"true"`
+	Key         string      `json:"key" validate:"required,oneof=console_url" required:"true" enum:"console_url"`
+	Label       string      `json:"label" validate:"required,min=2,max=32" required:"true"`
+	Value       interface{} `json:"value" validate:"required" required:"true"`
+	Description string      `json:"description" validate:"required,min=2,max=64" required:"true"`
 }
 
 func (s *Setting) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.Setting, error) {
@@ -46,7 +62,42 @@ func (s *Setting) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*
 	return &setting, nil
 }
 
-func (s *Setting) GetSettingByKey(ctx context.Context, pgClient *postgresqlDb.Queries, key string) (postgresqlDb.Setting, error) {
+func (s *Setting) Update(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	settingVal, err := json.Marshal(s.Value)
+	if err != nil {
+		return err
+	}
+	return pgClient.UpdateSettingById(ctx, postgresqlDb.UpdateSettingByIdParams{
+		ID:            s.ID,
+		Value:         settingVal,
+		IsVisibleOnUi: s.IsVisibleOnUi,
+	})
+}
+
+func GetVisibleSettings(ctx context.Context, pgClient *postgresqlDb.Queries) ([]SettingsResponse, error) {
+	visibleSettings, err := pgClient.GetVisibleSettings(ctx)
+	if err != nil {
+		return nil, err
+	}
+	settings := make([]SettingsResponse, len(visibleSettings))
+	for i, s := range visibleSettings {
+		var sValue SettingValue
+		err = json.Unmarshal(s.Value, &sValue)
+		if err != nil {
+			continue
+		}
+		settings[i] = SettingsResponse{
+			ID:          s.ID,
+			Key:         s.Key,
+			Value:       sValue.Value,
+			Label:       sValue.Label,
+			Description: sValue.Description,
+		}
+	}
+	return settings, nil
+}
+
+func GetSettingByKey(ctx context.Context, pgClient *postgresqlDb.Queries, key string) (postgresqlDb.Setting, error) {
 	setting, err := pgClient.GetSetting(ctx, key)
 	if err != nil {
 		return postgresqlDb.Setting{}, err

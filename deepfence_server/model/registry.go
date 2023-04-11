@@ -234,8 +234,7 @@ func (ru *RegistryUpdateReq) RegistryExists(ctx context.Context, pgClient *postg
 }
 
 func GetAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Queries) (json.RawMessage, error) {
-	s := Setting{}
-	aes, err := s.GetSettingByKey(ctx, pgClient, commonConstants.AES_SECRET)
+	aes, err := GetSettingByKey(ctx, pgClient, commonConstants.AES_SECRET)
 	if err != nil {
 		return nil, err
 	}

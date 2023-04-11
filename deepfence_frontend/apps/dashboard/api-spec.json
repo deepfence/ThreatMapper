@@ -10066,9 +10066,12 @@
         "type": "object",
         "properties": {
           "account_id": { "type": "array", "items": { "type": "string" } },
+          "container_name": { "type": "array", "items": { "type": "string" } },
           "host_name": { "type": "array", "items": { "type": "string" } },
+          "image_name": { "type": "array", "items": { "type": "string" } },
           "kubernetes_cluster_name": { "type": "array", "items": { "type": "string" } },
           "masked": { "type": "array", "items": { "type": "boolean" } },
+          "pod_name": { "type": "array", "items": { "type": "string" } },
           "scan_status": { "type": "array", "items": { "type": "string" } }
         }
       },
@@ -10085,7 +10088,6 @@
               "host",
               "container",
               "container_image",
-              "pod",
               "linux",
               "aws",
               "gcp",

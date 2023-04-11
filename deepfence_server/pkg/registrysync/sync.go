@@ -47,7 +47,7 @@ import (
 func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, pgId int32) error {
 
 	// decrypt secret
-	aesValue, err := encryption.GetAESValueForEncryption(ctx, pgClient)
+	aesValue, err := model.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		return err
 	}

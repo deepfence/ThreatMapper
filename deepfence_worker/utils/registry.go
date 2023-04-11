@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/acr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/dockerhub"
@@ -77,7 +78,7 @@ func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCred
 		return regCreds{}, err
 	}
 
-	key, err := encryption.GetAESValueForEncryption(ctx, pgClient)
+	key, err := model.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return regCreds{}, err
