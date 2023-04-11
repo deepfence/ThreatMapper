@@ -8,4 +8,5 @@ const (
 	SuccessIntegrationDeleted    = "integration deleted successfully"
 	SuccessIntegrationUpdated    = "integration updated successfully"
 	SuccessIntegrationCreated    = "integration added successfully"
+	SuccessEmailConfigCreated    = "email configuration added successfully"
 )

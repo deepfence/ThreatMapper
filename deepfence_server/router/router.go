@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
-	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
@@ -47,6 +46,7 @@ const (
 	ResourceRegistry    = "container-registry"
 	ResourceIntegration = "integration"
 	ResourceReport      = "report"
+	ResourceEmailConfig = "email-config"
 )
 
 // func telemetryInjector(next http.Handler) http.Handler {
@@ -348,6 +348,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Put("/status/{node_id}", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.UpdateAgentDiagnosticLogsStatus))
 				})
 				r.Get("/diagnostic-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.GetDiagnosticLogs))
+			})
+
+			r.Route("/settings", func(r chi.Router) {
+				r.Post("/email", dfHandler.AuthHandler(ResourceEmailConfig, PermissionGenerate, dfHandler.AddEmailConfiguration))
+				r.Get("/email", dfHandler.AuthHandler(ResourceEmailConfig, PermissionRead, dfHandler.GetEmailConfiguration))
 			})
 
 			// Reports

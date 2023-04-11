@@ -588,5 +588,10 @@ func (d *OpenApiDocs) AddReportsOperations() {
 }
 
 func (d *OpenApiDocs) AddSettingsOperations() {
-
+	d.AddOperation("addEmailConfiguration", http.MethodPost, "/deepfence/settings/email",
+		"Add Email Configuration", "This email configuration is used to send email notifications",
+		http.StatusOK, []string{tagEmailConfig}, bearerToken, new(EmailConfigurationAdd), nil)
+	d.AddOperation("getEmailConfiguration", http.MethodGet, "/deepfence/settings/email",
+		"Get Email Configurations", "Get Email Smtp / ses Configurations in system",
+		http.StatusOK, []string{tagEmailConfig}, bearerToken, nil, new([]EmailConfigurationResp))
 }
