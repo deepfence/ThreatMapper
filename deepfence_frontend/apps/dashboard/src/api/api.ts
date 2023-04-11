@@ -23,6 +23,8 @@ import {
 } from '@/api/generated';
 import storage from '@/utils/storage';
 
+import { ReportsApi } from './generated/apis/ReportsApi';
+
 const configuration = new Configuration({
   basePath: `${window.location.protocol}//${window.location.host}`,
   accessToken: () => {
@@ -251,5 +253,15 @@ export function getIntegrationApiClient() {
     addIntegration: integrationApi.addIntegration.bind(integrationApi),
     listIntegration: integrationApi.listIntegration.bind(integrationApi),
     deleteIntegration: integrationApi.deleteIntegration.bind(integrationApi),
+  };
+}
+
+export function getReportsApiClient() {
+  const reportsApi = new ReportsApi(configuration);
+
+  return {
+    listReports: reportsApi.listReports.bind(reportsApi),
+    generateReport: reportsApi.generateReport.bind(reportsApi),
+    deleteReport: reportsApi.deleteReport.bind(reportsApi),
   };
 }

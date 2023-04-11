@@ -42,7 +42,9 @@ import { getPageFromSearchParams } from '@/utils/table';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 // TODO: remove this once we have correct type from api
-const getNodeTypeByProviderName = (providerName: string): ComplianceScanNodeTypeEnum => {
+export const getNodeTypeByProviderName = (
+  providerName: string,
+): ComplianceScanNodeTypeEnum => {
   switch (providerName) {
     case 'linux':
       return ComplianceScanNodeTypeEnum.host;
@@ -79,7 +81,7 @@ const getActiveStatus = (searchParams: URLSearchParams) => {
   return searchParams.getAll('active');
 };
 
-async function getAccounts(
+export async function getAccounts(
   nodeType: string,
   searchParams: URLSearchParams,
 ): Promise<{
