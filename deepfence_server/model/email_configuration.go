@@ -29,11 +29,11 @@ type EmailConfigurationResp struct {
 	SesRegion       string
 }
 
-func (e *EmailConfigurationAdd) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.EmailConfiguration, error) {
+func (e *EmailConfigurationAdd) Create(ctx context.Context, pgClient *postgresqlDb.Queries) error {
 	aesValue, err := GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		return nil, err
+		return err
 	}
 
 	// note: we'll encrypt the secret in registry interface object and use its secretgetter
@@ -42,42 +42,28 @@ func (e *EmailConfigurationAdd) Create(ctx context.Context, pgClient *postgresql
 	err = json.Unmarshal(aesValue, &aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		return nil, err
+		return err
 	}
 	if e.Password != "" {
 		e.Password, err = aes.Encrypt(e.Password)
 		if err != nil {
 			log.Error().Msgf(err.Error())
-			return nil, err
+			return err
 		}
 	}
 	if e.AmazonAccessKey != "" {
 		e.AmazonAccessKey, err = aes.Encrypt(e.AmazonAccessKey)
 		if err != nil {
 			log.Error().Msgf(err.Error())
-			return nil, err
+			return err
 		}
 	}
 	if e.AmazonSecretKey != "" {
 		e.Password, err = aes.Encrypt(e.AmazonSecretKey)
 		if err != nil {
 			log.Error().Msgf(err.Error())
-			return nil, err
+			return err
 		}
 	}
-	emailConfig, err := pgClient.CreateEmailConfiguration(ctx, postgresqlDb.CreateEmailConfigurationParams{
-		EmailID:         e.EmailID,
-		EmailProvider:   e.EmailProvider,
-		Smtp:            e.Smtp,
-		Password:        e.Password,
-		Port:            e.Port,
-		AmazonAccessKey: e.AmazonAccessKey,
-		AmazonSecretKey: e.AmazonSecretKey,
-		SesRegion:       e.SesRegion,
-		CreatedByUserID: e.CreatedByUserID,
-	})
-	if err != nil {
-		return nil, err
-	}
-	return &emailConfig, nil
+	return nil
 }

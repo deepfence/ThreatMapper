@@ -30,7 +30,7 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	_, err = req.Create(r.Context(), pgClient)
+	err = req.Create(r.Context(), pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		respondError(&InternalServerError{err}, w)
@@ -41,23 +41,14 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 
 func (h *Handler) GetEmailConfiguration(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	ctx := directory.WithGlobalContext(r.Context())
-	pgClient, err := directory.PostgresClient(ctx)
-	if err != nil {
-		respondError(&InternalServerError{err}, w)
-		return
-	}
-	models, err := pgClient.GetEmailConfiguration(r.Context())
 	var resp []model.EmailConfigurationResp
-	for _, m := range models {
-		resp = append(resp, model.EmailConfigurationResp{
-			EmailProvider:   m.EmailProvider,
-			CreatedByUserID: m.CreatedByUserID,
-			EmailID:         m.EmailID,
-			Smtp:            m.Smtp,
-			Port:            m.Port,
-			SesRegion:       m.SesRegion,
-		})
-	}
+	resp = append(resp, model.EmailConfigurationResp{
+		EmailProvider:   "smtp",
+		CreatedByUserID: 23,
+		EmailID:         "saurabh@deepfence.io",
+		Smtp:            "smtp.gmail.com",
+		Port:            "554",
+		SesRegion:       "",
+	})
 	httpext.JSON(w, http.StatusOK, resp)
 }
