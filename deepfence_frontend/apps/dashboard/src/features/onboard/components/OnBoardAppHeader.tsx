@@ -8,7 +8,7 @@ import {
   HiOutlineMoon,
   HiOutlineSun,
 } from 'react-icons/hi';
-import { Link } from 'react-router-dom';
+import { Link, useFetcher } from 'react-router-dom';
 import {
   Avatar,
   Dropdown,
@@ -21,19 +21,19 @@ import {
 
 import LogoDeepfenceDarkBlue from '@/assets/logo-deepfence-dark-blue.svg';
 import { useTheme } from '@/theme/ThemeContext';
-import storage from '@/utils/storage';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 const themeSelectedDropdownClassname = 'text-blue-500 dark:text-blue-300';
 const themeDropdownClassname = 'text-gray-700 dark:text-gray-400';
 
 export const OnboardAppHeader = () => {
-  const { navigate } = usePageNavigation();
   const { setMode, userSelectedMode } = useTheme();
+  const fetcher = useFetcher();
 
   const logout = () => {
-    storage.clearAuth();
-    navigate('/auth/login');
+    fetcher.submit(null, {
+      method: 'post',
+      action: '/data-component/auth/logout',
+    });
   };
 
   return (
