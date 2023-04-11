@@ -71,7 +71,7 @@ export const RegistryImagesTable = ({
               to={generatePath('/registries/imagetags/:account/:nodeId/:imageId', {
                 account: account,
                 nodeId,
-                imageId: info.row.original.name ?? '',
+                imageId: encodeURIComponent(info.row.original.name ?? ''),
               })}
             >
               {info.getValue()}
