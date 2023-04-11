@@ -9,6 +9,7 @@ import {
   HiOutlineMoon,
   HiOutlineSun,
 } from 'react-icons/hi';
+import { useFetcher } from 'react-router-dom';
 import {
   Avatar,
   Dropdown,
@@ -18,7 +19,6 @@ import {
   IconButton,
 } from 'ui-components';
 
-import { logoutAction } from '@/features/auth/data-components/logoutAction';
 import { useTheme } from '@/theme/ThemeContext';
 
 export interface DashboardHeaderProps {
@@ -34,6 +34,7 @@ export function AppHeader({
   onSideNavExpandedChange,
 }: DashboardHeaderProps) {
   const { setMode, userSelectedMode } = useTheme();
+  const fetcher = useFetcher();
   return (
     <header
       className={classNames(
@@ -138,7 +139,10 @@ export function AppHeader({
                 <DropdownSeparator />
                 <DropdownItem
                   onClick={() => {
-                    logoutAction();
+                    fetcher.submit(null, {
+                      method: 'post',
+                      action: '/data-component/auth/logout',
+                    });
                   }}
                   className="text-red-700 dark:text-red-500"
                 >

@@ -5,6 +5,7 @@ import { scanPostureApiAction } from '@/components/scan-configure-forms/Complian
 import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
 import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
+import { module as logoutAction } from '@/features/auth/data-components/logoutAction';
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
@@ -566,6 +567,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'threat-graph',
         ...threatGraphAction,
+      },
+      {
+        path: 'auth/logout',
+        ...logoutAction,
       },
     ],
   },

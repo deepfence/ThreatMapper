@@ -4,7 +4,7 @@ import { getAuthenticationApiClient } from '@/api/api';
 import { ApiError, makeRequest, redirectToLogin } from '@/utils/api';
 import storage from '@/utils/storage';
 
-export const logoutAction = async (): Promise<{
+const action = async (): Promise<{
   error?: string;
 }> => {
   const r = await makeRequest({
@@ -32,4 +32,8 @@ export const logoutAction = async (): Promise<{
   storage.clearAuth();
 
   throw redirectToLogin();
+};
+
+export const module = {
+  action,
 };
