@@ -21,7 +21,7 @@ export const Metadata = ({
             <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
               {key.replaceAll('_', ' ')}
             </div>
-            <div className="text-gray-900 dark:text-white">{data[key]}</div>
+            <div className="text-gray-900 dark:text-white break-words">{data[key]}</div>
           </div>
         ))}
       </div>

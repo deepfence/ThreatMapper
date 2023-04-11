@@ -11,6 +11,7 @@ import {
   toTopologyMetadataString,
 } from '@/features/topology/components/node-details/Metadata';
 import {
+  ConnectionsTable,
   ContainerTable,
   ImageTable,
   ProcessTable,
@@ -198,7 +199,18 @@ export const Host = ({
             )}
             {tab === 'connections-and-processes' && (
               <>
-                <ProcessTable processes={fetcher.data?.hostData.processes ?? []} />
+                <ProcessTable
+                  processes={fetcher.data?.hostData.processes ?? []}
+                  onNodeClick={onNodeClick}
+                />
+                <ConnectionsTable
+                  type="inbound"
+                  connections={fetcher.data?.hostData.inbound_connections ?? []}
+                />
+                <ConnectionsTable
+                  type="outbound"
+                  connections={fetcher.data?.hostData.outbound_connections ?? []}
+                />
               </>
             )}
             {tab === 'containers-and-images' && (

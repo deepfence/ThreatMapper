@@ -198,7 +198,7 @@ importers:
       '@radix-ui/react-switch': 1.0.1_biqbaboplfbrettd7655fr4n2y
       '@radix-ui/react-tabs': 1.0.2_biqbaboplfbrettd7655fr4n2y
       '@radix-ui/react-tooltip': 1.0.3_5ndqzdd6t4rivxsukjv3i3ak2q
-      '@tanstack/react-table': 8.7.9_biqbaboplfbrettd7655fr4n2y
+      '@tanstack/react-table': 8.8.5_biqbaboplfbrettd7655fr4n2y
       ariakit: 2.0.0-next.43_5ndqzdd6t4rivxsukjv3i3ak2q
       classnames: 2.3.2
       cva: /class-variance-authority/0.4.0_typescript@4.9.5
@@ -5004,20 +5004,20 @@ packages:
       resolve-from: 5.0.0
     dev: true
 
-  /@tanstack/react-table/8.7.9_biqbaboplfbrettd7655fr4n2y:
-    resolution: {integrity: sha512-6MbbQn5AupSOkek1+6IYu+1yZNthAKTRZw9tW92Vi6++iRrD1GbI3lKTjJalf8lEEKOqapPzQPE20nywu0PjCA==}
+  /@tanstack/react-table/8.8.5_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-g/t21E/ICHvaCOJOhsDNr5QaB/6aDQEHFbx/YliwwU/CJThMqG+dS28vnToIBV/5MBgpeXoGRi2waDJVJlZrtg==}
     engines: {node: '>=12'}
     peerDependencies:
       react: '>=16'
       react-dom: '>=16'
     dependencies:
-      '@tanstack/table-core': 8.7.9
+      '@tanstack/table-core': 8.8.5
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     dev: false
 
-  /@tanstack/table-core/8.7.9:
-    resolution: {integrity: sha512-4RkayPMV1oS2SKDXfQbFoct1w5k+pvGpmX18tCXMofK/VDRdA2hhxfsQlMvsJ4oTX8b0CI4Y3GDKn5T425jBCw==}
+  /@tanstack/table-core/8.8.5:
+    resolution: {integrity: sha512-Xnwa1qxpgvSW7ozLiexmKp2PIYcLBiY/IizbdGriYCL6OOHuZ9baRhrrH51zjyz+61ly6K59rmt6AI/3RR+97Q==}
     engines: {node: '>=12'}
     dev: false
 

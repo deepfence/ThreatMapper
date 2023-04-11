@@ -73,7 +73,9 @@ import { module as threatGraphDetailModal } from '@/features/threat-graph/data-c
 import { module as threatGraphAction } from '@/features/threat-graph/data-components/threatGraphAction';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
+import { module as nodeDetailsContainerImage } from '@/features/topology/data-components/node-details/ContainerImage';
 import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
+import { module as nodeDetailsProcess } from '@/features/topology/data-components/node-details/Process';
 import { module as topologyAction } from '@/features/topology/data-components/topologyAction';
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
 import { module as topologyTable } from '@/features/topology/pages/Table';
@@ -206,6 +208,14 @@ export const privateRoutes: CustomRouteObject[] = [
               {
                 path: 'container/:nodeId',
                 ...nodeDetailsContainer,
+              },
+              {
+                path: 'process/:nodeId',
+                ...nodeDetailsProcess,
+              },
+              {
+                path: 'container_image/:nodeId',
+                ...nodeDetailsContainerImage,
               },
             ],
           },
