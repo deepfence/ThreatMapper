@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -63,26 +64,32 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 			errors.New("Key: 'SettingUpdateRequest.ID' Error:invalid")}, w)
 		return
 	}
+	var value interface{}
 	switch currentSettings.Key {
-	case "console_url":
+	case model.ConsoleURLSettingKey:
 		consoleUrl := fmt.Sprintf("%s", req.Value)
-		if _, err := url.ParseRequestURI(consoleUrl); err != nil {
+		var parsedUrl *url.URL
+		if parsedUrl, err = url.ParseRequestURI(consoleUrl); err != nil {
 			respondError(&ValidatorError{
 				errors.New("Key: 'SettingUpdateRequest.Value' Error:must be url")}, w)
 			return
 		}
-	case "inactive_delete_scan_results":
-		if _, ok := req.Value.(int); !ok {
+		value = parsedUrl.Scheme + "://" + parsedUrl.Host
+	case model.InactiveNodesDeleteScanResultsKey:
+		val, ok := req.Value.(float64)
+		if !ok {
 			respondError(&ValidatorError{
 				errors.New("Key: 'SettingUpdateRequest.Value' Error:must be integer")}, w)
 			return
 		}
+		value = int(math.Round(val))
 	}
 	setting := model.Setting{
-		ID: req.ID,
+		ID:  req.ID,
+		Key: req.Key,
 		Value: &model.SettingValue{
 			Label:       currentSettings.Value.Label,
-			Value:       req.Value,
+			Value:       value,
 			Description: currentSettings.Value.Description,
 		},
 		IsVisibleOnUi: currentSettings.IsVisibleOnUi,
