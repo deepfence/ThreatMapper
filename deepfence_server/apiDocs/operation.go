@@ -83,10 +83,6 @@ func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("registerInvitedUser", http.MethodPost, "/deepfence/user/invite/register",
 		"Register Invited User", "Register invited user",
 		http.StatusOK, []string{tagUser}, nil, new(RegisterInvitedUserRequest), new(LoginResponse))
-
-	d.AddOperation("getUserActivityLogs", http.MethodGet, "/deepfence/user-activity-log",
-		"Get activity logs for all users", "Get activity logs for all users",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.GetAuditLogsRow))
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {
@@ -588,5 +584,14 @@ func (d *OpenApiDocs) AddReportsOperations() {
 }
 
 func (d *OpenApiDocs) AddSettingsOperations() {
+	d.AddOperation("getSettings", http.MethodGet, "/deepfence/settings/global-settings",
+		"Get settings", "Get all settings",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]SettingsResponse))
+	d.AddOperation("updateSetting", http.MethodPatch, "/deepfence/settings/global-settings/{id}",
+		"Update setting", "Update setting",
+		http.StatusNoContent, []string{tagSettings}, bearerToken, new(SettingUpdateRequest), nil)
 
+	d.AddOperation("getUserActivityLogs", http.MethodGet, "/deepfence/settings/user-activity-log",
+		"Get activity logs", "Get activity logs for all users",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]postgresqldb.GetAuditLogsRow))
 }

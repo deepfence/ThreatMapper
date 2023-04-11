@@ -37,6 +37,7 @@ const (
 	//	API RBAC Resources
 
 	ResourceUser        = "user"
+	ResourceSettings    = "settings"
 	ResourceAllUsers    = "all-users"
 	ResourceAgentReport = "agent-report"
 	ResourceCloudReport = "cloud-report"
@@ -161,8 +162,13 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Delete("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionDelete, dfHandler.DeleteUserByUserID))
 			})
 
-			// get audit logs user-activity-log
-			r.Get("/user-activity-log", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetAuditLogs))
+			r.Route("/settings", func(r chi.Router) {
+				r.Get("/user-activity-log", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetAuditLogs))
+				r.Route("/global-settings", func(r chi.Router) {
+					r.Get("/", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetGlobalSettings))
+					r.Patch("/{id}", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UpdateGlobalSettings))
+				})
+			})
 
 			r.Route("/graph", func(r chi.Router) {
 				r.Route("/topology", func(r chi.Router) {

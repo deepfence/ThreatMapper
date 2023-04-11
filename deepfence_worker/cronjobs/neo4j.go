@@ -29,8 +29,7 @@ func getResourceCleanUpTimeout(ctx context.Context) time.Duration {
 	if err != nil {
 		return defaultDBScannedResourceCleanUpTimeout
 	}
-	s := model.Setting{}
-	aes, err := s.GetSettingByKey(ctx, pgClient, model.InactiveNodesDeleteScanResultsKey)
+	aes, err := model.GetSettingByKey(ctx, pgClient, model.InactiveNodesDeleteScanResultsKey)
 	if err != nil {
 		return defaultDBScannedResourceCleanUpTimeout
 	}
