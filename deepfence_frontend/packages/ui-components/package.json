@@ -25,6 +25,7 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.13",
     "@radix-ui/react-accordion": "^1.1.0",
     "@radix-ui/react-checkbox": "^1.0.0",
     "@radix-ui/react-dialog": "^1.0.0",
@@ -41,7 +42,9 @@
     "ariakit": "2.0.0-next.43",
     "classnames": "^2.3.2",
     "cva": "npm:class-variance-authority@^0.4.0",
+    "install": "^0.13.0",
     "lodash-es": "^4.17.21",
+    "npm": "^9.6.4",
     "tailwind-merge": "^1.9.0",
     "tailwindcss-radix": "^2.7.0"
   },
