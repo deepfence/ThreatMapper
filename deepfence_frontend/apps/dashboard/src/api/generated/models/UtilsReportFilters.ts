@@ -66,7 +66,6 @@ export const UtilsReportFiltersNodeTypeEnum = {
     Host: 'host',
     Container: 'container',
     ContainerImage: 'container_image',
-    Pod: 'pod',
     Linux: 'linux',
     Aws: 'aws',
     Gcp: 'gcp',
