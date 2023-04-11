@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 import { ModelContainer, ModelContainerImage, ModelProcess } from '@/api/generated';
+import { formatMemory, formatPercentage } from '@/utils/number';
 
 const tableClass = 'w-full table-fixed';
 const tableHeaderClass = 'text-gray-600 dark:text-gray-400';
@@ -30,10 +31,10 @@ export const ProcessTable = ({ processes }: { processes: ModelProcess[] }) => {
       <table className={tableClass}>
         <thead className={tableHeaderClass}>
           <tr>
-            <th className={twMerge(tableHeaderCellClass, 'w-[70%]')}>Process</th>
+            <th className={twMerge(tableHeaderCellClass, 'w-[60%]')}>Process</th>
             <th className={twMerge(tableHeaderCellClass, 'w-[10%]')}>PID</th>
-            <th className={twMerge(tableHeaderCellClass, 'text-right w-[10%]')}>CPU</th>
-            <th className={twMerge(tableHeaderCellClass, 'text-right w-[10%]')}>
+            <th className={twMerge(tableHeaderCellClass, 'text-right w-[15%]')}>CPU</th>
+            <th className={twMerge(tableHeaderCellClass, 'text-right w-[15%]')}>
               Memory
             </th>
           </tr>
@@ -45,10 +46,15 @@ export const ProcessTable = ({ processes }: { processes: ModelProcess[] }) => {
                 <td className={twMerge(tableBodyCellClass, '')}>{process.node_name}</td>
                 <td className={twMerge(tableBodyCellClass, '')}>{process.pid}</td>
                 <td className={twMerge(tableBodyCellClass, 'text-right')}>
-                  {process.cpu_usage}
+                  {formatPercentage(
+                    (process.cpu_usage / (process.cpu_max || 100)) * 100,
+                    {
+                      maximumFractionDigits: 1,
+                    },
+                  )}
                 </td>
                 <td className={twMerge(tableBodyCellClass, 'text-right')}>
-                  {process.memory_usage}
+                  {formatMemory(process.memory_usage ?? 0)}
                 </td>
               </tr>
             );
@@ -113,10 +119,15 @@ export const ContainerTable = ({
                   {container.docker_container_name}
                 </td>
                 <td className={twMerge(tableBodyCellClass, 'text-right')}>
-                  {container.cpu_usage}
+                  {formatPercentage(
+                    (container.cpu_usage / (container.cpu_max || 100)) * 100,
+                    {
+                      maximumFractionDigits: 1,
+                    },
+                  )}
                 </td>
                 <td className={twMerge(tableBodyCellClass, 'text-right')}>
-                  {container.memory_usage}
+                  {formatMemory(container.memory_usage ?? 0)}
                 </td>
               </tr>
             );
