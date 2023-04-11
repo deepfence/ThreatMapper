@@ -238,13 +238,8 @@ func GetAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Querie
 	if err != nil {
 		return nil, err
 	}
-	var sValue SettingValue
-	err = json.Unmarshal(aes.Value, &sValue)
-	if err != nil {
-		return nil, err
-	}
 
-	b, err := json.Marshal(sValue.Value)
+	b, err := json.Marshal(aes.Value.Value)
 	if err != nil {
 		return nil, err
 	}

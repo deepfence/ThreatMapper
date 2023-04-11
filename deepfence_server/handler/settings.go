@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -50,20 +53,39 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err}, w)
 		return
 	}
-	pgSettings, err := model.GetSettingByKey(ctx, pgClient, req.Key)
+	currentSettings, err := model.GetSettingByKey(ctx, pgClient, req.Key)
 	if err != nil {
 		respondError(err, w)
 		return
 	}
-	// TODO: validation for each key
+	if req.ID != currentSettings.ID {
+		respondError(&ValidatorError{
+			errors.New("Key: 'SettingUpdateRequest.ID' Error:invalid")}, w)
+		return
+	}
+	switch currentSettings.Key {
+	case "console_url":
+		consoleUrl := fmt.Sprintf("%s", req.Value)
+		if _, err := url.ParseRequestURI(consoleUrl); err != nil {
+			respondError(&ValidatorError{
+				errors.New("Key: 'SettingUpdateRequest.Value' Error:must be url")}, w)
+			return
+		}
+	case "inactive_delete_scan_results":
+		if _, ok := req.Value.(int); !ok {
+			respondError(&ValidatorError{
+				errors.New("Key: 'SettingUpdateRequest.Value' Error:must be integer")}, w)
+			return
+		}
+	}
 	setting := model.Setting{
 		ID: req.ID,
 		Value: &model.SettingValue{
-			Label:       req.Label,
+			Label:       currentSettings.Value.Label,
 			Value:       req.Value,
-			Description: req.Description,
+			Description: currentSettings.Value.Description,
 		},
-		IsVisibleOnUi: pgSettings.IsVisibleOnUi,
+		IsVisibleOnUi: currentSettings.IsVisibleOnUi,
 	}
 	err = setting.Update(ctx, pgClient)
 	if err != nil {
