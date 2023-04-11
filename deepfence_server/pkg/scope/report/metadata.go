@@ -153,7 +153,7 @@ type Metadata struct {
 	KubernetesIsInHostNetwork bool     `json:"kubernetes_is_in_host_network,omitempty"`
 	KubernetesType            string   `json:"kubernetes_type,omitempty"`
 	KubernetesPorts           []int32  `json:"kubernetes_ports,omitempty"`
-	KubernetesClusterId       string   `json:"kubernetes_cluster_id,omitempty"`
+	KubernetesClusterId       string   `json:"kubernetes_cluster_id"`
 	KubernetesClusterName     string   `json:"kubernetes_cluster_name"`
 }
 

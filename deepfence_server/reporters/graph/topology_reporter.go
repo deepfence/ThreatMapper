@@ -382,20 +382,25 @@ func filterNil(params map[string]interface{}) map[string]interface{} {
 func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, cloud_regions, cloud_kubernetes []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 
-	r, err := tx.Run(`
-		MATCH (cp: CloudProvider)
-		WHERE CASE WHEN $providers IS NULL THEN true ELSE cp.node_id IN $providers END
-		MATCH (cp) -[:HOSTS]-> (cr: CloudRegion)
-		WHERE CASE WHEN $regions IS NULL THEN true ELSE cr.node_id IN $regions END
-		MATCH (cr) -[:HOSTS]-> (n:Node)
-		WHERE n.active = true
-		AND n.kubernetes_cluster_id = ''
-		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
-		RETURN n.cloud_provider, n.cloud_region, n.node_id`,
-		filterNil(map[string]interface{}{"providers": cloud_provider, "regions": cloud_regions}))
+	query := `
+	MATCH (cp: CloudProvider)
+	WHERE CASE WHEN $providers IS NULL THEN true ELSE cp.node_id IN $providers END
+	MATCH (cp) -[:HOSTS]-> (cr: CloudRegion)
+	WHERE CASE WHEN $regions IS NULL THEN true ELSE cr.node_id IN $regions END
+	MATCH (cr) -[:HOSTS]-> (n:Node)
+	WHERE n.active = true
+	AND n.kubernetes_cluster_id = ''
+	` + reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false) + `
+	RETURN n.cloud_provider, n.cloud_region, n.node_id`
+
+	params := filterNil(map[string]interface{}{"providers": cloud_provider, "regions": cloud_regions})
+
+	r, err := tx.Run(query, params)
 	if err != nil {
 		return res, err
 	}
+	// log.Info().Msgf("get hosts query: %s params: %v", query, params)
+
 	records, err := r.Collect()
 	if err != nil {
 		return res, err
