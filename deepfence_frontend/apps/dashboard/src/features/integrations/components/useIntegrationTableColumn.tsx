@@ -204,6 +204,263 @@ export const useIntegrationTableColumn = () => {
             },
           ),
         ];
+      case IntegrationType.jira:
+        return [
+          columnHelper.accessor(
+            (cell) => {
+              if (isEmpty(cell.config)) {
+                return '-';
+              }
+              const isToken = cell.config?.api_token !== undefined;
+              if (isToken) {
+                return 'Token';
+              } else {
+                return 'Password';
+              }
+            },
+            {
+              id: 'api_token',
+              header: () => 'Auth Type',
+              minSize: 50,
+              size: 55,
+              maxSize: 60,
+            },
+          ),
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.issueType : '-'),
+            {
+              id: 'issueType',
+              header: () => 'Issue Type',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.jiraAssignee : '-'),
+            {
+              id: 'jiraAssignee',
+              header: () => 'Assigne',
+              minSize: 50,
+              size: 55,
+              maxSize: 60,
+            },
+          ),
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.username : '-'),
+            {
+              id: 'username',
+              header: () => 'Username',
+              minSize: 50,
+              size: 55,
+              maxSize: 60,
+            },
+          ),
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.jiraSiteUrl : '-'),
+            {
+              id: 'jiraSiteUrl',
+              header: () => 'Url',
+              minSize: 50,
+              size: 55,
+              maxSize: 60,
+            },
+          ),
+        ];
+      case IntegrationType.splunk:
+        return [
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.endpoint_url : '-'),
+            {
+              id: 'endpoint_url',
+              header: () => 'Endpoint Url',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.token : '-'),
+            {
+              id: 'token',
+              header: () => 'Token',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+        ];
+      case IntegrationType.elasticsearch:
+        return [
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.endpoint_url : '-'),
+            {
+              id: 'endpoint_url',
+              header: () => 'Endpoint Url',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.index : '-'),
+            {
+              id: 'index',
+              header: () => 'Index',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header : '-'),
+            {
+              id: 'auth_header',
+              header: () => 'Auth',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.docType : '-'),
+            {
+              id: 'docType',
+              header: () => 'Doc Type',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+        ];
+      case IntegrationType.sumoLogic:
+        return [
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.endpoint_url : '-'),
+            {
+              id: 'endpoint_url',
+              header: () => 'Endpoint Url',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+        ];
+      case IntegrationType.googleChronicle:
+        return [
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.url : '-'),
+            {
+              id: 'url',
+              header: () => 'Endpoint Url',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header : '-'),
+            {
+              id: 'auth_header',
+              header: () => 'Auth Header',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+        ];
+      case IntegrationType.awsSecurityHub:
+        return [
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.aws_access_key : '-'),
+            {
+              id: 'aws_access_key',
+              header: () => 'Access Key',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.aws_secret_key : '-'),
+            {
+              id: 'aws_secret_key',
+              header: () => 'Secret Key',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.aws_region : '-'),
+            {
+              id: 'aws_region',
+              header: () => 'Region',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+        ];
+      case IntegrationType.microsoftTeams:
+        return [
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.webhook_url : '-'),
+            {
+              id: 'webhook_url',
+              header: () => 'Webhook Url',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+        ];
+      case IntegrationType.pagerDuty:
+        return [
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.service_key : '-'),
+            {
+              id: 'service_key',
+              header: () => 'Service Key',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.api_key : '-'),
+            {
+              id: 'api_key',
+              header: () => 'Api Key',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+        ];
+      case IntegrationType.httpEndpoint:
+        return [
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.url : '-'),
+            {
+              id: 'url',
+              header: () => 'Url',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+          columnHelper.accessor(
+            (cell) => (!isEmpty(cell.config) ? cell.config.auth_key : '-'),
+            {
+              id: 'auth_key',
+              header: () => 'Auth Key',
+              minSize: 45,
+              size: 50,
+              maxSize: 55,
+            },
+          ),
+        ];
       default:
         console.warn('Dynamic columns valid integration type');
         return [];

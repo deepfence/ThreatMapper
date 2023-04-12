@@ -390,7 +390,7 @@ export const IntegrationForm = ({ integrationType }: IntegrationTypeProps) => {
           <>
             <TextInputType name="url" label="Endpoint Url" />
             <Radio
-              name="authType"
+              name="authTypeRadio"
               direction="row"
               value={authType}
               options={[

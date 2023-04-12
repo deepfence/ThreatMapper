@@ -52,11 +52,7 @@ export const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
   });
 };
 
-type IntegrationType = keyof typeof IntegrationType;
-const getConfigBodyNotificationType = (
-  formData: FormData,
-  integrationType: IntegrationType,
-) => {
+const getConfigBodyNotificationType = (formData: FormData, integrationType: string) => {
   const formBody = Object.fromEntries(formData);
 
   switch (integrationType) {
@@ -65,6 +61,70 @@ const getConfigBodyNotificationType = (
         webhook_url: formBody.url,
         channel: formBody.channelName,
       };
+    case IntegrationType.pagerDuty:
+      return {
+        service_key: formBody.integrationKey,
+        api_key: formBody.apiKey,
+      };
+    case IntegrationType.microsoftTeams:
+      return {
+        webhook_url: formBody.url,
+      };
+    case IntegrationType.httpEndpoint:
+      return {
+        url: formBody.apiUrl,
+        auth_key: formBody.authorizationKey,
+      };
+    case IntegrationType.splunk:
+      return {
+        endpoint_url: formBody.url,
+        token: formBody.token,
+      };
+    case IntegrationType.elasticsearch:
+      return {
+        endpoint_url: formBody.url,
+        index: formBody.index,
+        auth_header: formBody.authKey,
+        docType: formBody.docType,
+      };
+    case IntegrationType.sumoLogic:
+      return {
+        endpoint_url: formBody.url,
+      };
+    case IntegrationType.googleChronicle:
+      return {
+        url: formBody.url,
+        auth_header: formBody.authKey,
+      };
+    case IntegrationType.awsSecurityHub:
+      return {
+        aws_access_key: formBody.accessKey,
+        aws_secret_key: formBody.secretKey,
+        aws_region: formBody.region,
+      };
+    case IntegrationType.jira: {
+      const authTypeRadio = formBody.authTypeRadio;
+      if (authTypeRadio === 'apiToken') {
+        return {
+          jiraSiteUrl: formBody.url,
+          isAuthToken: true,
+          api_token: formBody.authType,
+          username: formBody.email,
+          jiraProjectKey: formBody.accessKey,
+          issueType: formBody.task,
+          jiraAssignee: formBody.assigne,
+        };
+      }
+      return {
+        jiraSiteUrl: formBody.url,
+        isAuthToken: false,
+        password: formBody.authType,
+        username: formBody.email,
+        jiraProjectKey: formBody.accessKey,
+        issueType: formBody.task,
+        jiraAssignee: formBody.assigne,
+      };
+    }
     case IntegrationType.s3:
       return {
         s3_bucket_name: formBody.name,
@@ -148,10 +208,7 @@ const action = async ({
           modelIntegrationAddReq: {
             integration_type: _integrationType,
             notification_type: _notificationType,
-            config: getConfigBodyNotificationType(
-              formData,
-              _integrationType as IntegrationType,
-            ),
+            config: getConfigBodyNotificationType(formData, _integrationType as string),
             filters: _filters,
           },
         },
