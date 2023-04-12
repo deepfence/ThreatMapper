@@ -8642,6 +8642,14 @@
           }
         }
       },
+      "ModelConnection": {
+        "type": "object",
+        "properties": {
+          "count": { "type": "integer" },
+          "node_id": { "type": "string" },
+          "node_name": { "type": "string" }
+        }
+      },
       "ModelContainer": {
         "required": [
           "node_id",
@@ -8865,7 +8873,9 @@
           "malware_latest_scan_id",
           "compliances_count",
           "compliance_scan_status",
-          "compliance_latest_scan_id"
+          "compliance_latest_scan_id",
+          "inbound_connections",
+          "outbound_connections"
         ],
         "type": "object",
         "properties": {
@@ -8889,6 +8899,11 @@
           "cpu_max": { "type": "number" },
           "cpu_usage": { "type": "number" },
           "host_name": { "type": "string" },
+          "inbound_connections": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelConnection" },
+            "nullable": true
+          },
           "instance_id": { "type": "string" },
           "instance_type": { "type": "string" },
           "interface_ips": { "type": "array", "items": {}, "nullable": true },
@@ -8906,6 +8921,11 @@
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
           "os": { "type": "string" },
+          "outbound_connections": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelConnection" },
+            "nullable": true
+          },
           "pods": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelPod" },

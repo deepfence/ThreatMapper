@@ -1,10 +1,8 @@
-import { TruncatedText } from '@/components/TruncatedText';
-
 export const Metadata = ({
   data,
   title,
 }: {
-  data: Record<string, string>;
+  data: Record<string, string | boolean>;
   title?: string;
 }) => {
   const keys = Object.keys(data);
@@ -23,12 +21,37 @@ export const Metadata = ({
             <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
               {key.replaceAll('_', ' ')}
             </div>
-            <div className="text-gray-900 dark:text-white">
-              <TruncatedText text={data[key]} />
-            </div>
+            <div className="text-gray-900 dark:text-white break-words">{data[key]}</div>
           </div>
         ))}
       </div>
     </div>
   );
 };
+
+export function toTopologyMetadataString(
+  value:
+    | string
+    | boolean
+    | number
+    | Array<string>
+    | Array<boolean>
+    | Array<number>
+    | undefined
+    | null,
+): string {
+  if (typeof value === 'boolean') {
+    return value ? 'Yes' : 'No';
+  } else if (typeof value === 'string' && value.length > 0) {
+    return value;
+  } else if (Array.isArray(value) && value.length > 0) {
+    return value
+      .map((val) => {
+        return toTopologyMetadataString(val);
+      })
+      .join(', ');
+  } else if (typeof value === 'number') {
+    return value.toString();
+  }
+  return '-';
+}
