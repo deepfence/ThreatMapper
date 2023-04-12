@@ -9,24 +9,24 @@ import (
 )
 
 type EmailConfigurationAdd struct {
-	EmailProvider   string
-	CreatedByUserID int64
-	EmailID         string
-	Smtp            string
-	Port            string
-	Password        string
-	AmazonAccessKey string
-	AmazonSecretKey string
-	SesRegion       string
+	EmailProvider   string `json:"email_provider"`
+	CreatedByUserID int64  `json:"created_by_user_id"`
+	EmailID         string `json:"email_id"`
+	Smtp            string `json:"smtp"`
+	Port            string `json:"port"`
+	Password        string `json:"password"`
+	AmazonAccessKey string `json:"amazon_access_key"`
+	AmazonSecretKey string `json:"amazon_secret_key"`
+	SesRegion       string `json:"ses_region"`
 }
 
 type EmailConfigurationResp struct {
-	EmailProvider   string
-	CreatedByUserID int64
-	EmailID         string
-	Smtp            string
-	Port            string
-	SesRegion       string
+	EmailProvider   string `json:"email_provider"`
+	CreatedByUserID int64  `json:"created_by_user_id"`
+	EmailID         string `json:"email_id"`
+	Smtp            string `json:"smtp"`
+	Port            string `json:"port"`
+	SesRegion       string `json:"ses_region"`
 }
 
 func (e *EmailConfigurationAdd) Create(ctx context.Context, pgClient *postgresqlDb.Queries) error {
