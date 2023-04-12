@@ -1,4 +1,9 @@
-import { Listbox as ListBox, ListboxProps, Transition } from '@headlessui/react';
+import {
+  Listbox as HUIListbox,
+  ListboxOptionProps as HUIListboxOptionProps,
+  ListboxProps as HUIListboxProps,
+  Transition,
+} from '@headlessui/react';
 import cx from 'classnames';
 import { cva } from 'cva';
 import { Fragment } from 'react';
@@ -7,10 +12,7 @@ import { IconContext } from 'react-icons/lib';
 import { twMerge } from 'tailwind-merge';
 
 export type SizeType = 'xs' | 'sm' | 'md';
-export type ItemType = {
-  label: string;
-  value: string;
-};
+
 const SIZE_DEFAULT = 'sm';
 
 type IconProps = {
@@ -52,26 +54,36 @@ const SelectArrow = ({ sizing = SIZE_DEFAULT }: Omit<IconProps, 'icon'>) => {
     </span>
   );
 };
-interface SelectProps extends ListboxProps<any, ItemType | ItemType[], string> {
+interface ListboxProps<TType, TActualType>
+  extends HUIListboxProps<
+    React.ExoticComponent<{
+      children?: React.ReactNode;
+    }>,
+    TType,
+    TActualType
+  > {
   sizing?: SizeType;
   children?: React.ReactNode;
   label?: string;
+  placeholder?: string;
+  getDisplayValue?: (value: TType) => string;
 }
-export function Listbox({
+export function Listbox<TType, TActualType>({
   sizing,
   children,
   value,
   label,
-  onChange,
+  placeholder,
+  getDisplayValue,
   ...props
-}: SelectProps) {
+}: ListboxProps<TType, TActualType>) {
   return (
-    <ListBox {...props} value={value} onChange={onChange}>
+    <HUIListbox {...props} value={value}>
       <div className="relative">
-        <ListBox.Label className={'text-sm font-medium text-gray-900 dark:text-white'}>
+        <HUIListbox.Label className={'text-sm font-medium text-gray-900 dark:text-white'}>
           {label}
-        </ListBox.Label>
-        <ListBox.Button
+        </HUIListbox.Label>
+        <HUIListbox.Button
           className={twMerge(
             cx(
               'w-full relative cursor-default rounded-lg bg-white',
@@ -92,17 +104,17 @@ export function Listbox({
           )}
         >
           <span className="block truncate">
-            {Array.isArray(value) ? `${value.length} selected` : value?.label}
+            {getPlaceholderValue(value, getDisplayValue, placeholder)}
           </span>
           <SelectArrow sizing={sizing} />
-        </ListBox.Button>
+        </HUIListbox.Button>
         <Transition
           as={Fragment}
           leave="transition ease-in duration-100"
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <ListBox.Options
+          <HUIListbox.Options
             className={twMerge(
               cx(
                 'absolute mt-1 max-h-60 w-full shadow-lg select-none',
@@ -114,23 +126,21 @@ export function Listbox({
             )}
           >
             {children}
-          </ListBox.Options>
+          </HUIListbox.Options>
         </Transition>
       </div>
-    </ListBox>
+    </HUIListbox>
   );
 }
 
-export const ListboxOption = ({
-  sizing,
-  item,
-}: {
+interface ListBoxOptionProps<TType> extends HUIListboxOptionProps<'li', TType> {
   sizing?: SizeType;
-  item: ItemType;
-}) => {
+}
+
+export function ListboxOption<TType>({ sizing, ...props }: ListBoxOptionProps<TType>) {
   return (
-    <ListBox.Option
-      className={({ active }) => {
+    <HUIListbox.Option
+      className={({ active, selected }) => {
         return twMerge(
           cx(
             'relative select-none py-2 pl-3 pr-3',
@@ -139,6 +149,7 @@ export const ListboxOption = ({
             'text-gray-500 dark:text-gray-300',
             {
               'bg-gray-100 dark:bg-gray-600': active,
+              'text-blue-600 dark:text-blue-400': selected,
             },
             sizeCva({
               size: sizing,
@@ -146,21 +157,20 @@ export const ListboxOption = ({
           ),
         );
       }}
-      value={item}
-    >
-      {({ selected }) => {
-        return (
-          <span
-            className={twMerge(
-              cx('block truncate', {
-                'text-blue-600 dark:text-blue-400': selected,
-              }),
-            )}
-          >
-            {item.label}
-          </span>
-        );
-      }}
-    </ListBox.Option>
+      {...props}
+    />
   );
-};
+}
+
+function getPlaceholderValue<T>(
+  value: T | T[] | undefined,
+  getDisplayValue?: (value: T) => string,
+  defaultPlaceholder?: string,
+) {
+  if (!value || (Array.isArray(value) && !value.length)) {
+    return defaultPlaceholder ?? 'Select...';
+  } else if (Array.isArray(value)) {
+    return `${value.length} selected`;
+  }
+  return getDisplayValue?.(value) ?? '1 item selected';
+}

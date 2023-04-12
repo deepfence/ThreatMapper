@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { useState } from 'react';
 
-import { ItemType, Listbox, ListboxOption } from '@/components/select/Listbox';
+import { Listbox, ListboxOption } from '@/components/select/Listbox';
 
 export default {
   title: 'Components/Listbox',
@@ -16,26 +16,60 @@ const people = [
   { label: 'Tanya Fox', value: 'tf' },
   { label: 'Hellen Schmidt', value: 'hs' },
 ];
-const Template: ComponentStory<typeof Listbox> = () => {
-  const [selected, setSelected] = useState<ItemType[]>([]);
+const MultiSelectTemplate: ComponentStory<typeof Listbox> = () => {
+  const [selected, setSelected] = useState<typeof people>([]);
 
   return (
     <Listbox
       sizing="sm"
       value={selected}
-      multiple
       label="Select your value"
-      onChange={(item: any) => {
+      name="multiple-select"
+      multiple
+      onChange={(item) => {
         console.log(item, 'item');
         setSelected(item);
       }}
     >
       {people.map((person) => {
-        return <ListboxOption key={person.value} item={person} />;
+        return (
+          <ListboxOption key={person.value} value={person}>
+            {person.label}
+          </ListboxOption>
+        );
       })}
     </Listbox>
   );
 };
 
-export const Default = Template.bind({});
-Default.args = {};
+export const MultiSelect = MultiSelectTemplate.bind({});
+MultiSelect.args = {};
+
+const SingleSelectTemplate: ComponentStory<typeof Listbox> = () => {
+  const [selected, setSelected] = useState<(typeof people)[number]>(people[0]);
+
+  return (
+    <Listbox
+      sizing="sm"
+      value={selected}
+      label="Person"
+      name="single-select"
+      onChange={(item) => {
+        console.log(item, 'item');
+        setSelected(item);
+      }}
+      getDisplayValue={(item) => item.label}
+    >
+      {people.map((person) => {
+        return (
+          <ListboxOption key={person.value} value={person}>
+            {person.label}
+          </ListboxOption>
+        );
+      })}
+    </Listbox>
+  );
+};
+
+export const SingleSelect = SingleSelectTemplate.bind({});
+SingleSelect.args = {};
