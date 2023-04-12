@@ -42,6 +42,7 @@ const SelectArrow = ({ sizing = SIZE_DEFAULT }: Omit<IconProps, 'icon'>) => {
     <span
       className={cx(
         'pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3',
+        'dark:text-white',
       )}
     >
       <IconContext.Provider
@@ -137,10 +138,12 @@ export function Combobox({
           <ComboBox.Button
             className={twMerge(cx('absolute inset-y-0 right-0 flex items-center pr-2'))}
           >
-            <Badge
-              label={Array.isArray(value) ? `${value.length}` : ''}
-              className="pr-8"
-            />
+            {multiple && (
+              <Badge
+                label={value.length + ''}
+                className="pr-8 dark:text-gray-100 dark:bg-gray-600"
+              />
+            )}
 
             <SelectArrow sizing={sizing} />
           </ComboBox.Button>

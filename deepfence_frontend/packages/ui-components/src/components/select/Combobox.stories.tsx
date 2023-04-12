@@ -40,7 +40,7 @@ const Template: ComponentStory<typeof Combobox> = () => {
       sizing="sm"
       value={selected}
       onScroll={onScroll}
-      multiple
+      multiple={true}
       label="Select your value"
       onChange={onChange}
       onSelect={onSelect}
