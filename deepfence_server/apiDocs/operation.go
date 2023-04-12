@@ -13,7 +13,6 @@ import (
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
 	ingester "github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	postgresqldb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	"github.com/deepfence/golang_deepfence_sdk/utils/report"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
@@ -65,10 +64,10 @@ func (d *OpenApiDocs) AddUserOperations() {
 
 	d.AddOperation("getApiTokens", http.MethodGet, "/deepfence/api-token",
 		"Get User's API Tokens", "Get logged in user's API Tokens",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.ApiToken))
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]ApiTokenResponse))
 	d.AddOperation("resetApiTokens", http.MethodPost, "/deepfence/api-token/reset",
 		"Reset User's API Tokens", "Reset user's API Tokens",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.ApiToken))
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]ApiTokenResponse))
 
 	d.AddOperation("resetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/request",
 		"Reset Password Request", "Request for resetting the password",
@@ -593,5 +592,5 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 
 	d.AddOperation("getUserActivityLogs", http.MethodGet, "/deepfence/settings/user-activity-log",
 		"Get activity logs", "Get activity logs for all users",
-		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]postgresqldb.GetAuditLogsRow))
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]GetAuditLogsRow))
 }

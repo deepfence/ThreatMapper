@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -16,6 +17,18 @@ const (
 	JwtSecretSettingKey               = "jwt_secret"
 	InactiveNodesDeleteScanResultsKey = "inactive_delete_scan_results"
 )
+
+type GetAuditLogsRow struct {
+	Event      string    `json:"event"`
+	Action     string    `json:"action"`
+	Resources  string    `json:"resources"`
+	Success    bool      `json:"success"`
+	UserID     int32     `json:"user_id"`
+	UserRoleID int32     `json:"user_role_id"`
+	CreatedAt  time.Time `json:"created_at"`
+	Role       string    `json:"role"`
+	Email      string    `json:"email"`
+}
 
 type SettingValue struct {
 	Label       string      `json:"label"`
