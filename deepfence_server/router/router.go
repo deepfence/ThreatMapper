@@ -48,7 +48,6 @@ const (
 	ResourceRegistry    = "container-registry"
 	ResourceIntegration = "integration"
 	ResourceReport      = "report"
-	ResourceEmailConfig = "email-config"
 )
 
 // func telemetryInjector(next http.Handler) http.Handler {
@@ -169,8 +168,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Get("/", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetGlobalSettings))
 					r.Patch("/{id}", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UpdateGlobalSettings))
 				})
-				r.Post("/email", dfHandler.AuthHandler(ResourceEmailConfig, PermissionGenerate, dfHandler.AddEmailConfiguration))
-				r.Get("/email", dfHandler.AuthHandler(ResourceEmailConfig, PermissionRead, dfHandler.GetEmailConfiguration))
+				r.Post("/email", dfHandler.AuthHandler(ResourceSettings, PermissionGenerate, dfHandler.AddEmailConfiguration))
+				r.Get("/email", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetEmailConfiguration))
 			})
 
 			r.Route("/graph", func(r chi.Router) {
