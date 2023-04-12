@@ -85,6 +85,19 @@ func (s *Setting) Update(ctx context.Context, pgClient *postgresqlDb.Queries) er
 	})
 }
 
+func GetManagementConsoleURL(ctx context.Context, pgClient *postgresqlDb.Queries) (string, error) {
+	setting, err := pgClient.GetSetting(ctx, ConsoleURLSettingKey)
+	if err != nil {
+		return "", err
+	}
+	var settingVal SettingValue
+	err = json.Unmarshal(setting.Value, &settingVal)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%v", settingVal.Value), nil
+}
+
 func GetVisibleSettings(ctx context.Context, pgClient *postgresqlDb.Queries) ([]SettingsResponse, error) {
 	visibleSettings, err := pgClient.GetVisibleSettings(ctx)
 	if err != nil {
