@@ -1,14 +1,20 @@
-import { Listbox as ListBox, ListboxProps, Transition } from '@headlessui/react';
+import {
+  Combobox as ComboBox,
+  ComboboxProps as ComboBoxProps,
+  Transition,
+} from '@headlessui/react';
 import cx from 'classnames';
 import { cva } from 'cva';
-import { Fragment } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { HiOutlineChevronDown } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import { twMerge } from 'tailwind-merge';
 
+import { Badge, CircleSpinner } from '@/main';
+
 export type SizeType = 'xs' | 'sm' | 'md';
 export type ItemType = {
-  label: string;
+  name: string;
   value: string;
 };
 const SIZE_DEFAULT = 'sm';
@@ -52,57 +58,100 @@ const SelectArrow = ({ sizing = SIZE_DEFAULT }: Omit<IconProps, 'icon'>) => {
     </span>
   );
 };
-interface SelectProps extends ListboxProps<any, ItemType | ItemType[], string> {
-  sizing?: SizeType;
+// ts-lint disable-next-line
+interface ComboboxProps {
   children?: React.ReactNode;
+  sizing?: SizeType;
   label?: string;
+  value?: any;
+  onScroll?: () => void;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSelect?: (item: ItemType) => void;
+  multiple?: boolean;
+  loading?: boolean;
 }
-export function Listbox({
+export function Combobox({
   sizing,
   children,
   value,
   label,
   onChange,
+  onSelect,
+  onScroll,
+  loading,
+  multiple,
   ...props
-}: SelectProps) {
+}: ComboboxProps) {
+  const [intersectionRef, setIntersectionRef] = useState<HTMLSpanElement | null>(null);
+  const loadObserver = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0];
+      if (entry.isIntersecting) {
+        onScroll?.();
+      }
+    },
+    {
+      threshold: 1,
+    },
+  );
+
+  useEffect(() => {
+    if (intersectionRef) {
+      loadObserver.observe(intersectionRef);
+    }
+    return () => {
+      if (intersectionRef) {
+        loadObserver.unobserve(intersectionRef);
+      }
+    };
+  }, [intersectionRef]);
+
   return (
-    <ListBox {...props} value={value} onChange={onChange}>
+    <ComboBox {...props} value={value} onChange={onSelect}>
       <div className="relative">
-        <ListBox.Label className={'text-sm font-medium text-gray-900 dark:text-white'}>
+        <ComboBox.Label className={'text-sm font-medium text-gray-900 dark:text-white'}>
           {label}
-        </ListBox.Label>
-        <ListBox.Button
-          className={twMerge(
-            cx(
-              'w-full relative cursor-default rounded-lg bg-white',
-              // text
-              'text-gray-900 dark:text-white',
-              'py-2 pl-3 pr-10 text-left shadow-md',
-              // bg
-              'bg-gray-50 dark:bg-gray-700',
-              // focus
-              'focus:outline-none focus-visible:border-blue-500',
-              'focus-visible:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700',
-              'focus-visible:ring-opacity-75 focus-visible:ring-offset-2',
-              'focus-visible:ring-offset-blue-500',
+        </ComboBox.Label>
+        <div className="relative">
+          <ComboBox.Input
+            className={cx(
+              'w-full ring-1 rounded-lg ring-gray-300 focus:ring-blue-600',
+              'focus:outline-none',
+              'dark:ring-gray-600 dark:focus:ring-blue-600',
+              // bg styles
+              'bg-gray-50',
+              'dark:bg-gray-700',
+              // placeholder styles
+              'placeholder-gray-500 disabled:placeholder-gray-400',
+              'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
+              // text styles
+              'text-gray-900 disabled:text-gray-700',
+              'dark:text-white dark:disabled:text-gray-200',
               sizeCva({
                 size: sizing,
               }),
-            ),
-          )}
-        >
-          <span className="block truncate">
-            {Array.isArray(value) ? `${value.length} selected` : value?.label}
-          </span>
-          <SelectArrow sizing={sizing} />
-        </ListBox.Button>
+            )}
+            displayValue={(item: ItemType) => item.name}
+            onChange={onChange}
+          />
+          <ComboBox.Button
+            className={twMerge(cx('absolute inset-y-0 right-0 flex items-center pr-2'))}
+          >
+            <Badge
+              label={Array.isArray(value) ? `${value.length}` : ''}
+              className="pr-8"
+            />
+
+            <SelectArrow sizing={sizing} />
+          </ComboBox.Button>
+        </div>
         <Transition
           as={Fragment}
           leave="transition ease-in duration-100"
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <ListBox.Options
+          <ComboBox.Options
             className={twMerge(
               cx(
                 'absolute mt-1 max-h-60 w-full shadow-lg select-none',
@@ -114,14 +163,19 @@ export function Listbox({
             )}
           >
             {children}
-          </ListBox.Options>
+            {loading ? (
+              <CircleSpinner />
+            ) : (
+              <span ref={(ele) => setIntersectionRef(ele)}></span>
+            )}
+          </ComboBox.Options>
         </Transition>
       </div>
-    </ListBox>
+    </ComboBox>
   );
 }
 
-export const ListboxOption = ({
+export const ComboboxOption = ({
   sizing,
   item,
 }: {
@@ -129,7 +183,7 @@ export const ListboxOption = ({
   item: ItemType;
 }) => {
   return (
-    <ListBox.Option
+    <ComboBox.Option
       className={({ active }) => {
         return twMerge(
           cx(
@@ -157,10 +211,10 @@ export const ListboxOption = ({
               }),
             )}
           >
-            {item.label}
+            {item?.name}
           </span>
         );
       }}
-    </ListBox.Option>
+    </ComboBox.Option>
   );
 };

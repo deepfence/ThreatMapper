@@ -1,7 +1,7 @@
 import { ComponentMeta, ComponentStory } from '@storybook/react';
 import { useState } from 'react';
 
-import { Listbox, ListboxOption } from '@/components/select/Listbox';
+import { ItemType, Listbox, ListboxOption } from '@/components/select/Listbox';
 
 export default {
   title: 'Components/Listbox',
@@ -17,13 +17,16 @@ const people = [
   { label: 'Hellen Schmidt', value: 'hs' },
 ];
 const Template: ComponentStory<typeof Listbox> = () => {
-  const [selected, setSelected] = useState(people[0]);
+  const [selected, setSelected] = useState<ItemType[]>([]);
 
   return (
     <Listbox
       sizing="sm"
-      selectedItem={selected}
+      value={selected}
+      multiple
+      label="Select your value"
       onChange={(item: any) => {
+        console.log(item, 'item');
         setSelected(item);
       }}
     >
