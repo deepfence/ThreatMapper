@@ -27,15 +27,15 @@ type IntegrationTypeProps = {
 
 export const IntegrationType = {
   slack: 'slack',
-  pagerDuty: 'pager-duty',
+  pagerDuty: 'pagerduty',
   email: 'email',
-  httpEndpoint: 'http-endpoint',
-  microsoftTeams: 'microsoft-teams',
+  httpEndpoint: 'http_endpoint',
+  microsoftTeams: 'teams',
   splunk: 'splunk',
   sumoLogic: 'sumo-logic',
   elasticsearch: 'elasticsearch',
-  googleChronicle: 'google-chronicle',
-  awsSecurityHub: 'aws-security-hub',
+  googleChronicle: 'googlechronicle',
+  awsSecurityHub: 'aws_security_hub',
   jira: 'jira',
   s3: 's3',
 } as const;
