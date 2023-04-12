@@ -56,12 +56,12 @@ func SearchCountHandler[T reporters.CypherableAndCategorizable](w http.ResponseW
 	}
 }
 
-func SearchCloudNodeHandler[T reporters.Cypherable](w http.ResponseWriter, r *http.Request) {
+func SearchCloudNodeHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	var req reporters_search.SearchNodeReq
+	var req reporters_search.SearchCloudNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	entries, err := reporters_search.SearchCloudNodeReport[T](r.Context(), req.NodeFilter, req.Window)
+	entries, err := reporters_search.SearchCloudNodeReport(r.Context(), req.CloudProvider, req.NodeFilter, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		http.Error(w, "Error processing request body", http.StatusBadRequest)
@@ -148,7 +148,7 @@ func (h *Handler) SearchCloudComplianceScans(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *Handler) SearchCloudNodes(w http.ResponseWriter, r *http.Request) {
-	SearchCloudNodeHandler[model.CloudNodeAccountInfo](w, r)
+	SearchCloudNodeHandler(w, r)
 }
 
 func (h *Handler) NodeCount(w http.ResponseWriter, r *http.Request) {

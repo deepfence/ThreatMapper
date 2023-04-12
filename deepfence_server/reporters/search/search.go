@@ -2,6 +2,7 @@ package reporters_search
 
 import (
 	"context"
+	"errors"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -21,6 +22,11 @@ type SearchFilter struct {
 	InFieldFilter []string                `json:"in_field_filter" required:"true"` // Fields to return
 	Filters       reporters.FieldsFilters `json:"filters" required:"true"`
 	Window        model.FetchWindow       `json:"window" required:"true"`
+}
+
+type SearchCloudNodeReq struct {
+	SearchNodeReq
+	CloudProvider string `json:"cloud_provider" required:"true"`
 }
 
 type SearchNodeReq struct {
@@ -183,10 +189,10 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	return res, nil
 }
 
-func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]model.CloudNodeAccountInfo, error) {
+func searchCloudNode(ctx context.Context, cloudProvider string, filter SearchFilter, fw model.FetchWindow) ([]model.CloudNodeAccountInfo, error) {
 	var res []model.CloudNodeAccountInfo
 	dummy := model.CloudNodeAccountInfo{
-		CloudProvider: filter.Filters.MatchFilter.FieldsValues["cloud_provider"][0].(string),
+		CloudProvider: cloudProvider,
 	}
 
 	driver, err := directory.Neo4jClient(ctx)
@@ -208,8 +214,8 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 
 	query := `
 		MATCH (n:` + dummy.NodeType() + `)` +
-		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-		`WITH n.node_id AS node_id, ` + reporters.FieldFilterCypherWithAlias("n", filter.InFieldFilter) +
+		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) + ` ` +
+		`WITH n.node_id AS node_id, ` + reporters.FieldFilterCypherWithAlias("n", filter.InFieldFilter) + ` ` +
 		`UNWIND node_id AS x
 		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `)-[:DETECTED]->(c:` + dummy.ScanResultType() + `)
 		WITH x, ` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, COUNT(c) AS total_compliance_count
@@ -344,8 +350,11 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 	return res, nil
 }
 
-func SearchCloudNodeReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]model.CloudNodeAccountInfo, error) {
-	hosts, err := searchCloudNode[T](ctx, filter, fw)
+func SearchCloudNodeReport(ctx context.Context, cloudProvider string, filter SearchFilter, fw model.FetchWindow) ([]model.CloudNodeAccountInfo, error) {
+	if cloudProvider == "" {
+		return nil, errors.New("cloud provider filter is missing from request")
+	}
+	hosts, err := searchCloudNode(ctx, cloudProvider, filter, fw)
 	if err != nil {
 		return nil, err
 	}
