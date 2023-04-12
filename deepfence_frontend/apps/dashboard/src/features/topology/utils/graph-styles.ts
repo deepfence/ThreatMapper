@@ -25,6 +25,7 @@ import PodLogo from '@/assets/topology/pod.png';
 import ProcessLogo from '@/assets/topology/process.png';
 import TheInternetLogo from '@/assets/topology/the-internet.png';
 import { EnhancedDetailedNodeSummary, G6Node } from '@/features/topology/types/graph';
+import { showContextMenu } from '@/features/topology/utils/expand-collapse';
 
 export const GraphPalette = {
   NODE_OUTLINE_DARK: '#E5E7EB',
@@ -105,7 +106,7 @@ export const nodeStyle = (
   } else if (node?.df_data?.type === 'process') {
     style.fill = COLORS.PROCESS;
   }
-  if (node.df_data?.type && node.df_data.type !== 'pseudo') {
+  if (showContextMenu(node.df_data)) {
     style.cursor = 'pointer';
   }
 
