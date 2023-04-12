@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/casbin/casbin/v2"
 	"net/http"
 	"os"
 	"strings"
@@ -168,6 +169,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Get("/", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetGlobalSettings))
 					r.Patch("/{id}", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UpdateGlobalSettings))
 				})
+				r.Post("/email", dfHandler.AuthHandler(ResourceEmailConfig, PermissionGenerate, dfHandler.AddEmailConfiguration))
+				r.Get("/email", dfHandler.AuthHandler(ResourceEmailConfig, PermissionRead, dfHandler.GetEmailConfiguration))
 			})
 
 			r.Route("/graph", func(r chi.Router) {
@@ -354,11 +357,6 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Put("/status/{node_id}", dfHandler.AuthHandler(ResourceDiagnosis, PermissionGenerate, dfHandler.UpdateAgentDiagnosticLogsStatus))
 				})
 				r.Get("/diagnostic-logs", dfHandler.AuthHandler(ResourceDiagnosis, PermissionRead, dfHandler.GetDiagnosticLogs))
-			})
-
-			r.Route("/settings", func(r chi.Router) {
-				r.Post("/email", dfHandler.AuthHandler(ResourceEmailConfig, PermissionGenerate, dfHandler.AddEmailConfiguration))
-				r.Get("/email", dfHandler.AuthHandler(ResourceEmailConfig, PermissionRead, dfHandler.GetEmailConfiguration))
 			})
 
 			// Reports
