@@ -90,6 +90,7 @@ func AddCloudControls(msg *message.Message) error {
 			n.service = $cloudCap,
 			n.cloud_provider = $cloud,
 			n.category = 'Compliance',
+			n.category_hierarchy = row.category_hierarchy,
 			n.compliance_type = $benchmark,
 			n.executable = false`,
 				map[string]interface{}{
