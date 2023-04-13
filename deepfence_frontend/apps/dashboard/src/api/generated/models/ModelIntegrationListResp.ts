@@ -27,10 +27,10 @@ export interface ModelIntegrationListResp {
     config?: { [key: string]: any; } | null;
     /**
      * 
-     * @type {{ [key: string]: Array<string>; }}
+     * @type {{ [key: string]: any; }}
      * @memberof ModelIntegrationListResp
      */
-    filters?: { [key: string]: Array<string>; } | null;
+    filters?: { [key: string]: any; } | null;
     /**
      * 
      * @type {number}
