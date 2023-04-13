@@ -8,9 +8,7 @@ import { CloudIcon } from '@/components/icons/cloud';
 import { ContainerIcon } from '@/components/icons/container';
 import { GraphIcon } from '@/components/icons/graph';
 import { HostIcon } from '@/components/icons/host';
-import { ImageIcon } from '@/components/icons/image';
 import { K8sIcon } from '@/components/icons/k8s';
-import { NamespaceIcon } from '@/components/icons/namespace';
 import { PodIcon } from '@/components/icons/pod';
 import { TableIcon } from '@/components/icons/table';
 import { TopologyViewTypes } from '@/features/topology/data-components/topologyAction';
@@ -20,7 +18,7 @@ import { DFAwait } from '@/utils/suspense';
 const CountsSkeleton = () => {
   return (
     <div className="flex items-center gap-1 flex-1 shrink justify-end min-w-0">
-      {[1, 2, 3, 4, 5, 6, 7].map((idx) => {
+      {[1, 2, 3, 4, 5].map((idx) => {
         return (
           <div
             key={idx}
@@ -73,16 +71,6 @@ export const TopologyHeader = ({ nodeCounts }: { nodeCounts: SearchNodeCountResp
                     name="Pods"
                     type={NodeType.pod}
                     count={data.pod}
-                  />
-                  <ResourceSelectorButton
-                    icon={<NamespaceIcon />}
-                    name="Namespaces"
-                    count={data.namespace}
-                  />
-                  <ResourceSelectorButton
-                    icon={<ImageIcon />}
-                    name="Container Images"
-                    count={data.container_image}
                   />
                 </div>
               );
