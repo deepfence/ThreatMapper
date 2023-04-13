@@ -30,6 +30,9 @@ spec:
             {{- toYaml .Values.scheduler.securityContext | nindent 12 }}
           image: "{{ .Values.scheduler.image.repository }}:{{ .Values.scheduler.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.scheduler.image.pullPolicy }}
+          env:
+            - name: DEEPFENCE_MODE
+              value: scheduler
           envFrom:
             - configMapRef:
                 name: "deepfence-console-config"

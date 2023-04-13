@@ -32,6 +32,9 @@ spec:
             {{- toYaml .Values.ingester.securityContext | nindent 12 }}
           image: "{{ .Values.ingester.image.repository }}:{{ .Values.ingester.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.ingester.image.pullPolicy }}
+          env:
+            - name: DEEPFENCE_MODE
+              value: ingester
           envFrom:
             - configMapRef:
                 name: "deepfence-console-config"

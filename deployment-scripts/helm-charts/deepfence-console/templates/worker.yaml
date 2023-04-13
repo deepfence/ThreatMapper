@@ -32,6 +32,9 @@ spec:
             {{- toYaml .Values.worker.securityContext | nindent 12 }}
           image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
+          env:
+            - name: DEEPFENCE_MODE
+              value: worker
           envFrom:
             - configMapRef:
                 name: "deepfence-console-config"

@@ -38,17 +38,17 @@ spec:
             - name: http
               containerPort: 9000
               protocol: TCP
-            - name: tcp
+            - name: ui
               containerPort: 9090
               protocol: TCP
           livenessProbe:
             tcpSocket:
-              port: tcp
+              port: http
             initialDelaySeconds: 60
             periodSeconds: 30
           readinessProbe:
             tcpSocket:
-              port: tcp
+              port: http
             initialDelaySeconds: 60
             periodSeconds: 30
           resources:
@@ -85,11 +85,11 @@ spec:
   ports:
     - name: http
       port: 9000
-      targetPort: tcp
+      targetPort: http
       protocol: TCP
-    - name: tcp
+    - name: ui
       port: 9090
-      targetPort: tcp
+      targetPort: ui
       protocol: TCP
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
