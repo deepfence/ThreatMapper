@@ -590,6 +590,9 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 	d.AddOperation("getEmailConfiguration", http.MethodGet, "/deepfence/settings/email",
 		"Get Email Configurations", "Get Email Smtp / ses Configurations in system",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]EmailConfigurationResp))
+	d.AddOperation("deleteEmailConfiguration", http.MethodDelete, "/deepfence/settings/email/{config-id}",
+		"Delete Email Configurations", "Delete Email Smtp / ses Configurations in system",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(ConfigIDPathReq), nil)
 	d.AddOperation("getSettings", http.MethodGet, "/deepfence/settings/global-settings",
 		"Get settings", "Get all settings",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]SettingsResponse))

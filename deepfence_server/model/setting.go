@@ -14,6 +14,7 @@ import (
 const (
 	ConsoleURLSettingKey              = "console_url"
 	JwtSecretSettingKey               = "jwt_secret"
+	EmailConfigurationKey             = "email_configuration"
 	InactiveNodesDeleteScanResultsKey = "inactive_delete_scan_results"
 )
 
