@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"reflect"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
-	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 )
 
@@ -78,11 +78,11 @@ type IntegrationListReq struct {
 }
 
 type IntegrationListResp struct {
-	ID               int32                  `json:"id"`
-	IntegrationType  string                 `json:"integration_type"`
-	NotificationType string                 `json:"notification_type"`
-	Config           map[string]interface{} `json:"config"`
-	Filters          map[string]interface{} `json:"filters"`
+	ID               int32                   `json:"id"`
+	IntegrationType  string                  `json:"integration_type"`
+	NotificationType string                  `json:"notification_type"`
+	Config           map[string]interface{}  `json:"config"`
+	Filters          reporters.FieldsFilters `json:"filters"`
 }
 
 func (i *IntegrationListReq) GetIntegrations(ctx context.Context, pgClient *postgresqlDb.Queries) ([]postgresqlDb.Integration, error) {
