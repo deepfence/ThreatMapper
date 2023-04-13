@@ -62,8 +62,19 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
+Create the name of the imagePullSecret to use
+*/}}
+{{- define "deepfence-console.imagePullSecretName" -}}
+{{- if .Values.imagePullSecret.create }}
+{{- default (include "deepfence-console.fullname" .) .Values.imagePullSecret.name }}
+{{- else }}
+{{- .Values.imagePullSecret.name }}
+{{- end }}
+{{- end }}
+
+{{/*
 Create secret to access docker registry
 */}}
 {{- define "imagePullSecret" }}
-{{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.registry.name (printf "%s:%s" .Values.registry.username .Values.registry.password | b64enc) | b64enc }}
+{{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.imagePullSecret.registry (printf "%s:%s" .Values.imagePullSecret.username .Values.imagePullSecret.password | b64enc) | b64enc }}
 {{- end }}
