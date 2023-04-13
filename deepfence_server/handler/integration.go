@@ -104,7 +104,7 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 	integrationList := []model.IntegrationListResp{}
 	for _, integration := range integrations {
 		var config map[string]interface{}
-		var filters map[string][]string
+		var filters map[string]interface{}
 
 		err = json.Unmarshal(integration.Config, &config)
 		if err != nil {

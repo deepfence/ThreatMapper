@@ -82,7 +82,7 @@ type IntegrationListResp struct {
 	IntegrationType  string                 `json:"integration_type"`
 	NotificationType string                 `json:"notification_type"`
 	Config           map[string]interface{} `json:"config"`
-	Filters          map[string][]string    `json:"filters"`
+	Filters          map[string]interface{} `json:"filters"`
 }
 
 func (i *IntegrationListReq) GetIntegrations(ctx context.Context, pgClient *postgresqlDb.Queries) ([]postgresqlDb.Integration, error) {
