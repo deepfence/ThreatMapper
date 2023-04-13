@@ -57,8 +57,13 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	if err != nil {
 		return err
 	}
+	var fieldsFilters reporters.FieldsFilters
+	err = json.Unmarshal(integrationRow.Filters, &fieldsFilters)
+	if err != nil {
+		return err
+	}
 	for _, scan := range list.ScansInfo {
-		results, _, err := reporters_scan.GetScanResults[T](ctx, utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId, reporters.FieldsFilters{}, model.FetchWindow{})
+		results, _, err := reporters_scan.GetScanResults[T](ctx, utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId, fieldsFilters, model.FetchWindow{})
 		iByte, err := json.Marshal(integrationRow)
 		if err != nil {
 			log.Error().Msgf("Error Processing for integration json marshall integrationRow: +%v", integrationRow, err)
