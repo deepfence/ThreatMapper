@@ -453,9 +453,9 @@ export const ReportTable = () => {
           }
         },
         header: () => 'Duration',
-        minSize: 35,
-        size: 40,
-        maxSize: 45,
+        minSize: 50,
+        size: 55,
+        maxSize: 60,
       }),
       columnHelper.accessor('status', {
         cell: (cell) => (
@@ -473,15 +473,15 @@ export const ReportTable = () => {
           />
         ),
         header: () => 'Status',
-        minSize: 75,
-        size: 80,
-        maxSize: 85,
+        minSize: 60,
+        size: 65,
+        maxSize: 70,
       }),
       columnHelper.accessor('filters', {
         cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
         header: () => 'Filters',
         minSize: 75,
-        size: 80,
+        size: 85,
         maxSize: 85,
       }),
       columnHelper.display({
