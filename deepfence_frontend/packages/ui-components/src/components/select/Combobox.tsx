@@ -1,11 +1,12 @@
 import {
-  Combobox as ComboBox,
-  ComboboxProps as ComboBoxProps,
+  Combobox as HUICombobox,
+  ComboboxOptionProps as HUIComboboxOptionProps,
+  ComboboxProps as HUIComboboxProps,
   Transition,
 } from '@headlessui/react';
 import cx from 'classnames';
 import { cva } from 'cva';
-import { Fragment, useEffect, useState } from 'react';
+import { ElementType, Fragment, useEffect, useState } from 'react';
 import { HiOutlineChevronDown } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import { twMerge } from 'tailwind-merge';
@@ -13,10 +14,7 @@ import { twMerge } from 'tailwind-merge';
 import { Badge, CircleSpinner } from '@/main';
 
 export type SizeType = 'xs' | 'sm' | 'md';
-export type ItemType = {
-  name: string;
-  value: string;
-};
+
 const SIZE_DEFAULT = 'sm';
 
 type IconProps = {
@@ -39,12 +37,7 @@ const sizeCva = cva([], {
 
 const SelectArrow = ({ sizing = SIZE_DEFAULT }: Omit<IconProps, 'icon'>) => {
   return (
-    <span
-      className={cx(
-        'pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3',
-        'dark:text-white',
-      )}
-    >
+    <span className={cx('pointer-events-none', 'dark:text-white')}>
       <IconContext.Provider
         value={{
           className: cx({
@@ -59,36 +52,54 @@ const SelectArrow = ({ sizing = SIZE_DEFAULT }: Omit<IconProps, 'icon'>) => {
     </span>
   );
 };
-// ts-lint disable-next-line
-interface ComboboxProps {
+
+type ComboboxProps<
+  TValue,
+  TNullable extends boolean | undefined,
+  TMultiple extends boolean | undefined,
+  TTag extends ElementType,
+> = HUIComboboxProps<TValue, TNullable, TMultiple, TTag> & {
   children?: React.ReactNode;
   sizing?: SizeType;
   label?: string;
-  value?: any;
-  onScroll?: () => void;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onSelect?: (item: ItemType) => void;
-  multiple?: boolean;
+  onEndReached?: () => void;
   loading?: boolean;
-}
-export function Combobox({
-  sizing,
+  getDisplayValue?: (item: TValue) => string;
+  onQueryChange: (query: string) => void;
+};
+
+let DEFAULT_COMBOBOX_TAG: React.ExoticComponent<{
+  children?: React.ReactNode;
+}>;
+
+export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBOBOX_TAG>(
+  props: ComboboxProps<TValue, true, true, TTag>,
+): JSX.Element;
+export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBOBOX_TAG>(
+  props: ComboboxProps<TValue, true, false, TTag>,
+): JSX.Element;
+export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBOBOX_TAG>(
+  props: ComboboxProps<TValue, false, false, TTag>,
+): JSX.Element;
+export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBOBOX_TAG>(
+  props: ComboboxProps<TValue, false, true, TTag>,
+): JSX.Element;
+export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBOBOX_TAG>({
   children,
-  value,
+  sizing,
   label,
-  onChange,
-  onSelect,
-  onScroll,
+  onEndReached,
   loading,
-  multiple,
+  getDisplayValue,
+  onQueryChange,
   ...props
-}: ComboboxProps) {
+}: ComboboxProps<TValue, boolean | undefined, boolean | undefined, TTag>) {
   const [intersectionRef, setIntersectionRef] = useState<HTMLSpanElement | null>(null);
   const loadObserver = new IntersectionObserver(
     (entries) => {
       const entry = entries[0];
       if (entry.isIntersecting) {
-        onScroll?.();
+        onEndReached?.();
       }
     },
     {
@@ -108,13 +119,16 @@ export function Combobox({
   }, [intersectionRef]);
 
   return (
-    <ComboBox {...props} value={value} onChange={onSelect}>
+    <HUICombobox {...(props as any)}>
       <div className="relative">
-        <ComboBox.Label className={'text-sm font-medium text-gray-900 dark:text-white'}>
+        <HUICombobox.Label
+          className={'text-sm font-medium text-gray-900 dark:text-white'}
+        >
           {label}
-        </ComboBox.Label>
+        </HUICombobox.Label>
         <div className="relative">
-          <ComboBox.Input
+          <HUICombobox.Input
+            placeholder="Select..."
             className={cx(
               'w-full ring-1 rounded-lg ring-gray-300 focus:ring-blue-600',
               'focus:outline-none',
@@ -132,21 +146,22 @@ export function Combobox({
                 size: sizing,
               }),
             )}
-            displayValue={(item: ItemType) => item.name}
-            onChange={onChange}
+            defaultValue={props.value}
+            displayValue={getDisplayValue as any}
+            onChange={(event) => onQueryChange(event.target.value)}
           />
-          <ComboBox.Button
+          <HUICombobox.Button
             className={twMerge(cx('absolute inset-y-0 right-0 flex items-center pr-2'))}
           >
-            {multiple && (
+            {props.multiple && Array.isArray(props.value) && (
               <Badge
-                label={value.length + ''}
+                label={`${props.value.length} selected`}
                 className="pr-8 dark:text-gray-100 dark:bg-gray-600"
               />
             )}
 
             <SelectArrow sizing={sizing} />
-          </ComboBox.Button>
+          </HUICombobox.Button>
         </div>
         <Transition
           as={Fragment}
@@ -154,7 +169,7 @@ export function Combobox({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <ComboBox.Options
+          <HUICombobox.Options
             className={twMerge(
               cx(
                 'absolute mt-1 max-h-60 w-full shadow-lg select-none',
@@ -171,23 +186,21 @@ export function Combobox({
             ) : (
               <span ref={(ele) => setIntersectionRef(ele)}></span>
             )}
-          </ComboBox.Options>
+          </HUICombobox.Options>
         </Transition>
       </div>
-    </ComboBox>
+    </HUICombobox>
   );
 }
 
-export const ComboboxOption = ({
-  sizing,
-  item,
-}: {
+interface ComboBoxOptionProps<TType> extends HUIComboboxOptionProps<'li', TType> {
   sizing?: SizeType;
-  item: ItemType;
-}) => {
+}
+
+export function ComboboxOption<TType>({ sizing, ...props }: ComboBoxOptionProps<TType>) {
   return (
-    <ComboBox.Option
-      className={({ active }) => {
+    <HUICombobox.Option
+      className={({ active, selected }) => {
         return twMerge(
           cx(
             'relative select-none py-2 pl-3 pr-3',
@@ -196,6 +209,7 @@ export const ComboboxOption = ({
             'text-gray-500 dark:text-gray-300',
             {
               'bg-gray-100 dark:bg-gray-600': active,
+              'text-blue-600 dark:text-blue-400': selected,
             },
             sizeCva({
               size: sizing,
@@ -203,21 +217,7 @@ export const ComboboxOption = ({
           ),
         );
       }}
-      value={item}
-    >
-      {({ selected }) => {
-        return (
-          <span
-            className={twMerge(
-              cx('block truncate', {
-                'text-blue-600 dark:text-blue-400': selected,
-              }),
-            )}
-          >
-            {item?.name}
-          </span>
-        );
-      }}
-    </ComboBox.Option>
+      {...props}
+    />
   );
-};
+}
