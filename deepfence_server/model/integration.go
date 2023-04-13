@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 )
 
@@ -16,10 +17,10 @@ type IntegrationIDPathReq struct {
 
 // IntegrationAddReq is the request body for adding a new integration
 type IntegrationAddReq struct {
-	Config           map[string]interface{} `json:"config"`
-	IntegrationType  string                 `json:"integration_type"`
-	NotificationType string                 `json:"notification_type"`
-	Filters          map[string][]string    `json:"filters"`
+	Config           map[string]interface{}  `json:"config"`
+	IntegrationType  string                  `json:"integration_type"`
+	NotificationType string                  `json:"notification_type"`
+	Filters          reporters.FieldsFilters `json:"filters"`
 }
 
 func (i *IntegrationAddReq) IntegrationExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {
