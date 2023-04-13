@@ -152,7 +152,14 @@ const action = async ({
               formData,
               _integrationType as IntegrationType,
             ),
-            filters: _filters,
+            filters: {
+              contains_filter: {
+                filter_in: {},
+              },
+              match_filter: { filter_in: {} },
+              order_filter: { order_fields: [] },
+              compare_filter: null,
+            },
           },
         },
       ],

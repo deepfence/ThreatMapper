@@ -187,21 +187,6 @@ export interface UserApiInterface {
     getUser(requestParameters: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelUser>;
 
     /**
-     * Get activity logs for all users
-     * @summary Get activity logs for all users
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof UserApiInterface
-     */
-    getUserActivityLogsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>>;
-
-    /**
-     * Get activity logs for all users
-     * Get activity logs for all users
-     */
-    getUserActivityLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>>;
-
-    /**
      * Get all users
      * @summary Get all users
      * @param {*} [options] Override http request option.
@@ -550,42 +535,6 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      */
     async getUser(requestParameters: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelUser> {
         const response = await this.getUserRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Get activity logs for all users
-     * Get activity logs for all users
-     */
-    async getUserActivityLogsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/user-activity-log`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse<any>(response);
-    }
-
-    /**
-     * Get activity logs for all users
-     * Get activity logs for all users
-     */
-    async getUserActivityLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>> {
-        const response = await this.getUserActivityLogsRaw(initOverrides);
         return await response.value();
     }
 
