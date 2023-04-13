@@ -61,6 +61,7 @@ export * from './ModelComplianceScanInfo';
 export * from './ModelComplianceScanResult';
 export * from './ModelComplianceScanStatusResp';
 export * from './ModelComplianceScanTriggerReq';
+export * from './ModelConnection';
 export * from './ModelContainer';
 export * from './ModelContainerImage';
 export * from './ModelDownloadReportResponse';

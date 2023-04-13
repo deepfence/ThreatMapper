@@ -29,6 +29,7 @@ const (
 	GoogleChronicle = "googlechronicle"
 	AwsSecurityHub  = "aws_security_hub"
 	Email           = "email"
+	Jira            = "jira"
 )
 
 const (

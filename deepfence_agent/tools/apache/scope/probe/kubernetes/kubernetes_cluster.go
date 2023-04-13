@@ -29,6 +29,7 @@ func (k *kubernetesCluster) GetNode() (report.Metadata, report.Parent) {
 		NodeType:              report.KubernetesCluster,
 		KubernetesClusterId:   kubernetesClusterId,
 		KubernetesClusterName: kubernetesClusterName,
+		CloudProvider:         k.cloudProvider,
 	}
 	parent := report.Parent{
 		CloudProvider: k.cloudProvider,

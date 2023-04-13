@@ -18,8 +18,7 @@ const (
 )
 
 var (
-	kubernetesClusterId string
-	//kubernetesClusterNodeId string
+	kubernetesClusterId   string
 	kubernetesClusterName string
 	cloudProviderNodeId   string
 )

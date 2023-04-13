@@ -82,6 +82,7 @@ models/ModelComplianceScanInfo.ts
 models/ModelComplianceScanResult.ts
 models/ModelComplianceScanStatusResp.ts
 models/ModelComplianceScanTriggerReq.ts
+models/ModelConnection.ts
 models/ModelContainer.ts
 models/ModelContainerImage.ts
 models/ModelDownloadReportResponse.ts

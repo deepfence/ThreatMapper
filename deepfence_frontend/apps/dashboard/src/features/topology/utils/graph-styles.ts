@@ -16,6 +16,7 @@ import AzureLogo from '@/assets/topology/azure.png';
 import CloudLogo from '@/assets/topology/cloud.png';
 import CloudRegionLogo from '@/assets/topology/cloud-region.png';
 import ContainerLogo from '@/assets/topology/container.png';
+import ContainerImageLogo from '@/assets/topology/container_image.png';
 import DigitalOceanLogo from '@/assets/topology/digital_ocean.png';
 import GCPLogo from '@/assets/topology/gcp.png';
 import HostLogo from '@/assets/topology/host.png';
@@ -166,6 +167,8 @@ const getNodeImagePath = (nodeType: string, nodeLabel?: string): string | undefi
     return KubernetesClusterLogo;
   } else if (nodeType === 'container') {
     return ContainerLogo;
+  } else if (nodeType === 'container_image') {
+    return ContainerImageLogo;
   } else if (nodeType === 'pod') {
     return PodLogo;
   } else if (nodeType === 'process') {

@@ -101,7 +101,7 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var integrationList []model.IntegrationListResp
+	integrationList := []model.IntegrationListResp{}
 	for _, integration := range integrations {
 		var config map[string]interface{}
 		var filters map[string][]string

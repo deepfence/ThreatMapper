@@ -4,7 +4,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
+	"math"
+
+	"net/url"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
@@ -112,20 +117,45 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err}, w)
 		return
 	}
-	pgSettings, err := model.GetSettingByKey(ctx, pgClient, req.Key)
+	currentSettings, err := model.GetSettingByKey(ctx, pgClient, req.Key)
 	if err != nil {
 		respondError(err, w)
 		return
 	}
-	// TODO: validation for each key
+	if req.ID != currentSettings.ID {
+		respondError(&ValidatorError{
+			errors.New("Key: 'SettingUpdateRequest.ID' Error:invalid")}, w)
+		return
+	}
+	var value interface{}
+	switch currentSettings.Key {
+	case model.ConsoleURLSettingKey:
+		consoleUrl := fmt.Sprintf("%s", req.Value)
+		var parsedUrl *url.URL
+		if parsedUrl, err = url.ParseRequestURI(consoleUrl); err != nil {
+			respondError(&ValidatorError{
+				errors.New("Key: 'SettingUpdateRequest.Value' Error:must be url")}, w)
+			return
+		}
+		value = parsedUrl.Scheme + "://" + parsedUrl.Host
+	case model.InactiveNodesDeleteScanResultsKey:
+		val, ok := req.Value.(float64)
+		if !ok {
+			respondError(&ValidatorError{
+				errors.New("Key: 'SettingUpdateRequest.Value' Error:must be integer")}, w)
+			return
+		}
+		value = int(math.Round(val))
+	}
 	setting := model.Setting{
-		ID: req.ID,
+		ID:  req.ID,
+		Key: req.Key,
 		Value: &model.SettingValue{
-			Label:       req.Label,
-			Value:       req.Value,
-			Description: req.Description,
+			Label:       currentSettings.Value.Label,
+			Value:       value,
+			Description: currentSettings.Value.Description,
 		},
-		IsVisibleOnUi: pgSettings.IsVisibleOnUi,
+		IsVisibleOnUi: currentSettings.IsVisibleOnUi,
 	}
 	err = setting.Update(ctx, pgClient)
 	if err != nil {

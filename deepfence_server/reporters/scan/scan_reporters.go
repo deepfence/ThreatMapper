@@ -596,7 +596,13 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 		if is_node != nil {
 			for k, v := range is_node.(dbtype.Node).Props {
 				if k != "node_id" {
-					tmp2[k] = v
+					if k == "masked" {
+						if _, ok := tmp2[k]; ok {
+							tmp2[k] = tmp2[k].(bool) || v.(bool)
+						}
+					} else {
+						tmp2[k] = v
+					}
 				}
 			}
 		}

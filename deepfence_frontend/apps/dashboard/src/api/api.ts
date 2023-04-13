@@ -30,6 +30,9 @@ const configuration = new Configuration({
   accessToken: () => {
     return storage.getAuth()?.accessToken ?? '';
   },
+  headers: {
+    'accept-encoding': 'gzip, deflate, br',
+  },
 });
 
 export function getAuthenticationApiClient() {
