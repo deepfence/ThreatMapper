@@ -74,7 +74,24 @@ func (h *Handler) GetEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *Handler) DeleteEmailConfiguration(w http.ResponseWriter, r *http.Request) {
-
+	defer r.Body.Close()
+	ctx := directory.WithGlobalContext(r.Context())
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+	configId, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+	err = pgClient.DeleteSettingByID(ctx, configId)
+	if err != nil {
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, nil)
 }
 
 func (h *Handler) GetGlobalSettings(w http.ResponseWriter, r *http.Request) {
