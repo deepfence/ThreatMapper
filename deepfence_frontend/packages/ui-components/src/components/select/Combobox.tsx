@@ -221,7 +221,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
             <HUICombobox.Options
               className={twMerge(
                 cx(
-                  'absolute mt-1 max-h-60 w-full shadow-lg select-none',
+                  'mt-1 max-h-60 w-full shadow-lg select-none',
                   // bg
                   'bg-gray-50 dark:bg-gray-700',
                   'overflow-auto rounded-md py-1',

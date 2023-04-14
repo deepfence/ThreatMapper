@@ -13,11 +13,22 @@ export type HostsListType = {
 
 export const searchHostsApiLoader = async ({
   params,
+  request,
 }: LoaderFunctionArgs): Promise<HostsListType[]> => {
   const scanType = params?.scanType;
   if (!scanType) {
     throw new Error('Scan For is required');
   }
+  const searchParams = new URL(request.url).searchParams;
+  const searchText = searchParams?.get('searchText')?.toString();
+
+  const matchFilter = { filter_in: {} };
+  if (searchText?.length) {
+    matchFilter.filter_in = {
+      node_id: [searchText],
+    };
+  }
+
   let filterValue = '';
   if (scanType === ScanTypeEnum.SecretScan) {
     filterValue = 'secrets_count';
@@ -47,9 +58,7 @@ export const searchHostsApiLoader = async ({
                   },
                 ],
               },
-              match_filter: {
-                filter_in: {},
-              },
+              match_filter: matchFilter,
               compare_filter: null,
             },
             in_field_filter: null,
@@ -96,8 +105,10 @@ export const searchHostsApiLoader = async ({
 
 export const useGetHostsList = ({
   scanType,
+  searchText,
 }: {
   scanType: ScanTypeEnum | 'none';
+  searchText: string;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   hosts: HostsListType[];
@@ -105,12 +116,15 @@ export const useGetHostsList = ({
   const fetcher = useFetcher<HostsListType[]>();
 
   useEffect(() => {
+    const searchParams = new URLSearchParams();
+    searchParams.set('searchText', searchText);
+
     fetcher.load(
-      generatePath('/data-component/search/hosts/:scanType', {
+      generatePath(`/data-component/search/hosts/:scanType/?${searchParams.toString()}`, {
         scanType,
       }),
     );
-  }, [scanType]);
+  }, [scanType, searchText]);
 
   return {
     status: fetcher.state,

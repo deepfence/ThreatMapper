@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { generatePath, useFetcher } from 'react-router-dom';
+import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 
 import { getTopologyApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
@@ -10,7 +10,19 @@ export type ClustersListType = {
   clusterName: string;
 };
 
-export const searchClustersApiLoader = async (): Promise<ClustersListType[]> => {
+export const searchClustersApiLoader = async ({
+  request,
+}: LoaderFunctionArgs): Promise<ClustersListType[]> => {
+  const searchParams = new URL(request.url).searchParams;
+  const searchText = searchParams?.get('searchText')?.toString();
+
+  const matchFilter = { filter_in: {} };
+  if (searchText?.length) {
+    matchFilter.filter_in = {
+      node_id: [searchText],
+    };
+  }
+
   const result = await makeRequest({
     apiFunction: getTopologyApiClient().getKubernetesTopologyGraph,
     apiArgs: [
@@ -20,9 +32,7 @@ export const searchClustersApiLoader = async (): Promise<ClustersListType[]> => 
           field_filters: {
             contains_filter: { filter_in: null },
             order_filter: null as any,
-            match_filter: {
-              filter_in: {},
-            },
+            match_filter: matchFilter,
             compare_filter: null,
           },
           host_filter: [],
@@ -69,15 +79,24 @@ export const searchClustersApiLoader = async (): Promise<ClustersListType[]> => 
   });
 };
 
-export const useGetClustersList = (): {
+export const useGetClustersList = ({
+  searchText,
+}: {
+  searchText: string;
+}): {
   status: 'idle' | 'loading' | 'submitting';
   clusters: ClustersListType[];
 } => {
   const fetcher = useFetcher<ClustersListType[]>();
 
   useEffect(() => {
-    fetcher.load(generatePath('/data-component/search/clusters'));
-  }, []);
+    const searchParams = new URLSearchParams();
+    searchParams.set('searchText', searchText);
+
+    fetcher.load(
+      generatePath(`/data-component/search/clusters/?${searchParams.toString()}`),
+    );
+  }, [searchText]);
 
   return {
     status: fetcher.state,

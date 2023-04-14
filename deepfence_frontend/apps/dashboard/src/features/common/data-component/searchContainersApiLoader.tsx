@@ -13,11 +13,22 @@ export type ContainersListType = {
 
 export const searchContainersApiLoader = async ({
   params,
+  request,
 }: LoaderFunctionArgs): Promise<ContainersListType[]> => {
   const scanType = params?.scanType;
   if (!scanType) {
     throw new Error('Scan For is required');
   }
+  const searchParams = new URL(request.url).searchParams;
+  const searchText = searchParams?.get('searchText')?.toString();
+
+  const matchFilter = { filter_in: {} };
+  if (searchText?.length) {
+    matchFilter.filter_in = {
+      node_id: [searchText],
+    };
+  }
+
   let filterValue = '';
   if (scanType === ScanTypeEnum.SecretScan) {
     filterValue = 'secrets_count';
@@ -47,9 +58,7 @@ export const searchContainersApiLoader = async ({
                   },
                 ],
               },
-              match_filter: {
-                filter_in: {},
-              },
+              match_filter: matchFilter,
               compare_filter: null,
             },
             in_field_filter: null,
@@ -95,8 +104,10 @@ export const searchContainersApiLoader = async ({
 
 export const useGetContainersList = ({
   scanType,
+  searchText,
 }: {
   scanType: ScanTypeEnum;
+  searchText: string;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   containers: ContainersListType[];
@@ -104,12 +115,18 @@ export const useGetContainersList = ({
   const fetcher = useFetcher<ContainersListType[]>();
 
   useEffect(() => {
+    const searchParams = new URLSearchParams();
+    searchParams.set('searchText', searchText);
+
     fetcher.load(
-      generatePath('/data-component/search/containers/:scanType', {
-        scanType,
-      }),
+      generatePath(
+        `/data-component/search/containers/:scanType/?${searchParams.toString()}`,
+        {
+          scanType,
+        },
+      ),
     );
-  }, [scanType]);
+  }, [scanType, searchText]);
 
   return {
     status: fetcher.state,
