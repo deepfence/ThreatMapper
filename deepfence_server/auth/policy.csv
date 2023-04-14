@@ -72,3 +72,8 @@ p, admin, report, delete
 p, standard-user, report, generate
 p, standard-user, report, download
 
+p, admin, settings, read
+p, admin, settings, write
+p, admin, settings, delete
+p, standard-user, settings, read
+p, standard-user, settings, write

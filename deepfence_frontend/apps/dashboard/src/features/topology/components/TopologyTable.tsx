@@ -27,7 +27,7 @@ import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDeta
 import { TopologyActionData } from '@/features/topology/data-components/topologyAction';
 import { TopologyAction } from '@/features/topology/types/graph';
 import { TopologyTreeData } from '@/features/topology/types/table';
-import { itemExpands } from '@/features/topology/utils/expand-collapse';
+import { itemExpands, itemHasDetails } from '@/features/topology/utils/expand-collapse';
 import {
   getExpandedIdsFromTreeData,
   getIdsFromTreeData,
@@ -118,19 +118,25 @@ export function TopologyTable() {
                 </button>
               ) : null}
               {!info.row.getCanExpand() ? <span>&nbsp;&nbsp;&nbsp;</span> : null}
-              <DFLink
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setClickedItem({
-                    nodeId: info.row.original.id!,
-                    nodeType: info.row.original.type!,
-                  });
-                }}
-                className="flex-1 shrink-0 truncate pl-2"
-              >
-                {info.getValue()}
-              </DFLink>
+              {itemHasDetails({
+                type: info.row.original.type,
+              }) ? (
+                <DFLink
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setClickedItem({
+                      nodeId: info.row.original.id!,
+                      nodeType: info.row.original.type!,
+                    });
+                  }}
+                  className="flex-1 shrink-0 truncate pl-2"
+                >
+                  {info.getValue()}
+                </DFLink>
+              ) : (
+                <span className="flex-1 shrink-0 truncate pl-2">{info.getValue()}</span>
+              )}
             </div>
           );
         },

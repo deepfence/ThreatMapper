@@ -1,0 +1,17 @@
+{{- if .Values.neo4j.create }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: "deepfence-neo4j-{{ .Release.Name }}"
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: neo4j
+spec:
+  storageClassName: {{ .Values.neo4j.storageClass }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.neo4j.volumeSize }}
+{{- end }}

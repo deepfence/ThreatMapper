@@ -1,0 +1,15 @@
+{{- if .Values.redis.create }}
+---
+kind: Secret
+apiVersion: v1
+type: Opaque
+metadata:
+  name: "deepfence-console-secrets-redis"
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: redis
+stringData:
+  DEEPFENCE_REDIS_DB_NUMBER: "0"
+  DEEPFENCE_REDIS_PORT: "6379"
+  DEEPFENCE_REDIS_HOST: deepfence-redis
+{{- end }}

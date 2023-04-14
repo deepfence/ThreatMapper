@@ -1,11 +1,13 @@
 package s3
 
+import "github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+
 type S3 struct {
-	Config           Config              `json:"config"`
-	IntegrationType  string              `json:"integration_type"`
-	NotificationType string              `json:"notification_type"`
-	Filters          map[string][]string `json:"filters"`
-	Message          string              `json:"message"`
+	Config           Config                  `json:"config"`
+	IntegrationType  string                  `json:"integration_type"`
+	NotificationType string                  `json:"notification_type"`
+	Filters          reporters.FieldsFilters `json:"filters"`
+	Message          string                  `json:"message"`
 }
 
 type Config struct {

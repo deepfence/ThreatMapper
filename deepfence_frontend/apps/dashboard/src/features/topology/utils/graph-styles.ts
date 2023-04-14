@@ -16,6 +16,7 @@ import AzureLogo from '@/assets/topology/azure.png';
 import CloudLogo from '@/assets/topology/cloud.png';
 import CloudRegionLogo from '@/assets/topology/cloud-region.png';
 import ContainerLogo from '@/assets/topology/container.png';
+import ContainerImageLogo from '@/assets/topology/container_image.png';
 import DigitalOceanLogo from '@/assets/topology/digital_ocean.png';
 import GCPLogo from '@/assets/topology/gcp.png';
 import HostLogo from '@/assets/topology/host.png';
@@ -24,6 +25,7 @@ import PodLogo from '@/assets/topology/pod.png';
 import ProcessLogo from '@/assets/topology/process.png';
 import TheInternetLogo from '@/assets/topology/the-internet.png';
 import { EnhancedDetailedNodeSummary, G6Node } from '@/features/topology/types/graph';
+import { showContextMenu } from '@/features/topology/utils/expand-collapse';
 
 export const GraphPalette = {
   NODE_OUTLINE_DARK: '#E5E7EB',
@@ -104,7 +106,7 @@ export const nodeStyle = (
   } else if (node?.df_data?.type === 'process') {
     style.fill = COLORS.PROCESS;
   }
-  if (node.df_data?.type && node.df_data.type !== 'pseudo') {
+  if (showContextMenu(node.df_data)) {
     style.cursor = 'pointer';
   }
 
@@ -166,6 +168,8 @@ const getNodeImagePath = (nodeType: string, nodeLabel?: string): string | undefi
     return KubernetesClusterLogo;
   } else if (nodeType === 'container') {
     return ContainerLogo;
+  } else if (nodeType === 'container_image') {
+    return ContainerImageLogo;
   } else if (nodeType === 'pod') {
     return PodLogo;
   } else if (nodeType === 'process') {

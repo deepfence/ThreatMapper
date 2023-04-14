@@ -15,6 +15,7 @@ apis/ReportsApi.ts
 apis/ScanResultsApi.ts
 apis/SearchApi.ts
 apis/SecretScanApi.ts
+apis/SettingsApi.ts
 apis/ThreatApi.ts
 apis/TopologyApi.ts
 apis/UserApi.ts
@@ -82,15 +83,19 @@ models/ModelComplianceScanInfo.ts
 models/ModelComplianceScanResult.ts
 models/ModelComplianceScanStatusResp.ts
 models/ModelComplianceScanTriggerReq.ts
+models/ModelConnection.ts
 models/ModelContainer.ts
 models/ModelContainerImage.ts
 models/ModelDownloadReportResponse.ts
+models/ModelEmailConfigurationAdd.ts
+models/ModelEmailConfigurationResp.ts
 models/ModelExportReport.ts
 models/ModelFetchWindow.ts
 models/ModelFiltersReq.ts
 models/ModelFiltersResult.ts
 models/ModelGenerateReportReq.ts
 models/ModelGenerateReportResp.ts
+models/ModelGetAuditLogsRow.ts
 models/ModelHost.ts
 models/ModelImageStub.ts
 models/ModelInitAgentReq.ts
@@ -137,6 +142,8 @@ models/ModelScanTriggerResp.ts
 models/ModelSecret.ts
 models/ModelSecretScanResult.ts
 models/ModelSecretScanTriggerReq.ts
+models/ModelSettingUpdateRequest.ts
+models/ModelSettingsResponse.ts
 models/ModelSummary.ts
 models/ModelUpdateUserIdRequest.ts
 models/ModelUpdateUserPasswordRequest.ts

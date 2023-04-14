@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -107,7 +106,7 @@ func (h *Handler) AuditUserActivity(
 	params := postgresql_db.CreateAuditLogParams{
 		Event:      event,
 		Action:     action,
-		Resources:  sql.NullString{String: string(resourceStr), Valid: true},
+		Resources:  resourceStr,
 		Success:    success,
 		UserID:     int32(user_id),
 		UserRoleID: int32(role_id),

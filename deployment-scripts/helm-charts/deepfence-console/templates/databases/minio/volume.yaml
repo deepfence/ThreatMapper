@@ -1,0 +1,17 @@
+{{- if .Values.minio.create }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: "deepfence-file-server-{{ .Release.Name }}"
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: minio
+spec:
+  storageClassName: {{ .Values.minio.storageClass }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.minio.volumeSize }}
+{{- end }}

@@ -91,7 +91,7 @@ func computeThreatGraph(session neo4j.Session) error {
 		WITH distinct m, max(s.updated_at) as most_recent
 		MATCH (m) <-[:SCANNED]- (s:VulnerabilityScan{updated_at: most_recent})-[:DETECTED]->(c:Vulnerability)
 		WITH s, m, count(distinct c) as vulnerabilities_count
-		SET m.vulnerabilities_count = vulnerabilities_count, m.vulnerability_scan_status = s.status, m.vulnerability_latest_scan_id = s.node_id`, map[string]interface{}{}); err != nil {
+		SET m.vulnerabilities_count = vulnerabilities_count`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
@@ -100,7 +100,7 @@ func computeThreatGraph(session neo4j.Session) error {
 		WITH distinct m, max(s.updated_at) as most_recent
 		MATCH (m) <-[:SCANNED]- (s:SecretScan{updated_at: most_recent})-[:DETECTED]->(c:Secret)
 		WITH s, m, count(distinct c) as secrets_count
-		SET m.secrets_count = secrets_count, m.secret_scan_status = s.status, m.secret_latest_scan_id = s.node_id`, map[string]interface{}{}); err != nil {
+		SET m.secrets_count = secrets_count`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
@@ -109,7 +109,7 @@ func computeThreatGraph(session neo4j.Session) error {
 		WITH distinct m, max(s.updated_at) as most_recent
 		MATCH (m) <-[:SCANNED]- (s:MalwareScan{updated_at: most_recent})-[:DETECTED]->(c:Malware)
 		WITH s, m, count(distinct c) as malwares_count
-		SET m.malwares_count = malwares_count, m.malware_scan_status = s.status, m.malware_latest_scan_id = s.node_id`, map[string]interface{}{}); err != nil {
+		SET m.malwares_count = malwares_count`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
@@ -118,7 +118,7 @@ func computeThreatGraph(session neo4j.Session) error {
 		WITH distinct m, max(s.updated_at) as most_recent
 		MATCH (m) <-[:SCANNED]- (s:ComplianceScan{updated_at: most_recent})-[:DETECTED]->(c:Compliance)
 		WITH s, m, count(distinct c) as compliances_count
-		SET m.compliances_count = compliances_count, m.compliance_scan_status = s.status, m.compliance_latest_scan_id = s.node_id`, map[string]interface{}{}); err != nil {
+		SET m.compliances_count = compliances_count`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
@@ -127,7 +127,7 @@ func computeThreatGraph(session neo4j.Session) error {
 		WITH distinct m, max(s.updated_at) as most_recent
 		MATCH (m) <-[:SCANNED]- (s:ComplianceScan{updated_at: most_recent})-[:DETECTED]->(c:CloudComplianceResult)
 		WITH s, m, count(distinct c) as cloud_compliances_count
-		SET m.cloud_compliances_count = cloud_compliances_count, m.cloud_compliance_scan_status = s.status, m.cloud_compliance_latest_scan_id = s.node_id`, map[string]interface{}{}); err != nil {
+		SET m.cloud_compliances_count = cloud_compliances_count`, map[string]interface{}{}); err != nil {
 		return err
 	}
 

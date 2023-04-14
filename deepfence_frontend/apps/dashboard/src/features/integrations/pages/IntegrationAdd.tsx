@@ -3,7 +3,6 @@ import { toast } from 'sonner';
 
 import { getIntegrationApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelIntegrationListResp } from '@/api/generated';
-import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 
@@ -26,14 +25,6 @@ export enum ActionEnumType {
   DELETE = 'delete',
   ADD = 'add',
 }
-const API_SCAN_TYPE_MAP: {
-  [key: string]: string;
-} = {
-  [ScanTypeEnum.VulnerabilityScan]: 'vulnerability',
-  [ScanTypeEnum.SecretScan]: 'secret',
-  [ScanTypeEnum.MalwareScan]: 'malware',
-  [ScanTypeEnum.ComplianceScan]: 'compliance',
-};
 
 const getIntegrations = async (): Promise<{
   message?: string;
@@ -51,16 +42,11 @@ const getIntegrations = async (): Promise<{
   }
 
   return {
-    data: integrationPromise.map((integration) => {
-      return {
-        ...integration,
-        ...integration.config,
-      };
-    }),
+    data: integrationPromise,
   };
 };
 
-const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
+export const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
   return typedDefer({
     data: getIntegrations(),
   });
@@ -79,7 +65,14 @@ const getConfigBodyNotificationType = (
         webhook_url: formBody.url,
         channel: formBody.channelName,
       };
-
+    case IntegrationType.s3:
+      return {
+        s3_bucket_name: formBody.name,
+        aws_access_key: formBody.accessKey,
+        aws_secret_key: formBody.secretKey,
+        s3_folder_name: formBody.folder,
+        aws_region: formBody.region,
+      };
     default:
       break;
   }
@@ -120,7 +113,7 @@ const action = async ({
     } else if (_notificationType === 'User Activities') {
       _notificationType = 'user_activities';
     } else {
-      _notificationType = API_SCAN_TYPE_MAP[_notificationType];
+      _notificationType = _notificationType.toLowerCase();
     }
 
     // filters
@@ -159,7 +152,14 @@ const action = async ({
               formData,
               _integrationType as IntegrationType,
             ),
-            filters: _filters,
+            filters: {
+              contains_filter: {
+                filter_in: {},
+              },
+              match_filter: { filter_in: {} },
+              order_filter: { order_fields: [] },
+              compare_filter: null,
+            },
           },
         },
       ],

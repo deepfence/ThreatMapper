@@ -1,0 +1,144 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepfence-ingester
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: ingester
+spec:
+  {{- if not .Values.ingester.autoscaling.enabled }}
+  replicas: {{ .Values.ingester.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
+      component: ingester
+  template:
+    metadata:
+      {{- with .Values.ingester.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
+        component: ingester
+    spec:
+      serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.ingester.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.ingester.securityContext | nindent 12 }}
+          image: "{{ .Values.ingester.image.repository }}:{{ .Values.ingester.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.ingester.image.pullPolicy }}
+          env:
+            - name: DEEPFENCE_MODE
+              value: ingester
+          envFrom:
+            - configMapRef:
+                name: "deepfence-console-config"
+            - secretRef:
+                {{- if .Values.redis.create }}
+                name: "deepfence-console-secrets-redis"
+                {{- else }}
+                name: {{ .Values.redis.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.minio.create }}
+                name: "deepfence-console-secrets-minio"
+                {{- else }}
+                name: {{ .Values.minio.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.kafka.create }}
+                name: "deepfence-console-secrets-kafka"
+                {{- else }}
+                name: {{ .Values.kafka.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.postgresql.create }}
+                name: "deepfence-console-secrets-postgresql"
+                {{- else }}
+                name: {{ .Values.postgresql.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.neo4j.create }}
+                name: "deepfence-console-secrets-neo4j"
+                {{- else }}
+                name: {{ .Values.neo4j.secretName }}
+                {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            {{- toYaml .Values.ingester.resources | nindent 12 }}
+      {{- with .Values.ingester.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.ingester.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.ingester.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-ingester
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: ingester
+spec:
+  type: {{ .Values.ingester.service.type }}
+  ports:
+    - port: {{ .Values.ingester.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
+    component: ingester
+---
+{{- if .Values.ingester.autoscaling.enabled }}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: deepfence-ingester
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: ingester
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: deepfence-ingester
+  minReplicas: {{ .Values.ingester.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.ingester.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.ingester.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: {{ .Values.ingester.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.ingester.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: {{ .Values.ingester.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}

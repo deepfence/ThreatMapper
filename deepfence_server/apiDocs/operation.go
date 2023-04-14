@@ -13,7 +13,6 @@ import (
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
 	ingester "github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	postgresqldb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	"github.com/deepfence/golang_deepfence_sdk/utils/report"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
@@ -65,10 +64,10 @@ func (d *OpenApiDocs) AddUserOperations() {
 
 	d.AddOperation("getApiTokens", http.MethodGet, "/deepfence/api-token",
 		"Get User's API Tokens", "Get logged in user's API Tokens",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.ApiToken))
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]ApiTokenResponse))
 	d.AddOperation("resetApiTokens", http.MethodPost, "/deepfence/api-token/reset",
 		"Reset User's API Tokens", "Reset user's API Tokens",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.ApiToken))
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]ApiTokenResponse))
 
 	d.AddOperation("resetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/request",
 		"Reset Password Request", "Request for resetting the password",
@@ -83,10 +82,6 @@ func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("registerInvitedUser", http.MethodPost, "/deepfence/user/invite/register",
 		"Register Invited User", "Register invited user",
 		http.StatusOK, []string{tagUser}, nil, new(RegisterInvitedUserRequest), new(LoginResponse))
-
-	d.AddOperation("getUserActivityLogs", http.MethodGet, "/deepfence/user-activity-log",
-		"Get activity logs for all users", "Get activity logs for all users",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.GetAuditLogsRow))
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {
@@ -588,5 +583,22 @@ func (d *OpenApiDocs) AddReportsOperations() {
 }
 
 func (d *OpenApiDocs) AddSettingsOperations() {
-
+	d.AddOperation("addEmailConfiguration", http.MethodPost, "/deepfence/settings/email",
+		"Add Email Configuration", "This email configuration is used to send email notifications",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(EmailConfigurationAdd), nil)
+	d.AddOperation("getEmailConfiguration", http.MethodGet, "/deepfence/settings/email",
+		"Get Email Configurations", "Get Email Smtp / ses Configurations in system",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]EmailConfigurationResp))
+	d.AddOperation("deleteEmailConfiguration", http.MethodDelete, "/deepfence/settings/email/{config_id}",
+		"Delete Email Configurations", "Delete Email Smtp / ses Configurations in system",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(ConfigIDPathReq), nil)
+	d.AddOperation("getSettings", http.MethodGet, "/deepfence/settings/global-settings",
+		"Get settings", "Get all settings",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]SettingsResponse))
+	d.AddOperation("updateSetting", http.MethodPatch, "/deepfence/settings/global-settings/{id}",
+		"Update setting", "Update setting",
+		http.StatusNoContent, []string{tagSettings}, bearerToken, new(SettingUpdateRequest), nil)
+	d.AddOperation("getUserActivityLogs", http.MethodGet, "/deepfence/settings/user-activity-log",
+		"Get activity logs", "Get activity logs for all users",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]GetAuditLogsRow))
 }

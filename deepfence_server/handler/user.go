@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/integrations/email"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -78,6 +78,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		respondError(&ForbiddenError{errors.New("Cannot register. Please contact your administrator for an invite")}, w)
 		return
 	}
+	registerRequest.Email = strings.ToLower(registerRequest.Email)
 	emailDomain, _ := utils.GetEmailDomain(registerRequest.Email)
 	c := model.Company{
 		Name:        registerRequest.Company,
@@ -182,7 +183,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 	user := model.User{
 		FirstName:           registerRequest.FirstName,
 		LastName:            registerRequest.LastName,
-		Email:               userInvite.Email,
+		Email:               strings.ToLower(userInvite.Email),
 		Company:             company.Name,
 		CompanyID:           company.ID,
 		IsActive:            true,
@@ -258,6 +259,7 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 	var userInvite postgresql_db.UserInvite
 	code := utils.NewUUID()
 	expiry := utils.GetCurrentDatetime().Add(48 * time.Hour)
+	inviteUserRequest.Email = strings.ToLower(inviteUserRequest.Email)
 	userInvite, err = pgClient.GetUserInviteByEmail(ctx, inviteUserRequest.Email)
 	if errors.Is(err, sql.ErrNoRows) {
 		userInvite, err = pgClient.CreateUserInvite(ctx, postgresql_db.CreateUserInviteParams{
@@ -291,10 +293,19 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	inviteURL := fmt.Sprintf("http://localhost/#/invite-accept/?invite_code=%s", code)
+	consoleUrl, err := model.GetManagementConsoleURL(ctx, pgClient)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	inviteURL := fmt.Sprintf("%s/auth/invite-accept?invite_code=%s", consoleUrl, code)
 	message := ""
 	if inviteUserRequest.Action == UserInviteSendEmail {
-		email.SendEmail()
+		//err = SendEmail()
+		//if err != nil {
+		//	respondError(errors.New("Email not configured"), w)
+		//	return
+		//}
 		message = "Invite sent"
 	}
 
@@ -352,6 +363,7 @@ func (h *Handler) GetUserByUserID(w http.ResponseWriter, r *http.Request) {
 	userId, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		respondError(&BadDecoding{err}, w)
+		return
 	}
 	user, statusCode, _, _, err := model.GetUserByID(userId)
 	if err != nil {
@@ -407,6 +419,7 @@ func (h *Handler) UpdateUserByUserID(w http.ResponseWriter, r *http.Request) {
 	userId, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
 		respondError(&BadDecoding{err}, w)
+		return
 	}
 	user, statusCode, ctx, pgClient, err := model.GetUserByID(userId)
 	if err != nil {
@@ -474,7 +487,7 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err}, w)
 		return
 	}
-	user, _, ctx, pgClient, err := model.GetUserByEmail(resetPasswordRequest.Email)
+	user, _, ctx, pgClient, err := model.GetUserByEmail(strings.ToLower(resetPasswordRequest.Email))
 	if err.Error() == utils.ErrorUserNotFound {
 		respondError(&NotFoundError{errors.New("A password reset email will be sent if a user exists with the provided email id")}, w)
 		return
@@ -495,12 +508,12 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	err = email.SendEmail()
-	if err != nil {
-		pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
-		respondError(errors.New("Email not configured"), w)
-		return
-	}
+	//err = SendEmail()
+	//if err != nil {
+	//	pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
+	//	respondError(errors.New("Email not configured"), w)
+	//	return
+	//}
 
 	httpext.JSON(w, http.StatusOK, model.MessageResponse{
 		Message: "A password reset email will be sent if a user exists with the provided email id"})

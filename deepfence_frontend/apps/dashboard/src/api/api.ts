@@ -23,10 +23,15 @@ import {
 } from '@/api/generated';
 import storage from '@/utils/storage';
 
+import { ReportsApi } from './generated/apis/ReportsApi';
+
 const configuration = new Configuration({
   basePath: `${window.location.protocol}//${window.location.host}`,
   accessToken: () => {
     return storage.getAuth()?.accessToken ?? '';
+  },
+  headers: {
+    'accept-encoding': 'gzip, deflate, br',
   },
 });
 
@@ -45,6 +50,7 @@ export function getUserApiClient() {
     registerUser: userApi.registerUser.bind(userApi),
     getUsers: userApi.getUsers.bind(userApi),
     getUser: userApi.getUser.bind(userApi),
+    getApiTokens: userApi.getApiTokens.bind(userApi),
     updateUser: userApi.updateUser.bind(userApi),
     deleteUser: userApi.deleteUser.bind(userApi),
     updatePassword: userApi.updatePassword.bind(userApi),
@@ -251,5 +257,15 @@ export function getIntegrationApiClient() {
     addIntegration: integrationApi.addIntegration.bind(integrationApi),
     listIntegration: integrationApi.listIntegration.bind(integrationApi),
     deleteIntegration: integrationApi.deleteIntegration.bind(integrationApi),
+  };
+}
+
+export function getReportsApiClient() {
+  const reportsApi = new ReportsApi(configuration);
+
+  return {
+    listReports: reportsApi.listReports.bind(reportsApi),
+    generateReport: reportsApi.generateReport.bind(reportsApi),
+    deleteReport: reportsApi.deleteReport.bind(reportsApi),
   };
 }

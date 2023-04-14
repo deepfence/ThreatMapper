@@ -2,7 +2,6 @@ package cronjobs
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -29,18 +28,11 @@ func getResourceCleanUpTimeout(ctx context.Context) time.Duration {
 	if err != nil {
 		return defaultDBScannedResourceCleanUpTimeout
 	}
-	s := model.Setting{}
-	aes, err := s.GetSettingByKey(ctx, pgClient, model.InactiveNodesDeleteScanResultsKey)
+	timeoutSetting, err := model.GetSettingByKey(ctx, pgClient, model.InactiveNodesDeleteScanResultsKey)
 	if err != nil {
 		return defaultDBScannedResourceCleanUpTimeout
 	}
-	var sValue directory.SettingValue
-	err = json.Unmarshal(aes.Value, &sValue)
-	if err != nil {
-		return defaultDBScannedResourceCleanUpTimeout
-	}
-
-	if t, ok := sValue.Value.(int); ok {
+	if t, ok := timeoutSetting.Value.Value.(int); ok {
 		return time.Hour * 24 * time.Duration(t)
 	}
 

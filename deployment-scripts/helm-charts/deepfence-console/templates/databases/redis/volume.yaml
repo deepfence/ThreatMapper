@@ -1,0 +1,17 @@
+{{- if .Values.redis.create }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: "deepfence-redis-{{ .Release.Name }}"
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: redis
+spec:
+  storageClassName: {{ .Values.redis.storageClass }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.redis.volumeSize }}
+{{- end }}

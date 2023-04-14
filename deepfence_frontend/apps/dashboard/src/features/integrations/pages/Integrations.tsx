@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { IconContext } from 'react-icons';
 import {
   FaAws,
@@ -15,9 +16,14 @@ import {
   FaSlack,
 } from 'react-icons/fa';
 import { HiArrowSmRight } from 'react-icons/hi';
+import { useLoaderData } from 'react-router-dom';
 import { Card } from 'ui-components';
 
+import { ModelIntegrationListResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { DFAwait } from '@/utils/suspense';
+
+import { loader } from './IntegrationAdd';
 
 const IntegrationsData = [
   {
@@ -38,6 +44,7 @@ const IntegrationsData = [
     types: [
       {
         name: 'Slack',
+        id: 'slack',
         icon: (
           <IconContext.Provider
             value={{
@@ -51,6 +58,7 @@ const IntegrationsData = [
       },
       {
         name: 'Microsoft Teams',
+        id: 'microsoft_teams',
         icon: (
           <IconContext.Provider
             value={{
@@ -63,7 +71,8 @@ const IntegrationsData = [
         path: '/integrations/notifications/add/microsoft-teams',
       },
       {
-        name: 'Page Duty',
+        name: 'Pager Duty',
+        id: 'pager_duty',
         icon: (
           <IconContext.Provider
             value={{
@@ -77,6 +86,7 @@ const IntegrationsData = [
       },
       {
         name: 'HTTP Endpoint',
+        id: 'http_endpoint',
         icon: (
           <IconContext.Provider
             value={{
@@ -106,6 +116,7 @@ const IntegrationsData = [
     types: [
       {
         name: 'Splunk',
+        id: 'splunk',
         icon: (
           <IconContext.Provider
             value={{
@@ -119,6 +130,7 @@ const IntegrationsData = [
       },
       {
         name: 'Elasticsearch',
+        id: 'elasticsearch',
         icon: (
           <IconContext.Provider
             value={{
@@ -132,6 +144,7 @@ const IntegrationsData = [
       },
       {
         name: 'Sumo Logic',
+        id: 'sumo_logic',
         icon: (
           <IconContext.Provider
             value={{
@@ -145,6 +158,7 @@ const IntegrationsData = [
       },
       {
         name: 'Google Chronicle',
+        id: 'google_chronicle',
         icon: (
           <IconContext.Provider
             value={{
@@ -158,6 +172,7 @@ const IntegrationsData = [
       },
       {
         name: 'AWS Security Hub',
+        id: 'aws_security_hub',
         icon: (
           <IconContext.Provider
             value={{
@@ -187,6 +202,7 @@ const IntegrationsData = [
     types: [
       {
         name: 'Jira',
+        id: 'jira',
         icon: (
           <IconContext.Provider
             value={{
@@ -216,6 +232,7 @@ const IntegrationsData = [
     types: [
       {
         name: 'S3',
+        id: 's3',
         icon: (
           <IconContext.Provider
             value={{
@@ -232,6 +249,9 @@ const IntegrationsData = [
 ];
 
 const Integrations = () => {
+  const loaderData = useLoaderData() as {
+    data: ModelIntegrationListResp[];
+  };
   return (
     <>
       <div className="flex p-2 pl-2 w-full shadow bg-white dark:bg-gray-800">
@@ -289,9 +309,26 @@ const Integrations = () => {
                           {type.icon}
                         </div>
                         <div className="flex flex-col gap-x-4">
-                          <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">
-                            23
-                          </span>
+                          <Suspense
+                            fallback={<div className="h-6 w-6 bg-slate-200"></div>}
+                          >
+                            <DFAwait resolve={loaderData?.data}>
+                              {(resolvedData: { data?: ModelIntegrationListResp[] }) => {
+                                const { data = [] } = resolvedData ?? {};
+                                const len = data.filter(
+                                  (integration) =>
+                                    integration.integration_type === type.id,
+                                ).length;
+
+                                return (
+                                  <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">
+                                    {len}
+                                  </span>
+                                );
+                              }}
+                            </DFAwait>
+                          </Suspense>
+
                           <span className="text-xs text-gray-400 dark:text-gray-500">
                             Connections
                           </span>
@@ -311,4 +348,5 @@ const Integrations = () => {
 
 export const module = {
   element: <Integrations />,
+  loader,
 };

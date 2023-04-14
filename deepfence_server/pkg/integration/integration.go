@@ -2,12 +2,16 @@ package integration
 
 import (
 	"errors"
+
 	awssecurityhub "github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/aws-security-hub"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/elasticsearch"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/email"
 	googlechronicle "github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/google-chronicle"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	httpendpoint "github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/http-endpoint"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/jira"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/pagerduty"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/s3"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/slack"
@@ -36,6 +40,10 @@ func GetIntegration(integrationType string, b []byte) (Integration, error) {
 		return googlechronicle.New(b)
 	case constants.AwsSecurityHub:
 		return awssecurityhub.New(b)
+	case constants.Email:
+		return email.New(b)
+	case constants.Jira:
+		return jira.New(b)
 	default:
 		return nil, errors.New("invalid integration type")
 	}

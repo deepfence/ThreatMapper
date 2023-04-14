@@ -2,24 +2,27 @@ import { useEffect, useState } from 'react';
 import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 import { CircleSpinner, SlidingModalContent, Tabs } from 'ui-components';
 
-import {
-  getComplianceApiClient,
-  getLookupApiClient,
-  getMalwareApiClient,
-  getSecretApiClient,
-  getVulnerabilityApiClient,
-} from '@/api/api';
+import { getLookupApiClient } from '@/api/api';
 import { ModelHost } from '@/api/generated';
 import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
 import { Header } from '@/features/topology/components/node-details/Header';
-import { Metadata } from '@/features/topology/components/node-details/Metadata';
 import {
+  Metadata,
+  toTopologyMetadataString,
+} from '@/features/topology/components/node-details/Metadata';
+import {
+  ConnectionsTable,
   ContainerTable,
   ImageTable,
   ProcessTable,
 } from '@/features/topology/components/node-details/SummaryTables';
+import {
+  getComplianceScanCounts,
+  getMalwareScanCounts,
+  getSecretScanCounts,
+  getVulnerabilityScanCounts,
+} from '@/features/topology/components/scan-results/loaderHelpers';
 import { ScanResult } from '@/features/topology/components/scan-results/ScanResult';
-import { ScanSummary } from '@/features/topology/types/node-details';
 import { ApiError, makeRequest } from '@/utils/api';
 
 export type LoaderData = {
@@ -28,170 +31,6 @@ export type LoaderData = {
   secretScanCounts: Awaited<ReturnType<typeof getSecretScanCounts>>;
   malwareScanCounts: Awaited<ReturnType<typeof getMalwareScanCounts>>;
   complianceScanCounts: Awaited<ReturnType<typeof getComplianceScanCounts>>;
-};
-
-const getVulnerabilityScanCounts = async (
-  vulnerabilityScanId?: string,
-): Promise<ScanSummary | null> => {
-  if (!vulnerabilityScanId || !vulnerabilityScanId.length) {
-    return null;
-  }
-  const vulnerabilityScanResults = await makeRequest({
-    apiFunction: getVulnerabilityApiClient().resultVulnerabilityScan,
-    apiArgs: [
-      {
-        modelScanResultsReq: {
-          scan_id: vulnerabilityScanId,
-          window: {
-            offset: 0,
-            size: 1,
-          },
-          fields_filter: {
-            contains_filter: {
-              filter_in: {},
-            },
-            match_filter: {
-              filter_in: {},
-            },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
-          },
-        },
-      },
-    ],
-  });
-  if (ApiError.isApiError(vulnerabilityScanResults)) {
-    console.error(vulnerabilityScanResults);
-    throw new Error("Couldn't get vulnerability scan results");
-  }
-  return {
-    scanId: vulnerabilityScanId,
-    timestamp: vulnerabilityScanResults.created_at,
-    counts: vulnerabilityScanResults.severity_counts ?? {},
-  };
-};
-
-const getSecretScanCounts = async (
-  secretScanId?: string,
-): Promise<ScanSummary | null> => {
-  if (!secretScanId || !secretScanId.length) {
-    return null;
-  }
-  const secretScanResults = await makeRequest({
-    apiFunction: getSecretApiClient().resultSecretScan,
-    apiArgs: [
-      {
-        modelScanResultsReq: {
-          scan_id: secretScanId,
-          window: {
-            offset: 0,
-            size: 1,
-          },
-          fields_filter: {
-            contains_filter: {
-              filter_in: {},
-            },
-            match_filter: {
-              filter_in: {},
-            },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
-          },
-        },
-      },
-    ],
-  });
-  if (ApiError.isApiError(secretScanResults)) {
-    console.error(secretScanResults);
-    throw new Error("Couldn't get secret scan results");
-  }
-  return {
-    scanId: secretScanId,
-    timestamp: secretScanResults.created_at,
-    counts: secretScanResults.severity_counts ?? {},
-  };
-};
-
-const getMalwareScanCounts = async (
-  malwareScanId?: string,
-): Promise<ScanSummary | null> => {
-  if (!malwareScanId || !malwareScanId.length) {
-    return null;
-  }
-  const malwareScanResults = await makeRequest({
-    apiFunction: getMalwareApiClient().resultMalwareScan,
-    apiArgs: [
-      {
-        modelScanResultsReq: {
-          scan_id: malwareScanId,
-          window: {
-            offset: 0,
-            size: 1,
-          },
-          fields_filter: {
-            contains_filter: {
-              filter_in: {},
-            },
-            match_filter: {
-              filter_in: {},
-            },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
-          },
-        },
-      },
-    ],
-  });
-  if (ApiError.isApiError(malwareScanResults)) {
-    console.error(malwareScanResults);
-    throw new Error("Couldn't get malware scan results");
-  }
-  return {
-    scanId: malwareScanId,
-    timestamp: malwareScanResults.created_at,
-    counts: malwareScanResults.severity_counts ?? {},
-  };
-};
-
-const getComplianceScanCounts = async (
-  complianceScanId?: string,
-): Promise<ScanSummary | null> => {
-  if (!complianceScanId || !complianceScanId.length) {
-    return null;
-  }
-  const complianceScanResults = await makeRequest({
-    apiFunction: getComplianceApiClient().resultComplianceScan,
-    apiArgs: [
-      {
-        modelScanResultsReq: {
-          scan_id: complianceScanId,
-          window: {
-            offset: 0,
-            size: 1,
-          },
-          fields_filter: {
-            contains_filter: {
-              filter_in: {},
-            },
-            match_filter: {
-              filter_in: {},
-            },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
-          },
-        },
-      },
-    ],
-  });
-  if (ApiError.isApiError(complianceScanResults)) {
-    console.error(complianceScanResults);
-    throw new Error("Couldn't get posture scan results");
-  }
-  return {
-    scanId: complianceScanId,
-    timestamp: complianceScanResults.created_at,
-    counts: complianceScanResults.status_counts ?? {},
-  };
 };
 
 const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
@@ -311,20 +150,67 @@ export const Host = ({
             {tab === 'metadata' && (
               <Metadata
                 data={{
-                  kernel_version: fetcher.data?.hostData?.kernel_version ?? '-',
-                  interface_ips: fetcher.data?.hostData?.interface_ips?.join(', ') ?? '-',
-                  interface_names:
-                    fetcher.data?.hostData?.interface_names?.join(', ') ?? '-',
-                  uptime: fetcher.data?.hostData?.uptime
-                    ? String(fetcher.data?.hostData?.uptime)
-                    : '-',
-                  cloud_provider: fetcher.data?.hostData.cloud_provider ?? '-',
+                  node_name: toTopologyMetadataString(fetcher.data?.hostData?.node_name),
+                  version: toTopologyMetadataString(fetcher.data?.hostData?.version),
+                  instance_id: toTopologyMetadataString(
+                    fetcher.data?.hostData?.instance_id,
+                  ),
+                  cloud_provider: toTopologyMetadataString(
+                    fetcher.data?.hostData?.cloud_provider,
+                  ),
+                  cloud_region: toTopologyMetadataString(
+                    fetcher.data?.hostData?.cloud_region,
+                  ),
+                  uptime: toTopologyMetadataString(fetcher.data?.hostData?.uptime),
+                  is_console_vm: toTopologyMetadataString(
+                    fetcher.data?.hostData?.is_console_vm,
+                  ),
+                  kernel_version: toTopologyMetadataString(
+                    fetcher.data?.hostData?.kernel_version,
+                  ),
+                  os: toTopologyMetadataString(fetcher.data?.hostData?.os),
+                  local_networks: toTopologyMetadataString(
+                    fetcher.data?.hostData?.local_networks,
+                  ),
+                  interface_ips: toTopologyMetadataString(
+                    fetcher.data?.hostData?.interface_ips,
+                  ),
+                  interface_names: toTopologyMetadataString(
+                    fetcher.data?.hostData?.interface_names,
+                  ),
+                  local_cidr: toTopologyMetadataString(
+                    fetcher.data?.hostData?.local_cidr,
+                  ),
+                  instance_type: toTopologyMetadataString(
+                    fetcher.data?.hostData?.instance_type,
+                  ),
+                  public_ip: toTopologyMetadataString(fetcher.data?.hostData?.public_ip),
+                  private_ip: toTopologyMetadataString(
+                    fetcher.data?.hostData?.private_ip,
+                  ),
+                  availability_zone: toTopologyMetadataString(
+                    fetcher.data?.hostData?.availability_zone,
+                  ),
+                  resource_group: toTopologyMetadataString(
+                    fetcher.data?.hostData?.resource_group,
+                  ),
                 }}
               />
             )}
             {tab === 'connections-and-processes' && (
               <>
-                <ProcessTable processes={fetcher.data?.hostData.processes ?? []} />
+                <ProcessTable
+                  processes={fetcher.data?.hostData.processes ?? []}
+                  onNodeClick={onNodeClick}
+                />
+                <ConnectionsTable
+                  type="inbound"
+                  connections={fetcher.data?.hostData.inbound_connections ?? []}
+                />
+                <ConnectionsTable
+                  type="outbound"
+                  connections={fetcher.data?.hostData.outbound_connections ?? []}
+                />
               </>
             )}
             {tab === 'containers-and-images' && (

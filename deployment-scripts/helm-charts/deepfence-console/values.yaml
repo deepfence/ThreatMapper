@@ -2,277 +2,391 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-registry:
-  name: "https://index.docker.io/v1/"
-  imagePrefix: ""
-  # This will create a secret called "deepfence-docker-secret"
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+imagePullSecret:
+  # Specifies whether a image pull secret should be created
+  create: false
+  registry: "https://index.docker.io/v1/"
   username: ""
   password: ""
-  # If kubernetes secret is already defined externally, change following value to false
-  # https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
-  createRegistrySecret: true
-
-image:
-  tag: 1.4.2
-  pullSecretName: docker-deepfence-secret
-
-# Use custom ssl certificate for Deepfence UI
-# custom certificates can be configured using two options
-# existing secret or base64 encoded cert and key string
-# provide one off the two options to configure custom certificates
-tls:
-  # provide secret name which contains tls cert and key
-  # reference: https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets
-  # make sure to create secret in the same namespace as that of the console
-  secretName: ""
-  # embed given cert and key as secret and mount to router pod
-  # provide certificate and key in below example format
-  # cert: |-
-  #   -----BEGIN CERTIFICATE-----
-  #   MIIFCTCCAvGgAwIBAgIUNshy8GFTjfUR7inZ1JCcN+tDuh4wDQYJKoZIhvcNAQEL
-  #   .....
-  #   JY7f+DC42mQvWWXbll+I60CEtZyExtfBEbSihOR2NoG3WMhXEGAXO5C/jEnSDHKt
-  #   BMepE4d9+TQFcPQ/OKSlP8FB2nPKZJdM+JlXDFWqeKvbdYS4QErRLd33qUmq
-  #   -----END CERTIFICATE-----
-  # key: |-
-  #   -----BEGIN PRIVATE KEY-----
-  #   MIIJQQIBADANBgkqhkiG9w0BAQEFAASCCSswggknAgEAAoICAQDECeUraonCz/89
-  #   .....
-  #   uK1Rv6SE6KrBFb8JYEpjyjiAlVUGDANqbMtB2dvJ/GD6vTch/kLyZ95x7+V0qXGV
-  #   bHEvWp7ugCTFhurM+lla0d+ElDO2
-  #   -----END PRIVATE KEY-----
-  cert: ""
-  key: ""
-
-# Configure port for browser / agents
-managementConsolePort: "443"
-
-# URL or ip address of Deepfence management console:
-# Example: deepfence.company.com, 11.22.33.44
-deepfenceUrl: ""
-
-volume:
-  storageClass: ""
-  # Change storage class when using different PV provisioner.
-  # For example, it will be 'openebs-hostpath' when using openebs
-  # or it will be 'default' when using cloud managed Persistent Volumes.
-  esStorage: 30Gi
-  postgresStorage: 30Gi
-  kafkaStorage: 30Gi
-
-clusterDomain: "cluster.local"
-
-db:
-  # If kubernetes secret is already defined externally, change following value to false
-  createDbSecret: true
-  #  Change following values accordingly if using externally managed database
-  postgresUserDb:
-    host: deepfence-postgres
-    port: "5432"
-    user: "cve"
-    password: "cve"
-    dbname: "users"
-    sslmode: "disable"
-    # Following values are only for SaaS deployments
-    customer_user_name: ""
-    customer_user_password: ""
-  elasticsearch:
-    scheme: "http"
-    host: deepfence-es
-    port: "9200"
-    user: ""
-    password: ""
-  redis:
-    host: deepfence-redis
-    port: "6379"
-  kafka_rest: deepfence-rest-proxy:8082
-  kafka:
-    broker: deepfence-kafka-broker:9092
-    ## set this to new value when kafka resplicas is >1
-    ## to generate download kafka and run "kafka-storage random-uuid"
-    ## storageUUID: ""
-    storageUUID: hNQ55qppT5GGybF52ZGlOQ
-    ## topic configurations
-    kafka_topic_replicas: 3
-    kafka_topic_retention_ms: "86400000" # values needs to be quoted
-
-# (Optional) Set custom name for the cluster and hostname prefix for console vm's to easily identify in Deepfence UI.
-# Example: df-console or deepfence-console
-# It will be suffixed with hostname - df-console-aks-agentpool-123456-vmss000001
-clusterName: "df-console"
-
-# SaaS specific values
-saas_deployment: false
-saas_portal_url: ""
-
-awsALB:
-  wafAnnotation: ""
-  certArn: ""
-  groupName: "deepfence-1"
-
-saas_env:
+  # The name of the imagePullSecret to use.
+  # If not set and create is true, a name is generated using the fullname template
   name: ""
-  clusterName: ""
-  lokiUrl: ""
 
-mountContainerRuntimeSocket:
-  dockerSock: false
-  # Change if socket path is not the following
-  dockerSockPath: "/var/run/docker.sock"
-  containerdSock: true
-  # Change if socket path is not the following
-  containerdSockPath: "/run/containerd/containerd.sock"
-  crioSock: false
-  # Change if socket path is not the following
-  crioSockPath: "/var/run/crio/crio.sock"
-
-serviceAccountName: deepfence-console
-
-api:
-  replicaCount: 1
+kafka:
+  # Specifies whether a kafka cluster should be created
+  create: true
+  # if create false provide name of the existing secret 
+  # secret format refer templates/console-secrets/kafka.yaml
+  secretName: ""
+  # if create true then below values are used to create kafka cluster
+  replicaCount: 1 # recommended 3 for high availability kafka
   image:
-    repository: deepfenceio/deepfence_api_ce
+    repository: deepfenceio/deepfence_kafka_broker_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
-
+    tag: v2
+  storageUUID: hNQ55qppT5GGybF52ZGlOQ
+  storageClass: ""
+  volumeSize: 30G
   resources:
-    requests:
-      cpu: 50m
-      memory: 150Mi
     limits:
-      cpu: 4000m
-      memory: 4Gi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-
+      # cpu: 100m
+      memory: 4000Mi
+    requests:
+      # cpu: 100m
+      memory: 1000Mi
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
   nodeSelector: {}
-
   tolerations: []
+  affinity: {}
 
-  service:
-    type: ClusterIP
-
-backend:
+postgresql:
+  # Specifies whether a postgres database instance should be created
+  create: true
+  # if create false provide name of the existing secret 
+  # secret format refer templates/console-secrets/postgresql.yaml
+  secretName: ""
+  # if create true then below values are used to create postgres database instance
+  secrets:
+    POSTGRES_PASSWORD: deepfence
+    POSTGRES_USER: deepfence
+    POSTGRES_DB: users
   replicaCount: 1
   image:
-    repository: deepfenceio/deepfence_api_ce
+    repository: postgres
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
-  initContainerRequired: true
-  nameOverride: ""
-  fullnameOverride: ""
-
+    tag: 15-alpine
+  storageClass: ""
+  volumeSize: 10G
   resources:
+    limits:
+      # cpu: 100m
+      memory: 2000Mi
     requests:
-      cpu: 50m
+      # cpu: 100m
       memory: 512Mi
-    limits:
-      cpu: 4000m
-      memory: 4Gi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
   nodeSelector: {}
-
   tolerations: []
+  affinity: {}
 
-  service:
-    type: ClusterIP
+redis:
+  # Specifies whether a postgres database instance should be created
+  create: true
+  # if create false provide name of the existing secret 
+  # secret format refer templates/console-secrets/redis.yaml
+  secretName: ""
+  # if create true then below values are used to create postgres database instance 
+  image:
+    repository: redis
+    pullPolicy: Always
+    tag: 7-alpine
+  storageClass: ""
+  volumeSize: 5G
+  resources: 
+    limits:
+      # cpu: 100m
+      memory: 1000Mi
+    requests:
+      # cpu: 100m
+      memory: 128Mi
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
+minio:
+  # Specifies whether a postgres database instance should be created
+  create: true
+  # if create false provide name of the existing secret 
+  # secret format refer templates/console-secrets/minio.yaml
+  secretName: ""
+  # if create true then below values are used to create postgres database instance 
+  secrets: 
+    MINIO_ROOT_USER: deepfence
+    MINIO_ROOT_PASSWORD: deepfence
+  image:
+    repository: deepfenceio/deepfence_file_server_ce
+    pullPolicy: Always
+    tag: v2
+  storageClass: ""
+  volumeSize: 30G
+  resources:
+    limits:
+      # cpu: 100m
+      memory: 1000Mi
+    requests:
+      # cpu: 100m
+      memory: 128Mi
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
-celery:
+neo4j:
+  # Specifies whether a neo4j database instance should be created
+  create: true
+  # if create false provide name of the existing secret 
+  # secret format refer templates/console-secrets/neo4j.yaml
+  secretName: ""
+  # if create true then below values are used to create neo4j database instance 
+  secrets:
+    # format should be username/password
+    NEO4J_AUTH: neo4j/e16908ffa5b9f8e9d4ed
+  config:
+    NEO4J_dbms_memory_pagecache_size: 2600m
+    NEO4J_dbms_memory_heap_initial__size: 4000m
+    NEO4J_dbms_memory_heap_max__size: 4000m
+    NEO4JLABS_PLUGINS: '["apoc"]'
+  image:
+    repository: neo4j
+    pullPolicy: Always
+    tag: 4.4.12
+  storageClass: ""
+  volumeSize: 30G
+  resources: {}
+    # limits:
+    #   # cpu: 100m
+    #   memory: 5000Mi
+    # requests:
+    #   # cpu: 100m
+    #   memory: 1000Mi
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+router:
   replicaCount: 1
   image:
-    repository: deepfenceio/deepfence_api_ce
+    repository: deepfenceio/deepfence_router_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
-
-  resources:
-    requests:
-      cpu: 50m
-      memory: 1Gi
-    limits:
-      cpu: 8000m
-      memory: 8Gi
-
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: v2
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+  service:
+    # useful for configuring loadbalancer options on supported clouds
+    annotations: {}  
+      # service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
+    type: LoadBalancer
+    httpsPort: 443
+    httpPort: 80
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
   autoscaling:
     enabled: false
     minReplicas: 1
     maxReplicas: 3
     targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-
+    # targetMemoryUtilizationPercentage: 80
   nodeSelector: {}
-
   tolerations: []
+  affinity: {}
 
-  service:
-    type: ClusterIP
-
-diagnosis:
+server:
   replicaCount: 1
-  nodeMetrics: false
   image:
-    repository: deepfenceio/deepfence_diagnosis_ce
+    repository: deepfenceio/deepfence_server_ce
     pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
-
-  resources:
-    requests:
-      cpu: 50m
-      memory: 100Mi
-    limits:
-      cpu: 2000m
-      memory: 200Mi
-
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: v2
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+  service:
+    type: ClusterIP
+    port: 8080
+    internalPort: 8081
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
   autoscaling:
     enabled: false
     minReplicas: 1
     maxReplicas: 3
     targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-
+    # targetMemoryUtilizationPercentage: 80
   nodeSelector: {}
-
   tolerations: []
+  affinity: {}
 
+worker:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_worker_ce
+    pullPolicy: Always
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: v2
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
   service:
     type: ClusterIP
+    port: 8080
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
-discovery:
+ingester:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_worker_ce
+    pullPolicy: Always
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: v2
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+  service:
+    type: ClusterIP
+    port: 8080
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+scheduler:
+  image:
+    repository: deepfenceio/deepfence_worker_ce
+    pullPolicy: Always
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: v2
+  service:
+    type: ClusterIP
+    port: 8080
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+ui:
+  replicaCount: 1
+  image:
+    repository: deepfenceio/deepfence_ui_ce
+    pullPolicy: Always
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: v2
+  service:
+    type: ClusterIP
+    port: 8081
+  resources: {}
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+  podAnnotations: {}
+  podSecurityContext: {}
+  securityContext: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+console_agent:
   # Show console vm in management console UI
-  runConsoleDiscovery: true
+  enable: true
   image:
-    repository: deepfenceio/deepfence_discovery_ce
+    repository: deepfenceio/deepfence_agent_ce
     pullPolicy: Always
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: v2
   enableGraphReport: true
   clusterName: ""
-
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
-
+  mountContainerRuntimeSocket:
+    dockerSock: false
+    dockerSockPath: "/var/run/docker.sock"                 # Change if socket path is not the following
+    containerdSock: true
+    containerdSockPath: "/run/containerd/containerd.sock"  # Change if socket path is not the following
+    crioSock: false
+    crioSockPath: "/var/run/crio/crio.sock"                # Change if socket path is not the following
   resources:
     requests:
       cpu: 50m
@@ -280,453 +394,9 @@ discovery:
     limits:
       cpu: 2000m
       memory: 2Gi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-
   nodeSelector: {}
-
   tolerations:
     - effect: NoSchedule
       operator: Exists
     - effect: NoExecute
       operator: Exists
-
-  service:
-    type: ClusterIP
-
-topology:
-  replicaCount: 1
-  image:
-    repository: deepfenceio/deepfence_discovery_ce
-    pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
-
-  resources:
-    requests:
-      cpu: 1000m
-      memory: 2Gi
-    limits:
-      cpu: 16000m
-      memory: 32Gi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-
-  nodeSelector: {}
-
-  tolerations: []
-
-  service:
-    type: ClusterIP
-
-fetcher:
-  replicaCount: 1
-  image:
-    repository: deepfenceio/deepfence_fetcher_ce
-    pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
-
-  resources:
-    requests:
-      cpu: 50m
-      memory: 100Mi
-    limits:
-      cpu: 2000m
-      memory: 2Gi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-
-  nodeSelector: {}
-
-  tolerations: []
-
-  service:
-    type: ClusterIP
-
-router:
-  replicaCount: 1
-  uiServiceName: "deepfence-ui"
-  image:
-    repository: deepfenceio/deepfence_router_ce
-    pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
-
-  resources:
-    requests:
-      cpu: 50m
-      memory: 100Mi
-    limits:
-      cpu: 4000m
-      memory: 4Gi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-
-  setAntiAffinity: false
-  nodeSelector: {}
-
-  tolerations: []
-
-  service:
-    type: ClusterIP
-
-
-redis:
-  replicaCount: 1
-  image:
-    repository: deepfenceio/deepfence_redis_ce
-    pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
-  initContainerRequired: true
-  nameOverride: ""
-  fullnameOverride: ""
-
-  resources:
-    requests:
-      cpu: 50m
-      memory: 100Mi
-    limits:
-      cpu: 8000m
-      memory: 16Gi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-
-  nodeSelector: {}
-
-  tolerations: []
-
-  service:
-    type: ClusterIP
-
-secretScanner:
-  replicaCount: 1
-  image:
-    repository: deepfenceio/deepfence_secret_scanner_ce
-    pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
-
-  resources:
-    requests:
-      cpu: 100m
-      memory: 40Mi
-      # ephemeral-storage: 10Gi
-    limits:
-      cpu: 4000m
-      memory: 4Gi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-
-  nodeSelector: {}
-
-  tolerations: []
-
-  service:
-    type: ClusterIP
-
-malwareScanner:
-  replicaCount: 1
-  image:
-    repository: deepfenceio/deepfence_malware_scanner_ce
-    pullPolicy: Always
-  imagePullMalware: 
-      - name: docker-deepfence-malware
-  nameOverride: ""
-  fullnameOverride: ""
-
-  resources:
-    requests:
-      cpu: 100m
-      memory: 100Mi
-    limits:
-      cpu: 4000m
-      memory: 4Gi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-
-  nodeSelector: {}
-
-  tolerations: []
-
-  service:
-    type: ClusterIP
-
-vulnerabilityMapper:
-  replicaCount: 1
-  image:
-    repository: deepfenceio/deepfence_vulnerability_mapper_ce
-    pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
-
-  resources:
-    requests:
-      cpu: 50m
-      memory: 100Mi
-    limits:
-      cpu: 4000m
-      memory: 8Gi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-
-  nodeSelector: {}
-
-  tolerations: []
-
-  service:
-    type: ClusterIP
-
-internalRouter:
-  replicaCount: 1
-  image:
-    repository: deepfenceio/deepfence_router_ce
-    pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
-
-  resources:
-    requests:
-      cpu: 50m
-      memory: 100Mi
-    limits:
-      cpu: 4000m
-      memory: 4Gi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-
-  setAntiAffinity: false
-  nodeSelector: {}
-
-  tolerations: []
-
-  service:
-    type: ClusterIP
-
-packageScanner:
-  replicaCount: 1
-  image:
-    repository: deepfenceio/deepfence_package_scanner_ce
-    pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
-
-  resources:
-    requests:
-      cpu: 50m
-      memory: 1Gi
-      # ephemeral-storage: 10Gi
-    limits:
-      cpu: 4000m
-      memory: 4Gi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-
-  nodeSelector: {}
-
-  tolerations: []
-
-  service:
-    type: ClusterIP
-
-ui:
-  runUIPod: true
-  replicaCount: 1
-  image:
-    repository: deepfenceio/deepfence_ui_ce
-    pullPolicy: Always
-  imagePullSecrets: 
-      - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
-
-  resources:
-    requests:
-      cpu: 50m
-      memory: 40Mi
-    limits:
-      cpu: 2000m
-      memory: 2Gi
-
-  autoscaling:
-    enabled: false
-    minReplicas: 1
-    maxReplicas: 3
-    targetCPUUtilizationPercentage: 80
-    targetMemoryUtilizationPercentage: 80
-
-  nodeSelector: {}
-
-  tolerations: []
-
-  service:
-    type: ClusterIP
-
-elasticsearch:
-  # Replication factor for elasticsearch
-  # Recommended: 3+ for production, 1 for dev setup, minikube
-  replicaCount: 3
-  image:
-    repository: deepfenceio/deepfence_elastic_ce
-    pullPolicy: Always
-  imagePullSecrets:
-  - name: docker-deepfence-secret
-  nameOverride: ""
-  fullnameOverride: ""
-
-  resources:
-    requests:
-      cpu: 200m
-      memory: 2Gi
-    limits:
-      cpu: 8000m
-      memory: 8Gi
-  heapSize: "2g"
-
-  autoscaling:
-    enabled: false
-  
-  nodeSelector: {}
-  
-  tolerations: []
-  
-  service:
-    type: ClusterIP
-
-postgresql:
-  replicaCount: 1
-  image:
-    repository: deepfenceio/deepfence_postgres_ce
-    pullPolicy: Always
-  imagePullSecrets:
-  - name: docker-deepfence-secret
-
-  resources:
-    requests:
-      cpu: 50m
-      memory: 40Mi
-    limits:
-      cpu: 4000m
-      memory: 8Gi
-
-  nodeSelector: {}
-  
-  tolerations: []
-  
-  service:
-    type: ClusterIP
-
-kafkaBroker:
-  # Replication factor for kafka-broker
-  # Recommended: 3+ for production, 1 for dev setup, minikube
-  replicaCount: 3
-  image:
-    repository: deepfenceio/deepfence_kafka_broker_ce
-    pullPolicy: Always
-
-  resources:
-    requests:
-      cpu: 500m
-      memory: 2Gi
-    limits:
-      cpu: 4000m
-      memory: 8Gi
-
-  autoscaling:
-    enabled: false
-  
-  nodeSelector: {}
-  
-  tolerations: []
-  
-  service:
-    type: ClusterIP
-
-kafkaRestProxy:
-  replicaCount: 1
-  image:
-    repository: deepfenceio/deepfence_kafka_rest_proxy_ce
-    pullPolicy: Always
-
-  resources:
-    requests:
-      cpu: 500m
-      memory: 2Gi
-    limits:
-      cpu: 2000m
-      memory: 4Gi
-
-  autoscaling:
-    enabled: false
-  
-  nodeSelector: {}
-  
-  tolerations: []
-  
-  service:
-    type: ClusterIP
