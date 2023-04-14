@@ -628,7 +628,7 @@ const SecretScans = () => {
   const { containers, status: listContainerStatus } = useGetContainersList({
     scanType: ScanTypeEnum.SecretScan,
   });
-  const { clusters, status: listClusterStatus } = useGetClustersList();
+  const { clusters, status: listClusterStatus } = useGetClustersList({});
 
   const columns = useMemo(() => {
     const columns = [

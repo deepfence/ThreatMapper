@@ -114,7 +114,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
   const [selectedImages, setSelectedImages] = useState([]);
 
   // kubernetes
-  const { clusters, status: listClusterStatus } = useGetClustersList();
+  const { clusters, status: listClusterStatus } = useGetClustersList({});
   const [selectedCluster, setSelectedClusters] = useState([]);
 
   // severity

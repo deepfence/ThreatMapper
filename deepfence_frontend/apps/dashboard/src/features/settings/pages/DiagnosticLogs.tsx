@@ -353,7 +353,7 @@ const AgentDiagnosticLogsComponent = () => {
     scanType: 'none',
   });
 
-  const { clusters, status: listClusterStatus } = useGetClustersList();
+  const { clusters, status: listClusterStatus } = useGetClustersList({});
 
   const loaderData = useLoaderData() as LoaderDataType;
   const actionData = useActionData() as string;
