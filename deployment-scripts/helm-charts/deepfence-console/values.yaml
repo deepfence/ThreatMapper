@@ -417,7 +417,7 @@ console_agent:
     # Overrides the image tag whose default is the chart appVersion.
     tag: v2
   enableGraphReport: true
-  clusterName: ""
+  clusterName: "deepfence-console"
   mountContainerRuntimeSocket:
     dockerSock: false
     dockerSockPath: "/var/run/docker.sock"                 # Change if socket path is not the following

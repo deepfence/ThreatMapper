@@ -1,13 +1,14 @@
 {{- if .Values.redis.create }}
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: deepfence-redis
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: redis
 spec:
+  serviceName: deepfence-redis
   replicas: 1
   selector:
     matchLabels:
@@ -46,7 +47,7 @@ spec:
             {{- toYaml .Values.redis.resources | nindent 12 }}
           volumeMounts:
             - mountPath: /data
-              name: data
+              name: "redis-{{ .Release.Name }}"
       {{- with .Values.redis.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -59,10 +60,16 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: "deepfence-redis-{{ .Release.Name }}"
+  volumeClaimTemplates:
+    - metadata:
+        name: "redis-{{ .Release.Name }}"
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "{{ .Values.redis.volumeSize }}"
+        storageClassName: {{ .Values.redis.storageClass }}
 ---
 apiVersion: v1
 kind: Service

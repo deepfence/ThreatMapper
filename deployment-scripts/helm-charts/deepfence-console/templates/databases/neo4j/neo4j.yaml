@@ -1,13 +1,14 @@
 {{- if .Values.neo4j.create }}
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: deepfence-neo4j
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: neo4j
 spec:
+  serviceName: deepfence-neo4j
   replicas: 1
   selector:
     matchLabels:
@@ -57,11 +58,11 @@ spec:
           resources:
             {{- toYaml .Values.neo4j.resources | nindent 12 }}
           volumeMounts:
-            - name: data
+            - name: "neo4j-{{ .Release.Name }}"
               mountPath: /data
-            - name: data
+            - name: "neo4j-{{ .Release.Name }}"
               mountPath: /logs
-            - name: data
+            - name: "neo4j-{{ .Release.Name }}"
               mountPath: /plugins
       {{- with .Values.neo4j.nodeSelector }}
       nodeSelector:
@@ -75,10 +76,16 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: "deepfence-neo4j-{{ .Release.Name }}"
+  volumeClaimTemplates:
+    - metadata:
+        name: "neo4j-{{ .Release.Name }}"
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "{{ .Values.neo4j.volumeSize }}"
+        storageClassName: {{ .Values.neo4j.storageClass }}
 ---
 apiVersion: v1
 kind: Service
