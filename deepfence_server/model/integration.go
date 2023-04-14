@@ -17,10 +17,15 @@ type IntegrationIDPathReq struct {
 
 // IntegrationAddReq is the request body for adding a new integration
 type IntegrationAddReq struct {
-	Config           map[string]interface{}  `json:"config"`
-	IntegrationType  string                  `json:"integration_type"`
-	NotificationType string                  `json:"notification_type"`
-	Filters          reporters.FieldsFilters `json:"filters"`
+	Config           map[string]interface{} `json:"config"`
+	IntegrationType  string                 `json:"integration_type"`
+	NotificationType string                 `json:"notification_type"`
+	Filters          IntegrationFilters     `json:"filters"`
+}
+
+type IntegrationFilters struct {
+	FieldsFilters reporters.FieldsFilters `json:"fields_filters"`
+	NodeIds       []NodeIdentifier        `json:"node_ids" required:"true"`
 }
 
 func (i *IntegrationAddReq) IntegrationExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {
