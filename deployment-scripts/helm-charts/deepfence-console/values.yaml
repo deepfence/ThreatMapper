@@ -177,6 +177,34 @@ neo4j:
   tolerations: []
   affinity: {}
 
+# ingress for console 
+ingress:
+  enable: true
+  ## name of the ingress class for ingress provider installed on the cluster, cannot be empty
+  ## Example: nginx
+  class: nginx
+  ## host example: threat.example.com
+  host: ""
+  ## annotations to customize ingress
+  annotations:
+    ## nginx ingress annotations
+    ## https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/
+    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: 200m
+
+    ## aws alb annotations
+    ## aws load balancer controller needs to be installed on the cluster for these annotations to work
+    ## documentation aws load balancer controller https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.4/guide/ingress/annotations/
+    # alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+    # alb.ingress.kubernetes.io/backend-protocol: HTTPS
+    ## arn of the certificate available on aws certificate manager
+    # alb.ingress.kubernetes.io/certificate-arn: ""
+    # alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}, {"HTTP":80}]'
+    # alb.ingress.kubernetes.io/scheme: internet-facing
+    # alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=3600
+    # alb.ingress.kubernetes.io/target-type: ip
+
 router:
   replicaCount: 1
   image:
@@ -191,24 +219,9 @@ router:
     # useful for configuring loadbalancer options on supported clouds
     annotations: {}  
       # service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
-    type: LoadBalancer
+    type: ClusterIP  # set service type to cluster ip and enable ingress if available
     httpsPort: 443
     httpPort: 80
-  ingress:
-    enabled: false
-    className: ""
-    annotations: {}
-      # kubernetes.io/ingress.class: nginx
-      # kubernetes.io/tls-acme: "true"
-    hosts:
-      - host: chart-example.local
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
-    tls: []
-    #  - secretName: chart-example-tls
-    #    hosts:
-    #      - chart-example.local
   resources: {}
     # limits:
     #   cpu: 100m
@@ -225,6 +238,31 @@ router:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+  # Use custom ssl certificate for Deepfence UI
+  # custom certificates can be configured using two options
+  # existing secret or base64 encoded cert and key string
+  # provide one off the two options to configure custom certificates
+  tls:
+    # provide secret name which contains tls cert and key
+    # reference: https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets
+    # make sure to create secret in the same namespace as that of the console
+    secretName: ""
+    # embed given cert and key as secret and mount to router pod
+    # provide certificate and key in below example format
+    # cert: |-
+    #   -----BEGIN CERTIFICATE-----
+    #   MIIFCTCCAvGgAwIBAgIUNshy8GFTjfUR7inZ1JCcN+tDuh4wDQYJKoZIhvcNAQEL
+    #   .....
+    #   BMepE4d9+TQFcPQ/OKSlP8FB2nPKZJdM+JlXDFWqeKvbdYS4QErRLd33qUmq
+    #   -----END CERTIFICATE-----
+    # key: |-
+    #   -----BEGIN PRIVATE KEY-----
+    #   MIIJQQIBADANBgkqhkiG9w0BAQEFAASCCSswggknAgEAAoICAQDECeUraonCz/89
+    #   .....
+    #   bHEvWp7ugCTFhurM+lla0d+ElDO2
+    #   -----END PRIVATE KEY-----
+    cert: ""
+    key: ""
 
 server:
   replicaCount: 1

@@ -1,8 +1,8 @@
 1. Get the application URL by running these commands:
-{{- if .Values.router.ingress.enabled }}
-{{- range $host := .Values.router.ingress.hosts }}
+{{- if .Values.ingress.enabled }}
+{{- range $host := .Values.ingress.host }}
   {{- range .paths }}
-  http{{ if $.Values.router.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
   {{- end }}
 {{- end }}
 {{- else if contains "NodePort" .Values.router.service.type }}
@@ -13,7 +13,7 @@
      NOTE: It may take a few minutes for the LoadBalancer IP to be available.
            You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "deepfence-console.fullname" . }}'
   export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "deepfence-console.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
-  echo http://$SERVICE_IP:{{ .Values.router.service.port }}
+  echo http://$SERVICE_IP:{{ .Values.router.service.httpsPort }}
 {{- else if contains "ClusterIP" .Values.router.service.type }}
   export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "deepfence-console.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
   export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")

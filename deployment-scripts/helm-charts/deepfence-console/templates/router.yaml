@@ -88,8 +88,24 @@ spec:
           #   initialDelaySeconds: 60
           #   periodSeconds: 30
           #   timeoutSeconds: 10
+          volumeMounts:
+            {{- if or .Values.router.tls.secretName (and .Values.router.tls.cert .Values.router.tls.key) }}
+            - name: certs
+              mountPath: /etc/deepfence/certs
+              readOnly: true
+            {{- end }}
           resources:
             {{- toYaml .Values.router.resources | nindent 12 }}
+      volumes:
+        {{- if .Values.router.tls.secretName }}
+        - name: certs
+          secret:
+            secretName: {{ .Values.router.tls.secretName }}
+        {{- else if and .Values.router.tls.cert .Values.router.tls.key }}
+        - name: certs
+          secret:
+            secretName: deepfence-router-tls
+        {{- end }}
       {{- with .Values.router.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -157,4 +173,20 @@ spec:
         name: memory
         targetAverageUtilization: {{ .Values.router.autoscaling.targetMemoryUtilizationPercentage }}
     {{- end }}
+{{- end }}
+---
+{{- if and .Values.router.tls.cert .Values.router.tls.key }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: deepfence-router-tls
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: router
+type: kubernetes.io/tls
+data:
+  tls.crt: |-
+{{ .Values.router.tls.cert | b64enc | indent 4}}
+  tls.key: |-
+{{ .Values.router.tls.key | b64enc | indent 4}}
 {{- end }}
