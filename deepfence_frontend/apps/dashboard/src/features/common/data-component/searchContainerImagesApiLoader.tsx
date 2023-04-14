@@ -105,7 +105,7 @@ export const useGetContainerImagesList = ({
   searchText,
 }: {
   scanType: ScanTypeEnum;
-  searchText: string;
+  searchText?: string;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   containerImages: ContainerImagesListType[];
@@ -114,7 +114,7 @@ export const useGetContainerImagesList = ({
 
   useEffect(() => {
     const searchParams = new URLSearchParams();
-    searchParams.set('searchText', searchText);
+    searchParams.set('searchText', searchText ?? '');
 
     fetcher.load(
       generatePath(

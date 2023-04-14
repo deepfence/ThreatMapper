@@ -108,7 +108,7 @@ export const useGetHostsList = ({
   searchText,
 }: {
   scanType: ScanTypeEnum | 'none';
-  searchText: string;
+  searchText?: string;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   hosts: HostsListType[];
@@ -117,7 +117,7 @@ export const useGetHostsList = ({
 
   useEffect(() => {
     const searchParams = new URLSearchParams();
-    searchParams.set('searchText', searchText);
+    searchParams.set('searchText', searchText ?? '');
 
     fetcher.load(
       generatePath(`/data-component/search/hosts/:scanType/?${searchParams.toString()}`, {

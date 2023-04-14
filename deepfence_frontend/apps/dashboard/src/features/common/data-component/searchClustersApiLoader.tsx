@@ -82,7 +82,7 @@ export const searchClustersApiLoader = async ({
 export const useGetClustersList = ({
   searchText,
 }: {
-  searchText: string;
+  searchText?: string;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   clusters: ClustersListType[];
@@ -91,7 +91,7 @@ export const useGetClustersList = ({
 
   useEffect(() => {
     const searchParams = new URLSearchParams();
-    searchParams.set('searchText', searchText);
+    searchParams.set('searchText', searchText ?? '');
 
     fetcher.load(
       generatePath(`/data-component/search/clusters/?${searchParams.toString()}`),

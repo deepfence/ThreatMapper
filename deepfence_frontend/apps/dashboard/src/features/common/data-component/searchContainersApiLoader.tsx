@@ -107,7 +107,7 @@ export const useGetContainersList = ({
   searchText,
 }: {
   scanType: ScanTypeEnum;
-  searchText: string;
+  searchText?: string;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   containers: ContainersListType[];
@@ -116,7 +116,7 @@ export const useGetContainersList = ({
 
   useEffect(() => {
     const searchParams = new URLSearchParams();
-    searchParams.set('searchText', searchText);
+    searchParams.set('searchText', searchText ?? '');
 
     fetcher.load(
       generatePath(
