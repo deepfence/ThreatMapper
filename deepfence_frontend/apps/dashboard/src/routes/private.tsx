@@ -66,7 +66,9 @@ import { module as secretScanResults } from '@/features/secrets/pages/SecretScan
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
 import { module as changePassword } from '@/features/settings/pages/ChangePassword';
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
+import { module as editGlobalSettings } from '@/features/settings/pages/EditGlobalSettings';
 import { module as editUser } from '@/features/settings/pages/EditUser';
+import { module as globalSettings } from '@/features/settings/pages/GlobalSettings';
 import { module as inviteUser } from '@/features/settings/pages/InviteUser';
 import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
@@ -492,6 +494,16 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'user-management/invite-user',
             ...inviteUser,
             meta: { title: 'Invite User' },
+          },
+          {
+            path: 'global-settings',
+            ...globalSettings,
+            meta: { title: 'Global Settings' },
+          },
+          {
+            path: 'global-settings/edit/:id',
+            ...editGlobalSettings,
+            meta: { title: 'Global Settings' },
           },
         ],
       },
