@@ -50,6 +50,7 @@ export function getUserApiClient() {
     registerUser: userApi.registerUser.bind(userApi),
     getUsers: userApi.getUsers.bind(userApi),
     getUser: userApi.getUser.bind(userApi),
+    getApiTokens: userApi.getApiTokens.bind(userApi),
     updateUser: userApi.updateUser.bind(userApi),
     deleteUser: userApi.deleteUser.bind(userApi),
     updatePassword: userApi.updatePassword.bind(userApi),
