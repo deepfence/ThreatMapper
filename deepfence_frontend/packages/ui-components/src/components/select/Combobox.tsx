@@ -1,3 +1,4 @@
+import { autoUpdate, flip, offset, size, useFloating } from '@floating-ui/react-dom';
 import {
   Combobox as HUICombobox,
   ComboboxOptionProps as HUIComboboxOptionProps,
@@ -6,7 +7,8 @@ import {
 } from '@headlessui/react';
 import cx from 'classnames';
 import { cva } from 'cva';
-import { ElementType, Fragment, useEffect, useState } from 'react';
+import { ElementType, ReactNode, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { HiOutlineChevronDown } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import { twMerge } from 'tailwind-merge';
@@ -141,6 +143,25 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
   ...props
 }: ComboboxProps<TValue, boolean | undefined, boolean | undefined, TTag>) {
   const [intersectionRef, setIntersectionRef] = useState<HTMLSpanElement | null>(null);
+  const { x, y, strategy, refs } = useFloating({
+    strategy: 'fixed',
+    placement: 'bottom-start',
+    whileElementsMounted: autoUpdate,
+    middleware: [
+      flip(),
+      offset({
+        mainAxis: 4,
+      }),
+      size({
+        apply({ availableHeight, elements }) {
+          Object.assign(elements.floating.style, {
+            width: `${elements.reference.getBoundingClientRect().width}px`,
+            maxHeight: `min(${availableHeight}px, 350px)`,
+          });
+        },
+      }),
+    ],
+  });
   const loadObserver = new IntersectionObserver(
     (entries) => {
       const entry = entries[0];
@@ -179,6 +200,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
         </HUICombobox.Label>
         <div className="relative">
           <HUICombobox.Input
+            ref={(ele) => refs.setReference(ele)}
             placeholder={placeholder || 'Select...'}
             className={twMerge(
               cx(
@@ -211,17 +233,23 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
             <SelectArrow sizing={sizing} color={color} />
           </HUICombobox.Button>
         </div>
-        <Transition
-          as={Fragment}
-          leave="transition ease-in duration-100"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="relative">
+        <Portal>
+          <Transition
+            as={'div'}
+            leave="transition ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+            ref={(ele) => refs.setFloating(ele)}
+            style={{
+              position: strategy,
+              top: y ?? 0,
+              left: x ?? 0,
+            }}
+          >
             <HUICombobox.Options
               className={twMerge(
                 cx(
-                  'mt-1 max-h-60 w-full shadow-lg select-none',
+                  'max-h-60 w-full shadow-lg select-none',
                   // bg
                   'bg-gray-50 dark:bg-gray-700',
                   'overflow-auto rounded-md py-1',
@@ -236,8 +264,8 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                 <span ref={(ele) => setIntersectionRef(ele)}></span>
               )}
             </HUICombobox.Options>
-          </div>
-        </Transition>
+          </Transition>
+        </Portal>
       </div>
     </HUICombobox>
   );
@@ -270,4 +298,14 @@ export function ComboboxOption<TType>({ sizing, ...props }: ComboBoxOptionProps<
       {...props}
     />
   );
+}
+
+function Portal(props: { children: ReactNode }) {
+  const { children } = props;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+  return createPortal(children, document.body);
 }
