@@ -55,7 +55,6 @@ export const action: ActionFunction = async ({
       const error = new ApiError<UpdateActionReturnType>({});
       if (r.status === 400) {
         const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        console.log('modelResponse', modelResponse);
 
         return error.set({
           fieldErrors: {
@@ -111,7 +110,6 @@ const EditGlobalSetting = () => {
   const loaderData = useLoaderData() as LoaderDataType;
   const fetcher = useFetcher<UpdateActionReturnType>();
   const { data } = fetcher;
-  console.log('data98', data);
 
   const { id } = useParams() as {
     id: string;
