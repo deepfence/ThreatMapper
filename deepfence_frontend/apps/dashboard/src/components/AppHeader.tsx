@@ -19,6 +19,7 @@ import {
   IconButton,
 } from 'ui-components';
 
+import { AutoRefresh } from '@/components/header/AutoRefresh';
 import { useTheme } from '@/theme/ThemeContext';
 
 export interface DashboardHeaderProps {
@@ -66,6 +67,7 @@ export function AppHeader({
           />
         </div>
         <div className="flex items-center gap-4">
+          <AutoRefresh />
           <IconContext.Provider
             value={{
               className: 'w-6 h-6 p-1 text-blue-600 dark:text-white',

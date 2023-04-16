@@ -218,11 +218,13 @@ export const TopologyGraph = () => {
           onStartScanClick={(options) => setScanOptions(options)}
         />
       ) : null}
-      <ConfigureScanModal
-        open={!!scanOptions}
-        onOpenChange={() => setScanOptions(undefined)}
-        scanOptions={scanOptions}
-      />
+      {!!scanOptions && (
+        <ConfigureScanModal
+          open={true}
+          onOpenChange={() => setScanOptions(undefined)}
+          scanOptions={scanOptions}
+        />
+      )}
     </>
   );
 };

@@ -5,7 +5,7 @@ import LoginBackground from '@/assets/background-login.svg';
 
 export const AuthLayout = () => {
   return (
-    <div className="grid h-screen place-items-center">
+    <div className="grid h-screen place-items-center overflow-auto">
       <div className="fixed">
         <img src={LoginBackground} alt="Login Background" className="object-cover" />
       </div>

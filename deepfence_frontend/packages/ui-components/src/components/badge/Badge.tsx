@@ -1,6 +1,6 @@
 import * as LabelPrimitive from '@radix-ui/react-label';
 import cx from 'classnames';
-import { ComponentProps, forwardRef, useId } from 'react';
+import React, { ComponentProps, forwardRef, useId } from 'react';
 import { IconContext } from 'react-icons';
 import { HiX } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
@@ -14,7 +14,7 @@ export type SelectedBadgeProps = {
   value: string | number | undefined;
 };
 export interface BadgeProps extends Omit<ComponentProps<'span'>, 'ref' | 'color'> {
-  label?: string;
+  label?: React.ReactNode;
   value?: string;
   size?: SizeType;
   color?: ColorType;
@@ -89,8 +89,7 @@ export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
             <button
               className="rounded ml-0.5 p-px hover:text-black hover:scale-105 focus:ring-1 focus:ring-blue-600 focus:outline-none "
               onClick={() => onRemove?.({ id: _id, value: value })}
-              name={label}
-              aria-label={label}
+              aria-label={'remove badge'}
             >
               <HiX />
             </button>
