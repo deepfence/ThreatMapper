@@ -2,12 +2,20 @@ import { ActionFunctionArgs, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { getIntegrationApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelIntegrationListResp } from '@/api/generated';
+import {
+  ApiDocsBadRequestResponse,
+  ModelIntegrationFilters,
+  ModelIntegrationListResp,
+  ModelNodeIdentifier,
+  ModelNodeIdentifierNodeTypeEnum,
+  ReportersFieldsFilters,
+} from '@/api/generated';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 
 import { IntegrationForm, IntegrationType } from '../components/IntegrationForm';
 import { IntegrationTable } from '../components/IntegrationTable';
+import { filter } from 'lodash-es';
 
 type ActionReturnType = {
   message?: string;
@@ -177,29 +185,95 @@ const action = async ({
     }
 
     // filters
-    const hostFilter = formData.getAll('hostFilter')?.toString();
-    const imageFilter = formData.getAll('imageFilter')?.toString();
-    const clusterFilter = formData.getAll('clusterFilter')?.toString();
-    const statusFilter = formData.getAll('statusFilter')?.toString();
+    const statusFilter = formData.getAll('statusFilter') as string[];
+    const severityFilter = formData.getAll('severityFilter') as string[];
     const intervalFilter = formData.get('interval')?.toString();
 
-    const _filters = {};
+    const hostFilter = formData.getAll('hostFilter') as string[];
+    const containerFilter = formData.getAll('containerFilter') as string[];
+    const imageFilter = formData.getAll('imageFilter') as string[];
+    const clusterFilter = formData.getAll('clusterFilter') as string[];
 
-    if (hostFilter) {
-      // TODO Add filters
+    const _filters: {
+      node_ids: ModelNodeIdentifier[];
+      fields_filters: ReportersFieldsFilters;
+    } = {
+      fields_filters: {
+        compare_filter: null,
+        contains_filter: { filter_in: {} },
+        match_filter: { filter_in: null },
+        order_filter: {
+          order_fields: null,
+        },
+      },
+      node_ids: [],
+    };
+
+    const nodeIds = [];
+
+    if (hostFilter.length) {
+      const _hosts: ModelNodeIdentifier[] = hostFilter.map<ModelNodeIdentifier>((id) => {
+        return {
+          node_id: id,
+          node_type: ModelNodeIdentifierNodeTypeEnum.Host,
+        };
+      });
+      nodeIds.push(..._hosts);
     }
-    if (imageFilter) {
-      // TODO Add filters
+    if (imageFilter.length) {
+      const _images: ModelNodeIdentifier[] = imageFilter.map<ModelNodeIdentifier>(
+        (id) => {
+          return {
+            node_id: id,
+            node_type: ModelNodeIdentifierNodeTypeEnum.Image,
+          };
+        },
+      );
+      nodeIds.push(..._images);
     }
-    if (clusterFilter) {
-      // TODO Add filters
+    if (containerFilter.length) {
+      const _containers: ModelNodeIdentifier[] = containerFilter.map<ModelNodeIdentifier>(
+        (id) => {
+          return {
+            node_id: id,
+            node_type: ModelNodeIdentifierNodeTypeEnum.Container,
+          };
+        },
+      );
+      nodeIds.push(..._containers);
     }
-    if (statusFilter) {
-      // TODO Add filters
+    if (clusterFilter.length) {
+      const _clusters: ModelNodeIdentifier[] = clusterFilter.map<ModelNodeIdentifier>(
+        (id) => {
+          return {
+            node_id: id,
+            node_type: ModelNodeIdentifierNodeTypeEnum.Cluster,
+          };
+        },
+      );
+      nodeIds.push(..._clusters);
+    }
+    if (severityFilter.length) {
+      const filters = _filters.fields_filters.contains_filter.filter_in;
+      const newFilter = {
+        ...filters,
+        severity: severityFilter.map((severity) => severity.toLowerCase()),
+      };
+      _filters.fields_filters.contains_filter.filter_in = newFilter;
+    }
+    if (statusFilter.length) {
+      const filters = _filters.fields_filters.contains_filter.filter_in;
+      const newFilter = {
+        ...filters,
+        status: statusFilter.map((status) => status.toLowerCase()),
+      };
+      _filters.fields_filters.contains_filter.filter_in = newFilter;
     }
     if (intervalFilter) {
       // TODO Add filters
     }
+
+    _filters.node_ids = nodeIds;
 
     const r = await makeRequest({
       apiFunction: getIntegrationApiClient().addIntegration,

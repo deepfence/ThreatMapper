@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ModelIntegrationFilters } from './ModelIntegrationFilters';
+import {
+    ModelIntegrationFiltersFromJSON,
+    ModelIntegrationFiltersFromJSONTyped,
+    ModelIntegrationFiltersToJSON,
+} from './ModelIntegrationFilters';
+
 /**
  * 
  * @export
@@ -27,10 +34,10 @@ export interface ModelIntegrationAddReq {
     config?: { [key: string]: any; } | null;
     /**
      * 
-     * @type {{ [key: string]: Array<string>; }}
+     * @type {ModelIntegrationFilters}
      * @memberof ModelIntegrationAddReq
      */
-    filters?: { [key: string]: Array<string>; } | null;
+    filters?: ModelIntegrationFilters;
     /**
      * 
      * @type {string}
@@ -65,7 +72,7 @@ export function ModelIntegrationAddReqFromJSONTyped(json: any, ignoreDiscriminat
     return {
         
         'config': !exists(json, 'config') ? undefined : json['config'],
-        'filters': !exists(json, 'filters') ? undefined : json['filters'],
+        'filters': !exists(json, 'filters') ? undefined : ModelIntegrationFiltersFromJSON(json['filters']),
         'integration_type': !exists(json, 'integration_type') ? undefined : json['integration_type'],
         'notification_type': !exists(json, 'notification_type') ? undefined : json['notification_type'],
     };
@@ -81,7 +88,7 @@ export function ModelIntegrationAddReqToJSON(value?: ModelIntegrationAddReq | nu
     return {
         
         'config': value.config,
-        'filters': value.filters,
+        'filters': ModelIntegrationFiltersToJSON(value.filters),
         'integration_type': value.integration_type,
         'notification_type': value.notification_type,
     };

@@ -16,6 +16,7 @@ export * from './ReportsApi';
 export * from './ScanResultsApi';
 export * from './SearchApi';
 export * from './SecretScanApi';
+export * from './SettingsApi';
 export * from './ThreatApi';
 export * from './TopologyApi';
 export * from './UserApi';
