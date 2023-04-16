@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 import {
@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { Button, Card, CircleSpinner, Modal } from 'ui-components';
 
 import { getSettingsApiClient } from '@/api/api';
-import { ModelEmailConfigurationResp } from '@/api/generated';
+import { ApiDocsBadRequestResponse, ModelEmailConfigurationResp } from '@/api/generated';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -21,34 +21,36 @@ export type ActionReturnType = {
   success: boolean;
 };
 
-export const action = async ({ request }: ActionFunctionArgs): Promise<any> => {
+export const action = async ({
+  request,
+}: ActionFunctionArgs): Promise<ActionReturnType> => {
   const formData = await request.formData();
-  const id = Number(formData.get('id'));
-  // const r = await makeRequest({
-  //   TODO: apiFunction: getSettingsApiClient().deleteConfiguration,
-  //   apiArgs: [
-  //     {
-  //       id,
-  //     },
-  //   ],
-  //   errorHandler: async (r) => {
-  //     const error = new ApiError<ActionReturnType>({ success: false });
-  //     if (r.status === 400) {
-  //       const modelResponse: ApiDocsBadRequestResponse = await r.json();
-  //       return error.set({
-  //         message: modelResponse.message ?? '',
-  //         success: false,
-  //       });
-  //     }
-  //   },
-  // });
+  const id = formData.get('id');
+  const r = await makeRequest({
+    apiFunction: getSettingsApiClient().deleteEmailConfiguration,
+    apiArgs: [
+      {
+        configId: id as string,
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<ActionReturnType>({ success: false });
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message ?? '',
+          success: false,
+        });
+      }
+    },
+  });
 
-  // if (ApiError.isApiError(r)) {
-  //   return r.value();
-  // }
+  if (ApiError.isApiError(r)) {
+    return r.value();
+  }
 
-  throw redirect('/settings/email-configuration/add-email-configuration', 302);
   toast('Email configuration deleted sucessfully');
+  throw redirect('/settings/email-configuration/add-email-configuration', 302);
   // return {
   //   success: true,
   // };
@@ -98,45 +100,47 @@ const EmailConfiguration = () => {
                 const { data: configData = [], message } = resolvedData;
                 const configuration: ModelEmailConfigurationResp = configData[0];
                 return (
-                  <div className="mt-2 flex flex-col gap-y-4">
-                    <div className="flex flex-col   px-2">
-                      <div className="flex flex-col">
-                        <span className="text-xs text-gray-500">Email Provider</span>
-                        <span className="text-sm">{configuration.email_provider}</span>
+                  <>
+                    <div className="mt-2 flex flex-col gap-y-4">
+                      <div className="flex flex-col   px-2">
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500">Email Provider</span>
+                          <span className="text-sm">{configuration.email_provider}</span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex flex-col   px-2">
-                      <div className="flex flex-col">
-                        <span className="text-xs text-gray-500">Email</span>
-                        <span className="text-sm">{configuration.email_id}</span>
+                      <div className="flex flex-col   px-2">
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-500">Email</span>
+                          <span className="text-sm">{configuration.email_id}</span>
+                        </div>
                       </div>
+                      <div>
+                        <Button
+                          color="danger"
+                          size="sm"
+                          onClick={() => {
+                            setShowDeleteDialog(true);
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                      {message && <p className="text-red-500 text-md px-2">{message}</p>}
                     </div>
-                    <div>
-                      <Button
-                        color="danger"
-                        size="sm"
-                        onClick={() => {
-                          setShowDeleteDialog(true);
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                    {message && <p className="text-red-500 text-md px-2">{message}</p>}
-                  </div>
+                    {showDeleteDialog && (
+                      <DeleteConfirmationModal
+                        showDialog={showDeleteDialog}
+                        id={String(configuration.id)}
+                        setShowDialog={setShowDeleteDialog}
+                      />
+                    )}
+                  </>
                 );
               }}
             </DFAwait>
           </Suspense>
         </Card>
       </div>
-      {showDeleteDialog && (
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          id={'1'} //TODO: need to send id dynamically
-          setShowDialog={setShowDeleteDialog}
-        />
-      )}
     </SettingsTab>
   );
 };
