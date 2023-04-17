@@ -5,10 +5,6 @@ import { useFetcher, useSearchParams } from 'react-router-dom';
 import { useInterval, useMeasure } from 'react-use';
 import { CircleSpinner, Dropdown, DropdownItem } from 'ui-components';
 
-import {
-  ConfigureScanModal,
-  ConfigureScanModalProps,
-} from '@/components/ConfigureScanModal';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { TopologyActionData } from '@/features/topology/data-components/topologyAction';
 import { useG6raph } from '@/features/topology/hooks/useG6Graph';
@@ -39,8 +35,6 @@ export const TopologyGraph = () => {
     y: number;
     model?: NodeModel;
   }>({ open: false, x: 0, y: 0 });
-  const [scanOptions, setScanOptions] =
-    useState<ConfigureScanModalProps['scanOptions']>();
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const { graph } = useG6raph(container, {}, {});
   const { dataDiffWithAction, isRefreshInProgress, ...graphDataManagerFunctions } =
@@ -215,16 +209,8 @@ export const TopologyGraph = () => {
           onOpenChange={(open) => {
             if (!open) setClickedItem(undefined);
           }}
-          onStartScanClick={(options) => setScanOptions(options)}
         />
       ) : null}
-      {!!scanOptions && (
-        <ConfigureScanModal
-          open={true}
-          onOpenChange={() => setScanOptions(undefined)}
-          scanOptions={scanOptions}
-        />
-      )}
     </>
   );
 };

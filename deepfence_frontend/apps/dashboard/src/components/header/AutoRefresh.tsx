@@ -39,19 +39,10 @@ export const AutoRefresh = () => {
             onClick={(seconds) => {
               setRefreshInSeconds(seconds);
             }}
-            seconds={30}
+            seconds={180}
             selectedSeconds={refreshInSeconds}
           >
-            30 Seconds
-          </RefreshDropdownItem>
-          <RefreshDropdownItem
-            onClick={(seconds) => {
-              setRefreshInSeconds(seconds);
-            }}
-            seconds={60}
-            selectedSeconds={refreshInSeconds}
-          >
-            1 Minute
+            3 Minutes
           </RefreshDropdownItem>
           <RefreshDropdownItem
             onClick={(seconds) => {
@@ -103,6 +94,7 @@ export const AutoRefresh = () => {
     >
       <Badge
         className="cursor-pointer"
+        color="primary"
         label={
           <>
             <div className="flex items-center gap-1 cursor-pointer">
