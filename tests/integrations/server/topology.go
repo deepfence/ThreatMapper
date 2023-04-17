@@ -8,7 +8,7 @@ import (
 	"github.com/deepfence/ThreatMapper/tests_integrations/utils"
 )
 
-func Test_topology() (time.Duration, error) {
+func Test_topology(setup utils.GraphDBSetup) (time.Duration, error) {
 	res, duration, err := utils.RunDeepfenceCtl([]string{"graph", "topology"})
 	if err != nil {
 		log.Fatal(err)
@@ -26,7 +26,7 @@ func Test_topology() (time.Duration, error) {
 	return duration, err
 }
 
-func Test_topology_hosts() (time.Duration, error) {
+func Test_topology_hosts(setup utils.GraphDBSetup) (time.Duration, error) {
 	res, duration, err := utils.RunDeepfenceCtl([]string{"graph", "topology", "--root=hosts"})
 	if err != nil {
 		log.Fatal(err)
@@ -44,7 +44,7 @@ func Test_topology_hosts() (time.Duration, error) {
 	return duration, err
 }
 
-func Test_topology_containers() (time.Duration, error) {
+func Test_topology_containers(setup utils.GraphDBSetup) (time.Duration, error) {
 	res, duration, err := utils.RunDeepfenceCtl([]string{"graph", "topology", "--root=containers"})
 	if err != nil {
 		log.Fatal(err)
@@ -62,7 +62,7 @@ func Test_topology_containers() (time.Duration, error) {
 	return duration, err
 }
 
-func Test_topology_pods() (time.Duration, error) {
+func Test_topology_pods(setup utils.GraphDBSetup) (time.Duration, error) {
 	res, duration, err := utils.RunDeepfenceCtl([]string{"graph", "topology", "--root=pods"})
 	if err != nil {
 		log.Fatal(err)
@@ -80,7 +80,7 @@ func Test_topology_pods() (time.Duration, error) {
 	return duration, err
 }
 
-func Test_topology_kubernetes() (time.Duration, error) {
+func Test_topology_kubernetes(setup utils.GraphDBSetup) (time.Duration, error) {
 	res, duration, err := utils.RunDeepfenceCtl([]string{"graph", "topology", "--root=kubernetes"})
 	if err != nil {
 		log.Fatal(err)
