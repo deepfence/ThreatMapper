@@ -277,5 +277,6 @@ export function getSettingsApiClient() {
   return {
     getSettings: settingsApi.getSettings.bind(settingsApi),
     updateSettings: settingsApi.updateSetting.bind(settingsApi),
+    getUserActivityLogs: settingsApi.getUserActivityLogs.bind(settingsApi),
   };
 }
