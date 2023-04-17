@@ -1,6 +1,9 @@
 package jira
 
-import "github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+import (
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	"github.com/go-playground/validator/v10"
+)
 
 type Jira struct {
 	Config           Config                  `json:"config"`
@@ -11,12 +14,16 @@ type Jira struct {
 }
 
 type Config struct {
-	JiraSiteUrl    string `json:"jiraSiteUrl"`
-	Username       string `json:"username"`
-	Password       string `json:"password"`
-	JiraProjectKey string `json:"jiraProjectKey"`
+	JiraSiteUrl    string `json:"jiraSiteUrl" validate:"required,url" required:"true"`
+	Username       string `json:"username" validate:"required" required:"true"`
+	Password       string `json:"password" validate:"required" required:"true"`
+	JiraProjectKey string `json:"jiraProjectKey" validate:"required" required:"true"`
 	JiraAssignee   string `json:"jiraAssignee"`
-	IssueType      string `json:"issueType"`
-	IsAuthToken    bool   `json:"isAuthToken"`
-	APIToken       string `json:"api_token"`
+	IssueType      string `json:"issueType" validate:"required" required:"true"`
+	IsAuthToken    bool   `json:"isAuthToken" validate:"required" required:"true"`
+	APIToken       string `json:"api_token" validate:"required" required:"true"`
+}
+
+func (j Jira) ValidateConfig(validate *validator.Validate) error {
+	return validate.Struct(j.Config)
 }

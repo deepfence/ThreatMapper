@@ -1,6 +1,9 @@
 package pagerduty
 
-import "github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+import (
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	"github.com/go-playground/validator/v10"
+)
 
 type PagerDuty struct {
 	Config           Config                  `json:"config"`
@@ -11,6 +14,10 @@ type PagerDuty struct {
 }
 
 type Config struct {
-	ServiceKey string `json:"service_key"`
-	APIKey     string `json:"api_key"`
+	ServiceKey string `json:"service_key" validate:"required" required:"true"`
+	APIKey     string `json:"api_key" validate:"required" required:"true"`
+}
+
+func (p PagerDuty) ValidateConfig(validate *validator.Validate) error {
+	return validate.Struct(p.Config)
 }
