@@ -26,9 +26,11 @@ func NewClient() (*openapi.APIClient, error) {
 
 	api_token := os.Getenv("DEEPFENCE_KEY")
 	if strings.Trim(api_token, "\"") == "" && oahttp.IsConsoleAgent(url) {
+		internalURL := os.Getenv("MGMT_CONSOLE_URL_INTERNAL")
+		internalPort := os.Getenv("MGMT_CONSOLE_PORT_INTERNAL")
 		logrus.Infof("fetch console agent token")
 		var err error
-		if api_token, err = oahttp.GetConsoleApiToken(url); err != nil {
+		if api_token, err = oahttp.GetConsoleApiToken(internalURL, internalPort); err != nil {
 			return nil, err
 		}
 	} else if api_token == "" {

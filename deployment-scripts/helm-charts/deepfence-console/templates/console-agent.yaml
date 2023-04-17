@@ -48,19 +48,25 @@ spec:
           hostPath:
             path: /sys/kernel/debug
             type: Directory
+        - name: host-fs
+          hostPath:
+            path: /
+            type: Directory
       containers:
         - name: deepfence-console-agent
           image: "{{ .Values.console_agent.image.repository }}:{{ .Values.console_agent.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.console_agent.image.pullPolicy }}
           env:
-            - name: MGMT_CONSOLE_URL
+            - name: MGMT_CONSOLE_URL_INTERNAL
               value: deepfence-server
+            - name: MGMT_CONSOLE_PORT_INTERNAL
+              value: "8081"
+            - name: MGMT_CONSOLE_URL
+              value: deepfence-router
             - name: MGMT_CONSOLE_PORT
-              value: "8080"
-            - name: MGMT_CONSOLE_URL_SCHEMA
-              value: "http"
-            # - name: DEEPFENCE_KEY
-            #   value: ""
+              value: "443"
+            - name: DEEPFENCE_KEY
+              value: "\"\""
             - name: DF_ENABLE_PROCESS_REPORT
               value: "{{ .Values.console_agent.enableGraphReport }}"
             - name: DF_CLUSTER_NAME
@@ -107,6 +113,9 @@ spec:
             {{ end }}
             - mountPath: /sys/kernel/debug
               name: kernel-sys
+            - mountPath: /fenced/mnt/host
+              name: host-fs
+              readOnly: true
           securityContext:
             privileged: true
           resources:

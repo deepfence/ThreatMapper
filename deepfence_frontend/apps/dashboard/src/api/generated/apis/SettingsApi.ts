@@ -44,6 +44,10 @@ export interface AddEmailConfigurationRequest {
     modelEmailConfigurationAdd?: ModelEmailConfigurationAdd;
 }
 
+export interface DeleteEmailConfigurationRequest {
+    configId: string;
+}
+
 export interface UpdateSettingRequest {
     id: number;
     modelSettingUpdateRequest?: ModelSettingUpdateRequest;
@@ -71,6 +75,22 @@ export interface SettingsApiInterface {
      * Add Email Configuration
      */
     addEmailConfiguration(requestParameters: AddEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Delete Email Smtp / ses Configurations in system
+     * @summary Delete Email Configurations
+     * @param {string} configId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    deleteEmailConfigurationRaw(requestParameters: DeleteEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Delete Email Smtp / ses Configurations in system
+     * Delete Email Configurations
+     */
+    deleteEmailConfiguration(requestParameters: DeleteEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Get Email Smtp / ses Configurations in system
@@ -177,6 +197,45 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      */
     async addEmailConfiguration(requestParameters: AddEmailConfigurationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.addEmailConfigurationRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Delete Email Smtp / ses Configurations in system
+     * Delete Email Configurations
+     */
+    async deleteEmailConfigurationRaw(requestParameters: DeleteEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.configId === null || requestParameters.configId === undefined) {
+            throw new runtime.RequiredError('configId','Required parameter requestParameters.configId was null or undefined when calling deleteEmailConfiguration.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/settings/email/{config_id}`.replace(`{${"config_id"}}`, encodeURIComponent(String(requestParameters.configId))),
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete Email Smtp / ses Configurations in system
+     * Delete Email Configurations
+     */
+    async deleteEmailConfiguration(requestParameters: DeleteEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.deleteEmailConfigurationRaw(requestParameters, initOverrides);
     }
 
     /**

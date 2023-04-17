@@ -77,13 +77,13 @@ spec:
               path: /deepfence/ping
               port: http
             initialDelaySeconds: 120
-            periodSeconds: 30
+            periodSeconds: 20
           readinessProbe:
             httpGet:
               path: /deepfence/ping
               port: http
             initialDelaySeconds: 120
-            periodSeconds: 30
+            periodSeconds: 20
           resources:
             {{- toYaml .Values.server.resources | nindent 12 }}
       {{- with .Values.server.nodeSelector }}

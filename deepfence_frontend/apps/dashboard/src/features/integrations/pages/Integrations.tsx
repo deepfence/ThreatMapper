@@ -68,7 +68,7 @@ const IntegrationsData = [
             <FaMicrosoft />
           </IconContext.Provider>
         ),
-        path: '/integrations/notifications/add/microsoft-teams',
+        path: '/integrations/notifications/add/teams',
       },
       {
         name: 'Pager Duty',
@@ -82,7 +82,7 @@ const IntegrationsData = [
             <FaMagento />
           </IconContext.Provider>
         ),
-        path: '/integrations/notifications/add/pager-duty',
+        path: '/integrations/notifications/add/pagerduty',
       },
       {
         name: 'HTTP Endpoint',
@@ -96,7 +96,7 @@ const IntegrationsData = [
             <FaMixer />
           </IconContext.Provider>
         ),
-        path: '/integrations/notifications/add/http-endpoint',
+        path: '/integrations/notifications/add/http_endpoint',
       },
     ],
   },
@@ -168,7 +168,7 @@ const IntegrationsData = [
             <FaGoogle />
           </IconContext.Provider>
         ),
-        path: '/integrations/seim/add/google-chronicle',
+        path: '/integrations/seim/add/googlechronicle',
       },
       {
         name: 'AWS Security Hub',
@@ -182,7 +182,7 @@ const IntegrationsData = [
             <FaAws />
           </IconContext.Provider>
         ),
-        path: '/integrations/seim/add/aws-security-hub',
+        path: '/integrations/seim/add/aws_security_hub',
       },
     ],
   },

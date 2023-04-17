@@ -78,6 +78,7 @@ export * from './ModelHost';
 export * from './ModelImageStub';
 export * from './ModelInitAgentReq';
 export * from './ModelIntegrationAddReq';
+export * from './ModelIntegrationFilters';
 export * from './ModelIntegrationListResp';
 export * from './ModelInviteUserRequest';
 export * from './ModelInviteUserResponse';

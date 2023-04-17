@@ -13,7 +13,11 @@ ENV CHECKPOINT_DISABLE=true \
     DF_TLS_ON="1" \
     MGMT_CONSOLE_PORT=443 \
     DF_KUBERNETES_ON="N" \
-    PACKAGE_SCAN_CONCURRENCY=1
+    PACKAGE_SCAN_CONCURRENCY=1 \
+    MGMT_CONSOLE_URL_SCHEMA=https \
+    DEEPFENCE_KEY="" \
+    MGMT_CONSOLE_URL_INTERNAL=127.0.0.1 \
+    MGMT_CONSOLE_PORT_INTERNAL=8081
 
 RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && mkdir -p /usr/share/man/man1 /usr/share/man/man2 /usr/share/man/man3 /usr/share/man/man4 /usr/share/man/man5 /usr/share/man/man6 /usr/share/man/man7 /usr/share/man/man8 \

@@ -1,13 +1,14 @@
 {{- if .Values.postgresql.create }}
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: deepfence-postgresql
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: postgresql
 spec:
+  serviceName: deepfence-postgresql
   replicas: 1
   selector:
     matchLabels:
@@ -53,7 +54,7 @@ spec:
             {{- toYaml .Values.postgresql.resources | nindent 12 }}
           volumeMounts:
             - mountPath: /data
-              name: data
+              name: "postgresql-{{ .Release.Name }}"
       {{- with .Values.postgresql.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -66,10 +67,16 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: "deepfence-postgresql-{{ .Release.Name }}"
+  volumeClaimTemplates:
+    - metadata:
+        name: "postgresql-{{ .Release.Name }}"
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "{{ .Values.postgresql.volumeSize }}"
+        storageClassName: {{ .Values.postgresql.storageClass }}
 ---
 apiVersion: v1
 kind: Service

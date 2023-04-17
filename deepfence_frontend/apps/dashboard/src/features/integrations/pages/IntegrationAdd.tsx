@@ -2,7 +2,13 @@ import { ActionFunctionArgs, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { getIntegrationApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelIntegrationListResp } from '@/api/generated';
+import {
+  ApiDocsBadRequestResponse,
+  ModelIntegrationListResp,
+  ModelNodeIdentifier,
+  ModelNodeIdentifierNodeTypeEnum,
+  ReportersFieldsFilters,
+} from '@/api/generated';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 
@@ -52,11 +58,7 @@ export const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
   });
 };
 
-type IntegrationType = keyof typeof IntegrationType;
-const getConfigBodyNotificationType = (
-  formData: FormData,
-  integrationType: IntegrationType,
-) => {
+const getConfigBodyNotificationType = (formData: FormData, integrationType: string) => {
   const formBody = Object.fromEntries(formData);
 
   switch (integrationType) {
@@ -65,6 +67,70 @@ const getConfigBodyNotificationType = (
         webhook_url: formBody.url,
         channel: formBody.channelName,
       };
+    case IntegrationType.pagerDuty:
+      return {
+        service_key: formBody.integrationKey,
+        api_key: formBody.apiKey,
+      };
+    case IntegrationType.microsoftTeams:
+      return {
+        webhook_url: formBody.url,
+      };
+    case IntegrationType.httpEndpoint:
+      return {
+        url: formBody.apiUrl,
+        auth_key: formBody.authorizationKey,
+      };
+    case IntegrationType.splunk:
+      return {
+        endpoint_url: formBody.url,
+        token: formBody.token,
+      };
+    case IntegrationType.elasticsearch:
+      return {
+        endpoint_url: formBody.url,
+        index: formBody.index,
+        auth_header: formBody.authKey,
+        docType: formBody.docType,
+      };
+    case IntegrationType.sumoLogic:
+      return {
+        endpoint_url: formBody.url,
+      };
+    case IntegrationType.googleChronicle:
+      return {
+        url: formBody.url,
+        auth_header: formBody.authKey,
+      };
+    case IntegrationType.awsSecurityHub:
+      return {
+        aws_access_key: formBody.accessKey,
+        aws_secret_key: formBody.secretKey,
+        aws_region: formBody.region,
+      };
+    case IntegrationType.jira: {
+      const authTypeRadio = formBody.authTypeRadio;
+      if (authTypeRadio === 'apiToken') {
+        return {
+          jiraSiteUrl: formBody.url,
+          isAuthToken: true,
+          api_token: formBody.authType,
+          username: formBody.email,
+          jiraProjectKey: formBody.accessKey,
+          issueType: formBody.task,
+          jiraAssignee: formBody.assigne,
+        };
+      }
+      return {
+        jiraSiteUrl: formBody.url,
+        isAuthToken: false,
+        password: formBody.authType,
+        username: formBody.email,
+        jiraProjectKey: formBody.accessKey,
+        issueType: formBody.task,
+        jiraAssignee: formBody.assigne,
+      };
+    }
     case IntegrationType.s3:
       return {
         s3_bucket_name: formBody.name,
@@ -117,29 +183,95 @@ const action = async ({
     }
 
     // filters
-    const hostFilter = formData.getAll('hostFilter')?.toString();
-    const imageFilter = formData.getAll('imageFilter')?.toString();
-    const clusterFilter = formData.getAll('clusterFilter')?.toString();
-    const statusFilter = formData.getAll('statusFilter')?.toString();
+    const statusFilter = formData.getAll('statusFilter') as string[];
+    const severityFilter = formData.getAll('severityFilter') as string[];
     const intervalFilter = formData.get('interval')?.toString();
 
-    const _filters = {};
+    const hostFilter = formData.getAll('hostFilter') as string[];
+    const containerFilter = formData.getAll('containerFilter') as string[];
+    const imageFilter = formData.getAll('imageFilter') as string[];
+    const clusterFilter = formData.getAll('clusterFilter') as string[];
 
-    if (hostFilter) {
-      // TODO Add filters
+    const _filters: {
+      node_ids: ModelNodeIdentifier[];
+      fields_filters: ReportersFieldsFilters;
+    } = {
+      fields_filters: {
+        compare_filter: null,
+        contains_filter: { filter_in: {} },
+        match_filter: { filter_in: null },
+        order_filter: {
+          order_fields: null,
+        },
+      },
+      node_ids: [],
+    };
+
+    const nodeIds = [];
+
+    if (hostFilter.length) {
+      const _hosts: ModelNodeIdentifier[] = hostFilter.map<ModelNodeIdentifier>((id) => {
+        return {
+          node_id: id,
+          node_type: ModelNodeIdentifierNodeTypeEnum.Host,
+        };
+      });
+      nodeIds.push(..._hosts);
     }
-    if (imageFilter) {
-      // TODO Add filters
+    if (imageFilter.length) {
+      const _images: ModelNodeIdentifier[] = imageFilter.map<ModelNodeIdentifier>(
+        (id) => {
+          return {
+            node_id: id,
+            node_type: ModelNodeIdentifierNodeTypeEnum.Image,
+          };
+        },
+      );
+      nodeIds.push(..._images);
     }
-    if (clusterFilter) {
-      // TODO Add filters
+    if (containerFilter.length) {
+      const _containers: ModelNodeIdentifier[] = containerFilter.map<ModelNodeIdentifier>(
+        (id) => {
+          return {
+            node_id: id,
+            node_type: ModelNodeIdentifierNodeTypeEnum.Container,
+          };
+        },
+      );
+      nodeIds.push(..._containers);
     }
-    if (statusFilter) {
-      // TODO Add filters
+    if (clusterFilter.length) {
+      const _clusters: ModelNodeIdentifier[] = clusterFilter.map<ModelNodeIdentifier>(
+        (id) => {
+          return {
+            node_id: id,
+            node_type: ModelNodeIdentifierNodeTypeEnum.Cluster,
+          };
+        },
+      );
+      nodeIds.push(..._clusters);
+    }
+    if (severityFilter.length) {
+      const filters = _filters.fields_filters.contains_filter.filter_in;
+      const newFilter = {
+        ...filters,
+        severity: severityFilter.map((severity) => severity.toLowerCase()),
+      };
+      _filters.fields_filters.contains_filter.filter_in = newFilter;
+    }
+    if (statusFilter.length) {
+      const filters = _filters.fields_filters.contains_filter.filter_in;
+      const newFilter = {
+        ...filters,
+        status: statusFilter.map((status) => status.toLowerCase()),
+      };
+      _filters.fields_filters.contains_filter.filter_in = newFilter;
     }
     if (intervalFilter) {
       // TODO Add filters
     }
+
+    _filters.node_ids = nodeIds;
 
     const r = await makeRequest({
       apiFunction: getIntegrationApiClient().addIntegration,
@@ -148,18 +280,8 @@ const action = async ({
           modelIntegrationAddReq: {
             integration_type: _integrationType,
             notification_type: _notificationType,
-            config: getConfigBodyNotificationType(
-              formData,
-              _integrationType as IntegrationType,
-            ),
-            filters: {
-              contains_filter: {
-                filter_in: {},
-              },
-              match_filter: { filter_in: {} },
-              order_filter: { order_fields: [] },
-              compare_filter: null,
-            },
+            config: getConfigBodyNotificationType(formData, _integrationType as string),
+            filters: _filters,
           },
         },
       ],
