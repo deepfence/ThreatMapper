@@ -37,6 +37,14 @@ export type addEmailConfigurationReturnType = {
   smtp?: string;
 };
 
+interface emailProvidersType {
+  [key: string]: string;
+}
+const emailProviders: emailProvidersType = {
+  'Amazon SES': 'amazon_ses',
+  'Google SMTP': 'smtp',
+  SMTP: 'smtp',
+};
 export const action = async ({
   request,
 }: ActionFunctionArgs): Promise<addEmailConfigurationReturnType> => {
@@ -63,16 +71,15 @@ export const action = async ({
   if (Object.keys(fieldErrors).length > 0) {
     return { fieldErrors };
   }
-  const emailProvider = body.emailProvider as string;
+  const emailProvider = body.email_provider as string;
   const data: ModelEmailConfigurationAdd = {
-    email_provider: emailProvider as string,
-    email_id: body.emailId as string,
-    created_by_user_id: 1, //TODO need to send user id or need to confirm if it is taken care in backend
+    email_provider: emailProviders[emailProvider],
+    email_id: body.email_id as string,
   };
   if (emailProvider === 'Amazon SES') {
-    data.amazon_access_key = body.amazonAccessKey as string;
-    data.amazon_secret_key = body.amazonSecretKey as string;
-    data.ses_region = body.sesRegion as string;
+    data.amazon_access_key = body.amazon_access_key as string;
+    data.amazon_secret_key = body.amazon_secret_key as string;
+    data.ses_region = body.ses_region as string;
   } else {
     data.smtp = body.smtp as string;
     data.port = body.port as string;
@@ -113,7 +120,6 @@ const AddEmailCongifuration = () => {
     setEmailProvider(value);
   };
   const isAmazonEmailProvider = emailProvider === 'Amazon SES';
-  console.log(emailProvider, 'emailProvider98');
   const placeholder =
     emailProvider === 'SMTP' ? 'SMTP port (SSL)' : 'Gmail SMTP port (SSL)';
 
