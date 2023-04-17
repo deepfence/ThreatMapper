@@ -166,6 +166,10 @@ func (d *OpenApiDocs) AddSearchOperations() {
 		"Search Cloud Resources", "Search across all data associated with CloudResources",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]CloudResource))
 
+	d.AddOperation("searchKubernetesClusters", http.MethodPost, "/deepfence/search/kubernetes-clusters",
+		"Search Kuberenetes Clusters", "Search across all data associated with kuberentes clusters",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]KubernetesCluster))
+
 	d.AddOperation("searchVulnerabilities", http.MethodPost, "/deepfence/search/vulnerabilities",
 		"Search Vulnerabilities", "Search across all the data associated with vulnerabilities",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Vulnerability))
@@ -249,6 +253,10 @@ func (d *OpenApiDocs) AddSearchOperations() {
 
 	d.AddOperation("countCloudResources", http.MethodPost, "/deepfence/search/count/cloud-resources",
 		"Count Cloud resources", "Count across all the data ssociated with cloud resources",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countKubernetesClusters", http.MethodPost, "/deepfence/search/count/kubernetes-clusters",
+		"Count Kubernetes clusters", "Count across all the data ssociated with kubernetes clusters",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 
 	d.AddOperation("countCompliances", http.MethodPost, "/deepfence/search/count/compliances",

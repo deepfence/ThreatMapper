@@ -110,6 +110,10 @@ func (h *Handler) SearchCloudResources(w http.ResponseWriter, r *http.Request) {
 	SearchHandler[model.CloudResource](w, r)
 }
 
+func (h *Handler) SearchKubernetesClusters(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.KubernetesCluster](w, r)
+}
+
 func (h *Handler) SearchCompliances(w http.ResponseWriter, r *http.Request) {
 	SearchHandler[model.Compliance](w, r)
 }
@@ -168,6 +172,10 @@ func (h *Handler) SearchCloudCompliancesCount(w http.ResponseWriter, r *http.Req
 
 func (h *Handler) SearchCloudResourcesCount(w http.ResponseWriter, r *http.Request) {
 	SearchCountHandler[model.CloudResource](w, r)
+}
+
+func (h *Handler) SearchKubernetesClustersCount(w http.ResponseWriter, r *http.Request) {
+	SearchCountHandler[model.KubernetesCluster](w, r)
 }
 
 func (h *Handler) SearchCompliancesCount(w http.ResponseWriter, r *http.Request) {

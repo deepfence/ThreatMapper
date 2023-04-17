@@ -206,6 +206,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/cloud-compliances", dfHandler.SearchCloudCompliances)
 				r.Post("/compliances", dfHandler.SearchCompliances)
 				r.Post("/cloud-resources", dfHandler.SearchCloudResources)
+				r.Post("/kubernetes-clusters", dfHandler.SearchKubernetesClusters)
 
 				r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScans)
 				r.Post("/secret/scans", dfHandler.SearchSecretScans)
@@ -224,6 +225,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Post("/cloud-compliances", dfHandler.SearchCloudCompliancesCount)
 					r.Post("/compliances", dfHandler.SearchCompliancesCount)
 					r.Post("/cloud-resources", dfHandler.SearchCloudResourcesCount)
+					r.Post("/kubernetes-clusters", dfHandler.SearchKubernetesClustersCount)
 
 					r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScansCount)
 					r.Post("/secret/scans", dfHandler.SearchSecretScansCount)
