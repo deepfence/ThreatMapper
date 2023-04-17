@@ -136,7 +136,7 @@ const EditGlobalSetting = () => {
             <span className="text text-blue-600 dark:text-blue-500">Back</span>
           </DFLink>
           <h3 className="py-2 mt-2 font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
-            Global Settings
+            Update Global Settings
           </h3>
         </div>
         <Card className="flex-col p-5 mt-2 ml-5 gap-y-4">

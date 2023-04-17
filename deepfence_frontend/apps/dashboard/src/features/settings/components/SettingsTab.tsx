@@ -1,4 +1,4 @@
-import { HiDocumentSearch, HiUsers } from 'react-icons/hi';
+import { HiDocumentSearch, HiGlobeAlt, HiUsers } from 'react-icons/hi';
 import { Tabs } from 'ui-components';
 
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -59,7 +59,7 @@ export const settingsTabs: Array<{
   {
     label: 'Global Settings',
     value: 'global-settings',
-    icon: <HiUsers />,
+    icon: <HiGlobeAlt />,
   },
 ];
 

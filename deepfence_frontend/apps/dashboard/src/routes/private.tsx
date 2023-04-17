@@ -503,7 +503,7 @@ export const privateRoutes: CustomRouteObject[] = [
           {
             path: 'global-settings/edit/:id',
             ...editGlobalSettings,
-            meta: { title: 'Global Settings' },
+            meta: { title: 'Edit Global Settings' },
           },
         ],
       },

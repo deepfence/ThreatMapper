@@ -150,8 +150,6 @@ const GlobalSettings = () => {
                       size="sm"
                       data={settings}
                       columns={columns}
-                      enablePagination
-                      pageSize={5}
                       enableColumnResizing
                       enableSorting
                     />
