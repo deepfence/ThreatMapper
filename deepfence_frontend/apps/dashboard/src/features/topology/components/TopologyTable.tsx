@@ -1,10 +1,8 @@
-import classNames from 'classnames';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { HiMinus, HiPlus } from 'react-icons/hi';
 import { useFetcher, useSearchParams } from 'react-router-dom';
 import { useInterval } from 'react-use';
 import {
-  Badge,
   Button,
   CircleSpinner,
   createColumnHelper,
@@ -18,10 +16,6 @@ import {
 } from 'ui-components';
 
 import { DetailedNodeSummary } from '@/api/generated';
-import {
-  ConfigureScanModal,
-  ConfigureScanModalProps,
-} from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { TopologyActionData } from '@/features/topology/data-components/topologyAction';
@@ -36,8 +30,6 @@ import {
 } from '@/features/topology/utils/topology-data';
 
 export function TopologyTable() {
-  const [scanOptions, setScanOptions] =
-    useState<ConfigureScanModalProps['scanOptions']>();
   const { isRefreshInProgress, treeData, action, ...graphDataManagerFunctions } =
     useTableDataManager();
   const graphDataManagerFunctionsRef = useRef(graphDataManagerFunctions);
@@ -233,32 +225,9 @@ export function TopologyTable() {
           onOpenChange={(open) => {
             if (!open) setClickedItem(undefined);
           }}
-          onStartScanClick={(options) => setScanOptions(options)}
         />
       ) : null}
-      <ConfigureScanModal
-        open={!!scanOptions}
-        onOpenChange={() => setScanOptions(undefined)}
-        scanOptions={scanOptions}
-      />
     </>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  return (
-    <Badge
-      label={status.toUpperCase().replaceAll('_', ' ')}
-      className={classNames({
-        'bg-green-100 dark:bg-green-600/10 text-green-600 dark:text-green-400':
-          status.toLowerCase() === 'complete',
-        'bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400':
-          status.toLowerCase() === 'error',
-        'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-          status.toLowerCase() === 'in_progress',
-      })}
-      size="sm"
-    />
   );
 }
 
