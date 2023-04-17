@@ -48,14 +48,16 @@ func AddCloudControls(msg *message.Message) error {
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	nc, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return err
+		log.Error().Msgf(err.Error())
+		return nil
 	}
 	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction()
 	if err != nil {
-		return err
+		log.Error().Msgf(err.Error())
+		return nil
 	}
 	defer tx.Close()
 
@@ -65,11 +67,13 @@ func AddCloudControls(msg *message.Message) error {
 			controlFilePath := fmt.Sprintf("%s/%s.json", cwd, benchmark)
 			controlsJson, err := os.ReadFile(controlFilePath)
 			if err != nil {
-				return fmt.Errorf("error reading controls file %s: %s", controlFilePath, err.Error())
+				log.Error().Msgf("error reading controls file %s: %s", controlFilePath, err.Error())
+				return nil
 			}
 			var controlList []Control
 			if err := json.Unmarshal(controlsJson, &controlList); err != nil {
-				return fmt.Errorf("error unmarshalling controls for compliance type %s: %s", benchmark, err.Error())
+				log.Error().Msgf("error unmarshalling controls for compliance type %s: %s", benchmark, err.Error())
+				return nil
 			}
 			var controlMap []map[string]interface{}
 			for _, control := range controlList {
@@ -101,17 +105,20 @@ func AddCloudControls(msg *message.Message) error {
 					"cloud":     cloud,
 					"cloudCap":  strings.ToUpper(cloud),
 				}); err != nil {
-				return err
+				log.Error().Msgf(err.Error())
+				return nil
 			}
 			benchmarkFilePath := fmt.Sprintf("%s/%s_benchmarks.json", cwd, benchmark)
 			if _, err := os.Stat(benchmarkFilePath); err == nil {
 				benchmarksJson, err := os.ReadFile(benchmarkFilePath)
 				if err != nil {
-					return fmt.Errorf("Error reading benchmarks file %s: %s", benchmarkFilePath, err.Error())
+					log.Error().Msgf("Error reading benchmarks file %s: %s", benchmarkFilePath, err.Error())
+					return nil
 				}
 				var benchmarkList []Benchmark
 				if err := json.Unmarshal(benchmarksJson, &benchmarkList); err != nil {
-					return fmt.Errorf("Error unmarshalling benchmarks for compliance type %s: %s", benchmark, err.Error())
+					log.Error().Msgf("Error unmarshalling benchmarks for compliance type %s: %s", benchmark, err.Error())
+					return nil
 				}
 				var benchmarkMap []map[string]interface{}
 				for _, benchMark := range benchmarkList {
@@ -144,10 +151,12 @@ func AddCloudControls(msg *message.Message) error {
 						"cloud":     cloud,
 						"cloudCap":  strings.ToUpper(cloud),
 					}); err != nil {
-					return err
+					log.Error().Msgf(err.Error())
+					return nil
 				}
 			}
 		}
 	}
+	log.Info().Msgf("Finishing Cloud Compliance Population")
 	return tx.Commit()
 }
