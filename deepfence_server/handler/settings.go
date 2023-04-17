@@ -85,7 +85,7 @@ func (h *Handler) DeleteEmailConfiguration(w http.ResponseWriter, r *http.Reques
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	configId, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	configId, err := strconv.ParseInt(chi.URLParam(r, "config_id"), 10, 64)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
 		return
