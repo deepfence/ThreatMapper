@@ -16,6 +16,7 @@ import {
   ScanResultsApi,
   SearchApi,
   SecretScanApi,
+  SettingsApi,
   ThreatApi,
   TopologyApi,
   UserApi,
@@ -267,5 +268,14 @@ export function getReportsApiClient() {
     listReports: reportsApi.listReports.bind(reportsApi),
     generateReport: reportsApi.generateReport.bind(reportsApi),
     deleteReport: reportsApi.deleteReport.bind(reportsApi),
+  };
+}
+
+export function getSettingsApiClient() {
+  const settingsApi = new SettingsApi(configuration);
+
+  return {
+    getSettings: settingsApi.getSettings.bind(settingsApi),
+    updateSettings: settingsApi.updateSetting.bind(settingsApi),
   };
 }
