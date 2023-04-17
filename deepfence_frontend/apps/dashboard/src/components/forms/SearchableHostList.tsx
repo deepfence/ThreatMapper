@@ -1,6 +1,6 @@
 import { debounce } from 'lodash-es';
 import { useEffect, useState } from 'react';
-import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
+import { Combobox, ComboboxOption } from 'ui-components';
 
 import {
   HostsListType,
@@ -13,16 +13,16 @@ export type SearchableHostListProps = {
   onChange?: (value: string[]) => void;
 };
 export const SearchableHostList = ({ scanType, onChange }: SearchableHostListProps) => {
-  const [hostSearchQuery, setSearchHostQuery] = useState('');
-  const [hostSearchOffset, setSearchHostOffset] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOffset, setSearcOffset] = useState(0);
   const [hostList, setHostList] = useState<HostsListType[]>([]);
 
   const [selectedHosts, setSelectedHosts] = useState<string[]>([]);
 
   const { hosts, status: listHostStatus } = useGetHostsList({
     scanType,
-    searchText: hostSearchQuery,
-    offset: hostSearchOffset,
+    searchText: searchQuery,
+    offset: searchOffset,
   });
 
   useEffect(() => {
@@ -31,13 +31,19 @@ export const SearchableHostList = ({ scanType, onChange }: SearchableHostListPro
     }
   }, [hosts]);
 
+  // clear list when user search for new query
+  useEffect(() => {
+    setHostList([]);
+    setSearcOffset(0);
+  }, [searchQuery]);
+
   const searchHost = debounce((query) => {
-    setSearchHostQuery(query);
+    setSearchQuery(query);
   }, 1000);
 
   const onEndReached = () => {
     if (hosts.length > 0) {
-      setSearchHostOffset((offset) => offset + 5);
+      setSearcOffset((offset) => offset + 15);
     }
   };
 
@@ -50,33 +56,31 @@ export const SearchableHostList = ({ scanType, onChange }: SearchableHostListPro
         readOnly
         value={selectedHosts.length}
       />
-      {listHostStatus !== 'idle' && hostList.length === 0 ? (
-        <CircleSpinner size="xs" />
-      ) : (
-        <>
-          <Combobox
-            multiple
-            sizing="sm"
-            label="Select host"
-            name="hostFilter"
-            value={selectedHosts}
-            onChange={(value) => {
-              setSelectedHosts(value);
-              onChange?.(value);
-            }}
-            onQueryChange={searchHost}
-            onEndReached={onEndReached}
-          >
-            {hostList.map((host, index) => {
-              return (
-                <ComboboxOption key={`${host.nodeId}-${index}`} value={host.nodeId}>
-                  {host.hostName}
-                </ComboboxOption>
-              );
-            })}
-          </Combobox>
-        </>
-      )}
+      <Combobox
+        multiple
+        sizing="sm"
+        label="Select host"
+        name="hostFilter"
+        value={selectedHosts}
+        onChange={(value) => {
+          setSelectedHosts(value);
+          onChange?.(value);
+        }}
+        getDisplayValue={() => {
+          return searchQuery;
+        }}
+        loading={listHostStatus !== 'idle'}
+        onQueryChange={searchHost}
+        onEndReached={onEndReached}
+      >
+        {hostList.map((host, index) => {
+          return (
+            <ComboboxOption key={`${host.nodeId}-${index}`} value={host.nodeId}>
+              {host.hostName}
+            </ComboboxOption>
+          );
+        })}
+      </Combobox>
     </>
   );
 };

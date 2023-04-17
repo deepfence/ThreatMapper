@@ -31,6 +31,12 @@ export const SearchableImageList = ({ scanType, onChange }: Props) => {
     }
   }, [containerImages]);
 
+  // clear list when user search for new query
+  useEffect(() => {
+    setImageList([]);
+    setOffset(0);
+  }, [searchQuery]);
+
   const searchContainerImage = debounce((query) => {
     setSearchQuery(query);
   }, 1000);
@@ -50,36 +56,33 @@ export const SearchableImageList = ({ scanType, onChange }: Props) => {
         readOnly
         value={selectedImages.length}
       />
-      {listImageStatus !== 'idle' && imageList.length === 0 ? (
-        <CircleSpinner size="xs" />
-      ) : (
-        <>
-          <Combobox
-            multiple
-            sizing="sm"
-            label="Select Image"
-            name="imageFilter"
-            value={selectedImages}
-            onChange={(value) => {
-              setSelectedImages(value);
-              onChange?.(value);
-            }}
-            onQueryChange={searchContainerImage}
-            onEndReached={onEndReached}
-          >
-            {imageList.map((containerImage, index) => {
-              return (
-                <ComboboxOption
-                  key={`${containerImage.nodeId}-${index}`}
-                  value={containerImage.nodeId}
-                >
-                  {containerImage.containerImage}
-                </ComboboxOption>
-              );
-            })}
-          </Combobox>
-        </>
-      )}
+      <Combobox
+        multiple
+        sizing="sm"
+        label="Select Image"
+        name="imageFilter"
+        value={selectedImages}
+        onChange={(value) => {
+          setSelectedImages(value);
+          onChange?.(value);
+        }}
+        getDisplayValue={() => {
+          return searchQuery;
+        }}
+        onQueryChange={searchContainerImage}
+        onEndReached={onEndReached}
+      >
+        {imageList.map((containerImage, index) => {
+          return (
+            <ComboboxOption
+              key={`${containerImage.nodeId}-${index}`}
+              value={containerImage.nodeId}
+            >
+              {containerImage.containerImage}
+            </ComboboxOption>
+          );
+        })}
+      </Combobox>
     </>
   );
 };
