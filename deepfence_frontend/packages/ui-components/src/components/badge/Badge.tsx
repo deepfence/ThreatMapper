@@ -90,6 +90,7 @@ export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
               className="rounded ml-0.5 p-px hover:text-black hover:scale-105 focus:ring-1 focus:ring-blue-600 focus:outline-none "
               onClick={() => onRemove?.({ id: _id, value: value })}
               aria-label={'remove badge'}
+              data-testid={`badge-remove-${_id}`}
             >
               <HiX />
             </button>
