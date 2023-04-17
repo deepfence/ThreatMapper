@@ -12,6 +12,7 @@ import {
 
 import { useGetClustersList } from '@/features/common/data-component/searchClustersApiLoader';
 import { useGetContainerImagesList } from '@/features/common/data-component/searchContainerImagesApiLoader';
+import { useGetContainersList } from '@/features/common/data-component/searchContainersApiLoader';
 import { useGetHostsList } from '@/features/common/data-component/searchHostsApiLoader';
 import { ScanTypeEnum } from '@/types/common';
 
@@ -27,15 +28,15 @@ type IntegrationTypeProps = {
 
 export const IntegrationType = {
   slack: 'slack',
-  pagerDuty: 'pager-duty',
+  pagerDuty: 'pagerduty',
   email: 'email',
-  httpEndpoint: 'http-endpoint',
-  microsoftTeams: 'microsoft-teams',
+  httpEndpoint: 'http_endpoint',
+  microsoftTeams: 'teams',
   splunk: 'splunk',
   sumoLogic: 'sumo-logic',
   elasticsearch: 'elasticsearch',
-  googleChronicle: 'google-chronicle',
-  awsSecurityHub: 'aws-security-hub',
+  googleChronicle: 'googlechronicle',
+  awsSecurityHub: 'aws_security_hub',
   jira: 'jira',
   s3: 's3',
 } as const;
@@ -107,6 +108,12 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
   });
   const [selectedHosts, setSelectedHosts] = useState([]);
 
+  // host
+  const { containers, status: listContainers } = useGetContainersList({
+    scanType: API_SCAN_TYPE_MAP[notificationType],
+  });
+  const [selectedContainers, setSelectedContainers] = useState([]);
+
   // images
   const { containerImages, status: listImagesStatus } = useGetContainerImagesList({
     scanType: API_SCAN_TYPE_MAP[notificationType],
@@ -118,10 +125,10 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
   const [selectedCluster, setSelectedClusters] = useState([]);
 
   // severity
-  const [selectedSeverity, setSelectedSeverity] = useState('');
+  const [selectedSeverity, setSelectedSeverity] = useState([]);
 
   // status
-  const [selectedStatus, setSelectedStatus] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState([]);
 
   return (
     <div className="flex flex-col">
@@ -153,7 +160,29 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
           </Select>
         </>
       )}
-
+      {listContainers !== 'idle' ? (
+        <CircleSpinner size="xs" />
+      ) : (
+        <>
+          <Select
+            value={selectedContainers}
+            name="containerFilter"
+            onChange={(value) => {
+              setSelectedContainers(value);
+            }}
+            placeholder="Select container"
+            sizing="xs"
+          >
+            {containers.map((container) => {
+              return (
+                <SelectItem value={container.nodeId} key={container.nodeId}>
+                  {container.nodeName}
+                </SelectItem>
+              );
+            })}
+          </Select>
+        </>
+      )}
       {listImagesStatus !== 'idle' ? (
         <CircleSpinner size="xs" />
       ) : (
@@ -177,7 +206,6 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
           </Select>
         </>
       )}
-
       {listClusterStatus !== 'idle' ? (
         <CircleSpinner size="xs" />
       ) : (
@@ -202,7 +230,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
         </>
       )}
 
-      {notificationType === ScanTypeEnum.ComplianceScan ? (
+      {notificationType === 'Compliance' || notificationType === 'CloudCompliance' ? (
         <Select
           value={selectedStatus}
           name="statusFilter"
@@ -219,9 +247,9 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
         </Select>
       ) : null}
 
-      {Object.values(ScanTypeEnum)
-        .filter((val) => val !== ScanTypeEnum.ComplianceScan)
-        .includes(notificationType as ScanTypeEnum) ? (
+      {['Secret', 'Vulnerability', 'Malware'].includes(
+        notificationType as ScanTypeEnum,
+      ) ? (
         <Select
           value={selectedSeverity}
           name="severityFilter"
@@ -390,7 +418,7 @@ export const IntegrationForm = ({ integrationType }: IntegrationTypeProps) => {
           <>
             <TextInputType name="url" label="Endpoint Url" />
             <Radio
-              name="authType"
+              name="authTypeRadio"
               direction="row"
               value={authType}
               options={[
