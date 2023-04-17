@@ -4,7 +4,6 @@ import { toast } from 'sonner';
 import { getIntegrationApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
-  ModelIntegrationFilters,
   ModelIntegrationListResp,
   ModelNodeIdentifier,
   ModelNodeIdentifierNodeTypeEnum,
@@ -15,7 +14,6 @@ import { typedDefer, TypedDeferredData } from '@/utils/router';
 
 import { IntegrationForm, IntegrationType } from '../components/IntegrationForm';
 import { IntegrationTable } from '../components/IntegrationTable';
-import { filter } from 'lodash-es';
 
 type ActionReturnType = {
   message?: string;
