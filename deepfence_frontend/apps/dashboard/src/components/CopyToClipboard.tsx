@@ -31,7 +31,8 @@ export const CopyToClipboard = ({
 
   const onCopy = useCallback(() => {
     try {
-      copyToClipboard(JSON.stringify(data));
+      const _string = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      copyToClipboard(_string);
       setCopied(true);
       setTimeout(() => {
         if (mountRef.current) {

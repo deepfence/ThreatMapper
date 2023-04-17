@@ -1,6 +1,9 @@
 package awssecurityhub
 
-import "github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+import (
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	"github.com/go-playground/validator/v10"
+)
 
 type AwsSecurityHub struct {
 	Config           Config                  `json:"config"`
@@ -12,8 +15,12 @@ type AwsSecurityHub struct {
 }
 
 type Config struct {
-	AWSAccountId string `json:"aws_account_id"`
-	AWSAccessKey string `json:"aws_access_key"`
-	AWSSecretKey string `json:"aws_secret_key"`
-	AWSRegion    string `json:"aws_region"`
+	AWSAccountId string `json:"aws_account_id" validate:"required,number,max=12,startswith=12" required:"true"`
+	AWSAccessKey string `json:"aws_access_key" validate:"required" required:"true"`
+	AWSSecretKey string `json:"aws_secret_key" validate:"required" required:"true"`
+	AWSRegion    string `json:"aws_region" validate:"required" required:"true"`
+}
+
+func (a AwsSecurityHub) ValidateConfig(validate *validator.Validate) error {
+	return validate.Struct(a.Config)
 }

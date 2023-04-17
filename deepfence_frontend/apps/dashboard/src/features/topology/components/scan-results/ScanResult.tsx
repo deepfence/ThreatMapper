@@ -69,7 +69,7 @@ const ScanResultHeading = ({
   }
   return (
     <div className="flex items-center gap-x-3">
-      <h3 className="text-gray-600 dark:text-gray-400 text-sm font-semibold uppercase">
+      <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
         {title}
       </h3>
       {timestamp ? (

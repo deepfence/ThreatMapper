@@ -14,6 +14,7 @@ import (
 	"github.com/fatih/color"
 
 	"github.com/deepfence/ThreatMapper/tests_integrations/server"
+	"github.com/deepfence/ThreatMapper/tests_integrations/utils"
 )
 
 func GetFunctionName(i interface{}) string {
@@ -23,6 +24,8 @@ func GetFunctionName(i interface{}) string {
 var (
 	max_worker int
 )
+
+type TestFunc func(utils.GraphDBSetup) (time.Duration, error)
 
 func init() {
 	var err error
@@ -39,7 +42,7 @@ func init() {
 
 type WorkerEntry struct {
 	index int
-	test  func() (time.Duration, error)
+	test  TestFunc
 }
 
 func min(a, b int) int {
@@ -51,26 +54,37 @@ func min(a, b int) int {
 
 func main() {
 	var enableBench = flag.Int("bench", 0, "Run benchmarks")
+	var numHosts = flag.Int("num-hosts", 0, "Total number of hosts")
+	var numVulns = flag.Int("num-vulns", 0, "Total number of vulnerabilities")
 	flag.Parse()
 
-	test_list := []func() (time.Duration, error){
+	test_list := []TestFunc{
 		server.Test_topology,
 		server.Test_topology_hosts,
 		server.Test_topology_containers,
 		server.Test_topology_pods,
 		server.Test_topology_kubernetes,
+
+		server.Test_search_all_vulnerabilities,
+		server.Test_search_all_vulnerability_count,
+		server.Test_search_top_vuln_hosts,
 	}
 
 	max_worker = min(max_worker, len(test_list))
 
-	valid_tests := run_tests(test_list)
+	setup := utils.GraphDBSetup{
+		NumHosts:           *numHosts,
+		NumVulnerabilities: *numVulns,
+	}
+
+	valid_tests := run_tests(setup, test_list)
 	if *enableBench != 0 {
-		run_bench(valid_tests, *enableBench)
+		run_bench(setup, valid_tests, *enableBench)
 	}
 }
 
-func run_tests(test_list []func() (time.Duration, error)) []func() (time.Duration, error) {
-	res := []func() (time.Duration, error){}
+func run_tests(setup utils.GraphDBSetup, test_list []TestFunc) []TestFunc {
+	res := []TestFunc{}
 	var wg sync.WaitGroup
 	// Test loop
 	passed := make([]bool, len(test_list))
@@ -78,7 +92,7 @@ func run_tests(test_list []func() (time.Duration, error)) []func() (time.Duratio
 	for i := 0; i < max_worker; i += 1 {
 		go func() {
 			for entry := range test_queue {
-				_, err := entry.test()
+				_, err := entry.test(setup)
 				passed[entry.index] = err == nil
 			}
 			wg.Done()
@@ -107,7 +121,7 @@ func run_tests(test_list []func() (time.Duration, error)) []func() (time.Duratio
 	return res
 }
 
-func run_bench(test_list []func() (time.Duration, error), count int) {
+func run_bench(setup utils.GraphDBSetup, test_list []TestFunc, count int) {
 	var wg sync.WaitGroup
 	// Bench loop
 	benchs := make([][]time.Duration, len(test_list))
@@ -118,7 +132,7 @@ func run_bench(test_list []func() (time.Duration, error), count int) {
 			for entry := range test_queue {
 				benchs[entry.index] = make([]time.Duration, 0, count)
 				for n := 0; n < count; n += 1 {
-					t, err := entry.test()
+					t, err := entry.test(setup)
 					if err != nil {
 						color.Yellow("Test failed when it should not have: %v at iteration %v: %v\n", entry.index, n, err)
 						continue // Skip error

@@ -80,6 +80,7 @@ import { module as nodeDetailsContainerImage } from '@/features/topology/data-co
 import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
 import { module as nodeDetailsPod } from '@/features/topology/data-components/node-details/Pod';
 import { module as nodeDetailsProcess } from '@/features/topology/data-components/node-details/Process';
+import { module as topologyTableHosts } from '@/features/topology/data-components/tables/HostsTable';
 import { module as topologyAction } from '@/features/topology/data-components/topologyAction';
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
 import { module as topologyTable } from '@/features/topology/pages/Table';
@@ -585,6 +586,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'topology',
         ...topologyAction,
+      },
+      {
+        path: 'topology/table/hosts',
+        ...topologyTableHosts,
       },
       {
         path: 'threat-graph',

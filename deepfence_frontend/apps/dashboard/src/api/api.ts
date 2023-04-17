@@ -158,8 +158,11 @@ export function getSearchApiClient() {
   return {
     searchVulnerabilityScan: searchApi.searchVulnerabilityScans.bind(searchApi),
     searchContainerImages: searchApi.searchContainerImages.bind(searchApi),
+    searchContainerImagesCount: searchApi.countContainerImages.bind(searchApi),
     searchContainers: searchApi.searchContainers.bind(searchApi),
+    searchContainersCount: searchApi.countContainers.bind(searchApi),
     searchHosts: searchApi.searchHosts.bind(searchApi),
+    searchHostsCount: searchApi.countHosts.bind(searchApi),
     searchVulnerabilities: searchApi.searchVulnerabilities.bind(searchApi),
     searchVulnerabilitiesCount: searchApi.countVulnerabilities.bind(searchApi),
     searchVulnerabilityScanCount: searchApi.countVulnerabilityScans.bind(searchApi),

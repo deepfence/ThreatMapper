@@ -1198,6 +1198,9 @@ const FilterComponent = () => {
 };
 const HeaderComponent = () => {
   const [searchParams] = useSearchParams();
+  const params = useParams() as {
+    nodeType: string;
+  };
   const loaderData = useLoaderData() as LoaderDataType;
   const isFilterApplied =
     searchParams.has('status') ||
@@ -1212,7 +1215,6 @@ const HeaderComponent = () => {
         <DFAwait resolve={loaderData.data ?? []}>
           {(resolvedData: LoaderDataType) => {
             const { scanStatusResult, data } = resolvedData;
-
             const { scan_id, node_type, updated_at } = scanStatusResult ?? {};
 
             if (!scan_id || !node_type || !updated_at) {
@@ -1228,10 +1230,10 @@ const HeaderComponent = () => {
                   <BreadcrumbLink>
                     <DFLink
                       to={generatePath('/posture/accounts/:nodeType', {
-                        nodeType: node_type,
+                        nodeType: params.nodeType,
                       })}
                     >
-                      {node_type}
+                      {params.nodeType}
                     </DFLink>
                   </BreadcrumbLink>
 
