@@ -1,14 +1,98 @@
 package handler
 
 import (
-	"net/http"
-	"strconv"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
+	"math"
+
+	"net/url"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
+	"net/http"
+	"strconv"
 )
+
+func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req model.EmailConfigurationAdd
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+	user, statusCode, _, _, err := h.GetUserFromJWT(r.Context())
+	if err != nil {
+		respondWithErrorCode(err, w, statusCode)
+		return
+	}
+	req.CreatedByUserID = user.ID
+	ctx := directory.WithGlobalContext(r.Context())
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+	err = req.Create(r.Context(), pgClient)
+	if err != nil {
+		log.Error().Msgf(err.Error())
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, api_messages.SuccessEmailConfigCreated)
+}
+
+func (h *Handler) GetEmailConfiguration(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	ctx := directory.WithGlobalContext(r.Context())
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+	setting, err := pgClient.GetSetting(ctx, model.EmailConfigurationKey)
+	if !errors.Is(err, sql.ErrNoRows) {
+		httpext.JSON(w, http.StatusOK, nil)
+	}
+	var resp []model.EmailConfigurationResp
+	var emailConfig model.EmailConfigurationResp
+	err = json.Unmarshal(setting.Value, &emailConfig)
+	if err != nil {
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+	emailConfig.ID = setting.ID
+	resp = append(resp, emailConfig)
+	httpext.JSON(w, http.StatusOK, resp)
+}
+
+func (h *Handler) DeleteEmailConfiguration(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	ctx := directory.WithGlobalContext(r.Context())
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+	configId, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+	err = pgClient.DeleteSettingByID(ctx, configId)
+	if err != nil {
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+	httpext.JSON(w, http.StatusOK, nil)
+}
 
 func (h *Handler) GetGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	ctx := directory.WithGlobalContext(r.Context())
@@ -50,20 +134,45 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err}, w)
 		return
 	}
-	pgSettings, err := model.GetSettingByKey(ctx, pgClient, req.Key)
+	currentSettings, err := model.GetSettingByKey(ctx, pgClient, req.Key)
 	if err != nil {
 		respondError(err, w)
 		return
 	}
-	// TODO: validation for each key
+	if req.ID != currentSettings.ID {
+		respondError(&ValidatorError{
+			errors.New("Key: 'SettingUpdateRequest.ID' Error:invalid")}, w)
+		return
+	}
+	var value interface{}
+	switch currentSettings.Key {
+	case model.ConsoleURLSettingKey:
+		consoleUrl := fmt.Sprintf("%s", req.Value)
+		var parsedUrl *url.URL
+		if parsedUrl, err = url.ParseRequestURI(consoleUrl); err != nil {
+			respondError(&ValidatorError{
+				errors.New("Key: 'SettingUpdateRequest.Value' Error:must be url")}, w)
+			return
+		}
+		value = parsedUrl.Scheme + "://" + parsedUrl.Host
+	case model.InactiveNodesDeleteScanResultsKey:
+		val, ok := req.Value.(float64)
+		if !ok {
+			respondError(&ValidatorError{
+				errors.New("Key: 'SettingUpdateRequest.Value' Error:must be integer")}, w)
+			return
+		}
+		value = int(math.Round(val))
+	}
 	setting := model.Setting{
-		ID: req.ID,
+		ID:  req.ID,
+		Key: req.Key,
 		Value: &model.SettingValue{
-			Label:       req.Label,
-			Value:       req.Value,
-			Description: req.Description,
+			Label:       currentSettings.Value.Label,
+			Value:       value,
+			Description: currentSettings.Value.Description,
 		},
-		IsVisibleOnUi: pgSettings.IsVisibleOnUi,
+		IsVisibleOnUi: currentSettings.IsVisibleOnUi,
 	}
 	err = setting.Update(ctx, pgClient)
 	if err != nil {

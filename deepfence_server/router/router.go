@@ -1,12 +1,12 @@
 package router
 
 import (
+	"github.com/casbin/casbin/v2"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
-	"github.com/casbin/casbin/v2"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
@@ -168,6 +168,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Get("/", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetGlobalSettings))
 					r.Patch("/{id}", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UpdateGlobalSettings))
 				})
+				r.Post("/email", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.AddEmailConfiguration))
+				r.Get("/email", dfHandler.AuthHandler(ResourceSettings, PermissionRead, dfHandler.GetEmailConfiguration))
+				r.Delete("/email/{config_id}", dfHandler.AuthHandler(ResourceSettings, PermissionDelete, dfHandler.DeleteEmailConfiguration))
 			})
 
 			r.Route("/graph", func(r chi.Router) {

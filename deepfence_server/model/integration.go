@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"reflect"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
@@ -19,7 +20,12 @@ type IntegrationAddReq struct {
 	Config           map[string]interface{} `json:"config"`
 	IntegrationType  string                 `json:"integration_type"`
 	NotificationType string                 `json:"notification_type"`
-	Filters          map[string][]string    `json:"filters"`
+	Filters          IntegrationFilters     `json:"filters"`
+}
+
+type IntegrationFilters struct {
+	FieldsFilters reporters.FieldsFilters `json:"fields_filters"`
+	NodeIds       []NodeIdentifier        `json:"node_ids" required:"true"`
 }
 
 func (i *IntegrationAddReq) IntegrationExists(ctx context.Context, pgClient *postgresqlDb.Queries) (bool, error) {
@@ -77,11 +83,11 @@ type IntegrationListReq struct {
 }
 
 type IntegrationListResp struct {
-	ID               int32                  `json:"id"`
-	IntegrationType  string                 `json:"integration_type"`
-	NotificationType string                 `json:"notification_type"`
-	Config           map[string]interface{} `json:"config"`
-	Filters          map[string][]string    `json:"filters"`
+	ID               int32                   `json:"id"`
+	IntegrationType  string                  `json:"integration_type"`
+	NotificationType string                  `json:"notification_type"`
+	Config           map[string]interface{}  `json:"config"`
+	Filters          reporters.FieldsFilters `json:"filters"`
 }
 
 func (i *IntegrationListReq) GetIntegrations(ctx context.Context, pgClient *postgresqlDb.Queries) ([]postgresqlDb.Integration, error) {

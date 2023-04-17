@@ -28,6 +28,8 @@ const (
 	ElasticSearch   = "elasticsearch"
 	GoogleChronicle = "googlechronicle"
 	AwsSecurityHub  = "aws_security_hub"
+	Email           = "email"
+	Jira            = "jira"
 )
 
 const (

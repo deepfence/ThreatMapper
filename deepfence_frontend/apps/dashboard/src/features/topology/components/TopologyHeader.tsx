@@ -1,65 +1,82 @@
 import classNames from 'classnames';
-import { ReactNode } from 'react';
+import { ReactNode, Suspense } from 'react';
 import { Link, useLocation, useMatches, useSearchParams } from 'react-router-dom';
 import { Tooltip } from 'ui-components';
 
+import { SearchNodeCountResp } from '@/api/generated';
 import { CloudIcon } from '@/components/icons/cloud';
 import { ContainerIcon } from '@/components/icons/container';
 import { GraphIcon } from '@/components/icons/graph';
 import { HostIcon } from '@/components/icons/host';
-import { ImageIcon } from '@/components/icons/image';
 import { K8sIcon } from '@/components/icons/k8s';
-import { NamespaceIcon } from '@/components/icons/namespace';
 import { PodIcon } from '@/components/icons/pod';
 import { TableIcon } from '@/components/icons/table';
 import { TopologyViewTypes } from '@/features/topology/data-components/topologyAction';
 import { NodeType } from '@/features/topology/utils/topology-data';
+import { DFAwait } from '@/utils/suspense';
 
-export const TopologyHeader = () => {
+const CountsSkeleton = () => {
+  return (
+    <div className="flex items-center gap-1 flex-1 shrink justify-end min-w-0">
+      {[1, 2, 3, 4, 5].map((idx) => {
+        return (
+          <div
+            key={idx}
+            className="bg-gray-200 dark:bg-gray-600 animate-pulse max-w-[150px] flex-1 h-6"
+          />
+        );
+      })}
+    </div>
+  );
+};
+
+export const TopologyHeader = ({ nodeCounts }: { nodeCounts: SearchNodeCountResp }) => {
   return (
     <div className="flex py-1 px-2 w-full shadow bg-white dark:bg-gray-800 items-center">
       <span className="text-md font-medium text-gray-700 dark:text-gray-200 uppercase">
         Topology
       </span>
       <div className="flex gap-4 ml-auto flex-1 shrink min-w-0">
-        <div className="flex items-center gap-1 flex-1 shrink justify-end min-w-0">
-          <ResourceSelectorButton
-            icon={<CloudIcon />}
-            name="Clouds"
-            count={10}
-            type={NodeType.cloud_provider}
-          />
-          <ResourceSelectorButton
-            icon={<HostIcon />}
-            name="Hosts"
-            type={NodeType.host}
-            count={38}
-          />
-          <ResourceSelectorButton
-            icon={<K8sIcon />}
-            name="Kubernetes Clusters"
-            count={3}
-            type={NodeType.kubernetes_cluster}
-          />
-          <ResourceSelectorButton
-            icon={<ContainerIcon />}
-            name="Containers"
-            count={87}
-            type={NodeType.container}
-          />
-          <ResourceSelectorButton
-            icon={<PodIcon />}
-            name="Pods"
-            type={NodeType.pod}
-            count={23}
-          />
-          <ResourceSelectorButton icon={<NamespaceIcon />} name="Namespaces" count={7} />
-          <ResourceSelectorButton
-            icon={<ImageIcon />}
-            name="Container Images"
-            count={5}
-          />
-        </div>
+        <Suspense fallback={<CountsSkeleton />}>
+          <DFAwait resolve={nodeCounts}>
+            {(data: SearchNodeCountResp) => {
+              return (
+                <div className="flex items-center gap-1 flex-1 shrink justify-end min-w-0">
+                  <ResourceSelectorButton
+                    icon={<CloudIcon />}
+                    name="Clouds"
+                    count={data.cloud_provider}
+                    type={NodeType.cloud_provider}
+                  />
+                  <ResourceSelectorButton
+                    icon={<HostIcon />}
+                    name="Hosts"
+                    type={NodeType.host}
+                    count={data.host}
+                  />
+                  <ResourceSelectorButton
+                    icon={<K8sIcon />}
+                    name="Kubernetes Clusters"
+                    count={data.kubernetes_cluster}
+                    type={NodeType.kubernetes_cluster}
+                  />
+                  <ResourceSelectorButton
+                    icon={<ContainerIcon />}
+                    name="Containers"
+                    count={data.container}
+                    type={NodeType.container}
+                  />
+                  <ResourceSelectorButton
+                    icon={<PodIcon />}
+                    name="Pods"
+                    type={NodeType.pod}
+                    count={data.pod}
+                  />
+                </div>
+              );
+            }}
+          </DFAwait>
+        </Suspense>
         <div>
           <ViewSwitcher />
         </div>

@@ -1,0 +1,111 @@
+{{- if .Values.neo4j.create }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: deepfence-neo4j
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: neo4j
+spec:
+  serviceName: deepfence-neo4j
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
+      component: neo4j
+  template:
+    metadata:
+      {{- with .Values.neo4j.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
+        component: neo4j
+    spec:
+      serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.neo4j.podSecurityContext | nindent 8 }}
+      containers:
+        - name: neo4j
+          securityContext:
+            {{- toYaml .Values.neo4j.securityContext | nindent 12 }}
+          image: "{{ .Values.neo4j.image.repository }}:{{ .Values.neo4j.image.tag }}"
+          imagePullPolicy: {{ .Values.neo4j.image.pullPolicy }}
+          envFrom:
+            - secretRef:
+                name: "deepfence-neo4j-secret"
+            - configMapRef:
+                name: "deepfence-neo4j-config"
+          ports:
+            - name: ui
+              containerPort: 7474
+              protocol: TCP
+            - name: http
+              containerPort: 7687
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.neo4j.resources | nindent 12 }}
+          volumeMounts:
+            - name: "neo4j-{{ .Release.Name }}"
+              mountPath: /data
+            - name: "neo4j-{{ .Release.Name }}"
+              mountPath: /logs
+            - name: "neo4j-{{ .Release.Name }}"
+              mountPath: /plugins
+      {{- with .Values.neo4j.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.neo4j.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.neo4j.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  volumeClaimTemplates:
+    - metadata:
+        name: "neo4j-{{ .Release.Name }}"
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "{{ .Values.neo4j.volumeSize }}"
+        storageClassName: {{ .Values.neo4j.storageClass }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-neo4j
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: neo4j
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 7687
+      targetPort: 7687
+      protocol: TCP
+    - name: ui
+      port: 7474
+      targetPort: 7474
+      protocol: TCP
+  selector:
+    {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
+    component: neo4j
+{{- end }}

@@ -7,6 +7,7 @@ import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretSca
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { module as logoutAction } from '@/features/auth/data-components/logoutAction';
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
+import { getApiTokenApiLoader } from '@/features/common/data-component/getApiTokenApiLoader';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
 import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
@@ -74,7 +75,10 @@ import { module as threatGraphDetailModal } from '@/features/threat-graph/data-c
 import { module as threatGraphAction } from '@/features/threat-graph/data-components/threatGraphAction';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
+import { module as nodeDetailsContainerImage } from '@/features/topology/data-components/node-details/ContainerImage';
 import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
+import { module as nodeDetailsPod } from '@/features/topology/data-components/node-details/Pod';
+import { module as nodeDetailsProcess } from '@/features/topology/data-components/node-details/Process';
 import { module as topologyAction } from '@/features/topology/data-components/topologyAction';
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
 import { module as topologyTable } from '@/features/topology/pages/Table';
@@ -207,6 +211,18 @@ export const privateRoutes: CustomRouteObject[] = [
               {
                 path: 'container/:nodeId',
                 ...nodeDetailsContainer,
+              },
+              {
+                path: 'process/:nodeId',
+                ...nodeDetailsProcess,
+              },
+              {
+                path: 'container_image/:nodeId',
+                ...nodeDetailsContainerImage,
+              },
+              {
+                path: 'pod/:nodeId',
+                ...nodeDetailsPod,
               },
             ],
           },
@@ -571,6 +587,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'auth/logout',
         ...logoutAction,
+      },
+      {
+        path: 'auth/apiToken',
+        loader: getApiTokenApiLoader,
       },
     ],
   },

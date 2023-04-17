@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -119,7 +120,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err}, w)
 		return
 	}
-	u, statusCode, ctx, pgClient, err := model.GetUserByEmail(loginRequest.Email)
+	u, statusCode, ctx, pgClient, err := model.GetUserByEmail(strings.ToLower(loginRequest.Email))
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return

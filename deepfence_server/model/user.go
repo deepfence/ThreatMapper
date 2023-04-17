@@ -61,6 +61,18 @@ func init() {
 	}
 }
 
+type ApiTokenResponse struct {
+	ID              int64
+	ApiToken        uuid.UUID
+	Name            string
+	CompanyID       int32
+	GroupID         int32
+	RoleID          int32
+	CreatedByUserID int64
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}
+
 type ApiToken struct {
 	ApiToken         uuid.UUID `json:"api_token" required:"true"`
 	ID               int64     `json:"id" required:"true"`

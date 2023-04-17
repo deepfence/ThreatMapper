@@ -114,6 +114,8 @@ services:
           cpus: ".2"
     restart: on-failure
     environment:
+      - MGMT_CONSOLE_URL_INTERNAL=127.0.0.1
+      - MGMT_CONSOLE_PORT_INTERNAL=8081
       - MGMT_CONSOLE_URL=127.0.0.1
       - MGMT_CONSOLE_PORT=443
       - DEEPFENCE_KEY=""

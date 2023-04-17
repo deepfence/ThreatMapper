@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"net/http"
 	"strconv"
 
@@ -101,10 +102,10 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var integrationList []model.IntegrationListResp
+	integrationList := []model.IntegrationListResp{}
 	for _, integration := range integrations {
 		var config map[string]interface{}
-		var filters map[string][]string
+		var filters reporters.FieldsFilters
 
 		err = json.Unmarshal(integration.Config, &config)
 		if err != nil {
@@ -112,7 +113,6 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 			respondError(&InternalServerError{err}, w)
 			return
 		}
-
 		err = json.Unmarshal(integration.Filters, &filters)
 		if err != nil {
 			log.Error().Msgf(err.Error())

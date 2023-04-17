@@ -1,12 +1,14 @@
 package awssecurityhub
 
+import "github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+
 type AwsSecurityHub struct {
-	Config           Config              `json:"config"`
-	IntegrationType  string              `json:"integration_type"`
-	NotificationType string              `json:"notification_type"`
-	Filters          map[string][]string `json:"filters"`
-	Message          string              `json:"message"`
-	Resource         string              `json:"resource"`
+	Config           Config                  `json:"config"`
+	IntegrationType  string                  `json:"integration_type"`
+	NotificationType string                  `json:"notification_type"`
+	Filters          reporters.FieldsFilters `json:"filters"`
+	Message          string                  `json:"message"`
+	Resource         string                  `json:"resource"`
 }
 
 type Config struct {

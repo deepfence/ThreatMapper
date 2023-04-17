@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
@@ -14,8 +15,21 @@ import (
 const (
 	ConsoleURLSettingKey              = "console_url"
 	JwtSecretSettingKey               = "jwt_secret"
+	EmailConfigurationKey             = "email_configuration"
 	InactiveNodesDeleteScanResultsKey = "inactive_delete_scan_results"
 )
+
+type GetAuditLogsRow struct {
+	Event      string    `json:"event"`
+	Action     string    `json:"action"`
+	Resources  string    `json:"resources"`
+	Success    bool      `json:"success"`
+	UserID     int32     `json:"user_id"`
+	UserRoleID int32     `json:"user_role_id"`
+	CreatedAt  time.Time `json:"created_at"`
+	Role       string    `json:"role"`
+	Email      string    `json:"email"`
+}
 
 type SettingValue struct {
 	Label       string      `json:"label"`
@@ -39,11 +53,9 @@ type SettingsResponse struct {
 }
 
 type SettingUpdateRequest struct {
-	ID          int64       `json:"id" validate:"required" required:"true"`
-	Key         string      `json:"key" validate:"required,oneof=console_url" required:"true" enum:"console_url"`
-	Label       string      `json:"label" validate:"required,min=2,max=32" required:"true"`
-	Value       interface{} `json:"value" validate:"required" required:"true"`
-	Description string      `json:"description" validate:"required,min=2,max=64" required:"true"`
+	ID    int64       `path:"id" validate:"required" required:"true"`
+	Key   string      `json:"key" validate:"required,oneof=console_url inactive_delete_scan_results" required:"true" enum:"console_url,inactive_delete_scan_results"`
+	Value interface{} `json:"value" validate:"required" required:"true"`
 }
 
 func (s *Setting) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.Setting, error) {
@@ -74,6 +86,19 @@ func (s *Setting) Update(ctx context.Context, pgClient *postgresqlDb.Queries) er
 	})
 }
 
+func GetManagementConsoleURL(ctx context.Context, pgClient *postgresqlDb.Queries) (string, error) {
+	setting, err := pgClient.GetSetting(ctx, ConsoleURLSettingKey)
+	if err != nil {
+		return "", err
+	}
+	var settingVal SettingValue
+	err = json.Unmarshal(setting.Value, &settingVal)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%v", settingVal.Value), nil
+}
+
 func GetVisibleSettings(ctx context.Context, pgClient *postgresqlDb.Queries) ([]SettingsResponse, error) {
 	visibleSettings, err := pgClient.GetVisibleSettings(ctx)
 	if err != nil {
@@ -97,12 +122,22 @@ func GetVisibleSettings(ctx context.Context, pgClient *postgresqlDb.Queries) ([]
 	return settings, nil
 }
 
-func GetSettingByKey(ctx context.Context, pgClient *postgresqlDb.Queries, key string) (postgresqlDb.Setting, error) {
+func GetSettingByKey(ctx context.Context, pgClient *postgresqlDb.Queries, key string) (*Setting, error) {
 	setting, err := pgClient.GetSetting(ctx, key)
 	if err != nil {
-		return postgresqlDb.Setting{}, err
+		return nil, err
 	}
-	return setting, nil
+	var sValue SettingValue
+	err = json.Unmarshal(setting.Value, &sValue)
+	if err != nil {
+		return nil, err
+	}
+	return &Setting{
+		ID:            setting.ID,
+		Key:           setting.Key,
+		Value:         &sValue,
+		IsVisibleOnUi: setting.IsVisibleOnUi,
+	}, nil
 }
 
 func GetJwtSecretSetting(ctx context.Context, pgClient *postgresqlDb.Queries) ([]byte, error) {

@@ -87,14 +87,13 @@ enum ActionEnumType {
   ADD = 'add',
 }
 const DURATION: { [k: string]: ModelGenerateReportReqDurationEnum } = {
-  'Last 0 Day': ModelGenerateReportReqDurationEnum.NUMBER_0,
   'Last 1 Day': ModelGenerateReportReqDurationEnum.NUMBER_1,
   'Last 7 Days': ModelGenerateReportReqDurationEnum.NUMBER_7,
   'Last 30 Days': ModelGenerateReportReqDurationEnum.NUMBER_30,
   'Last 60 Days': ModelGenerateReportReqDurationEnum.NUMBER_60,
   'Last 90 Days': ModelGenerateReportReqDurationEnum.NUMBER_90,
   'Last 180 Days': ModelGenerateReportReqDurationEnum.NUMBER_180,
-  'All Documents': 99999 as ModelGenerateReportReqDurationEnum,
+  'All Documents': 0 as ModelGenerateReportReqDurationEnum,
 };
 type LoaderDataType = {
   data: ReturnType<typeof getReportList>;
@@ -443,18 +442,20 @@ export const ReportTable = () => {
         maxSize: 70,
       }),
       columnHelper.accessor('duration', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => {
+          const duration = cell.getValue();
+          if (duration === 1) {
+            return 'Last 1 day';
+          } else if (duration === 0) {
+            return 'All documents';
+          } else {
+            return `Last ${duration} days`;
+          }
+        },
         header: () => 'Duration',
-        minSize: 35,
-        size: 40,
-        maxSize: 45,
-      }),
-      columnHelper.accessor('storage_path', {
-        cell: (cell) => cell.getValue() || '-',
-        header: () => 'Storage Path',
-        minSize: 75,
-        size: 80,
-        maxSize: 85,
+        minSize: 50,
+        size: 55,
+        maxSize: 60,
       }),
       columnHelper.accessor('status', {
         cell: (cell) => (
@@ -472,15 +473,15 @@ export const ReportTable = () => {
           />
         ),
         header: () => 'Status',
-        minSize: 75,
-        size: 80,
-        maxSize: 85,
+        minSize: 60,
+        size: 65,
+        maxSize: 70,
       }),
       columnHelper.accessor('filters', {
         cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
         header: () => 'Filters',
         minSize: 75,
-        size: 80,
+        size: 85,
         maxSize: 85,
       }),
       columnHelper.display({

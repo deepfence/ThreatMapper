@@ -1,0 +1,145 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepfence-ui
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: ui
+spec:
+  {{- if not .Values.ui.autoscaling.enabled }}
+  replicas: {{ .Values.ui.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
+      component: ui
+  template:
+    metadata:
+      {{- with .Values.ui.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
+        component: ui
+    spec:
+      serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.ui.podSecurityContext | nindent 8 }}
+      containers:
+        - name: ui
+          securityContext:
+            {{- toYaml .Values.ui.securityContext | nindent 12 }}
+          image: "{{ .Values.ui.image.repository }}:{{ .Values.ui.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.ui.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: "deepfence-console-config"
+            - secretRef:
+                {{- if .Values.redis.create }}
+                name: "deepfence-console-secrets-redis"
+                {{- else }}
+                name: {{ .Values.redis.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.minio.create }}
+                name: "deepfence-console-secrets-minio"
+                {{- else }}
+                name: {{ .Values.minio.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.kafka.create }}
+                name: "deepfence-console-secrets-kafka"
+                {{- else }}
+                name: {{ .Values.kafka.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.postgresql.create }}
+                name: "deepfence-console-secrets-postgresql"
+                {{- else }}
+                name: {{ .Values.postgresql.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.neo4j.create }}
+                name: "deepfence-console-secrets-neo4j"
+                {{- else }}
+                name: {{ .Values.neo4j.secretName }}
+                {{- end }}
+          ports:
+            - name: http
+              containerPort: 8081
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          resources:
+            {{- toYaml .Values.ui.resources | nindent 12 }}
+      {{- with .Values.ui.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.ui.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.ui.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-ui
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: ui
+spec:
+  type: {{ .Values.ui.service.type }}
+  ports:
+    - port: {{ .Values.ui.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
+    component: ui
+---
+{{- if .Values.ui.autoscaling.enabled }}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: deepfence-ui
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: ui
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: deepfence-ui
+  minReplicas: {{ .Values.ui.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.ui.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.ui.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: {{ .Values.ui.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.ui.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: {{ .Values.ui.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}

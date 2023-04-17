@@ -82,6 +82,7 @@ func AddCloudControls(msg *message.Message) error {
 		})
 		ON CREATE
 			SET n.active = true,
+			n.control_id = row.control_id,
 			n.benchmark_id = row.benchmark_id,
 			n.type = 'benchmark',
 			n.description = row.description,
@@ -90,6 +91,8 @@ func AddCloudControls(msg *message.Message) error {
 			n.service = $cloudCap,
 			n.cloud_provider = $cloud,
 			n.category = 'Compliance',
+			n.parent_control_hierarchy = row.parent_control_hierarchy,
+			n.category_hierarchy = row.category_hierarchy,
 			n.compliance_type = $benchmark,
 			n.executable = false`,
 				map[string]interface{}{

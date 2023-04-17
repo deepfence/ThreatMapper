@@ -3,6 +3,7 @@ package teams
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -18,9 +19,27 @@ func New(b []byte) (*Teams, error) {
 	return &t, nil
 }
 
+func (t Teams) FormatMessage(message []map[string]interface{}) string {
+	entiremsg := "*" + t.NotificationType + "*\n\n"
+	for k, v := range message {
+		entiremsg = entiremsg + fmt.Sprintf("#%d\n", k)
+		for key, val := range v {
+			entiremsg = fmt.Sprintf("%s:%s", key, val)
+		}
+		entiremsg = entiremsg + "\n"
+	}
+	return entiremsg
+}
+
 func (t Teams) SendNotification(message string) error {
+	var msg []map[string]interface{}
+	err := json.Unmarshal([]byte(message), &msg)
+	if err != nil {
+		return err
+	}
+	m := t.FormatMessage(msg)
 	payload := Payload{
-		Text: message,
+		Text: m,
 	}
 
 	payloadBytes, err := json.Marshal(payload)

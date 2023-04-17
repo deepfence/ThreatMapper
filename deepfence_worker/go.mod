@@ -29,16 +29,16 @@ require (
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
 	github.com/deepfence/YaraHunter v0.0.0-00010101000000-000000000000
 	github.com/deepfence/agent-plugins-grpc v1.0.1
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230406134345-d30bf6ca120b
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230414063913-89b979d968a2
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
 	github.com/hillu/go-yara/v4 v4.2.4
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/minio/minio-go/v7 v7.0.49
+	github.com/minio/minio-go/v7 v7.0.51
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.7
 	github.com/prometheus/client_golang v1.14.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/zerolog v1.29.0
-	github.com/twmb/franz-go v1.13.1
+	github.com/twmb/franz-go v1.13.2
 	github.com/twmb/franz-go/pkg/kadm v1.8.0
 	github.com/xuri/excelize/v2 v2.7.0
 	go.opentelemetry.io/otel v1.14.0
@@ -74,7 +74,7 @@ require (
 	github.com/containerd/typeurl v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
-	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230330091304-8f99282832d7 // indirect
+	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230414063913-89b979d968a2 // indirect
 	github.com/deepfence/vessel v0.9.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/cli v23.0.1+incompatible // indirect
@@ -125,7 +125,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/k-sone/critbitgo v1.4.0 // indirect
 	github.com/klauspost/compress v1.16.3 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/leodido/go-urn v1.2.2 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.1 // indirect
@@ -170,7 +170,7 @@ require (
 	github.com/prometheus/common v0.39.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
-	github.com/redis/go-redis/v9 v9.0.2 // indirect
+	github.com/redis/go-redis/v9 v9.0.3 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.3 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
