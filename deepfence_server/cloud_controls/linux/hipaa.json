@@ -4,7 +4,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.9",
+    "control_id": "hipaa-3.9",
     "description": "Ensure that TLS CA certificate file ownership is set to root:root (Automated)",
     "title": "Ensure that TLS CA certificate file ownership is set to root:root (Automated)",
     "tags": {},
@@ -21,7 +21,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.14",
+    "control_id": "hipaa-3.14",
     "description": "Ensure that the Docker server certificate key file permissions are set to 400 (Automated)",
     "title": "Ensure that the Docker server certificate key file permissions are set to 400 (Automated)",
     "tags": {},
@@ -38,7 +38,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.11",
+    "control_id": "hipaa-3.11",
     "description": "Ensure that Docker server certificate file ownership is set to root:root (Automated)",
     "title": "Ensure that Docker server certificate file ownership is set to root:root (Automated)",
     "tags": {},
@@ -55,7 +55,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.15",
+    "control_id": "hipaa-3.15",
     "description": "Ensure that the Docker socket file ownership is set to root:docker (Automated)",
     "title": "Ensure that the Docker socket file ownership is set to root:docker (Automated)",
     "tags": {},
@@ -72,7 +72,7 @@
     "category_hierarchy": [
       "Audit"
     ],
-    "control_id": "1.1.6",
+    "control_id": "hipaa-1.1.6",
     "description": "Ensure auditing is configured for Docker files and directories - /fenced/mnt/host/etc/docker (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - /fenced/mnt/host/etc/docker (Automated)",
     "tags": {},
@@ -89,7 +89,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.7",
+    "control_id": "hipaa-3.7",
     "description": "Ensure that registry certificate file ownership is set to root:root (Automated)",
     "title": "Ensure that registry certificate file ownership is set to root:root (Automated)",
     "tags": {},
@@ -106,7 +106,7 @@
     "category_hierarchy": [
       "Docker Daemon Configuration"
     ],
-    "control_id": "2.5",
+    "control_id": "hipaa-2.5",
     "description": "Ensure insecure registries are not used (Scored)",
     "title": "Ensure insecure registries are not used (Scored)",
     "tags": {},
@@ -123,7 +123,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.8",
+    "control_id": "hipaa-3.8",
     "description": "Ensure that registry certificate file permissions are set to 444 or more restrictively (Automated)",
     "title": "Ensure that registry certificate file permissions are set to 444 or more restrictively (Automated)",
     "tags": {},
@@ -140,7 +140,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.10",
+    "control_id": "hipaa-3.10",
     "description": "Ensure that TLS CA certificate file permissions are set to 444 or more restrictively (Automated)",
     "title": "Ensure that TLS CA certificate file permissions are set to 444 or more restrictively (Automated)",
     "tags": {},
@@ -157,7 +157,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.5",
+    "control_id": "hipaa-3.5",
     "description": "Ensure that the /fenced/mnt/host/etc/docker directory ownership is set to root:root (Automated)",
     "title": "Ensure that the /fenced/mnt/host/etc/docker directory ownership is set to root:root (Automated)",
     "tags": {},
@@ -174,7 +174,7 @@
     "category_hierarchy": [
       "Audit"
     ],
-    "control_id": "1.1.4",
+    "control_id": "hipaa-1.1.4",
     "description": "Ensure auditing is configured for Docker files and directories -/run/containerd (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories -/run/containerd (Automated)",
     "tags": {},
@@ -191,7 +191,7 @@
     "category_hierarchy": [
       "Audit"
     ],
-    "control_id": "1.1.15",
+    "control_id": "hipaa-1.1.15",
     "description": "Ensure auditing is configured for Docker files and directories - /usr/bin/containerd-shim (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - /usr/bin/containerd-shim (Automated)",
     "tags": {},
@@ -208,7 +208,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.6",
+    "control_id": "hipaa-3.6",
     "description": "Ensure that /fenced/mnt/host/etc/docker directory permissions are set to 755 or more restrictively (Automated)",
     "title": "Ensure that /fenced/mnt/host/etc/docker directory permissions are set to 755 or more restrictively (Automated)",
     "tags": {},
@@ -225,7 +225,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.22",
+    "control_id": "hipaa-3.22",
     "description": "Ensure that the /fenced/mnt/host/etc/default/docker file permissions are set to 644 or more restrictively (Automated)",
     "title": "Ensure that the /fenced/mnt/host/etc/default/docker file permissions are set to 644 or more restrictively (Automated)",
     "tags": {},
@@ -242,7 +242,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.2",
+    "control_id": "hipaa-3.2",
     "description": "Ensure that docker.service file permissions are appropriately set (Automated)",
     "title": "Ensure that docker.service file permissions are appropriately set (Automated)",
     "tags": {},
@@ -259,7 +259,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.13",
+    "control_id": "hipaa-3.13",
     "description": "Ensure that the Docker server certificate key file ownership is set to root:root (Automated)",
     "title": "Ensure that the Docker server certificate key file ownership is set to root:root (Automated)",
     "tags": {},
@@ -276,7 +276,7 @@
     "category_hierarchy": [
       "Docker Daemon Configuration"
     ],
-    "control_id": "2.7",
+    "control_id": "hipaa-2.7",
     "description": "Ensure TLS authentication for Docker daemon is configured (Scored)",
     "title": "Ensure TLS authentication for Docker daemon is configured (Scored)",
     "tags": {},
@@ -293,7 +293,7 @@
     "category_hierarchy": [
       "Audit"
     ],
-    "control_id": "1.1.18",
+    "control_id": "hipaa-1.1.18",
     "description": "Ensure auditing is configured for Docker files and directories - /usr/bin/runc (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - /usr/bin/runc (Automated)",
     "tags": {},
@@ -310,7 +310,7 @@
     "category_hierarchy": [
       "Audit"
     ],
-    "control_id": "1.1.5",
+    "control_id": "hipaa-1.1.5",
     "description": "Ensure auditing is configured for Docker files and directories - /var/lib/docker (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - /var/lib/docker (Automated)",
     "tags": {},
@@ -327,7 +327,7 @@
     "category_hierarchy": [
       "Audit"
     ],
-    "control_id": "1.1.9",
+    "control_id": "hipaa-1.1.9",
     "description": "Ensure auditing is configured for Docker files and directories - docker.socket (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - docker.socket (Automated)",
     "tags": {},
@@ -344,7 +344,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.17",
+    "control_id": "hipaa-3.17",
     "description": "Ensure that the daemon.json file ownership is set to root:root (Automated)",
     "title": "Ensure that the daemon.json file ownership is set to root:root (Automated)",
     "tags": {},
@@ -361,7 +361,7 @@
     "category_hierarchy": [
       "Audit"
     ],
-    "control_id": "1.1.17",
+    "control_id": "hipaa-1.1.17",
     "description": "Ensure auditing is configured for Docker files and directories - /usr/bin/containerd-shim-runc-v2 (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - /usr/bin/containerd-shim-runc-v2 (Automated)",
     "tags": {},
@@ -378,7 +378,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.21",
+    "control_id": "hipaa-3.21",
     "description": "Ensure that the /fenced/mnt/host/etc/sysconfig/docker file ownership is set to root:root (Automated)",
     "title": "Ensure that the /fenced/mnt/host/etc/sysconfig/docker file ownership is set to root:root (Automated)",
     "tags": {},
@@ -395,7 +395,7 @@
     "category_hierarchy": [
       "Audit"
     ],
-    "control_id": "1.1.10",
+    "control_id": "hipaa-1.1.10",
     "description": "Ensure auditing is configured for Docker files and directories - /fenced/mnt/host/etc/default/docker (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - /fenced/mnt/host/etc/default/docker (Automated)",
     "tags": {},
@@ -412,7 +412,7 @@
     "category_hierarchy": [
       "Docker Daemon Configuration"
     ],
-    "control_id": "2.14",
+    "control_id": "hipaa-2.14",
     "description": "Ensure containers are restricted from acquiring new privileges (Scored)",
     "title": "Ensure containers are restricted from acquiring new privileges (Scored)",
     "tags": {},
@@ -429,7 +429,7 @@
     "category_hierarchy": [
       "User Settings"
     ],
-    "control_id": "1.1.2",
+    "control_id": "hipaa-1.1.2",
     "description": "Ensure only trusted users are allowed to control Docker daemon (Automated)",
     "title": "Ensure only trusted users are allowed to control Docker daemon (Automated)",
     "tags": {},
@@ -446,7 +446,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.19",
+    "control_id": "hipaa-3.19",
     "description": "Ensure that the /fenced/mnt/host/etc/default/docker file ownership is set to root:root (Automated)",
     "title": "Ensure that the /fenced/mnt/host/etc/default/docker file ownership is set to root:root (Automated)",
     "tags": {},
@@ -463,7 +463,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.20",
+    "control_id": "hipaa-3.20",
     "description": "Ensure that the /fenced/mnt/host/etc/sysconfig/docker file permissions are set to 644 or more restrictively (Automated)",
     "title": "Ensure that the /fenced/mnt/host/etc/sysconfig/docker file permissions are set to 644 or more restrictively (Automated)",
     "tags": {},
@@ -480,7 +480,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.4",
+    "control_id": "hipaa-3.4",
     "description": "Ensure that docker.socket file permissions are set to 644 or more restrictive (Automated)",
     "title": "Ensure that docker.socket file permissions are set to 644 or more restrictive (Automated)",
     "tags": {},
@@ -497,7 +497,7 @@
     "category_hierarchy": [
       "Audit"
     ],
-    "control_id": "1.1.14",
+    "control_id": "hipaa-1.1.14",
     "description": "Ensure auditing is configured for Docker files and directories - /usr/bin/containerd (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - /usr/bin/containerd (Automated)",
     "tags": {},
@@ -514,7 +514,7 @@
     "category_hierarchy": [
       "Audit"
     ],
-    "control_id": "1.1.3",
+    "control_id": "hipaa-1.1.3",
     "description": "Ensure auditing is configured for the Docker daemon (Automated)",
     "title": "Ensure auditing is configured for the Docker daemon (Automated)",
     "tags": {},
@@ -531,7 +531,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.12",
+    "control_id": "hipaa-3.12",
     "description": "Ensure that the Docker server certificate file permissions are set to 444 or more restrictively (Automated)",
     "title": "Ensure that the Docker server certificate file permissions are set to 444 or more restrictively (Automated)",
     "tags": {},
@@ -548,7 +548,7 @@
     "category_hierarchy": [
       "Audit"
     ],
-    "control_id": "1.1.13",
+    "control_id": "hipaa-1.1.13",
     "description": "Ensure auditing is configured for Docker files and directories - /etc/sysconfig/docker (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - /etc/sysconfig/docker (Automated)",
     "tags": {},
@@ -565,7 +565,7 @@
     "category_hierarchy": [
       "Audit"
     ],
-    "control_id": "1.1.12",
+    "control_id": "hipaa-1.1.12",
     "description": "1.1.12 Ensure auditing is configured for Dockerfiles and directories - /fenced/mnt/host/etc/containerd/config.toml (Automated)",
     "title": "1.1.12 Ensure auditing is configured for Dockerfiles and directories - /fenced/mnt/host/etc/containerd/config.toml (Automated)",
     "tags": {},
@@ -582,7 +582,7 @@
     "category_hierarchy": [
       "Audit"
     ],
-    "control_id": "1.1.16",
+    "control_id": "hipaa-1.1.16",
     "description": "Ensure auditing is configured for Docker files and directories - /usr/bin/containerd-shim-runc-v1 (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - /usr/bin/containerd-shim-runc-v1 (Automated)",
     "tags": {},
@@ -599,7 +599,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.18",
+    "control_id": "hipaa-3.18",
     "description": "Ensure that daemon.json file permissions are set to 644 or more restrictive (Automated)",
     "title": "Ensure that daemon.json file permissions are set to 644 or more restrictive (Automated)",
     "tags": {},
@@ -616,7 +616,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.16",
+    "control_id": "hipaa-3.16",
     "description": "Ensure that the Docker socket file permissions are set to 660 or more restrictively (Automated)",
     "title": "Ensure that the Docker socket file permissions are set to 660 or more restrictively (Automated)",
     "tags": {},
@@ -633,7 +633,7 @@
     "category_hierarchy": [
       "Audit"
     ],
-    "control_id": "1.1.7",
+    "control_id": "hipaa-1.1.7",
     "description": "Ensure auditing is configured for Docker files and directories - docker.service (Automated)",
     "title": "Ensure auditing is configured for Docker files and directories - docker.service (Automated)",
     "tags": {},
@@ -650,7 +650,7 @@
     "category_hierarchy": [
       "Docker Files"
     ],
-    "control_id": "3.3",
+    "control_id": "hipaa-3.3",
     "description": "Ensure that docker.socket file ownership is set to root:root (Automated)",
     "title": "Ensure that docker.socket file ownership is set to root:root (Automated)",
     "tags": {},
@@ -667,7 +667,7 @@
     "category_hierarchy": [
       "Audit"
     ],
-    "control_id": "1.1.11",
+    "control_id": "hipaa-1.1.11",
     "description": "Ensure auditing is configured for Dockerfiles and directories - /fenced/mnt/host/etc/docker/daemon.json (Automated)",
     "title": "Ensure auditing is configured for Dockerfiles and directories - /fenced/mnt/host/etc/docker/daemon.json (Automated)",
     "tags": {},
