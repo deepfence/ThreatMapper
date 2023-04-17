@@ -95,7 +95,7 @@ func (h *Handler) DeleteEmailConfiguration(w http.ResponseWriter, r *http.Reques
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, nil)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) GetGlobalSettings(w http.ResponseWriter, r *http.Request) {
