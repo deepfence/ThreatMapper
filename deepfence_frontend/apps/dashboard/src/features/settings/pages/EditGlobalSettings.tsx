@@ -36,8 +36,6 @@ export const action: ActionFunction = async ({
   request,
 }): Promise<UpdateActionReturnType> => {
   const formData = await request.formData();
-  // add console_url which is the origin of request
-  formData.append('consoleUrl', window.location.origin);
   const body = Object.fromEntries(formData);
 
   const r = await makeRequest({
