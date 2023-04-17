@@ -21,6 +21,7 @@ export const searchHostsApiLoader = async ({
   }
   const searchParams = new URL(request.url).searchParams;
   const searchText = searchParams?.get('searchText')?.toString();
+  const offset = searchParams?.get('offset')?.toString() ?? '0';
 
   const matchFilter = { filter_in: {} };
   if (searchText?.length) {
@@ -68,8 +69,8 @@ export const searchHostsApiLoader = async ({
             },
           },
           window: {
-            offset: 0,
-            size: 100,
+            offset: +offset,
+            size: 5,
           },
         },
       },
@@ -106,9 +107,11 @@ export const searchHostsApiLoader = async ({
 export const useGetHostsList = ({
   scanType,
   searchText,
+  offset = 0,
 }: {
   scanType: ScanTypeEnum | 'none';
   searchText?: string;
+  offset?: number;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   hosts: HostsListType[];
@@ -118,13 +121,14 @@ export const useGetHostsList = ({
   useEffect(() => {
     const searchParams = new URLSearchParams();
     searchParams.set('searchText', searchText ?? '');
+    searchParams.set('offset', offset.toString());
 
     fetcher.load(
       generatePath(`/data-component/search/hosts/:scanType/?${searchParams.toString()}`, {
         scanType,
       }),
     );
-  }, [scanType, searchText]);
+  }, [scanType, searchText, offset]);
 
   return {
     status: fetcher.state,

@@ -21,6 +21,7 @@ export const searchContainersApiLoader = async ({
   }
   const searchParams = new URL(request.url).searchParams;
   const searchText = searchParams?.get('searchText')?.toString();
+  const offset = searchParams?.get('offset')?.toString() ?? '0';
 
   const matchFilter = { filter_in: {} };
   if (searchText?.length) {
@@ -68,8 +69,8 @@ export const searchContainersApiLoader = async ({
             },
           },
           window: {
-            offset: 0,
-            size: 100,
+            offset: +offset,
+            size: 15,
           },
         },
       },
@@ -105,9 +106,11 @@ export const searchContainersApiLoader = async ({
 export const useGetContainersList = ({
   scanType,
   searchText,
+  offset = 0,
 }: {
   scanType: ScanTypeEnum;
   searchText?: string;
+  offset?: number;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   containers: ContainersListType[];
@@ -117,6 +120,7 @@ export const useGetContainersList = ({
   useEffect(() => {
     const searchParams = new URLSearchParams();
     searchParams.set('searchText', searchText ?? '');
+    searchParams.set('offset', offset.toString());
 
     fetcher.load(
       generatePath(
@@ -126,7 +130,7 @@ export const useGetContainersList = ({
         },
       ),
     );
-  }, [scanType, searchText]);
+  }, [scanType, searchText, offset]);
 
   return {
     status: fetcher.state,

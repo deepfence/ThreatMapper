@@ -1,19 +1,11 @@
 import { useState } from 'react';
 import { Form, useActionData, useParams } from 'react-router-dom';
-import {
-  Button,
-  Card,
-  CircleSpinner,
-  Radio,
-  Select,
-  SelectItem,
-  TextInput,
-} from 'ui-components';
+import { Button, Card, Radio, Select, SelectItem, TextInput } from 'ui-components';
 
-import { useGetClustersList } from '@/features/common/data-component/searchClustersApiLoader';
-import { useGetContainerImagesList } from '@/features/common/data-component/searchContainerImagesApiLoader';
-import { useGetContainersList } from '@/features/common/data-component/searchContainersApiLoader';
-import { useGetHostsList } from '@/features/common/data-component/searchHostsApiLoader';
+import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
+import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
+import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { ScanTypeEnum } from '@/types/common';
 
 import {
@@ -102,28 +94,6 @@ const API_SCAN_TYPE_MAP: {
   Compliance: ScanTypeEnum.ComplianceScan,
 };
 const AdvancedFilters = ({ notificationType }: { notificationType: string }) => {
-  // host
-  const { hosts, status: listHostStatus } = useGetHostsList({
-    scanType: API_SCAN_TYPE_MAP[notificationType],
-  });
-  const [selectedHosts, setSelectedHosts] = useState([]);
-
-  // host
-  const { containers, status: listContainers } = useGetContainersList({
-    scanType: API_SCAN_TYPE_MAP[notificationType],
-  });
-  const [selectedContainers, setSelectedContainers] = useState([]);
-
-  // images
-  const { containerImages, status: listImagesStatus } = useGetContainerImagesList({
-    scanType: API_SCAN_TYPE_MAP[notificationType],
-  });
-  const [selectedImages, setSelectedImages] = useState([]);
-
-  // kubernetes
-  const { clusters, status: listClusterStatus } = useGetClustersList({});
-  const [selectedCluster, setSelectedClusters] = useState([]);
-
   // severity
   const [selectedSeverity, setSelectedSeverity] = useState([]);
 
@@ -131,104 +101,18 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
   const [selectedStatus, setSelectedStatus] = useState([]);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-y-3">
       <fieldset className="mt-4 mb-1">
         <legend className="text-sm font-medium text-gray-900 dark:text-white">
           Filters
         </legend>
       </fieldset>
-      {listHostStatus !== 'idle' ? (
-        <CircleSpinner size="xs" />
-      ) : (
-        <>
-          <Select
-            value={selectedHosts}
-            name="hostFilter"
-            onChange={(value) => {
-              setSelectedHosts(value);
-            }}
-            placeholder="Select host"
-            sizing="xs"
-          >
-            {hosts.map((host) => {
-              return (
-                <SelectItem value={host.hostName} key={host.nodeId}>
-                  {host.hostName}
-                </SelectItem>
-              );
-            })}
-          </Select>
-        </>
-      )}
-      {listContainers !== 'idle' ? (
-        <CircleSpinner size="xs" />
-      ) : (
-        <>
-          <Select
-            value={selectedContainers}
-            name="containerFilter"
-            onChange={(value) => {
-              setSelectedContainers(value);
-            }}
-            placeholder="Select container"
-            sizing="xs"
-          >
-            {containers.map((container) => {
-              return (
-                <SelectItem value={container.nodeId} key={container.nodeId}>
-                  {container.nodeName}
-                </SelectItem>
-              );
-            })}
-          </Select>
-        </>
-      )}
-      {listImagesStatus !== 'idle' ? (
-        <CircleSpinner size="xs" />
-      ) : (
-        <>
-          <Select
-            value={selectedImages}
-            name="imageFilter"
-            onChange={(value) => {
-              setSelectedImages(value);
-            }}
-            placeholder="Select image"
-            sizing="xs"
-          >
-            {containerImages.map((image) => {
-              return (
-                <SelectItem value={image.nodeId} key={image.nodeId}>
-                  {image.containerImage}
-                </SelectItem>
-              );
-            })}
-          </Select>
-        </>
-      )}
-      {listClusterStatus !== 'idle' ? (
-        <CircleSpinner size="xs" />
-      ) : (
-        <>
-          <Select
-            value={selectedCluster}
-            name="clusterFilter"
-            onChange={(value) => {
-              setSelectedClusters(value);
-            }}
-            placeholder="Select cluster"
-            sizing="xs"
-          >
-            {clusters.map((cluster) => {
-              return (
-                <SelectItem value={cluster.clusterId} key={cluster.clusterId}>
-                  {cluster.clusterName}
-                </SelectItem>
-              );
-            })}
-          </Select>
-        </>
-      )}
+      <SearchableHostList scanType={API_SCAN_TYPE_MAP[notificationType]} />
+
+      <SearchableContainerList scanType={API_SCAN_TYPE_MAP[notificationType]} />
+      <SearchableImageList scanType={API_SCAN_TYPE_MAP[notificationType]} />
+
+      <SearchableClusterList />
 
       {notificationType === 'Compliance' || notificationType === 'CloudCompliance' ? (
         <Select

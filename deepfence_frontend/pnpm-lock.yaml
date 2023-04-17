@@ -178,6 +178,7 @@ importers:
       react: ^18.2.0
       react-dom: ^18.2.0
       react-icons: ^4.7.1
+      react-use: ^17.4.0
       resize-observer-polyfill: ^1.5.1
       rollup-plugin-visualizer: ^5.9.0
       storybook-dark-mode: ^2.0.5
@@ -211,6 +212,7 @@ importers:
       install: 0.13.0
       lodash-es: 4.17.21
       npm: 9.6.4
+      react-use: 17.4.0_biqbaboplfbrettd7655fr4n2y
       tailwind-merge: 1.9.0
       tailwindcss-radix: 2.7.0
     devDependencies:

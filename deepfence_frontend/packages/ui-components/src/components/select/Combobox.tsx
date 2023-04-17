@@ -7,10 +7,11 @@ import {
 } from '@headlessui/react';
 import cx from 'classnames';
 import { cva } from 'cva';
-import { ElementType, ReactNode, useEffect, useState } from 'react';
+import { ElementType, ReactNode, RefObject, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { HiOutlineChevronDown } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
+import { useIntersection } from 'react-use';
 import { twMerge } from 'tailwind-merge';
 
 import { Badge, CircleSpinner } from '@/main';
@@ -142,7 +143,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
   onQueryChange,
   ...props
 }: ComboboxProps<TValue, boolean | undefined, boolean | undefined, TTag>) {
-  const [intersectionRef, setIntersectionRef] = useState<HTMLSpanElement | null>(null);
+  const intersectionRef = useRef<RefObject<HTMLElement> | null>(null);
   const { x, y, strategy, refs } = useFloating({
     strategy: 'fixed',
     placement: 'bottom-start',
@@ -162,28 +163,18 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
       }),
     ],
   });
-  const loadObserver = new IntersectionObserver(
-    (entries) => {
-      const entry = entries[0];
-      if (entry.isIntersecting) {
-        onEndReached?.();
-      }
-    },
-    {
-      threshold: 1,
-    },
-  );
+  // eslint-disable-next-line
+  const intersection = useIntersection(intersectionRef as RefObject<HTMLElement>, {
+    root: null,
+    rootMargin: '0px',
+    threshold: 1,
+  });
 
   useEffect(() => {
-    if (intersectionRef) {
-      loadObserver.observe(intersectionRef);
+    if (intersection?.isIntersecting) {
+      onEndReached?.();
     }
-    return () => {
-      if (intersectionRef) {
-        loadObserver.unobserve(intersectionRef);
-      }
-    };
-  }, [intersectionRef]);
+  }, [intersection]);
 
   return (
     <HUICombobox {...(props as any)}>
@@ -261,7 +252,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
               {loading ? (
                 <CircleSpinner />
               ) : (
-                <span ref={(ele) => setIntersectionRef(ele)}></span>
+                <span ref={intersectionRef as RefObject<HTMLElement>}></span>
               )}
             </HUICombobox.Options>
           </Transition>

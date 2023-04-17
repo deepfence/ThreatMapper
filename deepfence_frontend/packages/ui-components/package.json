@@ -46,6 +46,7 @@
     "install": "^0.13.0",
     "lodash-es": "^4.17.21",
     "npm": "^9.6.4",
+    "react-use": "^17.4.0",
     "tailwind-merge": "^1.9.0",
     "tailwindcss-radix": "^2.7.0"
   },
