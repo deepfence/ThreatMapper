@@ -1,9 +1,9 @@
 import { debounce } from 'lodash-es';
 import { useEffect, useState } from 'react';
-import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
+import { Combobox, ComboboxOption } from 'ui-components';
 
 import {
-  ContainerImagesListType,
+  SearchContainerImagesLoaderDataType,
   useGetContainerImagesList,
 } from '@/features/common/data-component/searchContainerImagesApiLoader';
 import { ScanTypeEnum } from '@/types/common';
@@ -13,37 +13,50 @@ export type Props = {
   onChange?: (value: string[]) => void;
 };
 export const SearchableImageList = ({ scanType, onChange }: Props) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [offset, setOffset] = useState(0);
-  const [imageList, setImageList] = useState<ContainerImagesListType[]>([]);
-
+  const [searchState, setSearchState] = useState<{
+    searchText: string;
+    offset: number;
+    imagesList: SearchContainerImagesLoaderDataType['containerImages'];
+  }>({
+    searchText: '',
+    offset: 0,
+    imagesList: [],
+  });
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
 
-  const { containerImages, status: listImageStatus } = useGetContainerImagesList({
+  const { containerImages } = useGetContainerImagesList({
     scanType,
-    searchText: searchQuery,
-    offset: offset,
+    searchText: searchState.searchText,
+    offset: searchState.offset,
   });
 
   useEffect(() => {
     if (containerImages.length > 0) {
-      setImageList((_containerImages) => [..._containerImages, ...containerImages]);
+      setSearchState((prev) => {
+        return {
+          ...prev,
+          imagesList: [...prev.imagesList, ...containerImages],
+        };
+      });
     }
   }, [containerImages]);
 
-  // clear list when user search for new query
-  useEffect(() => {
-    setImageList([]);
-    setOffset(0);
-  }, [searchQuery]);
-
   const searchContainerImage = debounce((query) => {
-    setSearchQuery(query);
+    setSearchState({
+      searchText: query,
+      offset: 0,
+      imagesList: [],
+    });
   }, 1000);
 
   const onEndReached = () => {
     if (containerImages.length > 0) {
-      setOffset((offset) => offset + 15);
+      setSearchState((prev) => {
+        return {
+          ...prev,
+          offset: prev.offset + 15,
+        };
+      });
     }
   };
 
@@ -67,12 +80,12 @@ export const SearchableImageList = ({ scanType, onChange }: Props) => {
           onChange?.(value);
         }}
         getDisplayValue={() => {
-          return searchQuery;
+          return searchState.searchText;
         }}
         onQueryChange={searchContainerImage}
         onEndReached={onEndReached}
       >
-        {imageList.map((containerImage, index) => {
+        {searchState.imagesList.map((containerImage, index) => {
           return (
             <ComboboxOption
               key={`${containerImage.nodeId}-${index}`}

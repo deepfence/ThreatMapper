@@ -6,15 +6,17 @@ import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 
-export type ContainerImagesListType = {
-  nodeId: string;
-  containerImage: string;
+export type SearchContainerImagesLoaderDataType = {
+  containerImages: {
+    nodeId: string;
+    containerImage: string;
+  }[];
 };
 
 export const searchContainerImagesApiLoader = async ({
   params,
   request,
-}: LoaderFunctionArgs): Promise<ContainerImagesListType[]> => {
+}: LoaderFunctionArgs): Promise<SearchContainerImagesLoaderDataType> => {
   const scanType = params?.scanType;
   if (!scanType) {
     throw new Error('Scan For is required');
@@ -26,7 +28,7 @@ export const searchContainerImagesApiLoader = async ({
   const matchFilter = { filter_in: {} };
   if (searchText?.length) {
     matchFilter.filter_in = {
-      node_id: [searchText],
+      docker_image_name: [searchText],
     };
   }
 
@@ -91,14 +93,18 @@ export const searchContainerImagesApiLoader = async ({
   }
 
   if (result === null) {
-    return [];
-  }
-  return result.map((res) => {
     return {
-      nodeId: res.node_id,
-      containerImage: `${res.docker_image_name}:${res.docker_image_tag}`,
+      containerImages: [],
     };
-  });
+  }
+  return {
+    containerImages: result.map((res) => {
+      return {
+        nodeId: res.node_id,
+        containerImage: `${res.docker_image_name}:${res.docker_image_tag}`,
+      };
+    }),
+  };
 };
 
 export const useGetContainerImagesList = ({
@@ -111,9 +117,9 @@ export const useGetContainerImagesList = ({
   offset?: number;
 }): {
   status: 'idle' | 'loading' | 'submitting';
-  containerImages: ContainerImagesListType[];
+  containerImages: SearchContainerImagesLoaderDataType['containerImages'];
 } => {
-  const fetcher = useFetcher<ContainerImagesListType[]>();
+  const fetcher = useFetcher<SearchContainerImagesLoaderDataType>();
 
   useEffect(() => {
     const searchParams = new URLSearchParams();
@@ -132,6 +138,6 @@ export const useGetContainerImagesList = ({
 
   return {
     status: fetcher.state,
-    containerImages: fetcher.data ?? [],
+    containerImages: fetcher.data?.containerImages ?? [],
   };
 };
