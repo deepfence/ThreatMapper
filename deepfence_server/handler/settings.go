@@ -5,18 +5,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 	"math"
-
+	"net/http"
 	"net/url"
+	"strconv"
+
+	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
-	"net/http"
-	"strconv"
 )
 
 func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) {
@@ -57,11 +57,15 @@ func (h *Handler) GetEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 		respondError(&InternalServerError{err}, w)
 		return
 	}
+	resp := []model.EmailConfigurationResp{}
 	setting, err := pgClient.GetSetting(ctx, model.EmailConfigurationKey)
-	if !errors.Is(err, sql.ErrNoRows) {
-		httpext.JSON(w, http.StatusOK, nil)
+	if errors.Is(err, sql.ErrNoRows) {
+		httpext.JSON(w, http.StatusOK, resp)
+		return
+	} else if err != nil {
+		respondError(&InternalServerError{err}, w)
+		return
 	}
-	var resp []model.EmailConfigurationResp
 	var emailConfig model.EmailConfigurationResp
 	err = json.Unmarshal(setting.Value, &emailConfig)
 	if err != nil {
