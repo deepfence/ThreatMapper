@@ -1,6 +1,9 @@
 package sumologic
 
-import "github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+import (
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	"github.com/go-playground/validator/v10"
+)
 
 type SumoLogic struct {
 	Config           Config                  `json:"config"`
@@ -11,5 +14,9 @@ type SumoLogic struct {
 }
 
 type Config struct {
-	HTTPEndpoint string `json:"http_endpoint"`
+	HTTPEndpoint string `json:"http_endpoint" validate:"required,url" required:"true"`
+}
+
+func (s SumoLogic) ValidateConfig(validate *validator.Validate) error {
+	return validate.Struct(s.Config)
 }

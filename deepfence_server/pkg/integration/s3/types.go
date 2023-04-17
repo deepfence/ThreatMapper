@@ -1,6 +1,9 @@
 package s3
 
-import "github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+import (
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	"github.com/go-playground/validator/v10"
+)
 
 type S3 struct {
 	Config           Config                  `json:"config"`
@@ -11,9 +14,13 @@ type S3 struct {
 }
 
 type Config struct {
-	S3BucketName string `json:"s3_bucket_name"`
-	AWSAccessKey string `json:"aws_access_key"`
-	AWSSecretKey string `json:"aws_secret_key"`
-	S3FolderName string `json:"s3_folder_name"`
-	AWSRegion    string `json:"aws_region"`
+	S3BucketName string `json:"s3_bucket_name" validate:"required" required:"true"`
+	AWSAccessKey string `json:"aws_access_key" validate:"required" required:"true"`
+	AWSSecretKey string `json:"aws_secret_key" validate:"required" required:"true"`
+	S3FolderName string `json:"s3_folder_name" validate:"required" required:"true"`
+	AWSRegion    string `json:"aws_region" validate:"required" required:"true"`
+}
+
+func (s S3) ValidateConfig(validate *validator.Validate) error {
+	return validate.Struct(s.Config)
 }

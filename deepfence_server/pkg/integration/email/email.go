@@ -16,6 +16,6 @@ func New(b []byte) (*Email, error) {
 	return &h, nil
 }
 
-func (h Email) SendNotification(message string) error {
+func (e Email) SendNotification(message string) error {
 	return nil
 }

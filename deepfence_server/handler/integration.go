@@ -32,11 +32,15 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 		return
 	}
-
-	_, err = integration.GetIntegration(req.IntegrationType, b)
+	obj, err := integration.GetIntegration(req.IntegrationType, b)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(&BadDecoding{err}, w)
+		return
+	}
+	err = obj.ValidateConfig(h.Validator)
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
 		return
 	}
 

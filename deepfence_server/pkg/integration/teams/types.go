@@ -1,6 +1,9 @@
 package teams
 
-import "github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+import (
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	"github.com/go-playground/validator/v10"
+)
 
 type Teams struct {
 	Config           Config                  `json:"config"`
@@ -11,7 +14,7 @@ type Teams struct {
 }
 
 type Config struct {
-	WebhookURL string `json:"webhook_url"`
+	WebhookURL string `json:"webhook_url" validate:"required,url" required:"true"`
 }
 
 // Payloads
@@ -24,6 +27,10 @@ type Payload struct {
 	Summary    string    `json:"summary,omitempty"`
 	Sections   []section `json:"sections,omitempty"`
 	ThemeColor string    `json:"themeColor,omitempty"`
+}
+
+func (t Teams) ValidateConfig(validate *validator.Validate) error {
+	return validate.Struct(t.Config)
 }
 
 type section struct {
