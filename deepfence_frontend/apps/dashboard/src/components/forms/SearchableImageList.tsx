@@ -11,8 +11,13 @@ import { ScanTypeEnum } from '@/types/common';
 export type Props = {
   scanType: ScanTypeEnum;
   onChange?: (value: string[]) => void;
+  defaultSelectedImages?: string[];
 };
-export const SearchableImageList = ({ scanType, onChange }: Props) => {
+export const SearchableImageList = ({
+  scanType,
+  onChange,
+  defaultSelectedImages,
+}: Props) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
     offset: number;
@@ -22,7 +27,9 @@ export const SearchableImageList = ({ scanType, onChange }: Props) => {
     offset: 0,
     imagesList: [],
   });
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<string[]>(
+    defaultSelectedImages ?? [],
+  );
 
   const { containerImages } = useGetContainerImagesList({
     scanType,
