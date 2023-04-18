@@ -162,6 +162,14 @@ func (d *OpenApiDocs) AddSearchOperations() {
 		"Search Container images", "Search across all the data associated with container images",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]ContainerImage))
 
+	d.AddOperation("searchCloudResources", http.MethodPost, "/deepfence/search/cloud-resources",
+		"Search Cloud Resources", "Search across all data associated with CloudResources",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]CloudResource))
+
+	d.AddOperation("searchKubernetesClusters", http.MethodPost, "/deepfence/search/kubernetes-clusters",
+		"Search Kuberenetes Clusters", "Search across all data associated with kuberentes clusters",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]KubernetesCluster))
+
 	d.AddOperation("searchVulnerabilities", http.MethodPost, "/deepfence/search/vulnerabilities",
 		"Search Vulnerabilities", "Search across all the data associated with vulnerabilities",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Vulnerability))
@@ -241,6 +249,14 @@ func (d *OpenApiDocs) AddSearchOperations() {
 
 	d.AddOperation("countCloudCompliances", http.MethodPost, "/deepfence/search/count/cloud-compliances",
 		"Count Cloud compliances", "Count across all the data ssociated with cloud compliances",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countCloudResources", http.MethodPost, "/deepfence/search/count/cloud-resources",
+		"Count Cloud resources", "Count across all the data ssociated with cloud resources",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countKubernetesClusters", http.MethodPost, "/deepfence/search/count/kubernetes-clusters",
+		"Count Kubernetes clusters", "Count across all the data ssociated with kubernetes clusters",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 
 	d.AddOperation("countCompliances", http.MethodPost, "/deepfence/search/count/compliances",
@@ -589,9 +605,9 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 	d.AddOperation("getEmailConfiguration", http.MethodGet, "/deepfence/settings/email",
 		"Get Email Configurations", "Get Email Smtp / ses Configurations in system",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]EmailConfigurationResp))
-	d.AddOperation("deleteEmailConfiguration", http.MethodDelete, "/deepfence/settings/email/{config-id}",
+	d.AddOperation("deleteEmailConfiguration", http.MethodDelete, "/deepfence/settings/email/{config_id}",
 		"Delete Email Configurations", "Delete Email Smtp / ses Configurations in system",
-		http.StatusOK, []string{tagSettings}, bearerToken, new(ConfigIDPathReq), nil)
+		http.StatusNoContent, []string{tagSettings}, bearerToken, new(ConfigIDPathReq), nil)
 	d.AddOperation("getSettings", http.MethodGet, "/deepfence/settings/global-settings",
 		"Get settings", "Get all settings",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]SettingsResponse))

@@ -7,6 +7,7 @@ import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretSca
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { module as logoutAction } from '@/features/auth/data-components/logoutAction';
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
+import { getApiTokenApiLoader } from '@/features/common/data-component/getApiTokenApiLoader';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
 import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
@@ -67,8 +68,10 @@ import { module as secretScans } from '@/features/secrets/pages/SecretScans';
 import { module as addEmailConfiguration } from '@/features/settings/pages/AddEmailCongifuration';
 import { module as changePassword } from '@/features/settings/pages/ChangePassword';
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
+import { module as editGlobalSettings } from '@/features/settings/pages/EditGlobalSettings';
 import { module as editUser } from '@/features/settings/pages/EditUser';
 import { module as emailConfiguration } from '@/features/settings/pages/EmailConfiguration';
+import { module as globalSettings } from '@/features/settings/pages/GlobalSettings';
 import { module as inviteUser } from '@/features/settings/pages/InviteUser';
 import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
@@ -78,7 +81,9 @@ import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph
 import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
 import { module as nodeDetailsContainerImage } from '@/features/topology/data-components/node-details/ContainerImage';
 import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
+import { module as nodeDetailsPod } from '@/features/topology/data-components/node-details/Pod';
 import { module as nodeDetailsProcess } from '@/features/topology/data-components/node-details/Process';
+import { module as topologyTableHosts } from '@/features/topology/data-components/tables/HostsTable';
 import { module as topologyAction } from '@/features/topology/data-components/topologyAction';
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
 import { module as topologyTable } from '@/features/topology/pages/Table';
@@ -219,6 +224,10 @@ export const privateRoutes: CustomRouteObject[] = [
               {
                 path: 'container_image/:nodeId',
                 ...nodeDetailsContainerImage,
+              },
+              {
+                path: 'pod/:nodeId',
+                ...nodeDetailsPod,
               },
             ],
           },
@@ -505,6 +514,16 @@ export const privateRoutes: CustomRouteObject[] = [
             ...addEmailConfiguration,
             meta: { title: 'Add Email Configuration' },
           },
+          {
+            path: 'global-settings',
+            ...globalSettings,
+            meta: { title: 'Global Settings' },
+          },
+          {
+            path: 'global-settings/edit/:id',
+            ...editGlobalSettings,
+            meta: { title: 'Edit Global Settings' },
+          },
         ],
       },
     ],
@@ -587,12 +606,20 @@ export const privateRoutes: CustomRouteObject[] = [
         ...topologyAction,
       },
       {
+        path: 'topology/table/hosts',
+        ...topologyTableHosts,
+      },
+      {
         path: 'threat-graph',
         ...threatGraphAction,
       },
       {
         path: 'auth/logout',
         ...logoutAction,
+      },
+      {
+        path: 'auth/apiToken',
+        loader: getApiTokenApiLoader,
       },
     ],
   },

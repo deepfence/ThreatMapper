@@ -15,21 +15,21 @@ func New(b []byte) (*ElasticSearch, error) {
 	return &p, nil
 }
 
-func (h ElasticSearch) SendNotification(message string) error {
+func (e ElasticSearch) SendNotification(message string) error {
 	var req *http.Request
 	var err error
 
-	payloadBytes := []byte("{\"index\":{\"_index\":\"" + h.Config.Index + "\"}}\n" + message)
+	payloadBytes := []byte("{\"index\":{\"_index\":\"" + e.Config.Index + "\"}}\n" + message)
 
 	// send message to this elasticsearch using http
 	// Set up the HTTP request.
-	req, err = http.NewRequest("POST", h.Config.URL+"/_bulk", bytes.NewBuffer(payloadBytes))
+	req, err = http.NewRequest("POST", e.Config.URL+"/_bulk", bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		return err
 	}
 
-	if h.Config.AuthHeader != "" {
-		req.Header.Set("Authorization", h.Config.AuthHeader)
+	if e.Config.AuthHeader != "" {
+		req.Header.Set("Authorization", e.Config.AuthHeader)
 	}
 
 	if err != nil {

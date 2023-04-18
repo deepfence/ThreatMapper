@@ -12,6 +12,7 @@ import {
 } from 'ui-components';
 
 import { CopyToClipboard } from '@/components/CopyToClipboard';
+import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
 import { containsWhiteSpace } from '@/utils/validator';
 
 const containerRuntimeDropdown = [
@@ -102,6 +103,14 @@ const InformationForm = memo(
       setSocketPath(event.currentTarget.value);
     };
 
+    const { status, data } = useGetApiToken();
+    const dfApiKey =
+      status !== 'idle'
+        ? '---DEEPFENCE-API-KEY---'
+        : data?.ApiToken === undefined
+        ? '---DEEPFENCE-API-KEY---'
+        : data?.ApiToken;
+
     useMemo(() => {
       const _clusterName = containsWhiteSpace(clusterName) ? defaultCluster : clusterName;
       const _namespace = containsWhiteSpace(namespace) ? defaultNamespace : namespace;
@@ -118,7 +127,7 @@ const InformationForm = memo(
 
       const installCommand = `helm install deepfence-agent deepfence/deepfence-agent \\
 --set managementConsoleUrl=${window.location.host ?? '---CONSOLE-IP---'} \\
---set deepfenceKey=${localStorage.getItem('dfApiKey') ?? '---DEEPFENCE-API-KEY---'} \\
+--set deepfenceKey=${dfApiKey} \\
 --set image.tag=${''} \\
 --set image.clusterAgentImageTag=${''} \\
 --set clusterName=${_clusterName} \\
@@ -195,13 +204,21 @@ ${sockCommand}="${_socketPath}" \\
 );
 
 export const K8ConnectorForm = () => {
+  const { status, data } = useGetApiToken();
+  const dfApiKey =
+    status !== 'idle'
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.ApiToken === undefined
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.ApiToken;
+
   const [instruction, setInstruction] =
     useState(`helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 helm repo update
 
 helm install deepfence-agent deepfence/deepfence-agent \\
 --set managementConsoleUrl=${window.location.host ?? '---CONSOLE-IP---'} \\
---set deepfenceKey=${localStorage.getItem('dfApiKey') ?? '---DEEPFENCE-API-KEY---'} \\
+--set deepfenceKey=${dfApiKey} \\
 --set image.tag=${''} \\
 --set image.clusterAgentImageTag=${''} \\
 --set clusterName=${defaultCluster} \\

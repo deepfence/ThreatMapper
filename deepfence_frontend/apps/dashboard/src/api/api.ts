@@ -51,6 +51,7 @@ export function getUserApiClient() {
     registerUser: userApi.registerUser.bind(userApi),
     getUsers: userApi.getUsers.bind(userApi),
     getUser: userApi.getUser.bind(userApi),
+    getApiTokens: userApi.getApiTokens.bind(userApi),
     updateUser: userApi.updateUser.bind(userApi),
     deleteUser: userApi.deleteUser.bind(userApi),
     updatePassword: userApi.updatePassword.bind(userApi),
@@ -157,8 +158,11 @@ export function getSearchApiClient() {
   return {
     searchVulnerabilityScan: searchApi.searchVulnerabilityScans.bind(searchApi),
     searchContainerImages: searchApi.searchContainerImages.bind(searchApi),
+    searchContainerImagesCount: searchApi.countContainerImages.bind(searchApi),
     searchContainers: searchApi.searchContainers.bind(searchApi),
+    searchContainersCount: searchApi.countContainers.bind(searchApi),
     searchHosts: searchApi.searchHosts.bind(searchApi),
+    searchHostsCount: searchApi.countHosts.bind(searchApi),
     searchVulnerabilities: searchApi.searchVulnerabilities.bind(searchApi),
     searchVulnerabilitiesCount: searchApi.countVulnerabilities.bind(searchApi),
     searchVulnerabilityScanCount: searchApi.countVulnerabilityScans.bind(searchApi),
@@ -276,5 +280,7 @@ export function getSettingsApiClient() {
     getEmailConfiguration: settingsApi.getEmailConfiguration.bind(settingsApi),
     addEmailConfiguration: settingsApi.addEmailConfiguration.bind(settingsApi),
     deleteEmailConfiguration: settingsApi.deleteEmailConfiguration.bind(settingsApi),
+    getSettings: settingsApi.getSettings.bind(settingsApi),
+    updateSettings: settingsApi.updateSetting.bind(settingsApi),
   };
 }

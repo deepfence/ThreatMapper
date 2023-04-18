@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ReportersFieldsFilters } from './ReportersFieldsFilters';
+import type { ModelIntegrationFilters } from './ModelIntegrationFilters';
 import {
-    ReportersFieldsFiltersFromJSON,
-    ReportersFieldsFiltersFromJSONTyped,
-    ReportersFieldsFiltersToJSON,
-} from './ReportersFieldsFilters';
+    ModelIntegrationFiltersFromJSON,
+    ModelIntegrationFiltersFromJSONTyped,
+    ModelIntegrationFiltersToJSON,
+} from './ModelIntegrationFilters';
 
 /**
  * 
@@ -34,10 +34,10 @@ export interface ModelIntegrationAddReq {
     config?: { [key: string]: any; } | null;
     /**
      * 
-     * @type {ReportersFieldsFilters}
+     * @type {ModelIntegrationFilters}
      * @memberof ModelIntegrationAddReq
      */
-    filters?: ReportersFieldsFilters;
+    filters?: ModelIntegrationFilters;
     /**
      * 
      * @type {string}
@@ -72,7 +72,7 @@ export function ModelIntegrationAddReqFromJSONTyped(json: any, ignoreDiscriminat
     return {
         
         'config': !exists(json, 'config') ? undefined : json['config'],
-        'filters': !exists(json, 'filters') ? undefined : ReportersFieldsFiltersFromJSON(json['filters']),
+        'filters': !exists(json, 'filters') ? undefined : ModelIntegrationFiltersFromJSON(json['filters']),
         'integration_type': !exists(json, 'integration_type') ? undefined : json['integration_type'],
         'notification_type': !exists(json, 'notification_type') ? undefined : json['notification_type'],
     };
@@ -88,7 +88,7 @@ export function ModelIntegrationAddReqToJSON(value?: ModelIntegrationAddReq | nu
     return {
         
         'config': value.config,
-        'filters': ReportersFieldsFiltersToJSON(value.filters),
+        'filters': ModelIntegrationFiltersToJSON(value.filters),
         'integration_type': value.integration_type,
         'notification_type': value.notification_type,
     };

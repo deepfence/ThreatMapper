@@ -1,0 +1,14 @@
+{{- if .Values.neo4j.create }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "deepfence-neo4j-config"
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: neo4j
+data:
+  {{- range $k, $v := .Values.neo4j.config }}
+  {{ $k }}: {{ $v | quote }}
+  {{- end }}
+{{- end }}

@@ -1,14 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { HiArrowsExpand } from 'react-icons/hi';
+import { HiArrowsExpand, HiInformationCircle } from 'react-icons/hi';
 import { useFetcher, useSearchParams } from 'react-router-dom';
 import { useInterval, useMeasure } from 'react-use';
 import { CircleSpinner, Dropdown, DropdownItem } from 'ui-components';
 
-import {
-  ConfigureScanModal,
-  ConfigureScanModalProps,
-} from '@/components/ConfigureScanModal';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { TopologyActionData } from '@/features/topology/data-components/topologyAction';
 import { useG6raph } from '@/features/topology/hooks/useG6Graph';
@@ -16,7 +12,9 @@ import { G6GraphEvent, G6Node, NodeModel } from '@/features/topology/types/graph
 import {
   focusItem,
   itemExpands,
+  itemHasDetails,
   nodeToFront,
+  showContextMenu,
 } from '@/features/topology/utils/expand-collapse';
 import { onNodeHover } from '@/features/topology/utils/graph-styles';
 import { updateGraph } from '@/features/topology/utils/graph-update';
@@ -37,8 +35,6 @@ export const TopologyGraph = () => {
     y: number;
     model?: NodeModel;
   }>({ open: false, x: 0, y: 0 });
-  const [scanOptions, setScanOptions] =
-    useState<ConfigureScanModalProps['scanOptions']>();
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const { graph } = useG6raph(container, {}, {});
   const { dataDiffWithAction, isRefreshInProgress, ...graphDataManagerFunctions } =
@@ -74,14 +70,15 @@ export const TopologyGraph = () => {
   useEffect(() => {
     if (!graph) return;
     graph.on('node:click', (e: G6GraphEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
       const { item: node } = e;
       const model = node?.getModel() as NodeModel;
-      if (!model?.df_data?.type || !model?.df_data?.id) return;
+      if (!model?.df_data?.type) return;
+      if (!showContextMenu(model.df_data)) return;
 
-      setClickedItem({
-        nodeId: model.df_data.id,
-        nodeType: model.df_data.type,
-      });
+      setContextmenu({ open: true, x: e.canvasX, y: e.canvasY, model });
     });
     graph.on('node:contextmenu', (e) => {
       e.preventDefault();
@@ -90,7 +87,7 @@ export const TopologyGraph = () => {
       const { item: node } = e;
       const model = node?.getModel() as NodeModel;
       if (!model?.df_data?.type) return;
-      if (!itemExpands(model.df_data)) return;
+      if (!showContextMenu(model.df_data)) return;
 
       setContextmenu({ open: true, x: e.canvasX, y: e.canvasY, model });
     });
@@ -133,36 +130,60 @@ export const TopologyGraph = () => {
               });
             }}
             content={
-              <DropdownItem
-                onClick={() => {
-                  const model = contextmenu.model;
-                  if (!model) return;
-                  if (!model.df_data?.type) return;
-                  if (
-                    !graphDataManagerFunctionsRef.current.isNodeExpanded({
-                      nodeId: model.id,
-                      nodeType: model.df_data.type,
-                    })
-                  ) {
-                    graphDataManagerFunctionsRef.current.getDataUpdates({
-                      type: 'expandNode',
-                      nodeId: model.id,
-                      nodeType: model.df_data.type,
-                    });
-                  } else {
-                    graphDataManagerFunctionsRef.current.getDataUpdates({
-                      type: 'collapseNode',
-                      nodeId: model.id,
-                      nodeType: model.df_data.type,
-                    });
-                  }
-                }}
-              >
-                <IconContext.Provider value={{ size: '18px' }}>
-                  <HiArrowsExpand />
-                </IconContext.Provider>
-                <span>Expand/Collapse</span>
-              </DropdownItem>
+              <>
+                {!!contextmenu.model?.df_data?.type &&
+                  itemExpands(contextmenu.model.df_data) && (
+                    <DropdownItem
+                      onClick={() => {
+                        const model = contextmenu.model;
+                        if (!model) return;
+                        if (!model.df_data?.type) return;
+                        if (
+                          !graphDataManagerFunctionsRef.current.isNodeExpanded({
+                            nodeId: model.id,
+                            nodeType: model.df_data.type,
+                          })
+                        ) {
+                          graphDataManagerFunctionsRef.current.getDataUpdates({
+                            type: 'expandNode',
+                            nodeId: model.id,
+                            nodeType: model.df_data.type,
+                          });
+                        } else {
+                          graphDataManagerFunctionsRef.current.getDataUpdates({
+                            type: 'collapseNode',
+                            nodeId: model.id,
+                            nodeType: model.df_data.type,
+                          });
+                        }
+                      }}
+                    >
+                      <IconContext.Provider value={{ size: '18px' }}>
+                        <HiArrowsExpand />
+                      </IconContext.Provider>
+                      <span>Expand/Collapse</span>
+                    </DropdownItem>
+                  )}
+                {!!contextmenu.model?.df_data?.type &&
+                  itemHasDetails(contextmenu.model.df_data) && (
+                    <DropdownItem
+                      onClick={() => {
+                        const model = contextmenu.model;
+                        if (!model) return;
+                        if (!model?.df_data?.type || !model?.df_data?.id) return;
+                        setClickedItem({
+                          nodeId: model.df_data.id,
+                          nodeType: model.df_data.type,
+                        });
+                      }}
+                    >
+                      <IconContext.Provider value={{ size: '18px' }}>
+                        <HiInformationCircle />
+                      </IconContext.Provider>
+                      <span>Details</span>
+                    </DropdownItem>
+                  )}
+              </>
             }
             triggerAsChild
           >
@@ -188,14 +209,8 @@ export const TopologyGraph = () => {
           onOpenChange={(open) => {
             if (!open) setClickedItem(undefined);
           }}
-          onStartScanClick={(options) => setScanOptions(options)}
         />
       ) : null}
-      <ConfigureScanModal
-        open={!!scanOptions}
-        onOpenChange={() => setScanOptions(undefined)}
-        scanOptions={scanOptions}
-      />
     </>
   );
 };

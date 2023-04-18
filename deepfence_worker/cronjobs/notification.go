@@ -49,21 +49,21 @@ func SendNotifications(msg *message.Message) error {
 }
 
 func processIntegration[T any](msg *message.Message, integrationRow postgresql_db.Integration) error {
-	namespace := msg.Metadata.Get(directory.NamespaceKey)
-	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
-	last30sTimeStamp := time.Now().UnixMilli() - 30000
-	ff := reporters.FieldsFilters{CompareFilters: []reporters.CompareFilter{{FieldName: "updated_at", GreaterThan: true, FieldValue: strconv.FormatInt(last30sTimeStamp, 10)}}}
-	list, err := reporters_scan.GetScansList(ctx, utils.DetectedNodeScanType[integrationRow.Resource], []model.NodeIdentifier{}, ff, model.FetchWindow{}, []string{"COMPLETE"})
+	var filters model.IntegrationFilters
+	err := json.Unmarshal(integrationRow.Filters, &filters)
 	if err != nil {
 		return err
 	}
-	var fieldsFilters reporters.FieldsFilters
-	err = json.Unmarshal(integrationRow.Filters, &fieldsFilters)
+	namespace := msg.Metadata.Get(directory.NamespaceKey)
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
+	last30sTimeStamp := time.Now().UnixMilli() - 30000
+	filters.FieldsFilters.CompareFilters = append(filters.FieldsFilters.CompareFilters, reporters.CompareFilter{FieldName: "updated_at", GreaterThan: true, FieldValue: strconv.FormatInt(last30sTimeStamp, 10)})
+	list, err := reporters_scan.GetScansList(ctx, utils.DetectedNodeScanType[integrationRow.Resource], filters.NodeIds, filters.FieldsFilters, model.FetchWindow{}, []string{"COMPLETE"})
 	if err != nil {
 		return err
 	}
 	for _, scan := range list.ScansInfo {
-		results, _, err := reporters_scan.GetScanResults[T](ctx, utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId, fieldsFilters, model.FetchWindow{})
+		results, _, err := reporters_scan.GetScanResults[T](ctx, utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId, filters.FieldsFilters, model.FetchWindow{})
 		iByte, err := json.Marshal(integrationRow)
 		if err != nil {
 			log.Error().Msgf("Error Processing for integration json marshall integrationRow: +%v", integrationRow, err)

@@ -19,7 +19,11 @@ export const itemExpandsAsCombo = (item: G6Item | null) => {
   );
 };
 
-export const itemExpands = (node: DetailedNodeSummary | null) => {
+export const itemExpands = (
+  node?: {
+    type?: string;
+  } | null,
+) => {
   return [
     'cloud_provider',
     'cloud_region',
@@ -28,6 +32,22 @@ export const itemExpands = (node: DetailedNodeSummary | null) => {
     'kubernetes_cluster',
     'container',
   ].includes(node?.type ?? '');
+};
+
+export const itemHasDetails = (
+  node?: {
+    type?: string;
+  } | null,
+) => {
+  return ['host', 'pod', 'container', 'process'].includes(node?.type ?? '');
+};
+
+export const showContextMenu = (
+  node?: {
+    type?: string;
+  } | null,
+) => {
+  return itemExpands(node) || itemHasDetails(node);
 };
 
 export const nodeToFront = (graph: G6Graph, nodeId: string) => {

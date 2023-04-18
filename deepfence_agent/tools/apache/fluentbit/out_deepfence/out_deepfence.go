@@ -239,8 +239,10 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 	hc = rhc.StandardClient()
 
 	if dschttp.IsConsoleAgent(host) && strings.Trim(apiToken, "\"") == "" {
+		internalURL := os.Getenv("MGMT_CONSOLE_URL_INTERNAL")
+		internalPort := os.Getenv("MGMT_CONSOLE_PORT_INTERNAL")
 		var err error
-		if apiToken, err = dschttp.GetConsoleApiToken(host); err != nil {
+		if apiToken, err = dschttp.GetConsoleApiToken(internalURL, internalPort); err != nil {
 			log.Panic(err)
 		}
 	}

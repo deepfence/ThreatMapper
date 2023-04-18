@@ -1,4 +1,4 @@
-import { HiDocumentSearch, HiOutlineMail, HiUsers, HiViewList } from 'react-icons/hi';
+import { HiDocumentSearch, HiOutlineMail, HiUsers, HiViewList, HiGlobeAlt } from 'react-icons/hi';
 import { Tabs } from 'ui-components';
 
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -11,7 +11,7 @@ type RouteProps =
   | 'schedule-jobs'
   | 'scan-type-data-upload'
   | 'agent-setup'
-  | 'global-setting';
+  | 'global-settings';
 type SettingsTabProps = {
   children: React.ReactNode;
   value: RouteProps;
@@ -57,9 +57,9 @@ export const settingsTabs: Array<{
   //   icon: <HiUsers />,
   // },
   {
-    label: 'Global Setting',
-    value: 'global-setting',
-    icon: <HiUsers />,
+    label: 'Global Settings',
+    value: 'global-settings',
+    icon: <HiGlobeAlt />,
   },
 ];
 

@@ -9249,9 +9249,21 @@
         "type": "object",
         "properties": {
           "config": { "type": "object", "additionalProperties": {}, "nullable": true },
-          "filters": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
+          "filters": { "$ref": "#/components/schemas/ModelIntegrationFilters" },
           "integration_type": { "type": "string" },
           "notification_type": { "type": "string" }
+        }
+      },
+      "ModelIntegrationFilters": {
+        "required": ["node_ids"],
+        "type": "object",
+        "properties": {
+          "fields_filters": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
+          "node_ids": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
+            "nullable": true
+          }
         }
       },
       "ModelIntegrationListResp": {

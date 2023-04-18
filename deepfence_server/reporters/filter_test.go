@@ -87,8 +87,38 @@ func TestParseFieldFilters2CypherWhereConditions(t *testing.T) {
 		},
 	}
 	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
-	assert.Equal(t, cypher, " WHERE  n:Node OR n:ImageContainer", "should be equal")
+	assert.Equal(t, cypher, " WHERE  n:Node OR n:ContainerImage", "should be equal")
 
+}
+
+func TestNotContainersFieldFilters2CypherWhereConditions(t *testing.T) {
+	node_name := "n"
+	cypher := ParseFieldFilters2CypherWhereConditions(node_name, mo.None[FieldsFilters](), true)
+	assert.Equal(t, cypher, "", "should be equal")
+
+	ff := FieldsFilters{
+		NotContainsFilter: ContainsFilter{
+			FieldsValues: map[string][]interface{}{},
+		},
+	}
+	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
+	assert.Equal(t, cypher, "", "should be equal")
+
+	ff = FieldsFilters{
+		NotContainsFilter: ContainsFilter{
+			FieldsValues: map[string][]interface{}{"toto": {"foo", "bar"}},
+		},
+	}
+	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
+	assert.Equal(t, cypher, " WHERE  n.toto  NOT IN ['foo','bar']", "should be equal")
+
+	ff = FieldsFilters{
+		NotContainsFilter: ContainsFilter{
+			FieldsValues: map[string][]interface{}{"node_type": {"host", "image"}},
+		},
+	}
+	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
+	assert.Equal(t, cypher, " WHERE   NOT n:Node AND  NOT n:ContainerImage", "should be equal")
 }
 
 func TestOrderFilter2CypherCondition(t *testing.T) {

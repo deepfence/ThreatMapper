@@ -1,6 +1,9 @@
 package elasticsearch
 
-import "github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+import (
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	"github.com/go-playground/validator/v10"
+)
 
 type ElasticSearch struct {
 	Config           Config                  `json:"config"`
@@ -11,7 +14,11 @@ type ElasticSearch struct {
 }
 
 type Config struct {
-	URL        string `json:"url"`
+	URL        string `json:"url" validate:"required,url" required:"true"`
 	AuthHeader string `json:"auth_header"`
-	Index      string `json:"index"`
+	Index      string `json:"index" validate:"required" required:"true"`
+}
+
+func (e ElasticSearch) ValidateConfig(validate *validator.Validate) error {
+	return validate.Struct(e.Config)
 }
