@@ -43,12 +43,11 @@ import {
   IconButton,
   Modal,
   Popover,
-  Select,
   SortingState,
   Table,
   TableSkeleton,
 } from 'ui-components';
-import { Checkbox, SelectItem } from 'ui-components';
+import { Checkbox } from 'ui-components';
 
 import { getScanResultsApiClient, getSearchApiClient } from '@/api/api';
 import {
@@ -58,12 +57,12 @@ import {
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterHeader } from '@/components/forms/FilterHeader';
+import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
+import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
+import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
-import { useGetClustersList } from '@/features/common/data-component/searchClustersApiLoader';
-import { useGetContainerImagesList } from '@/features/common/data-component/searchContainerImagesApiLoader';
-import { useGetContainersList } from '@/features/common/data-component/searchContainersApiLoader';
-import { useGetHostsList } from '@/features/common/data-component/searchHostsApiLoader';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -183,11 +182,6 @@ async function getScans(
     nodeFilters.node_id = nodeFilters.node_id
       ? nodeFilters.node_id.concat(images)
       : images;
-  }
-  if (languages && languages?.length > 0) {
-    nodeFilters.node_id = nodeFilters.node_id
-      ? nodeFilters.node_id.concat(languages)
-      : languages;
   }
 
   if (clusters && clusters?.length > 0) {
@@ -617,19 +611,6 @@ const SecretScans = () => {
 
   const columnHelper = createColumnHelper<ScanResult>();
 
-  const { hosts, status: listHostStatus } = useGetHostsList({
-    scanType: ScanTypeEnum.SecretScan,
-  });
-  const { containerImages, status: listContainerImageStatus } = useGetContainerImagesList(
-    {
-      scanType: ScanTypeEnum.SecretScan,
-    },
-  );
-  const { containers, status: listContainerStatus } = useGetContainersList({
-    scanType: ScanTypeEnum.SecretScan,
-  });
-  const { clusters, status: listClusterStatus } = useGetClustersList();
-
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('node_type', {
@@ -894,7 +875,7 @@ const SecretScans = () => {
               content={
                 <div className="dark:text-white">
                   <FilterHeader onReset={onResetFilters} />
-                  <Form className="flex flex-col gap-y-6 p-4">
+                  <Form className="flex flex-col gap-y-4 p-4">
                     <fieldset>
                       <legend className="text-sm font-medium">Type</legend>
                       <div className="flex gap-x-4">
@@ -1058,137 +1039,71 @@ const SecretScans = () => {
                       </div>
                     </fieldset>
                     <fieldset>
-                      {listHostStatus === 'submitting' ? (
-                        <CircleSpinner size="xs" />
-                      ) : (
-                        <Select
-                          noPortal
-                          name="host"
-                          label={'Host'}
-                          placeholder="Select host"
-                          sizing="xs"
-                          value={searchParams.getAll('hosts')}
-                          onChange={(value) => {
-                            setSearchParams((prev) => {
-                              prev.delete('hosts');
-                              value.forEach((host) => {
-                                prev.append('hosts', host);
-                              });
-                              prev.delete('page');
-                              return prev;
+                      <SearchableHostList
+                        scanType={ScanTypeEnum.VulnerabilityScan}
+                        defaultSelectedHosts={searchParams.getAll('hosts')}
+                        reset={!isFilterApplied}
+                        onChange={(value) => {
+                          setSearchParams((prev) => {
+                            prev.delete('hosts');
+                            value.forEach((host) => {
+                              prev.append('hosts', host);
                             });
-                          }}
-                        >
-                          <>
-                            {hosts.map((host) => {
-                              return (
-                                <SelectItem value={host.nodeId} key={host.nodeId}>
-                                  {host.hostName}
-                                </SelectItem>
-                              );
-                            })}
-                          </>
-                        </Select>
-                      )}
+                            prev.delete('page');
+                            return prev;
+                          });
+                        }}
+                      />
                     </fieldset>
                     <fieldset>
-                      {listContainerStatus === 'submitting' ? (
-                        <CircleSpinner size="xs" />
-                      ) : (
-                        <Select
-                          noPortal
-                          name="container"
-                          label={'Container'}
-                          placeholder="Select container"
-                          sizing="xs"
-                          value={searchParams.getAll('containers')}
-                          onChange={(value) => {
-                            setSearchParams((prev) => {
-                              prev.delete('containers');
-                              value.forEach((container) => {
-                                prev.append('containers', container);
-                              });
-                              prev.delete('page');
-                              return prev;
+                      <SearchableContainerList
+                        scanType={ScanTypeEnum.VulnerabilityScan}
+                        defaultSelectedContainers={searchParams.getAll('containers')}
+                        reset={!isFilterApplied}
+                        onChange={(value) => {
+                          setSearchParams((prev) => {
+                            prev.delete('containers');
+                            value.forEach((container) => {
+                              prev.append('containers', container);
                             });
-                          }}
-                        >
-                          {containers.map((container) => {
-                            return (
-                              <SelectItem value={container.nodeId} key={container.nodeId}>
-                                {container.nodeName}
-                              </SelectItem>
-                            );
-                          })}
-                        </Select>
-                      )}
+                            prev.delete('page');
+                            return prev;
+                          });
+                        }}
+                      />
                     </fieldset>
                     <fieldset>
-                      {listContainerImageStatus === 'submitting' ? (
-                        <CircleSpinner size="xs" />
-                      ) : (
-                        <Select
-                          noPortal
-                          name="image"
-                          label={'Image'}
-                          placeholder="Select image"
-                          sizing="xs"
-                          value={searchParams.getAll('containerImages')}
-                          onChange={(value) => {
-                            setSearchParams((prev) => {
-                              prev.delete('containerImages');
-                              value.forEach((containerImage) => {
-                                prev.append('containerImages', containerImage);
-                              });
-                              prev.delete('page');
-                              return prev;
+                      <SearchableImageList
+                        scanType={ScanTypeEnum.VulnerabilityScan}
+                        defaultSelectedImages={searchParams.getAll('containerImages')}
+                        reset={!isFilterApplied}
+                        onChange={(value) => {
+                          setSearchParams((prev) => {
+                            prev.delete('containerImages');
+                            value.forEach((containerImage) => {
+                              prev.append('containerImages', containerImage);
                             });
-                          }}
-                        >
-                          {containerImages.map?.((image) => {
-                            return (
-                              <SelectItem value={image.nodeId} key={image.nodeId}>
-                                {image.containerImage}
-                              </SelectItem>
-                            );
-                          })}
-                        </Select>
-                      )}
+                            prev.delete('page');
+                            return prev;
+                          });
+                        }}
+                      />
                     </fieldset>
                     <fieldset>
-                      {listClusterStatus === 'submitting' ? (
-                        <CircleSpinner size="xs" />
-                      ) : (
-                        <Select
-                          noPortal
-                          name="cluster"
-                          label={'Cluster'}
-                          placeholder="Select cluster"
-                          sizing="xs"
-                          value={searchParams.getAll('clusters')}
-                          onChange={(value) => {
-                            setSearchParams((prev) => {
-                              prev.delete('clusters');
-                              value.forEach((cluster) => {
-                                prev.append('clusters', cluster);
-                              });
-                              prev.delete('page');
-                              return prev;
+                      <SearchableClusterList
+                        defaultSelectedClusters={searchParams.getAll('clusters')}
+                        reset={!isFilterApplied}
+                        onChange={(value) => {
+                          setSearchParams((prev) => {
+                            prev.delete('clusters');
+                            value.forEach((cluster) => {
+                              prev.append('clusters', cluster);
                             });
-                          }}
-                        >
-                          {clusters.map((cluster) => {
-                            return (
-                              <SelectItem
-                                value={cluster.clusterId}
-                                key={cluster.clusterId}
-                              >
-                                {cluster.clusterName}
-                              </SelectItem>
-                            );
-                          })}
-                        </Select>
-                      )}
+                            prev.delete('page');
+                            return prev;
+                          });
+                        }}
+                      />
                     </fieldset>
                   </Form>
                 </div>

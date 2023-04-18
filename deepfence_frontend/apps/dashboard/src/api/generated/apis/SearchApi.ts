@@ -18,12 +18,14 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   ModelCloudCompliance,
+  ModelCloudResource,
   ModelCompliance,
   ModelContainer,
   ModelContainerImage,
   ModelFiltersReq,
   ModelFiltersResult,
   ModelHost,
+  ModelKubernetesCluster,
   ModelMalware,
   ModelScanInfo,
   ModelSecret,
@@ -40,6 +42,8 @@ import {
     ApiDocsFailureResponseToJSON,
     ModelCloudComplianceFromJSON,
     ModelCloudComplianceToJSON,
+    ModelCloudResourceFromJSON,
+    ModelCloudResourceToJSON,
     ModelComplianceFromJSON,
     ModelComplianceToJSON,
     ModelContainerFromJSON,
@@ -52,6 +56,8 @@ import {
     ModelFiltersResultToJSON,
     ModelHostFromJSON,
     ModelHostToJSON,
+    ModelKubernetesClusterFromJSON,
+    ModelKubernetesClusterToJSON,
     ModelMalwareFromJSON,
     ModelMalwareToJSON,
     ModelScanInfoFromJSON,
@@ -78,6 +84,10 @@ export interface CountCloudCompliancesRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
+export interface CountCloudResourcesRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
 export interface CountComplianceScansRequest {
     searchSearchScanReq?: SearchSearchScanReq;
 }
@@ -95,6 +105,10 @@ export interface CountContainersRequest {
 }
 
 export interface CountHostsRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
+export interface CountKubernetesClustersRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
@@ -138,6 +152,10 @@ export interface SearchCloudCompliancesRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
+export interface SearchCloudResourcesRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
 export interface SearchComplianceScansRequest {
     searchSearchScanReq?: SearchSearchScanReq;
 }
@@ -155,6 +173,10 @@ export interface SearchContainersRequest {
 }
 
 export interface SearchHostsRequest {
+    searchSearchNodeReq?: SearchSearchNodeReq;
+}
+
+export interface SearchKubernetesClustersRequest {
     searchSearchNodeReq?: SearchSearchNodeReq;
 }
 
@@ -220,6 +242,22 @@ export interface SearchApiInterface {
      * Count Cloud compliances
      */
     countCloudCompliances(requestParameters: CountCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Count across all the data ssociated with cloud resources
+     * @summary Count Cloud resources
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countCloudResourcesRaw(requestParameters: CountCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Count across all the data ssociated with cloud resources
+     * Count Cloud resources
+     */
+    countCloudResources(requestParameters: CountCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
      * Count across all the data associated with compliance scans
@@ -300,6 +338,22 @@ export interface SearchApiInterface {
      * Count hosts
      */
     countHosts(requestParameters: CountHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Count across all the data ssociated with kubernetes clusters
+     * @summary Count Kubernetes clusters
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    countKubernetesClustersRaw(requestParameters: CountKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>>;
+
+    /**
+     * Count across all the data ssociated with kubernetes clusters
+     * Count Kubernetes clusters
+     */
+    countKubernetesClusters(requestParameters: CountKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
 
     /**
      * Count across all the data associated with malware scans
@@ -477,6 +531,22 @@ export interface SearchApiInterface {
     searchCloudCompliances(requestParameters: SearchCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudCompliance>>;
 
     /**
+     * Search across all data associated with CloudResources
+     * @summary Search Cloud Resources
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    searchCloudResourcesRaw(requestParameters: SearchCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCloudResource>>>;
+
+    /**
+     * Search across all data associated with CloudResources
+     * Search Cloud Resources
+     */
+    searchCloudResources(requestParameters: SearchCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudResource>>;
+
+    /**
      * Search across all the data associated with compliance scan
      * @summary Search Compliance Scan results
      * @param {SearchSearchScanReq} [searchSearchScanReq] 
@@ -555,6 +625,22 @@ export interface SearchApiInterface {
      * Search hosts
      */
     searchHosts(requestParameters: SearchHostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelHost>>;
+
+    /**
+     * Search across all data associated with kuberentes clusters
+     * @summary Search Kuberenetes Clusters
+     * @param {SearchSearchNodeReq} [searchSearchNodeReq] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SearchApiInterface
+     */
+    searchKubernetesClustersRaw(requestParameters: SearchKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelKubernetesCluster>>>;
+
+    /**
+     * Search across all data associated with kuberentes clusters
+     * Search Kuberenetes Clusters
+     */
+    searchKubernetesClusters(requestParameters: SearchKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelKubernetesCluster>>;
 
     /**
      * Search across all the data associated with malwares scan
@@ -734,6 +820,45 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
      */
     async countCloudCompliances(requestParameters: CountCloudCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countCloudCompliancesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Count across all the data ssociated with cloud resources
+     * Count Cloud resources
+     */
+    async countCloudResourcesRaw(requestParameters: CountCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/cloud-resources`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Count across all the data ssociated with cloud resources
+     * Count Cloud resources
+     */
+    async countCloudResources(requestParameters: CountCloudResourcesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countCloudResourcesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -929,6 +1054,45 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
      */
     async countHosts(requestParameters: CountHostsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countHostsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Count across all the data ssociated with kubernetes clusters
+     * Count Kubernetes clusters
+     */
+    async countKubernetesClustersRaw(requestParameters: CountKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchSearchCountResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/count/kubernetes-clusters`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchSearchCountRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Count across all the data ssociated with kubernetes clusters
+     * Count Kubernetes clusters
+     */
+    async countKubernetesClusters(requestParameters: CountKubernetesClustersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
+        const response = await this.countKubernetesClustersRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -1359,6 +1523,45 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
     }
 
     /**
+     * Search across all data associated with CloudResources
+     * Search Cloud Resources
+     */
+    async searchCloudResourcesRaw(requestParameters: SearchCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCloudResource>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/cloud-resources`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelCloudResourceFromJSON));
+    }
+
+    /**
+     * Search across all data associated with CloudResources
+     * Search Cloud Resources
+     */
+    async searchCloudResources(requestParameters: SearchCloudResourcesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudResource>> {
+        const response = await this.searchCloudResourcesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Search across all the data associated with compliance scan
      * Search Compliance Scan results
      */
@@ -1550,6 +1753,45 @@ export class SearchApi extends runtime.BaseAPI implements SearchApiInterface {
      */
     async searchHosts(requestParameters: SearchHostsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelHost>> {
         const response = await this.searchHostsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Search across all data associated with kuberentes clusters
+     * Search Kuberenetes Clusters
+     */
+    async searchKubernetesClustersRaw(requestParameters: SearchKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelKubernetesCluster>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/search/kubernetes-clusters`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SearchSearchNodeReqToJSON(requestParameters.searchSearchNodeReq),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelKubernetesClusterFromJSON));
+    }
+
+    /**
+     * Search across all data associated with kuberentes clusters
+     * Search Kuberenetes Clusters
+     */
+    async searchKubernetesClusters(requestParameters: SearchKubernetesClustersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelKubernetesCluster>> {
+        const response = await this.searchKubernetesClustersRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

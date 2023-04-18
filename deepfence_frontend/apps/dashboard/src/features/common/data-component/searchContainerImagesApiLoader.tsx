@@ -6,18 +6,33 @@ import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 
-export type ContainerImagesListType = {
-  nodeId: string;
-  containerImage: string;
+export type SearchContainerImagesLoaderDataType = {
+  containerImages: {
+    nodeId: string;
+    containerImage: string;
+  }[];
+  hasNext: boolean;
 };
 
 export const searchContainerImagesApiLoader = async ({
   params,
-}: LoaderFunctionArgs): Promise<ContainerImagesListType[]> => {
+  request,
+}: LoaderFunctionArgs): Promise<SearchContainerImagesLoaderDataType> => {
+  const searchParams = new URL(request.url).searchParams;
   const scanType = params?.scanType;
   if (!scanType) {
     throw new Error('Scan For is required');
   }
+  const searchText = searchParams?.get('searchText')?.toString();
+  const size = parseInt(searchParams?.get('size')?.toString() ?? '0', 10);
+
+  const matchFilter = { filter_in: {} };
+  if (searchText?.length) {
+    matchFilter.filter_in = {
+      docker_image_name: [searchText],
+    };
+  }
+
   let filterValue = '';
   if (scanType === ScanTypeEnum.SecretScan) {
     filterValue = 'secrets_count';
@@ -47,9 +62,7 @@ export const searchContainerImagesApiLoader = async ({
                   },
                 ],
               },
-              match_filter: {
-                filter_in: {},
-              },
+              match_filter: matchFilter,
               compare_filter: null,
             },
             in_field_filter: ['node_id', 'docker_image_name', 'docker_image_tag'],
@@ -60,7 +73,7 @@ export const searchContainerImagesApiLoader = async ({
           },
           window: {
             offset: 0,
-            size: 100,
+            size: size + 1,
           },
         },
       },
@@ -81,36 +94,53 @@ export const searchContainerImagesApiLoader = async ({
   }
 
   if (result === null) {
-    return [];
-  }
-  return result.map((res) => {
     return {
-      nodeId: res.node_id,
-      containerImage: `${res.docker_image_name}:${res.docker_image_tag}`,
+      containerImages: [],
+      hasNext: false,
     };
-  });
+  }
+  return {
+    containerImages: result.slice(0, size).map((res) => {
+      return {
+        nodeId: res.node_id,
+        containerImage: `${res.docker_image_name}:${res.docker_image_tag}`,
+      };
+    }),
+    hasNext: result.length > size,
+  };
 };
 
 export const useGetContainerImagesList = ({
   scanType,
+  searchText,
+  size = 0,
 }: {
-  scanType: ScanTypeEnum;
+  scanType: ScanTypeEnum | 'none';
+  searchText?: string;
+  size: number;
 }): {
   status: 'idle' | 'loading' | 'submitting';
-  containerImages: ContainerImagesListType[];
+  containerImages: SearchContainerImagesLoaderDataType['containerImages'];
+  hasNext: boolean;
 } => {
-  const fetcher = useFetcher<ContainerImagesListType[]>();
+  const fetcher = useFetcher<SearchContainerImagesLoaderDataType>();
 
   useEffect(() => {
+    const searchParams = new URLSearchParams();
+    searchParams.set('searchText', searchText ?? '');
+    searchParams.set('size', size.toString());
     fetcher.load(
-      generatePath('/data-component/search/containerImages/:scanType', {
-        scanType,
-      }),
+      generatePath(
+        `/data-component/search/containerImages/:scanType/?${searchParams.toString()}`,
+        {
+          scanType,
+        },
+      ),
     );
-  }, [scanType]);
-
+  }, [scanType, searchText, size]);
   return {
     status: fetcher.state,
-    containerImages: fetcher.data ?? [],
+    containerImages: fetcher.data?.containerImages ?? [],
+    hasNext: fetcher.data?.hasNext ?? false,
   };
 };

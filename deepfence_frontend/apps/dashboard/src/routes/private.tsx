@@ -553,10 +553,18 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'search/containers/:scanType',
         loader: searchContainersApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
       },
       {
         path: 'search/containerImages/:scanType',
         loader: searchContainerImagesApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
       },
       {
         path: 'search/hosts/:scanType',

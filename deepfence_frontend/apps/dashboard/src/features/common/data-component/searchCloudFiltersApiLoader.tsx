@@ -48,7 +48,7 @@ export const searchCloudFiltersApiLoader = async ({
   if (ApiError.isApiError(result)) {
     throw result.value();
   }
-  console.log(result);
+
   if (!result || !result.filters) {
     return {
       services: [],
