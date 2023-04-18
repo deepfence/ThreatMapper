@@ -12,6 +12,7 @@ export type Props = {
   scanType: ScanTypeEnum | 'none';
   onChange?: (value: string[]) => void;
   defaultSelectedImages?: string[];
+  reset?: boolean;
 };
 
 const PAGE_SIZE = 15;
@@ -19,6 +20,7 @@ export const SearchableImageList = ({
   scanType,
   onChange,
   defaultSelectedImages,
+  reset,
 }: Props) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
@@ -44,6 +46,18 @@ export const SearchableImageList = ({
   useEffect(() => {
     setSelectedImages(defaultSelectedImages ?? []);
   }, [defaultSelectedImages]);
+
+  useEffect(() => {
+    if (reset) {
+      setSearchState({
+        searchText: '',
+        size: PAGE_SIZE,
+        imagesList: [],
+        hasNext: false,
+      });
+      setSelectedImages([]);
+    }
+  }, [reset]);
 
   useEffect(() => {
     if (containerImages.length > 0) {

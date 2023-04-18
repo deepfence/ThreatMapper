@@ -1,26 +1,30 @@
-import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
+import { useEffect } from 'react';
+import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 
 import { getSearchApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 
-export type ContainersListType = {
-  nodeId: string;
-  nodeName: string;
+export type SearchContainersLoaderDataType = {
+  containers: {
+    nodeId: string;
+    nodeName: string;
+  }[];
+  hasNext: boolean;
 };
 
-export const searchContainersApiAction = async ({
+export const searchContainersApiLoader = async ({
+  params,
   request,
-}: ActionFunctionArgs): Promise<ContainersListType[]> => {
-  const searchParams = new URL(request.url).searchParams;
-  const scanType = searchParams?.get('scanType')?.toString();
+}: LoaderFunctionArgs): Promise<SearchContainersLoaderDataType> => {
+  const scanType = params?.scanType;
   if (!scanType) {
-    throw new Error('Scan Type is required');
+    throw new Error('Scan For is required');
   }
-
+  const searchParams = new URL(request.url).searchParams;
   const searchText = searchParams?.get('searchText')?.toString();
-  const offset = searchParams?.get('offset')?.toString() ?? '0';
+  const size = parseInt(searchParams?.get('size')?.toString() ?? '0', 10);
 
   const matchFilter = { filter_in: {} };
   if (searchText?.length) {
@@ -68,8 +72,8 @@ export const searchContainersApiAction = async ({
             },
           },
           window: {
-            offset: +offset,
-            size: 15,
+            offset: 0,
+            size: size + 1,
           },
         },
       },
@@ -92,42 +96,54 @@ export const searchContainersApiAction = async ({
   }
 
   if (result === null) {
-    return [];
-  }
-  return result.map((res) => {
     return {
-      nodeId: res.node_id,
-      nodeName: res.docker_container_name,
+      containers: [],
+      hasNext: false,
     };
-  });
+  }
+  return {
+    containers: result.slice(0, size).map((res) => {
+      return {
+        nodeId: res.node_id,
+        nodeName: res.docker_container_name,
+      };
+    }),
+    hasNext: result.length > size,
+  };
 };
 
-type LoadArgs = {
+export const useGetContainersList = ({
+  scanType,
+  searchText,
+  size,
+}: {
   scanType: ScanTypeEnum | 'none';
   searchText?: string;
-  offset?: number;
-};
-
-export const useGetContainersList = (): {
+  size: number;
+}): {
   status: 'idle' | 'loading' | 'submitting';
-  containers: ContainersListType[];
-  load: (_: LoadArgs) => void;
+  containers: SearchContainersLoaderDataType['containers'];
+  hasNext: boolean;
 } => {
-  const fetcher = useFetcher<ContainersListType[]>();
+  const fetcher = useFetcher<SearchContainersLoaderDataType>();
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams();
+    searchParams.set('searchText', searchText ?? '');
+    searchParams.set('size', size.toString());
+    fetcher.load(
+      generatePath(
+        `/data-component/search/containers/:scanType/?${searchParams.toString()}`,
+        {
+          scanType,
+        },
+      ),
+    );
+  }, [scanType, searchText, size]);
 
   return {
     status: fetcher.state,
-    containers: fetcher.data ?? [],
-    load: ({ scanType, searchText, offset = 0 }: LoadArgs) => {
-      const searchParams = new URLSearchParams();
-      searchParams.set('searchText', searchText ?? '');
-      searchParams.set('offset', offset.toString());
-      searchParams.set('scanType', scanType.toString());
-
-      fetcher.submit(null, {
-        method: 'post',
-        action: `/data-component/search/containers/?${searchParams.toString()}`,
-      });
-    },
+    containers: fetcher.data?.containers ?? [],
+    hasNext: fetcher.data?.hasNext ?? false,
   };
 };

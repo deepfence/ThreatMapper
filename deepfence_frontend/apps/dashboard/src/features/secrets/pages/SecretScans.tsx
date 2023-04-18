@@ -1042,6 +1042,7 @@ const SecretScans = () => {
                       <SearchableHostList
                         scanType={ScanTypeEnum.VulnerabilityScan}
                         defaultSelectedHosts={searchParams.getAll('hosts')}
+                        reset={!isFilterApplied}
                         onChange={(value) => {
                           setSearchParams((prev) => {
                             prev.delete('hosts');
@@ -1058,6 +1059,7 @@ const SecretScans = () => {
                       <SearchableContainerList
                         scanType={ScanTypeEnum.VulnerabilityScan}
                         defaultSelectedContainers={searchParams.getAll('containers')}
+                        reset={!isFilterApplied}
                         onChange={(value) => {
                           setSearchParams((prev) => {
                             prev.delete('containers');
@@ -1074,6 +1076,7 @@ const SecretScans = () => {
                       <SearchableImageList
                         scanType={ScanTypeEnum.VulnerabilityScan}
                         defaultSelectedImages={searchParams.getAll('containerImages')}
+                        reset={!isFilterApplied}
                         onChange={(value) => {
                           setSearchParams((prev) => {
                             prev.delete('containerImages');
@@ -1089,6 +1092,7 @@ const SecretScans = () => {
                     <fieldset>
                       <SearchableClusterList
                         defaultSelectedClusters={searchParams.getAll('clusters')}
+                        reset={!isFilterApplied}
                         onChange={(value) => {
                           setSearchParams((prev) => {
                             prev.delete('clusters');

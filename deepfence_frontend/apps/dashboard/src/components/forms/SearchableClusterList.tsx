@@ -3,46 +3,63 @@ import { useEffect, useState } from 'react';
 import { Combobox, ComboboxOption } from 'ui-components';
 
 import {
-  ClustersListType,
+  SearchClustersLoaderDataType,
   useGetClustersList,
-} from '@/features/common/data-component/searchClustersApiAction';
-
+} from '@/features/common/data-component/searchClustersApiLoader';
+const PAGE_SIZE = 15;
 export const SearchableClusterList = ({
   onChange,
   defaultSelectedClusters,
+  reset,
 }: {
   onChange?: (value: string[]) => void;
   defaultSelectedClusters?: string[];
+  reset?: boolean;
 }) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
-    offset: number;
-    clustersList: ClustersListType[];
+    size: number;
+    clustersList: SearchClustersLoaderDataType['clusters'];
+    hasNext: boolean;
   }>({
     searchText: '',
-    offset: 0,
+    size: PAGE_SIZE,
     clustersList: [],
+    hasNext: false,
   });
 
   const [selectedClusters, setSelectedClusters] = useState<string[]>(
     defaultSelectedClusters ?? [],
   );
 
-  const { clusters, load } = useGetClustersList();
+  const { clusters, hasNext } = useGetClustersList({
+    searchText: searchState.searchText,
+    size: searchState.size,
+  });
 
   useEffect(() => {
-    load({
-      searchText: searchState.searchText,
-      offset: searchState.offset,
-    });
-  }, [searchState.searchText, searchState.offset]);
+    setSelectedClusters(defaultSelectedClusters ?? []);
+  }, [defaultSelectedClusters]);
+
+  useEffect(() => {
+    if (reset) {
+      setSearchState({
+        searchText: '',
+        size: PAGE_SIZE,
+        clustersList: [],
+        hasNext: false,
+      });
+      setSelectedClusters([]);
+    }
+  }, [reset]);
 
   useEffect(() => {
     if (clusters.length > 0) {
       setSearchState((prev) => {
         return {
           ...prev,
-          clustersList: [...prev.clustersList, ...clusters],
+          clustersList: clusters,
+          hasNext,
         };
       });
     }
@@ -51,8 +68,9 @@ export const SearchableClusterList = ({
   const searchCluster = debounce((query) => {
     setSearchState({
       searchText: query,
-      offset: 0,
+      size: PAGE_SIZE,
       clustersList: [],
+      hasNext: false,
     });
   }, 1000);
 
@@ -61,7 +79,7 @@ export const SearchableClusterList = ({
       setSearchState((prev) => {
         return {
           ...prev,
-          offset: prev.offset + 15,
+          size: prev.size + PAGE_SIZE,
         };
       });
     }

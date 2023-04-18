@@ -12,6 +12,7 @@ export type SearchableHostListProps = {
   scanType: ScanTypeEnum | 'none';
   onChange?: (value: string[]) => void;
   defaultSelectedHosts?: string[];
+  reset?: boolean;
 };
 
 const PAGE_SIZE = 15;
@@ -20,6 +21,7 @@ export const SearchableHostList = ({
   scanType,
   onChange,
   defaultSelectedHosts,
+  reset,
 }: SearchableHostListProps) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
@@ -40,6 +42,18 @@ export const SearchableHostList = ({
   useEffect(() => {
     setSelectedHosts(defaultSelectedHosts ?? []);
   }, [defaultSelectedHosts]);
+
+  useEffect(() => {
+    if (reset) {
+      setSearchState({
+        searchText: '',
+        size: PAGE_SIZE,
+        hostsList: [],
+        hasNext: false,
+      });
+      setSelectedHosts([]);
+    }
+  }, [reset]);
 
   const {
     hosts,

@@ -3,50 +3,68 @@ import { useEffect, useState } from 'react';
 import { Combobox, ComboboxOption } from 'ui-components';
 
 import {
-  ContainersListType,
+  SearchContainersLoaderDataType,
   useGetContainersList,
-} from '@/features/common/data-component/searchContainersApiAction';
+} from '@/features/common/data-component/searchContainersApiLoader';
 import { ScanTypeEnum } from '@/types/common';
 
 export type Props = {
   scanType: ScanTypeEnum | 'none';
   onChange?: (value: string[]) => void;
   defaultSelectedContainers?: string[];
+  reset?: boolean;
 };
+const PAGE_SIZE = 15;
 export const SearchableContainerList = ({
   scanType,
   onChange,
   defaultSelectedContainers,
+  reset,
 }: Props) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
-    offset: number;
-    containersList: ContainersListType[];
+    size: number;
+    containersList: SearchContainersLoaderDataType['containers'];
+    hasNext: boolean;
   }>({
     searchText: '',
-    offset: 0,
+    size: PAGE_SIZE,
     containersList: [],
+    hasNext: false,
   });
   const [selectedContainers, setSelectedContainers] = useState<string[]>(
     defaultSelectedContainers ?? [],
   );
 
-  const { containers, load } = useGetContainersList();
+  const { containers, hasNext } = useGetContainersList({
+    scanType,
+    searchText: searchState.searchText,
+    size: searchState.size,
+  });
 
   useEffect(() => {
-    load({
-      scanType,
-      searchText: searchState.searchText,
-      offset: searchState.offset,
-    });
-  }, [searchState.searchText, searchState.offset]);
+    setSelectedContainers(defaultSelectedContainers ?? []);
+  }, [defaultSelectedContainers]);
+
+  useEffect(() => {
+    if (reset) {
+      setSearchState({
+        searchText: '',
+        size: PAGE_SIZE,
+        containersList: [],
+        hasNext: false,
+      });
+      setSelectedContainers([]);
+    }
+  }, [reset]);
 
   useEffect(() => {
     if (containers.length > 0) {
       setSearchState((prev) => {
         return {
           ...prev,
-          containersList: [...prev.containersList, ...containers],
+          containersList: containers,
+          hasNext,
         };
       });
     }
@@ -55,8 +73,9 @@ export const SearchableContainerList = ({
   const searchContainer = debounce((query) => {
     setSearchState({
       searchText: query,
-      offset: 0,
+      size: PAGE_SIZE,
       containersList: [],
+      hasNext: false,
     });
   }, 1000);
 
@@ -65,7 +84,7 @@ export const SearchableContainerList = ({
       setSearchState((prev) => {
         return {
           ...prev,
-          offset: prev.offset + 15,
+          size: prev.size + PAGE_SIZE,
         };
       });
     }

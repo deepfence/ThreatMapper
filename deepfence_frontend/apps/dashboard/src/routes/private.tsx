@@ -11,9 +11,9 @@ import { getApiTokenApiLoader } from '@/features/common/data-component/getApiTok
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
 import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
-import { searchClustersApiAction } from '@/features/common/data-component/searchClustersApiAction';
+import { searchClustersApiLoader } from '@/features/common/data-component/searchClustersApiLoader';
 import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
-import { searchContainersApiAction } from '@/features/common/data-component/searchContainersApiAction';
+import { searchContainersApiLoader } from '@/features/common/data-component/searchContainersApiLoader';
 import { searchHostsApiLoader } from '@/features/common/data-component/searchHostsApiLoader';
 import { RootLayout } from '@/features/common/RootLayout';
 import { module as dashboard } from '@/features/dashboard/pages/Dashboard';
@@ -521,8 +521,8 @@ export const privateRoutes: CustomRouteObject[] = [
         loader: scanHistoryApiLoader,
       },
       {
-        path: 'search/containers',
-        action: searchContainersApiAction,
+        path: 'search/containers/:scanType',
+        loader: searchContainersApiLoader,
         shouldRevalidate: ({ formAction }) => {
           if (formAction) return false;
           return true;
@@ -546,7 +546,11 @@ export const privateRoutes: CustomRouteObject[] = [
       },
       {
         path: 'search/clusters',
-        action: searchClustersApiAction,
+        loader: searchClustersApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
       },
       {
         path: 'scan/vulnerability',

@@ -1,21 +1,25 @@
-import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
+import { useEffect } from 'react';
+import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 
 import { getSearchApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ApiError, makeRequest } from '@/utils/api';
 
-export type ClustersListType = {
-  clusterId: string;
-  clusterName: string;
+export type SearchClustersLoaderDataType = {
+  clusters: {
+    clusterId: string;
+    clusterName: string;
+  }[];
+  hasNext: boolean;
 };
 
-export const searchClustersApiAction = async ({
+export const searchClustersApiLoader = async ({
   request,
-}: ActionFunctionArgs): Promise<ClustersListType[]> => {
+}: LoaderFunctionArgs): Promise<SearchClustersLoaderDataType> => {
   const searchParams = new URL(request.url).searchParams;
 
   const searchText = searchParams?.get('searchText')?.toString();
-  const offset = searchParams?.get('offset')?.toString() ?? '0';
+  const size = parseInt(searchParams?.get('size')?.toString() ?? '0', 10);
 
   const matchFilter = { filter_in: {} };
   if (searchText?.length) {
@@ -48,8 +52,8 @@ export const searchClustersApiAction = async ({
             },
           },
           window: {
-            offset: +offset,
-            size: 15,
+            offset: 0,
+            size: size + 1,
           },
         },
       },
@@ -72,40 +76,48 @@ export const searchClustersApiAction = async ({
   }
 
   if (result === null) {
-    return [];
-  }
-  return result.map((res) => {
     return {
-      clusterId: res.node_id,
-      clusterName: res.node_name,
+      clusters: [],
+      hasNext: false,
     };
-  });
-};
-
-type LoadArgs = {
-  searchText?: string;
-  offset?: number;
-};
-
-export const useGetClustersList = (): {
-  status: 'idle' | 'loading' | 'submitting';
-  clusters: ClustersListType[];
-  load: (_: LoadArgs) => void;
-} => {
-  const fetcher = useFetcher<ClustersListType[]>();
+  }
 
   return {
-    status: fetcher.state,
-    clusters: fetcher.data ?? [],
-    load: ({ searchText, offset = 0 }: LoadArgs) => {
-      const searchParams = new URLSearchParams();
-      searchParams.set('searchText', searchText ?? '');
-      searchParams.set('offset', offset.toString());
+    clusters: result.slice(0, size).map((res) => {
+      return {
+        clusterId: res.node_id,
+        clusterName: res.node_name,
+      };
+    }),
+    hasNext: result.length > size,
+  };
+};
 
-      fetcher.submit(null, {
-        method: 'post',
-        action: `/data-component/search/clusters/?${searchParams.toString()}`,
-      });
-    },
+export const useGetClustersList = ({
+  searchText,
+  size,
+}: {
+  searchText?: string;
+  size: number;
+}): {
+  status: 'idle' | 'loading' | 'submitting';
+  clusters: SearchClustersLoaderDataType['clusters'];
+  hasNext: boolean;
+} => {
+  const fetcher = useFetcher<SearchClustersLoaderDataType>();
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams();
+    searchParams.set('searchText', searchText ?? '');
+    searchParams.set('size', size.toString());
+
+    fetcher.load(
+      generatePath(`/data-component/search/clusters/?${searchParams.toString()}`),
+    );
+  }, [searchText, size]);
+  return {
+    status: fetcher.state,
+    clusters: fetcher.data?.clusters ?? [],
+    hasNext: fetcher.data?.hasNext ?? false,
   };
 };
