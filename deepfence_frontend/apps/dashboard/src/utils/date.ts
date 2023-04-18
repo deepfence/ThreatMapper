@@ -4,7 +4,7 @@ import utc from 'dayjs/plugin/utc';
 dayjs.extend(utc);
 dayjs.extend(relativeTime);
 
-export const formatMilliseconds = (date: number | string) => {
+export const formatMilliseconds = (date: number | Date | string) => {
   return dayjs.utc(date).local().format('MMM D YYYY H:mm:ss');
 };
 
