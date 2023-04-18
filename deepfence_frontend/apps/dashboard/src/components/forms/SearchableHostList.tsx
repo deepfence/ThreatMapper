@@ -11,8 +11,13 @@ import { ScanTypeEnum } from '@/types/common';
 export type SearchableHostListProps = {
   scanType: ScanTypeEnum | 'none';
   onChange?: (value: string[]) => void;
+  defaultSelectedHosts?: string[];
 };
-export const SearchableHostList = ({ scanType, onChange }: SearchableHostListProps) => {
+export const SearchableHostList = ({
+  scanType,
+  onChange,
+  defaultSelectedHosts,
+}: SearchableHostListProps) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
     offset: number;
@@ -23,7 +28,9 @@ export const SearchableHostList = ({ scanType, onChange }: SearchableHostListPro
     hostsList: [],
   });
 
-  const [selectedHosts, setSelectedHosts] = useState<string[]>([]);
+  const [selectedHosts, setSelectedHosts] = useState<string[]>(
+    defaultSelectedHosts ?? [],
+  );
 
   const { hosts, status: listHostStatus } = useGetHostsList({
     scanType,

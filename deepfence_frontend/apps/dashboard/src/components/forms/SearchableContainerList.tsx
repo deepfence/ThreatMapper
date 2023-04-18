@@ -9,10 +9,15 @@ import {
 import { ScanTypeEnum } from '@/types/common';
 
 export type Props = {
-  scanType: ScanTypeEnum;
+  scanType: ScanTypeEnum | 'none';
   onChange?: (value: string[]) => void;
+  defaultSelectedContainers?: string[];
 };
-export const SearchableContainerList = ({ scanType, onChange }: Props) => {
+export const SearchableContainerList = ({
+  scanType,
+  onChange,
+  defaultSelectedContainers,
+}: Props) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
     offset: number;
@@ -22,7 +27,9 @@ export const SearchableContainerList = ({ scanType, onChange }: Props) => {
     offset: 0,
     containersList: [],
   });
-  const [selectedContainers, setSelectedContainers] = useState<string[]>([]);
+  const [selectedContainers, setSelectedContainers] = useState<string[]>(
+    defaultSelectedContainers ?? [],
+  );
 
   const { containers } = useGetContainersList({
     scanType,

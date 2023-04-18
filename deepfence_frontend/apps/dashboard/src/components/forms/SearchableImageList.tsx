@@ -9,7 +9,7 @@ import {
 import { ScanTypeEnum } from '@/types/common';
 
 export type Props = {
-  scanType: ScanTypeEnum;
+  scanType: ScanTypeEnum | 'none';
   onChange?: (value: string[]) => void;
   defaultSelectedImages?: string[];
 };

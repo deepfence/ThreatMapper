@@ -23,7 +23,6 @@ import {
   BreadcrumbLink,
   Button,
   Card,
-  CircleSpinner,
   createColumnHelper,
   Dropdown,
   DropdownItem,
@@ -48,18 +47,17 @@ import {
 } from '@/api/generated';
 import { ModelExportReport } from '@/api/generated/models/ModelExportReport';
 import { DFLink } from '@/components/DFLink';
+import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
+import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
+import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { TruncatedText } from '@/components/TruncatedText';
-import { useGetClustersList } from '@/features/common/data-component/searchClustersApiLoader';
-import { useGetContainerImagesList } from '@/features/common/data-component/searchContainerImagesApiLoader';
-import { useGetContainersList } from '@/features/common/data-component/searchContainersApiLoader';
-import { useGetHostsList } from '@/features/common/data-component/searchHostsApiLoader';
 import {
   getAccounts,
   getNodeTypeByProviderName,
 } from '@/features/postures/pages/Accounts';
 import { ActionReturnType } from '@/features/registries/components/RegistryAccountsTable';
-import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { download } from '@/utils/download';
@@ -162,12 +160,44 @@ const action = async ({
 
     const masked = formData.getAll('mask[]');
     const status = formData.getAll('status[]');
-    const hostIds = formData.getAll('hostIds[]');
-    const containerImages = formData.getAll('containerImages[]');
-    const containers = formData.getAll('containers[]');
-    const clusterIds = formData.getAll('clusterIds[]');
     const accountIds = formData.getAll('accountIds[]');
     const interval = formData.get('interval'); // send this when backend is ready to support
+
+    // host filter
+    const selectedHostLength = Number(formData.get('selectedHostLength'));
+    const hostIds = [];
+    if (selectedHostLength > 0) {
+      for (let i = 0; i < selectedHostLength; i++) {
+        hostIds.push(formData.get(`hostFilter[${i}]`) as string);
+      }
+    }
+
+    // container filter
+    const selectedContainerLength = Number(formData.get('selectedContainerLength'));
+    const containers = [];
+    if (selectedContainerLength > 0) {
+      for (let i = 0; i < selectedContainerLength; i++) {
+        containers.push(formData.get(`containerFilter[${i}]`) as string);
+      }
+    }
+
+    // image filter
+    const selectedImageLength = Number(formData.get('selectedImageLength'));
+    const containerImages = [];
+    if (selectedImageLength > 0) {
+      for (let i = 0; i < selectedImageLength; i++) {
+        containerImages.push(formData.get(`imageFilter[${i}]`) as string);
+      }
+    }
+
+    // cluster filter
+    const selectedClusterLength = Number(formData.get('selectedClusterLength'));
+    const clusterIds = [];
+    if (selectedClusterLength > 0) {
+      for (let i = 0; i < selectedClusterLength; i++) {
+        clusterIds.push(formData.get(`clusterFilter[${i}]`) as string);
+      }
+    }
 
     const _masked: boolean[] = [];
     if (masked.includes('Masked')) {
@@ -548,23 +578,6 @@ const AdvancedFilter = ({
   resourceType: string;
   provider: string;
 }) => {
-  const [selectedHosts, setSelectedHosts] = useState([]);
-  const [selectedCluster, setSelectedCluster] = useState([]);
-  const [selectedContainerImages, setSelectedContainerImages] = useState([]);
-  const [_containers, setContainers] = useState([]);
-  const { hosts, status: listHostStatus } = useGetHostsList({
-    scanType: 'none',
-  });
-
-  const { containerImages, status: listContainerImageStatus } = useGetContainerImagesList(
-    {
-      scanType: ScanTypeEnum.SecretScan,
-    },
-  );
-  const { containers, status: listContainerStatus } = useGetContainersList({
-    scanType: ScanTypeEnum.SecretScan,
-  });
-  const { clusters, status: listClusterStatus } = useGetClustersList({});
   const [cloudAccounts, setCloudAccounts] = useState<ModelCloudNodeAccountInfo[]>([]);
   const [selectedCloudAccounts, setSelectedCloudAccounts] = useState([]);
 
@@ -617,31 +630,7 @@ const AdvancedFilter = ({
       {resourceType && provider && provider === 'Host' ? (
         <>
           <div>
-            {listHostStatus !== 'idle' ? (
-              <div className="py-6">
-                <CircleSpinner size="sm" />
-              </div>
-            ) : (
-              <Select
-                value={selectedHosts}
-                name="hostIds[]"
-                onChange={(value) => {
-                  setSelectedHosts(value);
-                }}
-                placeholder="Select host"
-                label="Select host (Optional)"
-                sizing="xs"
-                className="mt-2"
-              >
-                {hosts.map((host) => {
-                  return (
-                    <SelectItem value={host.nodeId} key={host.nodeId}>
-                      {host.hostName}
-                    </SelectItem>
-                  );
-                })}
-              </Select>
-            )}
+            <SearchableHostList scanType={'none'} />
           </div>
         </>
       ) : null}
@@ -649,31 +638,7 @@ const AdvancedFilter = ({
       {resourceType && provider && provider === 'ContainerImage' ? (
         <>
           <div>
-            {listContainerImageStatus !== 'idle' ? (
-              <div className="py-6">
-                <CircleSpinner size="sm" />
-              </div>
-            ) : (
-              <Select
-                value={selectedContainerImages}
-                name="containerImages[]"
-                onChange={(value) => {
-                  setSelectedContainerImages(value);
-                }}
-                placeholder="Select Container Images"
-                label="Select Images"
-                sizing="xs"
-                className="mt-2"
-              >
-                {containerImages.map((image) => {
-                  return (
-                    <SelectItem value={image.nodeId} key={image.nodeId}>
-                      {image.containerImage}
-                    </SelectItem>
-                  );
-                })}
-              </Select>
-            )}
+            <SearchableImageList scanType={'none'} />
           </div>
         </>
       ) : null}
@@ -681,31 +646,7 @@ const AdvancedFilter = ({
       {resourceType && provider && provider === 'Container' ? (
         <>
           <div>
-            {listContainerStatus !== 'idle' ? (
-              <div className="py-6">
-                <CircleSpinner size="sm" />
-              </div>
-            ) : (
-              <Select
-                value={_containers}
-                name="containers[]"
-                onChange={(value) => {
-                  setContainers(value);
-                }}
-                placeholder="Select Containers"
-                label="Select Containers"
-                sizing="xs"
-                className="mt-2"
-              >
-                {containers.map((container) => {
-                  return (
-                    <SelectItem value={container.nodeId} key={container.nodeId}>
-                      {container.nodeName}
-                    </SelectItem>
-                  );
-                })}
-              </Select>
-            )}
+            <SearchableContainerList scanType={'none'} />
           </div>
         </>
       ) : null}
@@ -713,31 +654,7 @@ const AdvancedFilter = ({
       {resourceType && provider && resourceType !== 'CloudCompliance' ? (
         <>
           <div>
-            {listClusterStatus !== 'idle' ? (
-              <div className="py-6">
-                <CircleSpinner size="sm" />
-              </div>
-            ) : (
-              <Select
-                value={selectedCluster}
-                name="clusterIds[]"
-                onChange={(value) => {
-                  setSelectedCluster(value);
-                }}
-                placeholder="Select Clusters"
-                label="Select Clusters(Optional)"
-                sizing="xs"
-                className="mt-2"
-              >
-                {clusters.map((cluster) => {
-                  return (
-                    <SelectItem value={cluster.clusterId} key={cluster.clusterId}>
-                      {cluster.clusterName}
-                    </SelectItem>
-                  );
-                })}
-              </Select>
-            )}
+            <SearchableClusterList />
           </div>
         </>
       ) : null}
@@ -762,24 +679,26 @@ const AdvancedFilter = ({
           })}
         </Select>
       )}
-      <Select
-        value={status}
-        name="status[]"
-        onChange={(value) => {
-          setStatus(value);
-        }}
-        placeholder="Select Status"
-        label="Select Status (Optional)"
-        sizing="xs"
-      >
-        {['COMPLETE', 'ERROR']?.map((provider) => {
-          return (
-            <SelectItem value={provider} key={provider}>
-              {provider}
-            </SelectItem>
-          );
-        })}
-      </Select>
+      {provider && (
+        <Select
+          value={status}
+          name="status[]"
+          onChange={(value) => {
+            setStatus(value);
+          }}
+          placeholder="Select Status"
+          label="Select Status (Optional)"
+          sizing="xs"
+        >
+          {['COMPLETE', 'ERROR']?.map((provider) => {
+            return (
+              <SelectItem value={provider} key={provider}>
+                {provider}
+              </SelectItem>
+            );
+          })}
+        </Select>
+      )}
     </div>
   );
 };

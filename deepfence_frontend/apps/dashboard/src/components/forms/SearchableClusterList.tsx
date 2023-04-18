@@ -9,8 +9,10 @@ import {
 
 export const SearchableClusterList = ({
   onChange,
+  defaultSelectedClusters,
 }: {
   onChange?: (value: string[]) => void;
+  defaultSelectedClusters?: string[];
 }) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
@@ -22,7 +24,9 @@ export const SearchableClusterList = ({
     clustersList: [],
   });
 
-  const [selectedClusters, setSelectedClusters] = useState<string[]>([]);
+  const [selectedClusters, setSelectedClusters] = useState<string[]>(
+    defaultSelectedClusters ?? [],
+  );
 
   const { clusters } = useGetClustersList({
     searchText: searchState.searchText,

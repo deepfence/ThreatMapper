@@ -112,7 +112,7 @@ export const useGetContainerImagesList = ({
   searchText,
   offset = 0,
 }: {
-  scanType: ScanTypeEnum;
+  scanType: ScanTypeEnum | 'none';
   searchText?: string;
   offset?: number;
 }): {
