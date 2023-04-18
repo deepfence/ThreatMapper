@@ -689,10 +689,10 @@ const Dashboard = () => {
       <div className="grid grid-cols-2 2xl:grid-cols-3 gap-2 auto-rows-auto px-2 last:mb-2">
         <TopAttackPaths />
         <Posture />
+        <Registries />
         <TopRisksVulnerability />
         <TopRisksSecret />
         <TopRisksMalware />
-        <Registries />
         <RuntimeIncidents />
       </div>
     </div>
