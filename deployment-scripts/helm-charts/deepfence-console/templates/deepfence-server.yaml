@@ -32,6 +32,15 @@ spec:
             {{- toYaml .Values.server.securityContext | nindent 12 }}
           image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.server.image.pullPolicy }}
+          env:
+            - name: CONSOLE_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES
+              value: "30"
+            - name: DEEPFENCE_CONSOLE_ORCHESTRATOR
+              value: "kubernetes"
           envFrom:
             - configMapRef:
                 name: "deepfence-console-config"
