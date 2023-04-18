@@ -408,33 +408,3 @@ ui:
   tolerations: []
   affinity: {}
 
-console_agent:
-  # Show console vm in management console UI
-  enable: true
-  image:
-    repository: deepfenceio/deepfence_agent_ce
-    pullPolicy: Always
-    # Overrides the image tag whose default is the chart appVersion.
-    tag: v2
-  enableGraphReport: true
-  clusterName: "deepfence-console"
-  mountContainerRuntimeSocket:
-    dockerSock: false
-    dockerSockPath: "/var/run/docker.sock"                 # Change if socket path is not the following
-    containerdSock: true
-    containerdSockPath: "/run/containerd/containerd.sock"  # Change if socket path is not the following
-    crioSock: false
-    crioSockPath: "/var/run/crio/crio.sock"                # Change if socket path is not the following
-  resources:
-    requests:
-      cpu: 50m
-      memory: 150Mi
-    limits:
-      cpu: 2000m
-      memory: 2Gi
-  nodeSelector: {}
-  tolerations:
-    - effect: NoSchedule
-      operator: Exists
-    - effect: NoExecute
-      operator: Exists
