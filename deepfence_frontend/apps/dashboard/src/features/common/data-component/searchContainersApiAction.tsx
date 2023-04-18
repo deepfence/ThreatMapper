@@ -16,7 +16,7 @@ export const searchContainersApiAction = async ({
   const searchParams = new URL(request.url).searchParams;
   const scanType = searchParams?.get('scanType')?.toString();
   if (!scanType) {
-    throw new Error('Scan For is required');
+    throw new Error('Scan Type is required');
   }
 
   const searchText = searchParams?.get('searchText')?.toString();

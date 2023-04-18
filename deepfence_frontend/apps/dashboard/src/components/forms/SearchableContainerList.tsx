@@ -84,11 +84,15 @@ export const SearchableContainerList = ({
         multiple
         sizing="sm"
         label="Select container"
+        placeholder="Select container"
         name="containerFilter"
         value={selectedContainers}
         onChange={(value) => {
           setSelectedContainers(value);
           onChange?.(value);
+        }}
+        getDisplayValue={() => {
+          return searchState.searchText;
         }}
         onQueryChange={searchContainer}
         onEndReached={onEndReached}

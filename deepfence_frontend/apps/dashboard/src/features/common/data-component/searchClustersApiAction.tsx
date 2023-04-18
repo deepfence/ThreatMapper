@@ -13,10 +13,7 @@ export const searchClustersApiAction = async ({
   request,
 }: ActionFunctionArgs): Promise<ClustersListType[]> => {
   const searchParams = new URL(request.url).searchParams;
-  const scanType = searchParams?.get('scanType')?.toString();
-  if (!scanType) {
-    throw new Error('Scan For is required');
-  }
+
   const searchText = searchParams?.get('searchText')?.toString();
   const offset = searchParams?.get('offset')?.toString() ?? '0';
 

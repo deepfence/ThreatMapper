@@ -1,11 +1,12 @@
 import { debounce } from 'lodash-es';
 import { useEffect, useState } from 'react';
+import { usePrevious } from 'react-use';
 import { Combobox, ComboboxOption } from 'ui-components';
 
 import {
   HostsListType,
   useGetHostsList,
-} from '@/features/common/data-component/searchHostsApiAction';
+} from '@/features/common/data-component/searchHostsApiLoader';
 import { ScanTypeEnum } from '@/types/common';
 
 export type SearchableHostListProps = {
@@ -22,32 +23,31 @@ export const SearchableHostList = ({
     searchText: string;
     offset: number;
     hostsList: HostsListType[];
+    prevHostsLength: number;
   }>({
     searchText: '',
     offset: 0,
     hostsList: [],
+    prevHostsLength: 0,
   });
 
   const [selectedHosts, setSelectedHosts] = useState<string[]>(
     defaultSelectedHosts ?? [],
   );
 
-  const { hosts, status: listHostStatus, load } = useGetHostsList();
-
-  useEffect(() => {
-    load({
-      scanType,
-      searchText: searchState.searchText,
-      offset: searchState.offset,
-    });
-  }, [searchState.searchText, searchState.offset]);
+  const { hosts, status: listHostStatus } = useGetHostsList({
+    scanType,
+    searchText: searchState.searchText,
+    offset: searchState.offset,
+  });
 
   useEffect(() => {
     if (hosts.length > 0) {
       setSearchState((prev) => {
         return {
           ...prev,
-          hostsList: [...prev.hostsList, ...hosts],
+          hostsList: hosts,
+          prevHostsLength: prev.hostsList.length,
         };
       });
     }
@@ -58,18 +58,20 @@ export const SearchableHostList = ({
       searchText: query,
       offset: 0,
       hostsList: [],
+      prevHostsLength: 0,
     });
   }, 1000);
 
   const onEndReached = () => {
-    if (hosts.length > 0) {
-      setSearchState((prev) => {
+    setSearchState((prev) => {
+      if (prev.prevHostsLength < prev.hostsList.length) {
         return {
           ...prev,
           offset: prev.offset + 15,
         };
-      });
-    }
+      }
+      return prev;
+    });
   };
 
   return (
@@ -85,6 +87,7 @@ export const SearchableHostList = ({
         multiple
         sizing="sm"
         label="Select host"
+        placeholder="Select host"
         name="hostFilter"
         value={selectedHosts}
         onChange={(value) => {

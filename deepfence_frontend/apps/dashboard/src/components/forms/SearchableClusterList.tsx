@@ -80,6 +80,7 @@ export const SearchableClusterList = ({
         multiple
         sizing="sm"
         label="Select Cluster"
+        placeholder="Select Cluster"
         name="clusterFilter"
         value={selectedClusters}
         onChange={(value) => {

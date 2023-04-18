@@ -1,11 +1,12 @@
 import { debounce } from 'lodash-es';
 import { useEffect, useState } from 'react';
+import { usePrevious } from 'react-use';
 import { Combobox, ComboboxOption } from 'ui-components';
 
 import {
   SearchContainerImagesLoaderDataType,
   useGetContainerImagesList,
-} from '@/features/common/data-component/searchContainerImagesApiAction';
+} from '@/features/common/data-component/searchContainerImagesApiLoader';
 import { ScanTypeEnum } from '@/types/common';
 
 export type Props = {
@@ -31,22 +32,20 @@ export const SearchableImageList = ({
     defaultSelectedImages ?? [],
   );
 
-  const { containerImages, load } = useGetContainerImagesList();
+  const { containerImages } = useGetContainerImagesList({
+    scanType,
+    searchText: searchState.searchText,
+    offset: searchState.offset,
+  });
 
-  useEffect(() => {
-    load({
-      scanType,
-      searchText: searchState.searchText,
-      offset: searchState.offset,
-    });
-  }, [searchState.searchText, searchState.offset]);
+  const prevHostsLength = usePrevious(searchState.imagesList.length);
 
   useEffect(() => {
     if (containerImages.length > 0) {
       setSearchState((prev) => {
         return {
           ...prev,
-          imagesList: [...prev.imagesList, ...containerImages],
+          imagesList: [...containerImages],
         };
       });
     }
@@ -61,14 +60,15 @@ export const SearchableImageList = ({
   }, 1000);
 
   const onEndReached = () => {
-    if (containerImages.length > 0) {
-      setSearchState((prev) => {
+    setSearchState((prev) => {
+      if (prevHostsLength && prevHostsLength <= prev.imagesList.length) {
         return {
           ...prev,
           offset: prev.offset + 15,
         };
-      });
-    }
+      }
+      return prev;
+    });
   };
 
   return (
@@ -84,6 +84,7 @@ export const SearchableImageList = ({
         multiple
         sizing="sm"
         label="Select Image"
+        placeholder="Select Image"
         name="imageFilter"
         value={selectedImages}
         onChange={(value) => {

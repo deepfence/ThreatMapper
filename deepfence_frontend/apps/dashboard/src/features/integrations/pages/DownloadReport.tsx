@@ -608,108 +608,112 @@ const AdvancedFilter = ({
   }, [resourceType, provider]);
 
   return (
-    <div className="flex flex-col gap-y-4 pt-0 bg-slate-100 dark:bg-slate-700 p-5">
+    <>
       {resourceType && provider ? (
-        <div className="text-gray-700 dark:text-gray-100 text-xs uppercase font-bold pt-4">
-          Advanced Filter (Optional)
+        <div className="flex flex-col gap-y-4 pt-0 bg-slate-100 dark:bg-slate-700 p-5">
+          {resourceType && provider ? (
+            <div className="text-gray-700 dark:text-gray-100 text-xs uppercase font-bold pt-4">
+              Advanced Filter (Optional)
+            </div>
+          ) : null}
+
+          {isCloudAccount(provider) && (
+            <Select
+              value={selectedCloudAccounts}
+              name="accountIds[]"
+              onChange={(value) => {
+                setSelectedCloudAccounts(value);
+              }}
+              placeholder="Select accounts"
+              label="Select Account (Optional)"
+              sizing="xs"
+              className="mt-2"
+            >
+              {cloudAccounts.map((account) => {
+                return (
+                  <SelectItem value={account.node_id} key={account.node_id}>
+                    {account.node_name}
+                  </SelectItem>
+                );
+              })}
+            </Select>
+          )}
+
+          {provider === 'Host' ? (
+            <>
+              <div>
+                <SearchableHostList scanType={API_SCAN_TYPE_MAP[resourceType]} />
+              </div>
+            </>
+          ) : null}
+
+          {provider === 'ContainerImage' ? (
+            <>
+              <div>
+                <SearchableImageList scanType={API_SCAN_TYPE_MAP[resourceType]} />
+              </div>
+            </>
+          ) : null}
+
+          {provider === 'Container' ? (
+            <>
+              <div>
+                <SearchableContainerList scanType={API_SCAN_TYPE_MAP[resourceType]} />
+              </div>
+            </>
+          ) : null}
+
+          {resourceType !== 'CloudCompliance' ? (
+            <>
+              <div>
+                <SearchableClusterList />
+              </div>
+            </>
+          ) : null}
+
+          {provider && (
+            <Select
+              value={maskedType}
+              name="mask[]"
+              onChange={(value) => {
+                setMaskedType(value);
+              }}
+              placeholder="Select mask type"
+              label="Select Mask/Unmask (Optional)"
+              sizing="xs"
+            >
+              {['Masked', 'Unmasked']?.map((provider) => {
+                return (
+                  <SelectItem value={provider} key={provider}>
+                    {provider}
+                  </SelectItem>
+                );
+              })}
+            </Select>
+          )}
+          {provider && (
+            <Select
+              value={status}
+              name="status[]"
+              onChange={(value) => {
+                setStatus(value);
+              }}
+              placeholder="Select Status"
+              label="Select Status (Optional)"
+              sizing="xs"
+            >
+              {['COMPLETE', 'ERROR']?.map((provider) => {
+                return (
+                  <SelectItem value={provider} key={provider}>
+                    {provider}
+                  </SelectItem>
+                );
+              })}
+            </Select>
+          )}
         </div>
       ) : null}
-
-      {resourceType && provider && isCloudAccount(provider) && (
-        <Select
-          value={selectedCloudAccounts}
-          name="accountIds[]"
-          onChange={(value) => {
-            setSelectedCloudAccounts(value);
-          }}
-          placeholder="Select accounts"
-          label="Select Account (Optional)"
-          sizing="xs"
-          className="mt-2"
-        >
-          {cloudAccounts.map((account) => {
-            return (
-              <SelectItem value={account.node_id} key={account.node_id}>
-                {account.node_name}
-              </SelectItem>
-            );
-          })}
-        </Select>
-      )}
-
-      {resourceType && provider && provider === 'Host' ? (
-        <>
-          <div>
-            <SearchableHostList scanType={API_SCAN_TYPE_MAP[resourceType]} />
-          </div>
-        </>
-      ) : null}
-
-      {resourceType && provider && provider === 'ContainerImage' ? (
-        <>
-          <div>
-            <SearchableImageList scanType={API_SCAN_TYPE_MAP[resourceType]} />
-          </div>
-        </>
-      ) : null}
-
-      {resourceType && provider && provider === 'Container' ? (
-        <>
-          <div>
-            <SearchableContainerList scanType={API_SCAN_TYPE_MAP[resourceType]} />
-          </div>
-        </>
-      ) : null}
-
-      {resourceType && provider && resourceType !== 'CloudCompliance' ? (
-        <>
-          <div>
-            <SearchableClusterList />
-          </div>
-        </>
-      ) : null}
-
-      {provider && (
-        <Select
-          value={maskedType}
-          name="mask[]"
-          onChange={(value) => {
-            setMaskedType(value);
-          }}
-          placeholder="Select mask type"
-          label="Select Mask/Unmask (Optional)"
-          sizing="xs"
-        >
-          {['Masked', 'Unmasked']?.map((provider) => {
-            return (
-              <SelectItem value={provider} key={provider}>
-                {provider}
-              </SelectItem>
-            );
-          })}
-        </Select>
-      )}
-      {provider && (
-        <Select
-          value={status}
-          name="status[]"
-          onChange={(value) => {
-            setStatus(value);
-          }}
-          placeholder="Select Status"
-          label="Select Status (Optional)"
-          sizing="xs"
-        >
-          {['COMPLETE', 'ERROR']?.map((provider) => {
-            return (
-              <SelectItem value={provider} key={provider}>
-                {provider}
-              </SelectItem>
-            );
-          })}
-        </Select>
-      )}
-    </div>
+    </>
   );
 };
 const CloudComplianceForm = ({
@@ -910,7 +914,7 @@ const DownloadForm = () => {
 
         <AdvancedFilter provider={provider} resourceType={resource} />
 
-        <div className="p-5 gap-y-4 flex flex-col">
+        <div className="p-5 pt-0 gap-y-4 flex flex-col">
           <Select
             label="Select Download Type"
             value={downloadType}

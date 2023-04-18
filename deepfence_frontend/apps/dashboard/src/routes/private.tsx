@@ -12,9 +12,9 @@ import { registryConnectorActionApi } from '@/features/common/data-component/Reg
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
 import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { searchClustersApiAction } from '@/features/common/data-component/searchClustersApiAction';
-import { searchContainerImagesApiAction } from '@/features/common/data-component/searchContainerImagesApiAction';
+import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
 import { searchContainersApiAction } from '@/features/common/data-component/searchContainersApiAction';
-import { searchHostsApiAction } from '@/features/common/data-component/searchHostsApiAction';
+import { searchHostsApiLoader } from '@/features/common/data-component/searchHostsApiLoader';
 import { RootLayout } from '@/features/common/RootLayout';
 import { module as dashboard } from '@/features/dashboard/pages/Dashboard';
 import { module as integrationsLayout } from '@/features/integrations/layouts/IntegrationsLayout';
@@ -523,14 +523,26 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'search/containers',
         action: searchContainersApiAction,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
       },
       {
-        path: 'search/containerImages',
-        action: searchContainerImagesApiAction,
+        path: 'search/containerImages/:scanType',
+        loader: searchContainerImagesApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
       },
       {
-        path: 'search/hosts',
-        action: searchHostsApiAction,
+        path: 'search/hosts/:scanType',
+        loader: searchHostsApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
       },
       {
         path: 'search/clusters',
