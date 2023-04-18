@@ -145,8 +145,21 @@ func (h *Handler) GetAuditLogs(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-
-	err = httpext.JSON(w, http.StatusOK, auditLogs)
+	auditLogsResp := make([]model.GetAuditLogsRow, len(auditLogs))
+	for i, audotLog := range auditLogsResp {
+		auditLogsResp[i] = model.GetAuditLogsRow{
+			Event:      audotLog.Event,
+			Action:     audotLog.Action,
+			Resources:  audotLog.Resources,
+			Success:    audotLog.Success,
+			UserID:     audotLog.UserID,
+			UserRoleID: audotLog.UserRoleID,
+			CreatedAt:  audotLog.CreatedAt,
+			Role:       audotLog.Role,
+			Email:      audotLog.Email,
+		}
+	}
+	err = httpext.JSON(w, http.StatusOK, auditLogsResp)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
