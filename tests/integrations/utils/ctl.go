@@ -49,5 +49,12 @@ func RunDeepfenceCtl(args []string) (map[string]interface{}, time.Duration, erro
 		return output, dur, err
 	}
 	err = json.Unmarshal(b, &output)
+	if err != nil {
+		anonymous_nodes := []map[string]interface{}{}
+		err = json.Unmarshal(b, &anonymous_nodes)
+		if err == nil {
+			output[""] = anonymous_nodes
+		}
+	}
 	return output, dur, err
 }

@@ -10,7 +10,7 @@ import { renderUI } from '@/tests/utils';
 describe(`Component Badge`, () => {
   it(`render with label, color, icon, onRemove`, () => {
     const onRemove = vi.fn();
-    const { getByTestId, getByRole, getByText } = renderUI(
+    const { getByTestId, getByText } = renderUI(
       <Badge
         label="Test badge"
         id="test-label-id"
@@ -27,9 +27,7 @@ describe(`Component Badge`, () => {
     expect(badgeIconId).toBeInTheDocument();
 
     // action
-    const removeBtn = getByRole('button', {
-      name: 'Test badge',
-    });
+    const removeBtn = getByTestId('badge-remove-test-label-id');
     expect(removeBtn).toBeInTheDocument();
 
     fireEvent.click(removeBtn);

@@ -14,7 +14,7 @@ const tableClass = 'w-full table-fixed';
 const tableHeaderClass = 'text-gray-600 dark:text-gray-400';
 const tableBodyClass = 'text-gray-700 dark:text-gray-300';
 const tableHeaderCellClass =
-  'text-sm font-semibold text-left uppercase cursor-pointer user-select-none';
+  'text-xs font-semibold text-gray-500 dark:text-gray-400 text-left uppercase cursor-pointer user-select-none';
 const tableBodyCellClass = 'text-sm font-normal text-left';
 const tableRowClass = 'hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer';
 const moreButtonClass =

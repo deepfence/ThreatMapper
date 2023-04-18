@@ -15,7 +15,7 @@ func New(b []byte) (*GoogleChronicle, error) {
 	return &p, nil
 }
 
-func (h GoogleChronicle) SendNotification(message string) error {
+func (g GoogleChronicle) SendNotification(message string) error {
 	var req *http.Request
 	var err error
 
@@ -23,13 +23,13 @@ func (h GoogleChronicle) SendNotification(message string) error {
 
 	// send message to this elasticsearch using http
 	// Set up the HTTP request.
-	req, err = http.NewRequest("POST", h.Config.URL, bytes.NewBuffer(payloadBytes))
+	req, err = http.NewRequest("POST", g.Config.URL, bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		return err
 	}
 
-	if h.Config.AuthKey != "" {
-		req.Header.Set("Authorization", h.Config.AuthKey)
+	if g.Config.AuthKey != "" {
+		req.Header.Set("Authorization", g.Config.AuthKey)
 	}
 
 	if err != nil {

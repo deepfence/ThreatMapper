@@ -1,6 +1,9 @@
 package slack
 
-import "github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+import (
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	"github.com/go-playground/validator/v10"
+)
 
 type Slack struct {
 	Config           Config                  `json:"config"`
@@ -10,9 +13,13 @@ type Slack struct {
 	Message          string                  `json:"message"`
 }
 
+func (s Slack) ValidateConfig(validate *validator.Validate) error {
+	return validate.Struct(s.Config)
+}
+
 type Config struct {
-	WebhookURL string `json:"webhook_url"`
-	Channel    string `json:"channel"`
+	WebhookURL string `json:"webhook_url" validate:"required,url" required:"true"`
+	Channel    string `json:"channel" validate:"required" required:"true"`
 }
 
 type Payload struct {

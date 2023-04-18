@@ -7,7 +7,12 @@ import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiL
 
 export const LinuxConnectorForm = () => {
   const { status, data } = useGetApiToken();
-  const dfApiKey = status !== 'idle' ? '---DEEPFENCE-API-KEY---' : data?.ApiToken;
+  const dfApiKey =
+    status !== 'idle'
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.ApiToken === undefined
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.ApiToken;
 
   const code = `
 docker run -dit \\

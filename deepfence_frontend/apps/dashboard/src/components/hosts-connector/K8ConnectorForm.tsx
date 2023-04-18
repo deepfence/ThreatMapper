@@ -104,7 +104,12 @@ const InformationForm = memo(
     };
 
     const { status, data } = useGetApiToken();
-    const dfApiKey = status !== 'idle' ? '---DEEPFENCE-API-KEY---' : data?.ApiToken;
+    const dfApiKey =
+      status !== 'idle'
+        ? '---DEEPFENCE-API-KEY---'
+        : data?.ApiToken === undefined
+        ? '---DEEPFENCE-API-KEY---'
+        : data?.ApiToken;
 
     useMemo(() => {
       const _clusterName = containsWhiteSpace(clusterName) ? defaultCluster : clusterName;
@@ -200,7 +205,12 @@ ${sockCommand}="${_socketPath}" \\
 
 export const K8ConnectorForm = () => {
   const { status, data } = useGetApiToken();
-  const dfApiKey = status !== 'idle' ? '---DEEPFENCE-API-KEY---' : data?.ApiToken;
+  const dfApiKey =
+    status !== 'idle'
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.ApiToken === undefined
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.ApiToken;
 
   const [instruction, setInstruction] =
     useState(`helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
@@ -84,7 +85,7 @@ func (e *EmailConfigurationAdd) Create(ctx context.Context, pgClient *postgresql
 	_, err = pgClient.CreateSetting(ctx, postgresqlDb.CreateSettingParams{
 		Key:           EmailConfigurationKey,
 		Value:         settingVal,
-		IsVisibleOnUi: true,
+		IsVisibleOnUi: false,
 	})
 	if err != nil {
 		log.Error().Msgf(err.Error())

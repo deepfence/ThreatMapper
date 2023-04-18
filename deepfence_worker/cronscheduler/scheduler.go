@@ -64,6 +64,11 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
+	// Adding CloudComplianceTask only to ensure data is ingested if task fails on startup, Retry to be handled by watermill
+	_, err = s.cron.AddFunc("@every 60m", s.enqueueTask(sdkUtils.CloudComplianceTask))
+	if err != nil {
+		return err
+	}
 	_, err = s.cron.AddFunc("@every 60m", s.enqueueTask(sdkUtils.CheckAgentUpgradeTask))
 	if err != nil {
 		return err

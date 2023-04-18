@@ -1,10 +1,11 @@
 package router
 
 import (
-	"github.com/casbin/casbin/v2"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/casbin/casbin/v2"
 
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
@@ -204,6 +205,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/malwares", dfHandler.SearchMalwares)
 				r.Post("/cloud-compliances", dfHandler.SearchCloudCompliances)
 				r.Post("/compliances", dfHandler.SearchCompliances)
+				r.Post("/cloud-resources", dfHandler.SearchCloudResources)
+				r.Post("/kubernetes-clusters", dfHandler.SearchKubernetesClusters)
 
 				r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScans)
 				r.Post("/secret/scans", dfHandler.SearchSecretScans)
@@ -221,6 +224,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Post("/malwares", dfHandler.SearchMalwaresCount)
 					r.Post("/cloud-compliances", dfHandler.SearchCloudCompliancesCount)
 					r.Post("/compliances", dfHandler.SearchCompliancesCount)
+					r.Post("/cloud-resources", dfHandler.SearchCloudResourcesCount)
+					r.Post("/kubernetes-clusters", dfHandler.SearchKubernetesClustersCount)
 
 					r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScansCount)
 					r.Post("/secret/scans", dfHandler.SearchSecretScansCount)
