@@ -146,7 +146,7 @@ const AddEmailCongifuration = () => {
                 <SelectItem value={'SMTP'}>SMTP</SelectItem>
               </Select>
               <TextInput
-                label="Emial"
+                label="Email"
                 type={'email'}
                 placeholder="Email"
                 name="email_id"

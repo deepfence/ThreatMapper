@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 import {
@@ -162,15 +162,6 @@ const DeleteConfirmationModal = ({
 }) => {
   const fetcher = useFetcher();
 
-  const onDeleteAction = useCallback(() => {
-    const formData = new FormData();
-    formData.append('id', id);
-
-    fetcher.submit(formData, {
-      method: 'post',
-    });
-  }, [id, fetcher]);
-
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <div className="grid place-items-center p-6">
@@ -187,19 +178,15 @@ const DeleteConfirmationModal = ({
           <span>Are you sure you want to delete?</span>
         </h3>
         <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)}>
+          <Button size="xs" type="button" onClick={() => setShowDialog(false)}>
             No, cancel
           </Button>
-          <Button
-            size="xs"
-            color="danger"
-            onClick={() => {
-              onDeleteAction();
-              setShowDialog(false);
-            }}
-          >
-            Yes, I&apos;m sure
-          </Button>
+          <fetcher.Form method="post">
+            <input type="hidden" name="id" value={id} />
+            <Button size="xs" color="danger" type="submit">
+              Yes, I&apos;m sure
+            </Button>
+          </fetcher.Form>
         </div>
       </div>
     </Modal>
