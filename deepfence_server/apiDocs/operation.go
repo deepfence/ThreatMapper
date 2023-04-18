@@ -64,10 +64,10 @@ func (d *OpenApiDocs) AddUserOperations() {
 
 	d.AddOperation("getApiTokens", http.MethodGet, "/deepfence/api-token",
 		"Get User's API Tokens", "Get logged in user's API Tokens",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.ApiToken))
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new(ApiTokenResponse))
 	d.AddOperation("resetApiTokens", http.MethodPost, "/deepfence/api-token/reset",
 		"Reset User's API Tokens", "Reset user's API Tokens",
-		http.StatusOK, []string{tagUser}, bearerToken, nil, new([]postgresqldb.ApiToken))
+		http.StatusOK, []string{tagUser}, bearerToken, nil, new(ApiTokenResponse))
 
 	d.AddOperation("resetPasswordRequest", http.MethodPost, "/deepfence/user/reset-password/request",
 		"Reset Password Request", "Request for resetting the password",
