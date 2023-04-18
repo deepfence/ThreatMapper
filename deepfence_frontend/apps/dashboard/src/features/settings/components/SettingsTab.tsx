@@ -1,4 +1,10 @@
-import { HiDocumentSearch, HiOutlineMail, HiUsers, HiViewList, HiGlobeAlt } from 'react-icons/hi';
+import {
+  HiDocumentSearch,
+  HiGlobeAlt,
+  HiOutlineMail,
+  HiUsers,
+  HiViewList,
+} from 'react-icons/hi';
 import { Tabs } from 'ui-components';
 
 import { usePageNavigation } from '@/utils/usePageNavigation';
