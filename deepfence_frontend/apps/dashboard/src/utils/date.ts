@@ -11,3 +11,7 @@ export const formatMilliseconds = (date: number | string) => {
 export const formatToRelativeTimeFromNow = (date: string | Date | number) => {
   return dayjs(date).fromNow();
 };
+
+export const formatToString = (date: string | Date | number) => {
+  return dayjs(date).local().format('MMM D YYYY H:mm:ss');
+};

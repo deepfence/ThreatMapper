@@ -6,6 +6,7 @@ import { getSettingsApiClient } from '@/api/api';
 import { ModelGetAuditLogsRow } from '@/api/generated';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { ApiError, makeRequest } from '@/utils/api';
+import { formatToString } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
@@ -41,10 +42,10 @@ const UserAuditLogs = () => {
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('created_at', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => formatToString(cell.getValue() || ''),
         header: () => 'Timestamp',
         minSize: 30,
-        size: 30,
+        size: 80,
         maxSize: 85,
       }),
       columnHelper.accessor('event', {
@@ -78,13 +79,12 @@ const UserAuditLogs = () => {
       columnHelper.accessor('resources', {
         cell: (cell) => cell.getValue(),
         header: () => 'Resources',
-        enableSorting: false,
         minSize: 30,
         size: 80,
         maxSize: 85,
       }),
       columnHelper.accessor('success', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => String(cell.getValue()),
         header: () => 'Success',
         minSize: 30,
         size: 80,
@@ -96,7 +96,7 @@ const UserAuditLogs = () => {
 
   return (
     <SettingsTab value="user-audit-logs">
-      <div className="h-full mt-2 p-2">
+      <div className="h-full p-2">
         <Suspense fallback={<TableSkeleton columns={7} rows={5} size={'sm'} />}>
           <DFAwait resolve={loaderData.data}>
             {(resolvedData: LoaderDataType) => {
@@ -105,7 +105,7 @@ const UserAuditLogs = () => {
 
               return (
                 <div>
-                  <div className="flex justify-between m-2">
+                  <div className="flex justify-between">
                     <h3 className="py-2 font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
                       User Audit Logs
                     </h3>
@@ -119,7 +119,7 @@ const UserAuditLogs = () => {
                       data={logs}
                       columns={columns}
                       enablePagination
-                      pageSize={30}
+                      pageSize={10}
                       enableColumnResizing
                       enableSorting
                     />
