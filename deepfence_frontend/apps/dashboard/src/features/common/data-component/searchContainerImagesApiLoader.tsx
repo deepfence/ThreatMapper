@@ -11,6 +11,7 @@ export type SearchContainerImagesLoaderDataType = {
     nodeId: string;
     containerImage: string;
   }[];
+  hasNext: boolean;
 };
 
 export const searchContainerImagesApiLoader = async ({
@@ -23,7 +24,7 @@ export const searchContainerImagesApiLoader = async ({
     throw new Error('Scan For is required');
   }
   const searchText = searchParams?.get('searchText')?.toString();
-  const offset = searchParams?.get('offset')?.toString() ?? '0';
+  const size = parseInt(searchParams?.get('size')?.toString() ?? '0', 10);
 
   const matchFilter = { filter_in: {} };
   if (searchText?.length) {
@@ -72,7 +73,7 @@ export const searchContainerImagesApiLoader = async ({
           },
           window: {
             offset: 0,
-            size: Number(offset) + 15,
+            size: size + 1,
           },
         },
       },
@@ -95,36 +96,39 @@ export const searchContainerImagesApiLoader = async ({
   if (result === null) {
     return {
       containerImages: [],
+      hasNext: false,
     };
   }
   return {
-    containerImages: result.map((res) => {
+    containerImages: result.slice(0, size).map((res) => {
       return {
         nodeId: res.node_id,
         containerImage: `${res.docker_image_name}:${res.docker_image_tag}`,
       };
     }),
+    hasNext: result.length > size,
   };
 };
 
 export const useGetContainerImagesList = ({
   scanType,
   searchText,
-  offset = 0,
+  size = 0,
 }: {
   scanType: ScanTypeEnum | 'none';
   searchText?: string;
-  offset?: number;
+  size: number;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   containerImages: SearchContainerImagesLoaderDataType['containerImages'];
+  hasNext: boolean;
 } => {
   const fetcher = useFetcher<SearchContainerImagesLoaderDataType>();
 
   useEffect(() => {
     const searchParams = new URLSearchParams();
     searchParams.set('searchText', searchText ?? '');
-    searchParams.set('offset', offset.toString());
+    searchParams.set('size', size.toString());
     fetcher.load(
       generatePath(
         `/data-component/search/containerImages/:scanType/?${searchParams.toString()}`,
@@ -133,9 +137,10 @@ export const useGetContainerImagesList = ({
         },
       ),
     );
-  }, [scanType, searchText, offset]);
+  }, [scanType, searchText, size]);
   return {
     status: fetcher.state,
     containerImages: fetcher.data?.containerImages ?? [],
+    hasNext: fetcher.data?.hasNext ?? false,
   };
 };

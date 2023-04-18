@@ -1,6 +1,5 @@
 import { debounce } from 'lodash-es';
 import { useEffect, useState } from 'react';
-import { usePrevious } from 'react-use';
 import { Combobox, ComboboxOption } from 'ui-components';
 
 import {
@@ -14,6 +13,8 @@ export type Props = {
   onChange?: (value: string[]) => void;
   defaultSelectedImages?: string[];
 };
+
+const PAGE_SIZE = 15;
 export const SearchableImageList = ({
   scanType,
   onChange,
@@ -21,24 +22,28 @@ export const SearchableImageList = ({
 }: Props) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
-    offset: number;
+    size: number;
     imagesList: SearchContainerImagesLoaderDataType['containerImages'];
+    hasNext: boolean;
   }>({
     searchText: '',
-    offset: 0,
+    size: PAGE_SIZE,
     imagesList: [],
+    hasNext: false,
   });
   const [selectedImages, setSelectedImages] = useState<string[]>(
     defaultSelectedImages ?? [],
   );
 
-  const { containerImages } = useGetContainerImagesList({
+  const { containerImages, hasNext } = useGetContainerImagesList({
     scanType,
     searchText: searchState.searchText,
-    offset: searchState.offset,
+    size: searchState.size,
   });
 
-  const prevHostsLength = usePrevious(searchState.imagesList.length);
+  useEffect(() => {
+    setSelectedImages(defaultSelectedImages ?? []);
+  }, [defaultSelectedImages]);
 
   useEffect(() => {
     if (containerImages.length > 0) {
@@ -46,25 +51,27 @@ export const SearchableImageList = ({
         return {
           ...prev,
           imagesList: [...containerImages],
+          hasNext,
         };
       });
     }
-  }, [containerImages]);
+  }, [containerImages, hasNext]);
 
   const searchContainerImage = debounce((query) => {
     setSearchState({
       searchText: query,
-      offset: 0,
+      size: PAGE_SIZE,
       imagesList: [],
+      hasNext: false,
     });
   }, 1000);
 
   const onEndReached = () => {
     setSearchState((prev) => {
-      if (prevHostsLength && prevHostsLength <= prev.imagesList.length) {
+      if (prev.hasNext) {
         return {
           ...prev,
-          offset: prev.offset + 15,
+          size: prev.size + PAGE_SIZE,
         };
       }
       return prev;

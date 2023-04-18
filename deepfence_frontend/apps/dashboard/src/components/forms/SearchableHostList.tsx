@@ -1,10 +1,9 @@
 import { debounce } from 'lodash-es';
 import { useEffect, useState } from 'react';
-import { usePrevious } from 'react-use';
 import { Combobox, ComboboxOption } from 'ui-components';
 
 import {
-  HostsListType,
+  SearchHostsLoaderDataType,
   useGetHostsList,
 } from '@/features/common/data-component/searchHostsApiLoader';
 import { ScanTypeEnum } from '@/types/common';
@@ -14,6 +13,9 @@ export type SearchableHostListProps = {
   onChange?: (value: string[]) => void;
   defaultSelectedHosts?: string[];
 };
+
+const PAGE_SIZE = 15;
+
 export const SearchableHostList = ({
   scanType,
   onChange,
@@ -21,24 +23,32 @@ export const SearchableHostList = ({
 }: SearchableHostListProps) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
-    offset: number;
-    hostsList: HostsListType[];
-    prevHostsLength: number;
+    size: number;
+    hostsList: SearchHostsLoaderDataType['hosts'];
+    hasNext: boolean;
   }>({
     searchText: '',
-    offset: 0,
+    size: PAGE_SIZE,
     hostsList: [],
-    prevHostsLength: 0,
+    hasNext: false,
   });
 
   const [selectedHosts, setSelectedHosts] = useState<string[]>(
     defaultSelectedHosts ?? [],
   );
 
-  const { hosts, status: listHostStatus } = useGetHostsList({
+  useEffect(() => {
+    setSelectedHosts(defaultSelectedHosts ?? []);
+  }, [defaultSelectedHosts]);
+
+  const {
+    hosts,
+    status: listHostStatus,
+    hasNext,
+  } = useGetHostsList({
     scanType,
     searchText: searchState.searchText,
-    offset: searchState.offset,
+    size: searchState.size,
   });
 
   useEffect(() => {
@@ -47,27 +57,27 @@ export const SearchableHostList = ({
         return {
           ...prev,
           hostsList: hosts,
-          prevHostsLength: prev.hostsList.length,
+          hasNext,
         };
       });
     }
-  }, [hosts]);
+  }, [hosts, hasNext]);
 
   const searchHost = debounce((query) => {
     setSearchState({
       searchText: query,
-      offset: 0,
+      size: PAGE_SIZE,
       hostsList: [],
-      prevHostsLength: 0,
+      hasNext: false,
     });
   }, 1000);
 
   const onEndReached = () => {
     setSearchState((prev) => {
-      if (prev.prevHostsLength < prev.hostsList.length) {
+      if (prev.hasNext) {
         return {
           ...prev,
-          offset: prev.offset + 15,
+          size: prev.size + PAGE_SIZE,
         };
       }
       return prev;
