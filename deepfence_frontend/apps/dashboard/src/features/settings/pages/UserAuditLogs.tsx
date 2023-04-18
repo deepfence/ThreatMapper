@@ -6,7 +6,7 @@ import { getSettingsApiClient } from '@/api/api';
 import { ModelGetAuditLogsRow } from '@/api/generated';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { ApiError, makeRequest } from '@/utils/api';
-import { formatToString } from '@/utils/date';
+import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
@@ -42,7 +42,7 @@ const UserAuditLogs = () => {
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('created_at', {
-        cell: (cell) => formatToString(cell.getValue() || ''),
+        cell: (cell) => formatMilliseconds(cell.getValue() || ''),
         header: () => 'Timestamp',
         minSize: 30,
         size: 80,
@@ -119,7 +119,7 @@ const UserAuditLogs = () => {
                       data={logs}
                       columns={columns}
                       enablePagination
-                      pageSize={10}
+                      pageSize={30}
                       enableColumnResizing
                       enableSorting
                     />
