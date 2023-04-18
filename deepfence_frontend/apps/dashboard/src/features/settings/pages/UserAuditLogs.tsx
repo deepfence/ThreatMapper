@@ -78,6 +78,7 @@ const UserAuditLogs = () => {
       columnHelper.accessor('resources', {
         cell: (cell) => cell.getValue(),
         header: () => 'Resources',
+        enableSorting: false,
         minSize: 30,
         size: 80,
         maxSize: 85,
@@ -118,7 +119,7 @@ const UserAuditLogs = () => {
                       data={logs}
                       columns={columns}
                       enablePagination
-                      pageSize={5}
+                      pageSize={30}
                       enableColumnResizing
                       enableSorting
                     />
