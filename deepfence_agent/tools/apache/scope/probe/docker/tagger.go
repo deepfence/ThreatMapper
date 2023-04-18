@@ -42,19 +42,19 @@ func (t *Tagger) Tag(r report.Report) (report.Report, error) {
 	if err != nil {
 		return report.MakeReport(), err
 	}
-	t.tag(tree, &r.Process, r.ProcessParents)
+	t.tag(tree, &r.Process)
 
 	return r, nil
 }
 
-func (t *Tagger) tag(tree process.Tree, processTopology *report.Topology, processParents report.Parents) {
+func (t *Tagger) tag(tree process.Tree, processTopology *report.Topology) {
 	for _, node := range *processTopology {
-		if node.Pid < 0 {
+		if node.Metadata.Pid < 0 {
 			continue
 		}
 		var (
 			c         Container
-			candidate = node.Pid
+			candidate = node.Metadata.Pid
 			err       error
 		)
 
@@ -76,14 +76,12 @@ func (t *Tagger) tag(tree process.Tree, processTopology *report.Topology, proces
 			continue
 		}
 
-		parent, ok := processParents[node.NodeID]
-		if !ok {
-			parent = report.Parent{Host: t.hostName}
+		if node.Parents.Host == "" {
+			node.Parents.Host = t.hostName
 		}
-		parent.Container = c.ID()
+		node.Parents.Container = c.ID()
 		if image, ok := t.registry.GetContainerImage(c.Image()); ok {
-			parent.ContainerImage = image.ID
+			node.Parents.ContainerImage = image.ID
 		}
-		processParents[node.NodeID] = parent
 	}
 }

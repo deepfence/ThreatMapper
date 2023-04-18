@@ -10,7 +10,7 @@ import (
 // `Namespace` is already taken in meta.go
 type NamespaceResource interface {
 	Meta
-	GetNode() report.Metadata
+	GetNode() report.TopologyNode
 }
 
 type namespace struct {
@@ -23,6 +23,12 @@ func NewNamespace(ns *apiv1.Namespace) NamespaceResource {
 	return &namespace{ns: ns, Meta: namespaceMeta{ns.ObjectMeta}}
 }
 
-func (ns *namespace) GetNode() report.Metadata {
-	return ns.MetaNode(kubernetesClusterId+"-"+ns.Name(), report.Namespace)
+func (ns *namespace) GetNode() report.TopologyNode {
+	return report.TopologyNode{
+		Metadata: ns.MetaNode(kubernetesClusterId+"-"+ns.Name(), report.Namespace),
+		Parents: report.Parent{
+			CloudProvider:     cloudProviderNodeId,
+			KubernetesCluster: kubernetesClusterId,
+		},
+	}
 }

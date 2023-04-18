@@ -13,7 +13,7 @@ import (
 // Service represents a Kubernetes service
 type Service interface {
 	Meta
-	GetNode() (report.Metadata, report.Parent)
+	GetNode() report.TopologyNode
 	Selector() labels.Selector
 	ClusterIP() string
 	LoadBalancerIP() string
@@ -44,8 +44,8 @@ func servicePortString(p apiv1.ServicePort) string {
 	return fmt.Sprintf("%d:%d/%s", p.Port, p.NodePort, p.Protocol)
 }
 
-func (s *service) GetNode() (report.Metadata, report.Parent) {
-	node := report.Metadata{
+func (s *service) GetNode() report.TopologyNode {
+	metadata := report.Metadata{
 		Timestamp:             time.Now().UTC().Format(time.RFC3339Nano),
 		NodeID:                s.UID(),
 		NodeType:              report.Service,
@@ -61,24 +61,26 @@ func (s *service) GetNode() (report.Metadata, report.Parent) {
 		for _, ing := range s.Status.LoadBalancer.Ingress {
 			ingressIp = append(ingressIp, ing.IP)
 		}
-		node.KubernetesIngressIP = ingressIp
+		metadata.KubernetesIngressIP = ingressIp
 	}
 	if s.Spec.LoadBalancerIP != "" {
-		node.KubernetesPublicIP = s.Spec.LoadBalancerIP
+		metadata.KubernetesPublicIP = s.Spec.LoadBalancerIP
 	}
 	if len(s.Spec.Ports) != 0 {
 		ports := make([]int32, len(s.Spec.Ports))
 		for i, p := range s.Spec.Ports {
 			ports[i] = p.Port
 		}
-		node.KubernetesPorts = ports
+		metadata.KubernetesPorts = ports
 	}
-	parent := report.Parent{
-		CloudProvider:     cloudProviderNodeId,
-		KubernetesCluster: kubernetesClusterId,
-		Namespace:         kubernetesClusterId + "-" + s.GetNamespace(),
+	return report.TopologyNode{
+		Metadata: metadata,
+		Parents: report.Parent{
+			CloudProvider:     cloudProviderNodeId,
+			KubernetesCluster: kubernetesClusterId,
+			Namespace:         kubernetesClusterId + "-" + s.GetNamespace(),
+		},
 	}
-	return node, parent
 }
 
 func (s *service) ClusterIP() string {
