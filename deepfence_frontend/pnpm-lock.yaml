@@ -170,10 +170,8 @@ importers:
       eslint-plugin-react: ^7.32.2
       eslint-plugin-simple-import-sort: ^10.0.0
       eslint-plugin-storybook: ^0.6.10
-      install: ^0.13.0
       jsdom: ^21.1.0
       lodash-es: ^4.17.21
-      npm: ^9.6.4
       postcss: ^8.4.21
       react: ^18.2.0
       react-dom: ^18.2.0
@@ -209,9 +207,7 @@ importers:
       ariakit: 2.0.0-next.43_5ndqzdd6t4rivxsukjv3i3ak2q
       classnames: 2.3.2
       cva: /class-variance-authority/0.4.0_typescript@4.9.5
-      install: 0.13.0
       lodash-es: 4.17.21
-      npm: 9.6.4
       react-use: 17.4.0_biqbaboplfbrettd7655fr4n2y
       tailwind-merge: 1.9.0
       tailwindcss-radix: 2.7.0
@@ -10310,11 +10306,6 @@ packages:
     resolution: {integrity: sha512-xGq5ISgcUP5cvGkS2MMFLtPDBtrtQPSFfC6gA6U8wHKqfjTIMZLZNxOItQnoSjdOzlXOLU/yD32RKC4SvjNbtA==}
     dev: false
 
-  /install/0.13.0:
-    resolution: {integrity: sha512-zDml/jzr2PKU9I8J/xyZBQn8rPCAY//UOYNmR01XwNwyfhEWObo2SWfSl1+0tm1u6PhxLwDnfsT/6jB7OUxqFA==}
-    engines: {node: '>= 0.10'}
-    dev: false
-
   /internal-slot/1.0.3:
     resolution: {integrity: sha512-O0DB1JC/sPyZl7cIo78n5dR7eUSwwpYPiXRhTzNxZVAMUuB8vlnRFyLxdrVToks6XPLVnFfbzaVd5WLjhgg+vA==}
     engines: {node: '>= 0.4'}
@@ -11981,79 +11972,6 @@ packages:
     dependencies:
       path-key: 3.1.1
     dev: true
-
-  /npm/9.6.4:
-    resolution: {integrity: sha512-8/Mct0X/w77PmgIpSlXfNIOlrZBfT+8966zLCxOhwi1qZ2Ueyy99uWPSDW6bt2OKw1NzrvHJBSgkzAvn1iWuhw==}
-    engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
-    hasBin: true
-    dev: false
-    bundledDependencies:
-      - '@isaacs/string-locale-compare'
-      - '@npmcli/arborist'
-      - '@npmcli/config'
-      - '@npmcli/map-workspaces'
-      - '@npmcli/package-json'
-      - '@npmcli/run-script'
-      - abbrev
-      - archy
-      - cacache
-      - chalk
-      - ci-info
-      - cli-columns
-      - cli-table3
-      - columnify
-      - fastest-levenshtein
-      - fs-minipass
-      - glob
-      - graceful-fs
-      - hosted-git-info
-      - ini
-      - init-package-json
-      - is-cidr
-      - json-parse-even-better-errors
-      - libnpmaccess
-      - libnpmdiff
-      - libnpmexec
-      - libnpmfund
-      - libnpmhook
-      - libnpmorg
-      - libnpmpack
-      - libnpmpublish
-      - libnpmsearch
-      - libnpmteam
-      - libnpmversion
-      - make-fetch-happen
-      - minimatch
-      - minipass
-      - minipass-pipeline
-      - ms
-      - node-gyp
-      - nopt
-      - npm-audit-report
-      - npm-install-checks
-      - npm-package-arg
-      - npm-pick-manifest
-      - npm-profile
-      - npm-registry-fetch
-      - npm-user-validate
-      - npmlog
-      - p-map
-      - pacote
-      - parse-conflict-json
-      - proc-log
-      - qrcode-terminal
-      - read
-      - read-package-json
-      - read-package-json-fast
-      - semver
-      - ssri
-      - tar
-      - text-table
-      - tiny-relative-date
-      - treeverse
-      - validate-npm-package-name
-      - which
-      - write-file-atomic
 
   /npmlog/5.0.1:
     resolution: {integrity: sha512-AqZtDUWOMKs1G/8lwylVjrdYgqA4d9nu8hc+0gzRxlDb1I10+FHBGMXs6aiQHFdCUUlqH99MUMuLfzWDNDtfxw==}
