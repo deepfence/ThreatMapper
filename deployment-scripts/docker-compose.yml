@@ -221,6 +221,7 @@ services:
       - deepfence_net
     restart: always
     environment:
+      FORCE_HTTPS_REDIRECT: "true"
       KAFKA_REST_PROXY: "deepfence-rest-proxy:8082"
     ports:
       - "80:80"

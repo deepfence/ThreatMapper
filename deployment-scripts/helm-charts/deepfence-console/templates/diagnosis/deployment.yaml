@@ -54,6 +54,8 @@ spec:
           env:
             - name: NODE_METRICS
               value: "{{ .Values.diagnosis.nodeMetrics }}"
+            - name: FORCE_HTTPS_REDIRECT
+              value: "{{ .Values.router.forceHttpsRedirect }}"
             - name: UI_SERVICE_NAME
               value: "{{ .Values.router.uiServiceName }}"
             - name: CONSOLE_NAMESPACE

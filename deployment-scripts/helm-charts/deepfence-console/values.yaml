@@ -366,6 +366,7 @@ fetcher:
 router:
   replicaCount: 1
   uiServiceName: "deepfence-ui"
+  forceHttpsRedirect: true
   image:
     repository: deepfenceio/deepfence_router_ce
     pullPolicy: Always
