@@ -32,6 +32,9 @@ spec:
             {{- toYaml .Values.router.securityContext | nindent 12 }}
           image: "{{ .Values.router.image.repository }}:{{ .Values.router.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.router.image.pullPolicy }}
+          env:
+            - name: FORCE_HTTPS_REDIRECT
+              value: "{{ .Values.router.forceHttpsRedirect }}"
           envFrom:
             - configMapRef:
                 name: "deepfence-console-config"

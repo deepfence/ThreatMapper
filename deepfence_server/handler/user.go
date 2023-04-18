@@ -577,7 +577,18 @@ func (h *Handler) GetApiTokens(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, apiTokens)
+	apiTokenResponse := make([]model.ApiTokenResponse, len(apiTokens))
+	for i, apiToken := range apiTokens {
+		apiTokenResponse[i] = model.ApiTokenResponse{
+			ID:              apiToken.ID,
+			ApiToken:        apiToken.ApiToken.String(),
+			Name:            apiToken.Name,
+			CompanyID:       apiToken.CompanyID,
+			CreatedByUserID: apiToken.CreatedByUserID,
+			CreatedAt:       apiToken.CreatedAt,
+		}
+	}
+	httpext.JSON(w, http.StatusOK, apiTokenResponse)
 }
 
 func (h *Handler) createApiToken(ctx context.Context, pgClient *postgresql_db.Queries, user *model.User, roleID int32) error {
@@ -622,7 +633,18 @@ func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, apiTokens)
+	apiTokenResponse := make([]model.ApiTokenResponse, len(apiTokens))
+	for i, apiToken := range apiTokens {
+		apiTokenResponse[i] = model.ApiTokenResponse{
+			ID:              apiToken.ID,
+			ApiToken:        apiToken.ApiToken.String(),
+			Name:            apiToken.Name,
+			CompanyID:       apiToken.CompanyID,
+			CreatedByUserID: apiToken.CreatedByUserID,
+			CreatedAt:       apiToken.CreatedAt,
+		}
+	}
+	httpext.JSON(w, http.StatusOK, apiTokenResponse)
 }
 
 func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, int, context.Context, *postgresql_db.Queries, error) {

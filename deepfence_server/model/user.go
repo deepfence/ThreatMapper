@@ -62,15 +62,12 @@ func init() {
 }
 
 type ApiTokenResponse struct {
-	ID              int64
-	ApiToken        uuid.UUID
-	Name            string
-	CompanyID       int32
-	GroupID         int32
-	RoleID          int32
-	CreatedByUserID int64
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	ID              int64     `json:"id"`
+	ApiToken        string    `json:"api_token"`
+	Name            string    `json:"name"`
+	CompanyID       int32     `json:"company_id"`
+	CreatedByUserID int64     `json:"created_by_user_id"`
+	CreatedAt       time.Time `json:"created_at"`
 }
 
 type ApiToken struct {
