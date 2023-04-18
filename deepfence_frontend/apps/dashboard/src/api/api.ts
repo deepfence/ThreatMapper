@@ -276,11 +276,13 @@ export function getReportsApiClient() {
 
 export function getSettingsApiClient() {
   const settingsApi = new SettingsApi(configuration);
+
   return {
+    getSettings: settingsApi.getSettings.bind(settingsApi),
+    updateSettings: settingsApi.updateSetting.bind(settingsApi),
+    getUserActivityLogs: settingsApi.getUserActivityLogs.bind(settingsApi),
     getEmailConfiguration: settingsApi.getEmailConfiguration.bind(settingsApi),
     addEmailConfiguration: settingsApi.addEmailConfiguration.bind(settingsApi),
     deleteEmailConfiguration: settingsApi.deleteEmailConfiguration.bind(settingsApi),
-    getSettings: settingsApi.getSettings.bind(settingsApi),
-    updateSettings: settingsApi.updateSetting.bind(settingsApi),
   };
 }

@@ -74,6 +74,7 @@ import { module as emailConfiguration } from '@/features/settings/pages/EmailCon
 import { module as globalSettings } from '@/features/settings/pages/GlobalSettings';
 import { module as inviteUser } from '@/features/settings/pages/InviteUser';
 import { module as settings } from '@/features/settings/pages/Settings';
+import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
 import { module as threatGraphAction } from '@/features/threat-graph/data-components/threatGraphAction';
@@ -503,6 +504,11 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'user-management/invite-user',
             ...inviteUser,
             meta: { title: 'Invite User' },
+          },
+          {
+            path: 'user-audit-logs',
+            ...userAuditLogs,
+            meta: { title: 'User Audit Logs' },
           },
           {
             path: 'email-configuration',
