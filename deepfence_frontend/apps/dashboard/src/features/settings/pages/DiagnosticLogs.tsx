@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useMemo } from 'react';
 import {
   ActionFunctionArgs,
   Form,
@@ -8,15 +8,7 @@ import {
 } from 'react-router-dom';
 import { useInterval } from 'react-use';
 import { toast } from 'sonner';
-import {
-  Button,
-  CircleSpinner,
-  createColumnHelper,
-  Select,
-  SelectItem,
-  Table,
-  TableSkeleton,
-} from 'ui-components';
+import { Button, createColumnHelper, Table, TableSkeleton } from 'ui-components';
 
 import { getDiagnosisApiClient } from '@/api/api';
 import {
@@ -26,8 +18,8 @@ import {
   DiagnosisNodeIdentifierNodeTypeEnum,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { useGetClustersList } from '@/features/common/data-component/searchClustersApiLoader';
-import { useGetHostsList } from '@/features/common/data-component/searchHostsApiLoader';
+import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
+import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
@@ -68,9 +60,25 @@ const ACTION_TYPE = {
 
 const action = async ({ request }: ActionFunctionArgs): Promise<string | null> => {
   const formData = await request.formData();
-  const nodeIds = formData.getAll('nodeIds[]') as string[];
-  const clusterIds = formData.getAll('clusterIds[]') as string[];
   const actionType = formData.getAll('actionType')?.toString();
+
+  // host filter
+  const selectedHostLength = Number(formData.get('selectedHostLength'));
+  const nodeIds = [];
+  if (selectedHostLength > 0) {
+    for (let i = 0; i < selectedHostLength; i++) {
+      nodeIds.push(formData.get(`hostFilter[${i}]`) as string);
+    }
+  }
+
+  // cluster filter
+  const selectedClusterLength = Number(formData.get('selectedClusterLength'));
+  const clusterIds = [];
+  if (selectedClusterLength > 0) {
+    for (let i = 0; i < selectedClusterLength; i++) {
+      clusterIds.push(formData.get(`clusterFilter[${i}]`) as string);
+    }
+  }
 
   if (
     actionType === ACTION_TYPE.AGENT_LOGS &&
@@ -154,7 +162,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
 
   return null;
 };
-const EXCLUDES_NODES = ['in-the-internet', 'out-the-internet'];
 
 const ConsoleDiagnosticLogsTable = () => {
   const columnHelper = createColumnHelper<DiagnosisDiagnosticLogsLink>();
@@ -347,14 +354,6 @@ const ConsoleDiagnosticLogsComponent = () => {
 };
 
 const AgentDiagnosticLogsComponent = () => {
-  const [selectedHosts, setSelectedHosts] = useState([]);
-  const [selectedClusters, setSelectedClusters] = useState([]);
-  const { hosts, status: listHostStatus } = useGetHostsList({
-    scanType: 'none',
-  });
-
-  const { clusters, status: listClusterStatus } = useGetClustersList({});
-
   const loaderData = useLoaderData() as LoaderDataType;
   const actionData = useActionData() as string;
 
@@ -364,72 +363,24 @@ const AgentDiagnosticLogsComponent = () => {
       <span className="text-sm text-gray-500 dark:text-gray-300">
         Generate a link to download pdf for your host/cluster agent
       </span>
-      {listHostStatus !== 'idle' && listClusterStatus !== 'idle' ? (
-        <div className="py-6">
-          <CircleSpinner size="md" />
-        </div>
-      ) : (
-        <Form method="post">
-          {loaderData.message ? (
-            <p className="text-sm text-red-500 pt-2">{loaderData.message}</p>
-          ) : null}
-          {actionData ? <p className="text-sm text-red-500 pt-2">{actionData}</p> : null}
-          <input
-            type="text"
-            name="actionType"
-            readOnly
-            hidden
-            value={ACTION_TYPE.AGENT_LOGS}
-          />
-          <Select
-            value={selectedHosts}
-            name="nodeIds[]"
-            onChange={(value) => {
-              setSelectedHosts(value);
-            }}
-            placeholder="Select host"
-            sizing="xs"
-            className="mt-2"
-          >
-            {hosts
-              .filter((host) => {
-                return !EXCLUDES_NODES.includes(host.nodeId);
-              })
-              .map((host) => {
-                return (
-                  <SelectItem value={host.nodeId} key={host.nodeId}>
-                    {host.hostName}
-                  </SelectItem>
-                );
-              })}
-          </Select>
-          <Select
-            value={selectedClusters}
-            name="clusterIds[]"
-            onChange={(value) => {
-              setSelectedClusters(value);
-            }}
-            placeholder="Select cluster"
-            sizing="xs"
-            className="mt-2"
-          >
-            {clusters
-              .filter((cluster) => {
-                return !EXCLUDES_NODES.includes(cluster.clusterId);
-              })
-              .map((cluster) => {
-                return (
-                  <SelectItem value={cluster.clusterId} key={cluster.clusterId}>
-                    {cluster.clusterName}
-                  </SelectItem>
-                );
-              })}
-          </Select>
-          <Button size="xs" className="text-center mt-3 w-full" color="primary">
-            Get Logs
-          </Button>
-        </Form>
-      )}
+      <Form method="post" className="mt-4 flex flex-col gap-y-3">
+        {loaderData.message ? (
+          <p className="text-sm text-red-500 pt-2">{loaderData.message}</p>
+        ) : null}
+        {actionData ? <p className="text-sm text-red-500 pt-2">{actionData}</p> : null}
+        <input
+          type="text"
+          name="actionType"
+          readOnly
+          hidden
+          value={ACTION_TYPE.AGENT_LOGS}
+        />
+        <SearchableHostList scanType="none" />
+        <SearchableClusterList />
+        <Button size="xs" className="text-center mt-3 w-full" color="primary">
+          Get Logs
+        </Button>
+      </Form>
     </div>
   );
 };

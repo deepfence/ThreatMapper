@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 
 import { getSearchApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
@@ -12,15 +11,14 @@ export type HostsListType = {
   nodeName: string;
 };
 
-export const searchHostsApiLoader = async ({
-  params,
+export const searchHostsApiAction = async ({
   request,
-}: LoaderFunctionArgs): Promise<HostsListType[]> => {
-  const scanType = params?.scanType;
+}: ActionFunctionArgs): Promise<HostsListType[]> => {
+  const searchParams = new URL(request.url).searchParams;
+  const scanType = searchParams?.get('scanType')?.toString();
   if (!scanType) {
     throw new Error('Scan For is required');
   }
-  const searchParams = new URL(request.url).searchParams;
   const searchText = searchParams?.get('searchText')?.toString();
   const offset = searchParams?.get('offset')?.toString() ?? '0';
 
@@ -105,34 +103,31 @@ export const searchHostsApiLoader = async ({
   });
 };
 
-export const useGetHostsList = ({
-  scanType,
-  searchText,
-  offset = 0,
-}: {
+type LoadArgs = {
   scanType: ScanTypeEnum | 'none';
   searchText?: string;
   offset?: number;
-}): {
+};
+export const useGetHostsList = (): {
   status: 'idle' | 'loading' | 'submitting';
   hosts: HostsListType[];
+  load: (_: LoadArgs) => void;
 } => {
   const fetcher = useFetcher<HostsListType[]>();
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams();
-    searchParams.set('searchText', searchText ?? '');
-    searchParams.set('offset', offset.toString());
-
-    fetcher.load(
-      generatePath(`/data-component/search/hosts/:scanType/?${searchParams.toString()}`, {
-        scanType,
-      }),
-    );
-  }, [scanType, searchText, offset]);
 
   return {
     status: fetcher.state,
     hosts: fetcher.data ?? [],
+    load: ({ scanType, searchText, offset = 0 }: LoadArgs) => {
+      const searchParams = new URLSearchParams();
+      searchParams.set('searchText', searchText ?? '');
+      searchParams.set('offset', offset.toString());
+      searchParams.set('scanType', scanType.toString());
+
+      fetcher.submit(null, {
+        method: 'post',
+        action: `/data-component/search/hosts/?${searchParams.toString()}`,
+      });
+    },
   };
 };

@@ -5,7 +5,7 @@ import { Combobox, ComboboxOption } from 'ui-components';
 import {
   SearchContainerImagesLoaderDataType,
   useGetContainerImagesList,
-} from '@/features/common/data-component/searchContainerImagesApiLoader';
+} from '@/features/common/data-component/searchContainerImagesApiAction';
 import { ScanTypeEnum } from '@/types/common';
 
 export type Props = {
@@ -31,11 +31,15 @@ export const SearchableImageList = ({
     defaultSelectedImages ?? [],
   );
 
-  const { containerImages } = useGetContainerImagesList({
-    scanType,
-    searchText: searchState.searchText,
-    offset: searchState.offset,
-  });
+  const { containerImages, load } = useGetContainerImagesList();
+
+  useEffect(() => {
+    load({
+      scanType,
+      searchText: searchState.searchText,
+      offset: searchState.offset,
+    });
+  }, [searchState.searchText, searchState.offset]);
 
   useEffect(() => {
     if (containerImages.length > 0) {

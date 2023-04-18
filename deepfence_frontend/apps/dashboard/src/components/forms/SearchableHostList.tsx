@@ -5,7 +5,7 @@ import { Combobox, ComboboxOption } from 'ui-components';
 import {
   HostsListType,
   useGetHostsList,
-} from '@/features/common/data-component/searchHostsApiLoader';
+} from '@/features/common/data-component/searchHostsApiAction';
 import { ScanTypeEnum } from '@/types/common';
 
 export type SearchableHostListProps = {
@@ -32,11 +32,15 @@ export const SearchableHostList = ({
     defaultSelectedHosts ?? [],
   );
 
-  const { hosts, status: listHostStatus } = useGetHostsList({
-    scanType,
-    searchText: searchState.searchText,
-    offset: searchState.offset,
-  });
+  const { hosts, status: listHostStatus, load } = useGetHostsList();
+
+  useEffect(() => {
+    load({
+      scanType,
+      searchText: searchState.searchText,
+      offset: searchState.offset,
+    });
+  }, [searchState.searchText, searchState.offset]);
 
   useEffect(() => {
     if (hosts.length > 0) {

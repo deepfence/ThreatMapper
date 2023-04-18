@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 
 import { getSearchApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
@@ -10,10 +9,14 @@ export type ClustersListType = {
   clusterName: string;
 };
 
-export const searchClustersApiLoader = async ({
+export const searchClustersApiAction = async ({
   request,
-}: LoaderFunctionArgs): Promise<ClustersListType[]> => {
+}: ActionFunctionArgs): Promise<ClustersListType[]> => {
   const searchParams = new URL(request.url).searchParams;
+  const scanType = searchParams?.get('scanType')?.toString();
+  if (!scanType) {
+    throw new Error('Scan For is required');
+  }
   const searchText = searchParams?.get('searchText')?.toString();
   const offset = searchParams?.get('offset')?.toString() ?? '0';
 
@@ -82,30 +85,30 @@ export const searchClustersApiLoader = async ({
   });
 };
 
-export const useGetClustersList = ({
-  searchText,
-  offset = 0,
-}: {
+type LoadArgs = {
   searchText?: string;
   offset?: number;
-}): {
+};
+
+export const useGetClustersList = (): {
   status: 'idle' | 'loading' | 'submitting';
   clusters: ClustersListType[];
+  load: (_: LoadArgs) => void;
 } => {
   const fetcher = useFetcher<ClustersListType[]>();
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams();
-    searchParams.set('searchText', searchText ?? '');
-    searchParams.set('offset', offset.toString());
-
-    fetcher.load(
-      generatePath(`/data-component/search/clusters/?${searchParams.toString()}`),
-    );
-  }, [searchText, offset]);
 
   return {
     status: fetcher.state,
     clusters: fetcher.data ?? [],
+    load: ({ searchText, offset = 0 }: LoadArgs) => {
+      const searchParams = new URLSearchParams();
+      searchParams.set('searchText', searchText ?? '');
+      searchParams.set('offset', offset.toString());
+
+      fetcher.submit(null, {
+        method: 'post',
+        action: `/data-component/search/clusters/?${searchParams.toString()}`,
+      });
+    },
   };
 };

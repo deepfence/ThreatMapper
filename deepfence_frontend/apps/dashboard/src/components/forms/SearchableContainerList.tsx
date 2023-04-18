@@ -5,7 +5,7 @@ import { Combobox, ComboboxOption } from 'ui-components';
 import {
   ContainersListType,
   useGetContainersList,
-} from '@/features/common/data-component/searchContainersApiLoader';
+} from '@/features/common/data-component/searchContainersApiAction';
 import { ScanTypeEnum } from '@/types/common';
 
 export type Props = {
@@ -31,11 +31,15 @@ export const SearchableContainerList = ({
     defaultSelectedContainers ?? [],
   );
 
-  const { containers } = useGetContainersList({
-    scanType,
-    searchText: searchState.searchText,
-    offset: searchState.offset,
-  });
+  const { containers, load } = useGetContainersList();
+
+  useEffect(() => {
+    load({
+      scanType,
+      searchText: searchState.searchText,
+      offset: searchState.offset,
+    });
+  }, [searchState.searchText, searchState.offset]);
 
   useEffect(() => {
     if (containers.length > 0) {

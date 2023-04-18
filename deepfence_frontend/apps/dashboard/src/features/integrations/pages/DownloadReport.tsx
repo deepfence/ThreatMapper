@@ -58,6 +58,7 @@ import {
   getNodeTypeByProviderName,
 } from '@/features/postures/pages/Accounts';
 import { ActionReturnType } from '@/features/registries/components/RegistryAccountsTable';
+import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { download } from '@/utils/download';
@@ -571,6 +572,15 @@ const getBenchmarkList = (nodeType: string) => {
 const isCloudAccount = (provider: string) =>
   provider === 'Aws' || provider === 'Azure' || provider === 'Gcp';
 
+const API_SCAN_TYPE_MAP: {
+  [key: string]: ScanTypeEnum;
+} = {
+  Vulnerability: ScanTypeEnum.VulnerabilityScan,
+  Secret: ScanTypeEnum.SecretScan,
+  Malware: ScanTypeEnum.MalwareScan,
+  Compliance: ScanTypeEnum.ComplianceScan,
+};
+
 const AdvancedFilter = ({
   resourceType,
   provider,
@@ -630,7 +640,7 @@ const AdvancedFilter = ({
       {resourceType && provider && provider === 'Host' ? (
         <>
           <div>
-            <SearchableHostList scanType={'none'} />
+            <SearchableHostList scanType={API_SCAN_TYPE_MAP[resourceType]} />
           </div>
         </>
       ) : null}
@@ -638,7 +648,7 @@ const AdvancedFilter = ({
       {resourceType && provider && provider === 'ContainerImage' ? (
         <>
           <div>
-            <SearchableImageList scanType={'none'} />
+            <SearchableImageList scanType={API_SCAN_TYPE_MAP[resourceType]} />
           </div>
         </>
       ) : null}
@@ -646,7 +656,7 @@ const AdvancedFilter = ({
       {resourceType && provider && provider === 'Container' ? (
         <>
           <div>
-            <SearchableContainerList scanType={'none'} />
+            <SearchableContainerList scanType={API_SCAN_TYPE_MAP[resourceType]} />
           </div>
         </>
       ) : null}

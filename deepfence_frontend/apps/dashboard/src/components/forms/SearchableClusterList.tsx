@@ -5,7 +5,7 @@ import { Combobox, ComboboxOption } from 'ui-components';
 import {
   ClustersListType,
   useGetClustersList,
-} from '@/features/common/data-component/searchClustersApiLoader';
+} from '@/features/common/data-component/searchClustersApiAction';
 
 export const SearchableClusterList = ({
   onChange,
@@ -28,10 +28,14 @@ export const SearchableClusterList = ({
     defaultSelectedClusters ?? [],
   );
 
-  const { clusters } = useGetClustersList({
-    searchText: searchState.searchText,
-    offset: searchState.offset,
-  });
+  const { clusters, load } = useGetClustersList();
+
+  useEffect(() => {
+    load({
+      searchText: searchState.searchText,
+      offset: searchState.offset,
+    });
+  }, [searchState.searchText, searchState.offset]);
 
   useEffect(() => {
     if (clusters.length > 0) {

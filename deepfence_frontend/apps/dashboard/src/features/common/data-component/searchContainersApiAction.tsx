@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 
 import { getSearchApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
@@ -11,15 +10,15 @@ export type ContainersListType = {
   nodeName: string;
 };
 
-export const searchContainersApiLoader = async ({
-  params,
+export const searchContainersApiAction = async ({
   request,
-}: LoaderFunctionArgs): Promise<ContainersListType[]> => {
-  const scanType = params?.scanType;
+}: ActionFunctionArgs): Promise<ContainersListType[]> => {
+  const searchParams = new URL(request.url).searchParams;
+  const scanType = searchParams?.get('scanType')?.toString();
   if (!scanType) {
     throw new Error('Scan For is required');
   }
-  const searchParams = new URL(request.url).searchParams;
+
   const searchText = searchParams?.get('searchText')?.toString();
   const offset = searchParams?.get('offset')?.toString() ?? '0';
 
@@ -103,37 +102,32 @@ export const searchContainersApiLoader = async ({
   });
 };
 
-export const useGetContainersList = ({
-  scanType,
-  searchText,
-  offset = 0,
-}: {
+type LoadArgs = {
   scanType: ScanTypeEnum | 'none';
   searchText?: string;
   offset?: number;
-}): {
+};
+
+export const useGetContainersList = (): {
   status: 'idle' | 'loading' | 'submitting';
   containers: ContainersListType[];
+  load: (_: LoadArgs) => void;
 } => {
   const fetcher = useFetcher<ContainersListType[]>();
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams();
-    searchParams.set('searchText', searchText ?? '');
-    searchParams.set('offset', offset.toString());
-
-    fetcher.load(
-      generatePath(
-        `/data-component/search/containers/:scanType/?${searchParams.toString()}`,
-        {
-          scanType,
-        },
-      ),
-    );
-  }, [scanType, searchText, offset]);
 
   return {
     status: fetcher.state,
     containers: fetcher.data ?? [],
+    load: ({ scanType, searchText, offset = 0 }: LoadArgs) => {
+      const searchParams = new URLSearchParams();
+      searchParams.set('searchText', searchText ?? '');
+      searchParams.set('offset', offset.toString());
+      searchParams.set('scanType', scanType.toString());
+
+      fetcher.submit(null, {
+        method: 'post',
+        action: `/data-component/search/containers/?${searchParams.toString()}`,
+      });
+    },
   };
 };

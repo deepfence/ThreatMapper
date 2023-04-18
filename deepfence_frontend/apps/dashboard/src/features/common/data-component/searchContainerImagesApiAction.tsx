@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 
 import { getSearchApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
@@ -13,15 +12,14 @@ export type SearchContainerImagesLoaderDataType = {
   }[];
 };
 
-export const searchContainerImagesApiLoader = async ({
-  params,
+export const searchContainerImagesApiAction = async ({
   request,
-}: LoaderFunctionArgs): Promise<SearchContainerImagesLoaderDataType> => {
-  const scanType = params?.scanType;
+}: ActionFunctionArgs): Promise<SearchContainerImagesLoaderDataType> => {
+  const searchParams = new URL(request.url).searchParams;
+  const scanType = searchParams?.get('scanType')?.toString();
   if (!scanType) {
     throw new Error('Scan For is required');
   }
-  const searchParams = new URL(request.url).searchParams;
   const searchText = searchParams?.get('searchText')?.toString();
   const offset = searchParams?.get('offset')?.toString() ?? '0';
 
@@ -107,37 +105,32 @@ export const searchContainerImagesApiLoader = async ({
   };
 };
 
-export const useGetContainerImagesList = ({
-  scanType,
-  searchText,
-  offset = 0,
-}: {
+type LoadArgs = {
   scanType: ScanTypeEnum | 'none';
   searchText?: string;
   offset?: number;
-}): {
+};
+
+export const useGetContainerImagesList = (): {
   status: 'idle' | 'loading' | 'submitting';
   containerImages: SearchContainerImagesLoaderDataType['containerImages'];
+  load: (_: LoadArgs) => void;
 } => {
   const fetcher = useFetcher<SearchContainerImagesLoaderDataType>();
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams();
-    searchParams.set('searchText', searchText ?? '');
-    searchParams.set('offset', offset.toString());
-
-    fetcher.load(
-      generatePath(
-        `/data-component/search/containerImages/:scanType/?${searchParams.toString()}`,
-        {
-          scanType,
-        },
-      ),
-    );
-  }, [scanType, searchText, offset]);
 
   return {
     status: fetcher.state,
     containerImages: fetcher.data?.containerImages ?? [],
+    load: ({ scanType, searchText, offset = 0 }: LoadArgs) => {
+      const searchParams = new URLSearchParams();
+      searchParams.set('searchText', searchText ?? '');
+      searchParams.set('offset', offset.toString());
+      searchParams.set('scanType', scanType.toString());
+
+      fetcher.submit(null, {
+        method: 'post',
+        action: `/data-component/search/containerImages/?${searchParams.toString()}`,
+      });
+    },
   };
 };
