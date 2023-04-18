@@ -1,4 +1,10 @@
-import { HiDocumentSearch, HiUsers } from 'react-icons/hi';
+import {
+  HiDocumentSearch,
+  HiGlobeAlt,
+  HiOutlineMail,
+  HiUsers,
+  HiViewList,
+} from 'react-icons/hi';
 import { Tabs } from 'ui-components';
 
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -11,7 +17,7 @@ type RouteProps =
   | 'schedule-jobs'
   | 'scan-type-data-upload'
   | 'agent-setup'
-  | 'global-setting';
+  | 'global-settings';
 type SettingsTabProps = {
   children: React.ReactNode;
   value: RouteProps;
@@ -34,32 +40,32 @@ export const settingsTabs: Array<{
   {
     label: 'User Audit Logs',
     value: 'user-audit-logs',
-    icon: <HiUsers />,
+    icon: <HiViewList />,
   },
   {
     label: 'Email Configuration',
     value: 'email-configuration',
-    icon: <HiUsers />,
+    icon: <HiOutlineMail />,
   },
+  // {
+  //   label: 'Schedule Jobs',
+  //   value: 'schedule-jobs',
+  //   icon: <HiUsers />,
+  // },
+  // {
+  //   label: 'Scan Type Feed Data',
+  //   value: 'scan-type-data-upload',
+  //   icon: <HiUsers />,
+  // },
+  // {
+  //   label: 'Agent Setup',
+  //   value: 'agent-setup',
+  //   icon: <HiUsers />,
+  // },
   {
-    label: 'Schedule Jobs',
-    value: 'schedule-jobs',
-    icon: <HiUsers />,
-  },
-  {
-    label: 'Scan Type Feed Data',
-    value: 'scan-type-data-upload',
-    icon: <HiUsers />,
-  },
-  {
-    label: 'Agent Setup',
-    value: 'agent-setup',
-    icon: <HiUsers />,
-  },
-  {
-    label: 'Global Setting',
-    value: 'global-setting',
-    icon: <HiUsers />,
+    label: 'Global Settings',
+    value: 'global-settings',
+    icon: <HiGlobeAlt />,
   },
 ];
 

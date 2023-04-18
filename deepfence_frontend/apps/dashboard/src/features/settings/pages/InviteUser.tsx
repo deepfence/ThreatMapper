@@ -103,7 +103,7 @@ const InviteUser = () => {
         <Card className="flex-col p-5 mt-2 ml-5 gap-y-4">
           <fetcher.Form method="post" className="flex flex-col gap-y-3">
             <TextInput
-              label="Emial"
+              label="Email"
               type={'email'}
               placeholder="Email"
               name="email"
