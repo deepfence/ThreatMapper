@@ -16,79 +16,79 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelGetAuditLogsRow
+ * @interface PostgresqlDbGetAuditLogsRow
  */
-export interface ModelGetAuditLogsRow {
+export interface PostgresqlDbGetAuditLogsRow {
     /**
      * 
      * @type {string}
-     * @memberof ModelGetAuditLogsRow
+     * @memberof PostgresqlDbGetAuditLogsRow
      */
     action?: string;
     /**
      * 
      * @type {Date}
-     * @memberof ModelGetAuditLogsRow
+     * @memberof PostgresqlDbGetAuditLogsRow
      */
     created_at?: Date;
     /**
      * 
      * @type {string}
-     * @memberof ModelGetAuditLogsRow
+     * @memberof PostgresqlDbGetAuditLogsRow
      */
     email?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelGetAuditLogsRow
+     * @memberof PostgresqlDbGetAuditLogsRow
      */
     event?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelGetAuditLogsRow
+     * @memberof PostgresqlDbGetAuditLogsRow
      */
     resources?: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelGetAuditLogsRow
+     * @memberof PostgresqlDbGetAuditLogsRow
      */
     role?: string;
     /**
      * 
      * @type {boolean}
-     * @memberof ModelGetAuditLogsRow
+     * @memberof PostgresqlDbGetAuditLogsRow
      */
     success?: boolean;
     /**
      * 
      * @type {number}
-     * @memberof ModelGetAuditLogsRow
+     * @memberof PostgresqlDbGetAuditLogsRow
      */
     user_id?: number;
     /**
      * 
      * @type {number}
-     * @memberof ModelGetAuditLogsRow
+     * @memberof PostgresqlDbGetAuditLogsRow
      */
     user_role_id?: number;
 }
 
 /**
- * Check if a given object implements the ModelGetAuditLogsRow interface.
+ * Check if a given object implements the PostgresqlDbGetAuditLogsRow interface.
  */
-export function instanceOfModelGetAuditLogsRow(value: object): boolean {
+export function instanceOfPostgresqlDbGetAuditLogsRow(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function ModelGetAuditLogsRowFromJSON(json: any): ModelGetAuditLogsRow {
-    return ModelGetAuditLogsRowFromJSONTyped(json, false);
+export function PostgresqlDbGetAuditLogsRowFromJSON(json: any): PostgresqlDbGetAuditLogsRow {
+    return PostgresqlDbGetAuditLogsRowFromJSONTyped(json, false);
 }
 
-export function ModelGetAuditLogsRowFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelGetAuditLogsRow {
+export function PostgresqlDbGetAuditLogsRowFromJSONTyped(json: any, ignoreDiscriminator: boolean): PostgresqlDbGetAuditLogsRow {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -106,7 +106,7 @@ export function ModelGetAuditLogsRowFromJSONTyped(json: any, ignoreDiscriminator
     };
 }
 
-export function ModelGetAuditLogsRowToJSON(value?: ModelGetAuditLogsRow | null): any {
+export function PostgresqlDbGetAuditLogsRowToJSON(value?: PostgresqlDbGetAuditLogsRow | null): any {
     if (value === undefined) {
         return undefined;
     }
