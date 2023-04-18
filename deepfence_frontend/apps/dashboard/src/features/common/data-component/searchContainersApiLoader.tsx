@@ -26,7 +26,7 @@ export const searchContainersApiLoader = async ({
   const matchFilter = { filter_in: {} };
   if (searchText?.length) {
     matchFilter.filter_in = {
-      node_id: [searchText],
+      node_name: [searchText],
     };
   }
 

@@ -13,37 +13,51 @@ export type SearchableHostListProps = {
   onChange?: (value: string[]) => void;
 };
 export const SearchableHostList = ({ scanType, onChange }: SearchableHostListProps) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchOffset, setSearcOffset] = useState(0);
-  const [hostList, setHostList] = useState<HostsListType[]>([]);
+  const [searchState, setSearchState] = useState<{
+    searchText: string;
+    offset: number;
+    hostsList: HostsListType[];
+  }>({
+    searchText: '',
+    offset: 0,
+    hostsList: [],
+  });
 
   const [selectedHosts, setSelectedHosts] = useState<string[]>([]);
 
   const { hosts, status: listHostStatus } = useGetHostsList({
     scanType,
-    searchText: searchQuery,
-    offset: searchOffset,
+    searchText: searchState.searchText,
+    offset: searchState.offset,
   });
 
   useEffect(() => {
     if (hosts.length > 0) {
-      setHostList((_hosts) => [..._hosts, ...hosts]);
+      setSearchState((prev) => {
+        return {
+          ...prev,
+          hostsList: [...prev.hostsList, ...hosts],
+        };
+      });
     }
   }, [hosts]);
 
-  // clear list when user search for new query
-  useEffect(() => {
-    setHostList([]);
-    setSearcOffset(0);
-  }, [searchQuery]);
-
   const searchHost = debounce((query) => {
-    setSearchQuery(query);
+    setSearchState({
+      searchText: query,
+      offset: 0,
+      hostsList: [],
+    });
   }, 1000);
 
   const onEndReached = () => {
     if (hosts.length > 0) {
-      setSearcOffset((offset) => offset + 15);
+      setSearchState((prev) => {
+        return {
+          ...prev,
+          offset: prev.offset + 15,
+        };
+      });
     }
   };
 
@@ -67,16 +81,16 @@ export const SearchableHostList = ({ scanType, onChange }: SearchableHostListPro
           onChange?.(value);
         }}
         getDisplayValue={() => {
-          return searchQuery;
+          return searchState.searchText;
         }}
         loading={listHostStatus !== 'idle'}
         onQueryChange={searchHost}
         onEndReached={onEndReached}
       >
-        {hostList.map((host, index) => {
+        {searchState.hostsList.map((host, index) => {
           return (
             <ComboboxOption key={`${host.nodeId}-${index}`} value={host.nodeId}>
-              {host.hostName}
+              {host.nodeName}
             </ComboboxOption>
           );
         })}

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 
-import { getTopologyApiClient } from '@/api/api';
+import { getSearchApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ApiError, makeRequest } from '@/utils/api';
 
@@ -15,31 +15,42 @@ export const searchClustersApiLoader = async ({
 }: LoaderFunctionArgs): Promise<ClustersListType[]> => {
   const searchParams = new URL(request.url).searchParams;
   const searchText = searchParams?.get('searchText')?.toString();
+  const offset = searchParams?.get('offset')?.toString() ?? '0';
 
   const matchFilter = { filter_in: {} };
   if (searchText?.length) {
     matchFilter.filter_in = {
-      node_id: [searchText],
+      node_name: [searchText],
     };
   }
 
   const result = await makeRequest({
-    apiFunction: getTopologyApiClient().getKubernetesTopologyGraph,
+    apiFunction: getSearchApiClient().searchKubernetesClusters,
     apiArgs: [
       {
-        graphTopologyFilters: {
-          cloud_filter: [],
-          field_filters: {
-            contains_filter: { filter_in: null },
-            order_filter: null as any,
-            match_filter: matchFilter,
-            compare_filter: null,
+        searchSearchNodeReq: {
+          node_filter: {
+            filters: {
+              compare_filter: null,
+              contains_filter: {
+                filter_in: null,
+              },
+              match_filter: matchFilter,
+
+              order_filter: {
+                order_fields: null,
+              },
+            },
+            in_field_filter: null,
+            window: {
+              offset: 0,
+              size: 0,
+            },
           },
-          host_filter: [],
-          kubernetes_filter: [],
-          pod_filter: [],
-          region_filter: [],
-          container_filter: [],
+          window: {
+            offset: +offset,
+            size: 15,
+          },
         },
       },
     ],
@@ -63,18 +74,10 @@ export const searchClustersApiLoader = async ({
   if (result === null) {
     return [];
   }
-  const clusters = Object.keys(result.nodes)
-    .map((key) => result.nodes[key])
-    .filter((node) => {
-      return node.type === 'kubernetes_cluster';
-    })
-    .sort((a, b) => {
-      return (a.label ?? a.id ?? '').localeCompare(b.label ?? b.id ?? '');
-    });
-  return clusters.map((res) => {
+  return result.map((res) => {
     return {
-      clusterId: res.id ?? 'N/A',
-      clusterName: res.label ?? 'N/A',
+      clusterId: res.node_id,
+      clusterName: res.node_name,
     };
   });
 };

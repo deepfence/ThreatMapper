@@ -9,6 +9,7 @@ import { ApiError, makeRequest } from '@/utils/api';
 export type HostsListType = {
   nodeId: string;
   hostName: string;
+  nodeName: string;
 };
 
 export const searchHostsApiLoader = async ({
@@ -26,7 +27,7 @@ export const searchHostsApiLoader = async ({
   const matchFilter = { filter_in: {} };
   if (searchText?.length) {
     matchFilter.filter_in = {
-      node_id: [searchText],
+      node_name: [searchText],
     };
   }
 
@@ -70,7 +71,7 @@ export const searchHostsApiLoader = async ({
           },
           window: {
             offset: +offset,
-            size: 5,
+            size: 15,
           },
         },
       },

@@ -1,6 +1,6 @@
 import { debounce } from 'lodash-es';
 import { useEffect, useState } from 'react';
-import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
+import { Combobox, ComboboxOption } from 'ui-components';
 
 import {
   ClustersListType,
@@ -12,30 +12,50 @@ export const SearchableClusterList = ({
 }: {
   onChange?: (value: string[]) => void;
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [offset, setOffset] = useState(0);
-  const [clusterList, setClusterList] = useState<ClustersListType[]>([]);
+  const [searchState, setSearchState] = useState<{
+    searchText: string;
+    offset: number;
+    clustersList: ClustersListType[];
+  }>({
+    searchText: '',
+    offset: 0,
+    clustersList: [],
+  });
 
   const [selectedClusters, setSelectedClusters] = useState<string[]>([]);
 
-  const { clusters, status: listClusterStatus } = useGetClustersList({
-    searchText: searchQuery,
-    offset: offset,
+  const { clusters } = useGetClustersList({
+    searchText: searchState.searchText,
+    offset: searchState.offset,
   });
 
   useEffect(() => {
     if (clusters.length > 0) {
-      setClusterList((_clusters) => [..._clusters, ...clusters]);
+      setSearchState((prev) => {
+        return {
+          ...prev,
+          clustersList: [...prev.clustersList, ...clusters],
+        };
+      });
     }
   }, [clusters]);
 
   const searchCluster = debounce((query) => {
-    setSearchQuery(query);
+    setSearchState({
+      searchText: query,
+      offset: 0,
+      clustersList: [],
+    });
   }, 1000);
 
   const onEndReached = () => {
     if (clusters.length > 0) {
-      setOffset((offset) => offset + 15);
+      setSearchState((prev) => {
+        return {
+          ...prev,
+          offset: prev.offset + 15,
+        };
+      });
     }
   };
 
@@ -48,36 +68,33 @@ export const SearchableClusterList = ({
         readOnly
         value={selectedClusters.length}
       />
-      {listClusterStatus !== 'idle' && clusterList.length === 0 ? (
-        <CircleSpinner size="xs" />
-      ) : (
-        <>
-          <Combobox
-            multiple
-            sizing="sm"
-            label="Select Cluster"
-            name="clusterFilter"
-            value={selectedClusters}
-            onChange={(value) => {
-              setSelectedClusters(value);
-              onChange?.(value);
-            }}
-            onQueryChange={searchCluster}
-            onEndReached={onEndReached}
-          >
-            {clusterList.map((cluster, index) => {
-              return (
-                <ComboboxOption
-                  key={`${cluster.clusterId}-${index}`}
-                  value={cluster.clusterId}
-                >
-                  {cluster.clusterName}
-                </ComboboxOption>
-              );
-            })}
-          </Combobox>
-        </>
-      )}
+      <Combobox
+        multiple
+        sizing="sm"
+        label="Select Cluster"
+        name="clusterFilter"
+        value={selectedClusters}
+        onChange={(value) => {
+          setSelectedClusters(value);
+          onChange?.(value);
+        }}
+        getDisplayValue={() => {
+          return searchState.searchText;
+        }}
+        onQueryChange={searchCluster}
+        onEndReached={onEndReached}
+      >
+        {searchState.clustersList.map((cluster, index) => {
+          return (
+            <ComboboxOption
+              key={`${cluster.clusterId}-${index}`}
+              value={cluster.clusterId}
+            >
+              {cluster.clusterName}
+            </ComboboxOption>
+          );
+        })}
+      </Combobox>
     </>
   );
 };

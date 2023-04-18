@@ -222,7 +222,6 @@ const action = async ({
       }
     }
 
-    debugger;
     const _filters: {
       node_ids: ModelNodeIdentifier[];
       fields_filters: ReportersFieldsFilters;

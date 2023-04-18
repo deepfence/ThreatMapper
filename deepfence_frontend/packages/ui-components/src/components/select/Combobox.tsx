@@ -171,7 +171,6 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
   });
 
   useEffect(() => {
-    console.log('=====', intersection?.intersectionRatio);
     if (intersection?.isIntersecting && intersection?.intersectionRatio > 0) {
       onEndReached?.();
     }

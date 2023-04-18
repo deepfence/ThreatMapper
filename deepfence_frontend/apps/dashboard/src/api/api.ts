@@ -159,6 +159,7 @@ export function getSearchApiClient() {
     searchContainerImages: searchApi.searchContainerImages.bind(searchApi),
     searchContainers: searchApi.searchContainers.bind(searchApi),
     searchHosts: searchApi.searchHosts.bind(searchApi),
+    searchKubernetesClusters: searchApi.searchKubernetesClusters.bind(searchApi),
     searchVulnerabilities: searchApi.searchVulnerabilities.bind(searchApi),
     searchVulnerabilitiesCount: searchApi.countVulnerabilities.bind(searchApi),
     searchVulnerabilityScanCount: searchApi.countVulnerabilityScans.bind(searchApi),
