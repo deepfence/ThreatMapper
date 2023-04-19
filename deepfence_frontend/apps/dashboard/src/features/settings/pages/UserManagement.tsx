@@ -272,7 +272,7 @@ const APITokenComponent = () => {
                   'pt-2': !showApikey,
                 })}
               >
-                {showApikey ? data?.ApiToken || '-' : '******************************'}
+                {showApikey ? data?.api_token || '-' : '******************************'}
               </span>
               <div className="flex items-center">
                 {!showApikey ? (
@@ -305,7 +305,7 @@ const APITokenComponent = () => {
                 <CopyToClipboard
                   asIcon
                   className="relative top-0 right-0 ml-4"
-                  data={data?.ApiToken || ''}
+                  data={data?.api_token || ''}
                 />
               </div>
             </div>
