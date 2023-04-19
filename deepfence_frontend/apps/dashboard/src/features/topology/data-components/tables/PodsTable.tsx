@@ -1,11 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { FiFilter } from 'react-icons/fi';
 import { LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 import {
-  Checkbox,
   createColumnHelper,
-  IconButton,
-  Popover,
   RowSelectionState,
   SortingState,
   Table,
@@ -19,7 +15,6 @@ import {
   SearchSearchNodeReq,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { FilterHeader } from '@/components/forms/FilterHeader';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
@@ -119,208 +114,12 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   };
 };
 
-interface IFilters {
-  vulnerabilityScanStatus: Array<string>;
-  secretScanStatus: Array<string>;
-  malwareScanStatus: Array<string>;
-}
-function Filters({
-  filters,
-  onFiltersChange,
-}: {
-  filters: IFilters;
-  onFiltersChange: (filters: IFilters) => void;
-}) {
-  const isFilterApplied = useMemo(() => {
-    return Object.values(filters).some((filter) => filter.length > 0);
-  }, [filters]);
-  return (
-    <div className="relative ml-auto">
-      {isFilterApplied && (
-        <span className="absolute -left-[2px] -top-[2px] inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
-      )}
-      <Popover
-        triggerAsChild
-        content={
-          <div className="ml-auto w-[300px]">
-            <div className="dark:text-white">
-              <FilterHeader
-                onReset={() => {
-                  onFiltersChange({
-                    vulnerabilityScanStatus: [],
-                    secretScanStatus: [],
-                    malwareScanStatus: [],
-                  });
-                }}
-              />
-              <div className="flex flex-col gap-y-6 p-4">
-                <fieldset>
-                  <legend className="text-sm font-medium">
-                    Vulnerability Scan Status
-                  </legend>
-                  <div className="flex gap-x-4 mt-1">
-                    <Checkbox
-                      label="Never Scanned"
-                      checked={filters.vulnerabilityScanStatus.includes('')}
-                      onCheckedChange={(state) => {
-                        if (state) {
-                          onFiltersChange({
-                            ...filters,
-                            vulnerabilityScanStatus: [
-                              ...filters.vulnerabilityScanStatus,
-                              '',
-                            ],
-                          });
-                        } else {
-                          onFiltersChange({
-                            ...filters,
-                            vulnerabilityScanStatus:
-                              filters.vulnerabilityScanStatus.filter(
-                                (item) => item !== '',
-                              ),
-                          });
-                        }
-                      }}
-                    />
-                    <Checkbox
-                      label="Complete"
-                      checked={filters.vulnerabilityScanStatus.includes('COMPLETE')}
-                      onCheckedChange={(state) => {
-                        if (state) {
-                          onFiltersChange({
-                            ...filters,
-                            vulnerabilityScanStatus: [
-                              ...filters.vulnerabilityScanStatus,
-                              'COMPLETE',
-                            ],
-                          });
-                        } else {
-                          onFiltersChange({
-                            ...filters,
-                            vulnerabilityScanStatus:
-                              filters.vulnerabilityScanStatus.filter(
-                                (item) => item !== 'COMPLETE',
-                              ),
-                          });
-                        }
-                      }}
-                    />
-                  </div>
-                </fieldset>
-                <fieldset>
-                  <legend className="text-sm font-medium">Secret Scan Status</legend>
-                  <div className="flex gap-x-4 mt-1">
-                    <Checkbox
-                      label="Never Scanned"
-                      checked={filters.secretScanStatus.includes('')}
-                      onCheckedChange={(state) => {
-                        if (state) {
-                          onFiltersChange({
-                            ...filters,
-                            secretScanStatus: [...filters.secretScanStatus, ''],
-                          });
-                        } else {
-                          onFiltersChange({
-                            ...filters,
-                            secretScanStatus: filters.secretScanStatus.filter(
-                              (item) => item !== '',
-                            ),
-                          });
-                        }
-                      }}
-                    />
-                    <Checkbox
-                      label="Complete"
-                      checked={filters.secretScanStatus.includes('COMPLETE')}
-                      onCheckedChange={(state) => {
-                        if (state) {
-                          onFiltersChange({
-                            ...filters,
-                            secretScanStatus: [...filters.secretScanStatus, 'COMPLETE'],
-                          });
-                        } else {
-                          onFiltersChange({
-                            ...filters,
-                            secretScanStatus: filters.secretScanStatus.filter(
-                              (item) => item !== 'COMPLETE',
-                            ),
-                          });
-                        }
-                      }}
-                    />
-                  </div>
-                </fieldset>
-                <fieldset>
-                  <legend className="text-sm font-medium">Malware Scan Status</legend>
-                  <div className="flex gap-x-4 mt-1">
-                    <Checkbox
-                      label="Never Scanned"
-                      checked={filters.malwareScanStatus.includes('')}
-                      onCheckedChange={(state) => {
-                        if (state) {
-                          onFiltersChange({
-                            ...filters,
-                            malwareScanStatus: [...filters.malwareScanStatus, ''],
-                          });
-                        } else {
-                          onFiltersChange({
-                            ...filters,
-                            malwareScanStatus: filters.malwareScanStatus.filter(
-                              (item) => item !== '',
-                            ),
-                          });
-                        }
-                      }}
-                    />
-                    <Checkbox
-                      label="Complete"
-                      checked={filters.malwareScanStatus.includes('COMPLETE')}
-                      onCheckedChange={(state) => {
-                        if (state) {
-                          onFiltersChange({
-                            ...filters,
-                            malwareScanStatus: [...filters.malwareScanStatus, 'COMPLETE'],
-                          });
-                        } else {
-                          onFiltersChange({
-                            ...filters,
-                            malwareScanStatus: filters.malwareScanStatus.filter(
-                              (item) => item !== 'COMPLETE',
-                            ),
-                          });
-                        }
-                      }}
-                    />
-                  </div>
-                </fieldset>
-              </div>
-            </div>
-          </div>
-        }
-      >
-        <IconButton
-          size="xs"
-          outline
-          color="primary"
-          className="rounded-lg bg-transparent"
-          icon={<FiFilter />}
-        />
-      </Popover>
-    </div>
-  );
-}
 export const PodsTable = () => {
   const fetcher = useFetcher<LoaderData>();
   const columnHelper = createColumnHelper<LoaderData['pods'][number]>();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [sortState, setSortState] = useState<SortingState>([]);
   const [page, setPage] = useState(0);
-
-  const [filters, setFilters] = useState<IFilters>({
-    vulnerabilityScanStatus: [],
-    secretScanStatus: [],
-    malwareScanStatus: [],
-  });
 
   function fetchClustersData() {
     const searchParams = new URLSearchParams();
@@ -336,7 +135,7 @@ export const PodsTable = () => {
 
   useEffect(() => {
     fetchClustersData();
-  }, [filters, sortState, page]);
+  }, [sortState, page]);
 
   const [clickedItem, setClickedItem] = useState<{
     nodeId: string;
@@ -432,15 +231,6 @@ export const PodsTable = () => {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center h-9">
-        <Filters
-          filters={filters}
-          onFiltersChange={(newFilters) => {
-            setFilters(newFilters);
-            setPage(0);
-          }}
-        />
-      </div>
       <div>
         <Table
           data={fetcher.data?.pods ?? []}
