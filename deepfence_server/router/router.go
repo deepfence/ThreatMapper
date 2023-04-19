@@ -119,9 +119,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			r.Post("/user/reset-password/request", dfHandler.ResetPasswordRequest)
 			r.Post("/user/reset-password/verify", dfHandler.ResetPasswordVerification)
 
+			// Get access token for api key
 			r.Post("/auth/token", dfHandler.ApiAuthHandler)
-			// Generate new access token using refresh token
-			r.Post("/auth/token/refresh", dfHandler.RefreshTokenHandler)
 
 			if serveOpenapiDocs {
 				log.Info().Msgf("OpenAPI documentation: http://0.0.0.0%s/deepfence/openapi.json", serverPort)
@@ -151,6 +150,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Get("/", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.GetApiTokens))
 				r.Post("/reset", dfHandler.AuthHandler(ResourceUser, PermissionRead, dfHandler.ResetApiToken))
 			})
+
+			// Generate new access token using refresh token
+			r.Post("/auth/token/refresh", dfHandler.RefreshTokenHandler)
 
 			// manage other users
 			r.Post("/user/invite", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.InviteUser))

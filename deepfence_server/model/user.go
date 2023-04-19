@@ -34,7 +34,7 @@ type MessageResponse struct {
 
 var (
 	AccessTokenExpiry  = time.Minute * 30
-	RefreshTokenExpiry = time.Hour * 24
+	RefreshTokenExpiry = time.Hour * 26
 	ErrorMessage       = map[string]string{
 		"first_name":   "should only contain alphabets, numbers, space and hyphen",
 		"last_name":    "should only contain alphabets, numbers, space and hyphen",

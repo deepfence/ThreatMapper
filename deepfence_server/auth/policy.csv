@@ -5,6 +5,7 @@ p, standard-user, user, write
 p, standard-user, user, read
 p, read-only-user, user, read
 
+p, admin, all-users, delete
 p, admin, all-users, write
 p, admin, all-users, read
 p, standard-user, all-users, read

@@ -27,20 +27,6 @@ x-service-variables: &common-creds
 
 services:
 
-  #deepfence-init-container:
-  #  container_name: df-init-container
-  #  image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_init_ce:${DF_IMG_TAG:-2.0.0}
-  #  privileged: true
-  #  ulimits:
-  #    core: 0
-  #  network_mode: "host"
-  #  pid: "host"
-  #  restart: "no"
-  #  logging:
-  #    driver: "json-file"
-  #    options:
-  #      max-size: "1g"
-
   deepfence-postgres:
     container_name: deepfence-postgres
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_postgres_ce:${DF_IMG_TAG:-2.0.0}
@@ -183,7 +169,7 @@ services:
     environment:
       <<: *common-creds
       ELASTICSEARCH_SCHEME: "http"
-      DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES: 1440
+      DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES: 30
       DEEPFENCE_CONSOLE_ORCHESTRATOR: "docker"
     networks:
       - deepfence_net
