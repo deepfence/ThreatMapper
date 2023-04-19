@@ -87,6 +87,7 @@ import { module as nodeDetailsProcess } from '@/features/topology/data-component
 import { module as topologyTableContainers } from '@/features/topology/data-components/tables/ContainersTable';
 import { module as topologyTableHosts } from '@/features/topology/data-components/tables/HostsTable';
 import { module as topologyTableKunernetesCluster } from '@/features/topology/data-components/tables/KubernetesTable';
+import { module as topologyTablePods } from '@/features/topology/data-components/tables/PodsTable';
 import { module as topologyAction } from '@/features/topology/data-components/topologyAction';
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
 import { module as topologyTable } from '@/features/topology/pages/Table';
@@ -632,6 +633,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'topology/table/containers',
         ...topologyTableContainers,
+      },
+      {
+        path: 'topology/table/pods',
+        ...topologyTablePods,
       },
       {
         path: 'threat-graph',

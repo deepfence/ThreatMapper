@@ -6274,6 +6274,58 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/search/count/pods": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Count Pods",
+        "description": "Count across all the data associated with pods",
+        "operationId": "countPods",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/search/count/secret/scans": {
       "post": {
         "tags": ["Search"],
@@ -6723,6 +6775,61 @@
                 "schema": {
                   "type": "array",
                   "items": { "$ref": "#/components/schemas/ModelMalware" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/pods": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Pods",
+        "description": "Search across all the data associated with pods",
+        "operationId": "searchPods",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelPod" }
                 }
               }
             }
@@ -9328,8 +9435,6 @@
           "processes",
           "pods",
           "container_images",
-          "interface_names",
-          "interface_ips",
           "kernel_version",
           "uptime",
           "version",
@@ -9395,8 +9500,6 @@
           },
           "instance_id": { "type": "string" },
           "instance_type": { "type": "string" },
-          "interface_ips": { "type": "array", "items": {}, "nullable": true },
-          "interface_names": { "type": "array", "items": {}, "nullable": true },
           "is_console_vm": { "type": "boolean" },
           "kernel_id": { "type": "string" },
           "kernel_version": { "type": "string" },
