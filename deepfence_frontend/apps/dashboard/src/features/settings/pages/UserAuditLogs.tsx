@@ -3,9 +3,8 @@ import { useLoaderData } from 'react-router-dom';
 import { createColumnHelper, Table, TableSkeleton } from 'ui-components';
 
 import { getSettingsApiClient } from '@/api/api';
-import { ModelGetAuditLogsRow } from '@/api/generated';
-import { CopyToClipboard } from '@/components/CopyToClipboard';
 import { PostgresqlDbGetAuditLogsRow } from '@/api/generated';
+import { CopyToClipboard } from '@/components/CopyToClipboard';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
