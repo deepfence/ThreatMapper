@@ -37,7 +37,7 @@ export const getApiTokenApiLoader = async (): Promise<{
     return token.value();
   }
   return {
-    apiToken: token[0] as APIToken,
+    apiToken: token as APIToken,
   };
 };
 

@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { HiDotsVertical } from 'react-icons/hi';
-import { IconContext } from 'react-icons/lib';
 import { LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 import {
   Button,
@@ -24,7 +22,6 @@ import {
   ConfigureScanModal,
   ConfigureScanModalProps,
 } from '@/components/ConfigureScanModal';
-import { DFLink } from '@/components/DFLink';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
@@ -33,6 +30,8 @@ import {
   ComplianceScanNodeTypeEnum,
   MalwareScanNodeTypeEnum,
   ScanTypeEnum,
+  SecretScanNodeTypeEnum,
+  VulnerabilityScanNodeTypeEnum,
 } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { getPageFromSearchParams } from '@/utils/table';
@@ -122,115 +121,6 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   };
 };
 
-function getScanOptions(
-  scanType: ScanTypeEnum,
-  id: string,
-): ConfigureScanModalProps['scanOptions'] {
-  if (scanType === ScanTypeEnum.VulnerabilityScan) {
-    return {
-      showAdvancedOptions: true,
-      scanType,
-      data: {
-        nodeIds: [id],
-        nodeType: MalwareScanNodeTypeEnum.kubernetes_cluster,
-      },
-    };
-  }
-
-  if (scanType === ScanTypeEnum.SecretScan) {
-    return {
-      showAdvancedOptions: true,
-      scanType,
-      data: {
-        nodeIds: [id],
-        nodeType: MalwareScanNodeTypeEnum.kubernetes_cluster,
-      },
-    };
-  }
-
-  if (scanType === ScanTypeEnum.MalwareScan) {
-    return {
-      showAdvancedOptions: true,
-      scanType,
-      data: {
-        nodeIds: [id],
-        nodeType: MalwareScanNodeTypeEnum.kubernetes_cluster,
-      },
-    };
-  }
-  if (scanType === ScanTypeEnum.ComplianceScan) {
-    return {
-      showAdvancedOptions: true,
-      scanType,
-      data: {
-        nodeIds: [id],
-        nodeType: ComplianceScanNodeTypeEnum.kubernetes_cluster,
-      },
-    };
-  }
-
-  throw new Error('invalid scan type');
-}
-const ActionDropdown = ({ id }: { id: string }) => {
-  const [selectedScanType, setSelectedScanType] = useState<
-    | typeof ScanTypeEnum.VulnerabilityScan
-    | typeof ScanTypeEnum.SecretScan
-    | typeof ScanTypeEnum.MalwareScan
-    | typeof ScanTypeEnum.ComplianceScan
-  >();
-
-  return (
-    <>
-      <ConfigureScanModal
-        open={!!selectedScanType}
-        onOpenChange={() => setSelectedScanType(undefined)}
-        scanOptions={selectedScanType ? getScanOptions(selectedScanType, id) : undefined}
-      />
-      <Dropdown
-        triggerAsChild={true}
-        align="end"
-        content={
-          <>
-            <DropdownItem
-              onClick={() => setSelectedScanType(ScanTypeEnum.VulnerabilityScan)}
-            >
-              <div className="w-4 h-4">
-                <VulnerabilityIcon />
-              </div>
-              Start Vulnerability Scan
-            </DropdownItem>
-            <DropdownItem onClick={() => setSelectedScanType(ScanTypeEnum.SecretScan)}>
-              <div className="w-4 h-4">
-                <SecretsIcon />
-              </div>
-              Start Secret Scan
-            </DropdownItem>
-            <DropdownItem onClick={() => setSelectedScanType(ScanTypeEnum.MalwareScan)}>
-              <div className="w-4 h-4">
-                <MalwareIcon />
-              </div>
-              Start Malware Scan
-            </DropdownItem>
-            <DropdownItem
-              onClick={() => setSelectedScanType(ScanTypeEnum.ComplianceScan)}
-            >
-              <div className="w-4 h-4">
-                <PostureIcon />
-              </div>
-              Start Compliance Scan
-            </DropdownItem>
-          </>
-        }
-      >
-        <Button size="xs" color="normal" className="hover:bg-transparent">
-          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-            <HiDotsVertical />
-          </IconContext.Provider>
-        </Button>
-      </Dropdown>
-    </>
-  );
-};
 function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
   const [scanOptions, setScanOptions] =
     useState<ConfigureScanModalProps['scanOptions']>();
@@ -243,11 +133,11 @@ function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
               onSelect={(e) => {
                 e.preventDefault();
                 setScanOptions({
-                  showAdvancedOptions: false,
+                  showAdvancedOptions: nodeIds.length === 1,
                   scanType: ScanTypeEnum.VulnerabilityScan,
                   data: {
                     nodeIds,
-                    nodeType: MalwareScanNodeTypeEnum.kubernetes_cluster,
+                    nodeType: VulnerabilityScanNodeTypeEnum.kubernetes_cluster,
                   },
                 });
               }}
@@ -261,11 +151,11 @@ function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
               onSelect={(e) => {
                 e.preventDefault();
                 setScanOptions({
-                  showAdvancedOptions: false,
+                  showAdvancedOptions: nodeIds.length === 1,
                   scanType: ScanTypeEnum.SecretScan,
                   data: {
                     nodeIds,
-                    nodeType: MalwareScanNodeTypeEnum.kubernetes_cluster,
+                    nodeType: SecretScanNodeTypeEnum.kubernetes_cluster,
                   },
                 });
               }}
@@ -279,7 +169,7 @@ function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
               onSelect={(e) => {
                 e.preventDefault();
                 setScanOptions({
-                  showAdvancedOptions: false,
+                  showAdvancedOptions: nodeIds.length === 1,
                   scanType: ScanTypeEnum.MalwareScan,
                   data: {
                     nodeIds,
@@ -297,7 +187,7 @@ function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
               onSelect={(e) => {
                 e.preventDefault();
                 setScanOptions({
-                  showAdvancedOptions: false,
+                  showAdvancedOptions: nodeIds.length === 1,
                   scanType: ScanTypeEnum.ComplianceScan,
                   data: {
                     nodeIds,
@@ -336,11 +226,6 @@ export const KubernetesTable = () => {
   const [sortState, setSortState] = useState<SortingState>([]);
   const [page, setPage] = useState(0);
 
-  const [clickedItem, setClickedItem] = useState<{
-    nodeId: string;
-    nodeType: string;
-  }>();
-
   function fetchClustersData() {
     const searchParams = new URLSearchParams();
     searchParams.set('page', page.toString());
@@ -370,31 +255,7 @@ export const KubernetesTable = () => {
           if (info.row.original.node_name.length > 0) {
             name = info.row.original.node_name;
           }
-          return (
-            <div className="flex items-center">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                className="truncate"
-              >
-                <DFLink
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setClickedItem({
-                      nodeId: info.row.original.node_id!,
-                      nodeType: 'cluster',
-                    });
-                  }}
-                  className="flex-1 shrink-0 pl-2"
-                >
-                  {name}
-                </DFLink>
-              </button>
-            </div>
-          );
+          return <span className="flex-1 shrink-0 pl-2">{name}</span>;
         },
         header: () => 'name',
         minSize: 150,
@@ -409,16 +270,6 @@ export const KubernetesTable = () => {
         minSize: 150,
         size: 160,
         maxSize: 170,
-      }),
-      columnHelper.display({
-        id: 'actions',
-        enableSorting: false,
-        cell: (cell) => <ActionDropdown id={cell.row.original.node_id} />,
-        header: () => '',
-        minSize: 50,
-        size: 50,
-        maxSize: 50,
-        enableResizing: false,
       }),
     ],
     [fetcher.data],

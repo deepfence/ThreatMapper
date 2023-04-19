@@ -165,6 +165,7 @@ export function getSearchApiClient() {
     searchHostsCount: searchApi.countHosts.bind(searchApi),
     searchKubernetesClusters: searchApi.searchKubernetesClusters.bind(searchApi),
     countKubernetesClusters: searchApi.countKubernetesClusters.bind(searchApi),
+    countContainers: searchApi.countContainers.bind(searchApi),
     searchVulnerabilities: searchApi.searchVulnerabilities.bind(searchApi),
     searchVulnerabilitiesCount: searchApi.countVulnerabilities.bind(searchApi),
     searchVulnerabilityScanCount: searchApi.countVulnerabilityScans.bind(searchApi),

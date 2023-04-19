@@ -21,6 +21,7 @@ export type SecretScanConfigureFormProps = {
           | SecretScanNodeTypeEnum.host
           | SecretScanNodeTypeEnum.kubernetes_cluster
           | SecretScanNodeTypeEnum.registry
+          | SecretScanNodeTypeEnum.container
           | SecretScanNodeTypeEnum.imageTag;
       }
     | {
