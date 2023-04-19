@@ -60,6 +60,7 @@ models/LookupLookupFilter.ts
 models/ModelAgentId.ts
 models/ModelAgentUpgrade.ts
 models/ModelApiAuthRequest.ts
+models/ModelApiTokenResponse.ts
 models/ModelBasicNode.ts
 models/ModelCloudCompliance.ts
 models/ModelCloudComplianceBenchmark.ts
@@ -95,7 +96,6 @@ models/ModelFiltersReq.ts
 models/ModelFiltersResult.ts
 models/ModelGenerateReportReq.ts
 models/ModelGenerateReportResp.ts
-models/ModelGetAuditLogsRow.ts
 models/ModelHost.ts
 models/ModelImageStub.ts
 models/ModelInitAgentReq.ts
@@ -155,6 +155,7 @@ models/ModelVulnerability.ts
 models/ModelVulnerabilityScanConfigLanguage.ts
 models/ModelVulnerabilityScanResult.ts
 models/ModelVulnerabilityScanTriggerReq.ts
+models/PostgresqlDbGetAuditLogsRow.ts
 models/ReportMetadata.ts
 models/ReportRawReport.ts
 models/ReportersCompareFilter.ts

@@ -142,18 +142,6 @@ export interface ModelHost {
     instance_type: string;
     /**
      * 
-     * @type {Array<any>}
-     * @memberof ModelHost
-     */
-    interface_ips: Array<any> | null;
-    /**
-     * 
-     * @type {Array<any>}
-     * @memberof ModelHost
-     */
-    interface_names: Array<any> | null;
-    /**
-     * 
      * @type {boolean}
      * @memberof ModelHost
      */
@@ -336,8 +324,6 @@ export function instanceOfModelHost(value: object): boolean {
     isInstance = isInstance && "inbound_connections" in value;
     isInstance = isInstance && "instance_id" in value;
     isInstance = isInstance && "instance_type" in value;
-    isInstance = isInstance && "interface_ips" in value;
-    isInstance = isInstance && "interface_names" in value;
     isInstance = isInstance && "is_console_vm" in value;
     isInstance = isInstance && "kernel_id" in value;
     isInstance = isInstance && "kernel_version" in value;
@@ -394,8 +380,6 @@ export function ModelHostFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'inbound_connections': (json['inbound_connections'] === null ? null : (json['inbound_connections'] as Array<any>).map(ModelConnectionFromJSON)),
         'instance_id': json['instance_id'],
         'instance_type': json['instance_type'],
-        'interface_ips': json['interface_ips'],
-        'interface_names': json['interface_names'],
         'is_console_vm': json['is_console_vm'],
         'kernel_id': json['kernel_id'],
         'kernel_version': json['kernel_version'],
@@ -450,8 +434,6 @@ export function ModelHostToJSON(value?: ModelHost | null): any {
         'inbound_connections': (value.inbound_connections === null ? null : (value.inbound_connections as Array<any>).map(ModelConnectionToJSON)),
         'instance_id': value.instance_id,
         'instance_type': value.instance_type,
-        'interface_ips': value.interface_ips,
-        'interface_names': value.interface_names,
         'is_console_vm': value.is_console_vm,
         'kernel_id': value.kernel_id,
         'kernel_version': value.kernel_version,
