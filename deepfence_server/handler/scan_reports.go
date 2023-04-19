@@ -411,6 +411,7 @@ func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Re
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		log.Error().Msgf("error: %+v", err)
+		log.Error().Msgf("Failed to parse: %s", body)
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}

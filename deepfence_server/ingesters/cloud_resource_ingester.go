@@ -16,72 +16,72 @@ type CloudResourceIngester struct {
 }
 
 type CloudResource struct {
-	AccountID                      string                 `json:"account_id"`
-	Arn                            string                 `json:"arn"`
-	BlockPublicAcls                bool                   `json:"block_public_acls,omitempty"`
-	BlockPublicPolicy              bool                   `json:"block_public_policy,omitempty"`
-	BucketPolicyIsPublic           bool                   `json:"bucket_policy_is_public,omitempty"`
-	RestrictPublicBuckets          bool                   `json:"restrict_public_buckets,omitempty"`
-	ID                             string                 `json:"id"`
-	IgnorePublicAcls               bool                   `json:"ignore_public_acls,omitempty"`
-	Name                           string                 `json:"name"`
-	HostName                       string                 `json:"host_name"`
-	Region                         string                 `json:"region"`
-	ResourceID                     string                 `json:"resource_id"`
-	IsEgress                       bool                   `json:"is_egress"`
-	InstanceID                     string                 `json:"instance_id"`
-	NetworkMode                    string                 `json:"network_mode,omitempty"`
-	Scheme                         string                 `json:"scheme,omitempty"`
-	DbClusterIdentifier            string                 `json:"db_cluster_identifier,omitempty"`
-	ServiceName                    string                 `json:"service_name,omitempty"`
-	TaskDefinitionArn              string                 `json:"task_definition_arn,omitempty"`
-	VpcID                          string                 `json:"vpc_id,omitempty"`
-	AllowBlobPublicAccess          string                 `json:"allow_blob_public_access,omitempty"`
-	PublicAccess                   string                 `json:"public_access,omitempty"`
-	GroupId                        string                 `json:"group_id,omitempty"`
-	CidrIpv4                       string                 `json:"cidr_ipv4,omitempty"`
-	PublicNetworkAccess            string                 `json:"public_network_access,omitempty"`
-	StorageAccountName             string                 `json:"storage_account_name,omitempty"`
-	IamInstanceProfileArn          string                 `json:"iam_instance_profile_arn,omitempty"`
-	IamInstanceProfileId           string                 `json:"iam_instance_profile_id,omitempty"`
-	PublicIpAddress                string                 `json:"public_ip_address"`
-	PolicyStd                      map[string]interface{} `json:"policy_std,omitempty"`
-	Containers                     map[string]interface{} `json:"containers,omitempty"`
-	TaskDefinition                 map[string]interface{} `json:"task_definition,omitempty"`
-	VpcOptions                     map[string]interface{} `json:"vpc_options,omitempty"`
-	Policy                         map[string]interface{} `json:"policy,omitempty"`
-	PublicIps                      map[string]interface{} `json:"public_ips,omitempty"`
-	NetworkInterfaces              map[string]interface{} `json:"network_interfaces,omitempty"`
-	IamPolicy                      map[string]interface{} `json:"iam_policy,omitempty"`
-	IpConfiguration                map[string]interface{} `json:"ip_configuration,omitempty"`
-	IngressSettings                string                 `json:"ingress_settings,omitempty"`
-	SecurityGroups                 map[string]interface{} `json:"security_groups,omitempty"`
-	VpcSecurityGroups              map[string]interface{} `json:"vpc_security_groups,omitempty"`
-	ContainerDefinitions           map[string]interface{} `json:"container_definitions,omitempty"`
-	EventNotificationConfiguration map[string]interface{} `json:"event_notification_configuration,omitempty"`
-	ResourceVpcConfig              map[string]interface{} `json:"resource_vpc_config,omitempty"`
-	NetworkConfiguration           map[string]interface{} `json:"network_configuration,omitempty"`
-	AttachedPolicyArns             map[string]interface{} `json:"attached_policy_arns"`
-	CreateDate                     string                 `json:"create_date,omitempty"`
-	Groups                         map[string]interface{} `json:"groups"`
-	InlinePolicies                 map[string]interface{} `json:"inline_policies"`
-	Path                           string                 `json:"path"`
-	UserId                         string                 `json:"user_id"`
-	AccessLevel                    string                 `json:"access_level"`
-	Action                         string                 `json:"action"`
-	Description                    string                 `json:"description"`
-	Privilege                      string                 `json:"privilege"`
-	OrganizationId                 string                 `json:"organization_id"`
-	OrganizationMasterAccountArn   string                 `json:"organization_master_account_arn"`
-	OrganizationMasterAccountEmail string                 `json:"organization_master_account_email"`
-	TargetHealthDescriptions       map[string]interface{} `json:"target_health_descriptions"`
-	InstanceProfileArns            map[string]interface{} `json:"instance_profile_arns"`
-	Instances                      map[string]interface{} `json:"instances"`
-	TargetGroupArn                 string                 `json:"target_group_arn"`
-	VpcSecurityGroupIds            map[string]interface{} `json:"vpc_security_group_ids"`
-	Users                          map[string]interface{} `json:"users"`
-	UserGroups                     map[string]interface{} `json:"user-groups"`
-	ResourcesVpcConfig             map[string]interface{} `json:"resources_vpc_config"`
+	AccountID                      string           `json:"account_id"`
+	Arn                            string           `json:"arn"`
+	BlockPublicAcls                bool             `json:"block_public_acls,omitempty"`
+	BlockPublicPolicy              bool             `json:"block_public_policy,omitempty"`
+	BucketPolicyIsPublic           bool             `json:"bucket_policy_is_public,omitempty"`
+	RestrictPublicBuckets          bool             `json:"restrict_public_buckets,omitempty"`
+	ID                             string           `json:"id"`
+	IgnorePublicAcls               bool             `json:"ignore_public_acls,omitempty"`
+	Name                           string           `json:"name"`
+	HostName                       string           `json:"host_name"`
+	Region                         string           `json:"region"`
+	ResourceID                     string           `json:"resource_id"`
+	IsEgress                       bool             `json:"is_egress"`
+	InstanceID                     string           `json:"instance_id"`
+	NetworkMode                    string           `json:"network_mode,omitempty"`
+	Scheme                         string           `json:"scheme,omitempty"`
+	DbClusterIdentifier            string           `json:"db_cluster_identifier,omitempty"`
+	ServiceName                    string           `json:"service_name,omitempty"`
+	TaskDefinitionArn              string           `json:"task_definition_arn,omitempty"`
+	VpcID                          string           `json:"vpc_id,omitempty"`
+	AllowBlobPublicAccess          string           `json:"allow_blob_public_access,omitempty"`
+	PublicAccess                   string           `json:"public_access,omitempty"`
+	GroupId                        string           `json:"group_id,omitempty"`
+	CidrIpv4                       string           `json:"cidr_ipv4,omitempty"`
+	PublicNetworkAccess            string           `json:"public_network_access,omitempty"`
+	StorageAccountName             string           `json:"storage_account_name,omitempty"`
+	IamInstanceProfileArn          string           `json:"iam_instance_profile_arn,omitempty"`
+	IamInstanceProfileId           string           `json:"iam_instance_profile_id,omitempty"`
+	PublicIpAddress                string           `json:"public_ip_address"`
+	PolicyStd                      *json.RawMessage `json:"policy_std,omitempty"`
+	Containers                     *json.RawMessage `json:"containers,omitempty"`
+	TaskDefinition                 *json.RawMessage `json:"task_definition,omitempty"`
+	VpcOptions                     *json.RawMessage `json:"vpc_options,omitempty"`
+	Policy                         *json.RawMessage `json:"policy,omitempty"`
+	PublicIps                      *json.RawMessage `json:"public_ips,omitempty"`
+	NetworkInterfaces              *json.RawMessage `json:"network_interfaces,omitempty"`
+	IamPolicy                      *json.RawMessage `json:"iam_policy,omitempty"`
+	IpConfiguration                *json.RawMessage `json:"ip_configuration,omitempty"`
+	IngressSettings                string           `json:"ingress_settings,omitempty"`
+	SecurityGroups                 *json.RawMessage `json:"security_groups,omitempty"`
+	VpcSecurityGroups              *json.RawMessage `json:"vpc_security_groups,omitempty"`
+	ContainerDefinitions           *json.RawMessage `json:"container_definitions,omitempty"`
+	EventNotificationConfiguration *json.RawMessage `json:"event_notification_configuration,omitempty"`
+	ResourceVpcConfig              *json.RawMessage `json:"resource_vpc_config,omitempty"`
+	NetworkConfiguration           *json.RawMessage `json:"network_configuration,omitempty"`
+	AttachedPolicyArns             *json.RawMessage `json:"attached_policy_arns"`
+	CreateDate                     string           `json:"create_date,omitempty"`
+	Groups                         *json.RawMessage `json:"groups"`
+	InlinePolicies                 *json.RawMessage `json:"inline_policies"`
+	Path                           string           `json:"path"`
+	UserId                         string           `json:"user_id"`
+	AccessLevel                    string           `json:"access_level"`
+	Action                         string           `json:"action"`
+	Description                    string           `json:"description"`
+	Privilege                      string           `json:"privilege"`
+	OrganizationId                 string           `json:"organization_id"`
+	OrganizationMasterAccountArn   string           `json:"organization_master_account_arn"`
+	OrganizationMasterAccountEmail string           `json:"organization_master_account_email"`
+	TargetHealthDescriptions       *json.RawMessage `json:"target_health_descriptions"`
+	InstanceProfileArns            *json.RawMessage `json:"instance_profile_arns"`
+	Instances                      *json.RawMessage `json:"instances"`
+	TargetGroupArn                 string           `json:"target_group_arn"`
+	VpcSecurityGroupIds            *json.RawMessage `json:"vpc_security_group_ids"`
+	Users                          *json.RawMessage `json:"users"`
+	UserGroups                     *json.RawMessage `json:"user-groups"`
+	ResourcesVpcConfig             *json.RawMessage `json:"resources_vpc_config"`
 }
 
 func NewCloudResourceIngester() Ingester[[]CloudResource] {
@@ -324,6 +324,13 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 		if bb["resource_id"].(string) == "azure_compute_virtual_machine" {
 
 			bb["arn"] = bb["vm_id"]
+		}
+	}
+	accountId, present := bb["account_id"]
+	if present {
+		splits := strings.Split(fmt.Sprintf("%v", accountId), "-")
+		if len(splits) > 2 {
+			bb["cloud_provider"] = splits[2]
 		}
 	}
 
