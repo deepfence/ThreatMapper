@@ -97,7 +97,7 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 				res.KubernetesCluster = count
 			case "Pod":
 				res.Pod = count
-				res.Namespace = rec.Values[3].(int64)
+				res.Namespace = rec.Values[2].(int64)
 			case "CloudProvider":
 				res.CloudProviders = count
 			}
