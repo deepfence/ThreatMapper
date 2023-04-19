@@ -1,5 +1,9 @@
 import { SearchNodeCountResp } from '@/api/generated';
-import LogoAws from '@/assets/logo-aws.svg';
+import AwsSecurityHub from '@/assets/aws_security_hub.svg';
+import ElasticSearch from '@/assets/elasticsearch.svg';
+import GoogleChronicle from '@/assets/google_chronical.svg';
+import HttpEndpoint from '@/assets/http_endpoint.svg';
+import Jira from '@/assets/jira.svg';
 import LogoAWS from '@/assets/logo-aws.svg';
 import LogoAwsWhite from '@/assets/logo-aws-white.svg';
 import LogoAzure from '@/assets/logo-azure.svg';
@@ -12,6 +16,12 @@ import LogoJFrog from '@/assets/logo-jfrog.svg';
 import LogoK8 from '@/assets/logo-k8.svg';
 import LogoLinux from '@/assets/logo-linux.svg';
 import LogoQuay from '@/assets/logo-quay.svg';
+import MicrosoftTeams from '@/assets/microsoft_teams.svg';
+import PagerDuty from '@/assets/pagerduty.svg';
+import S3 from '@/assets/s3.svg';
+import Slack from '@/assets/slack.svg';
+import Splunk from '@/assets/splunk.svg';
+import SumoLogic from '@/assets/sumologic.svg';
 import { CloudIcon } from '@/components/icons/cloud';
 import { ContainerIcon } from '@/components/icons/container';
 import { HostIcon } from '@/components/icons/host';
@@ -31,11 +41,11 @@ export const getPostureLogo = (accountType: string, mode: Mode) => {
   } = {
     aws: {
       label: 'AWS',
-      icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
+      icon: mode === 'dark' ? LogoAwsWhite : LogoAWS,
     },
     aws_org: {
       label: 'AWS Organizations',
-      icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
+      icon: mode === 'dark' ? LogoAwsWhite : LogoAWS,
     },
     azure: {
       label: 'Azure',
@@ -108,3 +118,17 @@ export function getNodesIcon(nodeType: keyof SearchNodeCountResp) {
 
   return map[nodeType];
 }
+
+export {
+  AwsSecurityHub,
+  ElasticSearch,
+  GoogleChronicle,
+  HttpEndpoint,
+  Jira,
+  MicrosoftTeams,
+  PagerDuty,
+  S3,
+  Slack,
+  Splunk,
+  SumoLogic,
+};
