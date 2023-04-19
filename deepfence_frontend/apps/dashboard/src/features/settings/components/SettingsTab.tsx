@@ -28,14 +28,14 @@ export const settingsTabs: Array<{
   icon?: React.ReactNode;
 }> = [
   {
-    label: 'Diagnostic Logs',
-    value: 'diagnostic-logs',
-    icon: <HiDocumentSearch />,
-  },
-  {
     label: 'User Management',
     value: 'user-management',
     icon: <HiUsers />,
+  },
+  {
+    label: 'Diagnostic Logs',
+    value: 'diagnostic-logs',
+    icon: <HiDocumentSearch />,
   },
   {
     label: 'User Audit Logs',

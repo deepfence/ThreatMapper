@@ -129,105 +129,103 @@ const AddEmailCongifuration = () => {
         <div className="flex">
           <span className="flex ml-6 mt-2 dark:text-white ">Add Email Configuration</span>
         </div>
-        <Card className="flex-col p-5 mt-2 ml-5 gap-y-4">
-          <div className="w-3/4 max-w-xs">
-            <fetcher.Form method="post" className="flex flex-col gap-y-3">
-              <Select
-                name="email_provider"
-                label={'Email Provider'}
-                placeholder="Email Provider"
-                sizing="xs"
-                helperText={data?.fieldErrors?.email_provider}
-                onChange={onChange}
-                value={emailProvider}
-              >
-                <SelectItem value={'Google SMTP'}>Google SMTP</SelectItem>
-                <SelectItem value={'Amazon SES'}>Amazon SES</SelectItem>
-                <SelectItem value={'SMTP'}>SMTP</SelectItem>
-              </Select>
-              <TextInput
-                label="Email"
-                type={'email'}
-                placeholder="Email"
-                name="email_id"
-                color={data?.fieldErrors?.email_id ? 'error' : 'default'}
-                sizing="sm"
-                required
-                helperText={data?.fieldErrors?.email_id}
-              />
-              {!isAmazonEmailProvider ? (
-                <>
-                  <TextInput
-                    label="Password"
-                    type={'password'}
-                    placeholder="Password"
-                    name="password"
-                    color={data?.fieldErrors?.password ? 'error' : 'default'}
-                    sizing="sm"
-                    required
-                    helperText={data?.fieldErrors?.password}
-                  />
-                  <TextInput
-                    label="Port"
-                    type={'number'}
-                    placeholder={placeholder}
-                    name="port"
-                    color={data?.fieldErrors?.port ? 'error' : 'default'}
-                    sizing="sm"
-                    required
-                    helperText={data?.fieldErrors?.port}
-                  />
-                  <TextInput
-                    label="SMTP"
-                    type={'text'}
-                    placeholder="SMTP server"
-                    name="smtp"
-                    color={data?.fieldErrors?.smtp ? 'error' : 'default'}
-                    sizing="sm"
-                    required
-                    helperText={data?.fieldErrors?.smtp}
-                  />
-                </>
-              ) : (
-                <>
-                  <TextInput
-                    label="SES Region"
-                    type={'text'}
-                    placeholder="SES Region"
-                    name="ses_region"
-                    color={data?.fieldErrors?.ses_region ? 'error' : 'default'}
-                    sizing="sm"
-                    required
-                    helperText={data?.fieldErrors?.ses_region}
-                  />
-                  <TextInput
-                    label="Amazon Access Key"
-                    type={'text'}
-                    placeholder="Amazon Access Key"
-                    name="amazon_access_key"
-                    color={data?.fieldErrors?.amazon_access_key ? 'error' : 'default'}
-                    sizing="sm"
-                    required
-                    helperText={data?.fieldErrors?.amazon_access_key}
-                  />
-                  <TextInput
-                    label="Amazon Secret Key"
-                    type={'text'}
-                    placeholder="Amazon Secret Key"
-                    name="amazon_secret_key"
-                    color={data?.fieldErrors?.amazon_secret_key ? 'error' : 'default'}
-                    sizing="sm"
-                    required
-                    helperText={data?.fieldErrors?.amazon_secret_key}
-                  />
-                </>
-              )}
+        <Card className="max-w-sm flex-col p-5 mt-2 ml-5 gap-y-4">
+          <fetcher.Form method="post" className="flex flex-col gap-y-3">
+            <Select
+              name="email_provider"
+              label={'Email Provider'}
+              placeholder="Email Provider"
+              sizing="xs"
+              helperText={data?.fieldErrors?.email_provider}
+              onChange={onChange}
+              value={emailProvider}
+            >
+              <SelectItem value={'Google SMTP'}>Google SMTP</SelectItem>
+              <SelectItem value={'Amazon SES'}>Amazon SES</SelectItem>
+              <SelectItem value={'SMTP'}>SMTP</SelectItem>
+            </Select>
+            <TextInput
+              label="Email"
+              type={'email'}
+              placeholder="Email"
+              name="email_id"
+              color={data?.fieldErrors?.email_id ? 'error' : 'default'}
+              sizing="sm"
+              required
+              helperText={data?.fieldErrors?.email_id}
+            />
+            {!isAmazonEmailProvider ? (
+              <>
+                <TextInput
+                  label="Password"
+                  type={'password'}
+                  placeholder="Password"
+                  name="password"
+                  color={data?.fieldErrors?.password ? 'error' : 'default'}
+                  sizing="sm"
+                  required
+                  helperText={data?.fieldErrors?.password}
+                />
+                <TextInput
+                  label="Port"
+                  type={'number'}
+                  placeholder={placeholder}
+                  name="port"
+                  color={data?.fieldErrors?.port ? 'error' : 'default'}
+                  sizing="sm"
+                  required
+                  helperText={data?.fieldErrors?.port}
+                />
+                <TextInput
+                  label="SMTP"
+                  type={'text'}
+                  placeholder="SMTP server"
+                  name="smtp"
+                  color={data?.fieldErrors?.smtp ? 'error' : 'default'}
+                  sizing="sm"
+                  required
+                  helperText={data?.fieldErrors?.smtp}
+                />
+              </>
+            ) : (
+              <>
+                <TextInput
+                  label="SES Region"
+                  type={'text'}
+                  placeholder="SES Region"
+                  name="ses_region"
+                  color={data?.fieldErrors?.ses_region ? 'error' : 'default'}
+                  sizing="sm"
+                  required
+                  helperText={data?.fieldErrors?.ses_region}
+                />
+                <TextInput
+                  label="Amazon Access Key"
+                  type={'text'}
+                  placeholder="Amazon Access Key"
+                  name="amazon_access_key"
+                  color={data?.fieldErrors?.amazon_access_key ? 'error' : 'default'}
+                  sizing="sm"
+                  required
+                  helperText={data?.fieldErrors?.amazon_access_key}
+                />
+                <TextInput
+                  label="Amazon Secret Key"
+                  type={'text'}
+                  placeholder="Amazon Secret Key"
+                  name="amazon_secret_key"
+                  color={data?.fieldErrors?.amazon_secret_key ? 'error' : 'default'}
+                  sizing="sm"
+                  required
+                  helperText={data?.fieldErrors?.amazon_secret_key}
+                />
+              </>
+            )}
 
-              <Button color="primary" size="sm" type="submit">
-                Save Changes
-              </Button>
-            </fetcher.Form>
-          </div>
+            <Button color="primary" size="sm" type="submit">
+              Save Changes
+            </Button>
+          </fetcher.Form>
         </Card>
       </SettingsTab>
     </>
