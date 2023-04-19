@@ -181,6 +181,8 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 			for k, v := range is_node.(dbtype.Node).Props {
 				if k != "node_id" {
 					node_map[k] = v
+				} else {
+					node_map[dummy.ExtendedField()] = v
 				}
 			}
 		}
