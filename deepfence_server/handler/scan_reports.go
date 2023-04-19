@@ -166,6 +166,11 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 
 	h.AuditUserActivity(r, EVENT_VULNERABILITY_SCAN, ACTION_START, reqs, true)
 
+	for _, i := range scan_ids {
+		h.SendScanStatus(r.Context(), utils.VULNERABILITY_SCAN_STATUS,
+			NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
+	}
+
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -231,6 +236,11 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 
 	h.AuditUserActivity(r, EVENT_SECRET_SCAN, ACTION_START, reqs, true)
 
+	for _, i := range scan_ids {
+		h.SendScanStatus(r.Context(), utils.SECRET_SCAN_STATUS,
+			NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
+	}
+
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -280,10 +290,24 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	var scanIds []string
 	var bulkId string
-	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) || scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) || scanTrigger.NodeType == controls.ResourceTypeToString(controls.Host) {
+	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) ||
+		scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) ||
+		scanTrigger.NodeType == controls.ResourceTypeToString(controls.Host) {
 		scanIds, bulkId, err = startMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
+		if err != nil {
+			for _, i := range scanIds {
+				h.SendScanStatus(r.Context(), utils.CLOUD_COMPLIANCE_SCAN_STATUS,
+					NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
+			}
+		}
 	} else {
 		scanIds, bulkId, err = startMultiComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
+		if err != nil {
+			for _, i := range scanIds {
+				h.SendScanStatus(r.Context(), utils.COMPLIANCE_SCAN_STATUS,
+					NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
+			}
+		}
 	}
 
 	if err != nil {
@@ -364,10 +388,51 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 
 	h.AuditUserActivity(r, EVENT_MALWARE_SCAN, ACTION_START, reqs, true)
 
+	if err != nil {
+		for _, i := range scan_ids {
+			h.SendScanStatus(r.Context(), utils.MALWARE_SCAN_STATUS,
+				NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
+		}
+	}
+
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
+}
+
+func NewScanStatus(scanId, status, message string) map[string]interface{} {
+	return map[string]interface{}{
+		"scan_id":      scanId,
+		"scan_status":  status,
+		"scan_message": message,
+	}
+}
+
+func (h *Handler) SendScanStatus(
+	ctx context.Context, scanStatusType string, status map[string]interface{}) error {
+
+	tenantID, err := directory.ExtractNamespace(ctx)
+	if err != nil {
+		return err
+	}
+
+	rh := []kgo.RecordHeader{
+		{Key: "tenant_id", Value: []byte(tenantID)},
+	}
+
+	cb, err := json.Marshal(status)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	} else {
+		h.IngestChan <- &kgo.Record{
+			Topic:   scanStatusType,
+			Value:   cb,
+			Headers: rh,
+		}
+	}
+
+	return nil
 }
 
 func (h *Handler) StopVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
@@ -411,6 +476,7 @@ func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Re
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		log.Error().Msgf("error: %+v", err)
+		log.Error().Msgf("Failed to parse: %s", body)
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}

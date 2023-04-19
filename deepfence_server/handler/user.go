@@ -190,6 +190,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		Role:                role.Name,
 		RoleID:              role.ID,
 		PasswordInvalidated: registerRequest.IsTemporaryPassword,
+		CompanyNamespace:    company.Namespace,
 	}
 	user.Groups, err = model.GetDefaultUserGroupMap(ctx, pgClient, company.ID)
 	if err != nil {

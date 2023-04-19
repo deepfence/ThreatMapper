@@ -58,16 +58,17 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 		}
 		defer tx.Close()
 
-		if _, err = tx.Run(`
-			UNWIND $batch as row
-			MERGE (n:`+string(ts)+`{node_id: row.scan_id})
-			SET n.status = row.scan_status, n.scan_message = row.scan_message, n.updated_at = TIMESTAMP()
-			WITH n
-			MATCH (n) -[:DETECTED]- (m)
-			WITH n, count(m) as count
-			MATCH (n) -[:SCANNED]- (r)
-			SET r.`+scanCountField[ts]+`=count, r.`+scanStatusField[ts]+`=n.status, r.`+latestScanIdField[ts]+`=n.node_id`,
-			map[string]interface{}{"batch": statusesToMaps(data)}); err != nil {
+		query := `
+		UNWIND $batch as row
+		MERGE (n:` + string(ts) + `{node_id: row.scan_id})
+		SET n.status = row.scan_status, n.scan_message = row.scan_message, n.updated_at = TIMESTAMP()
+		WITH n
+		OPTIONAL MATCH (n) -[:DETECTED]- (m)
+		WITH n, count(m) as count
+		MATCH (n) -[:SCANNED]- (r)
+		SET r.` + scanCountField[ts] + `=count, r.` + scanStatusField[ts] + `=n.status, r.` + latestScanIdField[ts] + `=n.node_id`
+
+		if _, err = tx.Run(query, map[string]interface{}{"batch": statusesToMaps(data)}); err != nil {
 			log.Error().Msgf("Error while updating scan status: %+v", err)
 			return err
 		}

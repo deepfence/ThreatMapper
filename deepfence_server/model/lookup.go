@@ -306,7 +306,7 @@ func (ContainerImage) NodeType() string {
 }
 
 func (ContainerImage) ExtendedField() string {
-	return ""
+	return "docker_image_name"
 }
 
 func (ContainerImage) GetCategory() string {

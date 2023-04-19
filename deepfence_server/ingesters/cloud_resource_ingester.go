@@ -326,6 +326,13 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 			bb["arn"] = bb["vm_id"]
 		}
 	}
+	accountId, present := bb["account_id"]
+	if present {
+		splits := strings.Split(fmt.Sprintf("%v", accountId), "-")
+		if len(splits) > 2 {
+			bb["cloud_provider"] = splits[2]
+		}
+	}
 
 	return bb
 }
