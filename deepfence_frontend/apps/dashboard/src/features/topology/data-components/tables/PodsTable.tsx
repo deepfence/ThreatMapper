@@ -2,12 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { FiFilter } from 'react-icons/fi';
 import { LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 import {
-  Button,
   Checkbox,
   createColumnHelper,
-  Dropdown,
-  DropdownItem,
-  getRowSelectionColumn,
   IconButton,
   Popover,
   RowSelectionState,
@@ -22,22 +18,9 @@ import {
   ModelPod,
   SearchSearchNodeReq,
 } from '@/api/generated';
-import {
-  ConfigureScanModal,
-  ConfigureScanModalProps,
-} from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { FilterHeader } from '@/components/forms/FilterHeader';
-import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
-import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
-import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
-import {
-  MalwareScanNodeTypeEnum,
-  ScanTypeEnum,
-  SecretScanNodeTypeEnum,
-  VulnerabilityScanNodeTypeEnum,
-} from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { getOrderFromSearchParams, getPageFromSearchParams } from '@/utils/table';
@@ -51,12 +34,6 @@ const PAGE_SIZE = 20;
 const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   const searchParams = new URL(request.url).searchParams;
   const page = getPageFromSearchParams(searchParams);
-
-  const vulnerabilityScanStatus =
-    searchParams.get('vulnerability_scan_status')?.split(',') ?? [];
-  const secretScanStatus = searchParams.get('secret_scan_status')?.split(',') ?? [];
-  const malwareScanStatus = searchParams.get('malware_scan_status')?.split(',') ?? [];
-
   const order = getOrderFromSearchParams(searchParams);
 
   const searchSearchNodeReq: SearchSearchNodeReq = {
@@ -81,24 +58,6 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
     },
     window: { offset: page * PAGE_SIZE, size: PAGE_SIZE },
   };
-  if (vulnerabilityScanStatus.length) {
-    searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
-      ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-      vulnerability_scan_status: vulnerabilityScanStatus,
-    };
-  }
-  if (secretScanStatus.length) {
-    searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
-      ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-      secret_scan_status: secretScanStatus,
-    };
-  }
-  if (malwareScanStatus.length) {
-    searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
-      ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-      malware_scan_status: malwareScanStatus,
-    };
-  }
 
   if (order) {
     searchSearchNodeReq.node_filter.filters.order_filter.order_fields?.push({
@@ -160,85 +119,6 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   };
 };
 
-function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
-  const [scanOptions, setScanOptions] =
-    useState<ConfigureScanModalProps['scanOptions']>();
-  return (
-    <>
-      <Dropdown
-        content={
-          <>
-            <DropdownItem
-              onSelect={(e) => {
-                e.preventDefault();
-                setScanOptions({
-                  showAdvancedOptions: nodeIds.length === 1,
-                  scanType: ScanTypeEnum.VulnerabilityScan,
-                  data: {
-                    nodeIds,
-                    nodeType: VulnerabilityScanNodeTypeEnum.container,
-                  },
-                });
-              }}
-            >
-              <span className="h-6 w-6">
-                <VulnerabilityIcon />
-              </span>
-              <span>Start Vulnerability Scan</span>
-            </DropdownItem>
-            <DropdownItem
-              onSelect={(e) => {
-                e.preventDefault();
-                setScanOptions({
-                  showAdvancedOptions: nodeIds.length === 1,
-                  scanType: ScanTypeEnum.SecretScan,
-                  data: {
-                    nodeIds,
-                    nodeType: SecretScanNodeTypeEnum.container,
-                  },
-                });
-              }}
-            >
-              <span className="h-6 w-6">
-                <SecretsIcon />
-              </span>
-              <span>Start Secret Scan</span>
-            </DropdownItem>
-            <DropdownItem
-              onSelect={(e) => {
-                e.preventDefault();
-                setScanOptions({
-                  showAdvancedOptions: nodeIds.length === 1,
-                  scanType: ScanTypeEnum.MalwareScan,
-                  data: {
-                    nodeIds,
-                    nodeType: MalwareScanNodeTypeEnum.container,
-                  },
-                });
-              }}
-            >
-              <span className="h-6 w-6">
-                <MalwareIcon />
-              </span>
-              <span>Start Malware Scan</span>
-            </DropdownItem>
-          </>
-        }
-      >
-        <Button size="xs" color="primary" outline>
-          Actions
-        </Button>
-      </Dropdown>
-      {!!scanOptions && (
-        <ConfigureScanModal
-          open
-          onOpenChange={() => setScanOptions(undefined)}
-          scanOptions={scanOptions}
-        />
-      )}
-    </>
-  );
-}
 interface IFilters {
   vulnerabilityScanStatus: Array<string>;
   secretScanStatus: Array<string>;
@@ -446,19 +326,6 @@ export const PodsTable = () => {
     const searchParams = new URLSearchParams();
     searchParams.set('page', page.toString());
 
-    if (filters.vulnerabilityScanStatus.length) {
-      searchParams.set(
-        'vulnerability_scan_status',
-        filters.vulnerabilityScanStatus.join(','),
-      );
-    }
-    if (filters.secretScanStatus.length) {
-      searchParams.set('secret_scan_status', filters.secretScanStatus.join(','));
-    }
-    if (filters.malwareScanStatus.length) {
-      searchParams.set('malware_scan_status', filters.malwareScanStatus.join(','));
-    }
-
     if (sortState.length) {
       searchParams.set('sortby', sortState[0].id);
       searchParams.set('desc', String(sortState[0].desc));
@@ -471,10 +338,6 @@ export const PodsTable = () => {
     fetchClustersData();
   }, [filters, sortState, page]);
 
-  const selectedIds = useMemo(() => {
-    return Object.keys(rowSelectionState);
-  }, [rowSelectionState]);
-
   const [clickedItem, setClickedItem] = useState<{
     nodeId: string;
     nodeType: string;
@@ -482,11 +345,6 @@ export const PodsTable = () => {
 
   const columns = useMemo(
     () => [
-      getRowSelectionColumn(columnHelper, {
-        minSize: 40,
-        size: 40,
-        maxSize: 40,
-      }),
       columnHelper.accessor('pod_name', {
         cell: (info) => {
           let name = '';
@@ -519,14 +377,14 @@ export const PodsTable = () => {
             </div>
           );
         },
-        header: () => 'name',
+        header: () => 'Pod Name',
         minSize: 150,
         size: 160,
         maxSize: 170,
       }),
       columnHelper.accessor('kubernetes_cluster_name', {
         cell: (info) => {
-          return formatMilliseconds(info.getValue());
+          return info.getValue();
         },
         header: () => <span>Cluster Name</span>,
         minSize: 100,
@@ -535,12 +393,30 @@ export const PodsTable = () => {
       }),
       columnHelper.accessor('node_name', {
         cell: (info) => {
-          return formatMilliseconds(info.getValue());
+          return info.getValue();
         },
         header: () => <span>Node Name</span>,
         minSize: 100,
         size: 105,
         maxSize: 110,
+      }),
+      columnHelper.accessor('kubernetes_created', {
+        cell: (info) => {
+          return formatMilliseconds(info.getValue());
+        },
+        header: () => <span>Created On</span>,
+        minSize: 100,
+        size: 105,
+        maxSize: 110,
+      }),
+      columnHelper.accessor('kubernetes_is_in_host_network', {
+        cell: (info) => {
+          return info.getValue();
+        },
+        header: () => <span>In Host Network</span>,
+        minSize: 60,
+        size: 60,
+        maxSize: 65,
       }),
     ],
     [fetcher.data],
@@ -557,11 +433,6 @@ export const PodsTable = () => {
   return (
     <div className="space-y-2">
       <div className="flex items-center h-9">
-        {selectedIds.length ? (
-          <BulkActionButton nodeIds={selectedIds} />
-        ) : (
-          <div className="pl-4 text-sm">No rows selected</div>
-        )}
         <Filters
           filters={filters}
           onFiltersChange={(newFilters) => {
