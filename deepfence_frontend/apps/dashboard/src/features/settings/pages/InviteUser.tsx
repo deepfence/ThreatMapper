@@ -136,7 +136,7 @@ const InviteUser = () => {
               name="intent"
               value={ModelInviteUserRequestActionEnum['SendInviteEmail']}
             >
-              Send sign up request
+              Send invite via email
             </Button>
 
             <Button
@@ -146,7 +146,7 @@ const InviteUser = () => {
               name="intent"
               value={ModelInviteUserRequestActionEnum['GetInviteLink']}
             >
-              Get an invite link
+              Copy invite link
             </Button>
           </fetcher.Form>
           {data?.invite_url && (

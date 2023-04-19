@@ -8,6 +8,7 @@ import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/Vu
 import { module as logoutAction } from '@/features/auth/data-components/logoutAction';
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
 import { getApiTokenApiLoader } from '@/features/common/data-component/getApiTokenApiLoader';
+import { getUserApiLoader } from '@/features/common/data-component/getUserApiLoader';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
 import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
@@ -84,7 +85,10 @@ import { module as nodeDetailsContainerImage } from '@/features/topology/data-co
 import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
 import { module as nodeDetailsPod } from '@/features/topology/data-components/node-details/Pod';
 import { module as nodeDetailsProcess } from '@/features/topology/data-components/node-details/Process';
+import { module as topologyTableContainers } from '@/features/topology/data-components/tables/ContainersTable';
 import { module as topologyTableHosts } from '@/features/topology/data-components/tables/HostsTable';
+import { module as topologyTableKunernetesCluster } from '@/features/topology/data-components/tables/KubernetesTable';
+import { module as topologyTablePods } from '@/features/topology/data-components/tables/PodsTable';
 import { module as topologyAction } from '@/features/topology/data-components/topologyAction';
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
 import { module as topologyTable } from '@/features/topology/pages/Table';
@@ -624,6 +628,18 @@ export const privateRoutes: CustomRouteObject[] = [
         ...topologyTableHosts,
       },
       {
+        path: 'topology/table/kubernetesCluster',
+        ...topologyTableKunernetesCluster,
+      },
+      {
+        path: 'topology/table/containers',
+        ...topologyTableContainers,
+      },
+      {
+        path: 'topology/table/pods',
+        ...topologyTablePods,
+      },
+      {
         path: 'threat-graph',
         ...threatGraphAction,
       },
@@ -634,6 +650,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'auth/apiToken',
         loader: getApiTokenApiLoader,
+      },
+      {
+        path: 'auth/user',
+        loader: getUserApiLoader,
       },
     ],
   },

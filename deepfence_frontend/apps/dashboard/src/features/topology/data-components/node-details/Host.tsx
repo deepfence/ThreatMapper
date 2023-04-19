@@ -172,12 +172,7 @@ export const Host = ({
                   local_networks: toTopologyMetadataString(
                     fetcher.data?.hostData?.local_networks,
                   ),
-                  interface_ips: toTopologyMetadataString(
-                    fetcher.data?.hostData?.interface_ips,
-                  ),
-                  interface_names: toTopologyMetadataString(
-                    fetcher.data?.hostData?.interface_names,
-                  ),
+
                   local_cidr: toTopologyMetadataString(
                     fetcher.data?.hostData?.local_cidr,
                   ),

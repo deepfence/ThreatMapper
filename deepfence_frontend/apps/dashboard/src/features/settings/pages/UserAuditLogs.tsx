@@ -5,6 +5,7 @@ import { createColumnHelper, Table, TableSkeleton } from 'ui-components';
 import { getSettingsApiClient } from '@/api/api';
 import { ModelGetAuditLogsRow } from '@/api/generated';
 import { CopyToClipboard } from '@/components/CopyToClipboard';
+import { PostgresqlDbGetAuditLogsRow } from '@/api/generated';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
@@ -13,7 +14,7 @@ import { DFAwait } from '@/utils/suspense';
 
 type LoaderDataType = {
   message?: string;
-  data?: ModelGetAuditLogsRow[];
+  data?: PostgresqlDbGetAuditLogsRow[];
 };
 const getData = async (): Promise<LoaderDataType> => {
   const response = await makeRequest({
@@ -38,7 +39,7 @@ const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
 };
 
 const UserAuditLogs = () => {
-  const columnHelper = createColumnHelper<ModelGetAuditLogsRow>();
+  const columnHelper = createColumnHelper<PostgresqlDbGetAuditLogsRow>();
   const loaderData = useLoaderData() as LoaderDataType;
   const columns = useMemo(() => {
     const columns = [

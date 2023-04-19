@@ -2,15 +2,15 @@ import { useEffect } from 'react';
 import { useFetcher } from 'react-router-dom';
 
 import { getUserApiClient } from '@/api/api';
-import { ModelApiTokenResponse } from '@/api/generated';
+import { ModelUser } from '@/api/generated';
 import { ApiError, makeRequest } from '@/utils/api';
 
-export const getApiTokenApiLoader = async (): Promise<{
+export const getUserApiLoader = async (): Promise<{
   error?: string;
-  apiToken?: ModelApiTokenResponse;
+  user?: ModelUser;
 }> => {
-  const token = await makeRequest({
-    apiFunction: getUserApiClient().getApiTokens,
+  const user = await makeRequest({
+    apiFunction: getUserApiClient().getCurrentUser,
     apiArgs: [],
     errorHandler: async (r) => {
       const error = new ApiError<{ error?: string }>({});
@@ -22,28 +22,28 @@ export const getApiTokenApiLoader = async (): Promise<{
     },
   });
 
-  if (ApiError.isApiError(token)) {
-    return token.value();
+  if (ApiError.isApiError(user)) {
+    return user.value();
   }
   return {
-    apiToken: token[0],
+    user: user,
   };
 };
 
-export const useGetApiToken = (): {
+export const useGetCurrentUser = (): {
   status: 'idle' | 'loading' | 'submitting';
-  data: ModelApiTokenResponse | undefined;
+  data: ModelUser | undefined;
 } => {
   const fetcher = useFetcher<{
-    apiToken: ModelApiTokenResponse;
+    user: ModelUser;
   }>();
 
   useEffect(() => {
-    fetcher.load('/data-component/auth/apiToken');
+    fetcher.load('/data-component/auth/user');
   }, []);
 
   return {
     status: fetcher.state,
-    data: fetcher.data?.apiToken,
+    data: fetcher.data?.user,
   };
 };

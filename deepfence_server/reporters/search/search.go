@@ -70,9 +70,9 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 
 	query := `
 		MATCH (n) 
-		WHERE (n:Node OR n:Container OR n:ContainerImage OR n:KubernetesCluster OR n:Pod)
+		WHERE (n:Node OR n:Container OR n:ContainerImage OR n:KubernetesCluster OR n:Pod OR n:CloudProvider)
 		AND n.pseudo=false
-		RETURN labels(n), count(labels(n)), count(distinct n.cloud_provider), count(distinct n.kubernetes_namespace);`
+		RETURN labels(n), count(labels(n)), count(distinct n.kubernetes_namespace);`
 	r, err := tx.Run(query,
 		map[string]interface{}{})
 	if err != nil {
@@ -89,7 +89,6 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 			switch neo4jNodeType {
 			case "Node":
 				res.Host = count
-				res.CloudProviders = rec.Values[2].(int64)
 			case "Container":
 				res.Container = count
 			case "ContainerImage":
@@ -99,6 +98,8 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 			case "Pod":
 				res.Pod = count
 				res.Namespace = rec.Values[3].(int64)
+			case "CloudProvider":
+				res.CloudProviders = count
 			}
 		}
 	}
@@ -181,6 +182,8 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 			for k, v := range is_node.(dbtype.Node).Props {
 				if k != "node_id" {
 					node_map[k] = v
+				} else {
+					node_map[dummy.ExtendedField()] = v
 				}
 			}
 		}
