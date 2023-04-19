@@ -92,7 +92,7 @@ const ChangePassword = () => {
           </DFLink>
           <span className="flex ml-2 mt-2 dark:text-white ">User Profile</span>
         </div>
-        <Card className="flex-col p-5 mt-2 ml-5 gap-y-4">
+        <Card className="max-w-sm flex-col p-5 mt-2 ml-5 gap-y-4">
           <fetcher.Form method="post" className="flex flex-col gap-y-3">
             <TextInput
               label="Old Password"
@@ -101,7 +101,6 @@ const ChangePassword = () => {
               name="old_password"
               color={data?.fieldErrors?.old_password ? 'error' : 'default'}
               sizing="sm"
-              className="w-3/4 min-[200px] max-w-xs"
               helperText={data?.fieldErrors?.old_password}
               required
             />
@@ -111,7 +110,6 @@ const ChangePassword = () => {
               placeholder="New Password"
               name="new_password"
               sizing="sm"
-              className="w-3/4 min-[200px] max-w-xs"
               color={data?.fieldErrors?.new_password ? 'error' : 'default'}
               helperText={data?.fieldErrors?.new_password}
               required
@@ -122,21 +120,15 @@ const ChangePassword = () => {
               placeholder="Confirm Password"
               name="confirm_password"
               sizing="sm"
-              className="w-3/4 min-[200px] max-w-xs"
               color={data?.fieldErrors?.confirm_password ? 'error' : 'default'}
               helperText={data?.fieldErrors?.confirm_password}
               required
             />
-            <Button
-              color="primary"
-              className="w-3/4 max-w-xs pl-3"
-              type="submit"
-              size="xs"
-            >
+            <Button color="primary" type="submit" size="sm">
               Change Password
             </Button>
             <Link to="/settings/user-management">
-              <Button color="danger" className="w-3/4 max-w-xs pl-3" size="xs">
+              <Button color="danger" className="w-full" size="sm">
                 Cancel
               </Button>
             </Link>

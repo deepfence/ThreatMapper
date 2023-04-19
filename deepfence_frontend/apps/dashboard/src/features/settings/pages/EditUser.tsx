@@ -147,7 +147,7 @@ const EditUser = () => {
           </DFLink>
           <span className="flex ml-2 mt-2 dark:text-white ">User Profile</span>
         </div>
-        <Card className="flex-col p-5 mt-2 ml-5 gap-y-4">
+        <Card className="max-w-sm flex-col p-5 mt-2 ml-5 gap-y-4">
           <Suspense fallback={<CircleSpinner size="xs" />}>
             <DFAwait resolve={loaderData.data}>
               {(user: LoaderDataType) => {
@@ -161,7 +161,6 @@ const EditUser = () => {
                       name="firstName"
                       color={data?.fieldErrors?.firstName ? 'error' : 'default'}
                       sizing="sm"
-                      className="w-3/4 max-w-xs"
                       defaultValue={user.data?.first_name}
                       helperText={data?.fieldErrors?.firstName}
                       required
@@ -172,54 +171,49 @@ const EditUser = () => {
                       placeholder="Last Name"
                       name="lastName"
                       sizing="sm"
-                      className="w-3/4 max-w-xs"
                       color={data?.fieldErrors?.lastName ? 'error' : 'default'}
                       defaultValue={user.data?.last_name}
                       helperText={data?.fieldErrors?.lastName}
                       required
                     />
-                    <div className="w-3/4 max-w-xs">
-                      <Select
-                        defaultValue={user.data?.role}
-                        name="role"
-                        label={'Role'}
-                        placeholder="admin"
-                        sizing="xs"
-                        helperText={data?.fieldErrors?.role}
+                    <Select
+                      defaultValue={user.data?.role}
+                      name="role"
+                      label={'Role'}
+                      placeholder="admin"
+                      sizing="xs"
+                      helperText={data?.fieldErrors?.role}
+                    >
+                      <SelectItem
+                        value={ModelUpdateUserIdRequestRoleEnum['StandardUser']}
                       >
-                        <SelectItem
-                          value={ModelUpdateUserIdRequestRoleEnum['StandardUser']}
-                        >
-                          User
-                        </SelectItem>
-                        <SelectItem value={ModelUpdateUserIdRequestRoleEnum['Admin']}>
-                          Admin
-                        </SelectItem>
-                        <SelectItem
-                          value={ModelUpdateUserIdRequestRoleEnum['ReadOnlyUser']}
-                        >
-                          Read only user
-                        </SelectItem>
-                      </Select>
-                    </div>
-                    <div className="w-3/4 max-w-xs">
-                      <Select
-                        name="status"
-                        label={'Status'}
-                        placeholder="Active"
-                        sizing="xs"
-                        defaultValue={user.data?.is_active ? 'Active' : 'inActive'}
-                        helperText={data?.fieldErrors?.status}
+                        User
+                      </SelectItem>
+                      <SelectItem value={ModelUpdateUserIdRequestRoleEnum['Admin']}>
+                        Admin
+                      </SelectItem>
+                      <SelectItem
+                        value={ModelUpdateUserIdRequestRoleEnum['ReadOnlyUser']}
                       >
-                        <SelectItem value="true">Active</SelectItem>
-                        <SelectItem value="false">InActive</SelectItem>
-                      </Select>
-                    </div>
-                    <Button color="primary" className="w-3/4 max-w-xs pl-3" type="submit">
+                        Read only user
+                      </SelectItem>
+                    </Select>
+                    <Select
+                      name="status"
+                      label={'Status'}
+                      placeholder="Active"
+                      sizing="xs"
+                      defaultValue={user.data?.is_active ? 'Active' : 'inActive'}
+                      helperText={data?.fieldErrors?.status}
+                    >
+                      <SelectItem value="true">Active</SelectItem>
+                      <SelectItem value="false">InActive</SelectItem>
+                    </Select>
+                    <Button color="primary" type="submit">
                       Submit
                     </Button>
                     <Link to="/settings/user-management">
-                      <Button color="danger" className="w-3/4 max-w-xs pl-3">
+                      <Button color="danger" className="w-full">
                         Cancel
                       </Button>
                     </Link>

@@ -137,12 +137,12 @@ const EditGlobalSetting = () => {
             Update Global Settings
           </h3>
         </div>
-        <Card className="flex-col p-5 mt-2 ml-5 gap-y-4">
+        <Card className="max-w-sm flex-col p-5 mt-2 ml-5 gap-y-4">
           <Suspense fallback={<CircleSpinner size="xs" />}>
             <DFAwait resolve={loaderData.data}>
               {(setting: LoaderDataType) => {
                 return (
-                  <div className="w-3/4 max-w-xs">
+                  <div>
                     <fetcher.Form method="post" className="flex flex-col gap-y-3">
                       <TextInput
                         type="hidden"
