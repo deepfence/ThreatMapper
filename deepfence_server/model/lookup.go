@@ -68,8 +68,6 @@ type Host struct {
 	Processes                 []Process        `json:"processes" required:"true"`
 	Pods                      []Pod            `json:"pods" required:"true"`
 	ContainerImages           []ContainerImage `json:"container_images" required:"true"`
-	InterfaceNames            []interface{}    `json:"interface_names" required:"true"`
-	InterfaceIps              []interface{}    `json:"interface_ips" required:"true"`
 	KernelVersion             string           `json:"kernel_version" required:"true"`
 	Uptime                    int              `json:"uptime" required:"true"`
 	Version                   string           `json:"version" required:"true"`
