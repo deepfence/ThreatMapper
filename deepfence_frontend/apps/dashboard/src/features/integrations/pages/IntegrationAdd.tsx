@@ -187,10 +187,40 @@ const action = async ({
     const severityFilter = formData.getAll('severityFilter') as string[];
     const intervalFilter = formData.get('interval')?.toString();
 
-    const hostFilter = formData.getAll('hostFilter') as string[];
-    const containerFilter = formData.getAll('containerFilter') as string[];
-    const imageFilter = formData.getAll('imageFilter') as string[];
-    const clusterFilter = formData.getAll('clusterFilter') as string[];
+    // host filter
+    const selectedHostLength = Number(formData.get('selectedHostLength'));
+    const hostFilter = [];
+    if (selectedHostLength > 0) {
+      for (let i = 0; i < selectedHostLength; i++) {
+        hostFilter.push(formData.get(`hostFilter[${i}]`) as string);
+      }
+    }
+    // container filter
+    const selectedContainerLength = Number(formData.get('selectedContainerLength'));
+    const containerFilter = [];
+    if (selectedContainerLength > 0) {
+      for (let i = 0; i < selectedContainerLength; i++) {
+        containerFilter.push(formData.get(`containerFilter[${i}]`) as string);
+      }
+    }
+
+    // image filter
+    const selectedImageLength = Number(formData.get('selectedImageLength'));
+    const imageFilter = [];
+    if (selectedImageLength > 0) {
+      for (let i = 0; i < selectedImageLength; i++) {
+        imageFilter.push(formData.get(`imageFilter[${i}]`) as string);
+      }
+    }
+
+    // cluster filter
+    const selectedClusterLength = Number(formData.get('selectedClusterLength'));
+    const clusterFilter = [];
+    if (selectedClusterLength > 0) {
+      for (let i = 0; i < selectedClusterLength; i++) {
+        clusterFilter.push(formData.get(`clusterFilter[${i}]`) as string);
+      }
+    }
 
     const _filters: {
       node_ids: ModelNodeIdentifier[];
