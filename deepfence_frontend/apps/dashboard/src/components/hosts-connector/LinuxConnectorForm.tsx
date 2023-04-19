@@ -10,9 +10,9 @@ export const LinuxConnectorForm = () => {
   const dfApiKey =
     status !== 'idle'
       ? '---DEEPFENCE-API-KEY---'
-      : data?.ApiToken === undefined
+      : data?.api_token === undefined
       ? '---DEEPFENCE-API-KEY---'
-      : data?.ApiToken;
+      : data?.api_token;
 
   const code = `
 docker run -dit \\

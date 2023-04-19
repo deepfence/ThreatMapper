@@ -40,7 +40,10 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ModelApiTokenResponse" }
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelApiTokenResponse" }
+                }
               }
             }
           },
@@ -85,7 +88,10 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ModelApiTokenResponse" }
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelApiTokenResponse" }
+                }
               }
             }
           },
