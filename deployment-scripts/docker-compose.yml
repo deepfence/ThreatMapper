@@ -169,7 +169,7 @@ services:
     environment:
       <<: *common-creds
       ELASTICSEARCH_SCHEME: "http"
-      DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES: 30
+      DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES: 5
       DEEPFENCE_CONSOLE_ORCHESTRATOR: "docker"
     networks:
       - deepfence_net

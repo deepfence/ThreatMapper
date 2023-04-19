@@ -740,6 +740,9 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 
 func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, resultIds []string) ([]model.ScanResultBasicNode, error) {
 	res := make([]model.ScanResultBasicNode, 0)
+	if len(resultIds) == 0 {
+		return res, nil
+	}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return res, err

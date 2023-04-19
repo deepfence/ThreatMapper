@@ -17,7 +17,7 @@ MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
 ENV DEEPFENCE_HTTP_LISTEN_ENDPOINT=8080 \
-    DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES=30
+    DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES=5
 
 ADD deepfence_server/auth /auth
 ADD deepfence_server/cloud_controls /cloud_controls

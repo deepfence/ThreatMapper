@@ -374,7 +374,7 @@ func (h *Handler) GetUserByUserID(w http.ResponseWriter, r *http.Request) {
 	httpext.JSON(w, http.StatusOK, user)
 }
 
-func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx context.Context, pgClient *postgresql_db.Queries, user *model.User) {
+func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx context.Context, pgClient *postgresql_db.Queries, user *model.User, isCurrentUser bool) {
 	defer r.Body.Close()
 	var req model.UpdateUserRequest
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
@@ -387,9 +387,18 @@ func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 		respondError(&ValidatorError{err}, w)
 		return
 	}
+	toLogout := false
 	user.FirstName = req.FirstName
 	user.LastName = req.LastName
 	if user.Role != req.Role {
+		activeAdminUsersCount, err := pgClient.CountActiveAdminUsers(ctx)
+		if user.Role == model.AdminRole && activeAdminUsersCount < 2 {
+			respondWithErrorCode(errors.New("cannot delete last active admin user"), w, http.StatusForbidden)
+			return
+		}
+		if isCurrentUser {
+			toLogout = true
+		}
 		user.Role = req.Role
 		role, err := pgClient.GetRoleByName(ctx, req.Role)
 		if err != nil {
@@ -398,11 +407,19 @@ func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 		}
 		user.RoleID = role.ID
 	}
-	user.IsActive = req.IsActive
+	if user.IsActive != req.IsActive {
+		user.IsActive = req.IsActive
+		if isCurrentUser {
+			toLogout = true
+		}
+	}
 	_, err = user.Update(ctx, pgClient)
 	if err != nil {
 		respondError(err, w)
 		return
+	}
+	if toLogout {
+		LogoutHandler(ctx)
 	}
 	httpext.JSON(w, http.StatusOK, user)
 }
@@ -413,7 +430,7 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		respondWithErrorCode(err, w, statusCode)
 		return
 	}
-	h.updateUserHandler(w, r, ctx, pgClient, user)
+	h.updateUserHandler(w, r, ctx, pgClient, user, true)
 }
 
 func (h *Handler) UpdateUserByUserID(w http.ResponseWriter, r *http.Request) {
@@ -427,7 +444,12 @@ func (h *Handler) UpdateUserByUserID(w http.ResponseWriter, r *http.Request) {
 		respondWithErrorCode(err, w, statusCode)
 		return
 	}
-	h.updateUserHandler(w, r, ctx, pgClient, user)
+	currentUser, statusCode, _, _, err := h.GetUserFromJWT(r.Context())
+	if err != nil {
+		respondWithErrorCode(err, w, statusCode)
+		return
+	}
+	h.updateUserHandler(w, r, ctx, pgClient, user, currentUser.ID == user.ID)
 }
 
 func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
@@ -467,12 +489,53 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) deleteUserHandler(w http.ResponseWriter, r *http.Request, ctx context.Context, pgClient *postgresql_db.Queries, user *model.User, isCurrentUser bool) {
+	activeAdminUsersCount, err := pgClient.CountActiveAdminUsers(ctx)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	if user.Role == model.AdminRole && activeAdminUsersCount < 2 {
+		respondWithErrorCode(errors.New("cannot delete last active admin user"), w, http.StatusForbidden)
+		return
+	}
+	err = user.Delete(ctx, pgClient)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	if isCurrentUser {
+		LogoutHandler(ctx)
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	if err != nil {
+		respondWithErrorCode(err, w, statusCode)
+		return
+	}
+	h.deleteUserHandler(w, r, ctx, pgClient, user, true)
+}
+
 func (h *Handler) DeleteUserByUserID(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNoContent)
+	userId, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+	user, statusCode, ctx, pgClient, err := model.GetUserByID(userId)
+	if err != nil {
+		respondWithErrorCode(err, w, statusCode)
+		return
+	}
+	currentUser, statusCode, _, _, err := h.GetUserFromJWT(r.Context())
+	if err != nil {
+		respondWithErrorCode(err, w, statusCode)
+		return
+	}
+	h.deleteUserHandler(w, r, ctx, pgClient, user, currentUser.ID == user.ID)
 }
 
 func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {

@@ -402,6 +402,10 @@ func (u *User) UpdatePassword(ctx context.Context, pgClient *postgresqlDb.Querie
 	return nil
 }
 
+func (u *User) Delete(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	return pgClient.DeleteUser(ctx, u.ID)
+}
+
 func (u *User) Update(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.User, error) {
 	groupIDs, err := json.Marshal(utils.MapKeys(u.Groups))
 	if err != nil {
