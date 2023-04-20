@@ -1,7 +1,7 @@
 import cx from 'classnames';
 import { Suspense, useCallback, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
+import { FaPencilAlt, FaTrashAlt, FaUserPlus } from 'react-icons/fa';
 import {
   HiDotsVertical,
   HiKey,
@@ -270,23 +270,23 @@ const ChangePasswordModal = ({
 
 const APITokenSkeletonComponent = () => {
   return (
-    <div className="flex flex-col gap-y-4 animate-pulse min-w-[400px] pl-4">
-      <div className="h-10 w-72 bg-slate-200 py-4"></div>
+    <div className="flex flex-col gap-y-4 animate-pulse min-w-[400px]">
+      <div className="h-10 w-72 bg-gray-200 dark:bg-gray-700 py-4 rounded-md"></div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-slate-200"></div>
-        <div className="h-5 w-56 bg-slate-200"></div>
+        <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+        <div className="h-5 w-56 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
       </div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-slate-200"></div>
-        <div className="h-5 w-56 bg-slate-200"></div>
+        <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+        <div className="h-5 w-56 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
       </div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-slate-200"></div>
-        <div className="h-5 w-56 bg-slate-200"></div>
+        <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+        <div className="h-5 w-56 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
       </div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-slate-200"></div>
-        <div className="h-5 w-56 bg-slate-200"></div>
+        <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+        <div className="h-5 w-56 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
       </div>
     </div>
   );
@@ -304,19 +304,16 @@ const APITokenComponent = () => {
         showDialog={openChangePasswordForm}
         setShowDialog={setOpenChangePasswordForm}
       />
-      <h3 className="pb-4 font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
-        Your Information
-      </h3>
 
       {currentUserStatus !== 'idle' ? (
         <APITokenSkeletonComponent />
       ) : (
-        <div className="pl-4">
+        <div>
           <div className="flex">
             <div className="flex flex-col">
               <span className="text-2xl dark:text-gray-100 font-semibold">
-                {`${currentUserData?.first_name || 'Firstname'} ${
-                  currentUserData?.last_name || 'Lastname'
+                {`${currentUserData?.first_name || ''} ${
+                  currentUserData?.last_name || ''
                 }`}
               </span>
               <span
@@ -371,12 +368,10 @@ const APITokenComponent = () => {
               <HiKey /> Api key
             </span>
             <div className="text-sm dark:text-gray-100 font-semibold flex gap-x-2">
-              <span
-                className={cx('bg-gray-100 dark:bg-gray-800 p-1 rounded-md', {
-                  'pt-2': !showApikey,
-                })}
-              >
-                {showApikey ? data?.api_token || '-' : '******************************'}
+              <span className="bg-gray-100 dark:bg-gray-800 rounded-md font-mono">
+                {showApikey
+                  ? data?.api_token || '-'
+                  : '************************************'}
               </span>
               <div className="flex items-center">
                 {!showApikey ? (
@@ -497,7 +492,12 @@ const UserManagement = () => {
                     </h3>
                     <div className="flex justify-end gap-2">
                       <DFLink to="/settings/user-management/invite-user">
-                        <Button color="primary" size="xs" outline>
+                        <Button
+                          color="primary"
+                          size="xs"
+                          outline
+                          startIcon={<FaUserPlus />}
+                        >
                           Invite User
                         </Button>
                       </DFLink>
@@ -511,8 +511,6 @@ const UserManagement = () => {
                       size="sm"
                       data={users}
                       columns={columns}
-                      enablePagination
-                      pageSize={5}
                       enableColumnResizing
                       enableSorting
                     />
@@ -570,7 +568,7 @@ const DeleteConfirmationModal = ({
         </h3>
         <div className="flex items-center justify-right gap-4">
           <Button size="xs" onClick={() => setShowDialog(false)}>
-            No, cancel
+            No, Cancel
           </Button>
           <Button
             size="xs"

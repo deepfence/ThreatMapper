@@ -136,12 +136,12 @@ const Secret = () => {
   const loaderData = useLoaderData() as LoaderData;
   return (
     <div>
-      <div className="flex px-2 items-center w-full shadow bg-white dark:bg-gray-800 h-10">
-        <span className="text-md font-medium text-gray-700 dark:text-gray-200 uppercase">
+      <div className="flex p-2 items-center w-full shadow bg-white dark:bg-gray-800 h-10">
+        <span className="text-md font-medium text-gray-700 dark:text-gray-200">
           Secrets
         </span>
       </div>
-      <div className="m-2 grid grid-cols-12 gap-2">
+      <div className="p-2 grid grid-cols-12 gap-2">
         <div className="col-span-4">
           <Suspense
             fallback={

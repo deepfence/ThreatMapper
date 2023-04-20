@@ -32,11 +32,11 @@ const CountsSkeleton = () => {
 
 export const TopologyHeader = ({ nodeCounts }: { nodeCounts: SearchNodeCountResp }) => {
   return (
-    <div className="flex py-1 px-2 w-full shadow bg-white dark:bg-gray-800 items-center">
-      <span className="text-md font-medium text-gray-700 dark:text-gray-200 uppercase">
+    <div className="flex p-1 px-2 w-full shadow bg-white dark:bg-gray-800 items-center">
+      <span className="text-md font-medium text-gray-700 dark:text-gray-200">
         Topology
       </span>
-      <div className="flex gap-4 ml-auto flex-1 shrink min-w-0">
+      <div className="flex gap-x-4 ml-auto flex-1 shrink min-w-0">
         <Suspense fallback={<CountsSkeleton />}>
           <DFAwait resolve={nodeCounts}>
             {(data: SearchNodeCountResp) => {

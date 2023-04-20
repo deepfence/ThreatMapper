@@ -283,10 +283,6 @@ export const PodsTable = () => {
     () => [
       columnHelper.accessor('pod_name', {
         cell: (info) => {
-          let name = '';
-          if (info.row.original.node_name.length > 0) {
-            name = info.row.original.node_name;
-          }
           return (
             <div className="flex items-center">
               <button
@@ -307,7 +303,7 @@ export const PodsTable = () => {
                   }}
                   className="flex-1 shrink-0 pl-2"
                 >
-                  {name}
+                  {info.getValue() || '-'}
                 </DFLink>
               </button>
             </div>
@@ -327,11 +323,11 @@ export const PodsTable = () => {
         size: 80,
         maxSize: 90,
       }),
-      columnHelper.accessor('node_name', {
+      columnHelper.accessor('kubernetes_namespace', {
         cell: (info) => {
           return info.getValue();
         },
-        header: () => <span>Node Name</span>,
+        header: () => <span>Kubernetes Namespace</span>,
         minSize: 100,
         size: 105,
         maxSize: 110,
@@ -344,15 +340,6 @@ export const PodsTable = () => {
         minSize: 80,
         size: 80,
         maxSize: 90,
-      }),
-      columnHelper.accessor('kubernetes_is_in_host_network', {
-        cell: (info) => {
-          return capitalize(info.getValue().toString());
-        },
-        header: () => <span>In Host Network</span>,
-        minSize: 60,
-        size: 60,
-        maxSize: 65,
       }),
     ],
     [fetcher.data],

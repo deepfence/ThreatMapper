@@ -116,7 +116,7 @@ const InviteUser = () => {
               name="role"
               label={'Role'}
               placeholder="admin"
-              sizing="sm"
+              sizing="xs"
               helperText={data?.fieldErrors?.role}
             >
               <SelectItem value={ModelUpdateUserIdRequestRoleEnum['Admin']}>

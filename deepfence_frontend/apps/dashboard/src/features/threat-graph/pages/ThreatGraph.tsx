@@ -66,9 +66,9 @@ const ThreatGraphHeader = () => {
 
   const isFilterApplied = searchParams.get('type') && searchParams.get('type') !== 'all';
   return (
-    <div className="flex py-1 px-2 w-full shadow bg-white dark:bg-gray-800 justify-between items-center">
-      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-        THREAT GRAPH
+    <div className="flex p-2 w-full shadow bg-white dark:bg-gray-800 justify-between items-center">
+      <span className="text-md font-medium text-gray-700 dark:text-gray-200">
+        Threat Graph
       </span>
       <div className="relative gap-x-4">
         {isFilterApplied && (
