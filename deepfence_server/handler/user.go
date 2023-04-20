@@ -22,8 +22,9 @@ import (
 )
 
 const (
-	MaxPostRequestSize = 1000000 // 1 MB
-	DefaultNamespace   = "default"
+	MaxPostRequestSize    = 1000000 // 1 MB
+	DefaultNamespace      = "default"
+	passwordResetResponse = "A password reset email will be sent if a user exists with the provided email id"
 )
 
 var (
@@ -554,7 +555,7 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	user, statusCode, ctx, pgClient, err := model.GetUserByEmail(strings.ToLower(resetPasswordRequest.Email))
 	if errors.Is(err, model.UserNotFoundErr) {
-		respondError(&NotFoundError{errors.New("A password reset email will be sent if a user exists with the provided email id")}, w)
+		httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 		return
 	} else if err != nil {
 		respondWithErrorCode(err, w, statusCode)
@@ -580,8 +581,7 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, model.MessageResponse{
-		Message: "A password reset email will be sent if a user exists with the provided email id"})
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 }
 
 func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Request) {
