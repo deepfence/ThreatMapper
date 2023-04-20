@@ -3,6 +3,7 @@ package reporters_lookup
 import (
 	"context"
 
+	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -234,6 +235,12 @@ func GetKubernetesClustersReport(ctx context.Context, filter LookupFilter) ([]mo
 
 func GetCloudResourcesReport(ctx context.Context, filter LookupFilter) ([]model.CloudResource, error) {
 	entries, err := getGenericDirectNodeReport[model.CloudResource](ctx, filter)
+	for _, entry := range entries {
+		label, found := commonConstants.CSPM_RESOURCE_LABELS[commonConstants.CSPM_RESOURCES[entry.Type]]
+		if found {
+			entry.Type = label
+		}
+	}
 	if err != nil {
 		return nil, err
 	}

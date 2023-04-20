@@ -21,6 +21,7 @@ type CloudResource struct {
 	BlockPublicAcls                bool             `json:"block_public_acls,omitempty"`
 	BlockPublicPolicy              bool             `json:"block_public_policy,omitempty"`
 	BucketPolicyIsPublic           bool             `json:"bucket_policy_is_public,omitempty"`
+	CloudProvider                  string           `json:"cloud_provider,omitempty"`
 	RestrictPublicBuckets          bool             `json:"restrict_public_buckets,omitempty"`
 	ID                             string           `json:"id"`
 	IgnorePublicAcls               bool             `json:"ignore_public_acls,omitempty"`
