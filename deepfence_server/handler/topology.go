@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/render/detailed"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
 	reporters_graph "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
@@ -33,7 +32,6 @@ var (
 var topology_reporters map[directory.NamespaceID]reporters_graph.TopologyReporter
 
 func init() {
-	agent_report_ingesters = map[directory.NamespaceID]*ingesters.Ingester[report.Report]{}
 	topology_reporters = map[directory.NamespaceID]reporters_graph.TopologyReporter{}
 }
 

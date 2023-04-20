@@ -105,6 +105,7 @@ start_agent() {
     -e MGMT_CONSOLE_PORT="$MGMT_CONSOLE_PORT" \
     -e SCOPE_HOSTNAME="$DF_HOSTNAME" \
     -e DEEPFENCE_KEY="$DEEPFENCE_KEY" \
+    -e DF_USE_DUMMY_SCOPE="$DF_USE_DUMMY_SCOPE" \
     "$IMAGE_REPOSITORY"/deepfence_agent_ce:"${DF_IMG_TAG:-2.0.0}"
 }
 

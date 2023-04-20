@@ -118,6 +118,25 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) er
 	}
 	defer tx.Close()
 
+	res, err := tx.Run(`
+		MATCH (n:Node{node_id:$node_id})
+		MATCH (v:AgentVersion{node_id:$version})
+		MATCH (n) -[r:VERSIONED]-> (v)
+		RETURN true`,
+		map[string]interface{}{
+			"node_id": nodeId,
+			"version": version,
+		})
+	if err != nil {
+		return err
+	}
+
+	// If previous returns something, no writes needed
+	_, err = res.Single()
+	if err == nil {
+		return nil
+	}
+
 	_, err = tx.Run(`
 		OPTIONAL MATCH (n:Node{node_id:$node_id}) -[old:VERSIONED]-> (v)
 		DELETE old`,

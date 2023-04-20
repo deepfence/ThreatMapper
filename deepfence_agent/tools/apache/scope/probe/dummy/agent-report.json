@@ -1,0 +1,4854 @@
+{
+  "TS": "2023-04-21T17:17:04.564655311Z",
+  "Endpoint": {
+    ";68.183.155.185;8702": {
+      "metadata": {
+        "node_id": ";68.183.155.185;8702",
+        "timestamp": "2023-04-21T17:17:14.569465466Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "pid": 3381590
+      },
+      "adjacency": [
+        ";172.67.157.38;443"
+      ],
+      "parents": {},
+      "sets": {
+        "ps_map": null
+      }
+    },
+    ";68.183.155.185;8706": {
+      "metadata": {
+        "node_id": ";68.183.155.185;8706",
+        "timestamp": "2023-04-21T17:17:24.566208234Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "pid": 3381590
+      },
+      "adjacency": [
+        ";172.67.157.38;443"
+      ],
+      "parents": {},
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string-4026532529;127.0.0.1;10083": {
+      "metadata": {
+        "node_id": "agent-sed-string-4026532529;127.0.0.1;10083",
+        "timestamp": "2023-04-21T17:17:29.565840642Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "pid": 31254
+      },
+      "parents": {},
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string-4026532529;127.0.0.1;34530": {
+      "metadata": {
+        "node_id": "agent-sed-string-4026532529;127.0.0.1;34530",
+        "timestamp": "2023-04-21T17:17:29.565839359Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "pid": 30949
+      },
+      "adjacency": [
+        "agent-sed-string-4026532529;127.0.0.1;10083"
+      ],
+      "parents": {},
+      "sets": {
+        "ps_map": null
+      }
+    },
+    ";104.21.40.221;443": {
+      "metadata": {
+        "node_id": ";104.21.40.221;443",
+        "timestamp": "2023-04-21T17:17:04.565099863Z",
+        "pseudo": false,
+        "pid": -1
+      },
+      "parents": {},
+      "sets": {
+        "ps_map": null
+      }
+    },
+    ";68.183.155.185;22": {
+      "metadata": {
+        "node_id": ";68.183.155.185;22",
+        "timestamp": "2023-04-21T17:17:19.56753422Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "pid": 877
+      },
+      "parents": {},
+      "sets": {
+        "ps_map": null
+      }
+    },
+    ";172.67.157.38;443": {
+      "metadata": {
+        "node_id": ";172.67.157.38;443",
+        "timestamp": "2023-04-21T17:17:24.566211747Z",
+        "pseudo": false,
+        "pid": -1
+      },
+      "parents": {},
+      "sets": {
+        "ps_map": null
+      }
+    },
+    ";167.71.213.47;60112": {
+      "metadata": {
+        "node_id": ";167.71.213.47;60112",
+        "timestamp": "2023-04-21T17:17:19.56753282Z",
+        "pseudo": false,
+        "pid": -1
+      },
+      "adjacency": [
+        ";68.183.155.185;22"
+      ],
+      "parents": {},
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string-4026532590;127.0.0.1;40424": {
+      "metadata": {
+        "node_id": "agent-sed-string-4026532590;127.0.0.1;40424",
+        "timestamp": "2023-04-21T17:17:24.566224513Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "pid": 3386310
+      },
+      "adjacency": [
+        "agent-sed-string-4026532590;127.0.0.1;8080"
+      ],
+      "parents": {},
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string-4026532590;127.0.0.1;8080": {
+      "metadata": {
+        "node_id": "agent-sed-string-4026532590;127.0.0.1;8080",
+        "timestamp": "2023-04-21T17:17:24.566226254Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "pid": 33603
+      },
+      "parents": {},
+      "sets": {
+        "ps_map": null
+      }
+    },
+    ";68.183.155.185;63082": {
+      "metadata": {
+        "node_id": ";68.183.155.185;63082",
+        "timestamp": "2023-04-21T17:17:04.565098768Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "pid": 3381590
+      },
+      "adjacency": [
+        ";104.21.40.221;443"
+      ],
+      "parents": {},
+      "sets": {
+        "ps_map": null
+      }
+    },
+    ";68.183.155.185;63084": {
+      "metadata": {
+        "node_id": ";68.183.155.185;63084",
+        "timestamp": "2023-04-21T17:17:04.565077229Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "pid": 3381590
+      },
+      "adjacency": [
+        ";104.21.40.221;443"
+      ],
+      "parents": {},
+      "sets": {
+        "ps_map": null
+      }
+    },
+    ";179.50.16.249;50266": {
+      "metadata": {
+        "node_id": ";179.50.16.249;50266",
+        "timestamp": "2023-04-21T17:17:19.567510606Z",
+        "pseudo": false,
+        "pid": -1
+      },
+      "adjacency": [
+        ";68.183.155.185;22"
+      ],
+      "parents": {},
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string-4026532529;127.0.0.1;34528": {
+      "metadata": {
+        "node_id": "agent-sed-string-4026532529;127.0.0.1;34528",
+        "timestamp": "2023-04-21T17:17:29.565823733Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "pid": 30949
+      },
+      "adjacency": [
+        "agent-sed-string-4026532529;127.0.0.1;10083"
+      ],
+      "parents": {},
+      "sets": {
+        "ps_map": null
+      }
+    }
+  },
+  "Process": {
+    "agent-sed-string;1105895": {
+      "metadata": {
+        "node_id": "agent-sed-string;1105895",
+        "node_type": "process",
+        "node_name": "[loop5]",
+        "timestamp": "2023-04-21T17:16:57.413343728Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 1105895,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;775": {
+      "metadata": {
+        "node_id": "agent-sed-string;775",
+        "node_type": "process",
+        "node_name": "/lib/systemd/systemd-logind",
+        "timestamp": "2023-04-21T17:16:57.413305612Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 4390912,
+        "open_files_count": 19,
+        "host_name": "agent-sed-string",
+        "pid": 775,
+        "cmdline": "/lib/systemd/systemd-logind ",
+        "ppid": 1,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;187198": {
+      "metadata": {
+        "node_id": "agent-sed-string;187198",
+        "node_type": "process",
+        "node_name": "/lib/systemd/systemd-timesyncd",
+        "timestamp": "2023-04-21T17:16:57.413293809Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 4190208,
+        "open_files_count": 16,
+        "host_name": "agent-sed-string",
+        "pid": 187198,
+        "cmdline": "/lib/systemd/systemd-timesyncd ",
+        "ppid": 1,
+        "threads": 2
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31103": {
+      "metadata": {
+        "node_id": "agent-sed-string;31103",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/gui/lighttpd/sbin/php",
+        "timestamp": "2023-04-21T17:16:57.413284258Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 28696576,
+        "open_files_count": 18,
+        "host_name": "agent-sed-string",
+        "pid": 31103,
+        "cmdline": "/usr/local/zend/gui/lighttpd/sbin/php -c /usr/local/zend/gui/lighttpd/etc/php-fcgi.ini ",
+        "ppid": 31098,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;18": {
+      "metadata": {
+        "node_id": "agent-sed-string;18",
+        "node_type": "process",
+        "node_name": "[ksoftirqd/1]",
+        "timestamp": "2023-04-21T17:16:57.41329023Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 18,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;310179": {
+      "metadata": {
+        "node_id": "agent-sed-string;310179",
+        "node_type": "process",
+        "node_name": "[loop6]",
+        "timestamp": "2023-04-21T17:16:57.413336108Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 310179,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31263": {
+      "metadata": {
+        "node_id": "agent-sed-string;31263",
+        "node_type": "process",
+        "node_name": "php-fpm: pool www",
+        "timestamp": "2023-04-21T17:16:57.413277082Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 38006784,
+        "open_files_count": 33,
+        "host_name": "agent-sed-string",
+        "pid": 31263,
+        "cmdline": "php-fpm: pool www                                                                                                           ",
+        "ppid": 31259,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;94": {
+      "metadata": {
+        "node_id": "agent-sed-string;94",
+        "node_type": "process",
+        "node_name": "[scsi_tmf_0]",
+        "timestamp": "2023-04-21T17:16:57.413291671Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 94,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31260": {
+      "metadata": {
+        "node_id": "agent-sed-string;31260",
+        "node_type": "process",
+        "node_name": "php-fpm: pool www",
+        "timestamp": "2023-04-21T17:16:57.413180491Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 37900288,
+        "open_files_count": 33,
+        "host_name": "agent-sed-string",
+        "pid": 31260,
+        "cmdline": "php-fpm: pool www                                                                                                           ",
+        "ppid": 31259,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;9": {
+      "metadata": {
+        "node_id": "agent-sed-string;9",
+        "node_type": "process",
+        "node_name": "[mm_percpu_wq]",
+        "timestamp": "2023-04-21T17:16:57.413370238Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 9,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;821": {
+      "metadata": {
+        "node_id": "agent-sed-string;821",
+        "node_type": "process",
+        "node_name": "/sbin/agetty",
+        "timestamp": "2023-04-21T17:16:57.413348557Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 126976,
+        "open_files_count": 4,
+        "host_name": "agent-sed-string",
+        "pid": 821,
+        "cmdline": "/sbin/agetty -o -p -- \\u --keep-baud 115200,38400,9600 ttyS0 vt220 ",
+        "ppid": 1,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31127": {
+      "metadata": {
+        "node_id": "agent-sed-string;31127",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/bin/watchdog",
+        "timestamp": "2023-04-21T17:16:57.413326741Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 499712,
+        "open_files_count": 5,
+        "host_name": "agent-sed-string",
+        "pid": 31127,
+        "cmdline": "/usr/local/zend/bin/watchdog -c /usr/local/zend/etc/watchdog-lighttpd.ini -u zend -g zend -s lighttpd ",
+        "ppid": 29793,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;92": {
+      "metadata": {
+        "node_id": "agent-sed-string;92",
+        "node_type": "process",
+        "node_name": "[acpi_thermal_pm]",
+        "timestamp": "2023-04-21T17:16:57.413422098Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 92,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;30479": {
+      "metadata": {
+        "node_id": "agent-sed-string;30479",
+        "node_type": "process",
+        "node_name": "nginx: master process /usr/sbin/nginx",
+        "timestamp": "2023-04-21T17:16:57.413392198Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 1748992,
+        "open_files_count": 13,
+        "host_name": "agent-sed-string",
+        "pid": 30479,
+        "cmdline": "nginx: master process /usr/sbin/nginx ",
+        "ppid": 29793,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;171": {
+      "metadata": {
+        "node_id": "agent-sed-string;171",
+        "node_type": "process",
+        "node_name": "[scsi_tmf_2]",
+        "timestamp": "2023-04-21T17:16:57.413391201Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 171,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3145155": {
+      "metadata": {
+        "node_id": "agent-sed-string;3145155",
+        "node_type": "process",
+        "node_name": "/usr/lib/policykit-1/polkitd",
+        "timestamp": "2023-04-21T17:16:57.413319946Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 1101824,
+        "open_files_count": 10,
+        "host_name": "agent-sed-string",
+        "pid": 3145155,
+        "cmdline": "/usr/lib/policykit-1/polkitd --no-debug ",
+        "ppid": 1,
+        "threads": 3
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3505049": {
+      "metadata": {
+        "node_id": "agent-sed-string;3505049",
+        "node_type": "process",
+        "node_name": "/opt/digitalocean/bin/droplet-agent",
+        "timestamp": "2023-04-21T17:16:57.413275782Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 925696,
+        "open_files_count": 11,
+        "host_name": "agent-sed-string",
+        "pid": 3505049,
+        "cmdline": "/opt/digitalocean/bin/droplet-agent ",
+        "ppid": 1,
+        "threads": 9
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;172": {
+      "metadata": {
+        "node_id": "agent-sed-string;172",
+        "node_type": "process",
+        "node_name": "[cryptd]",
+        "timestamp": "2023-04-21T17:16:57.413365531Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 172,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;777": {
+      "metadata": {
+        "node_id": "agent-sed-string;777",
+        "node_type": "process",
+        "node_name": "/usr/lib/udisks2/udisksd",
+        "timestamp": "2023-04-21T17:16:57.413398403Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 5877760,
+        "open_files_count": 15,
+        "host_name": "agent-sed-string",
+        "pid": 777,
+        "cmdline": "/usr/lib/udisks2/udisksd ",
+        "ppid": 1,
+        "threads": 5
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;877": {
+      "metadata": {
+        "node_id": "agent-sed-string;877",
+        "node_type": "process",
+        "node_name": "sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups",
+        "timestamp": "2023-04-21T17:16:57.413399286Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 2953216,
+        "open_files_count": 5,
+        "host_name": "agent-sed-string",
+        "pid": 877,
+        "cmdline": "sshd: /usr/sbin/sshd -D [listener] 0 of 10-100 startups ",
+        "ppid": 1,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;112": {
+      "metadata": {
+        "node_id": "agent-sed-string;112",
+        "node_type": "process",
+        "node_name": "[kworker/u5:0]",
+        "timestamp": "2023-04-21T17:16:57.413397313Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 112,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;183": {
+      "metadata": {
+        "node_id": "agent-sed-string;183",
+        "node_type": "process",
+        "node_name": "[kworker/1:1H-kblockd]",
+        "timestamp": "2023-04-21T17:16:57.41325429Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 183,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;187078": {
+      "metadata": {
+        "node_id": "agent-sed-string;187078",
+        "node_type": "process",
+        "node_name": "/lib/systemd/systemd-networkd",
+        "timestamp": "2023-04-21T17:16:57.413349741Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 2998272,
+        "open_files_count": 21,
+        "host_name": "agent-sed-string",
+        "pid": 187078,
+        "cmdline": "/lib/systemd/systemd-networkd ",
+        "ppid": 1,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;83": {
+      "metadata": {
+        "node_id": "agent-sed-string;83",
+        "node_type": "process",
+        "node_name": "[edac-poller]",
+        "timestamp": "2023-04-21T17:16:57.413341718Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 83,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;24830": {
+      "metadata": {
+        "node_id": "agent-sed-string;24830",
+        "node_type": "process",
+        "node_name": "/usr/bin/containerd-shim-runc-v2",
+        "timestamp": "2023-04-21T17:16:57.413347409Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "cpu_usage": 0.0083948959032908,
+        "memory_max": -1,
+        "memory_usage": 3354624,
+        "open_files_count": 23,
+        "host_name": "agent-sed-string",
+        "pid": 24830,
+        "cmdline": "/usr/bin/containerd-shim-runc-v2 -namespace moby -id 71b88611c8d545635e3a3bd290f41c49d05d6cafda0ff45e71bf7eeec8bef6d9 -address /run/containerd/containerd.sock ",
+        "ppid": 1,
+        "threads": 17
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;170": {
+      "metadata": {
+        "node_id": "agent-sed-string;170",
+        "node_type": "process",
+        "node_name": "[scsi_eh_2]",
+        "timestamp": "2023-04-21T17:16:57.413361772Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 170,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31264": {
+      "metadata": {
+        "node_id": "agent-sed-string;31264",
+        "node_type": "process",
+        "node_name": "php-fpm: pool www",
+        "timestamp": "2023-04-21T17:16:57.413181622Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 37888000,
+        "open_files_count": 33,
+        "host_name": "agent-sed-string",
+        "pid": 31264,
+        "cmdline": "php-fpm: pool www                                                                                                           ",
+        "ppid": 31259,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;16205": {
+      "metadata": {
+        "node_id": "agent-sed-string;16205",
+        "node_type": "process",
+        "node_name": "/usr/bin/dockerd",
+        "timestamp": "2023-04-21T17:16:57.4133746Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "cpu_usage": 0.025184687709872394,
+        "memory_max": -1,
+        "memory_usage": 65339392,
+        "open_files_count": 88,
+        "host_name": "agent-sed-string",
+        "pid": 16205,
+        "cmdline": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock ",
+        "ppid": 1,
+        "threads": 21
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3381113": {
+      "metadata": {
+        "node_id": "agent-sed-string;3381113",
+        "node_type": "process",
+        "node_name": "[kworker/0:2-events]",
+        "timestamp": "2023-04-21T17:16:57.413346189Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 3381113,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;13": {
+      "metadata": {
+        "node_id": "agent-sed-string;13",
+        "node_type": "process",
+        "node_name": "[idle_inject/0]",
+        "timestamp": "2023-04-21T17:16:57.413256506Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 13,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;29772": {
+      "metadata": {
+        "node_id": "agent-sed-string;29772",
+        "node_type": "process",
+        "node_name": "/usr/bin/containerd-shim-runc-v2",
+        "timestamp": "2023-04-21T17:16:57.413376173Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 4530176,
+        "open_files_count": 23,
+        "host_name": "agent-sed-string",
+        "pid": 29772,
+        "cmdline": "/usr/bin/containerd-shim-runc-v2 -namespace moby -id 8ab99c249210aa564e6db356cea6770cf73a1d0f307ffb74d913039b7a70502c -address /run/containerd/containerd.sock ",
+        "ppid": 1,
+        "threads": 18
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;833": {
+      "metadata": {
+        "node_id": "agent-sed-string;833",
+        "node_type": "process",
+        "node_name": "/sbin/agetty",
+        "timestamp": "2023-04-21T17:16:57.413297881Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 118784,
+        "open_files_count": 4,
+        "host_name": "agent-sed-string",
+        "pid": 833,
+        "cmdline": "/sbin/agetty -o -p -- \\u --noclear tty1 linux ",
+        "ppid": 1,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;28105": {
+      "metadata": {
+        "node_id": "agent-sed-string;28105",
+        "node_type": "process",
+        "node_name": "/usr/bin/containerd-shim-runc-v2",
+        "timestamp": "2023-04-21T17:16:57.413259837Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "cpu_usage": 0.0083948959032908,
+        "memory_max": -1,
+        "memory_usage": 3862528,
+        "open_files_count": 23,
+        "host_name": "agent-sed-string",
+        "pid": 28105,
+        "cmdline": "/usr/bin/containerd-shim-runc-v2 -namespace moby -id 47d8531b788f6c3c8c0b3d04d8b1a96a52a5f8598389619ce037ba8ffda9e083 -address /run/containerd/containerd.sock ",
+        "ppid": 1,
+        "threads": 17
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3381527": {
+      "metadata": {
+        "node_id": "agent-sed-string;3381527",
+        "node_type": "process",
+        "node_name": "/usr/sbin/cron",
+        "timestamp": "2023-04-21T17:16:57.413278347Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 1798144,
+        "open_files_count": 4,
+        "host_name": "agent-sed-string",
+        "pid": 3381527,
+        "cmdline": "/usr/sbin/cron ",
+        "ppid": 3381448,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31128": {
+      "metadata": {
+        "node_id": "agent-sed-string;31128",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/gui/lighttpd/sbin/lighttpd",
+        "timestamp": "2023-04-21T17:16:57.413267284Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 1277952,
+        "open_files_count": 13,
+        "host_name": "agent-sed-string",
+        "pid": 31128,
+        "cmdline": "/usr/local/zend/gui/lighttpd/sbin/lighttpd -m /usr/local/zend/gui/lighttpd/lib -f /usr/local/zend/gui/lighttpd/etc/lighttpd.conf -D ",
+        "ppid": 31127,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;26": {
+      "metadata": {
+        "node_id": "agent-sed-string;26",
+        "node_type": "process",
+        "node_name": "[oom_reaper]",
+        "timestamp": "2023-04-21T17:16:57.413270388Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 26,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3243899": {
+      "metadata": {
+        "node_id": "agent-sed-string;3243899",
+        "node_type": "process",
+        "node_name": "[loop4]",
+        "timestamp": "2023-04-21T17:16:57.413255489Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 3243899,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;84": {
+      "metadata": {
+        "node_id": "agent-sed-string;84",
+        "node_type": "process",
+        "node_name": "[devfreq_wq]",
+        "timestamp": "2023-04-21T17:16:57.413197414Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 84,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;78": {
+      "metadata": {
+        "node_id": "agent-sed-string;78",
+        "node_type": "process",
+        "node_name": "[kblockd]",
+        "timestamp": "2023-04-21T17:16:57.413282258Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 78,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;23": {
+      "metadata": {
+        "node_id": "agent-sed-string;23",
+        "node_type": "process",
+        "node_name": "[rcu_tasks_kthre]",
+        "timestamp": "2023-04-21T17:16:57.413330721Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 23,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;476": {
+      "metadata": {
+        "node_id": "agent-sed-string;476",
+        "node_type": "process",
+        "node_name": "[kaluad]",
+        "timestamp": "2023-04-21T17:16:57.413354897Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 476,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;30710": {
+      "metadata": {
+        "node_id": "agent-sed-string;30710",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/bin/watchdog",
+        "timestamp": "2023-04-21T17:16:57.41340591Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 495616,
+        "open_files_count": 5,
+        "host_name": "agent-sed-string",
+        "pid": 30710,
+        "cmdline": "/usr/local/zend/bin/watchdog -c /usr/local/zend/etc/watchdog-deployment.ini -u 101 -g 101 -s zdd ",
+        "ppid": 29793,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31258": {
+      "metadata": {
+        "node_id": "agent-sed-string;31258",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/bin/php-fpm",
+        "timestamp": "2023-04-21T17:16:57.413424136Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 8962048,
+        "open_files_count": 4,
+        "host_name": "agent-sed-string",
+        "pid": 31258,
+        "cmdline": "/usr/local/zend/bin/php-fpm --daemonize --fpm-config /usr/local/zend/etc/php-fpm.conf --pid /usr/local/zend/tmp/php-fpm.pid ",
+        "ppid": 29793,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;91": {
+      "metadata": {
+        "node_id": "agent-sed-string;91",
+        "node_type": "process",
+        "node_name": "[kthrotld]",
+        "timestamp": "2023-04-21T17:16:57.413395455Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 91,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;15": {
+      "metadata": {
+        "node_id": "agent-sed-string;15",
+        "node_type": "process",
+        "node_name": "[cpuhp/1]",
+        "timestamp": "2023-04-21T17:16:57.413340831Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 15,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;762": {
+      "metadata": {
+        "node_id": "agent-sed-string;762",
+        "node_type": "process",
+        "node_name": "/usr/sbin/cron",
+        "timestamp": "2023-04-21T17:16:57.413373446Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 1122304,
+        "open_files_count": 5,
+        "host_name": "agent-sed-string",
+        "pid": 762,
+        "cmdline": "/usr/sbin/cron -f ",
+        "ppid": 1,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3243987": {
+      "metadata": {
+        "node_id": "agent-sed-string;3243987",
+        "node_type": "process",
+        "node_name": "/usr/lib/snapd/snapd",
+        "timestamp": "2023-04-21T17:16:57.413263892Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 18149376,
+        "open_files_count": 11,
+        "host_name": "agent-sed-string",
+        "pid": 3243987,
+        "cmdline": "/usr/lib/snapd/snapd ",
+        "ppid": 1,
+        "threads": 11
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31102": {
+      "metadata": {
+        "node_id": "agent-sed-string;31102",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/gui/lighttpd/sbin/php",
+        "timestamp": "2023-04-21T17:16:57.413262807Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 33173504,
+        "open_files_count": 18,
+        "host_name": "agent-sed-string",
+        "pid": 31102,
+        "cmdline": "/usr/local/zend/gui/lighttpd/sbin/php -c /usr/local/zend/gui/lighttpd/etc/php-fcgi.ini ",
+        "ppid": 31098,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;237": {
+      "metadata": {
+        "node_id": "agent-sed-string;237",
+        "node_type": "process",
+        "node_name": "[raid5wq]",
+        "timestamp": "2023-04-21T17:16:57.413283292Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 237,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;6": {
+      "metadata": {
+        "node_id": "agent-sed-string;6",
+        "node_type": "process",
+        "node_name": "[kworker/0:0H-kblockd]",
+        "timestamp": "2023-04-21T17:16:57.4134103Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 6,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;15255": {
+      "metadata": {
+        "node_id": "agent-sed-string;15255",
+        "node_type": "process",
+        "node_name": "[xfsalloc]",
+        "timestamp": "2023-04-21T17:16:57.413272513Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 15255,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;29793": {
+      "metadata": {
+        "node_id": "agent-sed-string;29793",
+        "node_type": "process",
+        "node_name": "/usr/local/bin/nothing",
+        "timestamp": "2023-04-21T17:16:57.413422995Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 593920,
+        "open_files_count": 3,
+        "host_name": "agent-sed-string",
+        "pid": 29793,
+        "cmdline": "/usr/local/bin/nothing ",
+        "ppid": 29772,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;277": {
+      "metadata": {
+        "node_id": "agent-sed-string;277",
+        "node_type": "process",
+        "node_name": "[jbd2/vda1-8]",
+        "timestamp": "2023-04-21T17:16:57.413304619Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 277,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;1869228": {
+      "metadata": {
+        "node_id": "agent-sed-string;1869228",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/bin/zdd",
+        "timestamp": "2023-04-21T17:16:57.413386396Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 30343168,
+        "open_files_count": 19,
+        "host_name": "agent-sed-string",
+        "pid": 1869228,
+        "cmdline": "/usr/local/zend/bin/zdd /usr/local/zend/etc/zdd.ini -e ",
+        "ppid": 30710,
+        "threads": 6
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;279": {
+      "metadata": {
+        "node_id": "agent-sed-string;279",
+        "node_type": "process",
+        "node_name": "[kworker/0:1H-kblockd]",
+        "timestamp": "2023-04-21T17:16:57.413258723Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 279,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3386066": {
+      "metadata": {
+        "node_id": "agent-sed-string;3386066",
+        "node_type": "process",
+        "node_name": "[kworker/u4:1-events_power_efficient]",
+        "timestamp": "2023-04-21T17:16:57.413357224Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 3386066,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;96": {
+      "metadata": {
+        "node_id": "agent-sed-string;96",
+        "node_type": "process",
+        "node_name": "[scsi_tmf_1]",
+        "timestamp": "2023-04-21T17:16:57.413302436Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 96,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;24849": {
+      "metadata": {
+        "node_id": "agent-sed-string;24849",
+        "node_type": "process",
+        "node_name": "/usr/bin//mono",
+        "timestamp": "2023-04-21T17:16:57.413322983Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 75202560,
+        "open_files_count": 4,
+        "host_name": "agent-sed-string",
+        "pid": 24849,
+        "cmdline": "/usr/bin//mono /usr/lib/mono/fsharp/fsi.exe --exename:fsharpi ",
+        "ppid": 24830,
+        "threads": 6
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3785515": {
+      "metadata": {
+        "node_id": "agent-sed-string;3785515",
+        "node_type": "process",
+        "node_name": "[loop1]",
+        "timestamp": "2023-04-21T17:16:57.413381746Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 3785515,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;93": {
+      "metadata": {
+        "node_id": "agent-sed-string;93",
+        "node_type": "process",
+        "node_name": "[scsi_eh_0]",
+        "timestamp": "2023-04-21T17:16:57.413416867Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 93,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;27": {
+      "metadata": {
+        "node_id": "agent-sed-string;27",
+        "node_type": "process",
+        "node_name": "[writeback]",
+        "timestamp": "2023-04-21T17:16:57.413301433Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 27,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;12": {
+      "metadata": {
+        "node_id": "agent-sed-string;12",
+        "node_type": "process",
+        "node_name": "[migration/0]",
+        "timestamp": "2023-04-21T17:16:57.413299817Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 12,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31098": {
+      "metadata": {
+        "node_id": "agent-sed-string;31098",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/gui/lighttpd/sbin/php",
+        "timestamp": "2023-04-21T17:16:57.413406893Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 6991872,
+        "open_files_count": 16,
+        "host_name": "agent-sed-string",
+        "pid": 31098,
+        "cmdline": "/usr/local/zend/gui/lighttpd/sbin/php -c /usr/local/zend/gui/lighttpd/etc/php-fcgi.ini ",
+        "ppid": 29793,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3386274": {
+      "metadata": {
+        "node_id": "agent-sed-string;3386274",
+        "node_type": "process",
+        "node_name": "[kworker/u4:0]",
+        "timestamp": "2023-04-21T17:16:57.413285893Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 3386274,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;89": {
+      "metadata": {
+        "node_id": "agent-sed-string;89",
+        "node_type": "process",
+        "node_name": "[ecryptfs-kthrea]",
+        "timestamp": "2023-04-21T17:16:57.413427397Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 89,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3": {
+      "metadata": {
+        "node_id": "agent-sed-string;3",
+        "node_type": "process",
+        "node_name": "[rcu_gp]",
+        "timestamp": "2023-04-21T17:16:57.413174427Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 3,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3381231": {
+      "metadata": {
+        "node_id": "agent-sed-string;3381231",
+        "node_type": "process",
+        "node_name": "[kworker/1:8-cgroup_destroy]",
+        "timestamp": "2023-04-21T17:16:57.413367589Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 3381231,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;28127": {
+      "metadata": {
+        "node_id": "agent-sed-string;28127",
+        "node_type": "process",
+        "node_name": "node",
+        "timestamp": "2023-04-21T17:16:57.413353929Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "cpu_usage": 0.0083948959032908,
+        "memory_max": -1,
+        "memory_usage": 90812416,
+        "open_files_count": 22,
+        "host_name": "agent-sed-string",
+        "pid": 28127,
+        "cmdline": "node current/index.js ",
+        "ppid": 28105,
+        "threads": 11
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;4": {
+      "metadata": {
+        "node_id": "agent-sed-string;4",
+        "node_type": "process",
+        "node_name": "[rcu_par_gp]",
+        "timestamp": "2023-04-21T17:16:57.413269334Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 4,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31262": {
+      "metadata": {
+        "node_id": "agent-sed-string;31262",
+        "node_type": "process",
+        "node_name": "php-fpm: pool www",
+        "timestamp": "2023-04-21T17:16:57.413400191Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 38080512,
+        "open_files_count": 33,
+        "host_name": "agent-sed-string",
+        "pid": 31262,
+        "cmdline": "php-fpm: pool www                                                                                                           ",
+        "ppid": 31259,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;10": {
+      "metadata": {
+        "node_id": "agent-sed-string;10",
+        "node_type": "process",
+        "node_name": "[ksoftirqd/0]",
+        "timestamp": "2023-04-21T17:16:57.41335809Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 10,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;4428": {
+      "metadata": {
+        "node_id": "agent-sed-string;4428",
+        "node_type": "process",
+        "node_name": "/usr/lib/accountsservice/accounts-daemon",
+        "timestamp": "2023-04-21T17:16:57.413352227Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 2732032,
+        "open_files_count": 8,
+        "host_name": "agent-sed-string",
+        "pid": 4428,
+        "cmdline": "/usr/lib/accountsservice/accounts-daemon ",
+        "ppid": 1,
+        "threads": 3
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3380642": {
+      "metadata": {
+        "node_id": "agent-sed-string;3380642",
+        "node_type": "process",
+        "node_name": "[kworker/0:1-events]",
+        "timestamp": "2023-04-21T17:16:57.413337203Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 3380642,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;4086403": {
+      "metadata": {
+        "node_id": "agent-sed-string;4086403",
+        "node_type": "process",
+        "node_name": "/usr/sbin/uuidd",
+        "timestamp": "2023-04-21T17:16:57.413268307Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 180224,
+        "open_files_count": 5,
+        "host_name": "agent-sed-string",
+        "pid": 4086403,
+        "cmdline": "/usr/sbin/uuidd --socket-activation ",
+        "ppid": 1,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31373": {
+      "metadata": {
+        "node_id": "agent-sed-string;31373",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/bin/statsd",
+        "timestamp": "2023-04-21T17:16:57.413425015Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "cpu_usage": 0.0083948959032908,
+        "memory_max": -1,
+        "memory_usage": 624902144,
+        "open_files_count": 10,
+        "host_name": "agent-sed-string",
+        "pid": 31373,
+        "cmdline": "/usr/local/zend/bin/statsd /usr/local/zend/etc/statsd.ini -e ",
+        "ppid": 30851,
+        "threads": 14
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;16238": {
+      "metadata": {
+        "node_id": "agent-sed-string;16238",
+        "node_type": "process",
+        "node_name": "bpfilter_umh",
+        "timestamp": "2023-04-21T17:16:57.413404996Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 69632,
+        "open_files_count": 3,
+        "host_name": "agent-sed-string",
+        "pid": 16238,
+        "cmdline": "bpfilter_umh ",
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;35184": {
+      "metadata": {
+        "node_id": "agent-sed-string;35184",
+        "node_type": "process",
+        "node_name": "irb",
+        "timestamp": "2023-04-21T17:16:57.413201844Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 5611520,
+        "open_files_count": 9,
+        "host_name": "agent-sed-string",
+        "pid": 35184,
+        "cmdline": "irb                                    ",
+        "ppid": 35161,
+        "threads": 2
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;614857": {
+      "metadata": {
+        "node_id": "agent-sed-string;614857",
+        "node_type": "process",
+        "node_name": "nginx: master process nginx -g daemon off;",
+        "timestamp": "2023-04-21T17:16:57.413295257Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 749568,
+        "open_files_count": 12,
+        "host_name": "agent-sed-string",
+        "pid": 614857,
+        "cmdline": "nginx: master process nginx -g daemon off; ",
+        "ppid": 614834,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;26186": {
+      "metadata": {
+        "node_id": "agent-sed-string;26186",
+        "node_type": "process",
+        "node_name": "/docker-java-home/jre/bin/java",
+        "timestamp": "2023-04-21T17:16:57.41318868Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 350777344,
+        "open_files_count": 59,
+        "host_name": "agent-sed-string",
+        "pid": 26186,
+        "cmdline": "/docker-java-home/jre/bin/java -Djava.util.logging.config.file=/usr/local/tomcat/conf/logging.properties -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Djdk.tls.ephemeralDHKeySize=2048 -Djava.endorsed.dirs=/usr/local/tomcat/endorsed -classpath /usr/local/tomcat/bin/bootstrap.jar:/usr/local/tomcat/bin/tomcat-juli.jar -Dcatalina.base=/usr/local/tomcat -Dcatalina.home=/usr/local/tomcat -Djava.io.tmpdir=/usr/local/tomcat/temp org.apache.catalina.startup.Bootstrap start ",
+        "ppid": 26164,
+        "threads": 41
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;2": {
+      "metadata": {
+        "node_id": "agent-sed-string;2",
+        "node_type": "process",
+        "node_name": "[kthreadd]",
+        "timestamp": "2023-04-21T17:16:57.413388134Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 2,
+        "ppid": -1,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;28": {
+      "metadata": {
+        "node_id": "agent-sed-string;28",
+        "node_type": "process",
+        "node_name": "[kcompactd0]",
+        "timestamp": "2023-04-21T17:16:57.413359017Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 28,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3381590": {
+      "metadata": {
+        "node_id": "agent-sed-string;3381590",
+        "node_type": "process",
+        "node_name": "/usr/local/discovery/deepfence-discovery",
+        "timestamp": "2023-04-21T17:16:57.413306705Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "cpu_usage": 0.025184687709872394,
+        "memory_max": -1,
+        "memory_usage": 199430144,
+        "open_files_count": 564,
+        "host_name": "agent-sed-string",
+        "pid": 3381590,
+        "cmdline": "/usr/local/discovery/deepfence-discovery --mode=probe --probe.log.level=info --probe.spy.interval=5s --probe.publish.interval=10s --probe.docker.interval=10s --probe.insecure=true --probe.docker=true --probe.cri=false --probe.token=998a83f0-d7de-4a53-8c63-e01f2901aeae --probe.processes=true --probe.endpoint.report=true --probe.track.deploads=false https://oss.deepfence.tech ",
+        "ppid": 3381539,
+        "threads": 13
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;11": {
+      "metadata": {
+        "node_id": "agent-sed-string;11",
+        "node_type": "process",
+        "node_name": "[rcu_sched]",
+        "timestamp": "2023-04-21T17:16:57.413339941Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 11,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;125": {
+      "metadata": {
+        "node_id": "agent-sed-string;125",
+        "node_type": "process",
+        "node_name": "[charger_manager]",
+        "timestamp": "2023-04-21T17:16:57.413187473Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 125,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;1553506": {
+      "metadata": {
+        "node_id": "agent-sed-string;1553506",
+        "node_type": "process",
+        "node_name": "[loop0]",
+        "timestamp": "2023-04-21T17:16:57.413274254Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 1553506,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;187107": {
+      "metadata": {
+        "node_id": "agent-sed-string;187107",
+        "node_type": "process",
+        "node_name": "/lib/systemd/systemd-journald",
+        "timestamp": "2023-04-21T17:16:57.41324981Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 14487552,
+        "open_files_count": 39,
+        "host_name": "agent-sed-string",
+        "pid": 187107,
+        "cmdline": "/lib/systemd/systemd-journald ",
+        "ppid": 1,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;30609": {
+      "metadata": {
+        "node_id": "agent-sed-string;30609",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/bin/watchdog",
+        "timestamp": "2023-04-21T17:16:57.413383131Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 491520,
+        "open_files_count": 5,
+        "host_name": "agent-sed-string",
+        "pid": 30609,
+        "cmdline": "/usr/local/zend/bin/watchdog -c /usr/local/zend/etc/watchdog-sc.ini -u 101 -g 101 -s scd ",
+        "ppid": 29793,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;478": {
+      "metadata": {
+        "node_id": "agent-sed-string;478",
+        "node_type": "process",
+        "node_name": "[kmpathd]",
+        "timestamp": "2023-04-21T17:16:57.413271567Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 478,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31254": {
+      "metadata": {
+        "node_id": "agent-sed-string;31254",
+        "node_type": "process",
+        "node_name": "nginx: worker process",
+        "timestamp": "2023-04-21T17:16:57.41338433Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 2580480,
+        "open_files_count": 13,
+        "host_name": "agent-sed-string",
+        "pid": 31254,
+        "cmdline": "nginx: worker process ",
+        "ppid": 30479,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;768": {
+      "metadata": {
+        "node_id": "agent-sed-string;768",
+        "node_type": "process",
+        "node_name": "/usr/sbin/irqbalance",
+        "timestamp": "2023-04-21T17:16:57.41332206Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 1093632,
+        "open_files_count": 6,
+        "host_name": "agent-sed-string",
+        "pid": 768,
+        "cmdline": "/usr/sbin/irqbalance --foreground ",
+        "ppid": 1,
+        "threads": 2
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;85": {
+      "metadata": {
+        "node_id": "agent-sed-string;85",
+        "node_type": "process",
+        "node_name": "[watchdogd]",
+        "timestamp": "2023-04-21T17:16:57.413252463Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 85,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;17": {
+      "metadata": {
+        "node_id": "agent-sed-string;17",
+        "node_type": "process",
+        "node_name": "[migration/1]",
+        "timestamp": "2023-04-21T17:16:57.413184626Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 17,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;1": {
+      "metadata": {
+        "node_id": "agent-sed-string;1",
+        "node_type": "process",
+        "node_name": "/lib/systemd/systemd",
+        "timestamp": "2023-04-21T17:16:57.413320912Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 10412032,
+        "open_files_count": 80,
+        "host_name": "agent-sed-string",
+        "pid": 1,
+        "cmdline": "/lib/systemd/systemd --system --deserialize 36 ",
+        "ppid": -1,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3381545": {
+      "metadata": {
+        "node_id": "agent-sed-string;3381545",
+        "node_type": "process",
+        "node_name": "/home/deepfence/bin/package-scanner",
+        "timestamp": "2023-04-21T17:16:57.41329887Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 13774848,
+        "open_files_count": 7,
+        "host_name": "agent-sed-string",
+        "pid": 3381545,
+        "cmdline": "/home/deepfence/bin/package-scanner -socket-path /tmp/package-scanner.sock -mode grpc-server ",
+        "ppid": 3381531,
+        "threads": 7
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31261": {
+      "metadata": {
+        "node_id": "agent-sed-string;31261",
+        "node_type": "process",
+        "node_name": "php-fpm: pool www",
+        "timestamp": "2023-04-21T17:16:57.413413292Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 37920768,
+        "open_files_count": 33,
+        "host_name": "agent-sed-string",
+        "pid": 31261,
+        "cmdline": "php-fpm: pool www                                                                                                           ",
+        "ppid": 31259,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;187102": {
+      "metadata": {
+        "node_id": "agent-sed-string;187102",
+        "node_type": "process",
+        "node_name": "/lib/systemd/systemd-resolved",
+        "timestamp": "2023-04-21T17:16:57.413380556Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 7741440,
+        "open_files_count": 15,
+        "host_name": "agent-sed-string",
+        "pid": 187102,
+        "cmdline": "/lib/systemd/systemd-resolved ",
+        "ppid": 1,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;80": {
+      "metadata": {
+        "node_id": "agent-sed-string;80",
+        "node_type": "process",
+        "node_name": "[tpm_dev_wq]",
+        "timestamp": "2023-04-21T17:16:57.413192866Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 80,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;30947": {
+      "metadata": {
+        "node_id": "agent-sed-string;30947",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/bin/watchdog",
+        "timestamp": "2023-04-21T17:16:57.41332405Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 479232,
+        "open_files_count": 5,
+        "host_name": "agent-sed-string",
+        "pid": 30947,
+        "cmdline": "/usr/local/zend/bin/watchdog -c /usr/local/zend/etc/watchdog-zsd.ini -u 101 -g 101 -s zsd ",
+        "ppid": 29793,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3385884": {
+      "metadata": {
+        "node_id": "agent-sed-string;3385884",
+        "node_type": "process",
+        "node_name": "[kworker/u4:2-events_power_efficient]",
+        "timestamp": "2023-04-21T17:16:57.413239586Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 3385884,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;15256": {
+      "metadata": {
+        "node_id": "agent-sed-string;15256",
+        "node_type": "process",
+        "node_name": "[xfs_mru_cache]",
+        "timestamp": "2023-04-21T17:16:57.413248406Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 15256,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;20": {
+      "metadata": {
+        "node_id": "agent-sed-string;20",
+        "node_type": "process",
+        "node_name": "[kworker/1:0H-kblockd]",
+        "timestamp": "2023-04-21T17:16:57.413329809Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 20,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3381539": {
+      "metadata": {
+        "node_id": "agent-sed-string;3381539",
+        "node_type": "process",
+        "node_name": "/bin/bash",
+        "timestamp": "2023-04-21T17:16:57.413164977Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 2555904,
+        "open_files_count": 4,
+        "host_name": "agent-sed-string",
+        "pid": 3381539,
+        "cmdline": "/bin/bash /home/deepfence/run_discovery.sh ",
+        "ppid": 3381531,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;614917": {
+      "metadata": {
+        "node_id": "agent-sed-string;614917",
+        "node_type": "process",
+        "node_name": "nginx: worker process",
+        "timestamp": "2023-04-21T17:16:57.4133278Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 1196032,
+        "open_files_count": 13,
+        "host_name": "agent-sed-string",
+        "pid": 614917,
+        "cmdline": "nginx: worker process ",
+        "ppid": 614857,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;719053": {
+      "metadata": {
+        "node_id": "agent-sed-string;719053",
+        "node_type": "process",
+        "node_name": "[loop8]",
+        "timestamp": "2023-04-21T17:16:57.413328864Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 719053,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3381468": {
+      "metadata": {
+        "node_id": "agent-sed-string;3381468",
+        "node_type": "process",
+        "node_name": "/bin/bash",
+        "timestamp": "2023-04-21T17:16:57.413338224Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 2740224,
+        "open_files_count": 4,
+        "host_name": "agent-sed-string",
+        "pid": 3381468,
+        "cmdline": "/bin/bash /usr/local/bin/start_services ",
+        "ppid": 3381448,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;30395": {
+      "metadata": {
+        "node_id": "agent-sed-string;30395",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/bin/watchdog",
+        "timestamp": "2023-04-21T17:16:57.413179279Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 499712,
+        "open_files_count": 5,
+        "host_name": "agent-sed-string",
+        "pid": 30395,
+        "cmdline": "/usr/local/zend/bin/watchdog -c /usr/local/zend/etc/watchdog-monitor.ini -u 101 -g 101 -s monitor ",
+        "ppid": 29793,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;98": {
+      "metadata": {
+        "node_id": "agent-sed-string;98",
+        "node_type": "process",
+        "node_name": "[vfio-irqfd-clea]",
+        "timestamp": "2023-04-21T17:16:57.413303297Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 98,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;1971390": {
+      "metadata": {
+        "node_id": "agent-sed-string;1971390",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/bin/MonitorNode",
+        "timestamp": "2023-04-21T17:16:57.41339355Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 174088192,
+        "open_files_count": 20,
+        "host_name": "agent-sed-string",
+        "pid": 1971390,
+        "cmdline": "/usr/local/zend/bin/MonitorNode /usr/local/zend/etc/monitor_node.ini /usr/local/zend/etc/conf.d -e ",
+        "ppid": 30395,
+        "threads": 6
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;1087802": {
+      "metadata": {
+        "node_id": "agent-sed-string;1087802",
+        "node_type": "process",
+        "node_name": "[loop3]",
+        "timestamp": "2023-04-21T17:16:57.41341591Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 1087802,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31259": {
+      "metadata": {
+        "node_id": "agent-sed-string;31259",
+        "node_type": "process",
+        "node_name": "php-fpm: master process (/usr/local/zend/etc/php-fpm.conf)",
+        "timestamp": "2023-04-21T17:16:57.413385407Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 10403840,
+        "open_files_count": 35,
+        "host_name": "agent-sed-string",
+        "pid": 31259,
+        "cmdline": "php-fpm: master process (/usr/local/zend/etc/php-fpm.conf)                                                                  ",
+        "ppid": 29793,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3381531": {
+      "metadata": {
+        "node_id": "agent-sed-string;3381531",
+        "node_type": "process",
+        "node_name": "/usr/bin/python3",
+        "timestamp": "2023-04-21T17:16:57.413296471Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 17596416,
+        "open_files_count": 30,
+        "host_name": "agent-sed-string",
+        "pid": 3381531,
+        "cmdline": "/usr/bin/python3 /usr/bin/supervisord -c /home/deepfence/supervisord.conf ",
+        "ppid": 3381448,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;99": {
+      "metadata": {
+        "node_id": "agent-sed-string;99",
+        "node_type": "process",
+        "node_name": "[ipv6_addrconf]",
+        "timestamp": "2023-04-21T17:16:57.413176546Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 99,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;477": {
+      "metadata": {
+        "node_id": "agent-sed-string;477",
+        "node_type": "process",
+        "node_name": "[kmpath_rdacd]",
+        "timestamp": "2023-04-21T17:16:57.41324431Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 477,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;25": {
+      "metadata": {
+        "node_id": "agent-sed-string;25",
+        "node_type": "process",
+        "node_name": "[khungtaskd]",
+        "timestamp": "2023-04-21T17:16:57.413421232Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 25,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3381448": {
+      "metadata": {
+        "node_id": "agent-sed-string;3381448",
+        "node_type": "process",
+        "node_name": "/usr/bin/containerd-shim-runc-v2",
+        "timestamp": "2023-04-21T17:16:57.413236353Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "cpu_usage": 0.0083948959032908,
+        "memory_max": -1,
+        "memory_usage": 5693440,
+        "open_files_count": 23,
+        "host_name": "agent-sed-string",
+        "pid": 3381448,
+        "cmdline": "/usr/bin/containerd-shim-runc-v2 -namespace moby -id 73df58ddf236a817a040395b7ee179d2a4900bb8e9d9cd9041a473ba71cbe4df -address /run/containerd/containerd.sock ",
+        "ppid": 1,
+        "threads": 12
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;885890": {
+      "metadata": {
+        "node_id": "agent-sed-string;885890",
+        "node_type": "process",
+        "node_name": "/sbin/multipathd",
+        "timestamp": "2023-04-21T17:16:57.413368953Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 18386944,
+        "open_files_count": 7,
+        "host_name": "agent-sed-string",
+        "pid": 885890,
+        "cmdline": "/sbin/multipathd -d -s ",
+        "ppid": 1,
+        "threads": 7
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;26164": {
+      "metadata": {
+        "node_id": "agent-sed-string;26164",
+        "node_type": "process",
+        "node_name": "/usr/bin/containerd-shim-runc-v2",
+        "timestamp": "2023-04-21T17:16:57.413412389Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 3596288,
+        "open_files_count": 23,
+        "host_name": "agent-sed-string",
+        "pid": 26164,
+        "cmdline": "/usr/bin/containerd-shim-runc-v2 -namespace moby -id 7c4bacb194461558e5ff2a7bb737e69b28bd06faf169cacbaa6089d0d144e60b -address /run/containerd/containerd.sock ",
+        "ppid": 1,
+        "threads": 17
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;21": {
+      "metadata": {
+        "node_id": "agent-sed-string;21",
+        "node_type": "process",
+        "node_name": "[kdevtmpfs]",
+        "timestamp": "2023-04-21T17:16:57.413389126Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 21,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;479": {
+      "metadata": {
+        "node_id": "agent-sed-string;479",
+        "node_type": "process",
+        "node_name": "[kmpath_handlerd]",
+        "timestamp": "2023-04-21T17:16:57.413198393Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 479,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;763": {
+      "metadata": {
+        "node_id": "agent-sed-string;763",
+        "node_type": "process",
+        "node_name": "/usr/bin/dbus-daemon",
+        "timestamp": "2023-04-21T17:16:57.413417841Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 2981888,
+        "open_files_count": 21,
+        "host_name": "agent-sed-string",
+        "pid": 763,
+        "cmdline": "/usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only ",
+        "ppid": 1,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31099": {
+      "metadata": {
+        "node_id": "agent-sed-string;31099",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/gui/lighttpd/sbin/php",
+        "timestamp": "2023-04-21T17:16:57.413342833Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 30072832,
+        "open_files_count": 18,
+        "host_name": "agent-sed-string",
+        "pid": 31099,
+        "cmdline": "/usr/local/zend/gui/lighttpd/sbin/php -c /usr/local/zend/gui/lighttpd/etc/php-fcgi.ini ",
+        "ppid": 31098,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;35161": {
+      "metadata": {
+        "node_id": "agent-sed-string;35161",
+        "node_type": "process",
+        "node_name": "/usr/bin/containerd-shim-runc-v2",
+        "timestamp": "2023-04-21T17:16:57.413396365Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "cpu_usage": 0.0083948959032908,
+        "memory_max": -1,
+        "memory_usage": 5169152,
+        "open_files_count": 23,
+        "host_name": "agent-sed-string",
+        "pid": 35161,
+        "cmdline": "/usr/bin/containerd-shim-runc-v2 -namespace moby -id bfc6cb9ca6f298823efe0c90af0e1e1f911631cf22db5a4de0b3b723b75fbf2c -address /run/containerd/containerd.sock ",
+        "ppid": 1,
+        "threads": 18
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;614916": {
+      "metadata": {
+        "node_id": "agent-sed-string;614916",
+        "node_type": "process",
+        "node_name": "nginx: worker process",
+        "timestamp": "2023-04-21T17:16:57.413377383Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 1196032,
+        "open_files_count": 13,
+        "host_name": "agent-sed-string",
+        "pid": 614916,
+        "cmdline": "nginx: worker process ",
+        "ppid": 614857,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;30": {
+      "metadata": {
+        "node_id": "agent-sed-string;30",
+        "node_type": "process",
+        "node_name": "[khugepaged]",
+        "timestamp": "2023-04-21T17:16:57.413360796Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 30,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;278": {
+      "metadata": {
+        "node_id": "agent-sed-string;278",
+        "node_type": "process",
+        "node_name": "[ext4-rsv-conver]",
+        "timestamp": "2023-04-21T17:16:57.413411466Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 278,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;33580": {
+      "metadata": {
+        "node_id": "agent-sed-string;33580",
+        "node_type": "process",
+        "node_name": "/usr/bin/containerd-shim-runc-v2",
+        "timestamp": "2023-04-21T17:16:57.413334497Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "cpu_usage": 0.0083948959032908,
+        "memory_max": -1,
+        "memory_usage": 5455872,
+        "open_files_count": 23,
+        "host_name": "agent-sed-string",
+        "pid": 33580,
+        "cmdline": "/usr/bin/containerd-shim-runc-v2 -namespace moby -id 87410bc5807bdcede5b5c786c4dd5288b6c35e5f5a2ed8b4a7aac0f9cbbc9416 -address /run/containerd/containerd.sock ",
+        "ppid": 1,
+        "threads": 17
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;16040": {
+      "metadata": {
+        "node_id": "agent-sed-string;16040",
+        "node_type": "process",
+        "node_name": "/usr/bin/containerd",
+        "timestamp": "2023-04-21T17:16:57.413199589Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "cpu_usage": 0.0335795836131632,
+        "memory_max": -1,
+        "memory_usage": 22216704,
+        "open_files_count": 44,
+        "host_name": "agent-sed-string",
+        "pid": 16040,
+        "cmdline": "/usr/bin/containerd ",
+        "ppid": 1,
+        "threads": 13
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;851203": {
+      "metadata": {
+        "node_id": "agent-sed-string;851203",
+        "node_type": "process",
+        "node_name": "/usr/sbin/rsyslogd",
+        "timestamp": "2023-04-21T17:16:57.413402786Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 2080768,
+        "open_files_count": 10,
+        "host_name": "agent-sed-string",
+        "pid": 851203,
+        "cmdline": "/usr/sbin/rsyslogd -n -iNONE ",
+        "ppid": 1,
+        "threads": 4
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3381547": {
+      "metadata": {
+        "node_id": "agent-sed-string;3381547",
+        "node_type": "process",
+        "node_name": "/opt/td-agent-bit/bin/td-agent-bit",
+        "timestamp": "2023-04-21T17:16:57.413409422Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 16969728,
+        "open_files_count": 116,
+        "host_name": "agent-sed-string",
+        "pid": 3381547,
+        "cmdline": "/opt/td-agent-bit/bin/td-agent-bit -c /etc/td-agent-bit/td-agent-bit.conf ",
+        "ppid": 3381531,
+        "threads": 9
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;82": {
+      "metadata": {
+        "node_id": "agent-sed-string;82",
+        "node_type": "process",
+        "node_name": "[md]",
+        "timestamp": "2023-04-21T17:16:57.413390042Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 82,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;109": {
+      "metadata": {
+        "node_id": "agent-sed-string;109",
+        "node_type": "process",
+        "node_name": "[kstrp]",
+        "timestamp": "2023-04-21T17:16:57.413177873Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 109,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;2324488": {
+      "metadata": {
+        "node_id": "agent-sed-string;2324488",
+        "node_type": "process",
+        "node_name": "/usr/bin/python3",
+        "timestamp": "2023-04-21T17:16:57.413309289Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 8990720,
+        "open_files_count": 7,
+        "host_name": "agent-sed-string",
+        "pid": 2324488,
+        "cmdline": "/usr/bin/python3 /usr/bin/networkd-dispatcher --run-startup-triggers ",
+        "ppid": 1,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3381225": {
+      "metadata": {
+        "node_id": "agent-sed-string;3381225",
+        "node_type": "process",
+        "node_name": "[kworker/1:1-mm_percpu_wq]",
+        "timestamp": "2023-04-21T17:16:57.413355852Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 3381225,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3381540": {
+      "metadata": {
+        "node_id": "agent-sed-string;3381540",
+        "node_type": "process",
+        "node_name": "/home/deepfence/bin/yara-hunter/YaraHunter",
+        "timestamp": "2023-04-21T17:16:57.413408474Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 96333824,
+        "open_files_count": 264,
+        "host_name": "agent-sed-string",
+        "pid": 3381540,
+        "cmdline": "/home/deepfence/bin/yara-hunter/YaraHunter --config-path /home/deepfence/bin/yara-hunter --rules-path /home/deepfence/bin/yara-hunter --socket-path=/tmp/yara-hunter.sock --http-port=8012 ",
+        "ppid": 3381531,
+        "threads": 9
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;33603": {
+      "metadata": {
+        "node_id": "agent-sed-string;33603",
+        "node_type": "process",
+        "node_name": "/usr/local/bin/python",
+        "timestamp": "2023-04-21T17:16:57.413200759Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 164413440,
+        "open_files_count": 15,
+        "host_name": "agent-sed-string",
+        "pid": 33603,
+        "cmdline": "/usr/local/bin/python /plone/instance/parts/instance/bin/interpreter /plone/buildout-cache/eggs/cp39/Zope-4.6.3-py3.9.egg/Zope2/Startup/serve.py /plone/instance/parts/instance/etc/wsgi.ini ",
+        "ppid": 33580,
+        "threads": 5
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;188181": {
+      "metadata": {
+        "node_id": "agent-sed-string;188181",
+        "node_type": "process",
+        "node_name": "/lib/systemd/systemd-udevd",
+        "timestamp": "2023-04-21T17:16:57.413344671Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 4214784,
+        "open_files_count": 14,
+        "host_name": "agent-sed-string",
+        "pid": 188181,
+        "cmdline": "/lib/systemd/systemd-udevd ",
+        "ppid": 1,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;30851": {
+      "metadata": {
+        "node_id": "agent-sed-string;30851",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/bin/watchdog",
+        "timestamp": "2023-04-21T17:16:57.413418797Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 491520,
+        "open_files_count": 5,
+        "host_name": "agent-sed-string",
+        "pid": 30851,
+        "cmdline": "/usr/local/zend/bin/watchdog -c /usr/local/zend/etc/watchdog-statsd.ini -u 101 -g 101 -s statsd ",
+        "ppid": 29793,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;30949": {
+      "metadata": {
+        "node_id": "agent-sed-string;30949",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/bin/zsd",
+        "timestamp": "2023-04-21T17:16:57.413265484Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "cpu_usage": 0.0167897918065816,
+        "memory_max": -1,
+        "memory_usage": 26169344,
+        "open_files_count": 17,
+        "host_name": "agent-sed-string",
+        "pid": 30949,
+        "cmdline": "/usr/local/zend/bin/zsd /usr/local/zend/etc/zsd.ini -e ",
+        "ppid": 30947,
+        "threads": 5
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;79": {
+      "metadata": {
+        "node_id": "agent-sed-string;79",
+        "node_type": "process",
+        "node_name": "[blkcg_punt_bio]",
+        "timestamp": "2023-04-21T17:16:57.413240758Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 79,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;14": {
+      "metadata": {
+        "node_id": "agent-sed-string;14",
+        "node_type": "process",
+        "node_name": "[cpuhp/0]",
+        "timestamp": "2023-04-21T17:16:57.413183532Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 14,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;16": {
+      "metadata": {
+        "node_id": "agent-sed-string;16",
+        "node_type": "process",
+        "node_name": "[idle_inject/1]",
+        "timestamp": "2023-04-21T17:16:57.413280449Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 16,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31100": {
+      "metadata": {
+        "node_id": "agent-sed-string;31100",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/gui/lighttpd/sbin/php",
+        "timestamp": "2023-04-21T17:16:57.413325821Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 29323264,
+        "open_files_count": 18,
+        "host_name": "agent-sed-string",
+        "pid": 31100,
+        "cmdline": "/usr/local/zend/gui/lighttpd/sbin/php -c /usr/local/zend/gui/lighttpd/etc/php-fcgi.ini ",
+        "ppid": 31098,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3381546": {
+      "metadata": {
+        "node_id": "agent-sed-string;3381546",
+        "node_type": "process",
+        "node_name": "/home/deepfence/bin/secret-scanner/SecretScanner",
+        "timestamp": "2023-04-21T17:16:57.413279547Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 70483968,
+        "open_files_count": 264,
+        "host_name": "agent-sed-string",
+        "pid": 3381546,
+        "cmdline": "/home/deepfence/bin/secret-scanner/SecretScanner --config-path /home/deepfence/bin/secret-scanner --socket-path=/tmp/secret-scanner.sock ",
+        "ppid": 3381531,
+        "threads": 11
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31253": {
+      "metadata": {
+        "node_id": "agent-sed-string;31253",
+        "node_type": "process",
+        "node_name": "nginx: worker process",
+        "timestamp": "2023-04-21T17:16:57.413189838Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 2154496,
+        "open_files_count": 13,
+        "host_name": "agent-sed-string",
+        "pid": 31253,
+        "cmdline": "nginx: worker process ",
+        "ppid": 30479,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;77": {
+      "metadata": {
+        "node_id": "agent-sed-string;77",
+        "node_type": "process",
+        "node_name": "[kintegrityd]",
+        "timestamp": "2023-04-21T17:16:57.413425966Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 77,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;778": {
+      "metadata": {
+        "node_id": "agent-sed-string;778",
+        "node_type": "process",
+        "node_name": "/usr/sbin/atd",
+        "timestamp": "2023-04-21T17:16:57.413378641Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 184320,
+        "open_files_count": 4,
+        "host_name": "agent-sed-string",
+        "pid": 778,
+        "cmdline": "/usr/sbin/atd -f ",
+        "ppid": 1,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;614834": {
+      "metadata": {
+        "node_id": "agent-sed-string;614834",
+        "node_type": "process",
+        "node_name": "/usr/bin/containerd-shim-runc-v2",
+        "timestamp": "2023-04-21T17:16:57.413401854Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "cpu_usage": 0.0083948959032908,
+        "memory_max": -1,
+        "memory_usage": 3219456,
+        "open_files_count": 23,
+        "host_name": "agent-sed-string",
+        "pid": 614834,
+        "cmdline": "/usr/bin/containerd-shim-runc-v2 -namespace moby -id 61c3b771a075b9e156381388990181c57546804ec0772dd36c4fb54b890dfa83 -address /run/containerd/containerd.sock ",
+        "ppid": 1,
+        "threads": 17
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;24": {
+      "metadata": {
+        "node_id": "agent-sed-string;24",
+        "node_type": "process",
+        "node_name": "[kauditd]",
+        "timestamp": "2023-04-21T17:16:57.413332586Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 24,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31310": {
+      "metadata": {
+        "node_id": "agent-sed-string;31310",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/bin/scd",
+        "timestamp": "2023-04-21T17:16:57.413414957Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 966656,
+        "open_files_count": 77,
+        "host_name": "agent-sed-string",
+        "pid": 31310,
+        "cmdline": "/usr/local/zend/bin/scd -p /usr/local/zend/etc/scd.ini -e ",
+        "ppid": 30609,
+        "threads": 15
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;1185631": {
+      "metadata": {
+        "node_id": "agent-sed-string;1185631",
+        "node_type": "process",
+        "node_name": "[loop7]",
+        "timestamp": "2023-04-21T17:16:57.413351117Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 1185631,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;81": {
+      "metadata": {
+        "node_id": "agent-sed-string;81",
+        "node_type": "process",
+        "node_name": "[ata_sff]",
+        "timestamp": "2023-04-21T17:16:57.413372234Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 81,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;31101": {
+      "metadata": {
+        "node_id": "agent-sed-string;31101",
+        "node_type": "process",
+        "node_name": "/usr/local/zend/gui/lighttpd/sbin/php",
+        "timestamp": "2023-04-21T17:16:57.413261333Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 29065216,
+        "open_files_count": 18,
+        "host_name": "agent-sed-string",
+        "pid": 31101,
+        "cmdline": "/usr/local/zend/gui/lighttpd/sbin/php -c /usr/local/zend/gui/lighttpd/etc/php-fcgi.ini ",
+        "ppid": 31098,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;29": {
+      "metadata": {
+        "node_id": "agent-sed-string;29",
+        "node_type": "process",
+        "node_name": "[ksmd]",
+        "timestamp": "2023-04-21T17:16:57.413403849Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 29,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;3381603": {
+      "metadata": {
+        "node_id": "agent-sed-string;3381603",
+        "node_type": "process",
+        "node_name": "tail",
+        "timestamp": "2023-04-21T17:16:57.41319105Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 307200,
+        "open_files_count": 5,
+        "host_name": "agent-sed-string",
+        "pid": 3381603,
+        "cmdline": "tail -f /var/log/fenced/discovery.logfile ",
+        "ppid": 3381468,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;95": {
+      "metadata": {
+        "node_id": "agent-sed-string;95",
+        "node_type": "process",
+        "node_name": "[scsi_eh_1]",
+        "timestamp": "2023-04-21T17:16:57.41324317Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 95,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;840": {
+      "metadata": {
+        "node_id": "agent-sed-string;840",
+        "node_type": "process",
+        "node_name": "/usr/bin/python3",
+        "timestamp": "2023-04-21T17:16:57.41333356Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "memory_usage": 8138752,
+        "open_files_count": 10,
+        "host_name": "agent-sed-string",
+        "pid": 840,
+        "cmdline": "/usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal ",
+        "ppid": 1,
+        "threads": 2
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;88": {
+      "metadata": {
+        "node_id": "agent-sed-string;88",
+        "node_type": "process",
+        "node_name": "[kswapd0]",
+        "timestamp": "2023-04-21T17:16:57.413241992Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 88,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "agent-sed-string;22": {
+      "metadata": {
+        "node_id": "agent-sed-string;22",
+        "node_type": "process",
+        "node_name": "[netns]",
+        "timestamp": "2023-04-21T17:16:57.413419686Z",
+        "pseudo": false,
+        "cpu_max": 200,
+        "memory_max": -1,
+        "host_name": "agent-sed-string",
+        "pid": 22,
+        "ppid": 2,
+        "threads": 1
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    }
+  },
+  "Container": {
+    "8ab99c249210aa564e6db356cea6770cf73a1d0f307ffb74d913039b7a70502c": {
+      "metadata": {
+        "node_id": "8ab99c249210aa564e6db356cea6770cf73a1d0f307ffb74d913039b7a70502c",
+        "node_type": "container",
+        "node_name": "php-zendserver / agent-sed-string",
+        "timestamp": "2023-04-21T17:17:29.564887809Z",
+        "uptime": 42082990,
+        "pseudo": false,
+        "cpu_max": 100,
+        "cpu_usage": 0.44140549019607844,
+        "memory_max": 4127395840,
+        "memory_usage": 1071411200,
+        "host_name": "agent-sed-string",
+        "docker_container_name": "php-zendserver",
+        "docker_container_command": "/usr/local/bin/run ",
+        "docker_container_state": "running",
+        "docker_container_state_human": "Up 16 months",
+        "docker_container_network_mode": "default",
+        "docker_container_created": "2021-12-20T15:34:18.179505925Z",
+        "docker_label": "{}",
+        "docker_image_id": "606eaa5ee825af782c1feee4a3540aa8f0bae5ac65c19b59cd99e7b5b3c79d64"
+      },
+      "parents": {
+        "host": "agent-sed-string",
+        "container_image": "606eaa5ee825af782c1feee4a3540aa8f0bae5ac65c19b59cd99e7b5b3c79d64"
+      },
+      "sets": {
+        "ps_map": {
+          "map": {
+            "docker_container_ips": [
+              "10.108.0.7",
+              "10.17.0.11",
+              "127.0.0.1",
+              "172.17.0.1",
+              "172.17.0.2",
+              "172.17.0.3",
+              "172.17.0.5",
+              "172.17.0.6",
+              "172.17.0.7",
+              "172.17.0.8",
+              "172.17.0.9",
+              "68.183.155.185"
+            ],
+            "docker_container_ips_with_scopes": [
+              ";10.108.0.7",
+              ";10.17.0.11",
+              ";68.183.155.185",
+              "agent-sed-string;127.0.0.1",
+              "agent-sed-string;172.17.0.1",
+              "agent-sed-string;172.17.0.2",
+              "agent-sed-string;172.17.0.3",
+              "agent-sed-string;172.17.0.5",
+              "agent-sed-string;172.17.0.6",
+              "agent-sed-string;172.17.0.7",
+              "agent-sed-string;172.17.0.8",
+              "agent-sed-string;172.17.0.9"
+            ],
+            "docker_container_networks": [
+              "bridge"
+            ],
+            "docker_container_ports": [
+              "10081/tcp",
+              "10082/tcp",
+              "2368/tcp",
+              "443/tcp",
+              "80/tcp",
+              "8080/tcp"
+            ],
+            "local_networks": [
+              "172.17.0.0/16"
+            ]
+          }
+        }
+      }
+    },
+    "bfc6cb9ca6f298823efe0c90af0e1e1f911631cf22db5a4de0b3b723b75fbf2c": {
+      "metadata": {
+        "node_id": "bfc6cb9ca6f298823efe0c90af0e1e1f911631cf22db5a4de0b3b723b75fbf2c",
+        "node_type": "container",
+        "node_name": "rails / agent-sed-string",
+        "timestamp": "2023-04-21T17:17:29.564890767Z",
+        "uptime": 42082791,
+        "pseudo": false,
+        "cpu_max": 100,
+        "memory_max": 4127395840,
+        "memory_usage": 7245824,
+        "host_name": "agent-sed-string",
+        "docker_container_name": "rails",
+        "docker_container_command": "irb ",
+        "docker_container_state": "running",
+        "docker_container_state_human": "Up 16 months",
+        "docker_container_network_mode": "default",
+        "docker_container_created": "2021-12-20T15:37:37.240555819Z",
+        "docker_label": "{}",
+        "docker_image_id": "660f41442a278fab36077eaad1cb0bce5e0842b5ad5e34d0e3bb9ccf995391d3"
+      },
+      "parents": {
+        "host": "agent-sed-string",
+        "container_image": "660f41442a278fab36077eaad1cb0bce5e0842b5ad5e34d0e3bb9ccf995391d3"
+      },
+      "sets": {
+        "ps_map": {
+          "map": {
+            "docker_container_ips": [
+              "10.108.0.7",
+              "10.17.0.11",
+              "127.0.0.1",
+              "172.17.0.1",
+              "172.17.0.2",
+              "172.17.0.3",
+              "172.17.0.5",
+              "172.17.0.6",
+              "172.17.0.7",
+              "172.17.0.8",
+              "172.17.0.9",
+              "68.183.155.185"
+            ],
+            "docker_container_ips_with_scopes": [
+              ";10.108.0.7",
+              ";10.17.0.11",
+              ";68.183.155.185",
+              "agent-sed-string;127.0.0.1",
+              "agent-sed-string;172.17.0.1",
+              "agent-sed-string;172.17.0.2",
+              "agent-sed-string;172.17.0.3",
+              "agent-sed-string;172.17.0.5",
+              "agent-sed-string;172.17.0.6",
+              "agent-sed-string;172.17.0.7",
+              "agent-sed-string;172.17.0.8",
+              "agent-sed-string;172.17.0.9"
+            ],
+            "docker_container_networks": [
+              "bridge"
+            ],
+            "docker_container_ports": [
+              "10081/tcp",
+              "10082/tcp",
+              "2368/tcp",
+              "443/tcp",
+              "80/tcp",
+              "8080/tcp"
+            ],
+            "local_networks": [
+              "172.17.0.0/16"
+            ]
+          }
+        }
+      }
+    },
+    "47d8531b788f6c3c8c0b3d04d8b1a96a52a5f8598389619ce037ba8ffda9e083": {
+      "metadata": {
+        "node_id": "47d8531b788f6c3c8c0b3d04d8b1a96a52a5f8598389619ce037ba8ffda9e083",
+        "node_type": "container",
+        "node_name": "ghost / agent-sed-string",
+        "timestamp": "2023-04-21T17:17:29.564851428Z",
+        "uptime": 42083060,
+        "pseudo": false,
+        "cpu_max": 100,
+        "cpu_usage": 0.009293024390243902,
+        "memory_max": 4127395840,
+        "memory_usage": 96182272,
+        "host_name": "agent-sed-string",
+        "docker_container_name": "ghost",
+        "docker_container_command": "docker-entrypoint.sh node current/index.js",
+        "docker_container_state": "running",
+        "docker_container_state_human": "Up 16 months",
+        "docker_container_network_mode": "default",
+        "docker_container_created": "2021-12-20T15:33:09.002927547Z",
+        "docker_label": "{}",
+        "docker_image_id": "b40265427368c38ca810c40e3e684553ae76087ec7a6ed46c813544b25789ae4"
+      },
+      "parents": {
+        "host": "agent-sed-string",
+        "container_image": "b40265427368c38ca810c40e3e684553ae76087ec7a6ed46c813544b25789ae4"
+      },
+      "sets": {
+        "ps_map": {
+          "map": {
+            "docker_container_networks": [
+              "bridge"
+            ],
+            "docker_container_ports": [
+              "10081/tcp",
+              "10082/tcp",
+              "2368/tcp",
+              "443/tcp",
+              "80/tcp",
+              "8080/tcp"
+            ],
+            "local_networks": [
+              "172.17.0.0/16"
+            ],
+            "docker_container_ips": [
+              "10.108.0.7",
+              "10.17.0.11",
+              "127.0.0.1",
+              "172.17.0.1",
+              "172.17.0.2",
+              "172.17.0.3",
+              "172.17.0.5",
+              "172.17.0.6",
+              "172.17.0.7",
+              "172.17.0.8",
+              "172.17.0.9",
+              "68.183.155.185"
+            ],
+            "docker_container_ips_with_scopes": [
+              ";10.108.0.7",
+              ";10.17.0.11",
+              ";68.183.155.185",
+              "agent-sed-string;127.0.0.1",
+              "agent-sed-string;172.17.0.1",
+              "agent-sed-string;172.17.0.2",
+              "agent-sed-string;172.17.0.3",
+              "agent-sed-string;172.17.0.5",
+              "agent-sed-string;172.17.0.6",
+              "agent-sed-string;172.17.0.7",
+              "agent-sed-string;172.17.0.8",
+              "agent-sed-string;172.17.0.9"
+            ]
+          }
+        }
+      }
+    },
+    "61c3b771a075b9e156381388990181c57546804ec0772dd36c4fb54b890dfa83": {
+      "metadata": {
+        "node_id": "61c3b771a075b9e156381388990181c57546804ec0772dd36c4fb54b890dfa83",
+        "node_type": "container",
+        "node_name": "nginx / agent-sed-string",
+        "timestamp": "2023-04-21T17:17:29.564861954Z",
+        "uptime": 33283624,
+        "pseudo": false,
+        "cpu_max": 100,
+        "memory_max": 4127395840,
+        "memory_usage": 3497984,
+        "host_name": "agent-sed-string",
+        "docker_container_name": "nginx",
+        "docker_container_command": "/docker-entrypoint.sh nginx -g daemon off;",
+        "docker_container_state": "running",
+        "docker_container_state_human": "Up 12 months",
+        "docker_container_network_mode": "default",
+        "docker_container_created": "2022-04-01T11:50:24.257774192Z",
+        "docker_label": "{\"maintainer\":\"NGINX Docker Maintainers \\u003cdocker-maint@nginx.com\\u003e\"}",
+        "docker_image_id": "12766a6745eea133de9fdcd03ff720fa971fdaf21113d4bc72b417c123b15619"
+      },
+      "parents": {
+        "host": "agent-sed-string",
+        "container_image": "12766a6745eea133de9fdcd03ff720fa971fdaf21113d4bc72b417c123b15619"
+      },
+      "sets": {
+        "ps_map": {
+          "map": {
+            "local_networks": [
+              "172.17.0.0/16"
+            ],
+            "docker_container_ips": [
+              "10.108.0.7",
+              "10.17.0.11",
+              "127.0.0.1",
+              "172.17.0.1",
+              "172.17.0.2",
+              "172.17.0.3",
+              "172.17.0.5",
+              "172.17.0.6",
+              "172.17.0.7",
+              "172.17.0.8",
+              "172.17.0.9",
+              "68.183.155.185"
+            ],
+            "docker_container_ips_with_scopes": [
+              ";10.108.0.7",
+              ";10.17.0.11",
+              ";68.183.155.185",
+              "agent-sed-string;127.0.0.1",
+              "agent-sed-string;172.17.0.1",
+              "agent-sed-string;172.17.0.2",
+              "agent-sed-string;172.17.0.3",
+              "agent-sed-string;172.17.0.5",
+              "agent-sed-string;172.17.0.6",
+              "agent-sed-string;172.17.0.7",
+              "agent-sed-string;172.17.0.8",
+              "agent-sed-string;172.17.0.9"
+            ],
+            "docker_container_networks": [
+              "bridge"
+            ],
+            "docker_container_ports": [
+              "10081/tcp",
+              "10082/tcp",
+              "2368/tcp",
+              "443/tcp",
+              "80/tcp",
+              "8080/tcp"
+            ]
+          }
+        }
+      }
+    },
+    "71b88611c8d545635e3a3bd290f41c49d05d6cafda0ff45e71bf7eeec8bef6d9": {
+      "metadata": {
+        "node_id": "71b88611c8d545635e3a3bd290f41c49d05d6cafda0ff45e71bf7eeec8bef6d9",
+        "node_type": "container",
+        "node_name": "fsharp / agent-sed-string",
+        "timestamp": "2023-04-21T17:17:29.56486815Z",
+        "uptime": 42083186,
+        "pseudo": false,
+        "cpu_max": 100,
+        "cpu_usage": 0.01002502512562814,
+        "memory_max": 4127395840,
+        "memory_usage": 77365248,
+        "host_name": "agent-sed-string",
+        "docker_container_name": "fsharp",
+        "docker_container_command": "fsharpi ",
+        "docker_container_state": "running",
+        "docker_container_state_human": "Up 16 months",
+        "docker_container_network_mode": "default",
+        "docker_container_created": "2021-12-20T15:31:02.998958919Z",
+        "docker_label": "{\"maintainer\":\"Dave Curylo \\u003cdave@curylo.org\\u003e, Steve Desmond \\u003csteve@stevedesmond.ca\\u003e\"}",
+        "docker_image_id": "21352db8ceed765daea13b6eb4f6d02ee204f732eecbd0289f96270eb2296f3a"
+      },
+      "parents": {
+        "host": "agent-sed-string",
+        "container_image": "21352db8ceed765daea13b6eb4f6d02ee204f732eecbd0289f96270eb2296f3a"
+      },
+      "sets": {
+        "ps_map": {
+          "map": {
+            "docker_container_ports": [
+              "10081/tcp",
+              "10082/tcp",
+              "2368/tcp",
+              "443/tcp",
+              "80/tcp",
+              "8080/tcp"
+            ],
+            "local_networks": [
+              "172.17.0.0/16"
+            ],
+            "docker_container_ips": [
+              "10.108.0.7",
+              "10.17.0.11",
+              "127.0.0.1",
+              "172.17.0.1",
+              "172.17.0.2",
+              "172.17.0.3",
+              "172.17.0.5",
+              "172.17.0.6",
+              "172.17.0.7",
+              "172.17.0.8",
+              "172.17.0.9",
+              "68.183.155.185"
+            ],
+            "docker_container_ips_with_scopes": [
+              ";10.108.0.7",
+              ";10.17.0.11",
+              ";68.183.155.185",
+              "agent-sed-string;127.0.0.1",
+              "agent-sed-string;172.17.0.1",
+              "agent-sed-string;172.17.0.2",
+              "agent-sed-string;172.17.0.3",
+              "agent-sed-string;172.17.0.5",
+              "agent-sed-string;172.17.0.6",
+              "agent-sed-string;172.17.0.7",
+              "agent-sed-string;172.17.0.8",
+              "agent-sed-string;172.17.0.9"
+            ],
+            "docker_container_networks": [
+              "bridge"
+            ]
+          }
+        }
+      }
+    },
+    "73df58ddf236a817a040395b7ee179d2a4900bb8e9d9cd9041a473ba71cbe4df": {
+      "metadata": {
+        "node_id": "73df58ddf236a817a040395b7ee179d2a4900bb8e9d9cd9041a473ba71cbe4df",
+        "node_type": "container",
+        "node_name": "deepfence-agent / agent-sed-string",
+        "timestamp": "2023-04-21T17:17:29.564873558Z",
+        "uptime": 2742,
+        "pseudo": false,
+        "cpu_max": 100,
+        "cpu_usage": 0.24198059113300494,
+        "memory_max": 4127395840,
+        "memory_usage": 447254528,
+        "host_name": "agent-sed-string",
+        "docker_container_name": "deepfence-agent",
+        "docker_container_command": "/usr/local/bin/start_services ",
+        "docker_container_state": "running",
+        "docker_container_state_human": "Up 45 minutes",
+        "docker_container_network_mode": "host",
+        "docker_container_created": "2023-04-21T16:31:46.582000701Z",
+        "docker_label": "{\"deepfence.role\":\"system\"}",
+        "docker_image_id": "ebdc4f19ca9d7d7cbe3625fb1fab6aca39e9ecee4b00f056bc5fd1e2afd0eb26"
+      },
+      "parents": {
+        "host": "agent-sed-string",
+        "container_image": "ebdc4f19ca9d7d7cbe3625fb1fab6aca39e9ecee4b00f056bc5fd1e2afd0eb26"
+      },
+      "sets": {
+        "ps_map": {
+          "map": {
+            "docker_container_ips_with_scopes": [
+              ";10.108.0.7",
+              ";10.17.0.11",
+              ";68.183.155.185",
+              "agent-sed-string;127.0.0.1",
+              "agent-sed-string;172.17.0.1",
+              "agent-sed-string;172.17.0.2",
+              "agent-sed-string;172.17.0.3",
+              "agent-sed-string;172.17.0.5",
+              "agent-sed-string;172.17.0.6",
+              "agent-sed-string;172.17.0.7",
+              "agent-sed-string;172.17.0.8",
+              "agent-sed-string;172.17.0.9"
+            ],
+            "docker_container_networks": [
+              "bridge"
+            ],
+            "docker_container_ports": [
+              "10081/tcp",
+              "10082/tcp",
+              "2368/tcp",
+              "443/tcp",
+              "80/tcp",
+              "8080/tcp"
+            ],
+            "local_networks": [
+              "172.17.0.0/16"
+            ],
+            "docker_container_ips": [
+              "10.108.0.7",
+              "10.17.0.11",
+              "127.0.0.1",
+              "172.17.0.1",
+              "172.17.0.2",
+              "172.17.0.3",
+              "172.17.0.5",
+              "172.17.0.6",
+              "172.17.0.7",
+              "172.17.0.8",
+              "172.17.0.9",
+              "68.183.155.185"
+            ]
+          }
+        }
+      }
+    },
+    "7c4bacb194461558e5ff2a7bb737e69b28bd06faf169cacbaa6089d0d144e60b": {
+      "metadata": {
+        "node_id": "7c4bacb194461558e5ff2a7bb737e69b28bd06faf169cacbaa6089d0d144e60b",
+        "node_type": "container",
+        "node_name": "struts / agent-sed-string",
+        "timestamp": "2023-04-21T17:17:29.564877271Z",
+        "uptime": 42083130,
+        "pseudo": false,
+        "cpu_max": 100,
+        "cpu_usage": 0.04363470873786408,
+        "memory_max": 4127395840,
+        "memory_usage": 357429248,
+        "host_name": "agent-sed-string",
+        "docker_container_name": "struts",
+        "docker_container_command": "catalina.sh run",
+        "docker_container_state": "running",
+        "docker_container_state_human": "Up 16 months",
+        "docker_container_network_mode": "default",
+        "docker_container_created": "2021-12-20T15:31:58.439106521Z",
+        "docker_label": "{}",
+        "docker_image_id": "e1440048c3f73d3bdc4cc04b43cdc5516f4ae828ec100c3dc4684b86a87b151b"
+      },
+      "parents": {
+        "host": "agent-sed-string",
+        "container_image": "e1440048c3f73d3bdc4cc04b43cdc5516f4ae828ec100c3dc4684b86a87b151b"
+      },
+      "sets": {
+        "ps_map": {
+          "map": {
+            "docker_container_ports": [
+              "10081/tcp",
+              "10082/tcp",
+              "2368/tcp",
+              "443/tcp",
+              "80/tcp",
+              "8080/tcp"
+            ],
+            "local_networks": [
+              "172.17.0.0/16"
+            ],
+            "docker_container_ips": [
+              "10.108.0.7",
+              "10.17.0.11",
+              "127.0.0.1",
+              "172.17.0.1",
+              "172.17.0.2",
+              "172.17.0.3",
+              "172.17.0.5",
+              "172.17.0.6",
+              "172.17.0.7",
+              "172.17.0.8",
+              "172.17.0.9",
+              "68.183.155.185"
+            ],
+            "docker_container_ips_with_scopes": [
+              ";10.108.0.7",
+              ";10.17.0.11",
+              ";68.183.155.185",
+              "agent-sed-string;127.0.0.1",
+              "agent-sed-string;172.17.0.1",
+              "agent-sed-string;172.17.0.2",
+              "agent-sed-string;172.17.0.3",
+              "agent-sed-string;172.17.0.5",
+              "agent-sed-string;172.17.0.6",
+              "agent-sed-string;172.17.0.7",
+              "agent-sed-string;172.17.0.8",
+              "agent-sed-string;172.17.0.9"
+            ],
+            "docker_container_networks": [
+              "bridge"
+            ]
+          }
+        }
+      }
+    },
+    "87410bc5807bdcede5b5c786c4dd5288b6c35e5f5a2ed8b4a7aac0f9cbbc9416": {
+      "metadata": {
+        "node_id": "87410bc5807bdcede5b5c786c4dd5288b6c35e5f5a2ed8b4a7aac0f9cbbc9416",
+        "node_type": "container",
+        "node_name": "plone / agent-sed-string",
+        "timestamp": "2023-04-21T17:17:29.564884726Z",
+        "uptime": 42082859,
+        "pseudo": false,
+        "cpu_max": 100,
+        "cpu_usage": 0.004640833333333334,
+        "memory_max": 4127395840,
+        "memory_usage": 168742912,
+        "host_name": "agent-sed-string",
+        "docker_container_name": "plone",
+        "docker_container_command": "/docker-entrypoint.sh start",
+        "docker_container_state": "running",
+        "docker_container_state_human": "Up 16 months",
+        "docker_container_network_mode": "default",
+        "docker_container_created": "2021-12-20T15:36:29.728612859Z",
+        "docker_label": "{}",
+        "docker_image_id": "e8cf277e1416aa300ebfdf262dc5a41474680d8eb499c0fc64cf8c78dc0753f1"
+      },
+      "parents": {
+        "host": "agent-sed-string",
+        "container_image": "e8cf277e1416aa300ebfdf262dc5a41474680d8eb499c0fc64cf8c78dc0753f1"
+      },
+      "sets": {
+        "ps_map": {
+          "map": {
+            "docker_container_ips": [
+              "10.108.0.7",
+              "10.17.0.11",
+              "127.0.0.1",
+              "172.17.0.1",
+              "172.17.0.2",
+              "172.17.0.3",
+              "172.17.0.5",
+              "172.17.0.6",
+              "172.17.0.7",
+              "172.17.0.8",
+              "172.17.0.9",
+              "68.183.155.185"
+            ],
+            "docker_container_ips_with_scopes": [
+              ";10.108.0.7",
+              ";10.17.0.11",
+              ";68.183.155.185",
+              "agent-sed-string;127.0.0.1",
+              "agent-sed-string;172.17.0.1",
+              "agent-sed-string;172.17.0.2",
+              "agent-sed-string;172.17.0.3",
+              "agent-sed-string;172.17.0.5",
+              "agent-sed-string;172.17.0.6",
+              "agent-sed-string;172.17.0.7",
+              "agent-sed-string;172.17.0.8",
+              "agent-sed-string;172.17.0.9"
+            ],
+            "docker_container_networks": [
+              "bridge"
+            ],
+            "docker_container_ports": [
+              "10081/tcp",
+              "10082/tcp",
+              "2368/tcp",
+              "443/tcp",
+              "80/tcp",
+              "8080/tcp"
+            ],
+            "local_networks": [
+              "172.17.0.0/16"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "CloudProvider": {
+    "digital_ocean": {
+      "metadata": {
+        "node_id": "digital_ocean",
+        "node_type": "cloud_provider",
+        "node_name": "DigitalOcean",
+        "timestamp": "2023-04-21T17:17:29.565561888Z",
+        "pseudo": false
+      },
+      "parents": {},
+      "sets": {
+        "ps_map": null
+      }
+    }
+  },
+  "CloudRegion": {
+    "nyc3-digital_ocean": {
+      "metadata": {
+        "node_id": "nyc3-digital_ocean",
+        "node_type": "cloud_region",
+        "node_name": "nyc3",
+        "timestamp": "2023-04-21T17:17:29.565563408Z",
+        "cloud_provider": "digital_ocean",
+        "pseudo": false
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    }
+  },
+  "KubernetesCluster": {},
+  "Pod": {},
+  "Service": {},
+  "Namespace": {},
+  "ContainerImage": {
+    "e1440048c3f73d3bdc4cc04b43cdc5516f4ae828ec100c3dc4684b86a87b151b": {
+      "metadata": {
+        "node_id": "e1440048c3f73d3bdc4cc04b43cdc5516f4ae828ec100c3dc4684b86a87b151b",
+        "node_type": "container_image",
+        "node_name": "piesecurity/apache-struts2-cve-2017-5638:latest",
+        "timestamp": "2023-04-21T17:17:29.565494218Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "docker_image_name": "piesecurity/apache-struts2-cve-2017-5638",
+        "docker_image_name_with_tag": "piesecurity/apache-struts2-cve-2017-5638:latest",
+        "docker_image_tag": "latest",
+        "docker_image_size": "370 MB",
+        "docker_image_created_at": "2017-07-12T14:19:16Z",
+        "docker_image_virtual_size": "370 MB",
+        "docker_image_labels": "{}"
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "bab95252ed7def1ff486f71b67bad6d82b3a79fd408183189e14829a283528d7": {
+      "metadata": {
+        "node_id": "bab95252ed7def1ff486f71b67bad6d82b3a79fd408183189e14829a283528d7",
+        "node_type": "container_image",
+        "node_name": "weaveworks/scope:1.13.2",
+        "timestamp": "2023-04-21T17:17:29.56545986Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "docker_image_name": "weaveworks/scope",
+        "docker_image_name_with_tag": "weaveworks/scope:1.13.2",
+        "docker_image_tag": "1.13.2",
+        "docker_image_size": "85 MB",
+        "docker_image_created_at": "2021-04-09T09:53:51Z",
+        "docker_image_virtual_size": "85 MB",
+        "docker_image_labels": "{\"maintainer\":\"Weaveworks \\u003chelp@weave.works\\u003e\",\"org.opencontainers.image.revision\":\"0e1d3f84d9f1c2a43da290ca9e260b62fb4ef067\",\"org.opencontainers.image.source\":\"https://github.com/weaveworks/scope\",\"org.opencontainers.image.title\":\"scope\",\"org.opencontainers.image.vendor\":\"Weaveworks\",\"works.weave.role\":\"system\"}"
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "e8cf277e1416aa300ebfdf262dc5a41474680d8eb499c0fc64cf8c78dc0753f1": {
+      "metadata": {
+        "node_id": "e8cf277e1416aa300ebfdf262dc5a41474680d8eb499c0fc64cf8c78dc0753f1",
+        "node_type": "container_image",
+        "node_name": "plone:latest",
+        "timestamp": "2023-04-21T17:17:29.565487355Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "docker_image_name": "plone",
+        "docker_image_name_with_tag": "plone:latest",
+        "docker_image_tag": "latest",
+        "docker_image_size": "754 MB",
+        "docker_image_created_at": "2021-12-03T22:04:55Z",
+        "docker_image_virtual_size": "754 MB",
+        "docker_image_labels": "null"
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "21352db8ceed765daea13b6eb4f6d02ee204f732eecbd0289f96270eb2296f3a": {
+      "metadata": {
+        "node_id": "21352db8ceed765daea13b6eb4f6d02ee204f732eecbd0289f96270eb2296f3a",
+        "node_type": "container_image",
+        "node_name": "fsharp:latest",
+        "timestamp": "2023-04-21T17:17:29.565438177Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "docker_image_name": "fsharp",
+        "docker_image_name_with_tag": "fsharp:latest",
+        "docker_image_tag": "latest",
+        "docker_image_size": "608 MB",
+        "docker_image_created_at": "2021-07-22T09:03:30Z",
+        "docker_image_virtual_size": "608 MB",
+        "docker_image_labels": "{\"maintainer\":\"Dave Curylo \\u003cdave@curylo.org\\u003e, Steve Desmond \\u003csteve@stevedesmond.ca\\u003e\"}"
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "042a816809aac8d0f7d7cacac7965782ee2ecac3f21bcf9f24b1de1a7387b769": {
+      "metadata": {
+        "node_id": "042a816809aac8d0f7d7cacac7965782ee2ecac3f21bcf9f24b1de1a7387b769",
+        "node_type": "container_image",
+        "node_name": "alpine:3.17",
+        "timestamp": "2023-04-21T17:17:29.565508206Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "docker_image_name": "alpine",
+        "docker_image_name_with_tag": "alpine:3.17",
+        "docker_image_tag": "3.17",
+        "docker_image_size": "7.0 MB",
+        "docker_image_created_at": "2023-01-09T17:05:20Z",
+        "docker_image_virtual_size": "7.0 MB",
+        "docker_image_labels": "null"
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "12766a6745eea133de9fdcd03ff720fa971fdaf21113d4bc72b417c123b15619": {
+      "metadata": {
+        "node_id": "12766a6745eea133de9fdcd03ff720fa971fdaf21113d4bc72b417c123b15619",
+        "node_type": "container_image",
+        "node_name": "nginx:latest",
+        "timestamp": "2023-04-21T17:17:29.565479125Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "docker_image_name": "nginx",
+        "docker_image_name_with_tag": "nginx:latest",
+        "docker_image_tag": "latest",
+        "docker_image_size": "142 MB",
+        "docker_image_created_at": "2022-03-29T16:02:44Z",
+        "docker_image_virtual_size": "142 MB",
+        "docker_image_labels": "{\"maintainer\":\"NGINX Docker Maintainers \\u003cdocker-maint@nginx.com\\u003e\"}"
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "be639b0e926132c462216dd3bdc6a60e669f617df39fd4b70a5f7c0114a97c53": {
+      "metadata": {
+        "node_id": "be639b0e926132c462216dd3bdc6a60e669f617df39fd4b70a5f7c0114a97c53",
+        "node_type": "container_image",
+        "node_name": "deepfenceio/deepfence_apache_struts_exploit:latest",
+        "timestamp": "2023-04-21T17:17:29.565490877Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "docker_image_name": "deepfenceio/deepfence_apache_struts_exploit",
+        "docker_image_name_with_tag": "deepfenceio/deepfence_apache_struts_exploit:latest",
+        "docker_image_tag": "latest",
+        "docker_image_size": "71 MB",
+        "docker_image_created_at": "2021-02-05T13:46:59Z",
+        "docker_image_virtual_size": "71 MB",
+        "docker_image_labels": "null"
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "ebdc4f19ca9d7d7cbe3625fb1fab6aca39e9ecee4b00f056bc5fd1e2afd0eb26": {
+      "metadata": {
+        "node_id": "ebdc4f19ca9d7d7cbe3625fb1fab6aca39e9ecee4b00f056bc5fd1e2afd0eb26",
+        "node_type": "container_image",
+        "node_name": "deepfenceio/deepfence_agent_ce:ramanan",
+        "timestamp": "2023-04-21T17:17:29.56550376Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "docker_image_name": "deepfenceio/deepfence_agent_ce",
+        "docker_image_name_with_tag": "deepfenceio/deepfence_agent_ce:ramanan",
+        "docker_image_tag": "ramanan",
+        "docker_image_size": "1.2 GB",
+        "docker_image_created_at": "2023-04-21T16:22:20Z",
+        "docker_image_virtual_size": "1.2 GB",
+        "docker_image_labels": "{\"deepfence.role\":\"system\"}"
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "b40265427368c38ca810c40e3e684553ae76087ec7a6ed46c813544b25789ae4": {
+      "metadata": {
+        "node_id": "b40265427368c38ca810c40e3e684553ae76087ec7a6ed46c813544b25789ae4",
+        "node_type": "container_image",
+        "node_name": "deepfence.azurecr.io/ghost:latest",
+        "timestamp": "2023-04-21T17:17:29.565470632Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "docker_image_name": "deepfence.azurecr.io/ghost",
+        "docker_image_name_with_tag": "deepfence.azurecr.io/ghost:latest",
+        "docker_image_tag": "latest",
+        "docker_image_size": "469 MB",
+        "docker_image_created_at": "2021-12-18T00:20:47Z",
+        "docker_image_virtual_size": "469 MB",
+        "docker_image_labels": "null"
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "606eaa5ee825af782c1feee4a3540aa8f0bae5ac65c19b59cd99e7b5b3c79d64": {
+      "metadata": {
+        "node_id": "606eaa5ee825af782c1feee4a3540aa8f0bae5ac65c19b59cd99e7b5b3c79d64",
+        "node_type": "container_image",
+        "node_name": "php-zendserver:latest",
+        "timestamp": "2023-04-21T17:17:29.565474572Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "docker_image_name": "php-zendserver",
+        "docker_image_name_with_tag": "php-zendserver:latest",
+        "docker_image_tag": "latest",
+        "docker_image_size": "1.0 GB",
+        "docker_image_created_at": "2021-10-01T05:40:29Z",
+        "docker_image_virtual_size": "1.0 GB",
+        "docker_image_labels": "null"
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "660f41442a278fab36077eaad1cb0bce5e0842b5ad5e34d0e3bb9ccf995391d3": {
+      "metadata": {
+        "node_id": "660f41442a278fab36077eaad1cb0bce5e0842b5ad5e34d0e3bb9ccf995391d3",
+        "node_type": "container_image",
+        "node_name": "rails:latest",
+        "timestamp": "2023-04-21T17:17:29.565499283Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "docker_image_name": "rails",
+        "docker_image_name_with_tag": "rails:latest",
+        "docker_image_tag": "latest",
+        "docker_image_size": "840 MB",
+        "docker_image_created_at": "2017-01-06T19:05:57Z",
+        "docker_image_virtual_size": "840 MB",
+        "docker_image_labels": "{}"
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    },
+    "8b3441dff5a4bfed7da1f6634fa72e94f3ad7a95bf7aa64ae52fb15f0c1161cf": {
+      "metadata": {
+        "node_id": "8b3441dff5a4bfed7da1f6634fa72e94f3ad7a95bf7aa64ae52fb15f0c1161cf",
+        "node_type": "container_image",
+        "node_name": "convertigo:latest",
+        "timestamp": "2023-04-21T17:17:29.565483976Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string",
+        "docker_image_name": "convertigo",
+        "docker_image_name_with_tag": "convertigo:latest",
+        "docker_image_tag": "latest",
+        "docker_image_size": "815 MB",
+        "docker_image_created_at": "2021-12-14T20:19:57Z",
+        "docker_image_virtual_size": "815 MB",
+        "docker_image_labels": "null"
+      },
+      "parents": {
+        "host": "agent-sed-string"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    }
+  },
+  "Host": {
+    "agent-sed-string": {
+      "metadata": {
+        "node_id": "agent-sed-string",
+        "node_type": "host",
+        "node_name": "agent-sed-string",
+        "timestamp": "2023-04-21T17:17:29.565564605Z",
+        "instance_id": "278631650",
+        "cloud_provider": "digital_ocean",
+        "public_ip": [
+          "68.183.155.185"
+        ],
+        "private_ip": [
+          "10.108.0.7"
+        ],
+        "cloud_region": "nyc3",
+        "uptime": 42099439,
+        "pseudo": false,
+        "cpu_max": 100,
+        "cpu_usage": 2.108433734939759,
+        "memory_max": 4127395840,
+        "memory_usage": 2772049920,
+        "version": "v1.4.2-e9350edd-1682094062210423",
+        "agent_running": true,
+        "kernel_version": "5.4.0-88-generic #99-Ubuntu SMP Thu Sep 23 17:29:00 UTC 2021",
+        "host_name": "agent-sed-string",
+        "os": "linux",
+        "interface_names": [
+          "lo",
+          "eth0",
+          "eth1",
+          "docker0",
+          "vethb0582d6",
+          "veth1b9ebca",
+          "veth8be902b",
+          "vethafdeec2",
+          "veth4b416db",
+          "veth931db20",
+          "vethf568127"
+        ],
+        "interface_ips": [
+          "68.183.155.185",
+          "10.108.0.7",
+          "172.17.0.1"
+        ],
+        "interface_ip_map": "{\"10.108.0.7\":\"255.255.240.0\",\"172.17.0.1\":\"255.255.0.0\",\"68.183.155.185\":\"255.255.240.0\"}",
+        "local_cidr": [
+          "127.0.0.1/8",
+          "68.183.155.185/20",
+          "10.17.0.11/16",
+          "10.108.0.7/20",
+          "172.17.0.1/16"
+        ]
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "cloud_region": "nyc3-digital_ocean"
+      },
+      "sets": {
+        "ps_map": null
+      }
+    }
+  },
+  "Overlay": {
+    "#docker_peer_agent-sed-string": {
+      "metadata": {
+        "node_id": "#docker_peer_agent-sed-string",
+        "node_type": "overlay",
+        "timestamp": "2023-04-21T17:17:29.56551323Z",
+        "pseudo": false,
+        "host_name": "agent-sed-string"
+      },
+      "parents": {},
+      "sets": {
+        "ps_map": {
+          "map": {
+            "docker_container_ips": [
+              "10.108.0.7",
+              "10.17.0.11",
+              "127.0.0.1",
+              "172.17.0.1",
+              "172.17.0.2",
+              "172.17.0.3",
+              "172.17.0.5",
+              "172.17.0.6",
+              "172.17.0.7",
+              "172.17.0.8",
+              "172.17.0.9",
+              "68.183.155.185"
+            ],
+            "docker_container_ips_with_scopes": [
+              ";10.108.0.7",
+              ";10.17.0.11",
+              ";68.183.155.185",
+              "agent-sed-string;127.0.0.1",
+              "agent-sed-string;172.17.0.1",
+              "agent-sed-string;172.17.0.2",
+              "agent-sed-string;172.17.0.3",
+              "agent-sed-string;172.17.0.5",
+              "agent-sed-string;172.17.0.6",
+              "agent-sed-string;172.17.0.7",
+              "agent-sed-string;172.17.0.8",
+              "agent-sed-string;172.17.0.9"
+            ],
+            "docker_container_networks": [
+              "bridge"
+            ],
+            "docker_container_ports": [
+              "10081/tcp",
+              "10082/tcp",
+              "2368/tcp",
+              "443/tcp",
+              "80/tcp",
+              "8080/tcp"
+            ],
+            "local_networks": [
+              "172.17.0.0/16"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "DNS": {
+    "68.183.155.185": {
+      "reverse": [
+        "agent-sed-string",
+        "agent-sed-string.local"
+      ]
+    },
+    "172.67.157.38": {
+      "forward": [
+        "oss.deepfence.tech"
+      ]
+    },
+    "104.21.40.221": {
+      "forward": [
+        "oss.deepfence.tech"
+      ]
+    },
+    "127.0.0.1": {
+      "reverse": [
+        "localhost"
+      ]
+    },
+    "167.71.213.47": {},
+    "179.50.16.249": {}
+  },
+  "Window": 30063483337,
+  "Shortcut": false,
+  "ID": "2159493389689185873"
+}

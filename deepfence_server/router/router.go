@@ -105,9 +105,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 
 	r.Use(middleware.Compress(5))
 
+	r.Mount("/debug", middleware.Profiler())
+
 	r.Route("/deepfence", func(r chi.Router) {
 		// r.Use(telemetryInjector)
-
 		r.Get("/ping", dfHandler.Ping)
 
 		// public apis
