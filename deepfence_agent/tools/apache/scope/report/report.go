@@ -253,6 +253,35 @@ type TopologyNode struct {
 	Sets      Sets
 }
 
+func (t TopologyNode) Merge(o TopologyNode) {
+	t.Metadata.Merge(o.Metadata)
+	t.Adjacency.Merge(o.Adjacency)
+	t.Parents.Merge(o.Parents)
+	t.Sets.Merge(o.Sets)
+}
+
+func (t TopologyNode) UnsafeMerge(o TopologyNode) {
+	t.Metadata.Merge(o.Metadata)
+	t.Adjacency.Merge(o.Adjacency)
+	t.Parents.Merge(o.Parents)
+	t.Sets.Merge(o.Sets)
+}
+
+func (t TopologyNode) Copy() TopologyNode {
+	return TopologyNode{
+		Metadata:  t.Metadata,
+		Adjacency: t.Adjacency,
+		Parents:   t.Parents,
+		Sets:      t.Sets,
+	}
+}
+
+func (t TopologyNode) UnMerge(o TopologyNode) {
+}
+
+func (t TopologyNode) UnsafeUnMerge(o TopologyNode) {
+}
+
 type Topology map[string]TopologyNode
 
 func MakeTopology() Topology {
@@ -269,14 +298,14 @@ func (t Topology) AddNode(node TopologyNode) {
 
 func (t Topology) Merge(o Topology) {
 	for k, v := range o {
-		t[k] = v
+		t[k].Merge(v)
 	}
 }
 
 func (t Topology) Copy() Topology {
 	newTopology := make(Topology)
 	for k, v := range t {
-		newTopology[k] = v
+		newTopology[k] = v.Copy()
 	}
 	return newTopology
 }
@@ -287,7 +316,7 @@ func (t Topology) UnsafeUnMerge(o Topology) {
 
 func (t Topology) UnsafeMerge(o Topology) {
 	for k, v := range o {
-		t[k] = v
+		t[k].Merge(v)
 	}
 }
 
@@ -351,37 +380,35 @@ func (t TopologySets) UnsafeUnMerge(o TopologySets) {
 
 }
 
-type Parents map[string]Parent
-
-func MakeParents() Parents {
-	return make(map[string]Parent)
+func (p Parent) Merge(o Parent) {
+	p.CloudProvider = o.CloudProvider
+	p.CloudRegion = o.CloudRegion
+	p.KubernetesCluster = o.KubernetesCluster
+	p.Host = o.Host
+	p.Container = o.Container
+	p.ContainerImage = o.ContainerImage
+	p.Namespace = o.Namespace
+	p.Pod = o.Pod
 }
 
-func (p Parents) AddParent(nodeId string, parents Parent) {
-	p[nodeId] = parents
-}
-
-func (t Parents) Merge(o Parents) {
-	for k, v := range o {
-		t[k] = v
+func (p Parent) Copy() Parent {
+	return Parent{
+		CloudProvider:     p.CloudProvider,
+		CloudRegion:       p.CloudRegion,
+		KubernetesCluster: p.KubernetesCluster,
+		Host:              p.Host,
+		Container:         p.Container,
+		ContainerImage:    p.ContainerImage,
+		Namespace:         p.Namespace,
+		Pod:               p.Pod,
 	}
 }
 
-func (t Parents) Copy() Parents {
-	newParents := MakeParents()
-	for k, v := range t {
-		newParents[k] = v
-	}
-	return newParents
+func (p Parent) UnsafeMerge(o Parent) {
+	p.Merge(o)
 }
 
-func (t Parents) UnsafeMerge(o Parents) {
-	for k, v := range o {
-		t[k] = v
-	}
-}
-
-func (t Parents) UnsafeUnMerge(o Parents) {
+func (p Parent) UnsafeUnMerge(o Parent) {
 
 }
 

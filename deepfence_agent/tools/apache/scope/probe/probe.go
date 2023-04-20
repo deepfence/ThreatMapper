@@ -229,9 +229,9 @@ ForLoop:
 	}
 
 	if p.noControls {
-		rpt.WalkTopologies(func(t *report.Topology) {
-			//t.Controls = report.Controls{}
-		})
+		//rpt.WalkTopologies(func(t *report.Topology) {
+		//	t.Controls = report.Controls{}
+		//})
 	}
 	return rpt, count
 }
