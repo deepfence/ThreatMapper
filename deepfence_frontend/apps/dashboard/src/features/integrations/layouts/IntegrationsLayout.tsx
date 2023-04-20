@@ -27,7 +27,7 @@ const IntegrationsLayout = () => {
         </Breadcrumb>
       </div>
 
-      <div className="p-4">
+      <div className="p-2">
         <Outlet />
       </div>
     </>

@@ -599,11 +599,11 @@ const RegistryImageTags = () => {
   return (
     <>
       <HeaderComponent />
-      <div className="p-4">
+      <div className="p-2">
         <Suspense
           fallback={
             <>
-              <div className="h-4 w-28 mt-4 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+              <div className="h-4 w-28 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
               <TableSkeleton columns={8} rows={10} size={'sm'} />
             </>
           }
