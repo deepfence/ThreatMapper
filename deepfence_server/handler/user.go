@@ -552,12 +552,12 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err}, w)
 		return
 	}
-	user, _, ctx, pgClient, err := model.GetUserByEmail(strings.ToLower(resetPasswordRequest.Email))
-	if errors.Is(err, sql.ErrNoRows) {
+	user, statusCode, ctx, pgClient, err := model.GetUserByEmail(strings.ToLower(resetPasswordRequest.Email))
+	if errors.Is(err, model.UserNotFoundErr) {
 		respondError(&NotFoundError{errors.New("A password reset email will be sent if a user exists with the provided email id")}, w)
 		return
 	} else if err != nil {
-		respondError(err, w)
+		respondWithErrorCode(err, w, statusCode)
 		return
 	}
 	err = pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)

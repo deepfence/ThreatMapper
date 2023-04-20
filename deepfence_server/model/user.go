@@ -339,7 +339,7 @@ func GetUserByEmail(email string) (*User, int, context.Context, *postgresqlDb.Qu
 	pgClient, err := directory.PostgresClient(ctx)
 	err = user.LoadFromDbByEmail(ctx, pgClient)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, http.StatusNotFound, ctx, pgClient, errors.New(utils.ErrorUserNotFound)
+		return nil, http.StatusNotFound, ctx, pgClient, UserNotFoundErr
 	} else if err != nil {
 		return nil, http.StatusInternalServerError, ctx, pgClient, err
 	}
