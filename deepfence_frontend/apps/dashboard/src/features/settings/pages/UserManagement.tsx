@@ -26,15 +26,22 @@ import {
   Dropdown,
   DropdownItem,
   Modal,
+  Select,
+  SelectItem,
   Table,
   TableSkeleton,
+  TextInput,
 } from 'ui-components';
 
 import { getUserApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse } from '@/api/generated';
+import {
+  ApiDocsBadRequestResponse,
+  ModelInviteUserRequestActionEnum,
+  ModelInviteUserRequestRoleEnum,
+  ModelUpdateUserIdRequestRoleEnum,
+} from '@/api/generated';
 import { ModelUser } from '@/api/generated/models/ModelUser';
 import { CopyToClipboard } from '@/components/CopyToClipboard';
-import { DFLink } from '@/components/DFLink';
 import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
 import { useGetCurrentUser } from '@/features/common/data-component/getUserApiLoader';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
@@ -76,8 +83,12 @@ export type ActionReturnType = {
     old_password?: string;
     new_password?: string;
     confirm_password?: string;
+    email?: string;
+    role?: string;
   };
   success: boolean;
+  invite_url?: string;
+  invite_expiry_hours?: number;
 };
 
 export enum ActionEnumType {
@@ -181,6 +192,60 @@ export const action = async ({
     return {
       success: true,
     };
+  } else if (_actionType === ActionEnumType.INVITE_USER) {
+    const body = Object.fromEntries(formData);
+
+    const r = await makeRequest({
+      apiFunction: getUserApiClient().inviteUser,
+      apiArgs: [
+        {
+          modelInviteUserRequest: {
+            action: body.intent as ModelInviteUserRequestActionEnum,
+            email: body.email as string,
+            role: body.role as ModelInviteUserRequestRoleEnum,
+          },
+        },
+      ],
+      errorHandler: async (r) => {
+        const error = new ApiError<ActionReturnType>({
+          success: false,
+        });
+        if (r.status === 400) {
+          const modelResponse: ApiDocsBadRequestResponse = await r.json();
+          return error.set({
+            fieldErrors: {
+              email: modelResponse.error_fields?.email as string,
+              role: modelResponse.error_fields?.role as string,
+            },
+            success: false,
+          });
+        } else if (r.status === 403) {
+          const modelResponse: ApiDocsBadRequestResponse = await r.json();
+          return error.set({
+            message: modelResponse.message,
+            success: false,
+          });
+        }
+      },
+    });
+
+    if (ApiError.isApiError(r)) {
+      return r.value();
+    }
+    if (body.intent == ModelInviteUserRequestActionEnum.GetInviteLink) {
+      r.invite_url && navigator.clipboard.writeText(r.invite_url);
+      toast.success('User invite URL copied');
+      return {
+        ...r,
+        success: true,
+      };
+    } else if (body.intent === ModelInviteUserRequestActionEnum.SendInviteEmail) {
+      toast.success('User invite sent successfully');
+    }
+
+    return {
+      success: true,
+    };
   }
   return {
     success: false,
@@ -264,7 +329,92 @@ const ChangePasswordModal = ({
       onOpenChange={() => setShowDialog(false)}
       title="Change Password"
     >
-      <ChangePassword setShowDialog={setShowDialog} />
+      <ChangePassword />
+    </Modal>
+  );
+};
+const InviteUserModal = ({
+  showDialog,
+  setShowDialog,
+}: {
+  showDialog: boolean;
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const fetcher = useFetcher<ActionReturnType>();
+  const { data } = fetcher;
+
+  return (
+    <Modal
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title="Invite User"
+    >
+      <fetcher.Form
+        method="post"
+        className="flex flex-col gap-y-3 pt-2 pb-6 mx-8 w-[260px]"
+      >
+        <TextInput
+          label="Email"
+          type={'email'}
+          placeholder="Email"
+          name="email"
+          color={data?.fieldErrors?.email ? 'error' : 'default'}
+          sizing="sm"
+          required
+          helperText={data?.fieldErrors?.email}
+        />
+        <Select
+          name="role"
+          label={'Role'}
+          placeholder="admin"
+          sizing="xs"
+          helperText={data?.fieldErrors?.role}
+        >
+          <SelectItem value={ModelUpdateUserIdRequestRoleEnum['Admin']}>Admin</SelectItem>
+          <SelectItem value={ModelUpdateUserIdRequestRoleEnum['StandardUser']}>
+            User
+          </SelectItem>
+          <SelectItem value={ModelUpdateUserIdRequestRoleEnum['ReadOnlyUser']}>
+            Read only user
+          </SelectItem>
+        </Select>
+        <div className={`text-red-600 dark:text-red-500 text-sm`}>
+          {!data?.success && data?.message && <span>{data.message}</span>}
+        </div>
+        <Button
+          color="primary"
+          size="sm"
+          type="submit"
+          name="intent"
+          value={ModelInviteUserRequestActionEnum['SendInviteEmail']}
+        >
+          Send invite via email
+        </Button>
+
+        <input
+          type="text"
+          name="_actionType"
+          hidden
+          readOnly
+          value={ActionEnumType.INVITE_USER}
+        />
+
+        <Button
+          outline
+          type="submit"
+          size="sm"
+          name="intent"
+          value={ModelInviteUserRequestActionEnum['GetInviteLink']}
+        >
+          Copy invite link
+        </Button>
+        {data?.invite_url && (
+          <p className={`mt-1.5 text-sm text-green-500`}>
+            Invite URL:{data?.invite_url}, invite will expire after{' '}
+            {data?.invite_expiry_hours} hours
+          </p>
+        )}
+      </fetcher.Form>
     </Modal>
   );
 };
@@ -417,6 +567,7 @@ const APITokenComponent = () => {
 };
 
 const UserManagement = () => {
+  const [openInviteUserForm, setOpenInviteUserForm] = useState(false);
   const columnHelper = createColumnHelper<ModelUser>();
   const loaderData = useLoaderData() as LoaderDataType;
   const columns = useMemo(() => {
@@ -479,6 +630,10 @@ const UserManagement = () => {
     <SettingsTab value="user-management">
       <div className="h-full mt-2 p-2">
         <APITokenComponent />
+        <InviteUserModal
+          showDialog={openInviteUserForm}
+          setShowDialog={setOpenInviteUserForm}
+        />
         <Suspense fallback={<TableSkeleton columns={6} rows={5} size={'sm'} />}>
           <DFAwait resolve={loaderData.data}>
             {(resolvedData: LoaderDataType) => {
@@ -491,18 +646,15 @@ const UserManagement = () => {
                     <h3 className="py-2 font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
                       User Accounts
                     </h3>
-                    <div className="flex justify-end gap-2">
-                      <DFLink to="/settings/user-management/invite-user">
-                        <Button
-                          color="primary"
-                          size="xs"
-                          outline
-                          startIcon={<FaUserPlus />}
-                        >
-                          Invite User
-                        </Button>
-                      </DFLink>
-                    </div>
+                    <Button
+                      size="xs"
+                      outline
+                      startIcon={<FaUserPlus />}
+                      type="button"
+                      onClick={() => setOpenInviteUserForm(true)}
+                    >
+                      Invite User
+                    </Button>
                   </div>
 
                   {message ? (
