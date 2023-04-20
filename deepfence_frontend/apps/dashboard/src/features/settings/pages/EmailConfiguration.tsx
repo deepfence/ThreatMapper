@@ -178,7 +178,7 @@ const DeleteConfirmationModal = ({
           <span>Are you sure you want to delete?</span>
         </h3>
         <div className="flex items-center justify-right gap-4">
-          <Button size="xs" type="button" onClick={() => setShowDialog(false)}>
+          <Button size="xs" type="button" onClick={() => setShowDialog(false)} outline>
             No, cancel
           </Button>
           <fetcher.Form method="post">

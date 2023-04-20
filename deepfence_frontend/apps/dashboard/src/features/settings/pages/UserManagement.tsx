@@ -82,7 +82,8 @@ export type ActionReturnType = {
 
 export enum ActionEnumType {
   DELETE = 'delete',
-  CHANGE_PASSWORD = 'change_password',
+  CHANGE_PASSWORD = 'changePassword',
+  INVITE_USER = 'inviteUser',
 }
 
 export const action = async ({
@@ -567,7 +568,7 @@ const DeleteConfirmationModal = ({
           <span>Are you sure you want to delete?</span>
         </h3>
         <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)}>
+          <Button size="xs" onClick={() => setShowDialog(false)} outline>
             No, Cancel
           </Button>
           <Button

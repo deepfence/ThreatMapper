@@ -65,13 +65,12 @@ export const ChangePassword = ({
         Change Password
       </Button>
       <Button
-        color="danger"
         className="w-full"
         size="sm"
         type="button"
         onClick={() => setShowDialog(false)}
       >
-        No, cancel
+        No, Cancel
       </Button>
     </fetcher.Form>
   );
