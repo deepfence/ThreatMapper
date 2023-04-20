@@ -2,12 +2,10 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -16,10 +14,7 @@ import (
 	"github.com/weaveworks/scope/probe/common"
 
 	metrics_prom "github.com/armon/go-metrics/prometheus"
-	linuxScanner "github.com/deepfence/compliance/scanner"
-	linuxScannerUtil "github.com/deepfence/compliance/util"
 	dfUtils "github.com/deepfence/df-utils"
-	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	docker_client "github.com/fsouza/go-dockerclient"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
@@ -29,7 +24,6 @@ import (
 	"github.com/weaveworks/scope/common/hostname"
 	"github.com/weaveworks/scope/probe"
 	"github.com/weaveworks/scope/probe/appclient"
-	"github.com/weaveworks/scope/probe/controls"
 	"github.com/weaveworks/scope/probe/cri"
 	"github.com/weaveworks/scope/probe/docker"
 	"github.com/weaveworks/scope/probe/endpoint"
@@ -70,108 +64,6 @@ func checkFlagsRequiringRoot(flags probeFlags) {
 		if flags.trackProcDeploads {
 			log.Warn("--probe.proc.track-deploads=true, but that requires root to find everything")
 		}
-	}
-}
-
-func setClusterAgentControls(k8sClusterName string) {
-	err := controls.RegisterControl(ctl.StartComplianceScan,
-		func(req ctl.StartComplianceScanRequest) error {
-			return kubernetes.StartComplianceScan(req)
-		})
-	if err != nil {
-		log.Errorf("set controls: %v", err)
-	}
-	_, err = exec.Command("/bin/sh", "/home/deepfence/token.sh").CombinedOutput()
-	if err != nil {
-		log.Errorf("generate token: %v", err)
-	} else {
-		log.Debug("Token generated successfully")
-	}
-	err = controls.RegisterControl(ctl.StartAgentUpgrade,
-		func(req ctl.StartAgentUpgradeRequest) error {
-			log.Info("Start Cluster Agent Upgrade")
-			appclient.SetUpgrade()
-			return kubernetes.StartClusterAgentUpgrade(req)
-		})
-	if err != nil {
-		log.Errorf("set controls: %v", err)
-	}
-	err = controls.RegisterControl(ctl.SendAgentDiagnosticLogs,
-		func(req ctl.SendAgentDiagnosticLogsRequest) error {
-			log.Info("Generate Cluster Agent Diagnostic Logs")
-			return controls.SendAgentDiagnosticLogs(req,
-				[]string{"/var/log/supervisor", "/var/log/compliance/compliance-status"},
-				[]string{})
-		})
-	if err != nil {
-		log.Errorf("set controls: %v", err)
-	}
-}
-
-func setAgentControls() {
-	err := controls.RegisterControl(ctl.StartVulnerabilityScan,
-		func(req ctl.StartVulnerabilityScanRequest) error {
-			return host.StartVulnerabilityScan(req)
-		})
-	if err != nil {
-		log.Errorf("set controls: %v", err)
-	}
-	err = controls.RegisterControl(ctl.StartSecretScan,
-		func(req ctl.StartSecretScanRequest) error {
-			return host.StartSecretsScan(req)
-		})
-	if err != nil {
-		log.Errorf("set controls: %v", err)
-	}
-	err = controls.RegisterControl(ctl.StartComplianceScan,
-		func(req ctl.StartComplianceScanRequest) error {
-			scanner, err := linuxScanner.NewComplianceScanner(
-				linuxScannerUtil.Config{
-					ComplianceCheckTypes:      strings.Split(req.BinArgs["benchmark_types"], ","),
-					ScanId:                    req.BinArgs["scan_id"],
-					NodeId:                    req.NodeId,
-					NodeName:                  req.NodeId,
-					ComplianceResultsFilePath: fmt.Sprintf("/var/log/fenced/compliance/%s.log", req.BinArgs["scan_id"]),
-					ComplianceStatusFilePath:  "/var/log/fenced/compliance-scan-logs/status.log",
-				})
-			if err != nil {
-				return err
-			}
-			err = scanner.RunComplianceScan()
-			if err != nil {
-				log.Errorf("Error from scan: %+v", err)
-				return err
-			}
-			return nil
-		})
-	if err != nil {
-		log.Errorf("set controls: %v", err)
-	}
-	err = controls.RegisterControl(ctl.StartMalwareScan,
-		func(req ctl.StartMalwareScanRequest) error {
-			return host.StartMalwareScan(req)
-		})
-	if err != nil {
-		log.Errorf("set controls: %v", err)
-	}
-	err = controls.RegisterControl(ctl.StartAgentUpgrade,
-		func(req ctl.StartAgentUpgradeRequest) error {
-			log.Info("Start Agent Upgrade")
-			appclient.SetUpgrade()
-			return host.StartAgentUpgrade(req)
-		})
-	if err != nil {
-		log.Errorf("set controls: %v", err)
-	}
-	err = controls.RegisterControl(ctl.SendAgentDiagnosticLogs,
-		func(req ctl.SendAgentDiagnosticLogsRequest) error {
-			log.Info("Generate Agent Diagnostic Logs")
-			return controls.SendAgentDiagnosticLogs(req,
-				[]string{"/var/log/supervisor", "/var/log/fenced"},
-				[]string{"/var/log/fenced/compliance/", "/var/log/fenced/malware-scan/", "/var/log/fenced/secret-scan/"})
-		})
-	if err != nil {
-		log.Errorf("set controls: %v", err)
 	}
 }
 
@@ -354,103 +246,105 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	}
 
 	p := probe.New(flags.spyInterval, flags.publishInterval, clients, flags.ticksPerFullReport, flags.noControls)
-	p.AddTagger(probe.NewTopologyTagger())
-	var processCache *process.CachingWalker
+	if os.Getenv("DF_USE_DUMMY_SCOPE") == "" {
+		p.AddTagger(probe.NewTopologyTagger())
+		var processCache *process.CachingWalker
 
-	if flags.kubernetesRole != kubernetesRoleCluster {
-		hostReporter, cloudProvider, cloudRegion := host.NewReporter(hostName, probeID, version)
-		defer hostReporter.Stop()
-		p.AddReporter(hostReporter)
-		p.AddTagger(host.NewTagger(hostName, cloudProvider, cloudRegion))
+		if flags.kubernetesRole != kubernetesRoleCluster {
+			hostReporter, cloudProvider, cloudRegion := host.NewReporter(hostName, probeID, version)
+			defer hostReporter.Stop()
+			p.AddReporter(hostReporter)
+			p.AddTagger(host.NewTagger(hostName, cloudProvider, cloudRegion))
 
-		if flags.procEnabled {
-			processCache = process.NewCachingWalker(process.NewWalker(flags.procRoot, false))
-			p.AddTicker(processCache)
-			p.AddReporter(process.NewReporter(processCache, hostName, process.GetDeltaTotalJiffies, flags.noCommandLineArguments, flags.trackProcDeploads))
-		}
-
-		if flags.endpointEnabled {
-			dnsSnooper, err := endpoint.NewDNSSnooper()
-			if err != nil {
-				log.Errorf("Failed to start DNS snooper: nodes for external services will be less accurate: %s", err)
-			} else {
-				defer dnsSnooper.Stop()
-			}
-
-			endpointReporter := endpoint.NewReporter(endpoint.ReporterConfig{
-				HostName:     hostName,
-				SpyProcs:     flags.spyProcs,
-				UseConntrack: flags.useConntrack,
-				WalkProc:     flags.procEnabled,
-				UseEbpfConn:  flags.useEbpfConn,
-				ProcRoot:     flags.procRoot,
-				BufferSize:   flags.conntrackBufferSize,
-				ProcessCache: processCache,
-				DNSSnooper:   dnsSnooper,
-			})
-			defer endpointReporter.Stop()
-			p.AddReporter(endpointReporter)
-		}
-
-	}
-
-	if flags.dockerEnabled {
-		// Don't add the bridge in Kubernetes since container IPs are global and
-		// shouldn't be scoped
-		if flags.dockerBridge != "" && !flags.kubernetesEnabled {
-			if err := report.AddLocalBridge(flags.dockerBridge); err != nil {
-				log.Errorf("Docker: problem with bridge %s: %v", flags.dockerBridge, err)
-			}
-		}
-		options := docker.RegistryOptions{
-			Interval:               flags.dockerInterval,
-			CollectStats:           true,
-			HostID:                 hostName,
-			DockerEndpoint:         os.Getenv("DOCKER_SOCKET_PATH"),
-			NoCommandLineArguments: flags.noCommandLineArguments,
-			NoEnvironmentVariables: flags.noEnvironmentVariables,
-		}
-		if registry, err := docker.NewRegistry(options); err == nil {
-			defer registry.Stop()
 			if flags.procEnabled {
-				p.AddTagger(docker.NewTagger(registry, hostName, processCache))
+				processCache = process.NewCachingWalker(process.NewWalker(flags.procRoot, false))
+				p.AddTicker(processCache)
+				p.AddReporter(process.NewReporter(processCache, hostName, process.GetDeltaTotalJiffies, flags.noCommandLineArguments, flags.trackProcDeploads))
 			}
-			p.AddReporter(docker.NewReporter(registry, hostName, probeID, p))
-		} else {
-			log.Errorf("Docker: failed to start registry: %v", err)
-		}
-	}
 
-	if flags.criEnabled {
-		runtimeClient, imageClient, err := cri.NewCRIClient(flags.criEndpoint)
-		if err != nil {
-			log.Errorf("CRI: failed to start registry: %v", err)
-		} else {
-			p.AddReporter(cri.NewReporter(runtimeClient, hostName, imageClient))
-		}
-	}
+			if flags.endpointEnabled {
+				dnsSnooper, err := endpoint.NewDNSSnooper()
+				if err != nil {
+					log.Errorf("Failed to start DNS snooper: nodes for external services will be less accurate: %s", err)
+				} else {
+					defer dnsSnooper.Stop()
+				}
 
-	if flags.kubernetesEnabled && flags.kubernetesRole != kubernetesRoleHost {
-		if client, err := kubernetes.NewClient(flags.kubernetesClientConfig, hostName); err == nil {
-			defer client.Stop()
-			reporter := kubernetes.NewReporter(client, probeID, hostName, p, flags.kubernetesNodeName)
-			defer reporter.Stop()
-			p.AddReporter(reporter)
-			go client.InitCNIPlugin()
-			if flags.kubernetesRole != kubernetesRoleCluster && flags.kubernetesNodeName == "" {
-				log.Warnf("No value for --probe.kubernetes.node-name, reporting all pods from every probe (which may impact performance).")
+				endpointReporter := endpoint.NewReporter(endpoint.ReporterConfig{
+					HostName:     hostName,
+					SpyProcs:     flags.spyProcs,
+					UseConntrack: flags.useConntrack,
+					WalkProc:     flags.procEnabled,
+					UseEbpfConn:  flags.useEbpfConn,
+					ProcRoot:     flags.procRoot,
+					BufferSize:   flags.conntrackBufferSize,
+					ProcessCache: processCache,
+					DNSSnooper:   dnsSnooper,
+				})
+				defer endpointReporter.Stop()
+				p.AddReporter(endpointReporter)
 			}
-		} else {
-			log.Errorf("Kubernetes: failed to start client: %v", err)
-			log.Errorf("Kubernetes: make sure to run Scope inside a POD with a service account or provide valid probe.kubernetes.* flags")
+
 		}
-	}
 
-	if flags.kubernetesEnabled {
-		p.AddTagger(&kubernetes.Tagger{})
-	}
+		if flags.dockerEnabled {
+			// Don't add the bridge in Kubernetes since container IPs are global and
+			// shouldn't be scoped
+			if flags.dockerBridge != "" && !flags.kubernetesEnabled {
+				if err := report.AddLocalBridge(flags.dockerBridge); err != nil {
+					log.Errorf("Docker: problem with bridge %s: %v", flags.dockerBridge, err)
+				}
+			}
+			options := docker.RegistryOptions{
+				Interval:               flags.dockerInterval,
+				CollectStats:           true,
+				HostID:                 hostName,
+				DockerEndpoint:         os.Getenv("DOCKER_SOCKET_PATH"),
+				NoCommandLineArguments: flags.noCommandLineArguments,
+				NoEnvironmentVariables: flags.noEnvironmentVariables,
+			}
+			if registry, err := docker.NewRegistry(options); err == nil {
+				defer registry.Stop()
+				if flags.procEnabled {
+					p.AddTagger(docker.NewTagger(registry, hostName, processCache))
+				}
+				p.AddReporter(docker.NewReporter(registry, hostName, probeID, p))
+			} else {
+				log.Errorf("Docker: failed to start registry: %v", err)
+			}
+		}
 
-	maybeExportProfileData(flags)
+		if flags.criEnabled {
+			runtimeClient, imageClient, err := cri.NewCRIClient(flags.criEndpoint)
+			if err != nil {
+				log.Errorf("CRI: failed to start registry: %v", err)
+			} else {
+				p.AddReporter(cri.NewReporter(runtimeClient, hostName, imageClient))
+			}
+		}
+
+		if flags.kubernetesEnabled && flags.kubernetesRole != kubernetesRoleHost {
+			if client, err := kubernetes.NewClient(flags.kubernetesClientConfig, hostName); err == nil {
+				defer client.Stop()
+				reporter := kubernetes.NewReporter(client, probeID, hostName, p, flags.kubernetesNodeName)
+				defer reporter.Stop()
+				p.AddReporter(reporter)
+				go client.InitCNIPlugin()
+				if flags.kubernetesRole != kubernetesRoleCluster && flags.kubernetesNodeName == "" {
+					log.Warnf("No value for --probe.kubernetes.node-name, reporting all pods from every probe (which may impact performance).")
+				}
+			} else {
+				log.Errorf("Kubernetes: failed to start client: %v", err)
+				log.Errorf("Kubernetes: make sure to run Scope inside a POD with a service account or provide valid probe.kubernetes.* flags")
+			}
+		}
+
+		if flags.kubernetesEnabled {
+			p.AddTagger(&kubernetes.Tagger{})
+		}
+
+		maybeExportProfileData(flags)
+	}
 
 	p.Start()
 	signals.SignalHandlerLoop(

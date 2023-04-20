@@ -110,10 +110,14 @@ main() {
     check_options "$@"
     launch_deepfenced
 }
-pidVal=$(/bin/pidof /usr/local/discovery/deepfence-discovery)
-if [ -n "$pidVal" ]; then
-    echo "Agent already running. Not going to start"
-    exit 0
+
+if [ "$DF_USE_DUMMY_SCOPE" == "" ]; then
+    pidVal=$(/bin/pidof /usr/local/discovery/deepfence-discovery)
+    if [ -n "$pidVal" ]; then
+        echo "Agent already running. Not going to start"
+        exit 0
+    fi
+    create_cgroups
 fi
-create_cgroups
+
 main "$@"

@@ -342,3 +342,6 @@ func (c *CloudResourceIngester) PushToDB(batches ReportIngestionData) error {
 	//DUMMY
 	return nil
 }
+
+func (c *CloudResourceIngester) Close() {
+}

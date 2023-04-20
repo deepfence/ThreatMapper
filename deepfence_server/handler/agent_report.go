@@ -5,11 +5,12 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"io"
 	"net/http"
+	"sync"
 
-	"github.com/bytedance/sonic"
+	jsoniter "github.com/json-iterator/go"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -17,28 +18,34 @@ import (
 	reportUtils "github.com/deepfence/golang_deepfence_sdk/utils/report"
 )
 
-var agent_report_ingesters map[directory.NamespaceID]*ingesters.Ingester[report.Report]
+var agent_report_ingesters sync.Map
+
+//var agent_report_ingesters map[directory.NamespaceID]*ingesters.Ingester[report.Report]
+//var access sync.RWMutex
 
 func init() {
-	agent_report_ingesters = map[directory.NamespaceID]*ingesters.Ingester[report.Report]{}
+	agent_report_ingesters = sync.Map{}
 }
 
-func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[report.Report], error) {
+func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[*report.Report], error) {
 	nid, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	ing, has := agent_report_ingesters[nid]
+	ing, has := agent_report_ingesters.Load(nid)
 	if has {
-		return ing, nil
+		return ing.(*ingesters.Ingester[*report.Report]), nil
 	}
 	new_entry, err := ingesters.NewNeo4jCollector(ctx)
 	if err != nil {
 		return nil, err
 	}
-	agent_report_ingesters[nid] = &new_entry
-	return &new_entry, nil
+	true_new_entry, loaded := agent_report_ingesters.LoadOrStore(nid, &new_entry)
+	if loaded {
+		new_entry.Close()
+	}
+	return true_new_entry.(*ingesters.Ingester[*report.Report]), nil
 }
 
 func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
@@ -57,17 +64,17 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	//	respondWith(ctx, w, http.StatusBadRequest, fmt.Errorf("Unsupported Content-Type: %v", contentType))
 	//	return
 	//}
-	data, err := io.ReadAll(r.Body)
-	r.Body.Close()
-	if err != nil {
-		log.Error().Msgf("Error reading all: %v", err)
-		respondWith(ctx, w, http.StatusBadRequest, err)
-		return
-	}
+	//data, err := io.ReadAll(r.Body)
+	//r.Body.Close()
+	//if err != nil {
+	//	log.Error().Msgf("Error reading all: %v", err)
+	//	respondWith(ctx, w, http.StatusBadRequest, err)
+	//	return
+	//}
+	rawReport := reportUtils.RawReport{}
 
-	var rawReport reportUtils.RawReport
-
-	err = sonic.Unmarshal(data, &rawReport)
+	dec := jsoniter.NewDecoder(r.Body)
+	err := dec.Decode(&rawReport)
 	if err != nil {
 		log.Error().Msgf("Error unmarshal: %v", err)
 		respondWith(ctx, w, http.StatusBadRequest, err)
@@ -86,17 +93,20 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
-	data, err = io.ReadAll(gzr)
-	if err != nil {
-		log.Error().Msgf("Error read all raw: %v", err)
-		respondWith(ctx, w, http.StatusBadRequest, err)
-		return
-	}
+	//data, err = io.ReadAll(gzr)
+	//if err != nil {
+	//	log.Error().Msgf("Error read all raw: %v", err)
+	//	respondWith(ctx, w, http.StatusBadRequest, err)
+	//	return
+	//}
 
 	//os.WriteFile("/tmp/report-"+time.Now().Format("2006-01-02-15-04-05")+".json", data, 0644)
 
 	rpt := report.MakeReport()
-	err = sonic.Unmarshal(data, &rpt)
+	dec_inner := jsoniter.NewDecoder(gzr)
+	err = dec_inner.Decode(&rpt)
+
+	//err = sonic.Unmarshal(data, &rpt)
 
 	//if err := codec.NewDecoderBytes([]byte(rawReport.GetPayload()), &codec.JsonHandle{}).Decode(&rpt); err != nil {
 	if err != nil {
@@ -112,7 +122,7 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := (*ingester).Ingest(ctx, rpt); err != nil {
+	if err := (*ingester).Ingest(ctx, &rpt); err != nil {
 		log.Error().Msgf("Error Adding report: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return
@@ -139,7 +149,7 @@ func (h *Handler) IngestSyncAgentReport(w http.ResponseWriter, r *http.Request) 
 
 	var rpt ingesters.ReportIngestionData
 
-	err = json.Unmarshal(data, &rpt)
+	err = jsoniter.Unmarshal(data, &rpt)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
