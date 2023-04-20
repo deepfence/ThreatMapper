@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/email"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
@@ -302,11 +303,11 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 	inviteURL := fmt.Sprintf("%s/auth/invite-accept?invite_code=%s", consoleUrl, code)
 	message := ""
 	if inviteUserRequest.Action == UserInviteSendEmail {
-		//err = SendEmail()
-		//if err != nil {
-		//	respondError(errors.New("Email not configured"), w)
-		//	return
-		//}
+		err = email.SendUserInviteEmail(ctx, inviteUserRequest.Email, user, inviteURL)
+		if err != nil {
+			respondError(err, w)
+			return
+		}
 		message = "Invite sent"
 	}
 
@@ -552,7 +553,7 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user, _, ctx, pgClient, err := model.GetUserByEmail(strings.ToLower(resetPasswordRequest.Email))
-	if err.Error() == utils.ErrorUserNotFound {
+	if errors.Is(err, sql.ErrNoRows) {
 		respondError(&NotFoundError{errors.New("A password reset email will be sent if a user exists with the provided email id")}, w)
 		return
 	} else if err != nil {
@@ -572,12 +573,12 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	//err = SendEmail()
-	//if err != nil {
-	//	pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
-	//	respondError(errors.New("Email not configured"), w)
-	//	return
-	//}
+	err = email.SendForgotPasswordEmail(ctx, user)
+	if err != nil {
+		pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
+		respondError(err, w)
+		return
+	}
 
 	httpext.JSON(w, http.StatusOK, model.MessageResponse{
 		Message: "A password reset email will be sent if a user exists with the provided email id"})
