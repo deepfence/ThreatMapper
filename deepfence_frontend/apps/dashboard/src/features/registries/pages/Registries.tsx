@@ -134,7 +134,7 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
             <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
               {abbreviateNumber(registry.registries ?? 0)}
             </span>
-            <div className="flex items-center gap-x-1">
+            <div className="flex items-center gap-x-1 min-w-[90px]">
               <IconContext.Provider
                 value={{
                   className: 'h-5 w-5 text-blue-500 dark:text-blue-400',
@@ -142,16 +142,16 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
               >
                 <HiDocumentText />
               </IconContext.Provider>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                Total Registries
-              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{`Registr${
+                registry.registries && registry.registries > 1 ? 'ies' : 'y'
+              }`}</span>
             </div>
           </div>
           <div className="gap-x-2 flex flex-col justify-center">
             <span className="text-[2rem] text-gray-900 dark:text-gray-200 font-light">
               {abbreviateNumber(registry.images ?? 0)}
             </span>
-            <div className="flex items-center gap-x-1">
+            <div className="flex items-center gap-x-1 min-w-[90px]">
               <IconContext.Provider
                 value={{
                   className: 'h-5 w-5 text-blue-500 dark:text-blue-400',
@@ -159,16 +159,16 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
               >
                 <HiPhotograph />
               </IconContext.Provider>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                Total Images
-              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{`Image${
+                registry.images && registry.images > 1 ? 's' : ''
+              }`}</span>
             </div>
           </div>
           <div className="gap-x-2 flex flex-col justify-center">
             <span className="text-[2rem] text-gray-900 dark:text-gray-200 font-light">
               {abbreviateNumber(registry.tags ?? 0)}
             </span>
-            <div className="flex items-center gap-x-1">
+            <div className="flex items-center gap-x-1 min-w-[90px]">
               <IconContext.Provider
                 value={{
                   className: 'h-5 w-5 text-blue-500 dark:text-blue-400',
@@ -176,7 +176,9 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
               >
                 <HiTag />
               </IconContext.Provider>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Total Tags</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{`Tag${
+                registry.tags && registry.tags > 1 ? 's' : ''
+              }`}</span>
             </div>
           </div>
         </div>

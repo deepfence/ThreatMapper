@@ -80,7 +80,7 @@ const UserAuditLogs = () => {
       columnHelper.accessor('resources', {
         cell: (cell) => {
           return (
-            <div className="relative">
+            <div className="relative truncate">
               <span className="mr-6">
                 <CopyToClipboard
                   data={String(cell.getValue())}

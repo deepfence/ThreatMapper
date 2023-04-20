@@ -68,8 +68,6 @@ import { module as secretScanResults } from '@/features/secrets/pages/SecretScan
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
 import { module as addEmailConfiguration } from '@/features/settings/pages/AddEmailCongifuration';
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
-import { module as editGlobalSettings } from '@/features/settings/pages/EditGlobalSettings';
-import { module as editUser } from '@/features/settings/pages/EditUser';
 import { module as emailConfiguration } from '@/features/settings/pages/EmailConfiguration';
 import { module as globalSettings } from '@/features/settings/pages/GlobalSettings';
 import { module as settings } from '@/features/settings/pages/Settings';
@@ -493,11 +491,6 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'User Management' },
           },
           {
-            path: 'user-management/edit/:userId',
-            ...editUser,
-            meta: { title: 'Edit User Account' },
-          },
-          {
             path: 'user-audit-logs',
             ...userAuditLogs,
             meta: { title: 'User Audit Logs' },
@@ -516,11 +509,6 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'global-settings',
             ...globalSettings,
             meta: { title: 'Global Settings' },
-          },
-          {
-            path: 'global-settings/edit/:id',
-            ...editGlobalSettings,
-            meta: { title: 'Edit Global Settings' },
           },
         ],
       },

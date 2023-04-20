@@ -13,7 +13,7 @@ export const ChangePassword = () => {
   return (
     <fetcher.Form
       method="post"
-      className="flex flex-col gap-y-3 pt-2 pb-6 mx-8 w-[260px]"
+      className="flex flex-col gap-y-3 mt-2 pb-8 mx-8 w-[260px]"
     >
       <TextInput
         label="Old Password"

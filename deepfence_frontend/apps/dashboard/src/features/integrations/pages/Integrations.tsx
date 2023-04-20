@@ -219,33 +219,34 @@ const Integrations = () => {
                         <div className="p-4 flex border-r border-gray-200 dark:border-gray-700 w-20 h-20">
                           {type.icon}
                         </div>
-                        <div className="flex flex-col gap-x-4">
-                          <Suspense
-                            fallback={
+                        <Suspense
+                          fallback={
+                            <div className="w-20">
                               <div className="h-6 w-4 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-                            }
-                          >
-                            <DFAwait resolve={loaderData?.data}>
-                              {(resolvedData: { data?: ModelIntegrationListResp[] }) => {
-                                const { data = [] } = resolvedData ?? {};
-                                const len = data.filter(
-                                  (integration) =>
-                                    integration.integration_type === type.id,
-                                ).length;
+                              <div className="h-4 w-1o bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                            </div>
+                          }
+                        >
+                          <DFAwait resolve={loaderData?.data}>
+                            {(resolvedData: { data?: ModelIntegrationListResp[] }) => {
+                              const { data = [] } = resolvedData ?? {};
+                              const len = data.filter(
+                                (integration) => integration.integration_type === type.id,
+                              ).length;
 
-                                return (
+                              return (
+                                <div className="flex flex-col">
                                   <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
                                     {len}
                                   </span>
-                                );
-                              }}
-                            </DFAwait>
-                          </Suspense>
-
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            Connections
-                          </span>
-                        </div>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    {`Connection${len > 1 ? 's' : ''}`}
+                                  </span>
+                                </div>
+                              );
+                            }}
+                          </DFAwait>
+                        </Suspense>
                       </div>
                     </Card>
                   );

@@ -142,7 +142,7 @@ const AccountSummary = () => {
                         </span>
                       </div>
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col min-w-[70px]">
                       <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
                         {abbreviateNumber(node_count ?? 0)}
                       </span>
@@ -152,21 +152,21 @@ const AccountSummary = () => {
                           : `Account${node_count && node_count > 1 ? 's' : ''}`}
                       </span>
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col min-w-[70px]">
                       <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
                         {abbreviateNumber(resource_count ?? 0)}
                       </span>
                       <span className="text-xs text-gray-500 dark:text-gray-400">
-                        Resources
+                        {`Resource${resource_count && resource_count > 1 ? 's' : ''}`}
                       </span>
                     </div>
 
-                    <div className="flex flex-col">
+                    <div className="flex flex-col min-w-[70px]">
                       <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
                         {abbreviateNumber(scan_count ?? 0)}
                       </span>
                       <span className="text-xs text-gray-500 dark:text-gray-400">
-                        Scans
+                        {`Scan${scan_count && scan_count > 1 ? 's' : ''}`}
                       </span>
                     </div>
                   </div>
