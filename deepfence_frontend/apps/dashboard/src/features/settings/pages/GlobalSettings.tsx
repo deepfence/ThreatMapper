@@ -1,7 +1,7 @@
 import { Suspense, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { FaPencilAlt } from 'react-icons/fa';
-import { HiDotsVertical } from 'react-icons/hi';
+import { HiDotsVertical, HiGlobeAlt } from 'react-icons/hi';
 import { ActionFunctionArgs, useFetcher, useLoaderData } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
@@ -234,21 +234,31 @@ const GlobalSettings = () => {
 
   return (
     <SettingsTab value="global-settings">
-      <div className="h-full px-2">
-        <Suspense fallback={<TableSkeleton columns={3} rows={3} size={'sm'} />}>
+      <div className="h-full">
+        <div className="mt-2 flex gap-x-2 items-center">
+          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
+            <IconContext.Provider
+              value={{
+                className: 'text-blue-600 dark:text-blue-400',
+              }}
+            >
+              <HiGlobeAlt />
+            </IconContext.Provider>
+          </div>
+          <h3 className="font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
+            Global Settings
+          </h3>
+        </div>
+        <Suspense
+          fallback={<TableSkeleton columns={3} rows={3} size={'sm'} className="mt-4" />}
+        >
           <DFAwait resolve={loaderData.data}>
             {(resolvedData: LoaderDataType) => {
               const { data, message } = resolvedData;
               const settings = data ?? [];
 
               return (
-                <div>
-                  <div className="flex justify-between">
-                    <h3 className="py-2 font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
-                      Global Settings
-                    </h3>
-                  </div>
-
+                <div className="mt-4">
                   {message ? (
                     <p className="text-red-500 text-sm">{message}</p>
                   ) : (

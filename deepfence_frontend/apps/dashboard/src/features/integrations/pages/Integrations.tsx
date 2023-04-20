@@ -221,9 +221,9 @@ const Integrations = () => {
                         </div>
                         <Suspense
                           fallback={
-                            <div className="w-20">
+                            <div className="w-16">
                               <div className="h-6 w-4 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-                              <div className="h-4 w-1o bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                              <div className="h-4 w-10 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
                             </div>
                           }
                         >

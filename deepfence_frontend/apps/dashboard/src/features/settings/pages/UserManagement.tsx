@@ -11,6 +11,7 @@ import {
   HiOutlineMail,
   HiOutlineSupport,
   HiOutlineUser,
+  HiUsers,
 } from 'react-icons/hi';
 import { ActionFunctionArgs, useFetcher, useLoaderData } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -804,51 +805,67 @@ const UserManagement = () => {
 
   return (
     <SettingsTab value="user-management">
-      <div className="h-full mt-2 p-2">
+      <div className="h-full mt-2">
         <APITokenComponent />
         <InviteUserModal
           showDialog={openInviteUserForm}
           setShowDialog={setOpenInviteUserForm}
         />
-        <Suspense fallback={<TableSkeleton columns={6} rows={5} size={'sm'} />}>
-          <DFAwait resolve={loaderData.data}>
-            {(resolvedData: LoaderDataType) => {
-              const { data, message } = resolvedData;
-              const users = data ?? [];
-
-              return (
-                <div className="mt-4">
-                  <div className="flex justify-between m-2">
-                    <h3 className="py-2 font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
-                      User Accounts
-                    </h3>
-                    <Button
-                      size="xs"
-                      outline
-                      startIcon={<FaUserPlus />}
-                      type="button"
-                      onClick={() => setOpenInviteUserForm(true)}
-                    >
-                      Invite User
-                    </Button>
-                  </div>
-
-                  {message ? (
-                    <p className="text-red-500 text-sm">{message}</p>
-                  ) : (
-                    <Table
-                      size="sm"
-                      data={users}
-                      columns={columns}
-                      enableColumnResizing
-                      enableSorting
-                    />
-                  )}
+        <div className="mt-4">
+          <div className="flex justify-between">
+            <div>
+              <div className="mt-2 flex gap-x-2 items-center">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
+                  <IconContext.Provider
+                    value={{
+                      className: 'text-blue-600 dark:text-blue-400',
+                    }}
+                  >
+                    <HiUsers />
+                  </IconContext.Provider>
                 </div>
-              );
-            }}
-          </DFAwait>
-        </Suspense>
+                <h3 className="font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
+                  User Accounts
+                </h3>
+              </div>
+            </div>
+            <Button
+              size="xs"
+              outline
+              startIcon={<FaUserPlus />}
+              type="button"
+              onClick={() => setOpenInviteUserForm(true)}
+            >
+              Invite User
+            </Button>
+          </div>
+          <Suspense
+            fallback={<TableSkeleton columns={6} rows={5} size={'sm'} className="mt-4" />}
+          >
+            <DFAwait resolve={loaderData.data}>
+              {(resolvedData: LoaderDataType) => {
+                const { data, message } = resolvedData;
+                const users = data ?? [];
+
+                return (
+                  <div className="mt-4">
+                    {message ? (
+                      <p className="text-red-500 text-sm">{message}</p>
+                    ) : (
+                      <Table
+                        size="sm"
+                        data={users}
+                        columns={columns}
+                        enableColumnResizing
+                        enableSorting
+                      />
+                    )}
+                  </div>
+                );
+              }}
+            </DFAwait>
+          </Suspense>
+        </div>
       </div>
     </SettingsTab>
   );
