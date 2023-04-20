@@ -37,6 +37,7 @@ import { CopyToClipboard } from '@/components/CopyToClipboard';
 import { DFLink } from '@/components/DFLink';
 import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
 import { useGetCurrentUser } from '@/features/common/data-component/getUserApiLoader';
+import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -71,40 +72,117 @@ const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
 
 export type ActionReturnType = {
   message?: string;
+  fieldErrors?: {
+    old_password?: string;
+    new_password?: string;
+    confirm_password?: string;
+  };
   success: boolean;
 };
+
+export enum ActionEnumType {
+  DELETE = 'delete',
+  CHANGE_PASSWORD = 'change_password',
+}
 
 export const action = async ({
   request,
 }: ActionFunctionArgs): Promise<ActionReturnType> => {
   const formData = await request.formData();
-  const id = Number(formData.get('userId'));
-  const r = await makeRequest({
-    apiFunction: getUserApiClient().deleteUser,
-    apiArgs: [
-      {
-        id,
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<ActionReturnType>({ success: false });
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message ?? '',
-          success: false,
-        });
-      }
-    },
-  });
 
-  if (ApiError.isApiError(r)) {
-    return r.value();
+  const _actionType = formData.get('_actionType')?.toString();
+
+  if (!_actionType) {
+    return {
+      message: 'Action Type is required',
+      success: false,
+    };
   }
 
-  toast('User account deleted sucessfully');
+  if (_actionType === ActionEnumType.DELETE) {
+    const id = Number(formData.get('userId'));
+    const r = await makeRequest({
+      apiFunction: getUserApiClient().deleteUser,
+      apiArgs: [
+        {
+          id,
+        },
+      ],
+      errorHandler: async (r) => {
+        const error = new ApiError<ActionReturnType>({ success: false });
+        if (r.status === 400) {
+          const modelResponse: ApiDocsBadRequestResponse = await r.json();
+          return error.set({
+            message: modelResponse.message ?? '',
+            success: false,
+          });
+        }
+      },
+    });
+
+    if (ApiError.isApiError(r)) {
+      return r.value();
+    }
+
+    toast('User account deleted sucessfully');
+    return {
+      success: true,
+    };
+  } else if (_actionType === ActionEnumType.CHANGE_PASSWORD) {
+    // add console_url which is the origin of request
+    formData.append('consoleUrl', window.location.origin);
+    const body = Object.fromEntries(formData);
+
+    if (body.new_password !== body.confirm_password) {
+      return {
+        message: 'Password does not match',
+        success: false,
+      };
+    }
+
+    const r = await makeRequest({
+      apiFunction: getUserApiClient().updatePassword,
+      apiArgs: [
+        {
+          modelUpdateUserPasswordRequest: {
+            old_password: body.old_password as string,
+            new_password: body.new_password as string,
+          },
+        },
+      ],
+      errorHandler: async (r) => {
+        const error = new ApiError<ActionReturnType>({
+          success: false,
+        });
+        if (r.status === 400) {
+          const modelResponse: ApiDocsBadRequestResponse = await r.json();
+          return error.set({
+            fieldErrors: {
+              old_password: modelResponse.error_fields?.old_password as string,
+              new_password: modelResponse.error_fields?.new_password as string,
+            },
+            success: false,
+          });
+        } else if (r.status === 403) {
+          const modelResponse: ApiDocsBadRequestResponse = await r.json();
+          return error.set({
+            message: modelResponse.message,
+            success: false,
+          });
+        }
+      },
+    });
+
+    if (ApiError.isApiError(r)) {
+      return r.value();
+    }
+    toast.success('Password changed successfully');
+    return {
+      success: true,
+    };
+  }
   return {
-    success: true,
+    success: false,
   };
 };
 const ActionDropdown = ({ id }: { id: string }) => {
@@ -172,6 +250,24 @@ const ActionDropdown = ({ id }: { id: string }) => {
   );
 };
 
+const ChangePasswordModal = ({
+  showDialog,
+  setShowDialog,
+}: {
+  showDialog: boolean;
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  return (
+    <Modal
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title="Change Password"
+    >
+      <ChangePassword setShowDialog={setShowDialog} />
+    </Modal>
+  );
+};
+
 const APITokenSkeletonComponent = () => {
   return (
     <div className="flex flex-col gap-y-4 animate-pulse min-w-[400px] pl-4">
@@ -200,9 +296,14 @@ const APITokenComponent = () => {
   const { status: currentUserStatus = 'dummy', data: currentUserData } =
     useGetCurrentUser();
   const [showApikey, setShowApiKey] = useState(false);
+  const [openChangePasswordForm, setOpenChangePasswordForm] = useState(false);
 
   return (
     <div className="text-gray-600 dark:text-white rounded-lg w-full p-2">
+      <ChangePasswordModal
+        showDialog={openChangePasswordForm}
+        setShowDialog={setOpenChangePasswordForm}
+      />
       <h3 className="pb-4 font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
         Your Information
       </h3>
@@ -232,11 +333,14 @@ const APITokenComponent = () => {
                 {currentUserData?.is_active ? 'Active' : 'InActive'}
               </span>
             </div>
-            <DFLink to="/settings/user-management/change-password" className="ml-auto">
-              <Button color="primary" size="xs">
-                Change Password
-              </Button>
-            </DFLink>
+            <Button
+              color="primary"
+              size="xs"
+              className="ml-auto self-start"
+              onClick={() => setOpenChangePasswordForm(true)}
+            >
+              Change Password
+            </Button>
           </div>
           <div className="flex mt-4 mb-2">
             <span className="text-sm text-gray-500 flex items-center gap-x-1 min-w-[140px] dark:text-gray-400">
@@ -442,6 +546,7 @@ const DeleteConfirmationModal = ({
 
   const onDeleteAction = useCallback(() => {
     const formData = new FormData();
+    formData.append('_actionType', ActionEnumType.DELETE);
     formData.append('userId', userId);
     fetcher.submit(formData, {
       method: 'post',

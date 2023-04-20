@@ -1,7 +1,12 @@
+import { capitalize } from 'lodash-es';
 import { useEffect, useMemo, useState } from 'react';
+import { FiFilter } from 'react-icons/fi';
 import { LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 import {
+  Checkbox,
   createColumnHelper,
+  IconButton,
+  Popover,
   RowSelectionState,
   SortingState,
   Table,
@@ -15,9 +20,9 @@ import {
   SearchSearchNodeReq,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { FilterHeader } from '@/components/forms/FilterHeader';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { ApiError, makeRequest } from '@/utils/api';
-import { formatMilliseconds } from '@/utils/date';
 import { getOrderFromSearchParams, getPageFromSearchParams } from '@/utils/table';
 
 type LoaderData = {
@@ -30,6 +35,8 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   const searchParams = new URL(request.url).searchParams;
   const page = getPageFromSearchParams(searchParams);
   const order = getOrderFromSearchParams(searchParams);
+
+  const kubernetesStatus = searchParams.get('kubernetes_state');
 
   const searchSearchNodeReq: SearchSearchNodeReq = {
     node_filter: {
@@ -53,6 +60,17 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
     },
     window: { offset: page * PAGE_SIZE, size: PAGE_SIZE },
   };
+
+  if (kubernetesStatus?.length) {
+    let state = kubernetesStatus;
+    if (kubernetesStatus === 'notRunning') {
+      state = '';
+    }
+    searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
+      ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
+      kubernetes_state: [state],
+    };
+  }
 
   if (order) {
     searchSearchNodeReq.node_filter.filters.order_filter.order_fields?.push({
@@ -113,6 +131,105 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
     totalRows: page * PAGE_SIZE + podsDataCount.count,
   };
 };
+interface IFilters {
+  kubernetesStatus: string[];
+}
+function Filters({
+  filters,
+  onFiltersChange,
+}: {
+  filters: IFilters;
+  onFiltersChange: (filters: IFilters) => void;
+}) {
+  const isFilterApplied = useMemo(() => {
+    return Object.values(filters).some((filter) => filter.length > 0);
+  }, [filters]);
+
+  return (
+    <div className="relative ml-auto">
+      {isFilterApplied && (
+        <span className="absolute -left-[2px] -top-[2px] inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
+      )}
+      <Popover
+        triggerAsChild
+        content={
+          <div className="ml-auto w-[300px]">
+            <div className="dark:text-white">
+              <FilterHeader
+                onReset={() => {
+                  onFiltersChange({
+                    kubernetesStatus: [],
+                  });
+                }}
+              />
+              <div className="flex flex-col gap-y-6 p-4">
+                <fieldset>
+                  <legend className="text-sm font-medium">Kubernetes State</legend>
+                  <div className="flex gap-x-4 mt-1">
+                    <Checkbox
+                      label="Not Running"
+                      checked={filters.kubernetesStatus.includes('notRunning')}
+                      onCheckedChange={(state: boolean) => {
+                        if (state) {
+                          const state = filters.kubernetesStatus;
+                          if (!filters.kubernetesStatus.includes('notRunning')) {
+                            state.push('notRunning');
+                          }
+                          onFiltersChange({
+                            ...filters,
+                            kubernetesStatus: state,
+                          });
+                        } else {
+                          onFiltersChange({
+                            ...filters,
+                            kubernetesStatus: filters.kubernetesStatus.filter(
+                              (state) => state !== 'notRunning',
+                            ),
+                          });
+                        }
+                      }}
+                    />
+                    <Checkbox
+                      label="Running"
+                      checked={filters.kubernetesStatus.includes('running')}
+                      onCheckedChange={(state: boolean) => {
+                        if (state) {
+                          const state = filters.kubernetesStatus;
+                          if (!filters.kubernetesStatus.includes('running')) {
+                            state.push('running');
+                          }
+                          onFiltersChange({
+                            ...filters,
+                            kubernetesStatus: state,
+                          });
+                        } else {
+                          onFiltersChange({
+                            ...filters,
+                            kubernetesStatus: filters.kubernetesStatus.filter(
+                              (state) => state !== 'running',
+                            ),
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+                </fieldset>
+              </div>
+            </div>
+          </div>
+        }
+      >
+        <IconButton
+          size="xs"
+          outline
+          color="primary"
+          className="rounded-lg bg-transparent"
+          icon={<FiFilter />}
+        />
+      </Popover>
+    </div>
+  );
+}
 
 export const PodsTable = () => {
   const fetcher = useFetcher<LoaderData>();
@@ -121,9 +238,29 @@ export const PodsTable = () => {
   const [sortState, setSortState] = useState<SortingState>([]);
   const [page, setPage] = useState(0);
 
-  function fetchClustersData() {
+  const [filters, setFilters] = useState<IFilters>({
+    kubernetesStatus: [],
+  });
+
+  function fetchPodsData() {
     const searchParams = new URLSearchParams();
     searchParams.set('page', page.toString());
+
+    if (filters.kubernetesStatus.length) {
+      if (
+        filters.kubernetesStatus.includes('notRunning') &&
+        filters.kubernetesStatus.length === 1
+      ) {
+        searchParams.set('kubernetes_state', 'notRunning');
+      } else if (
+        filters.kubernetesStatus.includes('running') &&
+        filters.kubernetesStatus.length === 1
+      ) {
+        searchParams.set('kubernetes_state', 'Running');
+      } else {
+        searchParams.delete('kubernetes_state');
+      }
+    }
 
     if (sortState.length) {
       searchParams.set('sortby', sortState[0].id);
@@ -134,8 +271,8 @@ export const PodsTable = () => {
   }
 
   useEffect(() => {
-    fetchClustersData();
-  }, [sortState, page]);
+    fetchPodsData();
+  }, [filters, sortState, page]);
 
   const [clickedItem, setClickedItem] = useState<{
     nodeId: string;
@@ -177,18 +314,18 @@ export const PodsTable = () => {
           );
         },
         header: () => 'Pod Name',
-        minSize: 150,
-        size: 160,
-        maxSize: 170,
+        minSize: 130,
+        size: 140,
+        maxSize: 145,
       }),
       columnHelper.accessor('kubernetes_cluster_name', {
         cell: (info) => {
           return info.getValue();
         },
         header: () => <span>Cluster Name</span>,
-        minSize: 100,
-        size: 105,
-        maxSize: 110,
+        minSize: 80,
+        size: 80,
+        maxSize: 90,
       }),
       columnHelper.accessor('node_name', {
         cell: (info) => {
@@ -199,18 +336,18 @@ export const PodsTable = () => {
         size: 105,
         maxSize: 110,
       }),
-      columnHelper.accessor('kubernetes_created', {
+      columnHelper.accessor('kubernetes_state', {
         cell: (info) => {
-          return formatMilliseconds(info.getValue());
+          return info.getValue();
         },
-        header: () => <span>Created On</span>,
-        minSize: 100,
-        size: 105,
-        maxSize: 110,
+        header: () => <span>Kubernetes State</span>,
+        minSize: 80,
+        size: 80,
+        maxSize: 90,
       }),
       columnHelper.accessor('kubernetes_is_in_host_network', {
         cell: (info) => {
-          return info.getValue();
+          return capitalize(info.getValue().toString());
         },
         header: () => <span>In Host Network</span>,
         minSize: 60,
@@ -231,6 +368,15 @@ export const PodsTable = () => {
 
   return (
     <div className="space-y-2">
+      <div className="flex items-center h-9">
+        <Filters
+          filters={filters}
+          onFiltersChange={(newFilters) => {
+            setFilters(newFilters);
+            setPage(0);
+          }}
+        />
+      </div>
       <div>
         <Table
           data={fetcher.data?.pods ?? []}
