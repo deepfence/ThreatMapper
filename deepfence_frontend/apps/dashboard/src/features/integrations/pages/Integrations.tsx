@@ -1,26 +1,25 @@
 import { Suspense } from 'react';
 import { IconContext } from 'react-icons';
-import {
-  FaAws,
-  FaBook,
-  FaBullhorn,
-  FaCopyright,
-  FaFire,
-  FaGoogle,
-  FaInstalod,
-  FaMagento,
-  FaMicrosoft,
-  FaMixer,
-  FaReact,
-  FaSearchengin,
-  FaSlack,
-} from 'react-icons/fa';
+import { FaBook, FaBullhorn, FaCopyright, FaFire, FaMagento } from 'react-icons/fa';
 import { HiArrowSmRight } from 'react-icons/hi';
 import { useLoaderData } from 'react-router-dom';
 import { Card } from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import {
+  AwsSecurityHub,
+  ElasticSearch,
+  GoogleChronicle,
+  HttpEndpoint,
+  Jira,
+  MicrosoftTeams,
+  PagerDuty,
+  S3,
+  Slack,
+  Splunk,
+  SumoLogic,
+} from '@/constants/logos';
 import { DFAwait } from '@/utils/suspense';
 
 import { loader } from './IntegrationAdd';
@@ -45,57 +44,25 @@ const IntegrationsData = [
       {
         name: 'Slack',
         id: 'slack',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-red-400',
-            }}
-          >
-            <FaSlack />
-          </IconContext.Provider>
-        ),
+        icon: <img src={Slack} alt="Slack Logo" />,
         path: '/integrations/notifications/add/slack',
       },
       {
         name: 'Microsoft Teams',
         id: 'microsoft_teams',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-blue-400',
-            }}
-          >
-            <FaMicrosoft />
-          </IconContext.Provider>
-        ),
+        icon: <img src={MicrosoftTeams} alt="MicrosoftTeams Logo" />,
         path: '/integrations/notifications/add/teams',
       },
       {
         name: 'Pager Duty',
         id: 'pager_duty',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-green-400',
-            }}
-          >
-            <FaMagento />
-          </IconContext.Provider>
-        ),
+        icon: <img src={PagerDuty} alt="PagerDuty Logo" />,
         path: '/integrations/notifications/add/pagerduty',
       },
       {
         name: 'HTTP Endpoint',
         id: 'http_endpoint',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-blue-400',
-            }}
-          >
-            <FaMixer />
-          </IconContext.Provider>
-        ),
+        icon: <img src={HttpEndpoint} alt="HttpEndpoint Logo" />,
         path: '/integrations/notifications/add/http_endpoint',
       },
     ],
@@ -117,71 +84,31 @@ const IntegrationsData = [
       {
         name: 'Splunk',
         id: 'splunk',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-green-400',
-            }}
-          >
-            <FaReact />
-          </IconContext.Provider>
-        ),
+        icon: <img src={Splunk} alt="Splunk Logo" />,
         path: '/integrations/seim/add/splunk',
       },
       {
         name: 'Elasticsearch',
         id: 'elasticsearch',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-blue-400',
-            }}
-          >
-            <FaSearchengin />
-          </IconContext.Provider>
-        ),
+        icon: <img src={ElasticSearch} alt="ElasticSearch Logo" />,
         path: '/integrations/seim/add/elasticsearch',
       },
       {
         name: 'Sumo Logic',
         id: 'sumo_logic',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-green-400',
-            }}
-          >
-            <FaInstalod />
-          </IconContext.Provider>
-        ),
+        icon: <img src={SumoLogic} alt="SumoLogic Logo" />,
         path: '/integrations/seim/add/sumo-logic',
       },
       {
         name: 'Google Chronicle',
         id: 'google_chronicle',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-blue-400',
-            }}
-          >
-            <FaGoogle />
-          </IconContext.Provider>
-        ),
+        icon: <img src={GoogleChronicle} alt="GoogleChronicle Logo" />,
         path: '/integrations/seim/add/googlechronicle',
       },
       {
         name: 'AWS Security Hub',
         id: 'aws_security_hub',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-yellow-400',
-            }}
-          >
-            <FaAws />
-          </IconContext.Provider>
-        ),
+        icon: <img src={AwsSecurityHub} alt="AwsSecurityHub Logo" />,
         path: '/integrations/seim/add/aws_security_hub',
       },
     ],
@@ -203,15 +130,7 @@ const IntegrationsData = [
       {
         name: 'Jira',
         id: 'jira',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-blue-400',
-            }}
-          >
-            <FaCopyright />
-          </IconContext.Provider>
-        ),
+        icon: <img src={Jira} alt="Jira Logo" />,
         path: '/integrations/ticketing/add/jira',
       },
     ],
@@ -233,15 +152,7 @@ const IntegrationsData = [
       {
         name: 'S3',
         id: 's3',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-yellow-400',
-            }}
-          >
-            <FaAws />
-          </IconContext.Provider>
-        ),
+        icon: <img src={S3} alt="AWS S3 Logo" />,
         path: '/integrations/archival/add/s3',
       },
     ],

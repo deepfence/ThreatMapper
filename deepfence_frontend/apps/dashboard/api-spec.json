@@ -6274,6 +6274,58 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/search/count/pods": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Count Pods",
+        "description": "Count across all the data associated with pods",
+        "operationId": "countPods",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/search/count/secret/scans": {
       "post": {
         "tags": ["Search"],
@@ -6723,6 +6775,61 @@
                 "schema": {
                   "type": "array",
                   "items": { "$ref": "#/components/schemas/ModelMalware" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/pods": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Pods",
+        "description": "Search across all the data associated with pods",
+        "operationId": "searchPods",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelPod" }
                 }
               }
             }
@@ -7228,7 +7335,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/ModelGetAuditLogsRow" }
+                  "items": { "$ref": "#/components/schemas/PostgresqlDbGetAuditLogsRow" }
                 }
               }
             }
@@ -8665,7 +8772,17 @@
         "type": "object",
         "properties": { "api_token": { "type": "string" } }
       },
-      "ModelApiTokenResponse": { "type": "object" },
+      "ModelApiTokenResponse": {
+        "type": "object",
+        "properties": {
+          "api_token": { "type": "string" },
+          "company_id": { "type": "integer" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "created_by_user_id": { "type": "integer" },
+          "id": { "type": "integer" },
+          "name": { "type": "string" }
+        }
+      },
       "ModelBasicNode": {
         "required": ["node_id", "name", "node_type", "host_name"],
         "type": "object",
@@ -9309,20 +9426,6 @@
         "type": "object",
         "properties": { "report_id": { "type": "string" } }
       },
-      "ModelGetAuditLogsRow": {
-        "type": "object",
-        "properties": {
-          "action": { "type": "string" },
-          "created_at": { "type": "string", "format": "date-time" },
-          "email": { "type": "string" },
-          "event": { "type": "string" },
-          "resources": { "type": "string" },
-          "role": { "type": "string" },
-          "success": { "type": "boolean" },
-          "user_id": { "type": "integer" },
-          "user_role_id": { "type": "integer" }
-        }
-      },
       "ModelHost": {
         "required": [
           "node_id",
@@ -9332,8 +9435,6 @@
           "processes",
           "pods",
           "container_images",
-          "interface_names",
-          "interface_ips",
           "kernel_version",
           "uptime",
           "version",
@@ -9399,8 +9500,6 @@
           },
           "instance_id": { "type": "string" },
           "instance_type": { "type": "string" },
-          "interface_ips": { "type": "array", "items": {}, "nullable": true },
-          "interface_names": { "type": "array", "items": {}, "nullable": true },
           "is_console_vm": { "type": "boolean" },
           "kernel_id": { "type": "string" },
           "kernel_version": { "type": "string" },
@@ -10388,6 +10487,20 @@
             },
             "nullable": true
           }
+        }
+      },
+      "PostgresqlDbGetAuditLogsRow": {
+        "type": "object",
+        "properties": {
+          "action": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "email": { "type": "string" },
+          "event": { "type": "string" },
+          "resources": { "type": "string" },
+          "role": { "type": "string" },
+          "success": { "type": "boolean" },
+          "user_id": { "type": "integer" },
+          "user_role_id": { "type": "integer" }
         }
       },
       "ReportIDList": { "type": "array", "items": { "type": "string" } },

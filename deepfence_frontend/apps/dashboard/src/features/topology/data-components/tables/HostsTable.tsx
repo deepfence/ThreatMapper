@@ -48,7 +48,7 @@ type LoaderData = {
   currentPage: number;
   totalRows: number;
 };
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 20;
 
 const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   const searchParams = new URL(request.url).searchParams;
@@ -169,12 +169,13 @@ export const HostsTable = () => {
     complianceScanStatus: [],
   });
   const [sortState, setSortState] = useState<SortingState>([]);
+  const [page, setPage] = useState(0);
   const [clickedItem, setClickedItem] = useState<{
     nodeId: string;
     nodeType: string;
   }>();
 
-  function fetchHostsData({ page = 0 }: { page?: number }) {
+  function fetchHostsData() {
     const searchParams = new URLSearchParams();
     searchParams.set('page', page.toString());
     if (filters.vulnerabilityScanStatus.length) {
@@ -207,8 +208,8 @@ export const HostsTable = () => {
   }, [rowSelectionState]);
 
   useEffect(() => {
-    fetchHostsData({});
-  }, [filters, sortState]);
+    fetchHostsData();
+  }, [filters, sortState, page]);
 
   const columns = useMemo(
     () => [
@@ -331,6 +332,7 @@ export const HostsTable = () => {
           filters={filters}
           onFiltersChange={(newFilters) => {
             setFilters(newFilters);
+            setPage(0);
           }}
         />
       </div>
@@ -360,7 +362,7 @@ export const HostsTable = () => {
             } else {
               newPageIndex = updaterOrValue.pageIndex;
             }
-            fetchHostsData({ page: newPageIndex });
+            setPage(newPageIndex);
           }}
           enableSorting
           manualSorting

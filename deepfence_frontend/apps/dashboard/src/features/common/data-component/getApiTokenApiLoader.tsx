@@ -2,23 +2,12 @@ import { useEffect } from 'react';
 import { useFetcher } from 'react-router-dom';
 
 import { getUserApiClient } from '@/api/api';
+import { ModelApiTokenResponse } from '@/api/generated';
 import { ApiError, makeRequest } from '@/utils/api';
-
-export type APIToken = {
-  ID: number;
-  ApiToken: string;
-  Name: string;
-  CompanyID: number;
-  GroupID: number;
-  RoleID: number;
-  CreatedByUserID: number;
-  UpdatedAt: string;
-  CreatedAt: string;
-};
 
 export const getApiTokenApiLoader = async (): Promise<{
   error?: string;
-  apiToken?: APIToken;
+  apiToken?: ModelApiTokenResponse;
 }> => {
   const token = await makeRequest({
     apiFunction: getUserApiClient().getApiTokens,
@@ -37,16 +26,16 @@ export const getApiTokenApiLoader = async (): Promise<{
     return token.value();
   }
   return {
-    apiToken: token[0] as APIToken,
+    apiToken: token[0],
   };
 };
 
 export const useGetApiToken = (): {
   status: 'idle' | 'loading' | 'submitting';
-  data: APIToken | undefined;
+  data: ModelApiTokenResponse | undefined;
 } => {
   const fetcher = useFetcher<{
-    apiToken: APIToken;
+    apiToken: ModelApiTokenResponse;
   }>();
 
   useEffect(() => {

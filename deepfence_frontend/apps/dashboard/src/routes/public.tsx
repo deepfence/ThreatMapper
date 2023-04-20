@@ -6,6 +6,7 @@ import { registerLoader } from '@/features/auth/loaders/registerLoader';
 import { ForgotPassword } from '@/features/auth/pages/ForgotPassword';
 import { Login } from '@/features/auth/pages/Login';
 import { RegisterUser } from '@/features/auth/pages/RegisterUser';
+import { module as registerWithInvite } from '@/features/auth/pages/RegisterWithInvite';
 import { CustomRouteObject } from '@/utils/router';
 
 export const publicRoutes: CustomRouteObject[] = [
@@ -31,6 +32,11 @@ export const publicRoutes: CustomRouteObject[] = [
         path: 'forgot-password',
         element: <ForgotPassword />,
         meta: { title: 'Forgot Password?' },
+      },
+      {
+        path: 'invite-accept',
+        ...registerWithInvite,
+        meta: { title: 'Register' },
       },
     ],
   },

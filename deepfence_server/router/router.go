@@ -114,11 +114,13 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 		r.Group(func(r chi.Router) {
 			r.Post("/user/register", dfHandler.RegisterUser)
 			r.Post("/user/invite/register", dfHandler.RegisterInvitedUser)
-			r.Post("/auth/token", dfHandler.ApiAuthHandler)
 			r.Post("/user/login", dfHandler.LoginHandler)
 
 			r.Post("/user/reset-password/request", dfHandler.ResetPasswordRequest)
 			r.Post("/user/reset-password/verify", dfHandler.ResetPasswordVerification)
+
+			// Get access token for api key
+			r.Post("/auth/token", dfHandler.ApiAuthHandler)
 
 			if serveOpenapiDocs {
 				log.Info().Msgf("OpenAPI documentation: http://0.0.0.0%s/deepfence/openapi.json", serverPort)
@@ -182,7 +184,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Post("/containers", dfHandler.GetTopologyContainersGraph)
 					r.Post("/pods", dfHandler.GetTopologyPodsGraph)
 				})
-				r.Post("/threat", dfHandler.GetThreatGraph)
+				r.Route("/threat", func(r chi.Router) {
+					r.Post("/", dfHandler.GetThreatGraph)
+					r.Post("/vulnerability", dfHandler.GetVulnerabilityThreatGraph)
+				})
 			})
 
 			r.Route("/lookup", func(r chi.Router) {
@@ -207,6 +212,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/compliances", dfHandler.SearchCompliances)
 				r.Post("/cloud-resources", dfHandler.SearchCloudResources)
 				r.Post("/kubernetes-clusters", dfHandler.SearchKubernetesClusters)
+				r.Post("/pods", dfHandler.SearchPods)
 
 				r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScans)
 				r.Post("/secret/scans", dfHandler.SearchSecretScans)
@@ -226,6 +232,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Post("/compliances", dfHandler.SearchCompliancesCount)
 					r.Post("/cloud-resources", dfHandler.SearchCloudResourcesCount)
 					r.Post("/kubernetes-clusters", dfHandler.SearchKubernetesClustersCount)
+					r.Post("/pods", dfHandler.SearchPodsCount)
 
 					r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScansCount)
 					r.Post("/secret/scans", dfHandler.SearchSecretScansCount)

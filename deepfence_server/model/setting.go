@@ -174,7 +174,7 @@ func SetScanResultsDeletionSetting(ctx context.Context, pgClient *postgresqlDb.Q
 		s := Setting{
 			Key: InactiveNodesDeleteScanResultsKey,
 			Value: &SettingValue{
-				Label:       "Inactive Nodes Scan Results Deletion Interval",
+				Label:       "Inactive Nodes Scan Results Deletion Interval (in days)",
 				Value:       30, // 30 days
 				Description: "Scan results deletion interval (in days) for nodes that are not active",
 			},

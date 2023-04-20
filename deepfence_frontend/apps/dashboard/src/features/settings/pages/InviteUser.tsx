@@ -100,7 +100,7 @@ const InviteUser = () => {
 
           <span className="flex ml-2 mt-2 dark:text-white ">User Profile</span>
         </div>
-        <Card className="flex-col p-5 mt-2 ml-5 gap-y-4">
+        <Card className="max-w-sm flex-col p-5 mt-2 ml-5 gap-y-4">
           <fetcher.Form method="post" className="flex flex-col gap-y-3">
             <TextInput
               label="Email"
@@ -109,55 +109,48 @@ const InviteUser = () => {
               name="email"
               color={data?.fieldErrors?.email ? 'error' : 'default'}
               sizing="sm"
-              className="w-3/4 min-[200px] max-w-xs"
               required
               helperText={data?.fieldErrors?.email}
             />
-            <div className="w-3/4 max-w-xs">
-              <Select
-                name="role"
-                label={'Role'}
-                placeholder="admin"
-                sizing="xs"
-                helperText={data?.fieldErrors?.role}
-              >
-                <SelectItem value={ModelUpdateUserIdRequestRoleEnum['Admin']}>
-                  admin
-                </SelectItem>
-                <SelectItem value={ModelUpdateUserIdRequestRoleEnum['StandardUser']}>
-                  User
-                </SelectItem>
-                <SelectItem value={ModelUpdateUserIdRequestRoleEnum['ReadOnlyUser']}>
-                  read only user
-                </SelectItem>
-              </Select>
-            </div>
+            <Select
+              name="role"
+              label={'Role'}
+              placeholder="admin"
+              sizing="sm"
+              helperText={data?.fieldErrors?.role}
+            >
+              <SelectItem value={ModelUpdateUserIdRequestRoleEnum['Admin']}>
+                admin
+              </SelectItem>
+              <SelectItem value={ModelUpdateUserIdRequestRoleEnum['StandardUser']}>
+                User
+              </SelectItem>
+              <SelectItem value={ModelUpdateUserIdRequestRoleEnum['ReadOnlyUser']}>
+                read only user
+              </SelectItem>
+            </Select>
             <Button
               color="primary"
-              className="w-3/4 max-w-xs pl-3"
               size="sm"
               type="submit"
               name="intent"
               value={ModelInviteUserRequestActionEnum['SendInviteEmail']}
             >
-              Send sign up request
+              Send invite via email
             </Button>
 
             <Button
               color="primary"
-              className="w-3/4 max-w-xs pl-3"
               type="submit"
               size="sm"
               name="intent"
               value={ModelInviteUserRequestActionEnum['GetInviteLink']}
             >
-              Get an invite link
+              Copy invite link
             </Button>
           </fetcher.Form>
           {data?.invite_url && (
-            <p
-              className={`mt-1.5 w-3/4 max-w-xs ${Typography.size.sm} text-green-500 relative`}
-            >
+            <p className={`mt-1.5 ${Typography.size.sm} text-green-500 relative`}>
               Invite URL:{data?.invite_url}, invite will expire after{' '}
               {data?.invite_expiry_hours} hours
             </p>

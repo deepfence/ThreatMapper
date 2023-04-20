@@ -107,9 +107,9 @@ const InformationForm = memo(
     const dfApiKey =
       status !== 'idle'
         ? '---DEEPFENCE-API-KEY---'
-        : data?.ApiToken === undefined
+        : data?.api_token === undefined
         ? '---DEEPFENCE-API-KEY---'
-        : data?.ApiToken;
+        : data?.api_token;
 
     useMemo(() => {
       const _clusterName = containsWhiteSpace(clusterName) ? defaultCluster : clusterName;
@@ -141,10 +141,9 @@ ${sockCommand}="${_socketPath}" \\
 
     return (
       <div className="p-5">
-        <div className="flex gap-2 mb-4">
-          <div className="w-1/2">
+        <div className="grid grid-cols-2 mb-4">
+          <div className="max-w-sm">
             <TextInput
-              className="w-3/4"
               label="Enter Cluster Name"
               type={'text'}
               sizing="sm"
@@ -153,9 +152,8 @@ ${sockCommand}="${_socketPath}" \\
               value={clusterName}
             />
           </div>
-          <div className="w-1/2">
+          <div className="max-w-sm">
             <TextInput
-              className="w-3/4"
               label="Enter Namespace"
               type={'text'}
               sizing="sm"
@@ -165,8 +163,8 @@ ${sockCommand}="${_socketPath}" \\
             />
           </div>
         </div>
-        <div className="flex mb-4">
-          <div className="w-1/2">
+        <div className="grid grid-cols-2 mb-4">
+          <div className="max-w-sm">
             <Select
               value={containerRuntime}
               name="region"
@@ -175,7 +173,6 @@ ${sockCommand}="${_socketPath}" \\
                 setSocketPath(socketMap[value].path || '');
               }}
               label="Select Container Runtime"
-              className="w-3/4"
               sizing="xs"
             >
               {containerRuntimeDropdown.map((runtime) => (
@@ -183,9 +180,8 @@ ${sockCommand}="${_socketPath}" \\
               ))}
             </Select>
           </div>
-          <div className="w-1/2">
+          <div className="max-w-sm">
             <TextInput
-              className="w-3/4"
               label="Enter Socket Path"
               type={'text'}
               sizing="sm"
@@ -208,9 +204,9 @@ export const K8ConnectorForm = () => {
   const dfApiKey =
     status !== 'idle'
       ? '---DEEPFENCE-API-KEY---'
-      : data?.ApiToken === undefined
+      : data?.api_token === undefined
       ? '---DEEPFENCE-API-KEY---'
-      : data?.ApiToken;
+      : data?.api_token;
 
   const [instruction, setInstruction] =
     useState(`helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper

@@ -19,9 +19,9 @@ import type {
   ApiDocsFailureResponse,
   ModelEmailConfigurationAdd,
   ModelEmailConfigurationResp,
-  ModelGetAuditLogsRow,
   ModelSettingUpdateRequest,
   ModelSettingsResponse,
+  PostgresqlDbGetAuditLogsRow,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -32,12 +32,12 @@ import {
     ModelEmailConfigurationAddToJSON,
     ModelEmailConfigurationRespFromJSON,
     ModelEmailConfigurationRespToJSON,
-    ModelGetAuditLogsRowFromJSON,
-    ModelGetAuditLogsRowToJSON,
     ModelSettingUpdateRequestFromJSON,
     ModelSettingUpdateRequestToJSON,
     ModelSettingsResponseFromJSON,
     ModelSettingsResponseToJSON,
+    PostgresqlDbGetAuditLogsRowFromJSON,
+    PostgresqlDbGetAuditLogsRowToJSON,
 } from '../models';
 
 export interface AddEmailConfigurationRequest {
@@ -129,13 +129,13 @@ export interface SettingsApiInterface {
      * @throws {RequiredError}
      * @memberof SettingsApiInterface
      */
-    getUserActivityLogsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelGetAuditLogsRow>>>;
+    getUserActivityLogsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<PostgresqlDbGetAuditLogsRow>>>;
 
     /**
      * Get activity logs for all users
      * Get activity logs
      */
-    getUserActivityLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelGetAuditLogsRow>>;
+    getUserActivityLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PostgresqlDbGetAuditLogsRow>>;
 
     /**
      * Update setting
@@ -314,7 +314,7 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      * Get activity logs for all users
      * Get activity logs
      */
-    async getUserActivityLogsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelGetAuditLogsRow>>> {
+    async getUserActivityLogsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<PostgresqlDbGetAuditLogsRow>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -334,14 +334,14 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelGetAuditLogsRowFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(PostgresqlDbGetAuditLogsRowFromJSON));
     }
 
     /**
      * Get activity logs for all users
      * Get activity logs
      */
-    async getUserActivityLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelGetAuditLogsRow>> {
+    async getUserActivityLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PostgresqlDbGetAuditLogsRow>> {
         const response = await this.getUserActivityLogsRaw(initOverrides);
         return await response.value();
     }

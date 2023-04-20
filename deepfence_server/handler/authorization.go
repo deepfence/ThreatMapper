@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"github.com/go-chi/jwtauth/v5"
 	"net/http"
+
+	"github.com/go-chi/jwtauth/v5"
 )
 
 func (h *Handler) AuthHandler(resource, permission string, handlerFunc http.HandlerFunc) func(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +21,7 @@ func (h *Handler) AuthHandler(resource, permission string, handlerFunc http.Hand
 		if enforce {
 			handlerFunc(w, r)
 		} else {
-			w.WriteHeader(http.StatusUnauthorized)
+			w.WriteHeader(http.StatusForbidden)
 			return
 		}
 	}

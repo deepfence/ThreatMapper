@@ -281,7 +281,7 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 		MERGE (cp) -[:HOSTS]-> (cr)
 		MERGE (n:Node{node_id:row.node_id})
 		MERGE (cr) -[:HOSTS]-> (n)
-		SET n += row, cp.active = true, cr.active = true, n.active = true`,
+		SET n += row, cp.active = true, cp.pseudo = false, cr.active = true, n.active = true`,
 			map[string]interface{}{"hosts": hosts[i]})
 		if err != nil {
 			log.Fatal(err)
@@ -339,7 +339,7 @@ func apply(image_rounds, hosts_rounds, containers_rounds, vuln_rounds, vuln_scan
 		MERGE (cp) -[:HOSTS]-> (cr)
 		MERGE (n:CloudResource{node_id:row.node_id})
 		MERGE (cr) -[:HOSTS] -> (n)
-		SET n += row, cp.active = true, cr.active = true, n.active = true`,
+		SET n += row, cp.active = true, cp.pseudo = false, cr.active = true, n.active = true`,
 			map[string]interface{}{"batch": aws_lambdas[i]})
 		if err != nil {
 			log.Fatal(err)

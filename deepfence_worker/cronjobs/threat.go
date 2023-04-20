@@ -123,9 +123,9 @@ func computeThreatGraph(session neo4j.Session) error {
 	}
 
 	if _, err = tx.Run(`
-		MATCH (s:CloudComplianceScan) -[:SCANNED]-> (m)
-		WITH distinct m, max(s.updated_at) as most_recent
-		MATCH (m) <-[:SCANNED]- (s:ComplianceScan{updated_at: most_recent})-[:DETECTED]->(c:CloudComplianceResult)
+		MATCH (s:CloudComplianceScan) -[:SCANNED]-> (p:CloudNode)
+		WITH distinct p, max(s.updated_at) as most_recent
+		MATCH (s:CloudComplianceScan{updated_at: most_recent})-[:DETECTED]->(c:CloudCompliance) -[:SCANNED]->(m:CloudResource)
 		WITH s, m, count(distinct c) as cloud_compliances_count
 		SET m.cloud_compliances_count = cloud_compliances_count`, map[string]interface{}{}); err != nil {
 		return err

@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
+  ModelApiTokenResponse,
   ModelInviteUserRequest,
   ModelInviteUserResponse,
   ModelLoginResponse,
@@ -35,6 +36,8 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
+    ModelApiTokenResponseFromJSON,
+    ModelApiTokenResponseToJSON,
     ModelInviteUserRequestFromJSON,
     ModelInviteUserRequestToJSON,
     ModelInviteUserResponseFromJSON,
@@ -147,13 +150,13 @@ export interface UserApiInterface {
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    getApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>>;
+    getApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelApiTokenResponse>>>;
 
     /**
      * Get logged in user\'s API Tokens
      * Get User\'s API Tokens
      */
-    getApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>>;
+    getApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelApiTokenResponse>>;
 
     /**
      * Get logged in user information
@@ -256,13 +259,13 @@ export interface UserApiInterface {
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    resetApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>>;
+    resetApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelApiTokenResponse>>>;
 
     /**
      * Reset user\'s API Tokens
      * Reset User\'s API Tokens
      */
-    resetApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>>;
+    resetApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelApiTokenResponse>>;
 
     /**
      * Request for resetting the password
@@ -430,7 +433,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Get logged in user\'s API Tokens
      * Get User\'s API Tokens
      */
-    async getApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>> {
+    async getApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelApiTokenResponse>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -450,14 +453,14 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse<any>(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelApiTokenResponseFromJSON));
     }
 
     /**
      * Get logged in user\'s API Tokens
      * Get User\'s API Tokens
      */
-    async getApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>> {
+    async getApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelApiTokenResponse>> {
         const response = await this.getApiTokensRaw(initOverrides);
         return await response.value();
     }
@@ -679,7 +682,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Reset user\'s API Tokens
      * Reset User\'s API Tokens
      */
-    async resetApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>> {
+    async resetApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelApiTokenResponse>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -699,14 +702,14 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse<any>(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelApiTokenResponseFromJSON));
     }
 
     /**
      * Reset user\'s API Tokens
      * Reset User\'s API Tokens
      */
-    async resetApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>> {
+    async resetApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelApiTokenResponse>> {
         const response = await this.resetApiTokensRaw(initOverrides);
         return await response.value();
     }

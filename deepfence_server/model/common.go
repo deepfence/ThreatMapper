@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"errors"
 	"strconv"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -11,6 +12,10 @@ import (
 
 const (
 	DefaultUserGroup = "default"
+)
+
+var (
+	UserNotFoundErr = errors.New("user not found")
 )
 
 type ErrorResponse struct {

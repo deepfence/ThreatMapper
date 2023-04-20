@@ -21,6 +21,7 @@ type CloudResource struct {
 	BlockPublicAcls                bool             `json:"block_public_acls,omitempty"`
 	BlockPublicPolicy              bool             `json:"block_public_policy,omitempty"`
 	BucketPolicyIsPublic           bool             `json:"bucket_policy_is_public,omitempty"`
+	CloudProvider                  string           `json:"cloud_provider,omitempty"`
 	RestrictPublicBuckets          bool             `json:"restrict_public_buckets,omitempty"`
 	ID                             string           `json:"id"`
 	IgnorePublicAcls               bool             `json:"ignore_public_acls,omitempty"`
@@ -114,7 +115,7 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 		MERGE (cp) -[:HOSTS]-> (cr)
 		MERGE (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
 		MERGE (cr) -[:HOSTS]-> (n)
-		SET n+=row, n.node_type = row.resource_id, n.cloud_region = cloud_region, n.updated_at = TIMESTAMP(), cp.active = true, cr.active = true, n.active = true`,
+		SET n+=row, n.node_type = row.resource_id, n.cloud_region = cloud_region, n.updated_at = TIMESTAMP(), cp.active = true, cp.pseudo = false, cr.active = true, n.active = true`,
 		map[string]interface{}{
 			"batch": batch,
 		},
@@ -324,6 +325,13 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 		if bb["resource_id"].(string) == "azure_compute_virtual_machine" {
 
 			bb["arn"] = bb["vm_id"]
+		}
+	}
+	accountId, present := bb["account_id"]
+	if present {
+		splits := strings.Split(fmt.Sprintf("%v", accountId), "-")
+		if len(splits) > 2 {
+			bb["cloud_provider"] = splits[2]
 		}
 	}
 

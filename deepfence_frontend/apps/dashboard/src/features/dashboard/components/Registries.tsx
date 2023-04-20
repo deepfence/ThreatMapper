@@ -71,7 +71,7 @@ export const Registries = () => {
                   mode,
                 );
                 return (
-                  <div className={cx('flex flex-col w-full')} key={registry.type}>
+                  <div className={cx('flex flex-col w-full py-3')} key={registry.type}>
                     <h4 className="text-sm text-gray-500 dark:text-gray-400 truncate">
                       {name}
                     </h4>

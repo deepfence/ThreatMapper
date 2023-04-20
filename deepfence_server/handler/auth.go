@@ -100,6 +100,9 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 	if err != nil {
 		return nil, "", err
 	}
+	if user.IsActive == false {
+		return nil, "", &ForbiddenError{errors.New("user is not active")}
+	}
 	grantType, err := utils.GetStringValueFromInterfaceMap(claims, "grant_type")
 	if err != nil {
 		return nil, "", err
@@ -123,6 +126,10 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	u, statusCode, ctx, pgClient, err := model.GetUserByEmail(strings.ToLower(loginRequest.Email))
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
+		return
+	}
+	if u.IsActive == false {
+		respondError(&ForbiddenError{errors.New("user is not active")}, w)
 		return
 	}
 	passwordValid, err := u.CompareHashAndPassword(ctx, pgClient, loginRequest.Password)

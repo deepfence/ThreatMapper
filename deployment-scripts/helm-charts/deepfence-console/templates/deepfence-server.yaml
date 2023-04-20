@@ -38,7 +38,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES
-              value: "30"
+              value: "5"
             - name: DEEPFENCE_CONSOLE_ORCHESTRATOR
               value: "kubernetes"
           envFrom:
