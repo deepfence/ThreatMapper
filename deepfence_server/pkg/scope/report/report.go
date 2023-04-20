@@ -246,7 +246,99 @@ var topologyNames = []string{
 	Overlay,
 }
 
+type TopologyNode struct {
+	Metadata  Metadata
+	Adjacency IDList
+	Parents   Parent
+	Sets      Sets
+}
+
+func (t TopologyNode) Merge(o TopologyNode) {
+	t.Metadata = o.Metadata
+	t.Adjacency = o.Adjacency
+	t.Parents = o.Parents
+	t.Sets = o.Sets
+}
+
+func (t TopologyNode) UnsafeMerge(o TopologyNode) {
+	t.Metadata = o.Metadata
+	t.Adjacency = o.Adjacency
+	t.Parents = o.Parents
+	t.Sets = o.Sets
+}
+
+func (t TopologyNode) Copy() TopologyNode {
+	return TopologyNode{
+		Metadata:  t.Metadata,
+		Adjacency: t.Adjacency,
+		Parents:   t.Parents,
+		Sets:      t.Sets,
+	}
+}
+
+func (t TopologyNode) UnMerge(o TopologyNode) {
+}
+
+func (t TopologyNode) UnsafeUnMerge(o TopologyNode) {
+}
+
+type Topology map[string]TopologyNode
+
+func MakeTopology() Topology {
+	return map[string]TopologyNode{}
+}
+
+func (t Topology) ReplaceNode(node TopologyNode) {
+	t[node.Metadata.NodeID] = node
+}
+
+func (t Topology) AddNode(node TopologyNode) {
+	t[node.Metadata.NodeID] = node
+}
+
+func (t Topology) Merge(o Topology) {
+	for k, v := range o {
+		t[k] = v
+	}
+}
+
+func (t Topology) Copy() Topology {
+	newTopology := make(Topology)
+	for k, v := range t {
+		newTopology[k] = v
+	}
+	return newTopology
+}
+
+func (t Topology) UnsafeUnMerge(o Topology) {
+
+}
+
+func (t Topology) UnsafeMerge(o Topology) {
+	for k, v := range o {
+		t[k] = v
+	}
+}
+
 type TopologyAdjacency map[string]IDList
+
+func (t TopologyAdjacency) Copy() TopologyAdjacency {
+	newTopologyAdjacency := MakeTopologyAdjacency()
+	for k, v := range t {
+		newTopologyAdjacency[k] = v
+	}
+	return newTopologyAdjacency
+}
+
+func (t TopologyAdjacency) UnsafeMerge(o TopologyAdjacency) {
+	for k, v := range o {
+		t[k] = v
+	}
+}
+
+func (t TopologyAdjacency) UnsafeUnMerge(o TopologyAdjacency) {
+
+}
 
 func (t TopologyAdjacency) AddAdjacency(nodeId string, id string) {
 	if _, ok := t[nodeId]; !ok {
@@ -257,33 +349,67 @@ func (t TopologyAdjacency) AddAdjacency(nodeId string, id string) {
 }
 
 func MakeTopologyAdjacency() TopologyAdjacency {
-	return map[string]IDList{}
+	return make(map[string]IDList)
 }
 
 type TopologySets map[string]Sets
 
 func MakeTopologySets() TopologySets {
-	return map[string]Sets{}
+	return make(map[string]Sets)
 }
 
 func (p TopologySets) AddSet(nodeId string, sets Sets) {
 	p[nodeId] = sets
 }
 
-type Parents map[string]Parent
-
-func MakeParents() Parents {
-	return map[string]Parent{}
-}
-
-func (p Parents) AddParent(nodeId string, parents Parent) {
-	p[nodeId] = parents
-}
-
-func (t Parents) Merge(o Parents) {
-	for k, v := range o {
-		t[k] = v
+func (t TopologySets) Copy() TopologySets {
+	newTopologySets := MakeTopologySets()
+	for k, v := range t {
+		newTopologySets[k] = v
 	}
+	return newTopologySets
+}
+
+func (t TopologySets) UnsafeMerge(o TopologySets) {
+	for k, v := range o {
+		t[k].Merge(v)
+	}
+}
+
+func (t TopologySets) UnsafeUnMerge(o TopologySets) {
+
+}
+
+func (p Parent) Merge(o Parent) {
+	p.CloudProvider = o.CloudProvider
+	p.CloudRegion = o.CloudRegion
+	p.KubernetesCluster = o.KubernetesCluster
+	p.Host = o.Host
+	p.Container = o.Container
+	p.ContainerImage = o.ContainerImage
+	p.Namespace = o.Namespace
+	p.Pod = o.Pod
+}
+
+func (p Parent) Copy() Parent {
+	return Parent{
+		CloudProvider:     p.CloudProvider,
+		CloudRegion:       p.CloudRegion,
+		KubernetesCluster: p.KubernetesCluster,
+		Host:              p.Host,
+		Container:         p.Container,
+		ContainerImage:    p.ContainerImage,
+		Namespace:         p.Namespace,
+		Pod:               p.Pod,
+	}
+}
+
+func (p Parent) UnsafeMerge(o Parent) {
+	p.Merge(o)
+}
+
+func (p Parent) UnsafeUnMerge(o Parent) {
+
 }
 
 type Parent struct {
@@ -307,20 +433,15 @@ type Report struct {
 	// Endpoint nodes are individual (address, port) tuples on each host.
 	// They come from inspecting active connections and can (theoretically)
 	// be traced back to a process. Edges are present.
-	Endpoint          Topology
-	EndpointAdjacency TopologyAdjacency
-	EndpointParents   Parents
+	Endpoint Topology
 
 	// Process nodes are processes on each host. Edges are not present.
-	Process        Topology
-	ProcessParents Parents
+	Process Topology
 
 	// Container nodes represent all Docker containers on hosts running probes.
 	// Metadata includes things like containter id, name, image id etc.
 	// Edges are not present.
-	Container        Topology
-	ContainerParents Parents
-	ContainerSets    TopologySets
+	Container Topology
 
 	// CloudProvider nodes represent all cloud providers.
 	// Metadata includes things like name etc. Edges are not
@@ -330,51 +451,42 @@ type Report struct {
 	// CloudRegion nodes represent all cloud regions.
 	// Metadata includes things like name etc. Edges are not
 	// present.
-	CloudRegion        Topology
-	CloudRegionParents Parents
+	CloudRegion Topology
 
 	// KubernetesCluster nodes represent all Kubernetes clusters.
 	// Metadata includes things like cluster id, name etc. Edges are not
 	// present.
-	KubernetesCluster        Topology
-	KubernetesClusterParents Parents
+	KubernetesCluster Topology
 
 	// Pod nodes represent all Kubernetes pods running on hosts running probes.
 	// Metadata includes things like pod id, name etc. Edges are not
 	// present.
-	Pod        Topology
-	PodParents Parents
+	Pod Topology
 
 	// Service nodes represent all Kubernetes services running on hosts running probes.
 	// Metadata includes things like service id, name etc. Edges are not
 	// present.
-	Service        Topology
-	ServiceParents Parents
+	Service Topology
 
 	// Namespace nodes represent all Kubernetes Namespaces running on hosts running probes.
 	// Metadata includes things like Namespace id, name, etc. Edges are not
 	// present.
-	Namespace        Topology
-	NamespaceParents Parents
+	Namespace Topology
 
 	// ContainerImages nodes represent all Docker containers images on
 	// hosts running probes. Metadata includes things like image id, name etc.
 	// Edges are not present.
-	ContainerImage        Topology
-	ContainerImageParents Parents
+	ContainerImage Topology
 
 	// Host nodes are physical hosts that run probes. Metadata includes things
 	// like operating system, load, etc. The information is scraped by the
 	// probes with each published report. Edges are not present.
-	Host        Topology
-	HostParents Parents
+	Host Topology
 
 	// Overlay nodes are active peers in any software-defined network that's
 	// overlaid on the infrastructure. The information is scraped by polling
 	// their status endpoints. Edges are present.
-	Overlay        Topology
-	OverlayParents Parents
-	OverlaySets    TopologySets
+	Overlay Topology
 
 	DNS DNSRecords `json:"DNS,omitempty" deepequal:"nil==empty"`
 	// Backwards-compatibility for an accident in commit 951629a / release 1.11.6.
@@ -403,46 +515,20 @@ type Report struct {
 func MakeReport() Report {
 	return Report{
 		Endpoint:          MakeTopology(),
-		EndpointAdjacency: MakeTopologyAdjacency(),
-		EndpointParents:   MakeParents(),
-
-		Process:        MakeTopology(),
-		ProcessParents: MakeParents(),
-
-		Container:        MakeTopology(),
-		ContainerParents: MakeParents(),
-		ContainerSets:    MakeTopologySets(),
-
-		CloudProvider: MakeTopology(),
-
-		CloudRegion:        MakeTopology(),
-		CloudRegionParents: MakeParents(),
-
-		KubernetesCluster:        MakeTopology(),
-		KubernetesClusterParents: MakeParents(),
-
-		Pod:        MakeTopology(),
-		PodParents: MakeParents(),
-
-		Service:        MakeTopology(),
-		ServiceParents: MakeParents(),
-
-		Namespace:        MakeTopology(),
-		NamespaceParents: MakeParents(),
-
-		ContainerImage:        MakeTopology(),
-		ContainerImageParents: MakeParents(),
-
-		Host:        MakeTopology(),
-		HostParents: MakeParents(),
-
-		Overlay:        MakeTopology(),
-		OverlayParents: MakeParents(),
-		OverlaySets:    MakeTopologySets(),
-
-		DNS:    DNSRecords{},
-		Window: 0,
-		ID:     fmt.Sprintf("%d", rand.Int63()),
+		Process:           MakeTopology(),
+		Container:         MakeTopology(),
+		CloudProvider:     MakeTopology(),
+		CloudRegion:       MakeTopology(),
+		KubernetesCluster: MakeTopology(),
+		Pod:               MakeTopology(),
+		Service:           MakeTopology(),
+		Namespace:         MakeTopology(),
+		ContainerImage:    MakeTopology(),
+		Host:              MakeTopology(),
+		Overlay:           MakeTopology(),
+		DNS:               DNSRecords{},
+		Window:            0,
+		ID:                fmt.Sprintf("%d", rand.Int63()),
 	}
 }
 

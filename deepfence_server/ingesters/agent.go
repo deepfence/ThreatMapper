@@ -106,7 +106,7 @@ func (nc *neo4jIngester) runEnqueueReport() {
 		case rpt := <-nc.enqueuer:
 			var hostNodeId string
 			for _, n := range rpt.Host {
-				hostNodeId = n.HostName
+				hostNodeId = n.Metadata.HostName
 				if len(rpt.Host) > 1 {
 					log.Error().Msgf("multiple hosts in one report: %v", hostNodeId)
 				}
@@ -183,28 +183,28 @@ func computeResolvers(rpt *report.Report) EndpointResolvers {
 	resolvers := NewEndpointResolvers()
 
 	for _, n := range rpt.Host {
-		if n.InterfaceIps == nil {
+		if n.Metadata.InterfaceIps == nil {
 			continue
 		}
-		for _, k := range n.InterfaceIps {
-			resolvers.network_map[k] = n.HostName
+		for _, k := range n.Metadata.InterfaceIps {
+			resolvers.network_map[k] = n.Metadata.HostName
 		}
 	}
 
 	var buf bytes.Buffer
 	for _, n := range rpt.Endpoint {
-		if n.HostName == "" {
+		if n.Metadata.HostName == "" {
 			continue
 		}
-		node_ip, node_port := extractIPPortFromEndpointID(n.NodeID)
+		node_ip, node_port := extractIPPortFromEndpointID(n.Metadata.NodeID)
 		if node_ip == localhost_ip {
 			continue
 		}
-		resolvers.network_map[node_ip] = n.HostName
+		resolvers.network_map[node_ip] = n.Metadata.HostName
 		buf.Reset()
 		buf.WriteString(node_ip)
 		buf.WriteByte(';')
-		buf.WriteString(strconv.Itoa(n.Pid))
+		buf.WriteString(strconv.Itoa(n.Metadata.Pid))
 		resolvers.ipport_ippid[node_ip+node_port] = buf.String()
 	}
 
@@ -247,28 +247,28 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	kubernetes_edges_batch := map[string][]string{}
 
 	for _, n := range rpt.Host {
-		hosts = append(hosts, map[string]interface{}{"node_id": n.NodeID})
-		metadataMap := metadataToMap(n)
-		if n.KubernetesClusterId != "" {
-			kubernetes_edges_batch[n.KubernetesClusterId] = append(kubernetes_edges_batch[n.KubernetesClusterId], n.NodeID)
+		hosts = append(hosts, map[string]interface{}{"node_id": n.Metadata.NodeID})
+		metadataMap := metadataToMap(n.Metadata)
+		if n.Metadata.KubernetesClusterId != "" {
+			kubernetes_edges_batch[n.Metadata.KubernetesClusterId] = append(kubernetes_edges_batch[n.Metadata.KubernetesClusterId], n.Metadata.NodeID)
 		}
 		host_batch = append(host_batch, metadataMap)
 	}
 
 	for _, n := range rpt.KubernetesCluster {
-		kubernetes_batch = append(kubernetes_batch, metadataToMap(n))
+		kubernetes_batch = append(kubernetes_batch, metadataToMap(n.Metadata))
 	}
 
 	processes_to_keep := map[string]struct{}{}
 	var buf bytes.Buffer
 	for _, n := range rpt.Endpoint {
-		if n.HostName == "" {
+		if n.Metadata.HostName == "" {
 			continue
 		}
 		buf.Reset()
-		buf.WriteString(n.HostName)
+		buf.WriteString(n.Metadata.HostName)
 		buf.WriteByte(';')
-		buf.WriteString(strconv.Itoa(n.Pid))
+		buf.WriteString(strconv.Itoa(n.Metadata.Pid))
 		host_pid := buf.String()
 		processes_to_keep[host_pid] = struct{}{}
 	}
@@ -280,9 +280,9 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	inbound_edges := []map[string]interface{}{}
 
 	for _, n := range rpt.Endpoint {
-		hostName := n.HostName
+		hostName := n.Metadata.HostName
 		if hostName == "" {
-			node_ip, _ := extractIPPortFromEndpointID(n.NodeID)
+			node_ip, _ := extractIPPortFromEndpointID(n.Metadata.NodeID)
 			if val, ok := resolvers.get_host(node_ip); ok {
 				hostName = val
 			} else {
@@ -290,19 +290,15 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 				continue
 			}
 		}
-		if n.Pid != -1 {
-			adjacency, ok := rpt.EndpointAdjacency[n.NodeID]
-			if !ok {
-				continue
-			}
-			if len(adjacency) == 0 {
+		if n.Metadata.Pid != -1 {
+			if len(n.Adjacency) == 0 {
 				// Handle inbound from internet
 				inbound_edges = append(inbound_edges,
-					map[string]interface{}{"destination": hostName, "left_pid": 0, "right_pid": n.Pid})
+					map[string]interface{}{"destination": hostName, "left_pid": 0, "right_pid": n.Metadata.Pid})
 			} else {
-				edges := make([]map[string]interface{}, 0, len(adjacency))
-				for _, i := range adjacency {
-					if n.NodeID != i {
+				edges := make([]map[string]interface{}, 0, len(n.Adjacency))
+				for _, i := range n.Adjacency {
+					if n.Metadata.NodeID != i {
 						ip, port := extractIPPortFromEndpointID(i)
 						if host, ok := resolvers.get_host(ip); ok {
 							if hostName == host {
@@ -312,11 +308,11 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 							if ok {
 								rightpid := extractPidFromNodeID(right_ippid)
 								edges = append(edges,
-									map[string]interface{}{"destination": host, "left_pid": n.Pid, "right_pid": rightpid})
+									map[string]interface{}{"destination": host, "left_pid": n.Metadata.Pid, "right_pid": rightpid})
 							}
 						} else {
 							edges = append(edges,
-								map[string]interface{}{"destination": "out-the-internet", "left_pid": n.Pid, "right_pid": 0})
+								map[string]interface{}{"destination": "out-the-internet", "left_pid": n.Metadata.Pid, "right_pid": 0})
 						}
 					}
 				}
@@ -330,36 +326,34 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	process_edges_batch := map[string][]string{}
 	container_process_edges_batch := map[string][]string{}
 	for _, n := range rpt.Process {
-		if _, ok := processes_to_keep[n.NodeID]; !ok {
+		if _, ok := processes_to_keep[n.Metadata.NodeID]; !ok {
 			continue
 		}
-		process_batch = append(process_batch, metadataToMap(n))
-		process_edges_batch[n.HostName] = append(process_edges_batch[n.HostName], n.NodeID)
-		if parent, has := rpt.ProcessParents[n.NodeID]; has {
-			if len(parent.Container) != 0 {
-				container_process_edges_batch[parent.Container] = append(container_process_edges_batch[parent.Container], n.NodeID)
-			}
+		process_batch = append(process_batch, metadataToMap(n.Metadata))
+		process_edges_batch[n.Metadata.HostName] = append(process_edges_batch[n.Metadata.HostName], n.Metadata.NodeID)
+		if len(n.Parents.Container) != 0 {
+			container_process_edges_batch[n.Parents.Container] = append(container_process_edges_batch[n.Parents.Container], n.Metadata.NodeID)
 		}
 	}
 
 	container_batch := make([]map[string]interface{}, 0, len(rpt.Container))
 	container_edges_batch := map[string][]string{}
 	for _, n := range rpt.Container {
-		if n.HostName == "" {
+		if n.Metadata.HostName == "" {
 			continue
 		}
-		container_batch = append(container_batch, metadataToMap(n))
-		container_edges_batch[n.HostName] = append(container_edges_batch[n.HostName], n.NodeID)
+		container_batch = append(container_batch, metadataToMap(n.Metadata))
+		container_edges_batch[n.Metadata.HostName] = append(container_edges_batch[n.Metadata.HostName], n.Metadata.NodeID)
 	}
 
 	container_image_batch := make([]map[string]interface{}, 0, len(rpt.ContainerImage))
 	container_image_edges_batch := map[string][]string{}
 	for _, n := range rpt.ContainerImage {
-		if n.HostName == "" {
+		if n.Metadata.HostName == "" {
 			continue
 		}
-		container_image_batch = append(container_image_batch, metadataToMap(n))
-		container_image_edges_batch[n.HostName] = append(container_image_edges_batch[n.HostName], n.NodeID)
+		container_image_batch = append(container_image_batch, metadataToMap(n.Metadata))
+		container_image_edges_batch[n.Metadata.HostName] = append(container_image_edges_batch[n.Metadata.HostName], n.Metadata.NodeID)
 	}
 
 	// Note: Pods are provided alone with an extra report
@@ -368,17 +362,17 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	pod_edges_batch := map[string][]string{}
 	pod_host_edges_batch := map[string][]string{}
 	for _, n := range rpt.Pod {
-		if n.KubernetesClusterId == "" {
+		if n.Metadata.KubernetesClusterId == "" {
 			continue
 		}
-		if n.HostName == "" {
-			if val, ok := resolvers.get_host(n.KubernetesIP); ok {
-				n.HostName = val
+		if n.Metadata.HostName == "" {
+			if val, ok := resolvers.get_host(n.Metadata.KubernetesIP); ok {
+				n.Metadata.HostName = val
 			}
 		}
-		pod_batch = append(pod_batch, metadataToMap(n))
-		pod_edges_batch[n.KubernetesClusterId] = append(pod_edges_batch[n.KubernetesClusterId], n.NodeID)
-		pod_host_edges_batch[n.HostName] = append(pod_host_edges_batch[n.HostName], n.NodeID)
+		pod_batch = append(pod_batch, metadataToMap(n.Metadata))
+		pod_edges_batch[n.Metadata.KubernetesClusterId] = append(pod_edges_batch[n.Metadata.KubernetesClusterId], n.Metadata.NodeID)
+		pod_host_edges_batch[n.Metadata.HostName] = append(pod_host_edges_batch[n.Metadata.HostName], n.Metadata.NodeID)
 	}
 
 	return ReportIngestionData{

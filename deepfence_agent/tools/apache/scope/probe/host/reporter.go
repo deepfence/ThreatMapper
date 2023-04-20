@@ -334,64 +334,72 @@ func (r *Reporter) Report() (report.Report, error) {
 	r.hostDetailsMetrics.RUnlock()
 
 	rep.CloudProvider.AddNode(
-		report.Metadata{
-			Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
-			NodeID:    cloudProvider,
-			NodeName:  cloudMetadata.Label,
-			NodeType:  report.CloudProvider,
+		report.TopologyNode{
+			Metadata: report.Metadata{
+				Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
+				NodeID:    cloudProvider,
+				NodeName:  cloudMetadata.Label,
+				NodeType:  report.CloudProvider,
+			},
 		},
 	)
 	cloudRegionId := cloudMetadata.Region + "-" + cloudProvider
 	rep.CloudRegion.AddNode(
-		report.Metadata{
-			Timestamp:     time.Now().UTC().Format(time.RFC3339Nano),
-			NodeID:        cloudRegionId,
-			NodeName:      cloudMetadata.Region,
-			NodeType:      report.CloudRegion,
-			CloudProvider: cloudProvider,
+		report.TopologyNode{
+			Metadata: report.Metadata{
+				Timestamp:     time.Now().UTC().Format(time.RFC3339Nano),
+				NodeID:        cloudRegionId,
+				NodeName:      cloudMetadata.Region,
+				NodeType:      report.CloudRegion,
+				CloudProvider: cloudProvider,
+			},
+			Parents: report.Parent{
+				CloudProvider: cloudProvider,
+			},
 		},
 	)
-	rep.CloudRegionParents[cloudRegionId] = report.Parent{CloudProvider: cloudProvider}
 
 	rep.Host.AddNode(
-		report.Metadata{
-			Timestamp:           time.Now().UTC().Format(time.RFC3339Nano),
-			NodeID:              r.hostName,
-			NodeName:            r.hostName,
-			NodeType:            report.Host,
-			HostName:            r.hostName,
-			Os:                  r.OSVersion,
-			KernelVersion:       r.KernelVersion,
-			Uptime:              uptime,
-			InterfaceNames:      interfaceNames,
-			InterfaceIps:        interfaceIPs,
-			InterfaceIpMap:      interfaceIPMap,
-			UserDefinedTags:     userDefinedTags,
-			Version:             r.AgentVersion,
-			IsConsoleVm:         r.IsConsoleVm,
-			AgentRunning:        true,
-			LocalCIDRs:          localCIDRs,
-			CloudProvider:       cloudProvider,
-			CloudRegion:         cloudMetadata.Region,
-			InstanceID:          cloudMetadata.InstanceID,
-			InstanceType:        cloudMetadata.InstanceType,
-			PublicIP:            cloudMetadata.PublicIP,
-			PrivateIP:           cloudMetadata.PrivateIP,
-			AvailabilityZone:    cloudMetadata.Zone,
-			KernelId:            cloudMetadata.KernelId,
-			ResourceGroup:       cloudMetadata.ResourceGroupName,
-			CpuMax:              cpuMax,
-			CpuUsage:            cpuUsage,
-			MemoryMax:           memoryMax,
-			MemoryUsage:         memoryUsage,
-			KubernetesClusterId: r.k8sClusterId,
+		report.TopologyNode{
+			Metadata: report.Metadata{
+				Timestamp:           time.Now().UTC().Format(time.RFC3339Nano),
+				NodeID:              r.hostName,
+				NodeName:            r.hostName,
+				NodeType:            report.Host,
+				HostName:            r.hostName,
+				Os:                  r.OSVersion,
+				KernelVersion:       r.KernelVersion,
+				Uptime:              uptime,
+				InterfaceNames:      interfaceNames,
+				InterfaceIps:        interfaceIPs,
+				InterfaceIpMap:      interfaceIPMap,
+				UserDefinedTags:     userDefinedTags,
+				Version:             r.AgentVersion,
+				IsConsoleVm:         r.IsConsoleVm,
+				AgentRunning:        true,
+				LocalCIDRs:          localCIDRs,
+				CloudProvider:       cloudProvider,
+				CloudRegion:         cloudMetadata.Region,
+				InstanceID:          cloudMetadata.InstanceID,
+				InstanceType:        cloudMetadata.InstanceType,
+				PublicIP:            cloudMetadata.PublicIP,
+				PrivateIP:           cloudMetadata.PrivateIP,
+				AvailabilityZone:    cloudMetadata.Zone,
+				KernelId:            cloudMetadata.KernelId,
+				ResourceGroup:       cloudMetadata.ResourceGroupName,
+				CpuMax:              cpuMax,
+				CpuUsage:            cpuUsage,
+				MemoryMax:           memoryMax,
+				MemoryUsage:         memoryUsage,
+				KubernetesClusterId: r.k8sClusterId,
+			},
+			Parents: report.Parent{
+				CloudProvider:     cloudProvider,
+				CloudRegion:       cloudRegionId,
+				KubernetesCluster: r.k8sClusterId,
+			},
 		},
 	)
-	rep.HostParents[r.hostName] = report.Parent{
-		CloudProvider:     cloudProvider,
-		CloudRegion:       cloudRegionId,
-		KubernetesCluster: r.k8sClusterId,
-	}
 
 	return rep, nil
 }
