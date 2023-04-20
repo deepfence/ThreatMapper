@@ -254,17 +254,17 @@ type TopologyNode struct {
 }
 
 func (t TopologyNode) Merge(o TopologyNode) {
-	t.Metadata.Merge(o.Metadata)
-	t.Adjacency.Merge(o.Adjacency)
-	t.Parents.Merge(o.Parents)
-	t.Sets.Merge(o.Sets)
+	t.Metadata = o.Metadata
+	t.Adjacency = o.Adjacency
+	t.Parents = o.Parents
+	t.Sets = o.Sets
 }
 
 func (t TopologyNode) UnsafeMerge(o TopologyNode) {
-	t.Metadata.Merge(o.Metadata)
-	t.Adjacency.Merge(o.Adjacency)
-	t.Parents.Merge(o.Parents)
-	t.Sets.Merge(o.Sets)
+	t.Metadata = o.Metadata
+	t.Adjacency = o.Adjacency
+	t.Parents = o.Parents
+	t.Sets = o.Sets
 }
 
 func (t TopologyNode) Copy() TopologyNode {
@@ -298,14 +298,14 @@ func (t Topology) AddNode(node TopologyNode) {
 
 func (t Topology) Merge(o Topology) {
 	for k, v := range o {
-		t[k].Merge(v)
+		t[k] = v
 	}
 }
 
 func (t Topology) Copy() Topology {
 	newTopology := make(Topology)
 	for k, v := range t {
-		newTopology[k] = v.Copy()
+		newTopology[k] = v
 	}
 	return newTopology
 }
@@ -316,7 +316,7 @@ func (t Topology) UnsafeUnMerge(o Topology) {
 
 func (t Topology) UnsafeMerge(o Topology) {
 	for k, v := range o {
-		t[k].Merge(v)
+		t[k] = v
 	}
 }
 
@@ -372,7 +372,7 @@ func (t TopologySets) Copy() TopologySets {
 
 func (t TopologySets) UnsafeMerge(o TopologySets) {
 	for k, v := range o {
-		t[k] = v
+		t[k].Merge(v)
 	}
 }
 
