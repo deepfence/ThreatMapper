@@ -238,7 +238,7 @@ func GetCloudResourcesReport(ctx context.Context, filter LookupFilter) ([]model.
 	for _, entry := range entries {
 		label, found := commonConstants.CSPM_RESOURCE_LABELS[commonConstants.CSPM_RESOURCES[entry.Type]]
 		if found {
-			entry.Type = label
+			entry.TypeLabel = label
 		}
 	}
 	if err != nil {
