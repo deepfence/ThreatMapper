@@ -19,7 +19,7 @@ const PostureConnectorLayout = () => {
                 nodeType: params.account,
               })}
             >
-              POSTURE ACCOUNTS
+              Posture Accounts
             </DFLink>
           </BreadcrumbLink>
 

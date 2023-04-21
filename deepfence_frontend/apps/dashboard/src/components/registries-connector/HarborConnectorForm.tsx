@@ -43,7 +43,7 @@ export const HarborConnectorForm = () => {
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
-              label="projetName"
+              label="Project Name"
               type={'text'}
               sizing="sm"
               name="projectName"

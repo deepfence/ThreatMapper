@@ -23,7 +23,7 @@ const RegistryConnectorLayout = () => {
                 account: params.account,
               })}
             >
-              REGISTRY ACCOUNTS
+              Registry Accounts
             </DFLink>
           </BreadcrumbLink>
 

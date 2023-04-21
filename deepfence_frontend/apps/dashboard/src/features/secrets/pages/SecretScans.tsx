@@ -421,21 +421,6 @@ const action = async ({
   return null;
 };
 
-const RefreshApiButton = () => {
-  const revalidator = useRevalidator();
-  return (
-    <IconButton
-      className="ml-auto rounded-lg"
-      size="xs"
-      outline
-      color="primary"
-      onClick={() => revalidator.revalidate()}
-      loading={revalidator.state === 'loading'}
-      icon={<HiRefresh />}
-    />
-  );
-};
-
 const DeleteConfirmationModal = ({
   showDialog,
   scanId,
@@ -823,10 +808,10 @@ const SecretScans = () => {
       <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
         <Breadcrumb separator={<HiChevronRight />} transparent>
           <BreadcrumbLink>
-            <DFLink to={'/secret'}>SECRETS</DFLink>
+            <DFLink to={'/secret'}>Secrets</DFLink>
           </BreadcrumbLink>
           <BreadcrumbLink>
-            <span className="inherit cursor-auto">SECRET SCANS</span>
+            <span className="inherit cursor-auto">Secret Scans</span>
           </BreadcrumbLink>
         </Breadcrumb>
 
@@ -834,7 +819,6 @@ const SecretScans = () => {
           {navigation.state === 'loading' ? <CircleSpinner size="xs" /> : null}
         </span>
         <div className="ml-auto flex gap-x-4">
-          <RefreshApiButton />
           <div className="relative gap-x-4">
             {isFilterApplied && (
               <span className="absolute -left-[2px] -top-[2px] inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>

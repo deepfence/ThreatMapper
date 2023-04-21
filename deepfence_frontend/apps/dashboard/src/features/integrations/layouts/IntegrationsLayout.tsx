@@ -18,7 +18,7 @@ const IntegrationsLayout = () => {
       <div className="flex p-2  w-full items-center shadow bg-white dark:bg-gray-800">
         <Breadcrumb separator={<HiChevronRight />} transparent>
           <BreadcrumbLink>
-            <DFLink to="/integrations">INTEGRATIONS</DFLink>
+            <DFLink to="/integrations">Integrations</DFLink>
           </BreadcrumbLink>
 
           <BreadcrumbLink>

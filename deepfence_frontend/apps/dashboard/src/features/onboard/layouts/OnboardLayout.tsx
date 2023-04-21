@@ -18,7 +18,7 @@ export const OnboardLayout = () => {
       <div className="px-16 pt-[64px] pb-8">
         <Outlet />
       </div>
-      <OnboardAppHeader />
+      <OnboardAppHeader showGotoDashboard={true} />
     </div>
   );
 };
