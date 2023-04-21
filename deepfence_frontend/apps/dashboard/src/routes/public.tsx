@@ -4,7 +4,10 @@ import { registerAction } from '@/features/auth/actions/registerAction';
 import { AuthLayout } from '@/features/auth/layouts/AuthLayout';
 import { loginLoader } from '@/features/auth/loaders/loginLoader';
 import { registerLoader } from '@/features/auth/loaders/registerLoader';
-import { ForgotPassword } from '@/features/auth/pages/ForgotPassword';
+import {
+  ForgotPassword,
+  forgotPasswordAction,
+} from '@/features/auth/pages/ForgotPassword';
 import { Login } from '@/features/auth/pages/Login';
 import { RegisterUser } from '@/features/auth/pages/RegisterUser';
 import { module as registerWithInvite } from '@/features/auth/pages/RegisterWithInvite';
@@ -33,6 +36,7 @@ export const publicRoutes: CustomRouteObject[] = [
       {
         path: 'forgot-password',
         element: <ForgotPassword />,
+        action: forgotPasswordAction,
         meta: { title: 'Forgot Password?' },
       },
       {

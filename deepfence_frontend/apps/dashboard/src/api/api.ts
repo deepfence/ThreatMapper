@@ -58,6 +58,7 @@ export function getUserApiClient() {
     updatePassword: userApi.updatePassword.bind(userApi),
     inviteUser: userApi.inviteUser.bind(userApi),
     registerInvitedUser: userApi.registerInvitedUser.bind(userApi),
+    resetPasswordRequest: userApi.resetPasswordRequest.bind(userApi),
   };
 }
 
