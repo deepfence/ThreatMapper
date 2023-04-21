@@ -20,6 +20,8 @@ export * from './GraphProviderThreatGraph';
 export * from './GraphThreatFilters';
 export * from './GraphThreatNodeInfo';
 export * from './GraphTopologyFilters';
+export * from './GraphVulnerabilityThreatGraph';
+export * from './GraphVulnerabilityThreatGraphRequest';
 export * from './IngestersCloudCompliance';
 export * from './IngestersCloudResource';
 export * from './IngestersCompliance';

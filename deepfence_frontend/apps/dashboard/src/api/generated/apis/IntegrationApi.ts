@@ -19,6 +19,7 @@ import type {
   ApiDocsFailureResponse,
   ModelIntegrationAddReq,
   ModelIntegrationListResp,
+  ModelMessageResponse,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -29,6 +30,8 @@ import {
     ModelIntegrationAddReqToJSON,
     ModelIntegrationListRespFromJSON,
     ModelIntegrationListRespToJSON,
+    ModelMessageResponseFromJSON,
+    ModelMessageResponseToJSON,
 } from '../models';
 
 export interface AddIntegrationRequest {
@@ -54,13 +57,13 @@ export interface IntegrationApiInterface {
      * @throws {RequiredError}
      * @memberof IntegrationApiInterface
      */
-    addIntegrationRaw(requestParameters: AddIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+    addIntegrationRaw(requestParameters: AddIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>>;
 
     /**
      * Add a new supported integration
      * Add Integration
      */
-    addIntegration(requestParameters: AddIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+    addIntegration(requestParameters: AddIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
 
     /**
      * Delete integration
@@ -104,7 +107,7 @@ export class IntegrationApi extends runtime.BaseAPI implements IntegrationApiInt
      * Add a new supported integration
      * Add Integration
      */
-    async addIntegrationRaw(requestParameters: AddIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async addIntegrationRaw(requestParameters: AddIntegrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -127,15 +130,16 @@ export class IntegrationApi extends runtime.BaseAPI implements IntegrationApiInt
             body: ModelIntegrationAddReqToJSON(requestParameters.modelIntegrationAddReq),
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelMessageResponseFromJSON(jsonValue));
     }
 
     /**
      * Add a new supported integration
      * Add Integration
      */
-    async addIntegration(requestParameters: AddIntegrationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.addIntegrationRaw(requestParameters, initOverrides);
+    async addIntegration(requestParameters: AddIntegrationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
+        const response = await this.addIntegrationRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

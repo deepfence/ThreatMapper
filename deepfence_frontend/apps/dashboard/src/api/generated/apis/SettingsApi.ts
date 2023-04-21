@@ -19,6 +19,7 @@ import type {
   ApiDocsFailureResponse,
   ModelEmailConfigurationAdd,
   ModelEmailConfigurationResp,
+  ModelMessageResponse,
   ModelSettingUpdateRequest,
   ModelSettingsResponse,
   PostgresqlDbGetAuditLogsRow,
@@ -32,6 +33,8 @@ import {
     ModelEmailConfigurationAddToJSON,
     ModelEmailConfigurationRespFromJSON,
     ModelEmailConfigurationRespToJSON,
+    ModelMessageResponseFromJSON,
+    ModelMessageResponseToJSON,
     ModelSettingUpdateRequestFromJSON,
     ModelSettingUpdateRequestToJSON,
     ModelSettingsResponseFromJSON,
@@ -68,13 +71,13 @@ export interface SettingsApiInterface {
      * @throws {RequiredError}
      * @memberof SettingsApiInterface
      */
-    addEmailConfigurationRaw(requestParameters: AddEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+    addEmailConfigurationRaw(requestParameters: AddEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>>;
 
     /**
      * This email configuration is used to send email notifications
      * Add Email Configuration
      */
-    addEmailConfiguration(requestParameters: AddEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+    addEmailConfiguration(requestParameters: AddEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
 
     /**
      * Delete Email Smtp / ses Configurations in system
@@ -165,7 +168,7 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      * This email configuration is used to send email notifications
      * Add Email Configuration
      */
-    async addEmailConfigurationRaw(requestParameters: AddEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async addEmailConfigurationRaw(requestParameters: AddEmailConfigurationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -188,15 +191,16 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
             body: ModelEmailConfigurationAddToJSON(requestParameters.modelEmailConfigurationAdd),
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelMessageResponseFromJSON(jsonValue));
     }
 
     /**
      * This email configuration is used to send email notifications
      * Add Email Configuration
      */
-    async addEmailConfiguration(requestParameters: AddEmailConfigurationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.addEmailConfigurationRaw(requestParameters, initOverrides);
+    async addEmailConfiguration(requestParameters: AddEmailConfigurationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
+        const response = await this.addEmailConfigurationRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

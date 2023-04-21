@@ -41,6 +41,7 @@ export function TopologyTable() {
   const [clickedItem, setClickedItem] = useState<{
     nodeId: string;
     nodeType: string;
+    parentId?: string;
   }>();
 
   const columnHelper = createColumnHelper<(typeof treeData)[number]>();
@@ -108,6 +109,7 @@ export function TopologyTable() {
                     setClickedItem({
                       nodeId: info.row.original.id!,
                       nodeType: info.row.original.type!,
+                      parentId: info.row.original.immediate_parent_id,
                     });
                   }}
                   className="flex-1 shrink-0 truncate pl-2"

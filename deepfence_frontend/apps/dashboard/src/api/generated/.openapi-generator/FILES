@@ -42,6 +42,8 @@ models/GraphProviderThreatGraph.ts
 models/GraphThreatFilters.ts
 models/GraphThreatNodeInfo.ts
 models/GraphTopologyFilters.ts
+models/GraphVulnerabilityThreatGraph.ts
+models/GraphVulnerabilityThreatGraphRequest.ts
 models/IngestersCloudCompliance.ts
 models/IngestersCloudResource.ts
 models/IngestersCompliance.ts

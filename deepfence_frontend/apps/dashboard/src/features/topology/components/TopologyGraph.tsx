@@ -28,6 +28,7 @@ export const TopologyGraph = () => {
   const [clickedItem, setClickedItem] = useState<{
     nodeId: string;
     nodeType: string;
+    parentId?: string;
   }>();
   const [contextmenu, setContextmenu] = useState<{
     open: boolean;
@@ -174,6 +175,7 @@ export const TopologyGraph = () => {
                         setClickedItem({
                           nodeId: model.df_data.id,
                           nodeType: model.df_data.type,
+                          parentId: model.df_data.immediate_parent_id,
                         });
                       }}
                     >

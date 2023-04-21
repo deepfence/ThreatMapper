@@ -23,6 +23,7 @@ export const NodeDetailsStackedModal = ({
   node: {
     nodeId: string;
     nodeType: string;
+    parentId?: string; // in case of cloud service node, this is the region
   };
 }) => {
   const [stack, setStack] = useState<Array<typeof node>>([node]);
@@ -40,7 +41,6 @@ export const NodeDetailsStackedModal = ({
 
   const [scanOptions, setScanOptions] =
     useState<ConfigureScanModalProps['scanOptions']>();
-
   return (
     <>
       <SlidingModal open={open} onOpenChange={onOpenChange} width="w-[min(650px,90%)]">
@@ -115,6 +115,7 @@ export const NodeDetailsStackedModal = ({
             onStartScanClick={(scanOptions) => {
               setScanOptions(scanOptions);
             }}
+            region={lastNode.parentId ?? ''}
             nodeType={lastNode.nodeType}
             showBackBtn={showBackBtn}
             onGoBack={onGoBack}

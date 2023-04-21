@@ -31,6 +31,7 @@ export {
   SlidingModalFooter,
   SlidingModalHeader,
 } from '@/components/modal/SlidingModal';
+export { Pagination } from '@/components/pagination/Pagination';
 export { Popover } from '@/components/popover/Popover';
 export { default as Radio } from '@/components/radio/Radio';
 export { Combobox, ComboboxOption } from '@/components/select/Combobox';
