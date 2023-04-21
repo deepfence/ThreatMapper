@@ -45,9 +45,12 @@ export const TopAttackPaths = () => {
         </DFLink>
       </div>
       <div className="flex items-center justify-center pt-2">
-        <Tabs value={'most'} tabs={attackPathTabs} size="xs" variant="tab">
+        <div className="text-gray-600 dark:text-gray-400 flex items-center justify-center h-[300px]">
+          Coming Soon!
+        </div>
+        {/* <Tabs value={'most'} tabs={attackPathTabs} size="xs" variant="tab">
           <DagreGraph />
-        </Tabs>
+        </Tabs> */}
       </div>
     </Card>
   );
