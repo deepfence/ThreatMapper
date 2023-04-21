@@ -59,7 +59,6 @@ export const forgotPasswordAction = async ({
   if (ApiError.isApiError(r)) {
     return r.value();
   }
-  toast.success(r.message);
   return {
     success: true,
     message: r.message,
@@ -71,59 +70,66 @@ export const ForgotPassword = () => {
   const { data, state } = fetcher;
 
   return (
-    <fetcher.Form method="post">
-      <div className="text-center">
-        <img
-          src={LogoDarkBlue}
-          alt="Deefence Logo"
-          width="55.46'"
-          height="34.74"
-          className="m-auto"
-        />
-      </div>
-      <h1
-        className={cx(
-          `${Typography.size['2xl']} ${Typography.weight.medium}`,
-          'text-center leading-6 mb-6 mt-2',
-        )}
-      >
-        Forgot Password
-      </h1>
-      <p className={`${Typography.size.sm} mb-2.5`}>
-        Provide the email registered with your account.
-      </p>
-      <TextInput
-        label="Email Address"
-        type="email"
-        placeholder="Email"
-        sizing="sm"
-        name="email"
-        required
-        color={data?.fieldErrors?.email ? 'error' : 'default'}
-        helperText={data?.fieldErrors?.email}
-      />
-
-      <div className="flex flex-col w-full mt-6">
-        <Button size="md" color="primary" className="w-full mb-4">
-          Send Link
-        </Button>
-        <Link
-          to="/auth/login"
+    <>
+      <fetcher.Form method="post">
+        <div className="text-center">
+          <img
+            src={LogoDarkBlue}
+            alt="Deefence Logo"
+            width="55.46'"
+            height="34.74"
+            className="m-auto"
+          />
+        </div>
+        <h1
           className={cx(
-            `${Typography.size.xs} `,
-            'bg-transparent text-center text-blue-600 dark:text-blue-500',
+            `${Typography.size['2xl']} ${Typography.weight.medium}`,
+            'text-center leading-6 mb-6 mt-2',
           )}
         >
-          Back to Login
-        </Link>
-      </div>
-      {state === 'submitting' && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity">
-          <div className="flex items-center justify-center absolute inset-0 ">
-            <CircleSpinner size="xl" />
-          </div>
+          Forgot Password
+        </h1>
+        <p className={`${Typography.size.sm} mb-2.5`}>
+          Provide the email registered with your account.
+        </p>
+        <TextInput
+          label="Email Address"
+          type="email"
+          placeholder="Email"
+          sizing="sm"
+          name="email"
+          required
+          color={data?.fieldErrors?.email ? 'error' : 'default'}
+          helperText={data?.fieldErrors?.email}
+        />
+
+        <div className="flex flex-col w-full mt-6">
+          <Button size="md" color="primary" className="w-full mb-4">
+            Send Link
+          </Button>
+          <Link
+            to="/auth/login"
+            className={cx(
+              `${Typography.size.xs} `,
+              'bg-transparent text-center text-blue-600 dark:text-blue-500',
+            )}
+          >
+            Back to Login
+          </Link>
         </div>
+        {state === 'submitting' && (
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity">
+            <div className="flex items-center justify-center absolute inset-0 ">
+              <CircleSpinner size="xl" />
+            </div>
+          </div>
+        )}
+      </fetcher.Form>
+      {data?.message && (
+        <p className={`mt-1.5 ${Typography.size.sm} text-green-500 relative text-center`}>
+          {data.message}
+        </p>
       )}
-    </fetcher.Form>
+    </>
   );
 };
