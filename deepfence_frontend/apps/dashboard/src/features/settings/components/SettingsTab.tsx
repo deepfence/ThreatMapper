@@ -1,4 +1,5 @@
 import {
+  HiCode,
   HiDocumentSearch,
   HiGlobeAlt,
   HiOutlineMail,
@@ -16,7 +17,7 @@ type RouteProps =
   | 'email-configuration'
   | 'schedule-jobs'
   | 'scan-type-data-upload'
-  | 'agent-setup'
+  | 'connection-instructions'
   | 'global-settings';
 type SettingsTabProps = {
   children: React.ReactNode;
@@ -57,15 +58,15 @@ export const settingsTabs: Array<{
   //   value: 'scan-type-data-upload',
   //   icon: <HiUsers />,
   // },
-  // {
-  //   label: 'Agent Setup',
-  //   value: 'agent-setup',
-  //   icon: <HiUsers />,
-  // },
   {
     label: 'Global Settings',
     value: 'global-settings',
     icon: <HiGlobeAlt />,
+  },
+  {
+    label: 'Connection Instructions',
+    value: 'connection-instructions',
+    icon: <HiCode />,
   },
 ];
 

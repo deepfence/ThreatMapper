@@ -66,6 +66,7 @@ import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
+import { module as connectorInstructions } from '@/features/settings/pages/ConnectorInstructions';
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
 import { module as emailConfiguration } from '@/features/settings/pages/EmailConfiguration';
 import { module as globalSettings } from '@/features/settings/pages/GlobalSettings';
@@ -503,6 +504,15 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'global-settings',
             ...globalSettings,
             meta: { title: 'Global Settings' },
+          },
+          {
+            path: 'connection-instructions',
+            ...connectorInstructions,
+            meta: { title: 'Connector Instructions' },
+          },
+          {
+            path: 'connector-instructions/:connectorType',
+            ...connectorInstructions,
           },
         ],
       },
