@@ -68,7 +68,7 @@ const IntegrationsData = [
     ],
   },
   {
-    name: 'Seim',
+    name: 'SEIM',
     icon: (
       <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
         <IconContext.Provider

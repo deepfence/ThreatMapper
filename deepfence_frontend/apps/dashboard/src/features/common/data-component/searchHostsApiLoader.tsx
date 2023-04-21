@@ -54,7 +54,9 @@ export const searchHostsApiLoader = async ({
           node_filter: {
             filters: {
               contains_filter: {
-                filter_in: {},
+                filter_in: {
+                  pseudo: [false],
+                },
               },
               order_filter: {
                 order_fields: [

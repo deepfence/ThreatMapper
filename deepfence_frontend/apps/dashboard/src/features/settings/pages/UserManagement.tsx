@@ -605,7 +605,7 @@ const APITokenComponent = () => {
         setShowDialog={setOpenChangePasswordForm}
       />
 
-      {currentUserStatus !== 'idle' ? (
+      {currentUserStatus !== 'idle' && !data ? (
         <APITokenSkeletonComponent />
       ) : (
         <div>
