@@ -26,11 +26,8 @@ export const FiveZeroZero = () => {
   const [sideNavExpanded, setSideNavExpanded] = useState(
     getSideNavigationState() === 'open' ? true : false,
   );
-  const error = useRouteError();
   const isAuth = useMemo(() => storage.getAuth(), []);
   const location = useLocation();
-
-  console.error(error);
 
   if (location.pathname.startsWith('/onboard')) {
     return (
