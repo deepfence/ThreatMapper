@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { useState } from 'react';
 
 import Button from '@/components/button/Button';
@@ -13,9 +13,9 @@ export default {
       control: { type: 'radio' },
     },
   },
-} as ComponentMeta<typeof Tooltip>;
+} as Meta<typeof Tooltip>;
 
-const Template: ComponentStory<typeof Tooltip> = (args) => (
+const Template: StoryFn<typeof Tooltip> = (args) => (
   <Tooltip {...args}>
     <Button color="primary" style={{ margin: '5rem 18rem' }}>
       Hover me
@@ -23,7 +23,7 @@ const Template: ComponentStory<typeof Tooltip> = (args) => (
   </Tooltip>
 );
 
-const ControlledTemplate: ComponentStory<typeof Tooltip> = (args) => {
+const ControlledTemplate: StoryFn<typeof Tooltip> = (args) => {
   const [open, setOpen] = useState(false);
   return (
     <Tooltip
@@ -40,16 +40,22 @@ const ControlledTemplate: ComponentStory<typeof Tooltip> = (args) => {
   );
 };
 
-export const Default = Template.bind({});
-Default.args = {
-  triggerAsChild: true,
-  placement: 'right',
-  content: 'This is a nice little tooltip.',
+export const Default = {
+  render: Template,
+
+  args: {
+    triggerAsChild: true,
+    placement: 'right',
+    content: 'This is a nice little tooltip.',
+  },
 };
 
-export const Controlled = ControlledTemplate.bind({});
-Controlled.args = {
-  triggerAsChild: true,
-  placement: 'right',
-  content: 'This is a nice little tooltip.',
+export const Controlled = {
+  render: ControlledTemplate,
+
+  args: {
+    triggerAsChild: true,
+    placement: 'right',
+    content: 'This is a nice little tooltip.',
+  },
 };

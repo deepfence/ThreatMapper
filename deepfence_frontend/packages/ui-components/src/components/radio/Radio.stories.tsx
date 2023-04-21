@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta } from '@storybook/react';
 
 import Radio from '@/components/radio/Radio';
 
@@ -8,83 +8,87 @@ export default {
   argTypes: {
     onValueChange: { action: 'onValueChange' },
   },
-} as ComponentMeta<typeof Radio>;
+} as Meta<typeof Radio>;
 
-const Template: ComponentStory<typeof Radio> = (args) => <Radio {...args} />;
-
-export const Default = Template.bind({});
-Default.args = {
-  name: 'Fruits',
-  options: [
-    {
-      label: 'Mango',
-      value: 'mango',
-    },
-    {
-      label: 'Apple',
-      value: 'apple',
-    },
-    {
-      label: 'Kiwi',
-      value: 'kiwi',
-    },
-  ],
+export const Default = {
+  args: {
+    name: 'Fruits',
+    options: [
+      {
+        label: 'Mango',
+        value: 'mango',
+      },
+      {
+        label: 'Apple',
+        value: 'apple',
+      },
+      {
+        label: 'Kiwi',
+        value: 'kiwi',
+      },
+    ],
+  },
 };
 
-export const Disabled = Template.bind({});
-Disabled.args = {
-  name: 'Fruits',
-  options: [
-    {
-      label: 'Disabled',
-      value: 'disabled',
-      disabled: true,
-    },
-    {
-      label: 'Apple',
-      value: 'apple',
-    },
-    {
-      label: 'Kiwi',
-      value: 'kiwi',
-    },
-  ],
+export const Disabled = {
+  args: {
+    name: 'Fruits',
+    options: [
+      {
+        label: 'Disabled',
+        value: 'disabled',
+        disabled: true,
+      },
+      {
+        label: 'Apple',
+        value: 'apple',
+      },
+      {
+        label: 'Kiwi',
+        value: 'kiwi',
+      },
+    ],
+  },
 };
-export const DefaultSelected = Template.bind({});
-DefaultSelected.args = {
-  name: 'Fruits',
-  defaultValue: 'apple',
-  options: [
-    {
-      label: 'Mango',
-      value: 'mango',
-    },
-    {
-      label: 'Apple',
-      value: 'apple',
-    },
-    {
-      label: 'Kiwi',
-      value: 'kiwi',
-    },
-  ],
+
+export const DefaultSelected = {
+  args: {
+    name: 'Fruits',
+    defaultValue: 'apple',
+    options: [
+      {
+        label: 'Mango',
+        value: 'mango',
+      },
+      {
+        label: 'Apple',
+        value: 'apple',
+      },
+      {
+        label: 'Kiwi',
+        value: 'kiwi',
+      },
+    ],
+  },
 };
-export const RowRadio = Template.bind({});
-RowRadio.args = {
-  name: 'Fruits',
-  direction: 'row',
-  options: [
-    {
-      label: 'Mango',
-      value: 'Mango',
-    },
-    {
-      label: 'Apple',
-      value: 'apple',
-    },
-    {
-      label: 'Kiwi',
-      value: 'kiwi',
-    },
-  ],
+
+export const RowRadio = {
+  args: {
+    name: 'Fruits',
+    direction: 'row',
+    options: [
+      {
+        label: 'Mango',
+        value: 'Mango',
+      },
+      {
+        label: 'Apple',
+        value: 'apple',
+      },
+      {
+        label: 'Kiwi',
+        value: 'kiwi',
+      },
+    ],
+  },
 };

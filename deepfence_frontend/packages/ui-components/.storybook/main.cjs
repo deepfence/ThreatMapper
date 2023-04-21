@@ -1,5 +1,4 @@
 const path = require('path');
-
 module.exports = {
   stories: ['../src/**/*.stories.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
   addons: [
@@ -7,32 +6,26 @@ module.exports = {
     '@storybook/addon-essentials',
     '@storybook/addon-interactions',
     {
-      name: '@storybook/addon-postcss',
+      name: '@storybook/addon-styling',
       options: {
-        postcssLoaderOptions: {
+        postCss: {
           implementation: require('postcss'),
         },
       },
     },
     '@storybook/addon-a11y',
-    'storybook-dark-mode',
   ],
-  framework: '@storybook/react',
-  core: {
-    builder: '@storybook/builder-vite',
+  framework: {
+    name: '@storybook/react-vite',
+    options: {},
   },
   features: {
     storyStoreV7: true,
   },
-  // https://github.com/storybookjs/builder-vite/issues/85#issuecomment-900831050
-  async viteFinal(config) {
-    return {
-      ...config,
-      resolve: {
-        alias: {
-          '@': path.resolve(__dirname, './../src'),
-        },
-      },
-    };
+  docs: {
+    autodocs: false,
+  },
+  core: {
+    disableTelemetry: true,
   },
 };

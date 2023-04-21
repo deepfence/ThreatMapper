@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { useState } from 'react';
 
 import { Listbox, ListboxOption } from '@/components/select/Listbox';
@@ -6,7 +6,7 @@ import { Listbox, ListboxOption } from '@/components/select/Listbox';
 export default {
   title: 'Components/Listbox',
   component: Listbox,
-} as ComponentMeta<typeof Listbox>;
+} as Meta<typeof Listbox>;
 
 const people = [
   { label: 'Wade Cooper', value: 'wc' },
@@ -16,7 +16,7 @@ const people = [
   { label: 'Tanya Fox', value: 'tf' },
   { label: 'Hellen Schmidt', value: 'hs' },
 ];
-const MultiSelectTemplate: ComponentStory<typeof Listbox> = () => {
+const MultiSelectTemplate: StoryFn<typeof Listbox> = () => {
   const [selected, setSelected] = useState<typeof people>([]);
 
   return (
@@ -42,10 +42,12 @@ const MultiSelectTemplate: ComponentStory<typeof Listbox> = () => {
   );
 };
 
-export const MultiSelect = MultiSelectTemplate.bind({});
-MultiSelect.args = {};
+export const MultiSelect = {
+  render: MultiSelectTemplate,
+  args: {},
+};
 
-const SingleSelectTemplate: ComponentStory<typeof Listbox> = () => {
+const SingleSelectTemplate: StoryFn<typeof Listbox> = () => {
   const [selected, setSelected] = useState<(typeof people)[number]>(people[0]);
 
   return (
@@ -71,5 +73,7 @@ const SingleSelectTemplate: ComponentStory<typeof Listbox> = () => {
   );
 };
 
-export const SingleSelect = SingleSelectTemplate.bind({});
-SingleSelect.args = {};
+export const SingleSelect = {
+  render: SingleSelectTemplate,
+  args: {},
+};
