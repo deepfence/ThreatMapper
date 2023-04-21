@@ -518,6 +518,7 @@ def cloud_compliance_scan_nodes():
                 if node_details.get("updated_at", 0) > updated_at:
                     updated_at = node_details.get("updated_at", 0)
             nodes_list.append({"node_name": node.node_name, "node_id": node.node_id,
+                               "version": node.version,
                                "enabled": ((datetime.now().timestamp() - updated_at) < 250.0)})
             node_ids.append(node.node_id)
         filters = {
@@ -620,6 +621,7 @@ def cloud_compliance_scan_nodes():
             node_item["account_id"] = node_item["node_name"]
             if node_id_ts_map.get(node_item["node_id"], None):
                 node_item["last_scanned_ts"] = node_id_ts_map[node_item["node_id"]]
+            node_item["version"] = node.version
             nodes_list.append(node_item)
             node_ids.append(node.node_id)
     filters = {
@@ -800,6 +802,7 @@ def cloud_compliance_scan_organization_nodes():
             node_item["account_id"] = node_item["node_name"]
             if node_id_ts_map.get(node_item["node_id"], None):
                 node_item["last_scanned_ts"] = node_id_ts_map[node_item["node_id"]]
+            node_item["version"] = node.version
             nodes_list.append(node_item)
             node_ids.append(node.node_id)
     filters = {
@@ -1355,6 +1358,7 @@ def register_cloud_account():
 
     monitored_account_ids = post_data.get("monitored_account_ids", {})
     org_account_id = post_data.get("org_acc_id", None)
+    version = post_data.get("version", "unknown")
     updated_at_timestamp = datetime.now().timestamp()
     scan_list = {}
     cloudtrail_trails = []
@@ -1373,7 +1377,8 @@ def register_cloud_account():
             "node_id": "{}-{};<cloud_org>".format(post_data["cloud_provider"], org_account_id),
             "cloud_provider": post_data["cloud_provider"],
             "account_id": org_account_id,
-            "updated_at": updated_at_timestamp
+            "updated_at": updated_at_timestamp,
+            "version": version
         }
         redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, node["node_id"], json.dumps(node))
         if post_data["cloud_provider"] == "aws":
@@ -1392,7 +1397,8 @@ def register_cloud_account():
                     "node_id": monitored_node_id,
                     "cloud_provider": post_data["cloud_provider"],
                     "account_id": monitored_account_id,
-                    "updated_at": updated_at_timestamp
+                    "updated_at": updated_at_timestamp,
+                    "version": version
                 }
             redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, monitored_node_id, json.dumps(node))
             cloud_compliance_node = CloudComplianceNode.query.filter_by(node_id=monitored_node_id).first()
@@ -1402,6 +1408,7 @@ def register_cloud_account():
                     node_name=monitored_account_id,
                     cloud_provider=post_data["cloud_provider"],
                     org_account_id="aws-{};<cloud_org>".format(org_account_id),
+                    version=version,
                 )
                 try:
                     cloud_compliance_node.save()
@@ -1455,7 +1462,8 @@ def register_cloud_account():
                 "node_id": post_data["node_id"],
                 "cloud_provider": post_data["cloud_provider"],
                 "account_id": post_data["cloud_account"],
-                "updated_at": updated_at_timestamp
+                "updated_at": updated_at_timestamp,
+                "version": version
             }
         redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, post_data["node_id"], json.dumps(node))
 
@@ -1464,7 +1472,8 @@ def register_cloud_account():
             cloud_compliance_node = CloudComplianceNode(
                 node_id=post_data["node_id"],
                 node_name=post_data["cloud_account"],
-                cloud_provider=post_data["cloud_provider"]
+                cloud_provider=post_data["cloud_provider"],
+                version=version
             )
             try:
                 cloud_compliance_node.save()
@@ -1555,6 +1564,7 @@ def register_kubernetes():
     if not post_data.get("node_id", None):
         raise InvalidUsage("Node ID is required for kube registration")
     kubernetes_id = post_data.get("node_id", None)
+    version = post_data.get("version", "unknown")
     kubernetes_cluster_name = post_data.get("node_name", kubernetes_id)
     updated_at_timestamp = datetime.now().timestamp()
     node = None
@@ -1568,7 +1578,8 @@ def register_kubernetes():
             "node_id": post_data["node_id"],
             "cloud_provider": COMPLIANCE_KUBERNETES_HOST,
             "account_id": post_data["node_id"],
-            "updated_at": updated_at_timestamp
+            "updated_at": updated_at_timestamp,
+            "version": version,
         }
     redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, post_data["node_id"], json.dumps(node))
     cloud_compliance_node = CloudComplianceNode.query.filter_by(node_id=kubernetes_id).first()
@@ -1577,6 +1588,7 @@ def register_kubernetes():
             node_id=kubernetes_id,
             node_name=kubernetes_cluster_name,
             cloud_provider=COMPLIANCE_KUBERNETES_HOST,
+            version=version,
         )
         try:
             cloud_compliance_node.save()
