@@ -1,18 +1,75 @@
 import cx from 'classnames';
-import { Link, useFetcher } from 'react-router-dom';
-import { Button, TextInput, Typography } from 'ui-components';
+import { ActionFunctionArgs, Link, useFetcher } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Button, CircleSpinner, TextInput, Typography } from 'ui-components';
 
+import { getUserApiClient } from '@/api/api';
+import { ApiDocsBadRequestResponse } from '@/api/generated';
 import LogoDarkBlue from '@/assets/logo-deepfence-dark-blue.svg';
+import { ApiError, makeRequest } from '@/utils/api';
 
-export const forgotPasswordAction = async () => {
+export type actionReturnType = {
+  error?: string;
+  fieldErrors?: {
+    email?: string;
+  };
+  message?: string;
+  success?: boolean;
+};
+
+export const forgotPasswordAction = async ({
+  request,
+}: ActionFunctionArgs): Promise<actionReturnType> => {
+  const formData = await request.formData();
+  const body = Object.fromEntries(formData);
+  if (!body.email) {
+    return {
+      fieldErrors: {
+        email: 'Email is required',
+      },
+    };
+  }
+  const r = await makeRequest({
+    apiFunction: getUserApiClient().resetPasswordRequest,
+    apiArgs: [
+      {
+        modelPasswordResetRequest: {
+          email: body.email as string,
+        },
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<actionReturnType>({});
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          fieldErrors: {
+            email: modelResponse.error_fields?.email as string,
+          },
+        });
+      } else if (r.status === 403) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          error: modelResponse.message,
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(r)) {
+    return r.value();
+  }
+  toast.success(r.message);
   return {
     success: true,
+    message: r.message,
   };
 };
 
 export const ForgotPassword = () => {
   const fetcher = useFetcher();
   const { data, state } = fetcher;
+
   return (
     <fetcher.Form method="post">
       <div className="text-center">
@@ -37,12 +94,13 @@ export const ForgotPassword = () => {
       </p>
       <TextInput
         label="Email Address"
-        type={'text'}
+        type="email"
         placeholder="Email"
         sizing="sm"
         name="email"
-        color={data?.errors?.newPassword ? 'error' : 'default'}
-        helperText={data?.errors?.newPassword?.[0]}
+        required
+        color={data?.fieldErrors?.email ? 'error' : 'default'}
+        helperText={data?.fieldErrors?.email}
       />
 
       <div className="flex flex-col w-full mt-6">
@@ -59,7 +117,13 @@ export const ForgotPassword = () => {
           Back to Login
         </Link>
       </div>
-      <div>{state === 'submitting' ? 'Loading...' : null}</div>
+      {state === 'submitting' && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity">
+          <div className="flex items-center justify-center absolute inset-0 ">
+            <CircleSpinner size="xl" />
+          </div>
+        </div>
+      )}
     </fetcher.Form>
   );
 };
