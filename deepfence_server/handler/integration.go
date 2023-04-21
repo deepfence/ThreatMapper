@@ -2,9 +2,10 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"net/http"
 	"strconv"
+
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -84,7 +85,7 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, api_messages.SuccessIntegrationCreated)
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationCreated})
 
 }
 
@@ -154,6 +155,6 @@ func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
 
 	err = model.DeleteIntegration(ctx, pgClient, int32(idInt))
 
-	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationDeleted})
+	w.WriteHeader(http.StatusNoContent)
 
 }

@@ -120,7 +120,7 @@ func (r *Reporter) processTopology() (report.Topology, error) {
 	err = r.walker.Walk(func(p, prev Process) {
 		pidstr := strconv.Itoa(p.PID)
 		nodeID := report.MakeProcessNodeID(r.hostID, pidstr)
-		node := report.Metadata{
+		metadata := report.Metadata{
 			Timestamp:      time.Now().UTC().Format(time.RFC3339Nano),
 			NodeID:         nodeID,
 			NodeName:       p.Name,
@@ -136,29 +136,34 @@ func (r *Reporter) processTopology() (report.Topology, error) {
 		if r.ptracer != nil {
 			paths, err := r.ptracer.GetOpenFileList(pidstr)
 			if err == nil {
-				node.OpenFiles = paths
+				metadata.OpenFiles = paths
 			}
 		}
 		if p.Cmdline != "" {
 			if r.noCommandLineArguments {
-				node.Cmdline = report.StripCommandArgs(p.Cmdline)
+				metadata.Cmdline = report.StripCommandArgs(p.Cmdline)
 			} else {
-				node.Cmdline = p.Cmdline
+				metadata.Cmdline = p.Cmdline
 			}
 		}
 
 		if p.PPID > 0 {
-			node.Ppid = p.PPID
+			metadata.Ppid = p.PPID
 		} else {
-			node.Ppid = -1
+			metadata.Ppid = -1
 		}
 		if deltaTotal > 0 {
 			cpuUsage := float64(p.Jiffies-prev.Jiffies) / float64(deltaTotal) * 100.
-			node.CpuMax = maxCPU
-			node.CpuUsage = cpuUsage
+			metadata.CpuMax = maxCPU
+			metadata.CpuUsage = cpuUsage
 		}
 
-		t.AddNode(node)
+		t.AddNode(report.TopologyNode{
+			Metadata: metadata,
+			Parents: report.Parent{
+				Host: r.hostName,
+			},
+		})
 	})
 
 	return t, err

@@ -21,6 +21,7 @@ type CloudResource struct {
 	BlockPublicAcls                bool             `json:"block_public_acls,omitempty"`
 	BlockPublicPolicy              bool             `json:"block_public_policy,omitempty"`
 	BucketPolicyIsPublic           bool             `json:"bucket_policy_is_public,omitempty"`
+	CloudProvider                  string           `json:"cloud_provider,omitempty"`
 	RestrictPublicBuckets          bool             `json:"restrict_public_buckets,omitempty"`
 	ID                             string           `json:"id"`
 	IgnorePublicAcls               bool             `json:"ignore_public_acls,omitempty"`
@@ -114,7 +115,7 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 		MERGE (cp) -[:HOSTS]-> (cr)
 		MERGE (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
 		MERGE (cr) -[:HOSTS]-> (n)
-		SET n+=row, n.node_type = row.resource_id, n.cloud_region = cloud_region, n.updated_at = TIMESTAMP(), cp.active = true, cp.pseudo = false, cr.active = true, n.active = true`,
+		SET n+=row, n.node_name = n.name, n.node_type = row.resource_id, n.cloud_region = cloud_region, n.updated_at = TIMESTAMP(), cp.active = true, cp.pseudo = false, cr.active = true, n.active = true`,
 		map[string]interface{}{
 			"batch": batch,
 		},

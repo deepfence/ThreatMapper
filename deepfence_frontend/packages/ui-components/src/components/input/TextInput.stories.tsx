@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta } from '@storybook/react';
 import { AiOutlineCheck, AiOutlineMail } from 'react-icons/ai';
 
 import TextInput from '@/components/input/TextInput';
@@ -9,70 +9,77 @@ export default {
   argTypes: {
     onChange: { action: 'onChange' },
   },
-} as ComponentMeta<typeof TextInput>;
+} as Meta<typeof TextInput>;
 
-const Template: ComponentStory<typeof TextInput> = (args) => <TextInput {...args} />;
-
-export const Default = Template.bind({});
-Default.args = {};
-
-export const WithPlaceholder = Template.bind({});
-WithPlaceholder.args = {
-  placeholder: 'test@deepfence.io',
+export const Default = {
+  args: {},
 };
 
-export const Disabled = Template.bind({});
-Disabled.args = {
-  placeholder: 'test@deepfence.io',
-  disabled: true,
+export const WithPlaceholder = {
+  args: {
+    placeholder: 'test@deepfence.io',
+  },
 };
 
-export const WithStartIcon = Template.bind({});
-WithStartIcon.args = {
-  placeholder: 'test@deepfence.io',
-  startIcon: <AiOutlineMail />,
-  disabled: false,
+export const Disabled = {
+  args: {
+    placeholder: 'test@deepfence.io',
+    disabled: true,
+  },
 };
 
-export const LargeInput = Template.bind({});
-LargeInput.args = {
-  placeholder: 'test@deepfence.io',
-  startIcon: <AiOutlineMail />,
-  sizing: 'lg',
+export const WithStartIcon = {
+  args: {
+    placeholder: 'test@deepfence.io',
+    startIcon: <AiOutlineMail />,
+    disabled: false,
+  },
 };
 
-export const WithLabel = Template.bind({});
-WithLabel.args = {
-  placeholder: 'test@deepfence.io',
-  startIcon: <AiOutlineMail />,
-  label: 'Username',
+export const LargeInput = {
+  args: {
+    placeholder: 'test@deepfence.io',
+    startIcon: <AiOutlineMail />,
+    sizing: 'lg',
+  },
 };
 
-export const WithStartAndEndIcon = Template.bind({});
-WithStartAndEndIcon.args = {
-  placeholder: 'test@deepfence.io',
-  startIcon: <AiOutlineMail />,
-  endIcon: <AiOutlineCheck />,
+export const WithLabel = {
+  args: {
+    placeholder: 'test@deepfence.io',
+    startIcon: <AiOutlineMail />,
+    label: 'Username',
+  },
 };
 
-export const WithSuccessCaption = Template.bind({});
-WithSuccessCaption.args = {
-  placeholder: 'test@deepfence.io',
-  startIcon: <AiOutlineMail />,
-  endIcon: <AiOutlineCheck />,
-  label: 'Username',
-  value: 'hello',
-  helperText: 'Sent successfully.',
-  color: 'success',
+export const WithStartAndEndIcon = {
+  args: {
+    placeholder: 'test@deepfence.io',
+    startIcon: <AiOutlineMail />,
+    endIcon: <AiOutlineCheck />,
+  },
 };
 
-export const ErrorWithCaption = Template.bind({});
-ErrorWithCaption.args = {
-  placeholder: 'test@deepfence.io',
-  startIcon: <AiOutlineMail />,
-  value: 'hello',
-  label: 'Username',
-  required: true,
-  color: 'error',
-  helperText: 'Please enter valid email.',
+export const WithSuccessCaption = {
+  args: {
+    placeholder: 'test@deepfence.io',
+    startIcon: <AiOutlineMail />,
+    endIcon: <AiOutlineCheck />,
+    label: 'Username',
+    value: 'hello',
+    helperText: 'Sent successfully.',
+    color: 'success',
+  },
+};
+
+export const ErrorWithCaption = {
+  args: {
+    placeholder: 'test@deepfence.io',
+    startIcon: <AiOutlineMail />,
+    value: 'hello',
+    label: 'Username',
+    required: true,
+    color: 'error',
+    helperText: 'Please enter valid email.',
+  },
 };

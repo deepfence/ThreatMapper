@@ -246,27 +246,78 @@ var topologyNames = []string{
 	Overlay,
 }
 
-var topologyAdjacencyNames = []string{
-	Endpoint,
+type TopologyNode struct {
+	Metadata  Metadata
+	Adjacency IDList
+	Parents   Parent
+	Sets      Sets
 }
 
-var topologyParentNames = []string{
-	Endpoint,
-	Process,
-	Container,
-	ContainerImage,
-	CloudRegion,
-	KubernetesCluster,
-	Pod,
-	Service,
-	Namespace,
-	Host,
-	Overlay,
+func (t TopologyNode) Merge(o TopologyNode) {
+	t.Metadata = o.Metadata
+	t.Adjacency = o.Adjacency
+	t.Parents = o.Parents
+	t.Sets = o.Sets
 }
 
-var topologySetNames = []string{
-	Container,
-	Overlay,
+func (t TopologyNode) UnsafeMerge(o TopologyNode) {
+	t.Metadata = o.Metadata
+	t.Adjacency = o.Adjacency
+	t.Parents = o.Parents
+	t.Sets = o.Sets
+}
+
+func (t TopologyNode) Copy() TopologyNode {
+	return TopologyNode{
+		Metadata:  t.Metadata,
+		Adjacency: t.Adjacency,
+		Parents:   t.Parents,
+		Sets:      t.Sets,
+	}
+}
+
+func (t TopologyNode) UnMerge(o TopologyNode) {
+}
+
+func (t TopologyNode) UnsafeUnMerge(o TopologyNode) {
+}
+
+type Topology map[string]TopologyNode
+
+func MakeTopology() Topology {
+	return map[string]TopologyNode{}
+}
+
+func (t Topology) ReplaceNode(node TopologyNode) {
+	t[node.Metadata.NodeID] = node
+}
+
+func (t Topology) AddNode(node TopologyNode) {
+	t[node.Metadata.NodeID] = node
+}
+
+func (t Topology) Merge(o Topology) {
+	for k, v := range o {
+		t[k] = v
+	}
+}
+
+func (t Topology) Copy() Topology {
+	newTopology := make(Topology)
+	for k, v := range t {
+		newTopology[k] = v
+	}
+	return newTopology
+}
+
+func (t Topology) UnsafeUnMerge(o Topology) {
+
+}
+
+func (t Topology) UnsafeMerge(o Topology) {
+	for k, v := range o {
+		t[k] = v
+	}
 }
 
 type TopologyAdjacency map[string]IDList
@@ -321,7 +372,7 @@ func (t TopologySets) Copy() TopologySets {
 
 func (t TopologySets) UnsafeMerge(o TopologySets) {
 	for k, v := range o {
-		t[k] = v
+		t[k].Merge(v)
 	}
 }
 
@@ -329,37 +380,35 @@ func (t TopologySets) UnsafeUnMerge(o TopologySets) {
 
 }
 
-type Parents map[string]Parent
-
-func MakeParents() Parents {
-	return make(map[string]Parent)
+func (p Parent) Merge(o Parent) {
+	p.CloudProvider = o.CloudProvider
+	p.CloudRegion = o.CloudRegion
+	p.KubernetesCluster = o.KubernetesCluster
+	p.Host = o.Host
+	p.Container = o.Container
+	p.ContainerImage = o.ContainerImage
+	p.Namespace = o.Namespace
+	p.Pod = o.Pod
 }
 
-func (p Parents) AddParent(nodeId string, parents Parent) {
-	p[nodeId] = parents
-}
-
-func (t Parents) Merge(o Parents) {
-	for k, v := range o {
-		t[k] = v
+func (p Parent) Copy() Parent {
+	return Parent{
+		CloudProvider:     p.CloudProvider,
+		CloudRegion:       p.CloudRegion,
+		KubernetesCluster: p.KubernetesCluster,
+		Host:              p.Host,
+		Container:         p.Container,
+		ContainerImage:    p.ContainerImage,
+		Namespace:         p.Namespace,
+		Pod:               p.Pod,
 	}
 }
 
-func (t Parents) Copy() Parents {
-	newParents := MakeParents()
-	for k, v := range t {
-		newParents[k] = v
-	}
-	return newParents
+func (p Parent) UnsafeMerge(o Parent) {
+	p.Merge(o)
 }
 
-func (t Parents) UnsafeMerge(o Parents) {
-	for k, v := range o {
-		t[k] = v
-	}
-}
-
-func (t Parents) UnsafeUnMerge(o Parents) {
+func (p Parent) UnsafeUnMerge(o Parent) {
 
 }
 
@@ -384,20 +433,15 @@ type Report struct {
 	// Endpoint nodes are individual (address, port) tuples on each host.
 	// They come from inspecting active connections and can (theoretically)
 	// be traced back to a process. Edges are present.
-	Endpoint          Topology
-	EndpointAdjacency TopologyAdjacency
-	EndpointParents   Parents
+	Endpoint Topology
 
 	// Process nodes are processes on each host. Edges are not present.
-	Process        Topology
-	ProcessParents Parents
+	Process Topology
 
 	// Container nodes represent all Docker containers on hosts running probes.
 	// Metadata includes things like containter id, name, image id etc.
 	// Edges are not present.
-	Container        Topology
-	ContainerParents Parents
-	ContainerSets    TopologySets
+	Container Topology
 
 	// CloudProvider nodes represent all cloud providers.
 	// Metadata includes things like name etc. Edges are not
@@ -407,51 +451,42 @@ type Report struct {
 	// CloudRegion nodes represent all cloud regions.
 	// Metadata includes things like name etc. Edges are not
 	// present.
-	CloudRegion        Topology
-	CloudRegionParents Parents
+	CloudRegion Topology
 
 	// KubernetesCluster nodes represent all Kubernetes clusters.
 	// Metadata includes things like cluster id, name etc. Edges are not
 	// present.
-	KubernetesCluster        Topology
-	KubernetesClusterParents Parents
+	KubernetesCluster Topology
 
 	// Pod nodes represent all Kubernetes pods running on hosts running probes.
 	// Metadata includes things like pod id, name etc. Edges are not
 	// present.
-	Pod        Topology
-	PodParents Parents
+	Pod Topology
 
 	// Service nodes represent all Kubernetes services running on hosts running probes.
 	// Metadata includes things like service id, name etc. Edges are not
 	// present.
-	Service        Topology
-	ServiceParents Parents
+	Service Topology
 
 	// Namespace nodes represent all Kubernetes Namespaces running on hosts running probes.
 	// Metadata includes things like Namespace id, name, etc. Edges are not
 	// present.
-	Namespace        Topology
-	NamespaceParents Parents
+	Namespace Topology
 
 	// ContainerImages nodes represent all Docker containers images on
 	// hosts running probes. Metadata includes things like image id, name etc.
 	// Edges are not present.
-	ContainerImage        Topology
-	ContainerImageParents Parents
+	ContainerImage Topology
 
 	// Host nodes are physical hosts that run probes. Metadata includes things
 	// like operating system, load, etc. The information is scraped by the
 	// probes with each published report. Edges are not present.
-	Host        Topology
-	HostParents Parents
+	Host Topology
 
 	// Overlay nodes are active peers in any software-defined network that's
 	// overlaid on the infrastructure. The information is scraped by polling
 	// their status endpoints. Edges are present.
-	Overlay        Topology
-	OverlayParents Parents
-	OverlaySets    TopologySets
+	Overlay Topology
 
 	DNS DNSRecords `json:"DNS,omitempty" deepequal:"nil==empty"`
 	// Backwards-compatibility for an accident in commit 951629a / release 1.11.6.
@@ -480,46 +515,20 @@ type Report struct {
 func MakeReport() Report {
 	return Report{
 		Endpoint:          MakeTopology(),
-		EndpointAdjacency: MakeTopologyAdjacency(),
-		EndpointParents:   MakeParents(),
-
-		Process:        MakeTopology(),
-		ProcessParents: MakeParents(),
-
-		Container:        MakeTopology(),
-		ContainerParents: MakeParents(),
-		ContainerSets:    MakeTopologySets(),
-
-		CloudProvider: MakeTopology(),
-
-		CloudRegion:        MakeTopology(),
-		CloudRegionParents: MakeParents(),
-
-		KubernetesCluster:        MakeTopology(),
-		KubernetesClusterParents: MakeParents(),
-
-		Pod:        MakeTopology(),
-		PodParents: MakeParents(),
-
-		Service:        MakeTopology(),
-		ServiceParents: MakeParents(),
-
-		Namespace:        MakeTopology(),
-		NamespaceParents: MakeParents(),
-
-		ContainerImage:        MakeTopology(),
-		ContainerImageParents: MakeParents(),
-
-		Host:        MakeTopology(),
-		HostParents: MakeParents(),
-
-		Overlay:        MakeTopology(),
-		OverlayParents: MakeParents(),
-		OverlaySets:    MakeTopologySets(),
-
-		DNS:    DNSRecords{},
-		Window: 0,
-		ID:     fmt.Sprintf("%d", rand.Int63()),
+		Process:           MakeTopology(),
+		Container:         MakeTopology(),
+		CloudProvider:     MakeTopology(),
+		CloudRegion:       MakeTopology(),
+		KubernetesCluster: MakeTopology(),
+		Pod:               MakeTopology(),
+		Service:           MakeTopology(),
+		Namespace:         MakeTopology(),
+		ContainerImage:    MakeTopology(),
+		Host:              MakeTopology(),
+		Overlay:           MakeTopology(),
+		DNS:               DNSRecords{},
+		Window:            0,
+		ID:                fmt.Sprintf("%d", rand.Int63()),
 	}
 }
 
@@ -535,15 +544,6 @@ func (r Report) Copy() Report {
 	newReport.WalkPairedTopologies(&r, func(newTopology, oldTopology *Topology) {
 		*newTopology = oldTopology.Copy()
 	})
-	newReport.WalkPairedAdjacencies(&r, func(newAdjacency *TopologyAdjacency, oldAdjacency *TopologyAdjacency) {
-		*newAdjacency = oldAdjacency.Copy()
-	})
-	newReport.WalkPairedParents(&r, func(newParents *Parents, oldParents *Parents) {
-		*newParents = oldParents.Copy()
-	})
-	newReport.WalkPairedSets(&r, func(newSets *TopologySets, oldSets *TopologySets) {
-		*newSets = oldSets.Copy()
-	})
 	return newReport
 }
 
@@ -558,15 +558,6 @@ func (r *Report) UnsafeMerge(other Report) {
 	r.WalkPairedTopologies(&other, func(ourTopology, theirTopology *Topology) {
 		ourTopology.UnsafeMerge(*theirTopology)
 	})
-	r.WalkPairedAdjacencies(&other, func(ourAdjacency *TopologyAdjacency, theirAdjacency *TopologyAdjacency) {
-		ourAdjacency.UnsafeMerge(*theirAdjacency)
-	})
-	r.WalkPairedParents(&other, func(ourParents *Parents, theirParents *Parents) {
-		ourParents.UnsafeMerge(*theirParents)
-	})
-	r.WalkPairedSets(&other, func(ourSets *TopologySets, theirSets *TopologySets) {
-		ourSets.UnsafeMerge(*theirSets)
-	})
 }
 
 // UnsafeUnMerge removes any information from r that would be added by merging other.
@@ -576,15 +567,6 @@ func (r *Report) UnsafeUnMerge(other Report) {
 	r.Window = r.Window - other.Window
 	r.WalkPairedTopologies(&other, func(ourTopology, theirTopology *Topology) {
 		ourTopology.UnsafeUnMerge(*theirTopology)
-	})
-	r.WalkPairedAdjacencies(&other, func(ourAdjacency *TopologyAdjacency, theirAdjacency *TopologyAdjacency) {
-		ourAdjacency.UnsafeUnMerge(*theirAdjacency)
-	})
-	r.WalkPairedParents(&other, func(ourParents *Parents, theirParents *Parents) {
-		ourParents.UnsafeUnMerge(*theirParents)
-	})
-	r.WalkPairedSets(&other, func(ourSets *TopologySets, theirSets *TopologySets) {
-		ourSets.UnsafeUnMerge(*theirSets)
 	})
 }
 
@@ -609,30 +591,6 @@ func (r *Report) WalkNamedTopologies(f func(string, *Topology)) {
 func (r *Report) WalkPairedTopologies(o *Report, f func(*Topology, *Topology)) {
 	for _, name := range topologyNames {
 		f(r.topology(name), o.topology(name))
-	}
-}
-
-// WalkPairedAdjacencies iterates through the TopologyAdjacency of this and another report,
-// potentially modifying one or both.
-func (r *Report) WalkPairedAdjacencies(o *Report, f func(*TopologyAdjacency, *TopologyAdjacency)) {
-	for _, name := range topologyAdjacencyNames {
-		f(r.topologyAdjacency(name), o.topologyAdjacency(name))
-	}
-}
-
-// WalkPairedParents iterates through the Parents of this and another report,
-// potentially modifying one or both.
-func (r *Report) WalkPairedParents(o *Report, f func(*Parents, *Parents)) {
-	for _, name := range topologyParentNames {
-		f(r.topologyParent(name), o.topologyParent(name))
-	}
-}
-
-// WalkPairedSets iterates through the TopologySets of this and another report,
-// potentially modifying one or both.
-func (r *Report) WalkPairedSets(o *Report, f func(*TopologySets, *TopologySets)) {
-	for _, name := range topologySetNames {
-		f(r.topologySet(name), o.topologySet(name))
 	}
 }
 
@@ -664,52 +622,6 @@ func (r *Report) topology(name string) *Topology {
 		return &r.Host
 	case Overlay:
 		return &r.Overlay
-	}
-	return nil
-}
-
-func (r *Report) topologyAdjacency(name string) *TopologyAdjacency {
-	switch name {
-	case Endpoint:
-		return &r.EndpointAdjacency
-	}
-	return nil
-}
-
-func (r *Report) topologyParent(name string) *Parents {
-	switch name {
-	case Endpoint:
-		return &r.EndpointParents
-	case Process:
-		return &r.ProcessParents
-	case Container:
-		return &r.ContainerParents
-	case ContainerImage:
-		return &r.ContainerImageParents
-	case CloudRegion:
-		return &r.CloudRegionParents
-	case KubernetesCluster:
-		return &r.KubernetesClusterParents
-	case Pod:
-		return &r.PodParents
-	case Service:
-		return &r.ServiceParents
-	case Namespace:
-		return &r.NamespaceParents
-	case Host:
-		return &r.HostParents
-	case Overlay:
-		return &r.OverlayParents
-	}
-	return nil
-}
-
-func (r *Report) topologySet(name string) *TopologySets {
-	switch name {
-	case Container:
-		return &r.ContainerSets
-	case Overlay:
-		return &r.OverlaySets
 	}
 	return nil
 }

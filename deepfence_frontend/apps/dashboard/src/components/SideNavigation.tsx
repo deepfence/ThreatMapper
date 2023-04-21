@@ -6,7 +6,7 @@ import { twMerge } from 'tailwind-merge';
 import { Tooltip } from 'ui-components';
 
 import DeepfenceBackground from '@/assets/df-background.jpg';
-import LogoDeepfenceDarkBlue from '@/assets/logo-deepfence-dark-blue.svg';
+import LogoDeepfenceWhite from '@/assets/logo-deepfence-white.svg';
 import { DFLink } from '@/components/DFLink';
 import { DashboardIcon } from '@/components/sideNavigation/icons/Dashboard';
 import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
@@ -131,7 +131,7 @@ export function SideNavigation({ expanded }: SideNavigationRootProps) {
           <NavigationMenu.Link asChild>
             <DFLink to="/" className="flex">
               <img
-                src={LogoDeepfenceDarkBlue}
+                src={LogoDeepfenceWhite}
                 alt="Deefence Logo"
                 width="40"
                 height="40"

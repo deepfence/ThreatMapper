@@ -15,6 +15,21 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
+var (
+	inboundInternetNode = detailed.NodeSummary{
+		ID:                "in-the-internet",
+		Label:             "The Internet (Inbound)",
+		ImmediateParentID: "",
+		Type:              "pseudo",
+	}
+	outboundInternetNode = detailed.NodeSummary{
+		ID:                "out-the-internet",
+		Label:             "The Internet (Outbound)",
+		ImmediateParentID: "",
+		Type:              "pseudo",
+	}
+)
+
 var topology_reporters map[directory.NamespaceID]reporters_graph.TopologyReporter
 
 func init() {
@@ -226,19 +241,8 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		}
 	}
 
-	nodes["in-the-internet"] = detailed.NodeSummary{
-		ID:                "in-the-internet",
-		Label:             "The Internet",
-		ImmediateParentID: "",
-		Type:              "pseudo",
-	}
-
-	nodes["out-the-internet"] = detailed.NodeSummary{
-		ID:                "out-the-internet",
-		Label:             "The Internet",
-		ImmediateParentID: "",
-		Type:              "pseudo",
-	}
+	nodes["in-the-internet"] = inboundInternetNode
+	nodes["out-the-internet"] = outboundInternetNode
 
 	for h, n := range graph.Processes {
 		for _, id_stub := range n {

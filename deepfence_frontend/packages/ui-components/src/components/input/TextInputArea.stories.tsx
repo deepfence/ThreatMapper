@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta } from '@storybook/react';
 
 import TextInputArea from '@/components/input/TextInputArea';
 
@@ -8,36 +8,37 @@ export default {
   argTypes: {
     onChange: { action: 'onChange' },
   },
-} as ComponentMeta<typeof TextInputArea>;
+} as Meta<typeof TextInputArea>;
 
-const Template: ComponentStory<typeof TextInputArea> = (args) => (
-  <TextInputArea {...args} />
-);
-
-export const Default = Template.bind({});
-Default.args = {};
-
-export const WithPlaceholder = Template.bind({});
-WithPlaceholder.args = {
-  placeholder: 'Hello Deepfence',
+export const Default = {
+  args: {},
 };
 
-export const Disabled = Template.bind({});
-Disabled.args = {
-  placeholder: 'Disabled...',
-  disabled: true,
+export const WithPlaceholder = {
+  args: {
+    placeholder: 'Hello Deepfence',
+  },
 };
 
-export const WithLabel = Template.bind({});
-WithLabel.args = {
-  placeholder: 'Hello Deepfence',
-  label: 'Comment',
+export const Disabled = {
+  args: {
+    placeholder: 'Disabled...',
+    disabled: true,
+  },
 };
 
-export const WithRowsAndColumnn = Template.bind({});
-WithRowsAndColumnn.args = {
-  placeholder: 'Hello Deepfence',
-  label: 'Comment',
-  rows: 10,
-  cols: 30,
+export const WithLabel = {
+  args: {
+    placeholder: 'Hello Deepfence',
+    label: 'Comment',
+  },
+};
+
+export const WithRowsAndColumnn = {
+  args: {
+    placeholder: 'Hello Deepfence',
+    label: 'Comment',
+    rows: 10,
+    cols: 30,
+  },
 };

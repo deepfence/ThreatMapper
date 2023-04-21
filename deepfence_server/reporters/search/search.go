@@ -71,7 +71,7 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 	query := `
 		MATCH (n) 
 		WHERE (n:Node OR n:Container OR n:ContainerImage OR n:KubernetesCluster OR n:Pod OR n:CloudProvider)
-		AND n.pseudo=false
+		AND n.pseudo=false AND n.active=true
 		RETURN labels(n), count(labels(n)), count(distinct n.kubernetes_namespace);`
 	r, err := tx.Run(query,
 		map[string]interface{}{})
@@ -128,21 +128,13 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	}
 	defer tx.Close()
 
-	conditions := reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true)
-	if dummy.NodeType() == "Node" {
-		if conditions == "" {
-			conditions = " WHERE n.pseudo=false"
-		} else {
-			conditions += " AND n.pseudo=false"
-		}
-	}
-
 	query := `
 		MATCH (n:` + dummy.NodeType() + `)` +
-		conditions +
+		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
 		` OPTIONAL MATCH (n) -[:IS]-> (e)
 		RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e ` +
-		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) + fw.FetchWindow2CypherQuery()
+		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) +
+		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{})

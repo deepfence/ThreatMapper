@@ -14,7 +14,7 @@ type Pod interface {
 	Meta
 	AddParent(topology, id string)
 	NodeName() string
-	GetNode() (report.Metadata, report.Parent)
+	GetNode() report.TopologyNode
 	RestartCount() uint
 	ContainerNames() []string
 	VolumeClaimNames() []string
@@ -82,13 +82,13 @@ func (p *pod) VolumeClaimNames() []string {
 	return claimNames
 }
 
-func (p *pod) GetNode() (report.Metadata, report.Parent) {
+func (p *pod) GetNode() report.TopologyNode {
 	var labelsStr string
 	labels, err := json.Marshal(p.Labels())
 	if err == nil {
 		labelsStr = string(labels)
 	}
-	node := report.Metadata{
+	metadata := report.Metadata{
 		Timestamp:                 time.Now().UTC().Format(time.RFC3339Nano),
 		NodeID:                    p.UID(),
 		NodeName:                  p.Name() + " / " + p.Namespace() + " / " + kubernetesClusterName,
@@ -104,13 +104,15 @@ func (p *pod) GetNode() (report.Metadata, report.Parent) {
 		KubernetesCreated:         p.Created(),
 		KubernetesLabels:          labelsStr,
 	}
-	parent := report.Parent{
-		CloudProvider:     cloudProviderNodeId,
-		KubernetesCluster: kubernetesClusterId,
-		Host:              p.HostName,
-		Namespace:         kubernetesClusterId + "-" + p.GetNamespace(),
+	return report.TopologyNode{
+		Metadata: metadata,
+		Parents: report.Parent{
+			CloudProvider:     cloudProviderNodeId,
+			KubernetesCluster: kubernetesClusterId,
+			Host:              p.HostName,
+			Namespace:         kubernetesClusterId + "-" + p.GetNamespace(),
+		},
 	}
-	return node, parent
 }
 
 func (p *pod) ContainerNames() []string {

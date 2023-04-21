@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { forwardRef } from 'react';
 import { HiChevronDoubleRight, HiHome } from 'react-icons/hi';
 
@@ -7,7 +7,7 @@ import { Breadcrumb, BreadcrumbLink } from '@/components/breadcrumb/Breadcrumb';
 export default {
   title: 'Components/BreadCrumb',
   component: Breadcrumb,
-} as ComponentMeta<typeof Breadcrumb>;
+} as Meta<typeof Breadcrumb>;
 
 const Link = forwardRef<
   HTMLAnchorElement,
@@ -23,7 +23,7 @@ const Link = forwardRef<
   );
 });
 
-const Template: ComponentStory<typeof Breadcrumb> = ({ separator }) => (
+const Template: StoryFn<typeof Breadcrumb> = ({ separator }) => (
   <Breadcrumb separator={separator} outline={false}>
     <BreadcrumbLink asChild icon={<HiHome />}>
       <Link>Link One</Link>
@@ -37,8 +37,10 @@ const Template: ComponentStory<typeof Breadcrumb> = ({ separator }) => (
   </Breadcrumb>
 );
 
-export const BreadCrumbComponent = Template.bind({});
+export const BreadCrumbComponent = {
+  render: Template,
 
-BreadCrumbComponent.args = {
-  separator: <HiChevronDoubleRight />,
+  args: {
+    separator: <HiChevronDoubleRight />,
+  },
 };

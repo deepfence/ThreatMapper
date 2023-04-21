@@ -46,7 +46,7 @@ func NewReporter(registry Registry, hostID string, probeID string, probe *probe.
 func (Reporter) Name() string { return "Docker" }
 
 // ContainerUpdated should be called whenever a container is updated.
-func (r *Reporter) ContainerUpdated(n report.Metadata, p report.Parent) {
+func (r *Reporter) ContainerUpdated(n report.TopologyNode) {
 	// Publish a 'short cut' report container just this container
 	rpt := report.MakeReport()
 	rpt.Shortcut = true
@@ -62,11 +62,9 @@ func (r *Reporter) Report() (report.Report, error) {
 	}
 
 	result := report.MakeReport()
-	var containerSets report.Sets
-	result.Container, containerSets, result.ContainerParents = r.containerTopology(localAddrs)
-	result.ContainerSets.AddSet(r.hostID, containerSets)
-	result.ContainerImage, result.ContainerImageParents = r.containerImageTopology()
-	result.Overlay, result.OverlaySets = r.overlayTopology()
+	result.Container = r.containerTopology(localAddrs)
+	result.ContainerImage = r.containerImageTopology()
+	result.Overlay = r.overlayTopology()
 	return result, nil
 }
 
@@ -85,13 +83,10 @@ func getLocalIPs() ([]string, []net.IP, error) {
 	return ips, addrs, nil
 }
 
-func (r *Reporter) containerTopology(localAddrs []net.IP) (report.Topology, report.Sets, report.Parents) {
+func (r *Reporter) containerTopology(localAddrs []net.IP) report.Topology {
 	result := report.MakeTopology()
-	containerSets := report.MakeSets()
-	parents := report.Parents{}
-	nodes := []report.Metadata{}
+	nodes := []report.TopologyNode{}
 	r.registry.WalkContainers(func(c Container) {
-		parents[c.ID()] = c.GetParent()
 		nodes = append(nodes, c.GetNode())
 	})
 
@@ -125,40 +120,39 @@ func (r *Reporter) containerTopology(localAddrs []net.IP) (report.Topology, repo
 		}
 		containerImageTags := r.registry.GetContainerTags()
 		for _, node := range nodes {
-			if node.NodeID == "" {
+			if node.Metadata.NodeID == "" {
 				continue
 			}
 			var isInHostNamespace bool
-			containerSets, isInHostNamespace = networkInfo(node.NodeID)
-			tags, ok := containerImageTags[node.NodeID]
+			node.Sets, isInHostNamespace = networkInfo(node.Metadata.NodeID)
+			tags, ok := containerImageTags[node.Metadata.NodeID]
 			if !ok {
 				tags = []string{}
 			}
-			node.IsConsoleVm = r.isConsoleVm
-			node.UserDefinedTags = tags
+			node.Metadata.IsConsoleVm = r.isConsoleVm
+			node.Metadata.UserDefinedTags = tags
 			// Indicate whether the container is in the host network
 			// The container's NetworkMode is not enough due to
 			// delegation (e.g. NetworkMode="container:foo" where
 			// foo is a container in the host networking namespace)
 			if isInHostNamespace {
-				node.DockerContainerNetworkMode = "host"
+				node.Metadata.DockerContainerNetworkMode = "host"
 			}
-			node.KubernetesClusterName = r.kubernetesClusterName
-			node.KubernetesClusterId = r.kubernetesClusterId
+			node.Metadata.KubernetesClusterName = r.kubernetesClusterName
+			node.Metadata.KubernetesClusterId = r.kubernetesClusterId
 			result.AddNode(node)
 		}
 	}
 
-	return result, containerSets, parents
+	return result
 }
 
-func (r *Reporter) containerImageTopology() (report.Topology, report.Parents) {
+func (r *Reporter) containerImageTopology() report.Topology {
 	result := report.MakeTopology()
-	parents := report.Parents{}
 	imageTagsMap := r.registry.GetImageTags()
 	r.registry.WalkImages(func(image docker_client.APIImages) {
 		imageID := trimImageID(image.ID)
-		node := report.Metadata{
+		metadata := report.Metadata{
 			Timestamp:              time.Now().UTC().Format(time.RFC3339Nano),
 			NodeID:                 imageID,
 			NodeType:               report.ContainerImage,
@@ -172,38 +166,40 @@ func (r *Reporter) containerImageTopology() (report.Topology, report.Parents) {
 
 		if len(image.RepoTags) > 0 {
 			imageFullName := image.RepoTags[0]
-			node.NodeName = imageFullName
-			node.ImageNameWithTag = imageFullName
-			node.ImageName = ImageNameWithoutTag(imageFullName)
-			node.ImageTag = ImageNameTag(imageFullName)
+			metadata.NodeName = imageFullName
+			metadata.ImageNameWithTag = imageFullName
+			metadata.ImageName = ImageNameWithoutTag(imageFullName)
+			metadata.ImageTag = ImageNameTag(imageFullName)
 		}
 		var tags []string
 		var ok bool
-		if node.ImageNameWithTag != "" {
-			tags, ok = imageTagsMap[node.ImageNameWithTag]
+		if metadata.ImageNameWithTag != "" {
+			tags, ok = imageTagsMap[metadata.ImageNameWithTag]
 			if !ok {
 				tags = []string{}
 			}
 		} else {
-			node.NodeName = imageID
+			metadata.NodeName = imageID
 		}
 
-		node.UserDefinedTags = tags
+		metadata.UserDefinedTags = tags
 		dockerImageLabels, err := json.Marshal(image.Labels)
 		if err == nil {
-			node.DockerImageLabels = string(dockerImageLabels)
+			metadata.DockerImageLabels = string(dockerImageLabels)
 		}
-		result.AddNode(node)
-		parents[node.NodeID] = report.Parent{
-			KubernetesCluster: r.kubernetesClusterId,
-			Host:              r.hostID,
-		}
+		result.AddNode(report.TopologyNode{
+			Metadata: metadata,
+			Parents: report.Parent{
+				KubernetesCluster: r.kubernetesClusterId,
+				Host:              r.hostID,
+			},
+		})
 	})
 
-	return result, parents
+	return result
 }
 
-func (r *Reporter) overlayTopology() (report.Topology, report.TopologySets) {
+func (r *Reporter) overlayTopology() report.Topology {
 	subnets := []string{}
 	r.registry.WalkNetworks(func(network docker_client.Network) {
 		for _, config := range network.IPAM.Config {
@@ -214,16 +210,18 @@ func (r *Reporter) overlayTopology() (report.Topology, report.TopologySets) {
 	// Add both local and global networks to the LocalNetworks Set
 	// since we treat container IPs as local
 	overlayNodeId := report.MakeOverlayNodeID(report.DockerOverlayPeerPrefix, r.hostID)
-	node := report.Metadata{
+	metadata := report.Metadata{
 		Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
 		NodeID:    overlayNodeId,
 		NodeType:  report.Overlay,
 		HostName:  r.hostID,
 	}
-	overlaySets := report.TopologySets{overlayNodeId: report.MakeSets().Add(report.HostLocalNetworks, report.MakeStringSet(subnets...))}
 	t := report.MakeTopology()
-	t.AddNode(node)
-	return t, overlaySets
+	t.AddNode(report.TopologyNode{
+		Metadata: metadata,
+		Sets:     report.MakeSets().Add(report.HostLocalNetworks, report.MakeStringSet(subnets...)),
+	})
+	return t
 }
 
 // Docker sometimes prefixes ids with a "type" annotation, but it renders a bit

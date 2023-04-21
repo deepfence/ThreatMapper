@@ -15,7 +15,7 @@ const RegistryConnectorLayout = () => {
 
   return (
     <>
-      <div className="flex p-2  w-full items-center shadow bg-white dark:bg-gray-800">
+      <div className="flex p-2 w-full items-center shadow bg-white dark:bg-gray-800">
         <Breadcrumb separator={<HiChevronRight />} transparent>
           <BreadcrumbLink>
             <DFLink
@@ -33,7 +33,7 @@ const RegistryConnectorLayout = () => {
         </Breadcrumb>
       </div>
 
-      <div className="p-4">
+      <div className="p-2">
         <Outlet />
       </div>
     </>

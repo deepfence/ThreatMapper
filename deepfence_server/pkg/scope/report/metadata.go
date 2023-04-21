@@ -4,53 +4,6 @@ import (
 	"reflect"
 )
 
-type MetadataRow struct {
-	ID       string      `json:"id"`
-	Label    string      `json:"label"`
-	Value    interface{} `json:"value"`
-	Priority float64     `json:"priority,omitempty"`
-	Datatype string      `json:"dataType,omitempty"`
-	Truncate int         `json:"truncate,omitempty"`
-}
-
-type Topology map[string]Metadata
-
-func MakeTopology() Topology {
-	return map[string]Metadata{}
-}
-
-func (t Topology) ReplaceNode(node Metadata) {
-	t[node.NodeID] = node
-}
-
-func (t Topology) AddNode(node Metadata) {
-	t[node.NodeID] = node
-}
-
-func (t Topology) Merge(o Topology) {
-	for k, v := range o {
-		t[k] = v
-	}
-}
-
-func (t Topology) Copy() Topology {
-	newTopology := make(Topology)
-	for k, v := range t {
-		newTopology[k] = v
-	}
-	return newTopology
-}
-
-func (t Topology) UnsafeUnMerge(o Topology) {
-
-}
-
-func (t Topology) UnsafeMerge(o Topology) {
-	for k, v := range o {
-		t[k] = v
-	}
-}
-
 func MakeMetadata() Metadata {
 	return Metadata{}
 }

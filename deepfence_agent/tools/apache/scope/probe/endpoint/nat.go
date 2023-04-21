@@ -65,8 +65,8 @@ func (n natMapper) applyNAT(rpt report.Report, scope string) {
 			return
 		}
 
-		copyNode := node.WithID(copyEndpointID)
-		copyNode.CopyOf = realEndpointID
-		rpt.Endpoint.AddNode(copyNode)
+		copyMetadata := node.Metadata.WithID(copyEndpointID)
+		copyMetadata.CopyOf = realEndpointID
+		rpt.Endpoint.AddNode(report.TopologyNode{Metadata: copyMetadata})
 	})
 }

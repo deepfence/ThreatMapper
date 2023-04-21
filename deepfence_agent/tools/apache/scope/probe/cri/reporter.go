@@ -44,42 +44,38 @@ func (Reporter) Name() string { return "CRI" }
 // Report generates a Report containing Container topologies
 func (r *Reporter) Report() (report.Report, error) {
 	result := report.MakeReport()
-	imageTopol, imageParents, imageMetadataMap, err := r.containerImageTopology()
+	imageTopol, imageMetadataMap, err := r.containerImageTopology()
 	if err != nil {
 		return report.MakeReport(), err
 	}
 
-	containerTopol, containerParents, err := r.containerTopology(imageMetadataMap)
+	containerTopol, err := r.containerTopology(imageMetadataMap)
 	if err != nil {
 		return report.MakeReport(), err
 	}
 
 	result.Container.Merge(containerTopol)
-	result.ContainerParents.Merge(containerParents)
 	result.ContainerImage.Merge(imageTopol)
-	result.ContainerImageParents.Merge(imageParents)
 	return result, nil
 }
 
-func (r *Reporter) containerTopology(imageMetadataMap map[string]ImageMetadata) (report.Topology, report.Parents, error) {
+func (r *Reporter) containerTopology(imageMetadataMap map[string]ImageMetadata) (report.Topology, error) {
 	result := report.MakeTopology()
-	containerParents := report.MakeParents()
 	ctx := context.Background()
 	resp, err := r.cri.ListContainers(ctx, &client.ListContainersRequest{})
 	if err != nil {
-		return result, containerParents, err
+		return result, err
 	}
 
 	for _, c := range resp.Containers {
-		metadata, parents := r.getNode(c, imageMetadataMap)
+		metadata := r.getNode(c, imageMetadataMap)
 		result.AddNode(metadata)
-		containerParents[metadata.NodeID] = parents
 	}
 
-	return result, containerParents, nil
+	return result, nil
 }
 
-func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]ImageMetadata) (report.Metadata, report.Parent) {
+func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]ImageMetadata) report.TopologyNode {
 	imageMetadata, ok := imageMetadataMap[c.ImageRef]
 	var imageID, imageName, imageTag string
 	if ok {
@@ -116,13 +112,15 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 		DockerLabels:              dockerLabels,
 		PodName:                   podName,
 	}
-	parent := report.Parent{
-		KubernetesCluster: r.kubernetesClusterId,
-		Host:              r.hostID,
-		ContainerImage:    imageID,
-		Pod:               podUid,
+	return report.TopologyNode{
+		Metadata: metadata,
+		Parents: report.Parent{
+			KubernetesCluster: r.kubernetesClusterId,
+			Host:              r.hostID,
+			ContainerImage:    imageID,
+			Pod:               podUid,
+		},
 	}
-	return metadata, parent
 }
 
 func getState(c *client.Container) string {
@@ -147,30 +145,28 @@ type ImageMetadata struct {
 	ImageRef  string
 }
 
-func (r *Reporter) containerImageTopology() (report.Topology, report.Parents, map[string]ImageMetadata, error) {
+func (r *Reporter) containerImageTopology() (report.Topology, map[string]ImageMetadata, error) {
 	result := report.MakeTopology()
-	containerImageParents := report.MakeParents()
 
 	ctx := context.Background()
 	resp, err := r.criImageClient.ListImages(ctx, &client.ListImagesRequest{})
 	if err != nil {
-		return result, containerImageParents, nil, err
+		return result, nil, err
 	}
 
 	imageMetadataMap := make(map[string]ImageMetadata, len(resp.Images))
 	for _, img := range resp.Images {
-		imageNode, imageParents, imageMetadata := r.getImage(img)
+		imageNode, imageMetadata := r.getImage(img)
 		if imageMetadata.ImageRef != "" {
 			imageMetadataMap[imageMetadata.ImageRef] = imageMetadata
 		}
 		result.AddNode(imageNode)
-		containerImageParents[imageNode.NodeID] = imageParents
 	}
 
-	return result, containerImageParents, imageMetadataMap, nil
+	return result, imageMetadataMap, nil
 }
 
-func (r *Reporter) getImage(image *client.Image) (report.Metadata, report.Parent, ImageMetadata) {
+func (r *Reporter) getImage(image *client.Image) (report.TopologyNode, ImageMetadata) {
 	// logrus.Infof("images: %v", image)
 	// image format: sha256:ab21abc2d2c34c2b2d2c23bbcf23gg23f23
 	metadata := report.Metadata{
@@ -200,12 +196,16 @@ func (r *Reporter) getImage(image *client.Image) (report.Metadata, report.Parent
 		metadata.ImageTag = ""
 		metadata.NodeName = image.Id
 	}
-	return metadata, report.Parent{Host: r.hostID}, ImageMetadata{
-		ImageName: metadata.ImageName,
-		ImageTag:  metadata.ImageTag,
-		ImageID:   image.Id,
-		ImageRef:  imageRef,
-	}
+	return report.TopologyNode{
+			Metadata: metadata,
+			Parents:  report.Parent{Host: r.hostID},
+		},
+		ImageMetadata{
+			ImageName: metadata.ImageName,
+			ImageTag:  metadata.ImageTag,
+			ImageID:   image.Id,
+			ImageRef:  imageRef,
+		}
 }
 
 // CRI sometimes prefixes ids with a "type" annotation, but it renders a bit

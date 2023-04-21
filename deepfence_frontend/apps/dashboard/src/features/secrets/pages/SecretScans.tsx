@@ -421,34 +421,6 @@ const action = async ({
   return null;
 };
 
-const ScanFromDropdown = () => {
-  return (
-    <Dropdown
-      triggerAsChild={true}
-      content={
-        <>
-          <DropdownItem className="text-xs">Last 12 hours</DropdownItem>
-          <DropdownItem className="text-xs">Last 24 hours</DropdownItem>
-          <DropdownItem className="text-xs">Last 7 days</DropdownItem>
-          <DropdownItem className="text-xs">Last 30 days</DropdownItem>
-          <DropdownItem className="text-xs">Last 60 days</DropdownItem>
-          <DropdownItem className="text-xs">Last 90 days</DropdownItem>
-          <DropdownItem className="text-xs">Last 6 months</DropdownItem>
-          <DropdownItem className="text-xs">Show All</DropdownItem>
-        </>
-      }
-    >
-      <IconButton
-        className="ml-auto rounded-lg"
-        size="xs"
-        outline
-        color="primary"
-        icon={<HiClock />}
-      />
-    </Dropdown>
-  );
-};
-
 const RefreshApiButton = () => {
   const revalidator = useRevalidator();
   return (
@@ -506,8 +478,8 @@ const DeleteConfirmationModal = ({
           <span>Are you sure you want to delete?</span>
         </h3>
         <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)}>
-            No, cancel
+          <Button size="xs" onClick={() => setShowDialog(false)} outline>
+            No, Cancel
           </Button>
           <Button
             size="xs"
@@ -862,7 +834,6 @@ const SecretScans = () => {
           {navigation.state === 'loading' ? <CircleSpinner size="xs" /> : null}
         </span>
         <div className="ml-auto flex gap-x-4">
-          <ScanFromDropdown />
           <RefreshApiButton />
           <div className="relative gap-x-4">
             {isFilterApplied && (

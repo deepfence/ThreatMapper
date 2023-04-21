@@ -49,7 +49,7 @@ type Registry interface {
 }
 
 // ContainerUpdateWatcher is the type of functions that get called when containers are updated.
-type ContainerUpdateWatcher func(metadata report.Metadata, parent report.Parent)
+type ContainerUpdateWatcher func(metadata report.TopologyNode)
 
 type UserDefinedTags struct {
 	tags map[string][]string
@@ -355,7 +355,7 @@ func (r *registry) updateContainerState(containerID string) {
 	// Trigger anyone watching for updates
 	node := c.GetNode()
 	for _, f := range r.watchers {
-		f(node, c.GetParent())
+		f(node)
 	}
 
 	// And finally, ensure we gather stats for it
@@ -392,25 +392,27 @@ func (r *registry) sendDeletedUpdate(containerID string) {
 	if !ok {
 		tags = []string{}
 	}
-	metadata := report.Metadata{
-		Timestamp:             time.Now().UTC().Format(time.RFC3339Nano),
-		NodeID:                containerID,
-		NodeName:              containerID,
-		NodeType:              report.Container,
-		DockerContainerState:  report.StateDeleted,
-		UserDefinedTags:       tags,
-		IsConsoleVm:           r.isConsoleVm,
-		KubernetesClusterName: r.kubernetesClusterName,
-		KubernetesClusterId:   r.kubernetesClusterId,
-		HostName:              r.hostID,
-	}
-	parent := report.Parent{
-		KubernetesCluster: r.kubernetesClusterId,
-		Host:              r.hostID,
+	node := report.TopologyNode{
+		Metadata: report.Metadata{
+			Timestamp:             time.Now().UTC().Format(time.RFC3339Nano),
+			NodeID:                containerID,
+			NodeName:              containerID,
+			NodeType:              report.Container,
+			DockerContainerState:  report.StateDeleted,
+			UserDefinedTags:       tags,
+			IsConsoleVm:           r.isConsoleVm,
+			KubernetesClusterName: r.kubernetesClusterName,
+			KubernetesClusterId:   r.kubernetesClusterId,
+			HostName:              r.hostID,
+		},
+		Parents: report.Parent{
+			KubernetesCluster: r.kubernetesClusterId,
+			Host:              r.hostID,
+		},
 	}
 	// Trigger anyone watching for updates
 	for _, f := range r.watchers {
-		f(metadata, parent)
+		f(node)
 	}
 }
 

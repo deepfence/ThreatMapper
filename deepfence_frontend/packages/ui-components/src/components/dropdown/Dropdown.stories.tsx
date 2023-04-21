@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
@@ -28,9 +28,9 @@ export default {
       control: { type: 'radio' },
     },
   },
-} as ComponentMeta<typeof Dropdown>;
+} as Meta<typeof Dropdown>;
 
-const DefaultTemplate: ComponentStory<typeof Dropdown> = (args) => {
+const DefaultTemplate: StoryFn<typeof Dropdown> = (args) => {
   return (
     <Dropdown
       {...args}
@@ -50,12 +50,15 @@ const DefaultTemplate: ComponentStory<typeof Dropdown> = (args) => {
   );
 };
 
-export const Default = DefaultTemplate.bind({});
-Default.args = {
-  triggerAsChild: true,
+export const Default = {
+  render: DefaultTemplate,
+
+  args: {
+    triggerAsChild: true,
+  },
 };
 
-const TemplateForIcons: ComponentStory<typeof Dropdown> = (args) => {
+const TemplateForIcons: StoryFn<typeof Dropdown> = (args) => {
   return (
     <Dropdown
       {...args}
@@ -100,12 +103,15 @@ const TemplateForIcons: ComponentStory<typeof Dropdown> = (args) => {
   );
 };
 
-export const WithIcons = TemplateForIcons.bind({});
-WithIcons.args = {
-  triggerAsChild: true,
+export const WithIcons = {
+  render: TemplateForIcons,
+
+  args: {
+    triggerAsChild: true,
+  },
 };
 
-const ControlledTemplate: ComponentStory<typeof Dropdown> = (args) => {
+const ControlledTemplate: StoryFn<typeof Dropdown> = (args) => {
   const [open, setOpen] = useState(false);
   return (
     <Dropdown
@@ -147,7 +153,10 @@ const ControlledTemplate: ComponentStory<typeof Dropdown> = (args) => {
   );
 };
 
-export const Controlled = ControlledTemplate.bind({});
-Controlled.args = {
-  triggerAsChild: true,
+export const Controlled = {
+  render: ControlledTemplate,
+
+  args: {
+    triggerAsChild: true,
+  },
 };

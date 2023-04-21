@@ -332,7 +332,7 @@ const AgentDiagnosticLogsTable = () => {
 };
 const ConsoleDiagnosticLogsComponent = () => {
   return (
-    <div className="bg-green-100 dark:bg-green-900/75 text-gray-500 dark:text-gray-300 px-4 py-6 w-fit rounded-lg flex flex-col max-w-[300px]">
+    <div className="bg-green-100 dark:bg-green-900/75 text-gray-500 dark:text-gray-300 px-4 pt-4 pb-6 w-fit rounded-lg flex flex-col max-w-[300px]">
       <h4 className="text-lg font-medium pb-2">Console Diagnostic Logs</h4>
       <span className="text-sm text-gray-500 dark:text-gray-300">
         Generate a link to download pdf for your console
@@ -358,7 +358,7 @@ const AgentDiagnosticLogsComponent = () => {
   const actionData = useActionData() as string;
 
   return (
-    <div className="bg-blue-100 dark:bg-blue-900/75 text-gray-600 dark:text-white px-4 py-6 w-fit rounded-lg flex flex-col max-w-[300px]">
+    <div className="bg-blue-100 dark:bg-blue-900/75 text-gray-600 dark:text-white px-4 pt-4 pb-6 w-fit rounded-lg flex flex-col max-w-[300px]">
       <h4 className="text-lg font-medium pb-2">Agent Diagnostic Logs</h4>
       <span className="text-sm text-gray-500 dark:text-gray-300">
         Generate a link to download pdf for your host/cluster agent
@@ -387,7 +387,7 @@ const AgentDiagnosticLogsComponent = () => {
 const DiagnosticLogs = () => {
   return (
     <SettingsTab value="diagnostic-logs">
-      <div className="grid grid-cols-[310px_1fr] p-2 gap-x-2">
+      <div className="grid grid-cols-[310px_1fr] gap-x-2">
         <div className="flex flex-col mt-2 gap-y-3">
           <ConsoleDiagnosticLogsComponent />
           <AgentDiagnosticLogsComponent />

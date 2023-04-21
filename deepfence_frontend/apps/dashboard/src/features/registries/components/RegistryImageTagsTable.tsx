@@ -221,7 +221,7 @@ export const RegistryImageTagsTable = ({
   return (
     <>
       {selectedIds.length === 0 ? (
-        <div className="text-sm text-gray-400 font-medium py-2.5">No rows selected</div>
+        <div className="text-sm text-gray-400 font-medium pb-2.5">No rows selected</div>
       ) : (
         <>
           <Dropdown

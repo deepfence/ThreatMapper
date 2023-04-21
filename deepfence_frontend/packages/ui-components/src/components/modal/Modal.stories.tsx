@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react';
+import { Meta } from '@storybook/react';
 import { useRef, useState } from 'react';
 
 import Button from '@/components/button/Button';
@@ -10,7 +10,7 @@ export default {
   argTypes: {
     onOpenChange: { action: 'onOpenChange' },
   },
-} as ComponentMeta<typeof Modal>;
+} as Meta<typeof Modal>;
 
 export const DefaultOpenModal = () => {
   const [, setOpen] = useState(false);

@@ -337,19 +337,22 @@ func (t *connectionTracker) addConnection(rpt *report.Report, hostNodeID string,
 		toNode   = t.makeEndpointNode(namespaceID, toAddr, ft.toPort, extraToNode)
 	)
 	rpt.Endpoint.AddNode(fromNode)
-	rpt.EndpointAdjacency.AddAdjacency(fromNode.NodeID, toNode.NodeID)
+	rpt.Endpoint[fromNode.Metadata.NodeID].Adjacency.Add(toNode.Metadata.NodeID)
 	rpt.Endpoint.AddNode(toNode)
 	t.addDNS(rpt, fromAddr.String())
 	t.addDNS(rpt, toAddr.String())
 }
 
-func (t *connectionTracker) makeEndpointNode(namespaceID uint32, addr net.IP, port uint16, extra extra) report.Metadata {
-	node := report.Metadata{
-		Timestamp:       time.Now().UTC().Format(time.RFC3339Nano),
-		NodeID:          report.MakeEndpointNodeIDB(t.conf.HostName, namespaceID, addr, port),
-		Pid:             extra.PID,
-		HostName:        extra.HostNodeID,
-		ConnectionCount: extra.ConnectionCount,
+func (t *connectionTracker) makeEndpointNode(namespaceID uint32, addr net.IP, port uint16, extra extra) report.TopologyNode {
+	node := report.TopologyNode{
+		Metadata: report.Metadata{
+			Timestamp:       time.Now().UTC().Format(time.RFC3339Nano),
+			NodeID:          report.MakeEndpointNodeIDB(t.conf.HostName, namespaceID, addr, port),
+			Pid:             extra.PID,
+			HostName:        extra.HostNodeID,
+			ConnectionCount: extra.ConnectionCount,
+		},
+		Adjacency: report.MakeIDList(),
 	}
 	return node
 }

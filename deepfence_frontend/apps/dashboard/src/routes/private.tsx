@@ -66,14 +66,10 @@ import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
-import { module as addEmailConfiguration } from '@/features/settings/pages/AddEmailCongifuration';
-import { module as changePassword } from '@/features/settings/pages/ChangePassword';
+import { module as connectorInstructions } from '@/features/settings/pages/ConnectorInstructions';
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
-import { module as editGlobalSettings } from '@/features/settings/pages/EditGlobalSettings';
-import { module as editUser } from '@/features/settings/pages/EditUser';
 import { module as emailConfiguration } from '@/features/settings/pages/EmailConfiguration';
 import { module as globalSettings } from '@/features/settings/pages/GlobalSettings';
-import { module as inviteUser } from '@/features/settings/pages/InviteUser';
 import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
@@ -500,21 +496,6 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'User Management' },
           },
           {
-            path: 'user-management/edit/:userId',
-            ...editUser,
-            meta: { title: 'Edit User Account' },
-          },
-          {
-            path: 'user-management/change-password',
-            ...changePassword,
-            meta: { title: 'Change your password' },
-          },
-          {
-            path: 'user-management/invite-user',
-            ...inviteUser,
-            meta: { title: 'Invite User' },
-          },
-          {
             path: 'user-audit-logs',
             ...userAuditLogs,
             meta: { title: 'User Audit Logs' },
@@ -525,19 +506,18 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Email Configuration' },
           },
           {
-            path: 'email-configuration/add-email-configuration',
-            ...addEmailConfiguration,
-            meta: { title: 'Add Email Configuration' },
-          },
-          {
             path: 'global-settings',
             ...globalSettings,
             meta: { title: 'Global Settings' },
           },
           {
-            path: 'global-settings/edit/:id',
-            ...editGlobalSettings,
-            meta: { title: 'Edit Global Settings' },
+            path: 'connection-instructions',
+            ...connectorInstructions,
+            meta: { title: 'Connector Instructions' },
+          },
+          {
+            path: 'connector-instructions/:connectorType',
+            ...connectorInstructions,
           },
         ],
       },

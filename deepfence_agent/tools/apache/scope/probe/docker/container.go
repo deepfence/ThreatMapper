@@ -36,7 +36,7 @@ type Container interface {
 	Image() string
 	PID() int
 	Hostname() string
-	GetNode() report.Metadata
+	GetNode() report.TopologyNode
 	GetParent() report.Parent
 	State() string
 	StateString() string
@@ -392,7 +392,7 @@ func (c *container) GetParent() report.Parent {
 	return c.baseParent
 }
 
-func (c *container) GetNode() report.Metadata {
+func (c *container) GetNode() report.TopologyNode {
 	c.RLock()
 	defer c.RUnlock()
 	c.baseNode.Timestamp = time.Now().UTC().Format(time.RFC3339Nano)
@@ -409,7 +409,10 @@ func (c *container) GetNode() report.Metadata {
 		c.baseNode.DockerContainerNetworkMode = networkMode
 	}
 	c.baseNode.MemoryUsage, c.baseNode.MemoryMax, c.baseNode.CpuUsage, c.baseNode.CpuMax = c.metrics()
-	return c.baseNode
+	return report.TopologyNode{
+		Metadata: c.baseNode,
+		Parents:  c.GetParent(),
+	}
 }
 
 // ContainerIsStopped checks if the docker container is in one of our "stopped" states

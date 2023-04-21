@@ -67,7 +67,9 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
       filters: {
         compare_filter: [],
         contains_filter: {
-          filter_in: {},
+          filter_in: {
+            pseudo: [false],
+          },
         },
         match_filter: {
           filter_in: {},

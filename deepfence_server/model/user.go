@@ -28,10 +28,6 @@ const (
 	GrantTypeAPIToken = "api_token"
 )
 
-type MessageResponse struct {
-	Message string `json:"message" required:"true"`
-}
-
 var (
 	AccessTokenExpiry  = time.Minute * 30
 	RefreshTokenExpiry = time.Hour * 26
@@ -202,7 +198,7 @@ type UserRegisterRequest struct {
 	Email               string `json:"email" validate:"required,email" required:"true"`
 	Company             string `json:"company" validate:"required,company_name,min=2,max=32" required:"true"`
 	Password            string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
-	IsTemporaryPassword bool   `json:"is_temporary_password" required:"true"`
+	IsTemporaryPassword bool   `json:"is_temporary_password"`
 	ConsoleURL          string `json:"console_url" validate:"required,url" required:"true"`
 }
 
@@ -210,7 +206,7 @@ type RegisterInvitedUserRequest struct {
 	FirstName           string `json:"first_name" validate:"required,user_name,min=2,max=32" required:"true"`
 	LastName            string `json:"last_name" validate:"required,user_name,min=2,max=32" required:"true"`
 	Password            string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
-	IsTemporaryPassword bool   `json:"is_temporary_password" required:"true"`
+	IsTemporaryPassword bool   `json:"is_temporary_password"`
 	Code                string `json:"code" validate:"required,uuid4" required:"true"`
 }
 
@@ -247,16 +243,16 @@ type UpdateUserPasswordRequest struct {
 type UpdateUserRequest struct {
 	FirstName string `json:"first_name" validate:"required,user_name,min=2,max=32"`
 	LastName  string `json:"last_name" validate:"required,user_name,min=2,max=32"`
-	IsActive  bool   `json:"is_active" validate:"required"`
-	Role      string `json:"role" validate:"required,oneof=admin standard-user read-only-user" required:"true" enum:"admin,standard-user,read-only-user"`
+	IsActive  bool   `json:"is_active"`
+	Role      string `json:"role" validate:"required,oneof=admin standard-user read-only-user" enum:"admin,standard-user,read-only-user"`
 }
 
 type UpdateUserIdRequest struct {
 	ID        int64  `path:"id" validate:"required"`
 	FirstName string `json:"first_name" validate:"required,user_name,min=2,max=32"`
 	LastName  string `json:"last_name" validate:"required,user_name,min=2,max=32"`
-	IsActive  bool   `json:"is_active" validate:"required"`
-	Role      string `json:"role" validate:"required,oneof=admin standard-user read-only-user" required:"true" enum:"admin,standard-user,read-only-user"`
+	IsActive  bool   `json:"is_active"`
+	Role      string `json:"role" validate:"required,oneof=admin standard-user read-only-user" enum:"admin,standard-user,read-only-user"`
 }
 
 type User struct {
@@ -339,7 +335,7 @@ func GetUserByEmail(email string) (*User, int, context.Context, *postgresqlDb.Qu
 	pgClient, err := directory.PostgresClient(ctx)
 	err = user.LoadFromDbByEmail(ctx, pgClient)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, http.StatusNotFound, ctx, pgClient, errors.New(utils.ErrorUserNotFound)
+		return nil, http.StatusNotFound, ctx, pgClient, UserNotFoundErr
 	} else if err != nil {
 		return nil, http.StatusInternalServerError, ctx, pgClient, err
 	}

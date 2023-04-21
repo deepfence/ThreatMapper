@@ -1,29 +1,92 @@
-import { Suspense, useMemo } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { FaPencilAlt } from 'react-icons/fa';
-import { HiDotsVertical } from 'react-icons/hi';
-import { generatePath, useLoaderData } from 'react-router-dom';
+import { HiDotsVertical, HiGlobeAlt } from 'react-icons/hi';
+import { ActionFunctionArgs, useFetcher, useLoaderData } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
   Button,
   createColumnHelper,
   Dropdown,
   DropdownItem,
+  Modal,
   Table,
   TableSkeleton,
+  TextInput,
 } from 'ui-components';
 
 import { getSettingsApiClient } from '@/api/api';
-import { ModelSettingsResponse } from '@/api/generated';
+import {
+  ApiDocsBadRequestResponse,
+  ModelSettingsResponse,
+  ModelSettingUpdateRequestKeyEnum,
+} from '@/api/generated';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 type LoaderDataType = {
   message?: string;
   data?: ModelSettingsResponse[];
 };
+
+type ActionReturnType = {
+  message?: string;
+  success: boolean;
+  fieldErrors?: {
+    value?: string;
+  };
+};
+
+const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType> => {
+  const formData = await request.formData();
+  const body = Object.fromEntries(formData);
+
+  const r = await makeRequest({
+    apiFunction: getSettingsApiClient().updateSettings,
+    apiArgs: [
+      {
+        id: Number(body.id),
+        modelSettingUpdateRequest: {
+          key: body.key as ModelSettingUpdateRequestKeyEnum,
+          value: body.value as string,
+        },
+      },
+    ],
+    errorHandler: async (r) => {
+      const error = new ApiError<ActionReturnType>({
+        success: false,
+      });
+      if (r.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+
+        return error.set({
+          fieldErrors: {
+            value: modelResponse.error_fields?.value as string,
+          },
+          message: modelResponse.message ?? '',
+          success: false,
+        });
+      } else if (r.status === 403) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message,
+          success: false,
+        });
+      }
+    },
+  });
+
+  if (ApiError.isApiError(r)) {
+    return r.value();
+  }
+  toast.success('Global settings details updated successfully');
+  return {
+    success: false,
+  };
+};
+
 const getData = async (): Promise<LoaderDataType> => {
   const response = await makeRequest({
     apiFunction: getSettingsApiClient().getSettings,
@@ -40,32 +103,75 @@ const getData = async (): Promise<LoaderDataType> => {
     data: response,
   };
 };
+
 const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
   return typedDefer({
     data: getData(),
   });
 };
 
-const ActionDropdown = ({ id }: { id: string }) => {
-  const { navigate } = usePageNavigation();
+const EditGlobalSettingModal = ({
+  showDialog,
+  setShowDialog,
+  setting,
+}: {
+  showDialog: boolean;
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  setting: ModelSettingsResponse;
+}) => {
+  const fetcher = useFetcher<ActionReturnType>();
+  const { data } = fetcher;
+
+  return (
+    <Modal
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title="Update Setting"
+    >
+      <fetcher.Form
+        method="post"
+        className="flex flex-col gap-y-3 pt-2 pb-6 mx-8 w-[260px]"
+      >
+        <TextInput type="hidden" className="hidden" name="id" value={setting?.id} />
+        <TextInput type="hidden" className="hidden" name="key" value={setting?.key} />
+        <TextInput
+          label={setting?.label}
+          type={'text'}
+          placeholder={setting?.key}
+          name="value"
+          color={data?.fieldErrors?.value ? 'error' : 'default'}
+          sizing="sm"
+          defaultValue={setting?.value}
+          helperText={data?.fieldErrors?.value}
+          required
+        />
+        <div className={`text-red-600 dark:text-red-500 text-sm`}>
+          {!data?.success && data?.message && <span>{data.message}</span>}
+        </div>
+        <Button color="primary" className=" pl-3" type="submit" size="sm">
+          Update
+        </Button>
+      </fetcher.Form>
+    </Modal>
+  );
+};
+
+const ActionDropdown = ({ setting }: { setting: ModelSettingsResponse }) => {
+  const [openEditSetting, setOpenEditSetting] = useState(false);
 
   return (
     <>
+      <EditGlobalSettingModal
+        showDialog={openEditSetting}
+        setShowDialog={setOpenEditSetting}
+        setting={setting}
+      />
       <Dropdown
         triggerAsChild={true}
         align="end"
         content={
           <>
-            <DropdownItem
-              className="text-sm"
-              onClick={() => {
-                navigate(
-                  generatePath('/settings/global-settings/edit/:id', {
-                    id: id,
-                  }),
-                );
-              }}
-            >
+            <DropdownItem className="text-sm" onClick={() => setOpenEditSetting(true)}>
               <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
                 <IconContext.Provider
                   value={{ className: 'text-gray-700 dark:text-gray-400' }}
@@ -114,7 +220,7 @@ const GlobalSettings = () => {
           if (!cell.row.original.id) {
             throw new Error('Settings not found');
           }
-          return <ActionDropdown id={cell.row.original.id.toString()} />;
+          return <ActionDropdown setting={cell.row.original} />;
         },
         header: () => '',
         minSize: 20,
@@ -128,21 +234,31 @@ const GlobalSettings = () => {
 
   return (
     <SettingsTab value="global-settings">
-      <div className="h-full px-2">
-        <Suspense fallback={<TableSkeleton columns={3} rows={3} size={'sm'} />}>
+      <div className="h-full">
+        <div className="mt-2 flex gap-x-2 items-center">
+          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
+            <IconContext.Provider
+              value={{
+                className: 'text-blue-600 dark:text-blue-400',
+              }}
+            >
+              <HiGlobeAlt />
+            </IconContext.Provider>
+          </div>
+          <h3 className="font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
+            Global Settings
+          </h3>
+        </div>
+        <Suspense
+          fallback={<TableSkeleton columns={3} rows={3} size={'sm'} className="mt-4" />}
+        >
           <DFAwait resolve={loaderData.data}>
             {(resolvedData: LoaderDataType) => {
               const { data, message } = resolvedData;
               const settings = data ?? [];
 
               return (
-                <div>
-                  <div className="flex justify-between">
-                    <h3 className="py-2 font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
-                      Global Settings
-                    </h3>
-                  </div>
-
+                <div className="mt-4">
                   {message ? (
                     <p className="text-red-500 text-sm">{message}</p>
                   ) : (
@@ -167,4 +283,5 @@ const GlobalSettings = () => {
 export const module = {
   element: <GlobalSettings />,
   loader,
+  action,
 };
