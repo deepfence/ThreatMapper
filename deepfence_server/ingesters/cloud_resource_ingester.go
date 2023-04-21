@@ -115,7 +115,7 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 		MERGE (cp) -[:HOSTS]-> (cr)
 		MERGE (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
 		MERGE (cr) -[:HOSTS]-> (n)
-		SET n+=row, n.node_type = row.resource_id, n.cloud_region = cloud_region, n.updated_at = TIMESTAMP(), cp.active = true, cp.pseudo = false, cr.active = true, n.active = true`,
+		SET n+=row, n.node_name = n.name, n.node_type = row.resource_id, n.cloud_region = cloud_region, n.updated_at = TIMESTAMP(), cp.active = true, cp.pseudo = false, cr.active = true, n.active = true`,
 		map[string]interface{}{
 			"batch": batch,
 		},

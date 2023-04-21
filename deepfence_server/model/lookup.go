@@ -327,6 +327,7 @@ type CloudResource struct {
 	Type                        string `json:"node_type" required:"true"`
 	TypeLabel                   string `json:"type_label" required:"true"`
 	AccountId                   string `json:"account_id" required:"true"`
+	CloudRegion                 string `json:"cloud_region" required:"true"`
 	CloudCompliancesCount       int64  `json:"cloud_compliances_count" required:"true"`
 	CloudComplianceScanStatus   string `json:"cloud_compliance_scan_status" required:"true"`
 	CloudComplianceLatestScanId string `json:"cloud_compliance_latest_scan_id" required:"true"`

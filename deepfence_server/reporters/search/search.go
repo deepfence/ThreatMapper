@@ -133,7 +133,8 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
 		` OPTIONAL MATCH (n) -[:IS]-> (e)
 		RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e ` +
-		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) + fw.FetchWindow2CypherQuery()
+		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) +
+		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{})

@@ -58,15 +58,32 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 		}
 		defer tx.Close()
 
-		query := `
-		UNWIND $batch as row
-		MERGE (n:` + string(ts) + `{node_id: row.scan_id})
-		SET n.status = row.scan_status, n.scan_message = row.scan_message, n.updated_at = TIMESTAMP()
-		WITH n
-		OPTIONAL MATCH (n) -[:DETECTED]- (m)
-		WITH n, count(m) as count
-		MATCH (n) -[:SCANNED]- (r)
-		SET r.` + scanCountField[ts] + `=count, r.` + scanStatusField[ts] + `=n.status, r.` + latestScanIdField[ts] + `=n.node_id`
+		query := ""
+		switch ts {
+		default:
+			query = `
+			UNWIND $batch as row
+			MERGE (n:` + string(ts) + `{node_id: row.scan_id})
+			SET n.status = row.scan_status, n.scan_message = row.scan_message, n.updated_at = TIMESTAMP()
+			WITH n
+			OPTIONAL MATCH (n) -[:DETECTED]- (m)
+			WITH n, count(m) as count
+			MATCH (n) -[:SCANNED]- (r)
+			SET r.` + scanCountField[ts] + `=count, r.` + scanStatusField[ts] + `=n.status, r.` + latestScanIdField[ts] + `=n.node_id`
+		case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
+			query = `
+			UNWIND $batch as row
+			MERGE (n:` + string(ts) + `{node_id: row.scan_id})
+			SET n.status = row.scan_status, n.scan_message = row.scan_message, n.updated_at = TIMESTAMP()
+			WITH n
+			OPTIONAL MATCH (n) -[:DETECTED]- (m)
+			WITH n, count(m) as total_count
+			OPTIONAL MATCH (n) -[:DETECTED]- (m)
+			WITH  n, total_count, m.resource as arn, count(m) as count
+			OPTIONAL MATCH (n) -[:SCANNED]- (cn) -[:OWNS]- (cr:CloudResource{arn: arn})
+			SET cn.` + scanCountField[ts] + `=total_count, cn.` + scanStatusField[ts] + `=n.status, cn.` + latestScanIdField[ts] + `=n.node_id
+			SET cr.` + scanCountField[ts] + `=count, cr.` + scanStatusField[ts] + `=n.status, cr.` + latestScanIdField[ts] + `=n.node_id`
+		}
 
 		if _, err = tx.Run(query, map[string]interface{}{"batch": statusesToMaps(data)}); err != nil {
 			log.Error().Msgf("Error while updating scan status: %+v", err)
