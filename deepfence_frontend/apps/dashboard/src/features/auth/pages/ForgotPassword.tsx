@@ -1,6 +1,5 @@
 import cx from 'classnames';
 import { ActionFunctionArgs, Link, useFetcher } from 'react-router-dom';
-import { toast } from 'sonner';
 import { Button, CircleSpinner, TextInput, Typography } from 'ui-components';
 
 import { getUserApiClient } from '@/api/api';
@@ -22,13 +21,7 @@ export const forgotPasswordAction = async ({
 }: ActionFunctionArgs): Promise<actionReturnType> => {
   const formData = await request.formData();
   const body = Object.fromEntries(formData);
-  if (!body.email) {
-    return {
-      fieldErrors: {
-        email: 'Email is required',
-      },
-    };
-  }
+
   const r = await makeRequest({
     apiFunction: getUserApiClient().resetPasswordRequest,
     apiArgs: [
@@ -104,7 +97,14 @@ export const ForgotPassword = () => {
         />
 
         <div className="flex flex-col w-full mt-6">
-          <Button size="md" color="primary" className="w-full mb-4">
+          <Button
+            size="md"
+            color="primary"
+            className="w-full mb-4"
+            loading={state === 'submitting'}
+            disabled={state === 'submitting'}
+            type="submit"
+          >
             Send Link
           </Button>
           <Link
@@ -117,13 +117,6 @@ export const ForgotPassword = () => {
             Back to Login
           </Link>
         </div>
-        {state === 'submitting' && (
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity">
-            <div className="flex items-center justify-center absolute inset-0 ">
-              <CircleSpinner size="xl" />
-            </div>
-          </div>
-        )}
       </fetcher.Form>
       {data?.message && (
         <p className={`mt-1.5 ${Typography.size.sm} text-green-500 relative text-center`}>
