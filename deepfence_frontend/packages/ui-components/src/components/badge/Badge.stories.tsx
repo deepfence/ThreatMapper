@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta } from '@storybook/react';
 import { useState } from 'react';
 import { HiInformationCircle } from 'react-icons/hi';
 
@@ -11,38 +11,41 @@ export default {
   argTypes: {
     onClick: { action: 'onClick' },
   },
-} as ComponentMeta<typeof Badge>;
+} as Meta<typeof Badge>;
 
-const Template: ComponentStory<typeof Badge> = (args) => <Badge {...args} />;
-
-export const Default = Template.bind({});
-Default.args = {
-  label: 'Badge sm',
+export const Default = {
+  args: {
+    label: 'Badge sm',
+  },
 };
 
-export const Primary = Template.bind({});
-Primary.args = {
-  label: 'Badge sm',
-  color: 'primary',
+export const Primary = {
+  args: {
+    label: 'Badge sm',
+    color: 'primary',
+  },
 };
 
-export const Success = Template.bind({});
-Success.args = {
-  label: 'Badge sm',
-  color: 'success',
+export const Success = {
+  args: {
+    label: 'Badge sm',
+    color: 'success',
+  },
 };
 
-export const Danger = Template.bind({});
-Danger.args = {
-  label: 'Badge sm',
-  color: 'danger',
+export const Danger = {
+  args: {
+    label: 'Badge sm',
+    color: 'danger',
+  },
 };
 
-export const MediumDanger = Template.bind({});
-MediumDanger.args = {
-  label: 'Badge sm',
-  color: 'danger',
-  size: 'lg',
+export const MediumDanger = {
+  args: {
+    label: 'Badge sm',
+    color: 'danger',
+    size: 'lg',
+  },
 };
 
 export const WithCloseAction = () => {

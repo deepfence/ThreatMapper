@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { useState } from 'react';
 import { AiOutlineMail } from 'react-icons/ai';
 
@@ -7,9 +7,9 @@ import { Select, SelectItem } from '@/components/select/Select';
 export default {
   title: 'Components/Select',
   component: Select,
-} as ComponentMeta<typeof Select>;
+} as Meta<typeof Select>;
 
-const Template: ComponentStory<typeof Select<string>> = (args) => {
+const Template: StoryFn<typeof Select<string>> = (args) => {
   const [value, setValue] = useState<string | undefined>();
   // TODO problem. somehow first value always gets selected.
   return (
@@ -38,13 +38,15 @@ const Template: ComponentStory<typeof Select<string>> = (args) => {
   );
 };
 
-export const Default = Template.bind({});
-Default.args = {};
+export const Default = {
+  render: Template,
+  args: {},
+};
 
 const PreCompItem = () => {
   return <div>Citrus</div>;
 };
-const PreComp: ComponentStory<typeof Select<string>> = (args) => {
+const PreComp: StoryFn<typeof Select<string>> = (args) => {
   const [value, setValue] = useState<string | undefined>();
   // TODO problem. somehow first value always gets selected.
   return (
@@ -74,14 +76,19 @@ const PreComp: ComponentStory<typeof Select<string>> = (args) => {
   );
 };
 
-export const WithPrefixComponent = PreComp.bind({});
-
-export const WithPrefixComponentXS = PreComp.bind({});
-WithPrefixComponentXS.args = {
-  sizing: 'xs',
+export const WithPrefixComponent = {
+  render: PreComp,
 };
 
-const TemplateMulti: ComponentStory<typeof Select<string[]>> = (args) => {
+export const WithPrefixComponentXS = {
+  render: PreComp,
+
+  args: {
+    sizing: 'xs',
+  },
+};
+
+const TemplateMulti: StoryFn<typeof Select<string[]>> = (args) => {
   const [value, setValue] = useState<string[] | undefined>([]);
   return (
     <Select
@@ -109,8 +116,11 @@ const TemplateMulti: ComponentStory<typeof Select<string[]>> = (args) => {
   );
 };
 
-export const MultiSelect = TemplateMulti.bind({});
-MultiSelect.args = {
-  startIcon: <AiOutlineMail />,
-  sizing: 'xs',
+export const MultiSelect = {
+  render: TemplateMulti,
+
+  args: {
+    startIcon: <AiOutlineMail />,
+    sizing: 'xs',
+  },
 };

@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { RowSelectionState, SortingState } from '@tanstack/react-table';
 import { sortBy } from 'lodash-es';
 import { useMemo, useRef, useState } from 'react';
@@ -15,7 +15,7 @@ import { TableSkeleton } from '@/components/table/TableSkeleton';
 export default {
   title: 'Components/Table',
   component: Table,
-} as ComponentMeta<typeof Table>;
+} as Meta<typeof Table>;
 
 type Fruit = {
   id: number;
@@ -23,7 +23,7 @@ type Fruit = {
   taste: string;
 };
 
-const Template: ComponentStory<typeof Table<Fruit>> = (args) => {
+const Template: StoryFn<typeof Table<Fruit>> = (args) => {
   const columnHelper = createColumnHelper<Fruit>();
 
   const checkboxRow = getRowSelectionColumn(columnHelper, {
@@ -77,25 +77,33 @@ const Template: ComponentStory<typeof Table<Fruit>> = (args) => {
   );
 };
 
-export const Default = Template.bind({});
-Default.args = {};
+export const Default = {
+  render: Template,
+  args: {},
+};
 
-export const SmallTable = Template.bind({});
-SmallTable.args = {
-  size: 'sm',
-  enableRowSelection: true,
-  rowSelectionState: {},
-  onRowSelectionChange: () => {
-    return false;
+export const SmallTable = {
+  render: Template,
+
+  args: {
+    size: 'sm',
+    enableRowSelection: true,
+    rowSelectionState: {},
+    onRowSelectionChange: () => {
+      return false;
+    },
   },
 };
 
-export const StripedTable = Template.bind({});
-StripedTable.args = {
-  striped: true,
+export const StripedTable = {
+  render: Template,
+
+  args: {
+    striped: true,
+  },
 };
 
-const TemplateWithSubcomponent: ComponentStory<typeof Table<Fruit>> = (args) => {
+const TemplateWithSubcomponent: StoryFn<typeof Table<Fruit>> = (args) => {
   const columnHelper = createColumnHelper<Fruit>();
 
   const columns = useMemo(
@@ -156,15 +164,20 @@ const TemplateWithSubcomponent: ComponentStory<typeof Table<Fruit>> = (args) => 
   );
 };
 
-export const DefaultWithSubcomponent = TemplateWithSubcomponent.bind({});
-DefaultWithSubcomponent.args = {};
-
-export const StripedWithSubcomponent = TemplateWithSubcomponent.bind({});
-StripedWithSubcomponent.args = {
-  striped: true,
+export const DefaultWithSubcomponent = {
+  render: TemplateWithSubcomponent,
+  args: {},
 };
 
-const TemplateWithAutoPagination: ComponentStory<typeof Table<Fruit>> = (args) => {
+export const StripedWithSubcomponent = {
+  render: TemplateWithSubcomponent,
+
+  args: {
+    striped: true,
+  },
+};
+
+const TemplateWithAutoPagination: StoryFn<typeof Table<Fruit>> = (args) => {
   const columnHelper = createColumnHelper<Fruit>();
   const tableInstanceRef = useRef<TableInstance<Fruit> | null>(null);
 
@@ -210,10 +223,12 @@ const TemplateWithAutoPagination: ComponentStory<typeof Table<Fruit>> = (args) =
   );
 };
 
-export const DefaultWithAutoPagination = TemplateWithAutoPagination.bind({});
-DefaultWithAutoPagination.args = {};
+export const DefaultWithAutoPagination = {
+  render: TemplateWithAutoPagination,
+  args: {},
+};
 
-const TemplateWithManualPagination: ComponentStory<typeof Table<Fruit>> = (args) => {
+const TemplateWithManualPagination: StoryFn<typeof Table<Fruit>> = (args) => {
   const columnHelper = createColumnHelper<Fruit>();
   const [{ pageIndex, pageSize }, setPagination] = useState({
     pageIndex: 0,
@@ -266,13 +281,17 @@ const TemplateWithManualPagination: ComponentStory<typeof Table<Fruit>> = (args)
   );
 };
 
-export const DefaultWithManualPagination = TemplateWithManualPagination.bind({});
-DefaultWithManualPagination.args = {};
+export const DefaultWithManualPagination = {
+  render: TemplateWithManualPagination,
+  args: {},
+};
 
-export const WithColumnResizing = TemplateWithManualPagination.bind({});
-WithColumnResizing.args = { enableColumnResizing: true };
+export const WithColumnResizing = {
+  render: TemplateWithManualPagination,
+  args: { enableColumnResizing: true },
+};
 
-const TemplateWithAutoSorting: ComponentStory<typeof Table<Fruit>> = (args) => {
+const TemplateWithAutoSorting: StoryFn<typeof Table<Fruit>> = (args) => {
   const columnHelper = createColumnHelper<Fruit>();
 
   const columns = useMemo(
@@ -309,10 +328,12 @@ const TemplateWithAutoSorting: ComponentStory<typeof Table<Fruit>> = (args) => {
   return <Table {...args} data={data} columns={columns} enablePagination enableSorting />;
 };
 
-export const DefaultWithAutoSorting = TemplateWithAutoSorting.bind({});
-DefaultWithAutoSorting.args = {};
+export const DefaultWithAutoSorting = {
+  render: TemplateWithAutoSorting,
+  args: {},
+};
 
-const TemplateWithManualSorting: ComponentStory<typeof Table<Fruit>> = (args) => {
+const TemplateWithManualSorting: StoryFn<typeof Table<Fruit>> = (args) => {
   const columnHelper = createColumnHelper<Fruit>();
   const [{ pageIndex, pageSize }, setPagination] = useState({
     pageIndex: 0,
@@ -379,10 +400,12 @@ const TemplateWithManualSorting: ComponentStory<typeof Table<Fruit>> = (args) =>
   );
 };
 
-export const DefaultWithManualSorting = TemplateWithManualSorting.bind({});
-DefaultWithManualSorting.args = {};
+export const DefaultWithManualSorting = {
+  render: TemplateWithManualSorting,
+  args: {},
+};
 
-const TemplateWithRowSelection: ComponentStory<typeof Table<Fruit>> = (args) => {
+const TemplateWithRowSelection: StoryFn<typeof Table<Fruit>> = (args) => {
   const columnHelper = createColumnHelper<Fruit>();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
 
@@ -454,14 +477,16 @@ const TemplateWithRowSelection: ComponentStory<typeof Table<Fruit>> = (args) => 
   );
 };
 
-export const DefaultWithRowSelection = TemplateWithRowSelection.bind({});
-DefaultWithRowSelection.args = {};
+export const DefaultWithRowSelection = {
+  render: TemplateWithRowSelection,
+  args: {},
+};
 
 type NestedFruit = Fruit & {
   fruits?: NestedFruit[];
 };
 
-const TemplateWithSubRows: ComponentStory<typeof Table<NestedFruit>> = (args) => {
+const TemplateWithSubRows: StoryFn<typeof Table<NestedFruit>> = (args) => {
   const columnHelper = createColumnHelper<NestedFruit>();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
 
@@ -539,16 +564,21 @@ const TemplateWithSubRows: ComponentStory<typeof Table<NestedFruit>> = (args) =>
   );
 };
 
-export const DefaultWithSubRows = TemplateWithSubRows.bind({});
-DefaultWithSubRows.args = {};
+export const DefaultWithSubRows = {
+  render: TemplateWithSubRows,
+  args: {},
+};
 
-const SkeletonTemplate: ComponentStory<typeof TableSkeleton> = (args) => {
+const SkeletonTemplate: StoryFn<typeof TableSkeleton> = (args) => {
   return <TableSkeleton {...args} />;
 };
 
-export const DefaultTableSkeleton = SkeletonTemplate.bind({});
-DefaultTableSkeleton.args = {
-  columns: 5,
-  rows: 3,
-  size: 'sm',
+export const DefaultTableSkeleton = {
+  render: SkeletonTemplate,
+
+  args: {
+    columns: 5,
+    rows: 3,
+    size: 'sm',
+  },
 };

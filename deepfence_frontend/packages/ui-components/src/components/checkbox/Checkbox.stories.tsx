@@ -1,5 +1,5 @@
 import { CheckedState } from '@radix-ui/react-checkbox';
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { useState } from 'react';
 
 import { Checkbox } from '@/components/checkbox/Checkbox';
@@ -7,22 +7,22 @@ import { Checkbox } from '@/components/checkbox/Checkbox';
 export default {
   title: 'Components/Checkbox',
   component: Checkbox,
-} as ComponentMeta<typeof Checkbox>;
+} as Meta<typeof Checkbox>;
 
-const Template: ComponentStory<typeof Checkbox> = (args) => <Checkbox {...args} />;
-
-export const Default = Template.bind({});
-Default.args = {
-  label: 'Default checkbox',
+export const Default = {
+  args: {
+    label: 'Default checkbox',
+  },
 };
 
-export const Rounded = Template.bind({});
-Rounded.args = {
-  label: 'Rounded checkbox',
-  rounded: true,
+export const Rounded = {
+  args: {
+    label: 'Rounded checkbox',
+    rounded: true,
+  },
 };
 
-const ControlledCheckboxTemplate: ComponentStory<typeof Checkbox> = (args) => {
+const ControlledCheckboxTemplate: StoryFn<typeof Checkbox> = (args) => {
   const [checked, setChecked] = useState<CheckedState>(false);
   return (
     <Checkbox
@@ -35,12 +35,15 @@ const ControlledCheckboxTemplate: ComponentStory<typeof Checkbox> = (args) => {
   );
 };
 
-export const ControlledCheckbox = ControlledCheckboxTemplate.bind({});
-ControlledCheckbox.args = {
-  label: 'Controlled checkbox',
+export const ControlledCheckbox = {
+  render: ControlledCheckboxTemplate,
+
+  args: {
+    label: 'Controlled checkbox',
+  },
 };
 
-const IndeterminateCheckboxTemplate: ComponentStory<typeof Checkbox> = (args) => {
+const IndeterminateCheckboxTemplate: StoryFn<typeof Checkbox> = (args) => {
   const [checked, setChecked] = useState<CheckedState>('indeterminate');
 
   return (
@@ -55,7 +58,10 @@ const IndeterminateCheckboxTemplate: ComponentStory<typeof Checkbox> = (args) =>
   );
 };
 
-export const IndeterminateCheckbox = IndeterminateCheckboxTemplate.bind({});
-IndeterminateCheckbox.args = {
-  label: 'Indeterminate checkbox',
+export const IndeterminateCheckbox = {
+  render: IndeterminateCheckboxTemplate,
+
+  args: {
+    label: 'Indeterminate checkbox',
+  },
 };

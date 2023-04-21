@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { useState } from 'react';
 
 import { Combobox, ComboboxOption } from '@/components/select/Combobox';
@@ -6,7 +6,7 @@ import { Combobox, ComboboxOption } from '@/components/select/Combobox';
 export default {
   title: 'Components/Combobox',
   component: Combobox,
-} as ComponentMeta<typeof Combobox>;
+} as Meta<typeof Combobox>;
 
 const OPTIONS = [
   {
@@ -61,7 +61,7 @@ const OPTIONS = [
   },
 ];
 
-const SingleSelectNullableTemplate: ComponentStory<typeof Combobox> = () => {
+const SingleSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
   const [selected, setSelected] = useState<(typeof OPTIONS)[number] | null>(null);
   const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
   const [loading, setLoading] = useState(false);
@@ -106,10 +106,12 @@ const SingleSelectNullableTemplate: ComponentStory<typeof Combobox> = () => {
   );
 };
 
-export const SingleSelectNullable = SingleSelectNullableTemplate.bind({});
-SingleSelectNullable.args = {};
+export const SingleSelectNullable = {
+  render: SingleSelectNullableTemplate,
+  args: {},
+};
 
-const SingleSelectNonNullableTemplate: ComponentStory<typeof Combobox> = () => {
+const SingleSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
   const [selected, setSelected] = useState<(typeof OPTIONS)[number]>(OPTIONS[0]);
   const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
   const [loading, setLoading] = useState(false);
@@ -153,10 +155,12 @@ const SingleSelectNonNullableTemplate: ComponentStory<typeof Combobox> = () => {
   );
 };
 
-export const SingleSelectNonNullable = SingleSelectNonNullableTemplate.bind({});
-SingleSelectNonNullable.args = {};
+export const SingleSelectNonNullable = {
+  render: SingleSelectNonNullableTemplate,
+  args: {},
+};
 
-const MultiSelectNullableTemplate: ComponentStory<typeof Combobox> = () => {
+const MultiSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
   const [selected, setSelected] = useState<typeof OPTIONS>([]);
   const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
   const [loading, setLoading] = useState(false);
@@ -202,10 +206,12 @@ const MultiSelectNullableTemplate: ComponentStory<typeof Combobox> = () => {
   );
 };
 
-export const MultiSelectNullable = MultiSelectNullableTemplate.bind({});
-MultiSelectNullable.args = {};
+export const MultiSelectNullable = {
+  render: MultiSelectNullableTemplate,
+  args: {},
+};
 
-const MultiSelectNonNullableTemplate: ComponentStory<typeof Combobox> = () => {
+const MultiSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
   const [selected, setSelected] = useState<typeof OPTIONS>([]);
   const [options, setOptions] = useState<typeof OPTIONS>([...OPTIONS]);
   const [loading, setLoading] = useState(false);
@@ -250,5 +256,7 @@ const MultiSelectNonNullableTemplate: ComponentStory<typeof Combobox> = () => {
   );
 };
 
-export const MultiSelectNonNullable = MultiSelectNonNullableTemplate.bind({});
-MultiSelectNonNullable.args = {};
+export const MultiSelectNonNullable = {
+  render: MultiSelectNonNullableTemplate,
+  args: {},
+};
