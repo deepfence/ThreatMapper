@@ -1,4 +1,6 @@
 import { Suspense, useMemo } from 'react';
+import { HiViewList } from 'react-icons/hi';
+import { IconContext } from 'react-icons/lib';
 import { useLoaderData } from 'react-router-dom';
 import { createColumnHelper, Table, TableSkeleton } from 'ui-components';
 
@@ -80,7 +82,7 @@ const UserAuditLogs = () => {
       columnHelper.accessor('resources', {
         cell: (cell) => {
           return (
-            <div className="relative">
+            <div className="relative truncate">
               <span className="mr-6">
                 <CopyToClipboard
                   data={String(cell.getValue())}
@@ -111,21 +113,31 @@ const UserAuditLogs = () => {
 
   return (
     <SettingsTab value="user-audit-logs">
-      <div className="h-full p-2">
-        <Suspense fallback={<TableSkeleton columns={7} rows={5} size={'sm'} />}>
+      <div className="h-full">
+        <div className="mt-2 flex gap-x-2 items-center">
+          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
+            <IconContext.Provider
+              value={{
+                className: 'text-blue-600 dark:text-blue-400',
+              }}
+            >
+              <HiViewList />
+            </IconContext.Provider>
+          </div>
+          <h3 className="font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
+            User Audit Logs
+          </h3>
+        </div>
+        <Suspense
+          fallback={<TableSkeleton columns={7} rows={5} size={'sm'} className="mt-4" />}
+        >
           <DFAwait resolve={loaderData.data}>
             {(resolvedData: LoaderDataType) => {
               const { data, message } = resolvedData;
               const logs = data ?? [];
 
               return (
-                <div>
-                  <div className="flex justify-between">
-                    <h3 className="py-2 font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
-                      User Audit Logs
-                    </h3>
-                  </div>
-
+                <div className="mt-4">
                   {message ? (
                     <p className="text-red-500 text-sm">{message}</p>
                   ) : (

@@ -6,18 +6,14 @@ import {
   ActionReturnType,
 } from '@/features/settings/pages/UserManagement';
 
-export const ChangePassword = ({
-  setShowDialog,
-}: {
-  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
+export const ChangePassword = () => {
   const fetcher = useFetcher<ActionReturnType>();
   const { data } = fetcher;
 
   return (
     <fetcher.Form
       method="post"
-      className="flex flex-col gap-y-3 pt-2 pb-3 mx-8 w-[260px]"
+      className="flex flex-col gap-y-3 mt-2 pb-8 mx-8 w-[260px]"
     >
       <TextInput
         label="Old Password"
@@ -61,17 +57,8 @@ export const ChangePassword = ({
         {!data?.success && data?.message && <span>{data.message}</span>}
       </div>
 
-      <Button color="primary" size="sm" type="submit" className="mt-2 w-full">
+      <Button color="primary" size="sm" type="submit" className="mt-1 w-full">
         Change Password
-      </Button>
-      <Button
-        color="danger"
-        className="w-full"
-        size="sm"
-        type="button"
-        onClick={() => setShowDialog(false)}
-      >
-        No, cancel
       </Button>
     </fetcher.Form>
   );

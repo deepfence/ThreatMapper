@@ -28,7 +28,7 @@ const PostureConnectorLayout = () => {
           </BreadcrumbLink>
         </Breadcrumb>
       </div>
-      <div className="p-4">
+      <div className="p-2">
         <Outlet />
       </div>
     </>

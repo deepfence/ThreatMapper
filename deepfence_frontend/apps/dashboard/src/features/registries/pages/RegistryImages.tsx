@@ -306,7 +306,7 @@ const RegistryImages = () => {
         <Suspense
           fallback={
             <div>
-              <div className="h-4 w-28 mt-4 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+              <div className="h-4 w-28 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
               <TableSkeleton columns={2} rows={10} size={'sm'} />
             </div>
           }

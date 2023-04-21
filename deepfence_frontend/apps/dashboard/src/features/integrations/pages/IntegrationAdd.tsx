@@ -384,7 +384,7 @@ const IntegrationAdd = () => {
   }
 
   return (
-    <div className="grid grid-cols-[310px_1fr] p-2 gap-x-2">
+    <div className="grid grid-cols-[310px_1fr] gap-x-2">
       <IntegrationForm integrationType={integrationType} />
       <IntegrationTable />
     </div>

@@ -51,20 +51,20 @@ const CardSkeleton = () => {
           key={k}
         >
           <div className="flex items-center justify-between w-full">
-            <div className="h-2 w-10 bg-slate-200"></div>
-            <div className="h-2 w-20 bg-slate-200 ml-auto mt-2"></div>
+            <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700"></div>
+            <div className="h-2 w-20 bg-gray-200 dark:bg-gray-700 rounded-md ml-auto mt-2"></div>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex self-start flex-col border-r border-gray-200 dark:border-gray-700 w-20 h-20">
-              <div className="rounded-full bg-slate-200 h-10 w-10"></div>
-              <div className="h-4 w-10 bg-slate-200 mt-2"></div>
-              <div className="h-2 w-10 bg-slate-200 mt-2"></div>
+              <div className="rounded-full bg-gray-200 dark:bg-gray-700 h-10 w-10"></div>
+              <div className="h-4 w-10 bg-gray-200 dark:bg-gray-700 mt-2"></div>
+              <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700 mt-2"></div>
             </div>
             <div className="flex gap-x-4 justify-center items-center">
               <div className="grid grid-cols-3 gap-4">
-                <div className="h-2 w-10 bg-slate-200 rounded"></div>
-                <div className="h-2 w-10 bg-slate-200 rounded"></div>
-                <div className="h-2 w-10 bg-slate-200 rounded"></div>
+                <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
               </div>
             </div>
           </div>
@@ -108,7 +108,7 @@ const AccountSummary = () => {
                         </span>
                         <IconContext.Provider
                           value={{
-                            className: 'text-blue-600 dark:text-blue-500 ',
+                            className: 'text-blue-600 dark:text-blue-500',
                           }}
                         >
                           <HiArrowSmRight />
@@ -118,8 +118,8 @@ const AccountSummary = () => {
                   </div>
                   <div className="mt-2 flex gap-x-6">
                     <div className="pr-2 flex flex-col gap-y-2 border-r border-gray-200 dark:border-gray-700">
-                      <div className="flex basis-8 justify-center items-center">
-                        <img src={account.icon} alt="logo" height="auto" />
+                      <div className="px-4 flex basis-8 justify-center items-center w-20 h-20">
+                        <img height="100%" width="100%" src={account.icon} alt="logo" />
                       </div>
                       <div className="flex flex-col items-center">
                         <span
@@ -137,34 +137,36 @@ const AccountSummary = () => {
                             maximumFractionDigits: 1,
                           })}
                         </span>
-                        <span className="text-xs text-gray-400 dark:text-gray-500">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           Compliance
                         </span>
                       </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
+                    <div className="flex flex-col min-w-[70px]">
+                      <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
                         {abbreviateNumber(node_count ?? 0)}
                       </span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
-                        {name === 'host' ? 'Hosts' : 'Accounts'}
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {name === 'host'
+                          ? `Host${node_count && node_count > 1 ? 's' : ''}`
+                          : `Account${node_count && node_count > 1 ? 's' : ''}`}
                       </span>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
+                    <div className="flex flex-col min-w-[70px]">
+                      <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
                         {abbreviateNumber(resource_count ?? 0)}
                       </span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
-                        Resources
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {`Resource${resource_count && resource_count > 1 ? 's' : ''}`}
                       </span>
                     </div>
 
-                    <div className="flex flex-col">
-                      <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
+                    <div className="flex flex-col min-w-[70px]">
+                      <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
                         {abbreviateNumber(scan_count ?? 0)}
                       </span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
-                        Scans
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {`Scan${scan_count && scan_count > 1 ? 's' : ''}`}
                       </span>
                     </div>
                   </div>
@@ -181,12 +183,12 @@ const AccountSummary = () => {
 const Posture = () => {
   return (
     <>
-      <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-        <span className="text-md font-medium text-gray-700 dark:text-gray-200 uppercase">
+      <div className="flex p-2 w-full items-center shadow bg-white dark:bg-gray-800">
+        <span className="text-md font-medium text-gray-700 dark:text-gray-200">
           Posture
         </span>
       </div>
-      <div className="p-4 flex flex-row flex-wrap gap-4">
+      <div className="p-2 flex flex-row flex-wrap gap-4">
         <AccountSummary />
       </div>
     </>

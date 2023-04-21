@@ -29,10 +29,10 @@ const IntegrationsData = [
     name: 'Notification',
     icon: (
       <>
-        <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
+        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
           <IconContext.Provider
             value={{
-              className: 'text-gray-600 dark:text-gray-200',
+              className: 'text-blue-600 dark:text-blue-400',
             }}
           >
             <FaBullhorn />
@@ -68,12 +68,12 @@ const IntegrationsData = [
     ],
   },
   {
-    name: 'SEIM',
+    name: 'Seim',
     icon: (
-      <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
+      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
         <IconContext.Provider
           value={{
-            className: 'text-gray-600 dark:text-gray-200',
+            className: 'text-blue-600 dark:text-blue-400',
           }}
         >
           <FaBook />
@@ -116,10 +116,10 @@ const IntegrationsData = [
   {
     name: 'Ticketing',
     icon: (
-      <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
+      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 flex items-center justify-center rounded-sm">
         <IconContext.Provider
           value={{
-            className: 'text-gray-600 dark:text-gray-200',
+            className: 'text-blue-600 dark:text-blue-400',
           }}
         >
           <FaCopyright />
@@ -138,10 +138,10 @@ const IntegrationsData = [
   {
     name: 'Archival',
     icon: (
-      <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
+      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 flex items-center justify-center rounded-sm">
         <IconContext.Provider
           value={{
-            className: 'text-gray-600 dark:text-gray-200',
+            className: 'text-blue-600 dark:text-blue-400',
           }}
         >
           <FaFire />
@@ -165,9 +165,9 @@ const Integrations = () => {
   };
   return (
     <>
-      <div className="flex p-2 pl-2 w-full shadow bg-white dark:bg-gray-800">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-          INTEGRATIONS
+      <div className="flex p-2 w-full shadow bg-white dark:bg-gray-800 items-center">
+        <span className="text-md font-medium text-gray-700 dark:text-gray-200">
+          Integrations
         </span>
         <DFLink className="ml-auto uppercase text-xs" to="/integrations/download/report">
           Report Download
@@ -186,10 +186,10 @@ const Integrations = () => {
                   {integration.icon}
                 </IconContext.Provider>
                 <h2 className="px-4 tracking-wider text-gary-900 dark:text-gray-200 font-semibold">
-                  {integration.name.toUpperCase()}
+                  {integration.name}
                 </h2>
               </div>
-              <div className="pl-2 flex flex-wrap gap-4">
+              <div className="pl-2 flex flex-wrap gap-2">
                 {integration?.types?.map((type) => {
                   return (
                     <Card key={type.name} className="p-4 flex flex-col shrink-0 gap-y-1">
@@ -219,31 +219,34 @@ const Integrations = () => {
                         <div className="p-4 flex border-r border-gray-200 dark:border-gray-700 w-20 h-20">
                           {type.icon}
                         </div>
-                        <div className="flex flex-col gap-x-4">
-                          <Suspense
-                            fallback={<div className="h-6 w-6 bg-slate-200"></div>}
-                          >
-                            <DFAwait resolve={loaderData?.data}>
-                              {(resolvedData: { data?: ModelIntegrationListResp[] }) => {
-                                const { data = [] } = resolvedData ?? {};
-                                const len = data.filter(
-                                  (integration) =>
-                                    integration.integration_type === type.id,
-                                ).length;
+                        <Suspense
+                          fallback={
+                            <div className="w-16">
+                              <div className="h-6 w-4 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                              <div className="h-4 w-10 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                            </div>
+                          }
+                        >
+                          <DFAwait resolve={loaderData?.data}>
+                            {(resolvedData: { data?: ModelIntegrationListResp[] }) => {
+                              const { data = [] } = resolvedData ?? {};
+                              const len = data.filter(
+                                (integration) => integration.integration_type === type.id,
+                              ).length;
 
-                                return (
-                                  <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">
+                              return (
+                                <div className="flex flex-col">
+                                  <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
                                     {len}
                                   </span>
-                                );
-                              }}
-                            </DFAwait>
-                          </Suspense>
-
-                          <span className="text-xs text-gray-400 dark:text-gray-500">
-                            Connections
-                          </span>
-                        </div>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    {`Connection${len > 1 ? 's' : ''}`}
+                                  </span>
+                                </div>
+                              );
+                            }}
+                          </DFAwait>
+                        </Suspense>
                       </div>
                     </Card>
                   );

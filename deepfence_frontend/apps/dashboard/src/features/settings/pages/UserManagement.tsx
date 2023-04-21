@@ -1,23 +1,19 @@
 import cx from 'classnames';
 import { Suspense, useCallback, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { FaPencilAlt, FaTrashAlt } from 'react-icons/fa';
+import { FaPencilAlt, FaTrashAlt, FaUserPlus } from 'react-icons/fa';
 import {
   HiDotsVertical,
-  HiKey,
   HiOutlineExclamationCircle,
   HiOutlineEye,
   HiOutlineEyeOff,
+  HiOutlineKey,
   HiOutlineMail,
   HiOutlineSupport,
-  HiUser,
+  HiOutlineUser,
+  HiUsers,
 } from 'react-icons/hi';
-import {
-  ActionFunctionArgs,
-  generatePath,
-  useFetcher,
-  useLoaderData,
-} from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher, useLoaderData } from 'react-router-dom';
 import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 import {
@@ -26,15 +22,21 @@ import {
   Dropdown,
   DropdownItem,
   Modal,
+  Select,
+  SelectItem,
   Table,
   TableSkeleton,
+  TextInput,
 } from 'ui-components';
 
 import { getUserApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse } from '@/api/generated';
+import {
+  ApiDocsBadRequestResponse,
+  ModelInviteUserRequestActionEnum,
+  ModelUpdateUserIdRequestRoleEnum,
+} from '@/api/generated';
 import { ModelUser } from '@/api/generated/models/ModelUser';
 import { CopyToClipboard } from '@/components/CopyToClipboard';
-import { DFLink } from '@/components/DFLink';
 import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
 import { useGetCurrentUser } from '@/features/common/data-component/getUserApiLoader';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
@@ -42,7 +44,6 @@ import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 type LoaderDataType = {
   message?: string;
@@ -76,13 +77,22 @@ export type ActionReturnType = {
     old_password?: string;
     new_password?: string;
     confirm_password?: string;
+    email?: string;
+    role?: string;
+    firstName?: string;
+    lastName?: string;
+    status?: string;
   };
   success: boolean;
+  invite_url?: string;
+  invite_expiry_hours?: number;
 };
 
 export enum ActionEnumType {
   DELETE = 'delete',
-  CHANGE_PASSWORD = 'change_password',
+  CHANGE_PASSWORD = 'changePassword',
+  INVITE_USER = 'inviteUser',
+  EDIT_USER = 'editUser',
 }
 
 export const action = async ({
@@ -180,22 +190,135 @@ export const action = async ({
     return {
       success: true,
     };
+  } else if (_actionType === ActionEnumType.INVITE_USER) {
+    const body = Object.fromEntries(formData);
+    const role = body.role as keyof typeof ModelUpdateUserIdRequestRoleEnum;
+    const _role: ModelUpdateUserIdRequestRoleEnum =
+      ModelUpdateUserIdRequestRoleEnum[role];
+
+    const r = await makeRequest({
+      apiFunction: getUserApiClient().inviteUser,
+      apiArgs: [
+        {
+          modelInviteUserRequest: {
+            action: body.intent as ModelInviteUserRequestActionEnum,
+            email: body.email as string,
+            role: _role,
+          },
+        },
+      ],
+      errorHandler: async (r) => {
+        const error = new ApiError<ActionReturnType>({
+          success: false,
+        });
+        if (r.status === 400) {
+          const modelResponse: ApiDocsBadRequestResponse = await r.json();
+          return error.set({
+            fieldErrors: {
+              email: modelResponse.error_fields?.email as string,
+              role: modelResponse.error_fields?.role as string,
+            },
+            success: false,
+          });
+        } else if (r.status === 403) {
+          const modelResponse: ApiDocsBadRequestResponse = await r.json();
+          return error.set({
+            message: modelResponse.message,
+            success: false,
+          });
+        }
+      },
+    });
+
+    if (ApiError.isApiError(r)) {
+      return r.value();
+    }
+    if (body.intent == ModelInviteUserRequestActionEnum.GetInviteLink) {
+      r.invite_url && navigator.clipboard.writeText(r.invite_url);
+      toast.success('User invite URL copied');
+      return {
+        ...r,
+        success: true,
+      };
+    } else if (body.intent === ModelInviteUserRequestActionEnum.SendInviteEmail) {
+      toast.success('User invite sent successfully');
+    }
+
+    return {
+      success: true,
+    };
+  } else if (_actionType === ActionEnumType.EDIT_USER) {
+    const body = Object.fromEntries(formData);
+
+    const role = body.role as keyof typeof ModelUpdateUserIdRequestRoleEnum;
+    const _role: ModelUpdateUserIdRequestRoleEnum =
+      ModelUpdateUserIdRequestRoleEnum[role];
+
+    const r = await makeRequest({
+      apiFunction: getUserApiClient().updateUser,
+      apiArgs: [
+        {
+          id: Number(body.id),
+          modelUpdateUserIdRequest: {
+            first_name: body.firstName as string,
+            last_name: body.lastName as string,
+            role: _role,
+            is_active: body.status === 'Active',
+          },
+        },
+      ],
+      errorHandler: async (r) => {
+        const error = new ApiError<ActionReturnType>({
+          success: false,
+        });
+        if (r.status === 400) {
+          const modelResponse: ApiDocsBadRequestResponse = await r.json();
+          return error.set({
+            fieldErrors: {
+              firstName: modelResponse.error_fields?.first_name as string,
+              lastName: modelResponse.error_fields?.last_name as string,
+              status: modelResponse.error_fields?.is_active as string,
+              role: modelResponse.error_fields?.role as string,
+            },
+            success: false,
+          });
+        } else if (r.status === 403) {
+          const modelResponse: ApiDocsBadRequestResponse = await r.json();
+          return error.set({
+            message: modelResponse.message,
+            success: false,
+          });
+        }
+      },
+    });
+
+    if (ApiError.isApiError(r)) {
+      return r.value();
+    }
+    toast.success('User details updated successfully');
   }
   return {
     success: false,
   };
 };
-const ActionDropdown = ({ id }: { id: string }) => {
+const ActionDropdown = ({ user }: { user: ModelUser }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const { navigate } = usePageNavigation();
+  const [showEditUserForm, setShowEditUserForm] = useState(false);
 
   return (
     <>
-      {showDeleteDialog && (
+      {showDeleteDialog && user.id && (
         <DeleteConfirmationModal
           showDialog={showDeleteDialog}
-          userId={id}
+          userId={user.id}
           setShowDialog={setShowDeleteDialog}
+        />
+      )}
+      {showEditUserForm && (
+        <EditUserModal
+          showDialog={showEditUserForm}
+          user={user}
+          setShowDialog={setShowEditUserForm}
         />
       )}
       <Dropdown
@@ -206,11 +329,7 @@ const ActionDropdown = ({ id }: { id: string }) => {
             <DropdownItem
               className="text-sm"
               onClick={() => {
-                navigate(
-                  generatePath('/settings/user-management/edit/:userId', {
-                    userId: id,
-                  }),
-                );
+                setShowEditUserForm(true);
               }}
             >
               <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
@@ -263,30 +382,211 @@ const ChangePasswordModal = ({
       onOpenChange={() => setShowDialog(false)}
       title="Change Password"
     >
-      <ChangePassword setShowDialog={setShowDialog} />
+      <ChangePassword />
+    </Modal>
+  );
+};
+const InviteUserModal = ({
+  showDialog,
+  setShowDialog,
+}: {
+  showDialog: boolean;
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const fetcher = useFetcher<ActionReturnType>();
+  const { data } = fetcher;
+
+  return (
+    <Modal
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title="Invite User"
+    >
+      <fetcher.Form
+        method="post"
+        className="flex flex-col gap-y-3 mt-2 mb-8 mx-8 w-[260px]"
+      >
+        <TextInput
+          label="Email"
+          type={'email'}
+          placeholder="Email"
+          name="email"
+          color={data?.fieldErrors?.email ? 'error' : 'default'}
+          sizing="sm"
+          required
+          helperText={data?.fieldErrors?.email}
+        />
+        <Select
+          noPortal
+          name="role"
+          label={'Role'}
+          placeholder="Role"
+          sizing="xs"
+          helperText={data?.fieldErrors?.role}
+        >
+          {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
+            return (
+              <SelectItem value={role} key={role}>
+                {role}
+              </SelectItem>
+            );
+          })}
+        </Select>
+        <div className={`text-red-600 dark:text-red-500 text-sm`}>
+          {!data?.success && data?.message && <span>{data.message}</span>}
+        </div>
+        <Button
+          color="primary"
+          size="sm"
+          type="submit"
+          name="intent"
+          value={ModelInviteUserRequestActionEnum['SendInviteEmail']}
+        >
+          Send invite via email
+        </Button>
+
+        <input
+          type="text"
+          name="_actionType"
+          hidden
+          readOnly
+          value={ActionEnumType.INVITE_USER}
+        />
+
+        <Button
+          outline
+          type="submit"
+          size="sm"
+          name="intent"
+          value={ModelInviteUserRequestActionEnum['GetInviteLink']}
+        >
+          Copy invite link
+        </Button>
+        {data?.invite_url && (
+          <p className={`mt-1.5 text-sm text-green-500`}>
+            Invite URL:{data?.invite_url}, invite will expire after{' '}
+            {data?.invite_expiry_hours} hours
+          </p>
+        )}
+      </fetcher.Form>
+    </Modal>
+  );
+};
+
+const EditUserModal = ({
+  showDialog,
+  user,
+  setShowDialog,
+}: {
+  showDialog: boolean;
+  user: ModelUser;
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const fetcher = useFetcher<ActionReturnType>();
+  const { data } = fetcher;
+
+  const role = Object.entries(ModelUpdateUserIdRequestRoleEnum).find(
+    ([_, val]) => val === user.role,
+  )?.[0];
+
+  return (
+    <Modal
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title="Update User"
+    >
+      <fetcher.Form
+        method="post"
+        className="flex flex-col gap-y-3 mt-2 mb-8 mx-8 w-[260px]"
+      >
+        <input readOnly type="hidden" name="id" value={user?.id} />
+        <input
+          readOnly
+          type="hidden"
+          name="_actionType"
+          value={ActionEnumType.EDIT_USER}
+        />
+        <TextInput
+          label="First Name"
+          type={'text'}
+          placeholder="First Name"
+          name="firstName"
+          color={data?.fieldErrors?.firstName ? 'error' : 'default'}
+          sizing="sm"
+          defaultValue={user?.first_name}
+          helperText={data?.fieldErrors?.firstName}
+          required
+        />
+        <TextInput
+          label="Last Name"
+          type={'text'}
+          placeholder="Last Name"
+          name="lastName"
+          sizing="sm"
+          color={data?.fieldErrors?.lastName ? 'error' : 'default'}
+          defaultValue={user?.last_name}
+          helperText={data?.fieldErrors?.lastName}
+          required
+        />
+        <Select
+          noPortal
+          defaultValue={role}
+          name="role"
+          label={'Role'}
+          placeholder="Role"
+          sizing="xs"
+          helperText={data?.fieldErrors?.role}
+        >
+          {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
+            return (
+              <SelectItem value={role} key={role}>
+                {role}
+              </SelectItem>
+            );
+          })}
+        </Select>
+        <Select
+          noPortal
+          name="status"
+          label={'Status'}
+          placeholder="Active"
+          sizing="xs"
+          defaultValue={user?.is_active ? 'Active' : 'inActive'}
+          helperText={data?.fieldErrors?.status}
+        >
+          <SelectItem value="Active">Active</SelectItem>
+          <SelectItem value="InActive">InActive</SelectItem>
+        </Select>
+        <div className={`text-red-600 dark:text-red-500 text-sm`}>
+          {!data?.success && data?.message && <span>{data.message}</span>}
+        </div>
+        <Button color="primary" type="submit" size="sm">
+          Update
+        </Button>
+      </fetcher.Form>
     </Modal>
   );
 };
 
 const APITokenSkeletonComponent = () => {
   return (
-    <div className="flex flex-col gap-y-4 animate-pulse min-w-[400px] pl-4">
-      <div className="h-10 w-72 bg-slate-200 py-4"></div>
+    <div className="flex flex-col gap-y-4 animate-pulse min-w-[400px]">
+      <div className="h-10 w-72 bg-gray-200 dark:bg-gray-700 py-4 rounded-md"></div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-slate-200"></div>
-        <div className="h-5 w-56 bg-slate-200"></div>
+        <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+        <div className="h-5 w-56 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
       </div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-slate-200"></div>
-        <div className="h-5 w-56 bg-slate-200"></div>
+        <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+        <div className="h-5 w-56 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
       </div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-slate-200"></div>
-        <div className="h-5 w-56 bg-slate-200"></div>
+        <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+        <div className="h-5 w-56 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
       </div>
       <div className="flex gap-x-[140px]">
-        <div className="h-5 w-16 bg-slate-200"></div>
-        <div className="h-5 w-56 bg-slate-200"></div>
+        <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+        <div className="h-5 w-56 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
       </div>
     </div>
   );
@@ -304,19 +604,16 @@ const APITokenComponent = () => {
         showDialog={openChangePasswordForm}
         setShowDialog={setOpenChangePasswordForm}
       />
-      <h3 className="pb-4 font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
-        Your Information
-      </h3>
 
       {currentUserStatus !== 'idle' ? (
         <APITokenSkeletonComponent />
       ) : (
-        <div className="pl-4">
+        <div>
           <div className="flex">
             <div className="flex flex-col">
               <span className="text-2xl dark:text-gray-100 font-semibold">
-                {`${currentUserData?.first_name || 'Firstname'} ${
-                  currentUserData?.last_name || 'Lastname'
+                {`${currentUserData?.first_name || ''} ${
+                  currentUserData?.last_name || ''
                 }`}
               </span>
               <span
@@ -344,41 +641,67 @@ const APITokenComponent = () => {
           </div>
           <div className="flex mt-4 mb-2">
             <span className="text-sm text-gray-500 flex items-center gap-x-1 min-w-[140px] dark:text-gray-400">
-              <HiOutlineMail /> Email
+              <IconContext.Provider
+                value={{
+                  className: 'w-4 h-4',
+                }}
+              >
+                <HiOutlineMail />
+              </IconContext.Provider>
+              Email
             </span>
             <span className="text-sm dark:text-gray-100 font-semibold">
               {currentUserData?.email || '-'}
             </span>
           </div>
-          <div className="flex mb-2">
+          <div className="flex my-3">
             <span className="text-sm text-gray-500 flex items-center gap-x-1 min-w-[140px] dark:text-gray-400">
-              <HiOutlineSupport /> Company
+              <IconContext.Provider
+                value={{
+                  className: 'w-4 h-4',
+                }}
+              >
+                <HiOutlineSupport />
+              </IconContext.Provider>
+              Company
             </span>
             <span className="text-sm dark:text-gray-100 font-semibold">
               {currentUserData?.company || '-'}
             </span>
           </div>
-          <div className="flex mb-2">
+          <div className="flex my-3">
             <span className="text-sm text-gray-500 flex items-center gap-x-1 min-w-[140px] dark:text-gray-400">
-              <HiUser /> Role
+              <IconContext.Provider
+                value={{
+                  className: 'w-4 h-4',
+                }}
+              >
+                <HiOutlineUser />
+              </IconContext.Provider>
+              Role
             </span>
             <span className="text-sm dark:text-gray-100 font-semibold">
               {currentUserData?.role || '-'}
             </span>
           </div>
-          <div className="flex mb-2">
+          <div className="flex my-3">
             <span className="text-sm text-gray-500 flex items-center gap-x-1 min-w-[140px] dark:text-gray-400">
-              <HiKey /> Api key
+              <IconContext.Provider
+                value={{
+                  className: 'w-4 h-4',
+                }}
+              >
+                <HiOutlineKey />
+              </IconContext.Provider>
+              Api key
             </span>
             <div className="text-sm dark:text-gray-100 font-semibold flex gap-x-2">
-              <span
-                className={cx('bg-gray-100 dark:bg-gray-800 p-1 rounded-md', {
-                  'pt-2': !showApikey,
-                })}
-              >
-                {showApikey ? data?.api_token || '-' : '******************************'}
+              <span className="font-mono">
+                {showApikey
+                  ? data?.api_token || '-'
+                  : '************************************'}
               </span>
-              <div className="flex items-center">
+              <div className="flex items-center ml-2">
                 {!showApikey ? (
                   <IconContext.Provider
                     value={{
@@ -421,6 +744,7 @@ const APITokenComponent = () => {
 };
 
 const UserManagement = () => {
+  const [openInviteUserForm, setOpenInviteUserForm] = useState(false);
   const columnHelper = createColumnHelper<ModelUser>();
   const loaderData = useLoaderData() as LoaderDataType;
   const columns = useMemo(() => {
@@ -467,7 +791,7 @@ const UserManagement = () => {
           if (!cell.row.original.id) {
             throw new Error('User id not found');
           }
-          return <ActionDropdown id={cell.row.original.id.toString()} />;
+          return <ActionDropdown user={cell.row.original} />;
         },
         header: () => '',
         minSize: 20,
@@ -481,47 +805,67 @@ const UserManagement = () => {
 
   return (
     <SettingsTab value="user-management">
-      <div className="h-full mt-2 p-2">
+      <div className="h-full mt-2">
         <APITokenComponent />
-        <Suspense fallback={<TableSkeleton columns={6} rows={5} size={'sm'} />}>
-          <DFAwait resolve={loaderData.data}>
-            {(resolvedData: LoaderDataType) => {
-              const { data, message } = resolvedData;
-              const users = data ?? [];
-
-              return (
-                <div className="mt-4">
-                  <div className="flex justify-between m-2">
-                    <h3 className="py-2 font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
-                      User Accounts
-                    </h3>
-                    <div className="flex justify-end gap-2">
-                      <DFLink to="/settings/user-management/invite-user">
-                        <Button color="primary" size="xs" outline>
-                          Invite User
-                        </Button>
-                      </DFLink>
-                    </div>
-                  </div>
-
-                  {message ? (
-                    <p className="text-red-500 text-sm">{message}</p>
-                  ) : (
-                    <Table
-                      size="sm"
-                      data={users}
-                      columns={columns}
-                      enablePagination
-                      pageSize={5}
-                      enableColumnResizing
-                      enableSorting
-                    />
-                  )}
+        <InviteUserModal
+          showDialog={openInviteUserForm}
+          setShowDialog={setOpenInviteUserForm}
+        />
+        <div className="mt-4">
+          <div className="flex justify-between">
+            <div>
+              <div className="mt-2 flex gap-x-2 items-center">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
+                  <IconContext.Provider
+                    value={{
+                      className: 'text-blue-600 dark:text-blue-400',
+                    }}
+                  >
+                    <HiUsers />
+                  </IconContext.Provider>
                 </div>
-              );
-            }}
-          </DFAwait>
-        </Suspense>
+                <h3 className="font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
+                  User Accounts
+                </h3>
+              </div>
+            </div>
+            <Button
+              size="xs"
+              outline
+              startIcon={<FaUserPlus />}
+              type="button"
+              onClick={() => setOpenInviteUserForm(true)}
+            >
+              Invite User
+            </Button>
+          </div>
+          <Suspense
+            fallback={<TableSkeleton columns={6} rows={5} size={'sm'} className="mt-4" />}
+          >
+            <DFAwait resolve={loaderData.data}>
+              {(resolvedData: LoaderDataType) => {
+                const { data, message } = resolvedData;
+                const users = data ?? [];
+
+                return (
+                  <div className="mt-4">
+                    {message ? (
+                      <p className="text-red-500 text-sm">{message}</p>
+                    ) : (
+                      <Table
+                        size="sm"
+                        data={users}
+                        columns={columns}
+                        enableColumnResizing
+                        enableSorting
+                      />
+                    )}
+                  </div>
+                );
+              }}
+            </DFAwait>
+          </Suspense>
+        </div>
       </div>
     </SettingsTab>
   );
@@ -539,7 +883,7 @@ const DeleteConfirmationModal = ({
   setShowDialog,
 }: {
   showDialog: boolean;
-  userId: string;
+  userId: number;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const fetcher = useFetcher();
@@ -547,7 +891,7 @@ const DeleteConfirmationModal = ({
   const onDeleteAction = useCallback(() => {
     const formData = new FormData();
     formData.append('_actionType', ActionEnumType.DELETE);
-    formData.append('userId', userId);
+    formData.append('userId', userId.toString());
     fetcher.submit(formData, {
       method: 'post',
     });
@@ -569,8 +913,8 @@ const DeleteConfirmationModal = ({
           <span>Are you sure you want to delete?</span>
         </h3>
         <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)}>
-            No, cancel
+          <Button size="xs" onClick={() => setShowDialog(false)} outline>
+            No, Cancel
           </Button>
           <Button
             size="xs"
