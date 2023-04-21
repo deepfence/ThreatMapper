@@ -280,13 +280,14 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	inbound_edges := []map[string]interface{}{}
 
 	for _, n := range rpt.Endpoint {
-		hostName := n.Metadata.HostName
-		if hostName == "" {
-			node_ip, _ := extractIPPortFromEndpointID(n.Metadata.NodeID)
+		node_ip, _ := extractIPPortFromEndpointID(n.Metadata.NodeID)
+		if node_ip == localhost_ip {
+			continue
+		}
+		if n.Metadata.HostName == "" {
 			if val, ok := resolvers.get_host(node_ip); ok {
-				hostName = val
+				n.Metadata.HostName = val
 			} else {
-				// This includes skipping all endpoint having 127.0.0.1
 				continue
 			}
 		}
@@ -294,14 +295,14 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			if len(n.Adjacency) == 0 {
 				// Handle inbound from internet
 				inbound_edges = append(inbound_edges,
-					map[string]interface{}{"destination": hostName, "left_pid": 0, "right_pid": n.Metadata.Pid})
+					map[string]interface{}{"destination": n.Metadata.HostName, "left_pid": 0, "right_pid": n.Metadata.Pid})
 			} else {
 				edges := make([]map[string]interface{}, 0, len(n.Adjacency))
 				for _, i := range n.Adjacency {
 					if n.Metadata.NodeID != i {
 						ip, port := extractIPPortFromEndpointID(i)
 						if host, ok := resolvers.get_host(ip); ok {
-							if hostName == host {
+							if n.Metadata.HostName == host {
 								continue
 							}
 							right_ippid, ok := resolvers.get_ip_pid(ip + port)
@@ -316,7 +317,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 						}
 					}
 				}
-				endpoint_edges_batch = append(endpoint_edges_batch, map[string]interface{}{"source": hostName, "edges": edges})
+				endpoint_edges_batch = append(endpoint_edges_batch, map[string]interface{}{"source": n.Metadata.HostName, "edges": edges})
 			}
 		}
 	}
@@ -459,7 +460,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 	if _, err := tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:Pod{node_id:row.node_id})
-		SET n+= row, n.updated_at = TIMESTAMP()`,
+		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true`,
 		map[string]interface{}{"batch": batches.Pod_batch}); err != nil {
 		return err
 	}

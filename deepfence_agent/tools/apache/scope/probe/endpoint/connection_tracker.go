@@ -336,8 +336,8 @@ func (t *connectionTracker) addConnection(rpt *report.Report, hostNodeID string,
 		toAddr   = net.IP(ft.toAddr[:])
 		toNode   = t.makeEndpointNode(namespaceID, toAddr, ft.toPort, extraToNode)
 	)
+	fromNode.Adjacency = report.MakeIDList(toNode.Metadata.NodeID)
 	rpt.Endpoint.AddNode(fromNode)
-	rpt.Endpoint[fromNode.Metadata.NodeID].Adjacency.Add(toNode.Metadata.NodeID)
 	rpt.Endpoint.AddNode(toNode)
 	t.addDNS(rpt, fromAddr.String())
 	t.addDNS(rpt, toAddr.String())
@@ -352,7 +352,6 @@ func (t *connectionTracker) makeEndpointNode(namespaceID uint32, addr net.IP, po
 			HostName:        extra.HostNodeID,
 			ConnectionCount: extra.ConnectionCount,
 		},
-		Adjacency: report.MakeIDList(),
 	}
 	return node
 }

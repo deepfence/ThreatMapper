@@ -247,10 +247,10 @@ var topologyNames = []string{
 }
 
 type TopologyNode struct {
-	Metadata  Metadata
-	Adjacency IDList
-	Parents   Parent
-	Sets      Sets
+	Metadata  Metadata `json:"metadata,omitempty"`
+	Adjacency IDList   `json:"adjacency,omitempty"`
+	Parents   Parent   `json:"parents,omitempty"`
+	Sets      Sets     `json:"sets,omitempty"`
 }
 
 func (t TopologyNode) Merge(o TopologyNode) {
@@ -344,7 +344,7 @@ func (t TopologyAdjacency) AddAdjacency(nodeId string, id string) {
 	if _, ok := t[nodeId]; !ok {
 		t[nodeId] = MakeIDList(id)
 	} else {
-		t[nodeId].Add(id)
+		t[nodeId] = t[nodeId].Add(id)
 	}
 }
 
