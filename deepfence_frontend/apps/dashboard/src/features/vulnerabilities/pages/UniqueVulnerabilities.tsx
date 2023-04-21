@@ -316,10 +316,10 @@ const UniqueVulnerabilities = () => {
       <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
         <Breadcrumb separator={<HiChevronRight />} transparent>
           <BreadcrumbLink>
-            <DFLink to={'/vulnerability'}>VULNERABILITIES</DFLink>
+            <DFLink to={'/vulnerability'}>Vulnerabilities</DFLink>
           </BreadcrumbLink>
           <BreadcrumbLink>
-            <span className="inherit cursor-auto">UNIQUE VULNERABILITIES</span>
+            <span className="inherit cursor-auto">Unique Vulnerabilities</span>
           </BreadcrumbLink>
         </Breadcrumb>
 

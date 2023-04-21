@@ -1119,7 +1119,7 @@ const HeaderComponent = ({
               <>
                 <Breadcrumb separator={<HiChevronRight />} transparent>
                   <BreadcrumbLink>
-                    <DFLink to={'/secret'}>SECRETS</DFLink>
+                    <DFLink to={'/secret'}>Secrets</DFLink>
                   </BreadcrumbLink>
                   <BreadcrumbLink>
                     <DFLink to={`/secret/scans?nodeType=${node_type}`}>

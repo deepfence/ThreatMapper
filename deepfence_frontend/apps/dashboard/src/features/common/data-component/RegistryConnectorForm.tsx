@@ -181,7 +181,7 @@ export const registryConnectorActionApi = async ({
 
   const formBody = Object.fromEntries(formData);
 
-  if (RegistryType.google_container_registry) {
+  if (registryType === RegistryType.google_container_registry) {
     const r = await makeRequest({
       apiFunction: getRegistriesApiClient().addRegistryGCR,
       apiArgs: [

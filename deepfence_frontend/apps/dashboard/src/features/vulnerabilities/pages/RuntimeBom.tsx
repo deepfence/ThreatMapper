@@ -219,7 +219,7 @@ const RuntimeBom = () => {
       <div className="flex px-2 items-center w-full shadow bg-white dark:bg-gray-800 h-10">
         <Breadcrumb separator={<HiChevronRight />} transparent>
           <BreadcrumbLink>
-            <DFLink to={'/vulnerability'}>VULNERABILITIES</DFLink>
+            <DFLink to={'/vulnerability'}>Vulnerabilities</DFLink>
           </BreadcrumbLink>
           <BreadcrumbLink>
             <span className="inherit cursor-auto">Runtime BOM</span>

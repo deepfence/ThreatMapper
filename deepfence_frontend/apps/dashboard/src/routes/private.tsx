@@ -1,6 +1,6 @@
 import { Outlet, redirect } from 'react-router-dom';
 
-import { ErrorComponent } from '@/components/error/ErrorComponent';
+import { FiveZeroZero } from '@/components/error/500';
 import { scanPostureApiAction } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
 import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
@@ -102,6 +102,7 @@ import { CustomRouteObject } from '@/utils/router';
 export const privateRoutes: CustomRouteObject[] = [
   {
     path: '/onboard',
+    errorElement: <FiveZeroZero />,
     element: <OnboardLayout />,
     loader: rootOnboardLoader,
     children: [
@@ -178,7 +179,7 @@ export const privateRoutes: CustomRouteObject[] = [
     path: '/',
     loader: authenticatedRootLoader,
     element: <RootLayout />,
-    errorElement: <ErrorComponent />,
+    errorElement: <FiveZeroZero />,
     children: [
       {
         index: true,

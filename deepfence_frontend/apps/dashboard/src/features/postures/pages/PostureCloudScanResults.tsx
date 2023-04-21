@@ -1225,7 +1225,7 @@ const HeaderComponent = () => {
               <>
                 <Breadcrumb separator={<HiChevronRight />} transparent>
                   <BreadcrumbLink>
-                    <DFLink to={'/posture'}>POSTURE</DFLink>
+                    <DFLink to={'/posture'}>Posture</DFLink>
                   </BreadcrumbLink>
                   <BreadcrumbLink>
                     <DFLink

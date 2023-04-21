@@ -395,21 +395,6 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
   );
 };
 
-const RefreshApiButton = () => {
-  const revalidator = useRevalidator();
-  return (
-    <IconButton
-      className="ml-auto rounded-lg"
-      size="xs"
-      outline
-      color="primary"
-      onClick={() => revalidator.revalidate()}
-      loading={revalidator.state === 'loading'}
-      icon={<HiRefresh />}
-    />
-  );
-};
-
 const Accounts = () => {
   const elementToFocusOnClose = useRef(null);
   const loaderData = useLoaderData() as LoaderDataType;
@@ -431,7 +416,7 @@ const Accounts = () => {
       <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
         <Breadcrumb separator={<HiChevronRight />} transparent>
           <BreadcrumbLink>
-            <DFLink to={'/posture'}>POSTURE</DFLink>
+            <DFLink to={'/posture'}>Posture</DFLink>
           </BreadcrumbLink>
           <BreadcrumbLink>
             <span className="inherit cursor-auto">{routeParams.nodeType}</span>
@@ -455,7 +440,6 @@ const Accounts = () => {
                 'Account'}
             </Button>
           </div>
-          <RefreshApiButton />
           <div>
             {isFilterApplied && (
               <span className="absolute -left-[2px] -top-[2px] inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>

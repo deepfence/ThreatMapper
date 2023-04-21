@@ -1,3 +1,4 @@
+import { FiveZeroZero } from '@/components/error/500';
 import { loginAction } from '@/features/auth/actions/loginAction';
 import { registerAction } from '@/features/auth/actions/registerAction';
 import { AuthLayout } from '@/features/auth/layouts/AuthLayout';
@@ -12,6 +13,7 @@ import { CustomRouteObject } from '@/utils/router';
 export const publicRoutes: CustomRouteObject[] = [
   {
     path: '/auth',
+    errorElement: <FiveZeroZero />,
     element: <AuthLayout />,
     children: [
       {
