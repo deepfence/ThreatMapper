@@ -1325,9 +1325,11 @@ def compliance_rules_update():
         raise InvalidUsage("rule_id_list must be list")
 
     if is_enabled:
-        disabled_rules = ComplianceRulesDisabled.query.filter_by(disabled_rule_id=func.any(rule_id_list)).all()
+        disabled_rules_objects = ComplianceRulesDisabled.query.filter_by(disabled_rule_id=func.any(rule_id_list)).all()
+        # filter out only id from disabled_rules_objects
+        disabled_rules_id_list = [disabled_rule.disabled_rule_id for disabled_rule in disabled_rules_objects]
         for rule_id in rule_id_list:
-            if rule_id not in disabled_rules:
+            if rule_id not in disabled_rules_id_list:
                 rule_id_list.remove(rule_id)
         ComplianceRulesDisabled.bulk_delete(rule_id_list, node_id)
 
