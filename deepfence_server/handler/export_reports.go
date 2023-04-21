@@ -110,7 +110,7 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, nil)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {

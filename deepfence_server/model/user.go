@@ -28,10 +28,6 @@ const (
 	GrantTypeAPIToken = "api_token"
 )
 
-type MessageResponse struct {
-	Message string `json:"message" required:"true"`
-}
-
 var (
 	AccessTokenExpiry  = time.Minute * 30
 	RefreshTokenExpiry = time.Hour * 26

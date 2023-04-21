@@ -144,7 +144,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, api_messages.SuccessRegistryCreated)
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryCreated})
 }
 
 // update registry
@@ -254,7 +254,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, api_messages.SuccessRegistryUpdated)
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryUpdated})
 }
 
 func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Request) {
@@ -391,7 +391,7 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, api_messages.SuccessRegistryCreated)
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryCreated})
 }
 
 func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
@@ -421,7 +421,7 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: "registry deleted successfully"})
+	w.WriteHeader(http.StatusNoContent)
 
 }
 

@@ -559,7 +559,7 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryUpdateReq), nil)
 	d.AddOperation("deleteRegistry", http.MethodDelete, "/deepfence/registryaccount/{registry_id}",
 		"Delete Registry", "Delete registry",
-		http.StatusOK, []string{tagRegistry}, bearerToken, new(RegistryIDPathReq), nil)
+		http.StatusNoContent, []string{tagRegistry}, bearerToken, new(RegistryIDPathReq), nil)
 	d.AddOperation("getSummaryAll", http.MethodGet, "/deepfence/registryaccount/summary",
 		"Get All Registries Summary By Type", "get summary of all registries scans, images and tags by registry type",
 		http.StatusOK, []string{tagRegistry}, bearerToken, nil, new(RegistrySummaryAllResp))
@@ -586,13 +586,13 @@ func (d *OpenApiDocs) AddRegistryOperations() {
 func (d *OpenApiDocs) AddIntegrationOperations() {
 	d.AddOperation("addIntegration", http.MethodPost, "/deepfence/integration",
 		"Add Integration", "Add a new supported integration",
-		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationAddReq), nil)
+		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationAddReq), new(MessageResponse))
 	d.AddOperation("listIntegration", http.MethodGet, "/deepfence/integration",
 		"List Integrations", "List all the added Integrations",
 		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationListReq), new([]IntegrationListResp))
 	d.AddOperation("deleteIntegration", http.MethodDelete, "/deepfence/integration/{integration_id}",
 		"Delete Integration", "Delete integration",
-		http.StatusOK, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
+		http.StatusNoContent, []string{tagIntegration}, bearerToken, new(IntegrationIDPathReq), nil)
 }
 
 func (d *OpenApiDocs) AddReportsOperations() {
@@ -607,13 +607,13 @@ func (d *OpenApiDocs) AddReportsOperations() {
 		http.StatusOK, []string{tagReports}, bearerToken, new(ReportReq), new(ExportReport))
 	d.AddOperation("deleteReport", http.MethodDelete, "/deepfence/reports/{report_id}",
 		"Delete Report", "delete report for given report_id",
-		http.StatusOK, []string{tagReports}, bearerToken, new(ReportReq), nil)
+		http.StatusNoContent, []string{tagReports}, bearerToken, new(ReportReq), nil)
 }
 
 func (d *OpenApiDocs) AddSettingsOperations() {
 	d.AddOperation("addEmailConfiguration", http.MethodPost, "/deepfence/settings/email",
 		"Add Email Configuration", "This email configuration is used to send email notifications",
-		http.StatusOK, []string{tagSettings}, bearerToken, new(EmailConfigurationAdd), nil)
+		http.StatusOK, []string{tagSettings}, bearerToken, new(EmailConfigurationAdd), new(MessageResponse))
 	d.AddOperation("getEmailConfiguration", http.MethodGet, "/deepfence/settings/email",
 		"Get Email Configurations", "Get Email Smtp / ses Configurations in system",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]EmailConfigurationResp))

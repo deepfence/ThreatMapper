@@ -2,12 +2,13 @@ package handler
 
 import (
 	"encoding/json"
+	"io"
+	"net/http"
+
 	httpext "github.com/go-playground/pkg/v5/net/http"
 
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
-	"io"
-	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 )
@@ -63,7 +64,7 @@ func (h *Handler) EnableCloudNodeControls(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, api_messages.SuccessCloudControlsEnabled)
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessCloudControlsEnabled})
 }
 
 func (h *Handler) DisableCloudNodeControls(w http.ResponseWriter, r *http.Request) {
@@ -89,5 +90,5 @@ func (h *Handler) DisableCloudNodeControls(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	httpext.JSON(w, http.StatusOK, api_messages.SuccessCloudControlsDisabled)
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessCloudControlsDisabled})
 }

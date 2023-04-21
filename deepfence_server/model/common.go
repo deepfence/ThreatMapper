@@ -18,6 +18,10 @@ var (
 	UserNotFoundErr = errors.New("user not found")
 )
 
+type MessageResponse struct {
+	Message string `json:"message" required:"true"`
+}
+
 type ErrorResponse struct {
 	Message     string            `json:"message" required:"true"`
 	ErrorFields map[string]string `json:"error_fields"`

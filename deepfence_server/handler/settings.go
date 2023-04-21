@@ -46,7 +46,7 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, api_messages.SuccessEmailConfigCreated)
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessEmailConfigCreated})
 }
 
 func (h *Handler) GetEmailConfiguration(w http.ResponseWriter, r *http.Request) {
