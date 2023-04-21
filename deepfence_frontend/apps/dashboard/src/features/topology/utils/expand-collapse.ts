@@ -38,8 +38,22 @@ export const itemHasDetails = (
   node?: {
     type?: string;
   } | null,
-) => {
-  return ['host', 'pod', 'container', 'process'].includes(node?.type ?? '');
+): boolean => {
+  return (
+    ['host', 'pod', 'container', 'process'].includes(node?.type ?? '') ||
+    isCloudServiceNode(node)
+  );
+};
+
+export const isCloudServiceNode = (
+  node?: {
+    type?: string;
+  } | null,
+): boolean => {
+  if (node?.type?.length && node.type.startsWith('aws_')) {
+    return true;
+  }
+  return false;
 };
 
 export const showContextMenu = (

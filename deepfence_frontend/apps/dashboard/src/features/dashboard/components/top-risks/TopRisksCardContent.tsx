@@ -51,7 +51,7 @@ export const TopRisksCardContent = ({
   return (
     <div className="mt-4">
       <div className="h-full dark:text-white">
-        <div className="flex justify-center my-8 divide-x dark:divide-gray-700">
+        <div className="flex justify-center items-center flex-wrap gap-y-2 my-8 ">
           {[
             {
               label: 'Total',
@@ -91,20 +91,22 @@ export const TopRisksCardContent = ({
                     ['text-4xl']: label === 'Total',
                   })}
                 >
-                  {color && (
-                    <div
-                      className="h-3 w-3 rounded-full"
-                      style={{
-                        backgroundColor: color,
-                      }}
-                    ></div>
-                  )}
                   {abbreviateNumber(count)}
                 </span>
                 {label !== 'Total' && (
-                  <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                    {label}
-                  </span>
+                  <div className="flex items-center gap-1">
+                    {color && (
+                      <div
+                        className="h-2 w-2 rounded-full"
+                        style={{
+                          backgroundColor: color,
+                        }}
+                      ></div>
+                    )}
+                    <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                      {label}
+                    </span>
+                  </div>
                 )}
               </div>
             );
@@ -126,7 +128,7 @@ export const TopRisksCardContent = ({
                         backgroundColor: SEVERITY_COLORS['critical'],
                       }}
                     ></div>
-                    {node.critical}
+                    <span>{abbreviateNumber(node.critical)}</span>
                   </div>
                   <div className={`flex items-center gap-1 font-semibold text-xs`}>
                     <div
@@ -135,7 +137,7 @@ export const TopRisksCardContent = ({
                         backgroundColor: SEVERITY_COLORS['high'],
                       }}
                     ></div>
-                    {node.high}
+                    <span>{abbreviateNumber(node.high)}</span>
                   </div>
                   <div className={`flex items-center gap-1 font-semibold text-xs`}>
                     <div
@@ -144,7 +146,7 @@ export const TopRisksCardContent = ({
                         backgroundColor: SEVERITY_COLORS['medium'],
                       }}
                     ></div>
-                    <span>{node.medium}</span>
+                    <span>{abbreviateNumber(node.medium)}</span>
                   </div>
                   <div className={`flex items-center gap-1 font-semibold text-xs`}>
                     <div
@@ -153,7 +155,7 @@ export const TopRisksCardContent = ({
                         backgroundColor: SEVERITY_COLORS['low'],
                       }}
                     ></div>
-                    <span>{node.low}</span>
+                    <span>{abbreviateNumber(node.low)}</span>
                   </div>
                   <div className={`flex items-center gap-1 font-semibold text-xs`}>
                     <div
@@ -162,7 +164,7 @@ export const TopRisksCardContent = ({
                         backgroundColor: SEVERITY_COLORS['unknown'],
                       }}
                     ></div>
-                    <span>{node.unknown}</span>
+                    <span>{abbreviateNumber(node.unknown)}</span>
                   </div>
                   <span className={`text-xs flex-grow flex-shrink-0 basis-0 truncate`}>
                     {node.nodeName}

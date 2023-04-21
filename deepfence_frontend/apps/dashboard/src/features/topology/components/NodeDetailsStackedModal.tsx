@@ -5,11 +5,13 @@ import {
   ConfigureScanModal,
   ConfigureScanModalProps,
 } from '@/components/ConfigureScanModal';
+import { CloudService } from '@/features/topology/data-components/node-details/CloudService';
 import { Container } from '@/features/topology/data-components/node-details/Container';
 import { ContainerImage } from '@/features/topology/data-components/node-details/ContainerImage';
 import { Host } from '@/features/topology/data-components/node-details/Host';
 import { Pod } from '@/features/topology/data-components/node-details/Pod';
 import { Process } from '@/features/topology/data-components/node-details/Process';
+import { isCloudServiceNode } from '@/features/topology/utils/expand-collapse';
 
 export const NodeDetailsStackedModal = ({
   open,
@@ -101,6 +103,19 @@ export const NodeDetailsStackedModal = ({
               setScanOptions(scanOptions);
             }}
             nodeId={lastNode.nodeId}
+            showBackBtn={showBackBtn}
+            onGoBack={onGoBack}
+            onNodeClick={(nodeId, nodeType) => {
+              setStack((prevStack) => [...prevStack, { nodeId, nodeType }]);
+            }}
+          />
+        ) : null}
+        {isCloudServiceNode({ type: lastNode.nodeType }) ? (
+          <CloudService
+            onStartScanClick={(scanOptions) => {
+              setScanOptions(scanOptions);
+            }}
+            nodeType={lastNode.nodeType}
             showBackBtn={showBackBtn}
             onGoBack={onGoBack}
             onNodeClick={(nodeId, nodeType) => {
