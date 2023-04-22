@@ -227,9 +227,12 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
         <Portal>
           <Transition
             as={'div'}
-            leave="transition ease-in duration-100"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
+            enter="transition ease-out duration-1200"
+            enterFrom="opacity-0 -translate-y-1"
+            enterTo="opacity-100 translate-y-0"
+            leave="transition ease-in duration-1200"
+            leaveFrom="opacity-100 translate-y-0"
+            leaveTo="opacity-0 -translate-y-1"
             ref={(ele) => refs.setFloating(ele)}
             style={{
               position: strategy,
