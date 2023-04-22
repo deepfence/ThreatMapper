@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { useMemo, useState } from 'react';
-import { useLocation, useRouteError } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import { AppHeader } from '@/components/AppHeader';
 import { getSideNavigationState, SideNavigation } from '@/components/SideNavigation';
@@ -9,8 +9,8 @@ import storage from '@/utils/storage';
 
 const ErrorComponent = () => {
   return (
-    <div className="flex flex-col items-center h-screen bg-gradient-to-b from-white from-80% via-white via-90% to-blue-100 to-30% dark:bg-gradient-to-b dark:from-gray-900 dark:via-gray-700 dark:to-blue-900">
-      <h1 className="text-[10.875rem] text-red-500 dark:text-red-600 font-semibold">
+    <div className="flex flex-col items-center justify-center h-full bg-gradient-to-b from-white from-80% via-white via-90% to-blue-100 to-30% dark:bg-gradient-to-b dark:from-gray-900 dark:via-gray-700 dark:to-blue-900">
+      <h1 className="text-[10.875rem] text-red-500 dark:text-red-600 font-semibold -mt-20">
         500
       </h1>
       <h4 className="text-3xl font-bold text-gray-700 dark:text-gray-400 -mt-10">
@@ -31,8 +31,8 @@ export const FiveZeroZero = () => {
 
   if (location.pathname.startsWith('/onboard')) {
     return (
-      <div>
-        <div className="pt-[64px]">
+      <div className="min-h-screen isolate">
+        <div className="pt-[64px] h-screen">
           <ErrorComponent />
         </div>
         <OnboardAppHeader showGotoDashboard={false} />
@@ -41,31 +41,31 @@ export const FiveZeroZero = () => {
   }
 
   return (
-    <div>
-      <>
-        {isAuth ? (
-          <>
-            <AppHeader
-              sideNavExpanded={sideNavExpanded}
-              onSideNavExpandedChange={(state) => setSideNavExpanded(state)}
-            />
-            <SideNavigation expanded={sideNavExpanded} />
-            <main
-              className={classNames(
-                'pt-[64px] h-screen overflow-auto transition-[margin-left]',
-                {
-                  'ml-[60px]': !sideNavExpanded,
-                  'ml-[240px]': sideNavExpanded,
-                },
-              )}
-            >
-              <ErrorComponent />
-            </main>
-          </>
-        ) : (
+    <div className="min-h-screen isolate">
+      {isAuth ? (
+        <>
+          <AppHeader
+            sideNavExpanded={sideNavExpanded}
+            onSideNavExpandedChange={(state) => setSideNavExpanded(state)}
+          />
+          <SideNavigation expanded={sideNavExpanded} />
+          <main
+            className={classNames(
+              'pt-[64px] h-screen overflow-auto transition-[margin-left]',
+              {
+                'ml-[60px]': !sideNavExpanded,
+                'ml-[240px]': sideNavExpanded,
+              },
+            )}
+          >
+            <ErrorComponent />
+          </main>
+        </>
+      ) : (
+        <div className="h-screen">
           <ErrorComponent />
-        )}
-      </>
+        </div>
+      )}
     </div>
   );
 };

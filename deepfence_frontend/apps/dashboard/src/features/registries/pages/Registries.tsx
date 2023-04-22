@@ -104,7 +104,7 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
     mode,
   );
   return (
-    <Card className="p-4 items-center gap-y-1" key={registry.type}>
+    <Card className="p-4 items-center" key={registry.type}>
       <div className="flex items-center justify-between w-full">
         <h4 className="text-gray-900 text-md dark:text-white mr-4">{name}</h4>
         <div className="ml-auto">
@@ -125,7 +125,7 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
           </DFLink>
         </div>
       </div>
-      <div className="flex items-center gap-x-6">
+      <div className="flex items-center gap-x-6 mt-3">
         <div className="p-4 flex items-center border-r border-gray-200 dark:border-gray-700 w-20 h-20">
           <img height="100%" width="100%" src={icon} alt="logo" />
         </div>
