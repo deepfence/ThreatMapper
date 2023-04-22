@@ -1,6 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react';
 import { useState } from 'react';
 
+import Button from '@/components/button/Button';
 import { Listbox, ListboxOption } from '@/components/select/Listbox';
 
 export default {
@@ -27,7 +28,6 @@ const MultiSelectTemplate: StoryFn<typeof Listbox> = () => {
       name="multiple-select"
       multiple
       onChange={(item) => {
-        console.log(item, 'item');
         setSelected(item);
       }}
     >
@@ -48,28 +48,40 @@ export const MultiSelect = {
 };
 
 const SingleSelectTemplate: StoryFn<typeof Listbox> = () => {
-  const [selected, setSelected] = useState<(typeof people)[number]>(people[0]);
+  const [selected, setSelected] = useState<string>(people[0].value);
 
   return (
-    <Listbox
-      sizing="sm"
-      value={selected}
-      label="Person"
-      name="single-select"
-      onChange={(item) => {
-        console.log(item, 'item');
-        setSelected(item);
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target as HTMLFormElement);
+        formData.get('single-select'); // should be people.value
       }}
-      getDisplayValue={(item) => item.label}
     >
-      {people.map((person) => {
-        return (
-          <ListboxOption key={person.value} value={person}>
-            {person.label}
-          </ListboxOption>
-        );
-      })}
-    </Listbox>
+      <Listbox
+        sizing="sm"
+        value={selected}
+        label="Person"
+        name="single-select"
+        onChange={(item) => {
+          setSelected(item);
+        }}
+        getDisplayValue={(item) => {
+          return people.find((person) => person.value === item)?.label ?? '';
+        }}
+      >
+        {people.map((person) => {
+          return (
+            <ListboxOption key={person.value} value={person.value}>
+              {person.label}
+            </ListboxOption>
+          );
+        })}
+      </Listbox>
+      <div className="mt-2">
+        <Button type="submit">Submit</Button>
+      </div>
+    </form>
   );
 };
 
