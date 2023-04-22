@@ -17,7 +17,7 @@ export const IntegrationTable = () => {
   const columns = useIntegrationTableColumn();
 
   return (
-    <>
+    <div className="self-start">
       <Suspense fallback={<TableSkeleton columns={4} rows={5} size={'sm'} />}>
         <DFAwait resolve={loaderData?.data}>
           {(resolvedData: LoaderDataType) => {
@@ -42,6 +42,6 @@ export const IntegrationTable = () => {
           }}
         </DFAwait>
       </Suspense>
-    </>
+    </div>
   );
 };

@@ -306,7 +306,11 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
     ],
     [],
   );
-  return <Table columns={columns} data={data} enableSorting size="sm" />;
+  return (
+    <div className="self-start">
+      <Table columns={columns} data={data} enableSorting size="sm" />
+    </div>
+  );
 };
 
 function getScanOptions(

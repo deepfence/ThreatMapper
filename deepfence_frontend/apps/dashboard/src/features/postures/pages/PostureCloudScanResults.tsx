@@ -831,7 +831,7 @@ const ScanResultTable = () => {
   }, [setSearchParams]);
 
   return (
-    <>
+    <div className="self-start">
       <Suspense fallback={<TableSkeleton columns={6} rows={10} size={'md'} />}>
         <DFAwait resolve={loaderData.data}>
           {(resolvedData: LoaderDataType) => {
@@ -992,7 +992,7 @@ const ScanResultTable = () => {
           }}
         </DFAwait>
       </Suspense>
-    </>
+    </div>
   );
 };
 
