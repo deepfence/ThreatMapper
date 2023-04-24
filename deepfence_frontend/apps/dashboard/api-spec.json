@@ -1121,6 +1121,65 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/graph/threat/vulnerability": {
+      "post": {
+        "tags": ["Threat"],
+        "summary": "Get Vulnerability Threat Graph",
+        "description": "Retrieve threat graph associated with vulnerabilities",
+        "operationId": "getVulnerabilityThreatGraph",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GraphVulnerabilityThreatGraphRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GraphVulnerabilityThreatGraph"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/graph/topology/": {
       "post": {
         "tags": ["Topology"],
@@ -2068,7 +2127,14 @@
           }
         },
         "responses": {
-          "200": { "description": "OK" },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelMessageResponse" }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -2114,7 +2180,7 @@
           }
         ],
         "responses": {
-          "200": { "description": "OK" },
+          "204": { "description": "No Content" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -3039,7 +3105,7 @@
           }
         ],
         "responses": {
-          "200": { "description": "OK" },
+          "204": { "description": "No Content" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -3340,7 +3406,7 @@
           }
         ],
         "responses": {
-          "200": { "description": "OK" },
+          "204": { "description": "No Content" },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -7144,7 +7210,14 @@
           }
         },
         "responses": {
-          "200": { "description": "OK" },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelMessageResponse" }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -8403,6 +8476,33 @@
           }
         }
       },
+      "GraphVulnerabilityThreatGraph": {
+        "type": "object",
+        "properties": {
+          "attack_path": {
+            "type": "array",
+            "items": { "type": "array", "items": { "type": "string" } },
+            "nullable": true
+          },
+          "cve_attack_vector": { "type": "string" },
+          "cve_id": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "ports": { "type": "array", "items": {}, "nullable": true }
+        }
+      },
+      "GraphVulnerabilityThreatGraphRequest": {
+        "required": ["graph_type"],
+        "type": "object",
+        "properties": {
+          "graph_type": {
+            "enum": [
+              "most_vulnerable_attack_paths",
+              "direct_internet_exposure",
+              "indirect_internet_exposure"
+            ],
+            "type": "string"
+          }
+        }
+      },
       "IngestersCloudCompliance": {
         "type": "object",
         "properties": {
@@ -8440,6 +8540,7 @@
           "block_public_policy": { "type": "boolean" },
           "bucket_policy_is_public": { "type": "boolean" },
           "cidr_ipv4": { "type": "string" },
+          "cloud_provider": { "type": "string" },
           "container_definitions": {},
           "containers": {},
           "create_date": { "type": "string" },
@@ -9053,18 +9154,24 @@
           "node_id",
           "node_name",
           "node_type",
+          "type_label",
+          "account_id",
+          "cloud_region",
           "cloud_compliances_count",
           "cloud_compliance_scan_status",
           "cloud_compliance_latest_scan_id"
         ],
         "type": "object",
         "properties": {
+          "account_id": { "type": "string" },
           "cloud_compliance_latest_scan_id": { "type": "string" },
           "cloud_compliance_scan_status": { "type": "string" },
           "cloud_compliances_count": { "type": "integer" },
+          "cloud_region": { "type": "string" },
           "node_id": { "type": "string" },
           "node_name": { "type": "string" },
-          "node_type": { "type": "string" }
+          "node_type": { "type": "string" },
+          "type_label": { "type": "string" }
         }
       },
       "ModelCompliance": {
@@ -9873,13 +9980,7 @@
         }
       },
       "ModelRegisterInvitedUserRequest": {
-        "required": [
-          "first_name",
-          "last_name",
-          "password",
-          "is_temporary_password",
-          "code"
-        ],
+        "required": ["first_name", "last_name", "password", "code"],
         "type": "object",
         "properties": {
           "code": { "type": "string" },
@@ -10286,7 +10387,6 @@
         }
       },
       "ModelUpdateUserIdRequest": {
-        "required": ["role"],
         "type": "object",
         "properties": {
           "first_name": { "type": "string" },
@@ -10307,7 +10407,6 @@
         }
       },
       "ModelUpdateUserRequest": {
-        "required": ["role"],
         "type": "object",
         "properties": {
           "first_name": { "type": "string" },
@@ -10351,7 +10450,6 @@
           "email",
           "company",
           "password",
-          "is_temporary_password",
           "console_url"
         ],
         "type": "object",

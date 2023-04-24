@@ -81,6 +81,12 @@ export interface IngestersCloudResource {
     cidr_ipv4?: string;
     /**
      * 
+     * @type {string}
+     * @memberof IngestersCloudResource
+     */
+    cloud_provider?: string;
+    /**
+     * 
      * @type {any}
      * @memberof IngestersCloudResource
      */
@@ -446,6 +452,7 @@ export function IngestersCloudResourceFromJSONTyped(json: any, ignoreDiscriminat
         'block_public_policy': !exists(json, 'block_public_policy') ? undefined : json['block_public_policy'],
         'bucket_policy_is_public': !exists(json, 'bucket_policy_is_public') ? undefined : json['bucket_policy_is_public'],
         'cidr_ipv4': !exists(json, 'cidr_ipv4') ? undefined : json['cidr_ipv4'],
+        'cloud_provider': !exists(json, 'cloud_provider') ? undefined : json['cloud_provider'],
         'container_definitions': !exists(json, 'container_definitions') ? undefined : json['container_definitions'],
         'containers': !exists(json, 'containers') ? undefined : json['containers'],
         'create_date': !exists(json, 'create_date') ? undefined : json['create_date'],
@@ -524,6 +531,7 @@ export function IngestersCloudResourceToJSON(value?: IngestersCloudResource | nu
         'block_public_policy': value.block_public_policy,
         'bucket_policy_is_public': value.bucket_policy_is_public,
         'cidr_ipv4': value.cidr_ipv4,
+        'cloud_provider': value.cloud_provider,
         'container_definitions': value.container_definitions,
         'containers': value.containers,
         'create_date': value.create_date,

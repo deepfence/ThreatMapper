@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { ReactNode, Suspense } from 'react';
-import { Link, useLocation, useMatches, useSearchParams } from 'react-router-dom';
+import { generatePath, Link, useLocation, useMatches, useParams } from 'react-router-dom';
 import { Tooltip } from 'ui-components';
 
 import { SearchNodeCountResp } from '@/api/generated';
@@ -18,7 +18,7 @@ import { DFAwait } from '@/utils/suspense';
 const CountsSkeleton = () => {
   return (
     <div className="flex items-center gap-1 flex-1 shrink justify-end min-w-0">
-      {[1, 2, 3, 4, 5].map((idx) => {
+      {[1, 2, 3, 4].map((idx) => {
         return (
           <div
             key={idx}
@@ -97,15 +97,19 @@ const ResourceSelectorButton = ({
   type?: (typeof TopologyViewTypes)[number];
 }) => {
   const matches = useMatches();
-
   const currentPathName = matches[matches.length - 1]?.pathname ?? '';
-  const [searchParams] = useSearchParams();
+  const layoutType = currentPathName.includes('/table') ? 'table' : 'graph';
   const isActive =
-    searchParams.get('type') === type ||
-    (!searchParams.get('type') && type === NodeType.cloud_provider);
+    (currentPathName.endsWith('table') || currentPathName.endsWith('graph')) &&
+    type === 'cloud_provider'
+      ? true
+      : currentPathName.endsWith(type || '');
   return (
     <Link
-      to={currentPathName + (type ? `?type=${type}` : '')}
+      to={generatePath('/topology/:layoutType/:viewType', {
+        layoutType: layoutType,
+        viewType: type || '',
+      })}
       className={classNames(
         'flex gap-1 items-center text-base font-medium rounded-lg h-full px-2 shrink justify-end min-w-0 relative',
         {
@@ -128,10 +132,11 @@ const ResourceSelectorButton = ({
 };
 
 const ViewSwitcher = () => {
+  const params = useParams();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
 
-  const isGraphView = location.pathname.endsWith('graph');
+  const type = params.viewType ?? 'cloud_provider';
+  const isGraphView = location.pathname.includes('graph');
   return (
     <div className="flex h-full">
       <Tooltip
@@ -141,7 +146,7 @@ const ViewSwitcher = () => {
         delayDuration={200}
       >
         <Link
-          to={`/topology/graph?${searchParams.toString()}`}
+          to={`/topology/graph/${type}`}
           type="button"
           className={classNames(
             'flex items-center text-lg font-semibold rounded-l-lg h-full px-2 border-2 border-blue-600 dark:border-blue-600',
@@ -163,7 +168,7 @@ const ViewSwitcher = () => {
         delayDuration={200}
       >
         <Link
-          to={`/topology/table?${searchParams.toString()}`}
+          to={`/topology/table/${type}`}
           type="button"
           className={classNames(
             'flex items-center text-lg font-semibold rounded-r-lg h-full px-2 border-2 border-blue-600 dark:border-blue-600',

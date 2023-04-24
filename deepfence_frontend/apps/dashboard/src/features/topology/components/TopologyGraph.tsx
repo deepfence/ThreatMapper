@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiArrowsExpand, HiInformationCircle } from 'react-icons/hi';
-import { useFetcher, useSearchParams } from 'react-router-dom';
+import { useFetcher, useParams } from 'react-router-dom';
 import { useInterval, useMeasure } from 'react-use';
 import { CircleSpinner, Dropdown, DropdownItem } from 'ui-components';
 
@@ -28,6 +28,7 @@ export const TopologyGraph = () => {
   const [clickedItem, setClickedItem] = useState<{
     nodeId: string;
     nodeType: string;
+    parentId?: string;
   }>();
   const [contextmenu, setContextmenu] = useState<{
     open: boolean;
@@ -174,6 +175,7 @@ export const TopologyGraph = () => {
                         setClickedItem({
                           nodeId: model.df_data.id,
                           nodeType: model.df_data.type,
+                          parentId: model.df_data.immediate_parent_id,
                         });
                       }}
                     >
@@ -216,7 +218,8 @@ export const TopologyGraph = () => {
 };
 
 function useGraphDataManager() {
-  const [searchParams] = useSearchParams();
+  const params = useParams();
+  const type = params.viewType ?? 'cloud_provider';
   const [dataDiffWithAction, setDataDiffWithAction] = useState<{
     diff?: ReturnType<typeof getTopologyDiff>;
     action?: TopologyActionData['action'];
@@ -243,7 +246,7 @@ function useGraphDataManager() {
       },
       {
         method: 'post',
-        action: `/data-component/topology?${searchParams.toString()}`,
+        action: `/data-component/topology?type=${type}`,
       },
     );
   };

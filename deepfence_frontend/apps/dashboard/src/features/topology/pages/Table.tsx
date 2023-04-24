@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { TopologyTable } from '@/features/topology/components/TopologyTable';
 import { ContainersTable } from '@/features/topology/data-components/tables/ContainersTable';
@@ -7,8 +7,8 @@ import { KubernetesTable } from '@/features/topology/data-components/tables/Kube
 import { PodsTable } from '@/features/topology/data-components/tables/PodsTable';
 
 const Table = () => {
-  const [searchParams] = useSearchParams();
-  const type = searchParams.get('type') ?? 'cloud';
+  const params = useParams();
+  const type = params.viewType ?? 'cloud_provider';
   if (type === 'host') {
     return <HostsTable />;
   } else if (type === 'kubernetes_cluster') {

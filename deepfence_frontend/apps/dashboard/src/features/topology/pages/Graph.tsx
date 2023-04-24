@@ -1,10 +1,10 @@
-import { useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { TopologyGraph } from '@/features/topology/components/TopologyGraph';
 
 const Graph = () => {
-  const [searchParams] = useSearchParams();
-  const type = searchParams.get('type') ?? 'cloud';
+  const params = useParams();
+  const type = params.viewType ?? 'cloud_provider';
   return <TopologyGraph key={type} />;
 };
 

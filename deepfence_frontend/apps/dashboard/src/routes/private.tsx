@@ -76,6 +76,7 @@ import { module as userManagement } from '@/features/settings/pages/UserManageme
 import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
 import { module as threatGraphAction } from '@/features/threat-graph/data-components/threatGraphAction';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
+import { module as nodeDetailsCloudService } from '@/features/topology/data-components/node-details/CloudService';
 import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
 import { module as nodeDetailsContainerImage } from '@/features/topology/data-components/node-details/ContainerImage';
 import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
@@ -199,12 +200,12 @@ export const privateRoutes: CustomRouteObject[] = [
             loader: () => redirect('/topology/graph', 301),
           },
           {
-            path: 'table',
+            path: 'table/:viewType?',
             ...topologyTable,
             meta: { title: 'Cloud Topology' },
           },
           {
-            path: 'graph',
+            path: 'graph/:viewType?',
             ...topologyGraph,
             meta: { title: 'Cloud Topology' },
           },
@@ -230,6 +231,10 @@ export const privateRoutes: CustomRouteObject[] = [
               {
                 path: 'pod/:nodeId',
                 ...nodeDetailsPod,
+              },
+              {
+                path: 'cloud-service/:nodeType',
+                ...nodeDetailsCloudService,
               },
             ],
           },

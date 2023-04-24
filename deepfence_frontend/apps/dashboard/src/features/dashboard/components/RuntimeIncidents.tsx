@@ -11,7 +11,7 @@ export const RuntimeIncidents = () => {
       <div className="flex flex-row items-center gap-x-2 pb-2">
         <IconContext.Provider
           value={{
-            className: 'w-4 h-4 text-blue-700',
+            className: 'w-5 h-5 text-blue-700 dark:text-blue-300',
           }}
         >
           <HiFlag />
@@ -37,17 +37,21 @@ export const RuntimeIncidents = () => {
           runtime information.
         </p>
         <p>
-          <DFLink to="https://deepfence.io/threatstryker/">More information...</DFLink>
+          <DFLink href="https://deepfence.io/threatstryker/" target="_blank">
+            More information...
+          </DFLink>
         </p>
         <div className="py-3">
-          <Button
-            color="success"
-            size="md"
-            className="bg-green-500 dark:bg-green-500 hover:bg-green-600 hover:dark:bg-green-600"
-          >
-            Grab ThreatStryker&nbsp;
-            <HiArrowRight />
-          </Button>
+          <DFLink href="https://deepfence.io/threatstryker/" target="_blank">
+            <Button
+              color="success"
+              size="md"
+              className="bg-green-500 dark:bg-green-500 hover:bg-green-600 hover:dark:bg-green-600"
+            >
+              Grab ThreatStryker&nbsp;
+              <HiArrowRight />
+            </Button>
+          </DFLink>
         </div>
       </div>
     </Card>
