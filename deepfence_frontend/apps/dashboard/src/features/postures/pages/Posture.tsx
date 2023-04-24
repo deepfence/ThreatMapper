@@ -1,4 +1,5 @@
 import cx from 'classnames';
+import { startCase } from 'lodash-es';
 import { Suspense } from 'react';
 import { IconContext } from 'react-icons';
 import { HiArrowSmRight } from 'react-icons/hi';
@@ -93,10 +94,10 @@ const AccountSummary = () => {
               } = provider;
               const account = getPostureLogo(name, mode);
               return (
-                <Card key={name} className="p-4 flex flex-col gap-y-1">
+                <Card key={name} className="p-4 flex flex-col">
                   <div className="flex items-center justify-between w-full">
-                    <h4 className="text-gray-900 text-sm dark:text-white mr-4 uppercase">
-                      {account.label}
+                    <h4 className="text-gray-900 text-sm dark:text-white mr-4">
+                      {startCase(account.label)}
                     </h4>
                     <div className="ml-auto">
                       <DFLink
@@ -116,7 +117,7 @@ const AccountSummary = () => {
                       </DFLink>
                     </div>
                   </div>
-                  <div className="mt-2 flex gap-x-6">
+                  <div className="mt-3 flex gap-x-6 items-center">
                     <div className="pr-2 flex flex-col gap-y-2 border-r border-gray-200 dark:border-gray-700">
                       <div className="px-4 flex basis-8 justify-center items-center w-20 h-20">
                         <img height="100%" width="100%" src={account.icon} alt="logo" />
@@ -124,7 +125,7 @@ const AccountSummary = () => {
                       <div className="flex flex-col items-center">
                         <span
                           className={cx('text-md rounded-lg px-1 font-medium w-fit', {
-                            'bg-[#de425b]/30 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
+                            'bg-[#FF8A4C]/30 dark:bg-[#FF8A4C]/20 text-[#FF5A1F] dark:text-[#FF5A1F]':
                               compliance_percentage > 60 && compliance_percentage < 100,
                             'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
                               compliance_percentage > 30 && compliance_percentage < 90,
@@ -188,7 +189,7 @@ const Posture = () => {
           Posture
         </span>
       </div>
-      <div className="p-2 flex flex-row flex-wrap gap-4">
+      <div className="p-2 flex flex-row flex-wrap gap-2">
         <AccountSummary />
       </div>
     </>

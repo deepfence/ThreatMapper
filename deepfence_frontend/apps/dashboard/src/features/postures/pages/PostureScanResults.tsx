@@ -58,6 +58,12 @@ import {
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterHeader } from '@/components/forms/FilterHeader';
+import {
+  HeaderSkeleton,
+  RectSkeleton,
+  SquareSkeleton,
+  TimestampSkeleton,
+} from '@/components/header/HeaderSkeleton';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import {
@@ -810,7 +816,7 @@ const ScanResusltTable = () => {
   }, [setSearchParams]);
 
   return (
-    <>
+    <div className="self-start">
       <Suspense fallback={<TableSkeleton columns={6} rows={10} size={'md'} />}>
         <DFAwait resolve={loaderData.data}>
           {(resolvedData: LoaderDataType) => {
@@ -971,7 +977,7 @@ const ScanResusltTable = () => {
           }}
         </DFAwait>
       </Suspense>
-    </>
+    </div>
   );
 };
 
@@ -1151,7 +1157,26 @@ const HeaderComponent = () => {
 
   return (
     <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-      <Suspense fallback={<CircleSpinner size="xs" />}>
+      <Suspense
+        fallback={
+          <HeaderSkeleton
+            RightSkeleton={
+              <>
+                <TimestampSkeleton />
+                <SquareSkeleton />
+                <SquareSkeleton />
+              </>
+            }
+            LeftSkeleton={
+              <>
+                <RectSkeleton width="w-40" height="h-4" />
+                <RectSkeleton width="w-40" height="h-4" />
+                <RectSkeleton width="w-40" height="h-4" />
+              </>
+            }
+          />
+        }
+      >
         <DFAwait resolve={loaderData.data ?? []}>
           {(resolvedData: LoaderDataType) => {
             const { scanStatusResult } = resolvedData;

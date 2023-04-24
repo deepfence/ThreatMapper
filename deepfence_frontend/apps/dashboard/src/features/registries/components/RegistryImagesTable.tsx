@@ -98,7 +98,7 @@ export const RegistryImagesTable = ({
   }
 
   return (
-    <div>
+    <div className="self-start">
       {selectedIds.length === 0 ? (
         <div className="text-sm text-gray-400 font-medium pb-3">No rows selected</div>
       ) : (

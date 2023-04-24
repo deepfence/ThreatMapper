@@ -219,7 +219,7 @@ export const RegistryImageTagsTable = ({
   }, [rowSelectionState]);
 
   return (
-    <>
+    <div className="self-start">
       {selectedIds.length === 0 ? (
         <div className="text-sm text-gray-400 font-medium pb-2.5">No rows selected</div>
       ) : (
@@ -307,7 +307,7 @@ export const RegistryImageTagsTable = ({
           });
         }}
       />
-    </>
+    </div>
   );
 };
 

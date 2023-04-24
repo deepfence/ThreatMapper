@@ -16,7 +16,7 @@ export const ScanStatusInProgress = ({ LogoIcon }: { LogoIcon: () => JSX.Element
         Scan In Progress
       </span>
       <span className="text-sm text-gray-500 dark:text-gray-400">
-        Your scan is runing. Please check back later
+        Scan is running. Please check back later
       </span>
     </div>
   );
