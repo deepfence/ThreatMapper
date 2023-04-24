@@ -14,7 +14,7 @@ const ErrorComponent = () => {
         500
       </h1>
       <h4 className="text-3xl font-bold text-gray-700 dark:text-gray-400 -mt-10">
-        Opps! Something went wrong
+        Something went wrong
       </h4>
       <p className="mt-2 text-lg font-semibold text-gray-700 dark:text-gray-300 tracking-wider">
         Please try again or contact support
