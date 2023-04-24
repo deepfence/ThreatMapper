@@ -3,6 +3,7 @@ import { IconContext } from 'react-icons';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 
 import { ScanTypeEnum } from '@/types/common';
+import { DFLink } from '@/components/DFLink';
 
 export const ScanStatusInProgress = ({ LogoIcon }: { LogoIcon: () => JSX.Element }) => {
   return (
@@ -16,7 +17,7 @@ export const ScanStatusInProgress = ({ LogoIcon }: { LogoIcon: () => JSX.Element
         Scan In Progress
       </span>
       <span className="text-sm text-gray-500 dark:text-gray-400">
-        Scan is running. Please check back later
+        Scan is running, please check back later
       </span>
     </div>
   );
@@ -36,7 +37,7 @@ export const ScanStatusInError = () => {
       </div>
       <span className="text-2xl font-medium text-red-500/80">Scan Error</span>
       <span className="text-sm text-gray-500 dark:text-gray-400">
-        Your scan runs into an error. Please check back later
+        Scan ran into an error, please check <DFLink to="#">details</DFLink>
       </span>
     </div>
   );

@@ -2,14 +2,13 @@ import cx from 'classnames';
 import { Suspense, useMemo, useRef, useState } from 'react';
 import { FaPlay, FaPlus } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
-import { HiChevronRight, HiRefresh } from 'react-icons/hi';
+import { HiChevronRight } from 'react-icons/hi';
 import {
   Form,
   generatePath,
   LoaderFunctionArgs,
   useLoaderData,
   useParams,
-  useRevalidator,
   useSearchParams,
 } from 'react-router-dom';
 import {
@@ -308,9 +307,6 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
   const currentPage = data?.currentPage ?? 0;
   const cloudProvider = accounts[0]?.cloud_provider ?? '';
 
-  if (!cloudProvider) {
-    return null;
-  }
   return (
     <>
       <div>
@@ -334,9 +330,13 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
         />
         <Form>
           {Object.keys(rowSelectionState).length === 0 ? (
-            <div className="text-sm text-gray-400 font-medium mb-3 flex justify-between">
-              No rows selected
-            </div>
+            <>
+              {accounts.length > 0 && (
+                <div className="text-sm text-gray-400 font-medium pt-2 pl-2 pb-2.5 flex justify-between">
+                  No rows selected
+                </div>
+              )}
+            </>
           ) : (
             <>
               <div className="mb-1.5 flex gap-x-2">

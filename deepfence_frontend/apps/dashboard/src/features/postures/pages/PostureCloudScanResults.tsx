@@ -313,7 +313,7 @@ async function getScans(
     scanStatusResult: statuses,
     data: {
       totalStatus,
-      nodeName: result.node_name,
+      nodeName: result.node_id,
       statusCounts: cloudComplianceStatus,
       timestamp: result.updated_at,
       compliances: result.compliances ?? [],
@@ -1239,8 +1239,8 @@ const HeaderComponent = () => {
       >
         <DFAwait resolve={loaderData.data ?? []}>
           {(resolvedData: LoaderDataType) => {
-            const { scanStatusResult, data } = resolvedData;
-            const { scan_id, node_type, updated_at } = scanStatusResult ?? {};
+            const { scanStatusResult } = resolvedData;
+            const { scan_id, node_id, node_type, updated_at } = scanStatusResult ?? {};
 
             if (!scan_id || !node_type || !updated_at) {
               throw new Error('Scan id, node type or updated_at is missing');
@@ -1262,11 +1262,9 @@ const HeaderComponent = () => {
                     </DFLink>
                   </BreadcrumbLink>
 
-                  {data ? (
-                    <BreadcrumbLink>
-                      <span className="inherit cursor-auto">{data.nodeName}</span>
-                    </BreadcrumbLink>
-                  ) : null}
+                  <BreadcrumbLink>
+                    <span className="inherit cursor-auto">{node_id ?? ''}</span>
+                  </BreadcrumbLink>
                 </Breadcrumb>
                 <div className="ml-auto flex items-center gap-x-4">
                   <div className="flex flex-col">
