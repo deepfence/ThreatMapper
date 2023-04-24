@@ -3,7 +3,6 @@ import { IconContext } from 'react-icons';
 import {
   HiChevronLeft,
   HiLogout,
-  HiOutlineBell,
   HiOutlineDesktopComputer,
   HiOutlineMoon,
   HiOutlineSun,

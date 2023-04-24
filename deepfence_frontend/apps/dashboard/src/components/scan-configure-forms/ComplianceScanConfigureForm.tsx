@@ -351,7 +351,7 @@ export const ComplianceScanConfigureForm = ({
   return (
     <>
       <fetcher.Form
-        className="flex gap-4 mb-6 px-4"
+        className="flex gap-4"
         method="post"
         action="/data-component/scan/posture"
       >
@@ -386,7 +386,7 @@ export const ComplianceScanConfigureForm = ({
         <Button
           disabled={state !== 'idle'}
           loading={state !== 'idle'}
-          size="xs"
+          size="sm"
           color="primary"
           type="submit"
           className="ml-auto "

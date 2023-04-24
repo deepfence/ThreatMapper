@@ -1240,7 +1240,7 @@ const HeaderComponent = () => {
         <DFAwait resolve={loaderData.data ?? []}>
           {(resolvedData: LoaderDataType) => {
             const { scanStatusResult } = resolvedData;
-            const { scan_id, node_id, node_type, updated_at } = scanStatusResult ?? {};
+            const { scan_id, node_name, node_type, updated_at } = scanStatusResult ?? {};
 
             if (!scan_id || !node_type || !updated_at) {
               throw new Error('Scan id, node type or updated_at is missing');
@@ -1263,7 +1263,7 @@ const HeaderComponent = () => {
                   </BreadcrumbLink>
 
                   <BreadcrumbLink>
-                    <span className="inherit cursor-auto">{node_id ?? ''}</span>
+                    <span className="inherit cursor-auto">{node_name ?? ''}</span>
                   </BreadcrumbLink>
                 </Breadcrumb>
                 <div className="ml-auto flex items-center gap-x-4">

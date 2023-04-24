@@ -9222,7 +9222,8 @@
           "created_at",
           "node_id",
           "node_type",
-          "severity_counts"
+          "severity_counts",
+          "node_name"
         ],
         "type": "object",
         "properties": {
@@ -9233,6 +9234,7 @@
           },
           "created_at": { "type": "integer", "format": "int64" },
           "node_id": { "type": "string" },
+          "node_name": { "type": "string" },
           "node_type": { "type": "string" },
           "scan_id": { "type": "string" },
           "severity_counts": {

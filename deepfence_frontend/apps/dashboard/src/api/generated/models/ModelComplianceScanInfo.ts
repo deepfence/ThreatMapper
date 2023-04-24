@@ -42,6 +42,12 @@ export interface ModelComplianceScanInfo {
      * @type {string}
      * @memberof ModelComplianceScanInfo
      */
+    node_name: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelComplianceScanInfo
+     */
     node_type: string;
     /**
      * 
@@ -77,6 +83,7 @@ export function instanceOfModelComplianceScanInfo(value: object): boolean {
     isInstance = isInstance && "benchmark_types" in value;
     isInstance = isInstance && "created_at" in value;
     isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "node_type" in value;
     isInstance = isInstance && "scan_id" in value;
     isInstance = isInstance && "severity_counts" in value;
@@ -99,6 +106,7 @@ export function ModelComplianceScanInfoFromJSONTyped(json: any, ignoreDiscrimina
         'benchmark_types': json['benchmark_types'],
         'created_at': json['created_at'],
         'node_id': json['node_id'],
+        'node_name': json['node_name'],
         'node_type': json['node_type'],
         'scan_id': json['scan_id'],
         'severity_counts': json['severity_counts'],
@@ -119,6 +127,7 @@ export function ModelComplianceScanInfoToJSON(value?: ModelComplianceScanInfo | 
         'benchmark_types': value.benchmark_types,
         'created_at': value.created_at,
         'node_id': value.node_id,
+        'node_name': value.node_name,
         'node_type': value.node_type,
         'scan_id': value.scan_id,
         'severity_counts': value.severity_counts,
