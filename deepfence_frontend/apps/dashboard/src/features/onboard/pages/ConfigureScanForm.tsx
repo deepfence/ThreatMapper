@@ -29,7 +29,23 @@ const SelectedAccountComponent = ({
       {accounts.length > 0 ? `${type} / ${accounts[0]}` : null}
       &nbsp;
       {accounts.length > 1 && (
-        <Tooltip content={accounts.slice(1).join(', ')} triggerAsChild>
+        <Tooltip
+          content={
+            <ul>
+              {accounts.map((node, index) => {
+                return (
+                  <li key={node}>
+                    <span className="text-gray-400 py-2 pr-1 font-semibold">
+                      {index + 1}.
+                    </span>
+                    <span className="text-gray-300">{node}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          }
+          triggerAsChild
+        >
           <span className={'text-sm text-gray-600 dark:text-gray-300'}>
             +{accounts.length - 1} more
           </span>
@@ -72,7 +88,7 @@ const ScanConfigureForm = () => {
         description="Choose from the below options to perform your first scan."
         endComponent={
           <SelectedAccountComponent
-            accounts={state.map((node) => node.urlId)}
+            accounts={state.map((node) => node.accountId ?? '')}
             type={state[0].urlType}
           />
         }
