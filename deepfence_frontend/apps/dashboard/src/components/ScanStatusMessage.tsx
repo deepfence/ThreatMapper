@@ -2,8 +2,8 @@ import cx from 'classnames';
 import { IconContext } from 'react-icons';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 
-import { ScanTypeEnum } from '@/types/common';
 import { DFLink } from '@/components/DFLink';
+import { ScanTypeEnum } from '@/types/common';
 
 export const ScanStatusInProgress = ({ LogoIcon }: { LogoIcon: () => JSX.Element }) => {
   return (
