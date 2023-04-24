@@ -116,11 +116,12 @@ func GetComplianceScanStatus(ctx context.Context, scanType utils.Neo4jScanType, 
 	}
 	defer tx.Close()
 
-	res, err := tx.Run(fmt.Sprintf(`
-		MATCH (m:%s) -[:SCANNED]-> (n:CloudNode)
-		WHERE m.node_id IN $scan_ids
-		RETURN m.node_id, m.benchmark_types, m.status, n.node_id, m.updated_at`, scanType),
-		map[string]interface{}{"scan_ids": scanIds})
+	query := fmt.Sprintf(`
+	MATCH (m:%s) -[:SCANNED]-> (n:CloudNode)
+	WHERE m.node_id IN $scan_ids
+	RETURN m.node_id, m.benchmark_types, m.status, n.node_id, m.updated_at, n.node_name`, scanType)
+
+	res, err := tx.Run(query, map[string]interface{}{"scan_ids": scanIds})
 	if err != nil {
 		return scanResponse, err
 	}
@@ -142,6 +143,7 @@ func GetComplianceScanStatus(ctx context.Context, scanType utils.Neo4jScanType, 
 			NodeId:         rec.Values[3].(string),
 			NodeType:       controls.ResourceTypeToString(controls.CloudAccount),
 			UpdatedAt:      rec.Values[4].(int64),
+			NodeName:       rec.Values[5].(string),
 		}
 		scanResponse.Statuses = append(scanResponse.Statuses, tmp)
 	}
@@ -993,7 +995,7 @@ func GetComplianceBulkScans(ctx context.Context, scanType utils.Neo4jScanType, s
 
 	neo_res, err := tx.Run(`
 		MATCH (m:Bulk`+string(scanType)+`{node_id:$scan_id}) -[:BATCH]-> (d:`+string(scanType)+`) -[:SCANNED]-> (n:CloudNode)
-		RETURN d.node_id, d.benchmark_types, d.status, n.node_id, d.updated_at`,
+		RETURN d.node_id, d.benchmark_types, d.status, n.node_id, d.updated_at, n.node_name`,
 		map[string]interface{}{"scan_id": scanId})
 	if err != nil {
 		log.Error().Msgf("Compliance bulk scans status query failed: %+v", err)
@@ -1018,6 +1020,7 @@ func GetComplianceBulkScans(ctx context.Context, scanType utils.Neo4jScanType, s
 			NodeId:         rec.Values[3].(string),
 			NodeType:       controls.ResourceTypeToString(controls.CloudAccount),
 			UpdatedAt:      rec.Values[4].(int64),
+			NodeName:       rec.Values[5].(string),
 		}
 		scanIds.Statuses = append(scanIds.Statuses, tmp)
 	}

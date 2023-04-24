@@ -75,6 +75,7 @@ type ComplianceScanInfo struct {
 	NodeId         string           `json:"node_id" required:"true"`
 	NodeType       string           `json:"node_type" required:"true"`
 	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
+	NodeName       string           `json:"node_name" required:"true"`
 }
 
 const (
