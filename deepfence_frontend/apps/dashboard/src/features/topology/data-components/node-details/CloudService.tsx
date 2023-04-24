@@ -175,7 +175,7 @@ export const CloudService = ({
                     status:{' '}
                     <ScanStatusBadge status={resource.cloud_compliance_scan_status} />
                   </div>
-                  {!resource.cloud_compliance_scan_status?.length && (
+                  {!!resource.cloud_compliance_scan_status?.length && (
                     <Link
                       className="uppercase flex items-center gap-1 font-bold"
                       style={{
