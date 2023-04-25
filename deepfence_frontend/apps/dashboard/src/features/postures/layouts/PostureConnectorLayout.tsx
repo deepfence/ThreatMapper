@@ -1,3 +1,4 @@
+import { startCase } from 'lodash-es';
 import { HiChevronRight } from 'react-icons/hi';
 import { generatePath, Outlet, useParams } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbLink } from 'ui-components';
@@ -24,7 +25,10 @@ const PostureConnectorLayout = () => {
           </BreadcrumbLink>
 
           <BreadcrumbLink>
-            <span className="inherit cursor-auto">Connector</span>
+            <span className="inherit cursor-auto">New</span>
+          </BreadcrumbLink>
+          <BreadcrumbLink>
+            <span className="inherit cursor-auto">{startCase(params.account)}</span>
           </BreadcrumbLink>
         </Breadcrumb>
       </div>

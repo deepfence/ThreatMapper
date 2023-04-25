@@ -1,3 +1,4 @@
+import { startCase } from 'lodash-es';
 import { Suspense } from 'react';
 import { IconContext } from 'react-icons';
 import { FaAngleDoubleUp, FaImages, FaPlus, FaTags } from 'react-icons/fa';
@@ -130,7 +131,7 @@ const HeaderComponent = ({ nodeType }: { nodeType: string }) => {
           <DFLink to={'/registries'}>Registries</DFLink>
         </BreadcrumbLink>
         <BreadcrumbLink>
-          <span className="inherit cursor-auto">{nodeType}</span>
+          <span className="inherit cursor-auto">{startCase(nodeType)}</span>
         </BreadcrumbLink>
       </Breadcrumb>
       <div className="ml-auto flex items-center gap-x-4">

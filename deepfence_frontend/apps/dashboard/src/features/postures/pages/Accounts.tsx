@@ -1,4 +1,5 @@
 import cx from 'classnames';
+import { startCase } from 'lodash-es';
 import { Suspense, useMemo, useRef, useState } from 'react';
 import { FaPlay, FaPlus } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
@@ -419,7 +420,7 @@ const Accounts = () => {
             <DFLink to={'/posture'}>Posture</DFLink>
           </BreadcrumbLink>
           <BreadcrumbLink>
-            <span className="inherit cursor-auto">{routeParams.nodeType}</span>
+            <span className="inherit cursor-auto">{startCase(routeParams.nodeType)}</span>
           </BreadcrumbLink>
         </Breadcrumb>
         <div className="ml-auto flex relative gap-x-4">
