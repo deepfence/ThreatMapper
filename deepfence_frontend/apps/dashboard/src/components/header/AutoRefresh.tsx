@@ -32,7 +32,6 @@ export const AutoRefresh = () => {
   return (
     <Dropdown
       align="end"
-      triggerAsChild
       content={
         <>
           <RefreshDropdownItem

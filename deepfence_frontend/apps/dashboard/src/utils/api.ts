@@ -103,12 +103,63 @@ async function refreshAccessTokenIfPossible(): Promise<boolean> {
 }
 
 export function redirectToLogin() {
-  return redirect('/auth/login');
+  const searchParams = new URLSearchParams();
+  const url = new URL(window.location.href);
+  searchParams.append('redirectTo', `${url.pathname}${url.search}`);
+  return redirect(`/auth/login?${searchParams.toString()}`);
 }
 
 export async function requireLogin() {
   const auth = storage.getAuth();
   if (auth) return;
   storage.clearAuth();
-  throw redirect('/auth/login');
+  throw redirectToLogin();
+}
+
+export function validateRedirectToUrl(redirectTo: string) {
+  if (!redirectTo) return true;
+  if (!redirectTo.startsWith('/')) return false;
+  return true;
+}
+
+type Result<T, E> =
+  | {
+      ok: true;
+      value: T;
+    }
+  | {
+      ok: false;
+      error: E;
+    };
+
+type Func<T extends any[], R> = (...a: T) => R;
+
+export function apiWrapper<F extends Func<any[], any>>({
+  fn,
+  options,
+}: {
+  fn: F;
+  options?: {
+    handleAuthError?: boolean;
+  };
+}): Func<Parameters<F>, Promise<Result<Awaited<ReturnType<F>>, ResponseError>>> {
+  return async (...args: Parameters<F>) => {
+    try {
+      const value = await fn(...args);
+      return { ok: true, value: value };
+    } catch (error) {
+      if (isResponseError(error)) {
+        if (error.response.status === 401 && options?.handleAuthError !== false) {
+          if (await refreshAccessTokenIfPossible()) {
+            return apiWrapper({ fn, options })(...args);
+          }
+        }
+        return { ok: false, error };
+      }
+
+      console.error(`unknown error while calling ${fn.name}`);
+      console.error(error);
+      throw error;
+    }
+  };
 }

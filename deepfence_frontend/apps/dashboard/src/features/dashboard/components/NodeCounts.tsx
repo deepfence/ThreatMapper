@@ -38,7 +38,7 @@ const CountWithIcon = ({
         e.preventDefault();
         if (link) navigate(link);
       }}
-      className="py-2 basis-full flex flex-col h-full cursor-pointer hover:bg-gray-50 hover:dark:bg-gray-700/20 pl-2 justify-center"
+      className="py-2 flex-1 flex flex-col cursor-pointer hover:bg-gray-50 hover:dark:bg-gray-700/20 pl-2 justify-center"
     >
       <div
         className={cx('w-full border-r dark:border-gray-700 pr-4 ', {
@@ -61,7 +61,7 @@ const CountWithIcon = ({
 
 const CountWithIconSkeleton = () => {
   return (
-    <div className="py-2 basis-full flex flex-col h-full cursor-pointer hover:bg-gray-50 hover:dark:bg-gray-700/20 pl-2 justify-center">
+    <div className="py-2 flex-1 flex flex-col h-full cursor-pointer hover:bg-gray-50 hover:dark:bg-gray-700/20 pl-2 justify-center">
       <div className={cx('pr-4')}>
         <div className="font-light flex text-gray-700 dark:text-white items-center">
           <div
@@ -80,8 +80,8 @@ const CountWithIconSkeleton = () => {
 export const NodeCounts = () => {
   const loaderData = useLoaderData() as DashboardLoaderData;
   return (
-    <div className="p-2 gap-2">
-      <Card className="flex items-center gap-2">
+    <div className="m-2">
+      <Card className="flex gap-2 flex-wrap justify-center">
         <Suspense fallback={<CountWithIconSkeleton />}>
           <DFAwait resolve={loaderData.nodeCounts}>
             {(nodeCounts: DashboardLoaderData['nodeCounts']) => {

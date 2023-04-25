@@ -2,7 +2,7 @@ import { ActionFunction, redirect } from 'react-router-dom';
 
 import { getAuthenticationApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper, validateRedirectToUrl } from '@/utils/api';
 import storage from '@/utils/storage';
 
 export type LoginActionReturnType = {
@@ -16,47 +16,54 @@ export type LoginActionReturnType = {
 export const loginAction: ActionFunction = async ({
   request,
 }): Promise<LoginActionReturnType> => {
+  const url = new URL(request.url);
   const formData = await request.formData();
   const body = Object.fromEntries(formData);
 
-  const r = await makeRequest({
-    apiFunction: getAuthenticationApiClient().login,
-    apiArgs: [
-      {
-        modelLoginRequest: {
-          email: body.email as string,
-          password: body.password as string,
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<LoginActionReturnType>({});
-      if (r.status === 404 || r.status === 401) {
-        return error.set({
-          error: 'Invalid credentials',
-        });
-      } else if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          fieldErrors: {
-            email: modelResponse.error_fields?.email,
-            password: modelResponse.error_fields?.password,
-          },
-        });
-      }
+  const login = apiWrapper({
+    fn: getAuthenticationApiClient().login,
+    options: { handleAuthError: false },
+  });
+
+  const loginResponse = await login({
+    modelLoginRequest: {
+      email: body.email as string,
+      password: body.password as string,
     },
   });
 
-  if (ApiError.isApiError(r)) {
-    return r.value();
+  if (!loginResponse.ok) {
+    if (
+      loginResponse.error.response.status === 404 ||
+      loginResponse.error.response.status === 401
+    ) {
+      return {
+        error: 'Invalid credentials',
+      };
+    } else if (loginResponse.error.response.status === 400) {
+      const modelResponse: ApiDocsBadRequestResponse =
+        await loginResponse.error.response.json();
+      return {
+        fieldErrors: {
+          email: modelResponse.error_fields?.email,
+          password: modelResponse.error_fields?.password,
+        },
+      };
+    }
+    throw loginResponse.error;
   }
 
   storage.setAuth({
-    accessToken: r.access_token,
-    refreshToken: r.refresh_token,
+    accessToken: loginResponse.value.access_token,
+    refreshToken: loginResponse.value.refresh_token,
   });
 
-  if (!r.onboarding_required) {
+  const redirectTo = url.searchParams.get('redirectTo');
+  if (redirectTo && validateRedirectToUrl(redirectTo)) {
+    throw redirect(url.searchParams.get('redirectTo') as string, 302);
+  }
+
+  if (!loginResponse.value.onboarding_required) {
     throw redirect('/dashboard', 302);
   }
 
