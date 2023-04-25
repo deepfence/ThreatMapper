@@ -1,16 +1,15 @@
 import { EChartsOption } from 'echarts';
 import { capitalize } from 'lodash-es';
-import { IconContext } from 'react-icons';
-import { HiArrowSmRight } from 'react-icons/hi';
-import { Card, CircleSpinner } from 'ui-components';
+import { HiOutlineChevronRight } from 'react-icons/hi';
+import { Button, Card, CircleSpinner, Separator } from 'ui-components';
 
-import { DFLink } from '@/components/DFLink';
 import { ReactECharts } from '@/components/ReactEcharts';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { VulnerabilitySeverityType } from '@/types/common';
 import { getObjectKeys } from '@/utils/array';
 import { abbreviateNumber } from '@/utils/number';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 type ChartData = Array<{
   label: string;
@@ -86,24 +85,28 @@ export const VulnerabilitiesCountsCard = ({
   detailsLink: string;
 }) => {
   const { mode } = useTheme();
+  const { navigate } = usePageNavigation();
   return (
     <Card className="flex h-full p-2 flex-col">
-      <div className="p-2 flex">
-        <h4 className="text-gray-900 text-sm dark:text-white truncate">{title}</h4>
-        <DFLink
-          to={detailsLink}
-          className="shrink-0 flex hover:no-underline ml-auto mr-2"
-        >
-          <span className="text-xs text-blue-600 dark:text-blue-500">Details</span>
-          <IconContext.Provider
-            value={{
-              className: 'text-blue-600 dark:text-blue-500',
+      <div className="flex items-center pb-2">
+        <h4 className="text-gray-900 font-medium text-base dark:text-white truncate">
+          {title}
+        </h4>
+        <div className="flex ml-auto">
+          <Button
+            color="normal"
+            size="xs"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate(detailsLink);
             }}
           >
-            <HiArrowSmRight />
-          </IconContext.Provider>
-        </DFLink>
+            Details&nbsp;
+            <HiOutlineChevronRight />
+          </Button>
+        </div>
       </div>
+      <Separator />
       {loading && <LoadingComponent />}
       {data && !loading && (
         <div className="flex flex-col gap-2 items-center justify-center relative">

@@ -1,9 +1,9 @@
 import { Suspense } from 'react';
 import { IconContext } from 'react-icons';
-import { FaBook, FaBullhorn, FaCopyright, FaFire, FaMagento } from 'react-icons/fa';
-import { HiArrowSmRight } from 'react-icons/hi';
+import { FaBook, FaBullhorn, FaCopyright, FaFire } from 'react-icons/fa';
+import { HiOutlineChevronRight } from 'react-icons/hi';
 import { useLoaderData } from 'react-router-dom';
-import { Card } from 'ui-components';
+import { Button, Card } from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
@@ -21,6 +21,7 @@ import {
   SumoLogic,
 } from '@/constants/logos';
 import { DFAwait } from '@/utils/suspense';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 import { loader } from './IntegrationAdd';
 
@@ -163,6 +164,7 @@ const Integrations = () => {
   const loaderData = useLoaderData() as {
     data: ModelIntegrationListResp[];
   };
+  const { navigate } = usePageNavigation();
   return (
     <>
       <div className="flex p-2 w-full shadow bg-white dark:bg-gray-800 items-center">
@@ -173,14 +175,14 @@ const Integrations = () => {
           Report Download
         </DFLink>
       </div>
-      <div className="flex flex-col space-y-8 my-2">
+      <div className="p-2 gap-y-4 flex flex-col">
         {IntegrationsData.map((integration) => {
           return (
             <section key={integration.name} className="flex flex-col">
-              <div className="flex items-center pl-2 mb-2 text-gray-700">
+              <div className="flex items-center">
                 <IconContext.Provider
                   value={{
-                    className: 'w-4 h-4 text-gray-700',
+                    className: 'w-4 h-4',
                   }}
                 >
                   {integration.icon}
@@ -189,35 +191,33 @@ const Integrations = () => {
                   {integration.name}
                 </h2>
               </div>
-              <div className="pl-2 flex flex-wrap gap-2">
+              <div className="mt-2 flex flex-wrap gap-2">
                 {integration?.types?.map((type) => {
                   return (
-                    <Card key={type.name} className="p-4 flex flex-col shrink-0 gap-y-1">
+                    <Card key={type.name} className="p-2 flex flex-col shrink-0 pb-3">
                       <div className="flex items-center justify-between w-full">
-                        <h4 className="text-gray-900 text-md dark:text-white mr-4">
+                        <h4 className="text-gray-900 font-medium text-base dark:text-white mr-4">
                           {type.name}
                         </h4>
-                        <div className="ml-auto">
-                          <DFLink
-                            to={type.path ?? '#'}
-                            className="flex items-center hover:no-underline"
+                        <div className="flex ml-auto">
+                          <Button
+                            color="normal"
+                            size="xs"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              navigate(type.path);
+                            }}
                           >
-                            <span className="text-xs text-blue-600 dark:text-blue-500">
-                              Configure
-                            </span>
-                            <IconContext.Provider
-                              value={{
-                                className: 'text-blue-600 dark:text-blue-500 ',
-                              }}
-                            >
-                              <HiArrowSmRight />
-                            </IconContext.Provider>
-                          </DFLink>
+                            Go to details&nbsp;
+                            <HiOutlineChevronRight />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center gap-x-6">
-                        <div className="p-4 flex border-r border-gray-200 dark:border-gray-700 w-20 h-20">
-                          {type.icon}
+                      <div className="flex items-center gap-x-6 mt-2">
+                        <div className="border-r border-gray-200 dark:border-gray-700">
+                          <div className="px-4 flex justify-center items-center h-8 w-20 m-w-[32px] m-h-[32px]">
+                            {type.icon}
+                          </div>
                         </div>
                         <Suspense
                           fallback={

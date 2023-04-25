@@ -1,20 +1,19 @@
 import cx from 'classnames';
 import { startCase } from 'lodash-es';
 import { Suspense } from 'react';
-import { IconContext } from 'react-icons';
-import { HiArrowSmRight } from 'react-icons/hi';
+import { HiOutlineChevronRight } from 'react-icons/hi';
 import { useLoaderData } from 'react-router-dom';
-import { Card } from 'ui-components';
+import { Button, Card } from 'ui-components';
 
 import { getCloudNodesApiClient } from '@/api/api';
 import { ModelCloudNodeProvidersListResp } from '@/api/generated';
-import { DFLink } from '@/components/DFLink';
 import { getPostureLogo } from '@/constants/logos';
 import { useTheme } from '@/theme/ThemeContext';
 import { ApiError, makeRequest } from '@/utils/api';
 import { abbreviateNumber, formatPercentage } from '@/utils/number';
 import { typedDefer } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export type LoaderDataType = {
   error?: string;
@@ -78,7 +77,7 @@ const CardSkeleton = () => {
 const AccountSummary = () => {
   const { mode } = useTheme();
   const loaderData = useLoaderData() as LoaderDataType;
-
+  const { navigate } = usePageNavigation();
   return (
     <>
       <Suspense fallback={<CardSkeleton />}>
@@ -94,32 +93,28 @@ const AccountSummary = () => {
               } = provider;
               const account = getPostureLogo(name, mode);
               return (
-                <Card key={name} className="p-4 flex flex-col">
-                  <div className="flex items-center justify-between w-full">
-                    <h4 className="text-gray-900 text-sm dark:text-white mr-4">
+                <Card key={name} className="p-2 pb-3 flex flex-col">
+                  <div className="flex items-center w-full">
+                    <h4 className="text-gray-900 text-base font-medium dark:text-white mr-4">
                       {startCase(account.label)}
                     </h4>
-                    <div className="ml-auto">
-                      <DFLink
-                        to={`/posture/accounts/${name}`}
-                        className="flex items-center hover:no-underline"
+                    <div className="flex ml-auto">
+                      <Button
+                        color="normal"
+                        size="xs"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate(`/posture/accounts/${name}`);
+                        }}
                       >
-                        <span className="text-xs text-blue-600 dark:text-blue-500">
-                          Go to details
-                        </span>
-                        <IconContext.Provider
-                          value={{
-                            className: 'text-blue-600 dark:text-blue-500',
-                          }}
-                        >
-                          <HiArrowSmRight />
-                        </IconContext.Provider>
-                      </DFLink>
+                        Go to details&nbsp;
+                        <HiOutlineChevronRight />
+                      </Button>
                     </div>
                   </div>
-                  <div className="mt-3 flex gap-x-6 items-center">
+                  <div className="mt-2 flex gap-x-6 items-center">
                     <div className="pr-2 flex flex-col gap-y-2 border-r border-gray-200 dark:border-gray-700">
-                      <div className="px-4 flex basis-8 justify-center items-center w-20 h-20">
+                      <div className="px-4 flex justify-center items-center h-8 w-20 m-w-[32px] m-h-[32px]">
                         <img height="100%" width="100%" src={account.icon} alt="logo" />
                       </div>
                       <div className="flex flex-col items-center">
