@@ -1,12 +1,12 @@
 import { HiOutlineChevronRight } from 'react-icons/hi';
-import { Button, Card, CircleSpinner, Separator } from 'ui-components';
+import { Card, CircleSpinner, Separator } from 'ui-components';
 
+import { LinkButton } from '@/components/LinkButton';
 import {
   TopNVulnerableChart,
   TopNVulnerableChartData,
 } from '@/features/vulnerabilities/components/landing/TopNVulnerableChart';
 import { useTheme } from '@/theme/ThemeContext';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 const LoadingComponent = () => {
   return (
@@ -28,7 +28,7 @@ export const TopNVulnerableCard = ({
   link: string;
 }) => {
   const { mode } = useTheme();
-  const { navigate } = usePageNavigation();
+
   return (
     <Card className="w-full py-2 px-3 flex flex-col relative">
       <div className="flex items-center pb-2">
@@ -36,17 +36,12 @@ export const TopNVulnerableCard = ({
           {title}
         </h4>
         <div className="flex ml-auto">
-          <Button
-            color="normal"
-            size="xs"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate(link);
-            }}
-          >
-            Go to Scans&nbsp;
-            <HiOutlineChevronRight />
-          </Button>
+          <LinkButton to={link} sizing="xs">
+            <>
+              Go to Scans&nbsp;
+              <HiOutlineChevronRight />
+            </>
+          </LinkButton>
         </div>
       </div>
       <Separator />

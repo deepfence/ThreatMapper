@@ -1,9 +1,10 @@
 import cx from 'classnames';
 import { Suspense } from 'react';
 import { HiOutlineChevronRight } from 'react-icons/hi';
-import { useLoaderData, useNavigate } from 'react-router-dom';
-import { Button, Card, Separator } from 'ui-components';
+import { useLoaderData } from 'react-router-dom';
+import { Card, Separator } from 'ui-components';
 
+import { LinkButton } from '@/components/LinkButton';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { getPostureLogo } from '@/constants/logos';
 import { DashboardLoaderData } from '@/features/dashboard/pages/Dashboard';
@@ -32,7 +33,6 @@ export const PostureStatSkeleton = () => {
 
 export const Posture = () => {
   const loaderData = useLoaderData() as DashboardLoaderData;
-  const navigation = useNavigate();
   const { mode } = useTheme();
   return (
     <Card className="p-2">
@@ -42,17 +42,12 @@ export const Posture = () => {
         </div>
         <h4 className="text-base font-medium">Posture</h4>
         <div className="flex ml-auto">
-          <Button
-            color="normal"
-            size="xs"
-            onClick={(e) => {
-              e.preventDefault();
-              navigation('/posture');
-            }}
-          >
-            Go to Posture Dashboard&nbsp;
-            <HiOutlineChevronRight />
-          </Button>
+          <LinkButton to={'/posture'} sizing="xs">
+            <>
+              Go to Posture Dashboard&nbsp;
+              <HiOutlineChevronRight />
+            </>
+          </LinkButton>
         </div>
       </div>
       <Separator />

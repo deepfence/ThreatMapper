@@ -1,8 +1,8 @@
 import { HiOutlineChevronRight } from 'react-icons/hi';
-import { Button, Card, Separator, Tabs } from 'ui-components';
+import { Card, Separator } from 'ui-components';
 
+import { LinkButton } from '@/components/LinkButton';
 import { DagreGraph } from '@/features/vulnerabilities/components/landing/DagreGraph';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export const attackPathTabs: Array<{
   label: string;
@@ -23,25 +23,20 @@ export const attackPathTabs: Array<{
 ];
 
 export const TopAttackPaths = () => {
-  const { navigate } = usePageNavigation();
   return (
     <Card className="h-full p-2">
       <div className="flex items-center pb-2">
         <h4 className="text-gray-900 font-medium text-base dark:text-white">
           Top Attack Paths
         </h4>
+
         <div className="flex ml-auto">
-          <Button
-            color="normal"
-            size="xs"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate('/vulnerability/scans');
-            }}
-          >
-            Go to ThreatGraph&nbsp;
-            <HiOutlineChevronRight />
-          </Button>
+          <LinkButton to={'/vulnerability/scans'} sizing="xs">
+            <>
+              Go to ThreatGraph&nbsp;
+              <HiOutlineChevronRight />
+            </>
+          </LinkButton>
         </div>
       </div>
       <Separator />

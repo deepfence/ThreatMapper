@@ -1,15 +1,15 @@
 import { EChartsOption } from 'echarts';
 import { capitalize } from 'lodash-es';
 import { HiOutlineChevronRight } from 'react-icons/hi';
-import { Button, Card, CircleSpinner, Separator } from 'ui-components';
+import { Card, CircleSpinner, Separator } from 'ui-components';
 
+import { LinkButton } from '@/components/LinkButton';
 import { ReactECharts } from '@/components/ReactEcharts';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { VulnerabilitySeverityType } from '@/types/common';
 import { getObjectKeys } from '@/utils/array';
 import { abbreviateNumber } from '@/utils/number';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 type ChartData = Array<{
   label: string;
@@ -85,7 +85,7 @@ export const VulnerabilitiesCountsCard = ({
   detailsLink: string;
 }) => {
   const { mode } = useTheme();
-  const { navigate } = usePageNavigation();
+
   return (
     <Card className="flex h-full p-2 flex-col">
       <div className="flex items-center pb-2">
@@ -93,17 +93,12 @@ export const VulnerabilitiesCountsCard = ({
           {title}
         </h4>
         <div className="flex ml-auto">
-          <Button
-            color="normal"
-            size="xs"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate(detailsLink);
-            }}
-          >
-            Details&nbsp;
-            <HiOutlineChevronRight />
-          </Button>
+          <LinkButton to={detailsLink} sizing="xs">
+            <>
+              Details&nbsp;
+              <HiOutlineChevronRight />
+            </>
+          </LinkButton>
         </div>
       </div>
       <Separator />

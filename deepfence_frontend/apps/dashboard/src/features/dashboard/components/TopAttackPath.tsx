@@ -1,12 +1,11 @@
 import { HiOutlineChevronRight } from 'react-icons/hi';
-import { useNavigate } from 'react-router-dom';
-import { Button, Card, Separator } from 'ui-components';
+import { Card, Separator } from 'ui-components';
 
+import { LinkButton } from '@/components/LinkButton';
 import { ThreatGraphIcon } from '@/components/sideNavigation/icons/ThreatGraph';
 import { ThreatGraphComponent } from '@/features/threat-graph/components/ThreatGraph';
 
 export const TopAttackPaths = () => {
-  const navigate = useNavigate();
   return (
     <Card className="p-2">
       <div className="flex flex-row items-center gap-x-2 pb-2">
@@ -15,17 +14,12 @@ export const TopAttackPaths = () => {
         </div>
         <h4 className="text-base font-medium">Top Attack Paths</h4>
         <div className="flex ml-auto">
-          <Button
-            color="normal"
-            size="xs"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate('/threatgraph');
-            }}
-          >
-            Go to ThreatGraph&nbsp;
-            <HiOutlineChevronRight />
-          </Button>
+          <LinkButton to={'/threatgraph'} sizing="xs">
+            <>
+              Go to ThreatGraph&nbsp;
+              <HiOutlineChevronRight />
+            </>
+          </LinkButton>
         </div>
       </div>
       <Separator />

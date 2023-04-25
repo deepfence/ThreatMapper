@@ -7,11 +7,12 @@ import {
 } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import { useLoaderData } from 'react-router-dom';
-import { Button, Card } from 'ui-components';
+import { Card } from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ModelSummary } from '@/api/generated/models/ModelSummary';
+import { LinkButton } from '@/components/LinkButton';
 import { getRegistryLogo } from '@/constants/logos';
 import { useTheme } from '@/theme/ThemeContext';
 import { RegistryType } from '@/types/common';
@@ -19,7 +20,6 @@ import { ApiError, makeRequest } from '@/utils/api';
 import { abbreviateNumber } from '@/utils/number';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 interface RegistryResponseType extends ModelSummary {
   type: string;
@@ -108,7 +108,6 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
     registry.type as unknown as keyof typeof RegistryType,
     mode,
   );
-  const { navigate } = usePageNavigation();
 
   return (
     <Card className="p-2 pb-3 flex flex-col" key={registry.type}>
@@ -117,17 +116,12 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
           {name}
         </h4>
         <div className="flex ml-auto">
-          <Button
-            color="normal"
-            size="xs"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate(`/registries/${registry.type}`);
-            }}
-          >
-            Go to details&nbsp;
-            <HiOutlineChevronRight />
-          </Button>
+          <LinkButton to={`/registries/${registry.type}`} sizing="xs">
+            <>
+              Go to details&nbsp;
+              <HiOutlineChevronRight />
+            </>
+          </LinkButton>
         </div>
       </div>
       <div className="flex items-center gap-x-6 mt-2">
@@ -142,7 +136,7 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
             <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
               {abbreviateNumber(registry.registries ?? 0)}
             </span>
-            <div className="flex items-center gap-x-1 min-w-[70px]">
+            <div className="flex items-center gap-x-1 min-w-[90px]">
               <IconContext.Provider
                 value={{
                   className: 'h-5 w-5 text-blue-500 dark:text-blue-400',

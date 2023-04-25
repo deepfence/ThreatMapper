@@ -3,10 +3,11 @@ import { IconContext } from 'react-icons';
 import { FaBook, FaBullhorn, FaCopyright, FaFire } from 'react-icons/fa';
 import { HiOutlineChevronRight } from 'react-icons/hi';
 import { useLoaderData } from 'react-router-dom';
-import { Button, Card } from 'ui-components';
+import { Card } from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { LinkButton } from '@/components/LinkButton';
 import {
   AwsSecurityHub,
   ElasticSearch,
@@ -21,7 +22,6 @@ import {
   SumoLogic,
 } from '@/constants/logos';
 import { DFAwait } from '@/utils/suspense';
-import { usePageNavigation } from '@/utils/usePageNavigation';
 
 import { loader } from './IntegrationAdd';
 
@@ -164,7 +164,7 @@ const Integrations = () => {
   const loaderData = useLoaderData() as {
     data: ModelIntegrationListResp[];
   };
-  const { navigate } = usePageNavigation();
+
   return (
     <>
       <div className="flex p-2 w-full shadow bg-white dark:bg-gray-800 items-center">
@@ -200,17 +200,12 @@ const Integrations = () => {
                           {type.name}
                         </h4>
                         <div className="flex ml-auto">
-                          <Button
-                            color="normal"
-                            size="xs"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              navigate(type.path);
-                            }}
-                          >
-                            Go to details&nbsp;
-                            <HiOutlineChevronRight />
-                          </Button>
+                          <LinkButton to={type.path} sizing="xs">
+                            <>
+                              Go to details&nbsp;
+                              <HiOutlineChevronRight />
+                            </>
+                          </LinkButton>
                         </div>
                       </div>
                       <div className="flex items-center gap-x-6 mt-2">
@@ -222,8 +217,8 @@ const Integrations = () => {
                         <Suspense
                           fallback={
                             <div className="w-16">
-                              <div className="h-6 w-4 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-                              <div className="h-4 w-10 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                              <div className="h-8 w-4 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                              <div className="mt-2 h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
                             </div>
                           }
                         >
