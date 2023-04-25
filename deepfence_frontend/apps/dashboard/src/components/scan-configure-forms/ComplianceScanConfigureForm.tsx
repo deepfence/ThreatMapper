@@ -1,10 +1,9 @@
 import { filter, find } from 'lodash-es';
 import { useEffect, useState } from 'react';
 import { memo, useMemo } from 'react';
-import { HiMinusCircle, HiPlusCircle } from 'react-icons/hi';
 import { ActionFunctionArgs, generatePath, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button, TableSkeleton, Tabs } from 'ui-components';
+import { Button, Checkbox, TableSkeleton, Tabs } from 'ui-components';
 import { CircleSpinner, createColumnHelper, Switch, Table } from 'ui-components';
 
 import { getComplianceApiClient } from '@/api/api';
@@ -351,7 +350,7 @@ export const ComplianceScanConfigureForm = ({
   return (
     <>
       <fetcher.Form
-        className="flex gap-4 mb-6 px-4"
+        className="flex gap-4"
         method="post"
         action="/data-component/scan/posture"
       >
@@ -363,21 +362,15 @@ export const ComplianceScanConfigureForm = ({
           value={tabs.map((tab) => tab.value)}
         />
         {complianceType[nodeType]?.map((type: string) => (
-          <Button
-            color="primary"
-            outline={hasTypeSelected(tabs, type) ? false : true}
-            size="xs"
+          <Checkbox
+            label={type}
             key={type}
-            onClick={() => {
+            checked={tabs.find((tab) => tab.value === type) !== undefined}
+            value={type}
+            onCheckedChange={() => {
               onCheckTypeSelection(type);
             }}
-            endIcon={hasTypeSelected(tabs, type) ? <HiMinusCircle /> : <HiPlusCircle />}
-            className="self-start"
-            value={type}
-            type="button"
-          >
-            {type}
-          </Button>
+          />
         ))}
 
         <input type="text" name="_nodeIds" hidden readOnly value={nodeIds.join(',')} />
@@ -386,7 +379,7 @@ export const ComplianceScanConfigureForm = ({
         <Button
           disabled={state !== 'idle'}
           loading={state !== 'idle'}
-          size="xs"
+          size="sm"
           color="primary"
           type="submit"
           className="ml-auto "

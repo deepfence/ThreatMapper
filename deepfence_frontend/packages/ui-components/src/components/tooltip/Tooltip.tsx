@@ -8,7 +8,7 @@ export interface TooltipProps
   placement?: 'top' | 'right' | 'bottom' | 'left';
   children: React.ReactNode;
   triggerAsChild?: boolean;
-  content: string;
+  content: string | React.ReactNode;
   delayDuration?: number;
 }
 
@@ -53,18 +53,23 @@ export const Tooltip = (props: TooltipProps) => {
               width={14}
               className="fill-gray-900 dark:fill-gray-700"
             />
-            <span
-              className={cx(
-                'block text-white',
-                Typography.size.sm,
-                Typography.weight.medium,
-              )}
-              style={{
-                wordBreak: 'break-word',
-              }}
-            >
-              {content}
-            </span>
+
+            {typeof content === 'string' ? (
+              <span
+                className={cx(
+                  'block text-white',
+                  Typography.size.sm,
+                  Typography.weight.medium,
+                )}
+                style={{
+                  wordBreak: 'break-word',
+                }}
+              >
+                {content}
+              </span>
+            ) : (
+              content
+            )}
           </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
       </TooltipPrimitive.Root>

@@ -1,5 +1,5 @@
 import { IconContext } from 'react-icons';
-import { HiArrowRight, HiDocumentSearch, HiSwitchHorizontal } from 'react-icons/hi';
+import { HiArrowRight, HiSwitchHorizontal } from 'react-icons/hi';
 import { generatePath, Navigate, useLocation } from 'react-router-dom';
 import { Button, Card, Separator, Tooltip, Typography } from 'ui-components';
 
@@ -10,6 +10,10 @@ import LogoAzureRegistry from '@/assets/logo-azure-registry.svg';
 import LogoGoogle from '@/assets/logo-google.svg';
 import LogoK8 from '@/assets/logo-k8.svg';
 import LogoLinux from '@/assets/logo-linux.svg';
+import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
+import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
+import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
+import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { OnboardConnectionNode } from '@/features/onboard/pages/connectors/MyConnectors';
 import { Mode, useTheme } from '@/theme/ThemeContext';
@@ -38,33 +42,33 @@ type ScanTypeListProps = {
 const complianceScanData = {
   scanTitle: 'Compliance Scan',
   scanType: ScanTypeEnum.ComplianceScan,
-  description: `A few words about the compliance scan and why you need to use it.`,
+  description: `Compliance scan measures the level of compliance, and presents the overall compliance picture as a 'Threat Graph'. This will show how the platforms are exposed, the routes that an attacker may take to exploit the exposure.`,
   buttonText: 'Configure Compliance Scan',
 };
 
 const cloudComplianceScanData = {
   scanTitle: 'Compliance Scan',
   scanType: ScanTypeEnum.CloudComplianceScan,
-  description: `A few words about the compliance scan and why you need to use it.`,
+  description: `Compliance scan measures the level of compliance, and presents the overall compliance picture as a 'Threat Graph'. This will show how the platforms are exposed, the routes that an attacker may take to exploit the exposure.`,
   buttonText: 'Configure Compliance Scan',
 };
 
 const vulnerabilityScanData = {
   scanTitle: 'Vulnerability Scan',
   scanType: ScanTypeEnum.VulnerabilityScan,
-  description: `A few words about the vulnerability scan and why you need to use it.`,
+  description: `Your infrastructure and applications depend on third-party components, and if vulnerabilities are ever found, attackers will rush to create and deliver exploits. Deepfence ThreatMapper categorizes and prioritizes vulnerabilities so you know what you need to fix first.`,
   buttonText: 'Configure Vulnerability Scan',
 };
 const secretScanData = {
   scanTitle: 'Secret Scan',
   scanType: ScanTypeEnum.SecretScan,
-  description: `A few words about the secret scan and why you need to use it.`,
+  description: `Deepfence Secret Scan can find unprotected secrets in container images or file systems. Deepfence SecretScanner helps users scan their container images or local directories on hosts and outputs a JSON file with details of all the secrets found.`,
   buttonText: 'Configure Secret Scan',
 };
 const malwareScanData = {
   scanTitle: 'Malware Scan',
   scanType: ScanTypeEnum.MalwareScan,
-  description: `A few words about the malwawre scan and why you need to use it.`,
+  description: `Deepfence Malware scans container images, running Docker containers, and filesystems to find indicators of malware. It uses ruleset to identify resources that match known malware signatures, and may indicate that the container or filesystem has been compromised.`,
   buttonText: 'Configure Malware Scan',
 };
 
@@ -98,31 +102,31 @@ const logoAndTextMap = (
     aws:
       mode === 'dark'
         ? {
-            title: `(${count}) Amazon Web Service Account${count > 1 ? 's' : ''}`,
+            title: `Amazon Web Service Account${count > 1 ? 's' : ''}`,
             logo: LogoAwsWhite,
           }
         : {
-            title: `(${count}) Amazon Web Service Account${count > 1 ? 's' : ''}`,
+            title: `Amazon Web Service Account${count > 1 ? 's' : ''}`,
             logo: LogoAws,
           },
     gcp: {
-      title: `(${count}) Google Cloud Service Account${count > 1 ? 's' : ''}`,
+      title: `Google Cloud Service Account${count > 1 ? 's' : ''}`,
       logo: LogoGoogle,
     },
     azure: {
-      title: `(${count}) Azure Web Service Account${count > 1 ? 's' : ''}`,
+      title: `Azure Web Service Account${count > 1 ? 's' : ''}`,
       logo: LogoAzure,
     },
     host: {
-      title: `(${count}) Linux Host${count > 1 ? 's' : ''}`,
+      title: `Linux Host${count > 1 ? 's' : ''}`,
       logo: LogoLinux,
     },
     kubernetes_cluster: {
-      title: `(${count}) Kubernetes Service${count > 1 ? 's' : ''}`,
+      title: `Kubernetes Service${count > 1 ? 's' : ''}`,
       logo: LogoK8,
     },
     registry: {
-      title: `(${count}) Registr${count > 1 ? 'ies' : 'y'}`,
+      title: `Registr${count > 1 ? 'ies' : 'y'}`,
       logo: LogoAzureRegistry,
     },
   };
@@ -148,18 +152,29 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
         <span
           className={`${Typography.size.base} ${Typography.weight.medium} text-gray-500 dark:text-gray-400`}
         >
-          <Tooltip content={state[0].accountId ?? ''}>
+          <Tooltip content={state[0].accountId ?? ''} triggerAsChild>
             <span>{getNodeDisplayText(state[0].accountId ?? '')}</span>
           </Tooltip>
           &nbsp;
           {state.length > 1 && (
             <Tooltip
-              content={state
-                .map((node) => node.accountId)
-                .slice(1)
-                .join(', ')}
+              content={
+                <ul>
+                  {state.map((node, index) => {
+                    return (
+                      <li key={node.accountId}>
+                        <span className="text-gray-400 py-2 pr-1 font-semibold">
+                          {index + 1}.
+                        </span>
+                        <span className="text-gray-300">{node.accountId}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              }
+              triggerAsChild
             >
-              <span className={`${Typography.size.sm} text-blue-500 dark:text-blue-400`}>
+              <span className={'text-sm text-gray-600 dark:text-gray-300'}>
                 +{state.length - 1} more
               </span>
             </Tooltip>
@@ -189,19 +204,38 @@ const ScanHeader = ({ state }: { state: OnboardConnectionNode[] }) => {
       {possibleScanMap[state[0].urlType].map(
         ({ scanTitle, scanType, description, buttonText }: ScanTypeListProps) => {
           return (
-            <Card key={scanType} className="p-5">
+            <Card key={scanType} className="py-3 px-4">
               <h2
                 className={`flex items-center gap-x-2 ${Typography.size.lg} ${Typography.weight.medium} text-gray-700 dark:text-gray-100 pb-2`}
               >
                 <IconContext.Provider
                   value={{ className: 'w-8 h-8 text-blue-600 dark:text-blue-500' }}
                 >
-                  <HiDocumentSearch />
+                  {scanType === ScanTypeEnum.VulnerabilityScan && (
+                    <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
+                      <VulnerabilityIcon />
+                    </div>
+                  )}
+                  {scanType === ScanTypeEnum.ComplianceScan && (
+                    <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
+                      <PostureIcon />
+                    </div>
+                  )}
+                  {scanType === ScanTypeEnum.SecretScan && (
+                    <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
+                      <SecretsIcon />
+                    </div>
+                  )}
+                  {scanType === ScanTypeEnum.MalwareScan && (
+                    <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
+                      <MalwareIcon />
+                    </div>
+                  )}
                 </IconContext.Provider>
                 {scanTitle}
               </h2>
               <Separator />
-              <p className={`${Typography.size.sm} ${Typography.weight.normal} py-2`}>
+              <p className="text-sm font-normal py-2 text-gray-500 dark:text-gray-400 min-h-[160px]">
                 {description}
               </p>
               <Button
@@ -248,7 +282,7 @@ const ChooseScan = () => {
       />
       <SelectedAccount state={state} />
       <ScanHeader state={state} />
-      <Button onClick={goBack} color="default" size="xs" className="mt-16">
+      <Button onClick={goBack} color="default" size="xs" className="mt-12">
         Go Back
       </Button>
     </>

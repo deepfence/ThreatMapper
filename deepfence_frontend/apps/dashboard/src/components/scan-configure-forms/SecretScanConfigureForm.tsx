@@ -156,7 +156,7 @@ export const SecretScanConfigureForm = ({
 
   return (
     <fetcher.Form
-      className="flex flex-col mb-4 min-w-[380px]"
+      className="flex flex-col min-w-[380px]"
       method="post"
       action="/data-component/scan/secret"
     >
@@ -173,14 +173,14 @@ export const SecretScanConfigureForm = ({
           <h6 className={'text-md font-medium dark:text-white'}>Advanced Options</h6>
         )}
         {!wantAdvanceOptions && (
-          <p className="text-gray-900 dark:text-white text-sm pr-3">
+          <p className="text-gray-900 dark:text-white text-base pr-3">
             You can start secret scanning to find for any secrets
           </p>
         )}
         <Button
           disabled={state !== 'idle'}
           loading={state !== 'idle'}
-          size="xs"
+          size="sm"
           color="primary"
           className="ml-auto"
           type="submit"

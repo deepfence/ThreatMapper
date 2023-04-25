@@ -7,6 +7,7 @@ import {
   HiRefresh,
 } from 'react-icons/hi';
 import { useLoaderData, useRevalidator } from 'react-router-dom';
+import { useInterval } from 'react-use';
 import {
   Button,
   createColumnHelper,
@@ -251,6 +252,11 @@ function MyConnectors() {
   const { navigate } = usePageNavigation();
   const navigatedRef = useRef(false);
   const loaderData = useLoaderData() as LoaderData;
+  const revalidator = useRevalidator();
+
+  useInterval(() => {
+    revalidator.revalidate();
+  }, 300000);
 
   return (
     <Tabs
