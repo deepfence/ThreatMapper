@@ -2,7 +2,7 @@ import { ActionFunction, redirect } from 'react-router-dom';
 
 import { getAuthenticationApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
-import { ApiError, makeRequest } from '@/utils/api';
+import { ApiError, makeRequest, validateRedirectToUrl } from '@/utils/api';
 import storage from '@/utils/storage';
 
 export type LoginActionReturnType = {
@@ -16,6 +16,7 @@ export type LoginActionReturnType = {
 export const loginAction: ActionFunction = async ({
   request,
 }): Promise<LoginActionReturnType> => {
+  const url = new URL(request.url);
   const formData = await request.formData();
   const body = Object.fromEntries(formData);
 
@@ -55,6 +56,11 @@ export const loginAction: ActionFunction = async ({
     accessToken: r.access_token,
     refreshToken: r.refresh_token,
   });
+
+  const redirectTo = url.searchParams.get('redirectTo');
+  if (redirectTo && validateRedirectToUrl(redirectTo)) {
+    throw redirect(url.searchParams.get('redirectTo') as string, 302);
+  }
 
   if (!r.onboarding_required) {
     throw redirect('/dashboard', 302);

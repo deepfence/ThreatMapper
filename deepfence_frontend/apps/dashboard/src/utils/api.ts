@@ -103,12 +103,21 @@ async function refreshAccessTokenIfPossible(): Promise<boolean> {
 }
 
 export function redirectToLogin() {
-  return redirect('/auth/login');
+  const searchParams = new URLSearchParams();
+  const url = new URL(window.location.href);
+  searchParams.append('redirectTo', `${url.pathname}${url.search}`);
+  return redirect(`/auth/login?${searchParams.toString()}`);
 }
 
 export async function requireLogin() {
   const auth = storage.getAuth();
   if (auth) return;
   storage.clearAuth();
-  throw redirect('/auth/login');
+  throw redirectToLogin();
+}
+
+export function validateRedirectToUrl(redirectTo: string) {
+  if (!redirectTo) return true;
+  if (!redirectTo.startsWith('/')) return false;
+  return true;
 }
