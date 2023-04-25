@@ -16,7 +16,7 @@ import {
 import { NodeCounts } from '@/features/dashboard/components/NodeCounts';
 import { Posture } from '@/features/dashboard/components/Posture';
 import { Registries } from '@/features/dashboard/components/Registries';
-import { RuntimeIncidents } from '@/features/dashboard/components/RuntimeIncidents';
+import { ThreatStrykerBanner } from '@/features/dashboard/components/ThreatStrykerBanner';
 import { TopAttackPaths } from '@/features/dashboard/components/TopAttackPath';
 import { TopRisksMalware } from '@/features/dashboard/components/TopRisksMalware';
 import { TopRisksSecret } from '@/features/dashboard/components/TopRisksSecret';
@@ -691,6 +691,7 @@ const loader = async (): Promise<TypedDeferredData<DashboardLoaderData>> => {
 const Dashboard = () => {
   return (
     <div className="overflow-auto">
+      <ThreatStrykerBanner />
       <NodeCounts />
       <div className="grid grid-cols-2 2xl:grid-cols-3 gap-2 auto-rows-auto px-2 last:mb-2">
         <TopAttackPaths />
@@ -699,7 +700,6 @@ const Dashboard = () => {
         <TopRisksVulnerability />
         <TopRisksSecret />
         <TopRisksMalware />
-        <RuntimeIncidents />
       </div>
     </div>
   );
