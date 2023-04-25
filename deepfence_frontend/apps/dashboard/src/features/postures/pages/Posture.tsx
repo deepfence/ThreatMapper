@@ -95,7 +95,7 @@ const AccountSummary = () => {
               return (
                 <Card key={name} className="p-2 pb-3 flex flex-col">
                   <div className="flex items-center w-full">
-                    <h4 className="text-gray-900 text-base font-medium dark:text-white mr-4">
+                    <h4 className="text-gray-900 text-sm font-medium dark:text-white mr-4">
                       {startCase(account.label)}
                     </h4>
                     <div className="flex ml-auto">

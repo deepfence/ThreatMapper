@@ -196,7 +196,7 @@ const Integrations = () => {
                   return (
                     <Card key={type.name} className="p-2 flex flex-col shrink-0 pb-3">
                       <div className="flex items-center justify-between w-full">
-                        <h4 className="text-gray-900 font-medium text-base dark:text-white mr-4">
+                        <h4 className="text-gray-900 font-medium text-sm dark:text-white mr-4">
                           {type.name}
                         </h4>
                         <div className="flex ml-auto">

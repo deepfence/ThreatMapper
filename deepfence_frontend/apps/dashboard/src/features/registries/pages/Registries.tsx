@@ -112,9 +112,7 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
   return (
     <Card className="p-2 pb-3 flex flex-col" key={registry.type}>
       <div className="flex items-center w-full">
-        <h4 className="text-gray-900 font-medium text-base dark:text-white mr-4">
-          {name}
-        </h4>
+        <h4 className="text-gray-900 font-medium text-sm dark:text-white mr-4">{name}</h4>
         <div className="flex ml-auto">
           <LinkButton to={`/registries/${registry.type}`} sizing="xs">
             <>
