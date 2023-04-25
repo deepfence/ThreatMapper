@@ -1,5 +1,10 @@
 import { Suspense } from 'react';
-import { HiArrowSmRight, HiDocumentText, HiPhotograph, HiTag } from 'react-icons/hi';
+import {
+  HiDocumentText,
+  HiOutlineChevronRight,
+  HiPhotograph,
+  HiTag,
+} from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import { useLoaderData } from 'react-router-dom';
 import { Card } from 'ui-components';
@@ -7,7 +12,7 @@ import { Card } from 'ui-components';
 import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ModelSummary } from '@/api/generated/models/ModelSummary';
-import { DFLink } from '@/components/DFLink';
+import { LinkButton } from '@/components/LinkButton';
 import { getRegistryLogo } from '@/constants/logos';
 import { useTheme } from '@/theme/ThemeContext';
 import { RegistryType } from '@/types/common';
@@ -103,32 +108,27 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
     registry.type as unknown as keyof typeof RegistryType,
     mode,
   );
+
   return (
-    <Card className="p-4 items-center" key={registry.type}>
-      <div className="flex items-center justify-between w-full">
-        <h4 className="text-gray-900 text-md dark:text-white mr-4">{name}</h4>
-        <div className="ml-auto">
-          <DFLink
-            to={`/registries/${registry.type}`}
-            className="flex items-center hover:no-underline"
-          >
-            <span className="text-xs text-blue-600 dark:text-blue-500">
-              Go to details
-            </span>
-            <IconContext.Provider
-              value={{
-                className: 'text-blue-600 dark:text-blue-500 ',
-              }}
-            >
-              <HiArrowSmRight />
-            </IconContext.Provider>
-          </DFLink>
+    <Card className="p-2 pb-3 flex flex-col" key={registry.type}>
+      <div className="flex items-center w-full">
+        <h4 className="text-gray-900 font-medium text-sm dark:text-white mr-4">{name}</h4>
+        <div className="flex ml-auto">
+          <LinkButton to={`/registries/${registry.type}`} sizing="xs">
+            <>
+              Go to details&nbsp;
+              <HiOutlineChevronRight />
+            </>
+          </LinkButton>
         </div>
       </div>
-      <div className="flex items-center gap-x-6 mt-3">
-        <div className="p-4 flex items-center border-r border-gray-200 dark:border-gray-700 w-20 h-20">
-          <img height="100%" width="100%" src={icon} alt="logo" />
+      <div className="flex items-center gap-x-6 mt-2">
+        <div className="gap-y-2 border-r border-gray-200 dark:border-gray-700">
+          <div className="px-4 flex justify-center items-center h-8 w-20 m-w-[32px] m-h-[32px]">
+            <img height="100%" width="100%" src={icon} alt="logo" />
+          </div>
         </div>
+
         <div className="flex gap-x-4 justify-center items-center">
           <div className="flex flex-col justify-center">
             <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
@@ -151,7 +151,7 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
             <span className="text-[2rem] text-gray-900 dark:text-gray-200 font-light">
               {abbreviateNumber(registry.images ?? 0)}
             </span>
-            <div className="flex items-center gap-x-1 min-w-[90px]">
+            <div className="flex items-center gap-x-1 min-w-[70px]">
               <IconContext.Provider
                 value={{
                   className: 'h-5 w-5 text-blue-500 dark:text-blue-400',

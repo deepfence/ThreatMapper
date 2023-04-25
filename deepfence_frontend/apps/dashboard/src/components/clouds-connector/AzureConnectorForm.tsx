@@ -3,8 +3,16 @@ import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, Step, Stepper, Typography } from 'ui-components';
 
 import { CopyToClipboard } from '@/components/CopyToClipboard';
+import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
 
 export const AzureConnectorForm = () => {
+  const { status, data } = useGetApiToken();
+  const dfApiKey =
+    status !== 'idle'
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.api_token === undefined
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.api_token;
   const code = `provider "azurerm" {
     features {}
     subscription_id = "<SUBSCRIPTION_ID eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX>"
@@ -15,7 +23,7 @@ export const AzureConnectorForm = () => {
     version             = "0.1.0"
     mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
     mgmt-console-port   = "443"
-    deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+    deepfence-key       = "${dfApiKey}"
   }
   `;
 

@@ -1,9 +1,10 @@
 import cx from 'classnames';
 import { Suspense } from 'react';
 import { HiOutlineChevronRight } from 'react-icons/hi';
-import { useLoaderData, useNavigate } from 'react-router-dom';
-import { Button, Card, Separator } from 'ui-components';
+import { useLoaderData } from 'react-router-dom';
+import { Card, Separator } from 'ui-components';
 
+import { LinkButton } from '@/components/LinkButton';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { getRegistryLogo } from '@/constants/logos';
 import { DashboardLoaderData } from '@/features/dashboard/pages/Dashboard';
@@ -33,7 +34,6 @@ const RegistriesSkeleton = () => {
 
 export const Registries = () => {
   const { mode } = useTheme();
-  const navigate = useNavigate();
   const loaderData = useLoaderData() as DashboardLoaderData;
   return (
     <Card className="p-2">
@@ -43,17 +43,12 @@ export const Registries = () => {
         </div>
         <span className="text-base font-medium">Registries</span>
         <div className="flex ml-auto gap-1">
-          <Button
-            color="normal"
-            size="xs"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate('/registries');
-            }}
-          >
-            Go to Registries&nbsp;
-            <HiOutlineChevronRight />
-          </Button>
+          <LinkButton to={'/registries'} sizing="xs">
+            <>
+              Go to Registries&nbsp;
+              <HiOutlineChevronRight />
+            </>
+          </LinkButton>
         </div>
       </div>
       <Separator />

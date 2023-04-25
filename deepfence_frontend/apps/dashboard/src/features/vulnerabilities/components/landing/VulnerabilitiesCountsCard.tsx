@@ -1,10 +1,9 @@
 import { EChartsOption } from 'echarts';
 import { capitalize } from 'lodash-es';
-import { IconContext } from 'react-icons';
-import { HiArrowSmRight } from 'react-icons/hi';
-import { Card, CircleSpinner } from 'ui-components';
+import { HiOutlineChevronRight } from 'react-icons/hi';
+import { Card, CircleSpinner, Separator } from 'ui-components';
 
-import { DFLink } from '@/components/DFLink';
+import { LinkButton } from '@/components/LinkButton';
 import { ReactECharts } from '@/components/ReactEcharts';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { Mode, useTheme } from '@/theme/ThemeContext';
@@ -86,24 +85,23 @@ export const VulnerabilitiesCountsCard = ({
   detailsLink: string;
 }) => {
   const { mode } = useTheme();
+
   return (
     <Card className="flex h-full p-2 flex-col">
-      <div className="p-2 flex">
-        <h4 className="text-gray-900 text-sm dark:text-white truncate">{title}</h4>
-        <DFLink
-          to={detailsLink}
-          className="shrink-0 flex hover:no-underline ml-auto mr-2"
-        >
-          <span className="text-xs text-blue-600 dark:text-blue-500">Details</span>
-          <IconContext.Provider
-            value={{
-              className: 'text-blue-600 dark:text-blue-500',
-            }}
-          >
-            <HiArrowSmRight />
-          </IconContext.Provider>
-        </DFLink>
+      <div className="flex items-center pb-2">
+        <h4 className="text-gray-900 font-medium text-base dark:text-white truncate">
+          {title}
+        </h4>
+        <div className="flex ml-auto">
+          <LinkButton to={detailsLink} sizing="xs">
+            <>
+              Details&nbsp;
+              <HiOutlineChevronRight />
+            </>
+          </LinkButton>
+        </div>
       </div>
+      <Separator />
       {loading && <LoadingComponent />}
       {data && !loading && (
         <div className="flex flex-col gap-2 items-center justify-center relative">

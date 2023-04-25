@@ -1,14 +1,13 @@
 import cx from 'classnames';
 import { startCase } from 'lodash-es';
 import { Suspense } from 'react';
-import { IconContext } from 'react-icons';
-import { HiArrowSmRight } from 'react-icons/hi';
+import { HiOutlineChevronRight } from 'react-icons/hi';
 import { useLoaderData } from 'react-router-dom';
 import { Card } from 'ui-components';
 
 import { getCloudNodesApiClient } from '@/api/api';
 import { ModelCloudNodeProvidersListResp } from '@/api/generated';
-import { DFLink } from '@/components/DFLink';
+import { LinkButton } from '@/components/LinkButton';
 import { getPostureLogo } from '@/constants/logos';
 import { useTheme } from '@/theme/ThemeContext';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -94,37 +93,28 @@ const AccountSummary = () => {
               } = provider;
               const account = getPostureLogo(name, mode);
               return (
-                <Card key={name} className="p-4 flex flex-col">
-                  <div className="flex items-center justify-between w-full">
-                    <h4 className="text-gray-900 text-sm dark:text-white mr-4">
+                <Card key={name} className="p-2 pb-3 flex flex-col">
+                  <div className="flex items-center w-full">
+                    <h4 className="text-gray-900 text-sm font-medium dark:text-white mr-4">
                       {startCase(account.label)}
                     </h4>
-                    <div className="ml-auto">
-                      <DFLink
-                        to={`/posture/accounts/${name}`}
-                        className="flex items-center hover:no-underline"
-                      >
-                        <span className="text-xs text-blue-600 dark:text-blue-500">
-                          Go to details
-                        </span>
-                        <IconContext.Provider
-                          value={{
-                            className: 'text-blue-600 dark:text-blue-500',
-                          }}
-                        >
-                          <HiArrowSmRight />
-                        </IconContext.Provider>
-                      </DFLink>
+                    <div className="flex ml-auto">
+                      <LinkButton to={`/posture/accounts/${name}`} sizing="xs">
+                        <>
+                          Go to details&nbsp;
+                          <HiOutlineChevronRight />
+                        </>
+                      </LinkButton>
                     </div>
                   </div>
-                  <div className="mt-3 flex gap-x-6 items-center">
+                  <div className="mt-2 flex gap-x-6 items-center">
                     <div className="pr-2 flex flex-col gap-y-2 border-r border-gray-200 dark:border-gray-700">
-                      <div className="px-4 flex basis-8 justify-center items-center w-20 h-20">
-                        <img height="100%" width="100%" src={account.icon} alt="logo" />
+                      <div className="px-4 flex justify-center items-center h-8 w-20 max-h-9">
+                        <img src={account.icon} alt="logo" />
                       </div>
                       <div className="flex flex-col items-center">
                         <span
-                          className={cx('text-md rounded-lg px-1 font-medium w-fit', {
+                          className={cx('text-base rounded-lg px-1 font-medium w-fit', {
                             'bg-[#FF8A4C]/30 dark:bg-[#FF8A4C]/20 text-[#FF5A1F] dark:text-[#FF5A1F]':
                               compliance_percentage > 60 && compliance_percentage < 100,
                             'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
