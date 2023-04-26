@@ -144,7 +144,7 @@ func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgres
 	return true, nil
 }
 
-func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, ns string) error {
 	bSecret, err := json.Marshal(ra.Secret)
 	if err != nil {
 		return err
@@ -167,6 +167,32 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgres
 		NonSecret:       bNonSecret, // rawNonSecretJSON,
 		Extras:          bExtras,    // rawExtrasJSON,
 	})
+
+	cr, err := pgClient.GetContainerRegistryByTypeAndName(ctx, postgresqlDb.GetContainerRegistryByTypeAndNameParams{
+		RegistryType: ra.RegistryType,
+		Name:         ra.Name,
+	})
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	registryId := GetRegistryID(ra.RegistryType, ns)
+	query := `
+		CREATE (m:RegistryAccount{node_id: $node_id, registry_type: $registry_type})
+		SET m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`
+	_, err = tx.Run(query, map[string]interface{}{"node_id": registryId, "registry_type": ra.RegistryType, "pgId": cr.ID})
+
 	return err
 }
 

@@ -138,7 +138,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	req.Extras = registry.GetExtras()
 
 	// add to registry db
-	err = req.CreateRegistry(ctx, pgClient)
+	err = req.CreateRegistry(ctx, pgClient, registry.GetNamespace())
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		respondError(&InternalServerError{err}, w)
@@ -385,7 +385,7 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	req.Extras = registry.GetExtras()
 
 	// add to registry db
-	err = req.CreateRegistry(ctx, pgClient)
+	err = req.CreateRegistry(ctx, pgClient, registry.GetNamespace())
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		respondError(&InternalServerError{err}, w)
