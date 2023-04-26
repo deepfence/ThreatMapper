@@ -74,7 +74,7 @@ import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
-import { module as threatGraphAction } from '@/features/threat-graph/data-components/threatGraphAction';
+import { module as threatGraphLoader } from '@/features/threat-graph/data-components/threatGraphAction';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as nodeDetailsCloudService } from '@/features/topology/data-components/node-details/CloudService';
 import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
@@ -627,7 +627,7 @@ export const privateRoutes: CustomRouteObject[] = [
       },
       {
         path: 'threat-graph',
-        ...threatGraphAction,
+        ...threatGraphLoader,
       },
       {
         path: 'auth/logout',

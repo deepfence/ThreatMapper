@@ -1,14 +1,14 @@
-import { ActionFunctionArgs } from 'react-router-dom';
+import { LoaderFunctionArgs } from 'react-router-dom';
 
 import { getThreatGraphApiClient } from '@/api/api';
 import { GraphProviderThreatGraph, GraphThreatFiltersTypeEnum } from '@/api/generated';
 import { ApiError, makeRequest } from '@/utils/api';
 
-export type ThreatGraphActionData = Awaited<ReturnType<typeof action>>;
+export type ThreatGraphLoaderData = Awaited<ReturnType<typeof loader>>;
 
-const action = async ({
+const loader = async ({
   request,
-}: ActionFunctionArgs): Promise<{ [key: string]: GraphProviderThreatGraph }> => {
+}: LoaderFunctionArgs): Promise<{ [key: string]: GraphProviderThreatGraph }> => {
   const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
   const type = searchParams.get('type') as GraphThreatFiltersTypeEnum | undefined;
@@ -37,5 +37,5 @@ const action = async ({
 };
 
 export const module = {
-  action,
+  loader,
 };

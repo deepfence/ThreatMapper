@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
+import { LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 import { twMerge } from 'tailwind-merge';
 import {
   CircleSpinner,
@@ -21,15 +21,15 @@ import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { getScanLink } from '@/utils/scan';
 
-const action = async ({
+const loader = async ({
   request,
-}: ActionFunctionArgs): Promise<{
+}: LoaderFunctionArgs): Promise<{
   nodeType: string;
   nodeData: (ModelHost | ModelCloudResource)[];
 }> => {
-  const formData = await request.formData();
-  const nodeIds = formData.getAll('nodeIds') as string[];
-  const nodeType = formData.get('nodeType')?.toString();
+  const url = new URL(request.url);
+  const nodeIds = url.searchParams.getAll('nodeIds') as string[];
+  const nodeType = url.searchParams.get('nodeType')?.toString();
   if (!nodeType) throw new Error('No nodeType');
   if (!nodeIds?.length) {
     return {
@@ -101,20 +101,17 @@ export const DetailsModal = ({
   label,
   nodeType,
 }: DetailsModalProps) => {
-  const fetcher = useFetcher<Awaited<ReturnType<typeof action>>>();
+  const fetcher = useFetcher<Awaited<ReturnType<typeof loader>>>();
 
   useEffect(() => {
     if (!nodes) return;
     if (!Object.keys(nodes).length) return;
-    const formData = new FormData();
+    const searchParams = new URLSearchParams();
     Object.keys(nodes).forEach((nodeId) => {
-      formData.append('nodeIds', nodeId);
+      searchParams.append('nodeIds', nodeId);
     });
-    formData.append('nodeType', nodeType);
-    fetcher.submit(formData, {
-      method: 'post',
-      action: '/data-component/threat-graph/details-modal',
-    });
+    searchParams.append('nodeType', nodeType);
+    fetcher.load(`/data-component/threat-graph/details-modal?${searchParams.toString()}`);
   }, [nodes]);
 
   const data = useMemo(() => {
@@ -290,5 +287,5 @@ const CountCard = ({
 };
 
 export const module = {
-  action,
+  loader,
 };
