@@ -534,7 +534,7 @@ func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Info().Msgf("registry %d summary %+v", req.RegistryId, counts)
+	log.Info().Msgf("registry %s summary %+v", req.RegistryId, counts)
 
 	httpext.JSON(w, http.StatusOK, counts)
 }

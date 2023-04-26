@@ -25,7 +25,7 @@ require (
 	github.com/bytedance/sonic v1.8.7
 	github.com/casbin/casbin/v2 v2.68.0
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230419184302-8199088da642
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230426073046-3eb89c3b0565
 	github.com/docker/docker v23.0.3+incompatible
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/jwtauth/v5 v5.1.0
