@@ -187,11 +187,12 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgres
 	}
 	defer tx.Close()
 
-	registryId := GetRegistryID(ra.RegistryType, ns)
+	registryID := GetRegistryID(ra.RegistryType, ns)
 	query := `
-		CREATE (m:RegistryAccount{node_id: $node_id, registry_type: $registry_type})
-		SET m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`
-	_, err = tx.Run(query, map[string]interface{}{"node_id": registryId, "registry_type": ra.RegistryType, "pgId": cr.ID})
+		MERGE (m:RegistryAccount{node_id: $node_id })
+		SET m.registry_type = $registry_type,
+		m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`
+	_, err = tx.Run(query, map[string]interface{}{"node_id": registryID, "registry_type": ra.RegistryType, "pgId": cr.ID})
 
 	return err
 }
