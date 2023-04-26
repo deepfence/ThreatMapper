@@ -1148,7 +1148,7 @@ const HeaderComponent = ({
                   </BreadcrumbLink>
                   <BreadcrumbLink>
                     <DFLink to={`/secret/scans?nodeType=${node_type}`}>
-                      {node_type}
+                      {capitalize(node_type)}
                     </DFLink>
                   </BreadcrumbLink>
                   <BreadcrumbLink>

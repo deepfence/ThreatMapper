@@ -63,3 +63,14 @@ export const RegistryType = {
   jfrog_container_registry: 'jfrog_container_registry',
   quay: 'quay',
 } as const;
+export const registryTypeToNameMapping: { [key: string]: string } = {
+  azure_container_registry: 'Azure Container Registry',
+  docker_hub: 'Docker Registry',
+  docker_private_registry: 'Docker Private Registry',
+  ecr: 'Amazon ECR',
+  gitlab: 'GitLab Registry',
+  google_container_registry: 'Google Registry',
+  harbor: 'Harbor Registry',
+  jfrog_container_registry: 'JFrog Registry',
+  quay: 'Quay Registry',
+} as const;

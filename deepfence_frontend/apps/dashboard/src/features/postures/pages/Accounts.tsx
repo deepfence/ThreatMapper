@@ -1,5 +1,4 @@
 import cx from 'classnames';
-import { startCase } from 'lodash-es';
 import { Suspense, useMemo, useRef, useState } from 'react';
 import { FaPlay, FaPlus } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
@@ -34,6 +33,7 @@ import { DFLink } from '@/components/DFLink';
 import { FilterHeader } from '@/components/forms/FilterHeader';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { CLOUDS } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { ComplianceScanNodeTypeEnum, ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -420,7 +420,9 @@ const Accounts = () => {
             <DFLink to={'/posture'}>Posture</DFLink>
           </BreadcrumbLink>
           <BreadcrumbLink>
-            <span className="inherit cursor-auto">{startCase(routeParams.nodeType)}</span>
+            <span className="inherit cursor-auto">
+              {providersToNameMapping[routeParams.nodeType]}
+            </span>
           </BreadcrumbLink>
         </Breadcrumb>
         <div className="ml-auto flex relative gap-x-4">

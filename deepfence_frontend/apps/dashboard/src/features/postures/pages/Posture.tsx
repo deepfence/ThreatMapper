@@ -1,5 +1,4 @@
 import cx from 'classnames';
-import { startCase } from 'lodash-es';
 import { Suspense } from 'react';
 import { HiOutlineChevronRight } from 'react-icons/hi';
 import { useLoaderData } from 'react-router-dom';
@@ -19,6 +18,15 @@ export type LoaderDataType = {
   error?: string;
   message?: string;
   data: Awaited<ReturnType<typeof getCloudNodeProviders>>;
+};
+
+export const providersToNameMapping: { [key: string]: string } = {
+  aws: 'AWS',
+  aws_org: 'AWS Organizations',
+  gcp: 'GCP',
+  azure: 'Azure',
+  linux: 'Linux Hosts',
+  kubernetes: 'Kubernetes',
 };
 
 async function getCloudNodeProviders(): Promise<ModelCloudNodeProvidersListResp> {
@@ -96,7 +104,7 @@ const AccountSummary = () => {
                 <Card key={name} className="p-2 pb-3 flex flex-col">
                   <div className="flex items-center w-full">
                     <h4 className="text-gray-900 text-sm font-medium dark:text-white mr-4">
-                      {startCase(account.label)}
+                      {providersToNameMapping[name]}
                     </h4>
                     <div className="flex ml-auto">
                       <LinkButton to={`/posture/accounts/${name}`} sizing="xs">

@@ -30,37 +30,30 @@ import { K8sIcon } from '@/components/icons/k8s';
 import { NamespaceIcon } from '@/components/icons/namespace';
 import { PodIcon } from '@/components/icons/pod';
 import { Mode } from '@/theme/ThemeContext';
-import { RegistryType } from '@/types/common';
+import { RegistryType, registryTypeToNameMapping } from '@/types/common';
 
 export const getPostureLogo = (accountType: string, mode: Mode) => {
   const map: {
     [k: string]: {
-      label: string;
       icon: string;
     };
   } = {
     aws: {
-      label: 'AWS',
       icon: mode === 'dark' ? LogoAwsWhite : LogoAWS,
     },
     aws_org: {
-      label: 'AWS Organizations',
       icon: mode === 'dark' ? LogoAwsWhite : LogoAWS,
     },
     azure: {
-      label: 'Azure',
       icon: LogoAzure,
     },
     gcp: {
-      label: 'GCP',
       icon: LogoGoogle,
     },
     kubernetes: {
-      label: 'Kubernetes',
       icon: LogoK8,
     },
     linux: {
-      label: 'Linux Hosts',
       icon: LogoLinux,
     },
   };
@@ -69,34 +62,25 @@ export const getPostureLogo = (accountType: string, mode: Mode) => {
 
 export const getRegistryLogo = (registryType: keyof typeof RegistryType, mode: Mode) => {
   let icon = '';
-  let name = '';
+  const name = registryTypeToNameMapping[registryType];
   if (registryType === RegistryType.azure_container_registry) {
     icon = LogoAzureRegistry;
-    name = 'Azure Registry';
   } else if (registryType === RegistryType.docker_hub) {
     icon = LogoDocker;
-    name = 'Docker Registry';
   } else if (registryType === RegistryType.docker_private_registry) {
     icon = LogoDocker;
-    name = 'Docker Private Registry';
   } else if (registryType === RegistryType.ecr) {
     icon = mode === 'light' ? LogoAWS : LogoAwsWhite;
-    name = 'Amazon ECR';
   } else if (registryType === RegistryType.gitlab) {
     icon = LogoGitlab;
-    name = 'Gitlab Registry';
   } else if (registryType === RegistryType.google_container_registry) {
     icon = LogoGoogle;
-    name = 'Google Registry';
   } else if (registryType === RegistryType.harbor) {
     icon = LogoHarbor;
-    name = 'Harbor Registry';
   } else if (registryType === RegistryType.jfrog_container_registry) {
     icon = LogoJFrog;
-    name = 'JFrog Registry';
   } else if (registryType === RegistryType.quay) {
     icon = LogoQuay;
-    name = 'Quay Registry';
   }
 
   return {
