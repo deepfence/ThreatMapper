@@ -32,16 +32,16 @@ func GetAgentActions(ctx context.Context, nodeId string, work_num_to_extract int
 		actions = append(actions, scan_actions...)
 	}
 
-	diagnosticLogActions, scan_err := ExtractAgentDiagnosticLogRequests(ctx, nodeId, controls.Host, work_num_to_extract)
+	diagnosticLogActions, scan_log_err := ExtractAgentDiagnosticLogRequests(ctx, nodeId, controls.Host, work_num_to_extract)
 	work_num_to_extract -= len(diagnosticLogActions)
 	if scan_err == nil {
 		actions = append(actions, diagnosticLogActions...)
 	}
 
-	return actions, []error{}
+	return actions, []error{scan_err, upgrade_err, scan_log_err}
 }
 
-func GetPendingAgentScans(ctx context.Context, nodeId string) ([]controls.Action, error) {
+func GetPendingAgentScans(ctx context.Context, nodeId string, availableWorkload int) ([]controls.Action, error) {
 	res := []controls.Action{}
 	if len(nodeId) == 0 {
 		return res, errors.New("Missing node_id")
@@ -52,8 +52,7 @@ func GetPendingAgentScans(ctx context.Context, nodeId string) ([]controls.Action
 		return res, err
 	}
 
-	// TODO: 5
-	if has, err := hasPendingAgentScans(client, nodeId, 5); !has || err != nil {
+	if has, err := hasPendingAgentScans(client, nodeId, availableWorkload); !has || err != nil {
 		return res, err
 	}
 
@@ -123,11 +122,10 @@ func hasAgentDiagnosticLogRequests(client neo4j.Driver, nodeId string, nodeType 
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n{node_id:$id})
-		WHERE (n:`+controls.ResourceTypeToNeo4j(nodeType)+`) 
+		WHERE (n:`+controls.ResourceTypeToNeo4j(nodeType)+`)
 		AND s.status = '`+utils.SCAN_STATUS_STARTING+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work
-		SET s.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
 		WITH s
 		RETURN s.trigger_action`,
 		map[string]interface{}{"id": nodeId, "max_work": max_work})
@@ -168,7 +166,7 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeId string, nodeT
 	defer tx.Close()
 
 	r, err := tx.Run(`MATCH (s:AgentDiagnosticLogs) -[:SCHEDULEDLOGS]-> (n{node_id:$id})
-		WHERE (n:`+controls.ResourceTypeToNeo4j(nodeType)+`) 
+		WHERE (n:`+controls.ResourceTypeToNeo4j(nodeType)+`)
 		AND s.status = '`+utils.SCAN_STATUS_STARTING+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work

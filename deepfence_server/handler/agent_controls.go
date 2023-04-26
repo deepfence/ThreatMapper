@@ -68,7 +68,7 @@ func (h *Handler) GetAgentInitControls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actions, err := controls.GetPendingAgentScans(ctx, agentId.NodeId)
+	actions, err := controls.GetPendingAgentScans(ctx, agentId.NodeId, agentId.AvailableWorkload)
 	if err != nil {
 		log.Warn().Msgf("Cannot get actions: %s, skipping", err)
 	}

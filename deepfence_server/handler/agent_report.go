@@ -20,9 +20,6 @@ import (
 
 var agent_report_ingesters sync.Map
 
-//var agent_report_ingesters map[directory.NamespaceID]*ingesters.Ingester[report.Report]
-//var access sync.RWMutex
-
 func init() {
 	agent_report_ingesters = sync.Map{}
 }
@@ -51,26 +48,6 @@ func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[*report.Re
 func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	//contentType := r.Header.Get("Content-Type")
-	//var isMsgpack int
-	//switch {
-	//case strings.HasPrefix(contentType, "application/msgpack"):
-	//	isMsgpack = 1
-	//case strings.HasPrefix(contentType, "application/json"):
-	//	isMsgpack = 0
-	//case strings.HasPrefix(contentType, "application/binc"):
-	//	isMsgpack = 2
-	//default:
-	//	respondWith(ctx, w, http.StatusBadRequest, fmt.Errorf("Unsupported Content-Type: %v", contentType))
-	//	return
-	//}
-	//data, err := io.ReadAll(r.Body)
-	//r.Body.Close()
-	//if err != nil {
-	//	log.Error().Msgf("Error reading all: %v", err)
-	//	respondWith(ctx, w, http.StatusBadRequest, err)
-	//	return
-	//}
 	rawReport := reportUtils.RawReport{}
 
 	dec := jsoniter.NewDecoder(r.Body)
@@ -93,22 +70,11 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
-	//data, err = io.ReadAll(gzr)
-	//if err != nil {
-	//	log.Error().Msgf("Error read all raw: %v", err)
-	//	respondWith(ctx, w, http.StatusBadRequest, err)
-	//	return
-	//}
-
-	//os.WriteFile("/tmp/report-"+time.Now().Format("2006-01-02-15-04-05")+".json", data, 0644)
 
 	rpt := report.MakeReport()
 	dec_inner := jsoniter.NewDecoder(gzr)
 	err = dec_inner.Decode(&rpt)
 
-	//err = sonic.Unmarshal(data, &rpt)
-
-	//if err := codec.NewDecoderBytes([]byte(rawReport.GetPayload()), &codec.JsonHandle{}).Decode(&rpt); err != nil {
 	if err != nil {
 		log.Error().Msgf("Error sonic unmarshal: %v", err)
 		respondWith(ctx, w, http.StatusBadRequest, err)
