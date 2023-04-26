@@ -16,9 +16,9 @@ import (
 
 const (
 	diagnosticLogsCleanUpTimeout           = time.Hour * 6
-	dbReportCleanUpTimeout                 = time.Minute * 5
+	dbReportCleanUpTimeout                 = time.Minute * 2
 	dbRegistryCleanUpTimeout               = time.Minute * 30
-	dbScanTimeout                          = time.Minute * 5
+	dbScanTimeout                          = time.Minute * 2
 	dbUpgradeTimeout                       = time.Minute * 10
 	defaultDBScannedResourceCleanUpTimeout = time.Hour * 24 * 30
 )

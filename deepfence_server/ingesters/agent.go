@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -22,23 +23,46 @@ const (
 	REDIS_NETWORK_MAP_KEY   = "network_map"
 	REDIS_IPPORTPID_MAP_KEY = "ipportpid_map"
 	workers_num             = 2
-	db_input_size           = 100
+	default_db_input_size   = 10
 	db_batch_size           = 1_000
-	db_batch_timeout        = time.Second * 10
 	resolver_batch_size     = 1_000
+	default_ingester_size   = 15_000
+	db_batch_timeout        = time.Second * 10
 	resolver_timeout        = time.Second * 10
-	ingester_size           = 15_000
 	max_network_maps_size   = 1024 * 1024 * 1024 // 1 GB per maps
 	enqueer_timeout         = time.Second * 30
+	agent_base_timeout      = time.Second * 30
 	localhost_ip            = "127.0.0.1"
+	default_push_back       = 1
 )
 
 var (
-	Push_back atomic.Int32
+	Push_back     atomic.Int32
+	ingester_size int
+	db_input_size int
 )
 
 func init() {
-	Push_back.Store(2)
+	Push_back.Store(default_push_back)
+	push := os.Getenv("DF_INGEST_PUSH_BACK")
+	if push != "" {
+		push_int, err := strconv.Atoi(push)
+		if err == nil {
+			Push_back.Store(int32(push_int))
+		}
+	}
+
+	ingester_size = default_ingester_size
+	bsize := os.Getenv("DF_INGEST_REPORT_SIZE")
+	if bsize != "" {
+		ingester_size, _ = strconv.Atoi(bsize)
+	}
+
+	db_input_size = default_db_input_size
+	dbsize := os.Getenv("DF_INGEST_DB_SIZE")
+	if dbsize != "" {
+		db_input_size, _ = strconv.Atoi(dbsize)
+	}
 }
 
 type EndpointResolvers struct {
@@ -640,7 +664,7 @@ func (nc *neo4jIngester) runIngester() {
 	log.Info().Msgf("runIngester ended")
 }
 
-func (nc *neo4jIngester) runDBBatcher(db_pusher chan ReportIngestionData) {
+func (nc *neo4jIngester) runDBBatcher(db_pusher chan ReportIngestionData, notify_full chan struct{}, num_pushes atomic.Int32) {
 	batch := make([]ReportIngestionData, db_batch_size)
 	size := 0
 	send := false
@@ -669,13 +693,17 @@ loop:
 			for i := 1; i < size; i++ {
 				final_batch.merge(&batch[i])
 			}
-			log.Info().Msgf("Pushing %v reports to DB", size)
+			log.Debug().Msgf("Pushing %v reports to DB", size)
 			size = 0
+			num_pushes.Add(1)
 			select {
 			case db_pusher <- final_batch:
 			default:
 				log.Warn().Msgf("DB channel full")
-				Push_back.Add(1)
+				select {
+				case notify_full <- struct{}{}:
+				default:
+				}
 			}
 		}
 		if reset_timeout {
@@ -689,12 +717,20 @@ loop:
 func (nc *neo4jIngester) runDBPusher(db_pusher chan ReportIngestionData) {
 	for batches := range db_pusher {
 		span := telemetry.NewSpan(context.Background(), "ingester", "PushAgentReportsToDB")
-		defer span.End()
-		err := nc.PushToDB(batches)
-		if err != nil {
-			span.EndWithErr(err)
-			log.Error().Msgf("push to neo4j err: %v", err)
-			Push_back.Add(1)
+		retry := 0
+		for {
+			err := nc.PushToDB(batches)
+			if err != nil {
+				log.Error().Msgf("push to neo4j err: %v", err)
+				if retry == 1 {
+					span.EndWithErr(err)
+					break
+				}
+				retry += 1
+			} else {
+				span.End()
+				break
+			}
 		}
 	}
 	log.Info().Msgf("runDBPusher ended")
@@ -746,14 +782,36 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
 		go nc.runPreparer()
 	}
 
-	db_pusher := make(chan ReportIngestionData, 10)
-	go nc.runDBBatcher(db_pusher)
+	notify_full := make(chan struct{}, 1)
+	num_pushes := atomic.Int32{}
+	db_pusher := make(chan ReportIngestionData, db_input_size)
+	go nc.runDBBatcher(db_pusher, notify_full, num_pushes)
 	go nc.runDBPusher(db_pusher)
 
 	go nc.resolversUpdater()
 
 	go nc.runIngester()
 	go nc.runEnqueueReport()
+
+	// Push back decreaser
+	go func() {
+		prev_num_pushes := int32(0)
+		for {
+			select {
+			case <-time.After(agent_base_timeout * time.Duration(Push_back.Load())):
+			}
+			select {
+			case <-notify_full:
+				Push_back.Add(1)
+			default:
+				if Push_back.Load() > 1 && prev_num_pushes > num_pushes.Load() {
+					Push_back.Add(-1)
+				}
+				prev_num_pushes = num_pushes.Swap(0)
+			}
+			log.Info().Msgf("Push back: %v", Push_back.Load())
+		}
+	}()
 
 	return nc, nil
 }
