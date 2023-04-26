@@ -599,7 +599,7 @@ const APITokenComponent = () => {
   const [openChangePasswordForm, setOpenChangePasswordForm] = useState(false);
 
   return (
-    <div className="text-gray-600 dark:text-white rounded-lg w-full p-2">
+    <div className="text-gray-600 dark:text-white rounded-lg w-full">
       <ChangePasswordModal
         showDialog={openChangePasswordForm}
         setShowDialog={setOpenChangePasswordForm}
@@ -824,16 +824,17 @@ const UserManagement = () => {
                     <HiUsers />
                   </IconContext.Provider>
                 </div>
-                <h3 className="font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
+                <h3 className="font-medium text-gray-900 dark:text-white text-base">
                   User Accounts
                 </h3>
               </div>
             </div>
             <Button
               size="xs"
-              outline
+              color="primary"
               startIcon={<FaUserPlus />}
               type="button"
+              className="self-start"
               onClick={() => setOpenInviteUserForm(true)}
             >
               Invite User

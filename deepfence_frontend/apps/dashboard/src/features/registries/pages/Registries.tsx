@@ -79,7 +79,7 @@ const RegistrySkeleton = () => {
   return (
     <>
       {Array.from(Array(9).keys()).map((k) => (
-        <Card className="p-4 animate-pulse items-center gap-2 min-w-[400px]" key={k}>
+        <Card className="p-2 animate-pulse items-center gap-2 min-w-[400px]" key={k}>
           <div className="flex items-center justify-between w-full">
             <div className="h-2 w-24 bg-gray-200 dark:bg-gray-700"></div>
             <div className="h-2 w-20 bg-gray-200 dark:bg-gray-700 rounded-md ml-auto mt-2"></div>

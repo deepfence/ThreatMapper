@@ -1,3 +1,4 @@
+import { startCase } from 'lodash-es';
 import { HiChevronRight } from 'react-icons/hi';
 import { Outlet, useParams } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbLink } from 'ui-components';
@@ -22,7 +23,9 @@ const IntegrationsLayout = () => {
           </BreadcrumbLink>
 
           <BreadcrumbLink>
-            <span className="inherit cursor-auto">{params.integrationType}</span>
+            <span className="inherit cursor-auto">
+              {startCase(params.integrationType)}
+            </span>
           </BreadcrumbLink>
         </Breadcrumb>
       </div>

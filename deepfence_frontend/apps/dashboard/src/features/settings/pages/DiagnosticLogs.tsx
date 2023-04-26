@@ -224,7 +224,7 @@ const ConsoleDiagnosticLogsTable = () => {
 
             return (
               <div>
-                <h3 className="py-2 font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
+                <h3 className="py-2 font-medium text-gray-900 dark:text-white text-base">
                   Console Diagnostic Logs
                 </h3>
                 {message ? (
@@ -308,7 +308,7 @@ const AgentDiagnosticLogsTable = () => {
 
             return (
               <div>
-                <h3 className="py-2 font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
+                <h3 className="py-2 font-medium text-gray-900 dark:text-white text-base">
                   Agent Diagnostic Logs
                 </h3>
                 {message ? (

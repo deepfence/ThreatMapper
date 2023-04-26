@@ -47,7 +47,7 @@ const CardSkeleton = () => {
     <>
       {Array.from(Array(5).keys()).map((k) => (
         <Card
-          className="p-4 animate-pulse items-center gap-2 min-w-[330px] min-h-[150px]"
+          className="p-2 animate-pulse items-center gap-2 min-w-[330px] min-h-[150px]"
           key={k}
         >
           <div className="flex items-center justify-between w-full">

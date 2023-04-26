@@ -1,12 +1,11 @@
 import { Suspense } from 'react';
 import { IconContext } from 'react-icons';
 import { FaBook, FaBullhorn, FaCopyright, FaFire } from 'react-icons/fa';
-import { HiOutlineChevronRight } from 'react-icons/hi';
+import { HiCollection, HiOutlineChevronRight } from 'react-icons/hi';
 import { useLoaderData } from 'react-router-dom';
 import { Card } from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
-import { DFLink } from '@/components/DFLink';
 import { LinkButton } from '@/components/LinkButton';
 import {
   AwsSecurityHub,
@@ -69,7 +68,7 @@ const IntegrationsData = [
     ],
   },
   {
-    name: 'SEIM',
+    name: 'SIEM/SOAR',
     icon: (
       <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
         <IconContext.Provider
@@ -171,11 +170,30 @@ const Integrations = () => {
         <span className="text-md font-medium text-gray-700 dark:text-gray-200">
           Integrations
         </span>
-        <DFLink className="ml-auto uppercase text-xs" to="/integrations/download/report">
-          Report Download
-        </DFLink>
       </div>
       <div className="p-2 gap-y-4 flex flex-col">
+        <Card className="w-fit">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 flex items-center justify-center rounded-sm">
+              <IconContext.Provider
+                value={{
+                  className: 'text-blue-600 dark:text-blue-400',
+                }}
+              >
+                <HiCollection />
+              </IconContext.Provider>
+            </div>
+            <h2 className="px-4 tracking-wider text-gary-900 dark:text-gray-200 font-semibold">
+              Report Download
+            </h2>
+            <div className="px-2">
+              <LinkButton to="/integrations/download/report" sizing="sm">
+                Click to generate report&nbsp;
+                <HiOutlineChevronRight />
+              </LinkButton>
+            </div>
+          </div>
+        </Card>
         {IntegrationsData.map((integration) => {
           return (
             <section key={integration.name} className="flex flex-col">
