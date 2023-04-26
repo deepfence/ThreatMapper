@@ -368,7 +368,7 @@ const DeleteConfirmationModal = ({
         ) : null}
 
         <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} outline>
+          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
             No, Cancel
           </Button>
           <Button

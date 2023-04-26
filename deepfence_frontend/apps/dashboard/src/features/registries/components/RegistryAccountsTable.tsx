@@ -120,7 +120,7 @@ const DeleteConfirmationModal = ({
           <p className="text-red-500 text-sm mb-4">{actionData.message}</p>
         )}
         <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} outline>
+          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
             No, cancel
           </Button>
           <Form method="post">
