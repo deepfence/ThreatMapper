@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { IconContext } from 'react-icons';
 import { FaBook, FaBullhorn, FaCopyright, FaFire } from 'react-icons/fa';
-import { HiCollection, HiOutlineChevronRight } from 'react-icons/hi';
+import { HiDownload, HiOutlineChevronRight } from 'react-icons/hi';
 import { useLoaderData } from 'react-router-dom';
 import { Card } from 'ui-components';
 
@@ -180,15 +180,15 @@ const Integrations = () => {
                   className: 'text-blue-600 dark:text-blue-400',
                 }}
               >
-                <HiCollection />
+                <HiDownload />
               </IconContext.Provider>
             </div>
             <h2 className="px-4 tracking-wider text-gary-900 dark:text-gray-200 font-semibold">
-              Report Download
+              Reports Download
             </h2>
             <div className="px-2">
               <LinkButton to="/integrations/download/report" sizing="sm">
-                Click to generate report&nbsp;
+                Generate and download PDF/Excel Reports&nbsp;
                 <HiOutlineChevronRight />
               </LinkButton>
             </div>

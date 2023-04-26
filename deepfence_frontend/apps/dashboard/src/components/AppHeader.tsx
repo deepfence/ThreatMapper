@@ -4,7 +4,6 @@ import {
   HiChevronLeft,
   HiLogout,
   HiMenu,
-  HiOutlineBell,
   HiOutlineDesktopComputer,
   HiOutlineMoon,
   HiOutlineSun,
@@ -68,13 +67,6 @@ export function AppHeader({
         </div>
         <div className="flex items-center gap-4">
           <AutoRefresh />
-          <IconContext.Provider
-            value={{
-              className: 'w-6 h-6 p-1 text-blue-600 dark:text-white',
-            }}
-          >
-            <HiOutlineBell />
-          </IconContext.Provider>
           <Dropdown
             triggerAsChild
             align="end"
