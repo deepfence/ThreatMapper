@@ -116,7 +116,9 @@ func GetScannersWorkloads() int32 {
 	res := int32(0)
 	res += host.GetSecretScannerJobCount()
 	res += host.GetMalwareScannerJobCount()
-	//TODO: Add more scanners workfload
+	res += host.GetPackageScannerJobCount()
+	//TODO: Add more scanners workload
+	logrus.Infof("GetScannersWorkloads: %d", res)
 	return res
 }
 

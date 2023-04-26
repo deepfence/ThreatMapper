@@ -92,7 +92,7 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = mc.DeleteFile(r.Context(), report.StoragePath, false, minio.RemoveObjectOptions{})
+	err = mc.DeleteFile(r.Context(), report.StoragePath, false, minio.RemoveObjectOptions{ForceDelete: true})
 	if err != nil {
 		respondError(err, w)
 		return

@@ -148,3 +148,21 @@ func StartVulnerabilityScan(req ctl.StartVulnerabilityScanRequest) error {
 	}()
 	return nil
 }
+
+func GetPackageScannerJobCount() int32 {
+	conn, err := grpc.Dial(
+		"unix://"+packageScannerSocket,
+		grpc.WithAuthority("dummy"),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Errorf("error in creating package scanner client: %s", err.Error())
+		return 0
+	}
+	client := pb.NewScannersClient(conn)
+	jobReport, err := client.ReportJobsStatus(context.Background(), &pb.Empty{})
+	if err != nil {
+		return 0
+	}
+	return jobReport.RunningJobs
+}
