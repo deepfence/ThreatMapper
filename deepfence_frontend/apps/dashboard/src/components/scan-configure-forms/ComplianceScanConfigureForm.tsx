@@ -65,7 +65,7 @@ export const scanPostureApiAction = async ({
   const body = Object.fromEntries(formData);
   const nodeIds = body._nodeIds.toString().split(',');
   let nodeType = body._nodeType.toString();
-  const checkTypes = body._checkTypes.toString();
+  const checkTypes = body._checkTypes.toString().replace('SOC2', 'soc_2');
 
   if (nodeType === ComplianceScanNodeTypeEnum.kubernetes_cluster) {
     nodeType = 'cluster';
@@ -249,7 +249,9 @@ export const ControlsTable = memo(
 
     useEffect(() => {
       if (selectedTab) {
-        fetchControls(selectedTab.toLowerCase(), _nodeType);
+        const benchmarkType =
+          selectedTab === 'SOC2' ? 'soc_2' : selectedTab.toLowerCase();
+        fetchControls(benchmarkType, _nodeType);
       }
     }, [selectedTab]);
 

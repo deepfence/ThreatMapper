@@ -43,11 +43,11 @@ export const GitLabConnectorForm = () => {
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
-              label="Gitlab Registry URL"
+              label="GitLab Registry URL"
               type={'text'}
               sizing="sm"
               name="registryUrl"
-              placeholder="Gitlab Registry URL"
+              placeholder="GitLab Registry URL"
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"

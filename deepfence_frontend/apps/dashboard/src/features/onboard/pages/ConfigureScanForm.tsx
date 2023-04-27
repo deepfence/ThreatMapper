@@ -197,7 +197,7 @@ const ScanConfigureForm = () => {
       </Card>
 
       <div className="flex">
-        <Button onClick={goBack} size="xs" className="mt-12">
+        <Button onClick={goBack} size="xs" className="mt-12" type="button">
           Go Back
         </Button>
       </div>

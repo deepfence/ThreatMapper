@@ -58,19 +58,19 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
               <div className="w-4 h-4">
                 <VulnerabilityIcon />
               </div>
-              Scan for vulnerability
+              Start Vulnerability Scan
             </DropdownItem>
             <DropdownItem onClick={() => setSelectedScanType(ScanTypeEnum.SecretScan)}>
               <div className="w-4 h-4">
                 <SecretsIcon />
               </div>
-              Scan for secret
+              Start Secret Scan
             </DropdownItem>
             <DropdownItem onClick={() => setSelectedScanType(ScanTypeEnum.MalwareScan)}>
               <div className="w-4 h-4">
                 <MalwareIcon />
               </div>
-              Scan for malware
+              Start Malware Scan
             </DropdownItem>
           </>
         }
@@ -221,9 +221,9 @@ export const RegistryImageTagsTable = ({
   return (
     <div className="self-start">
       {selectedIds.length === 0 ? (
-        <div className="text-sm text-gray-400 font-medium pb-2.5">No rows selected</div>
+        <div className="text-sm text-gray-400 font-medium pb-3">No rows selected</div>
       ) : (
-        <>
+        <div className="mb-1.5">
           <Dropdown
             triggerAsChild={true}
             align="start"
@@ -256,16 +256,11 @@ export const RegistryImageTagsTable = ({
               </>
             }
           >
-            <Button
-              size="xs"
-              color="normal"
-              startIcon={<FaPlay />}
-              className="text-blue-600 dark:text-blue-500"
-            >
-              Start scan
+            <Button size="xxs" outline color="primary">
+              Start Scan
             </Button>
           </Dropdown>
-        </>
+        </div>
       )}
 
       <ConfigureScanModal

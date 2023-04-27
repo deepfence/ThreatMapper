@@ -3,6 +3,7 @@ import { Outlet, useParams } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbLink } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
+import { integrationTypeToNameMapping } from '@/features/integrations/pages/Integrations';
 
 const IntegrationsLayout = () => {
   const params = useParams() as {
@@ -22,7 +23,9 @@ const IntegrationsLayout = () => {
           </BreadcrumbLink>
 
           <BreadcrumbLink>
-            <span className="inherit cursor-auto">{params.integrationType}</span>
+            <span className="inherit cursor-auto">
+              {integrationTypeToNameMapping[params.integrationType]}
+            </span>
           </BreadcrumbLink>
         </Breadcrumb>
       </div>

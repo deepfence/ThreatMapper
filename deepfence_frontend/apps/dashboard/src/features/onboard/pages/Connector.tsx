@@ -61,7 +61,7 @@ const Connector = () => {
             </p>
           </div>
           <div className="flex">
-            <Button onClick={goBack} size="xs">
+            <Button onClick={goBack} size="xs" type="button">
               Go Back
             </Button>
             <div className="flex items-center ml-auto">

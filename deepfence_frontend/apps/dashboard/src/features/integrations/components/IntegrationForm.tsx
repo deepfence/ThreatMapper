@@ -25,7 +25,7 @@ export const IntegrationType = {
   httpEndpoint: 'http_endpoint',
   microsoftTeams: 'teams',
   splunk: 'splunk',
-  sumoLogic: 'sumo-logic',
+  sumoLogic: 'sumologic',
   elasticsearch: 'elasticsearch',
   googleChronicle: 'googlechronicle',
   awsSecurityHub: 'aws_security_hub',

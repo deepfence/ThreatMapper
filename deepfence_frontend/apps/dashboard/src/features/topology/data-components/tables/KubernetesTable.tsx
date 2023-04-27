@@ -289,7 +289,7 @@ export const KubernetesTable = () => {
         {selectedIds.length ? (
           <BulkActionButton nodeIds={selectedIds} />
         ) : (
-          <div className="pl-4 text-sm">No rows selected</div>
+          <div className="text-gray-400 pl-4 text-sm">No rows selected</div>
         )}
       </div>
       <div>

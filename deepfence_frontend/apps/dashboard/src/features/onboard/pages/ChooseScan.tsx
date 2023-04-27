@@ -282,7 +282,7 @@ const ChooseScan = () => {
       />
       <SelectedAccount state={state} />
       <ScanHeader state={state} />
-      <Button onClick={goBack} color="default" size="xs" className="mt-12">
+      <Button onClick={goBack} color="default" size="xs" className="mt-12" type="button">
         Go Back
       </Button>
     </>
