@@ -6,7 +6,7 @@ import { generatePath, useFetcher } from 'react-router-dom';
 import { useMeasure } from 'react-use';
 
 import { GraphProviderThreatGraph } from '@/api/generated';
-import { ThreatGraphLoaderData } from '@/features/threat-graph/data-components/threatGraphAction';
+import { ThreatGraphLoaderData } from '@/features/threat-graph/data-components/threatGraphLoader';
 import { useG6raph } from '@/features/threat-graph/hooks/useG6Graph';
 import { ThreatGraphNodeModelConfig } from '@/features/threat-graph/utils/threat-graph-custom-node';
 import { G6GraphData } from '@/features/topology/types/graph';
