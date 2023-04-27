@@ -1404,7 +1404,7 @@ def register_cloud_account():
                 }
             redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, monitored_node_id, json.dumps(node))
             cloud_compliance_node = CloudComplianceNode.query.filter_by(node_id=monitored_node_id).first()
-            if not cloud_compliance_node:
+            if not cloud_compliance_node or cloud_compliance_node.version != version:
                 cloud_compliance_node = CloudComplianceNode(
                     node_id=monitored_node_id,
                     node_name=monitored_account_id,
@@ -1470,7 +1470,7 @@ def register_cloud_account():
         redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, post_data["node_id"], json.dumps(node))
 
         cloud_compliance_node = CloudComplianceNode.query.filter_by(node_id=post_data["node_id"]).one_or_none()
-        if not cloud_compliance_node:
+        if not cloud_compliance_node or cloud_compliance_node.version != version:
             cloud_compliance_node = CloudComplianceNode(
                 node_id=post_data["node_id"],
                 node_name=post_data["cloud_account"],
@@ -1575,6 +1575,7 @@ def register_kubernetes():
         node = json.loads(compliance_scan_node_details_str)
     if node and updated_at_timestamp > node["updated_at"]:
         node["updated_at"] = updated_at_timestamp
+        node["version"] = version
     elif not node:
         node = {
             "node_id": post_data["node_id"],
@@ -1598,8 +1599,9 @@ def register_kubernetes():
             app.logger.error("Duplicate cloud compliance kube node {}".format(e))
             print(e)
             raise InvalidUsage("Duplicate cloud compliance kube node")
-    elif kubernetes_cluster_name != cloud_compliance_node.node_name:
+    elif kubernetes_cluster_name != cloud_compliance_node.node_name or version != cloud_compliance_node.version:
         cloud_compliance_node.node_name = kubernetes_cluster_name
+        cloud_compliance_node.version = version
         cloud_compliance_node.save()
 
     current_pending_scans_str = redis.hget(PENDING_CLOUD_COMPLIANCE_SCANS_KEY, kubernetes_id)
