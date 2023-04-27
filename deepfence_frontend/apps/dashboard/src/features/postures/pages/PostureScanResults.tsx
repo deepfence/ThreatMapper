@@ -74,6 +74,7 @@ import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
 import { PostureResultChart } from '@/features/postures/components/PostureResultChart';
+import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { PostureSeverityType, ScanStatusEnum, ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -1162,7 +1163,7 @@ const HeaderComponent = () => {
                         nodeType: _nodeType,
                       })}
                     >
-                      {_nodeType}
+                      {providersToNameMapping[_nodeType]}
                     </DFLink>
                   </BreadcrumbLink>
                   <BreadcrumbLink>

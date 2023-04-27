@@ -15,7 +15,6 @@ import {
 import { IconContext } from 'react-icons/lib';
 import {
   ActionFunctionArgs,
-  Form,
   generatePath,
   LoaderFunctionArgs,
   Outlet,
@@ -76,6 +75,7 @@ import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
 import { useGetCloudFilters } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { PostureResultChart } from '@/features/postures/components/PostureResultChart';
+import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { PostureSeverityType, ScanStatusEnum, ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -1222,7 +1222,7 @@ const HeaderComponent = () => {
                         nodeType: params.nodeType,
                       })}
                     >
-                      {params.nodeType}
+                      {providersToNameMapping[params.nodeType]}
                     </DFLink>
                   </BreadcrumbLink>
 
