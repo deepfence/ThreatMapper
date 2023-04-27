@@ -11,7 +11,7 @@ import { HostIcon } from '@/components/icons/host';
 import { K8sIcon } from '@/components/icons/k8s';
 import { PodIcon } from '@/components/icons/pod';
 import { TableIcon } from '@/components/icons/table';
-import { TopologyViewTypes } from '@/features/topology/data-components/topologyAction';
+import { TopologyViewTypes } from '@/features/topology/data-components/topologyLoader';
 import { NodeType } from '@/features/topology/utils/topology-data';
 import { DFAwait } from '@/utils/suspense';
 
