@@ -2,11 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiArrowsExpand, HiInformationCircle } from 'react-icons/hi';
 import { useFetcher, useParams } from 'react-router-dom';
-import { useInterval, useMeasure } from 'react-use';
+import { useEffectOnce, useMeasure } from 'react-use';
 import { CircleSpinner, Dropdown, DropdownItem } from 'ui-components';
 
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
-import { TopologyActionData } from '@/features/topology/data-components/topologyAction';
+import {
+  TopologyLoaderData,
+  useTopologyActionDeduplicator,
+} from '@/features/topology/data-components/topologyLoader';
 import { useG6raph } from '@/features/topology/hooks/useG6Graph';
 import { G6GraphEvent, G6Node, NodeModel } from '@/features/topology/types/graph';
 import {
@@ -44,13 +47,9 @@ export const TopologyGraph = () => {
 
   graphDataManagerFunctionsRef.current = graphDataManagerFunctions;
 
-  useEffect(() => {
+  useEffectOnce(() => {
     graphDataManagerFunctionsRef.current.getDataUpdates({ type: 'refresh' });
-  }, []);
-
-  useInterval(() => {
-    graphDataManagerFunctionsRef.current.getDataUpdates({ type: 'refresh' });
-  }, 30000);
+  });
 
   useEffect(() => {
     if (dataDiffWithAction.diff && dataDiffWithAction.action) {
@@ -222,34 +221,32 @@ function useGraphDataManager() {
   const type = params.viewType ?? 'cloud_provider';
   const [dataDiffWithAction, setDataDiffWithAction] = useState<{
     diff?: ReturnType<typeof getTopologyDiff>;
-    action?: TopologyActionData['action'];
+    action?: TopologyLoaderData['action'];
   }>({});
+  useTopologyActionDeduplicator();
   const [storageManager] = useState(new GraphStorageManager());
 
-  const fetcher = useFetcher<TopologyActionData>();
-  const getDataUpdates = (action: TopologyActionData['action']): void => {
+  const fetcher = useFetcher<TopologyLoaderData>();
+  const getDataUpdates = (action: TopologyLoaderData['action']): void => {
     if (fetcher.state !== 'idle') return;
-    if (action?.type === 'expandNode')
+    if (action?.type === 'expandNode') {
       storageManager.addNodeToFilters({
         nodeId: action.nodeId,
         nodeType: action.nodeType,
       });
-    else if (action?.type === 'collapseNode')
+    } else if (action?.type === 'collapseNode') {
       storageManager.removeNodeFromFilters({
         nodeId: action.nodeId,
         nodeType: action.nodeType,
       });
-    fetcher.submit(
-      {
-        action: JSON.stringify(action),
-        filters: JSON.stringify(storageManager.getFilters()),
-      },
-      {
-        method: 'post',
-        action: `/data-component/topology?type=${type}`,
-      },
-    );
+    }
+    const searchParams = new URLSearchParams();
+    searchParams.set('type', type);
+    searchParams.set('action', JSON.stringify(action));
+    searchParams.set('filters', JSON.stringify(storageManager.getFilters()));
+    fetcher.load(`/data-component/topology?${searchParams.toString()}`);
   };
+
   useEffect(() => {
     if (!fetcher.data) return;
     const action = fetcher.data.action;
@@ -257,6 +254,7 @@ function useGraphDataManager() {
     const diff = storageManager.getDiff();
     setDataDiffWithAction({ action, diff });
   }, [fetcher.data]);
+
   return {
     dataDiffWithAction,
     getDataUpdates,

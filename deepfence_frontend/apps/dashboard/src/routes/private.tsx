@@ -74,7 +74,7 @@ import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
-import { module as threatGraphAction } from '@/features/threat-graph/data-components/threatGraphAction';
+import { module as threatGraphLoader } from '@/features/threat-graph/data-components/threatGraphLoader';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as nodeDetailsCloudService } from '@/features/topology/data-components/node-details/CloudService';
 import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
@@ -86,7 +86,7 @@ import { module as topologyTableContainers } from '@/features/topology/data-comp
 import { module as topologyTableHosts } from '@/features/topology/data-components/tables/HostsTable';
 import { module as topologyTableKunernetesCluster } from '@/features/topology/data-components/tables/KubernetesTable';
 import { module as topologyTablePods } from '@/features/topology/data-components/tables/PodsTable';
-import { module as topologyAction } from '@/features/topology/data-components/topologyAction';
+import { module as topologyLoader } from '@/features/topology/data-components/topologyLoader';
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
 import { module as topologyTable } from '@/features/topology/pages/Table';
 import { module as topology } from '@/features/topology/pages/Topology';
@@ -607,7 +607,7 @@ export const privateRoutes: CustomRouteObject[] = [
       },
       {
         path: 'topology',
-        ...topologyAction,
+        ...topologyLoader,
       },
       {
         path: 'topology/table/hosts',
@@ -627,7 +627,7 @@ export const privateRoutes: CustomRouteObject[] = [
       },
       {
         path: 'threat-graph',
-        ...threatGraphAction,
+        ...threatGraphLoader,
       },
       {
         path: 'auth/logout',

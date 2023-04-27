@@ -97,8 +97,8 @@ const getDefaultOptions = (theme: Mode): G6GraphOptionsWithoutContainer => {
     layout: {
       type: 'dagre',
       rankdir: 'TB',
-      nodesep: 50,
-      ranksep: 60,
+      nodesep: 60,
+      ranksep: 40,
       preventOverlap: true,
     },
     defaultNode: {

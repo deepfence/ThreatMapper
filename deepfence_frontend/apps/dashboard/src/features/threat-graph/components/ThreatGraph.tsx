@@ -6,7 +6,7 @@ import { generatePath, useFetcher } from 'react-router-dom';
 import { useMeasure } from 'react-use';
 
 import { GraphProviderThreatGraph } from '@/api/generated';
-import { ThreatGraphActionData } from '@/features/threat-graph/data-components/threatGraphAction';
+import { ThreatGraphLoaderData } from '@/features/threat-graph/data-components/threatGraphLoader';
 import { useG6raph } from '@/features/threat-graph/hooks/useG6Graph';
 import { ThreatGraphNodeModelConfig } from '@/features/threat-graph/utils/threat-graph-custom-node';
 import { G6GraphData } from '@/features/topology/types/graph';
@@ -162,19 +162,13 @@ function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6Grap
 }
 
 function useThreatGraphData() {
-  const fetcher = useFetcher<ThreatGraphActionData>();
+  const fetcher = useFetcher<ThreatGraphLoaderData>();
 
   const getDataUpdates = ({ filters }: { filters?: ThreatGraphFilters }): void => {
     if (fetcher.state !== 'idle') return;
     const searchParams = new URLSearchParams();
     if (filters?.type) searchParams.set('type', filters.type ?? 'all');
-    fetcher.submit(
-      {},
-      {
-        method: 'post',
-        action: generatePath(`/data-component/threat-graph?${searchParams.toString()}`),
-      },
-    );
+    fetcher.load(generatePath(`/data-component/threat-graph?${searchParams.toString()}`));
   };
 
   return {
