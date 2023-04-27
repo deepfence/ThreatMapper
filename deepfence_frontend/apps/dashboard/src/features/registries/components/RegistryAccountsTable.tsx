@@ -170,7 +170,7 @@ const ActionDropdown = ({ id }: { id: string }) => {
                     <div className="w-4 h-4">
                       <VulnerabilityIcon />
                     </div>
-                    Scan for vulnerability
+                    Start Vulnerability Scan
                   </DropdownItem>
                   <DropdownItem
                     onClick={() => setSelectedScanType(ScanTypeEnum.SecretScan)}
@@ -178,7 +178,7 @@ const ActionDropdown = ({ id }: { id: string }) => {
                     <div className="w-4 h-4">
                       <SecretsIcon />
                     </div>
-                    Scan for secret
+                    Start Secret Scan
                   </DropdownItem>
                   <DropdownItem
                     onClick={() => setSelectedScanType(ScanTypeEnum.MalwareScan)}
@@ -186,7 +186,7 @@ const ActionDropdown = ({ id }: { id: string }) => {
                     <div className="w-4 h-4">
                       <MalwareIcon />
                     </div>
-                    Scan for malware
+                    Start Malware Scan
                   </DropdownItem>
                 </>
               }

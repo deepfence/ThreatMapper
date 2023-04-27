@@ -620,13 +620,13 @@ const HistoryDropdown = () => {
 };
 
 const ActionDropdown = ({
-  icon,
   ids,
-  label,
+  align,
+  triggerButton,
 }: {
-  icon: React.ReactNode;
   ids: string[];
-  label?: string;
+  align: 'center' | 'end' | 'start';
+  triggerButton: React.ReactNode;
 }) => {
   const fetcher = useFetcher();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -652,7 +652,7 @@ const ActionDropdown = ({
       />
       <Dropdown
         triggerAsChild={true}
-        align="end"
+        align={align}
         content={
           <>
             <DropdownItem onClick={() => onTableAction(ActionEnumType.MASK)}>
@@ -702,12 +702,7 @@ const ActionDropdown = ({
           </>
         }
       >
-        <Button size="xs" color="normal" className="hover:bg-transparent">
-          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-            {icon}
-          </IconContext.Provider>
-          {label ? <span className="ml-2">{label}</span> : null}
-        </Button>
+        {triggerButton}
       </Dropdown>
     </>
   );
@@ -718,7 +713,6 @@ const ScanResultTable = () => {
   const columnHelper = createColumnHelper<ModelCloudCompliance>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [sort, setSort] = useSortingState();
 
   const columns = useMemo(() => {
@@ -823,7 +817,19 @@ const ScanResultTable = () => {
         id: 'actions',
         enableSorting: false,
         cell: (cell) => (
-          <ActionDropdown icon={<HiDotsVertical />} ids={[cell.row.original.node_id]} />
+          <ActionDropdown
+            ids={[cell.row.original.node_id]}
+            align="end"
+            triggerButton={
+              <Button size="xs" color="normal">
+                <IconContext.Provider
+                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
+                >
+                  <HiDotsVertical />
+                </IconContext.Provider>
+              </Button>
+            }
+          />
         ),
         header: () => '',
         minSize: 40,
@@ -867,67 +873,23 @@ const ScanResultTable = () => {
               return null;
             }
             return (
-              <Form>
+              <>
                 {Object.keys(rowSelectionState).length === 0 ? (
                   <div className="text-sm text-gray-400 font-medium mb-3">
                     No rows selected
                   </div>
                 ) : (
                   <>
-                    <DeleteConfirmationModal
-                      showDialog={showDeleteDialog}
-                      ids={Object.keys(rowSelectionState)}
-                      setShowDialog={setShowDeleteDialog}
-                    />
-                    <div className="mb-1.5 flex gap-x-2">
-                      <Button
-                        size="xxs"
-                        color="danger"
-                        type="button"
-                        outline
-                        startIcon={<HiArchive />}
-                        onClick={() => setShowDeleteDialog(true)}
-                      >
-                        Delete
-                      </Button>
-                      <Button
-                        size="xs"
-                        color="default"
-                        outline
-                        startIcon={<HiEyeOff />}
-                        type="submit"
-                        onClick={() => {
-                          const formData = new FormData();
-                          formData.append('actionType', ActionEnumType.MASK);
-                          Object.keys(rowSelectionState).forEach((item) =>
-                            formData.append('ids[]', item),
-                          );
-                          fetcher.submit(formData, {
-                            method: 'post',
-                          });
-                        }}
-                      >
-                        Mask
-                      </Button>
-                      <Button
-                        size="xs"
-                        color="default"
-                        outline
-                        startIcon={<HiEye />}
-                        type="submit"
-                        onClick={() => {
-                          const formData = new FormData();
-                          formData.append('actionType', ActionEnumType.UNMASK);
-                          Object.keys(rowSelectionState).forEach((item) =>
-                            formData.append('ids[]', item),
-                          );
-                          fetcher.submit(formData, {
-                            method: 'post',
-                          });
-                        }}
-                      >
-                        Un mask
-                      </Button>
+                    <div className="mb-1.5">
+                      <ActionDropdown
+                        ids={Object.keys(rowSelectionState)}
+                        align="start"
+                        triggerButton={
+                          <Button size="xxs" color="primary" outline>
+                            Actions
+                          </Button>
+                        }
+                      />
                     </div>
                   </>
                 )}
@@ -994,7 +956,7 @@ const ScanResultTable = () => {
                     return {};
                   }}
                 />
-              </Form>
+              </>
             );
           }}
         </DFAwait>

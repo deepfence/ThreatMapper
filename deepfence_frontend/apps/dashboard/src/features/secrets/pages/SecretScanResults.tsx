@@ -21,10 +21,8 @@ import {
   Outlet,
   useFetcher,
   useLoaderData,
-  useParams,
   useSearchParams,
 } from 'react-router-dom';
-import { Form } from 'react-router-dom';
 import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 import {
@@ -454,7 +452,6 @@ const HistoryDropdown = () => {
   const { navigate } = usePageNavigation();
   const fetcher = useFetcher<ApiLoaderDataType>();
   const loaderData = useLoaderData() as LoaderDataType;
-  const params = useParams();
   const isScanHistoryLoading = fetcher.state === 'loading';
 
   const onHistoryClick = (nodeType: string, nodeId: string) => {
@@ -560,120 +557,15 @@ const HistoryDropdown = () => {
     </Suspense>
   );
 };
-const MaskDropdown = ({ ids }: { ids: string[] }) => {
-  const fetcher = useFetcher();
 
-  const onMaskAction = useCallback(
-    (maskHostAndImages: string) => {
-      const formData = new FormData();
-      formData.append('actionType', ActionEnumType.MASK);
-      formData.append('maskHostAndImages', maskHostAndImages);
-      ids.forEach((item) => formData.append('ids[]', item));
-      fetcher.submit(formData, {
-        method: 'post',
-      });
-    },
-    [ids, fetcher],
-  );
-
-  return (
-    <Dropdown
-      triggerAsChild={true}
-      content={
-        <>
-          <DropdownItem className="text-sm" onClick={() => onMaskAction('')}>
-            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-              <IconContext.Provider
-                value={{ className: 'text-gray-700 dark:text-gray-400' }}
-              >
-                <HiEyeOff />
-              </IconContext.Provider>
-              Mask {ids.length > 1 ? 'secrets' : 'secret'}
-            </span>
-          </DropdownItem>
-          <DropdownItem
-            className="text-sm"
-            onClick={() => onMaskAction('maskHostAndImages')}
-          >
-            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-              <IconContext.Provider
-                value={{ className: 'text-gray-700 dark:text-gray-400' }}
-              >
-                <HiEyeOff />
-              </IconContext.Provider>
-              Mask {ids.length > 1 ? 'secrets' : 'secret'} across hosts and images
-            </span>
-          </DropdownItem>
-        </>
-      }
-    >
-      <Button size="xs" color="default" outline startIcon={<HiEyeOff />} type="button">
-        Mask
-      </Button>
-    </Dropdown>
-  );
-};
-const UnMaskDropdown = ({ ids }: { ids: string[] }) => {
-  const fetcher = useFetcher();
-
-  const onUnMaskAction = useCallback(
-    (unMaskHostAndImages: string) => {
-      const formData = new FormData();
-      formData.append('actionType', ActionEnumType.UNMASK);
-      formData.append('maskHostAndImages', unMaskHostAndImages);
-      ids.forEach((item) => formData.append('ids[]', item));
-      fetcher.submit(formData, {
-        method: 'post',
-      });
-    },
-    [ids],
-  );
-
-  return (
-    <Dropdown
-      triggerAsChild={true}
-      content={
-        <>
-          <DropdownItem className="text-sm" onClick={() => onUnMaskAction('')}>
-            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-              <IconContext.Provider
-                value={{ className: 'text-gray-700 dark:text-gray-400' }}
-              >
-                <HiEye />
-              </IconContext.Provider>
-              Unmask {ids.length > 1 ? 'secrets' : 'secret'}
-            </span>
-          </DropdownItem>
-          <DropdownItem
-            className="text-sm"
-            onClick={() => onUnMaskAction('maskHostAndImages')}
-          >
-            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-              <IconContext.Provider
-                value={{ className: 'text-gray-700 dark:text-gray-400' }}
-              >
-                <HiEye />
-              </IconContext.Provider>
-              Unmask {ids.length > 1 ? 'secrets' : 'secret'} across hosts and images
-            </span>
-          </DropdownItem>
-        </>
-      }
-    >
-      <Button size="xs" color="default" outline startIcon={<HiEye />} type="button">
-        Un mask
-      </Button>
-    </Dropdown>
-  );
-};
 const ActionDropdown = ({
-  icon,
   ids,
-  label,
+  align,
+  triggerButton,
 }: {
-  icon: React.ReactNode;
   ids: string[];
-  label?: string;
+  align: 'center' | 'end' | 'start';
+  triggerButton: React.ReactNode;
 }) => {
   const fetcher = useFetcher();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -704,7 +596,7 @@ const ActionDropdown = ({
       />
       <Dropdown
         triggerAsChild={true}
-        align="end"
+        align={align}
         content={
           <>
             <DropdownSubMenu
@@ -735,14 +627,34 @@ const ActionDropdown = ({
               }
             >
               <DropdownItem>
-                <IconContext.Provider
-                  value={{
-                    className: 'w-4 h-4',
-                  }}
-                >
-                  <HiChevronLeft />
-                </IconContext.Provider>
-                <span className="text-gray-700 dark:text-gray-400">Mask</span>
+                {align === 'start' ? (
+                  <>
+                    <IconContext.Provider
+                      value={{ className: 'w-3 h-3 text-gray-700 dark:text-gray-400' }}
+                    >
+                      <HiEyeOff />
+                    </IconContext.Provider>
+                    <span className="text-gray-700 dark:text-gray-400">Mask</span>
+                    <IconContext.Provider
+                      value={{
+                        className: 'w-4 h-4 ml-auto',
+                      }}
+                    >
+                      <HiChevronRight />
+                    </IconContext.Provider>
+                  </>
+                ) : (
+                  <>
+                    <IconContext.Provider
+                      value={{
+                        className: 'w-4 h-4',
+                      }}
+                    >
+                      <HiChevronLeft />
+                    </IconContext.Provider>
+                    <span className="text-gray-700 dark:text-gray-400">Mask</span>
+                  </>
+                )}
               </DropdownItem>
             </DropdownSubMenu>
             <DropdownSubMenu
@@ -773,14 +685,34 @@ const ActionDropdown = ({
               }
             >
               <DropdownItem>
-                <IconContext.Provider
-                  value={{
-                    className: 'w-4 h-4',
-                  }}
-                >
-                  <HiChevronLeft />
-                </IconContext.Provider>
-                <span className="text-gray-700 dark:text-gray-400">Un mask</span>
+                {align === 'start' ? (
+                  <>
+                    <IconContext.Provider
+                      value={{ className: 'w-3 h-3 text-gray-700 dark:text-gray-400' }}
+                    >
+                      <HiEye />
+                    </IconContext.Provider>
+                    <span className="text-gray-700 dark:text-gray-400">Un mask</span>
+                    <IconContext.Provider
+                      value={{
+                        className: 'w-4 h-4 ml-auto',
+                      }}
+                    >
+                      <HiChevronRight />
+                    </IconContext.Provider>
+                  </>
+                ) : (
+                  <>
+                    <IconContext.Provider
+                      value={{
+                        className: 'w-4 h-4',
+                      }}
+                    >
+                      <HiChevronLeft />
+                    </IconContext.Provider>
+                    <span className="text-gray-700 dark:text-gray-400">Un Mask</span>
+                  </>
+                )}
               </DropdownItem>
             </DropdownSubMenu>
             <DropdownItem
@@ -814,12 +746,7 @@ const ActionDropdown = ({
           </>
         }
       >
-        <Button size="xs" color="normal" className="hover:bg-transparent">
-          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-            {icon}
-          </IconContext.Provider>
-          {label ? <span className="ml-2">{label}</span> : null}
-        </Button>
+        {triggerButton}
       </Dropdown>
     </>
   );
@@ -830,7 +757,6 @@ const SecretTable = () => {
   const columnHelper = createColumnHelper<ModelSecret>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [sort, setSort] = useSortingState();
 
   const columns = useMemo(() => {
@@ -925,8 +851,17 @@ const SecretTable = () => {
         enableSorting: false,
         cell: (cell) => (
           <ActionDropdown
-            icon={<HiDotsVertical />}
             ids={[cell.row.original.node_id.toString()]}
+            align="end"
+            triggerButton={
+              <Button size="xs" color="normal">
+                <IconContext.Provider
+                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
+                >
+                  <HiDotsVertical />
+                </IconContext.Provider>
+              </Button>
+            }
           />
         ),
         header: () => '',
@@ -943,18 +878,6 @@ const SecretTable = () => {
   const selectedIds = useMemo(() => {
     return Object.keys(rowSelectionState).map((key) => key.split('<-->')[0]);
   }, [rowSelectionState]);
-
-  const onTableAction = useCallback(
-    (actionType: string) => {
-      const formData = new FormData();
-      formData.append('actionType', actionType);
-      selectedIds.forEach((item) => formData.append('ids[]', item));
-      fetcher.submit(formData, {
-        method: 'post',
-      });
-    },
-    [selectedIds],
-  );
 
   return (
     <div className="self-start">
@@ -984,42 +907,23 @@ const SecretTable = () => {
               return null;
             }
             return (
-              <Form>
+              <>
                 {selectedIds.length === 0 ? (
-                  <div className="text-sm text-gray-400 font-medium py-2.5">
+                  <div className="text-sm text-gray-400 font-medium py-1.5">
                     No rows selected
                   </div>
                 ) : (
-                  <>
-                    <DeleteConfirmationModal
-                      showDialog={showDeleteDialog}
+                  <div className="mb-1.5">
+                    <ActionDropdown
                       ids={selectedIds}
-                      setShowDialog={setShowDeleteDialog}
+                      align="start"
+                      triggerButton={
+                        <Button size="xxs" color="primary" outline>
+                          Actions
+                        </Button>
+                      }
                     />
-                    <div className="mb-2 flex gap-x-2">
-                      <Button
-                        size="xs"
-                        color="danger"
-                        type="button"
-                        outline
-                        startIcon={<HiArchive />}
-                        onClick={() => setShowDeleteDialog(true)}
-                      >
-                        Delete
-                      </Button>
-                      <MaskDropdown ids={selectedIds} />
-                      <UnMaskDropdown ids={selectedIds} />
-                      <Button
-                        size="xs"
-                        color="default"
-                        outline
-                        startIcon={<HiBell />}
-                        onClick={() => onTableAction(ActionEnumType.NOTIFY)}
-                      >
-                        Notify
-                      </Button>
-                    </div>
-                  </>
+                  </div>
                 )}
 
                 <Table
@@ -1082,7 +986,7 @@ const SecretTable = () => {
                     return {};
                   }}
                 />
-              </Form>
+              </>
             );
           }}
         </DFAwait>

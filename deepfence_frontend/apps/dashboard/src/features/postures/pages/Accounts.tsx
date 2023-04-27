@@ -292,7 +292,7 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
               setScanNodeIds([info.row.original.node_id]);
             }}
           >
-            Start scan
+            Start Scan
           </Button>
         ),
         header: () => 'Start action',
@@ -333,7 +333,7 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
           {Object.keys(rowSelectionState).length === 0 ? (
             <>
               {accounts.length > 0 && (
-                <div className="text-sm text-gray-400 font-medium pt-2 pl-2 pb-2.5 flex justify-between">
+                <div className="text-sm text-gray-400 font-medium pt-2 pb-1 flex justify-between">
                   No rows selected
                 </div>
               )}
@@ -342,10 +342,9 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
             <>
               <div className="mb-1.5 flex gap-x-2">
                 <Button
-                  size="xs"
-                  color="normal"
-                  startIcon={<FaPlay />}
-                  className="text-blue-600 dark:text-blue-500"
+                  size="xxs"
+                  color="primary"
+                  outline
                   onClick={() => {
                     const scanType = CLOUDS.includes(
                       cloudProvider as ComplianceScanNodeTypeEnum,
@@ -356,7 +355,7 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
                     setScanNodeIds(Object.keys(rowSelectionState));
                   }}
                 >
-                  Start scan
+                  Start Scan
                 </Button>
               </div>
             </>
