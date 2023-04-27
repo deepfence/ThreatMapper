@@ -367,25 +367,8 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
           columns={columns}
           enableRowSelection
           enablePagination
-          manualPagination
           totalRows={totalRows}
-          pageIndex={currentPage}
-          onPaginationChange={(updaterOrValue) => {
-            let newPageIndex = 0;
-            if (typeof updaterOrValue === 'function') {
-              newPageIndex = updaterOrValue({
-                pageIndex: currentPage,
-                pageSize: PAGE_SIZE,
-              }).pageIndex;
-            } else {
-              newPageIndex = updaterOrValue.pageIndex;
-            }
-            setSearchParams((prev) => {
-              prev.set('page', String(newPageIndex));
-              return prev;
-            });
-          }}
-          pageSize={PAGE_SIZE}
+          pageSize={30}
           rowSelectionState={rowSelectionState}
           onRowSelectionChange={setRowSelectionState}
           getRowId={(row) => row.node_id ?? ''}
