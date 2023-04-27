@@ -480,8 +480,8 @@ const DeleteConfirmationModal = ({
           <Button
             size="xs"
             color="danger"
-            type="button"
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
               onDeleteAction(ActionEnumType.DELETE);
               setShowDialog(false);
             }}
