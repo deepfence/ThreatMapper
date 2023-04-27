@@ -67,9 +67,9 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 	var buf bytes.Buffer
 	for _, edge := range edges {
 		if edge.Values[2].(string) != edge.Values[6].(string) {
-			left_pids := edge.Values[3].([]int64)
-			right_pids := edge.Values[7].([]int64)
-			for i := range edge.Values[3].([]int64) {
+			left_pids := edge.Values[3].([]interface{})
+			right_pids := edge.Values[7].([]interface{})
+			for i := range left_pids {
 				buf.Reset()
 				buf.WriteString(edge.Values[0].(string))
 				buf.WriteByte(';')
@@ -77,7 +77,7 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 				buf.WriteByte(';')
 				buf.WriteString(edge.Values[2].(string))
 				buf.WriteByte(';')
-				buf.WriteString(strconv.Itoa(int(left_pids[i])))
+				buf.WriteString(strconv.Itoa(int(left_pids[i].(int64))))
 				src := buf.String()
 				buf.Reset()
 				buf.WriteString(edge.Values[4].(string))
@@ -86,7 +86,7 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 				buf.WriteByte(';')
 				buf.WriteString(edge.Values[6].(string))
 				buf.WriteByte(';')
-				buf.WriteString(strconv.Itoa(int(right_pids[i])))
+				buf.WriteString(strconv.Itoa(int(right_pids[i].(int64))))
 				target := buf.String()
 				res = append(res, ConnectionSummary{Source: src, Target: target})
 			}

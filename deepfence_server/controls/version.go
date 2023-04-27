@@ -99,7 +99,58 @@ func GetAgentVersionTarball(ctx context.Context, version string) (string, error)
 	return r.Values[0].(string), nil
 }
 
+func hasPendingUpgradeOrNew(ctx context.Context, version string, nodeId string) (bool, error) {
+
+	client, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return false, err
+	}
+
+	session, err := client.Session(neo4j.AccessModeRead)
+	if err != nil {
+		return false, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return false, err
+	}
+	defer tx.Close()
+
+	res, err := tx.Run(`
+		MATCH (n:Node{node_id:$node_id})
+		MATCH (v:AgentVersion{node_id:$version})
+		OPTIONAL MATCH (v) -[rs:SCHEDULED]-> (n)
+		OPTIONAL MATCH (n) -[rv:VERSIONED]-> (v)
+		RETURN rs IS NOT NULL OR rv IS NULL`,
+		map[string]interface{}{
+			"node_id": nodeId,
+			"version": version,
+		})
+	if err != nil {
+		return false, err
+	}
+
+	r, err := res.Single()
+	if err != nil {
+		// No results means new
+		return true, nil
+	}
+	return r.Values[0].(bool), nil
+}
+
 func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) error {
+
+	has, err := hasPendingUpgradeOrNew(ctx, version, nodeId)
+
+	if err != nil {
+		return err
+	}
+
+	if !has {
+		return nil
+	}
 
 	client, err := directory.Neo4jClient(ctx)
 	if err != nil {
@@ -117,25 +168,6 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) er
 		return err
 	}
 	defer tx.Close()
-
-	res, err := tx.Run(`
-		MATCH (n:Node{node_id:$node_id})
-		MATCH (v:AgentVersion{node_id:$version})
-		MATCH (n) -[r:VERSIONED]-> (v)
-		RETURN true`,
-		map[string]interface{}{
-			"node_id": nodeId,
-			"version": version,
-		})
-	if err != nil {
-		return err
-	}
-
-	// If previous returns something, no writes needed
-	_, err = res.Single()
-	if err == nil {
-		return nil
-	}
 
 	_, err = tx.Run(`
 		OPTIONAL MATCH (n:Node{node_id:$node_id}) -[old:VERSIONED]-> (v)
