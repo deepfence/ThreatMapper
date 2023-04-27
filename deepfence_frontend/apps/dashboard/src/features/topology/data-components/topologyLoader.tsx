@@ -20,6 +20,10 @@ export const TopologyViewTypes = [
   NodeType.container,
 ] as const;
 
+// React router revalidate uses the same url with all the params etc to call the loader again
+// so if the user has performed some action on the graph/table, react router will send the same
+// payload even in case of revalidate, so here we check if we get the same action again, if yes
+// we return a refresh action instead of the same action again
 class TopologyActionDeduplicator {
   private static previousAction: TopologyLoaderData['action'];
 
