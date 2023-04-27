@@ -52,7 +52,7 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 	WHERE n.active = true
 	AND   m.active = true
 	WITH CASE WHEN coalesce(n.kubernetes_cluster_id, '') <> '' THEN n.kubernetes_cluster_id ELSE n.cloud_region END AS left_region, n, m, r, CASE WHEN coalesce(m.kubernetes_cluster_id, '') <> '' THEN m.kubernetes_cluster_id ELSE m.cloud_region END AS right_region
-	RETURN n.cloud_provider, left_region, n.node_id, r.left_pid, m.cloud_provider, right_region, m.node_id, r.right_pid`, nil)
+	RETURN n.cloud_provider, left_region, n.node_id, r.left_pids, m.cloud_provider, right_region, m.node_id, r.right_pids`, nil)
 
 	if err != nil {
 		return []ConnectionSummary{}, err
@@ -67,25 +67,29 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 	var buf bytes.Buffer
 	for _, edge := range edges {
 		if edge.Values[2].(string) != edge.Values[6].(string) {
-			buf.Reset()
-			buf.WriteString(edge.Values[0].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[1].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[2].(string))
-			buf.WriteByte(';')
-			buf.WriteString(strconv.Itoa(int(edge.Values[3].(int64))))
-			src := buf.String()
-			buf.Reset()
-			buf.WriteString(edge.Values[4].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[5].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[6].(string))
-			buf.WriteByte(';')
-			buf.WriteString(strconv.Itoa(int(edge.Values[7].(int64))))
-			target := buf.String()
-			res = append(res, ConnectionSummary{Source: src, Target: target})
+			left_pids := edge.Values[3].([]int64)
+			right_pids := edge.Values[7].([]int64)
+			for i := range edge.Values[3].([]int64) {
+				buf.Reset()
+				buf.WriteString(edge.Values[0].(string))
+				buf.WriteByte(';')
+				buf.WriteString(edge.Values[1].(string))
+				buf.WriteByte(';')
+				buf.WriteString(edge.Values[2].(string))
+				buf.WriteByte(';')
+				buf.WriteString(strconv.Itoa(int(left_pids[i])))
+				src := buf.String()
+				buf.Reset()
+				buf.WriteString(edge.Values[4].(string))
+				buf.WriteByte(';')
+				buf.WriteString(edge.Values[5].(string))
+				buf.WriteByte(';')
+				buf.WriteString(edge.Values[6].(string))
+				buf.WriteByte(';')
+				buf.WriteString(strconv.Itoa(int(right_pids[i])))
+				target := buf.String()
+				res = append(res, ConnectionSummary{Source: src, Target: target})
+			}
 		}
 	}
 

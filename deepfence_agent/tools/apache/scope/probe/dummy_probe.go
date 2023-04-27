@@ -20,8 +20,13 @@ import (
 	"github.com/weaveworks/scope/report"
 )
 
-//go:embed dummy/agent-report.json
 var dummy_agent string
+
+//go:embed dummy/agent-report.json
+var slim_dummy_agent string
+
+//go:embed dummy/fat-agent-report.json
+var fat_dummy_agent string
 
 var dummyNum int
 
@@ -29,6 +34,12 @@ func init() {
 	dummy := os.Getenv("DF_USE_DUMMY_SCOPE")
 	if dummy != "" {
 		dummyNum, _ = strconv.Atoi(dummy)
+	}
+
+	dummy_agent = slim_dummy_agent
+	useFat := os.Getenv("DF_USE_FAT_DUMMY_SCOPE")
+	if useFat != "" {
+		dummy_agent = fat_dummy_agent
 	}
 }
 

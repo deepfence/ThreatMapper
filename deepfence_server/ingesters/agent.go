@@ -282,6 +282,50 @@ func concatMaps(input map[string][]string) []map[string]interface{} {
 	return res
 }
 
+type Connection struct {
+	source string
+	destination string
+	left_pid int
+	right_pid int
+}
+
+func connections2maps(connections []Connection) []map[string]interface{} {
+	delim := ";;;"
+	unique_maps := map[string]map[string][]int{}
+	for _, connection := range connections {
+		connection_id := connection.source+delim+connection.destination
+		v, has := unique_maps[connection_id]
+		if !has {
+			unique_maps[connection_id] = map[string][]int{
+				"left_pids": {connection.left_pid},
+				"right_pids": {connection.right_pid},
+			}
+		} else {
+			unique_maps[connection_id]["left_pids"] = append(v["left_pids"], connection.left_pid)
+			unique_maps[connection_id]["right_pids"] = append(v["right_pids"], connection.right_pid)
+		}
+	}
+	res := []map[string]interface{}{}
+	for k, v := range unique_maps {
+		source_dest := strings.Split(k, delim)
+		internal := map[string]interface{}{}
+		internal["source"] = source_dest[0]
+		internal["destination"] = source_dest[1]
+		pids := []map[string]int{}
+		left_pids := v["left_pids"]
+		right_pids := v["right_pids"]
+		for i := range left_pids {
+			pids = append(pids, map[string]int{
+				"left": left_pids[i],
+				"right": right_pids[i],
+			})
+		}
+		internal["pids"] = pids
+		res = append(res, internal)
+	}
+	return res
+}
+
 func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache, buf *bytes.Buffer) ReportIngestionData {
 	hosts := make([]map[string]interface{}, 0, len(rpt.Host))
 	host_batch := make([]map[string]interface{}, 0, len(rpt.Host))
@@ -317,9 +361,8 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	endpoint_edges_batch := make([]map[string]interface{}, 0, len(rpt.Endpoint))
 	//endpoint_batch := []map[string]string{}
 	//endpoint_edges := []map[string]string{}
-	// Handle inbound from internet
-	inbound_edges := []map[string]interface{}{}
 
+	connections := []Connection{}
 	local_memoization := map[string]struct{}{}
 	for _, n := range rpt.Endpoint {
 		node_ip, _ := extractIPPortFromEndpointID(n.Metadata.NodeID)
@@ -336,10 +379,13 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		if n.Metadata.Pid != -1 {
 			if len(n.Adjacency) == 0 {
 				// Handle inbound from internet
-				inbound_edges = append(inbound_edges,
-					map[string]interface{}{"destination": n.Metadata.HostName, "left_pid": 0, "right_pid": n.Metadata.Pid})
+				connections = append(connections, Connection{
+					source:      "in-the-internet",
+					destination: n.Metadata.HostName,
+					left_pid:    0,
+					right_pid:   n.Metadata.Pid,
+				})
 			} else {
-				edges := make([]map[string]interface{}, 0, len(n.Adjacency))
 				for _, i := range n.Adjacency {
 					if n.Metadata.NodeID != i {
 						ip, port := extractIPPortFromEndpointID(i)
@@ -355,20 +401,27 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 							right_ippid, ok := resolvers.get_ip_pid(ip + port)
 							if ok {
 								rightpid := extractPidFromNodeID(right_ippid)
-								edges = append(edges,
-									map[string]interface{}{"destination": host, "left_pid": n.Metadata.Pid, "right_pid": rightpid})
+								connections = append(connections, Connection{
+									source:      n.Metadata.HostName,
+									destination: host,
+									left_pid:    n.Metadata.Pid,
+									right_pid:   rightpid,
+								})
 							}
 						} else {
-							edges = append(edges,
-								map[string]interface{}{"destination": "out-the-internet", "left_pid": n.Metadata.Pid, "right_pid": 0})
+							connections = append(connections, Connection{
+								source:      n.Metadata.HostName,
+								destination: "out-the-internet",
+								left_pid:    n.Metadata.Pid,
+								right_pid:   0,
+							})
 						}
 					}
 				}
-				endpoint_edges_batch = append(endpoint_edges_batch, map[string]interface{}{"source": n.Metadata.HostName, "edges": edges})
 			}
 		}
 	}
-	endpoint_edges_batch = append(endpoint_edges_batch, map[string]interface{}{"source": "in-the-internet", "edges": inbound_edges})
+	endpoint_edges_batch = connections2maps(connections)
 
 	process_batch := make([]map[string]interface{}, 0, len(rpt.Process))
 	process_edges_batch := map[string][]string{}
@@ -424,7 +477,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	}
 
 	return ReportIngestionData{
-		Endpoint_edges_batch: endpoint_edges_batch,
+		Endpoint_edges_batch:     endpoint_edges_batch,
 
 		Process_batch:            process_batch,
 		Host_batch:               host_batch,
@@ -635,10 +688,12 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 	if _, err = tx.Run(`
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
-		WITH n, row
-		UNWIND row.edges as row2
-		MATCH (m:Node{node_id: row2.destination})
-		MERGE (n)-[:CONNECTS {left_pid: row2.left_pid, right_pid: row2.right_pid}]->(m)`, map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
+		MATCH (m:Node{node_id: row.destination})
+		MERGE (n)-[r:CONNECTS]->(m)
+		WITH n, r, m, row.pids as rpids
+		UNWIND rpids as pids
+		SET r.left_pids = coalesce(r.left_pids, []) + pids.left,
+		    r.right_pids = coalesce(r.right_pids, []) + pids.right`, map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
 		return err
 	}
 
