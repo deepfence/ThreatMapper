@@ -1,6 +1,8 @@
+import { useEffect, useRef, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiArrowRight, HiSwitchHorizontal } from 'react-icons/hi';
 import { generatePath, Navigate, useLocation } from 'react-router-dom';
+import { useMeasure } from 'react-use';
 import { Button, Card, Separator, Tooltip, Typography } from 'ui-components';
 
 import LogoAws from '@/assets/logo-aws.svg';
@@ -199,8 +201,17 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
 
 const ScanHeader = ({ state }: { state: OnboardConnectionNode[] }) => {
   const { navigate } = usePageNavigation();
+  const [descHeight, setDescHeight] = useState(0);
+  const maxHeight = useRef(0);
+  const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
+
+  useEffect(() => {
+    maxHeight.current = 0;
+    setDescHeight(0);
+  }, [height, width]);
+
   return (
-    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5" ref={measureRef}>
       {possibleScanMap[state[0].urlType].map(
         ({ scanTitle, scanType, description, buttonText }: ScanTypeListProps) => {
           return (
@@ -235,9 +246,23 @@ const ScanHeader = ({ state }: { state: OnboardConnectionNode[] }) => {
                 {scanTitle}
               </h2>
               <Separator />
-              <p className="text-sm font-normal py-2 text-gray-500 dark:text-gray-400 min-h-[160px]">
+              <p
+                className="text-sm font-normal py-2 text-gray-500 dark:text-gray-400"
+                ref={(el: HTMLDivElement) => {
+                  const height = el?.clientHeight ?? 0;
+                  maxHeight.current =
+                    maxHeight.current < height ? height : maxHeight.current;
+                  if (maxHeight.current > 0) {
+                    setDescHeight(maxHeight.current);
+                  }
+                }}
+                style={{
+                  height: descHeight > 0 ? descHeight : 'auto',
+                }}
+              >
                 {description}
               </p>
+
               <Button
                 size="xs"
                 color="primary"
