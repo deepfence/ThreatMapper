@@ -8652,6 +8652,7 @@
         "properties": {
           "@timestamp": { "type": "string", "format": "date-time" },
           "scan_id": { "type": "string" },
+          "scan_message": { "type": "string" },
           "scan_status": { "type": "string" }
         }
       },
@@ -9218,14 +9219,15 @@
       "ModelComplianceScanInfo": {
         "required": [
           "scan_id",
-          "benchmark_types",
           "status",
+          "status_message",
           "updated_at",
           "created_at",
           "node_id",
           "node_type",
           "severity_counts",
-          "node_name"
+          "node_name",
+          "benchmark_types"
         ],
         "type": "object",
         "properties": {
@@ -9245,6 +9247,7 @@
             "nullable": true
           },
           "status": { "type": "string" },
+          "status_message": { "type": "string" },
           "updated_at": { "type": "integer", "format": "int64" }
         }
       },
@@ -10133,6 +10136,7 @@
         "required": [
           "scan_id",
           "status",
+          "status_message",
           "updated_at",
           "created_at",
           "node_id",
@@ -10153,6 +10157,7 @@
             "nullable": true
           },
           "status": { "type": "string" },
+          "status_message": { "type": "string" },
           "updated_at": { "type": "integer", "format": "int64" }
         }
       },
@@ -10164,11 +10169,6 @@
           "node_ids": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
-            "nullable": true
-          },
-          "scan_status": {
-            "type": "array",
-            "items": { "type": "string" },
             "nullable": true
           },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
@@ -10884,6 +10884,7 @@
             ],
             "type": "string"
           },
+          "scan_id": { "type": "string" },
           "scan_type": {
             "enum": [
               "vulnerability",
@@ -10905,7 +10906,7 @@
               "nist",
               "hipaa",
               "pci",
-              "soc2"
+              "soc_2"
             ],
             "type": "array",
             "items": { "type": "string" },
