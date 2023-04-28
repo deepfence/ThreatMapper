@@ -77,6 +77,7 @@ export interface TableProps<TData extends RowData> {
   getTrProps?: (row: Row<TData>, rowIdx: number) => React.ComponentProps<'tr'>;
   getSubRows?: (originalRow: TData, index: number) => TData[] | undefined;
   noDataText?: string;
+  approximatePagination?: boolean;
 }
 
 interface TableContextValues<TData extends RowData> {
@@ -126,6 +127,7 @@ const CustomTable = <TData extends RowData>(
     expanded,
     onExpandedChange,
     noDataText = 'No data',
+    approximatePagination,
   } = props;
   const TableContext = createTableContext<TData>();
 
@@ -258,6 +260,7 @@ const CustomTable = <TData extends RowData>(
             }}
             pageSize={table.getState().pagination.pageSize}
             totalRows={manualPagination ? totalRows : data.length}
+            approximatePagination={approximatePagination}
           />
         </div>
       ) : null}
