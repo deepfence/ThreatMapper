@@ -69,7 +69,7 @@ async function getTop5SecretAssetsData(nodeType: 'image' | 'host' | 'container')
           fields_filter: {
             contains_filter: {
               filter_in: {
-                scan_status: ['COMPLETE'],
+                status: ['COMPLETE'],
               },
             },
             match_filter: { filter_in: {} },
