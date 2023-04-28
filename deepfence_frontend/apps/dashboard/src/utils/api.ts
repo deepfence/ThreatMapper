@@ -3,6 +3,7 @@ import { redirect } from 'react-router-dom';
 import { getAuthenticationApiClient } from '@/api/api';
 import { ModelResponseAccessToken, ResponseError } from '@/api/generated';
 import storage from '@/utils/storage';
+import { sleep } from '@/utils/timers';
 
 export class ApiError<T> {
   private _value: T;
@@ -163,3 +164,17 @@ export function apiWrapper<F extends Func<any[], any>>({
     }
   };
 }
+
+export const retryUntilResponseHasValue = async <F extends Func<any[], any>>(
+  fn: F,
+  fnParams: Parameters<F>,
+  checkResonseHasValue: (response: Awaited<ReturnType<F>>) => Promise<boolean>,
+): Promise<ReturnType<F>> => {
+  const response = await fn(...fnParams);
+  const isPresent = await checkResonseHasValue(response);
+  if (!isPresent) {
+    await sleep(3000);
+    return retryUntilResponseHasValue(fn, fnParams, checkResonseHasValue);
+  }
+  return response;
+};

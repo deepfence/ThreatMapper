@@ -49,6 +49,12 @@ export interface UtilsReportFilters {
      * @type {string}
      * @memberof UtilsReportFilters
      */
+    scan_id?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof UtilsReportFilters
+     */
     scan_type: UtilsReportFiltersScanTypeEnum;
     /**
      * 
@@ -117,6 +123,7 @@ export function UtilsReportFiltersFromJSONTyped(json: any, ignoreDiscriminator: 
         'advanced_report_filters': !exists(json, 'advanced_report_filters') ? undefined : UtilsAdvancedReportFiltersFromJSON(json['advanced_report_filters']),
         'include_dead_nodes': !exists(json, 'include_dead_nodes') ? undefined : json['include_dead_nodes'],
         'node_type': json['node_type'],
+        'scan_id': !exists(json, 'scan_id') ? undefined : json['scan_id'],
         'scan_type': json['scan_type'],
         'severity_or_check_type': !exists(json, 'severity_or_check_type') ? undefined : json['severity_or_check_type'],
     };
@@ -134,6 +141,7 @@ export function UtilsReportFiltersToJSON(value?: UtilsReportFilters | null): any
         'advanced_report_filters': UtilsAdvancedReportFiltersToJSON(value.advanced_report_filters),
         'include_dead_nodes': value.include_dead_nodes,
         'node_type': value.node_type,
+        'scan_id': value.scan_id,
         'scan_type': value.scan_type,
         'severity_or_check_type': value.severity_or_check_type,
     };

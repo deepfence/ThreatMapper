@@ -1,5 +1,4 @@
 import cx from 'classnames';
-import dayjs from 'dayjs';
 import React, {
   Suspense,
   useCallback,
@@ -17,7 +16,6 @@ import {
   HiDotsVertical,
   HiDownload,
   HiOutlineExclamationCircle,
-  HiRefresh,
 } from 'react-icons/hi';
 import {
   ActionFunctionArgs,
@@ -27,7 +25,6 @@ import {
   useFetcher,
   useLoaderData,
   useNavigation,
-  useRevalidator,
   useSearchParams,
 } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -49,11 +46,19 @@ import {
 } from 'ui-components';
 import { Checkbox } from 'ui-components';
 
-import { getScanResultsApiClient, getSearchApiClient } from '@/api/api';
+import {
+  getReportsApiClient,
+  getScanResultsApiClient,
+  getSearchApiClient,
+} from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
+  ModelGenerateReportReqDurationEnum,
+  ModelGenerateReportReqReportTypeEnum,
   ModelScanInfo,
   SearchSearchScanReq,
+  UtilsReportFiltersNodeTypeEnum,
+  UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterHeader } from '@/components/forms/FilterHeader';
@@ -65,9 +70,16 @@ import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { ScanTypeEnum } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import {
+  ApiError,
+  apiWrapper,
+  makeRequest,
+  retryUntilResponseHasValue,
+} from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
+import { download } from '@/utils/download';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { isScanComplete } from '@/utils/scan';
 import { DFAwait } from '@/utils/suspense';
 import {
   getOrderFromSearchParams,
@@ -382,40 +394,88 @@ const action = async ({
     toast.success('Scan deleted successfully');
     return null;
   } else if (actionType === ActionEnumType.DOWNLOAD) {
-    const result = await makeRequest({
-      apiFunction: getScanResultsApiClient().downloadScanResultsForScanID,
-      apiArgs: [
-        {
-          scanId: scanId.toString(),
-          scanType: ScanTypeEnum.SecretScan,
+    const nodeType = formData.get('nodeType') as UtilsReportFiltersNodeTypeEnum;
+    if (!nodeType) {
+      throw new Error('Node Type is required');
+    }
+    const getReportIdApi = apiWrapper({
+      fn: getReportsApiClient().generateReport,
+    });
+
+    const getReportIdApiResponse = await getReportIdApi({
+      modelGenerateReportReq: {
+        duration: ModelGenerateReportReqDurationEnum.NUMBER_0,
+        filters: {
+          node_type: nodeType,
+          scan_type: UtilsReportFiltersScanTypeEnum.Secret,
         },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<{
-          message?: string;
-        }>({});
-        if (r.status === 400 || r.status === 409) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-          });
-        }
+        report_type: ModelGenerateReportReqReportTypeEnum.Xlsx,
       },
     });
-    if (ApiError.isApiError(result)) {
-      if (result.value()?.message !== undefined) {
-        const message = result.value()?.message ?? 'Something went wrong';
-        toast.error(message);
+
+    if (!getReportIdApiResponse.ok) {
+      if (getReportIdApiResponse.error.response.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse =
+          await getReportIdApiResponse.error.response.json();
+        const error = modelResponse.error_fields?.message;
+        if (error) {
+          toast.error(error);
+          return null;
+        } else {
+          toast.error('Something went wrong, please try again');
+          return null;
+        }
+      }
+      throw getReportIdApiResponse.error;
+    }
+
+    const reportId = getReportIdApiResponse.value.report_id;
+    if (!reportId) {
+      toast.error('Somethings went wrong, please try again');
+      console.error('Report id is missing in api response');
+      return null;
+    }
+    const getReportApi = apiWrapper({
+      fn: getReportsApiClient().getReport,
+    });
+
+    const reportResponse = await retryUntilResponseHasValue(
+      getReportApi,
+      [{ reportId }],
+      async (response) => {
+        if (!response.ok) {
+          if (response.error.response.status === 400) {
+            const modelResponse: ApiDocsBadRequestResponse =
+              await response.error.response.json();
+            const error = modelResponse.error_fields?.message;
+            if (error) {
+              toast.error(error);
+              return true;
+            }
+          }
+          toast.error('Something went wrong, please try again');
+          return true;
+        } else {
+          const url = response.value.url;
+          if (!url) {
+            toast.success(
+              'Download in progress, it may take some time however you can always find it on Integrations > Report Downloads',
+            );
+          }
+          return !!url;
+        }
+      },
+    );
+
+    if (reportResponse.ok) {
+      const url = reportResponse.value.url;
+      if (url) {
+        download(url);
+      } else {
+        toast.error('Something went wrong, please try again');
       }
     }
 
-    toast.success('Download is in progress');
-    const a = document.createElement('a');
-    const unixTime = dayjs(new Date()).unix();
-    a.href = 'https://64.227.142.80/deepfence/openapi.json';
-    a.download = `secret_scan_${unixTime}`;
-    a.click();
-    // TODO: Add download link
     return null;
   }
   return null;
@@ -487,10 +547,14 @@ const ActionDropdown = ({
   icon,
   scanId,
   nodeId,
+  scanStatus,
+  nodeType,
 }: {
   icon: React.ReactNode;
   scanId: string;
   nodeId: string;
+  scanStatus: string;
+  nodeType: string;
 }) => {
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
@@ -501,6 +565,7 @@ const ActionDropdown = ({
     formData.append('actionType', ActionEnumType.DOWNLOAD);
     formData.append('scanId', scanId);
     formData.append('nodeId', nodeId);
+    formData.append('nodeType', nodeType);
     fetcher.submit(formData, {
       method: 'post',
     });
@@ -528,13 +593,19 @@ const ActionDropdown = ({
             <DropdownItem
               className="text-sm"
               onClick={(e) => {
+                if (!isScanComplete(scanStatus)) return;
                 e.preventDefault();
                 onDownloadAction();
               }}
             >
-              <span className="flex items-center gap-x-2">
+              <span
+                className={cx('flex items-center gap-x-2', {
+                  'opacity-60 dark:opacity-30 cursor-default':
+                    !isScanComplete(scanStatus),
+                })}
+              >
                 <HiDownload />
-                Download
+                Download Report
               </span>
             </DropdownItem>
             <DropdownItem className="text-sm" onClick={() => setShowDeleteDialog(true)}>
@@ -777,6 +848,8 @@ const SecretScans = () => {
             icon={<HiDotsVertical />}
             scanId={cell.row.original.scan_id}
             nodeId={cell.row.original.node_id}
+            nodeType={cell.row.original.node_type}
+            scanStatus={cell.row.original.status}
           />
         ),
         header: () => '',

@@ -167,13 +167,14 @@ async function getTop5VulnerableAssetsData(): Promise<
         modelScanListReq: {
           fields_filter: {
             contains_filter: {
-              filter_in: {},
+              filter_in: {
+                status: ['COMPLETE'],
+              },
             },
             match_filter: { filter_in: {} },
             order_filter: { order_fields: [] },
             compare_filter: null,
           },
-          scan_status: ['COMPLETE'],
           node_ids: [
             ...top5Hosts.map((node) => {
               return {
@@ -352,13 +353,14 @@ async function getTop5SecretAssetsData(): Promise<
         modelScanListReq: {
           fields_filter: {
             contains_filter: {
-              filter_in: {},
+              filter_in: {
+                status: ['COMPLETE'],
+              },
             },
             match_filter: { filter_in: {} },
             order_filter: { order_fields: [] },
             compare_filter: null,
           },
-          scan_status: ['COMPLETE'],
           node_ids: [
             ...top5Hosts.map((node) => {
               return {
@@ -537,13 +539,14 @@ async function getTop5MalwaresAssetsData(): Promise<
         modelScanListReq: {
           fields_filter: {
             contains_filter: {
-              filter_in: {},
+              filter_in: {
+                status: ['COMPLETE'],
+              },
             },
             match_filter: { filter_in: {} },
             order_filter: { order_fields: [] },
             compare_filter: null,
           },
-          scan_status: ['COMPLETE'],
           node_ids: [
             ...top5Hosts.map((node) => {
               return {

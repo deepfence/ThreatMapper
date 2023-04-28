@@ -52,12 +52,6 @@ export interface ModelScanListReq {
     node_ids: Array<ModelNodeIdentifier> | null;
     /**
      * 
-     * @type {Array<string>}
-     * @memberof ModelScanListReq
-     */
-    scan_status?: Array<string> | null;
-    /**
-     * 
      * @type {ModelFetchWindow}
      * @memberof ModelScanListReq
      */
@@ -88,7 +82,6 @@ export function ModelScanListReqFromJSONTyped(json: any, ignoreDiscriminator: bo
         
         'fields_filter': ReportersFieldsFiltersFromJSON(json['fields_filter']),
         'node_ids': (json['node_ids'] === null ? null : (json['node_ids'] as Array<any>).map(ModelNodeIdentifierFromJSON)),
-        'scan_status': !exists(json, 'scan_status') ? undefined : json['scan_status'],
         'window': ModelFetchWindowFromJSON(json['window']),
     };
 }
@@ -104,7 +97,6 @@ export function ModelScanListReqToJSON(value?: ModelScanListReq | null): any {
         
         'fields_filter': ReportersFieldsFiltersToJSON(value.fields_filter),
         'node_ids': (value.node_ids === null ? null : (value.node_ids as Array<any>).map(ModelNodeIdentifierToJSON)),
-        'scan_status': value.scan_status,
         'window': ModelFetchWindowToJSON(value.window),
     };
 }

@@ -88,6 +88,7 @@ export function getVulnerabilityApiClient() {
     listVulnerabilityScans:
       vulnerabilityApi.listVulnerabilityScans.bind(vulnerabilityApi),
     getSbom: vulnerabilityApi.getSBOM.bind(vulnerabilityApi),
+    downloadSBOM: vulnerabilityApi.downloadSBOM.bind(vulnerabilityApi),
   };
 }
 
@@ -281,6 +282,7 @@ export function getReportsApiClient() {
     listReports: reportsApi.listReports.bind(reportsApi),
     generateReport: reportsApi.generateReport.bind(reportsApi),
     deleteReport: reportsApi.deleteReport.bind(reportsApi),
+    getReport: reportsApi.getReport.bind(reportsApi),
   };
 }
 
