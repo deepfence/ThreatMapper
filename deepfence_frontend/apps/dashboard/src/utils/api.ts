@@ -170,7 +170,7 @@ export const retryUntilResponseHasValue = async <F extends Func<any[], any>>(
   fnParams: Parameters<F>,
   checkResonseHasValue: (response: Awaited<ReturnType<F>>) => Promise<boolean>,
 ): Promise<ReturnType<F>> => {
-  const response = await fn(fnParams);
+  const response = await fn(...fnParams);
   const isPresent = await checkResonseHasValue(response);
   if (!isPresent) {
     await sleep(3000);

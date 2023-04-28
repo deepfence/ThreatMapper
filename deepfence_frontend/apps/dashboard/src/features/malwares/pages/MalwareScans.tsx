@@ -459,7 +459,7 @@ const action = async ({
           const url = response.value.url;
           if (!url) {
             toast.success(
-              'Download in progress, it may take some time however you can always find it from integration report download module',
+              'Download in progress, it may take some time however you can always find it on Integrations > Report Downloads',
             );
           }
           return !!url;
