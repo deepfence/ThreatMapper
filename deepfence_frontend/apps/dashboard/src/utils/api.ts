@@ -164,16 +164,16 @@ export function apiWrapper<F extends Func<any[], any>>({
     }
   };
 }
-type Parameter<T> = T extends (arg: infer T) => any ? T : never;
-export const retryUntilResponseHasValue = async <F extends (arg: any) => any>(
-  fn: (params: Parameter<F>) => Promise<ReturnType<F>>,
-  fnParams: Parameter<F>,
-  checkResonseHasValue: (response: ReturnType<F>) => Promise<boolean>,
+
+export const retryUntilResponseHasValue = async <F extends Func<any[], any>>(
+  fn: F,
+  fnParams: Parameters<F>,
+  checkResonseHasValue: (response: Awaited<ReturnType<F>>) => Promise<boolean>,
 ): Promise<ReturnType<F>> => {
   const response = await fn(fnParams);
   const isPresent = await checkResonseHasValue(response);
   if (!isPresent) {
-    await sleep(5000);
+    await sleep(3000);
     return retryUntilResponseHasValue(fn, fnParams, checkResonseHasValue);
   }
   return response;

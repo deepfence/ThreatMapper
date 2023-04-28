@@ -441,9 +441,7 @@ const action = async ({
 
     const reportResponse = await retryUntilResponseHasValue(
       getReportApi,
-      {
-        reportId,
-      },
+      [{ reportId }],
       async (response) => {
         if (!response.ok) {
           if (response.error.response.status === 400) {
