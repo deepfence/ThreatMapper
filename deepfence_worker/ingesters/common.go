@@ -64,7 +64,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			query = `
 			UNWIND $batch as row
 			MERGE (n:` + string(ts) + `{node_id: row.scan_id})
-			SET n.status = row.scan_status, n.scan_message = row.scan_message, n.updated_at = TIMESTAMP()
+			SET n.status = row.scan_status, n.status_message = row.scan_message, n.updated_at = TIMESTAMP()
 			WITH n
 			OPTIONAL MATCH (n) -[:DETECTED]- (m)
 			WITH n, count(m) as count
@@ -74,7 +74,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 			query = `
 			UNWIND $batch as row
 			MERGE (n:` + string(ts) + `{node_id: row.scan_id})
-			SET n.status = row.scan_status, n.scan_message = row.scan_message, n.updated_at = TIMESTAMP()
+			SET n.status = row.scan_status, n.status_message = row.scan_message, n.updated_at = TIMESTAMP()
 			WITH n
 			OPTIONAL MATCH (n) -[:DETECTED]- (m)
 			WITH n, count(m) as total_count
