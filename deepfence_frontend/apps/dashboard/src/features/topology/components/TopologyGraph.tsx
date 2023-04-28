@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { HiArrowsExpand, HiInformationCircle } from 'react-icons/hi';
+import {
+  HiArrowsExpand,
+  HiInformationCircle,
+  HiOutlineInformationCircle,
+} from 'react-icons/hi';
 import { useFetcher, useParams } from 'react-router-dom';
 import { useEffectOnce, useMeasure } from 'react-use';
 import { CircleSpinner, Dropdown, DropdownItem } from 'ui-components';
 
+import { DFLink } from '@/components/DFLink';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import {
   TopologyLoaderData,
@@ -116,6 +121,24 @@ export const TopologyGraph = () => {
         {isRefreshInProgress ? (
           <div className="absolute bottom-32 left-6 text-gray-600 dark:text-gray-400">
             <CircleSpinner size="xl" />
+          </div>
+        ) : null}
+        {!isRefreshInProgress && graphDataManagerFunctions.isEmpty() ? (
+          <div className="absolute inset-0 flex gap-2 flex-col items-center justify-center p-6">
+            <div>
+              <IconContext.Provider
+                value={{ className: 'text-[3rem] text-blue-600 dark:text-blue-400' }}
+              >
+                <HiOutlineInformationCircle />
+              </IconContext.Provider>
+            </div>
+            <div className="text-gray-600 dark:text-gray-400 text-lg text-center">
+              No data to display, please{' '}
+              <DFLink to="/settings/connection-instructions">
+                connect your infrastructure
+              </DFLink>{' '}
+              to the platform to visualize it.
+            </div>
           </div>
         ) : null}
         {
@@ -259,6 +282,7 @@ function useGraphDataManager() {
     dataDiffWithAction,
     getDataUpdates,
     isNodeExpanded: storageManager.isNodeExpanded,
+    isEmpty: storageManager.isEmpty,
     isRefreshInProgress: fetcher.state !== 'idle',
   };
 }

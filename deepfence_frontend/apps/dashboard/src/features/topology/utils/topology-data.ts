@@ -149,6 +149,7 @@ export class GraphStorageManager {
     this.findChildrenIdsOfType = this.findChildrenIdsOfType.bind(this);
     this.getTreeData = this.getTreeData.bind(this);
     this.getNodesForIds = this.getNodesForIds.bind(this);
+    this.isEmpty = this.isEmpty.bind(this);
   }
   getApiData() {
     return this.data;
@@ -366,6 +367,9 @@ export class GraphStorageManager {
         return nodesObj[nodeId];
       })
       .filter((node) => !!node);
+  }
+  isEmpty(): boolean {
+    return Object.keys(this.getApiData()?.nodes ?? {}).length === 0;
   }
 }
 
