@@ -245,7 +245,7 @@ const GlobalSettings = () => {
               <HiGlobeAlt />
             </IconContext.Provider>
           </div>
-          <h3 className="font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
+          <h3 className="font-medium text-gray-900 dark:text-white text-base">
             Global Settings
           </h3>
         </div>

@@ -1,6 +1,8 @@
+import { useEffect, useRef, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiArrowRight, HiSwitchHorizontal } from 'react-icons/hi';
 import { generatePath, Navigate, useLocation } from 'react-router-dom';
+import { useMeasure } from 'react-use';
 import { Button, Card, Separator, Tooltip, Typography } from 'ui-components';
 
 import LogoAws from '@/assets/logo-aws.svg';
@@ -199,63 +201,69 @@ const SelectedAccount = ({ state }: { state: OnboardConnectionNode[] }) => {
 
 const ScanHeader = ({ state }: { state: OnboardConnectionNode[] }) => {
   const { navigate } = usePageNavigation();
+
   return (
-    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
       {possibleScanMap[state[0].urlType].map(
         ({ scanTitle, scanType, description, buttonText }: ScanTypeListProps) => {
           return (
-            <Card key={scanType} className="py-3 px-4">
-              <h2
-                className={`flex items-center gap-x-2 ${Typography.size.lg} ${Typography.weight.medium} text-gray-700 dark:text-gray-100 pb-2`}
-              >
-                <IconContext.Provider
-                  value={{ className: 'w-8 h-8 text-blue-600 dark:text-blue-500' }}
+            <Card key={scanType} className="py-3 px-4 flex flex-col">
+              <div>
+                <h2
+                  className={`flex items-center gap-x-2 ${Typography.size.lg} ${Typography.weight.medium} text-gray-700 dark:text-gray-100 pb-2`}
                 >
-                  {scanType === ScanTypeEnum.VulnerabilityScan && (
-                    <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
-                      <VulnerabilityIcon />
-                    </div>
-                  )}
-                  {scanType === ScanTypeEnum.ComplianceScan && (
-                    <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
-                      <PostureIcon />
-                    </div>
-                  )}
-                  {scanType === ScanTypeEnum.SecretScan && (
-                    <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
-                      <SecretsIcon />
-                    </div>
-                  )}
-                  {scanType === ScanTypeEnum.MalwareScan && (
-                    <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
-                      <MalwareIcon />
-                    </div>
-                  )}
-                </IconContext.Provider>
-                {scanTitle}
-              </h2>
-              <Separator />
-              <p className="text-sm font-normal py-2 text-gray-500 dark:text-gray-400 min-h-[160px]">
-                {description}
-              </p>
-              <Button
-                size="xs"
-                color="primary"
-                className="mt-2 w-full"
-                endIcon={<HiArrowRight />}
-                onClick={() => {
-                  navigate(
-                    generatePath('/onboard/scan/configure/:scanType', {
-                      scanType,
-                    }),
-                    {
-                      state,
-                    },
-                  );
-                }}
-              >
-                {buttonText}
-              </Button>
+                  <IconContext.Provider
+                    value={{ className: 'w-8 h-8 text-blue-600 dark:text-blue-500' }}
+                  >
+                    {scanType === ScanTypeEnum.VulnerabilityScan && (
+                      <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
+                        <VulnerabilityIcon />
+                      </div>
+                    )}
+                    {scanType === ScanTypeEnum.ComplianceScan && (
+                      <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
+                        <PostureIcon />
+                      </div>
+                    )}
+                    {scanType === ScanTypeEnum.SecretScan && (
+                      <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
+                        <SecretsIcon />
+                      </div>
+                    )}
+                    {scanType === ScanTypeEnum.MalwareScan && (
+                      <div className="w-5 h-5 text-blue-600 dark:text-blue-500">
+                        <MalwareIcon />
+                      </div>
+                    )}
+                  </IconContext.Provider>
+                  {scanTitle}
+                </h2>
+                <Separator />
+              </div>
+              <div className="flex-1 flex flex-col justify-between">
+                <p className="text-sm font-normal py-2 text-gray-500 dark:text-gray-400">
+                  {description}
+                </p>
+
+                <Button
+                  size="xs"
+                  color="primary"
+                  className="mt-2 w-full"
+                  endIcon={<HiArrowRight />}
+                  onClick={() => {
+                    navigate(
+                      generatePath('/onboard/scan/configure/:scanType', {
+                        scanType,
+                      }),
+                      {
+                        state,
+                      },
+                    );
+                  }}
+                >
+                  {buttonText}
+                </Button>
+              </div>
             </Card>
           );
         },
@@ -282,7 +290,7 @@ const ChooseScan = () => {
       />
       <SelectedAccount state={state} />
       <ScanHeader state={state} />
-      <Button onClick={goBack} color="default" size="xs" className="mt-12">
+      <Button onClick={goBack} color="default" size="xs" className="mt-12" type="button">
         Go Back
       </Button>
     </>

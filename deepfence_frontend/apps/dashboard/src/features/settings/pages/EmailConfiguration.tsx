@@ -331,7 +331,7 @@ const EmailConfiguration = () => {
             <HiOutlineMail />
           </IconContext.Provider>
         </div>
-        <h3 className="font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
+        <h3 className="font-medium text-gray-900 dark:text-white text-base">
           Email Configuration
         </h3>
       </div>
@@ -353,12 +353,12 @@ const EmailConfiguration = () => {
                       <div className="p-4 max-w-sm shadow-lg dark:bg-gray-800 rounded-md flex flex-col gap-y-3">
                         <div className="flex">
                           <div className="flex flex-col">
-                            <span className="text-2xl dark:text-gray-100 font-semibold">
+                            <span className="text-lg dark:text-gray-100 font-semibold">
                               Configurations
                             </span>
                           </div>
                         </div>
-                        <div className="flex mt-4">
+                        <div className="flex mt-2">
                           <span className="text-sm text-gray-500 flex items-center gap-x-1 min-w-[140px] dark:text-gray-400">
                             <IconContext.Provider
                               value={{

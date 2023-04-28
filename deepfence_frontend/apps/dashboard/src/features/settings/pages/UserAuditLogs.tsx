@@ -124,7 +124,7 @@ const UserAuditLogs = () => {
               <HiViewList />
             </IconContext.Provider>
           </div>
-          <h3 className="font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
+          <h3 className="font-medium text-gray-900 dark:text-white text-base">
             User Audit Logs
           </h3>
         </div>

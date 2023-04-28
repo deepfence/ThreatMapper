@@ -781,7 +781,7 @@ func listScansHandler(w http.ResponseWriter, r *http.Request, scan_type utils.Ne
 		return
 	}
 
-	infos, err := reporters_scan.GetScansList(r.Context(), scan_type, req.NodeIds, req.FieldsFilter, req.Window, req.ScanStatus)
+	infos, err := reporters_scan.GetScansList(r.Context(), scan_type, req.NodeIds, req.FieldsFilter, req.Window)
 	if err == reporters.NotFoundErr {
 		err = &NotFoundError{err}
 	}
@@ -1089,6 +1089,69 @@ func (h *Handler) ScanResultNotifyHandler(w http.ResponseWriter, r *http.Request
 	h.scanResultActionHandler(w, r, "notify")
 }
 
+func getScanResults(ctx context.Context, scanId, scanType string) (model.DownloadScanResultsResponse, error) {
+	resp := model.DownloadScanResultsResponse{}
+	switch scanType {
+	case "VulnerabilityScan":
+		result, common, err := reporters_scan.GetScanResults[model.Vulnerability](
+			ctx, utils.StringToNeo4jScanType(scanType), scanId,
+			reporters.FieldsFilters{}, model.FetchWindow{})
+		if err != nil {
+			return resp, err
+		}
+		resp.ScanInfo = common
+		resp.ScanResults = []interface{}{result}
+		return resp, nil
+
+	case "SecretScan":
+		result, common, err := reporters_scan.GetScanResults[model.Secret](
+			ctx, utils.StringToNeo4jScanType(scanType), scanId,
+			reporters.FieldsFilters{}, model.FetchWindow{})
+		if err != nil {
+			return resp, err
+		}
+		resp.ScanInfo = common
+		resp.ScanResults = []interface{}{result}
+		return resp, nil
+
+	case "MalwareScan":
+		result, common, err := reporters_scan.GetScanResults[model.Malware](
+			ctx, utils.StringToNeo4jScanType(scanType), scanId,
+			reporters.FieldsFilters{}, model.FetchWindow{})
+		if err != nil {
+			return resp, err
+		}
+		resp.ScanInfo = common
+		resp.ScanResults = []interface{}{result}
+		return resp, nil
+
+	case "ComplianceScan":
+		result, common, err := reporters_scan.GetScanResults[model.Compliance](
+			ctx, utils.StringToNeo4jScanType(scanType), scanId,
+			reporters.FieldsFilters{}, model.FetchWindow{})
+		if err != nil {
+			return resp, err
+		}
+		resp.ScanInfo = common
+		resp.ScanResults = []interface{}{result}
+		return resp, nil
+
+	case "CloudComplianceScan":
+		result, common, err := reporters_scan.GetScanResults[model.CloudCompliance](
+			ctx, utils.StringToNeo4jScanType(scanType), scanId,
+			reporters.FieldsFilters{}, model.FetchWindow{})
+		if err != nil {
+			return resp, err
+		}
+		resp.ScanInfo = common
+		resp.ScanResults = []interface{}{result}
+		return resp, nil
+
+	default:
+		return resp, errors.New("unknown scan type")
+	}
+}
+
 func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, action string) {
 	req := model.ScanActionRequest{
 		ScanID:   chi.URLParam(r, "scan_id"),
@@ -1101,8 +1164,22 @@ func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, ac
 	}
 	switch action {
 	case "download":
-		resp := model.DownloadReportResponse{}
-		httpext.JSON(w, http.StatusOK, resp)
+		resp, err := getScanResults(r.Context(), req.ScanID, req.ScanType)
+		if err != nil {
+			log.Error().Msg(err.Error())
+			respondError(err, w)
+		}
+		data, err := json.Marshal(resp)
+		if err != nil {
+			log.Error().Msg(err.Error())
+			respondError(err, w)
+		}
+		w.Header().Set("Content-Disposition",
+			"attachment; filename="+strconv.Quote(utils.ScanIdReplacer.Replace(req.ScanID)+".json"))
+		w.Header().Set("Content-Type", "application/octet-stream")
+		w.WriteHeader(http.StatusOK)
+		w.Write(data)
+
 	case "delete":
 		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{})
 		if err != nil {
@@ -1183,7 +1260,11 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 	case "download":
 		resp := model.DownloadReportResponse{}
 		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(req.ScanID)+".json")
-		url, err := mc.ExposeFile(r.Context(), sbomFile, true, DownloadReportUrlExpiry, url.Values{})
+		cd := url.Values{
+			"response-content-disposition": []string{
+				"attachment; filename=" + strconv.Quote(utils.ScanIdReplacer.Replace(req.ScanID)+".json")},
+		}
+		url, err := mc.ExposeFile(r.Context(), sbomFile, true, DownloadReportUrlExpiry, cd)
 		if err != nil {
 			log.Error().Msg(err.Error())
 			respondError(err, w)

@@ -8,6 +8,7 @@ import { LinkButton } from '@/components/LinkButton';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { getPostureLogo } from '@/constants/logos';
 import { DashboardLoaderData } from '@/features/dashboard/pages/Dashboard';
+import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { useTheme } from '@/theme/ThemeContext';
 import { abbreviateNumber, formatPercentage } from '@/utils/number';
 import { DFAwait } from '@/utils/suspense';
@@ -60,14 +61,15 @@ export const Posture = () => {
           <DFAwait resolve={loaderData.cloudProviders}>
             {(data: DashboardLoaderData['cloudProviders']) => {
               return data.providers?.map((provider) => {
-                const { icon, label } = getPostureLogo(provider.name ?? '', mode);
+                const providerName = provider.name ?? '';
+                const { icon } = getPostureLogo(providerName, mode);
                 return (
                   <div
-                    key={provider.name}
+                    key={providerName}
                     className={cx('flex flex-col py-4 gap-1 dark:border-gray-700')}
                   >
                     <h4 className="text-gray-500 dark:text-gray-400 text-sm font-normal">
-                      {label}
+                      {providersToNameMapping[providerName]}
                     </h4>
                     <div className="flex items-center gap-x-4">
                       <div className="flex items-center basis-10 shrink-0 mr-2">

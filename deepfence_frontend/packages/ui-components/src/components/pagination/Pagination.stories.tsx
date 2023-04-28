@@ -41,6 +41,17 @@ export const RightDots = {
   },
 };
 
+export const ApproximatePagination = {
+  args: {
+    currentPage: 15,
+    onPageChange: (page: number) => {
+      return page + '';
+    },
+    totalRows: 200,
+    approximatePagination: true,
+  },
+};
+
 export const LeftRightDots = {
   args: {
     currentPage: 15,

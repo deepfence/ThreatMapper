@@ -358,6 +358,7 @@ const ScanInProgress = () => {
                   startIcon={<HiOutlineChevronDoubleLeft />}
                   onClick={() => navigate('/onboard/connectors/my-connectors')}
                   color="primary"
+                  type="button"
                 >
                   Go back to try again
                 </Button>

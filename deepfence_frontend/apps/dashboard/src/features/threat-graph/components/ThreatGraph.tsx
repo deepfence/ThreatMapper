@@ -2,11 +2,14 @@ import '@/features/threat-graph/utils/threat-graph-custom-node';
 
 import { NodeConfig } from '@antv/g6';
 import { useEffect, useRef, useState } from 'react';
+import { IconContext } from 'react-icons';
+import { HiOutlineInformationCircle } from 'react-icons/hi';
 import { generatePath, useFetcher } from 'react-router-dom';
 import { useMeasure } from 'react-use';
+import { CircleSpinner } from 'ui-components';
 
 import { GraphProviderThreatGraph } from '@/api/generated';
-import { ThreatGraphActionData } from '@/features/threat-graph/data-components/threatGraphAction';
+import { ThreatGraphLoaderData } from '@/features/threat-graph/data-components/threatGraphLoader';
 import { useG6raph } from '@/features/threat-graph/hooks/useG6Graph';
 import { ThreatGraphNodeModelConfig } from '@/features/threat-graph/utils/threat-graph-custom-node';
 import { G6GraphData } from '@/features/topology/types/graph';
@@ -27,7 +30,7 @@ export const ThreatGraphComponent = ({
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
   const { graph } = useG6raph(container);
-  const { data, ...graphDataFunctions } = useThreatGraphData();
+  const { data, loading, ...graphDataFunctions } = useThreatGraphData();
   const graphDataFunctionsRef = useRef(graphDataFunctions);
   graphDataFunctionsRef.current = graphDataFunctions;
 
@@ -59,9 +62,38 @@ export const ThreatGraphComponent = ({
   return (
     <div className="h-full w-full relative select-none" ref={measureRef}>
       <div className="absolute inset-0" ref={setContainer} />
+      {loading ? (
+        <div className="absolute bottom-32 left-6 text-gray-600 dark:text-gray-400">
+          <CircleSpinner size="xl" />
+        </div>
+      ) : null}
+      {!loading && isGraphEmpty(data) ? (
+        <div className="absolute inset-0 flex gap-2 flex-col items-center justify-center p-6">
+          <div>
+            <IconContext.Provider
+              value={{ className: 'text-[3rem] text-blue-600 dark:text-blue-400' }}
+            >
+              <HiOutlineInformationCircle />
+            </IconContext.Provider>
+          </div>
+          <div className="text-gray-600 dark:text-gray-400 text-lg text-center">
+            No attack paths found, please run some scans to discover attack paths.
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };
+
+function isGraphEmpty(data?: ThreatGraphLoaderData): boolean {
+  if (!data) return true;
+  return (
+    !data.aws.resources?.length &&
+    !data.gcp.resources?.length &&
+    !data.azure.resources?.length &&
+    !data.others.resources?.length
+  );
+}
 
 function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6GraphData {
   const g6Data: G6GraphData = {
@@ -162,23 +194,18 @@ function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6Grap
 }
 
 function useThreatGraphData() {
-  const fetcher = useFetcher<ThreatGraphActionData>();
+  const fetcher = useFetcher<ThreatGraphLoaderData>();
 
   const getDataUpdates = ({ filters }: { filters?: ThreatGraphFilters }): void => {
     if (fetcher.state !== 'idle') return;
     const searchParams = new URLSearchParams();
     if (filters?.type) searchParams.set('type', filters.type ?? 'all');
-    fetcher.submit(
-      {},
-      {
-        method: 'post',
-        action: generatePath(`/data-component/threat-graph?${searchParams.toString()}`),
-      },
-    );
+    fetcher.load(generatePath(`/data-component/threat-graph?${searchParams.toString()}`));
   };
 
   return {
     data: fetcher.data,
     getDataUpdates,
+    loading: fetcher.state !== 'idle',
   };
 }

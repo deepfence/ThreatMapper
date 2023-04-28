@@ -1,12 +1,11 @@
 import { Suspense } from 'react';
 import { IconContext } from 'react-icons';
 import { FaBook, FaBullhorn, FaCopyright, FaFire } from 'react-icons/fa';
-import { HiOutlineChevronRight } from 'react-icons/hi';
+import { HiDownload, HiOutlineChevronRight } from 'react-icons/hi';
 import { useLoaderData } from 'react-router-dom';
 import { Card } from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
-import { DFLink } from '@/components/DFLink';
 import { LinkButton } from '@/components/LinkButton';
 import {
   AwsSecurityHub,
@@ -21,9 +20,25 @@ import {
   Splunk,
   SumoLogic,
 } from '@/constants/logos';
+import { IntegrationType } from '@/features/integrations/components/IntegrationForm';
 import { DFAwait } from '@/utils/suspense';
 
 import { loader } from './IntegrationAdd';
+
+export const integrationTypeToNameMapping: { [key: string]: string } = {
+  slack: 'Slack',
+  teams: 'Microsoft Teams',
+  pagerduty: 'Pager Duty',
+  http_endpoint: 'HTTP Endpoint',
+  jira: 'Jira',
+  s3: 'S3',
+  splunk: 'Splunk',
+  elasticsearch: 'Elasticsearch',
+  sumologic: 'Sumo Logic',
+  googlechronicle: 'Google Chronicle',
+  aws_security_hub: 'AWS Security Hub',
+  email: 'Email',
+};
 
 const IntegrationsData = [
   {
@@ -43,33 +58,33 @@ const IntegrationsData = [
     ),
     types: [
       {
-        name: 'Slack',
-        id: 'slack',
+        name: integrationTypeToNameMapping[IntegrationType.slack],
+        id: IntegrationType.slack,
         icon: <img src={Slack} alt="Slack Logo" />,
         path: '/integrations/notifications/add/slack',
       },
       {
-        name: 'Microsoft Teams',
-        id: 'microsoft_teams',
+        name: integrationTypeToNameMapping[IntegrationType.microsoftTeams],
+        id: IntegrationType.microsoftTeams,
         icon: <img src={MicrosoftTeams} alt="MicrosoftTeams Logo" />,
         path: '/integrations/notifications/add/teams',
       },
       {
-        name: 'Pager Duty',
-        id: 'pager_duty',
+        name: integrationTypeToNameMapping[IntegrationType.pagerDuty],
+        id: IntegrationType.pagerDuty,
         icon: <img src={PagerDuty} alt="PagerDuty Logo" />,
         path: '/integrations/notifications/add/pagerduty',
       },
       {
-        name: 'HTTP Endpoint',
-        id: 'http_endpoint',
+        name: integrationTypeToNameMapping[IntegrationType.httpEndpoint],
+        id: IntegrationType.httpEndpoint,
         icon: <img src={HttpEndpoint} alt="HttpEndpoint Logo" />,
         path: '/integrations/notifications/add/http_endpoint',
       },
     ],
   },
   {
-    name: 'SEIM',
+    name: 'SIEM/SOAR',
     icon: (
       <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
         <IconContext.Provider
@@ -83,32 +98,32 @@ const IntegrationsData = [
     ),
     types: [
       {
-        name: 'Splunk',
-        id: 'splunk',
+        name: integrationTypeToNameMapping[IntegrationType.splunk],
+        id: IntegrationType.splunk,
         icon: <img src={Splunk} alt="Splunk Logo" />,
         path: '/integrations/seim/add/splunk',
       },
       {
-        name: 'Elasticsearch',
-        id: 'elasticsearch',
+        name: integrationTypeToNameMapping[IntegrationType.elasticsearch],
+        id: IntegrationType.elasticsearch,
         icon: <img src={ElasticSearch} alt="ElasticSearch Logo" />,
         path: '/integrations/seim/add/elasticsearch',
       },
       {
-        name: 'Sumo Logic',
-        id: 'sumo_logic',
+        name: integrationTypeToNameMapping[IntegrationType.sumoLogic],
+        id: IntegrationType.sumoLogic,
         icon: <img src={SumoLogic} alt="SumoLogic Logo" />,
-        path: '/integrations/seim/add/sumo-logic',
+        path: '/integrations/seim/add/sumologic',
       },
       {
-        name: 'Google Chronicle',
-        id: 'google_chronicle',
+        name: integrationTypeToNameMapping[IntegrationType.googleChronicle],
+        id: IntegrationType.googleChronicle,
         icon: <img src={GoogleChronicle} alt="GoogleChronicle Logo" />,
         path: '/integrations/seim/add/googlechronicle',
       },
       {
-        name: 'AWS Security Hub',
-        id: 'aws_security_hub',
+        name: integrationTypeToNameMapping[IntegrationType.awsSecurityHub],
+        id: IntegrationType.awsSecurityHub,
         icon: <img src={AwsSecurityHub} alt="AwsSecurityHub Logo" />,
         path: '/integrations/seim/add/aws_security_hub',
       },
@@ -129,8 +144,8 @@ const IntegrationsData = [
     ),
     types: [
       {
-        name: 'Jira',
-        id: 'jira',
+        name: integrationTypeToNameMapping[IntegrationType.jira],
+        id: IntegrationType.jira,
         icon: <img src={Jira} alt="Jira Logo" />,
         path: '/integrations/ticketing/add/jira',
       },
@@ -151,8 +166,8 @@ const IntegrationsData = [
     ),
     types: [
       {
-        name: 'S3',
-        id: 's3',
+        name: integrationTypeToNameMapping[IntegrationType.s3],
+        id: IntegrationType.s3,
         icon: <img src={S3} alt="AWS S3 Logo" />,
         path: '/integrations/archival/add/s3',
       },
@@ -171,11 +186,30 @@ const Integrations = () => {
         <span className="text-md font-medium text-gray-700 dark:text-gray-200">
           Integrations
         </span>
-        <DFLink className="ml-auto uppercase text-xs" to="/integrations/download/report">
-          Report Download
-        </DFLink>
       </div>
       <div className="p-2 gap-y-4 flex flex-col">
+        <Card className="w-fit">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 flex items-center justify-center rounded-sm">
+              <IconContext.Provider
+                value={{
+                  className: 'text-blue-600 dark:text-blue-400',
+                }}
+              >
+                <HiDownload />
+              </IconContext.Provider>
+            </div>
+            <h2 className="px-4 tracking-wider text-gary-900 dark:text-gray-200 font-semibold">
+              Reports Download
+            </h2>
+            <div className="px-2">
+              <LinkButton to="/integrations/download/report" sizing="sm">
+                Generate and download PDF/Excel Reports&nbsp;
+                <HiOutlineChevronRight />
+              </LinkButton>
+            </div>
+          </div>
+        </Card>
         {IntegrationsData.map((integration) => {
           return (
             <section key={integration.name} className="flex flex-col">

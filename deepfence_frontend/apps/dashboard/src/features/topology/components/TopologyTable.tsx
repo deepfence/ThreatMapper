@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { HiMinus, HiPlus } from 'react-icons/hi';
 import { useFetcher, useParams } from 'react-router-dom';
-import { useInterval } from 'react-use';
+import { useEffectOnce } from 'react-use';
 import {
   CircleSpinner,
   createColumnHelper,
@@ -14,7 +14,10 @@ import {
 import { DetailedNodeSummary } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
-import { TopologyActionData } from '@/features/topology/data-components/topologyAction';
+import {
+  TopologyLoaderData,
+  useTopologyActionDeduplicator,
+} from '@/features/topology/data-components/topologyLoader';
 import { TopologyAction } from '@/features/topology/types/graph';
 import { TopologyTreeData } from '@/features/topology/types/table';
 import { itemExpands, itemHasDetails } from '@/features/topology/utils/expand-collapse';
@@ -46,13 +49,9 @@ export function TopologyTable() {
 
   const columnHelper = createColumnHelper<(typeof treeData)[number]>();
 
-  useEffect(() => {
+  useEffectOnce(() => {
     graphDataManagerFunctionsRef.current.getDataUpdates({ type: 'refresh' });
-  }, []);
-
-  useInterval(() => {
-    graphDataManagerFunctionsRef.current.getDataUpdates({ type: 'refresh' });
-  }, 300000);
+  });
 
   const columns = useMemo(
     () => [
@@ -207,10 +206,11 @@ function useTableDataManager() {
   const [treeData, setTreeData] = useState<TopologyTreeData[]>([]);
   const [action, setAction] = useState<TopologyAction>();
   const [storageManager] = useState(new GraphStorageManager());
+  useTopologyActionDeduplicator();
   const rootNodeType = params.viewType || NodeType.cloud_provider;
 
-  const fetcher = useFetcher<TopologyActionData>();
-  const getDataUpdates = (action: TopologyActionData['action']): void => {
+  const fetcher = useFetcher<TopologyLoaderData>();
+  const getDataUpdates = (action: TopologyLoaderData['action']): void => {
     if (fetcher.state !== 'idle') return;
     if (action?.type === 'expandNode')
       storageManager.addNodeToFilters({
@@ -222,16 +222,10 @@ function useTableDataManager() {
         nodeId: action.nodeId,
         nodeType: action.nodeType,
       });
-    fetcher.submit(
-      {
-        action: JSON.stringify(action),
-        filters: JSON.stringify(storageManager.getFilters()),
-      },
-      {
-        method: 'post',
-        action: `/data-component/topology?type=${rootNodeType}`,
-      },
-    );
+    const searchParams = new URLSearchParams();
+    searchParams.set('action', JSON.stringify(action));
+    searchParams.set('filters', JSON.stringify(storageManager.getFilters()));
+    fetcher.load(`/data-component/topology?${searchParams.toString()}`);
     setAction(action);
   };
   useEffect(() => {
@@ -240,6 +234,7 @@ function useTableDataManager() {
     setTreeData(storageManager.getTreeData({ rootNodeType: rootNodeType as NodeType }));
     setAction(undefined);
   }, [fetcher.data]);
+
   return {
     treeData,
     action,

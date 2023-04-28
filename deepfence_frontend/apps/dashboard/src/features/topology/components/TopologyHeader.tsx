@@ -11,7 +11,7 @@ import { HostIcon } from '@/components/icons/host';
 import { K8sIcon } from '@/components/icons/k8s';
 import { PodIcon } from '@/components/icons/pod';
 import { TableIcon } from '@/components/icons/table';
-import { TopologyViewTypes } from '@/features/topology/data-components/topologyAction';
+import { TopologyViewTypes } from '@/features/topology/data-components/topologyLoader';
 import { NodeType } from '@/features/topology/utils/topology-data';
 import { DFAwait } from '@/utils/suspense';
 
@@ -111,22 +111,39 @@ const ResourceSelectorButton = ({
         viewType: type || '',
       })}
       className={classNames(
-        'flex gap-1 items-center text-base font-medium rounded-lg h-full px-2 shrink justify-end min-w-0 relative',
+        'flex gap-1 items-center text-base font-normal rounded-lg h-full px-2 shrink justify-end min-w-0 relative',
         {
           ['text-gray-700 dark:text-gray-400']: !type,
           ['text-blue-600 dark:text-blue-500']: !!type,
+          'bg-blue-100 dark:bg-blue-900 rounded-md transition ease-in-out delay-150':
+            isActive,
         },
       )}
       onClick={(e) => {
         if (!type) e.preventDefault();
       }}
     >
-      <div className="h-6 w-6 shrink-0">{icon}</div>
-      <div className="shrink">{count}</div>
-      <div className="font-normal truncate">{name}</div>
-      {isActive && (
-        <div className="h-1 rounded-lg bg-blue-500 absolute -bottom-1 right-2 left-3" />
-      )}
+      <div
+        className={classNames('h-6 w-6 shrink-0', {
+          'text-blue-700 dark:text-blue-200 transition ease-in-out delay-150': isActive,
+        })}
+      >
+        {icon}
+      </div>
+      <div
+        className={classNames('shrink', {
+          'text-blue-700 dark:text-blue-200 transition ease-in-out delay-150': isActive,
+        })}
+      >
+        {count}
+      </div>
+      <div
+        className={classNames('font-normal truncate', {
+          'text-blue-700 dark:text-blue-200 transition ease-in-out delay-150': isActive,
+        })}
+      >
+        {name}
+      </div>
     </Link>
   );
 };
@@ -149,10 +166,11 @@ const ViewSwitcher = () => {
           to={`/topology/graph/${type}`}
           type="button"
           className={classNames(
-            'flex items-center text-lg font-semibold rounded-l-lg h-full px-2 border-2 border-blue-600 dark:border-blue-600',
+            'flex items-center text-lg font-semibold rounded-l-lg h-full px-2 border border-blue-200 dark:border-blue-800',
             {
               ['text-blue-600 dark:text-blue-500']: !isGraphView,
-              ['bg-blue-600 text-gray-100 dark:text-white']: isGraphView,
+              ['bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-0 transition ease-in-out delay-150']:
+                isGraphView,
             },
           )}
         >
@@ -171,10 +189,11 @@ const ViewSwitcher = () => {
           to={`/topology/table/${type}`}
           type="button"
           className={classNames(
-            'flex items-center text-lg font-semibold rounded-r-lg h-full px-2 border-2 border-blue-600 dark:border-blue-600',
+            'flex items-center text-lg font-semibold rounded-r-lg h-full px-2 border border-blue-200 dark:border-blue-800',
             {
               ['text-blue-600 dark:text-blue-500']: isGraphView,
-              ['bg-blue-600 text-gray-100 dark:text-white']: !isGraphView,
+              ['bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-0 transition ease-in-out delay-150']:
+                !isGraphView,
             },
           )}
         >

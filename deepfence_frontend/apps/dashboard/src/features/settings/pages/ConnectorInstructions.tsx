@@ -1,4 +1,5 @@
 import cx from 'classnames';
+import { startCase } from 'lodash-es';
 import { HiCode, HiOutlineArrowCircleRight, HiOutlineArrowLeft } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import { generatePath, useParams } from 'react-router-dom';
@@ -209,8 +210,8 @@ const Instructions = ({ connectorType }: { connectorType: string }) => {
             <HiOutlineArrowLeft />
           </IconContext.Provider>
         </DFLink>
-        <h3 className="font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
-          {connectorType}
+        <h3 className="font-medium text-gray-900 dark:text-white text-base">
+          {startCase(connectorType)}
         </h3>
       </div>
       <div className="pt-2">
@@ -242,8 +243,8 @@ const Connectors = () => {
             <HiCode />
           </IconContext.Provider>
         </div>
-        <h3 className="font-medium text-gray-900 dark:text-white uppercase text-sm tracking-wider">
-          Connector Instructions
+        <h3 className="font-medium text-gray-900 dark:text-white text-base">
+          Connection Instructions
         </h3>
       </div>
       <div className="h-full dark:text-white mt-4">

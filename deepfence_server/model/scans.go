@@ -58,6 +58,7 @@ type ScanStatus string
 type ScanInfo struct {
 	ScanId         string           `json:"scan_id" required:"true"`
 	Status         string           `json:"status" required:"true"`
+	StatusMessage  string           `json:"status_message" required:"true"`
 	UpdatedAt      int64            `json:"updated_at" required:"true" format:"int64"`
 	CreatedAt      int64            `json:"created_at" required:"true" format:"int64"`
 	NodeId         string           `json:"node_id" required:"true"`
@@ -67,15 +68,8 @@ type ScanInfo struct {
 }
 
 type ComplianceScanInfo struct {
-	ScanId         string           `json:"scan_id" required:"true"`
-	BenchmarkTypes []string         `json:"benchmark_types" required:"true"`
-	Status         string           `json:"status" required:"true"`
-	UpdatedAt      int64            `json:"updated_at" required:"true" format:"int64"`
-	CreatedAt      int64            `json:"created_at" required:"true" format:"int64"`
-	NodeId         string           `json:"node_id" required:"true"`
-	NodeType       string           `json:"node_type" required:"true"`
-	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
-	NodeName       string           `json:"node_name" required:"true"`
+	ScanInfo
+	BenchmarkTypes []string `json:"benchmark_types" required:"true"`
 }
 
 const (
@@ -103,7 +97,6 @@ type ComplianceScanStatusResp struct {
 }
 
 type ScanListReq struct {
-	ScanStatus   []string                `json:"scan_status"`
 	NodeIds      []NodeIdentifier        `json:"node_ids" required:"true"`
 	FieldsFilter reporters.FieldsFilters `json:"fields_filter" required:"true"`
 	Window       FetchWindow             `json:"window"  required:"true"`
@@ -133,6 +126,11 @@ type ScanResultsActionRequest struct {
 
 type DownloadReportResponse struct {
 	UrlLink string `json:"url_link"`
+}
+
+type DownloadScanResultsResponse struct {
+	ScanInfo    ScanResultsCommon `json:"scan_info"`
+	ScanResults []interface{}     `json:"scan_results"`
 }
 
 type ScanActionRequest struct {

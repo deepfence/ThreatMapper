@@ -33,6 +33,7 @@ import { DFLink } from '@/components/DFLink';
 import { FilterHeader } from '@/components/forms/FilterHeader';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { CLOUDS } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { ComplianceScanNodeTypeEnum, ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -291,7 +292,7 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
               setScanNodeIds([info.row.original.node_id]);
             }}
           >
-            Start scan
+            Start Scan
           </Button>
         ),
         header: () => 'Start action',
@@ -332,7 +333,7 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
           {Object.keys(rowSelectionState).length === 0 ? (
             <>
               {accounts.length > 0 && (
-                <div className="text-sm text-gray-400 font-medium pt-2 pl-2 pb-2.5 flex justify-between">
+                <div className="text-sm text-gray-400 font-medium pt-2 pb-1 flex justify-between">
                   No rows selected
                 </div>
               )}
@@ -341,10 +342,9 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
             <>
               <div className="mb-1.5 flex gap-x-2">
                 <Button
-                  size="xs"
-                  color="normal"
-                  startIcon={<FaPlay />}
-                  className="text-blue-600 dark:text-blue-500"
+                  size="xxs"
+                  color="primary"
+                  outline
                   onClick={() => {
                     const scanType = CLOUDS.includes(
                       cloudProvider as ComplianceScanNodeTypeEnum,
@@ -355,7 +355,7 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
                     setScanNodeIds(Object.keys(rowSelectionState));
                   }}
                 >
-                  Start scan
+                  Start Scan
                 </Button>
               </div>
             </>
@@ -367,25 +367,8 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
           columns={columns}
           enableRowSelection
           enablePagination
-          manualPagination
           totalRows={totalRows}
-          pageIndex={currentPage}
-          onPaginationChange={(updaterOrValue) => {
-            let newPageIndex = 0;
-            if (typeof updaterOrValue === 'function') {
-              newPageIndex = updaterOrValue({
-                pageIndex: currentPage,
-                pageSize: PAGE_SIZE,
-              }).pageIndex;
-            } else {
-              newPageIndex = updaterOrValue.pageIndex;
-            }
-            setSearchParams((prev) => {
-              prev.set('page', String(newPageIndex));
-              return prev;
-            });
-          }}
-          pageSize={PAGE_SIZE}
+          pageSize={30}
           rowSelectionState={rowSelectionState}
           onRowSelectionChange={setRowSelectionState}
           getRowId={(row) => row.node_id ?? ''}
@@ -419,7 +402,9 @@ const Accounts = () => {
             <DFLink to={'/posture'}>Posture</DFLink>
           </BreadcrumbLink>
           <BreadcrumbLink>
-            <span className="inherit cursor-auto">{routeParams.nodeType}</span>
+            <span className="inherit cursor-auto">
+              {providersToNameMapping[routeParams.nodeType]}
+            </span>
           </BreadcrumbLink>
         </Breadcrumb>
         <div className="ml-auto flex relative gap-x-4">

@@ -5359,7 +5359,9 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ModelDownloadReportResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ModelDownloadScanResultsResponse"
+                }
               }
             }
           },
@@ -9455,6 +9457,13 @@
         "type": "object",
         "properties": { "url_link": { "type": "string" } }
       },
+      "ModelDownloadScanResultsResponse": {
+        "type": "object",
+        "properties": {
+          "scan_info": { "$ref": "#/components/schemas/ModelScanResultsCommon" },
+          "scan_results": { "type": "array", "items": {}, "nullable": true }
+        }
+      },
       "ModelEmailConfigurationAdd": {
         "type": "object",
         "properties": {
@@ -10208,6 +10217,33 @@
             ],
             "type": "string"
           }
+        }
+      },
+      "ModelScanResultsCommon": {
+        "required": [
+          "docker_container_name",
+          "docker_image_name",
+          "host_name",
+          "kubernetes_cluster_name",
+          "node_id",
+          "node_name",
+          "node_type",
+          "scan_id",
+          "updated_at",
+          "created_at"
+        ],
+        "type": "object",
+        "properties": {
+          "created_at": { "type": "integer", "format": "int64" },
+          "docker_container_name": { "type": "string" },
+          "docker_image_name": { "type": "string" },
+          "host_name": { "type": "string" },
+          "kubernetes_cluster_name": { "type": "string" },
+          "node_id": { "type": "string" },
+          "node_name": { "type": "string" },
+          "node_type": { "type": "string" },
+          "scan_id": { "type": "string" },
+          "updated_at": { "type": "integer", "format": "int64" }
         }
       },
       "ModelScanResultsMaskRequest": {

@@ -221,7 +221,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 	    ORDER BY n.updated_at DESC` +
 		scan_filter.Window.FetchWindow2CypherQuery() +
 		`}
-	    RETURN n.node_id as scan_id, n.status, n.updated_at, m.node_id, labels(m) as node_type, m.node_name` +
+	    RETURN n.node_id as scan_id, n.status, coalesce('',n.status_message), n.updated_at, m.node_id, labels(m) as node_type, m.node_name` +
 		reporters.OrderFilter2CypherCondition("n", scan_filter.Filters.OrderFilter) +
 		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
@@ -247,10 +247,11 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 		res = append(res, model.ScanInfo{
 			ScanId:         rec.Values[0].(string),
 			Status:         rec.Values[1].(string),
-			UpdatedAt:      rec.Values[2].(int64),
-			NodeId:         rec.Values[3].(string),
-			NodeType:       reporters_scan.Labels2NodeType(rec.Values[4].([]interface{})),
-			NodeName:       rec.Values[5].(string),
+			StatusMessage:  rec.Values[2].(string),
+			UpdatedAt:      rec.Values[3].(int64),
+			NodeId:         rec.Values[4].(string),
+			NodeType:       reporters_scan.Labels2NodeType(rec.Values[5].([]interface{})),
+			NodeName:       rec.Values[6].(string),
 			SeverityCounts: counts,
 		})
 	}

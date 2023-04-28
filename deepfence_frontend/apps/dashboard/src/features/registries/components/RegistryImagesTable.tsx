@@ -102,7 +102,7 @@ export const RegistryImagesTable = ({
       {selectedIds.length === 0 ? (
         <div className="text-sm text-gray-400 font-medium pb-3">No rows selected</div>
       ) : (
-        <>
+        <div className="mb-1.5">
           <Dropdown
             triggerAsChild={true}
             align="start"
@@ -135,16 +135,11 @@ export const RegistryImagesTable = ({
               </>
             }
           >
-            <Button
-              size="xs"
-              color="normal"
-              startIcon={<FaPlay />}
-              className="text-blue-600 dark:text-blue-500"
-            >
+            <Button size="xxs" color="primary" outline>
               Start scan
             </Button>
           </Dropdown>
-        </>
+        </div>
       )}
       <ConfigureScanModal
         open={!!selectedScanType}
