@@ -1,6 +1,7 @@
 import { useFetcher } from 'react-router-dom';
 import { Button, TextInput } from 'ui-components';
 
+import { SuccessModal } from '@/features/settings/components/SuccessModal';
 import {
   ActionEnumType,
   ActionReturnType,
@@ -10,6 +11,7 @@ export const ChangePassword = () => {
   const fetcher = useFetcher<ActionReturnType>();
   const { data } = fetcher;
 
+  if (data?.success) return <SuccessModal text="Password changed successfully!" />;
   return (
     <fetcher.Form
       method="post"
