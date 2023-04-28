@@ -1404,7 +1404,7 @@ def register_cloud_account():
                 }
             redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, monitored_node_id, json.dumps(node))
             cloud_compliance_node = CloudComplianceNode.query.filter_by(node_id=monitored_node_id).first()
-            if not cloud_compliance_node or cloud_compliance_node.version != version:
+            if not cloud_compliance_node:
                 cloud_compliance_node = CloudComplianceNode(
                     node_id=monitored_node_id,
                     node_name=monitored_account_id,
@@ -1418,6 +1418,9 @@ def register_cloud_account():
                     app.logger.error("Duplicate cloud compliance node {}".format(e))
                     print(e)
                     raise InvalidUsage("Duplicate cloud compliance node")
+            if cloud_compliance_node is not None and cloud_compliance_node.version != version:
+                cloud_compliance_node.version = version
+                cloud_compliance_node.save()
 
             if post_data["cloud_provider"] == "aws":
                 for notification in cloudtrail_alerts_notifications:
@@ -1470,7 +1473,7 @@ def register_cloud_account():
         redis.hset(CLOUD_COMPLIANCE_SCAN_NODES_CACHE_KEY, post_data["node_id"], json.dumps(node))
 
         cloud_compliance_node = CloudComplianceNode.query.filter_by(node_id=post_data["node_id"]).one_or_none()
-        if not cloud_compliance_node or cloud_compliance_node.version != version:
+        if not cloud_compliance_node:
             cloud_compliance_node = CloudComplianceNode(
                 node_id=post_data["node_id"],
                 node_name=post_data["cloud_account"],
@@ -1483,6 +1486,10 @@ def register_cloud_account():
                 app.logger.error("Duplicate cloud compliance node {}".format(e))
                 print(e)
                 raise InvalidUsage("Duplicate cloud compliance node")
+
+        if cloud_compliance_node is not None and cloud_compliance_node.version != version:
+            cloud_compliance_node.version = version
+            cloud_compliance_node.save()
 
         if post_data["cloud_provider"] == "aws":
             cloudtrail_alerts_notifications = CloudtrailAlertNotification.query.filter().all()
