@@ -2,17 +2,18 @@ package cronjobs
 
 import (
 	"encoding/json"
+	"strconv"
+	"time"
+
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	"github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
+	reporters_scan "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
-	"strconv"
-	"time"
 )
 
 func SendNotifications(msg *message.Message) error {
@@ -58,7 +59,8 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	last30sTimeStamp := time.Now().UnixMilli() - 30000
 	filters.FieldsFilters.CompareFilters = append(filters.FieldsFilters.CompareFilters, reporters.CompareFilter{FieldName: "updated_at", GreaterThan: true, FieldValue: strconv.FormatInt(last30sTimeStamp, 10)})
-	list, err := reporters_scan.GetScansList(ctx, utils.DetectedNodeScanType[integrationRow.Resource], filters.NodeIds, filters.FieldsFilters, model.FetchWindow{}, []string{"COMPLETE"})
+	filters.FieldsFilters.ContainsFilter = reporters.ContainsFilter{FieldsValues: map[string][]interface{}{"status": {"COMPLETE"}}}
+	list, err := reporters_scan.GetScansList(ctx, utils.DetectedNodeScanType[integrationRow.Resource], filters.NodeIds, filters.FieldsFilters, model.FetchWindow{})
 	if err != nil {
 		return err
 	}
