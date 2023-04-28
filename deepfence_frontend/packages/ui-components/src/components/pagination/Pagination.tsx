@@ -17,6 +17,7 @@ type PageButtonProps = {
 
 type OwnProps = {
   onPageChange: (page: number) => void;
+  approximatePagination?: boolean;
   totalRows: number;
   pageSize?: number;
   sizing?: SizeType;
@@ -59,12 +60,23 @@ export const Pagination = ({
   totalRows,
   siblingCount = 2,
   sizing = 'sm',
+  approximatePagination = false,
 }: Props) => {
-  const totalPageCount = Math.ceil(totalRows / pageSize);
+  const totalNumberOfPages = Math.ceil(totalRows / pageSize);
+
+  /* For an approximatePagination, we could not confirm exact page numbers, and 
+     for number of pages at given current page, there is chances to have more number of pages, is such situation
+     dots are shown to ui to indicate more pages are available.
+  */
+  const likelyToHaveMorePages = approximatePagination
+    ? totalRows >= totalNumberOfPages * pageSize
+    : false;
+
   const pagination = usePagination({
     currentPage,
-    totalPageCount,
+    totalNumberOfPages,
     siblingCount,
+    likelyToHaveMorePages,
   });
 
   const currentShowing = useMemo(() => {
@@ -108,13 +120,13 @@ export const Pagination = ({
   };
 
   const onNext = () => {
-    if (currentPage === totalPageCount) {
+    if (currentPage === totalNumberOfPages) {
       return;
     }
     onPageChange(currentPage + 1);
   };
 
-  if (totalPageCount === 0) {
+  if (totalNumberOfPages === 0) {
     return null;
   }
 
@@ -129,8 +141,12 @@ export const Pagination = ({
         <span className="text-black dark:text-white">
           {currentShowing[0]}-{currentShowing[1]}
         </span>
-        <span> of</span>
-        <span className="text-black dark:text-white"> {totalRows}</span>
+        {!approximatePagination ? (
+          <>
+            <span> of</span>
+            <span className="text-black dark:text-white"> {totalRows}</span>
+          </>
+        ) : null}
       </div>
       <div
         className={cx(
