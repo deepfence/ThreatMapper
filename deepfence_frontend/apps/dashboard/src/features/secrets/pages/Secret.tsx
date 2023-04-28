@@ -68,13 +68,15 @@ async function getTop5SecretAssetsData(nodeType: 'image' | 'host' | 'container')
         modelScanListReq: {
           fields_filter: {
             contains_filter: {
-              filter_in: {},
+              filter_in: {
+                scan_status: ['COMPLETE'],
+              },
             },
             match_filter: { filter_in: {} },
             order_filter: { order_fields: [] },
             compare_filter: null,
           },
-          scan_status: ['COMPLETE'],
+
           node_ids: top5Nodes.map((node) => {
             return {
               node_id: node.node_id,
