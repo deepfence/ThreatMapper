@@ -90,6 +90,7 @@ models/ModelConnection.ts
 models/ModelContainer.ts
 models/ModelContainerImage.ts
 models/ModelDownloadReportResponse.ts
+models/ModelDownloadScanResultsResponse.ts
 models/ModelEmailConfigurationAdd.ts
 models/ModelEmailConfigurationResp.ts
 models/ModelExportReport.ts
@@ -137,6 +138,7 @@ models/ModelScanListReq.ts
 models/ModelScanListResp.ts
 models/ModelScanResultBasicNode.ts
 models/ModelScanResultsActionRequest.ts
+models/ModelScanResultsCommon.ts
 models/ModelScanResultsMaskRequest.ts
 models/ModelScanResultsReq.ts
 models/ModelScanStatusReq.ts

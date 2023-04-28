@@ -91,7 +91,7 @@ export const NodeCounts = () => {
                   Icon={getNodesIcon('cloud_provider')}
                   label="Cloud Providers"
                   type="cloud_provider"
-                  link="/topology/graph?type=cloud_provider"
+                  link="/topology/graph/cloud_provider"
                 />
               );
             }}
@@ -106,7 +106,7 @@ export const NodeCounts = () => {
                   Icon={getNodesIcon('host')}
                   label="Hosts"
                   type="host"
-                  link="/topology/graph?type=host"
+                  link="/topology/graph/host"
                 />
               );
             }}
@@ -121,7 +121,7 @@ export const NodeCounts = () => {
                   Icon={getNodesIcon('kubernetes_cluster')}
                   label="Kubernetes Clusters"
                   type="kubernetes_cluster"
-                  link="/topology/graph?type=kubernetes_cluster"
+                  link="/topology/graph/kubernetes_cluster"
                 />
               );
             }}
@@ -136,7 +136,7 @@ export const NodeCounts = () => {
                   Icon={getNodesIcon('container')}
                   label="Containers"
                   type="container"
-                  link="/topology/graph?type=container"
+                  link="/topology/graph/container"
                 />
               );
             }}
@@ -151,7 +151,7 @@ export const NodeCounts = () => {
                   Icon={getNodesIcon('pod')}
                   label="Pods"
                   type="pod"
-                  link="/topology/graph?type=pod"
+                  link="/topology/graph/pod"
                 />
               );
             }}

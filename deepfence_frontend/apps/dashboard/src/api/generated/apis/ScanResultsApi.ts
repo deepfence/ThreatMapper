@@ -17,7 +17,7 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
-  ModelDownloadReportResponse,
+  ModelDownloadScanResultsResponse,
   ModelNodesInScanResultRequest,
   ModelScanResultBasicNode,
   ModelScanResultsActionRequest,
@@ -28,8 +28,8 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
-    ModelDownloadReportResponseFromJSON,
-    ModelDownloadReportResponseToJSON,
+    ModelDownloadScanResultsResponseFromJSON,
+    ModelDownloadScanResultsResponseToJSON,
     ModelNodesInScanResultRequestFromJSON,
     ModelNodesInScanResultRequestToJSON,
     ModelScanResultBasicNodeFromJSON,
@@ -119,13 +119,13 @@ export interface ScanResultsApiInterface {
      * @throws {RequiredError}
      * @memberof ScanResultsApiInterface
      */
-    downloadScanResultsRaw(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelDownloadReportResponse>>;
+    downloadScanResultsRaw(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelDownloadScanResultsResponse>>;
 
     /**
      * Download scan results
      * Download Scans Results
      */
-    downloadScanResults(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelDownloadReportResponse>;
+    downloadScanResults(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelDownloadScanResultsResponse>;
 
     /**
      * Get all nodes in given scan result ids
@@ -283,7 +283,7 @@ export class ScanResultsApi extends runtime.BaseAPI implements ScanResultsApiInt
      * Download scan results
      * Download Scans Results
      */
-    async downloadScanResultsRaw(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelDownloadReportResponse>> {
+    async downloadScanResultsRaw(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelDownloadScanResultsResponse>> {
         if (requestParameters.scanId === null || requestParameters.scanId === undefined) {
             throw new runtime.RequiredError('scanId','Required parameter requestParameters.scanId was null or undefined when calling downloadScanResults.');
         }
@@ -311,14 +311,14 @@ export class ScanResultsApi extends runtime.BaseAPI implements ScanResultsApiInt
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelDownloadReportResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelDownloadScanResultsResponseFromJSON(jsonValue));
     }
 
     /**
      * Download scan results
      * Download Scans Results
      */
-    async downloadScanResults(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelDownloadReportResponse> {
+    async downloadScanResults(requestParameters: DownloadScanResultsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelDownloadScanResultsResponse> {
         const response = await this.downloadScanResultsRaw(requestParameters, initOverrides);
         return await response.value();
     }
