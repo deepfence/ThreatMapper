@@ -168,7 +168,7 @@ async function getTop5VulnerableAssetsData(): Promise<
           fields_filter: {
             contains_filter: {
               filter_in: {
-                scan_status: ['COMPLETE'],
+                status: ['COMPLETE'],
               },
             },
             match_filter: { filter_in: {} },
@@ -354,7 +354,7 @@ async function getTop5SecretAssetsData(): Promise<
           fields_filter: {
             contains_filter: {
               filter_in: {
-                scan_status: ['COMPLETE'],
+                status: ['COMPLETE'],
               },
             },
             match_filter: { filter_in: {} },
@@ -540,7 +540,7 @@ async function getTop5MalwaresAssetsData(): Promise<
           fields_filter: {
             contains_filter: {
               filter_in: {
-                scan_status: ['COMPLETE'],
+                status: ['COMPLETE'],
               },
             },
             match_filter: { filter_in: {} },
