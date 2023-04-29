@@ -16,12 +16,7 @@ import (
 	"github.com/weaveworks/scope/probe/controls"
 	"github.com/weaveworks/scope/probe/host"
 	"github.com/weaveworks/scope/probe/kubernetes"
-
-	_ "embed"
 )
-
-//go:embed dummy/sbom.json
-var dummy_sbom string
 
 func setClusterAgentControls(k8sClusterName string) {
 	err := controls.RegisterControl(ctl.StartComplianceScan,
