@@ -45,19 +45,26 @@ func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[*report.Re
 	return true_new_entry.(*ingesters.Ingester[*report.Report]), nil
 }
 
+var rawReportPool = sync.Pool{
+	New: func() interface{} {
+		return &reportUtils.RawReport{}
+	},
+}
+
 func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	rawReport := reportUtils.RawReport{}
+	rawReport := rawReportPool.Get().(*reportUtils.RawReport)
 
 	dec := jsoniter.NewDecoder(r.Body)
-	err := dec.Decode(&rawReport)
+	err := dec.Decode(rawReport)
 	if err != nil {
 		log.Error().Msgf("Error unmarshal: %v", err)
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
 	b64, err := base64.StdEncoding.DecodeString(rawReport.GetPayload())
+	rawReportPool.Put(rawReport)
 	if err != nil {
 		log.Error().Msgf("Error b64 reader: %v", err)
 		respondWith(ctx, w, http.StatusBadRequest, err)
@@ -71,7 +78,8 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rpt := report.MakeReport()
+	rpt := ingesters.ReportPool.Get().(*report.Report)
+	rpt.Clear()
 	dec_inner := jsoniter.NewDecoder(gzr)
 	err = dec_inner.Decode(&rpt)
 
@@ -88,7 +96,7 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := (*ingester).Ingest(ctx, &rpt); err != nil {
+	if err := (*ingester).Ingest(ctx, rpt); err != nil {
 		log.Error().Msgf("Error Adding report: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return

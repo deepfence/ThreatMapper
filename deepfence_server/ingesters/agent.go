@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -41,6 +42,13 @@ var (
 	ingester_size int
 	db_input_size int
 )
+
+var ReportPool = sync.Pool{
+	New: func() any {
+		rpt := report.MakeReport()
+		return &rpt
+	},
+}
 
 func init() {
 	Push_back.Store(default_push_back)
@@ -157,6 +165,9 @@ loop:
 					i = 0
 				default:
 					log.Warn().Msgf("ingester channel full")
+					for _, v := range report_buffer {
+						ReportPool.Put(v)
+					}
 				}
 			}
 			timeout = time.After(enqueer_timeout)
@@ -283,21 +294,21 @@ func concatMaps(input map[string][]string) []map[string]interface{} {
 }
 
 type Connection struct {
-	source string
+	source      string
 	destination string
-	left_pid int
-	right_pid int
+	left_pid    int
+	right_pid   int
 }
 
 func connections2maps(connections []Connection) []map[string]interface{} {
 	delim := ";;;"
 	unique_maps := map[string]map[string][]int{}
 	for _, connection := range connections {
-		connection_id := connection.source+delim+connection.destination
+		connection_id := connection.source + delim + connection.destination
 		v, has := unique_maps[connection_id]
 		if !has {
 			unique_maps[connection_id] = map[string][]int{
-				"left_pids": {connection.left_pid},
+				"left_pids":  {connection.left_pid},
 				"right_pids": {connection.right_pid},
 			}
 		} else {
@@ -316,7 +327,7 @@ func connections2maps(connections []Connection) []map[string]interface{} {
 		right_pids := v["right_pids"]
 		for i := range left_pids {
 			pids = append(pids, map[string]int{
-				"left": left_pids[i],
+				"left":  left_pids[i],
 				"right": right_pids[i],
 			})
 		}
@@ -477,7 +488,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	}
 
 	return ReportIngestionData{
-		Endpoint_edges_batch:     endpoint_edges_batch,
+		Endpoint_edges_batch: endpoint_edges_batch,
 
 		Process_batch:            process_batch,
 		Host_batch:               host_batch,
@@ -515,6 +526,7 @@ func (nc *neo4jIngester) Ingest(ctx context.Context, rpt *report.Report) error {
 	select {
 	case nc.enqueuer <- rpt:
 	default:
+		ReportPool.Put(rpt)
 		return fmt.Errorf("enqueuer channel full")
 	}
 	return nil
@@ -704,14 +716,9 @@ func (nc *neo4jIngester) runIngester() {
 	for reports := range nc.ingester {
 		for _, rpt := range reports {
 			select {
-			case nc.preparers_input <- rpt:
-			default:
-				log.Warn().Msgf("preparer channel full")
-			}
-
-			select {
 			case nc.resolvers_input <- rpt:
 			default:
+				ReportPool.Put(rpt)
 				log.Warn().Msgf("resolvers channel full")
 			}
 		}
@@ -795,7 +802,17 @@ func (nc *neo4jIngester) runResolver() {
 	var buf bytes.Buffer
 	for rpt := range nc.resolvers_input {
 		r := computeResolvers(rpt, &buf)
-		nc.resolvers_update <- r
+		select {
+		case nc.preparers_input <- rpt:
+		default:
+			ReportPool.Put(rpt)
+			log.Warn().Msgf("preparer channel full")
+		}
+		select {
+		case nc.resolvers_update <- r:
+		default:
+			log.Warn().Msgf("resolvers channel full")
+		}
 	}
 	log.Info().Msgf("runResolver ended")
 }
@@ -804,6 +821,7 @@ func (nc *neo4jIngester) runPreparer() {
 	var buf bytes.Buffer
 	for rpt := range nc.preparers_input {
 		batches := prepareNeo4jIngestion(rpt, &nc.resolvers, &buf)
+		ReportPool.Put(rpt)
 		nc.batcher <- batches
 	}
 }
