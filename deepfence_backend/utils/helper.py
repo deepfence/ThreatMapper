@@ -1190,6 +1190,7 @@ def get_top_exploitable_vulnerabilities(number, time_unit, lucene_query_string, 
     for vulnerability in top_vulnerabilities:
         cve_doc = vulnerability.get("_source", {})
         cve_id = cve_doc.get("cve_id")
+        is_cve_fixed = 1 if cve_doc.get("cve_fixed_in", "") else 0
         node_name = cve_doc.get('cve_container_image', '')
         network_attack_vector = is_network_attack_vector(cve_doc.get("cve_attack_vector", ""))
         if not network_attack_vector and cve_doc.get('cve_severity') != "critical":
@@ -1223,12 +1224,18 @@ def get_top_exploitable_vulnerabilities(number, time_unit, lucene_query_string, 
                 exploit_present,
                 1 if prev_exploit_poc else 0
             )
+            prev_cve_fixed_in = prev_vulnerability['_source'].get("cve_fixed_in", "")
+            vulnerability['_source']['is_cve_fixed'] = max(
+                is_cve_fixed,
+                1 if prev_cve_fixed_in else 0
+            )
         else:
             vulnerability['_source']['vulnerable_images'] = [node_name]
             vulnerability['_source']['exploitability_score'] = exploitability_score
             vulnerability['_source']['attack_vector'] = attack_vector_map[exploitability_score][0]
             vulnerability['_source']['live_connection'] = attack_vector_map[exploitability_score][1]
             vulnerability['_source']['exploit_present'] = exploit_present
+            vulnerability['_source']['is_cve_fixed'] = is_cve_fixed
         vulnerability['_source']['uscore'] = ((1 + (
                 min(max_uptime, active_nodes.get(cve_doc.get("cve_container_image"), 0)) /
                 (float)(max_uptime))) * cve_doc.get("cve_cvss_score"))
@@ -1245,6 +1252,7 @@ def get_top_exploitable_vulnerabilities(number, time_unit, lucene_query_string, 
             x.get('_source', {}).get('exploitability_score'),
             cve_severity_map[x.get('_source', {}).get('cve_severity', '')],
             x.get('_source', {}).get('exploit_present'),
+            x.get('_source', {}).get('is_cve_fixed'),
             x.get('_source', {}).get('cve_cvss_score', 0),
         ),
         reverse=True
