@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -47,6 +48,7 @@ var (
 	serveOpenapiDocs      = flag.Bool("api-docs", true, "serve openapi documentation")
 	enableHttpLogs        = flag.Bool("http-logs", false, "enable request logs")
 	kafkaBrokers          string
+	enable_debug          bool
 )
 
 type Config struct {
@@ -56,7 +58,17 @@ type Config struct {
 	Orchestrator           string
 }
 
+func init() {
+	enable_debug = os.Getenv("DF_ENABLE_DEBUG") != ""
+}
+
 func main() {
+
+	if enable_debug {
+		runtime.SetBlockProfileRate(1)
+		runtime.SetMutexProfileFraction(1)
+	}
+
 	flag.Parse()
 
 	openApiDocs := apiDocs.InitializeOpenAPIReflector()
