@@ -5,8 +5,6 @@ import { IconContext } from 'react-icons';
 import { HiChevronRight } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
-import { Typography } from '@/components/typography/Typography';
-
 type BreadcrumbLinkType = {
   children: React.ReactNode;
   asChild?: boolean;
@@ -59,7 +57,7 @@ export const BreadcrumbLink = React.forwardRef<
             className: 'mx-2 text-gray-700 dark:text-gray-400 text-sm',
           }}
         >
-          {separator ? separator : <HiChevronRight />}
+          {separator ? <span>{separator}</span> : <HiChevronRight />}
         </IconContext.Provider>
       )}
     </>
