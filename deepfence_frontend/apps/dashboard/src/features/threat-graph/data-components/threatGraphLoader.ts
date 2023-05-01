@@ -12,19 +12,23 @@ const loader = async ({
   const url = new URL(request.url);
   const searchParams = new URLSearchParams(url.search);
   const type = searchParams.get('type') as GraphThreatFiltersTypeEnum | undefined;
+  const cloudResourceOnly = searchParams.get('cloud_resource_only') === 'true';
+  const awsAccountIds = searchParams.getAll('aws_account_ids');
+  const gcpAccountIds = searchParams.getAll('gcp_account_ids');
+  const azureAccountIds = searchParams.getAll('azure_account_ids');
   const threatGraph = await makeRequest({
     apiFunction: getThreatGraphApiClient().getThreatGraph,
     apiArgs: [
       {
         graphThreatFilters: {
           aws_filter: {
-            account_ids: null,
+            account_ids: awsAccountIds,
           },
           azure_filter: {
-            account_ids: null,
+            account_ids: azureAccountIds,
           },
-          gcp_filter: { account_ids: null },
-          cloud_resource_only: false,
+          gcp_filter: { account_ids: gcpAccountIds },
+          cloud_resource_only: cloudResourceOnly,
           type: type ?? 'all',
         },
       },

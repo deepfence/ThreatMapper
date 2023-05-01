@@ -17,6 +17,10 @@ import { getNodeImage } from '@/features/topology/utils/graph-styles';
 
 export type ThreatGraphFilters = {
   type?: string;
+  cloud_resource_only?: boolean;
+  aws_account_ids?: string[];
+  gcp_account_ids?: string[];
+  azure_account_ids?: string[];
 };
 
 export const ThreatGraphComponent = ({
@@ -200,6 +204,22 @@ function useThreatGraphData() {
     if (fetcher.state !== 'idle') return;
     const searchParams = new URLSearchParams();
     if (filters?.type) searchParams.set('type', filters.type ?? 'all');
+    if (filters?.cloud_resource_only) searchParams.set('cloud_resource_only', 'true');
+    if (filters?.aws_account_ids) {
+      filters?.aws_account_ids.forEach((id) => {
+        searchParams.append('aws_account_ids', id);
+      });
+    }
+    if (filters?.gcp_account_ids) {
+      filters?.gcp_account_ids.forEach((id) => {
+        searchParams.append('gcp_account_ids', id);
+      });
+    }
+    if (filters?.azure_account_ids) {
+      filters?.azure_account_ids.forEach((id) => {
+        searchParams.append('azure_account_ids', id);
+      });
+    }
     fetcher.load(generatePath(`/data-component/threat-graph?${searchParams.toString()}`));
   };
 

@@ -11,6 +11,7 @@ import { getApiTokenApiLoader } from '@/features/common/data-component/getApiTok
 import { getUserApiLoader } from '@/features/common/data-component/getUserApiLoader';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
+import { searchCloudAccountsApiLoader } from '@/features/common/data-component/searchCloudAccountsApiLoader';
 import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { searchClustersApiLoader } from '@/features/common/data-component/searchClustersApiLoader';
 import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
@@ -487,6 +488,10 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Settings' },
         children: [
           {
+            index: true,
+            loader: () => redirect('/settings/user-management', 302),
+          },
+          {
             path: 'diagnostic-logs',
             ...diagnosticLogs,
             meta: { title: 'Diagnostic Logs' },
@@ -567,6 +572,14 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'search/clusters',
         loader: searchClustersApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
+      },
+      {
+        path: 'search/cloud-accounts/:nodeType',
+        loader: searchCloudAccountsApiLoader,
         shouldRevalidate: ({ formAction }) => {
           if (formAction) return false;
           return true;

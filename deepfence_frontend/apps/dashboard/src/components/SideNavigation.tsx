@@ -76,7 +76,7 @@ const MenuItems: Array<{
   {
     title: 'Settings',
     Icon: SettingsIcon,
-    to: '/settings/user-management',
+    to: '/settings',
   },
 ];
 
