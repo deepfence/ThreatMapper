@@ -596,6 +596,8 @@ const AdvancedFilter = ({
 
   useEffect(() => {
     const fetchAccounts = async () => {
+      // TODO(Manan): @milan-deepfence why we are calling this directly from the component??
+      // TODO: use the useGetCloudAccountsList hook to get this data in the future.
       const data = await getAccounts(
         getNodeTypeByProviderName(provider.toLowerCase()),
         new URLSearchParams(),
