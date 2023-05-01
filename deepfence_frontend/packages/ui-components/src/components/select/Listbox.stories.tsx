@@ -59,7 +59,7 @@ const SingleSelectTemplate: StoryFn<typeof Listbox> = () => {
       }}
     >
       <Listbox
-        sizing="sm"
+        sizing="md"
         value={selected}
         label="Person"
         name="single-select"
