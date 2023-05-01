@@ -38,7 +38,6 @@ import {
 import { getReportsApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
-  ModelCloudNodeAccountInfo,
   ModelGenerateReportReqDurationEnum,
   ModelGenerateReportReqReportTypeEnum,
   UtilsReportFiltersNodeTypeEnum,
@@ -53,10 +52,7 @@ import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { TruncatedText } from '@/components/TruncatedText';
-import {
-  getAccounts,
-  getNodeTypeByProviderName,
-} from '@/features/postures/pages/Accounts';
+import { useGetCloudAccountsList } from '@/features/common/data-component/searchCloudAccountsApiLoader';
 import { ActionReturnType } from '@/features/registries/components/RegistryAccountsTable';
 import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -588,26 +584,21 @@ const AdvancedFilter = ({
   resourceType: string;
   provider: string;
 }) => {
-  const [cloudAccounts, setCloudAccounts] = useState<ModelCloudNodeAccountInfo[]>([]);
   const [selectedCloudAccounts, setSelectedCloudAccounts] = useState([]);
 
   const [maskedType, setMaskedType] = useState([]);
   const [status, setStatus] = useState([]);
 
+  const { accounts: cloudAccounts, load } = useGetCloudAccountsList({
+    nodeType: provider.toLowerCase(),
+    fetchOnAction: true,
+  });
+
   useEffect(() => {
-    const fetchAccounts = async () => {
-      // TODO(Manan): @milan-deepfence why we are calling this directly from the component??
-      // TODO: use the useGetCloudAccountsList hook to get this data in the future.
-      const data = await getAccounts(
-        getNodeTypeByProviderName(provider.toLowerCase()),
-        new URLSearchParams(),
-      );
-      setCloudAccounts(data.accounts);
-    };
     if (isCloudAccount(provider)) {
-      fetchAccounts();
+      load(provider.toLowerCase());
     }
-  }, [resourceType, provider]);
+  }, [provider]);
 
   return (
     <>

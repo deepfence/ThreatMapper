@@ -43,23 +43,35 @@ export const searchCloudAccountsApiLoader = async ({
 
 export const useGetCloudAccountsList = ({
   nodeType,
+  fetchOnAction,
 }: {
   // TODO: strongly type this
   nodeType: string;
+  fetchOnAction?: boolean;
 }): {
   accounts: ModelCloudNodeAccountInfo[];
+  load: (nodeType: string) => void;
 } => {
   const fetcher = useFetcher<SearchCloudAccountsLoaderDataType>();
 
   useEffect(() => {
-    fetcher.load(
-      generatePath(`/data-component/search/cloud-accounts/:nodeType`, {
-        nodeType,
-      }),
-    );
+    if (!fetchOnAction) {
+      fetcher.load(
+        generatePath(`/data-component/search/cloud-accounts/:nodeType`, {
+          nodeType,
+        }),
+      );
+    }
   }, [nodeType]);
 
   return {
     accounts: fetcher.data?.accounts ?? [],
+    load: (nodeType: string) => {
+      fetcher.load(
+        generatePath(`/data-component/search/cloud-accounts/:nodeType`, {
+          nodeType,
+        }),
+      );
+    },
   };
 };
