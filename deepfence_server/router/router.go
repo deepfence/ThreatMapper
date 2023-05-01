@@ -61,6 +61,15 @@ const (
 // 	})
 // }
 
+var (
+	enable_debug bool
+)
+
+func init() {
+	enable_debug_str := os.Getenv("DF_ENABLE_DEBUG")
+	enable_debug = enable_debug_str != ""
+}
+
 func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool,
 	ingestC chan *kgo.Record, taskPublisher *kafka.Publisher, openApiDocs *apiDocs.OpenApiDocs, orchestrator string) error {
 	// JWT
@@ -105,7 +114,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 
 	r.Use(middleware.Compress(5))
 
-	r.Mount("/debug", middleware.Profiler())
+	if enable_debug {
+		r.Mount("/debug", middleware.Profiler())
+	}
 
 	r.Route("/deepfence", func(r chi.Router) {
 		// r.Use(telemetryInjector)
