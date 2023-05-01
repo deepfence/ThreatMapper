@@ -25,6 +25,7 @@ type TopologyReporter interface {
 	KubernetesGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error)
 	ContainerGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error)
 	PodGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error)
+	Close()
 }
 
 type neo4jTopologyReporter struct {
@@ -891,4 +892,7 @@ func NewNeo4jCollector(ctx context.Context) (TopologyReporter, error) {
 	}
 
 	return nc, nil
+}
+
+func (ntp *neo4jTopologyReporter) Close() {
 }

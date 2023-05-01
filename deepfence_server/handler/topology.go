@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/render/detailed"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
@@ -29,10 +30,10 @@ var (
 	}
 )
 
-var topology_reporters map[directory.NamespaceID]reporters_graph.TopologyReporter
+var topology_reporters sync.Map
 
 func init() {
-	topology_reporters = map[directory.NamespaceID]reporters_graph.TopologyReporter{}
+	topology_reporters = sync.Map{}
 }
 
 func getTopologyReporter(ctx context.Context) (reporters_graph.TopologyReporter, error) {
@@ -41,16 +42,19 @@ func getTopologyReporter(ctx context.Context) (reporters_graph.TopologyReporter,
 		return nil, err
 	}
 
-	ing, has := topology_reporters[nid]
+	ing, has := topology_reporters.Load(nid)
 	if has {
-		return ing, nil
+		return ing.(reporters_graph.TopologyReporter), nil
 	}
 	new_entry, err := reporters_graph.NewNeo4jCollector(ctx)
 	if err != nil {
 		return nil, err
 	}
-	topology_reporters[nid] = new_entry
-	return new_entry, nil
+	true_entry, loaded := topology_reporters.LoadOrStore(nid, new_entry)
+	if loaded {
+		new_entry.Close()
+	}
+	return true_entry.(reporters_graph.TopologyReporter), nil
 }
 
 func (h *Handler) GetTopologyGraph(w http.ResponseWriter, req *http.Request) {
