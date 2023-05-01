@@ -10,9 +10,8 @@ import {
 } from 'react-icons/hi';
 import {
   ActionFunctionArgs,
-  Form,
   generatePath,
-  useActionData,
+  useFetcher,
   useParams,
 } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -64,7 +63,7 @@ export const action = async ({
     ],
     errorHandler: async (r) => {
       const error = new ApiError<ActionReturnType>({ success: false });
-      if (r.status === 400) {
+      if (r.status === 400 || r.status === 404) {
         const modelResponse: ApiDocsBadRequestResponse = await r.json();
         return error.set({
           message: modelResponse.message ?? '',
@@ -93,13 +92,14 @@ const DeleteConfirmationModal = ({
   id: string;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const actionData = useActionData() as ActionReturnType;
+  const fetcher = useFetcher<ActionReturnType>();
+  const { state, data } = fetcher;
 
   useEffect(() => {
-    if (actionData?.success) {
+    if (data?.success) {
       setShowDialog(false);
     }
-  }, [actionData]);
+  }, [data]);
 
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
@@ -116,19 +116,23 @@ const DeleteConfirmationModal = ({
           <br />
           <span>Are you sure you want to delete?</span>
         </h3>
-        {actionData?.message && (
-          <p className="text-red-500 text-sm mb-4">{actionData.message}</p>
-        )}
+        {data?.message && <p className="text-red-500 text-sm mb-4">{data.message}</p>}
         <div className="flex items-center justify-right gap-4">
           <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
             No, cancel
           </Button>
-          <Form method="post">
+          <fetcher.Form method="post">
             <input type="text" name="_nodeId" hidden readOnly value={id} />
-            <Button size="xs" color="danger" type="submit">
+            <Button
+              size="xs"
+              color="danger"
+              type="submit"
+              disabled={state !== 'idle'}
+              loading={state !== 'idle'}
+            >
               Yes, I&apos;m sure
             </Button>
-          </Form>
+          </fetcher.Form>
         </div>
       </div>
     </Modal>

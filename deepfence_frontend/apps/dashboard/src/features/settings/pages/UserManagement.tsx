@@ -394,7 +394,7 @@ const InviteUserModal = ({
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const fetcher = useFetcher<ActionReturnType>();
-  const { data } = fetcher;
+  const { data, state } = fetcher;
 
   return (
     <Modal
@@ -440,6 +440,8 @@ const InviteUserModal = ({
           size="sm"
           type="submit"
           name="intent"
+          disabled={state !== 'idle'}
+          loading={state !== 'idle'}
           value={ModelInviteUserRequestActionEnum['SendInviteEmail']}
         >
           Send invite via email
@@ -458,6 +460,8 @@ const InviteUserModal = ({
           type="submit"
           size="sm"
           name="intent"
+          disabled={state !== 'idle'}
+          loading={state !== 'idle'}
           value={ModelInviteUserRequestActionEnum['GetInviteLink']}
         >
           Copy invite link

@@ -23,7 +23,7 @@ type ActionReturnType = {
 
 type FormProps = {
   onSuccess: () => void;
-  renderButton: () => JSX.Element;
+  renderButton: (state: 'submitting' | 'idle' | 'loading') => JSX.Element;
   registryType: string;
 };
 
@@ -282,7 +282,7 @@ export const RegistryConnectorForm = ({
       {registryType === RegistryType.quay && <QuayConnectorForm />}
 
       <input type="text" name="registryType" hidden readOnly value={registryType} />
-      {renderButton()}
+      {renderButton(fetcher.state)}
     </fetcher.Form>
   );
 };

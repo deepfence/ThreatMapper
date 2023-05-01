@@ -181,7 +181,7 @@ const EmailConfigurationModal = ({
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const fetcher = useFetcher<AddEmailConfigurationReturnType>();
-  const { data } = fetcher;
+  const { data, state } = fetcher;
   const [emailProvider, setEmailProvider] = useState<string>('Google SMTP');
 
   return (
@@ -281,7 +281,13 @@ const EmailConfigurationModal = ({
         <div className={`text-red-600 dark:text-red-500 text-sm`}>
           {!data?.success && data?.message && <span>{data.message}</span>}
         </div>
-        <Button color="primary" size="sm" type="submit">
+        <Button
+          color="primary"
+          size="sm"
+          type="submit"
+          disabled={state !== 'idle'}
+          loading={state !== 'idle'}
+        >
           Submit
         </Button>
       </fetcher.Form>
@@ -339,7 +345,7 @@ const EmailConfiguration = () => {
         <Suspense fallback={<CircleSpinner size="xs" />}>
           <DFAwait resolve={loaderData.data}>
             {(resolvedData: LoaderDataType) => {
-              const { data: configData = [], message } = resolvedData;
+              const { data: configData = [] } = resolvedData;
               const configuration: ModelEmailConfigurationResp = configData[0];
               return (
                 <>
