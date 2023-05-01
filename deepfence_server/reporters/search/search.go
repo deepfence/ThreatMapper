@@ -69,7 +69,7 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 	defer tx.Close()
 
 	query := `
-		MATCH (n) 
+		MATCH (n)
 		WHERE (n:Node OR n:Container OR n:ContainerImage OR n:KubernetesCluster OR n:Pod OR n:CloudProvider)
 		AND n.pseudo=false AND n.active=true
 		RETURN labels(n), count(labels(n)), count(distinct n.kubernetes_namespace);`
@@ -216,12 +216,12 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 	    WITH m
 		MATCH (n:` + string(scan_type) + `) -[:SCANNED]-> (m)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(scan_filter.Filters), true) +
-		` 
+		`
 	    RETURN n
 	    ORDER BY n.updated_at DESC` +
 		scan_filter.Window.FetchWindow2CypherQuery() +
 		`}
-	    RETURN n.node_id as scan_id, n.status, coalesce('',n.status_message), n.updated_at, m.node_id, labels(m) as node_type, m.node_name` +
+	    RETURN n.node_id as scan_id, n.status, n.status_message, n.updated_at, m.node_id, labels(m) as node_type, m.node_name` +
 		reporters.OrderFilter2CypherCondition("n", scan_filter.Filters.OrderFilter) +
 		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
