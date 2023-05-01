@@ -74,3 +74,7 @@ export const registryTypeToNameMapping: { [key: string]: string } = {
   jfrog_container_registry: 'JFrog Registry',
   quay: 'Quay Registry',
 } as const;
+
+export type CloudNodeType = 'aws' | 'azure' | 'gcp';
+export const isCloudNode = (nodeType: CloudNodeType) =>
+  nodeType === 'aws' || nodeType === 'azure' || nodeType === 'gcp';

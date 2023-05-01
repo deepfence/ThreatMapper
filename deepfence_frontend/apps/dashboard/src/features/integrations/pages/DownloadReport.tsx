@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   HiArchive,
@@ -53,8 +53,9 @@ import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { TruncatedText } from '@/components/TruncatedText';
 import { useGetCloudAccountsList } from '@/features/common/data-component/searchCloudAccountsApiLoader';
+import { getNodeTypeByProviderName } from '@/features/postures/pages/Accounts';
 import { ActionReturnType } from '@/features/registries/components/RegistryAccountsTable';
-import { ScanTypeEnum } from '@/types/common';
+import { CloudNodeType, isCloudNode, ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { download } from '@/utils/download';
@@ -565,8 +566,6 @@ const getBenchmarkList = (nodeType: string) => {
       return [];
   }
 };
-const isCloudAccount = (provider: string) =>
-  provider === 'Aws' || provider === 'Azure' || provider === 'Gcp';
 
 const API_SCAN_TYPE_MAP: {
   [key: string]: ScanTypeEnum;
@@ -575,6 +574,7 @@ const API_SCAN_TYPE_MAP: {
   Secret: ScanTypeEnum.SecretScan,
   Malware: ScanTypeEnum.MalwareScan,
   Compliance: ScanTypeEnum.ComplianceScan,
+  CloudCompliance: ScanTypeEnum.CloudComplianceScan,
 };
 
 const AdvancedFilter = ({
@@ -588,17 +588,14 @@ const AdvancedFilter = ({
 
   const [maskedType, setMaskedType] = useState([]);
   const [status, setStatus] = useState([]);
+  const nodeType = useMemo(
+    () => getNodeTypeByProviderName(provider.toLowerCase()),
+    [provider],
+  );
 
-  const { accounts: cloudAccounts, load } = useGetCloudAccountsList({
-    nodeType: provider.toLowerCase(),
-    fetchOnAction: true,
+  const { accounts: cloudAccounts } = useGetCloudAccountsList({
+    nodeType: nodeType as CloudNodeType,
   });
-
-  useEffect(() => {
-    if (isCloudAccount(provider)) {
-      load(provider.toLowerCase());
-    }
-  }, [provider]);
 
   return (
     <>
@@ -610,7 +607,7 @@ const AdvancedFilter = ({
             </div>
           ) : null}
 
-          {isCloudAccount(provider) && (
+          {isCloudNode(nodeType as CloudNodeType) && (
             <Select
               value={selectedCloudAccounts}
               name="accountIds[]"
@@ -631,8 +628,7 @@ const AdvancedFilter = ({
               })}
             </Select>
           )}
-
-          {provider === 'Host' ? (
+          {nodeType === 'host' ? (
             <>
               <div>
                 <SearchableHostList scanType={API_SCAN_TYPE_MAP[resourceType]} />

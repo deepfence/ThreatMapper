@@ -42,7 +42,10 @@ export const searchHostsApiLoader = async ({
     filterValue = 'vulnerabilities_count';
   } else if (scanType === ScanTypeEnum.MalwareScan) {
     filterValue = 'malwares_count';
-  } else if (scanType === ScanTypeEnum.ComplianceScan) {
+  } else if (
+    scanType === ScanTypeEnum.ComplianceScan ||
+    scanType === ScanTypeEnum.CloudComplianceScan
+  ) {
     filterValue = 'compliances_count';
   }
 
@@ -133,15 +136,20 @@ export const useGetHostsList = ({
   const fetcher = useFetcher<SearchHostsLoaderDataType>();
 
   useEffect(() => {
-    const searchParams = new URLSearchParams();
-    searchParams.set('searchText', searchText ?? '');
-    searchParams.set('size', size.toString());
+    if (scanType) {
+      const searchParams = new URLSearchParams();
+      searchParams.set('searchText', searchText ?? '');
+      searchParams.set('size', size.toString());
 
-    fetcher.load(
-      generatePath(`/data-component/search/hosts/:scanType/?${searchParams.toString()}`, {
-        scanType,
-      }),
-    );
+      fetcher.load(
+        generatePath(
+          `/data-component/search/hosts/:scanType/?${searchParams.toString()}`,
+          {
+            scanType,
+          },
+        ),
+      );
+    }
   }, [scanType, searchText, size]);
 
   return {
