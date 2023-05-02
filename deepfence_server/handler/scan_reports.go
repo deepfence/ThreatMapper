@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"net/url"
 	"path"
@@ -1196,6 +1197,62 @@ func (h *Handler) ScanResultDownloadHandler(w http.ResponseWriter, r *http.Reque
 
 func (h *Handler) ScanDeleteHandler(w http.ResponseWriter, r *http.Request) {
 	h.scanIdActionHandler(w, r, "delete")
+}
+
+func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
+
+	duration, err := strconv.ParseInt(chi.URLParam(r, "duration"), 10, 64)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	req := model.BulkDeleteScansRequest{
+		Duration: int(duration),
+		ScanType: chi.URLParam(r, "scan_type"),
+	}
+	if err := h.Validator.Struct(req); err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+
+	log.Info().Msgf("delete %s scans older than %d days", req.ScanType, req.Duration)
+
+	filters := reporters.FieldsFilters{}
+	if req.Duration > 0 {
+		previous := time.Now().AddDate(0, 0, int(math.Copysign(float64(req.Duration), -1)))
+		filters = reporters.FieldsFilters{
+			CompareFilters: []reporters.CompareFilter{
+				{
+					FieldName:   "updated_at",
+					FieldValue:  strconv.FormatInt(previous.UnixMilli(), 10),
+					GreaterThan: false,
+				},
+			},
+		}
+		log.Info().Msgf("delete %s scans older than %s", req.ScanType, previous)
+	} else {
+		log.Info().Msgf("delete all %s scans", req.ScanType)
+	}
+
+	scansList, err := reporters_scan.GetScansList(r.Context(),
+		utils.DetectedNodeScanType[req.ScanType], nil, filters, model.FetchWindow{})
+	if err != nil {
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+
+	for _, s := range scansList.ScansInfo {
+		err := reporters_scan.DeleteScanResult(r.Context(),
+			utils.DetectedNodeScanType[req.ScanType], s.ScanId, []string{})
+		if err != nil {
+			log.Error().Err(err).Msgf("failed to delete scan id %s", s.ScanId)
+			continue
+		}
+		log.Info().Msgf("delete scan %s %s", req.ScanType, s.ScanId)
+	}
+
+	httpext.JSON(w, http.StatusOK, nil)
 }
 
 func (h *Handler) GetAllNodesInScanResultBulkHandler(w http.ResponseWriter, r *http.Request) {

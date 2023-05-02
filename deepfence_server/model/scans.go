@@ -133,6 +133,11 @@ type DownloadScanResultsResponse struct {
 	ScanResults []interface{}     `json:"scan_results"`
 }
 
+type BulkDeleteScansRequest struct {
+	ScanType string `path:"scan_type" json:"scan_type" validate:"required,oneof=Secret Vulnerability Malware Compliance CloudCompliance" required:"true" enum:"Secret,Vulnerability,Malware,Compliance,CloudCompliance"`
+	Duration int    `path:"duration" json:"duration" validate:"required,oneof=-1 1 7 30 60 90 180" required:"true" enum:"-1,1,7,30,60,90,180"`
+}
+
 type ScanActionRequest struct {
 	ScanID   string `path:"scan_id" validate:"required" required:"true"`
 	ScanType string `path:"scan_type" validate:"required,oneof=SecretScan VulnerabilityScan MalwareScan ComplianceScan CloudComplianceScan" required:"true" enum:"SecretScan,VulnerabilityScan,MalwareScan,ComplianceScan,CloudComplianceScan"`
@@ -201,7 +206,7 @@ type SecretScanResult struct {
 
 type VulnerabilityScanResult struct {
 	ScanResultsCommon
-	Vulnerabilities []Vulnerability  `json:"vulnerabilities" required:"true" required:"true"`
+	Vulnerabilities []Vulnerability  `json:"vulnerabilities" required:"true"`
 	SeverityCounts  map[string]int32 `json:"severity_counts" required:"true"`
 }
 
@@ -241,7 +246,7 @@ type Secret struct {
 	UpdatedAt             int64   `json:"updated_at" required:"true"`
 	Level                 string  `json:"level" required:"true"`
 	Score                 float64 `json:"score" required:"true"`
-	RuleID                int32   `json:"rule_id" required:"true" required:"true"`
+	RuleID                int32   `json:"rule_id" required:"true"`
 	Name                  string  `json:"name" required:"true"`
 	Part                  string  `json:"part" required:"true"`
 	SignatureToMatch      string  `json:"signature_to_match" required:"true"`

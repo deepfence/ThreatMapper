@@ -342,6 +342,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/notify", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ScanResultNotifyHandler))
 			})
 
+			r.Delete("/scans/{scan_type}/{duration}", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.BulkDeleteScans))
+
 			r.Route("/scan/{scan_type}/{scan_id}", func(r chi.Router) {
 				r.Get("/download", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ScanResultDownloadHandler))
 				r.Delete("/", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.ScanDeleteHandler))
