@@ -23,7 +23,7 @@ const DURATION: { [k: string]: number } = {
   'Last 60 Days': 60,
   'Last 90 Days': 90,
   'Last 180 Days': 180,
-  All: 10000,
+  All: 0,
 };
 
 const DeleteConfirmationModal = ({
