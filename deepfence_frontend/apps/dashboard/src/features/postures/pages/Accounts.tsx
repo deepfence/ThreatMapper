@@ -44,9 +44,10 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 // TODO: remove this once we have correct type from api
 export const getNodeTypeByProviderName = (
   providerName: string,
-): ComplianceScanNodeTypeEnum => {
+): ComplianceScanNodeTypeEnum | undefined => {
   switch (providerName) {
     case 'linux':
+    case 'host':
       return ComplianceScanNodeTypeEnum.host;
     case 'aws':
       return ComplianceScanNodeTypeEnum.aws;
@@ -57,7 +58,7 @@ export const getNodeTypeByProviderName = (
     case 'kubernetes':
       return ComplianceScanNodeTypeEnum.kubernetes_cluster;
     default:
-      throw new Error('Invalid provider name');
+      return;
   }
 };
 
@@ -308,6 +309,7 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
   const currentPage = data?.currentPage ?? 0;
   const cloudProvider = accounts[0]?.cloud_provider ?? '';
 
+  const nodeType = getNodeTypeByProviderName(cloudProvider);
   return (
     <>
       <div>
@@ -315,7 +317,7 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
           open={!!selectedScanType}
           onOpenChange={() => setSelectedScanType(undefined)}
           scanOptions={
-            selectedScanType
+            selectedScanType && nodeType
               ? {
                   showAdvancedOptions: true,
                   scanType: CLOUDS.includes(cloudProvider as ComplianceScanNodeTypeEnum)
@@ -323,7 +325,7 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
                     : ScanTypeEnum.ComplianceScan,
                   data: {
                     nodeIds: scanNodeIds ?? [],
-                    nodeType: getNodeTypeByProviderName(cloudProvider),
+                    nodeType: nodeType,
                   },
                 }
               : undefined

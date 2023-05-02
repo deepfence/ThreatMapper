@@ -3,6 +3,7 @@ import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 
 import { getCloudNodesApiClient } from '@/api/api';
 import { ModelCloudNodeAccountInfo } from '@/api/generated';
+import { CloudNodeType, isCloudNode } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 
 export type SearchCloudAccountsLoaderDataType = {
@@ -44,19 +45,20 @@ export const searchCloudAccountsApiLoader = async ({
 export const useGetCloudAccountsList = ({
   nodeType,
 }: {
-  // TODO: strongly type this
-  nodeType: string;
+  nodeType: CloudNodeType;
 }): {
   accounts: ModelCloudNodeAccountInfo[];
 } => {
   const fetcher = useFetcher<SearchCloudAccountsLoaderDataType>();
 
   useEffect(() => {
-    fetcher.load(
-      generatePath(`/data-component/search/cloud-accounts/:nodeType`, {
-        nodeType,
-      }),
-    );
+    if (isCloudNode(nodeType)) {
+      fetcher.load(
+        generatePath(`/data-component/search/cloud-accounts/:nodeType`, {
+          nodeType,
+        }),
+      );
+    }
   }, [nodeType]);
 
   return {
