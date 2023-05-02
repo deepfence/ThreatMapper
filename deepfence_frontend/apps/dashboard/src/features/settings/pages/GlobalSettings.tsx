@@ -120,7 +120,7 @@ const EditGlobalSettingModal = ({
   setting: ModelSettingsResponse;
 }) => {
   const fetcher = useFetcher<ActionReturnType>();
-  const { data } = fetcher;
+  const { data, state } = fetcher;
 
   return (
     <Modal
@@ -148,7 +148,14 @@ const EditGlobalSettingModal = ({
         <div className={`text-red-600 dark:text-red-500 text-sm`}>
           {!data?.success && data?.message && <span>{data.message}</span>}
         </div>
-        <Button color="primary" className=" pl-3" type="submit" size="sm">
+        <Button
+          color="primary"
+          className=" pl-3"
+          type="submit"
+          size="sm"
+          disabled={state !== 'idle'}
+          loading={state !== 'idle'}
+        >
           Update
         </Button>
       </fetcher.Form>

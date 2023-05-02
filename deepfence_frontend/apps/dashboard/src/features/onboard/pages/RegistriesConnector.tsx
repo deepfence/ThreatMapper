@@ -18,13 +18,20 @@ export const RegistriesConnector = () => {
             navigate('/onboard/connectors/my-connectors');
           }}
           registryType={connectorType}
-          renderButton={() => (
+          renderButton={(state) => (
             <div className="flex">
               <Button onClick={goBack} size="xs" type="button">
                 Go Back
               </Button>
               <div className="flex items-center ml-auto">
-                <Button color="primary" size="xs" className="ml-auto" type="submit">
+                <Button
+                  color="primary"
+                  size="xs"
+                  className="ml-auto"
+                  type="submit"
+                  disabled={state !== 'idle'}
+                  loading={state !== 'idle'}
+                >
                   Save and go to connectors
                 </Button>
               </div>

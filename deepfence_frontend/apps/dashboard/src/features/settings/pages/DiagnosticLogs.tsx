@@ -2,7 +2,7 @@ import { Suspense, useMemo } from 'react';
 import {
   ActionFunctionArgs,
   Form,
-  useActionData,
+  useFetcher,
   useLoaderData,
   useRevalidator,
 } from 'react-router-dom';
@@ -355,7 +355,8 @@ const ConsoleDiagnosticLogsComponent = () => {
 
 const AgentDiagnosticLogsComponent = () => {
   const loaderData = useLoaderData() as LoaderDataType;
-  const actionData = useActionData() as string;
+  const fetcher = useFetcher<string>();
+  const { data, state } = fetcher;
 
   return (
     <div className="bg-blue-100 dark:bg-blue-900/75 text-gray-600 dark:text-white px-4 pt-4 pb-6 w-fit rounded-lg flex flex-col max-w-[300px]">
@@ -363,11 +364,11 @@ const AgentDiagnosticLogsComponent = () => {
       <span className="text-sm text-gray-500 dark:text-gray-300">
         Generate a link to download pdf for your host/cluster agent
       </span>
-      <Form method="post" className="mt-4 flex flex-col gap-y-3">
+      <fetcher.Form method="post" className="mt-4 flex flex-col gap-y-3">
         {loaderData.message ? (
           <p className="text-sm text-red-500 pt-2">{loaderData.message}</p>
         ) : null}
-        {actionData ? <p className="text-sm text-red-500 pt-2">{actionData}</p> : null}
+        {data ? <p className="text-sm text-red-500 pt-2">{data}</p> : null}
         <input
           type="text"
           name="actionType"
@@ -377,10 +378,17 @@ const AgentDiagnosticLogsComponent = () => {
         />
         <SearchableHostList scanType="none" />
         <SearchableClusterList />
-        <Button size="xs" className="text-center mt-3 w-full" color="primary">
+        <Button
+          size="xs"
+          className="text-center mt-3 w-full"
+          color="primary"
+          type="submit"
+          disabled={state !== 'idle'}
+          loading={state !== 'idle'}
+        >
           Get Logs
         </Button>
-      </Form>
+      </fetcher.Form>
     </div>
   );
 };

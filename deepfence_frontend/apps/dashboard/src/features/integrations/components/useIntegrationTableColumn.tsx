@@ -53,6 +53,8 @@ const DeleteConfirmationModal = ({
           <Button
             size="xs"
             color="danger"
+            disabled={fetcher.state !== 'idle'}
+            loading={fetcher.state !== 'idle'}
             onClick={() => {
               const formData = new FormData();
               formData.append('_actionType', 'delete');
