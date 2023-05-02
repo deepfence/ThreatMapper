@@ -285,10 +285,10 @@ func record2struct(node dbtype.Node) AttackPathData {
 	sum_sum_cloud_compliance_, _ := record["sum_sum_cloud_compliance"]
 	node_count, _ := record["count_*"]
 	collect_node_id_, _ := record["collect_node_id"]
-	collect_num_cve_, _ := record["collect_num_cve"]
-	collect_num_secrets_, _ := record["collect_num_secrets"]
-	collect_num_compliance_, _ := record["collect_num_compliance"]
-	collect_num_cloud_compliance_, _ := record["collect_num_cloud_compliance"]
+	collect_num_cve_, _ := record["collect_vulnerabilities_count"]
+	collect_num_secrets_, _ := record["collect_secrets_count"]
+	collect_num_compliance_, _ := record["collect_compliances_count"]
+	collect_num_cloud_compliance_, _ := record["collect_cloud_compliances_count"]
 
 	collect_node_id := []string{}
 	for _, v := range collect_node_id_.([]interface{}) {
