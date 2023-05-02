@@ -1,7 +1,7 @@
 import { IconContext } from 'react-icons';
 import { HiOutlineCheckCircle } from 'react-icons/hi';
 
-export const SuccessModal = ({
+export const SuccessModalContent = ({
   text,
   children,
 }: {

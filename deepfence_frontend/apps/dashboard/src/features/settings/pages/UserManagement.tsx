@@ -14,6 +14,7 @@ import {
   HiUsers,
 } from 'react-icons/hi';
 import { ActionFunctionArgs, useFetcher, useLoaderData } from 'react-router-dom';
+import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 import {
   Button,
@@ -40,7 +41,7 @@ import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiL
 import { useGetCurrentUser } from '@/features/common/data-component/getUserApiLoader';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
-import { SuccessModal } from '@/features/settings/components/SuccessModal';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -235,7 +236,8 @@ export const action = async ({
     let data = {};
     if (body.intent == ModelInviteUserRequestActionEnum.GetInviteLink) {
       r.invite_url && navigator.clipboard.writeText(r.invite_url);
-      data = { ...data, ...r, success: true, successMessage: 'User invite URL copied' };
+      data = { ...data, ...r, success: true };
+      toast.success('User invite URL copied !');
     } else if (body.intent === ModelInviteUserRequestActionEnum.SendInviteEmail) {
       data = { successMessage: 'User invite sent successfully' };
     }
@@ -401,8 +403,8 @@ const InviteUserModal = ({
       onOpenChange={() => setShowDialog(false)}
       title="Invite User"
     >
-      {data?.success ? (
-        <SuccessModal text={data?.successMessage}>
+      {data?.success && data?.successMessage ? (
+        <SuccessModalContent text={data?.successMessage}>
           {data?.invite_url && (
             <p
               className={`mb-4 font-normal text-center text-sm text-green-500  w-[260px]`}
@@ -411,7 +413,7 @@ const InviteUserModal = ({
               hours
             </p>
           )}
-        </SuccessModal>
+        </SuccessModalContent>
       ) : (
         <fetcher.Form
           method="post"
@@ -474,8 +476,8 @@ const InviteUserModal = ({
             Copy invite link
           </Button>
           {data?.invite_url && (
-            <p className={`mt-1.5 text-sm text-green-500`}>
-              Invite URL:{data?.invite_url}, invite will expire after{' '}
+            <p className={`mt-1.5 font-normal text-center text-sm text-green-500`}>
+              Invite URL: {data?.invite_url}, invite will expire after{' '}
               {data?.invite_expiry_hours} hours
             </p>
           )}
@@ -578,7 +580,7 @@ const EditUserModal = ({
           </Button>
         </fetcher.Form>
       ) : (
-        <SuccessModal text="User details successfully updated!" />
+        <SuccessModalContent text="User details successfully updated!" />
       )}
     </Modal>
   );
@@ -949,7 +951,7 @@ const DeleteConfirmationModal = ({
           </div>
         </div>
       ) : (
-        <SuccessModal text="User details successfully updated!" />
+        <SuccessModalContent text="User details successfully updated!" />
       )}
     </Modal>
   );
