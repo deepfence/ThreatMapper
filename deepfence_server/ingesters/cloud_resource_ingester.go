@@ -37,7 +37,7 @@ type CloudResource struct {
 	ServiceName                    string           `json:"service_name,omitempty"`
 	TaskDefinitionArn              string           `json:"task_definition_arn,omitempty"`
 	VpcID                          string           `json:"vpc_id,omitempty"`
-	AllowBlobPublicAccess          string           `json:"allow_blob_public_access,omitempty"`
+	AllowBlobPublicAccess          bool             `json:"allow_blob_public_access,omitempty"`
 	PublicAccess                   string           `json:"public_access,omitempty"`
 	GroupId                        string           `json:"group_id,omitempty"`
 	CidrIpv4                       string           `json:"cidr_ipv4,omitempty"`
