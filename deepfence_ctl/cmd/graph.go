@@ -151,6 +151,26 @@ var graphThreatSubCmd = &cobra.Command{
 	},
 }
 
+var attackPathsSubCmd = &cobra.Command{
+	Use:   "attacks",
+	Short: "Get Attack paths graph",
+	Long:  `This subcommand retrieve the attack paths graph`,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		req := http.Client().ThreatApi.GetVulnerabilityThreatGraph(context.Background())
+		req = req.GraphVulnerabilityThreatGraphRequest(
+			deepfence_server_client.GraphVulnerabilityThreatGraphRequest{
+				GraphType: "most_vulnerable_attack_paths",
+			})
+		res, rh, err := http.Client().ThreatApi.GetVulnerabilityThreatGraphExecute(req)
+
+		if err != nil {
+			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
+		}
+		output.Out(res)
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(graphCmd)
 	graphCmd.AddCommand(graphTopologySubCmd)
@@ -168,4 +188,6 @@ func init() {
 	graphCmd.AddCommand(graphThreatSubCmd)
 	graphThreatSubCmd.PersistentFlags().String("issue-filter", "", "vulnerability/malware/secrets/compliance/cloud_complaince/all")
 	graphThreatSubCmd.PersistentFlags().Bool("cloud-only", false, "vulnerability/malware/secrets/compliance/cloud_complaince/all")
+
+	graphCmd.AddCommand(attackPathsSubCmd)
 }
