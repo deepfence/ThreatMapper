@@ -7,22 +7,18 @@ import {
   getVulnerabilityApiClient,
 } from '@/api/api';
 import {
-  ApiDocsBadRequestResponse,
   ModelCloudNodeProvidersListResp,
   ModelNodeIdentifierNodeTypeEnum,
-  ModelSummary,
   SearchNodeCountResp,
 } from '@/api/generated';
 import { NodeCounts } from '@/features/dashboard/components/NodeCounts';
 import { Posture } from '@/features/dashboard/components/Posture';
-import { Registries } from '@/features/dashboard/components/Registries';
-import { ThreatStrykerBanner } from '@/features/dashboard/components/ThreatStrykerBanner';
 import { TopAttackPaths } from '@/features/dashboard/components/TopAttackPath';
 import { TopRisksMalware } from '@/features/dashboard/components/TopRisksMalware';
+import { TopRisksRuntimeDummy } from '@/features/dashboard/components/TopRisksRuntimeDummy';
 import { TopRisksSecret } from '@/features/dashboard/components/TopRisksSecret';
 import { TopRisksVulnerability } from '@/features/dashboard/components/TopRisksVulnerability';
-import { RegistryType } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { ApiError, apiWrapper, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 
 async function getCloudNodeProviders(): Promise<ModelCloudNodeProvidersListResp> {
@@ -40,45 +36,27 @@ async function getCloudNodeProviders(): Promise<ModelCloudNodeProvidersListResp>
   }
   return result;
 }
-interface RegistryResponseType extends ModelSummary {
-  type: string;
-}
 
-async function getRegistriesSummary(): Promise<RegistryResponseType[]> {
-  const result = await makeRequest({
-    apiFunction: getRegistriesApiClient().getRegistriesSummary,
-    apiArgs: [],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
+async function getRegistriesSummary(): Promise<number> {
+  const getRegistriesSummary = apiWrapper({
+    fn: getRegistriesApiClient().getRegistriesSummary,
   });
 
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  const result = await getRegistriesSummary();
+
+  if (!result.ok) {
+    throw result.error;
   }
-  if (result === null) {
+  if (result.value === null) {
     // TODO: handle this case with 404 status maybe
     throw new Error('Error getting registries');
   }
-  type Keys = keyof typeof RegistryType;
-  type ReponseType = { [K in Keys]: RegistryResponseType };
-  const response: RegistryResponseType[] = [];
-  for (const [key, value] of Object.entries(result as ReponseType)) {
-    response.push({
-      registries: value.registries,
-      images: value.images,
-      tags: value.tags,
-      type: key,
-    });
+  let numRegistries = 0;
+  for (const value of Object.values(result.value)) {
+    numRegistries += value.registries ?? 0;
   }
 
-  return response;
+  return numRegistries;
 }
 
 async function getNodeCounts(): Promise<SearchNodeCountResp> {
@@ -694,12 +672,11 @@ const loader = async (): Promise<TypedDeferredData<DashboardLoaderData>> => {
 const Dashboard = () => {
   return (
     <div className="overflow-auto">
-      <ThreatStrykerBanner />
       <NodeCounts />
       <div className="grid grid-cols-2 2xl:grid-cols-3 gap-2 auto-rows-auto px-2 last:mb-2">
         <TopAttackPaths />
         <Posture />
-        <Registries />
+        <TopRisksRuntimeDummy />
         <TopRisksVulnerability />
         <TopRisksSecret />
         <TopRisksMalware />
