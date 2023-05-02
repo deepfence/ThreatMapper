@@ -1,4 +1,5 @@
 import {
+  HiClock,
   HiCode,
   HiDocumentSearch,
   HiGlobeAlt,
@@ -13,6 +14,7 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 type RouteProps =
   | 'diagnostic-logs'
   | 'user-management'
+  | 'scan-history-and-db-management'
   | 'user-audit-logs'
   | 'email-configuration'
   | 'schedule-jobs'
@@ -32,6 +34,11 @@ export const settingsTabs: Array<{
     label: 'User Management',
     value: 'user-management',
     icon: <HiUsers />,
+  },
+  {
+    label: 'Scan History & Database Management',
+    value: 'scan-history-and-db-management',
+    icon: <HiClock />,
   },
   {
     label: 'Diagnostic Logs',
