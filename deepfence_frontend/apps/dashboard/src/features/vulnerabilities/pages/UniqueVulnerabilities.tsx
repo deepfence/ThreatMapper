@@ -295,7 +295,7 @@ const UniqueVulnerabilities = () => {
         size: 60,
         maxSize: 70,
       }),
-      columnHelper.accessor('cve_caused_by_package_path', {
+      columnHelper.accessor('cve_affected_assets', {
         enableSorting: false,
         enableResizing: true,
         cell: (info) => info.getValue(),
