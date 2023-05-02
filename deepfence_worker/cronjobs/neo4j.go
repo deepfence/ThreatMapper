@@ -217,9 +217,19 @@ func CleanUpDB(msg *message.Message) error {
 	}
 
 	if _, err = session.Run(`
-		MATCH (n:CloudRegion) -[:HOSTS]-> (m)
+		MATCH (n:CloudRegion) -[:HOSTS]-> (m:CloudResource)
+		WHERE m.node_type IN $cloud_types
+		AND m.active = true
+		WITH count(m) as c, n LIMIT 100000
+		SET n.active = c <> 0`,
+		map[string]interface{}{"cloud_types": model.TopologyCloudResourceTypes}); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:CloudRegion) -[:HOSTS]-> (m:Node)
 		WHERE m.active = true
-		WITH count(m) as c, n
+		WITH count(m) as c, n LIMIT 100000
 		SET n.active = c <> 0`,
 		map[string]interface{}{}); err != nil {
 		return err
@@ -228,7 +238,7 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:CloudProvider) -[:HOSTS]-> (m)
 		WHERE m.active = true
-		WITH count(m) as c, n
+		WITH count(m) as c, n LIMIT 100000
 		SET n.active = c <> 0`,
 		map[string]interface{}{}); err != nil {
 		return err
@@ -237,6 +247,7 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:CloudRegion)
 		WHERE not (n) -[:HOSTS]-> ()
+		WITH n LIMIT 100000
 		DELETE n`,
 		map[string]interface{}{}); err != nil {
 		return err
@@ -245,6 +256,7 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:CloudProvider)
 		WHERE not (n) -[:HOSTS]-> ()
+		WITH n LIMIT 100000
 		DELETE n`,
 		map[string]interface{}{}); err != nil {
 		return err

@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -171,14 +172,6 @@ func extractResourceNodeIds(ids []interface{}) []NodeID {
 	return res
 }
 
-var (
-	topology_cloud_resource_types = []string{
-		"aws_ec2_instance", "aws_eks_cluster", "aws_s3_bucket", "aws_lambda_function",
-		"aws_ecs_task", "aws_ecs_cluster", "aws_ecr_repository", "aws_ecrpublic_repository",
-		"aws_ecs_task", "aws_rds_db_instance", "aws_rds_db_cluster", "aws_ec2_application_load_balancer",
-		"aws_ec2_classic_load_balancer", "aws_ec2_network_load_balancer"}
-)
-
 func (nc *neo4jTopologyReporter) GetCloudServices(
 	tx neo4j.Transaction,
 	cloud_provider []string,
@@ -199,7 +192,7 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 		filterNil(map[string]interface{}{
 			"providers":      cloud_provider,
 			"regions":        cloud_regions,
-			"resource_types": topology_cloud_resource_types,
+			"resource_types": model.TopologyCloudResourceTypes,
 		}))
 
 	if err != nil {
