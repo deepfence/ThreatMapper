@@ -33,7 +33,7 @@ export const ThreatGraphComponent = ({
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
-  const { graph } = useG6raph(container);
+  const { graph } = useG6raph(container, 'threat-graph-node');
   const { data, loading, ...graphDataFunctions } = useThreatGraphData();
   const graphDataFunctionsRef = useRef(graphDataFunctions);
   graphDataFunctionsRef.current = graphDataFunctions;
