@@ -343,7 +343,7 @@ func initializeDatabase() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = model.InitializeScheduler(ctx, pgClient)
+	err = model.InitializeScheduledTasks(ctx, pgClient)
 	if err != nil {
 		return nil, err
 	}
