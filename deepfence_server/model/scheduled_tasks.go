@@ -45,7 +45,8 @@ func GetScheduledTask(ctx context.Context) ([]postgresqlDb.Scheduler, error) {
 }
 
 type UpdateScheduledTaskRequest struct {
-	IsEnabled bool `json:"is_enabled" required:"true"`
+	ID        int64 `path:"id" validate:"required" required:"true"`
+	IsEnabled bool  `json:"is_enabled" required:"true"`
 }
 
 func UpdateScheduledTask(ctx context.Context, id int64, updateScheduledTask UpdateScheduledTaskRequest) error {
