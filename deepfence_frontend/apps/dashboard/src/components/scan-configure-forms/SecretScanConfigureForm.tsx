@@ -212,22 +212,24 @@ export const SecretScanConfigureForm = ({
               }}
             />
           )}
-          <TextInput
-            className="min-[200px] max-w-xs"
-            label="Scan interval in days (optional)"
-            type={'text'}
-            sizing="sm"
-            name="scanInterval"
-            placeholder=""
-          />
-          <Checkbox
-            name="scanEveryday"
-            label="Check and scan for new images every day"
-            checked={autoCheckandScan}
-            onCheckedChange={(checked: boolean) => {
-              setAutoCheckandScan(checked);
-            }}
-          />
+          <div className="hidden">
+            <TextInput
+              className="min-[200px] max-w-xs"
+              label="Scan interval in days (optional)"
+              type={'text'}
+              sizing="sm"
+              name="scanInterval"
+              placeholder=""
+            />
+            <Checkbox
+              name="scanEveryday"
+              label="Check and scan for new images every day"
+              checked={autoCheckandScan}
+              onCheckedChange={(checked: boolean) => {
+                setAutoCheckandScan(checked);
+              }}
+            />
+          </div>
         </div>
       ) : null}
     </fetcher.Form>
