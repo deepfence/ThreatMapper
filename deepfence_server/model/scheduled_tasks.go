@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
@@ -28,6 +29,43 @@ var (
 		utils.NodeTypeCloudNode:         "cloud account",
 	}
 )
+
+func GetScheduledTask(ctx context.Context) ([]postgresqlDb.Scheduler, error) {
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+	schedules, err := pgClient.GetSchedules(ctx)
+	if errors.Is(err, sql.ErrNoRows) {
+		return []postgresqlDb.Scheduler{}, nil
+	} else if err != nil {
+		return nil, err
+	}
+	return schedules, nil
+}
+
+type UpdateScheduledTaskRequest struct {
+	IsEnabled bool `json:"is_enabled" required:"true"`
+}
+
+func UpdateScheduledTask(ctx context.Context, id int64, updateScheduledTask UpdateScheduledTaskRequest) error {
+	pgClient, err := directory.PostgresClient(ctx)
+	if err != nil {
+		return err
+	}
+	schedule, err := pgClient.GetSchedule(ctx, id)
+	if err != nil {
+		return err
+	}
+	return pgClient.UpdateSchedule(ctx, postgresqlDb.UpdateScheduleParams{
+		Description: schedule.Description,
+		CronExpr:    schedule.CronExpr,
+		Payload:     schedule.Payload,
+		IsEnabled:   updateScheduledTask.IsEnabled,
+		Status:      schedule.Status,
+		ID:          id,
+	})
+}
 
 func InitializeScheduledTasks(ctx context.Context, pgClient *postgresqlDb.Queries) error {
 	schedules, err := pgClient.GetSchedules(ctx)

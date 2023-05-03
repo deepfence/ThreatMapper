@@ -634,4 +634,12 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 	d.AddOperation("getUserActivityLogs", http.MethodGet, "/deepfence/settings/user-activity-log",
 		"Get activity logs", "Get activity logs for all users",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]postgresqldb.GetAuditLogsRow))
+
+	// Scheduled tasks
+	d.AddOperation("getScheduledTasks", http.MethodGet, "/deepfence/scheduled-task",
+		"Get scheduled tasks", "Get scheduled tasks",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]postgresqldb.Scheduler))
+	d.AddOperation("updateScheduledTask", http.MethodPatch, "/deepfence/scheduled-task/{id}",
+		"Update scheduled task", "Update scheduled task",
+		http.StatusNoContent, []string{tagSettings}, bearerToken, new(UpdateScheduledTaskRequest), nil)
 }
