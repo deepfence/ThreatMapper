@@ -144,7 +144,7 @@ func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgres
 	return true, nil
 }
 
-func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, ns string) error {
+func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.Context, pgClient *postgresqlDb.Queries, ns string) error {
 	bSecret, err := json.Marshal(ra.Secret)
 	if err != nil {
 		return err
@@ -173,12 +173,12 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgres
 		Name:         ra.Name,
 	})
 
-	driver, err := directory.Neo4jClient(ctx)
+	driver, err := directory.Neo4jClient(rContext)
 	if err != nil {
 		return err
 	}
 
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
 	tx, err := session.BeginTransaction()
