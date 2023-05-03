@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
@@ -96,7 +97,7 @@ func main() {
 		}
 	case "scheduler":
 		log.Info().Msg("Starting scheduler")
-
+		time.Sleep(10 * time.Second)
 		scheduler, err := cronscheduler.NewScheduler(tasksPublisher)
 		if err != nil {
 			log.Error().Msg(err.Error())

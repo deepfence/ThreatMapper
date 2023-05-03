@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -14,6 +15,8 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	sdkUtils "github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
 var ReportRetentionTime = 24 * time.Hour
@@ -61,4 +64,12 @@ func RunCommand(cmd *exec.Cmd) (*bytes.Buffer, error) {
 		return nil, errors.New(fmt.Sprint(errorOnRun) + ": " + stderr.String())
 	}
 	return &out, nil
+}
+
+func GetScheduledJobHash(schedule postgresqlDb.Scheduler) string {
+	var payload map[string]string
+	json.Unmarshal(schedule.Payload, &payload)
+	message := map[string]interface{}{"action": schedule.Action, "payload": payload, "cron": schedule.CronExpr}
+	scheduleStr, _ := json.Marshal(message)
+	return sdkUtils.GenerateHashFromString(string(scheduleStr))
 }

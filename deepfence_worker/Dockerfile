@@ -3,7 +3,7 @@ ARG IMAGE_REPOSITORY=deepfenceio
 FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS packagescanner
 FROM $IMAGE_REPOSITORY/deepfence_secret_scanner_ce:$DF_IMG_TAG AS secretscanner
 FROM $IMAGE_REPOSITORY/deepfence_malware_scanner_ce:$DF_IMG_TAG AS yarahunter
-FROM surnet/alpine-wkhtmltopdf:3.16.2-0.12.6-full as wkhtmltopdf
+FROM surnet/alpine-wkhtmltopdf:3.17.0-0.12.6-full as wkhtmltopdf
 
 FROM alpine:3.17 AS builder-yara
 
@@ -67,7 +67,8 @@ ADD deepfence_server/cloud_controls /cloud_controls
 RUN apk add --no-cache kafkacat docker openrc bash skopeo jansson-dev \
         libmagic libstdc++ libx11 libxrender libxext libssl1.1 ca-certificates \
         fontconfig freetype ttf-droid ttf-freefont ttf-liberation
-RUN apk add hyperscan --repository=https://dl-cdn.alpinelinux.org/alpine/v3.13/community 
+RUN apk add hyperscan --repository=https://dl-cdn.alpinelinux.org/alpine/v3.13/community \
+    && apk add --no-cache postgresql-client --repository=https://dl-cdn.alpinelinux.org/alpine/v3.14/main
 
 ENV DEEPFENCE_KAFKA_TOPIC_PARTITIONS=3 \
     DEEPFENCE_KAFKA_TOPIC_PARTITIONS_TASKS=3 \

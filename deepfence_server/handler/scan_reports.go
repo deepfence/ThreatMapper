@@ -158,7 +158,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		}, nil
 	}
 
-	scan_ids, bulkId, err := startMultiScan(r.Context(), true, utils.NEO4J_VULNERABILITY_SCAN, reqs.ScanTriggerCommon, actionBuilder)
+	scan_ids, bulkId, err := StartMultiScan(r.Context(), true, utils.NEO4J_VULNERABILITY_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
@@ -228,7 +228,7 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		}, nil
 	}
 
-	scan_ids, bulkId, err := startMultiScan(r.Context(), true, utils.NEO4J_SECRET_SCAN, reqs.ScanTriggerCommon, actionBuilder)
+	scan_ids, bulkId, err := StartMultiScan(r.Context(), true, utils.NEO4J_SECRET_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
@@ -294,7 +294,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.Host) {
-		scanIds, bulkId, err = startMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
+		scanIds, bulkId, err = StartMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
 		if err != nil {
 			for _, i := range scanIds {
 				h.SendScanStatus(r.Context(), utils.CLOUD_COMPLIANCE_SCAN_STATUS,
@@ -380,7 +380,7 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		}, nil
 	}
 
-	scan_ids, bulkId, err := startMultiScan(r.Context(), true, utils.NEO4J_MALWARE_SCAN, reqs.ScanTriggerCommon, actionBuilder)
+	scan_ids, bulkId, err := StartMultiScan(r.Context(), true, utils.NEO4J_MALWARE_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
@@ -1458,7 +1458,7 @@ func extractBulksNodes(nodes []model.NodeIdentifier) (regularNodes []model.NodeI
 	return regularNodes, clusterNodes, registryNodes
 }
 
-func startMultiScan(ctx context.Context,
+func StartMultiScan(ctx context.Context,
 	gen_bulk_id bool,
 	scan_type utils.Neo4jScanType,
 	req model.ScanTriggerCommon,
@@ -1577,7 +1577,7 @@ func startMultiScan(ctx context.Context,
 	return scanIds, bulkId, tx.Commit()
 }
 
-func startMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, benchmarkTypes []string) ([]string, string, error) {
+func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentifier, benchmarkTypes []string) ([]string, string, error) {
 	driver, err := directory.Neo4jClient(ctx)
 
 	if err != nil {
