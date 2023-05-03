@@ -260,7 +260,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 			WITH COUNT(DISTINCT o.node_id) AS account_count
 			OPTIONAL MATCH (p:CloudResource)
 			WHERE p.cloud_provider = $cloud_provider
-			WITH account_count, COUNT(*) AS resource_count
+			WITH account_count, COUNT(distinct p.id) AS resource_count
 			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s{cloud_provider: $cloud_provider})<-[:IS_CHILD]-(o:%s{cloud_provider:$cloud_provider+'_org'})
 			WITH account_count, resource_count, COUNT(DISTINCT n.node_id) AS scan_count
 			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudComplianceResult), (o:%s{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
@@ -290,7 +290,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 			WITH COUNT(DISTINCT m.node_id) AS account_count
 			OPTIONAL MATCH (p:CloudResource)
 			WHERE p.cloud_provider = $cloud_provider
-			WITH account_count, COUNT(*) AS resource_count
+			WITH account_count, COUNT(distinct p.id) AS resource_count
 			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s{cloud_provider: $cloud_provider})
 			WITH account_count, resource_count, COUNT(DISTINCT n.node_id) AS scan_count
 			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudComplianceResult)
