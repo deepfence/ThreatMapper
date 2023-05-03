@@ -1200,24 +1200,23 @@ func (h *Handler) ScanDeleteHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
-
-	duration, err := strconv.ParseInt(chi.URLParam(r, "duration"), 10, 64)
+	defer r.Body.Close()
+	var req model.BulkDeleteScansRequest
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 	if err != nil {
 		respondError(err, w)
 		return
 	}
-
-	req := model.BulkDeleteScansRequest{
-		Duration: int(duration),
-		ScanType: chi.URLParam(r, "scan_type"),
-	}
-	if err := h.Validator.Struct(req); err != nil {
+	err = h.Validator.Struct(req)
+	if err != nil {
 		respondError(&ValidatorError{err}, w)
 		return
 	}
 
-	log.Info().Msgf("delete %s scans older than %d days", req.ScanType, req.Duration)
+	log.Info().Msgf("delete %s scans older than %d days with severity/status %s",
+		req.ScanType, req.Duration, req.SeverityOrStatus)
 
+	// TODO: add severity/status filter
 	filters := reporters.FieldsFilters{}
 	if req.Duration > 0 {
 		previous := time.Now().AddDate(0, 0, int(math.Copysign(float64(req.Duration), -1)))

@@ -510,7 +510,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanResultsActionRequest), nil)
 
 	// Bulk Delete Scans
-	d.AddOperation("bulkDeleteScans", http.MethodDelete, "/deepfence/scans/{scan_type}/{duration}",
+	d.AddOperation("bulkDeleteScans", http.MethodPost, "/deepfence/scans/bulk/delete",
 		"Bulk Delete Scans", "Bulk delete scans along with their results for a particular scan type",
 		http.StatusOK, []string{tagScanResults}, bearerToken, new(BulkDeleteScansRequest), nil)
 

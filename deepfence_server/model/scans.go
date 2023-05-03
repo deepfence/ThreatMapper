@@ -134,8 +134,9 @@ type DownloadScanResultsResponse struct {
 }
 
 type BulkDeleteScansRequest struct {
-	ScanType string `path:"scan_type" json:"scan_type" validate:"required,oneof=Secret Vulnerability Malware Compliance CloudCompliance" required:"true" enum:"Secret,Vulnerability,Malware,Compliance,CloudCompliance"`
-	Duration int    `path:"duration" json:"duration" validate:"required,oneof=-1 1 7 30 60 90 180" required:"true" enum:"-1,1,7,30,60,90,180"`
+	ScanType         string `json:"scan_type" validate:"required,oneof=Secret Vulnerability Malware Compliance CloudCompliance" required:"true" enum:"Secret,Vulnerability,Malware,Compliance,CloudCompliance"`
+	Duration         int    `json:"duration" validate:"required,oneof=-1 1 7 30 60 90 180" required:"true" enum:"-1,1,7,30,60,90,180" default:"30"`
+	SeverityOrStatus string `json:"severity_or_status" validate:"required,oneof=critical high medium low info note pass warn alarm ok skip all" required:"true" enum:"critical,high,medium,low,info,note,pass,warn,alarm,ok,skip,all" default:"all"`
 }
 
 type ScanActionRequest struct {
