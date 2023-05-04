@@ -12,6 +12,8 @@ class CloudComplianceNode(db.Model):
     cloud_provider = db.Column(db.String(200), nullable=False)
     compliance_percentage = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
     org_account_id = db.Column(db.String(200), nullable=True)
+    version = db.Column(db.String(20), nullable=True)
+
 
     def save(self, commit=True):
         db.session.add(self)
@@ -47,6 +49,7 @@ class CloudComplianceNode(db.Model):
             "cloud_provider": self.cloud_provider,
             "compliance_percentage": self.compliance_percentage,
             "org_account_id": self.org_account_id,
+            "version": self.version,
         }
 
     def __repr__(self):

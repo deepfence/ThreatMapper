@@ -134,6 +134,11 @@
     padding-right: 10px;
 
     .runtime-vulnerabilities {
+      position: relative;
+      .download.primary-btn {
+          position: absolute;
+          right: 10px;
+      }
       .heading {
         background-color: transparent;
         padding-left: 30px;

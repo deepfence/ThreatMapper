@@ -1,10 +1,7 @@
+import isNil from 'lodash/isNil';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, withRouter } from 'react-router-dom';
-import isNil from 'lodash/isNil';
-import { DfTableV2 } from '../common/df-table-v2';
-import pollable from '../common/header-view/pollable';
-import injectModalTrigger from '../common/generic-modal/modal-trigger-hoc';
 import {
   clearStartComplianceScanErrrorAction,
   getComplianceCloudCredentialsAction,
@@ -12,6 +9,9 @@ import {
   toaster,
 } from '../../actions/app-actions';
 import AppLoader from '../common/app-loader/app-loader';
+import { DfTableV2 } from '../common/df-table-v2';
+import injectModalTrigger from '../common/generic-modal/modal-trigger-hoc';
+import pollable from '../common/header-view/pollable';
 
 import { StartScanModalContent } from './start-scan-modal';
 
@@ -232,6 +232,13 @@ const AccountListTable = ({
           width: 60,
           maxWidth: 70,
           minWidth: 60,
+        },
+        {
+          Header: 'Version',
+          accessor: 'version',
+          width: 50,
+          maxWidth: 70,
+          minWidth: 50,
         },
         {
           Header: 'Actions',

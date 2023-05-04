@@ -128,6 +128,7 @@ import {
   getMalwareClassesChartData,
   malwareScanMaskDocs,
   malwareScanUnmaskDocs,
+  downloadMostExploitableReport,
 } from '../utils/web-api-utils';
 
 import { GRAPH_VIEW_MODE, TABLE_VIEW_MODE } from '../constants/naming';
@@ -1553,6 +1554,15 @@ export function reportDownloadStatusAction(params) {
     ActionTypes.REPORT_STATUS_FAILURE,
   ];
   return genericThunkAction(actionTypes, reportDownloadStatus, params);
+}
+
+export function downloadMostExploitableAction(params) {
+  const actionTypes = [
+    ActionTypes.DOWNLOAD_MEXPV_REQUEST,
+    ActionTypes.DOWNLOAD_MEXPV_SUCCESS,
+    ActionTypes.DOWNLOAD_MEXPV_FAILURE,
+  ];
+  return genericThunkAction(actionTypes, downloadMostExploitableReport, params);
 }
 
 export function downloadReportAction(params) {
