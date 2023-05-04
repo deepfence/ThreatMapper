@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"net/http"
 	"net/url"
 	"path"
@@ -1214,28 +1213,10 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Info().Msgf("delete %s scans older than %d days with severity/status %s",
-		req.ScanType, req.Duration, req.SeverityOrStatus)
-
-	// TODO: add severity/status filter
-	filters := reporters.FieldsFilters{}
-	if req.Duration > 0 {
-		previous := time.Now().AddDate(0, 0, int(math.Copysign(float64(req.Duration), -1)))
-		filters = reporters.FieldsFilters{
-			CompareFilters: []reporters.CompareFilter{
-				{
-					FieldName:   "updated_at",
-					FieldValue:  strconv.FormatInt(previous.UnixMilli(), 10),
-					GreaterThan: false,
-				},
-			},
-		}
-		log.Info().Msgf("delete %s scans older than %s", req.ScanType, previous)
-	} else {
-		log.Info().Msgf("delete all %s scans", req.ScanType)
-	}
+		req.ScanType, req.Filters)
 
 	scansList, err := reporters_scan.GetScansList(r.Context(),
-		utils.DetectedNodeScanType[req.ScanType], nil, filters, model.FetchWindow{})
+		utils.DetectedNodeScanType[req.ScanType], nil, req.Filters, model.FetchWindow{})
 	if err != nil {
 		respondError(&ValidatorError{err}, w)
 		return
