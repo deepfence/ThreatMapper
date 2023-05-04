@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button, Checkbox, Radio, TextInput } from 'ui-components';
+import { Button, Checkbox, Radio } from 'ui-components';
 
 import { getSecretApiClient } from '@/api/api';
 import {
@@ -49,8 +49,6 @@ export const scanSecretApiAction = async ({
   const _images = formData.get('_images')?.toString().split(',') ?? [];
   const nodeType = formData.get('_nodeType')?.toString() ?? '';
 
-  const scanInterval = formData.get('scanInterval')?.toString() ?? '';
-  const scanEveryday = formData.get('scanEveryday')?.toString() ?? '';
   const imageTag = formData.get('imageTag')?.toString() ?? '';
   const priorityScan = formData.get('priorityScan')?.toString() ?? '';
 
@@ -138,7 +136,6 @@ export const SecretScanConfigureForm = ({
   showAdvancedOptions: wantAdvanceOptions,
 }: SecretScanConfigureFormProps) => {
   const [priorityScan, setPriorityScan] = useState(false);
-  const [autoCheckandScan, setAutoCheckandScan] = useState(false);
   const [imageTag, setImageTag] = useState('latest');
   const fetcher = useFetcher<ScanActionReturnType>();
 
@@ -212,24 +209,6 @@ export const SecretScanConfigureForm = ({
               }}
             />
           )}
-          <div className="hidden">
-            <TextInput
-              className="min-[200px] max-w-xs"
-              label="Scan interval in days (optional)"
-              type={'text'}
-              sizing="sm"
-              name="scanInterval"
-              placeholder=""
-            />
-            <Checkbox
-              name="scanEveryday"
-              label="Check and scan for new images every day"
-              checked={autoCheckandScan}
-              onCheckedChange={(checked: boolean) => {
-                setAutoCheckandScan(checked);
-              }}
-            />
-          </div>
         </div>
       ) : null}
     </fetcher.Form>
