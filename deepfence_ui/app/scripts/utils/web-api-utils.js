@@ -2047,6 +2047,53 @@ export function reportDownloadStatus(params = {}) {
     },
   }).then(errorHandler);
 }
+export function downloadMostExploitableReport(params) {
+  const url = `${backendElasticApiEndPoint()}/vulnerability/top_exploits_download`;
+  return fetch(url, {
+    credentials: 'same-origin',
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getAuthHeader(),
+    },
+  })
+    .then(response => {
+      return new Promise((resolve, reject) => {
+      if (response.ok) {
+        resolve(response.blob());
+      } else {
+        if (response.status === 400) {
+          response.json().then(
+            jObj => {
+              reject({
+                ...jObj.error,
+              });
+            },
+            error => {
+              reject({
+                message: 'Failed to decode',
+              });
+            }
+          );
+        } else {
+          reject({
+            message: 'Failed to fetch file',
+          });
+        }
+      }
+    });
+    })
+    .then(blob => {
+      const fileURL = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = fileURL;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }).catch(e => {
+      alert(e.message)
+    });
+}
 
 export function downloadReport(params = {}) {
   const { path = '' } = params;
