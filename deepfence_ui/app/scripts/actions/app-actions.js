@@ -1556,13 +1556,13 @@ export function reportDownloadStatusAction(params) {
   return genericThunkAction(actionTypes, reportDownloadStatus, params);
 }
 
-export function downloadMostExploitableAction(params) {
+export function downloadMostExploitableAction() {
   const actionTypes = [
     ActionTypes.DOWNLOAD_MEXPV_REQUEST,
     ActionTypes.DOWNLOAD_MEXPV_SUCCESS,
     ActionTypes.DOWNLOAD_MEXPV_FAILURE,
   ];
-  return genericThunkAction(actionTypes, downloadMostExploitableReport, params);
+  return genericThunkAction(actionTypes, downloadMostExploitableReport);
 }
 
 export function downloadReportAction(params) {
