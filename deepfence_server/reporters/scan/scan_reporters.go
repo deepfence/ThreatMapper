@@ -507,9 +507,9 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 	defer tx.Close()
 
 	res, err := tx.Run(`
-		MATCH (m:`+string(scanType)+`) -[:SCANNED]-> (:CloudNode{node_id: $node_id})
+		MATCH (m:`+string(scanType)+`) -[:SCANNED]-> (n:CloudNode{node_id: $node_id})
 		WHERE NOT m.status = $complete AND NOT m.status = $failed AND NOT m.status = $in_progress
-		RETURN m.node_id, m.benchmark_types, m.status, m.status_message, m.updated_at ORDER BY m.updated_at`,
+		RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.updated_at, n.node_name ORDER BY m.updated_at`,
 		map[string]interface{}{"node_id": nodeId, "complete": utils.SCAN_STATUS_SUCCESS, "failed": utils.SCAN_STATUS_FAILED, "in_progress": utils.SCAN_STATUS_INPROGRESS})
 	if err != nil {
 		return model.CloudComplianceScanListResp{}, err
