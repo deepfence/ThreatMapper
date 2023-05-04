@@ -232,8 +232,9 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 		if postureProviderName == PostureProviderLinux || postureProviderName == PostureProviderKubernetes {
 			postureProvider.NodeLabel = nodeLabel
 			scanType = utils.NEO4J_COMPLIANCE_SCAN
-			nodeRes, err := tx.Run(fmt.Sprintf(`
+			query := fmt.Sprintf(`
 			MATCH (m:%s)
+			WHERE m.pseudo=false
 			WITH COUNT(DISTINCT m.node_id) AS account_count
 			MATCH (n:%s)-[:SCANNED]->(m:%s)
 			WITH account_count, COUNT(DISTINCT n.node_id) AS scan_count
@@ -242,8 +243,12 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 			MATCH (m:%s)<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:Compliance)
 			WHERE c1.status IN ['ok', 'info', 'skip']
 			RETURN account_count, scan_count, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage`,
-				neo4jNodeType, scanType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType),
-				map[string]interface{}{})
+				neo4jNodeType, scanType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType)
+			// log.Info().Msgf("linux counts query %s", query)
+			nodeRes, err := tx.Run(query, map[string]interface{}{})
+			if err != nil {
+				log.Error().Msgf("Provider query error for %s: %v", postureProviderName, err)
+			}
 			nodeRec, err := nodeRes.Single()
 			if err != nil {
 				log.Error().Msgf("Provider query error for %s: %v", postureProviderName, err)
@@ -260,7 +265,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 			WITH COUNT(DISTINCT o.node_id) AS account_count
 			OPTIONAL MATCH (p:CloudResource)
 			WHERE p.cloud_provider = $cloud_provider
-			WITH account_count, COUNT(distinct p.id) AS resource_count
+			WITH account_count, COUNT(distinct p.arn) AS resource_count
 			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s{cloud_provider: $cloud_provider})<-[:IS_CHILD]-(o:%s{cloud_provider:$cloud_provider+'_org'})
 			WITH account_count, resource_count, COUNT(DISTINCT n.node_id) AS scan_count
 			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudComplianceResult), (o:%s{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
@@ -290,7 +295,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 			WITH COUNT(DISTINCT m.node_id) AS account_count
 			OPTIONAL MATCH (p:CloudResource)
 			WHERE p.cloud_provider = $cloud_provider
-			WITH account_count, COUNT(distinct p.id) AS resource_count
+			WITH account_count, COUNT(distinct p.arn) AS resource_count
 			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s{cloud_provider: $cloud_provider})
 			WITH account_count, resource_count, COUNT(DISTINCT n.node_id) AS scan_count
 			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudComplianceResult)
