@@ -408,6 +408,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				})
 			})
 
+			// vulnerability db management
+			r.Route("/database", func(r chi.Router) {
+				r.Put("/vulnerability", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadVulnerabilityDB))
+			})
+
 		})
 	})
 
