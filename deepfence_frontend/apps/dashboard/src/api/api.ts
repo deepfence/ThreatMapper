@@ -210,6 +210,7 @@ export function getScanResultsApiClient() {
     unmaskScanResult: scanResultsApi.unmaskScanResult.bind(scanResultsApi),
     getAllNodesInScanResults:
       scanResultsApi.getAllNodesInScanResults.bind(scanResultsApi),
+    bulkDeleteScansHistory: scanResultsApi.bulkDeleteScans.bind(scanResultsApi),
   };
 }
 
@@ -296,5 +297,7 @@ export function getSettingsApiClient() {
     getEmailConfiguration: settingsApi.getEmailConfiguration.bind(settingsApi),
     addEmailConfiguration: settingsApi.addEmailConfiguration.bind(settingsApi),
     deleteEmailConfiguration: settingsApi.deleteEmailConfiguration.bind(settingsApi),
+    uploadVulnerabilityDatabase:
+      settingsApi.uploadVulnerabilityDatabase.bind(settingsApi),
   };
 }

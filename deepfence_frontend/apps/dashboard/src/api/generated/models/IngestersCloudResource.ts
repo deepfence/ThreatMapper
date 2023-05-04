@@ -39,10 +39,10 @@ export interface IngestersCloudResource {
     action?: string;
     /**
      * 
-     * @type {string}
+     * @type {boolean}
      * @memberof IngestersCloudResource
      */
-    allow_blob_public_access?: string;
+    allow_blob_public_access?: boolean;
     /**
      * 
      * @type {string}

@@ -1,11 +1,22 @@
 import { capitalize } from 'lodash-es';
 import { useEffect, useState } from 'react';
-import { HiClock, HiDatabase, HiOutlineExclamationCircle } from 'react-icons/hi';
+import {
+  HiBadgeCheck,
+  HiClock,
+  HiDatabase,
+  HiOutlineExclamationCircle,
+} from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
-import { useFetcher } from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { Button, FileInput, Listbox, ListboxOption, Modal, Radio } from 'ui-components';
 
+import { getScanResultsApiClient, getSettingsApiClient } from '@/api/api';
+import {
+  ApiDocsBadRequestResponse,
+  ModelBulkDeleteScansRequestScanTypeEnum,
+} from '@/api/generated';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
+import { apiWrapper } from '@/utils/api';
 
 const getStatusesOrSeverityByResource = (resource: string): string[] => {
   const map: { [key: string]: string[] } = {
@@ -23,65 +34,172 @@ const DURATION: { [k: string]: number } = {
   'Last 60 Days': 60,
   'Last 90 Days': 90,
   'Last 180 Days': 180,
-  All: 0,
+  All: -1,
 };
 
+enum ActionEnumType {
+  DELETE = 'delete',
+  UPLOAD = 'upload',
+}
+export type ActionReturnType = {
+  deleteSuccess?: boolean;
+  uploadSuccess?: boolean;
+  message?: string;
+};
+const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType> => {
+  const formData = await request.formData();
+  const actionType = formData.get('actionType');
+
+  if (actionType === ActionEnumType.DELETE) {
+    const duration = formData.get('duration')?.toString();
+    const severityOrStatus = formData.get('severityOrStatus');
+    const scanType = formData
+      .get('selectedResource')
+      ?.toString() as ModelBulkDeleteScansRequestScanTypeEnum;
+
+    const deleteScanHistoryApi = apiWrapper({
+      fn: getScanResultsApiClient().bulkDeleteScansHistory,
+    });
+
+    const deleteScanHistoryResponse = await deleteScanHistoryApi({
+      modelBulkDeleteScansRequest: {
+        scan_type: scanType,
+        filters: {
+          compare_filter: null,
+          contains_filter: {
+            filter_in: {
+              severity: [severityOrStatus],
+              updated_at: [duration],
+            },
+          },
+          order_filter: { order_fields: [] },
+          match_filter: { filter_in: {} },
+        },
+      },
+    });
+    if (!deleteScanHistoryResponse.ok) {
+      if (deleteScanHistoryResponse.error.response.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse =
+          await deleteScanHistoryResponse.error.response.json();
+        return {
+          deleteSuccess: false,
+          message: modelResponse?.message,
+        };
+      }
+      throw deleteScanHistoryResponse.error;
+    }
+
+    return {
+      deleteSuccess: true,
+    };
+  } else if (actionType === ActionEnumType.UPLOAD) {
+    const uploadApi = apiWrapper({
+      fn: getSettingsApiClient().uploadVulnerabilityDatabase,
+    });
+
+    const uploadApiResponse = await uploadApi({
+      database: formData.get('vulnerabilityDatabase') as Blob,
+    });
+    if (!uploadApiResponse.ok) {
+      if (uploadApiResponse.error.response.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse =
+          await uploadApiResponse.error.response.json();
+        return {
+          uploadSuccess: false,
+          message: modelResponse?.message,
+        };
+      }
+      throw uploadApiResponse.error;
+    }
+    return {
+      uploadSuccess: true,
+    };
+  }
+  return {};
+};
+
+const DeleteSuccess = () => {
+  return (
+    <div className="grid place-items-center p-6">
+      <IconContext.Provider
+        value={{
+          className: 'mb-3 dark:text-green-600 text-green-400 w-[70px] h-[70px]',
+        }}
+      >
+        <HiBadgeCheck />
+      </IconContext.Provider>
+      <h3 className="mb-4 font-normal text-center text-sm">
+        Selected scan history deleted successfully
+      </h3>
+    </div>
+  );
+};
 const DeleteConfirmationModal = ({
   showDialog,
   setShowDialog,
+  data,
 }: {
   showDialog: boolean;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  data: {
+    duration: number;
+    severityOrStatus: string;
+    selectedResource: string;
+  };
 }) => {
   const fetcher = useFetcher<{
     deleteSuccess: boolean;
     message: string;
   }>();
 
-  if (fetcher.data?.deleteSuccess) {
-    setShowDialog(false);
-  }
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          The selected resource scan history will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-
-        {fetcher.data?.message ? (
-          <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
-        ) : null}
-
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, Cancel
-          </Button>
-          <Button
-            size="xs"
-            color="danger"
-            disabled={fetcher.state !== 'idle'}
-            loading={fetcher.state !== 'idle'}
-            onClick={() => {
-              const formData = new FormData();
-              formData.append('_actionType', 'delete');
-              fetcher.submit(formData, {
-                method: 'post',
-              });
+      {!fetcher.data?.deleteSuccess ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
             }}
           >
-            Yes, I&apos;m sure
-          </Button>
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            The selected resource scan history will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+
+          {fetcher.data?.message ? (
+            <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
+          ) : null}
+
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              size="xs"
+              color="danger"
+              disabled={fetcher.state !== 'idle'}
+              loading={fetcher.state !== 'idle'}
+              onClick={() => {
+                const formData = new FormData();
+                formData.append('actionType', ActionEnumType.DELETE);
+                formData.append('severityOrStatus', data.severityOrStatus);
+                formData.append('selectedResource', data.selectedResource);
+                formData.append('duration', data.duration.toString());
+                fetcher.submit(formData, {
+                  method: 'post',
+                });
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <DeleteSuccess />
+      )}
     </Modal>
   );
 };
@@ -113,19 +231,24 @@ const UploadVulnerabilityDatabase = () => {
         className="mt-2 min-[200px] max-w-xs"
         label="Please select a file to upload"
         sizing="sm"
-        name="databaseFile"
+        name="vulnerabilityDatabase"
+        onChoosen={(e) => e}
       />
-      <div className="w-fit">
+
+      <div className="w-fit mt-4 flex gap-x-4 items-center">
         <Button
           color="primary"
           size="sm"
           type="button"
-          className="mt-4 w-[108px]"
+          className="w-[108px]"
           loading={state !== 'idle'}
           disabled={state !== 'idle'}
         >
           Upload
         </Button>
+        {!fetcher.data?.uploadSuccess && fetcher.data?.message ? (
+          <p className="text-red-500 text-sm">{fetcher.data?.message}</p>
+        ) : null}
       </div>
     </>
   );
@@ -134,7 +257,7 @@ const ScanHistoryAndDbManagement = () => {
   const [severityOrStatus, setSeverityOrResources] = useState('severity');
   const [selectedResource, setSelectedResource] = useState('vulnerability');
   const [selectedSeveritiesOrStatuses, setSelectedSeveritiesOrStatuses] = useState('all');
-  const [duration, setDuration] = useState('Last 1 Day');
+  const [duration, setDuration] = useState(1);
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -150,6 +273,11 @@ const ScanHistoryAndDbManagement = () => {
       <DeleteConfirmationModal
         showDialog={showDeleteDialog}
         setShowDialog={setShowDeleteDialog}
+        data={{
+          duration,
+          severityOrStatus: selectedSeveritiesOrStatuses,
+          selectedResource,
+        }}
       />
       <div>
         <div className="mt-2 flex gap-x-2 items-center">
@@ -198,7 +326,7 @@ const ScanHistoryAndDbManagement = () => {
               {severityOrStatus === 'severity' ? ' Severity ' : ' Status '}
             </h6>
             <Radio
-              name="resource"
+              name="severityOrStatus"
               value={selectedSeveritiesOrStatuses}
               options={(getStatusesOrSeverityByResource(selectedResource) ?? []).map(
                 (type) => {
@@ -216,6 +344,7 @@ const ScanHistoryAndDbManagement = () => {
             </h6>
             <Listbox
               sizing="sm"
+              name="duration"
               placeholder="Choose Duration"
               multiple={false}
               value={duration}
@@ -224,7 +353,7 @@ const ScanHistoryAndDbManagement = () => {
               }}
               getDisplayValue={(item) => {
                 for (const [key, value] of Object.entries(DURATION)) {
-                  if (value.toString() == item) {
+                  if (value == item) {
                     return key;
                   }
                 }
@@ -258,4 +387,5 @@ const ScanHistoryAndDbManagement = () => {
 
 export const module = {
   element: <ScanHistoryAndDbManagement />,
+  action,
 };

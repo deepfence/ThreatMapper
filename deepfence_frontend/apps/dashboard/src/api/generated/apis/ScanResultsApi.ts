@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
+  ModelBulkDeleteScansRequest,
   ModelDownloadScanResultsResponse,
   ModelNodesInScanResultRequest,
   ModelScanResultBasicNode,
@@ -28,6 +29,8 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
+    ModelBulkDeleteScansRequestFromJSON,
+    ModelBulkDeleteScansRequestToJSON,
     ModelDownloadScanResultsResponseFromJSON,
     ModelDownloadScanResultsResponseToJSON,
     ModelNodesInScanResultRequestFromJSON,
@@ -39,6 +42,10 @@ import {
     ModelScanResultsMaskRequestFromJSON,
     ModelScanResultsMaskRequestToJSON,
 } from '../models';
+
+export interface BulkDeleteScansRequest {
+    modelBulkDeleteScansRequest?: ModelBulkDeleteScansRequest;
+}
 
 export interface DeleteScanResultRequest {
     modelScanResultsActionRequest?: ModelScanResultsActionRequest;
@@ -77,6 +84,22 @@ export interface UnmaskScanResultRequest {
  * @interface ScanResultsApiInterface
  */
 export interface ScanResultsApiInterface {
+    /**
+     * Bulk delete scans along with their results for a particular scan type
+     * @summary Bulk Delete Scans
+     * @param {ModelBulkDeleteScansRequest} [modelBulkDeleteScansRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ScanResultsApiInterface
+     */
+    bulkDeleteScansRaw(requestParameters: BulkDeleteScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Bulk delete scans along with their results for a particular scan type
+     * Bulk Delete Scans
+     */
+    bulkDeleteScans(requestParameters: BulkDeleteScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
     /**
      * Delete selected scan results
      * @summary Delete selected scan results
@@ -197,6 +220,44 @@ export interface ScanResultsApiInterface {
  * 
  */
 export class ScanResultsApi extends runtime.BaseAPI implements ScanResultsApiInterface {
+
+    /**
+     * Bulk delete scans along with their results for a particular scan type
+     * Bulk Delete Scans
+     */
+    async bulkDeleteScansRaw(requestParameters: BulkDeleteScansRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scans/bulk/delete`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelBulkDeleteScansRequestToJSON(requestParameters.modelBulkDeleteScansRequest),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Bulk delete scans along with their results for a particular scan type
+     * Bulk Delete Scans
+     */
+    async bulkDeleteScans(requestParameters: BulkDeleteScansRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.bulkDeleteScansRaw(requestParameters, initOverrides);
+    }
 
     /**
      * Delete selected scan results
