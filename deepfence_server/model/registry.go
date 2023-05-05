@@ -194,7 +194,7 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 		m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`
 	_, err = tx.Run(query, map[string]interface{}{"node_id": registryID, "registry_type": ra.RegistryType, "pgId": cr.ID})
 
-	return err
+	return tx.Commit()
 }
 
 func (ru *RegistryUpdateReq) UpdateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r int32) error {

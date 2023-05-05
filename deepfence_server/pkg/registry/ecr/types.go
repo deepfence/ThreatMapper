@@ -10,8 +10,8 @@ type RegistryECR struct {
 }
 
 type NonSecret struct {
-	UseIAMRole           bool   `json:"use_iam_role"`
-	IsPublic             bool   `json:"is_public"`
+	UseIAMRole           string `json:"use_iam_role"`
+	IsPublic             string `json:"is_public"`
 	AWSAccessKeyID       string `json:"aws_access_key_id"`
 	AWSRegionName        string `json:"aws_region_name"`
 	AWSAccountID         string `json:"aws_account_id"` // legacy: registry_id

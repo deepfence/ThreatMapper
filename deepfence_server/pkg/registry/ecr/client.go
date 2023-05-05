@@ -2,6 +2,7 @@ package ecr
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -9,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
 func listImages(awsAccessKey, awsSecretKey, awsRegion string) ([]model.ContainerImage, error) {
@@ -34,6 +34,7 @@ func listImages(awsAccessKey, awsSecretKey, awsRegion string) ([]model.Container
 	// Create slice of ContainerImage structs
 	var containerImages []model.ContainerImage
 
+	var imageResult []*ecr.ListImagesOutput
 	// List images for each repository
 	for _, repo := range result.Repositories {
 		// Set up input parameters
@@ -46,18 +47,23 @@ func listImages(awsAccessKey, awsSecretKey, awsRegion string) ([]model.Container
 		if err != nil {
 			return nil, fmt.Errorf("error listing images for repository %s: %v", *repo.RepositoryName, err)
 		}
-
+		imageResult = append(imageResult, result)
 		// Add containers to ContainerImage struct
 		for _, image := range result.ImageIds {
-			var containerImage model.ContainerImage
-			containerImage.Name = *repo.RepositoryName
-			containerImage.Tag = *image.ImageTag
-			containerImage.DockerImageID = *image.ImageDigest
-			containerImages = append(containerImages, containerImage)
+			if image.ImageTag != nil {
+				var containerImage model.ContainerImage
+				containerImage.Name = *repo.RepositoryUri
+				containerImage.ID = model.DigestToID(*image.ImageDigest)
+				containerImage.Tag = *image.ImageTag
+				containerImage.DockerImageID = *image.ImageDigest
+				containerImage.Metadata = model.Metadata{
+					"digest":       *image.ImageDigest,
+					"last_updated": time.Now().Unix(),
+				}
+				containerImages = append(containerImages, containerImage)
+			}
 		}
 	}
-
-	log.Info().Msgf("ecr containerImages: %+v", containerImages)
 
 	return containerImages, nil
 }
@@ -106,9 +112,14 @@ func listImagesCrossAccount(awsRegion, awsAccountID, targetAccountRoleARN string
 		// Add containers to ContainerImage struct
 		for _, image := range result.ImageIds {
 			var containerImage model.ContainerImage
-			containerImage.Name = *repo.RepositoryName
+			containerImage.Name = *repo.RepositoryUri
 			containerImage.Tag = *image.ImageTag
+			containerImage.ID = model.DigestToID(*image.ImageDigest)
 			containerImage.DockerImageID = *image.ImageDigest
+			containerImage.Metadata = model.Metadata{
+				"digest":       *image.ImageDigest,
+				"last_updated": time.Now().Unix(),
+			}
 			containerImages = append(containerImages, containerImage)
 		}
 	}

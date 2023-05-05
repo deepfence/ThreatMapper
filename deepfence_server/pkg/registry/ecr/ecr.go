@@ -41,6 +41,10 @@ func (e *RegistryECR) DecryptExtras(aes encryption.AES) error {
 }
 
 func (e *RegistryECR) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
+	// based on iamrole we need to fetch images
+	if e.NonSecret.UseIAMRole == "true" {
+		return listImagesCrossAccount(e.NonSecret.AWSRegionName, e.NonSecret.AWSAccountID, e.NonSecret.TargetAccountRoleARN)
+	}
 	return listImages(e.NonSecret.AWSAccessKeyID, e.Secret.AWSSecretAccessKey, e.NonSecret.AWSRegionName)
 }
 
@@ -57,7 +61,17 @@ func (e *RegistryECR) GetExtras() map[string]interface{} {
 }
 
 func (e *RegistryECR) GetNamespace() string {
-	return ""
+	if e.NonSecret.IsPublic == "true" {
+		if e.NonSecret.UseIAMRole == "true" {
+			return e.NonSecret.AWSAccountID
+		}
+		return e.NonSecret.AWSAccessKeyID
+	} else {
+		if e.NonSecret.UseIAMRole == "true" {
+			return e.NonSecret.AWSRegionName + "_" + e.NonSecret.AWSAccountID
+		}
+	}
+	return e.NonSecret.AWSRegionName + "_" + e.NonSecret.AWSAccessKeyID
 }
 
 func (e *RegistryECR) GetRegistryType() string {
