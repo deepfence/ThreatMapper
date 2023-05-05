@@ -397,7 +397,7 @@ function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
               onSelect={(e) => {
                 e.preventDefault();
                 setScanOptions({
-                  showAdvancedOptions: false,
+                  showAdvancedOptions: nodeIds.length === 1,
                   scanType: ScanTypeEnum.VulnerabilityScan,
                   data: {
                     nodeIds,
@@ -415,7 +415,7 @@ function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
               onSelect={(e) => {
                 e.preventDefault();
                 setScanOptions({
-                  showAdvancedOptions: false,
+                  showAdvancedOptions: nodeIds.length === 1,
                   scanType: ScanTypeEnum.SecretScan,
                   data: {
                     nodeIds,
@@ -433,7 +433,7 @@ function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
               onSelect={(e) => {
                 e.preventDefault();
                 setScanOptions({
-                  showAdvancedOptions: false,
+                  showAdvancedOptions: nodeIds.length === 1,
                   scanType: ScanTypeEnum.MalwareScan,
                   data: {
                     nodeIds,
@@ -451,7 +451,7 @@ function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
               onSelect={(e) => {
                 e.preventDefault();
                 setScanOptions({
-                  showAdvancedOptions: false,
+                  showAdvancedOptions: nodeIds.length === 1,
                   scanType: ScanTypeEnum.ComplianceScan,
                   data: {
                     nodeIds,

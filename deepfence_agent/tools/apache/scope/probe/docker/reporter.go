@@ -102,18 +102,19 @@ func (r *Reporter) containerTopology(localAddrs []net.IP) report.Topology {
 				Add(ContainerIPsWithScopes, report.MakeStringSet(hostIPsWithScopes...))
 		}
 
-		var networkInfo func(prefix string) (report.Sets, bool)
-		networkInfo = func(prefix string) (ips report.Sets, isInHostNamespace bool) {
+		var networkInfo func(prefix string) (*report.Sets, bool)
+		emptySets := report.MakeSets()
+		networkInfo = func(prefix string) (ips *report.Sets, isInHostNamespace bool) {
 			container, ok := r.registry.GetContainerByPrefix(prefix)
 			if !ok {
-				return report.MakeSets(), false
+				return &emptySets, false
 			}
 
 			networkMode, ok := container.NetworkMode()
 			if ok && strings.HasPrefix(networkMode, "container:") {
 				return networkInfo(networkMode[10:])
 			} else if ok && networkMode == "host" {
-				return hostNetworkInfo, true
+				return &hostNetworkInfo, true
 			}
 
 			return container.NetworkInfo(localAddrs), false
@@ -185,11 +186,11 @@ func (r *Reporter) containerImageTopology() report.Topology {
 		metadata.UserDefinedTags = tags
 		dockerImageLabels, err := json.Marshal(image.Labels)
 		if err == nil {
-			metadata.DockerImageLabels = string(dockerImageLabels)
+			metadata.DockerLabels = string(dockerImageLabels)
 		}
 		result.AddNode(report.TopologyNode{
 			Metadata: metadata,
-			Parents: report.Parent{
+			Parents: &report.Parent{
 				KubernetesCluster: r.kubernetesClusterId,
 				Host:              r.hostID,
 			},
@@ -217,9 +218,11 @@ func (r *Reporter) overlayTopology() report.Topology {
 		HostName:  r.hostID,
 	}
 	t := report.MakeTopology()
+	sets := report.MakeSets()
+	sets = sets.Add(report.HostLocalNetworks, report.MakeStringSet(subnets...))
 	t.AddNode(report.TopologyNode{
 		Metadata: metadata,
-		Sets:     report.MakeSets().Add(report.HostLocalNetworks, report.MakeStringSet(subnets...)),
+		Sets:     &sets,
 	})
 	return t
 }

@@ -9,7 +9,7 @@ import {
 
 export const ChangePassword = () => {
   const fetcher = useFetcher<ActionReturnType>();
-  const { data } = fetcher;
+  const { data, state } = fetcher;
 
   if (data?.success) return <SuccessModalContent text="Password changed successfully!" />;
   return (
@@ -59,7 +59,14 @@ export const ChangePassword = () => {
         {!data?.success && data?.message && <span>{data.message}</span>}
       </div>
 
-      <Button color="primary" size="sm" type="submit" className="mt-1 w-full">
+      <Button
+        color="primary"
+        size="sm"
+        type="submit"
+        className="mt-1 w-full"
+        disabled={state !== 'idle'}
+        loading={state !== 'idle'}
+      >
         Change Password
       </Button>
     </fetcher.Form>

@@ -248,9 +248,9 @@ var topologyNames = []string{
 
 type TopologyNode struct {
 	Metadata  Metadata `json:"metadata,omitempty"`
-	Adjacency IDList   `json:"adjacency,omitempty"`
-	Parents   Parent   `json:"parents,omitempty"`
-	Sets      Sets     `json:"sets,omitempty"`
+	Adjacency *IDList  `json:"adjacency,omitempty"`
+	Parents   *Parent  `json:"parents,omitempty"`
+	Sets      *Sets    `json:"sets,omitempty"`
 }
 
 func (t TopologyNode) Merge(o TopologyNode) {
@@ -342,7 +342,7 @@ func (t TopologyAdjacency) UnsafeUnMerge(o TopologyAdjacency) {
 
 func (t TopologyAdjacency) AddAdjacency(nodeId string, id string) {
 	if _, ok := t[nodeId]; !ok {
-		t[nodeId] = MakeIDList(id)
+		t[nodeId] = *MakeIDList(id)
 	} else {
 		t[nodeId] = t[nodeId].Add(id)
 	}
@@ -529,6 +529,45 @@ func MakeReport() Report {
 		DNS:               DNSRecords{},
 		Window:            0,
 		ID:                fmt.Sprintf("%d", rand.Int63()),
+	}
+}
+
+func (r *Report) Clear() {
+	for k := range r.Endpoint {
+		delete(r.Endpoint, k)
+	}
+	for k := range r.Process {
+		delete(r.Process, k)
+	}
+	for k := range r.Container {
+		delete(r.Container, k)
+	}
+	for k := range r.CloudProvider {
+		delete(r.CloudProvider, k)
+	}
+	for k := range r.CloudRegion {
+		delete(r.CloudRegion, k)
+	}
+	for k := range r.KubernetesCluster {
+		delete(r.KubernetesCluster, k)
+	}
+	for k := range r.Pod {
+		delete(r.Pod, k)
+	}
+	for k := range r.Service {
+		delete(r.Service, k)
+	}
+	for k := range r.Namespace {
+		delete(r.Namespace, k)
+	}
+	for k := range r.ContainerImage {
+		delete(r.ContainerImage, k)
+	}
+	for k := range r.Host {
+		delete(r.Host, k)
+	}
+	for k := range r.Overlay {
+		delete(r.Overlay, k)
 	}
 }
 

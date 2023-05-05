@@ -6,7 +6,7 @@ import { G6Graph, G6GraphOptionsWithoutContainer } from '@/features/topology/typ
 import { GraphPalette } from '@/features/topology/utils/graph-styles';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 
-const toolbar = new G6.ToolBar({
+export const toolbar = new G6.ToolBar({
   className: 'absolute bottom-2.5 left-2.5',
   getContent: () => `<div>
     <ul class="list-none m-0 p-2.5 pt-0 rounded-md drop-shadow-md shadow-gray-500 border-solid border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
@@ -86,7 +86,10 @@ const tooltip = new G6.Tooltip({
   },
 });
 
-const getDefaultOptions = (theme: Mode): G6GraphOptionsWithoutContainer => {
+const getDefaultOptions = (
+  theme: Mode,
+  defaultNodeType: string,
+): G6GraphOptionsWithoutContainer => {
   return {
     fitView: true,
     maxZoom: 4,
@@ -102,7 +105,7 @@ const getDefaultOptions = (theme: Mode): G6GraphOptionsWithoutContainer => {
       preventOverlap: true,
     },
     defaultNode: {
-      type: 'threat-graph-node',
+      type: defaultNodeType,
       labelCfg: {
         style: {
           fill:
@@ -145,6 +148,7 @@ const getDefaultOptions = (theme: Mode): G6GraphOptionsWithoutContainer => {
 
 export const useG6raph = (
   graphContainer: HTMLElement | null,
+  defaultNodeType: string,
   options: G6GraphOptionsWithoutContainer = {},
 ) => {
   const [graph, setGraph] = useState<G6Graph | null>(null);
@@ -163,7 +167,7 @@ export const useG6raph = (
     const height = graphContainer.offsetHeight;
     const g6Graph = new G6.Graph({
       plugins: [...plugins, toolbar, tooltip],
-      ...getDefaultOptions(mode),
+      ...getDefaultOptions(mode, defaultNodeType),
       ...options,
       container: graphContainer,
       width,

@@ -11,6 +11,7 @@ import { getApiTokenApiLoader } from '@/features/common/data-component/getApiTok
 import { getUserApiLoader } from '@/features/common/data-component/getUserApiLoader';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
+import { searchCloudAccountsApiLoader } from '@/features/common/data-component/searchCloudAccountsApiLoader';
 import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { searchClustersApiLoader } from '@/features/common/data-component/searchClustersApiLoader';
 import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
@@ -70,11 +71,14 @@ import { module as connectorInstructions } from '@/features/settings/pages/Conne
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
 import { module as emailConfiguration } from '@/features/settings/pages/EmailConfiguration';
 import { module as globalSettings } from '@/features/settings/pages/GlobalSettings';
+import { module as scanHistoryAndDbManagement } from '@/features/settings/pages/ScanHistoryAndDbManagement';
+import { module as scheduledJobs } from '@/features/settings/pages/ScheduledJobs';
 import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
 import { module as threatGraphLoader } from '@/features/threat-graph/data-components/threatGraphLoader';
+import { module as vulnerabilityTthreatGraphLoader } from '@/features/threat-graph/data-components/vulnerabilityThreatGraphLoader';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as nodeDetailsCloudService } from '@/features/topology/data-components/node-details/CloudService';
 import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
@@ -487,6 +491,10 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Settings' },
         children: [
           {
+            index: true,
+            loader: () => redirect('/settings/user-management', 302),
+          },
+          {
             path: 'diagnostic-logs',
             ...diagnosticLogs,
             meta: { title: 'Diagnostic Logs' },
@@ -495,6 +503,16 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'user-management',
             ...userManagement,
             meta: { title: 'User Management' },
+          },
+          {
+            path: 'scan-history-and-db-management',
+            ...scanHistoryAndDbManagement,
+            meta: { title: 'Scan History & Database Management' },
+          },
+          {
+            path: 'scheduled-jobs',
+            ...scheduledJobs,
+            meta: { title: 'Scheduled Jobs' },
           },
           {
             path: 'user-audit-logs',
@@ -573,6 +591,14 @@ export const privateRoutes: CustomRouteObject[] = [
         },
       },
       {
+        path: 'search/cloud-accounts/:nodeType',
+        loader: searchCloudAccountsApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
+      },
+      {
         path: 'scan/vulnerability',
         action: scanVulnerabilityApiAction,
       },
@@ -628,6 +654,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'threat-graph',
         ...threatGraphLoader,
+      },
+      {
+        path: 'threat-graph-vulnerability',
+        ...vulnerabilityTthreatGraphLoader,
       },
       {
         path: 'auth/logout',

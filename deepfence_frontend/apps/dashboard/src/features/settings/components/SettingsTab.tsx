@@ -1,4 +1,6 @@
+import { FaHistory } from 'react-icons/fa';
 import {
+  HiClock,
   HiCode,
   HiDocumentSearch,
   HiGlobeAlt,
@@ -13,12 +15,14 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 type RouteProps =
   | 'diagnostic-logs'
   | 'user-management'
+  | 'scan-history-and-db-management'
   | 'user-audit-logs'
   | 'email-configuration'
   | 'schedule-jobs'
   | 'scan-type-data-upload'
   | 'connection-instructions'
-  | 'global-settings';
+  | 'global-settings'
+  | 'scheduled-jobs';
 type SettingsTabProps = {
   children: React.ReactNode;
   value: RouteProps;
@@ -32,6 +36,16 @@ export const settingsTabs: Array<{
     label: 'User Management',
     value: 'user-management',
     icon: <HiUsers />,
+  },
+  {
+    label: 'Scan History & Database Management',
+    value: 'scan-history-and-db-management',
+    icon: <FaHistory />,
+  },
+  {
+    label: 'Scheduled Jobs',
+    value: 'scheduled-jobs',
+    icon: <HiClock />,
   },
   {
     label: 'Diagnostic Logs',

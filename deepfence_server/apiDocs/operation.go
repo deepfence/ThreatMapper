@@ -509,6 +509,11 @@ func (d *OpenApiDocs) AddScansOperations() {
 		"Notify Scans Results", "Notify scan results in connected integration channels",
 		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(ScanResultsActionRequest), nil)
 
+	// Bulk Delete Scans
+	d.AddOperation("bulkDeleteScans", http.MethodPost, "/deepfence/scans/bulk/delete",
+		"Bulk Delete Scans", "Bulk delete scans along with their results for a particular scan type",
+		http.StatusOK, []string{tagScanResults}, bearerToken, new(BulkDeleteScansRequest), nil)
+
 	// Scan ID Actions
 	d.AddOperation("downloadScanResults", http.MethodGet, "/deepfence/scan/{scan_type}/{scan_id}/download",
 		"Download Scans Results", "Download scan results",
@@ -629,4 +634,17 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 	d.AddOperation("getUserActivityLogs", http.MethodGet, "/deepfence/settings/user-activity-log",
 		"Get activity logs", "Get activity logs for all users",
 		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]postgresqldb.GetAuditLogsRow))
+
+	// Scheduled tasks
+	d.AddOperation("getScheduledTasks", http.MethodGet, "/deepfence/scheduled-task",
+		"Get scheduled tasks", "Get scheduled tasks",
+		http.StatusOK, []string{tagSettings}, bearerToken, nil, new([]postgresqldb.Scheduler))
+	d.AddOperation("updateScheduledTask", http.MethodPatch, "/deepfence/scheduled-task/{id}",
+		"Update scheduled task", "Update scheduled task",
+		http.StatusNoContent, []string{tagSettings}, bearerToken, new(UpdateScheduledTaskRequest), nil)
+
+	// Database upload
+	d.AddOperation("uploadVulnerabilityDatabase", http.MethodPut, "/deepfence/database/vulnerability",
+		"Upload Vulnerability Database", "Upload Vulnerability Database for use in vulnerability scans",
+		http.StatusOK, []string{tagSettings}, bearerToken, new(DBUploadRequest), new(MessageResponse))
 }

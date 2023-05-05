@@ -395,7 +395,7 @@ const InviteUserModal = ({
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const fetcher = useFetcher<ActionReturnType>();
-  const { data } = fetcher;
+  const { data, state } = fetcher;
 
   return (
     <Modal

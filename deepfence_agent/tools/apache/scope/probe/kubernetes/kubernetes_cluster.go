@@ -33,7 +33,7 @@ func (k *kubernetesCluster) GetNode() report.TopologyNode {
 	}
 	return report.TopologyNode{
 		Metadata: metadata,
-		Parents: report.Parent{
+		Parents: &report.Parent{
 			CloudProvider: k.cloudProvider,
 		},
 	}

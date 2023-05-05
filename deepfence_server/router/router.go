@@ -61,6 +61,15 @@ const (
 // 	})
 // }
 
+var (
+	enable_debug bool
+)
+
+func init() {
+	enable_debug_str := os.Getenv("DF_ENABLE_DEBUG")
+	enable_debug = enable_debug_str != ""
+}
+
 func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDocs bool,
 	ingestC chan *kgo.Record, taskPublisher *kafka.Publisher, openApiDocs *apiDocs.OpenApiDocs, orchestrator string) error {
 	// JWT
@@ -105,7 +114,9 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 
 	r.Use(middleware.Compress(5))
 
-	r.Mount("/debug", middleware.Profiler())
+	if enable_debug {
+		r.Mount("/debug", middleware.Profiler())
+	}
 
 	r.Route("/deepfence", func(r chi.Router) {
 		// r.Use(telemetryInjector)
@@ -331,6 +342,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/notify", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ScanResultNotifyHandler))
 			})
 
+			r.Post("/scans/bulk/delete", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.BulkDeleteScans))
+
 			r.Route("/scan/{scan_type}/{scan_id}", func(r chi.Router) {
 				r.Get("/download", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ScanResultDownloadHandler))
 				r.Delete("/", dfHandler.AuthHandler(ResourceScanReport, PermissionDelete, dfHandler.ScanDeleteHandler))
@@ -380,6 +393,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Delete("/{report_id}", dfHandler.AuthHandler(ResourceReport, PermissionDelete, dfHandler.DeleteReport))
 			})
 
+			r.Route("/scheduled-task", func(r chi.Router) {
+				r.Get("/", dfHandler.AuthHandler(ResourceAllUsers, PermissionRead, dfHandler.GetScheduledTask))
+				r.Patch("/{id}", dfHandler.AuthHandler(ResourceAllUsers, PermissionWrite, dfHandler.UpdateScheduledTask))
+			})
+
 			// Integration
 			r.Route("/integration", func(r chi.Router) {
 				r.Post("/", dfHandler.AuthHandler(ResourceIntegration, PermissionWrite, dfHandler.AddIntegration))
@@ -388,6 +406,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Delete("/", dfHandler.AuthHandler(ResourceIntegration, PermissionDelete, dfHandler.DeleteIntegration))
 					r.Put("/", dfHandler.AuthHandler(ResourceIntegration, PermissionUpdate, doNothingHandler))
 				})
+			})
+
+			// vulnerability db management
+			r.Route("/database", func(r chi.Router) {
+				r.Put("/vulnerability", dfHandler.AuthHandler(ResourceSettings, PermissionWrite, dfHandler.UploadVulnerabilityDB))
 			})
 
 		})

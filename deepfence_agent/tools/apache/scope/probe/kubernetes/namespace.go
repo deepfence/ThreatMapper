@@ -26,7 +26,7 @@ func NewNamespace(ns *apiv1.Namespace) NamespaceResource {
 func (ns *namespace) GetNode() report.TopologyNode {
 	return report.TopologyNode{
 		Metadata: ns.MetaNode(kubernetesClusterId+"-"+ns.Name(), report.Namespace),
-		Parents: report.Parent{
+		Parents: &report.Parent{
 			CloudProvider:     cloudProviderNodeId,
 			KubernetesCluster: kubernetesClusterId,
 		},

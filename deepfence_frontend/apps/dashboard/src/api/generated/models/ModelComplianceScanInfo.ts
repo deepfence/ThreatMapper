@@ -69,6 +69,12 @@ export interface ModelComplianceScanInfo {
     status: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelComplianceScanInfo
+     */
+    status_message: string;
+    /**
+     * 
      * @type {number}
      * @memberof ModelComplianceScanInfo
      */
@@ -88,6 +94,7 @@ export function instanceOfModelComplianceScanInfo(value: object): boolean {
     isInstance = isInstance && "scan_id" in value;
     isInstance = isInstance && "severity_counts" in value;
     isInstance = isInstance && "status" in value;
+    isInstance = isInstance && "status_message" in value;
     isInstance = isInstance && "updated_at" in value;
 
     return isInstance;
@@ -111,6 +118,7 @@ export function ModelComplianceScanInfoFromJSONTyped(json: any, ignoreDiscrimina
         'scan_id': json['scan_id'],
         'severity_counts': json['severity_counts'],
         'status': json['status'],
+        'status_message': json['status_message'],
         'updated_at': json['updated_at'],
     };
 }
@@ -132,6 +140,7 @@ export function ModelComplianceScanInfoToJSON(value?: ModelComplianceScanInfo | 
         'scan_id': value.scan_id,
         'severity_counts': value.severity_counts,
         'status': value.status,
+        'status_message': value.status_message,
         'updated_at': value.updated_at,
     };
 }

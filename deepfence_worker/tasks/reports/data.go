@@ -4,15 +4,15 @@ import (
 	"context"
 	"math"
 	"sort"
-	"strconv"
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	rptScans "github.com/deepfence/ThreatMapper/deepfence_server/reporters/scan"
 	rptSearch "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
+	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	sdkUtils "github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -29,7 +29,7 @@ type Info[T any] struct {
 	Title          string
 	StartTime      string
 	EndTime        string
-	AppliedFilters utils.ReportFilters
+	AppliedFilters sdkUtils.ReportFilters
 	NodeWiseData   NodeWiseData[T]
 }
 
@@ -43,7 +43,7 @@ type NodeWiseData[T any] struct {
 	ScanData      map[string]ScanData[T]
 }
 
-func searchScansFilter(params utils.ReportParams) rptSearch.SearchScanReq {
+func searchScansFilter(params sdkUtils.ReportParams) rptSearch.SearchScanReq {
 	filters := rptSearch.SearchScanReq{}
 
 	filters.NodeFilter = rptSearch.SearchFilter{
@@ -76,7 +76,7 @@ func levelFilter(key string, value []string) reporters.FieldsFilters {
 		return reporters.FieldsFilters{
 			MatchFilter: reporters.MatchFilter{
 				FieldsValues: map[string][]interface{}{
-					key: utils.StringArrayToInterfaceArray(value),
+					key: sdkUtils.StringArrayToInterfaceArray(value),
 				},
 			},
 		}
@@ -84,22 +84,7 @@ func levelFilter(key string, value []string) reporters.FieldsFilters {
 	return reporters.FieldsFilters{}
 }
 
-func timeRangeFilter(key string, start, end time.Time) []reporters.CompareFilter {
-	return []reporters.CompareFilter{
-		{
-			FieldName:   key,
-			FieldValue:  strconv.FormatInt(start.UnixMilli(), 10),
-			GreaterThan: true,
-		},
-		{
-			FieldName:   key,
-			FieldValue:  strconv.FormatInt(end.UnixMilli(), 10),
-			GreaterThan: false,
-		},
-	}
-}
-
-func getVulnerabilityData(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*Info[model.Vulnerability], error) {
+func getVulnerabilityData(ctx context.Context, session neo4j.Session, params sdkUtils.ReportParams) (*Info[model.Vulnerability], error) {
 
 	searchFilter := searchScansFilter(params)
 
@@ -113,12 +98,12 @@ func getVulnerabilityData(ctx context.Context, session neo4j.Session, params uti
 		start := end.AddDate(0, 0, int(math.Copysign(float64(params.Duration), -1)))
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
-				CompareFilters: timeRangeFilter("updated_at", start, end),
+				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
 			},
 		}
 	}
 
-	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, utils.NEO4J_VULNERABILITY_SCAN)
+	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4J_VULNERABILITY_SCAN)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +119,7 @@ func getVulnerabilityData(ctx context.Context, session neo4j.Session, params uti
 
 	for _, s := range scans {
 		result, common, err := rptScans.GetScanResults[model.Vulnerability](
-			ctx, utils.NEO4J_VULNERABILITY_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
+			ctx, sdkUtils.NEO4J_VULNERABILITY_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
 			continue
@@ -161,7 +146,7 @@ func getVulnerabilityData(ctx context.Context, session neo4j.Session, params uti
 	return &data, nil
 }
 
-func getSecretData(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*Info[model.Secret], error) {
+func getSecretData(ctx context.Context, session neo4j.Session, params sdkUtils.ReportParams) (*Info[model.Secret], error) {
 
 	searchFilter := searchScansFilter(params)
 
@@ -175,11 +160,11 @@ func getSecretData(ctx context.Context, session neo4j.Session, params utils.Repo
 		start = end.AddDate(0, 0, int(math.Copysign(float64(params.Duration), -1)))
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
-				CompareFilters: timeRangeFilter("updated_at", start, end),
+				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
 			},
 		}
 	}
-	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, utils.NEO4J_SECRET_SCAN)
+	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4J_SECRET_SCAN)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +180,7 @@ func getSecretData(ctx context.Context, session neo4j.Session, params utils.Repo
 
 	for _, s := range scans {
 		result, common, err := rptScans.GetScanResults[model.Secret](
-			ctx, utils.NEO4J_SECRET_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
+			ctx, sdkUtils.NEO4J_SECRET_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
 			continue
@@ -222,7 +207,7 @@ func getSecretData(ctx context.Context, session neo4j.Session, params utils.Repo
 	return &data, nil
 }
 
-func getMalwareData(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*Info[model.Malware], error) {
+func getMalwareData(ctx context.Context, session neo4j.Session, params sdkUtils.ReportParams) (*Info[model.Malware], error) {
 
 	searchFilter := searchScansFilter(params)
 
@@ -236,11 +221,11 @@ func getMalwareData(ctx context.Context, session neo4j.Session, params utils.Rep
 		start = end.AddDate(0, 0, int(math.Copysign(float64(params.Duration), -1)))
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
-				CompareFilters: timeRangeFilter("updated_at", start, end),
+				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
 			},
 		}
 	}
-	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, utils.NEO4J_MALWARE_SCAN)
+	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4J_MALWARE_SCAN)
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +241,7 @@ func getMalwareData(ctx context.Context, session neo4j.Session, params utils.Rep
 
 	for _, s := range scans {
 		result, common, err := rptScans.GetScanResults[model.Malware](
-			ctx, utils.NEO4J_MALWARE_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
+			ctx, sdkUtils.NEO4J_MALWARE_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
 			continue
@@ -283,7 +268,7 @@ func getMalwareData(ctx context.Context, session neo4j.Session, params utils.Rep
 	return &data, nil
 }
 
-func getComplianceData(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*Info[model.Compliance], error) {
+func getComplianceData(ctx context.Context, session neo4j.Session, params sdkUtils.ReportParams) (*Info[model.Compliance], error) {
 
 	searchFilter := searchScansFilter(params)
 
@@ -297,11 +282,11 @@ func getComplianceData(ctx context.Context, session neo4j.Session, params utils.
 		start = end.AddDate(0, 0, int(math.Copysign(float64(params.Duration), -1)))
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
-				CompareFilters: timeRangeFilter("updated_at", start, end),
+				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
 			},
 		}
 	}
-	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, utils.NEO4J_COMPLIANCE_SCAN)
+	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4J_COMPLIANCE_SCAN)
 	if err != nil {
 		return nil, err
 	}
@@ -317,7 +302,7 @@ func getComplianceData(ctx context.Context, session neo4j.Session, params utils.
 
 	for _, s := range scans {
 		result, common, err := rptScans.GetScanResults[model.Compliance](
-			ctx, utils.NEO4J_COMPLIANCE_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
+			ctx, sdkUtils.NEO4J_COMPLIANCE_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
 			continue
@@ -344,7 +329,7 @@ func getComplianceData(ctx context.Context, session neo4j.Session, params utils.
 	return &data, nil
 }
 
-func getCloudComplianceData(ctx context.Context, session neo4j.Session, params utils.ReportParams) (*Info[model.CloudCompliance], error) {
+func getCloudComplianceData(ctx context.Context, session neo4j.Session, params sdkUtils.ReportParams) (*Info[model.CloudCompliance], error) {
 
 	searchFilter := searchScansFilter(params)
 
@@ -358,12 +343,12 @@ func getCloudComplianceData(ctx context.Context, session neo4j.Session, params u
 		start = end.AddDate(0, 0, int(math.Copysign(float64(params.Duration), -1)))
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
-				CompareFilters: timeRangeFilter("updated_at", start, end),
+				CompareFilters: utils.TimeRangeFilter("updated_at", start, end),
 			},
 		}
 	}
 
-	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, utils.NEO4J_CLOUD_COMPLIANCE_SCAN)
+	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4J_CLOUD_COMPLIANCE_SCAN)
 	if err != nil {
 		return nil, err
 	}
@@ -379,7 +364,7 @@ func getCloudComplianceData(ctx context.Context, session neo4j.Session, params u
 
 	for _, s := range scans {
 		result, common, err := rptScans.GetScanResults[model.CloudCompliance](
-			ctx, utils.NEO4J_CLOUD_COMPLIANCE_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
+			ctx, sdkUtils.NEO4J_CLOUD_COMPLIANCE_SCAN, s.ScanId, severityFilter, model.FetchWindow{})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to get results for %s", s.ScanId)
 			continue

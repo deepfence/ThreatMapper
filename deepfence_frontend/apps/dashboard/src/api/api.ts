@@ -88,6 +88,7 @@ export function getVulnerabilityApiClient() {
     listVulnerabilityScans:
       vulnerabilityApi.listVulnerabilityScans.bind(vulnerabilityApi),
     getSbom: vulnerabilityApi.getSBOM.bind(vulnerabilityApi),
+    downloadSBOM: vulnerabilityApi.downloadSBOM.bind(vulnerabilityApi),
   };
 }
 
@@ -209,6 +210,7 @@ export function getScanResultsApiClient() {
     unmaskScanResult: scanResultsApi.unmaskScanResult.bind(scanResultsApi),
     getAllNodesInScanResults:
       scanResultsApi.getAllNodesInScanResults.bind(scanResultsApi),
+    bulkDeleteScansHistory: scanResultsApi.bulkDeleteScans.bind(scanResultsApi),
   };
 }
 
@@ -249,6 +251,8 @@ export function getThreatGraphApiClient() {
 
   return {
     getThreatGraph: threatGraphApi.getThreatGraph.bind(threatGraphApi),
+    getVulnerabilityThreatGraph:
+      threatGraphApi.getVulnerabilityThreatGraph.bind(threatGraphApi),
   };
 }
 
@@ -281,6 +285,7 @@ export function getReportsApiClient() {
     listReports: reportsApi.listReports.bind(reportsApi),
     generateReport: reportsApi.generateReport.bind(reportsApi),
     deleteReport: reportsApi.deleteReport.bind(reportsApi),
+    getReport: reportsApi.getReport.bind(reportsApi),
   };
 }
 
@@ -294,5 +299,9 @@ export function getSettingsApiClient() {
     getEmailConfiguration: settingsApi.getEmailConfiguration.bind(settingsApi),
     addEmailConfiguration: settingsApi.addEmailConfiguration.bind(settingsApi),
     deleteEmailConfiguration: settingsApi.deleteEmailConfiguration.bind(settingsApi),
+    uploadVulnerabilityDatabase:
+      settingsApi.uploadVulnerabilityDatabase.bind(settingsApi),
+    getScheduledTasks: settingsApi.getScheduledTasks.bind(settingsApi),
+    updateScheduledTask: settingsApi.updateScheduledTask.bind(settingsApi),
   };
 }

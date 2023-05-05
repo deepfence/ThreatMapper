@@ -50,7 +50,12 @@ export const isCloudServiceNode = (
     type?: string;
   } | null,
 ): boolean => {
-  if (node?.type?.length && node.type.startsWith('aws_')) {
+  if (
+    node?.type?.length &&
+    (node.type.startsWith('aws_') ||
+      node.type.startsWith('azure_') ||
+      node.type.startsWith('gcp_'))
+  ) {
     return true;
   }
   return false;

@@ -64,6 +64,7 @@ models/ModelAgentUpgrade.ts
 models/ModelApiAuthRequest.ts
 models/ModelApiTokenResponse.ts
 models/ModelBasicNode.ts
+models/ModelBulkDeleteScansRequest.ts
 models/ModelCloudCompliance.ts
 models/ModelCloudComplianceBenchmark.ts
 models/ModelCloudComplianceScanDetails.ts
@@ -150,6 +151,7 @@ models/ModelSecretScanTriggerReq.ts
 models/ModelSettingUpdateRequest.ts
 models/ModelSettingsResponse.ts
 models/ModelSummary.ts
+models/ModelUpdateScheduledTaskRequest.ts
 models/ModelUpdateUserIdRequest.ts
 models/ModelUpdateUserPasswordRequest.ts
 models/ModelUpdateUserRequest.ts
@@ -160,6 +162,7 @@ models/ModelVulnerabilityScanConfigLanguage.ts
 models/ModelVulnerabilityScanResult.ts
 models/ModelVulnerabilityScanTriggerReq.ts
 models/PostgresqlDbGetAuditLogsRow.ts
+models/PostgresqlDbScheduler.ts
 models/ReportMetadata.ts
 models/ReportRawReport.ts
 models/ReportersCompareFilter.ts

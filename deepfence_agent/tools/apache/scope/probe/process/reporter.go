@@ -160,7 +160,7 @@ func (r *Reporter) processTopology() (report.Topology, error) {
 
 		t.AddNode(report.TopologyNode{
 			Metadata: metadata,
-			Parents: report.Parent{
+			Parents: &report.Parent{
 				Host: r.hostName,
 			},
 		})

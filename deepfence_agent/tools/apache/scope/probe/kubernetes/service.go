@@ -49,7 +49,7 @@ func (s *service) GetNode() report.TopologyNode {
 		Timestamp:             time.Now().UTC().Format(time.RFC3339Nano),
 		NodeID:                s.UID(),
 		NodeType:              report.Service,
-		NodeName:              s.Name(),
+		NodeName:              s.Name() + " / " + s.GetNamespace() + " / " + kubernetesClusterName,
 		KubernetesType:        string(s.Spec.Type),
 		KubernetesClusterId:   kubernetesClusterId,
 		KubernetesClusterName: kubernetesClusterName,
@@ -66,16 +66,15 @@ func (s *service) GetNode() report.TopologyNode {
 	if s.Spec.LoadBalancerIP != "" {
 		metadata.KubernetesPublicIP = s.Spec.LoadBalancerIP
 	}
-	if len(s.Spec.Ports) != 0 {
-		ports := make([]int32, len(s.Spec.Ports))
+	if len(s.Spec.Ports) > 0 {
+		metadata.KubernetesPorts = make([]string, len(s.Spec.Ports))
 		for i, p := range s.Spec.Ports {
-			ports[i] = p.Port
+			metadata.KubernetesPorts[i] = servicePortString(p)
 		}
-		metadata.KubernetesPorts = ports
 	}
 	return report.TopologyNode{
 		Metadata: metadata,
-		Parents: report.Parent{
+		Parents: &report.Parent{
 			CloudProvider:     cloudProviderNodeId,
 			KubernetesCluster: kubernetesClusterId,
 			Namespace:         kubernetesClusterId + "-" + s.GetNamespace(),

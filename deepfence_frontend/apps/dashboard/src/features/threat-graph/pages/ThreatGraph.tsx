@@ -1,9 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { FiFilter } from 'react-icons/fi';
 import { useSearchParams } from 'react-router-dom';
-import { IconButton, Popover, Radio } from 'ui-components';
+import {
+  Checkbox,
+  IconButton,
+  Listbox,
+  ListboxOption,
+  Popover,
+  Radio,
+} from 'ui-components';
 
 import { GraphNodeInfo } from '@/api/generated';
+import { useGetCloudAccountsList } from '@/features/common/data-component/searchCloudAccountsApiLoader';
 import {
   ThreatGraphComponent,
   ThreatGraphFilters,
@@ -21,11 +29,19 @@ const ThreatGraph = () => {
 
   const [filters, setFilters] = useState<ThreatGraphFilters>({
     type: searchParams.get('type') ?? 'all',
+    cloud_resource_only: searchParams.get('cloud_resource_only') === 'true',
+    aws_account_ids: searchParams.getAll('aws_account_ids'),
+    gcp_account_ids: searchParams.getAll('gcp_account_ids'),
+    azure_account_ids: searchParams.getAll('azure_account_ids'),
   });
 
   useEffect(() => {
     setFilters({
       type: searchParams.get('type') ?? 'all',
+      cloud_resource_only: searchParams.get('cloud_resource_only') === 'true',
+      aws_account_ids: searchParams.getAll('aws_account_ids'),
+      gcp_account_ids: searchParams.getAll('gcp_account_ids'),
+      azure_account_ids: searchParams.getAll('azure_account_ids'),
     });
   }, [searchParams]);
 
@@ -64,7 +80,23 @@ const ThreatGraphHeader = () => {
   const elementToFocusOnClose = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const isFilterApplied = searchParams.get('type') && searchParams.get('type') !== 'all';
+  const { accounts: AWSAccounts } = useGetCloudAccountsList({
+    nodeType: 'aws',
+  });
+  const { accounts: GCPAccounts } = useGetCloudAccountsList({
+    nodeType: 'gcp',
+  });
+  const { accounts: AzureAccounts } = useGetCloudAccountsList({
+    nodeType: 'azure',
+  });
+
+  const isFilterApplied =
+    (searchParams.get('type') && searchParams.get('type') !== 'all') ||
+    searchParams.get('cloud_resource_only') === 'true' ||
+    !!searchParams.getAll('aws_account_ids').length ||
+    !!searchParams.getAll('gcp_account_ids').length ||
+    !!searchParams.getAll('azure_account_ids').length;
+
   return (
     <div className="flex p-2 w-full shadow bg-white dark:bg-gray-800 justify-between items-center">
       <span className="text-md font-medium text-gray-700 dark:text-gray-200">
@@ -78,13 +110,13 @@ const ThreatGraphHeader = () => {
           triggerAsChild
           elementToFocusOnCloseRef={elementToFocusOnClose}
           content={
-            <div className="dark:text-white p-4">
-              <form className="flex flex-col gap-y-6">
+            <div className="dark:text-white p-4 min-w-[300px]">
+              <form className="flex flex-col gap-y-4">
                 <fieldset>
                   <legend className="text-sm font-medium">Type</legend>
-                  <div className="flex gap-x-4">
+                  <div className="flex gap-y-4">
                     <Radio
-                      direction="row"
+                      direction="col"
                       value={searchParams.get('type') ?? 'all'}
                       onValueChange={(value) => {
                         setSearchParams((prev) => {
@@ -121,6 +153,111 @@ const ThreatGraphHeader = () => {
                     />
                   </div>
                 </fieldset>
+                <fieldset>
+                  <legend className="text-sm font-medium">Scope</legend>
+                  <div className="flex gap-y-4">
+                    <Checkbox
+                      label="Show only Cloud Resources"
+                      checked={searchParams.get('cloud_resource_only') === 'true'}
+                      onCheckedChange={(state) => {
+                        setSearchParams((prev) => {
+                          prev.set('cloud_resource_only', String(state));
+                          return prev;
+                        });
+                      }}
+                    />
+                  </div>
+                </fieldset>
+                {!!AWSAccounts.length && (
+                  <fieldset>
+                    <legend className="text-sm font-medium">AWS Accounts</legend>
+                    <div className="flex gap-y-4">
+                      <Listbox
+                        sizing="sm"
+                        placeholder="Select AWS Accounts"
+                        value={searchParams.getAll('aws_account_ids') ?? []}
+                        multiple
+                        onChange={(value) => {
+                          setSearchParams((prev) => {
+                            prev.delete('aws_account_ids');
+                            value.forEach((v) => {
+                              prev.append('aws_account_ids', v);
+                            });
+                            return prev;
+                          });
+                        }}
+                      >
+                        {AWSAccounts?.map((account) => {
+                          return (
+                            <ListboxOption key={account.node_id} value={account.node_id}>
+                              {account.node_name}
+                            </ListboxOption>
+                          );
+                        })}
+                      </Listbox>
+                    </div>
+                  </fieldset>
+                )}
+                {!!GCPAccounts.length && (
+                  <fieldset>
+                    <legend className="text-sm font-medium">GCP Accounts</legend>
+                    <div className="flex gap-y-4">
+                      <Listbox
+                        sizing="sm"
+                        placeholder="Select GCP Accounts"
+                        value={searchParams.getAll('gcp_account_ids') ?? []}
+                        multiple
+                        onChange={(value) => {
+                          setSearchParams((prev) => {
+                            prev.delete('gcp_account_ids');
+                            value.forEach((v) => {
+                              prev.append('gcp_account_ids', v);
+                            });
+                            return prev;
+                          });
+                        }}
+                      >
+                        {GCPAccounts?.map((account) => {
+                          return (
+                            <ListboxOption key={account.node_id} value={account.node_id}>
+                              {account.node_name}
+                            </ListboxOption>
+                          );
+                        })}
+                      </Listbox>
+                    </div>
+                  </fieldset>
+                )}
+                {!!AzureAccounts.length && (
+                  <fieldset>
+                    <legend className="text-sm font-medium">Azure Accounts</legend>
+                    <div className="flex gap-y-4">
+                      <Listbox
+                        sizing="sm"
+                        placeholder="Select Azure Accounts"
+                        value={searchParams.getAll('azure_account_ids') ?? []}
+                        multiple
+                        onChange={(value) => {
+                          setSearchParams((prev) => {
+                            prev.delete('azure_account_ids');
+                            value.forEach((v) => {
+                              prev.append('azure_account_ids', v);
+                            });
+                            return prev;
+                          });
+                        }}
+                      >
+                        {AzureAccounts?.map((account) => {
+                          return (
+                            <ListboxOption key={account.node_id} value={account.node_id}>
+                              {account.node_name}
+                            </ListboxOption>
+                          );
+                        })}
+                      </Listbox>
+                    </div>
+                  </fieldset>
+                )}
               </form>
             </div>
           }

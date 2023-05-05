@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Form, useActionData, useParams } from 'react-router-dom';
+import { useFetcher, useParams } from 'react-router-dom';
 import { Button, Card, Radio, Select, SelectItem, TextInput } from 'ui-components';
 
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
@@ -214,15 +214,16 @@ const NotificationType = () => {
 };
 
 export const IntegrationForm = ({ integrationType }: IntegrationTypeProps) => {
-  const actionData = useActionData() as {
+  const fetcher = useFetcher<{
     message: string;
-  };
+  }>();
+  const { state, data } = fetcher;
 
   // for jira
   const [authType, setAuthType] = useState('apiToken');
 
   return (
-    <Form method="post">
+    <fetcher.Form method="post">
       <Card className="w-full relative p-5 flex flex-col gap-y-4">
         {integrationType === IntegrationType.slack && (
           <>
@@ -349,16 +350,21 @@ export const IntegrationForm = ({ integrationType }: IntegrationTypeProps) => {
           hidden
           value={ActionEnumType.ADD}
         />
-        {actionData?.message && (
-          <p className="text-red-500 text-sm">{actionData.message}</p>
-        )}
+        {data?.message && <p className="text-red-500 text-sm">{data.message}</p>}
 
         <div className="flex mt-2 w-full">
-          <Button color="primary" className="w-full" size="xs" type="submit">
+          <Button
+            color="primary"
+            className="w-full"
+            size="xs"
+            type="submit"
+            disabled={state !== 'idle'}
+            loading={state !== 'idle'}
+          >
             Subscribe
           </Button>
         </div>
       </Card>
-    </Form>
+    </fetcher.Form>
   );
 };

@@ -5,8 +5,6 @@ import { IconContext } from 'react-icons';
 import { HiChevronRight } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
-import { Typography } from '@/components/typography/Typography';
-
 type BreadcrumbLinkType = {
   children: React.ReactNode;
   asChild?: boolean;
@@ -29,39 +27,40 @@ export const BreadcrumbLink = React.forwardRef<
 >(({ asChild, children, icon, isLast, separator, className, ...props }, forwardedRef) => {
   const Comp = asChild ? Slot : 'button';
   return (
-    <Comp
-      {...props}
-      className={twMerge(
-        cx(
-          `inline-flex items-center leading-[21px] item-center`,
-          'outline-none focus-visible:outline-none focus:ring-1 focus-visible:ring-gray-400',
-          `text-gray-700 dark:text-gray-400 ${Typography.size.sm}`,
-          className,
-        ),
-      )}
-      ref={forwardedRef}
-    >
-      {icon && (
-        <IconContext.Provider
-          value={{
-            className: 'mr-2 w-[16px] h-[16px]',
-          }}
-        >
-          {icon}
-        </IconContext.Provider>
-      )}
-      <Slottable>{children}</Slottable>
-
+    <>
+      <Comp
+        {...props}
+        className={twMerge(
+          cx(
+            `inline-flex items-center leading-[21px] item-center`,
+            'outline-none focus-visible:outline-none focus:ring-2 focus-visible:ring-blue-600 dark:focus-visible:ring-blue-500 focus-visible:rounded-sm',
+            'text-gray-700 dark:text-gray-400 text-sm',
+            className,
+          ),
+        )}
+        ref={forwardedRef}
+      >
+        {icon && (
+          <IconContext.Provider
+            value={{
+              className: 'mr-2 w-[16px] h-[16px]',
+            }}
+          >
+            {icon}
+          </IconContext.Provider>
+        )}
+        <Slottable>{children}</Slottable>
+      </Comp>
       {!isLast && (
         <IconContext.Provider
           value={{
-            className: 'mx-2',
+            className: 'mx-2 text-gray-700 dark:text-gray-400 text-sm',
           }}
         >
-          {separator ? separator : <HiChevronRight />}
+          {separator ? <span>{separator}</span> : <HiChevronRight />}
         </IconContext.Provider>
       )}
-    </Comp>
+    </>
   );
 });
 

@@ -7,7 +7,7 @@ import { LoginActionReturnType } from '@/features/auth/actions/loginAction';
 
 export const Login = () => {
   const fetcher = useFetcher<LoginActionReturnType>();
-  const { data } = fetcher;
+  const { data, state } = fetcher;
 
   return (
     <fetcher.Form method="post">
@@ -76,7 +76,14 @@ export const Login = () => {
           Register
         </Link>
       </div>
-      <Button size="md" color="primary" className="w-full" type="submit">
+      <Button
+        size="md"
+        color="primary"
+        className="w-full"
+        type="submit"
+        disabled={state !== 'idle'}
+        loading={state !== 'idle'}
+      >
         Log In
       </Button>
       {data?.error && (

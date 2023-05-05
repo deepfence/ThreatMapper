@@ -721,6 +721,58 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/database/vulnerability": {
+      "put": {
+        "tags": ["Settings"],
+        "summary": "Upload Vulnerability Database",
+        "description": "Upload Vulnerability Database for use in vulnerability scans",
+        "operationId": "uploadVulnerabilityDatabase",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": { "$ref": "#/components/schemas/FormDataModelDBUploadRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelMessageResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/diagnosis/agent-logs": {
       "post": {
         "tags": ["Diagnosis"],
@@ -5395,6 +5447,152 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/scans/bulk/delete": {
+      "post": {
+        "tags": ["Scan Results"],
+        "summary": "Bulk Delete Scans",
+        "description": "Bulk delete scans along with their results for a particular scan type",
+        "operationId": "bulkDeleteScans",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelBulkDeleteScansRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/scheduled-task": {
+      "get": {
+        "tags": ["Settings"],
+        "summary": "Get scheduled tasks",
+        "description": "Get scheduled tasks",
+        "operationId": "getScheduledTasks",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/PostgresqlDbScheduler" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/scheduled-task/{id}": {
+      "patch": {
+        "tags": ["Settings"],
+        "summary": "Update scheduled task",
+        "description": "Update scheduled task",
+        "operationId": "updateScheduledTask",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelUpdateScheduledTaskRequest" }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "No Content" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/search/cloud-compliance/scans": {
       "post": {
         "tags": ["Search"],
@@ -8303,6 +8501,13 @@
           "node_type": { "enum": ["host", "cluster"], "type": "string" }
         }
       },
+      "FormDataModelDBUploadRequest": {
+        "required": ["database"],
+        "type": "object",
+        "properties": {
+          "database": { "$ref": "#/components/schemas/FormDataMultipartFile" }
+        }
+      },
       "FormDataModelRegistryGCRAddReq": {
         "required": ["name", "registry_url", "service_account_json"],
         "type": "object",
@@ -8535,7 +8740,7 @@
           "access_level": { "type": "string" },
           "account_id": { "type": "string" },
           "action": { "type": "string" },
-          "allow_blob_public_access": { "type": "string" },
+          "allow_blob_public_access": { "type": "boolean" },
           "arn": { "type": "string" },
           "attached_policy_arns": {},
           "block_public_acls": { "type": "boolean" },
@@ -8652,6 +8857,7 @@
         "properties": {
           "@timestamp": { "type": "string", "format": "date-time" },
           "scan_id": { "type": "string" },
+          "scan_message": { "type": "string" },
           "scan_status": { "type": "string" }
         }
       },
@@ -8894,6 +9100,23 @@
           "name": { "type": "string" },
           "node_id": { "type": "string" },
           "node_type": { "type": "string" }
+        }
+      },
+      "ModelBulkDeleteScansRequest": {
+        "required": ["scan_type", "filters"],
+        "type": "object",
+        "properties": {
+          "filters": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
+          "scan_type": {
+            "enum": [
+              "Secret",
+              "Vulnerability",
+              "Malware",
+              "Compliance",
+              "CloudCompliance"
+            ],
+            "type": "string"
+          }
         }
       },
       "ModelCloudCompliance": {
@@ -9218,14 +9441,15 @@
       "ModelComplianceScanInfo": {
         "required": [
           "scan_id",
-          "benchmark_types",
           "status",
+          "status_message",
           "updated_at",
           "created_at",
           "node_id",
           "node_type",
           "severity_counts",
-          "node_name"
+          "node_name",
+          "benchmark_types"
         ],
         "type": "object",
         "properties": {
@@ -9245,6 +9469,7 @@
             "nullable": true
           },
           "status": { "type": "string" },
+          "status_message": { "type": "string" },
           "updated_at": { "type": "integer", "format": "int64" }
         }
       },
@@ -10133,6 +10358,7 @@
         "required": [
           "scan_id",
           "status",
+          "status_message",
           "updated_at",
           "created_at",
           "node_id",
@@ -10153,6 +10379,7 @@
             "nullable": true
           },
           "status": { "type": "string" },
+          "status_message": { "type": "string" },
           "updated_at": { "type": "integer", "format": "int64" }
         }
       },
@@ -10164,11 +10391,6 @@
           "node_ids": {
             "type": "array",
             "items": { "$ref": "#/components/schemas/ModelNodeIdentifier" },
-            "nullable": true
-          },
-          "scan_status": {
-            "type": "array",
-            "items": { "type": "string" },
             "nullable": true
           },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
@@ -10424,6 +10646,11 @@
           "tags": { "type": "integer" }
         }
       },
+      "ModelUpdateScheduledTaskRequest": {
+        "required": ["is_enabled"],
+        "type": "object",
+        "properties": { "is_enabled": { "type": "boolean" } }
+      },
       "ModelUpdateUserIdRequest": {
         "type": "object",
         "properties": {
@@ -10639,6 +10866,22 @@
           "user_role_id": { "type": "integer" }
         }
       },
+      "PostgresqlDbScheduler": {
+        "type": "object",
+        "properties": {
+          "action": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" },
+          "cron_expr": { "type": "string" },
+          "description": { "type": "string" },
+          "id": { "type": "integer" },
+          "is_enabled": { "type": "boolean" },
+          "is_system": { "type": "boolean" },
+          "last_ran_at": { "$ref": "#/components/schemas/SqlNullTime" },
+          "payload": {},
+          "status": { "type": "string" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
       "ReportIDList": { "type": "array", "items": { "type": "string" } },
       "ReportMetadata": {
         "type": "object",
@@ -10851,6 +11094,7 @@
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
+      "SqlNullTime": { "type": "object" },
       "UtilsAdvancedReportFilters": {
         "type": "object",
         "properties": {
@@ -10884,6 +11128,7 @@
             ],
             "type": "string"
           },
+          "scan_id": { "type": "string" },
           "scan_type": {
             "enum": [
               "vulnerability",
@@ -10905,7 +11150,7 @@
               "nist",
               "hipaa",
               "pci",
-              "soc2"
+              "soc_2"
             ],
             "type": "array",
             "items": { "type": "string" },

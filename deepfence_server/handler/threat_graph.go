@@ -63,7 +63,7 @@ func (h *Handler) GetVulnerabilityThreatGraph(w http.ResponseWriter, r *http.Req
 		respondError(&ValidatorError{err}, w)
 		return
 	}
-	vulnerabilityThreatGraph, err := reporters_graph.GetVulnerabilityThreatGraph(req.GraphType)
+	vulnerabilityThreatGraph, err := reporters_graph.GetVulnerabilityThreatGraph(r.Context(), req.GraphType)
 	if err != nil {
 		log.Error().Msgf("Error GetVulnerabilityThreatGraph: %v", err)
 		respondError(err, w)
