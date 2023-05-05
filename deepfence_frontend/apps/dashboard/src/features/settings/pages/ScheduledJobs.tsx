@@ -177,7 +177,12 @@ const ScheduledJobs = () => {
         maxSize: 85,
       }),
       columnHelper.accessor('is_enabled', {
-        cell: (cell) => (cell.getValue() ? 'Yes' : 'No'),
+        cell: (cell) =>
+          cell.getValue() ? (
+            <span className="text-green-600 dark:text-green-500">Yes</span>
+          ) : (
+            <span className="text-red-600 dark:text-red-500">No</span>
+          ),
         header: () => 'Enabled',
         minSize: 30,
         size: 30,
