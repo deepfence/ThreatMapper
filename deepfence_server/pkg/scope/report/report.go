@@ -532,6 +532,45 @@ func MakeReport() Report {
 	}
 }
 
+func (r *Report) Clear() {
+	for k := range r.Endpoint {
+		delete(r.Endpoint, k)
+	}
+	for k := range r.Process {
+		delete(r.Process, k)
+	}
+	for k := range r.Container {
+		delete(r.Container, k)
+	}
+	for k := range r.CloudProvider {
+		delete(r.CloudProvider, k)
+	}
+	for k := range r.CloudRegion {
+		delete(r.CloudRegion, k)
+	}
+	for k := range r.KubernetesCluster {
+		delete(r.KubernetesCluster, k)
+	}
+	for k := range r.Pod {
+		delete(r.Pod, k)
+	}
+	for k := range r.Service {
+		delete(r.Service, k)
+	}
+	for k := range r.Namespace {
+		delete(r.Namespace, k)
+	}
+	for k := range r.ContainerImage {
+		delete(r.ContainerImage, k)
+	}
+	for k := range r.Host {
+		delete(r.Host, k)
+	}
+	for k := range r.Overlay {
+		delete(r.Overlay, k)
+	}
+}
+
 // Copy returns a value copy of the report.
 func (r Report) Copy() Report {
 	newReport := Report{
