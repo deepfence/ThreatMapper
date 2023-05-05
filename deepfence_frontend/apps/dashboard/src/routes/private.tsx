@@ -71,6 +71,7 @@ import { module as connectorInstructions } from '@/features/settings/pages/Conne
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
 import { module as emailConfiguration } from '@/features/settings/pages/EmailConfiguration';
 import { module as globalSettings } from '@/features/settings/pages/GlobalSettings';
+import { module as scheduledJobs } from '@/features/settings/pages/ScheduledJobs';
 import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
@@ -502,6 +503,12 @@ export const privateRoutes: CustomRouteObject[] = [
             ...userManagement,
             meta: { title: 'User Management' },
           },
+          {
+            path: 'scheduled-jobs',
+            ...scheduledJobs,
+            meta: { title: 'Scheduled Jobs' },
+          },
+
           {
             path: 'user-audit-logs',
             ...userAuditLogs,

@@ -1,4 +1,5 @@
 import {
+  HiClock,
   HiCode,
   HiDocumentSearch,
   HiGlobeAlt,
@@ -18,7 +19,8 @@ type RouteProps =
   | 'schedule-jobs'
   | 'scan-type-data-upload'
   | 'connection-instructions'
-  | 'global-settings';
+  | 'global-settings'
+  | 'scheduled-jobs';
 type SettingsTabProps = {
   children: React.ReactNode;
   value: RouteProps;
@@ -32,6 +34,11 @@ export const settingsTabs: Array<{
     label: 'User Management',
     value: 'user-management',
     icon: <HiUsers />,
+  },
+  {
+    label: 'Scheduled Jobs',
+    value: 'scheduled-jobs',
+    icon: <HiClock />,
   },
   {
     label: 'Diagnostic Logs',

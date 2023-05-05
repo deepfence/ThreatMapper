@@ -298,5 +298,7 @@ export function getSettingsApiClient() {
     getEmailConfiguration: settingsApi.getEmailConfiguration.bind(settingsApi),
     addEmailConfiguration: settingsApi.addEmailConfiguration.bind(settingsApi),
     deleteEmailConfiguration: settingsApi.deleteEmailConfiguration.bind(settingsApi),
+    getScheduledTasks: settingsApi.getScheduledTasks.bind(settingsApi),
+    updateScheduledTask: settingsApi.updateScheduledTask.bind(settingsApi),
   };
 }
