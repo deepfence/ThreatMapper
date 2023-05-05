@@ -22,7 +22,9 @@ import type {
   ModelMessageResponse,
   ModelSettingUpdateRequest,
   ModelSettingsResponse,
+  ModelUpdateScheduledTaskRequest,
   PostgresqlDbGetAuditLogsRow,
+  PostgresqlDbScheduler,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -39,8 +41,12 @@ import {
     ModelSettingUpdateRequestToJSON,
     ModelSettingsResponseFromJSON,
     ModelSettingsResponseToJSON,
+    ModelUpdateScheduledTaskRequestFromJSON,
+    ModelUpdateScheduledTaskRequestToJSON,
     PostgresqlDbGetAuditLogsRowFromJSON,
     PostgresqlDbGetAuditLogsRowToJSON,
+    PostgresqlDbSchedulerFromJSON,
+    PostgresqlDbSchedulerToJSON,
 } from '../models';
 
 export interface AddEmailConfigurationRequest {
@@ -51,9 +57,18 @@ export interface DeleteEmailConfigurationRequest {
     configId: string;
 }
 
+export interface UpdateScheduledTaskRequest {
+    id: number;
+    modelUpdateScheduledTaskRequest?: ModelUpdateScheduledTaskRequest;
+}
+
 export interface UpdateSettingRequest {
     id: number;
     modelSettingUpdateRequest?: ModelSettingUpdateRequest;
+}
+
+export interface UploadVulnerabilityDatabaseRequest {
+    database: Blob | null;
 }
 
 /**
@@ -111,6 +126,21 @@ export interface SettingsApiInterface {
     getEmailConfiguration(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelEmailConfigurationResp>>;
 
     /**
+     * Get scheduled tasks
+     * @summary Get scheduled tasks
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    getScheduledTasksRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<PostgresqlDbScheduler>>>;
+
+    /**
+     * Get scheduled tasks
+     * Get scheduled tasks
+     */
+    getScheduledTasks(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PostgresqlDbScheduler>>;
+
+    /**
      * Get all settings
      * @summary Get settings
      * @param {*} [options] Override http request option.
@@ -141,6 +171,23 @@ export interface SettingsApiInterface {
     getUserActivityLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PostgresqlDbGetAuditLogsRow>>;
 
     /**
+     * Update scheduled task
+     * @summary Update scheduled task
+     * @param {number} id 
+     * @param {ModelUpdateScheduledTaskRequest} [modelUpdateScheduledTaskRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    updateScheduledTaskRaw(requestParameters: UpdateScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Update scheduled task
+     * Update scheduled task
+     */
+    updateScheduledTask(requestParameters: UpdateScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
      * Update setting
      * @summary Update setting
      * @param {number} id 
@@ -156,6 +203,22 @@ export interface SettingsApiInterface {
      * Update setting
      */
     updateSetting(requestParameters: UpdateSettingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Upload Vulnerability Database for use in vulnerability scans
+     * @summary Upload Vulnerability Database
+     * @param {Blob} database 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SettingsApiInterface
+     */
+    uploadVulnerabilityDatabaseRaw(requestParameters: UploadVulnerabilityDatabaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>>;
+
+    /**
+     * Upload Vulnerability Database for use in vulnerability scans
+     * Upload Vulnerability Database
+     */
+    uploadVulnerabilityDatabase(requestParameters: UploadVulnerabilityDatabaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
 
 }
 
@@ -279,6 +342,42 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
     }
 
     /**
+     * Get scheduled tasks
+     * Get scheduled tasks
+     */
+    async getScheduledTasksRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<PostgresqlDbScheduler>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scheduled-task`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(PostgresqlDbSchedulerFromJSON));
+    }
+
+    /**
+     * Get scheduled tasks
+     * Get scheduled tasks
+     */
+    async getScheduledTasks(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PostgresqlDbScheduler>> {
+        const response = await this.getScheduledTasksRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get all settings
      * Get settings
      */
@@ -351,6 +450,48 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
     }
 
     /**
+     * Update scheduled task
+     * Update scheduled task
+     */
+    async updateScheduledTaskRaw(requestParameters: UpdateScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling updateScheduledTask.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scheduled-task/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelUpdateScheduledTaskRequestToJSON(requestParameters.modelUpdateScheduledTaskRequest),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Update scheduled task
+     * Update scheduled task
+     */
+    async updateScheduledTask(requestParameters: UpdateScheduledTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.updateScheduledTaskRaw(requestParameters, initOverrides);
+    }
+
+    /**
      * Update setting
      * Update setting
      */
@@ -390,6 +531,67 @@ export class SettingsApi extends runtime.BaseAPI implements SettingsApiInterface
      */
     async updateSetting(requestParameters: UpdateSettingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.updateSettingRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Upload Vulnerability Database for use in vulnerability scans
+     * Upload Vulnerability Database
+     */
+    async uploadVulnerabilityDatabaseRaw(requestParameters: UploadVulnerabilityDatabaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>> {
+        if (requestParameters.database === null || requestParameters.database === undefined) {
+            throw new runtime.RequiredError('database','Required parameter requestParameters.database was null or undefined when calling uploadVulnerabilityDatabase.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters.database !== undefined) {
+            formParams.append('database', requestParameters.database as any);
+        }
+
+        const response = await this.request({
+            path: `/deepfence/database/vulnerability`,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelMessageResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Upload Vulnerability Database for use in vulnerability scans
+     * Upload Vulnerability Database
+     */
+    async uploadVulnerabilityDatabase(requestParameters: UploadVulnerabilityDatabaseRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
+        const response = await this.uploadVulnerabilityDatabaseRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
 }
