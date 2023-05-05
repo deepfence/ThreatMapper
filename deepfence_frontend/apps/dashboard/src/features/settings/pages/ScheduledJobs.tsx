@@ -1,7 +1,7 @@
 import { Suspense, useMemo } from 'react';
 import { IconContext } from 'react-icons';
-import { FaEye, FaEyeSlash, FaTasks } from 'react-icons/fa';
-import { HiDotsVertical } from 'react-icons/hi';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { HiClock, HiDotsVertical } from 'react-icons/hi';
 import { ActionFunctionArgs, useFetcher, useLoaderData } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
@@ -143,7 +143,7 @@ const ScheduledJobs = () => {
     const columns = [
       columnHelper.accessor('created_at', {
         cell: (cell) => formatMilliseconds(cell.getValue() || ''),
-        header: () => 'Time Stamp',
+        header: () => 'Timestamp',
         minSize: 30,
         size: 50,
         maxSize: 60,
@@ -177,8 +177,8 @@ const ScheduledJobs = () => {
         maxSize: 85,
       }),
       columnHelper.accessor('is_enabled', {
-        cell: (cell) => (cell.getValue() ? 'Active' : 'In Active'),
-        header: () => 'Active',
+        cell: (cell) => (cell.getValue() ? 'Yes' : 'No'),
+        header: () => 'Enabled',
         minSize: 30,
         size: 30,
         maxSize: 85,
@@ -222,7 +222,7 @@ const ScheduledJobs = () => {
                       className: 'text-blue-600 dark:text-blue-400',
                     }}
                   >
-                    <FaTasks />
+                    <HiClock />
                   </IconContext.Provider>
                 </div>
                 <h3 className="font-medium text-gray-900 dark:text-white text-base">

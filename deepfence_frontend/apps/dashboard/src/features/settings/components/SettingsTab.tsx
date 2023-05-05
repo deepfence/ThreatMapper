@@ -1,5 +1,5 @@
-import { FaTasks } from 'react-icons/fa';
 import {
+  HiClock,
   HiCode,
   HiDocumentSearch,
   HiGlobeAlt,
@@ -38,7 +38,7 @@ export const settingsTabs: Array<{
   {
     label: 'Scheduled Jobs',
     value: 'scheduled-jobs',
-    icon: <FaTasks />,
+    icon: <HiClock />,
   },
   {
     label: 'Diagnostic Logs',
