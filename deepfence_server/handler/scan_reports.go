@@ -1212,8 +1212,7 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Info().Msgf("delete %s scans older than %d days with severity/status %s",
-		req.ScanType, req.Filters)
+	log.Info().Msgf("delete %s scans filters %+v", req.ScanType, req.Filters)
 
 	scansList, err := reporters_scan.GetScansList(r.Context(),
 		utils.DetectedNodeScanType[req.ScanType], nil, req.Filters, model.FetchWindow{})

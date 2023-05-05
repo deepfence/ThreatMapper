@@ -116,6 +116,11 @@ func main() {
 		log.Fatal().Msg(err.Error())
 	}
 
+	err = initMinio()
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
+
 	log.Info().Msg("starting deepfence-server")
 
 	mux := chi.NewRouter()
@@ -419,5 +424,19 @@ func initializeTelemetry() error {
 	otel.SetTextMapPropagator(
 		propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}),
 	)
+	return nil
+}
+
+func initMinio() error {
+	ctx := directory.NewContextWithNameSpace("database")
+	mc, err := directory.MinioClient(ctx)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return err
+	}
+	if err := mc.CreatePublicBucket(ctx); err != nil {
+		log.Error().Err(err).Msgf("failed to create bucket")
+		return err
+	}
 	return nil
 }
