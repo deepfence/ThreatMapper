@@ -135,9 +135,6 @@ func ecrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (re
 		NonSecret: nonsecret,
 	}
 
-	// log hub
-	log.Info().Msgf("hub before: %+v", hub)
-
 	err = hub.DecryptSecret(aes)
 	if err != nil {
 		log.Error().Msg(err.Error())
