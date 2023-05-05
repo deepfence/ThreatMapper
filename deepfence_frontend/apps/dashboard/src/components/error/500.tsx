@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useRouteError } from 'react-router-dom';
 
 import { AppHeader } from '@/components/AppHeader';
 import { getSideNavigationState, SideNavigation } from '@/components/SideNavigation';
@@ -28,7 +28,8 @@ export const FiveZeroZero = () => {
   );
   const isAuth = useMemo(() => storage.getAuth(), []);
   const location = useLocation();
-
+  const error = useRouteError();
+  console.error(error);
   if (location.pathname.startsWith('/onboard')) {
     return (
       <div className="min-h-screen isolate">

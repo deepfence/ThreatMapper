@@ -71,6 +71,7 @@ import { module as connectorInstructions } from '@/features/settings/pages/Conne
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
 import { module as emailConfiguration } from '@/features/settings/pages/EmailConfiguration';
 import { module as globalSettings } from '@/features/settings/pages/GlobalSettings';
+import { module as scanHistoryAndDbManagement } from '@/features/settings/pages/ScanHistoryAndDbManagement';
 import { module as scheduledJobs } from '@/features/settings/pages/ScheduledJobs';
 import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
@@ -504,11 +505,15 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'User Management' },
           },
           {
+            path: 'scan-history-and-db-management',
+            ...scanHistoryAndDbManagement,
+            meta: { title: 'Scan History & Database Management' },
+          },
+          {
             path: 'scheduled-jobs',
             ...scheduledJobs,
             meta: { title: 'Scheduled Jobs' },
           },
-
           {
             path: 'user-audit-logs',
             ...userAuditLogs,

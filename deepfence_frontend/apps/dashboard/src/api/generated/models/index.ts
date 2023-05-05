@@ -42,6 +42,7 @@ export * from './ModelAgentUpgrade';
 export * from './ModelApiAuthRequest';
 export * from './ModelApiTokenResponse';
 export * from './ModelBasicNode';
+export * from './ModelBulkDeleteScansRequest';
 export * from './ModelCloudCompliance';
 export * from './ModelCloudComplianceBenchmark';
 export * from './ModelCloudComplianceScanDetails';

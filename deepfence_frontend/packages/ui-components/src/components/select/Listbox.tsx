@@ -7,14 +7,13 @@ import {
 } from '@headlessui/react';
 import cx from 'classnames';
 import { cva } from 'cva';
+import { isNil } from 'lodash-es';
 import { useId } from 'react';
 import { HiOutlineChevronDown } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import { twMerge } from 'tailwind-merge';
-
 export type SizeType = 'sm' | 'md' | 'lg';
 export type ColorType = 'default' | 'error' | 'success';
-
 type IconProps = {
   icon: React.ReactNode;
   name?: string;
@@ -33,7 +32,6 @@ const optionCva = cva([], {
     size: 'md',
   },
 });
-
 const buttonCva = cva(
   [
     'block w-full ring-1 rounded-lg relative',
@@ -98,7 +96,6 @@ const buttonCva = cva(
     },
   },
 );
-
 const SelectArrow = ({ color }: Omit<IconProps, 'icon'>) => {
   return (
     <span
@@ -134,7 +131,7 @@ interface ListboxProps<TType, TActualType>
   children?: React.ReactNode;
   label?: string;
   placeholder?: string;
-  getDisplayValue?: (value: TType) => string;
+  getDisplayValue?: (value?: TType) => string;
   required?: boolean;
   id?: string;
 }
@@ -231,11 +228,9 @@ export function Listbox<TType, TActualType>({
     </HUIListbox>
   );
 }
-
 interface ListBoxOptionProps<TType> extends HUIListboxOptionProps<'li', TType> {
   sizing?: SizeType;
 }
-
 export function ListboxOption<TType>({ sizing, ...props }: ListBoxOptionProps<TType>) {
   return (
     <HUIListbox.Option
@@ -260,16 +255,17 @@ export function ListboxOption<TType>({ sizing, ...props }: ListBoxOptionProps<TT
     />
   );
 }
-
-function getPlaceholderValue<T>(
-  value: T | T[] | undefined,
-  getDisplayValue?: (value: T) => string,
+function getPlaceholderValue<T extends unknown | unknown[]>(
+  value?: T,
+  getDisplayValue?: (value?: T) => string,
   defaultPlaceholder?: string,
 ) {
-  if (!value || (Array.isArray(value) && !value.length)) {
+  if (isNil(value) || (Array.isArray(value) && !value.length)) {
     return defaultPlaceholder ?? 'Select...';
+  } else if (getDisplayValue) {
+    return getDisplayValue?.(value);
   } else if (Array.isArray(value)) {
     return `${value.length} selected`;
   }
-  return getDisplayValue?.(value) ?? '1 item selected';
+  return '1 item selected';
 }
