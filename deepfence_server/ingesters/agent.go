@@ -388,7 +388,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			}
 		}
 		if n.Metadata.Pid != -1 {
-			if len(n.Adjacency) == 0 {
+			if len(*n.Adjacency) == 0 {
 				// Handle inbound from internet
 				connections = append(connections, Connection{
 					source:      "in-the-internet",
@@ -397,7 +397,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 					right_pid:   n.Metadata.Pid,
 				})
 			} else {
-				for _, i := range n.Adjacency {
+				for _, i := range *n.Adjacency {
 					if n.Metadata.NodeID != i {
 						ip, port := extractIPPortFromEndpointID(i)
 						// local memoization is used to skip redis access (91% reduction)
