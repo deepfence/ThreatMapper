@@ -50,6 +50,9 @@ const loader = async () => {
   });
 };
 
+const isProviderLinuxOrKubernetes = (provider: string) => {
+  return provider === 'linux' || provider === 'kubernetes';
+};
 const CardSkeleton = () => {
   return (
     <>
@@ -98,8 +101,10 @@ const AccountSummary = () => {
                 scan_count,
                 compliance_percentage = 0,
                 resource_count,
+                node_label,
               } = provider;
               const account = getPostureLogo(name, mode);
+
               return (
                 <Card key={name} className="p-2 pb-3 flex flex-col">
                   <div className="flex items-center w-full">
@@ -146,26 +151,26 @@ const AccountSummary = () => {
                         {abbreviateNumber(node_count ?? 0)}
                       </span>
                       <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {name === 'host'
-                          ? `Host${node_count && node_count > 1 ? 's' : ''}`
-                          : `Account${node_count && node_count > 1 ? 's' : ''}`}
+                        {node_label}
                       </span>
                     </div>
-                    <div className="flex flex-col min-w-[70px]">
-                      <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
-                        {abbreviateNumber(resource_count ?? 0)}
-                      </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {`Resource${resource_count && resource_count > 1 ? 's' : ''}`}
-                      </span>
-                    </div>
+                    {!isProviderLinuxOrKubernetes(name) ? (
+                      <div className="flex flex-col min-w-[70px]">
+                        <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
+                          {abbreviateNumber(resource_count ?? 0)}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          Resources
+                        </span>
+                      </div>
+                    ) : null}
 
                     <div className="flex flex-col min-w-[70px]">
                       <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
                         {abbreviateNumber(scan_count ?? 0)}
                       </span>
                       <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {`Scan${scan_count && scan_count > 1 ? 's' : ''}`}
+                        Scans
                       </span>
                     </div>
                   </div>

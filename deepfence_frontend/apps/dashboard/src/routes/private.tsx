@@ -72,11 +72,13 @@ import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLo
 import { module as emailConfiguration } from '@/features/settings/pages/EmailConfiguration';
 import { module as globalSettings } from '@/features/settings/pages/GlobalSettings';
 import { module as scanHistoryAndDbManagement } from '@/features/settings/pages/ScanHistoryAndDbManagement';
+import { module as scheduledJobs } from '@/features/settings/pages/ScheduledJobs';
 import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
 import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
 import { module as threatGraphLoader } from '@/features/threat-graph/data-components/threatGraphLoader';
+import { module as vulnerabilityTthreatGraphLoader } from '@/features/threat-graph/data-components/vulnerabilityThreatGraphLoader';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as nodeDetailsCloudService } from '@/features/topology/data-components/node-details/CloudService';
 import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
@@ -508,6 +510,11 @@ export const privateRoutes: CustomRouteObject[] = [
             meta: { title: 'Scan History & Database Management' },
           },
           {
+            path: 'scheduled-jobs',
+            ...scheduledJobs,
+            meta: { title: 'Scheduled Jobs' },
+          },
+          {
             path: 'user-audit-logs',
             ...userAuditLogs,
             meta: { title: 'User Audit Logs' },
@@ -647,6 +654,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'threat-graph',
         ...threatGraphLoader,
+      },
+      {
+        path: 'threat-graph-vulnerability',
+        ...vulnerabilityTthreatGraphLoader,
       },
       {
         path: 'auth/logout',

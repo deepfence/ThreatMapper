@@ -3,19 +3,24 @@ import { Suspense } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import { Card } from 'ui-components';
 
+import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { getNodesIcon } from '@/constants/logos';
 import { DashboardLoaderData } from '@/features/dashboard/pages/Dashboard';
 import { abbreviateNumber } from '@/utils/number';
 import { DFAwait } from '@/utils/suspense';
 
-const ColorClasses: Record<keyof DashboardLoaderData['nodeCounts'], string> = {
+const ColorClasses: Record<
+  keyof DashboardLoaderData['nodeCounts'] | 'registries',
+  string
+> = {
   cloud_provider: 'text-blue-500 dark:text-blue-300',
   container: 'text-yellow-500 dark:text-yellow-300',
   host: 'text-green-500 dark:text-green-300',
   kubernetes_cluster: 'text-indigo-500 dark:text-indigo-300',
   pod: 'text-purple-500 dark:text-purple-300',
   container_image: 'text-orange-500 dark:text-orange-300',
-  namespace: 'text-teal-500 dark:text-teal-300',
+  namespace: 'text-emerald-500 dark:text-emerald-300',
+  registries: 'text-teal-500 dark:text-teal-300',
 };
 
 const CountWithIcon = ({
@@ -28,7 +33,7 @@ const CountWithIcon = ({
   count: string;
   Icon: () => JSX.Element;
   label: string;
-  type: keyof DashboardLoaderData['nodeCounts'];
+  type: keyof DashboardLoaderData['nodeCounts'] | 'registries';
   link?: string;
 }) => {
   const navigate = useNavigate();
@@ -132,21 +137,6 @@ export const NodeCounts = () => {
             {(nodeCounts: DashboardLoaderData['nodeCounts']) => {
               return (
                 <CountWithIcon
-                  count={abbreviateNumber(nodeCounts.container)}
-                  Icon={getNodesIcon('container')}
-                  label="Containers"
-                  type="container"
-                  link="/topology/graph/container"
-                />
-              );
-            }}
-          </DFAwait>
-        </Suspense>
-        <Suspense fallback={<CountWithIconSkeleton />}>
-          <DFAwait resolve={loaderData.nodeCounts}>
-            {(nodeCounts: DashboardLoaderData['nodeCounts']) => {
-              return (
-                <CountWithIcon
                   count={abbreviateNumber(nodeCounts.pod)}
                   Icon={getNodesIcon('pod')}
                   label="Pods"
@@ -177,11 +167,41 @@ export const NodeCounts = () => {
             {(nodeCounts: DashboardLoaderData['nodeCounts']) => {
               return (
                 <CountWithIcon
+                  count={abbreviateNumber(nodeCounts.container)}
+                  Icon={getNodesIcon('container')}
+                  label="Containers"
+                  type="container"
+                  link="/topology/graph/container"
+                />
+              );
+            }}
+          </DFAwait>
+        </Suspense>
+        <Suspense fallback={<CountWithIconSkeleton />}>
+          <DFAwait resolve={loaderData.nodeCounts}>
+            {(nodeCounts: DashboardLoaderData['nodeCounts']) => {
+              return (
+                <CountWithIcon
                   count={abbreviateNumber(nodeCounts.container_image)}
                   Icon={getNodesIcon('container_image')}
                   label="Container Images"
                   type="container_image"
                   link="/topology/graph"
+                />
+              );
+            }}
+          </DFAwait>
+        </Suspense>
+        <Suspense fallback={<CountWithIconSkeleton />}>
+          <DFAwait resolve={loaderData.registries}>
+            {(registries: DashboardLoaderData['registries']) => {
+              return (
+                <CountWithIcon
+                  count={abbreviateNumber(registries)}
+                  Icon={RegistryIcon}
+                  label="Container Registries"
+                  type="registries"
+                  link="/registries"
                 />
               );
             }}

@@ -1,8 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiArrowRight, HiSwitchHorizontal } from 'react-icons/hi';
 import { generatePath, Navigate, useLocation } from 'react-router-dom';
-import { useMeasure } from 'react-use';
 import { Button, Card, Separator, Tooltip, Typography } from 'ui-components';
 
 import LogoAws from '@/assets/logo-aws.svg';

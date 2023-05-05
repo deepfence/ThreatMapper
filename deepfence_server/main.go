@@ -343,6 +343,10 @@ func initializeDatabase() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = model.InitializeScheduledTasks(ctx, pgClient)
+	if err != nil {
+		return nil, err
+	}
 	return jwtSecret, nil
 }
 

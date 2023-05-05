@@ -8,6 +8,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/acr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/dockerhub"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/dockerprivate"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/ecr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/gcr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/harbor"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/jfrog"
@@ -37,7 +38,10 @@ func GetRegistry(rType string, requestByte []byte) (Registry, error) {
 		r, err = harbor.New(requestByte)
 	case constants.JFROG:
 		r, err = jfrog.New(requestByte)
+	case constants.ECR:
+		r, err = ecr.New(requestByte)
 	}
+
 	return r, err
 }
 
@@ -218,6 +222,34 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 			},
 		}
 		return r, nil
+
+	case constants.ECR:
+		var nonSecret map[string]string
+		var secret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(row.EncryptedSecret, &secret)
+		if err != nil {
+			return nil, err
+		}
+		r = &ecr.RegistryECR{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: ecr.NonSecret{
+				UseIAMRole:           nonSecret["use_iam_role"],
+				IsPublic:             nonSecret["is_public"],
+				AWSAccessKeyID:       nonSecret["aws_access_key_id"],
+				AWSRegionName:        nonSecret["aws_region_name"],
+				AWSAccountID:         nonSecret["aws_account_id"],
+				TargetAccountRoleARN: nonSecret["target_account_role_arn"],
+			},
+			Secret: ecr.Secret{
+				AWSSecretAccessKey: secret["aws_secret_access_key"],
+			},
+		}
+		return r, err
 	}
 	return r, err
 }
@@ -331,6 +363,25 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 				JfrogRegistryURL: nonSecret["jfrog_registry_url"],
 				JfrogRepository:  nonSecret["jfrog_repository"],
 				JfrogUsername:    nonSecret["jfrog_username"],
+			},
+		}
+		return r, nil
+	case constants.ECR:
+		var nonSecret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		r = &ecr.RegistryECR{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: ecr.NonSecret{
+				UseIAMRole:           nonSecret["use_iam_role"],
+				IsPublic:             nonSecret["is_public"],
+				AWSAccessKeyID:       nonSecret["aws_access_key_id"],
+				AWSRegionName:        nonSecret["aws_region_name"],
+				AWSAccountID:         nonSecret["aws_account_id"],
+				TargetAccountRoleARN: nonSecret["target_account_role_arn"],
 			},
 		}
 		return r, nil

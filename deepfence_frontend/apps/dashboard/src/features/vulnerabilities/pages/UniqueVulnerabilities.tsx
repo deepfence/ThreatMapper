@@ -213,6 +213,13 @@ const UniqueVulnerabilities = () => {
         size: 150,
         maxSize: 250,
       }),
+      columnHelper.accessor('cve_caused_by_package', {
+        cell: (info) => info.getValue(),
+        header: () => 'Package',
+        minSize: 100,
+        size: 200,
+        maxSize: 250,
+      }),
       columnHelper.accessor('cve_severity', {
         enableResizing: false,
         cell: (info) => (

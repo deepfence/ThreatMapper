@@ -353,7 +353,7 @@ func (r *Reporter) Report() (report.Report, error) {
 				NodeType:      report.CloudRegion,
 				CloudProvider: cloudProvider,
 			},
-			Parents: report.Parent{
+			Parents: &report.Parent{
 				CloudProvider: cloudProvider,
 			},
 		},
@@ -393,7 +393,7 @@ func (r *Reporter) Report() (report.Report, error) {
 				MemoryUsage:         memoryUsage,
 				KubernetesClusterId: r.k8sClusterId,
 			},
-			Parents: report.Parent{
+			Parents: &report.Parent{
 				CloudProvider:     cloudProvider,
 				CloudRegion:       cloudRegionId,
 				KubernetesCluster: r.k8sClusterId,

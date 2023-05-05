@@ -60,7 +60,7 @@ var userRegisterSubCmd = &cobra.Command{
 			ConsoleUrl:          consoleUrl,
 			Email:               email,
 			FirstName:           first_name,
-			IsTemporaryPassword: empty,
+			IsTemporaryPassword: &empty,
 			LastName:            last_name,
 			Password:            password,
 		})

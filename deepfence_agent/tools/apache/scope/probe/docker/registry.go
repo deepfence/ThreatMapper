@@ -405,7 +405,7 @@ func (r *registry) sendDeletedUpdate(containerID string) {
 			KubernetesClusterId:   r.kubernetesClusterId,
 			HostName:              r.hostID,
 		},
-		Parents: report.Parent{
+		Parents: &report.Parent{
 			KubernetesCluster: r.kubernetesClusterId,
 			Host:              r.hostID,
 		},

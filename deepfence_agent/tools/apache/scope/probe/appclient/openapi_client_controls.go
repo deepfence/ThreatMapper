@@ -114,11 +114,12 @@ const (
 
 func GetScannersWorkloads() int32 {
 	res := int32(0)
-	res += host.GetSecretScannerJobCount()
-	res += host.GetMalwareScannerJobCount()
-	res += host.GetPackageScannerJobCount()
+	secret := host.GetSecretScannerJobCount()
+	malware := host.GetMalwareScannerJobCount()
+	vuln := host.GetPackageScannerJobCount()
 	//TODO: Add more scanners workload
-	logrus.Infof("GetScannersWorkloads: %d", res)
+	logrus.Infof("GetScannersWorkloads secret: %d malware: %d package: %d", secret, malware, vuln)
+	res = secret + malware + vuln
 	return res
 }
 

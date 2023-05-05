@@ -81,7 +81,6 @@ type Metadata struct {
 	DockerImageCreatedAt   string `json:"docker_image_created_at,omitempty"`
 	DockerImageVirtualSize string `json:"docker_image_virtual_size,omitempty"`
 	DockerImageID          string `json:"docker_image_id,omitempty"`
-	DockerImageLabels      string `json:"docker_image_labels,omitempty"`
 
 	// process
 	Pid       int      `json:"pid,omitempty"`
@@ -105,7 +104,7 @@ type Metadata struct {
 	KubernetesCreated         string   `json:"kubernetes_created,omitempty"`
 	KubernetesIsInHostNetwork bool     `json:"kubernetes_is_in_host_network,omitempty"`
 	KubernetesType            string   `json:"kubernetes_type,omitempty"`
-	KubernetesPorts           []int32  `json:"kubernetes_ports,omitempty"`
+	KubernetesPorts           []string `json:"kubernetes_ports,omitempty"`
 	KubernetesClusterId       string   `json:"kubernetes_cluster_id,omitempty"`
 	KubernetesClusterName     string   `json:"kubernetes_cluster_name,omitempty"`
 }

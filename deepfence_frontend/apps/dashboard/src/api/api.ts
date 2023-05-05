@@ -251,6 +251,8 @@ export function getThreatGraphApiClient() {
 
   return {
     getThreatGraph: threatGraphApi.getThreatGraph.bind(threatGraphApi),
+    getVulnerabilityThreatGraph:
+      threatGraphApi.getVulnerabilityThreatGraph.bind(threatGraphApi),
   };
 }
 
@@ -299,5 +301,7 @@ export function getSettingsApiClient() {
     deleteEmailConfiguration: settingsApi.deleteEmailConfiguration.bind(settingsApi),
     uploadVulnerabilityDatabase:
       settingsApi.uploadVulnerabilityDatabase.bind(settingsApi),
+    getScheduledTasks: settingsApi.getScheduledTasks.bind(settingsApi),
+    updateScheduledTask: settingsApi.updateScheduledTask.bind(settingsApi),
   };
 }
