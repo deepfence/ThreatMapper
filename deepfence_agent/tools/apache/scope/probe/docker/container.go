@@ -37,7 +37,7 @@ type Container interface {
 	PID() int
 	Hostname() string
 	GetNode() report.TopologyNode
-	GetParent() report.Parent
+	GetParent() *report.Parent
 	State() string
 	StateString() string
 	HasTTY() bool
@@ -45,7 +45,7 @@ type Container interface {
 	StartGatheringStats(StatsGatherer) error
 	StopGatheringStats()
 	NetworkMode() (string, bool)
-	NetworkInfo([]net.IP) report.Sets
+	NetworkInfo([]net.IP) *report.Sets
 }
 
 type container struct {
@@ -220,7 +220,7 @@ func addScopeToIPs(hostID string, ips []net.IP) []string {
 	return ipsWithScopes
 }
 
-func (c *container) NetworkInfo(localAddrs []net.IP) report.Sets {
+func (c *container) NetworkInfo(localAddrs []net.IP) *report.Sets {
 	c.RLock()
 	defer c.RUnlock()
 
@@ -283,7 +283,7 @@ func (c *container) NetworkInfo(localAddrs []net.IP) report.Sets {
 	if len(ipsWithScopes) > 0 {
 		s = s.Add(ContainerIPsWithScopes, report.MakeStringSet(ipsWithScopes...))
 	}
-	return s
+	return &s
 }
 
 func (c *container) memoryUsageMetric(stats []docker.Stats) (int64, int64) {
@@ -388,8 +388,8 @@ func (c *container) getBaseNode() (report.Metadata, report.Parent) {
 	return result, parents
 }
 
-func (c *container) GetParent() report.Parent {
-	return c.baseParent
+func (c *container) GetParent() *report.Parent {
+	return &c.baseParent
 }
 
 func (c *container) GetNode() report.TopologyNode {

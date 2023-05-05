@@ -6,11 +6,12 @@ type IDList StringSet
 var emptyIDList = IDList(MakeStringSet())
 
 // MakeIDList makes a new IDList.
-func MakeIDList(ids ...string) IDList {
+func MakeIDList(ids ...string) *IDList {
 	if len(ids) == 0 {
-		return emptyIDList
+		return &emptyIDList
 	}
-	return IDList(MakeStringSet(ids...))
+	idList := IDList(MakeStringSet(ids...))
+	return &idList
 }
 
 // Add is the only correct way to add ids to an IDList.

@@ -114,7 +114,7 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 	}
 	return report.TopologyNode{
 		Metadata: metadata,
-		Parents: report.Parent{
+		Parents: &report.Parent{
 			KubernetesCluster: r.kubernetesClusterId,
 			Host:              r.hostID,
 			ContainerImage:    imageID,
@@ -198,7 +198,7 @@ func (r *Reporter) getImage(image *client.Image) (report.TopologyNode, ImageMeta
 	}
 	return report.TopologyNode{
 			Metadata: metadata,
-			Parents:  report.Parent{Host: r.hostID},
+			Parents:  &report.Parent{Host: r.hostID},
 		},
 		ImageMetadata{
 			ImageName: metadata.ImageName,
