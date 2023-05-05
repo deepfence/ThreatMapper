@@ -2,7 +2,6 @@ package registry
 
 import (
 	"encoding/json"
-	"strconv"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
@@ -235,17 +234,12 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 		if err != nil {
 			return nil, err
 		}
-		useIAMRole, err := strconv.ParseBool(nonSecret["use_iam_role"])
-		if err != nil {
-			return nil, err
-		}
-		isPublic, err := strconv.ParseBool(nonSecret["is_public"])
 		r = &ecr.RegistryECR{
 			RegistryType: row.RegistryType,
 			Name:         row.Name,
 			NonSecret: ecr.NonSecret{
-				UseIAMRole:           useIAMRole,
-				IsPublic:             isPublic,
+				UseIAMRole:           nonSecret["use_iam_role"],
+				IsPublic:             nonSecret["is_public"],
 				AWSAccessKeyID:       nonSecret["aws_access_key_id"],
 				AWSRegionName:        nonSecret["aws_region_name"],
 				AWSAccountID:         nonSecret["aws_account_id"],
@@ -255,6 +249,7 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 				AWSSecretAccessKey: secret["aws_secret_access_key"],
 			},
 		}
+		return r, err
 	}
 	return r, err
 }
@@ -368,6 +363,25 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 				JfrogRegistryURL: nonSecret["jfrog_registry_url"],
 				JfrogRepository:  nonSecret["jfrog_repository"],
 				JfrogUsername:    nonSecret["jfrog_username"],
+			},
+		}
+		return r, nil
+	case constants.ECR:
+		var nonSecret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		r = &ecr.RegistryECR{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: ecr.NonSecret{
+				UseIAMRole:           nonSecret["use_iam_role"],
+				IsPublic:             nonSecret["is_public"],
+				AWSAccessKeyID:       nonSecret["aws_access_key_id"],
+				AWSRegionName:        nonSecret["aws_region_name"],
+				AWSAccountID:         nonSecret["aws_account_id"],
+				TargetAccountRoleARN: nonSecret["target_account_role_arn"],
 			},
 		}
 		return r, nil
