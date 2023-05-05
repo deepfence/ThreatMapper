@@ -88,7 +88,7 @@ const tooltip = new G6.Tooltip({
 
 const getDefaultOptions = (
   theme: Mode,
-  registerNodeName: string,
+  defaultNodeType: string,
 ): G6GraphOptionsWithoutContainer => {
   return {
     fitView: true,
@@ -105,7 +105,7 @@ const getDefaultOptions = (
       preventOverlap: true,
     },
     defaultNode: {
-      type: registerNodeName,
+      type: defaultNodeType,
       labelCfg: {
         style: {
           fill:
@@ -148,7 +148,7 @@ const getDefaultOptions = (
 
 export const useG6raph = (
   graphContainer: HTMLElement | null,
-  registerNodeName: string,
+  defaultNodeType: string,
   options: G6GraphOptionsWithoutContainer = {},
 ) => {
   const [graph, setGraph] = useState<G6Graph | null>(null);
@@ -167,7 +167,7 @@ export const useG6raph = (
     const height = graphContainer.offsetHeight;
     const g6Graph = new G6.Graph({
       plugins: [...plugins, toolbar, tooltip],
-      ...getDefaultOptions(mode, registerNodeName),
+      ...getDefaultOptions(mode, defaultNodeType),
       ...options,
       container: graphContainer,
       width,
