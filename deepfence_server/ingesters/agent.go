@@ -388,7 +388,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			}
 		}
 		if n.Metadata.Pid != -1 {
-			if len(*n.Adjacency) == 0 {
+			if n.Adjacency == nil || len(*n.Adjacency) == 0 {
 				// Handle inbound from internet
 				connections = append(connections, Connection{
 					source:      "in-the-internet",
