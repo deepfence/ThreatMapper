@@ -1,5 +1,5 @@
+import { FaHistory } from 'react-icons/fa';
 import {
-  HiClock,
   HiCode,
   HiDocumentSearch,
   HiGlobeAlt,
@@ -38,7 +38,7 @@ export const settingsTabs: Array<{
   {
     label: 'Scan History & Database Management',
     value: 'scan-history-and-db-management',
-    icon: <HiClock />,
+    icon: <FaHistory />,
   },
   {
     label: 'Diagnostic Logs',

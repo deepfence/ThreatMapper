@@ -1,4 +1,3 @@
-// eslint-disable-next-line simple-import-sort/imports
 import { Outlet, redirect } from 'react-router-dom';
 
 import { FiveZeroZero } from '@/components/error/500';
@@ -72,10 +71,10 @@ import { module as connectorInstructions } from '@/features/settings/pages/Conne
 import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
 import { module as emailConfiguration } from '@/features/settings/pages/EmailConfiguration';
 import { module as globalSettings } from '@/features/settings/pages/GlobalSettings';
+import { module as scanHistoryAndDbManagement } from '@/features/settings/pages/ScanHistoryAndDbManagement';
 import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
-import { module as scanHistoryAndDbManagement } from '@/features/settings/pages/ScanHistoryAndDbManagement';
 import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
 import { module as threatGraphLoader } from '@/features/threat-graph/data-components/threatGraphLoader';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
