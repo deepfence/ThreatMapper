@@ -102,5 +102,7 @@ RUN tar -xzf /usr/local/yara.tar.gz -C /usr/local/ \
     && rm /usr/local/yara.tar.gz \
     && chmod +x /entrypoint.sh
 
+ENV GRYPE_DB_UPDATE_URL="http://deepfence-file-server:9000/database/database/vulnerability/listing.json"
+
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/local/bin/deepfence_worker"]

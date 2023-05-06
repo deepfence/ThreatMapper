@@ -446,7 +446,7 @@ func (h *Handler) getImages(w http.ResponseWriter, r *http.Request) ([]model.Con
 		return images, err
 	}
 
-	log.Info().Msgf("get images for registry id %d found %d images", req.RegistryId, len(images))
+	log.Info().Msgf("get images for registry id %s found %d images", req.RegistryId, len(images))
 
 	return images, nil
 }

@@ -84,7 +84,10 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	}()
 
 	log.Info().Msg("scanning sbom for vulnerabilities ...")
-	vulnerabilities, err := grype.Scan(grypeBin, grypeConfig, sbomFile, nil)
+	env := []string{
+		"GRYPE_DB_UPDATE_URL=http://deepfence-file-server:9000/database/database/vulnerability/listing.json",
+	}
+	vulnerabilities, err := grype.Scan(grypeBin, grypeConfig, sbomFile, &env)
 	if err != nil {
 		log.Error().Msgf("error: %s output: %s", err.Error(), string(vulnerabilities))
 		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)

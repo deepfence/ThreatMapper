@@ -23,6 +23,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
+	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -438,5 +439,10 @@ func initMinio() error {
 		log.Error().Err(err).Msgf("failed to create bucket")
 		return err
 	}
+
+	go func() {
+		handler.PeriodicDownloadDB()
+	}()
+
 	return nil
 }
