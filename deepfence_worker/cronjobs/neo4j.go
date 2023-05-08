@@ -98,6 +98,7 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:Node)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND n.active = false
 		AND NOT exists((n) <-[:SCANNED]-())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
 		WITH n LIMIT 100000
@@ -112,6 +113,7 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:ContainerImage)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND n.active = false
 		AND NOT exists((n) <-[:SCANNED]-())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
 		WITH n LIMIT 100000
@@ -126,6 +128,7 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:Container)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND n.active = false
 		AND NOT exists((n) <-[:SCANNED]-())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
 		WITH n LIMIT 100000
@@ -140,6 +143,7 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:KubernetesCluster)
 		WHERE n.updated_at < TIMESTAMP()-$old_time_ms
+		AND n.active = false
 		WITH n LIMIT 100000
 		DETACH DELETE n`,
 		map[string]interface{}{
