@@ -76,6 +76,7 @@ import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryA
 import { useGetCloudFilters } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { PostureResultChart } from '@/features/postures/components/PostureResultChart';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { PostureSeverityType, ScanStatusEnum, ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -350,7 +351,7 @@ type ActionFunctionType =
 const action = async ({
   params: { scanId = '' },
   request,
-}: ActionFunctionArgs): Promise<null> => {
+}: ActionFunctionArgs): Promise<null | { success: boolean }> => {
   const formData = await request.formData();
   const ids = (formData.getAll('ids[]') ?? []) as string[];
   const actionType = formData.get('actionType');
@@ -430,7 +431,9 @@ const action = async ({
   }
 
   if (actionType === ActionEnumType.DELETE) {
-    toast.success('Deleted successfully');
+    return {
+      success: true,
+    };
   } else if (actionType === ActionEnumType.NOTIFY) {
     toast.success('Notified successfully');
   } else if (actionType === ActionEnumType.MASK) {
@@ -466,37 +469,41 @@ const DeleteConfirmationModal = ({
 
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          The selected compliances will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, Cancel
-          </Button>
-          <Button
-            size="xs"
-            color="danger"
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              onDeleteAction(ActionEnumType.DELETE);
-              setShowDialog(false);
+      {!fetcher.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
             }}
           >
-            Yes, I&apos;m sure
-          </Button>
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            The selected compliances will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              size="xs"
+              color="danger"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteAction(ActionEnumType.DELETE);
+                setShowDialog(false);
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
     </Modal>
   );
 };

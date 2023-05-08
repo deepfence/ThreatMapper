@@ -6,6 +6,7 @@ import { useFetcher, useParams } from 'react-router-dom';
 import { Button, createColumnHelper, Dropdown, DropdownItem, Modal } from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 
 import { IntegrationType } from './IntegrationForm';
 
@@ -23,51 +24,52 @@ const DeleteConfirmationModal = ({
     message: string;
   }>();
 
-  if (fetcher.data?.deleteSuccess) {
-    setShowDialog(false);
-  }
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          The selected integration will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-
-        {fetcher.data?.message ? (
-          <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
-        ) : null}
-
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, Cancel
-          </Button>
-          <Button
-            size="xs"
-            color="danger"
-            disabled={fetcher.state !== 'idle'}
-            loading={fetcher.state !== 'idle'}
-            onClick={() => {
-              const formData = new FormData();
-              formData.append('_actionType', 'delete');
-              formData.append('id', id);
-              fetcher.submit(formData, {
-                method: 'post',
-              });
+      {!fetcher.data?.deleteSuccess ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
             }}
           >
-            Yes, I&apos;m sure
-          </Button>
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            The selected integration will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+
+          {fetcher.data?.message ? (
+            <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
+          ) : null}
+
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              size="xs"
+              color="danger"
+              disabled={fetcher.state !== 'idle'}
+              loading={fetcher.state !== 'idle'}
+              onClick={() => {
+                const formData = new FormData();
+                formData.append('_actionType', 'delete');
+                formData.append('id', id);
+                fetcher.submit(formData, {
+                  method: 'post',
+                });
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
     </Modal>
   );
 };

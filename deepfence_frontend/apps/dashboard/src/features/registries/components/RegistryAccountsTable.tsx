@@ -35,6 +35,7 @@ import { DFLink } from '@/components/DFLink';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import {
   MalwareScanNodeTypeEnum,
   ScanTypeEnum,
@@ -95,46 +96,44 @@ const DeleteConfirmationModal = ({
   const fetcher = useFetcher<ActionReturnType>();
   const { state, data } = fetcher;
 
-  useEffect(() => {
-    if (data?.success) {
-      setShowDialog(false);
-    }
-  }, [data]);
-
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          The selected accounts will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-        {data?.message && <p className="text-red-500 text-sm mb-4">{data.message}</p>}
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, cancel
-          </Button>
-          <fetcher.Form method="post">
-            <input type="text" name="_nodeId" hidden readOnly value={id} />
-            <Button
-              size="xs"
-              color="danger"
-              type="submit"
-              disabled={state !== 'idle'}
-              loading={state !== 'idle'}
-            >
-              Yes, I&apos;m sure
+      {!fetcher.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
+            }}
+          >
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            The selected accounts will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+          {data?.message && <p className="text-red-500 text-sm mb-4">{data.message}</p>}
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, cancel
             </Button>
-          </fetcher.Form>
+            <fetcher.Form method="post">
+              <input type="text" name="_nodeId" hidden readOnly value={id} />
+              <Button
+                size="xs"
+                color="danger"
+                type="submit"
+                disabled={state !== 'idle'}
+                loading={state !== 'idle'}
+              >
+                Yes, I&apos;m sure
+              </Button>
+            </fetcher.Form>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="Registry account deleted sucessfully!" />
+      )}
     </Modal>
   );
 };
