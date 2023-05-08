@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -123,31 +124,7 @@ func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registr
 func RegistryImagesToMaps(ms []model.ContainerImage) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
-		res = append(res, toMap(v))
+		res = append(res, utils.StructToMap(v))
 	}
 	return res
-}
-
-func toMap(i model.ContainerImage) map[string]interface{} {
-	out, err := json.Marshal(i)
-	if err != nil {
-		return nil
-	}
-	bb := map[string]interface{}{}
-	_ = json.Unmarshal(out, &bb)
-	bb = convertStructFieldToJSONString(bb, "metrics")
-	bb = convertStructFieldToJSONString(bb, "metadata")
-	return bb
-}
-
-func convertStructFieldToJSONString(bb map[string]interface{}, key string) map[string]interface{} {
-	if val, ok := bb[key]; ok && val != nil {
-		v, e := json.Marshal(val)
-		if e == nil {
-			bb[key] = string(v)
-		} else {
-			bb[key] = "error"
-		}
-	}
-	return bb
 }

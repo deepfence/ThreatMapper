@@ -89,18 +89,18 @@ type Host struct {
 	CpuUsage                  float64          `json:"cpu_usage" required:"true"`
 	MemoryMax                 int64            `json:"memory_max" required:"true"`
 	MemoryUsage               int64            `json:"memory_usage" required:"true"`
-	VulnerabilitiesCount      int64            `json:"vulnerabilities_count" required:"true"`
-	VulnerabilityScanStatus   string           `json:"vulnerability_scan_status" required:"true"`
-	VulnerabilityLatestScanId string           `json:"vulnerability_latest_scan_id" required:"true"`
-	SecretsCount              int64            `json:"secrets_count" required:"true"`
-	SecretScanStatus          string           `json:"secret_scan_status" required:"true"`
-	SecretLatestScanId        string           `json:"secret_latest_scan_id" required:"true"`
-	MalwaresCount             int64            `json:"malwares_count" required:"true"`
-	MalwareScanStatus         string           `json:"malware_scan_status" required:"true"`
-	MalwareLatestScanId       string           `json:"malware_latest_scan_id" required:"true"`
-	CompliancesCount          int64            `json:"compliances_count" required:"true"`
-	ComplianceScanStatus      string           `json:"compliance_scan_status" required:"true"`
-	ComplianceLatestScanId    string           `json:"compliance_latest_scan_id" required:"true"`
+	VulnerabilitiesCount      int64            `json:"vulnerabilities_count,omitempty" required:"true"`
+	VulnerabilityScanStatus   string           `json:"vulnerability_scan_status,omitempty" required:"true"`
+	VulnerabilityLatestScanId string           `json:"vulnerability_latest_scan_id,omitempty" required:"true"`
+	SecretsCount              int64            `json:"secrets_count,omitempty" required:"true"`
+	SecretScanStatus          string           `json:"secret_scan_status,omitempty" required:"true"`
+	SecretLatestScanId        string           `json:"secret_latest_scan_id,omitempty" required:"true"`
+	MalwaresCount             int64            `json:"malwares_count,omitempty" required:"true"`
+	MalwareScanStatus         string           `json:"malware_scan_status,omitempty" required:"true"`
+	MalwareLatestScanId       string           `json:"malware_latest_scan_id,omitempty" required:"true"`
+	CompliancesCount          int64            `json:"compliances_count,omitempty" required:"true"`
+	ComplianceScanStatus      string           `json:"compliance_scan_status,omitempty" required:"true"`
+	ComplianceLatestScanId    string           `json:"compliance_latest_scan_id,omitempty" required:"true"`
 	InboundConnections        []Connection     `json:"inbound_connections" required:"true"`
 	OutboundConnections       []Connection     `json:"outbound_connections" required:"true"`
 }
@@ -214,15 +214,15 @@ type Container struct {
 	CpuUsage                   float64                `json:"cpu_usage" required:"true"`
 	MemoryMax                  int64                  `json:"memory_max" required:"true"`
 	MemoryUsage                int64                  `json:"memory_usage" required:"true"`
-	VulnerabilitiesCount       int64                  `json:"vulnerabilities_count" required:"true"`
-	VulnerabilityScanStatus    string                 `json:"vulnerability_scan_status" required:"true"`
-	VulnerabilityLatestScanId  string                 `json:"vulnerability_latest_scan_id" required:"true"`
-	SecretsCount               int64                  `json:"secrets_count" required:"true"`
-	SecretScanStatus           string                 `json:"secret_scan_status" required:"true"`
-	SecretLatestScanId         string                 `json:"secret_latest_scan_id" required:"true"`
-	MalwaresCount              int64                  `json:"malwares_count" required:"true"`
-	MalwareScanStatus          string                 `json:"malware_scan_status" required:"true"`
-	MalwareLatestScanId        string                 `json:"malware_latest_scan_id" required:"true"`
+	VulnerabilitiesCount       int64                  `json:"vulnerabilities_count,omitempty" required:"true"`
+	VulnerabilityScanStatus    string                 `json:"vulnerability_scan_status,omitempty" required:"true"`
+	VulnerabilityLatestScanId  string                 `json:"vulnerability_latest_scan_id,omitempty" required:"true"`
+	SecretsCount               int64                  `json:"secrets_count,omitempty" required:"true"`
+	SecretScanStatus           string                 `json:"secret_scan_status,omitempty" required:"true"`
+	SecretLatestScanId         string                 `json:"secret_latest_scan_id,omitempty" required:"true"`
+	MalwaresCount              int64                  `json:"malwares_count,omitempty" required:"true"`
+	MalwareScanStatus          string                 `json:"malware_scan_status,omitempty" required:"true"`
+	MalwareLatestScanId        string                 `json:"malware_latest_scan_id,omitempty" required:"true"`
 }
 
 func (Container) NodeType() string {
@@ -289,15 +289,15 @@ type ContainerImage struct {
 	DockerImageVirtualSize    string      `json:"docker_image_virtual_size" required:"true"`
 	DockerImageID             string      `json:"docker_image_id" required:"true"`
 	Metadata                  Metadata    `json:"metadata" required:"true" nested_json:"true"`
-	VulnerabilitiesCount      int64       `json:"vulnerabilities_count" required:"true"`
-	VulnerabilityScanStatus   string      `json:"vulnerability_scan_status" required:"true"`
-	VulnerabilityLatestScanId string      `json:"vulnerability_latest_scan_id" required:"true"`
-	SecretsCount              int64       `json:"secrets_count" required:"true"`
-	SecretScanStatus          string      `json:"secret_scan_status" required:"true"`
-	SecretLatestScanId        string      `json:"secret_latest_scan_id" required:"true"`
-	MalwaresCount             int64       `json:"malwares_count" required:"true"`
-	MalwareScanStatus         string      `json:"malware_scan_status" required:"true"`
-	MalwareLatestScanId       string      `json:"malware_latest_scan_id" required:"true"`
+	VulnerabilitiesCount      int64       `json:"vulnerabilities_count,omitempty" required:"true"`
+	VulnerabilityScanStatus   string      `json:"vulnerability_scan_status,omitempty" required:"true"`
+	VulnerabilityLatestScanId string      `json:"vulnerability_latest_scan_id,omitempty" required:"true"`
+	SecretsCount              int64       `json:"secrets_count,omitempty" required:"true"`
+	SecretScanStatus          string      `json:"secret_scan_status,omitempty" required:"true"`
+	SecretLatestScanId        string      `json:"secret_latest_scan_id,omitempty" required:"true"`
+	MalwaresCount             int64       `json:"malwares_count,omitempty" required:"true"`
+	MalwareScanStatus         string      `json:"malware_scan_status,omitempty" required:"true"`
+	MalwareLatestScanId       string      `json:"malware_latest_scan_id,omitempty" required:"true"`
 	Containers                []Container `json:"containers" required:"true"`
 }
 
