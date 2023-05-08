@@ -405,7 +405,10 @@ class CveScanECRImages(CveScanRegistryImages):
                     raise DFError('region is required for iam role')
         else:
             if not self.aws_access_key_id or not self.aws_secret_access_key or not self.aws_region_name:
-                raise DFError('access key, secret key and region is required')
+                if self.is_public == "true":
+                    raise DFError('access key and secret key are required')
+                else:
+                    raise DFError('access key, secret key and region are required')
         token = None
         try:
             if self.registry_id:
