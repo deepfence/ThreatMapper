@@ -19,10 +19,10 @@ var client = &http.Client{
 	},
 }
 
-func listImagesRegistryV2(url, repository, userName, password string) ([]model.ContainerImage, error) {
+func listImagesRegistryV2(url, repository, userName, password string) ([]model.IngestedContainerImage, error) {
 
 	var (
-		images []model.ContainerImage
+		images []model.IngestedContainerImage
 	)
 
 	repos, err := listCatalogRegistryV2(url, repository, userName, password)
@@ -176,8 +176,8 @@ func getManifestsV2(url, repository, userName, password, repoName, tag string) (
 	return digest, manifests, err
 }
 
-func getImageWithTags(url, repository, userName, password, repoName string, repoTags RepoTagsResp) []model.ContainerImage {
-	var imageAndTag []model.ContainerImage
+func getImageWithTags(url, repository, userName, password, repoName string, repoTags RepoTagsResp) []model.IngestedContainerImage {
+	var imageAndTag []model.IngestedContainerImage
 
 	for _, tag := range repoTags.Tags {
 		digest, manifest, err := getManifestsV2(url, repository, userName, password, repoName, tag)
@@ -192,7 +192,7 @@ func getImageWithTags(url, repository, userName, password, repoName string, repo
 			}
 		}
 
-		tt := model.ContainerImage{
+		tt := model.IngestedContainerImage{
 			ID:   model.DigestToID(digest),
 			Name: repoName,
 			Tag:  tag,

@@ -78,7 +78,7 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	return insertToNeo4j(ctx, list, r, pgId)
 }
 
-func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registry.Registry, pgId int32) error {
+func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r registry.Registry, pgId int32) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -121,7 +121,7 @@ func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registr
 	return tx.Commit()
 }
 
-func RegistryImagesToMaps(ms []model.ContainerImage) []map[string]interface{} {
+func RegistryImagesToMaps(ms []model.IngestedContainerImage) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
 		res = append(res, utils.StructToMap(v))

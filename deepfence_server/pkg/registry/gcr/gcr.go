@@ -76,7 +76,7 @@ func (d *RegistryGCR) DecryptExtras(aes encryption.AES) error {
 	return err
 }
 
-func (d *RegistryGCR) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
+func (d *RegistryGCR) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
 	return listImagesRegistryV2(d.NonSecret.RegistryURL, d.NonSecret.ProjectId,
 		"_json_key", d.Extras.ServiceAccountJson)
 }

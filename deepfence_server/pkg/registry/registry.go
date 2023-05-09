@@ -398,7 +398,7 @@ type Registry interface {
 	DecryptExtras(aes encryption.AES) error
 	GetSecret() map[string]interface{}
 	GetExtras() map[string]interface{}
-	FetchImagesFromRegistry() ([]model.ContainerImage, error)
+	FetchImagesFromRegistry() ([]model.IngestedContainerImage, error)
 	GetNamespace() string
 	GetRegistryType() string
 	GetUsername() string

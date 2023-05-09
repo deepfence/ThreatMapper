@@ -40,7 +40,7 @@ func (e *RegistryECR) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (e *RegistryECR) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
+func (e *RegistryECR) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
 	// based on iamrole we need to fetch images
 	if e.NonSecret.UseIAMRole == "true" {
 		return listImagesCrossAccount(e.NonSecret.AWSRegionName, e.NonSecret.AWSAccountID, e.NonSecret.TargetAccountRoleARN)

@@ -12,7 +12,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 )
 
-func listImages(awsAccessKey, awsSecretKey, awsRegion string) ([]model.ContainerImage, error) {
+func listImages(awsAccessKey, awsSecretKey, awsRegion string) ([]model.IngestedContainerImage, error) {
 	// Set up AWS session with access key ID and secret access key
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(awsRegion),
@@ -31,8 +31,8 @@ func listImages(awsAccessKey, awsSecretKey, awsRegion string) ([]model.Container
 		return nil, fmt.Errorf("error describing repositories: %v", err)
 	}
 
-	// Create slice of ContainerImage structs
-	var containerImages []model.ContainerImage
+	// Create slice of IngestedContainerImage structs
+	var containerImages []model.IngestedContainerImage
 
 	var imageResult []*ecr.ListImagesOutput
 	// List images for each repository
@@ -48,10 +48,10 @@ func listImages(awsAccessKey, awsSecretKey, awsRegion string) ([]model.Container
 			return nil, fmt.Errorf("error listing images for repository %s: %v", *repo.RepositoryName, err)
 		}
 		imageResult = append(imageResult, result)
-		// Add containers to ContainerImage struct
+		// Add containers to IngestedContainerImage struct
 		for _, image := range result.ImageIds {
 			if image.ImageTag != nil {
-				var containerImage model.ContainerImage
+				var containerImage model.IngestedContainerImage
 				containerImage.Name = *repo.RepositoryUri
 				containerImage.ID = model.DigestToID(*image.ImageDigest)
 				containerImage.Tag = *image.ImageTag
@@ -67,7 +67,7 @@ func listImages(awsAccessKey, awsSecretKey, awsRegion string) ([]model.Container
 
 	return containerImages, nil
 }
-func listImagesCrossAccount(awsRegion, awsAccountID, targetAccountRoleARN string) ([]model.ContainerImage, error) {
+func listImagesCrossAccount(awsRegion, awsAccountID, targetAccountRoleARN string) ([]model.IngestedContainerImage, error) {
 	// Create session with default credentials provider chain
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String(awsRegion),
@@ -93,8 +93,8 @@ func listImagesCrossAccount(awsRegion, awsAccountID, targetAccountRoleARN string
 		return nil, fmt.Errorf("error describing repositories: %v", err)
 	}
 
-	// Create slice of ContainerImage structs
-	var containerImages []model.ContainerImage
+	// Create slice of IngestedContainerImage structs
+	var containerImages []model.IngestedContainerImage
 
 	// List images for each repository
 	for _, repo := range result.Repositories {
@@ -109,9 +109,9 @@ func listImagesCrossAccount(awsRegion, awsAccountID, targetAccountRoleARN string
 			return nil, fmt.Errorf("error listing images for repository %s: %v", *repo.RepositoryName, err)
 		}
 
-		// Add containers to ContainerImage struct
+		// Add containers to IngestedContainerImage struct
 		for _, image := range result.ImageIds {
-			var containerImage model.ContainerImage
+			var containerImage model.IngestedContainerImage
 			containerImage.Name = *repo.RepositoryUri
 			containerImage.Tag = *image.ImageTag
 			containerImage.ID = model.DigestToID(*image.ImageDigest)

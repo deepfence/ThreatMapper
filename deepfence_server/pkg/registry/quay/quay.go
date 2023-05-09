@@ -69,7 +69,7 @@ func (d *RegistryQuay) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (d *RegistryQuay) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
+func (d *RegistryQuay) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
 	return listImages(d.NonSecret.QuayRegistryURL, d.NonSecret.QuayNamespace, d.Secret.QuayAccessToken)
 }
 
