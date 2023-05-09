@@ -727,7 +727,7 @@ const ScanResusltTable = () => {
             <div className="truncate">{info.row.original.test_number}</div>
           </DFLink>
         ),
-        header: () => 'Test ID',
+        header: () => 'ID',
         minSize: 50,
         size: 60,
         maxSize: 65,
