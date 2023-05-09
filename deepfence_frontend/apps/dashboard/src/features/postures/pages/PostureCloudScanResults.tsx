@@ -494,7 +494,6 @@ const DeleteConfirmationModal = ({
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteAction(ActionEnumType.DELETE);
-                setShowDialog(false);
               }}
             >
               Yes, I&apos;m sure

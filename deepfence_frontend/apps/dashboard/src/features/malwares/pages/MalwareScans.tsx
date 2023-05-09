@@ -539,7 +539,6 @@ const DeleteConfirmationModal = ({
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteAction(ActionEnumType.DELETE);
-                setShowDialog(false);
               }}
             >
               Yes, I&apos;m sure
@@ -587,12 +586,14 @@ const ActionDropdown = ({
 
   return (
     <>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        scanId={scanId}
-        nodeId={nodeId}
-        setShowDialog={setShowDeleteDialog}
-      />
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          scanId={scanId}
+          nodeId={nodeId}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
       <Dropdown
         triggerAsChild
         align="end"
