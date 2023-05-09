@@ -178,7 +178,7 @@ const HeaderComponent = () => {
     <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <Breadcrumb separator={<HiChevronRight />} transparent>
         <BreadcrumbLink>
-          <DFLink to={'/registries'}>REGISTRIES</DFLink>
+          <DFLink to={'/registries'}>Registries</DFLink>
         </BreadcrumbLink>
         <BreadcrumbLink>
           <DFLink
