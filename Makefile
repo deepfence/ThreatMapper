@@ -35,6 +35,11 @@ agent:
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
 	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" bash build.sh)
 
+.PHONY: deepfenced
+deepfenced:
+	(cd ./deepfence_bootstrapper && make)
+	cp ./deepfence_bootstrapper/deepfence_bootstrapper ./deepfence_agent
+
 .PHONY: redis
 redis:
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_redis_ce:$(DF_IMG_TAG) -f deepfence_redis/redis-Dockerfile ./deepfence_redis
