@@ -14,6 +14,7 @@ import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ModelSummary } from '@/api/generated/models/ModelSummary';
 import { LinkButton } from '@/components/LinkButton';
 import { getRegistryLogo } from '@/constants/logos';
+import { useRegistrySummary } from '@/queries/registries';
 import { useTheme } from '@/theme/ThemeContext';
 import { RegistryType } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -188,7 +189,7 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
 };
 
 const Registries = () => {
-  const loaderData = useLoaderData() as LoaderDataType;
+  const { data, isLoading } = useRegistrySummary();
   const { mode } = useTheme();
 
   return (
@@ -199,25 +200,20 @@ const Registries = () => {
         </span>
       </div>
       <div className="flex gap-2 flex-wrap my-2 pl-2">
-        <Suspense fallback={<RegistrySkeleton />}>
-          <DFAwait resolve={loaderData.data}>
-            {(resolvedData: LoaderDataType['data']) => {
-              return resolvedData.map((registry) => {
-                return (
-                  <Registry
-                    key={
-                      getRegistryLogo(
-                        registry.type as unknown as keyof typeof RegistryType,
-                        mode,
-                      ).name
-                    }
-                    registry={registry}
-                  />
-                );
-              });
-            }}
-          </DFAwait>
-        </Suspense>
+        {isLoading ? <RegistrySkeleton /> : null}
+        {data?.map((registry) => {
+          return (
+            <Registry
+              key={
+                getRegistryLogo(
+                  registry.type as unknown as keyof typeof RegistryType,
+                  mode,
+                ).name
+              }
+              registry={registry}
+            />
+          );
+        })}
       </div>
     </>
   );
