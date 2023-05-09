@@ -316,7 +316,7 @@ const UniqueVulnerabilities = () => {
     ];
 
     return columns;
-  }, []);
+  }, [searchParams]);
 
   return (
     <div>

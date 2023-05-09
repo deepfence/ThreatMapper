@@ -14,22 +14,28 @@ export const AzureConnectorForm = () => {
       ? '---DEEPFENCE-API-KEY---'
       : data?.api_token;
   const code = `provider "azurerm" {
-    features {}
-    subscription_id = "<SUBSCRIPTION_ID eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX>"
-  }
-  
-  module "cloud-scanner_example_single-subscription" {
-    source              = "deepfence/cloud-scanner/azure//examples/single-subscription"
-    version             = "0.1.0"
-    mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
-    mgmt-console-port   = "443"
-    deepfence-key       = "${dfApiKey}"
-  }
-  `;
+  features {}
+  subscription_id = "<SUBSCRIPTION_ID eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX>"
+}
+
+module "cloud-scanner_example_single-subscription" {
+  source              = "deepfence/cloud-scanner/azure//examples/single-subscription"
+  version             = "0.2.0"
+  mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
+  mgmt-console-port   = "443"
+  deepfence-key       = "${dfApiKey}"
+  name                = "deepfence-cloud-scanner"
+}
+
+variable "image" {
+  type        = string
+  default     = "quay.io/deepfenceio/cloud-scanner:1.5.0"
+}
+`;
 
   return (
     <Stepper>
-      <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation">
+      <Step indicator={<HiViewGridAdd />} title="Teraform">
         <div className={`${Typography.size.sm} dark:text-gray-200`}>
           Connect to your Azure Cloud Account via Teraform. Find out more information by{' '}
           <a
