@@ -348,6 +348,7 @@ export const HostsTable = () => {
           enablePagination
           manualPagination
           enableRowSelection
+          approximatePagination
           rowSelectionState={rowSelectionState}
           onRowSelectionChange={setRowSelectionState}
           getRowId={(row) => row.node_id}

@@ -302,6 +302,7 @@ export const KubernetesTable = () => {
           enablePagination
           manualPagination
           enableRowSelection
+          approximatePagination
           rowSelectionState={rowSelectionState}
           onRowSelectionChange={setRowSelectionState}
           getRowId={(row) => row.node_id}

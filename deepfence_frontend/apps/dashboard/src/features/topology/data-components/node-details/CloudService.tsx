@@ -204,6 +204,7 @@ export const CloudService = ({
             pageSize={PAGE_SIZE}
             siblingCount={1}
             sizing="sm"
+            approximatePagination
           />
         </div>
       </SlidingModalContent>

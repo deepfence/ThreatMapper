@@ -880,6 +880,7 @@ const ScanResusltTable = () => {
                   enablePagination
                   manualPagination
                   enableColumnResizing
+                  approximatePagination
                   totalRows={data.pagination.totalRows}
                   pageSize={PAGE_SIZE}
                   pageIndex={data.pagination.currentPage}
