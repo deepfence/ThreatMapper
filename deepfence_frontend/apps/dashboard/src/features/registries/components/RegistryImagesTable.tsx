@@ -161,6 +161,7 @@ export const RegistryImagesTable = ({
         manualPagination
         enableColumnResizing
         enableSorting
+        approximatePagination
         totalRows={totalRows}
         pageSize={PAGE_SIZE}
         pageIndex={currentPage}

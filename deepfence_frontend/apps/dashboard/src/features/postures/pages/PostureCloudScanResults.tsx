@@ -904,6 +904,7 @@ const ScanResultTable = () => {
                   onRowSelectionChange={setRowSelectionState}
                   enablePagination
                   manualPagination
+                  approximatePagination
                   enableColumnResizing
                   totalRows={data.pagination.totalRows}
                   pageSize={PAGE_SIZE}

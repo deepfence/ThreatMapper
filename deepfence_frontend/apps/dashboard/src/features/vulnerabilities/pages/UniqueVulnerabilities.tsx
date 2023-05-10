@@ -347,6 +347,7 @@ const UniqueVulnerabilities = () => {
                   manualPagination
                   enableRowSelection
                   enableColumnResizing
+                  approximatePagination
                   totalRows={resolvedData.totalRows}
                   pageSize={PAGE_SIZE}
                   pageIndex={resolvedData.currentPage}
