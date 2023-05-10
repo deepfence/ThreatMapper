@@ -61,21 +61,28 @@ func (v *VulnerabilityDBListing) Append(db Database, version string) {
 }
 
 func (v *VulnerabilityDBListing) Sort(version string) {
-	v5db := v.Available[version]
+	if len(v.Available[version]) <= 1 {
+		return
+	}
 
-	sort.Slice(v5db[:], func(i, j int) bool {
-		return v5db[i].Built.Before(v5db[j].Built)
+	dbs := v.Available[version]
+	sort.Slice(dbs[:], func(i, j int) bool {
+		return dbs[i].Built.Before(dbs[j].Built)
 	})
-
-	v.Available[version] = v5db
+	v.Available[version] = dbs
 }
 
 func (v *VulnerabilityDBListing) Latest(version string) *Database {
+	// sort, get last element
 	v.Sort(version)
+
 	dbs, ok := v.Available[version]
 	if !ok {
 		return nil
 
 	}
-	return &dbs[len(dbs)-1]
+	if len(dbs) >= 1 {
+		return &dbs[len(dbs)-1]
+	}
+	return nil
 }

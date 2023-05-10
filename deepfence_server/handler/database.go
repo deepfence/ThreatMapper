@@ -188,10 +188,17 @@ func downloadVulnerabilityDb() {
 		return
 	}
 
+	log.Info().Msgf("available vulnerability databases V3=%d V5=%d",
+		len(listing.Available[model.Version3]), len(listing.Available[model.Version5]))
+
 	// sort by built time
-	listing.Sort(model.Version5)
+	// listing.Sort(model.Version5)
 
 	latest := listing.Latest(model.Version5)
+	if latest == nil {
+		log.Error().Msgf("latest v5 database are empty, check listing url")
+		return
+	}
 
 	log.Info().Msgf("latest threat intel db: %v", latest)
 
