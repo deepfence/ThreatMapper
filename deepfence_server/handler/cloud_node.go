@@ -42,9 +42,13 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		}
 		monitoredAccountIds[req.CloudAccount] = nodeId
 		orgNodeId := fmt.Sprintf("%s-%s-cloud-org", req.CloudProvider, orgAccountId)
+		orgCloudProvider := model.PostureProviderGCPOrg
+		if req.CloudProvider == model.PostureProviderAWS {
+			orgCloudProvider = model.PostureProviderAWSOrg
+		}
 		node := map[string]interface{}{
 			"node_id":        orgNodeId,
-			"cloud_provider": model.PostureProviderAWSOrg,
+			"cloud_provider": orgCloudProvider,
 			"node_name":      orgAccountId,
 		}
 		err = model.UpsertCloudComplianceNode(ctx, node, "")

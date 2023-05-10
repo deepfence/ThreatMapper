@@ -13,11 +13,12 @@ import (
 const PostureProviderAWS = "aws"
 const PostureProviderAWSOrg = "aws_org"
 const PostureProviderGCP = "gcp"
+const PostureProviderGCPOrg = "gcp_org"
 const PostureProviderAzure = "azure"
 const PostureProviderLinux = "linux"
 const PostureProviderKubernetes = "kubernetes"
 
-var SupportedPostureProviders = []string{PostureProviderAWS, PostureProviderAWSOrg, PostureProviderGCP,
+var SupportedPostureProviders = []string{PostureProviderAWS, PostureProviderAWSOrg, PostureProviderGCP, PostureProviderGCPOrg,
 	PostureProviderAzure, PostureProviderLinux, PostureProviderKubernetes}
 
 type CloudNodeAccountRegisterReq struct {
@@ -257,8 +258,11 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 				postureProvider.ScanCount = int(nodeRec.Values[1].(int64))
 				postureProvider.CompliancePercentage = nodeRec.Values[2].(float64)
 			}
-		} else if postureProviderName == PostureProviderAWSOrg {
-			cloudProvider := PostureProviderAWS
+		} else if postureProviderName == PostureProviderAWSOrg || postureProviderName == PostureProviderGCPOrg {
+			cloudProvider := PostureProviderGCP
+			if postureProviderName == PostureProviderAWSOrg {
+				cloudProvider = PostureProviderAWS
+			}
 			postureProvider.NodeLabel = "Organizations"
 			nodeRes, err := tx.Run(fmt.Sprintf(`
 			MATCH (o:%s{cloud_provider:$cloud_provider+'_org'})
@@ -349,6 +353,9 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	if cloudProvider == PostureProviderAWSOrg {
 		cloudProvider = PostureProviderAWS
 		isOrgListing = true
+	} else if cloudProvider == PostureProviderGCPOrg {
+		cloudProvider = PostureProviderGCP
+		isOrgListing = true
 	} else if cloudProvider == PostureProviderKubernetes {
 		neo4jNodeType = "KubernetesCluster"
 	} else if cloudProvider == PostureProviderLinux {
@@ -374,7 +381,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		}
 		RETURN  x, node_name, cloud_provider, compliance_percentage, updated_at, COALESCE(last_scan_id, ''), COALESCE(last_scan_status, '')
 		ORDER BY updated_at`, neo4jNodeType, neo4jNodeType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType,
-			neo4jNodeType, scanType, neo4jNodeType, scanType)+fw.FetchWindow2CypherQuery(),
+			neo4jNodeType, scanType, neo4jNodeType, scanType, utils.NodeTypeCloudNode)+fw.FetchWindow2CypherQuery(),
 			map[string]interface{}{"cloud_provider": cloudProvider, "pass_status": passStatus})
 		if err != nil {
 			return CloudNodeAccountsListResp{Total: 0}, err
