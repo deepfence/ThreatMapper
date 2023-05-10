@@ -381,7 +381,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		}
 		RETURN  x, node_name, cloud_provider, compliance_percentage, updated_at, COALESCE(last_scan_id, ''), COALESCE(last_scan_status, '')
 		ORDER BY updated_at`, neo4jNodeType, neo4jNodeType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType,
-			neo4jNodeType, scanType, neo4jNodeType, scanType)+fw.FetchWindow2CypherQuery(),
+			neo4jNodeType, scanType, neo4jNodeType, scanType, utils.NodeTypeCloudNode)+fw.FetchWindow2CypherQuery(),
 			map[string]interface{}{"cloud_provider": cloudProvider, "pass_status": passStatus})
 		if err != nil {
 			return CloudNodeAccountsListResp{Total: 0}, err
