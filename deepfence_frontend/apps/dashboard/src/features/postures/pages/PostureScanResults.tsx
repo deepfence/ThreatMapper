@@ -499,6 +499,10 @@ const HistoryDropdown = () => {
   const { navigate } = usePageNavigation();
   const fetcher = useFetcher<ApiLoaderDataType>();
   const loaderData = useLoaderData() as LoaderDataType;
+  const params = useParams() as {
+    scanId: string;
+    nodeType: string;
+  };
 
   const isScanHistoryLoading = fetcher.state === 'loading';
 
@@ -548,8 +552,9 @@ const HistoryDropdown = () => {
                         key={item.scanId}
                         onClick={() => {
                           navigate(
-                            generatePath('/posture/scan-results/:scanId', {
+                            generatePath('/posture/scan-results/:nodeType/:scanId', {
                               scanId: item.scanId,
+                              nodeType: params.nodeType,
                             }),
                             {
                               replace: true,
