@@ -400,11 +400,13 @@ const ActionDropdown = ({
 
   return (
     <>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        id={data.report_id ?? ''}
-        setShowDialog={setShowDeleteDialog}
-      />
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          id={data.report_id ?? ''}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
       <Dropdown
         triggerAsChild={true}
         align="end"

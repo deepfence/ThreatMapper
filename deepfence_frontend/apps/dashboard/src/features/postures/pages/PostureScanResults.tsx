@@ -616,13 +616,16 @@ const ActionDropdown = ({
   ids,
   align,
   triggerButton,
+  setIdsToDelete,
+  setShowDeleteDialog,
 }: {
   ids: string[];
   align: 'center' | 'end' | 'start';
   triggerButton: React.ReactNode;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const fetcher = useFetcher();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const onTableAction = useCallback(
     (actionType: string) => {
@@ -637,67 +640,61 @@ const ActionDropdown = ({
   );
 
   return (
-    <>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        ids={ids}
-        setShowDialog={setShowDeleteDialog}
-      />
-      <Dropdown
-        triggerAsChild={true}
-        align={align}
-        content={
-          <>
-            <DropdownItem onClick={() => onTableAction(ActionEnumType.MASK)}>
+    <Dropdown
+      triggerAsChild={true}
+      align={align}
+      content={
+        <>
+          <DropdownItem onClick={() => onTableAction(ActionEnumType.MASK)}>
+            <IconContext.Provider
+              value={{ className: 'text-gray-700 dark:text-gray-400' }}
+            >
+              <HiEyeOff />
+            </IconContext.Provider>
+            <span className="text-gray-700 dark:text-gray-400">Mask</span>
+          </DropdownItem>
+          <DropdownItem onClick={() => onTableAction(ActionEnumType.UNMASK)}>
+            <IconContext.Provider
+              value={{ className: 'text-gray-700 dark:text-gray-400' }}
+            >
+              <HiEye />
+            </IconContext.Provider>
+            <span className="text-gray-700 dark:text-gray-400">Un mask</span>
+          </DropdownItem>
+          <DropdownItem
+            className="text-sm"
+            onClick={() => onTableAction(ActionEnumType.NOTIFY)}
+          >
+            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
               <IconContext.Provider
                 value={{ className: 'text-gray-700 dark:text-gray-400' }}
               >
-                <HiEyeOff />
+                <HiBell />
               </IconContext.Provider>
-              <span className="text-gray-700 dark:text-gray-400">Mask</span>
-            </DropdownItem>
-            <DropdownItem onClick={() => onTableAction(ActionEnumType.UNMASK)}>
+              Notify
+            </span>
+          </DropdownItem>
+          <DropdownItem
+            className="text-sm"
+            onClick={() => {
+              setIdsToDelete(ids);
+              setShowDeleteDialog(true);
+            }}
+          >
+            <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
               <IconContext.Provider
-                value={{ className: 'text-gray-700 dark:text-gray-400' }}
+                value={{ className: 'text-red-700 dark:text-red-400' }}
               >
-                <HiEye />
+                <HiArchive />
               </IconContext.Provider>
-              <span className="text-gray-700 dark:text-gray-400">Un mask</span>
-            </DropdownItem>
-            <DropdownItem
-              className="text-sm"
-              onClick={() => onTableAction(ActionEnumType.NOTIFY)}
-            >
-              <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-                <IconContext.Provider
-                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
-                >
-                  <HiBell />
-                </IconContext.Provider>
-                Notify
-              </span>
-            </DropdownItem>
-            <DropdownItem
-              className="text-sm"
-              onClick={() => {
-                setShowDeleteDialog(true);
-              }}
-            >
-              <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
-                <IconContext.Provider
-                  value={{ className: 'text-red-700 dark:text-red-400' }}
-                >
-                  <HiArchive />
-                </IconContext.Provider>
-                Delete
-              </span>
-            </DropdownItem>
-          </>
-        }
-      >
-        {triggerButton}
-      </Dropdown>
-    </>
+              Delete
+            </span>
+          </DropdownItem>
+        </>
+      }
+    >
+      {triggerButton}
+    </Dropdown>
   );
 };
 const ScanResusltTable = () => {
@@ -706,6 +703,8 @@ const ScanResusltTable = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [sort, setSort] = useSortingState();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [idsToDelete, setIdsToDelete] = useState<string[]>([]);
 
   const columns = useMemo(() => {
     const columns = [
@@ -804,6 +803,8 @@ const ScanResusltTable = () => {
           <ActionDropdown
             ids={[cell.row.original.node_id]}
             align="end"
+            setIdsToDelete={setIdsToDelete}
+            setShowDeleteDialog={setShowDeleteDialog}
             triggerButton={
               <Button size="xs" color="normal">
                 <IconContext.Provider
@@ -867,6 +868,8 @@ const ScanResusltTable = () => {
                     <ActionDropdown
                       ids={Object.keys(rowSelectionState)}
                       align="start"
+                      setIdsToDelete={setIdsToDelete}
+                      setShowDeleteDialog={setShowDeleteDialog}
                       triggerButton={
                         <Button size="xxs" color="primary" outline>
                           Actions
@@ -875,7 +878,13 @@ const ScanResusltTable = () => {
                     />
                   </div>
                 )}
-
+                {showDeleteDialog && (
+                  <DeleteConfirmationModal
+                    showDialog={showDeleteDialog}
+                    ids={idsToDelete}
+                    setShowDialog={setShowDeleteDialog}
+                  />
+                )}
                 <Table
                   size="sm"
                   data={data.compliances}

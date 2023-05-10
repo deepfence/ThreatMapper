@@ -558,16 +558,21 @@ const ActionDropdown = ({
   nodeId,
   scanStatus,
   nodeType,
+  setShowDeleteDialog,
+  setScanIdToDelete,
+  setNodeIdToDelete,
 }: {
   icon: React.ReactNode;
   scanId: string;
   nodeId: string;
   scanStatus: string;
   nodeType: string;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  setScanIdToDelete: React.Dispatch<React.SetStateAction<string>>;
+  setNodeIdToDelete: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const onDownloadAction = useCallback(() => {
     const formData = new FormData();
@@ -585,60 +590,56 @@ const ActionDropdown = ({
   }, [fetcher]);
 
   return (
-    <>
-      {showDeleteDialog && (
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          scanId={scanId}
-          nodeId={nodeId}
-          setShowDialog={setShowDeleteDialog}
-        />
-      )}
-      <Dropdown
-        triggerAsChild
-        align="end"
-        open={open}
-        onOpenChange={setOpen}
-        content={
-          <>
-            <DropdownItem
-              className="text-sm"
-              onClick={(e) => {
-                if (!isScanComplete(scanStatus)) return;
-                e.preventDefault();
-                onDownloadAction();
-              }}
+    <Dropdown
+      triggerAsChild
+      align="end"
+      open={open}
+      onOpenChange={setOpen}
+      content={
+        <>
+          <DropdownItem
+            className="text-sm"
+            onClick={(e) => {
+              if (!isScanComplete(scanStatus)) return;
+              e.preventDefault();
+              onDownloadAction();
+            }}
+          >
+            <span
+              className={cx('flex items-center gap-x-2', {
+                'opacity-60 dark:opacity-30 cursor-default': !isScanComplete(scanStatus),
+              })}
             >
-              <span
-                className={cx('flex items-center gap-x-2', {
-                  'opacity-60 dark:opacity-30 cursor-default':
-                    !isScanComplete(scanStatus),
-                })}
+              <HiDownload />
+              Download Report
+            </span>
+          </DropdownItem>
+          <DropdownItem
+            className="text-sm"
+            onClick={() => {
+              setScanIdToDelete(scanId);
+              setNodeIdToDelete(nodeId);
+              setShowDeleteDialog(true);
+            }}
+          >
+            <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
+              <IconContext.Provider
+                value={{ className: 'text-red-700 dark:text-red-400' }}
               >
-                <HiDownload />
-                Download Report
-              </span>
-            </DropdownItem>
-            <DropdownItem className="text-sm" onClick={() => setShowDeleteDialog(true)}>
-              <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
-                <IconContext.Provider
-                  value={{ className: 'text-red-700 dark:text-red-400' }}
-                >
-                  <HiArchive />
-                </IconContext.Provider>
-                Delete
-              </span>
-            </DropdownItem>
-          </>
-        }
-      >
-        <Button className="ml-auto" size="xs" color="normal">
-          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-            {icon}
-          </IconContext.Provider>
-        </Button>
-      </Dropdown>
-    </>
+                <HiArchive />
+              </IconContext.Provider>
+              Delete
+            </span>
+          </DropdownItem>
+        </>
+      }
+    >
+      <Button className="ml-auto" size="xs" color="normal">
+        <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
+          {icon}
+        </IconContext.Provider>
+      </Button>
+    </Dropdown>
   );
 };
 
@@ -648,6 +649,9 @@ const SecretScans = () => {
   const loaderData = useLoaderData() as LoaderDataType;
   const navigation = useNavigation();
   const [sort, setSort] = useSortingState();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [scanIdToDelete, setScanIdToDelete] = useState('');
+  const [nodeIdToDelete, setNodeIdToDelete] = useState('');
 
   const columnHelper = createColumnHelper<ScanResult>();
 
@@ -861,6 +865,9 @@ const SecretScans = () => {
             nodeId={cell.row.original.node_id}
             nodeType={cell.row.original.node_type}
             scanStatus={cell.row.original.status}
+            setScanIdToDelete={setScanIdToDelete}
+            setNodeIdToDelete={setNodeIdToDelete}
+            setShowDeleteDialog={setShowDeleteDialog}
           />
         ),
         header: () => '',
@@ -1161,6 +1168,14 @@ const SecretScans = () => {
           </div>
         </div>
       </div>
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          scanId={scanIdToDelete}
+          nodeId={nodeIdToDelete}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
       <div className="m-2">
         <Suspense fallback={<TableSkeleton columns={7} rows={15} size={'md'} />}>
           <DFAwait resolve={loaderData.data}>

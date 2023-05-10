@@ -569,13 +569,16 @@ const ActionDropdown = ({
   ids,
   align,
   triggerButton,
+  setIdsToDelete,
+  setShowDeleteDialog,
 }: {
   ids: string[];
   align: 'center' | 'end' | 'start';
   triggerButton: React.ReactNode;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const fetcher = useFetcher();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const onTableAction = useCallback(
     (actionType: string, maskHostAndImages?: string) => {
@@ -596,13 +599,6 @@ const ActionDropdown = ({
 
   return (
     <>
-      {(showDeleteDialog || fetcher.data?.success) && (
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          ids={ids}
-          setShowDialog={setShowDeleteDialog}
-        />
-      )}
       <Dropdown
         triggerAsChild={true}
         align={align}
@@ -740,6 +736,7 @@ const ActionDropdown = ({
             <DropdownItem
               className="text-sm"
               onClick={() => {
+                setIdsToDelete(ids);
                 setShowDeleteDialog(true);
               }}
             >
@@ -767,7 +764,8 @@ const SecretTable = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [sort, setSort] = useSortingState();
-
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [idsToDelete, setIdsToDelete] = useState<string[]>([]);
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
@@ -862,6 +860,8 @@ const SecretTable = () => {
           <ActionDropdown
             ids={[cell.row.original.node_id.toString()]}
             align="end"
+            setIdsToDelete={setIdsToDelete}
+            setShowDeleteDialog={setShowDeleteDialog}
             triggerButton={
               <Button size="xs" color="normal">
                 <IconContext.Provider
@@ -926,6 +926,8 @@ const SecretTable = () => {
                     <ActionDropdown
                       ids={selectedIds}
                       align="start"
+                      setIdsToDelete={setIdsToDelete}
+                      setShowDeleteDialog={setShowDeleteDialog}
                       triggerButton={
                         <Button size="xxs" color="primary" outline>
                           Actions
@@ -934,7 +936,13 @@ const SecretTable = () => {
                     />
                   </div>
                 )}
-
+                {showDeleteDialog && (
+                  <DeleteConfirmationModal
+                    showDialog={showDeleteDialog}
+                    ids={idsToDelete}
+                    setShowDialog={setShowDeleteDialog}
+                  />
+                )}
                 <Table
                   size="sm"
                   data={data.tableData}

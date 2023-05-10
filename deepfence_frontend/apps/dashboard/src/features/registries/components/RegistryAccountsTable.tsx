@@ -138,8 +138,15 @@ const DeleteConfirmationModal = ({
   );
 };
 
-const ActionDropdown = ({ id }: { id: string }) => {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+const ActionDropdown = ({
+  id,
+  setIdsToDelete,
+  setShowDeleteDialog,
+}: {
+  id: string;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string>>;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   const [selectedScanType, setSelectedScanType] = useState<
     | typeof ScanTypeEnum.VulnerabilityScan
     | typeof ScanTypeEnum.SecretScan
@@ -148,11 +155,6 @@ const ActionDropdown = ({ id }: { id: string }) => {
 
   return (
     <>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        id={id}
-        setShowDialog={setShowDeleteDialog}
-      />
       <ConfigureScanModal
         open={!!selectedScanType}
         onOpenChange={() => setSelectedScanType(undefined)}
@@ -218,6 +220,7 @@ const ActionDropdown = ({ id }: { id: string }) => {
             <DropdownItem
               className="text-sm"
               onClick={() => {
+                setIdsToDelete(id);
                 setShowDeleteDialog(true);
               }}
             >
@@ -247,6 +250,8 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
   const { account } = useParams() as {
     account: string;
   };
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [idsToDelete, setIdsToDelete] = useState<string>('');
 
   const columnHelper = createColumnHelper<ModelRegistryListResp>();
   const columns = useMemo(
@@ -298,7 +303,13 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
           if (!cell.row.original.node_id) {
             throw new Error('Registry Account node id not found');
           }
-          return <ActionDropdown id={cell.row.original.node_id.toString()} />;
+          return (
+            <ActionDropdown
+              id={cell.row.original.node_id.toString()}
+              setIdsToDelete={setIdsToDelete}
+              setShowDeleteDialog={setShowDeleteDialog}
+            />
+          );
         },
         header: () => '',
         minSize: 20,
@@ -311,6 +322,13 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
   );
   return (
     <div className="self-start">
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          id={idsToDelete}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
       <Table columns={columns} data={data} enableSorting size="sm" />
     </div>
   );
