@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   HiLocationMarker,
@@ -26,6 +26,7 @@ import {
   ModelEmailConfigurationResp,
 } from '@/api/generated';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -190,134 +191,146 @@ const EmailConfigurationModal = ({
       onOpenChange={() => setShowDialog(false)}
       title="Add Email Configuration"
     >
-      <fetcher.Form
-        method="post"
-        className="flex flex-col gap-y-3 mt-2 pb-8 mx-8 min-w-[384px]"
-      >
-        <input
-          readOnly
-          type="hidden"
-          name="_actionType"
-          value={ActionEnumType.ADD_CONFIGURATION}
-        />
-        <Select
-          noPortal
-          name="email_provider"
-          label={'Email Provider'}
-          placeholder="Email Provider"
-          sizing="xs"
-          onChange={(value) => setEmailProvider(value)}
-          value={emailProvider}
+      {!data?.success ? (
+        <fetcher.Form
+          method="post"
+          className="flex flex-col gap-y-3 mt-2 pb-8 mx-8 min-w-[384px]"
         >
-          <SelectItem value={'Google SMTP'}>Google SMTP</SelectItem>
-          <SelectItem value={'Amazon SES'}>Amazon SES</SelectItem>
-          <SelectItem value={'SMTP'}>SMTP</SelectItem>
-        </Select>
-        <TextInput
-          label="Email"
-          type={'email'}
-          placeholder="Email"
-          name="email_id"
-          sizing="sm"
-          required
-        />
-        {emailProvider !== 'Amazon SES' ? (
-          <>
-            <TextInput
-              label="Password"
-              type={'password'}
-              placeholder="Password"
-              name="password"
-              sizing="sm"
-              required
-            />
-            <TextInput
-              label="Port"
-              type={'number'}
-              placeholder={
-                emailProvider === 'SMTP' ? 'SMTP port (SSL)' : 'Gmail SMTP port (SSL)'
-              }
-              name="port"
-              sizing="sm"
-              required
-            />
-            <TextInput
-              label="SMTP"
-              type={'text'}
-              placeholder="SMTP server"
-              name="smtp"
-              sizing="sm"
-              required
-            />
-          </>
-        ) : (
-          <>
-            <TextInput
-              label="SES Region"
-              type={'text'}
-              placeholder="SES Region"
-              name="ses_region"
-              sizing="sm"
-              required
-            />
-            <TextInput
-              label="Amazon Access Key"
-              type={'text'}
-              placeholder="Amazon Access Key"
-              name="amazon_access_key"
-              sizing="sm"
-              required
-            />
-            <TextInput
-              label="Amazon Secret Key"
-              type={'text'}
-              placeholder="Amazon Secret Key"
-              name="amazon_secret_key"
-              sizing="sm"
-              required
-            />
-          </>
-        )}
-        <div className={`text-red-600 dark:text-red-500 text-sm`}>
-          {!data?.success && data?.message && <span>{data.message}</span>}
-        </div>
-        <Button
-          color="primary"
-          size="sm"
-          type="submit"
-          disabled={state !== 'idle'}
-          loading={state !== 'idle'}
-        >
-          Submit
-        </Button>
-      </fetcher.Form>
+          <input
+            readOnly
+            type="hidden"
+            name="_actionType"
+            value={ActionEnumType.ADD_CONFIGURATION}
+          />
+          <Select
+            noPortal
+            name="email_provider"
+            label={'Email Provider'}
+            placeholder="Email Provider"
+            sizing="xs"
+            onChange={(value) => setEmailProvider(value)}
+            value={emailProvider}
+          >
+            <SelectItem value={'Google SMTP'}>Google SMTP</SelectItem>
+            <SelectItem value={'Amazon SES'}>Amazon SES</SelectItem>
+            <SelectItem value={'SMTP'}>SMTP</SelectItem>
+          </Select>
+          <TextInput
+            label="Email"
+            type={'email'}
+            placeholder="Email"
+            name="email_id"
+            sizing="sm"
+            required
+          />
+          {emailProvider !== 'Amazon SES' ? (
+            <>
+              <TextInput
+                label="Password"
+                type={'password'}
+                placeholder="Password"
+                name="password"
+                sizing="sm"
+                required
+              />
+              <TextInput
+                label="Port"
+                type={'number'}
+                placeholder={
+                  emailProvider === 'SMTP' ? 'SMTP port (SSL)' : 'Gmail SMTP port (SSL)'
+                }
+                name="port"
+                sizing="sm"
+                required
+              />
+              <TextInput
+                label="SMTP"
+                type={'text'}
+                placeholder="SMTP server"
+                name="smtp"
+                sizing="sm"
+                required
+              />
+            </>
+          ) : (
+            <>
+              <TextInput
+                label="SES Region"
+                type={'text'}
+                placeholder="SES Region"
+                name="ses_region"
+                sizing="sm"
+                required
+              />
+              <TextInput
+                label="Amazon Access Key"
+                type={'text'}
+                placeholder="Amazon Access Key"
+                name="amazon_access_key"
+                sizing="sm"
+                required
+              />
+              <TextInput
+                label="Amazon Secret Key"
+                type={'text'}
+                placeholder="Amazon Secret Key"
+                name="amazon_secret_key"
+                sizing="sm"
+                required
+              />
+            </>
+          )}
+          <div className={`text-red-600 dark:text-red-500 text-sm`}>
+            {!data?.success && data?.message && <span>{data.message}</span>}
+          </div>
+          <Button
+            color="primary"
+            size="sm"
+            type="submit"
+            disabled={state !== 'idle'}
+            loading={state !== 'idle'}
+          >
+            Submit
+          </Button>
+        </fetcher.Form>
+      ) : (
+        <SuccessModalContent text="Email configuration successfully updated!" />
+      )}
     </Modal>
   );
 };
 
-const AddEmailConfigurationComponent = () => {
+const AddEmailConfigurationComponent = ({ show }: { show: boolean }) => {
   const [openEmailConfiguration, setOpenEmailConfiguration] = useState(false);
   return (
-    <div className="p-4 max-w-sm shadow-lg dark:bg-gray-800 rounded-md">
-      <EmailConfigurationModal
-        showDialog={openEmailConfiguration}
-        setShowDialog={setOpenEmailConfiguration}
-      />
-      <h4 className="text-lg font-medium pb-2 dark:text-white">Configuration Setup</h4>
-      <p className="text-base text-gray-500 dark:text-gray-400">
-        Please connect an email provider in order to configure email, you can click on Add
-        Configuration to set up email configurations
-      </p>
-      <Button
-        size="sm"
-        className="text-center mt-4 w-full"
-        color="primary"
-        type="button"
-        onClick={() => setOpenEmailConfiguration(true)}
-      >
-        Add configurations
-      </Button>
-    </div>
+    <>
+      {openEmailConfiguration && (
+        <EmailConfigurationModal
+          showDialog={openEmailConfiguration}
+          setShowDialog={setOpenEmailConfiguration}
+        />
+      )}
+      {show && (
+        <div className="p-4 max-w-sm shadow-lg dark:bg-gray-800 rounded-md">
+          <h4 className="text-lg font-medium pb-2 dark:text-white">
+            Configuration Setup
+          </h4>
+          <p className="text-base text-gray-500 dark:text-gray-400">
+            Please connect an email provider in order to configure email, you can click on
+            Add Configuration to set up email configurations
+          </p>
+          <Button
+            size="sm"
+            className="text-center mt-4 w-full"
+            color="primary"
+            type="button"
+            onClick={() => setOpenEmailConfiguration(true)}
+          >
+            Add configurations
+          </Button>
+        </div>
+      )}
+    </>
   );
 };
 
@@ -349,13 +362,15 @@ const EmailConfiguration = () => {
               const configuration: ModelEmailConfigurationResp = configData[0];
               return (
                 <>
-                  {configuration ? (
+                  {showDeleteDialog && (
+                    <DeleteConfirmationModal
+                      showDialog={showDeleteDialog}
+                      id={String(configuration?.id || 0)}
+                      setShowDialog={setShowDeleteDialog}
+                    />
+                  )}
+                  {configuration && (
                     <>
-                      <DeleteConfirmationModal
-                        showDialog={showDeleteDialog}
-                        id={String(configuration.id)}
-                        setShowDialog={setShowDeleteDialog}
-                      />
                       <div className="p-4 max-w-sm shadow-lg dark:bg-gray-800 rounded-md flex flex-col gap-y-3">
                         <div className="flex">
                           <div className="flex flex-col">
@@ -452,9 +467,8 @@ const EmailConfiguration = () => {
                         </Button>
                       </div>
                     </>
-                  ) : (
-                    <AddEmailConfigurationComponent />
                   )}
+                  <AddEmailConfigurationComponent show={!configuration} />
                 </>
               );
             }}
@@ -482,45 +496,43 @@ const DeleteConfirmationModal = ({
 }) => {
   const fetcher = useFetcher();
 
-  useEffect(() => {
-    if (fetcher.data?.success) {
-      setShowDialog(false);
-    }
-  }, [fetcher]);
-
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          Email configuration will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" type="button" onClick={() => setShowDialog(false)} outline>
-            No, Cancel
-          </Button>
-          <fetcher.Form method="post">
-            <input readOnly type="hidden" name="id" value={id} />
-            <input
-              readOnly
-              type="hidden"
-              name="_actionType"
-              value={ActionEnumType.DELETE}
-            />
-            <Button size="xs" color="danger" type="submit">
-              Yes, I&apos;m sure
+      {!fetcher.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
+            }}
+          >
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            Email configuration will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" type="button" onClick={() => setShowDialog(false)} outline>
+              No, Cancel
             </Button>
-          </fetcher.Form>
+            <fetcher.Form method="post">
+              <input readOnly type="hidden" name="id" value={id} />
+              <input
+                readOnly
+                type="hidden"
+                name="_actionType"
+                value={ActionEnumType.DELETE}
+              />
+              <Button size="xs" color="danger" type="submit">
+                Yes, I&apos;m sure
+              </Button>
+            </fetcher.Form>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="Email configuration deleted successfully!" />
+      )}
     </Modal>
   );
 };

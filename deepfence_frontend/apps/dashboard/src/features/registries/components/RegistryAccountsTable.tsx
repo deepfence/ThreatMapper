@@ -35,6 +35,7 @@ import { DFLink } from '@/components/DFLink';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import {
   MalwareScanNodeTypeEnum,
   ScanTypeEnum,
@@ -95,52 +96,57 @@ const DeleteConfirmationModal = ({
   const fetcher = useFetcher<ActionReturnType>();
   const { state, data } = fetcher;
 
-  useEffect(() => {
-    if (data?.success) {
-      setShowDialog(false);
-    }
-  }, [data]);
-
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          The selected accounts will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-        {data?.message && <p className="text-red-500 text-sm mb-4">{data.message}</p>}
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, cancel
-          </Button>
-          <fetcher.Form method="post">
-            <input type="text" name="_nodeId" hidden readOnly value={id} />
-            <Button
-              size="xs"
-              color="danger"
-              type="submit"
-              disabled={state !== 'idle'}
-              loading={state !== 'idle'}
-            >
-              Yes, I&apos;m sure
+      {!fetcher.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
+            }}
+          >
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            The selected accounts will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+          {data?.message && <p className="text-red-500 text-sm mb-4">{data.message}</p>}
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, cancel
             </Button>
-          </fetcher.Form>
+            <fetcher.Form method="post">
+              <input type="text" name="_nodeId" hidden readOnly value={id} />
+              <Button
+                size="xs"
+                color="danger"
+                type="submit"
+                disabled={state !== 'idle'}
+                loading={state !== 'idle'}
+              >
+                Yes, I&apos;m sure
+              </Button>
+            </fetcher.Form>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="Registry account deleted sucessfully!" />
+      )}
     </Modal>
   );
 };
 
-const ActionDropdown = ({ id }: { id: string }) => {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+const ActionDropdown = ({
+  id,
+  setIdsToDelete,
+  setShowDeleteDialog,
+}: {
+  id: string;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string>>;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   const [selectedScanType, setSelectedScanType] = useState<
     | typeof ScanTypeEnum.VulnerabilityScan
     | typeof ScanTypeEnum.SecretScan
@@ -149,11 +155,6 @@ const ActionDropdown = ({ id }: { id: string }) => {
 
   return (
     <>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        id={id}
-        setShowDialog={setShowDeleteDialog}
-      />
       <ConfigureScanModal
         open={!!selectedScanType}
         onOpenChange={() => setSelectedScanType(undefined)}
@@ -219,6 +220,7 @@ const ActionDropdown = ({ id }: { id: string }) => {
             <DropdownItem
               className="text-sm"
               onClick={() => {
+                setIdsToDelete(id);
                 setShowDeleteDialog(true);
               }}
             >
@@ -248,6 +250,8 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
   const { account } = useParams() as {
     account: string;
   };
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [idsToDelete, setIdsToDelete] = useState<string>('');
 
   const columnHelper = createColumnHelper<ModelRegistryListResp>();
   const columns = useMemo(
@@ -299,7 +303,13 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
           if (!cell.row.original.node_id) {
             throw new Error('Registry Account node id not found');
           }
-          return <ActionDropdown id={cell.row.original.node_id.toString()} />;
+          return (
+            <ActionDropdown
+              id={cell.row.original.node_id.toString()}
+              setIdsToDelete={setIdsToDelete}
+              setShowDeleteDialog={setShowDeleteDialog}
+            />
+          );
         },
         header: () => '',
         minSize: 20,
@@ -312,6 +322,13 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
   );
   return (
     <div className="self-start">
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          id={idsToDelete}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
       <Table columns={columns} data={data} enableSorting size="sm" />
     </div>
   );

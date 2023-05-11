@@ -69,6 +69,7 @@ import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { ScanTypeEnum } from '@/types/common';
 import {
   ApiError,
@@ -352,9 +353,13 @@ const loader = async ({
 
 const action = async ({
   request,
-}: ActionFunctionArgs): Promise<{
-  url: string;
-} | null> => {
+}: ActionFunctionArgs): Promise<
+  | {
+      url: string;
+    }
+  | null
+  | { success: boolean }
+> => {
   const formData = await request.formData();
   const actionType = formData.get('actionType');
   const scanId = formData.get('scanId');
@@ -391,8 +396,9 @@ const action = async ({
       }
     }
 
-    toast.success('Scan deleted successfully');
-    return null;
+    return {
+      success: true,
+    };
   } else if (actionType === ActionEnumType.DOWNLOAD) {
     const nodeType = formData.get('nodeType') as UtilsReportFiltersNodeTypeEnum;
     if (!nodeType) {
@@ -509,36 +515,39 @@ const DeleteConfirmationModal = ({
 
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          Selected scan will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, Cancel
-          </Button>
-          <Button
-            size="xs"
-            color="danger"
-            onClick={(e) => {
-              e.preventDefault();
-              onDeleteAction(ActionEnumType.DELETE);
-              setShowDialog(false);
+      {!fetcher.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
             }}
           >
-            Yes, I&apos;m sure
-          </Button>
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            Selected scan will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              size="xs"
+              color="danger"
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteAction(ActionEnumType.DELETE);
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="Scan deleted successfully!" />
+      )}
     </Modal>
   );
 };
@@ -549,16 +558,21 @@ const ActionDropdown = ({
   nodeId,
   scanStatus,
   nodeType,
+  setShowDeleteDialog,
+  setScanIdToDelete,
+  setNodeIdToDelete,
 }: {
   icon: React.ReactNode;
   scanId: string;
   nodeId: string;
   scanStatus: string;
   nodeType: string;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  setScanIdToDelete: React.Dispatch<React.SetStateAction<string>>;
+  setNodeIdToDelete: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const onDownloadAction = useCallback(() => {
     const formData = new FormData();
@@ -576,58 +590,56 @@ const ActionDropdown = ({
   }, [fetcher]);
 
   return (
-    <>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        scanId={scanId}
-        nodeId={nodeId}
-        setShowDialog={setShowDeleteDialog}
-      />
-      <Dropdown
-        triggerAsChild
-        align="end"
-        open={open}
-        onOpenChange={setOpen}
-        content={
-          <>
-            <DropdownItem
-              className="text-sm"
-              onClick={(e) => {
-                if (!isScanComplete(scanStatus)) return;
-                e.preventDefault();
-                onDownloadAction();
-              }}
+    <Dropdown
+      triggerAsChild
+      align="end"
+      open={open}
+      onOpenChange={setOpen}
+      content={
+        <>
+          <DropdownItem
+            className="text-sm"
+            onClick={(e) => {
+              if (!isScanComplete(scanStatus)) return;
+              e.preventDefault();
+              onDownloadAction();
+            }}
+          >
+            <span
+              className={cx('flex items-center gap-x-2', {
+                'opacity-60 dark:opacity-30 cursor-default': !isScanComplete(scanStatus),
+              })}
             >
-              <span
-                className={cx('flex items-center gap-x-2', {
-                  'opacity-60 dark:opacity-30 cursor-default':
-                    !isScanComplete(scanStatus),
-                })}
+              <HiDownload />
+              Download Report
+            </span>
+          </DropdownItem>
+          <DropdownItem
+            className="text-sm"
+            onClick={() => {
+              setScanIdToDelete(scanId);
+              setNodeIdToDelete(nodeId);
+              setShowDeleteDialog(true);
+            }}
+          >
+            <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
+              <IconContext.Provider
+                value={{ className: 'text-red-700 dark:text-red-400' }}
               >
-                <HiDownload />
-                Download Report
-              </span>
-            </DropdownItem>
-            <DropdownItem className="text-sm" onClick={() => setShowDeleteDialog(true)}>
-              <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
-                <IconContext.Provider
-                  value={{ className: 'text-red-700 dark:text-red-400' }}
-                >
-                  <HiArchive />
-                </IconContext.Provider>
-                Delete
-              </span>
-            </DropdownItem>
-          </>
-        }
-      >
-        <Button className="ml-auto" size="xs" color="normal">
-          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-            {icon}
-          </IconContext.Provider>
-        </Button>
-      </Dropdown>
-    </>
+                <HiArchive />
+              </IconContext.Provider>
+              Delete
+            </span>
+          </DropdownItem>
+        </>
+      }
+    >
+      <Button className="ml-auto" size="xs" color="normal">
+        <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
+          {icon}
+        </IconContext.Provider>
+      </Button>
+    </Dropdown>
   );
 };
 
@@ -637,6 +649,9 @@ const SecretScans = () => {
   const loaderData = useLoaderData() as LoaderDataType;
   const navigation = useNavigation();
   const [sort, setSort] = useSortingState();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [scanIdToDelete, setScanIdToDelete] = useState('');
+  const [nodeIdToDelete, setNodeIdToDelete] = useState('');
 
   const columnHelper = createColumnHelper<ScanResult>();
 
@@ -850,6 +865,9 @@ const SecretScans = () => {
             nodeId={cell.row.original.node_id}
             nodeType={cell.row.original.node_type}
             scanStatus={cell.row.original.status}
+            setScanIdToDelete={setScanIdToDelete}
+            setNodeIdToDelete={setNodeIdToDelete}
+            setShowDeleteDialog={setShowDeleteDialog}
           />
         ),
         header: () => '',
@@ -1150,6 +1168,14 @@ const SecretScans = () => {
           </div>
         </div>
       </div>
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          scanId={scanIdToDelete}
+          nodeId={nodeIdToDelete}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
       <div className="m-2">
         <Suspense fallback={<TableSkeleton columns={7} rows={15} size={'md'} />}>
           <DFAwait resolve={loaderData.data}>

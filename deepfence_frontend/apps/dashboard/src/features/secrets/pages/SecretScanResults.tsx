@@ -73,6 +73,7 @@ import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
 import { SecretsResultChart } from '@/features/secrets/components/landing/SecretsResultChart';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { ScanStatusEnum, ScanTypeEnum, SecretSeverityType } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -284,7 +285,7 @@ type ActionFunctionType =
 const action = async ({
   params: { scanId = '' },
   request,
-}: ActionFunctionArgs): Promise<null> => {
+}: ActionFunctionArgs): Promise<null | { success: true }> => {
   const formData = await request.formData();
   const ids = (formData.getAll('ids[]') ?? []) as string[];
   const actionType = formData.get('actionType');
@@ -366,7 +367,9 @@ const action = async ({
   }
 
   if (actionType === ActionEnumType.DELETE) {
-    toast.success('Deleted successfully');
+    return {
+      success: true,
+    };
   } else if (actionType === ActionEnumType.NOTIFY) {
     toast.success('Notified successfully');
   } else if (actionType === ActionEnumType.MASK) {
@@ -415,36 +418,39 @@ const DeleteConfirmationModal = ({
 
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          The selected secrets will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, Cancel
-          </Button>
-          <Button
-            size="xs"
-            color="danger"
-            onClick={(e) => {
-              e.preventDefault();
-              onDeleteAction(ActionEnumType.DELETE);
-              setShowDialog(false);
+      {!fetcher.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
             }}
           >
-            Yes, I&apos;m sure
-          </Button>
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            The selected secrets will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              size="xs"
+              color="danger"
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteAction(ActionEnumType.DELETE);
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
     </Modal>
   );
 };
@@ -563,13 +569,16 @@ const ActionDropdown = ({
   ids,
   align,
   triggerButton,
+  setIdsToDelete,
+  setShowDeleteDialog,
 }: {
   ids: string[];
   align: 'center' | 'end' | 'start';
   triggerButton: React.ReactNode;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const fetcher = useFetcher();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const onTableAction = useCallback(
     (actionType: string, maskHostAndImages?: string) => {
@@ -590,11 +599,6 @@ const ActionDropdown = ({
 
   return (
     <>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        ids={ids}
-        setShowDialog={setShowDeleteDialog}
-      />
       <Dropdown
         triggerAsChild={true}
         align={align}
@@ -732,6 +736,7 @@ const ActionDropdown = ({
             <DropdownItem
               className="text-sm"
               onClick={() => {
+                setIdsToDelete(ids);
                 setShowDeleteDialog(true);
               }}
             >
@@ -759,7 +764,8 @@ const SecretTable = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [sort, setSort] = useSortingState();
-
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [idsToDelete, setIdsToDelete] = useState<string[]>([]);
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
@@ -854,6 +860,8 @@ const SecretTable = () => {
           <ActionDropdown
             ids={[cell.row.original.node_id.toString()]}
             align="end"
+            setIdsToDelete={setIdsToDelete}
+            setShowDeleteDialog={setShowDeleteDialog}
             triggerButton={
               <Button size="xs" color="normal">
                 <IconContext.Provider
@@ -918,6 +926,8 @@ const SecretTable = () => {
                     <ActionDropdown
                       ids={selectedIds}
                       align="start"
+                      setIdsToDelete={setIdsToDelete}
+                      setShowDeleteDialog={setShowDeleteDialog}
                       triggerButton={
                         <Button size="xxs" color="primary" outline>
                           Actions
@@ -926,7 +936,13 @@ const SecretTable = () => {
                     />
                   </div>
                 )}
-
+                {showDeleteDialog && (
+                  <DeleteConfirmationModal
+                    showDialog={showDeleteDialog}
+                    ids={idsToDelete}
+                    setShowDialog={setShowDeleteDialog}
+                  />
+                )}
                 <Table
                   size="sm"
                   data={data.tableData}
