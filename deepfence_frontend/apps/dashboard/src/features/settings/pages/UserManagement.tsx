@@ -233,17 +233,15 @@ export const action = async ({
     if (ApiError.isApiError(r)) {
       return r.value();
     }
-    let data = {};
     if (body.intent == ModelInviteUserRequestActionEnum.GetInviteLink) {
       r.invite_url && navigator.clipboard.writeText(r.invite_url);
-      data = { ...data, ...r, success: true };
       toast.success('User invite URL copied !');
+      return { ...r, success: true };
     } else if (body.intent === ModelInviteUserRequestActionEnum.SendInviteEmail) {
-      data = { successMessage: 'User invite sent successfully' };
+      return { successMessage: 'User invite sent successfully', success: true };
     }
 
     return {
-      ...data,
       success: true,
     };
   } else if (_actionType === ActionEnumType.EDIT_USER) {

@@ -362,11 +362,13 @@ const EmailConfiguration = () => {
               const configuration: ModelEmailConfigurationResp = configData[0];
               return (
                 <>
-                  <DeleteConfirmationModal
-                    showDialog={showDeleteDialog}
-                    id={String(configuration?.id || 0)}
-                    setShowDialog={setShowDeleteDialog}
-                  />
+                  {showDeleteDialog && (
+                    <DeleteConfirmationModal
+                      showDialog={showDeleteDialog}
+                      id={String(configuration?.id || 0)}
+                      setShowDialog={setShowDeleteDialog}
+                    />
+                  )}
                   {configuration && (
                     <>
                       <div className="p-4 max-w-sm shadow-lg dark:bg-gray-800 rounded-md flex flex-col gap-y-3">
