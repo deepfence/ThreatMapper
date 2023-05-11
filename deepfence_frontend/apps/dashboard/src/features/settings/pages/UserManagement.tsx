@@ -41,6 +41,7 @@ import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiL
 import { useGetCurrentUser } from '@/features/common/data-component/getUserApiLoader';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -86,6 +87,7 @@ export type ActionReturnType = {
   success: boolean;
   invite_url?: string;
   invite_expiry_hours?: number;
+  successMessage?: string;
 };
 
 export enum ActionEnumType {
@@ -134,7 +136,6 @@ export const action = async ({
       return r.value();
     }
 
-    toast('User account deleted sucessfully');
     return {
       success: true,
     };
@@ -186,7 +187,6 @@ export const action = async ({
     if (ApiError.isApiError(r)) {
       return r.value();
     }
-    toast.success('Password changed successfully');
     return {
       success: true,
     };
@@ -235,13 +235,10 @@ export const action = async ({
     }
     if (body.intent == ModelInviteUserRequestActionEnum.GetInviteLink) {
       r.invite_url && navigator.clipboard.writeText(r.invite_url);
-      toast.success('User invite URL copied');
-      return {
-        ...r,
-        success: true,
-      };
+      toast.success('User invite URL copied !');
+      return { ...r, success: true };
     } else if (body.intent === ModelInviteUserRequestActionEnum.SendInviteEmail) {
-      toast.success('User invite sent successfully');
+      return { successMessage: 'User invite sent successfully', success: true };
     }
 
     return {
@@ -295,7 +292,9 @@ export const action = async ({
     if (ApiError.isApiError(r)) {
       return r.value();
     }
-    toast.success('User details updated successfully');
+    return {
+      success: true,
+    };
   }
   return {
     success: false,
@@ -402,77 +401,86 @@ const InviteUserModal = ({
       onOpenChange={() => setShowDialog(false)}
       title="Invite User"
     >
-      <fetcher.Form
-        method="post"
-        className="flex flex-col gap-y-3 mt-2 mb-8 mx-8 w-[260px]"
-      >
-        <TextInput
-          label="Email"
-          type={'email'}
-          placeholder="Email"
-          name="email"
-          color={data?.fieldErrors?.email ? 'error' : 'default'}
-          sizing="sm"
-          required
-          helperText={data?.fieldErrors?.email}
-        />
-        <Select
-          noPortal
-          name="role"
-          label={'Role'}
-          placeholder="Role"
-          sizing="xs"
-          helperText={data?.fieldErrors?.role}
+      {data?.success && data?.successMessage ? (
+        <SuccessModalContent text={data?.successMessage}>
+          {data?.invite_url && (
+            <p
+              className={`mb-4 font-normal text-center text-sm text-green-500  w-[260px]`}
+            >
+              {data?.invite_url} , invite will expire after {data?.invite_expiry_hours}{' '}
+              hours
+            </p>
+          )}
+        </SuccessModalContent>
+      ) : (
+        <fetcher.Form
+          method="post"
+          className="flex flex-col gap-y-3 mt-2 mb-8 mx-8 w-[260px]"
         >
-          {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
-            return (
-              <SelectItem value={role} key={role}>
-                {role}
-              </SelectItem>
-            );
-          })}
-        </Select>
-        <div className={`text-red-600 dark:text-red-500 text-sm`}>
-          {!data?.success && data?.message && <span>{data.message}</span>}
-        </div>
-        <Button
-          color="primary"
-          size="sm"
-          type="submit"
-          name="intent"
-          disabled={state !== 'idle'}
-          loading={state !== 'idle'}
-          value={ModelInviteUserRequestActionEnum['SendInviteEmail']}
-        >
-          Send invite via email
-        </Button>
+          <TextInput
+            label="Email"
+            type={'email'}
+            placeholder="Email"
+            name="email"
+            color={data?.fieldErrors?.email ? 'error' : 'default'}
+            sizing="sm"
+            required
+            helperText={data?.fieldErrors?.email}
+          />
+          <Select
+            noPortal
+            name="role"
+            label={'Role'}
+            placeholder="Role"
+            sizing="xs"
+            helperText={data?.fieldErrors?.role}
+          >
+            {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
+              return (
+                <SelectItem value={role} key={role}>
+                  {role}
+                </SelectItem>
+              );
+            })}
+          </Select>
+          <div className={`text-red-600 dark:text-red-500 text-sm`}>
+            {!data?.success && data?.message && <span>{data.message}</span>}
+          </div>
+          <Button
+            color="primary"
+            size="sm"
+            type="submit"
+            name="intent"
+            value={ModelInviteUserRequestActionEnum['SendInviteEmail']}
+          >
+            Send invite via email
+          </Button>
 
-        <input
-          type="text"
-          name="_actionType"
-          hidden
-          readOnly
-          value={ActionEnumType.INVITE_USER}
-        />
+          <input
+            type="text"
+            name="_actionType"
+            hidden
+            readOnly
+            value={ActionEnumType.INVITE_USER}
+          />
 
-        <Button
-          outline
-          type="submit"
-          size="sm"
-          name="intent"
-          disabled={state !== 'idle'}
-          loading={state !== 'idle'}
-          value={ModelInviteUserRequestActionEnum['GetInviteLink']}
-        >
-          Copy invite link
-        </Button>
-        {data?.invite_url && (
-          <p className={`mt-1.5 text-sm text-green-500`}>
-            Invite URL:{data?.invite_url}, invite will expire after{' '}
-            {data?.invite_expiry_hours} hours
-          </p>
-        )}
-      </fetcher.Form>
+          <Button
+            outline
+            type="submit"
+            size="sm"
+            name="intent"
+            value={ModelInviteUserRequestActionEnum['GetInviteLink']}
+          >
+            Copy invite link
+          </Button>
+          {data?.invite_url && (
+            <p className={`mt-1.5 font-normal text-center text-sm text-green-500`}>
+              Invite URL: {data?.invite_url}, invite will expire after{' '}
+              {data?.invite_expiry_hours} hours
+            </p>
+          )}
+        </fetcher.Form>
+      )}
     </Modal>
   );
 };
@@ -499,75 +507,79 @@ const EditUserModal = ({
       onOpenChange={() => setShowDialog(false)}
       title="Update User"
     >
-      <fetcher.Form
-        method="post"
-        className="flex flex-col gap-y-3 mt-2 mb-8 mx-8 w-[260px]"
-      >
-        <input readOnly type="hidden" name="id" value={user?.id} />
-        <input
-          readOnly
-          type="hidden"
-          name="_actionType"
-          value={ActionEnumType.EDIT_USER}
-        />
-        <TextInput
-          label="First Name"
-          type={'text'}
-          placeholder="First Name"
-          name="firstName"
-          color={data?.fieldErrors?.firstName ? 'error' : 'default'}
-          sizing="sm"
-          defaultValue={user?.first_name}
-          helperText={data?.fieldErrors?.firstName}
-          required
-        />
-        <TextInput
-          label="Last Name"
-          type={'text'}
-          placeholder="Last Name"
-          name="lastName"
-          sizing="sm"
-          color={data?.fieldErrors?.lastName ? 'error' : 'default'}
-          defaultValue={user?.last_name}
-          helperText={data?.fieldErrors?.lastName}
-          required
-        />
-        <Select
-          noPortal
-          defaultValue={role}
-          name="role"
-          label={'Role'}
-          placeholder="Role"
-          sizing="xs"
-          helperText={data?.fieldErrors?.role}
+      {!data?.success ? (
+        <fetcher.Form
+          method="post"
+          className="flex flex-col gap-y-3 mt-2 mb-8 mx-8 w-[260px]"
         >
-          {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
-            return (
-              <SelectItem value={role} key={role}>
-                {role}
-              </SelectItem>
-            );
-          })}
-        </Select>
-        <Select
-          noPortal
-          name="status"
-          label={'Status'}
-          placeholder="Active"
-          sizing="xs"
-          defaultValue={user?.is_active ? 'Active' : 'inActive'}
-          helperText={data?.fieldErrors?.status}
-        >
-          <SelectItem value="Active">Active</SelectItem>
-          <SelectItem value="InActive">InActive</SelectItem>
-        </Select>
-        <div className={`text-red-600 dark:text-red-500 text-sm`}>
-          {!data?.success && data?.message && <span>{data.message}</span>}
-        </div>
-        <Button color="primary" type="submit" size="sm">
-          Update
-        </Button>
-      </fetcher.Form>
+          <input readOnly type="hidden" name="id" value={user?.id} />
+          <input
+            readOnly
+            type="hidden"
+            name="_actionType"
+            value={ActionEnumType.EDIT_USER}
+          />
+          <TextInput
+            label="First Name"
+            type={'text'}
+            placeholder="First Name"
+            name="firstName"
+            color={data?.fieldErrors?.firstName ? 'error' : 'default'}
+            sizing="sm"
+            defaultValue={user?.first_name}
+            helperText={data?.fieldErrors?.firstName}
+            required
+          />
+          <TextInput
+            label="Last Name"
+            type={'text'}
+            placeholder="Last Name"
+            name="lastName"
+            sizing="sm"
+            color={data?.fieldErrors?.lastName ? 'error' : 'default'}
+            defaultValue={user?.last_name}
+            helperText={data?.fieldErrors?.lastName}
+            required
+          />
+          <Select
+            noPortal
+            defaultValue={role}
+            name="role"
+            label={'Role'}
+            placeholder="Role"
+            sizing="xs"
+            helperText={data?.fieldErrors?.role}
+          >
+            {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
+              return (
+                <SelectItem value={role} key={role}>
+                  {role}
+                </SelectItem>
+              );
+            })}
+          </Select>
+          <Select
+            noPortal
+            name="status"
+            label={'Status'}
+            placeholder="Active"
+            sizing="xs"
+            defaultValue={user?.is_active ? 'Active' : 'inActive'}
+            helperText={data?.fieldErrors?.status}
+          >
+            <SelectItem value="Active">Active</SelectItem>
+            <SelectItem value="InActive">InActive</SelectItem>
+          </Select>
+          <div className={`text-red-600 dark:text-red-500 text-sm`}>
+            {!data?.success && data?.message && <span>{data.message}</span>}
+          </div>
+          <Button color="primary" type="submit" size="sm">
+            Update
+          </Button>
+        </fetcher.Form>
+      ) : (
+        <SuccessModalContent text="User details successfully updated!" />
+      )}
     </Modal>
   );
 };
@@ -811,10 +823,12 @@ const UserManagement = () => {
     <SettingsTab value="user-management">
       <div className="h-full mt-2">
         <APITokenComponent />
-        <InviteUserModal
-          showDialog={openInviteUserForm}
-          setShowDialog={setOpenInviteUserForm}
-        />
+        {openInviteUserForm && (
+          <InviteUserModal
+            showDialog={openInviteUserForm}
+            setShowDialog={setOpenInviteUserForm}
+          />
+        )}
         <div className="mt-4">
           <div className="flex justify-between">
             <div>
@@ -901,39 +915,42 @@ const DeleteConfirmationModal = ({
       method: 'post',
     });
   }, [userId, fetcher]);
-
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          Selected user will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, Cancel
-          </Button>
-          <Button
-            size="xs"
-            color="danger"
-            onClick={(e) => {
-              e.preventDefault();
-              onDeleteAction();
-              setShowDialog(false);
+      {!fetcher?.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
             }}
           >
-            Yes, I&apos;m sure
-          </Button>
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            Selected user will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              size="xs"
+              color="danger"
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteAction();
+                setShowDialog(false);
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="User details successfully updated!" />
+      )}
     </Modal>
   );
 };

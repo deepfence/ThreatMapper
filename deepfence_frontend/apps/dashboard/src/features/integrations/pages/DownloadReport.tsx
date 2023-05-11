@@ -55,6 +55,7 @@ import { TruncatedText } from '@/components/TruncatedText';
 import { useGetCloudAccountsList } from '@/features/common/data-component/searchCloudAccountsApiLoader';
 import { getNodeTypeByProviderName } from '@/features/postures/pages/Accounts';
 import { ActionReturnType } from '@/features/registries/components/RegistryAccountsTable';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { CloudNodeType, isCloudNode, ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
@@ -318,7 +319,6 @@ const action = async ({
         message: 'Error in adding report',
       };
     }
-    toast('Report deleted successfully');
     return {
       deleteSuccess: true,
     };
@@ -341,49 +341,50 @@ const DeleteConfirmationModal = ({
     message: string;
   }>();
 
-  if (fetcher.data?.deleteSuccess) {
-    setShowDialog(false);
-  }
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          The selected report will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-
-        {fetcher.data?.message ? (
-          <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
-        ) : null}
-
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, Cancel
-          </Button>
-          <Button
-            size="xs"
-            color="danger"
-            onClick={() => {
-              const formData = new FormData();
-              formData.append('_actionType', ActionEnumType.DELETE);
-              formData.append('id', id);
-              fetcher.submit(formData, {
-                method: 'post',
-              });
+      {!fetcher.data?.deleteSuccess ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
             }}
           >
-            Yes, I&apos;m sure
-          </Button>
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            The selected report will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+
+          {fetcher.data?.message ? (
+            <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
+          ) : null}
+
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              size="xs"
+              color="danger"
+              onClick={() => {
+                const formData = new FormData();
+                formData.append('_actionType', ActionEnumType.DELETE);
+                formData.append('id', id);
+                fetcher.submit(formData, {
+                  method: 'post',
+                });
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
     </Modal>
   );
 };
@@ -399,11 +400,13 @@ const ActionDropdown = ({
 
   return (
     <>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        id={data.report_id ?? ''}
-        setShowDialog={setShowDeleteDialog}
-      />
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          id={data.report_id ?? ''}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
       <Dropdown
         triggerAsChild={true}
         align="end"

@@ -3,7 +3,6 @@ import { IconContext } from 'react-icons';
 import { FaPencilAlt } from 'react-icons/fa';
 import { HiDotsVertical, HiGlobeAlt } from 'react-icons/hi';
 import { ActionFunctionArgs, useFetcher, useLoaderData } from 'react-router-dom';
-import { toast } from 'sonner';
 import {
   Button,
   createColumnHelper,
@@ -22,6 +21,7 @@ import {
   ModelSettingUpdateRequestKeyEnum,
 } from '@/api/generated';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -81,9 +81,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
   if (ApiError.isApiError(r)) {
     return r.value();
   }
-  toast.success('Global settings details updated successfully');
   return {
-    success: false,
+    success: true,
   };
 };
 
@@ -128,37 +127,41 @@ const EditGlobalSettingModal = ({
       onOpenChange={() => setShowDialog(false)}
       title="Update Setting"
     >
-      <fetcher.Form
-        method="post"
-        className="flex flex-col gap-y-3 pt-2 pb-6 mx-8 w-[260px]"
-      >
-        <TextInput type="hidden" className="hidden" name="id" value={setting?.id} />
-        <TextInput type="hidden" className="hidden" name="key" value={setting?.key} />
-        <TextInput
-          label={setting?.label}
-          type={'text'}
-          placeholder={setting?.key}
-          name="value"
-          color={data?.fieldErrors?.value ? 'error' : 'default'}
-          sizing="sm"
-          defaultValue={setting?.value}
-          helperText={data?.fieldErrors?.value}
-          required
-        />
-        <div className={`text-red-600 dark:text-red-500 text-sm`}>
-          {!data?.success && data?.message && <span>{data.message}</span>}
-        </div>
-        <Button
-          color="primary"
-          className=" pl-3"
-          type="submit"
-          size="sm"
-          disabled={state !== 'idle'}
-          loading={state !== 'idle'}
+      {!data?.success ? (
+        <fetcher.Form
+          method="post"
+          className="flex flex-col gap-y-3 pt-2 pb-6 mx-8 w-[260px]"
         >
-          Update
-        </Button>
-      </fetcher.Form>
+          <TextInput type="hidden" className="hidden" name="id" value={setting?.id} />
+          <TextInput type="hidden" className="hidden" name="key" value={setting?.key} />
+          <TextInput
+            label={setting?.label}
+            type={'text'}
+            placeholder={setting?.key}
+            name="value"
+            color={data?.fieldErrors?.value ? 'error' : 'default'}
+            sizing="sm"
+            defaultValue={setting?.value}
+            helperText={data?.fieldErrors?.value}
+            required
+          />
+          <div className={`text-red-600 dark:text-red-500 text-sm`}>
+            {!data?.success && data?.message && <span>{data.message}</span>}
+          </div>
+          <Button
+            color="primary"
+            className=" pl-3"
+            type="submit"
+            size="sm"
+            disabled={state !== 'idle'}
+            loading={state !== 'idle'}
+          >
+            Update
+          </Button>
+        </fetcher.Form>
+      ) : (
+        <SuccessModalContent text="Global Settings successfully updated!" />
+      )}
     </Modal>
   );
 };
