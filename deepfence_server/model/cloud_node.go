@@ -247,16 +247,15 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 				neo4jNodeType, scanType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType)
 			// log.Info().Msgf("linux counts query %s", query)
 			nodeRes, err := tx.Run(query, map[string]interface{}{})
-			if err != nil {
-				log.Error().Msgf("Provider query error for %s: %v", postureProviderName, err)
-			}
-			nodeRec, err := nodeRes.Single()
-			if err != nil {
-				log.Error().Msgf("Provider query error for %s: %v", postureProviderName, err)
-			} else {
-				postureProvider.NodeCount = int(nodeRec.Values[0].(int64))
-				postureProvider.ScanCount = int(nodeRec.Values[1].(int64))
-				postureProvider.CompliancePercentage = nodeRec.Values[2].(float64)
+			if err == nil {
+				nodeRec, err := nodeRes.Single()
+				if err != nil {
+					log.Warn().Msgf("Provider query error for %s: %v", postureProviderName, err)
+				} else {
+					postureProvider.NodeCount = int(nodeRec.Values[0].(int64))
+					postureProvider.ScanCount = int(nodeRec.Values[1].(int64))
+					postureProvider.CompliancePercentage = nodeRec.Values[2].(float64)
+				}
 			}
 		} else if postureProviderName == PostureProviderAWSOrg || postureProviderName == PostureProviderGCPOrg {
 			cloudProvider := PostureProviderGCP
@@ -283,14 +282,16 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 				map[string]interface{}{
 					"cloud_provider": cloudProvider,
 				})
-			nodeRec, err := nodeRes.Single()
-			if err != nil {
-				log.Error().Msgf("Provider query error for %s: %v", postureProviderName, err)
-			} else {
-				postureProvider.NodeCount = int(nodeRec.Values[0].(int64))
-				postureProvider.ResourceCount = int(nodeRec.Values[1].(int64))
-				postureProvider.ScanCount = int(nodeRec.Values[2].(int64))
-				postureProvider.CompliancePercentage = nodeRec.Values[3].(float64)
+			if err == nil {
+				nodeRec, err := nodeRes.Single()
+				if err != nil {
+					log.Warn().Msgf("Provider query error for %s: %v", postureProviderName, err)
+				} else {
+					postureProvider.NodeCount = int(nodeRec.Values[0].(int64))
+					postureProvider.ResourceCount = int(nodeRec.Values[1].(int64))
+					postureProvider.ScanCount = int(nodeRec.Values[2].(int64))
+					postureProvider.CompliancePercentage = nodeRec.Values[3].(float64)
+				}
 			}
 		} else {
 			postureProvider.NodeLabel = "Accounts"
@@ -312,14 +313,16 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 				map[string]interface{}{
 					"cloud_provider": postureProviderName,
 				})
-			nodeRec, err := nodeRes.Single()
-			if err != nil {
-				log.Error().Msgf("Provider query error for %s: %v", postureProviderName, err)
-			} else {
-				postureProvider.NodeCount = int(nodeRec.Values[0].(int64))
-				postureProvider.ResourceCount = int(nodeRec.Values[1].(int64))
-				postureProvider.ScanCount = int(nodeRec.Values[2].(int64))
-				postureProvider.CompliancePercentage = nodeRec.Values[3].(float64)
+			if err == nil {
+				nodeRec, err := nodeRes.Single()
+				if err != nil {
+					log.Warn().Msgf("Provider query error for %s: %v", postureProviderName, err)
+				} else {
+					postureProvider.NodeCount = int(nodeRec.Values[0].(int64))
+					postureProvider.ResourceCount = int(nodeRec.Values[1].(int64))
+					postureProvider.ScanCount = int(nodeRec.Values[2].(int64))
+					postureProvider.CompliancePercentage = nodeRec.Values[3].(float64)
+				}
 			}
 		}
 		postureProviders = append(postureProviders, postureProvider)

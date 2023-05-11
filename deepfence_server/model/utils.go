@@ -43,26 +43,52 @@ func ValidatePassword(fl validator.FieldLevel) bool {
 	return true
 }
 
+var (
+	ErrorMessage = map[string]string{
+		"UserRegisterRequest.FirstName":         "should only contain alphabets, numbers, space and hyphen",
+		"UserRegisterRequest.LastName":          "should only contain alphabets, numbers, space and hyphen",
+		"UserRegisterRequest.Company":           "should only contain alphabets, numbers and valid characters",
+		"UserRegisterRequest.Password":          "should contain at least one upper case, lower case, digit and special character",
+		"UpdateUserPasswordRequest.OldPassword": "incorrect old password",
+		"UpdateUserPasswordRequest.NewPassword": "should contain at least one upper case, lower case, digit and special character",
+		"LoginRequest.Password":                 "incorrect password",
+		"RegisterInvitedUserRequest.Password":   "should contain at least one upper case, lower case, digit and special character",
+
+		"api_token": "api_token must be UUID",
+		"email":     "invalid email address",
+	}
+)
+
 func ParseValidatorError(errMsg string) map[string]string {
 	fields := make(map[string]string)
-	validate := func(errMsg string) string {
+	validate := func(errMsg string) (string, string, string) {
 		s := strings.SplitN(errMsg, "'", 3)
-		if len(s) == 3 {
-			s = strings.Split(s[1], ".")
-			if len(s) == 2 {
-				return utils.ToSnakeCase(s[1])
-			}
-			return utils.ToSnakeCase(s[1])
+		sLen := len(s)
+		errMessage := strings.TrimPrefix(strings.TrimSpace(s[sLen-1]), "Error:")
+		if index := strings.LastIndex(errMessage, " on the '"); index > 0 {
+			errMessage = errMessage[:index]
 		}
-		return strings.ToLower(errMsg)
+		if sLen == 3 {
+			structKey := strings.Split(s[1], ".")
+			if len(structKey) == 2 {
+				return utils.ToSnakeCase(structKey[1]), s[1], errMessage
+			}
+			return utils.ToSnakeCase(s[1]), s[1], errMessage
+		}
+		return strings.ToLower(errMsg), "", errMessage
 	}
+	var errKey, errFullKey, errMessage string
 	for _, msg := range strings.Split(errMsg, "\n") {
-		field := validate(msg)
-		m, ok := ErrorMessage[field]
-		if ok {
-			fields[validate(msg)] = m
+		errKey, errFullKey, errMessage = validate(msg)
+		if errKey == "" {
+			continue
+		}
+		if errVal, ok := ErrorMessage[errFullKey]; ok {
+			fields[errKey] = errVal
+		} else if errVal, ok := ErrorMessage[errKey]; ok {
+			fields[errKey] = errVal
 		} else {
-			fields[validate(msg)] = "invalid"
+			fields[errKey] = errMessage
 		}
 	}
 	return fields
