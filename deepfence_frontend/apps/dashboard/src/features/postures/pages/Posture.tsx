@@ -123,7 +123,7 @@ const AccountSummary = () => {
                   <div className="mt-2 flex gap-x-6 items-center">
                     <div className="pr-2 flex flex-col gap-y-2 border-r border-gray-200 dark:border-gray-700">
                       <div className="px-4 flex justify-center items-center h-8 w-20 max-h-9">
-                        <img src={account.icon} alt="logo" />
+                        <img src={account?.icon} alt="logo" />
                       </div>
                       <div className="flex flex-col items-center">
                         <span
