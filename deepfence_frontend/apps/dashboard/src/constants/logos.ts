@@ -47,6 +47,9 @@ export const getPostureLogo = (accountType: string, mode: Mode) => {
     azure: {
       icon: LogoAzure,
     },
+    gcp_org: {
+      icon: LogoGoogle,
+    },
     gcp: {
       icon: LogoGoogle,
     },
