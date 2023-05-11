@@ -180,9 +180,16 @@ const RuntimeBom = () => {
           );
         },
         header: () => 'Type',
-        minSize: 200,
-        size: 300,
-        maxSize: 500,
+        minSize: 50,
+        size: 100,
+        maxSize: 200,
+      }),
+      columnHelper.accessor('node_name', {
+        cell: (cell) => cell.getValue(),
+        header: () => 'Name',
+        minSize: 100,
+        size: 200,
+        maxSize: 300,
       }),
       columnHelper.accessor('node_id', {
         enableSorting: false,
@@ -204,7 +211,7 @@ const RuntimeBom = () => {
             </div>
           );
         },
-        header: () => 'Name',
+        header: () => 'Node',
         minSize: 200,
         size: 300,
         maxSize: 500,
