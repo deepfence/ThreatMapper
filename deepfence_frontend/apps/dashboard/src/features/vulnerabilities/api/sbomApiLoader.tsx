@@ -132,22 +132,6 @@ export const SbomModal = ({
             />
           );
         },
-        sortingFn: (rowA, rowB) => {
-          const severityA = rowA.original.severity?.toLowerCase();
-          const severityB = rowB.original.severity?.toLowerCase();
-          if (severityA === severityB) return 0;
-          if (severityA === 'critical') return -1;
-          if (severityB === 'critical') return 1;
-          if (severityA === 'high') return -1;
-          if (severityB === 'high') return 1;
-          if (severityA === 'medium') return -1;
-          if (severityB === 'medium') return 1;
-          if (severityA === 'low') return -1;
-          if (severityB === 'low') return 1;
-          if (severityA === 'unknown') return -1;
-          if (severityB === 'unknown') return 1;
-          return 0;
-        },
         header: () => 'Severity',
         minSize: 50,
         size: 70,
