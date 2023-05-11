@@ -75,6 +75,7 @@ import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
 import { PostureResultChart } from '@/features/postures/components/PostureResultChart';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { PostureSeverityType, ScanStatusEnum, ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -345,7 +346,7 @@ type ActionFunctionType =
 const action = async ({
   params: { scanId = '' },
   request,
-}: ActionFunctionArgs): Promise<null> => {
+}: ActionFunctionArgs): Promise<null | { success: boolean }> => {
   const formData = await request.formData();
   const ids = (formData.getAll('ids[]') ?? []) as string[];
   const actionType = formData.get('actionType');
@@ -425,7 +426,9 @@ const action = async ({
   }
 
   if (actionType === ActionEnumType.DELETE) {
-    toast.success('Deleted successfully');
+    return {
+      success: true,
+    };
   } else if (actionType === ActionEnumType.NOTIFY) {
     toast.success('Notified successfully');
   } else if (actionType === ActionEnumType.MASK) {
@@ -461,36 +464,39 @@ const DeleteConfirmationModal = ({
 
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          The selected compliances will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, Cancel
-          </Button>
-          <Button
-            size="xs"
-            color="danger"
-            onClick={(e) => {
-              e.preventDefault();
-              onDeleteAction(ActionEnumType.DELETE);
-              setShowDialog(false);
+      {!fetcher.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
             }}
           >
-            Yes, I&apos;m sure
-          </Button>
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            The selected compliances will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              size="xs"
+              color="danger"
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteAction(ActionEnumType.DELETE);
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
     </Modal>
   );
 };
@@ -615,13 +621,16 @@ const ActionDropdown = ({
   ids,
   align,
   triggerButton,
+  setIdsToDelete,
+  setShowDeleteDialog,
 }: {
   ids: string[];
   align: 'center' | 'end' | 'start';
   triggerButton: React.ReactNode;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const fetcher = useFetcher();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const onTableAction = useCallback(
     (actionType: string) => {
@@ -636,67 +645,61 @@ const ActionDropdown = ({
   );
 
   return (
-    <>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        ids={ids}
-        setShowDialog={setShowDeleteDialog}
-      />
-      <Dropdown
-        triggerAsChild={true}
-        align={align}
-        content={
-          <>
-            <DropdownItem onClick={() => onTableAction(ActionEnumType.MASK)}>
+    <Dropdown
+      triggerAsChild={true}
+      align={align}
+      content={
+        <>
+          <DropdownItem onClick={() => onTableAction(ActionEnumType.MASK)}>
+            <IconContext.Provider
+              value={{ className: 'text-gray-700 dark:text-gray-400' }}
+            >
+              <HiEyeOff />
+            </IconContext.Provider>
+            <span className="text-gray-700 dark:text-gray-400">Mask</span>
+          </DropdownItem>
+          <DropdownItem onClick={() => onTableAction(ActionEnumType.UNMASK)}>
+            <IconContext.Provider
+              value={{ className: 'text-gray-700 dark:text-gray-400' }}
+            >
+              <HiEye />
+            </IconContext.Provider>
+            <span className="text-gray-700 dark:text-gray-400">Un mask</span>
+          </DropdownItem>
+          <DropdownItem
+            className="text-sm"
+            onClick={() => onTableAction(ActionEnumType.NOTIFY)}
+          >
+            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
               <IconContext.Provider
                 value={{ className: 'text-gray-700 dark:text-gray-400' }}
               >
-                <HiEyeOff />
+                <HiBell />
               </IconContext.Provider>
-              <span className="text-gray-700 dark:text-gray-400">Mask</span>
-            </DropdownItem>
-            <DropdownItem onClick={() => onTableAction(ActionEnumType.UNMASK)}>
+              Notify
+            </span>
+          </DropdownItem>
+          <DropdownItem
+            className="text-sm"
+            onClick={() => {
+              setIdsToDelete(ids);
+              setShowDeleteDialog(true);
+            }}
+          >
+            <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
               <IconContext.Provider
-                value={{ className: 'text-gray-700 dark:text-gray-400' }}
+                value={{ className: 'text-red-700 dark:text-red-400' }}
               >
-                <HiEye />
+                <HiArchive />
               </IconContext.Provider>
-              <span className="text-gray-700 dark:text-gray-400">Un mask</span>
-            </DropdownItem>
-            <DropdownItem
-              className="text-sm"
-              onClick={() => onTableAction(ActionEnumType.NOTIFY)}
-            >
-              <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-                <IconContext.Provider
-                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
-                >
-                  <HiBell />
-                </IconContext.Provider>
-                Notify
-              </span>
-            </DropdownItem>
-            <DropdownItem
-              className="text-sm"
-              onClick={() => {
-                setShowDeleteDialog(true);
-              }}
-            >
-              <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
-                <IconContext.Provider
-                  value={{ className: 'text-red-700 dark:text-red-400' }}
-                >
-                  <HiArchive />
-                </IconContext.Provider>
-                Delete
-              </span>
-            </DropdownItem>
-          </>
-        }
-      >
-        {triggerButton}
-      </Dropdown>
-    </>
+              Delete
+            </span>
+          </DropdownItem>
+        </>
+      }
+    >
+      {triggerButton}
+    </Dropdown>
   );
 };
 const ScanResusltTable = () => {
@@ -705,6 +708,8 @@ const ScanResusltTable = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [sort, setSort] = useSortingState();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [idsToDelete, setIdsToDelete] = useState<string[]>([]);
 
   const columns = useMemo(() => {
     const columns = [
@@ -803,6 +808,8 @@ const ScanResusltTable = () => {
           <ActionDropdown
             ids={[cell.row.original.node_id]}
             align="end"
+            setIdsToDelete={setIdsToDelete}
+            setShowDeleteDialog={setShowDeleteDialog}
             triggerButton={
               <Button size="xs" color="normal">
                 <IconContext.Provider
@@ -866,6 +873,8 @@ const ScanResusltTable = () => {
                     <ActionDropdown
                       ids={Object.keys(rowSelectionState)}
                       align="start"
+                      setIdsToDelete={setIdsToDelete}
+                      setShowDeleteDialog={setShowDeleteDialog}
                       triggerButton={
                         <Button size="xxs" color="primary" outline>
                           Actions
@@ -874,7 +883,13 @@ const ScanResusltTable = () => {
                     />
                   </div>
                 )}
-
+                {showDeleteDialog && (
+                  <DeleteConfirmationModal
+                    showDialog={showDeleteDialog}
+                    ids={idsToDelete}
+                    setShowDialog={setShowDeleteDialog}
+                  />
+                )}
                 <Table
                   size="sm"
                   data={data.compliances}
