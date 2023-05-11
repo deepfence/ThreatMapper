@@ -199,7 +199,7 @@ const RuntimeBom = () => {
                 }}
                 href="#"
               >
-                <span className="truncate capitalize">{info.getValue()}</span>
+                <span className="truncate">{info.getValue()}</span>
               </DFLink>
             </div>
           );
