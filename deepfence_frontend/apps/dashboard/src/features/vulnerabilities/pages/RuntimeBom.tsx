@@ -185,13 +185,6 @@ const RuntimeBom = () => {
         maxSize: 200,
       }),
       columnHelper.accessor('node_name', {
-        cell: (cell) => cell.getValue(),
-        header: () => 'Name',
-        minSize: 100,
-        size: 200,
-        maxSize: 300,
-      }),
-      columnHelper.accessor('node_id', {
         enableSorting: false,
         cell: (info) => {
           return (
