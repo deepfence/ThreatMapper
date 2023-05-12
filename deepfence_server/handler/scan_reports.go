@@ -1000,7 +1000,7 @@ func (h *Handler) GroupSecretResultsHandler(w http.ResponseWriter, r *http.Reque
 	})
 }
 
-func groupMalwares(ctx context.Context) ([]reporters_search.ResultGroup, error) {
+func groupMalwares(ctx context.Context, byClass bool) ([]reporters_search.ResultGroup, error) {
 	results := []reporters_search.ResultGroup{}
 
 	driver, err := directory.Neo4jClient(ctx)
@@ -1022,6 +1022,11 @@ func groupMalwares(ctx context.Context) ([]reporters_search.ResultGroup, error) 
 
 	query := `MATCH (n:Malware)-[]->(m:MalwareRule) 
 	RETURN m.rule_name as name, n.file_severity as severity, count(*) as count`
+
+	if byClass {
+		query = `MATCH (n:Malware)-[]->(m:MalwareRule) 
+		RETURN m.info as name, n.file_severity as severity, count(*) as count`
+	}
 
 	res, err := tx.Run(query, map[string]interface{}{})
 	if err != nil {
@@ -1048,7 +1053,21 @@ func groupMalwares(ctx context.Context) ([]reporters_search.ResultGroup, error) 
 
 func (h *Handler) GroupMalwareResultsHandler(w http.ResponseWriter, r *http.Request) {
 
-	groups, err := groupMalwares(r.Context())
+	groups, err := groupMalwares(r.Context(), false)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to group malwares")
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
+		Groups: groups,
+	})
+}
+
+func (h *Handler) GroupMalwareClassResultsHandler(w http.ResponseWriter, r *http.Request) {
+
+	groups, err := groupMalwares(r.Context(), true)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to group malwares")
 		respondError(err, w)

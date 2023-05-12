@@ -492,11 +492,14 @@ func (d *OpenApiDocs) AddScansOperations() {
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
 
 	// pie chart apis
-	d.AddOperation("groupResultsSecretScan", http.MethodGet, "/deepfence/scan/results/count/group/secret",
-		"Group Secret Scans Results", "Group Secret Scans results by severity/rule",
+	d.AddOperation("groupResultsSecrets", http.MethodGet, "/deepfence/scan/results/count/group/secret",
+		"Group Secret Results", "Group Secret Scans results by severity/rule",
 		http.StatusOK, []string{tagSecretScan}, bearerToken, nil, new(ResultGroupResp))
-	d.AddOperation("groupResultsMalwareScan", http.MethodGet, "/deepfence/scan/results/count/group/malware",
-		"Group Malware Scans Results", "Group Malware Scans results by severity/rule",
+	d.AddOperation("groupResultsMalwares", http.MethodGet, "/deepfence/scan/results/count/group/malware",
+		"Group Malware Results", "Group Malware Scans results by severity/rule",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, nil, new(ResultGroupResp))
+	d.AddOperation("groupResultsMalwaresClass", http.MethodGet, "/deepfence/scan/results/count/group/malware/class",
+		"Group Malware Results By Class", "Group Malware Scans results by severity/class",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, nil, new(ResultGroupResp))
 
 	d.AddOperation("getAllNodesInScanResults", http.MethodPost, "/deepfence/scan/nodes-in-result",
