@@ -2,6 +2,10 @@ module github.com/deepfence/ThreatMapper/deepfence_bootstrapper
 
 go 1.19
 
+replace github.com/deepfence/golang_deepfence_sdk/utils => ../golang_deepfence_sdk/utils/
+
+replace github.com/deepfence/golang_deepfence_sdk/client => ../golang_deepfence_sdk/client/
+
 require (
 	github.com/containerd/cgroups/v3 v3.0.1
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230502152923-2ddec84086c1

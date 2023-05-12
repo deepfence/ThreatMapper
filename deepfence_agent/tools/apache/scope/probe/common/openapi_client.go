@@ -7,7 +7,7 @@ import (
 
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
 	oahttp "github.com/deepfence/golang_deepfence_sdk/utils/http"
-	"github.com/sirupsen/logrus"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
 var (
@@ -28,7 +28,7 @@ func NewClient() (*openapi.APIClient, error) {
 	if strings.Trim(api_token, "\"") == "" && oahttp.IsConsoleAgent(url) {
 		internalURL := os.Getenv("MGMT_CONSOLE_URL_INTERNAL")
 		internalPort := os.Getenv("MGMT_CONSOLE_PORT_INTERNAL")
-		logrus.Infof("fetch console agent token")
+		log.Info().Msg("fetch console agent token")
 		var err error
 		if api_token, err = oahttp.GetConsoleApiToken(internalURL, internalPort); err != nil {
 			return nil, err
