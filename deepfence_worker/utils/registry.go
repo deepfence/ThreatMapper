@@ -17,6 +17,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/dockerprivate"
 	registryECR "github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/ecr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/gcr"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/gitlab"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/harbor"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/jfrog"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/quay"
@@ -108,11 +109,52 @@ func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCred
 		return jfrogCreds(reg, aes)
 	case constants.ECR:
 		return ecrCreds(reg, aes)
+	case constants.GITLAB:
+		return gitlabCreds(reg, aes)
 	default:
 		return regCreds{}, nil
 	}
 }
 
+func gitlabCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (regCreds, error) {
+	var (
+		err       error
+		hub       gitlab.RegistryGitlab
+		nonsecret gitlab.NonSecret
+		secret    gitlab.Secret
+	)
+
+	err = json.Unmarshal(reg.NonSecret, &nonsecret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	err = json.Unmarshal(reg.EncryptedSecret, &secret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	hub = gitlab.RegistryGitlab{
+		Name:      reg.Name,
+		Secret:    secret,
+		NonSecret: nonsecret,
+	}
+
+	err = hub.DecryptSecret(aes)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	return regCreds{
+		URL:           hub.NonSecret.GitlabRegistryURL,
+		UserName:      "gitlab-ci-token",
+		Password:      hub.Secret.GitlabToken,
+		NameSpace:     "",
+		ImagePrefix:   "registry.gitlab.com",
+		SkipTLSVerify: false,
+		UseHttp:       useHttp(hub.NonSecret.GitlabRegistryURL),
+	}, nil
+
+}
 func ecrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (regCreds, error) {
 	var (
 		err       error
