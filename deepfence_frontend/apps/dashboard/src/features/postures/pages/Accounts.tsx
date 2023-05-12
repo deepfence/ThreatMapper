@@ -754,7 +754,6 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
           data={accounts ?? []}
           columns={columns}
           enableRowSelection
-          totalRows={totalRows}
           rowSelectionState={rowSelectionState}
           onRowSelectionChange={setRowSelectionState}
           getRowId={(row) => row.node_id ?? ''}
