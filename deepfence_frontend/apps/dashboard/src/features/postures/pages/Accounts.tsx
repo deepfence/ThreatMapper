@@ -12,7 +12,6 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import {
-  Badge,
   Breadcrumb,
   BreadcrumbLink,
   Button,
@@ -33,6 +32,7 @@ import { DFLink } from '@/components/DFLink';
 import { FilterHeader } from '@/components/forms/FilterHeader';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { CLOUDS } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { ComplianceScanNodeTypeEnum, ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -53,6 +53,8 @@ export const getNodeTypeByProviderName = (
       return ComplianceScanNodeTypeEnum.aws;
     case 'gcp':
       return ComplianceScanNodeTypeEnum.gcp;
+    case 'gcp_org':
+      return ComplianceScanNodeTypeEnum.gcp_org;
     case 'azure':
       return ComplianceScanNodeTypeEnum.azure;
     case 'kubernetes':
@@ -157,7 +159,7 @@ const loader = async ({
 
 const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const columnHelper = createColumnHelper<ModelCloudNodeAccountInfo>();
   const [selectedScanType, setSelectedScanType] = useState<
     typeof ScanTypeEnum.ComplianceScan | typeof ScanTypeEnum.CloudComplianceScan
@@ -199,7 +201,7 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
           return (
             <WrapperComponent>
               <div className="flex items-center gap-x-2 truncate">
-                <span className="truncate capitalize">{cell.getValue()}</span>
+                <span className="truncate">{cell.getValue()}</span>
               </div>
             </WrapperComponent>
           );
@@ -245,26 +247,7 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
       columnHelper.accessor('last_scan_status', {
         cell: (info) => {
           const value = info.getValue();
-          const isNeverScan = info.row.original.last_scan_status?.toLowerCase() === '';
-          const isScanning =
-            value?.toLowerCase() !== 'complete' &&
-            value?.toLowerCase() !== 'error' &&
-            !isNeverScan;
-          const status = isNeverScan ? 'NEVER SCANNED' : value?.toUpperCase();
-          return (
-            <Badge
-              label={status}
-              className={cx('text-md rounded-lg font-medium text-center w-fit px-2', {
-                'bg-[#0E9F6E]/20 dark:bg-[#0E9F6E]/20 text-[#0E9F6E] dark:text-[#0E9F6E]':
-                  value?.toLowerCase() === 'complete',
-                'bg-[#de425b]/30 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
-                  value?.toLowerCase() === 'error',
-                'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-                  isScanning,
-              })}
-              size="sm"
-            />
-          );
+          return <ScanStatusBadge status={value ?? ''} />;
         },
         header: () => 'Status',
         minSize: 50,

@@ -29,6 +29,7 @@ async function getTop5SecretAssetsData(nodeType: 'image' | 'host' | 'container')
               contains_filter: {
                 filter_in: {
                   pseudo: [false],
+                  active: [true],
                 },
               },
               match_filter: {
@@ -62,64 +63,82 @@ async function getTop5SecretAssetsData(nodeType: 'image' | 'host' | 'container')
     throw new Error('error getting top 5 container images');
   }
   const top5NodeScans = await makeRequest({
-    apiFunction: getSecretApiClient().listSecretScans,
+    apiFunction: getSearchApiClient().searchSecretsScan,
     apiArgs: [
       {
-        modelScanListReq: {
-          fields_filter: {
-            contains_filter: {
-              filter_in: {
-                status: ['COMPLETE'],
-              },
+        searchSearchScanReq: {
+          node_filters: {
+            filters: {
+              compare_filter: [],
+              contains_filter: { filter_in: {} },
+              match_filter: { filter_in: {} },
+              order_filter: { order_fields: [] },
+              not_contains_filter: { filter_in: {} },
             },
-            match_filter: { filter_in: {} },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
+            in_field_filter: [],
+            window: { offset: 0, size: 0 },
           },
-
-          node_ids: top5Nodes.map((node) => {
-            return {
-              node_id: node.node_id,
-              node_type: nodeType,
-            };
-          }),
+          scan_filters: {
+            filters: {
+              compare_filter: [],
+              contains_filter: {
+                filter_in: {
+                  node_id: top5Nodes
+                    .map((node) => node.secret_latest_scan_id)
+                    .filter((scanId) => {
+                      return !!scanId?.length;
+                    }),
+                },
+              },
+              match_filter: { filter_in: {} },
+              order_filter: { order_fields: [] },
+              not_contains_filter: { filter_in: {} },
+            },
+            in_field_filter: [],
+            window: { offset: 0, size: 0 },
+          },
           window: {
             offset: 0,
-            size: 1,
+            size: 5,
           },
         },
       },
     ],
   });
   if (ApiError.isApiError(top5NodeScans)) {
-    throw new Error('error getting top 5 container image scans');
+    throw new Error('error getting top 5 scans');
   }
 
-  return top5Nodes.map((node) => {
-    const latestScan = top5NodeScans.scans_info?.find(
-      (scan) => scan.node_id === node.node_id,
-    );
-    let name = '';
-    if (nodeType === 'image') {
-      name = `${(node as ModelContainerImage).docker_image_name}:${
-        (node as ModelContainerImage).docker_image_tag
-      }`;
-    } else if (nodeType === 'container') {
-      name = `${(node as ModelContainer).docker_container_name} on ${
-        (node as ModelContainer).host_name
-      }`;
-    } else if (nodeType === 'host') {
-      name = (node as ModelHost).host_name;
-    }
-    return {
-      name,
-      critical: latestScan?.severity_counts?.critical ?? 0,
-      high: latestScan?.severity_counts?.high ?? 0,
-      medium: latestScan?.severity_counts?.medium ?? 0,
-      low: latestScan?.severity_counts?.low ?? 0,
-      unknown: latestScan?.severity_counts?.unknown ?? 0,
-    };
-  });
+  return top5Nodes
+    .map((node) => {
+      const latestScan = top5NodeScans.find((scan) => scan.node_id === node.node_id);
+      if (!latestScan) {
+        return null;
+      }
+      return {
+        name: latestScan.node_name,
+        critical: latestScan.severity_counts?.critical ?? 0,
+        high: latestScan.severity_counts?.high ?? 0,
+        medium: latestScan.severity_counts?.medium ?? 0,
+        low: latestScan.severity_counts?.low ?? 0,
+        unknown: latestScan.severity_counts?.unknown ?? 0,
+      };
+    })
+    .reduce<
+      Array<{
+        name: string;
+        critical: number;
+        high: number;
+        medium: number;
+        low: number;
+        unknown: number;
+      }>
+    >((acc, curr) => {
+      if (curr) {
+        acc.push(curr);
+      }
+      return acc;
+    }, []);
 }
 
 type LoaderData = {
