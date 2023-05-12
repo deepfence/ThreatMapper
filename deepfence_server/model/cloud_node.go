@@ -64,8 +64,17 @@ type CloudNodeAccountInfo struct {
 	LastScanStatus       string  `json:"last_scan_status"`
 }
 
-func (CloudNodeAccountInfo) NodeType() string {
-	return "CloudNode"
+func (v CloudNodeAccountInfo) NodeType() string {
+	switch v.CloudProvider {
+	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg:
+		return "CloudNode"
+	case PostureProviderLinux:
+		return "Node"
+	case PostureProviderKubernetes:
+		return "KubernetesCluster"
+	default:
+		return "CloudNode"
+	}
 }
 
 func (CloudNodeAccountInfo) ExtendedField() string {
