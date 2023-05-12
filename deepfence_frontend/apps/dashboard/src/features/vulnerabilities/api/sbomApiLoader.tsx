@@ -132,6 +132,19 @@ export const SbomModal = ({
             />
           );
         },
+        sortingFn: (rowA, rowB) => {
+          const severityA = rowA.original.severity?.toLowerCase() || 'default';
+          const severityB = rowB.original.severity?.toLowerCase() || 'default';
+          const severityMap: { [key: string]: number } = {
+            critical: 4,
+            high: 3,
+            medium: 2,
+            low: 1,
+            unknown: 0,
+            default: 0,
+          };
+          return severityMap[severityA] - severityMap[severityB];
+        },
         header: () => 'Severity',
         minSize: 50,
         size: 70,

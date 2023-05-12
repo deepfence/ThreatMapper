@@ -180,11 +180,11 @@ const RuntimeBom = () => {
           );
         },
         header: () => 'Type',
-        minSize: 200,
-        size: 300,
-        maxSize: 500,
+        minSize: 50,
+        size: 100,
+        maxSize: 200,
       }),
-      columnHelper.accessor('node_id', {
+      columnHelper.accessor('node_name', {
         enableSorting: false,
         cell: (info) => {
           return (
@@ -199,12 +199,12 @@ const RuntimeBom = () => {
                 }}
                 href="#"
               >
-                <span className="truncate capitalize">{info.getValue()}</span>
+                <span className="truncate">{info.getValue()}</span>
               </DFLink>
             </div>
           );
         },
-        header: () => 'Name',
+        header: () => 'Node',
         minSize: 200,
         size: 300,
         maxSize: 500,

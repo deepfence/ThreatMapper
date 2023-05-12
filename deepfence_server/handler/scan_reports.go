@@ -940,6 +940,145 @@ func (h *Handler) CountCloudComplianceScanResultsHandler(w http.ResponseWriter, 
 	})
 }
 
+func groupSecrets(ctx context.Context) ([]reporters_search.ResultGroup, error) {
+	results := []reporters_search.ResultGroup{}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return results, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return results, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return results, err
+	}
+	defer tx.Close()
+
+	query := `MATCH (n:Secret)-[:IS]->(m:SecretRule)
+	RETURN m.name as name, n.level as severity, count(*) as count`
+
+	res, err := tx.Run(query, map[string]interface{}{})
+	if err != nil {
+		return results, err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return results, err
+	}
+
+	for _, rec := range recs {
+		results = append(results,
+			reporters_search.ResultGroup{
+				Name:     rec.Values[0].(string),
+				Severity: rec.Values[1].(string),
+				Count:    rec.Values[2].(int64),
+			},
+		)
+	}
+
+	return results, nil
+}
+
+func (h *Handler) GroupSecretResultsHandler(w http.ResponseWriter, r *http.Request) {
+
+	groups, err := groupSecrets(r.Context())
+	if err != nil {
+		log.Error().Err(err).Msg("failed to group secrets")
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
+		Groups: groups,
+	})
+}
+
+func groupMalwares(ctx context.Context, byClass bool) ([]reporters_search.ResultGroup, error) {
+	results := []reporters_search.ResultGroup{}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return results, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return results, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return results, err
+	}
+	defer tx.Close()
+
+	query := `MATCH (n:Malware)-[:IS]->(m:MalwareRule)
+	RETURN m.rule_name as name, n.file_severity as severity, count(*) as count`
+
+	if byClass {
+		query = `MATCH (n:Malware)-[:IS]->(m:MalwareRule)
+		RETURN m.info as name, n.file_severity as severity, count(*) as count`
+	}
+
+	res, err := tx.Run(query, map[string]interface{}{})
+	if err != nil {
+		return results, err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return results, err
+	}
+
+	for _, rec := range recs {
+		results = append(results,
+			reporters_search.ResultGroup{
+				Name:     rec.Values[0].(string),
+				Severity: rec.Values[1].(string),
+				Count:    rec.Values[2].(int64),
+			},
+		)
+	}
+
+	return results, nil
+}
+
+func (h *Handler) GroupMalwareResultsHandler(w http.ResponseWriter, r *http.Request) {
+
+	groups, err := groupMalwares(r.Context(), false)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to group malwares")
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
+		Groups: groups,
+	})
+}
+
+func (h *Handler) GroupMalwareClassResultsHandler(w http.ResponseWriter, r *http.Request) {
+
+	groups, err := groupMalwares(r.Context(), true)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to group malwares")
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
+		Groups: groups,
+	})
+}
+
 func (h *Handler) CloudComplianceFiltersHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var req model.FiltersReq
