@@ -49,6 +49,16 @@ type NodeCountResp struct {
 	Namespace         int64 `json:"namespace" required:"true"`
 }
 
+type ResultGroup struct {
+	Name     string `json:"name"`
+	Count    int    `json:"count"`
+	Severity string `json:"severity"`
+}
+
+type ResultGroupResp struct {
+	Groups []ResultGroup `json:"groups"`
+}
+
 func CountNodes(ctx context.Context) (NodeCountResp, error) {
 	res := NodeCountResp{}
 	driver, err := directory.Neo4jClient(ctx)

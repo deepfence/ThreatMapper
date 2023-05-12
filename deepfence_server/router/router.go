@@ -327,6 +327,10 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Post("/compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CountComplianceScanResultsHandler))
 					r.Post("/malware", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CountMalwareScanResultsHandler))
 					r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CountCloudComplianceScanResultsHandler))
+					r.Route("/group", func(r chi.Router) {
+						r.Get("/secret", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GroupSecretResultsHandler))
+						r.Get("/malware", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GroupMalwareResultsHandler))
+					})
 				})
 			})
 

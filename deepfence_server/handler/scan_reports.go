@@ -940,6 +940,81 @@ func (h *Handler) CountCloudComplianceScanResultsHandler(w http.ResponseWriter, 
 	})
 }
 
+func (h *Handler) GroupSecretResultsHandler(w http.ResponseWriter, r *http.Request) {
+
+	groups := []reporters_search.ResultGroup{
+		{
+			Name:     "Log file",
+			Count:    190,
+			Severity: "high",
+		},
+		{
+			Name:     "Django configuration file",
+			Count:    13,
+			Severity: "medium",
+		},
+		{
+			Name:     "Potential cryptographic key bundle",
+			Count:    8,
+			Severity: "low",
+		},
+		{
+			Name:     "netrc with SMTP credentials",
+			Count:    8,
+			Severity: "low",
+		},
+		{
+			Name:     "SQLite database file",
+			Count:    2,
+			Severity: "high",
+		},
+	}
+
+	httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
+		Groups: groups,
+	})
+}
+
+func (h *Handler) GroupMalwareResultsHandler(w http.ResponseWriter, r *http.Request) {
+
+	groups := []reporters_search.ResultGroup{
+		{
+			Name:     "RIPEMD160_Constants",
+			Count:    18,
+			Severity: "high",
+		},
+		{
+			Name:     "SHA1_Constants",
+			Count:    18,
+			Severity: "medium",
+		},
+		{
+			Name:     "MD5_Constants",
+			Count:    17,
+			Severity: "low",
+		},
+		{
+			Name:     "BASE64_table",
+			Count:    11,
+			Severity: "high",
+		},
+		{
+			Name:     "SHA512_Constants",
+			Count:    10,
+			Severity: "low",
+		},
+		{
+			Name:     "RIPEMD128_Constants",
+			Count:    5,
+			Severity: "high",
+		},
+	}
+
+	httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
+		Groups: groups,
+	})
+}
+
 func (h *Handler) CloudComplianceFiltersHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var req model.FiltersReq

@@ -491,6 +491,14 @@ func (d *OpenApiDocs) AddScansOperations() {
 		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
 
+	// pie chart apis
+	d.AddOperation("groupResultsSecretScan", http.MethodGet, "/deepfence/scan/results/count/group/secret",
+		"Group Secret Scans Results", "Group Secret Scans results by severity/rule",
+		http.StatusOK, []string{tagSecretScan}, bearerToken, nil, new(ResultGroupResp))
+	d.AddOperation("groupResultsMalwareScan", http.MethodGet, "/deepfence/scan/results/count/group/malware",
+		"Group Malware Scans Results", "Group Malware Scans results by severity/rule",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, nil, new(ResultGroupResp))
+
 	d.AddOperation("getAllNodesInScanResults", http.MethodPost, "/deepfence/scan/nodes-in-result",
 		"Get all nodes in given scan result ids", "Get all nodes in given scan result ids",
 		http.StatusOK, []string{tagScanResults}, bearerToken, new(NodesInScanResultRequest), new([]ScanResultBasicNode))
