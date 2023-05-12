@@ -940,34 +940,59 @@ func (h *Handler) CountCloudComplianceScanResultsHandler(w http.ResponseWriter, 
 	})
 }
 
+func groupSecrets(ctx context.Context) ([]reporters_search.ResultGroup, error) {
+	results := []reporters_search.ResultGroup{}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return results, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return results, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return results, err
+	}
+	defer tx.Close()
+
+	query := `MATCH (n:Secret)-[]->(m:SecretRule) 
+	RETURN m.name as name, n.level as severity, count(*) as count`
+
+	res, err := tx.Run(query, map[string]interface{}{})
+	if err != nil {
+		return results, err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return results, err
+	}
+
+	for _, rec := range recs {
+		results = append(results,
+			reporters_search.ResultGroup{
+				Name:     rec.Values[0].(string),
+				Severity: rec.Values[1].(string),
+				Count:    rec.Values[2].(int64),
+			},
+		)
+	}
+
+	return results, nil
+}
+
 func (h *Handler) GroupSecretResultsHandler(w http.ResponseWriter, r *http.Request) {
 
-	groups := []reporters_search.ResultGroup{
-		{
-			Name:     "Log file",
-			Count:    190,
-			Severity: "high",
-		},
-		{
-			Name:     "Django configuration file",
-			Count:    13,
-			Severity: "medium",
-		},
-		{
-			Name:     "Potential cryptographic key bundle",
-			Count:    8,
-			Severity: "low",
-		},
-		{
-			Name:     "netrc with SMTP credentials",
-			Count:    8,
-			Severity: "low",
-		},
-		{
-			Name:     "SQLite database file",
-			Count:    2,
-			Severity: "high",
-		},
+	groups, err := groupSecrets(r.Context())
+	if err != nil {
+		log.Error().Err(err).Msg("failed to group secrets")
+		respondError(err, w)
+		return
 	}
 
 	httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
@@ -975,39 +1000,59 @@ func (h *Handler) GroupSecretResultsHandler(w http.ResponseWriter, r *http.Reque
 	})
 }
 
+func groupMalwares(ctx context.Context) ([]reporters_search.ResultGroup, error) {
+	results := []reporters_search.ResultGroup{}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return results, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return results, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return results, err
+	}
+	defer tx.Close()
+
+	query := `MATCH (n:Malware)-[]->(m:MalwareRule) 
+	RETURN m.rule_name as name, n.file_severity as severity, count(*) as count`
+
+	res, err := tx.Run(query, map[string]interface{}{})
+	if err != nil {
+		return results, err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return results, err
+	}
+
+	for _, rec := range recs {
+		results = append(results,
+			reporters_search.ResultGroup{
+				Name:     rec.Values[0].(string),
+				Severity: rec.Values[1].(string),
+				Count:    rec.Values[2].(int64),
+			},
+		)
+	}
+
+	return results, nil
+}
+
 func (h *Handler) GroupMalwareResultsHandler(w http.ResponseWriter, r *http.Request) {
 
-	groups := []reporters_search.ResultGroup{
-		{
-			Name:     "RIPEMD160_Constants",
-			Count:    18,
-			Severity: "high",
-		},
-		{
-			Name:     "SHA1_Constants",
-			Count:    18,
-			Severity: "medium",
-		},
-		{
-			Name:     "MD5_Constants",
-			Count:    17,
-			Severity: "low",
-		},
-		{
-			Name:     "BASE64_table",
-			Count:    11,
-			Severity: "high",
-		},
-		{
-			Name:     "SHA512_Constants",
-			Count:    10,
-			Severity: "low",
-		},
-		{
-			Name:     "RIPEMD128_Constants",
-			Count:    5,
-			Severity: "high",
-		},
+	groups, err := groupMalwares(r.Context())
+	if err != nil {
+		log.Error().Err(err).Msg("failed to group malwares")
+		respondError(err, w)
+		return
 	}
 
 	httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{

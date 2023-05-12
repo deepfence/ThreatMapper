@@ -51,7 +51,7 @@ type NodeCountResp struct {
 
 type ResultGroup struct {
 	Name     string `json:"name"`
-	Count    int    `json:"count"`
+	Count    int64  `json:"count"`
 	Severity string `json:"severity"`
 }
 
