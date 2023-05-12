@@ -960,7 +960,7 @@ func groupSecrets(ctx context.Context) ([]reporters_search.ResultGroup, error) {
 	}
 	defer tx.Close()
 
-	query := `MATCH (n:Secret)-[]->(m:SecretRule) 
+	query := `MATCH (n:Secret)-[:IS]->(m:SecretRule)
 	RETURN m.name as name, n.level as severity, count(*) as count`
 
 	res, err := tx.Run(query, map[string]interface{}{})
@@ -1020,11 +1020,11 @@ func groupMalwares(ctx context.Context, byClass bool) ([]reporters_search.Result
 	}
 	defer tx.Close()
 
-	query := `MATCH (n:Malware)-[]->(m:MalwareRule) 
+	query := `MATCH (n:Malware)-[:IS]->(m:MalwareRule)
 	RETURN m.rule_name as name, n.file_severity as severity, count(*) as count`
 
 	if byClass {
-		query = `MATCH (n:Malware)-[]->(m:MalwareRule) 
+		query = `MATCH (n:Malware)-[:IS]->(m:MalwareRule)
 		RETURN m.info as name, n.file_severity as severity, count(*) as count`
 	}
 
