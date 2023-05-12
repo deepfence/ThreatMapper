@@ -1,15 +1,11 @@
 package appclient
 
 import (
-	"bytes"
-	"context"
-	"encoding/base64"
 	"net/url"
+	"os"
 	"sync/atomic"
 
-	"github.com/bytedance/sonic"
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
-	"github.com/klauspost/compress/gzip"
 	"github.com/weaveworks/scope/probe/common"
 	"github.com/weaveworks/scope/report"
 )
@@ -18,14 +14,27 @@ type OpenapiClient struct {
 	client               *openapi.APIClient
 	stopControlListening chan struct{}
 	publishInterval      atomic.Int32
+	httpClient           *Client
 }
 
 func NewOpenapiClient() (*OpenapiClient, error) {
-	httpsClient, err := common.NewClient()
+	openapiClient, err := common.NewClient()
+	if err != nil {
+		return nil, err
+	}
+	httpClient, err := NewClient(
+		os.Getenv("MGMT_CONSOLE_URL"),
+		os.Getenv("MGMT_CONSOLE_PORT"),
+		os.Getenv("DEEPFENCE_KEY"),
+	)
+	if err != nil {
+		return nil, err
+	}
 	res := &OpenapiClient{
-		client:               httpsClient,
+		client:               openapiClient,
 		stopControlListening: make(chan struct{}),
 		publishInterval:      atomic.Int32{},
+		httpClient:           httpClient,
 	}
 	res.publishInterval.Store(10)
 
@@ -33,33 +42,9 @@ func NewOpenapiClient() (*OpenapiClient, error) {
 }
 
 // Publish implements MultiAppClient
-func (oc OpenapiClient) Publish(r report.Report) error {
-	buf, err := sonic.Marshal(r)
-	if err != nil {
-		return err
-	}
-
-	req := oc.client.TopologyApi.IngestAgentReport(context.Background())
-
-	var b bytes.Buffer
-	gz := gzip.NewWriter(&b)
-	if _, err := gz.Write(buf); err != nil {
-		return err
-	}
-	gz.Close()
-	bb := b.Bytes()
-	dst := make([]byte, base64.StdEncoding.EncodedLen(len(bb)))
-	base64.StdEncoding.Encode(dst, bb)
-	req = req.ReportRawReport(openapi.ReportRawReport{
-		Payload: string(dst),
-	})
-
-	_, err = oc.client.TopologyApi.IngestAgentReportExecute(req)
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (ct *OpenapiClient) Publish(r report.Report) error {
+	_, err := ct.httpClient.PublishAgentReport(r)
+	return err
 }
 
 func (ct *OpenapiClient) PublishInterval() int32 {
@@ -67,11 +52,11 @@ func (ct *OpenapiClient) PublishInterval() int32 {
 }
 
 // Set implements MultiAppClient
-func (OpenapiClient) Set(hostname string, urls []url.URL) {
+func (ct *OpenapiClient) Set(hostname string, urls []url.URL) {
 	panic("unimplemented")
 }
 
 // Stop implements Mu(ve *ValueError) Error() string {
-func (OpenapiClient) Stop() {
+func (ct *OpenapiClient) Stop() {
 	panic("unimplemented")
 }
