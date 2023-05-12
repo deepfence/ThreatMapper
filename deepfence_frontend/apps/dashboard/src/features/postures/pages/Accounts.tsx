@@ -395,18 +395,32 @@ const ActionDropdown = ({
   scanStatus,
   nodeType,
   scanType,
+  nodeId,
+  cloudProvider,
   setShowDeleteDialog,
   setScanIdToDelete,
   setScanTypeToDelete,
+  setSelectedScanType,
+  setScanNodeIds,
 }: {
   icon: React.ReactNode;
   scanId?: string;
   nodeType?: string;
   scanType: ScanTypeEnum;
   scanStatus: string;
+  nodeId?: string;
+  cloudProvider?: string;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   setScanIdToDelete: React.Dispatch<React.SetStateAction<string>>;
   setScanTypeToDelete: React.Dispatch<React.SetStateAction<ScanTypeEnum | undefined>>;
+  setSelectedScanType: React.Dispatch<
+    React.SetStateAction<
+      | typeof ScanTypeEnum.ComplianceScan
+      | typeof ScanTypeEnum.CloudComplianceScan
+      | undefined
+    >
+  >;
+  setScanNodeIds: React.Dispatch<React.SetStateAction<string[] | undefined>>;
 }) => {
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
@@ -439,6 +453,30 @@ const ActionDropdown = ({
       content={
         <>
           <DropdownItem
+            className="text-sm"
+            onClick={() => {
+              if (!nodeId) {
+                throw new Error('Node id is required to start scan');
+              }
+              const scanType = CLOUDS.includes(
+                cloudProvider as ComplianceScanNodeTypeEnum,
+              )
+                ? ScanTypeEnum.CloudComplianceScan
+                : ScanTypeEnum.ComplianceScan;
+              setSelectedScanType(scanType);
+              setScanNodeIds([nodeId]);
+            }}
+          >
+            <span className="flex items-center gap-x-2 text-blue-600 dark:text-blue-500">
+              <IconContext.Provider
+                value={{ className: 'text-blue-600 dark:text-blue-500' }}
+              >
+                <FaPlay />
+              </IconContext.Provider>
+              Start Scan
+            </span>
+          </DropdownItem>
+          <DropdownItem
             className={cx('text-sm', {
               'opacity-60 dark:opacity-30 cursor-default': !isScanComplete(scanStatus),
             })}
@@ -455,7 +493,7 @@ const ActionDropdown = ({
               })}
             >
               <HiDownload />
-              Download Report
+              Download Latest Report
             </span>
           </DropdownItem>
           <DropdownItem
@@ -475,7 +513,7 @@ const ActionDropdown = ({
               >
                 <HiArchive />
               </IconContext.Provider>
-              Delete
+              Delete Latest Scan
             </span>
           </DropdownItem>
         </>
@@ -615,36 +653,6 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
         maxSize: 80,
       }),
       columnHelper.display({
-        id: 'startScan',
-        enableSorting: false,
-        cell: (info) => (
-          <Button
-            size="xs"
-            color="normal"
-            startIcon={<FaPlay />}
-            className="text-blue-600 dark:text-blue-500"
-            onClick={() => {
-              if (!info.row.original.node_id) {
-                throw new Error('Node id is required to start scan');
-              }
-              const scanType = CLOUDS.includes(
-                info.row.original.cloud_provider as ComplianceScanNodeTypeEnum,
-              )
-                ? ScanTypeEnum.CloudComplianceScan
-                : ScanTypeEnum.ComplianceScan;
-              setSelectedScanType(scanType);
-              setScanNodeIds([info.row.original.node_id]);
-            }}
-          >
-            Start Scan
-          </Button>
-        ),
-        header: () => 'Start action',
-        minSize: 80,
-        size: 100,
-        maxSize: 120,
-      }),
-      columnHelper.display({
         id: 'actions',
         enableSorting: false,
         cell: (cell) => {
@@ -657,12 +665,16 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
             <ActionDropdown
               icon={<HiDotsVertical />}
               scanId={cell.row.original.last_scan_id}
+              nodeId={cell.row.original.node_id}
               nodeType={nodeType}
               scanType={scanType}
+              cloudProvider={cell.row.original.cloud_provider}
               scanStatus={cell.row.original.last_scan_status || ''}
               setScanIdToDelete={setScanIdToDelete}
               setScanTypeToDelete={setScanTypeToDelete}
               setShowDeleteDialog={setShowDeleteDialog}
+              setSelectedScanType={setSelectedScanType}
+              setScanNodeIds={setScanNodeIds}
             />
           );
         },
@@ -742,12 +754,12 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
           data={accounts ?? []}
           columns={columns}
           enableRowSelection
-          enablePagination
           totalRows={totalRows}
-          pageSize={30}
           rowSelectionState={rowSelectionState}
           onRowSelectionChange={setRowSelectionState}
           getRowId={(row) => row.node_id ?? ''}
+          enableColumnResizing
+          enableSorting
         />
       </div>
     </>
