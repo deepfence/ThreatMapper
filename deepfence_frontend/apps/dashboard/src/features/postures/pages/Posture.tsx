@@ -24,6 +24,7 @@ export const providersToNameMapping: { [key: string]: string } = {
   aws: 'AWS',
   aws_org: 'AWS Organizations',
   gcp: 'GCP',
+  gcp_org: 'GCP Organizations',
   azure: 'Azure',
   linux: 'Linux Hosts',
   kubernetes: 'Kubernetes',

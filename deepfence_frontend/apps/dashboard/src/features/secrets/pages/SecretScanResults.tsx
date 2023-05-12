@@ -12,6 +12,7 @@ import {
   HiEye,
   HiEyeOff,
   HiOutlineExclamationCircle,
+  HiOutlineTrash,
 } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import {
@@ -64,6 +65,7 @@ import {
   SquareSkeleton,
   TimestampSkeleton,
 } from '@/components/header/HeaderSkeleton';
+import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import {
   NoIssueFound,
   ScanStatusInError,
@@ -71,12 +73,12 @@ import {
 } from '@/components/ScanStatusMessage';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
-import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
+import { ScanHistoryApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
 import { SecretsResultChart } from '@/features/secrets/components/landing/SecretsResultChart';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { ScanStatusEnum, ScanTypeEnum, SecretSeverityType } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { ApiError, apiWrapper, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -95,6 +97,7 @@ enum ActionEnumType {
   UNMASK = 'unmask',
   DELETE = 'delete',
   NOTIFY = 'notify',
+  DELETE_SCAN = 'delete_scan',
 }
 
 type ScanResult = {
@@ -282,10 +285,14 @@ type ActionFunctionType =
   | ReturnType<typeof getScanResultsApiClient>['notifyScanResult']
   | ReturnType<typeof getScanResultsApiClient>['unmaskScanResult'];
 
+type ActionData = {
+  success: boolean;
+} | null;
+
 const action = async ({
   params: { scanId = '' },
   request,
-}: ActionFunctionArgs): Promise<null | { success: true }> => {
+}: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
   const ids = (formData.getAll('ids[]') ?? []) as string[];
   const actionType = formData.get('actionType');
@@ -357,6 +364,19 @@ const action = async ({
         }
       },
     });
+  } else if (actionType === ActionEnumType.DELETE_SCAN) {
+    const deleteScan = apiWrapper({
+      fn: getScanResultsApiClient().deleteScanResultsForScanID,
+    });
+
+    const result = await deleteScan({
+      scanId: formData.get('scanId') as string,
+      scanType: ScanTypeEnum.SecretScan,
+    });
+
+    if (!result.ok) {
+      throw new Error('Error deleting scan');
+    }
   }
 
   if (ApiError.isApiError(result)) {
@@ -366,7 +386,7 @@ const action = async ({
     }
   }
 
-  if (actionType === ActionEnumType.DELETE) {
+  if (actionType === ActionEnumType.DELETE || actionType === ActionEnumType.DELETE_SCAN) {
     return {
       success: true,
     };
@@ -402,7 +422,7 @@ const DeleteConfirmationModal = ({
   ids: string[];
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<ActionData>();
 
   const onDeleteAction = useCallback(
     (actionType: string) => {
@@ -455,11 +475,70 @@ const DeleteConfirmationModal = ({
   );
 };
 
+const DeleteScanConfirmationModal = ({
+  open,
+  onOpenChange,
+  scanId,
+}: {
+  scanId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => {
+  const fetcher = useFetcher<ActionData>();
+  const onDeleteScan = () => {
+    const formData = new FormData();
+    formData.append('actionType', ActionEnumType.DELETE_SCAN);
+    formData.append('scanId', scanId);
+    fetcher.submit(formData, {
+      method: 'post',
+    });
+  };
+  return (
+    <Modal open={open} onOpenChange={onOpenChange}>
+      {!fetcher.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
+            }}
+          >
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            <span>Are you sure you want to delete the scan?</span>
+          </h3>
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => onOpenChange(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              loading={fetcher.state === 'loading'}
+              disabled={fetcher.state === 'loading'}
+              size="xs"
+              color="danger"
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteScan();
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <SuccessModalContent text="Scan deleted successfully!" />
+      )}
+    </Modal>
+  );
+};
+
 const HistoryDropdown = () => {
   const { navigate } = usePageNavigation();
-  const fetcher = useFetcher<ApiLoaderDataType>();
+  const fetcher = useFetcher<ScanHistoryApiLoaderDataType>();
   const loaderData = useLoaderData() as LoaderDataType;
   const isScanHistoryLoading = fetcher.state === 'loading';
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [scanIdToDelete, setScanIdToDelete] = useState<string | null>(null);
 
   const onHistoryClick = (nodeType: string, nodeId: string) => {
     fetcher.load(
@@ -472,96 +551,120 @@ const HistoryDropdown = () => {
   };
 
   return (
-    <Suspense
-      fallback={
-        <IconButton
-          size="xs"
-          color="primary"
-          outline
-          className="rounded-lg bg-transparent"
-          icon={<FaHistory />}
-          type="button"
-          loading
-        />
-      }
-    >
-      <DFAwait resolve={loaderData.data ?? []}>
-        {(resolvedData: LoaderDataType) => {
-          const { scanStatusResult } = resolvedData;
-          const { scan_id, node_id, node_type } = scanStatusResult ?? {};
-          if (!scan_id || !node_id || !node_type) {
-            throw new Error('Scan id, node id or node type is missing');
-          }
-          return (
-            <Dropdown
-              triggerAsChild
-              onOpenChange={(open) => {
-                if (open) onHistoryClick(node_type, node_id);
-              }}
-              content={
-                <>
-                  {fetcher?.data?.data?.map((item) => {
-                    return (
-                      <DropdownItem
-                        className="text-sm"
-                        key={item.scanId}
-                        onClick={() => {
-                          navigate(
-                            generatePath('/secret/scan-results/:scanId', {
-                              scanId: item.scanId,
-                            }),
-                            {
-                              replace: true,
-                            },
-                          );
-                        }}
-                      >
-                        <span
-                          className={twMerge(
-                            cx(
-                              'flex items-center text-gray-700 dark:text-gray-400 gap-x-4',
-                              {
-                                'text-blue-600 dark:text-blue-500':
-                                  item.scanId === scan_id,
-                              },
-                            ),
-                          )}
-                        >
-                          <Badge
-                            label={item.status}
-                            className={cx({
-                              'bg-green-100 dark:bg-green-600/10 text-green-600 dark:text-green-400':
-                                item.status.toLowerCase() === 'complete',
-                              'bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400':
-                                item.status.toLowerCase() === 'error',
-                              'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-                                item.status.toLowerCase() !== 'complete' &&
-                                item.status.toLowerCase() !== 'error',
-                            })}
-                            size="sm"
+    <>
+      <Suspense
+        fallback={
+          <Button
+            size="xs"
+            color="primary"
+            outline
+            className="rounded-lg bg-transparent"
+            startIcon={<FaHistory />}
+            type="button"
+            loading
+          >
+            Scan History
+          </Button>
+        }
+      >
+        <DFAwait resolve={loaderData.data ?? []}>
+          {(resolvedData: LoaderDataType) => {
+            const { scanStatusResult } = resolvedData;
+            const { scan_id, node_id, node_type } = scanStatusResult ?? {};
+            if (!scan_id || !node_id || !node_type) {
+              throw new Error('Scan id, node id or node type is missing');
+            }
+
+            return (
+              <Popover
+                open={popoverOpen}
+                triggerAsChild
+                onOpenChange={(open) => {
+                  if (open) onHistoryClick(node_type, node_id);
+                  setPopoverOpen(open);
+                }}
+                content={
+                  <div className="p-4 max-h-80 overflow-y-auto flex flex-col gap-2">
+                    {fetcher.state === 'loading' && !fetcher.data?.data?.length && (
+                      <div className="flex items-center justify-center p-4">
+                        <CircleSpinner size="lg" />
+                      </div>
+                    )}
+                    {[...(fetcher?.data?.data ?? [])].reverse().map((item) => {
+                      const isCurrentScan = item.scanId === scan_id;
+                      return (
+                        <div key={item.scanId} className="flex gap-2 justify-between">
+                          <button
+                            className="flex gap-2 justify-between flex-grow"
+                            onClick={() => {
+                              navigate(
+                                generatePath('/secret/scan-results/:scanId', {
+                                  scanId: item.scanId,
+                                }),
+                                {
+                                  replace: true,
+                                },
+                              );
+                              setPopoverOpen(false);
+                            }}
+                          >
+                            <span
+                              className={twMerge(
+                                cx(
+                                  'flex items-center text-gray-700 dark:text-gray-400 gap-x-4',
+                                  {
+                                    'text-blue-600 dark:text-blue-500': isCurrentScan,
+                                  },
+                                ),
+                              )}
+                            >
+                              {formatMilliseconds(item.updatedAt)}
+                            </span>
+                            <ScanStatusBadge status={item.status} />
+                          </button>
+                          <IconButton
+                            color="danger"
+                            outline
+                            size="xxs"
+                            disabled={isCurrentScan}
+                            className="rounded-lg bg-transparent"
+                            icon={<HiOutlineTrash />}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setScanIdToDelete(item.scanId);
+                            }}
                           />
-                          {formatMilliseconds(item.updatedAt)}
-                        </span>
-                      </DropdownItem>
-                    );
-                  })}
-                </>
-              }
-            >
-              <IconButton
-                size="xs"
-                color="primary"
-                outline
-                className="rounded-lg bg-transparent"
-                icon={<FaHistory />}
-                type="button"
-                loading={isScanHistoryLoading}
-              />
-            </Dropdown>
-          );
-        }}
-      </DFAwait>
-    </Suspense>
+                        </div>
+                      );
+                    })}
+                  </div>
+                }
+              >
+                <Button
+                  size="xs"
+                  color="primary"
+                  outline
+                  startIcon={<FaHistory />}
+                  type="button"
+                  loading={isScanHistoryLoading}
+                >
+                  Scan History
+                </Button>
+              </Popover>
+            );
+          }}
+        </DFAwait>
+      </Suspense>
+      {scanIdToDelete && (
+        <DeleteScanConfirmationModal
+          scanId={scanIdToDelete}
+          open={!!scanIdToDelete}
+          onOpenChange={(open) => {
+            if (!open) setScanIdToDelete(null);
+          }}
+        />
+      )}
+    </>
   );
 };
 

@@ -7,31 +7,33 @@ import {
   getSecretApiClient,
   getVulnerabilityApiClient,
 } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelNodeIdentifierNodeTypeEnum,
-} from '@/api/generated';
+import { ModelNodeIdentifierNodeTypeEnum } from '@/api/generated';
 import { ScanTypeEnum } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 type ScanList = {
   updatedAt: number;
   scanId: string;
   status: string;
 };
-export type ApiLoaderDataType = {
+export type ScanHistoryApiLoaderDataType = {
   error?: string;
   message?: string;
   data: ScanList[];
 };
 
-async function getScanList(
-  scanType: ScanTypeEnum,
-  nodeId: string,
-  nodeType: string,
-): Promise<ApiLoaderDataType> {
-  const result = await makeRequest({
-    apiFunction: {
+export const scanHistoryApiLoader = async ({
+  params,
+}: LoaderFunctionArgs): Promise<ScanHistoryApiLoaderDataType> => {
+  const nodeId = params?.nodeId;
+  const nodeType = params?.nodeType;
+  const scanType = params?.scanType as ScanTypeEnum;
+  if (!nodeId || !nodeType || !scanType) {
+    throw new Error('Scan Type, Node Type and Node Id are required');
+  }
+
+  const getScanHistory = apiWrapper({
+    fn: {
       [ScanTypeEnum.VulnerabilityScan]:
         getVulnerabilityApiClient().listVulnerabilityScans,
       [ScanTypeEnum.SecretScan]: getSecretApiClient().listSecretScans,
@@ -40,56 +42,48 @@ async function getScanList(
         getCloudComplianceApiClient().listCloudComplianceScan,
       [ScanTypeEnum.ComplianceScan]: getComplianceApiClient().listComplianceScan,
     }[scanType],
+  });
 
-    apiArgs: [
-      {
-        modelScanListReq: {
-          fields_filter: {
-            contains_filter: {
-              filter_in: {},
-            },
-            match_filter: { filter_in: {} },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
-          },
-          node_ids: [
-            {
-              node_id: nodeId.toString(),
-              node_type: nodeType.toString() as ModelNodeIdentifierNodeTypeEnum,
-            },
-          ],
-          window: {
-            offset: 0,
-            size: 50,
-          },
+  const result = await getScanHistory({
+    modelScanListReq: {
+      fields_filter: {
+        contains_filter: {
+          filter_in: {},
         },
+        match_filter: { filter_in: {} },
+        order_filter: { order_fields: [] },
+        compare_filter: null,
       },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400 || r.status === 409) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message ?? '',
-        });
-      }
+      node_ids: [
+        {
+          node_id: nodeId.toString(),
+          node_type: nodeType.toString() as ModelNodeIdentifierNodeTypeEnum,
+        },
+      ],
+      window: {
+        offset: 0,
+        size: Number.MAX_SAFE_INTEGER,
+      },
     },
   });
 
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  if (!result.ok) {
+    console.error(result.error);
+    return {
+      error: 'Error getting scan history',
+      message: result.error.message,
+      data: [],
+    };
   }
 
-  if (!result.scans_info) {
+  if (!result.value.scans_info) {
     return {
       data: [],
     };
   }
 
   return {
-    data: result.scans_info?.map((res) => {
+    data: result.value.scans_info?.map((res) => {
       return {
         updatedAt: res.updated_at,
         scanId: res.scan_id,
@@ -97,17 +91,4 @@ async function getScanList(
       };
     }),
   };
-}
-
-export const scanHistoryApiLoader = async ({
-  params,
-}: LoaderFunctionArgs): Promise<ApiLoaderDataType> => {
-  const nodeId = params?.nodeId;
-  const nodeType = params?.nodeType;
-  const scanType = params?.scanType;
-  if (!nodeId || !nodeType || !scanType) {
-    throw new Error('Scan Type, Node Type and Node Id are required');
-  }
-
-  return await getScanList(scanType as ScanTypeEnum, nodeId, nodeType);
 };

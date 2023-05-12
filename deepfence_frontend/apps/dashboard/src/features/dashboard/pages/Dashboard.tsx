@@ -98,6 +98,7 @@ async function getTop5VulnerableAssetsData(): Promise<
                   contains_filter: {
                     filter_in: {
                       pseudo: [false],
+                      active: [true],
                     },
                   },
                   match_filter: {
@@ -139,43 +140,55 @@ async function getTop5VulnerableAssetsData(): Promise<
   }
 
   const top5NodeScans = await makeRequest({
-    apiFunction: getVulnerabilityApiClient().listVulnerabilityScans,
+    apiFunction: getSearchApiClient().searchVulnerabilityScan,
     apiArgs: [
       {
-        modelScanListReq: {
-          fields_filter: {
-            contains_filter: {
-              filter_in: {
-                status: ['COMPLETE'],
-              },
+        searchSearchScanReq: {
+          node_filters: {
+            filters: {
+              compare_filter: [],
+              contains_filter: { filter_in: {} },
+              match_filter: { filter_in: {} },
+              order_filter: { order_fields: [] },
+              not_contains_filter: { filter_in: {} },
             },
-            match_filter: { filter_in: {} },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
+            in_field_filter: [],
+            window: { offset: 0, size: 0 },
           },
-          node_ids: [
-            ...top5Hosts.map((node) => {
-              return {
-                node_id: node.node_id,
-                node_type: ModelNodeIdentifierNodeTypeEnum.Host,
-              };
-            }),
-            ...top5Containers.map((node) => {
-              return {
-                node_id: node.node_id,
-                node_type: ModelNodeIdentifierNodeTypeEnum.Container,
-              };
-            }),
-            ...top5Images.map((node) => {
-              return {
-                node_id: node.node_id,
-                node_type: ModelNodeIdentifierNodeTypeEnum.Image,
-              };
-            }),
-          ],
+          scan_filters: {
+            filters: {
+              compare_filter: [],
+              contains_filter: {
+                filter_in: {
+                  node_id: [
+                    ...top5Hosts
+                      .map((node) => node.vulnerability_latest_scan_id)
+                      .filter((scanId) => {
+                        return !!scanId?.length;
+                      }),
+                    ...top5Containers
+                      .map((node) => node.vulnerability_latest_scan_id)
+                      .filter((scanId) => {
+                        return !!scanId?.length;
+                      }),
+                    ...top5Images
+                      .map((node) => node.vulnerability_latest_scan_id)
+                      .filter((scanId) => {
+                        return !!scanId?.length;
+                      }),
+                  ],
+                },
+              },
+              match_filter: { filter_in: {} },
+              order_filter: { order_fields: [] },
+              not_contains_filter: { filter_in: {} },
+            },
+            in_field_filter: [],
+            window: { offset: 0, size: 0 },
+          },
           window: {
             offset: 0,
-            size: 1,
+            size: 15,
           },
         },
       },
@@ -187,9 +200,7 @@ async function getTop5VulnerableAssetsData(): Promise<
 
   return [...top5Hosts, ...top5Containers, ...top5Images]
     .map((node) => {
-      const latestScan = top5NodeScans.scans_info?.find(
-        (scan) => scan.node_id === node.node_id,
-      );
+      const latestScan = top5NodeScans?.find((scan) => scan.node_id === node.node_id);
       const critical = latestScan?.severity_counts?.critical ?? 0;
       const high = latestScan?.severity_counts?.high ?? 0;
       const medium = latestScan?.severity_counts?.medium ?? 0;
@@ -284,6 +295,7 @@ async function getTop5SecretAssetsData(): Promise<
                   contains_filter: {
                     filter_in: {
                       pseudo: [false],
+                      active: [true],
                     },
                   },
                   match_filter: {
@@ -325,57 +337,67 @@ async function getTop5SecretAssetsData(): Promise<
   }
 
   const top5NodeScans = await makeRequest({
-    apiFunction: getSecretApiClient().listSecretScans,
+    apiFunction: getSearchApiClient().searchSecretsScan,
     apiArgs: [
       {
-        modelScanListReq: {
-          fields_filter: {
-            contains_filter: {
-              filter_in: {
-                status: ['COMPLETE'],
-              },
+        searchSearchScanReq: {
+          node_filters: {
+            filters: {
+              compare_filter: [],
+              contains_filter: { filter_in: {} },
+              match_filter: { filter_in: {} },
+              order_filter: { order_fields: [] },
+              not_contains_filter: { filter_in: {} },
             },
-            match_filter: { filter_in: {} },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
+            in_field_filter: [],
+            window: { offset: 0, size: 0 },
           },
-          node_ids: [
-            ...top5Hosts.map((node) => {
-              return {
-                node_id: node.node_id,
-                node_type: ModelNodeIdentifierNodeTypeEnum.Host,
-              };
-            }),
-            ...top5Containers.map((node) => {
-              return {
-                node_id: node.node_id,
-                node_type: ModelNodeIdentifierNodeTypeEnum.Container,
-              };
-            }),
-            ...top5Images.map((node) => {
-              return {
-                node_id: node.node_id,
-                node_type: ModelNodeIdentifierNodeTypeEnum.Image,
-              };
-            }),
-          ],
+          scan_filters: {
+            filters: {
+              compare_filter: [],
+              contains_filter: {
+                filter_in: {
+                  node_id: [
+                    ...top5Hosts
+                      .map((node) => node.secret_latest_scan_id)
+                      .filter((scanId) => {
+                        return !!scanId?.length;
+                      }),
+                    ...top5Containers
+                      .map((node) => node.secret_latest_scan_id)
+                      .filter((scanId) => {
+                        return !!scanId?.length;
+                      }),
+                    ...top5Images
+                      .map((node) => node.secret_latest_scan_id)
+                      .filter((scanId) => {
+                        return !!scanId?.length;
+                      }),
+                  ],
+                },
+              },
+              match_filter: { filter_in: {} },
+              order_filter: { order_fields: [] },
+              not_contains_filter: { filter_in: {} },
+            },
+            in_field_filter: [],
+            window: { offset: 0, size: 0 },
+          },
           window: {
             offset: 0,
-            size: 1,
+            size: 15,
           },
         },
       },
     ],
   });
   if (ApiError.isApiError(top5NodeScans)) {
-    throw new Error('error getting top 5 container image scans');
+    throw new Error('error getting top 5 scans');
   }
 
   return [...top5Hosts, ...top5Containers, ...top5Images]
     .map((node) => {
-      const latestScan = top5NodeScans.scans_info?.find(
-        (scan) => scan.node_id === node.node_id,
-      );
+      const latestScan = top5NodeScans?.find((scan) => scan.node_id === node.node_id);
       const critical = latestScan?.severity_counts?.critical ?? 0;
       const high = latestScan?.severity_counts?.high ?? 0;
       const medium = latestScan?.severity_counts?.medium ?? 0;
@@ -511,57 +533,67 @@ async function getTop5MalwaresAssetsData(): Promise<
   }
 
   const top5NodeScans = await makeRequest({
-    apiFunction: getMalwareApiClient().listMalwareScans,
+    apiFunction: getSearchApiClient().searchMalwaresScan,
     apiArgs: [
       {
-        modelScanListReq: {
-          fields_filter: {
-            contains_filter: {
-              filter_in: {
-                status: ['COMPLETE'],
-              },
+        searchSearchScanReq: {
+          node_filters: {
+            filters: {
+              compare_filter: [],
+              contains_filter: { filter_in: {} },
+              match_filter: { filter_in: {} },
+              order_filter: { order_fields: [] },
+              not_contains_filter: { filter_in: {} },
             },
-            match_filter: { filter_in: {} },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
+            in_field_filter: [],
+            window: { offset: 0, size: 0 },
           },
-          node_ids: [
-            ...top5Hosts.map((node) => {
-              return {
-                node_id: node.node_id,
-                node_type: ModelNodeIdentifierNodeTypeEnum.Host,
-              };
-            }),
-            ...top5Containers.map((node) => {
-              return {
-                node_id: node.node_id,
-                node_type: ModelNodeIdentifierNodeTypeEnum.Container,
-              };
-            }),
-            ...top5Images.map((node) => {
-              return {
-                node_id: node.node_id,
-                node_type: ModelNodeIdentifierNodeTypeEnum.Image,
-              };
-            }),
-          ],
+          scan_filters: {
+            filters: {
+              compare_filter: [],
+              contains_filter: {
+                filter_in: {
+                  node_id: [
+                    ...top5Hosts
+                      .map((node) => node.malware_latest_scan_id)
+                      .filter((scanId) => {
+                        return !!scanId?.length;
+                      }),
+                    ...top5Containers
+                      .map((node) => node.malware_latest_scan_id)
+                      .filter((scanId) => {
+                        return !!scanId?.length;
+                      }),
+                    ...top5Images
+                      .map((node) => node.malware_latest_scan_id)
+                      .filter((scanId) => {
+                        return !!scanId?.length;
+                      }),
+                  ],
+                },
+              },
+              match_filter: { filter_in: {} },
+              order_filter: { order_fields: [] },
+              not_contains_filter: { filter_in: {} },
+            },
+            in_field_filter: [],
+            window: { offset: 0, size: 0 },
+          },
           window: {
             offset: 0,
-            size: 1,
+            size: 15,
           },
         },
       },
     ],
   });
   if (ApiError.isApiError(top5NodeScans)) {
-    throw new Error('error getting top 5 container image scans');
+    throw new Error('error getting top 5 scans');
   }
 
   return [...top5Hosts, ...top5Containers, ...top5Images]
     .map((node) => {
-      const latestScan = top5NodeScans.scans_info?.find(
-        (scan) => scan.node_id === node.node_id,
-      );
+      const latestScan = top5NodeScans.find((scan) => scan.node_id === node.node_id);
       const critical = latestScan?.severity_counts?.critical ?? 0;
       const high = latestScan?.severity_counts?.high ?? 0;
       const medium = latestScan?.severity_counts?.medium ?? 0;

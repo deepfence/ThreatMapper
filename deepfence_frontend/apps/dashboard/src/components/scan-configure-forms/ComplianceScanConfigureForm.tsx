@@ -25,6 +25,7 @@ export const complianceType: {
   aws: ['CIS', 'NIST', 'PCI', 'HIPAA', 'SOC2', 'GDPR'],
   aws_org: ['CIS', 'NIST', 'PCI', 'HIPAA', 'SOC2', 'GDPR'],
   gcp: ['CIS'],
+  gcp_org: ['CIS'],
   azure: ['CIS', 'NIST', 'HIPAA'],
   host: ['HIPAA', 'GDPR', 'PCI', 'NIST'],
   kubernetes_cluster: ['NSA-CISA'],
@@ -54,8 +55,10 @@ type TabsType = {
 
 export const CLOUDS = [
   ComplianceScanNodeTypeEnum.aws,
+  ComplianceScanNodeTypeEnum.aws_org,
   ComplianceScanNodeTypeEnum.azure,
   ComplianceScanNodeTypeEnum.gcp,
+  ComplianceScanNodeTypeEnum.gcp_org,
 ];
 
 export const scanPostureApiAction = async ({

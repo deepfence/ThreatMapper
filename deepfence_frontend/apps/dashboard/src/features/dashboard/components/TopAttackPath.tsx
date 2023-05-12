@@ -23,7 +23,7 @@ export const TopAttackPaths = () => {
         </div>
       </div>
       <Separator />
-      <div className="flex items-center justify-center h-[380px]">
+      <div className="flex items-center justify-center h-[400px]">
         <ThreatGraphComponent />
       </div>
     </Card>
