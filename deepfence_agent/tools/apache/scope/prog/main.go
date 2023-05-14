@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"math/rand"
 	"net"
 	"os"
 	"regexp"
@@ -230,19 +229,6 @@ func main() {
 	flags := flags{}
 	setupFlags(&flags)
 	flag.Parse()
-
-	rand.Seed(time.Now().UnixNano()) // Initialize random seed
-
-	min := 0
-	max := 120 // 2 minutes = 120 seconds
-
-	// Generate a random number within the given range
-	randomSeconds := rand.Intn(max-min+1) + min
-
-	sleepDuration := time.Duration(randomSeconds) * time.Second
-	fmt.Printf("Sleeping for %d seconds...\n", randomSeconds)
-
-	time.Sleep(sleepDuration)
 
 	// Deal with common args
 	if flags.debug {
