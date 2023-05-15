@@ -149,7 +149,7 @@ func gitlabCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) 
 		UserName:      "gitlab-ci-token",
 		Password:      hub.Secret.GitlabToken,
 		NameSpace:     "",
-		ImagePrefix:   hub.NonSecret.GitlabRegistryURL,
+		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.GitlabRegistryURL),
 		SkipTLSVerify: false,
 		UseHttp:       useHttp(hub.NonSecret.GitlabRegistryURL),
 	}, nil
