@@ -61,6 +61,7 @@ func CleanUpDB(msg *message.Message) error {
 		WITH n LIMIT 100000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -71,6 +72,7 @@ func CleanUpDB(msg *message.Message) error {
 		WITH n LIMIT 100000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbRegistryCleanUpTimeout.Milliseconds()}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -81,6 +83,7 @@ func CleanUpDB(msg *message.Message) error {
 		WITH n LIMIT 100000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -91,6 +94,7 @@ func CleanUpDB(msg *message.Message) error {
 		WITH n LIMIT 100000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -107,6 +111,7 @@ func CleanUpDB(msg *message.Message) error {
 			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
 		}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -122,6 +127,7 @@ func CleanUpDB(msg *message.Message) error {
 			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
 		}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -137,6 +143,7 @@ func CleanUpDB(msg *message.Message) error {
 			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
 		}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -149,6 +156,7 @@ func CleanUpDB(msg *message.Message) error {
 		map[string]interface{}{
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
 		}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -158,6 +166,7 @@ func CleanUpDB(msg *message.Message) error {
 		WITH n LIMIT 100000
 		DETACH DELETE n`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -167,6 +176,7 @@ func CleanUpDB(msg *message.Message) error {
 		WITH n LIMIT 100000
 		DETACH DELETE n`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -179,6 +189,7 @@ func CleanUpDB(msg *message.Message) error {
 			"time_ms":    dbScanTimeout.Milliseconds(),
 			"new_status": utils.SCAN_STATUS_FAILED,
 		}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -191,6 +202,7 @@ func CleanUpDB(msg *message.Message) error {
 			"time_ms":    dbUpgradeTimeout.Milliseconds(),
 			"new_status": utils.SCAN_STATUS_FAILED,
 		}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -204,6 +216,7 @@ func CleanUpDB(msg *message.Message) error {
 			"time_ms":     diagnosticLogsCleanUpTimeout.Milliseconds(),
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
 		}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -217,6 +230,7 @@ func CleanUpDB(msg *message.Message) error {
 			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
 		}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -224,10 +238,11 @@ func CleanUpDB(msg *message.Message) error {
 		MATCH (n:CloudRegion)
 		CALL {
 			WITH n
-			MATCH (n) -[:HOSTS]-> (p:CloudResource) where p.node_type in $cloud_types return (count(p) > 0) as active_region
+			MATCH (m:CloudProvider) -[:HOSTS]-> (n) -[:HOSTS]-> (p:CloudResource) where p.cloud_provider = m.node_id and p.node_type in $cloud_types return (count(p) > 0) as active_region
 		}
 		SET n.active = active_region`,
 		map[string]interface{}{"cloud_types": model.TopologyCloudResourceTypes}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -237,6 +252,7 @@ func CleanUpDB(msg *message.Message) error {
 		WITH count(m) as c, n LIMIT 100000
 		SET n.active = c <> 0`,
 		map[string]interface{}{}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -246,6 +262,7 @@ func CleanUpDB(msg *message.Message) error {
 		WITH count(m) as c, n LIMIT 100000
 		SET n.active = c <> 0`,
 		map[string]interface{}{}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -255,6 +272,7 @@ func CleanUpDB(msg *message.Message) error {
 		WITH n LIMIT 100000
 		DELETE n`,
 		map[string]interface{}{}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
@@ -264,6 +282,7 @@ func CleanUpDB(msg *message.Message) error {
 		WITH n LIMIT 100000
 		DELETE n`,
 		map[string]interface{}{}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
