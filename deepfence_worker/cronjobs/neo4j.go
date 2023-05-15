@@ -221,11 +221,12 @@ func CleanUpDB(msg *message.Message) error {
 	}
 
 	if _, err = session.Run(`
-		MATCH (n:CloudRegion) -[:HOSTS]-> (m:CloudResource)
-		WHERE m.node_type IN $cloud_types
-		AND m.active = true
-		WITH count(m) as c, n LIMIT 100000
-		SET n.active = c <> 0`,
+		MATCH (n:CloudRegion)
+		CALL {
+			WITH n
+			MATCH (n) -[:HOSTS]-> (p:CloudResource) where p.node_type in $cloud_types return (count(p) > 0) as active_region
+		}
+		SET n.active = active_region`,
 		map[string]interface{}{"cloud_types": model.TopologyCloudResourceTypes}); err != nil {
 		return err
 	}
