@@ -13,11 +13,11 @@ import (
 )
 
 const (
-	VULNERABILITY_SCAN_CRON    = "0 0 * * 0"
-	SECRET_SCAN_CRON           = "0 0 * * 1"
-	MALWARE_SCAN_CRON          = "0 0 * * 2"
-	COMPLIANCE_SCAN_CRON       = "0 0 * * 3"
-	CLOUD_COMPLIANCE_SCAN_CRON = "0 0 * * 4"
+	VULNERABILITY_SCAN_CRON    = "0 0 0 * * 0"
+	SECRET_SCAN_CRON           = "0 0 0 * * 1"
+	MALWARE_SCAN_CRON          = "0 0 0 * * 2"
+	COMPLIANCE_SCAN_CRON       = "0 0 0 * * 3"
+	CLOUD_COMPLIANCE_SCAN_CRON = "0 0 0 * * 4"
 )
 
 var (
