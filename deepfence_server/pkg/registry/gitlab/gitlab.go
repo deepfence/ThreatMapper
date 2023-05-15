@@ -40,7 +40,7 @@ func (e *RegistryGitlab) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (e *RegistryGitlab) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
+func (e *RegistryGitlab) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
 	return listImages(e.NonSecret.GitlabServerURL, e.NonSecret.GitlabRegistryURL, e.Secret.GitlabToken)
 }
 
