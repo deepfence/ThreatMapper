@@ -3980,11 +3980,11 @@
     }
   },
   "CloudRegion": {
-    "nyc3-digital_ocean": {
+    "region-sed-string-digital_ocean": {
       "metadata": {
-        "node_id": "nyc3-digital_ocean",
+        "node_id": "region-sed-string-digital_ocean",
         "node_type": "cloud_region",
-        "node_name": "nyc3",
+        "node_name": "region-sed-string",
         "timestamp": "2023-05-05T14:19:09.350430788Z",
         "cloud_provider": "digital_ocean",
         "pseudo": false
@@ -4255,7 +4255,7 @@
         "private_ip": [
           "10.108.0.7"
         ],
-        "cloud_region": "nyc3",
+        "cloud_region": "region-sed-string",
         "uptime": 43298334,
         "pseudo": false,
         "cpu_max": 100,
@@ -4296,7 +4296,7 @@
       },
       "parents": {
         "cloud_provider": "digital_ocean",
-        "cloud_region": "nyc3-digital_ocean"
+        "cloud_region": "region-sed-string-digital_ocean"
       }
     }
   },

@@ -108,6 +108,7 @@ func setAgentControls() {
 }
 
 func sendDummySbomToConsole(init_req ctl.StartVulnerabilityScanRequest) error {
+	//TODO: reuse existing client
 	httpsClient, err := common.NewClient()
 	if err != nil {
 		return err
@@ -145,10 +146,10 @@ func sendDummySbomToConsole(init_req ctl.StartVulnerabilityScanRequest) error {
 
 	data.SetSbom(string(c_sbom))
 
-	req := httpsClient.VulnerabilityApi.IngestSbom(context.Background())
+	req := httpsClient.Client().VulnerabilityApi.IngestSbom(context.Background())
 	req = req.UtilsScanSbomRequest(data)
 
-	resp, err := httpsClient.VulnerabilityApi.IngestSbomExecute(req)
+	resp, err := httpsClient.Client().VulnerabilityApi.IngestSbomExecute(req)
 	if err != nil {
 		log.Error(err)
 		return err

@@ -5,7 +5,6 @@ import (
 	"os"
 	"strings"
 
-	openapi "github.com/deepfence/golang_deepfence_sdk/client"
 	oahttp "github.com/deepfence/golang_deepfence_sdk/utils/http"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
@@ -14,7 +13,7 @@ var (
 	ConnError = errors.New("Connection error")
 )
 
-func NewClient() (*openapi.APIClient, error) {
+func NewClient() (*oahttp.OpenapiHttpClient, error) {
 	url := os.Getenv("MGMT_CONSOLE_URL")
 	if url == "" {
 		return nil, errors.New("MGMT_CONSOLE_URL not set")
@@ -42,5 +41,5 @@ func NewClient() (*openapi.APIClient, error) {
 	if err != nil {
 		return nil, ConnError
 	}
-	return https_client.Client(), nil
+	return https_client, nil
 }

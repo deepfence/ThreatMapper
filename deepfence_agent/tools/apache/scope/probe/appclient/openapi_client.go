@@ -9,16 +9,18 @@ import (
 	"sync/atomic"
 
 	"github.com/bytedance/sonic"
-	openapi "github.com/deepfence/golang_deepfence_sdk/client"
+	"github.com/deepfence/golang_deepfence_sdk/client"
+	openapi "github.com/deepfence/golang_deepfence_sdk/utils/http"
 	"github.com/weaveworks/scope/probe/common"
 	"github.com/weaveworks/scope/report"
 )
 
 type OpenapiClient struct {
-	client               *openapi.APIClient
+	client               *openapi.OpenapiHttpClient
 	stopControlListening chan struct{}
 	publishInterval      atomic.Int32
 	publishReportUrl     string
+	rawClient            *http.Client
 }
 
 func NewOpenapiClient() (*OpenapiClient, error) {
@@ -30,16 +32,20 @@ func NewOpenapiClient() (*OpenapiClient, error) {
 		client:               openapiClient,
 		stopControlListening: make(chan struct{}),
 		publishInterval:      atomic.Int32{},
-		publishReportUrl:     "https://"+os.Getenv("MGMT_CONSOLE_URL") + "/deepfence/ingest/report",
+		publishReportUrl:     "https://" + os.Getenv("MGMT_CONSOLE_URL") + "/deepfence/ingest/report",
+		rawClient:            openapiClient.Client().GetConfig().HTTPClient,
 	}
-	res.publishInterval.Store(10)
+	res.publishInterval.Store(1)
 
 	return res, err
 }
 
+func (ct *OpenapiClient) API() *client.APIClient {
+	return ct.client.Client()
+}
+
 // Publish implements MultiAppClient
 func (ct *OpenapiClient) Publish(r report.Report) error {
-	c := ct.client.GetConfig().HTTPClient
 	buf, err := sonic.Marshal(r)
 	if err != nil {
 		return err
@@ -60,12 +66,12 @@ func (ct *OpenapiClient) Publish(r report.Report) error {
 	}
 	httpReq.Close = true
 
-	for k, v := range ct.client.GetConfig().DefaultHeader {
+	for k, v := range ct.client.GetDefaultHeaders() {
 		httpReq.Header.Add(k, v)
 	}
 	httpReq.Header.Add("Content-Encoding", "gzip")
 
-	resp, err := c.Do(httpReq)
+	resp, err := ct.rawClient.Do(httpReq)
 	if err != nil {
 		return err
 	}

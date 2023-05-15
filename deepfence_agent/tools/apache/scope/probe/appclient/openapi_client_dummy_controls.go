@@ -51,6 +51,8 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 				return err
 			}
 
+			ct.publishInterval.Store(30)
+
 			for _, action := range ctl.Commands {
 				logrus.Infof("Init execute :%v", action.Id)
 				err := controls.ApplyControl(action)
@@ -62,7 +64,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 
 		if isClusterAgent {
 			go func() {
-				req := ct.client.ControlsApi.GetKubernetesClusterControls(context.Background())
+				req := ct.API().ControlsApi.GetKubernetesClusterControls(context.Background())
 				agentId := openapi.NewModelAgentId(getMaxAllocatable(), dummyNodeId)
 				req = req.ModelAgentId(*agentId)
 				for {
@@ -73,7 +75,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 					}
 					agentId.SetAvailableWorkload(getMaxAllocatable())
 					req = req.ModelAgentId(*agentId)
-					ctl, _, err := ct.client.ControlsApi.GetKubernetesClusterControlsExecute(req)
+					ctl, _, err := ct.API().ControlsApi.GetKubernetesClusterControlsExecute(req)
 					if err != nil {
 						logrus.Errorf("Getting controls failed: %v\n", err)
 						continue
@@ -92,18 +94,18 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 			}()
 		} else {
 			go func() {
-				req := ct.client.ControlsApi.GetAgentControls(context.Background())
+				req := ct.API().ControlsApi.GetAgentControls(context.Background())
 				agentId := openapi.NewModelAgentId(getMaxAllocatable(), dummyNodeId)
 				req = req.ModelAgentId(*agentId)
 				for {
 					select {
-					case <-time.After(time.Second * time.Duration(ct.PublishInterval()/2)):
+					case <-time.After(time.Second * time.Duration(ct.PublishInterval())):
 					case <-ct.stopControlListening:
 						break
 					}
 					agentId.SetAvailableWorkload(getMaxAllocatable())
 					req = req.ModelAgentId(*agentId)
-					ctl, _, err := ct.client.ControlsApi.GetAgentControlsExecute(req)
+					ctl, _, err := ct.API().ControlsApi.GetAgentControlsExecute(req)
 					if err != nil {
 						logrus.Errorf("Getting controls failed: %v\n", err)
 						continue
