@@ -45,9 +45,9 @@ type TagDetail struct {
 	Totalsize     int    `json:"total_size"`
 }
 
-func listImages(gitlabServerURL, gitlabRegistryURL, accessToken string) ([]model.ContainerImage, error) {
+func listImages(gitlabServerURL, gitlabRegistryURL, accessToken string) ([]model.IngestedContainerImage, error) {
 
-	containerImages := []model.ContainerImage{}
+	containerImages := []model.IngestedContainerImage{}
 
 	// Retrieve a list of projects
 	projects, err := getProjects(gitlabServerURL, accessToken)
@@ -69,7 +69,7 @@ func listImages(gitlabServerURL, gitlabRegistryURL, accessToken string) ([]model
 				return nil, err
 			}
 
-			var containerImage model.ContainerImage
+			var containerImage model.IngestedContainerImage
 			containerImage.Name = project.PathWithNamespace
 			containerImage.ID = model.DigestToID(tagDetail.Digest)
 			containerImage.Tag = tag.Name
