@@ -1,6 +1,6 @@
 import cx from 'classnames';
 import { capitalize } from 'lodash-es';
-import { Suspense, useCallback, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FaHistory } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import {
@@ -823,6 +823,11 @@ const ScanResultTable = () => {
   const [sort, setSort] = useSortingState();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [idsToDelete, setIdsToDelete] = useState<string[]>([]);
+  useEffect(() => {
+    if (idsToDelete.length) {
+      setRowSelectionState({});
+    }
+  }, [loaderData.data]);
 
   const columns = useMemo(() => {
     const columns = [
