@@ -38,16 +38,10 @@ import {
   TableSkeleton,
 } from 'ui-components';
 
-import {
-  getCloudNodesApiClient,
-  getReportsApiClient,
-  getScanResultsApiClient,
-} from '@/api/api';
+import { getCloudNodesApiClient, getScanResultsApiClient } from '@/api/api';
 import {
   ApiDocsBadRequestResponse,
   ModelCloudNodeAccountInfo,
-  ModelGenerateReportReqDurationEnum,
-  ModelGenerateReportReqReportTypeEnum,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
@@ -57,16 +51,11 @@ import { FilterHeader } from '@/components/forms/FilterHeader';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { CLOUDS } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
+import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { ComplianceScanNodeTypeEnum, ScanTypeEnum } from '@/types/common';
-import {
-  ApiError,
-  apiWrapper,
-  makeRequest,
-  retryUntilResponseHasValue,
-} from '@/utils/api';
-import { download } from '@/utils/download';
+import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { isScanComplete } from '@/utils/scan';
 import { DFAwait } from '@/utils/suspense';
@@ -75,7 +64,6 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 
 enum ActionEnumType {
   DELETE = 'delete',
-  DOWNLOAD = 'download',
 }
 
 export const getNodeTypeByProviderName = (
@@ -166,90 +154,6 @@ const action = async ({
     return {
       success: true,
     };
-  } else if (actionType === ActionEnumType.DOWNLOAD) {
-    const nodeType = formData.get('nodeType') as UtilsReportFiltersNodeTypeEnum;
-    if (!nodeType) {
-      throw new Error('Node Type is required');
-    }
-    const getReportIdApi = apiWrapper({
-      fn: getReportsApiClient().generateReport,
-    });
-
-    const getReportIdApiResponse = await getReportIdApi({
-      modelGenerateReportReq: {
-        duration: ModelGenerateReportReqDurationEnum.NUMBER_0,
-        filters: {
-          node_type: nodeType,
-          scan_type: scanType as UtilsReportFiltersScanTypeEnum,
-        },
-        report_type: ModelGenerateReportReqReportTypeEnum.Xlsx,
-      },
-    });
-
-    if (!getReportIdApiResponse.ok) {
-      if (getReportIdApiResponse.error.response.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse =
-          await getReportIdApiResponse.error.response.json();
-        const error = modelResponse.error_fields?.message;
-        if (error) {
-          toast.error(error);
-          return null;
-        } else {
-          toast.error('Something went wrong, please try again');
-          return null;
-        }
-      }
-      throw getReportIdApiResponse.error;
-    }
-
-    const reportId = getReportIdApiResponse.value.report_id;
-    if (!reportId) {
-      toast.error('Somethings went wrong, please try again');
-      console.error('Report id is missing in api response');
-      return null;
-    }
-    const getReportApi = apiWrapper({
-      fn: getReportsApiClient().getReport,
-    });
-
-    const reportResponse = await retryUntilResponseHasValue(
-      getReportApi,
-      [{ reportId }],
-      async (response) => {
-        if (!response.ok) {
-          if (response.error.response.status === 400) {
-            const modelResponse: ApiDocsBadRequestResponse =
-              await response.error.response.json();
-            const error = modelResponse.error_fields?.message;
-            if (error) {
-              toast.error(error);
-              return true;
-            }
-          }
-          toast.error('Something went wrong, please try again');
-          return true;
-        } else {
-          const url = response.value.url;
-          if (!url) {
-            toast.success(
-              'Download in progress, it may take some time however you can always find it on Integrations > Report Downloads',
-            );
-          }
-          return !!url;
-        }
-      },
-    );
-
-    if (reportResponse.ok) {
-      const url = reportResponse.value.url;
-      if (url) {
-        download(url);
-      } else {
-        toast.error('Something went wrong, please try again');
-      }
-    }
-
-    return null;
   }
   return null;
 };
@@ -426,21 +330,19 @@ const ActionDropdown = ({
 }) => {
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
+  const { downloadScan } = useDownloadScan();
 
-  const onDownloadAction = useCallback(
-    (actionType: ActionEnumType) => {
-      if (!scanId || !nodeType) return;
-      const formData = new FormData();
-      formData.append('actionType', actionType);
-      formData.append('scanId', scanId);
-      formData.append('nodeType', nodeType);
-      formData.append('scanType', scanType ?? '');
-      fetcher.submit(formData, {
-        method: 'post',
-      });
-    },
-    [scanId, fetcher],
-  );
+  const onDownloadAction = useCallback(() => {
+    if (!scanId || !nodeType) return;
+    downloadScan({
+      scanId,
+      nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
+      scanType:
+        (scanType as ScanTypeEnum) === ScanTypeEnum.CloudComplianceScan
+          ? UtilsReportFiltersScanTypeEnum.CloudCompliance
+          : UtilsReportFiltersScanTypeEnum.Compliance,
+    });
+  }, [scanId, nodeType, downloadScan, scanType]);
 
   useEffect(() => {
     if (fetcher.state === 'idle') setOpen(false);
@@ -485,7 +387,7 @@ const ActionDropdown = ({
             onClick={(e) => {
               if (!isScanComplete(scanStatus)) return;
               e.preventDefault();
-              onDownloadAction(ActionEnumType.DOWNLOAD);
+              onDownloadAction();
             }}
           >
             <span

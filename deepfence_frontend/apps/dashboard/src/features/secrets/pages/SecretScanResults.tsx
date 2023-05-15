@@ -11,6 +11,7 @@ import {
   HiDotsVertical,
   HiEye,
   HiEyeOff,
+  HiOutlineDownload,
   HiOutlineExclamationCircle,
   HiOutlineTrash,
 } from 'react-icons/hi';
@@ -55,6 +56,8 @@ import {
   ApiDocsBadRequestResponse,
   ModelScanInfo,
   ModelScanResultsReq,
+  UtilsReportFiltersNodeTypeEnum,
+  UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
 import { ModelSecret } from '@/api/generated/models/ModelSecret';
 import { DFLink } from '@/components/DFLink';
@@ -73,6 +76,7 @@ import {
 } from '@/components/ScanStatusMessage';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
+import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { ScanHistoryApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
 import { SecretsResultChart } from '@/features/secrets/components/landing/SecretsResultChart';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
@@ -81,6 +85,7 @@ import { ScanStatusEnum, ScanTypeEnum, SecretSeverityType } from '@/types/common
 import { ApiError, apiWrapper, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { isScanComplete } from '@/utils/scan';
 import { DFAwait } from '@/utils/suspense';
 import {
   getOrderFromSearchParams,
@@ -532,13 +537,14 @@ const DeleteScanConfirmationModal = ({
   );
 };
 
-const HistoryDropdown = () => {
+const HistoryDropdown = ({ nodeType }: { nodeType: string }) => {
   const { navigate } = usePageNavigation();
   const fetcher = useFetcher<ScanHistoryApiLoaderDataType>();
   const loaderData = useLoaderData() as LoaderDataType;
   const isScanHistoryLoading = fetcher.state === 'loading';
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [scanIdToDelete, setScanIdToDelete] = useState<string | null>(null);
+  const { downloadScan } = useDownloadScan();
 
   const onHistoryClick = (nodeType: string, nodeId: string) => {
     fetcher.load(
@@ -622,18 +628,36 @@ const HistoryDropdown = () => {
                             </span>
                             <ScanStatusBadge status={item.status} />
                           </button>
-                          <IconButton
-                            color="danger"
-                            outline
-                            size="xxs"
-                            disabled={isCurrentScan}
-                            className="rounded-lg bg-transparent"
-                            icon={<HiOutlineTrash />}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setScanIdToDelete(item.scanId);
-                            }}
-                          />
+                          <div className="flex gap-1">
+                            <IconButton
+                              color="primary"
+                              outline
+                              size="xxs"
+                              disabled={!isScanComplete(item.status)}
+                              className="rounded-lg bg-transparent"
+                              icon={<HiOutlineDownload />}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                downloadScan({
+                                  scanId: item.scanId,
+                                  scanType: UtilsReportFiltersScanTypeEnum.Secret,
+                                  nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
+                                });
+                              }}
+                            />
+                            <IconButton
+                              color="danger"
+                              outline
+                              size="xxs"
+                              disabled={isCurrentScan}
+                              className="rounded-lg bg-transparent"
+                              icon={<HiOutlineTrash />}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setScanIdToDelete(item.scanId);
+                              }}
+                            />
+                          </div>
                         </div>
                       );
                     })}
@@ -1189,7 +1213,7 @@ const HeaderComponent = ({
                     <span className="text-gray-400 text-[10px]">Last scan</span>
                   </div>
                   <div className="ml-auto">
-                    <HistoryDropdown />
+                    <HistoryDropdown nodeType={node_type} />
                   </div>
 
                   <div className="relative">
