@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"sync/atomic"
+	"math/rand"
 	"time"
 
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
@@ -94,12 +95,22 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 			}()
 		} else {
 			go func() {
+				// Add jitter
+				rand.Seed(time.Now().UnixNano())
+
+				min := 0
+				max := 600
+
+				jitter := int32(rand.Intn(max-min+1) + min)
+
+				<-time.After(time.Second*time.Duration(jitter))
+
 				req := ct.API().ControlsApi.GetAgentControls(context.Background())
 				agentId := openapi.NewModelAgentId(getMaxAllocatable(), dummyNodeId)
 				req = req.ModelAgentId(*agentId)
 				for {
 					select {
-					case <-time.After(time.Second * time.Duration(ct.PublishInterval())):
+					case <-time.After(time.Second*time.Duration(ct.PublishInterval())):
 					case <-ct.stopControlListening:
 						break
 					}

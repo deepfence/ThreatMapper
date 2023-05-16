@@ -888,6 +888,8 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
 	// Push back decreaser
 	go func() {
 		twice := false
+		// Received num at the time of push back change
+		prev_received_num := int32(0)
 		loop:
 		for {
 			select {
@@ -895,19 +897,21 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
 			case <-done:
 				break loop
 			}
-			if num_ingested.Load() < (num_received.Load() / 3) * 2 {
-				Push_back.Add(1)
+			current_num_received := num_received.Swap(0)
+			current_num_ingested := num_ingested.Swap(0)
+			if current_num_ingested < (current_num_received / 4) * 3 {
+				Push_back.Add(1 * current_num_received / current_num_received)
 				twice = false
-			} else if num_ingested.Load() == num_received.Load() {
+				prev_received_num = current_num_received
+			} else if current_num_received < (prev_received_num / 4) * 3 {
 				if Push_back.Load() > 1 && twice {
 					Push_back.Add(-1)
 					twice = false
+					prev_received_num = current_num_received
 				}
 				twice = true
 			}
-	log.Info().Msgf("Received: %v, pushed: %v, Push back: %v", num_received.Load(), num_ingested.Load(), Push_back.Load())
-			num_received.Store(0)
-			num_ingested.Store(0)
+	log.Info().Msgf("Received: %v, pushed: %v, Push back: %v", current_num_received, current_num_ingested, Push_back.Load())
 		}
 	}()
 

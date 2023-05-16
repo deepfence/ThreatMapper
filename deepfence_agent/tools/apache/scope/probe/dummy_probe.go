@@ -77,10 +77,11 @@ func (p *Probe) dummyPublishLoop(i int) {
 
 	jitter := int32(rand.Intn(max-min+1) + min)
 
+	<-time.After(time.Second*time.Duration(jitter))
+
 	for {
 		select {
-		case <-time.After(time.Second*time.Duration(jitter%p.publisher.PublishInterval()) +
-			time.Second*time.Duration(p.publisher.PublishInterval())):
+		case <-time.After(time.Second*time.Duration(p.publisher.PublishInterval())):
 			err = p.publisher.Publish(rpt)
 			if err == nil {
 				publishCount++
