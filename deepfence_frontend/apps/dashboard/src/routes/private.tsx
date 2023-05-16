@@ -7,6 +7,7 @@ import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretSca
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
 import { module as logoutAction } from '@/features/auth/data-components/logoutAction';
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
+import { action as downloadScanAction } from '@/features/common/data-component/downloadScanAction';
 import { getApiTokenApiLoader } from '@/features/common/data-component/getApiTokenApiLoader';
 import { getUserApiLoader } from '@/features/common/data-component/getUserApiLoader';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
@@ -670,6 +671,10 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'auth/user',
         loader: getUserApiLoader,
+      },
+      {
+        path: 'scan/download',
+        action: downloadScanAction,
       },
     ],
   },

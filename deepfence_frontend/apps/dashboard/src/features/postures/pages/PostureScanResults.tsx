@@ -10,6 +10,7 @@ import {
   HiDotsVertical,
   HiEye,
   HiEyeOff,
+  HiOutlineDownload,
   HiOutlineExclamationCircle,
   HiOutlineTrash,
 } from 'react-icons/hi';
@@ -55,6 +56,8 @@ import {
   ModelCompliance,
   ModelScanInfo,
   ModelScanResultsReq,
+  UtilsReportFiltersNodeTypeEnum,
+  UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterHeader } from '@/components/forms/FilterHeader';
@@ -74,6 +77,7 @@ import {
 } from '@/components/ScanStatusMessage';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { POSTURE_STATUS_COLORS } from '@/constants/charts';
+import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { ScanHistoryApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
 import { PostureResultChart } from '@/features/postures/components/PostureResultChart';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
@@ -83,6 +87,7 @@ import { PostureSeverityType, ScanStatusEnum, ScanTypeEnum } from '@/types/commo
 import { ApiError, apiWrapper, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { isScanComplete } from '@/utils/scan';
 import { DFAwait } from '@/utils/suspense';
 import {
   getOrderFromSearchParams,
@@ -578,7 +583,7 @@ const DeleteScanConfirmationModal = ({
   );
 };
 
-const HistoryDropdown = () => {
+const HistoryDropdown = ({ nodeType }: { nodeType: string }) => {
   const { navigate } = usePageNavigation();
   const fetcher = useFetcher<ScanHistoryApiLoaderDataType>();
   const loaderData = useLoaderData() as LoaderDataType;
@@ -588,6 +593,7 @@ const HistoryDropdown = () => {
   };
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [scanIdToDelete, setScanIdToDelete] = useState<string | null>(null);
+  const { downloadScan } = useDownloadScan();
 
   const isScanHistoryLoading = fetcher.state === 'loading';
 
@@ -674,18 +680,36 @@ const HistoryDropdown = () => {
                             </span>
                             <ScanStatusBadge status={item.status} />
                           </button>
-                          <IconButton
-                            color="danger"
-                            outline
-                            size="xxs"
-                            disabled={isCurrentScan}
-                            className="rounded-lg bg-transparent"
-                            icon={<HiOutlineTrash />}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setScanIdToDelete(item.scanId);
-                            }}
-                          />
+                          <div className="flex gap-1">
+                            <IconButton
+                              color="primary"
+                              outline
+                              size="xxs"
+                              disabled={!isScanComplete(item.status)}
+                              className="rounded-lg bg-transparent"
+                              icon={<HiOutlineDownload />}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                downloadScan({
+                                  scanId: item.scanId,
+                                  scanType: UtilsReportFiltersScanTypeEnum.Compliance,
+                                  nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
+                                });
+                              }}
+                            />
+                            <IconButton
+                              color="danger"
+                              outline
+                              size="xxs"
+                              disabled={isCurrentScan}
+                              className="rounded-lg bg-transparent"
+                              icon={<HiOutlineTrash />}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setScanIdToDelete(item.scanId);
+                              }}
+                            />
+                          </div>
                         </div>
                       );
                     })}
@@ -1302,7 +1326,7 @@ const HeaderComponent = () => {
                     <span className="text-gray-400 text-[10px]">Last scan</span>
                   </div>
 
-                  <HistoryDropdown />
+                  <HistoryDropdown nodeType={node_type} />
 
                   <div className="relative">
                     {isFilterApplied && (
