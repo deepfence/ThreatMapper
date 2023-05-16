@@ -5,7 +5,6 @@ package probe
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand"
 	"os"
 	"strconv"
@@ -74,17 +73,14 @@ func (p *Probe) dummyPublishLoop(i int) {
 	rand.Seed(time.Now().UnixNano())
 
 	min := 0
-	max := 120
+	max := 600
 
-	randomSeconds := rand.Intn(max-min+1) + min
+	jitter := int32(rand.Intn(max-min+1) + min)
 
-	sleepDuration := time.Duration(randomSeconds) * time.Second
-	fmt.Printf("Sleeping for %d seconds...\n", randomSeconds)
-
-	time.Sleep(sleepDuration)
 	for {
 		select {
-		case <-time.After(time.Second * time.Duration(p.publisher.PublishInterval())):
+		case <-time.After(time.Second*time.Duration(jitter%p.publisher.PublishInterval()) +
+			time.Second*time.Duration(p.publisher.PublishInterval())):
 			err = p.publisher.Publish(rpt)
 			if err == nil {
 				publishCount++

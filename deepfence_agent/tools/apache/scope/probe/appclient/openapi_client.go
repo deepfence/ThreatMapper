@@ -32,10 +32,10 @@ func NewOpenapiClient() (*OpenapiClient, error) {
 		client:               openapiClient,
 		stopControlListening: make(chan struct{}),
 		publishInterval:      atomic.Int32{},
-		publishReportUrl:     "https://" + os.Getenv("MGMT_CONSOLE_URL") + "/deepfence/ingest/report",
+		publishReportUrl:     "https://" + os.Getenv("MGMT_CONSOLE_URL") + ":443/deepfence/ingest/report",
 		rawClient:            openapiClient.Client().GetConfig().HTTPClient,
 	}
-	res.publishInterval.Store(1)
+	res.publishInterval.Store(10)
 
 	return res, err
 }
@@ -63,11 +63,6 @@ func (ct *OpenapiClient) Publish(r report.Report) error {
 	httpReq, err := http.NewRequest(http.MethodPost, ct.publishReportUrl, bytes.NewReader(b.Bytes()))
 	if err != nil {
 		return err
-	}
-	httpReq.Close = true
-
-	for k, v := range ct.client.GetDefaultHeaders() {
-		httpReq.Header.Add(k, v)
 	}
 	httpReq.Header.Add("Content-Encoding", "gzip")
 
