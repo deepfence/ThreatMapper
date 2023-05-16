@@ -57,7 +57,7 @@ func (h *Handler) UploadVulnerabilityDB(w http.ResponseWriter, r *http.Request) 
 	}
 
 	go func() {
-		UpdateListing(path, checksum)
+		UpdateListing(path, checksum, time.Now())
 	}()
 
 	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: path + " " + checksum})
@@ -93,7 +93,7 @@ func getEnvOrDefault(envVar string, defaultValue string) string {
 	return envValue
 }
 
-func UpdateListing(newFile, newFileCheckSum string) {
+func UpdateListing(newFile, newFileCheckSum string, buildTime time.Time) {
 	log.Info().Msg("update vulnerability database listing")
 
 	ctx := context.Background()
@@ -118,7 +118,7 @@ func UpdateListing(newFile, newFileCheckSum string) {
 
 	listing.Append(
 		model.Database{
-			Built:   time.Now(),
+			Built:   buildTime,
 			Version: 5,
 			URL: fmt.Sprintf(
 				"http://%s/%s",
@@ -208,14 +208,14 @@ func downloadVulnerabilityDb() {
 		return
 	}
 
-	path, checksum, err := UploadToMinio(context.Background(), data.Bytes(), path.Base(latest.URL))
+	path, _, err := UploadToMinio(context.Background(), data.Bytes(), path.Base(latest.URL))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return
 	}
 
 	go func() {
-		UpdateListing(path, checksum)
+		UpdateListing(path, latest.Checksum, latest.Built)
 	}()
 
 }
