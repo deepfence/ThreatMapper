@@ -56,7 +56,6 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:Node)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		AND exists((n) <-[:SCANNED]-())
 		AND NOT n.node_id IN ["in-the-internet", "out-the-internet"]
 		WITH n LIMIT 100000
 		SET n.active=false`,
@@ -68,7 +67,6 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:ContainerImage)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		AND exists((n) <-[:SCANNED]-())
 		WITH n LIMIT 100000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbRegistryCleanUpTimeout.Milliseconds()}); err != nil {
@@ -79,7 +77,6 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:Container)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		AND exists((n) <-[:SCANNED]-())
 		WITH n LIMIT 100000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
@@ -90,7 +87,6 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:KubernetesCluster)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		AND exists((n) <-[:SCANNED]-())
 		WITH n LIMIT 100000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
@@ -101,8 +97,7 @@ func CleanUpDB(msg *message.Message) error {
 	// Delete old with no data
 	if _, err = session.Run(`
 		MATCH (n:Node)
-		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		AND n.active = false
+		WHERE n.active = false
 		AND NOT exists((n) <-[:SCANNED]-())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
 		WITH n LIMIT 100000
@@ -117,14 +112,12 @@ func CleanUpDB(msg *message.Message) error {
 
 	if _, err = session.Run(`
 		MATCH (n:ContainerImage)
-		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		AND n.active = false
+		WHERE n.active = false
 		AND NOT exists((n) <-[:SCANNED]-())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
 		WITH n LIMIT 100000
 		DETACH DELETE n`,
 		map[string]interface{}{
-			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
 		}); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
@@ -133,14 +126,12 @@ func CleanUpDB(msg *message.Message) error {
 
 	if _, err = session.Run(`
 		MATCH (n:Container)
-		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		AND n.active = false
+		WHERE n.active = false
 		AND NOT exists((n) <-[:SCANNED]-())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
 		WITH n LIMIT 100000
 		DETACH DELETE n`,
 		map[string]interface{}{
-			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
 		}); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
@@ -149,8 +140,8 @@ func CleanUpDB(msg *message.Message) error {
 
 	if _, err = session.Run(`
 		MATCH (n:KubernetesCluster)
-		WHERE n.updated_at < TIMESTAMP()-$old_time_ms
-		AND n.active = false
+		WHERE n.active = false
+		OR n.updated_at < TIMESTAMP()-$old_time_ms
 		WITH n LIMIT 100000
 		DETACH DELETE n`,
 		map[string]interface{}{
@@ -227,7 +218,6 @@ func CleanUpDB(msg *message.Message) error {
 		WITH n LIMIT 100000
 		DETACH DELETE n`,
 		map[string]interface{}{
-			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
 		}); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
