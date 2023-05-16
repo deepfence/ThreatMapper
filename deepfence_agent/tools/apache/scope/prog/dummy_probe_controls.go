@@ -9,7 +9,10 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"fmt"
+	"math/rand"
 	"os/exec"
+	"time"
 
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	log "github.com/sirupsen/logrus"
@@ -154,4 +157,19 @@ func sendDummySbomToConsole(init_req ctl.StartVulnerabilityScanRequest) error {
 	log.Debugf("publish sbom to console response: %v", resp)
 
 	return nil
+}
+
+// Add jitter
+func init() {
+	rand.Seed(time.Now().UnixNano())
+
+	min := 0
+	max := 120
+
+	randomSeconds := rand.Intn(max-min+1) + min
+
+	sleepDuration := time.Duration(randomSeconds) * time.Second
+	fmt.Printf("Sleeping for %d seconds...\n", randomSeconds)
+
+	time.Sleep(sleepDuration)
 }

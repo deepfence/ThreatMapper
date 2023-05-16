@@ -1201,7 +1201,7 @@ func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request
 	}
 	switch action {
 	case "delete":
-		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
+		err = reporters_scan.DeleteScan(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
 	case "notify":
 		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
 	}
@@ -1320,7 +1320,7 @@ func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, ac
 		w.Write(data)
 
 	case "delete":
-		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{})
+		err = reporters_scan.DeleteScan(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{})
 		if err != nil {
 			respondError(err, w)
 			return
@@ -1351,7 +1351,7 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Info().Msgf("delete %s scans filters %+v", req.ScanType, req.Filters)
+	log.Info().Msgf("bulk delete %s scans filters %+v", req.ScanType, req.Filters)
 
 	scansList, err := reporters_scan.GetScansList(r.Context(),
 		utils.DetectedNodeScanType[req.ScanType], nil, req.Filters, model.FetchWindow{})
@@ -1361,7 +1361,7 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, s := range scansList.ScansInfo {
-		err := reporters_scan.DeleteScanResult(r.Context(),
+		err := reporters_scan.DeleteScan(r.Context(),
 			utils.DetectedNodeScanType[req.ScanType], s.ScanId, []string{})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to delete scan id %s", s.ScanId)

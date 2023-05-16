@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"encoding/base64"
 	"io"
 	"net/http"
 	"sync"
@@ -15,7 +14,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	reportUtils "github.com/deepfence/golang_deepfence_sdk/utils/report"
 )
 
 var agent_report_ingesters sync.Map
@@ -45,33 +43,10 @@ func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[*report.Re
 	return true_new_entry.(*ingesters.Ingester[*report.Report]), nil
 }
 
-var rawReportPool = sync.Pool{
-	New: func() interface{} {
-		return &reportUtils.RawReport{}
-	},
-}
-
 func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	rawReport := rawReportPool.Get().(*reportUtils.RawReport)
-
-	dec := jsoniter.NewDecoder(r.Body)
-	err := dec.Decode(rawReport)
-	if err != nil {
-		log.Error().Msgf("Error unmarshal: %v", err)
-		respondWith(ctx, w, http.StatusBadRequest, err)
-		return
-	}
-	b64, err := base64.StdEncoding.DecodeString(rawReport.GetPayload())
-	rawReportPool.Put(rawReport)
-	if err != nil {
-		log.Error().Msgf("Error b64 reader: %v", err)
-		respondWith(ctx, w, http.StatusBadRequest, err)
-		return
-	}
-	sr := bytes.NewReader(b64)
-	gzr, err := gzip.NewReader(sr)
+	gzr, err := gzip.NewReader(r.Body)
 	if err != nil {
 		log.Error().Msgf("Error gzip reader: %v", err)
 		respondWith(ctx, w, http.StatusBadRequest, err)
@@ -82,7 +57,6 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	rpt.Clear()
 	dec_inner := jsoniter.NewDecoder(gzr)
 	err = dec_inner.Decode(&rpt)
-
 	if err != nil {
 		log.Error().Msgf("Error sonic unmarshal: %v", err)
 		respondWith(ctx, w, http.StatusBadRequest, err)
