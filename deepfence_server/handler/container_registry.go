@@ -138,13 +138,13 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	req.Extras = registry.GetExtras()
 
 	// add to registry db
-	err = req.CreateRegistry(ctx, pgClient)
+	err = req.CreateRegistry(ctx, r.Context(), pgClient, registry.GetNamespace())
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, api_messages.SuccessRegistryCreated)
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryCreated})
 }
 
 // update registry
@@ -254,7 +254,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, api_messages.SuccessRegistryUpdated)
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryUpdated})
 }
 
 func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Request) {
@@ -385,13 +385,13 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	req.Extras = registry.GetExtras()
 
 	// add to registry db
-	err = req.CreateRegistry(ctx, pgClient)
+	err = req.CreateRegistry(ctx, r.Context(), pgClient, registry.GetNamespace())
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, api_messages.SuccessRegistryCreated)
+	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryCreated})
 }
 
 func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
@@ -421,7 +421,7 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: "registry deleted successfully"})
+	w.WriteHeader(http.StatusNoContent)
 
 }
 
@@ -446,7 +446,7 @@ func (h *Handler) getImages(w http.ResponseWriter, r *http.Request) ([]model.Con
 		return images, err
 	}
 
-	log.Info().Msgf("get images for registry id %d found %d images", req.RegistryId, len(images))
+	log.Info().Msgf("get images for registry id %s found %d images", req.RegistryId, len(images))
 
 	return images, nil
 }
@@ -534,7 +534,7 @@ func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Info().Msgf("registry %d summary %+v", req.RegistryId, counts)
+	log.Info().Msgf("registry %s summary %+v", req.RegistryId, counts)
 
 	httpext.JSON(w, http.StatusOK, counts)
 }

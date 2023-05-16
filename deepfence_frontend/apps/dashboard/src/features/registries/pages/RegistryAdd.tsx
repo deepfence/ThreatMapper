@@ -25,9 +25,16 @@ const RegistryAdd = () => {
           );
         }}
         registryType={account}
-        renderButton={() => (
+        renderButton={(state) => (
           <div className="flex ml-auto">
-            <Button color="primary" size="xs" className="ml-auto" type="submit">
+            <Button
+              color="primary"
+              size="xs"
+              className="ml-auto"
+              type="submit"
+              disabled={state !== 'idle'}
+              loading={state !== 'idle'}
+            >
               Save information
             </Button>
           </div>

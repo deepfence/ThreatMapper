@@ -9,7 +9,7 @@ import (
 // Sets is a string->set-of-strings map.
 // It is immutable.
 type Sets struct {
-	PsMap *ps.Tree `json:"ps_map"`
+	PsMap *ps.Tree `json:"ps_map,omitempty"`
 }
 
 // EmptySets is an empty Sets.  Starts with this.

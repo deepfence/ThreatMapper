@@ -10,6 +10,7 @@ type Ingester[T any] interface {
 	Ingest(ctx context.Context, data T) error
 	// TOREMOVE
 	PushToDB(batches ReportIngestionData) error
+	Close()
 }
 
 type KafkaIngester[T any] interface {

@@ -69,7 +69,7 @@ func (d *RegistryDockerPrivate) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (d *RegistryDockerPrivate) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
+func (d *RegistryDockerPrivate) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
 	return listImagesRegistryV2(d.NonSecret.DockerRegistryURL, d.NonSecret.DockerUsername, d.Secret.DockerPassword)
 }
 

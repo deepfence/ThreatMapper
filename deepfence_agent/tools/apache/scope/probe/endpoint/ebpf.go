@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package endpoint
@@ -5,7 +6,6 @@ package endpoint
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"regexp"
@@ -83,6 +83,7 @@ type EbpfTracker struct {
 //   - 4.1.2-foo
 //   - 4.1.2-33.44+bar
 //   - etc.
+//
 // For example, on a Ubuntu system the vendor specific release part
 // (after the first `-`) could look like:
 // '<ABI number>.<upload number>-<flavour>' or
@@ -165,7 +166,7 @@ func newEbpfTracker() (*EbpfTracker, error) {
 func (t *EbpfTracker) TCPEventV4(e tracer.TcpV4) {
 	if t.debugBPF {
 		debugBPFFile := "/var/run/scope/debug-bpf"
-		b, err := ioutil.ReadFile("/var/run/scope/debug-bpf")
+		b, err := os.ReadFile("/var/run/scope/debug-bpf")
 		if err == nil && strings.TrimSpace(string(b[:])) == "stop" {
 			os.Remove(debugBPFFile)
 			log.Warnf("ebpf tracker stopped as requested by user")

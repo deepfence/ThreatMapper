@@ -1,4 +1,4 @@
-import { ComponentMeta } from '@storybook/react';
+import { Meta } from '@storybook/react';
 import { useRef, useState } from 'react';
 
 import Button from '@/components/button/Button';
@@ -15,7 +15,7 @@ export default {
   argTypes: {
     onOpenChange: { action: 'onOpenChange' },
   },
-} as ComponentMeta<typeof SlidingModal>;
+} as Meta<typeof SlidingModal>;
 
 export const ModalWithTrigger = () => {
   const [open, setOpen] = useState(false);

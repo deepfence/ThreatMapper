@@ -65,7 +65,7 @@ export const TopNSecretChart = ({
               displayName: 'Unknown',
             },
           ],
-          source: data,
+          source: [...data].reverse(),
         },
         tooltip: {
           trigger: 'axis',
@@ -106,41 +106,26 @@ export const TopNSecretChart = ({
           {
             type: 'bar',
             stack: 'total',
-            label: {
-              show: true,
-            },
             color: SEVERITY_COLORS['critical'],
           },
           {
             type: 'bar',
             stack: 'total',
-            label: {
-              show: true,
-            },
             color: SEVERITY_COLORS['high'],
           },
           {
             type: 'bar',
             stack: 'total',
-            label: {
-              show: true,
-            },
             color: SEVERITY_COLORS['medium'],
           },
           {
             type: 'bar',
             stack: 'total',
-            label: {
-              show: true,
-            },
             color: SEVERITY_COLORS['low'],
           },
           {
             type: 'bar',
             stack: 'total',
-            label: {
-              show: true,
-            },
             color: SEVERITY_COLORS['unknown'],
           },
         ],

@@ -16,3 +16,32 @@ const (
 var RegistryTypes = []string{
 	ACR, DOCKER_HUB, DOCKER_PRIVATE, ECR, GCR, GITLAB, HARBOR, JFROG, QUAY,
 }
+
+// Integration related consts
+const (
+	Slack           = "slack"
+	HTTP            = "http_endpoint"
+	Teams           = "teams"
+	Splunk          = "splunk"
+	S3              = "s3"
+	PagerDuty       = "pagerduty"
+	ElasticSearch   = "elasticsearch"
+	GoogleChronicle = "googlechronicle"
+	AwsSecurityHub  = "aws_security_hub"
+	Email           = "email"
+	Jira            = "jira"
+)
+
+const (
+	Password       = "password"
+	WebhookURL     = "webhook_url"
+	IntegrationKey = "integration_key"
+	APIKey         = "api_key"
+)
+
+var SensitiveFields = map[string]struct{}{
+	Password:       {},
+	WebhookURL:     {},
+	IntegrationKey: {},
+	APIKey:         {},
+}

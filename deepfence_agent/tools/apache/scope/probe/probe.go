@@ -7,7 +7,6 @@ import (
 
 	"github.com/armon/go-metrics"
 	log "github.com/sirupsen/logrus"
-	"github.com/weaveworks/common/mtime"
 	"golang.org/x/time/rate"
 
 	"github.com/weaveworks/scope/report"
@@ -112,13 +111,6 @@ func (p *Probe) AddTicker(ts ...Ticker) {
 	p.tickers = append(p.tickers, ts...)
 }
 
-// Start starts the probe
-func (p *Probe) Start() {
-	p.done.Add(2)
-	go p.spyLoop()
-	go p.publishLoop()
-}
-
 // Stop stops the probe
 func (p *Probe) Stop() error {
 	close(p.quit)
@@ -187,7 +179,7 @@ func (p *Probe) report() report.Report {
 	}
 
 	result := report.MakeReport()
-	result.TS = mtime.Now()
+	result.TS = time.Now()
 	for i := 0; i < cap(reports); i++ {
 		result.UnsafeMerge(<-reports)
 	}
@@ -230,54 +222,9 @@ ForLoop:
 	}
 
 	if p.noControls {
-		rpt.WalkTopologies(func(t *report.Topology) {
-			t.Controls = report.Controls{}
-		})
+		//rpt.WalkTopologies(func(t *report.Topology) {
+		//	t.Controls = report.Controls{}
+		//})
 	}
 	return rpt, count
-}
-
-func (p *Probe) publishLoop() {
-	defer p.done.Done()
-	startTime := mtime.Now()
-	publishCount := 0
-	var lastFullReport report.Report
-
-	for {
-		var err error
-		select {
-		case <-time.After(time.Second * time.Duration(p.publisher.PublishInterval())):
-			rpt, count := p.drainAndSanitise(report.MakeReport(), p.spiedReports)
-			if count == 0 {
-				continue // No data has been collected - don't bother publishing.
-			}
-
-			fullReport := (publishCount % p.ticksPerFullReport) == 0
-			if !fullReport {
-				rpt.UnsafeUnMerge(lastFullReport)
-			}
-			rpt.Window = mtime.Now().Sub(startTime)
-			startTime = mtime.Now()
-			err = p.publisher.Publish(rpt)
-			if err == nil {
-				if fullReport {
-					lastFullReport = rpt
-				}
-				publishCount++
-			} else {
-				// If we failed to send then drop back to full report next time
-				publishCount = 0
-			}
-
-		//case rpt := <-p.shortcutReports:
-		//	rpt, _ = p.drainAndSanitise(rpt, p.shortcutReports)
-		//	err = p.publisher.Publish(rpt)
-
-		case <-p.quit:
-			return
-		}
-		if err != nil {
-			log.Infof("Publish: %v", err)
-		}
-	}
 }

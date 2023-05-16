@@ -3,12 +3,21 @@ package reporters_graph
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"reflect"
+	"sort"
+	"strconv"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/samber/mo"
+)
+
+const (
+	cloud_resource_limit = 1000
 )
 
 type TopologyReporter interface {
@@ -17,6 +26,7 @@ type TopologyReporter interface {
 	KubernetesGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error)
 	ContainerGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error)
 	PodGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error)
+	Close()
 }
 
 type neo4jTopologyReporter struct {
@@ -32,8 +42,9 @@ type NodeStub struct {
 
 type ResourceStub struct {
 	NodeStub
-	ResourceType string `json:"resource-type"`
-	AccountId    string `json:"account_id"`
+	ResourceType string   `json:"resource-type"`
+	AccountId    string   `json:"account_id"`
+	IDs          []NodeID `json:"ids"`
 }
 
 func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]ConnectionSummary, error) {
@@ -41,8 +52,9 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 	r, err := tx.Run(`
 	MATCH (n:Node) -[r:CONNECTS]-> (m:Node)
 	WHERE n.active = true
+	AND   m.active = true
 	WITH CASE WHEN coalesce(n.kubernetes_cluster_id, '') <> '' THEN n.kubernetes_cluster_id ELSE n.cloud_region END AS left_region, n, m, r, CASE WHEN coalesce(m.kubernetes_cluster_id, '') <> '' THEN m.kubernetes_cluster_id ELSE m.cloud_region END AS right_region
-	RETURN n.cloud_provider, left_region, n.node_id, r.left_pid, m.cloud_provider, right_region, m.node_id, r.right_pid`, nil)
+	RETURN n.cloud_provider, left_region, n.node_id, r.left_pids, m.cloud_provider, right_region, m.node_id, r.right_pids`, nil)
 
 	if err != nil {
 		return []ConnectionSummary{}, err
@@ -57,29 +69,47 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 	var buf bytes.Buffer
 	for _, edge := range edges {
 		if edge.Values[2].(string) != edge.Values[6].(string) {
-			buf.Reset()
-			buf.WriteString(edge.Values[0].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[1].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[2].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[3].(string))
-			src := buf.String()
-			buf.Reset()
-			buf.WriteString(edge.Values[4].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[5].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[6].(string))
-			buf.WriteByte(';')
-			buf.WriteString(edge.Values[7].(string))
-			target := buf.String()
-			res = append(res, ConnectionSummary{Source: src, Target: target})
+			left_pids := edge.Values[3].([]interface{})
+			right_pids := edge.Values[7].([]interface{})
+			for i := range left_pids {
+				buf.Reset()
+				buf.WriteString(edge.Values[0].(string))
+				buf.WriteByte(';')
+				buf.WriteString(edge.Values[1].(string))
+				buf.WriteByte(';')
+				buf.WriteString(edge.Values[2].(string))
+				buf.WriteByte(';')
+				buf.WriteString(strconv.Itoa(int(left_pids[i].(int64))))
+				src := buf.String()
+				buf.Reset()
+				buf.WriteString(edge.Values[4].(string))
+				buf.WriteByte(';')
+				buf.WriteString(edge.Values[5].(string))
+				buf.WriteByte(';')
+				buf.WriteString(edge.Values[6].(string))
+				buf.WriteByte(';')
+				buf.WriteString(strconv.Itoa(int(right_pids[i].(int64))))
+				target := buf.String()
+				res = append(res, ConnectionSummary{Source: src, Target: target})
+			}
 		}
 	}
 
 	return res, nil
+}
+
+func nodeIds2nodeId(node_ids []NodeID) string {
+	h := sha256.New()
+	v := []string{}
+	for i := range node_ids {
+		v = append(v, string(node_ids[i]))
+	}
+	sort.Strings(v)
+
+	for _, s := range v {
+		h.Write([]byte(s))
+	}
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 func (nc *neo4jTopologyReporter) GetNonPublicCloudResources(tx neo4j.Transaction, cloud_provider []string, cloud_regions []string, cloud_services []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
@@ -87,11 +117,11 @@ func (nc *neo4jTopologyReporter) GetNonPublicCloudResources(tx neo4j.Transaction
 	r, err := tx.Run(`
 		MATCH (s:CloudResource)
 		WHERE s.depth IS NULL
-		AND CASE WHEN $services IS NULL THEN [1] ELSE s.resource_id IN $services END
+		AND CASE WHEN $services IS NULL THEN [1] ELSE s.node_type IN $services END
 		AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
 		AND CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END `+
 		reporters.ParseFieldFilters2CypherWhereConditions("s", fieldfilters, false)+`
-		RETURN s.node_id,s.cloud_provider,s.region,s.account_id,s.resource_id`,
+		RETURN collect(s.node_id),s.cloud_provider,s.region,s.account_id,s.node_type`,
 		filterNil(map[string]interface{}{
 			"providers": cloud_provider,
 			"services":  cloud_services,
@@ -111,19 +141,35 @@ func (nc *neo4jTopologyReporter) GetNonPublicCloudResources(tx neo4j.Transaction
 		if record.Values[0] == nil || record.Values[1] == nil {
 			continue
 		}
-		node_id := NodeID(record.Values[0].(string))
+		node_ids := extractResourceNodeIds(record.Values[0].([]interface{}))
 		region := NodeID(record.Values[2].(string))
 		account_id := NodeID(record.Values[3].(string))
-		resource_id := NodeID(record.Values[4].(string))
-		key := NodeID(string(region) + ":" + string(resource_id))
+		node_type := NodeID(record.Values[4].(string))
+		key := NodeID(string(region) + ":" + string(node_type))
 		if _, present := res[key]; !present {
 			res[key] = []ResourceStub{}
 		}
 
-		res[key] = append(res[key], ResourceStub{NodeStub: NodeStub{node_id, record.Values[0].(string)}, ResourceType: string(resource_id), AccountId: string(account_id)})
+		res[key] = append(res[key], ResourceStub{
+			NodeStub: NodeStub{
+				ID:   NodeID(nodeIds2nodeId(node_ids)),
+				Name: string(node_type),
+			},
+			IDs:          node_ids,
+			ResourceType: string(node_type),
+			AccountId:    string(account_id),
+		})
 	}
 	return res, nil
 
+}
+
+func extractResourceNodeIds(ids []interface{}) []NodeID {
+	res := []NodeID{}
+	for i := range ids {
+		res = append(res, NodeID(ids[i].(string)))
+	}
+	return res
 }
 
 func (nc *neo4jTopologyReporter) GetCloudServices(
@@ -134,18 +180,19 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 
 	res := map[NodeID][]ResourceStub{}
 	r, err := tx.Run(`
-		MATCH (s:CloudResource) WHERE s.resource_id IN
-		['aws_ec2_instance','aws_eks_cluster','aws_s3_bucket','aws_lambda_function',
-		'aws_ecs_task','aws_ecs_cluster','aws_ecr_repository','aws_ecrpublic_repository',
-		'aws_ecs_task','aws_rds_db_instance','aws_rds_db_cluster','aws_ec2_application_load_balancer',
-		'aws_ec2_classic_load_balancer','aws_ec2_network_load_balancer']
-		AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
-		AND CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END `+
+		MATCH (cp: CloudProvider)
+		WHERE CASE WHEN $providers IS NULL THEN true ELSE cp.node_id IN $providers END
+		MATCH (cp) -[:HOSTS]-> (cr: CloudRegion)
+		WHERE CASE WHEN $regions IS NULL THEN true ELSE cr.node_id IN $regions END
+		MATCH (cr) -[:HOSTS]-> (s:CloudResource)
+		WITH s LIMIT `+strconv.Itoa(cloud_resource_limit)+`
+		WHERE s.node_type IN $resource_types `+
 		reporters.ParseFieldFilters2CypherWhereConditions("s", fieldfilters, false)+`
-		RETURN s.region, s.resource_id`,
+		RETURN collect(s.node_id), s.cloud_region, s.node_type`,
 		filterNil(map[string]interface{}{
-			"providers": cloud_provider,
-			"regions":   cloud_regions,
+			"providers":      cloud_provider,
+			"regions":        cloud_regions,
+			"resource_types": model.TopologyCloudResourceTypes,
 		}))
 
 	if err != nil {
@@ -158,10 +205,19 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 	}
 
 	for _, record := range records {
-		region := record.Values[0].(string)
-		service := record.Values[1].(string)
+		node_ids := extractResourceNodeIds(record.Values[0].([]interface{}))
+		region := record.Values[1].(string)
+		service := record.Values[2].(string)
 
-		res[NodeID(region)] = append(res[NodeID(region)], ResourceStub{NodeStub: NodeStub{NodeID(service), service}, ResourceType: service})
+		res[NodeID(region)] = append(res[NodeID(region)],
+			ResourceStub{
+				NodeStub: NodeStub{
+					ID:   NodeID(nodeIds2nodeId(node_ids)),
+					Name: service,
+				},
+				IDs:          node_ids,
+				ResourceType: service,
+			})
 	}
 	return res, nil
 
@@ -170,13 +226,18 @@ func (nc *neo4jTopologyReporter) GetCloudServices(
 func (nc *neo4jTopologyReporter) GetPublicCloudResources(tx neo4j.Transaction, cloud_provider []string, cloud_regions []string, cloud_services []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]ResourceStub, error) {
 	res := map[NodeID][]ResourceStub{}
 	r, err := tx.Run(`
+		MATCH (cp: CloudProvider)
+		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE cp.node_id IN $providers END
+		MATCH (cp) -[:HOSTS]-> (cr: CloudRegion)
+		WHERE CASE WHEN $regions IS NULL THEN [1] ELSE cr.node_id IN $regions END
+		MATCH (cr) -[:HOSTS]-> (s:CloudResource)
 		MATCH (s:CloudResource)
 		WHERE s.depth IS NOT NULL
-		AND CASE WHEN $services IS NULL THEN [1] ELSE s.resource_id IN $services END
+		AND CASE WHEN $services IS NULL THEN [1] ELSE s.node_type IN $services END
 		AND CASE WHEN $providers IS NULL THEN [1] ELSE s.cloud_provider IN $providers END
 		AND CASE WHEN $regions IS NULL THEN [1] ELSE s.region IN $regions END`+
 		reporters.ParseFieldFilters2CypherWhereConditions("s", fieldfilters, false)+`
-		RETURN s.node_id,s.cloud_provider,s.region,s.account_id,s.resource_id`,
+		RETURN collect(s.node_id),s.cloud_provider,s.region,s.account_id,s.node_type`,
 		filterNil(map[string]interface{}{
 			"providers": cloud_provider,
 			"services":  cloud_services,
@@ -196,16 +257,24 @@ func (nc *neo4jTopologyReporter) GetPublicCloudResources(tx neo4j.Transaction, c
 		if record.Values[0] == nil || record.Values[1] == nil {
 			continue
 		}
-		node_id := NodeID(record.Values[0].(string))
+		node_ids := extractResourceNodeIds(record.Values[0].([]interface{}))
 		region := NodeID(record.Values[2].(string))
 		account_id := NodeID(record.Values[3].(string))
-		resource_id := NodeID(record.Values[4].(string))
-		key := NodeID(string(region) + ":" + string(resource_id))
+		node_type := NodeID(record.Values[4].(string))
+		key := NodeID(string(region) + ":" + string(node_type))
 		if _, present := res[key]; !present {
 			res[key] = []ResourceStub{}
 		}
 
-		res[key] = append(res[key], ResourceStub{NodeStub: NodeStub{node_id, record.Values[0].(string)}, ResourceType: string(resource_id), AccountId: string(account_id)})
+		res[key] = append(res[key], ResourceStub{
+			NodeStub: NodeStub{
+				ID:   NodeID(nodeIds2nodeId(node_ids)),
+				Name: string(node_type),
+			},
+			IDs:          node_ids,
+			ResourceType: string(node_type),
+			AccountId:    string(account_id),
+		})
 	}
 	return res, nil
 
@@ -214,10 +283,9 @@ func (nc *neo4jTopologyReporter) GetPublicCloudResources(tx neo4j.Transaction, c
 func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]NodeStub, error) {
 	res := []NodeStub{}
 	r, err := tx.Run(`
-		MATCH (n:Node)
+		MATCH (n:CloudProvider)
 		WHERE n.active = true
-		AND n.cloud_provider <> 'internet' 
-		RETURN n.cloud_provider`, nil)
+		RETURN n.node_id`, nil)
 
 	if err != nil {
 		return res, err
@@ -238,11 +306,11 @@ func (nc *neo4jTopologyReporter) getCloudProviders(tx neo4j.Transaction) ([]Node
 func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_provider []string) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 	r, err := tx.Run(`
-		MATCH (n:Node)
+		MATCH (cr:CloudProvider)
+		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE cr.node_id IN $providers END
+		MATCH (cr) -[:HOSTS]-> (n:CloudRegion)
 		WHERE n.active = true
-		AND n.kubernetes_cluster_id = ""
-		AND CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
-		RETURN n.cloud_provider, n.cloud_region`,
+		RETURN cr.node_id, n.node_id`,
 		filterNil(map[string]interface{}{"providers": cloud_provider}))
 
 	if err != nil {
@@ -263,40 +331,17 @@ func (nc *neo4jTopologyReporter) getCloudRegions(tx neo4j.Transaction, cloud_pro
 		res[provider] = append(res[provider], NodeStub{ID: region, Name: string(region)})
 	}
 
-	r, err = tx.Run(`
-		MATCH (n:CloudResource)
-		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
-		RETURN n.cloud_provider, n.region`,
-		filterNil(map[string]interface{}{"providers": cloud_provider}))
-
-	if err != nil {
-		return res, err
-	}
-	records, err = r.Collect()
-
-	if err != nil {
-		return res, err
-	}
-
-	for _, record := range records {
-		provider := NodeID(record.Values[0].(string))
-		region := NodeID(record.Values[1].(string))
-		if _, present := res[provider]; !present {
-			res[provider] = []NodeStub{}
-		}
-		res[provider] = append(res[provider], NodeStub{ID: region, Name: string(region)})
-	}
-
 	return res, nil
 }
 
 func (nc *neo4jTopologyReporter) getCloudKubernetes(tx neo4j.Transaction, cloud_provider []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 	r, err := tx.Run(`
-		MATCH (n:KubernetesCluster) -[:INSTANCIATE]-> (m:Node)
+		MATCH (cr:CloudProvider)
+		WHERE CASE WHEN $providers IS NULL THEN true ELSE cr.node_id IN $providers END
+		MATCH (cr) -[:HOSTS]-> (n:KubernetesCluster)
 		WHERE n.active = true
-		WITH DISTINCT m.cloud_provider as cloud_provider, n
-		WHERE CASE WHEN $providers IS NULL THEN [1] ELSE cloud_provider IN $providers END
+		WITH DISTINCT cr.node_id as cloud_provider, n
 		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
 		RETURN cloud_provider, n.node_id, n.node_name`,
 		filterNil(map[string]interface{}{"providers": cloud_provider}))
@@ -335,23 +380,56 @@ func filterNil(params map[string]interface{}) map[string]interface{} {
 func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, cloud_regions, cloud_kubernetes []string, fieldfilters mo.Option[reporters.FieldsFilters]) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 
-	r, err := tx.Run(`
-		MATCH (n:Node)
-		WITH coalesce(n.kubernetes_cluster_id, '') <> '' AS is_kub, n
-		WHERE n.active = true
-		AND CASE WHEN $providers IS NULL THEN [1] ELSE n.cloud_provider IN $providers END
-		AND CASE WHEN is_kub THEN
-		    CASE WHEN $kubernetes IS NULL THEN [1] ELSE n.kubernetes_cluster_id IN $kubernetes END
-		ELSE
-		    CASE WHEN $regions IS NULL THEN [1] ELSE n.cloud_region IN $regions END
-		END
-		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
-		RETURN n.cloud_provider, CASE WHEN is_kub THEN n.kubernetes_cluster_id ELSE n.cloud_region END, n.node_id`,
-		filterNil(map[string]interface{}{"providers": cloud_provider, "regions": cloud_regions, "kubernetes": cloud_kubernetes}))
+	query := `
+	MATCH (cp: CloudProvider)
+	WHERE CASE WHEN $providers IS NULL THEN true ELSE cp.node_id IN $providers END
+	MATCH (cp) -[:HOSTS]-> (cr: CloudRegion)
+	WHERE CASE WHEN $regions IS NULL THEN true ELSE cr.node_id IN $regions END
+	MATCH (cr) -[:HOSTS]-> (n:Node)
+	WHERE n.active = true
+	AND n.kubernetes_cluster_id = ''
+	` + reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false) + `
+	RETURN n.cloud_provider, n.cloud_region, n.node_id`
+
+	params := filterNil(map[string]interface{}{"providers": cloud_provider, "regions": cloud_regions})
+
+	r, err := tx.Run(query, params)
 	if err != nil {
 		return res, err
 	}
+	// log.Info().Msgf("get hosts query: %s params: %v", query, params)
+
 	records, err := r.Collect()
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		//provider := record.Values[0].(string)
+		if record.Values[1] == nil || record.Values[2] == nil {
+			continue
+		}
+		parent := NodeID(record.Values[1].(string))
+		host_id := NodeID(record.Values[2].(string))
+		if _, present := res[parent]; !present {
+			res[parent] = []NodeStub{}
+		}
+
+		res[parent] = append(res[parent], NodeStub{ID: host_id, Name: string(host_id)})
+	}
+
+	r, err = tx.Run(`
+		MATCH (k:KubernetesCluster) -[:INSTANCIATE]-> (n:Node)
+		WHERE CASE WHEN $kubernetes IS NULL THEN true ELSE k.node_id IN $kubernetes END
+		AND n.active = true
+		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, false)+`
+		RETURN n.cloud_provider, n.kubernetes_cluster_id, n.node_id`,
+		filterNil(map[string]interface{}{"kubernetes": cloud_kubernetes}))
+	if err != nil {
+		return res, err
+	}
+
+	records, err = r.Collect()
 
 	if err != nil {
 		return res, err
@@ -362,31 +440,59 @@ func (nc *neo4jTopologyReporter) getHosts(tx neo4j.Transaction, cloud_provider, 
 		if record.Values[1] == nil || record.Values[2] == nil {
 			continue
 		}
-		region := NodeID(record.Values[1].(string))
+		parent := NodeID(record.Values[1].(string))
 		host_id := NodeID(record.Values[2].(string))
-		if _, present := res[region]; !present {
-			res[region] = []NodeStub{}
+		if _, present := res[parent]; !present {
+			res[parent] = []NodeStub{}
 		}
 
-		res[region] = append(res[region], NodeStub{ID: host_id, Name: string(host_id)})
+		res[parent] = append(res[parent], NodeStub{ID: host_id, Name: string(host_id)})
 	}
 
 	return res, nil
 }
 
-func (nc *neo4jTopologyReporter) getProcesses(tx neo4j.Transaction, hosts []string) (map[NodeID][]NodeStub, error) {
+func (nc *neo4jTopologyReporter) getProcesses(tx neo4j.Transaction, hosts, containers []string) (map[NodeID][]NodeStub, error) {
 	res := map[NodeID][]NodeStub{}
 
 	r, err := tx.Run(`
 		MATCH (n:Node)
-		WHERE n.host_name IN $hosts WITH n
+		WHERE n.node_id IN $hosts WITH n
 		MATCH (n)-[:HOSTS]->(m:Process)
-		RETURN n.node_id, m.node_id, m.name`,
+		RETURN n.node_id, m.node_id, m.node_name`,
 		map[string]interface{}{"hosts": hosts})
 	if err != nil {
 		return res, err
 	}
 	records, err := r.Collect()
+
+	if err != nil {
+		return res, err
+	}
+
+	for _, record := range records {
+		host_id := NodeID(record.Values[0].(string))
+		process_id := NodeID(record.Values[1].(string))
+		process_name := record.Values[2].(string)
+		if _, present := res[host_id]; !present {
+			res[host_id] = []NodeStub{}
+		}
+		res[host_id] = append(res[host_id], NodeStub{ID: process_id, Name: process_name})
+	}
+
+	// Note that this code is overwritting
+	// previous parents in `res` and thus needs to be done
+	// in that specific order
+	r, err = tx.Run(`
+		MATCH (n:Container)
+		WHERE n.node_id IN $containers WITH n
+		MATCH (n)-[:HOSTS]->(m:Process)
+		RETURN n.node_id, m.node_id, m.node_name`,
+		map[string]interface{}{"containers": containers})
+	if err != nil {
+		return res, err
+	}
+	records, err = r.Collect()
 
 	if err != nil {
 		return res, err
@@ -411,9 +517,9 @@ func (nc *neo4jTopologyReporter) getPods(tx neo4j.Transaction, hosts []string, f
 	r, err := tx.Run(`
 		MATCH (n:Pod)
 		`+reporters.ParseFieldFilters2CypherWhereConditions("n", fieldfilters, true)+`
-		MATCH (m:Node{node_id:n.host_node_id})
+		MATCH (m:Node{node_id:n.host_name})
 		WHERE CASE WHEN $hosts IS NULL THEN [1] ELSE m.host_name IN $hosts END
-		RETURN m.host_name, n.node_id, n.kubernetes_name`,
+		RETURN m.host_name, n.node_id, n.node_name`,
 		filterNil(map[string]interface{}{"hosts": hosts}))
 	if err != nil {
 		return res, err
@@ -444,11 +550,12 @@ func (nc *neo4jTopologyReporter) getContainers(tx neo4j.Transaction, hosts, pods
 		MATCH (n:Node)
 		WHERE n.active = true
 		AND (CASE WHEN $hosts IS NULL THEN [1] ELSE n.host_name IN $hosts END
-		OR CASE WHEN $pods IS NULL THEN [1] ELSE n.`+"`docker_label_io.kubernetes.pod.name`"+`IN $pods END)
+		OR CASE WHEN $pods IS NULL THEN [1] ELSE n.pod_name IN $pods END)
 		WITH n
 		MATCH (n)-[:HOSTS]->(m:Container)
+		WHERE m.active = true
 		`+reporters.ParseFieldFilters2CypherWhereConditions("m", fieldfilters, true)+`
-		RETURN coalesce(n.`+"`docker_label_io.kubernetes.pod.name`"+`, n.node_id), m.node_id, m.docker_container_name`,
+		RETURN coalesce(n.pod_name, n.node_id), m.node_id, m.docker_container_name`,
 		filterNil(map[string]interface{}{"hosts": hosts, "pods": pods}))
 	if err != nil {
 		return res, err
@@ -497,6 +604,7 @@ type TopologyFilters struct {
 	KubernetesFilter []string                `json:"kubernetes_filter" required:"true"`
 	HostFilter       []string                `json:"host_filter" required:"true"`
 	PodFilter        []string                `json:"pod_filter" required:"true"`
+	ContainerFilter  []string                `json:"container_filter" required:"true"`
 	FieldFilter      reporters.FieldsFilters `json:"field_filters" required:"true"`
 }
 
@@ -511,6 +619,10 @@ type ThreatFilters struct {
 	IssueType         string              `json:"type" required:"true" enum:"all,vulnerability,secret,malware,compliance,cloud_compliance"`
 	CloudResourceOnly bool                `json:"cloud_resource_only" required:"true"`
 }
+
+const (
+	root_node_id = ""
+)
 
 func (nc *neo4jTopologyReporter) getContainerGraph(ctx context.Context, filters TopologyFilters) (RenderedGraph, error) {
 	res := RenderedGraph{}
@@ -527,7 +639,17 @@ func (nc *neo4jTopologyReporter) getContainerGraph(ctx context.Context, filters 
 	}
 	defer tx.Close()
 
-	res.Containers, err = nc.getContainers(tx, nil, nil, mo.Some(filters.FieldFilter))
+	tmp, err := nc.getContainers(tx, nil, nil, mo.Some(filters.FieldFilter))
+	if err != nil {
+		return res, err
+	}
+	// Regroup all hosts into one root host
+	res.Containers = map[NodeID][]NodeStub{}
+	for _, containers := range tmp {
+		res.Containers[root_node_id] = append(res.Containers[root_node_id], containers...)
+	}
+
+	res.Processes, err = nc.getProcesses(tx, []string{}, filters.ContainerFilter)
 	if err != nil {
 		return res, err
 	}
@@ -556,9 +678,14 @@ func (nc *neo4jTopologyReporter) getPodGraph(ctx context.Context, filters Topolo
 	if err != nil {
 		return res, err
 	}
-	res.Pods, err = nc.getPods(tx, nil, mo.Some(filters.FieldFilter))
+	tmp, err := nc.getPods(tx, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
+	}
+	// Regroup all hosts into one root host
+	res.Pods = map[NodeID][]NodeStub{}
+	for _, pods := range tmp {
+		res.Pods[root_node_id] = append(res.Pods[root_node_id], pods...)
 	}
 	res.Containers, err = nc.getContainers(tx, []string{}, pod_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
@@ -591,11 +718,16 @@ func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters
 	if err != nil {
 		return res, err
 	}
-	res.Kubernetes, err = nc.getCloudKubernetes(tx, nil, mo.Some(filters.FieldFilter))
+	tmp, err := nc.getCloudKubernetes(tx, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
 	}
-	res.Hosts, err = nc.getHosts(tx, []string{}, []string{}, kubernetes_filter, mo.None[reporters.FieldsFilters]())
+	// Regroup all providers into one root provider
+	res.Kubernetes = map[NodeID][]NodeStub{}
+	for _, kubs := range tmp {
+		res.Kubernetes[root_node_id] = append(res.Kubernetes[root_node_id], kubs...)
+	}
+	res.Hosts, err = nc.getHosts(tx, nil, []string{}, kubernetes_filter, mo.None[reporters.FieldsFilters]())
 	if err != nil {
 		return res, err
 	}
@@ -633,11 +765,16 @@ func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters Topol
 	if err != nil {
 		return res, err
 	}
-	res.Hosts, err = nc.getHosts(tx, nil, nil, nil, mo.Some(filters.FieldFilter))
+	tmp, err := nc.getHosts(tx, nil, nil, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
 	}
-	res.Processes, err = nc.getProcesses(tx, host_filter)
+	// Regroup all regions into one root region
+	res.Hosts = map[NodeID][]NodeStub{}
+	for _, hosts := range tmp {
+		res.Hosts[root_node_id] = append(res.Hosts[root_node_id], hosts...)
+	}
+	res.Processes, err = nc.getProcesses(tx, host_filter, []string{})
 	if err != nil {
 		return res, err
 	}
@@ -661,6 +798,7 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyF
 	kubernetes_filter := filters.KubernetesFilter
 	host_filter := filters.HostFilter
 	pod_filter := filters.PodFilter
+	container_filter := filters.ContainerFilter
 
 	session, err := nc.driver.Session(neo4j.AccessModeRead)
 	if err != nil {
@@ -695,7 +833,7 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyF
 	if err != nil {
 		return res, err
 	}
-	res.Processes, err = nc.getProcesses(tx, host_filter)
+	res.Processes, err = nc.getProcesses(tx, host_filter, container_filter)
 	if err != nil {
 		return res, err
 	}
@@ -747,4 +885,7 @@ func NewNeo4jCollector(ctx context.Context) (TopologyReporter, error) {
 	}
 
 	return nc, nil
+}
+
+func (ntp *neo4jTopologyReporter) Close() {
 }

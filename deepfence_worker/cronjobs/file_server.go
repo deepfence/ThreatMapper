@@ -24,7 +24,7 @@ func CleanUpDiagnosisLogs(msg *message.Message) error {
 	cleanup := func(pathPrefix string) {
 		objects := mc.ListFiles(ctx, pathPrefix, false, 0, true)
 		for _, obj := range objects {
-			if obj.Expires.Before(sixHoursAgo) {
+			if obj.LastModified.Before(sixHoursAgo) {
 				err = mc.DeleteFile(ctx, obj.Key, false, minio.RemoveObjectOptions{ForceDelete: true})
 				if err != nil {
 					log.Warn().Msg(err.Error())

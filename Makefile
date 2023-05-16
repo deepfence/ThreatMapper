@@ -1,13 +1,9 @@
 PWD=$(shell pwd)
 
-DEEPFENCE_CONSOLE_DIR=$(PWD)/deepfence_console
 DEEPFENCE_AGENT_DIR=$(PWD)/deepfence_agent
 DEEPFENCE_ROUTER_DIR=$(PWD)/haproxy
 DEEPFENCE_FILE_SERVER_DIR=$(PWD)/deepfence_file_server
 DEEPFENCE_FRONTEND_DIR=$(PWD)/deepfence_frontend
-DEEPFENCE_DIAG_DIR=$(PWD)/deepfence_diagnosis
-DEEPFENCE_FETCHER_DIR=$(DEEPFENCE_CONSOLE_DIR)/fetcher
-VULNERABILITY_MAPPER_DIR=$(PWD)/vulnerability_mapper
 SECRET_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/SecretScanner
 MALWARE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/YaraHunter/
 PACKAGE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/package-scanner
@@ -28,10 +24,6 @@ console_plugins: secretscanner malwarescanner packagescanner
 bootstrap:
 	./bootstrap.sh
 
-#.PHONY: init-container
-#init-container:
-#	docker build -f $(DEEPFENCE_CONSOLE_DIR)/init-container/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_init_ce:$(DF_IMG_TAG) $(DEEPFENCE_CONSOLE_DIR)/init-container
-
 .PHONY: bootstrap-agent-plugins
 bootstrap-agent-plugins:
 	(cd $(DEEPFENCE_AGENT_DIR)/plugins && bash bootstrap.sh)
@@ -42,6 +34,11 @@ bootstrap-agent-plugins:
 agent:
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
 	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" bash build.sh)
+
+.PHONY: deepfenced
+deepfenced:
+	(cd ./deepfence_bootstrapper && make)
+	cp ./deepfence_bootstrapper/deepfence_bootstrapper ./deepfence_agent
 
 .PHONY: redis
 redis:

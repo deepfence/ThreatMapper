@@ -2,43 +2,36 @@ package ingesters
 
 import (
 	"encoding/json"
+
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-func status_scan_field(ts utils.Neo4jScanType) string {
-	switch ts {
-	case utils.NEO4J_SECRET_SCAN:
-		return "secret_scan_status"
-	case utils.NEO4J_VULNERABILITY_SCAN:
-		return "vulnerability_scan_status"
-	case utils.NEO4J_MALWARE_SCAN:
-		return "malware_scan_status"
-	case utils.NEO4J_COMPLIANCE_SCAN:
-		return "compliance_scan_status"
-	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
-		return "cloud_compliance_scan_status"
+var (
+	scanStatusField = map[utils.Neo4jScanType]string{
+		utils.NEO4J_SECRET_SCAN:           "secret_scan_status",
+		utils.NEO4J_VULNERABILITY_SCAN:    "vulnerability_scan_status",
+		utils.NEO4J_MALWARE_SCAN:          "malware_scan_status",
+		utils.NEO4J_COMPLIANCE_SCAN:       "compliance_scan_status",
+		utils.NEO4J_CLOUD_COMPLIANCE_SCAN: "cloud_compliance_scan_status",
 	}
-	return "unknown"
-}
-
-func status_count_field(ts utils.Neo4jScanType) string {
-	switch ts {
-	case utils.NEO4J_SECRET_SCAN:
-		return "secrets_count"
-	case utils.NEO4J_VULNERABILITY_SCAN:
-		return "vulnerabilities_count"
-	case utils.NEO4J_MALWARE_SCAN:
-		return "malwares_count"
-	case utils.NEO4J_COMPLIANCE_SCAN:
-		return "compliances_count"
-	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
-		return "cloud_compliances_count"
+	latestScanIdField = map[utils.Neo4jScanType]string{
+		utils.NEO4J_SECRET_SCAN:           "secret_latest_scan_id",
+		utils.NEO4J_VULNERABILITY_SCAN:    "vulnerability_latest_scan_id",
+		utils.NEO4J_MALWARE_SCAN:          "malware_latest_scan_id",
+		utils.NEO4J_COMPLIANCE_SCAN:       "compliance_latest_scan_id",
+		utils.NEO4J_CLOUD_COMPLIANCE_SCAN: "cloud_compliance_latest_scan_id",
 	}
-	return "unknown"
-}
+	scanCountField = map[utils.Neo4jScanType]string{
+		utils.NEO4J_SECRET_SCAN:           "secrets_count",
+		utils.NEO4J_VULNERABILITY_SCAN:    "vulnerabilities_count",
+		utils.NEO4J_MALWARE_SCAN:          "malwares_count",
+		utils.NEO4J_COMPLIANCE_SCAN:       "compliances_count",
+		utils.NEO4J_CLOUD_COMPLIANCE_SCAN: "cloud_compliances_count",
+	}
+)
 
 func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data []Status) error {
 	return func(ns string, data []Status) error {
@@ -65,16 +58,34 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 		}
 		defer tx.Close()
 
-		if _, err = tx.Run(`
+		query := ""
+		switch ts {
+		default:
+			query = `
 			UNWIND $batch as row
-			MERGE (n:`+string(ts)+`{node_id: row.scan_id})
-			SET n.status = row.scan_status, n.scan_message = row.scan_message, n.updated_at = TIMESTAMP()
+			MERGE (n:` + string(ts) + `{node_id: row.scan_id})
+			SET n.status = row.scan_status, n.status_message = row.scan_message, n.updated_at = TIMESTAMP()
 			WITH n
-			MATCH (n) -[:DETECTED]- (m)
+			OPTIONAL MATCH (n) -[:DETECTED]- (m)
 			WITH n, count(m) as count
 			MATCH (n) -[:SCANNED]- (r)
-			SET r.`+status_count_field(ts)+` = count, r.`+status_scan_field(ts)+`=n.scan_status`,
-			map[string]interface{}{"batch": statusesToMaps(data)}); err != nil {
+			SET r.` + scanCountField[ts] + `=count, r.` + scanStatusField[ts] + `=n.status, r.` + latestScanIdField[ts] + `=n.node_id`
+		case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
+			query = `
+			UNWIND $batch as row
+			MERGE (n:` + string(ts) + `{node_id: row.scan_id})
+			SET n.status = row.scan_status, n.status_message = row.scan_message, n.updated_at = TIMESTAMP()
+			WITH n
+			OPTIONAL MATCH (n) -[:DETECTED]- (m)
+			WITH n, count(m) as total_count
+			OPTIONAL MATCH (n) -[:DETECTED]- (m)
+			WITH  n, total_count, m.resource as arn, count(m) as count
+			OPTIONAL MATCH (n) -[:SCANNED]- (cn) -[:OWNS]- (cr:CloudResource{arn: arn})
+			SET cn.` + scanCountField[ts] + `=total_count, cn.` + scanStatusField[ts] + `=n.status, cn.` + latestScanIdField[ts] + `=n.node_id
+			SET cr.` + scanCountField[ts] + `=count, cr.` + scanStatusField[ts] + `=n.status, cr.` + latestScanIdField[ts] + `=n.node_id`
+		}
+
+		if _, err = tx.Run(query, map[string]interface{}{"batch": statusesToMaps(data)}); err != nil {
 			log.Error().Msgf("Error while updating scan status: %+v", err)
 			return err
 		}

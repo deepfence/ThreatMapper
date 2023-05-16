@@ -72,8 +72,13 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
         contains_filter: { filter_in: {} },
         order_filter: { order_fields: [] },
         match_filter: { filter_in: {} },
+        compare_filter: null,
       },
       in_field_filter: null,
+      window: {
+        offset: 0,
+        size: 0,
+      },
     },
     window: { offset: page * PAGE_SIZE, size: PAGE_SIZE },
   };
@@ -208,6 +213,13 @@ const UniqueVulnerabilities = () => {
         size: 150,
         maxSize: 250,
       }),
+      columnHelper.accessor('cve_caused_by_package', {
+        cell: (info) => info.getValue(),
+        header: () => 'Package',
+        minSize: 100,
+        size: 200,
+        maxSize: 250,
+      }),
       columnHelper.accessor('cve_severity', {
         enableResizing: false,
         cell: (info) => (
@@ -304,17 +316,17 @@ const UniqueVulnerabilities = () => {
     ];
 
     return columns;
-  }, []);
+  }, [searchParams]);
 
   return (
     <div>
       <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
         <Breadcrumb separator={<HiChevronRight />} transparent>
           <BreadcrumbLink>
-            <DFLink to={'/vulnerability'}>VULNERABILITIES</DFLink>
+            <DFLink to={'/vulnerability'}>Vulnerabilities</DFLink>
           </BreadcrumbLink>
           <BreadcrumbLink>
-            <span className="inherit cursor-auto">UNIQUE VULNERABILITIES</span>
+            <span className="inherit cursor-auto">Unique Vulnerabilities</span>
           </BreadcrumbLink>
         </Breadcrumb>
 
@@ -335,6 +347,7 @@ const UniqueVulnerabilities = () => {
                   manualPagination
                   enableRowSelection
                   enableColumnResizing
+                  approximatePagination
                   totalRows={resolvedData.totalRows}
                   pageSize={PAGE_SIZE}
                   pageIndex={resolvedData.currentPage}

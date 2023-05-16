@@ -1,8 +1,7 @@
-import { HiArrowSmRight } from 'react-icons/hi';
-import { IconContext } from 'react-icons/lib';
-import { Card, CircleSpinner } from 'ui-components';
+import { HiOutlineChevronRight } from 'react-icons/hi';
+import { Card, CircleSpinner, Separator } from 'ui-components';
 
-import { DFLink } from '@/components/DFLink';
+import { LinkButton } from '@/components/LinkButton';
 import {
   TopNVulnerableChart,
   TopNVulnerableChartData,
@@ -29,24 +28,23 @@ export const TopNVulnerableCard = ({
   link: string;
 }) => {
   const { mode } = useTheme();
+
   return (
     <Card className="w-full py-2 px-3 flex flex-col relative">
-      <div className="flex">
-        <h4 className="flex-1 text-gray-900 text-md dark:text-white truncate">{title}</h4>
-        <DFLink
-          to={link}
-          className="shrink-0 flex items-center justify-end hover:no-underline active:no-underline focus:no-underline ml-auto mr-2"
-        >
-          <span className="text-xs text-blue-600 dark:text-blue-500">Go to Scans</span>
-          <IconContext.Provider
-            value={{
-              className: 'text-blue-600 dark:text-blue-500 ',
-            }}
-          >
-            <HiArrowSmRight />
-          </IconContext.Provider>
-        </DFLink>
+      <div className="flex items-center pb-2">
+        <h4 className="flex-1 text-gray-900 font-medium text-base dark:text-white truncate">
+          {title}
+        </h4>
+        <div className="flex ml-auto">
+          <LinkButton to={link} sizing="xs">
+            <>
+              Go to Scans&nbsp;
+              <HiOutlineChevronRight />
+            </>
+          </LinkButton>
+        </div>
       </div>
+      <Separator />
       <div className="basis-60">
         {!loading && <TopNVulnerableChart theme={mode} data={data} />}
       </div>

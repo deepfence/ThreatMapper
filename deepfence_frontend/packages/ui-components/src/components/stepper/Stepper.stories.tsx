@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { IconContext } from 'react-icons';
 import { HiBookOpen } from 'react-icons/hi';
 
@@ -7,7 +7,7 @@ import { Step, Stepper } from '@/components/stepper/Stepper';
 export default {
   title: 'Components/Stepper',
   component: Stepper,
-} as ComponentMeta<typeof Stepper>;
+} as Meta<typeof Stepper>;
 
 const Icon = () => (
   <IconContext.Provider
@@ -20,7 +20,7 @@ const Icon = () => (
   </IconContext.Provider>
 );
 
-const Template: ComponentStory<typeof Stepper> = (args) => (
+const Template: StoryFn<typeof Stepper> = (args) => (
   <Stepper>
     <Step indicator={<Icon />} title="Ordered">
       <div>A Laptop</div>
@@ -42,4 +42,6 @@ const Template: ComponentStory<typeof Stepper> = (args) => (
     </Step>
   </Stepper>
 );
-export const Default = Template.bind({});
+export const Default = {
+  render: Template,
+};

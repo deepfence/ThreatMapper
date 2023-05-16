@@ -13,12 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelComputeMetrics } from './ModelComputeMetrics';
-import {
-    ModelComputeMetricsFromJSON,
-    ModelComputeMetricsFromJSONTyped,
-    ModelComputeMetricsToJSON,
-} from './ModelComputeMetrics';
 import type { ModelHost } from './ModelHost';
 import {
     ModelHostFromJSON,
@@ -34,22 +28,10 @@ import {
 export interface ModelKubernetesCluster {
     /**
      * 
-     * @type {{ [key: string]: any; }}
-     * @memberof ModelKubernetesCluster
-     */
-    cloud_metadata: { [key: string]: any; };
-    /**
-     * 
      * @type {Array<ModelHost>}
      * @memberof ModelKubernetesCluster
      */
-    containers: Array<ModelHost> | null;
-    /**
-     * 
-     * @type {ModelComputeMetrics}
-     * @memberof ModelKubernetesCluster
-     */
-    metrics: ModelComputeMetrics;
+    hosts: Array<ModelHost> | null;
     /**
      * 
      * @type {string}
@@ -69,9 +51,7 @@ export interface ModelKubernetesCluster {
  */
 export function instanceOfModelKubernetesCluster(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "cloud_metadata" in value;
-    isInstance = isInstance && "containers" in value;
-    isInstance = isInstance && "metrics" in value;
+    isInstance = isInstance && "hosts" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
 
@@ -88,9 +68,7 @@ export function ModelKubernetesClusterFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         
-        'cloud_metadata': json['cloud_metadata'],
-        'containers': (json['containers'] === null ? null : (json['containers'] as Array<any>).map(ModelHostFromJSON)),
-        'metrics': ModelComputeMetricsFromJSON(json['metrics']),
+        'hosts': (json['hosts'] === null ? null : (json['hosts'] as Array<any>).map(ModelHostFromJSON)),
         'node_id': json['node_id'],
         'node_name': json['node_name'],
     };
@@ -105,9 +83,7 @@ export function ModelKubernetesClusterToJSON(value?: ModelKubernetesCluster | nu
     }
     return {
         
-        'cloud_metadata': value.cloud_metadata,
-        'containers': (value.containers === null ? null : (value.containers as Array<any>).map(ModelHostToJSON)),
-        'metrics': ModelComputeMetricsToJSON(value.metrics),
+        'hosts': (value.hosts === null ? null : (value.hosts as Array<any>).map(ModelHostToJSON)),
         'node_id': value.node_id,
         'node_name': value.node_name,
     };

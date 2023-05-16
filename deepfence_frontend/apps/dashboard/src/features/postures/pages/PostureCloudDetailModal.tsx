@@ -14,8 +14,8 @@ import {
 } from 'ui-components';
 
 import { getSearchApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelCompliance } from '@/api/generated';
-import { CopyToClipboardAsJson } from '@/components/CopyToClipboardIcon';
+import { ApiDocsBadRequestResponse, ModelCloudCompliance } from '@/api/generated';
+import { CopyToClipboard } from '@/components/CopyToClipboard';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { STATUSES } from '@/features/postures/pages/PostureScanResults';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -29,7 +29,7 @@ dayjs.extend(relativeTime);
 type LoaderDataType = {
   error?: string;
   message?: string;
-  data?: ModelCompliance;
+  data?: ModelCloudCompliance;
 };
 
 async function getCompliances(complianceId: string) {
@@ -42,7 +42,7 @@ async function getCompliances(complianceId: string) {
             filters: {
               contains_filter: {
                 filter_in: {
-                  control_id: [complianceId],
+                  node_id: [complianceId],
                 },
               },
               order_filter: {
@@ -51,8 +51,13 @@ async function getCompliances(complianceId: string) {
               match_filter: {
                 filter_in: {},
               },
+              compare_filter: null,
             },
             in_field_filter: null,
+            window: {
+              offset: 0,
+              size: 0,
+            },
           },
           window: {
             offset: 0,
@@ -125,13 +130,13 @@ const Header = () => {
                     <PostureIcon />
                   </span>
                   <span className="text-md text-gray-900 dark:text-white truncate">
-                    {truncate(compliane.test_number ?? '')}
+                    {truncate(compliane.control_id ?? '')}
                   </span>
                   <Badge
                     label={compliane?.compliance_check_type?.toUpperCase()}
                     size="sm"
                   />
-                  <CopyToClipboardAsJson data={compliane} />
+                  <CopyToClipboard data={compliane} />
                 </div>
                 <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7">
                   {dayjs(compliane.updated_at).fromNow() || '-'}
@@ -169,8 +174,8 @@ const DetailsComponent = () => {
               'status',
               'compliance_check_type',
             ];
-            const fixed = pick<ModelCompliance>(compliance, pickBy);
-            const others = omit<ModelCompliance>(compliance, pickBy);
+            const fixed = pick<ModelCloudCompliance>(compliance, pickBy);
+            const others = omit<ModelCloudCompliance>(compliance, pickBy);
             return (
               <div className="text-gray-900 dark:text-gray-300 overflow-auto">
                 <section>

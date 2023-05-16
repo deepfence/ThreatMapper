@@ -69,7 +69,7 @@ func (d *RegistryHarbor) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (d *RegistryHarbor) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
+func (d *RegistryHarbor) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
 	return listImages(d.NonSecret.HarborRegistryURL, d.NonSecret.HarborProjectName,
 		d.NonSecret.HarborUsername, d.Secret.HarborPassword)
 }

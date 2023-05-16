@@ -14,7 +14,7 @@ function enhanceApiNode(apiNode: DetailedNodeSummary): EnhancedDetailedNodeSumma
     id: apiNode.id!,
     label: apiNode.type === 'process' ? getShortLabel(apiNode.label) : apiNode.label,
     df_data: apiNode,
-    img: getNodeImage(apiNode.type ?? ''),
+    img: getNodeImage(apiNode.type ?? '', apiNode.label),
   };
 }
 
@@ -35,7 +35,7 @@ export function convertApiNodesDiffToModelNodesDiff(
       if (!parentId?.length) {
         parentId = 'root';
       }
-      if (!node.pseudo || parentId === 'root') {
+      if (node.type !== 'pseudo' || parentId === 'root') {
         if (!enhancedDiff[parentId])
           enhancedDiff[parentId] = createEmptyEnhancedNodeDiff();
         enhancedDiff[parentId].add.push(enhancedNode);

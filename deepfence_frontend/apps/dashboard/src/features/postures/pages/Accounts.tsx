@@ -1,24 +1,34 @@
 import cx from 'classnames';
-import { Suspense, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { IconContext } from 'react-icons';
 import { FaPlay, FaPlus } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
-import { HiChevronRight, HiRefresh } from 'react-icons/hi';
 import {
+  HiArchive,
+  HiChevronRight,
+  HiDotsVertical,
+  HiDownload,
+  HiOutlineExclamationCircle,
+} from 'react-icons/hi';
+import {
+  ActionFunctionArgs,
   Form,
   generatePath,
   LoaderFunctionArgs,
+  useFetcher,
   useLoaderData,
   useParams,
-  useRevalidator,
   useSearchParams,
 } from 'react-router-dom';
+import { toast } from 'sonner';
 import {
-  Badge,
   Breadcrumb,
   BreadcrumbLink,
   Button,
   Checkbox,
   createColumnHelper,
+  Dropdown,
+  DropdownItem,
   getRowSelectionColumn,
   IconButton,
   Modal,
@@ -28,36 +38,53 @@ import {
   TableSkeleton,
 } from 'ui-components';
 
-import { getCloudNodesApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelCloudNodeAccountInfo } from '@/api/generated';
-import { DFLink } from '@/components/DFLink';
-import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
+import { getCloudNodesApiClient, getScanResultsApiClient } from '@/api/api';
 import {
-  CLOUDS,
-  PostureScanConfigureForm,
-} from '@/components/scan-configure-forms/PostureScanConfigureForm';
-import { ComplianceScanNodeTypeEnum } from '@/types/common';
+  ApiDocsBadRequestResponse,
+  ModelCloudNodeAccountInfo,
+  UtilsReportFiltersNodeTypeEnum,
+  UtilsReportFiltersScanTypeEnum,
+} from '@/api/generated';
+import { ConfigureScanModal } from '@/components/ConfigureScanModal';
+import { DFLink } from '@/components/DFLink';
+import { FilterHeader } from '@/components/forms/FilterHeader';
+import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
+import { CLOUDS } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import { ScanStatusBadge } from '@/components/ScanStatusBadge';
+import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
+import { providersToNameMapping } from '@/features/postures/pages/Posture';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { ComplianceScanNodeTypeEnum, ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { isScanComplete } from '@/utils/scan';
 import { DFAwait } from '@/utils/suspense';
 import { getPageFromSearchParams } from '@/utils/table';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
-// TODO: remove this once we have correct type from api
-const getNodeTypeByProviderName = (providerName: string): ComplianceScanNodeTypeEnum => {
+enum ActionEnumType {
+  DELETE = 'delete',
+}
+
+export const getNodeTypeByProviderName = (
+  providerName: string,
+): ComplianceScanNodeTypeEnum | undefined => {
   switch (providerName) {
     case 'linux':
+    case 'host':
       return ComplianceScanNodeTypeEnum.host;
     case 'aws':
       return ComplianceScanNodeTypeEnum.aws;
     case 'gcp':
       return ComplianceScanNodeTypeEnum.gcp;
+    case 'gcp_org':
+      return ComplianceScanNodeTypeEnum.gcp_org;
     case 'azure':
       return ComplianceScanNodeTypeEnum.azure;
     case 'kubernetes':
       return ComplianceScanNodeTypeEnum.kubernetes_cluster;
     default:
-      throw new Error('Invalid provider name');
+      return;
   }
 };
 
@@ -81,7 +108,56 @@ const getActiveStatus = (searchParams: URLSearchParams) => {
   return searchParams.getAll('active');
 };
 
-async function getAccounts(
+const action = async ({
+  request,
+}: ActionFunctionArgs): Promise<{ success?: boolean } | null> => {
+  const formData = await request.formData();
+  const actionType = formData.get('actionType');
+  const scanId = formData.get('scanId');
+  const scanType = formData.get('scanType');
+  if (!actionType) {
+    throw new Error('Invalid action');
+  }
+
+  if (actionType === ActionEnumType.DELETE) {
+    if (!scanId) {
+      throw new Error('Invalid action');
+    }
+    const result = await makeRequest({
+      apiFunction: getScanResultsApiClient().deleteScanResultsForScanID,
+      apiArgs: [
+        {
+          scanId: scanId.toString(),
+          scanType: scanType as ScanTypeEnum,
+        },
+      ],
+      errorHandler: async (r) => {
+        const error = new ApiError<{
+          message?: string;
+        }>({});
+        if (r.status === 400 || r.status === 409) {
+          const modelResponse: ApiDocsBadRequestResponse = await r.json();
+          return error.set({
+            message: modelResponse.message ?? '',
+          });
+        }
+      },
+    });
+    if (ApiError.isApiError(result)) {
+      if (result.value()?.message !== undefined) {
+        const message =
+          result.value()?.message ?? 'Something went wrong, please try again';
+        toast.error(message);
+      }
+    }
+
+    return {
+      success: true,
+    };
+  }
+  return null;
+};
+export async function getAccounts(
   nodeType: string,
   searchParams: URLSearchParams,
 ): Promise<{
@@ -154,18 +230,225 @@ const loader = async ({
   });
 };
 
+const DeleteConfirmationModal = ({
+  showDialog,
+  scanId,
+  scanType,
+  setShowDialog,
+}: {
+  showDialog: boolean;
+  scanId: string;
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  scanType?: ScanTypeEnum;
+}) => {
+  const fetcher = useFetcher();
+
+  const onDeleteAction = useCallback(
+    (actionType: string) => {
+      const formData = new FormData();
+      formData.append('actionType', actionType);
+      formData.append('scanId', scanId);
+      formData.append('scanType', scanType ?? '');
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    },
+    [scanId, scanType, fetcher],
+  );
+
+  return (
+    <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
+      {!fetcher.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
+            }}
+          >
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            Selected scan will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              size="xs"
+              color="danger"
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteAction(ActionEnumType.DELETE);
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <SuccessModalContent text="Scan deleted successfully!" />
+      )}
+    </Modal>
+  );
+};
+
+const ActionDropdown = ({
+  icon,
+  scanId,
+  scanStatus,
+  nodeType,
+  scanType,
+  nodeId,
+  cloudProvider,
+  setShowDeleteDialog,
+  setScanIdToDelete,
+  setScanTypeToDelete,
+  setSelectedScanType,
+  setScanNodeIds,
+}: {
+  icon: React.ReactNode;
+  scanId?: string;
+  nodeType?: string;
+  scanType: ScanTypeEnum;
+  scanStatus: string;
+  nodeId?: string;
+  cloudProvider?: string;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  setScanIdToDelete: React.Dispatch<React.SetStateAction<string>>;
+  setScanTypeToDelete: React.Dispatch<React.SetStateAction<ScanTypeEnum | undefined>>;
+  setSelectedScanType: React.Dispatch<
+    React.SetStateAction<
+      | typeof ScanTypeEnum.ComplianceScan
+      | typeof ScanTypeEnum.CloudComplianceScan
+      | undefined
+    >
+  >;
+  setScanNodeIds: React.Dispatch<React.SetStateAction<string[] | undefined>>;
+}) => {
+  const fetcher = useFetcher();
+  const [open, setOpen] = useState(false);
+  const { downloadScan } = useDownloadScan();
+
+  const onDownloadAction = useCallback(() => {
+    if (!scanId || !nodeType) return;
+    downloadScan({
+      scanId,
+      nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
+      scanType:
+        (scanType as ScanTypeEnum) === ScanTypeEnum.CloudComplianceScan
+          ? UtilsReportFiltersScanTypeEnum.CloudCompliance
+          : UtilsReportFiltersScanTypeEnum.Compliance,
+    });
+  }, [scanId, nodeType, downloadScan, scanType]);
+
+  useEffect(() => {
+    if (fetcher.state === 'idle') setOpen(false);
+  }, [fetcher]);
+
+  return (
+    <Dropdown
+      triggerAsChild
+      align="end"
+      open={open}
+      onOpenChange={setOpen}
+      content={
+        <>
+          <DropdownItem
+            className="text-sm"
+            onClick={() => {
+              if (!nodeId) {
+                throw new Error('Node id is required to start scan');
+              }
+              const scanType = CLOUDS.includes(
+                cloudProvider as ComplianceScanNodeTypeEnum,
+              )
+                ? ScanTypeEnum.CloudComplianceScan
+                : ScanTypeEnum.ComplianceScan;
+              setSelectedScanType(scanType);
+              setScanNodeIds([nodeId]);
+            }}
+          >
+            <span className="flex items-center gap-x-2 text-blue-600 dark:text-blue-500">
+              <IconContext.Provider
+                value={{ className: 'text-blue-600 dark:text-blue-500' }}
+              >
+                <FaPlay />
+              </IconContext.Provider>
+              Start Scan
+            </span>
+          </DropdownItem>
+          <DropdownItem
+            className={cx('text-sm', {
+              'opacity-60 dark:opacity-30 cursor-default': !isScanComplete(scanStatus),
+            })}
+            onClick={(e) => {
+              if (!isScanComplete(scanStatus)) return;
+              e.preventDefault();
+              onDownloadAction();
+            }}
+          >
+            <span
+              className={cx('flex items-center gap-x-2', {
+                'opacity-60 dark:opacity-30 cursor-not-allowed':
+                  !isScanComplete(scanStatus),
+              })}
+            >
+              <HiDownload />
+              Download Latest Report
+            </span>
+          </DropdownItem>
+          <DropdownItem
+            className={cx('text-sm', {
+              'opacity-60 dark:opacity-30 cursor-not-allowed': !scanId || !nodeType,
+            })}
+            onClick={() => {
+              if (!scanId || !nodeType) return;
+              setScanIdToDelete(scanId);
+              setScanTypeToDelete(scanType);
+              setShowDeleteDialog(true);
+            }}
+          >
+            <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
+              <IconContext.Provider
+                value={{ className: 'text-red-700 dark:text-red-400' }}
+              >
+                <HiArchive />
+              </IconContext.Provider>
+              Delete Latest Scan
+            </span>
+          </DropdownItem>
+        </>
+      }
+    >
+      <Button className="ml-auto" size="xs" color="normal">
+        <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
+          {icon}
+        </IconContext.Provider>
+      </Button>
+    </Dropdown>
+  );
+};
+
 const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const columnHelper = createColumnHelper<ModelCloudNodeAccountInfo>();
-  const [openScanConfigure, setOpenScanConfigure] = useState<{
-    show: boolean;
-    nodeIds: string[];
-  }>({
-    show: false,
-    nodeIds: [],
-  });
+  const [selectedScanType, setSelectedScanType] = useState<
+    typeof ScanTypeEnum.ComplianceScan | typeof ScanTypeEnum.CloudComplianceScan
+  >();
+  const [scanNodeIds, setScanNodeIds] = useState<string[]>();
+  const accounts = data?.accounts ?? [];
+  const totalRows = data?.totalRows ?? 0;
+  const currentPage = data?.currentPage ?? 0;
+  const cloudProvider = accounts[0]?.cloud_provider ?? '';
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [scanIdToDelete, setScanIdToDelete] = useState('');
+  const [scanTypeToDelete, setScanTypeToDelete] = useState<ScanTypeEnum>();
 
+  const nodeType = getNodeTypeByProviderName(cloudProvider);
   const columns = useMemo(
     () => [
       getRowSelectionColumn(columnHelper, {
@@ -176,31 +459,32 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
       }),
       columnHelper.accessor('node_name', {
         cell: (cell) => {
+          const isNeverScan = cell.row.original.last_scan_status?.toLowerCase() === '';
           const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
-            let redirectUrl = generatePath(`/posture/scan-results/:nodeType/:scanId`, {
-              scanId: cell.row.original.last_scan_id || 'dummy',
-              nodeType: cell.row.original.cloud_provider || 'dummy',
-            });
+            let path = '/posture/scan-results/:nodeType/:scanId';
+
             if (
               cell.row.original.cloud_provider &&
               CLOUDS.includes(
                 cell.row.original.cloud_provider as ComplianceScanNodeTypeEnum,
               )
             ) {
-              redirectUrl = generatePath(
-                `/posture/cloud/scan-results/:nodeType/:scanId`,
-                {
-                  scanId: cell.row.original.last_scan_id ?? '',
-                  nodeType: cell.row.original.cloud_provider ?? '',
-                },
-              );
+              path = '/posture/cloud/scan-results/:nodeType/:scanId';
             }
-            return <DFLink to={redirectUrl}>{children}</DFLink>;
+            const redirectUrl = generatePath(`${path}`, {
+              scanId: cell.row.original.last_scan_id ?? '',
+              nodeType: cell.row.original.cloud_provider ?? '',
+            });
+            return isNeverScan ? (
+              <span>{children}</span>
+            ) : (
+              <DFLink to={redirectUrl}>{children}</DFLink>
+            );
           };
           return (
             <WrapperComponent>
               <div className="flex items-center gap-x-2 truncate">
-                <span className="truncate capitalize">{cell.getValue()}</span>
+                <span className="truncate">{cell.getValue()}</span>
               </div>
             </WrapperComponent>
           );
@@ -246,25 +530,7 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
       columnHelper.accessor('last_scan_status', {
         cell: (info) => {
           const value = info.getValue();
-          const unknowStatus =
-            value?.toLowerCase() !== 'complete' &&
-            value?.toLowerCase() !== 'error' &&
-            value;
-
-          return (
-            <Badge
-              label={value?.toUpperCase() || 'UNKNOWN'}
-              className={cx('text-md rounded-lg font-medium text-center w-fit px-2', {
-                'bg-[#0E9F6E]/20 dark:bg-[#0E9F6E]/20 text-[#0E9F6E] dark:text-[#0E9F6E]':
-                  value?.toLowerCase() === 'complete',
-                'bg-[#de425b]/30 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
-                  value?.toLowerCase() === 'error',
-                'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-                  unknowStatus,
-              })}
-              size="sm"
-            />
-          );
+          return <ScanStatusBadge status={value ?? ''} />;
         },
         header: () => 'Status',
         minSize: 50,
@@ -272,146 +538,115 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
         maxSize: 80,
       }),
       columnHelper.display({
-        id: 'startScan',
+        id: 'actions',
         enableSorting: false,
-        cell: (info) => (
-          <Button
-            size="xs"
-            color="normal"
-            startIcon={<FaPlay />}
-            className="text-blue-600 dark:text-blue-500"
-            onClick={() => {
-              if (!info.row.original.node_id) {
-                throw new Error('Node id is required to start scan');
-              }
-              setOpenScanConfigure({
-                show: true,
-                nodeIds: [info.row.original.node_id],
-              });
-            }}
-          >
-            Start scan
-          </Button>
-        ),
-        header: () => 'Start action',
-        minSize: 80,
-        size: 100,
-        maxSize: 120,
+        cell: (cell) => {
+          const scanType = CLOUDS.includes(
+            cell.row.original.cloud_provider as ComplianceScanNodeTypeEnum,
+          )
+            ? ScanTypeEnum.CloudComplianceScan
+            : ScanTypeEnum.ComplianceScan;
+          return (
+            <ActionDropdown
+              icon={<HiDotsVertical />}
+              scanId={cell.row.original.last_scan_id}
+              nodeId={cell.row.original.node_id}
+              nodeType={nodeType}
+              scanType={scanType}
+              cloudProvider={cell.row.original.cloud_provider}
+              scanStatus={cell.row.original.last_scan_status || ''}
+              setScanIdToDelete={setScanIdToDelete}
+              setScanTypeToDelete={setScanTypeToDelete}
+              setShowDeleteDialog={setShowDeleteDialog}
+              setSelectedScanType={setSelectedScanType}
+              setScanNodeIds={setScanNodeIds}
+            />
+          );
+        },
+        header: () => '',
+        minSize: 50,
+        size: 50,
+        maxSize: 50,
+        enableResizing: false,
       }),
     ],
-    [rowSelectionState, searchParams, data?.accounts],
+    [rowSelectionState, searchParams, data],
   );
-  const accounts = data?.accounts ?? [];
-  const totalRows = data?.totalRows ?? 0;
-  const currentPage = data?.currentPage ?? 0;
-  const cloudProvider = accounts[0]?.cloud_provider ?? '';
 
-  if (!cloudProvider) {
-    return null;
-  }
   return (
     <>
       <div>
-        <Modal
-          open={openScanConfigure.show}
-          width="w-full"
-          title="Configure your scan option"
-          onOpenChange={() =>
-            setOpenScanConfigure({
-              show: false,
-              nodeIds: [],
-            })
+        <ConfigureScanModal
+          open={!!selectedScanType}
+          onOpenChange={() => setSelectedScanType(undefined)}
+          scanOptions={
+            selectedScanType && nodeType
+              ? {
+                  showAdvancedOptions: true,
+                  scanType: CLOUDS.includes(cloudProvider as ComplianceScanNodeTypeEnum)
+                    ? ScanTypeEnum.CloudComplianceScan
+                    : ScanTypeEnum.ComplianceScan,
+                  data: {
+                    nodeIds: scanNodeIds ?? [],
+                    nodeType: nodeType,
+                  },
+                }
+              : undefined
           }
-        >
-          <div className="p-4 pt-0">
-            <PostureScanConfigureForm
-              wantAdvanceOptions={true}
-              onSuccess={() => {
-                setOpenScanConfigure({
-                  show: false,
-                  nodeIds: [],
-                });
-              }}
-              data={{
-                nodeType: getNodeTypeByProviderName(cloudProvider),
-                nodeIds: openScanConfigure.nodeIds,
-                images: [],
-              }}
-            />
-          </div>
-        </Modal>
+        />
         <Form>
           {Object.keys(rowSelectionState).length === 0 ? (
-            <div className="text-sm text-gray-400 font-medium mb-3 flex justify-between">
-              No rows selected
-            </div>
+            <>
+              {accounts.length > 0 && (
+                <div className="text-sm text-gray-400 font-medium pt-2 pb-1 flex justify-between">
+                  No rows selected
+                </div>
+              )}
+            </>
           ) : (
             <>
               <div className="mb-1.5 flex gap-x-2">
                 <Button
-                  size="xs"
-                  color="normal"
-                  startIcon={<FaPlay />}
-                  className="text-blue-600 dark:text-blue-500"
-                  onClick={() =>
-                    setOpenScanConfigure({
-                      show: true,
-                      nodeIds: Object.keys(rowSelectionState),
-                    })
-                  }
+                  size="xxs"
+                  color="primary"
+                  outline
+                  onClick={() => {
+                    const scanType = CLOUDS.includes(
+                      cloudProvider as ComplianceScanNodeTypeEnum,
+                    )
+                      ? ScanTypeEnum.CloudComplianceScan
+                      : ScanTypeEnum.ComplianceScan;
+                    setSelectedScanType(scanType);
+                    setScanNodeIds(Object.keys(rowSelectionState));
+                  }}
                 >
-                  Start scan
+                  Start Scan
                 </Button>
               </div>
             </>
           )}
         </Form>
+        {showDeleteDialog && (
+          <DeleteConfirmationModal
+            showDialog={showDeleteDialog}
+            scanId={scanIdToDelete}
+            scanType={scanTypeToDelete}
+            setShowDialog={setShowDeleteDialog}
+          />
+        )}
         <Table
           size="sm"
           data={accounts ?? []}
           columns={columns}
           enableRowSelection
-          enablePagination
-          manualPagination
-          totalRows={totalRows}
-          pageIndex={currentPage}
-          onPaginationChange={(updaterOrValue) => {
-            let newPageIndex = 0;
-            if (typeof updaterOrValue === 'function') {
-              newPageIndex = updaterOrValue({
-                pageIndex: currentPage,
-                pageSize: PAGE_SIZE,
-              }).pageIndex;
-            } else {
-              newPageIndex = updaterOrValue.pageIndex;
-            }
-            setSearchParams((prev) => {
-              prev.set('page', String(newPageIndex));
-              return prev;
-            });
-          }}
-          pageSize={PAGE_SIZE}
           rowSelectionState={rowSelectionState}
           onRowSelectionChange={setRowSelectionState}
           getRowId={(row) => row.node_id ?? ''}
+          enableColumnResizing
+          enableSorting
         />
       </div>
     </>
-  );
-};
-
-const RefreshApiButton = () => {
-  const revalidator = useRevalidator();
-  return (
-    <IconButton
-      className="ml-auto rounded-lg"
-      size="xs"
-      outline
-      color="primary"
-      onClick={() => revalidator.revalidate()}
-      loading={revalidator.state === 'loading'}
-      icon={<HiRefresh />}
-    />
   );
 };
 
@@ -425,15 +660,23 @@ const Accounts = () => {
   const { navigate } = usePageNavigation();
   const isFilterApplied = searchParams.has('');
 
+  const onResetFilters = () => {
+    setSearchParams(() => {
+      return {};
+    });
+  };
+
   return (
     <div>
       <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
         <Breadcrumb separator={<HiChevronRight />} transparent>
           <BreadcrumbLink>
-            <DFLink to={'/posture'}>POSTURE</DFLink>
+            <DFLink to={'/posture'}>Posture</DFLink>
           </BreadcrumbLink>
           <BreadcrumbLink>
-            <span className="inherit cursor-auto">{routeParams.nodeType}</span>
+            <span className="inherit cursor-auto">
+              {providersToNameMapping[routeParams.nodeType]}
+            </span>
           </BreadcrumbLink>
         </Breadcrumb>
         <div className="ml-auto flex relative gap-x-4">
@@ -454,7 +697,6 @@ const Accounts = () => {
                 'Account'}
             </Button>
           </div>
-          <RefreshApiButton />
           <div>
             {isFilterApplied && (
               <span className="absolute -left-[2px] -top-[2px] inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
@@ -464,8 +706,9 @@ const Accounts = () => {
               triggerAsChild
               elementToFocusOnCloseRef={elementToFocusOnClose}
               content={
-                <div className="dark:text-white p-4 w-[300px]">
-                  <div className="flex flex-col gap-y-6">
+                <div className="dark:text-white w-[300px]">
+                  <FilterHeader onReset={onResetFilters} />
+                  <div className="flex flex-col gap-y-6 p-4">
                     <fieldset>
                       <legend className="text-sm font-medium">Active</legend>
                       <div className="flex gap-x-4 mt-1">
@@ -554,5 +797,6 @@ const Accounts = () => {
 
 export const module = {
   loader,
+  action,
   element: <Accounts />,
 };

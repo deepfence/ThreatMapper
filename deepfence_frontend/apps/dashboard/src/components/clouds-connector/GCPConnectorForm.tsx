@@ -2,9 +2,17 @@ import cx from 'classnames';
 import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, Step, Stepper, Typography } from 'ui-components';
 
-import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
+import { CopyToClipboard } from '@/components/CopyToClipboard';
+import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
 
 export const GCPConnectorForm = () => {
+  const { status, data } = useGetApiToken();
+  const dfApiKey =
+    status !== 'idle'
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.api_token === undefined
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.api_token;
   const code = `
 provider "google" {
   project = "<PROJECT_ID>; ex. dev1-123456"
@@ -17,17 +25,24 @@ provider "google-beta" {
 }
 
 module "cloud-scanner_example_single-project" {
-  source            = "deepfence/cloud-scanner/gcp//examples/single-project"
-  version           = "0.1.0"
-  mgmt-console-url  = "<Console URL> eg. XXX.XXX.XX.XXX"
-  mgmt-console-port = "443"
-  deepfence-key     = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+  source              = "deepfence/cloud-scanner/gcp//examples/single-project"
+  version             = "0.2.0"
+  mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
+  mgmt-console-port   = "443"
+  deepfence-key       = "${dfApiKey}"
+  name                = "deepfence-cloud-scanner"
+  image_name          = "[us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:latest](http://us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:latest)"
+}
+
+variable "image" {
+  type        = string
+  default     = "[us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:1.5.0](http://us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:1.5.0)"
 }
 `;
 
   return (
     <Stepper>
-      <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation">
+      <Step indicator={<HiViewGridAdd />} title="Teraform">
         <div className={`${Typography.size.sm} dark:text-gray-200`}>
           Connect to your Google Cloud Account via Teraform. Find out more information by{' '}
           <a
@@ -55,7 +70,7 @@ module "cloud-scanner_example_single-project" {
             >
               {code}
             </pre>
-            <CopyToClipboardIcon text={code} />
+            <CopyToClipboard data={code} asIcon />
           </Card>
         </div>
       </Step>
@@ -75,7 +90,7 @@ module "cloud-scanner_example_single-project" {
               >
                 terraform init
               </pre>
-              <CopyToClipboardIcon text={'terraform init'} className="top-4" />
+              <CopyToClipboard data={'terraform init'} className="top-4" asIcon />
             </div>
             <div className="relative">
               <pre
@@ -87,7 +102,7 @@ module "cloud-scanner_example_single-project" {
               >
                 terraform plan
               </pre>
-              <CopyToClipboardIcon text={'terraform plan'} className="top-0" />
+              <CopyToClipboard data={'terraform plan'} className="top-0" asIcon />
             </div>
             <div className="relative">
               <pre
@@ -99,7 +114,7 @@ module "cloud-scanner_example_single-project" {
               >
                 terraform apply
               </pre>
-              <CopyToClipboardIcon text={'terraform apply'} className="top-0" />
+              <CopyToClipboard data={'terraform apply'} className="top-0" asIcon />
             </div>
           </Card>
         </div>

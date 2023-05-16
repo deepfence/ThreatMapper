@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"strings"
 )
 
 type AlreadyRunningScanError struct {
@@ -99,7 +100,7 @@ func AddNewScan(tx WriteDBTransaction,
 	}
 
 	if _, err = tx.Run(fmt.Sprintf(`
-		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, trigger_action: $action, updated_at: TIMESTAMP()})
+		MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, trigger_action: $action, updated_at: TIMESTAMP(), created_at: TIMESTAMP()})
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCANNED]->(m)`, scan_type, controls.ResourceTypeToNeo4j(node_type)),
 		map[string]interface{}{
@@ -231,7 +232,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		action, _ = json.Marshal(ctl.Action{ID: ctl.StartComplianceScan, RequestPayload: string(internalReq)})
 	}
 	if _, err = tx.Run(fmt.Sprintf(`
-		MERGE (n:%s{node_id: $scan_id, status: $status, retries: 0, updated_at: TIMESTAMP(), benchmark_types: $benchmark_types, trigger_action: $action})
+		MERGE (n:%s{node_id: $scan_id, status: $status, status_message: "", retries: 0, updated_at: TIMESTAMP(), benchmark_types: $benchmark_types, trigger_action: $action, created_at:TIMESTAMP()})
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCANNED]->(m)`, scanType, neo4jNodeType),
 		map[string]interface{}{
@@ -258,7 +259,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	return nil
 }
 
-func UpdateScanStatus(ctx context.Context, scan_type string, scan_id string, status string) error {
+func UpdateScanStatus(ctx context.Context, scan_type string, scan_id string, status, message string) error {
 
 	driver, err := directory.Neo4jClient(ctx)
 
@@ -280,9 +281,10 @@ func UpdateScanStatus(ctx context.Context, scan_type string, scan_id string, sta
 
 	if _, err = tx.Run(fmt.Sprintf(`
 		MERGE (n:%s{node_id: $scan_id})
-		SET n.status = $status, n.updated_at = TIMESTAMP()`, scan_type),
+		SET n.status = $status, n.status_message = $message, n.updated_at = TIMESTAMP()`, scan_type),
 		map[string]interface{}{
 			"scan_id": scan_id,
+			"message": message,
 			"status":  status}); err != nil {
 		return err
 	}

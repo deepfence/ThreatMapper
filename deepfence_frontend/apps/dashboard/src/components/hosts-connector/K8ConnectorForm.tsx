@@ -11,7 +11,8 @@ import {
   Typography,
 } from 'ui-components';
 
-import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
+import { CopyToClipboard } from '@/components/CopyToClipboard';
+import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
 import { containsWhiteSpace } from '@/utils/validator';
 
 const containerRuntimeDropdown = [
@@ -60,65 +61,66 @@ const defaultNamespace = 'deepfence';
 const defaultRuntime = containerRuntimeDropdown[0].name;
 const defaultSocketPath = socketMap.containerd.path;
 
-const InformationForm = memo(
-  ({
-    setInstruction,
-  }: {
-    setInstruction: React.Dispatch<React.SetStateAction<string>>;
-  }) => {
-    const [clusterName, setClusterName] = useState(defaultCluster);
-    const [namespace, setNamespace] = useState(defaultNamespace);
-    const [containerRuntime, setContainerRuntime] = useState(defaultRuntime);
-    const [socketPath, setSocketPath] = useState(defaultSocketPath);
+const InformationForm = ({
+  setInstruction,
+  dfApiKey,
+}: {
+  setInstruction: React.Dispatch<React.SetStateAction<string>>;
+  dfApiKey: string;
+}) => {
+  const [clusterName, setClusterName] = useState(defaultCluster);
+  const [namespace, setNamespace] = useState(defaultNamespace);
+  const [containerRuntime, setContainerRuntime] = useState(defaultRuntime);
+  const [socketPath, setSocketPath] = useState(defaultSocketPath);
 
-    const [command, setCommand] = useState('');
-    const [error, setError] = useState('');
+  const [command, setCommand] = useState('');
+  const [error, setError] = useState('');
 
-    useEffect(() => {
-      if (containsWhiteSpace(clusterName)) {
-        setError('Spaces are not allowed in cluster name.');
-      } else if (containsWhiteSpace(namespace)) {
-        setError('Spaces are not allowed in namespace.');
-      } else if (containsWhiteSpace(socketPath)) {
-        setError('Spaces are not allowed in socket path.');
-      } else {
-        setError('');
-      }
-    }, [clusterName, namespace, socketPath]);
+  useEffect(() => {
+    if (containsWhiteSpace(clusterName)) {
+      setError('Spaces are not allowed in cluster name.');
+    } else if (containsWhiteSpace(namespace)) {
+      setError('Spaces are not allowed in namespace.');
+    } else if (containsWhiteSpace(socketPath)) {
+      setError('Spaces are not allowed in socket path.');
+    } else {
+      setError('');
+    }
+  }, [clusterName, namespace, socketPath]);
 
-    useEffect(() => {
-      setInstruction(command);
-    }, [command]);
+  useEffect(() => {
+    setInstruction(command);
+  }, [command]);
 
-    const onClusterNameChange = (event: React.FormEvent<HTMLInputElement>) => {
-      setClusterName(event.currentTarget.value);
-    };
+  const onClusterNameChange = (event: React.FormEvent<HTMLInputElement>) => {
+    setClusterName(event.currentTarget.value);
+  };
 
-    const onNamespaceChange = (event: React.FormEvent<HTMLInputElement>) => {
-      setNamespace(event.currentTarget.value);
-    };
+  const onNamespaceChange = (event: React.FormEvent<HTMLInputElement>) => {
+    setNamespace(event.currentTarget.value);
+  };
 
-    const onSocketPathChange = (event: React.FormEvent<HTMLInputElement>) => {
-      setSocketPath(event.currentTarget.value);
-    };
+  const onSocketPathChange = (event: React.FormEvent<HTMLInputElement>) => {
+    setSocketPath(event.currentTarget.value);
+  };
 
-    useMemo(() => {
-      const _clusterName = containsWhiteSpace(clusterName) ? defaultCluster : clusterName;
-      const _namespace = containsWhiteSpace(namespace) ? defaultNamespace : namespace;
+  useMemo(() => {
+    const _clusterName = containsWhiteSpace(clusterName) ? defaultCluster : clusterName;
+    const _namespace = containsWhiteSpace(namespace) ? defaultNamespace : namespace;
 
-      const _socketPath = containsWhiteSpace(socketPath)
-        ? socketMap[containerRuntime].path
-        : socketPath;
+    const _socketPath = containsWhiteSpace(socketPath)
+      ? socketMap[containerRuntime].path
+      : socketPath;
 
-      const runtime = containerRuntimeDropdown.find(
-        (runtime) => runtime.name === containerRuntime,
-      );
-      const runtimeCommand = runtime?.value || '';
-      const sockCommand = socketMap[containerRuntime].command || '';
+    const runtime = containerRuntimeDropdown.find(
+      (runtime) => runtime.name === containerRuntime,
+    );
+    const runtimeCommand = runtime?.value || '';
+    const sockCommand = socketMap[containerRuntime].command || '';
 
-      const installCommand = `helm install deepfence-agent deepfence/deepfence-agent \\
+    const installCommand = `helm install deepfence-agent deepfence/deepfence-agent \\
 --set managementConsoleUrl=${window.location.host ?? '---CONSOLE-IP---'} \\
---set deepfenceKey=${localStorage.getItem('dfApiKey') ?? '---DEEPFENCE-API-KEY---'} \\
+--set deepfenceKey=${dfApiKey} \\
 --set image.tag=${''} \\
 --set image.clusterAgentImageTag=${''} \\
 --set clusterName=${_clusterName} \\
@@ -127,81 +129,84 @@ ${sockCommand}="${_socketPath}" \\
 --namespace ${_namespace} \\
 --create-namespace`;
 
-      setCommand(installCommand);
-    }, [clusterName, namespace, socketPath, containerRuntime]);
+    setCommand(installCommand);
+  }, [clusterName, namespace, socketPath, containerRuntime, dfApiKey]);
 
-    return (
-      <div className="p-5">
-        <div className="flex gap-2 mb-4">
-          <div className="w-1/2">
-            <TextInput
-              className="w-3/4"
-              label="Enter Cluster Name"
-              type={'text'}
-              sizing="sm"
-              name="clusterName"
-              onChange={onClusterNameChange}
-              value={clusterName}
-            />
-          </div>
-          <div className="w-1/2">
-            <TextInput
-              className="w-3/4"
-              label="Enter Namespace"
-              type={'text'}
-              sizing="sm"
-              name="namespace"
-              onChange={onNamespaceChange}
-              value={namespace}
-            />
-          </div>
+  return (
+    <div className="p-5">
+      <div className="grid grid-cols-2 mb-4">
+        <div className="max-w-sm">
+          <TextInput
+            label="Enter Cluster Name"
+            type={'text'}
+            sizing="sm"
+            name="clusterName"
+            onChange={onClusterNameChange}
+            value={clusterName}
+          />
         </div>
-        <div className="flex mb-4">
-          <div className="w-1/2">
-            <Select
-              value={containerRuntime}
-              name="region"
-              onChange={(value) => {
-                setContainerRuntime(value);
-                setSocketPath(socketMap[value].path || '');
-              }}
-              label="Select Container Runtime"
-              className="w-3/4"
-              sizing="xs"
-            >
-              {containerRuntimeDropdown.map((runtime) => (
-                <SelectItem value={runtime.name} key={runtime.name} />
-              ))}
-            </Select>
-          </div>
-          <div className="w-1/2">
-            <TextInput
-              className="w-3/4"
-              label="Enter Socket Path"
-              type={'text'}
-              sizing="sm"
-              name="socketPath"
-              value={socketPath}
-              onChange={onSocketPathChange}
-            />
-          </div>
-        </div>
-        <div className={`text-red-600 dark:text-red-500 ${Typography.size.sm}`}>
-          {error && <span>{error}</span>}
+        <div className="max-w-sm">
+          <TextInput
+            label="Enter Namespace"
+            type={'text'}
+            sizing="sm"
+            name="namespace"
+            onChange={onNamespaceChange}
+            value={namespace}
+          />
         </div>
       </div>
-    );
-  },
-);
+      <div className="grid grid-cols-2 mb-4">
+        <div className="max-w-sm">
+          <Select
+            value={containerRuntime}
+            name="region"
+            onChange={(value) => {
+              setContainerRuntime(value);
+              setSocketPath(socketMap[value].path || '');
+            }}
+            label="Select Container Runtime"
+            sizing="xs"
+          >
+            {containerRuntimeDropdown.map((runtime) => (
+              <SelectItem value={runtime.name} key={runtime.name} />
+            ))}
+          </Select>
+        </div>
+        <div className="max-w-sm">
+          <TextInput
+            label="Enter Socket Path"
+            type={'text'}
+            sizing="sm"
+            name="socketPath"
+            value={socketPath}
+            onChange={onSocketPathChange}
+          />
+        </div>
+      </div>
+      <div className={`text-red-600 dark:text-red-500 ${Typography.size.sm}`}>
+        {error && <span>{error}</span>}
+      </div>
+    </div>
+  );
+};
 
 export const K8ConnectorForm = () => {
+  const { status, data } = useGetApiToken();
+  const dfApiKey =
+    status !== 'idle'
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.api_token === undefined
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.api_token;
+
   const [instruction, setInstruction] =
     useState(`helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 helm repo update
 
 helm install deepfence-agent deepfence/deepfence-agent \\
 --set managementConsoleUrl=${window.location.host ?? '---CONSOLE-IP---'} \\
---set deepfenceKey=${localStorage.getItem('dfApiKey') ?? '---DEEPFENCE-API-KEY---'} \\
+--set deepfenceKey=${dfApiKey} \\
 --set image.tag=${''} \\
 --set image.clusterAgentImageTag=${''} \\
 --set clusterName=${defaultCluster} \\
@@ -233,7 +238,7 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
               Enter cluster information:
             </p>
             <Card className="w-full relative ">
-              <InformationForm setInstruction={setInstruction} />
+              <InformationForm setInstruction={setInstruction} dfApiKey={dfApiKey} />
             </Card>
           </div>
         </Step>
@@ -254,11 +259,12 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
                   helm repo add deepfence
                   https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
                 </pre>
-                <CopyToClipboardIcon
-                  text={
+                <CopyToClipboard
+                  data={
                     'helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper'
                   }
                   className="top-4"
+                  asIcon
                 />
               </div>
               <div className="relative">
@@ -271,7 +277,7 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
                 >
                   helm repo update
                 </pre>
-                <CopyToClipboardIcon text={'helm repo update'} className="top-0" />
+                <CopyToClipboard data={'helm repo update'} className="top-0" asIcon />
               </div>
               <div className="relative">
                 <pre
@@ -283,7 +289,7 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
                 >
                   {instruction}
                 </pre>
-                <CopyToClipboardIcon text={instruction} className="top-0" />
+                <CopyToClipboard data={instruction} className="top-0" asIcon />
               </div>
             </Card>
           </div>

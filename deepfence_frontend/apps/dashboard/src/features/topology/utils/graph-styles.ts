@@ -1,15 +1,39 @@
 import { truncate } from 'lodash-es';
 
-import { DetailedNodeSummary } from '@/api/generated';
+import AWSLogo from '@/assets/topology/aws.png';
+import AWSEc2ALBLogo from '@/assets/topology/aws_ec2_application_load_balancer.png';
+import AWSEc2CLBLogo from '@/assets/topology/aws_ec2_classic_load_balancer.png';
+import AWSEc2InstanceLogo from '@/assets/topology/aws_ec2_instance.png';
+import AWSEc2NLBLogo from '@/assets/topology/aws_ec2_network_load_balancer.png';
+import AWSECRRepositoryLogo from '@/assets/topology/aws_ecr_repository.png';
+import AWSECSClusterLogo from '@/assets/topology/aws_ecs_cluster.png';
+import AWSECSTaskLogo from '@/assets/topology/aws_ecs_task.png';
+import AWSLambdaFunctionLogo from '@/assets/topology/aws_lambda_function.png';
+import AWSRDSDBClusterLogo from '@/assets/topology/aws_rds_db_cluster.png';
+import AWSRDSDBInstanceLogo from '@/assets/topology/aws_rds_db_instance.png';
+import AWSS3BucketLogo from '@/assets/topology/aws_s3_bucket.png';
+import AzureLogo from '@/assets/topology/azure.png';
+import AzureAppServiceFunction from '@/assets/topology/azure_app_service_function_app.svg';
+import AzureComputeVirtualMachine from '@/assets/topology/azure_compute_virtual_machine.svg';
+import AzureStorageContainer from '@/assets/topology/azure_storage_container.svg';
+import AzureStorageQueue from '@/assets/topology/azure_storage_queue.svg';
+import AzureStorageTable from '@/assets/topology/azure_storage_table.svg';
 import CloudLogo from '@/assets/topology/cloud.png';
 import CloudRegionLogo from '@/assets/topology/cloud-region.png';
 import ContainerLogo from '@/assets/topology/container.png';
+import ContainerImageLogo from '@/assets/topology/container_image.png';
+import DigitalOceanLogo from '@/assets/topology/digital_ocean.png';
+import GCPLogo from '@/assets/topology/gcp.png';
+import GCPComputeInstance from '@/assets/topology/gcp_compute_instance.svg';
+import GCPDatabaseInstance from '@/assets/topology/gcp_sql_database_instance.svg';
+import GCPStorageBucket from '@/assets/topology/gcp_storage_bucket.svg';
 import HostLogo from '@/assets/topology/host.png';
 import KubernetesClusterLogo from '@/assets/topology/kubernetes-cluster.png';
 import PodLogo from '@/assets/topology/pod.png';
 import ProcessLogo from '@/assets/topology/process.png';
 import TheInternetLogo from '@/assets/topology/the-internet.png';
 import { EnhancedDetailedNodeSummary, G6Node } from '@/features/topology/types/graph';
+import { showContextMenu } from '@/features/topology/utils/expand-collapse';
 
 export const GraphPalette = {
   NODE_OUTLINE_DARK: '#E5E7EB',
@@ -90,7 +114,7 @@ export const nodeStyle = (
   } else if (node?.df_data?.type === 'process') {
     style.fill = COLORS.PROCESS;
   }
-  if (node.df_data?.type && node.df_data.type !== 'pseudo') {
+  if (showContextMenu(node.df_data)) {
     style.cursor = 'pointer';
   }
 
@@ -120,24 +144,95 @@ export const onNodeHover = (item: G6Node, enter: boolean) => {
     }
   }
 };
+export const getNodeImage = (
+  nodeType: string,
+  nodeLabel?: string,
+): string | undefined => {
+  const path = getNodeImagePath(nodeType, nodeLabel);
+  if (path) {
+    return getImageFullPath(path);
+  }
+};
 
-export const getNodeImage = (nodeType: string): string | undefined => {
+const getNodeImagePath = (nodeType: string, nodeLabel?: string): string | undefined => {
   if (nodeType === 'cloud_provider') {
-    return getImageFullPath(CloudLogo);
+    if (nodeLabel && nodeLabel === 'aws') {
+      return AWSLogo;
+    } else if (nodeLabel && nodeLabel === 'digital_ocean') {
+      return DigitalOceanLogo;
+    } else if (nodeLabel && nodeLabel === 'azure') {
+      return AzureLogo;
+    } else if (nodeLabel && nodeLabel === 'gcp') {
+      return GCPLogo;
+    }
+    return CloudLogo;
   } else if (nodeType === 'pseudo') {
-    return getImageFullPath(TheInternetLogo);
+    return TheInternetLogo;
   } else if (nodeType === 'cloud_region') {
-    return getImageFullPath(CloudRegionLogo);
+    return CloudRegionLogo;
   } else if (nodeType === 'host') {
-    return getImageFullPath(HostLogo);
+    return HostLogo;
   } else if (nodeType === 'kubernetes_cluster') {
-    return getImageFullPath(KubernetesClusterLogo);
+    return KubernetesClusterLogo;
   } else if (nodeType === 'container') {
-    return getImageFullPath(ContainerLogo);
+    return ContainerLogo;
+  } else if (nodeType === 'container_image') {
+    return ContainerImageLogo;
   } else if (nodeType === 'pod') {
-    return getImageFullPath(PodLogo);
+    return PodLogo;
   } else if (nodeType === 'process') {
-    return getImageFullPath(ProcessLogo);
+    return ProcessLogo;
+  } else if (nodeType.startsWith('aws_')) {
+    if (nodeType === 'aws_ec2_instance') {
+      return AWSEc2InstanceLogo;
+    } else if (nodeType === 'aws_eks_cluster') {
+      return KubernetesClusterLogo;
+    } else if (nodeType === 'aws_s3_bucket') {
+      return AWSS3BucketLogo;
+    } else if (nodeType === 'aws_lambda_function') {
+      return AWSLambdaFunctionLogo;
+    } else if (nodeType === 'aws_ecs_task') {
+      return AWSECSTaskLogo;
+    } else if (nodeType === 'aws_ecs_cluster') {
+      return AWSECSClusterLogo;
+    } else if (
+      nodeType === 'aws_ecr_repository' ||
+      nodeType === 'aws_ecrpublic_repository'
+    ) {
+      return AWSECRRepositoryLogo;
+    } else if (nodeType === 'aws_rds_db_instance') {
+      return AWSRDSDBInstanceLogo;
+    } else if (nodeType === 'aws_rds_db_cluster') {
+      return AWSRDSDBClusterLogo;
+    } else if (nodeType === 'aws_ec2_application_load_balancer') {
+      return AWSEc2ALBLogo;
+    } else if (nodeType === 'aws_ec2_classic_load_balancer') {
+      return AWSEc2CLBLogo;
+    } else if (nodeType === 'aws_ec2_network_load_balancer') {
+      return AWSEc2NLBLogo;
+    }
+  } else if (nodeType.startsWith('azure_')) {
+    if (nodeType === 'azure_app_service_function_app') {
+      return AzureAppServiceFunction;
+    } else if (nodeType === 'azure_compute_virtual_machine') {
+      return AzureComputeVirtualMachine;
+    } else if (nodeType === 'azure_storage_container') {
+      return AzureStorageContainer;
+    } else if (nodeType === 'azure_storage_queue') {
+      return AzureStorageQueue;
+    } else if (nodeType === 'azure_storage_table') {
+      return AzureStorageTable;
+    }
+  } else if (nodeType.startsWith('gcp_')) {
+    if (nodeType === 'gcp_compute_instance') {
+      return GCPComputeInstance;
+    } else if (nodeType === 'gcp_sql_database_instance') {
+      return GCPDatabaseInstance;
+    } else if (nodeType === 'gcp_storage_bucket') {
+      return GCPStorageBucket;
+    } else if (nodeType === 'gcp_compute_disk') {
+      return GCPComputeInstance;
+    }
   }
 };
 

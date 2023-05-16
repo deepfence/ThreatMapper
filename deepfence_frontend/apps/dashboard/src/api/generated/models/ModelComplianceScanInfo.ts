@@ -27,10 +27,22 @@ export interface ModelComplianceScanInfo {
     benchmark_types: Array<string> | null;
     /**
      * 
+     * @type {number}
+     * @memberof ModelComplianceScanInfo
+     */
+    created_at: number;
+    /**
+     * 
      * @type {string}
      * @memberof ModelComplianceScanInfo
      */
     node_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelComplianceScanInfo
+     */
+    node_name: string;
     /**
      * 
      * @type {string}
@@ -57,6 +69,12 @@ export interface ModelComplianceScanInfo {
     status: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelComplianceScanInfo
+     */
+    status_message: string;
+    /**
+     * 
      * @type {number}
      * @memberof ModelComplianceScanInfo
      */
@@ -69,11 +87,14 @@ export interface ModelComplianceScanInfo {
 export function instanceOfModelComplianceScanInfo(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "benchmark_types" in value;
+    isInstance = isInstance && "created_at" in value;
     isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "node_type" in value;
     isInstance = isInstance && "scan_id" in value;
     isInstance = isInstance && "severity_counts" in value;
     isInstance = isInstance && "status" in value;
+    isInstance = isInstance && "status_message" in value;
     isInstance = isInstance && "updated_at" in value;
 
     return isInstance;
@@ -90,11 +111,14 @@ export function ModelComplianceScanInfoFromJSONTyped(json: any, ignoreDiscrimina
     return {
         
         'benchmark_types': json['benchmark_types'],
+        'created_at': json['created_at'],
         'node_id': json['node_id'],
+        'node_name': json['node_name'],
         'node_type': json['node_type'],
         'scan_id': json['scan_id'],
         'severity_counts': json['severity_counts'],
         'status': json['status'],
+        'status_message': json['status_message'],
         'updated_at': json['updated_at'],
     };
 }
@@ -109,11 +133,14 @@ export function ModelComplianceScanInfoToJSON(value?: ModelComplianceScanInfo | 
     return {
         
         'benchmark_types': value.benchmark_types,
+        'created_at': value.created_at,
         'node_id': value.node_id,
+        'node_name': value.node_name,
         'node_type': value.node_type,
         'scan_id': value.scan_id,
         'severity_counts': value.severity_counts,
         'status': value.status,
+        'status_message': value.status_message,
         'updated_at': value.updated_at,
     };
 }

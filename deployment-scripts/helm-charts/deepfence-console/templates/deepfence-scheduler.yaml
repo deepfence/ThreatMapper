@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepfence-scheduler
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
+      component: scheduler
+  template:
+    metadata:
+      {{- with .Values.scheduler.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
+        component: scheduler
+    spec:
+      serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.scheduler.podSecurityContext | nindent 8 }}
+      containers:
+        - name: scheduler
+          securityContext:
+            {{- toYaml .Values.scheduler.securityContext | nindent 12 }}
+          image: "{{ .Values.scheduler.image.repository }}:{{ .Values.scheduler.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.scheduler.image.pullPolicy }}
+          env:
+            - name: DEEPFENCE_MODE
+              value: scheduler
+          envFrom:
+            - configMapRef:
+                name: "deepfence-console-config"
+            - secretRef:
+                {{- if .Values.redis.create }}
+                name: "deepfence-console-secrets-redis"
+                {{- else }}
+                name: {{ .Values.redis.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.minio.create }}
+                name: "deepfence-console-secrets-minio"
+                {{- else }}
+                name: {{ .Values.minio.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.kafka.create }}
+                name: "deepfence-console-secrets-kafka"
+                {{- else }}
+                name: {{ .Values.kafka.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.postgresql.create }}
+                name: "deepfence-console-secrets-postgresql"
+                {{- else }}
+                name: {{ .Values.postgresql.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.neo4j.create }}
+                name: "deepfence-console-secrets-neo4j"
+                {{- else }}
+                name: {{ .Values.neo4j.secretName }}
+                {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            {{- toYaml .Values.scheduler.resources | nindent 12 }}
+      {{- with .Values.scheduler.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.scheduler.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.scheduler.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-scheduler
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: scheduler
+spec:
+  type: {{ .Values.scheduler.service.type }}
+  ports:
+    - port: {{ .Values.scheduler.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
+    component: scheduler

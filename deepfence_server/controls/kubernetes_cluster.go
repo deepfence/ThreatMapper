@@ -32,6 +32,12 @@ func GetKubernetesClusterActions(ctx context.Context, nodeId string, workNumToEx
 		actions = append(actions, scanActions...)
 	}
 
+	diagnosticLogActions, scan_err := ExtractAgentDiagnosticLogRequests(ctx, nodeId, controls.KubernetesCluster, workNumToExtract)
+	workNumToExtract -= len(diagnosticLogActions)
+	if scan_err == nil {
+		actions = append(actions, diagnosticLogActions...)
+	}
+
 	return actions, []error{scanErr, upgradeErr}
 }
 

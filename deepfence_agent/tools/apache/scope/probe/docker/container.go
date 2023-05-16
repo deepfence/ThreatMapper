@@ -1,10 +1,10 @@
 package docker
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -12,31 +12,15 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/weaveworks/common/mtime"
 	"github.com/weaveworks/scope/report"
 )
 
 // These constants are keys used in node metadata
 const (
-	ContainerName          = report.DockerContainerName
-	ContainerCommand       = report.DockerContainerCommand
 	ContainerPorts         = report.DockerContainerPorts
-	ContainerCreated       = report.DockerContainerCreated
 	ContainerNetworks      = report.DockerContainerNetworks
 	ContainerIPs           = report.DockerContainerIPs
-	ContainerHostname      = report.DockerContainerHostname
 	ContainerIPsWithScopes = report.DockerContainerIPsWithScopes
-	ContainerState         = report.DockerContainerState
-	ContainerStateHuman    = report.DockerContainerStateHuman
-	ContainerUptime        = report.DockerContainerUptime
-	//ContainerRestartCount  = report.DockerContainerRestartCount
-	ContainerNetworkMode = report.DockerContainerNetworkMode
-
-	MemoryUsage   = "docker_memory_usage"
-	CPUTotalUsage = "docker_cpu_total_usage"
-
-	LabelPrefix = report.DockerLabelPrefix
-	EnvPrefix   = report.DockerEnvPrefix
 )
 
 // StatsGatherer gathers container stats
@@ -52,7 +36,8 @@ type Container interface {
 	Image() string
 	PID() int
 	Hostname() string
-	GetNode() report.Node
+	GetNode() report.TopologyNode
+	GetParent() *report.Parent
 	State() string
 	StateString() string
 	HasTTY() bool
@@ -60,7 +45,7 @@ type Container interface {
 	StartGatheringStats(StatsGatherer) error
 	StopGatheringStats()
 	NetworkMode() (string, bool)
-	NetworkInfo([]net.IP) report.Sets
+	NetworkInfo([]net.IP) *report.Sets
 }
 
 type container struct {
@@ -71,7 +56,8 @@ type container struct {
 	pendingStats           [60]docker.Stats
 	numPending             int
 	hostID                 string
-	baseNode               report.Node
+	baseNode               report.Metadata
+	baseParent             report.Parent
 	noCommandLineArguments bool
 	noEnvironmentVariables bool
 }
@@ -84,7 +70,7 @@ func NewContainer(c *docker.Container, hostID string, noCommandLineArguments boo
 		noCommandLineArguments: noCommandLineArguments,
 		noEnvironmentVariables: noEnvironmentVariables,
 	}
-	result.baseNode = result.getBaseNode()
+	result.baseNode, result.baseParent = result.getBaseNode()
 	return result
 }
 
@@ -234,7 +220,7 @@ func addScopeToIPs(hostID string, ips []net.IP) []string {
 	return ipsWithScopes
 }
 
-func (c *container) NetworkInfo(localAddrs []net.IP) report.Sets {
+func (c *container) NetworkInfo(localAddrs []net.IP) *report.Sets {
 	c.RLock()
 	defer c.RUnlock()
 
@@ -297,33 +283,28 @@ func (c *container) NetworkInfo(localAddrs []net.IP) report.Sets {
 	if len(ipsWithScopes) > 0 {
 		s = s.Add(ContainerIPsWithScopes, report.MakeStringSet(ipsWithScopes...))
 	}
-	return s
+	return &s
 }
 
-func (c *container) memoryUsageMetric(stats []docker.Stats) report.Metric {
-	var max float64
-	samples := make([]report.Sample, len(stats))
-	for i, s := range stats {
-		samples[i].Timestamp = s.Read
-		// This code adapted from
-		// https://github.com/docker/cli/blob/5931fb4276be0afdd6e5ed338d1b2b4b9b5ec8e5/cli/command/container/stats_helpers.go
-		// so that Scope numbers match Docker numbers. Page cache is intentionally excluded.
-		samples[i].Value = float64(s.MemoryStats.Usage - s.MemoryStats.Stats.Cache)
-		if float64(s.MemoryStats.Limit) > max {
-			max = float64(s.MemoryStats.Limit)
-		}
+func (c *container) memoryUsageMetric(stats []docker.Stats) (int64, int64) {
+	var max uint64
+	if len(stats) == 0 {
+		return 0, 0
 	}
-	return report.MakeMetric(samples).WithMax(max)
+	s := stats[len(stats)-1]
+	if s.MemoryStats.Limit > max {
+		max = s.MemoryStats.Limit
+	}
+	return int64(s.MemoryStats.Usage - s.MemoryStats.Stats.Cache), int64(max)
 }
 
-func (c *container) cpuPercentMetric(stats []docker.Stats) report.Metric {
+func (c *container) cpuPercentMetric(stats []docker.Stats) (float64, float64) {
 	if len(stats) < 2 {
-		return report.MakeMetric(nil)
+		return 0.0, 0.0
 	}
-
-	samples := make([]report.Sample, len(stats)-1)
+	var recentCpuUsage float64
 	previous := stats[0]
-	for i, s := range stats[1:] {
+	for _, s := range stats[1:] {
 		// Copies from docker/api/client/stats.go#L205
 		cpuDelta := float64(s.CPUStats.CPUUsage.TotalUsage - previous.CPUStats.CPUUsage.TotalUsage)
 		systemDelta := float64(s.CPUStats.SystemCPUUsage - previous.CPUStats.SystemCPUUsage)
@@ -331,27 +312,24 @@ func (c *container) cpuPercentMetric(stats []docker.Stats) report.Metric {
 		if systemDelta > 0.0 && cpuDelta > 0.0 {
 			cpuPercent = (cpuDelta / systemDelta) * 100.0
 		}
-		samples[i].Timestamp = s.Read
-		samples[i].Value = cpuPercent
+		recentCpuUsage = cpuPercent
 		previous = s
 	}
-	return report.MakeMetric(samples).WithMax(100.0)
+	return recentCpuUsage, 100.0
 }
 
-func (c *container) metrics() report.Metrics {
+func (c *container) metrics() (int64, int64, float64, float64) {
 	if c.numPending == 0 {
-		return report.Metrics{}
+		return 0, 0, 0.0, 0.0
 	}
 	pendingStats := c.pendingStats[:c.numPending]
-	result := report.Metrics{
-		MemoryUsage:   c.memoryUsageMetric(pendingStats),
-		CPUTotalUsage: c.cpuPercentMetric(pendingStats),
-	}
+	memoryUsage, memoryMax := c.memoryUsageMetric(pendingStats)
+	cpuUsage, cpuMax := c.cpuPercentMetric(pendingStats)
 
 	// leave one stat to help with relative metrics
 	c.pendingStats[0] = c.pendingStats[c.numPending-1]
 	c.numPending = 1
-	return result
+	return memoryUsage, memoryMax, cpuUsage, cpuMax
 }
 
 func (c *container) env() map[string]string {
@@ -374,63 +352,73 @@ func (c *container) getSanitizedCommand() string {
 	return result
 }
 
-func (c *container) getBaseNode() report.Node {
-	result := report.MakeNodeWith(report.MakeContainerNodeID(c.ID()), map[string]string{
-		ContainerID:       c.ID(),
-		ContainerCreated:  c.container.Created.Format(time.RFC3339Nano),
-		ContainerCommand:  c.getSanitizedCommand(),
-		ImageID:           c.Image(),
-		ContainerHostname: c.Hostname(),
-	}).WithParent(report.ContainerImage, report.MakeContainerImageNodeID(c.Image()))
-	result = result.AddPrefixPropertyList(LabelPrefix, c.container.Config.Labels)
-	if !c.noEnvironmentVariables {
-		result = result.AddPrefixPropertyList(EnvPrefix, c.env())
+func (c *container) getBaseNode() (report.Metadata, report.Parent) {
+	containerName := strings.TrimPrefix(c.container.Name, "/")
+	var dockerLabels string
+	podName := c.container.Config.Labels["io.kubernetes.pod.name"]
+	podUid := c.container.Config.Labels["io.kubernetes.pod.uid"]
+	dockerLabelsJson, err := json.Marshal(c.container.Config.Labels)
+	if err == nil {
+		dockerLabels = string(dockerLabelsJson)
 	}
-	return result
+	result := report.Metadata{
+		Timestamp:              time.Now().UTC().Format(time.RFC3339Nano),
+		NodeID:                 c.ID(),
+		NodeName:               containerName + " / " + c.hostID,
+		NodeType:               report.Container,
+		HostName:               c.hostID,
+		DockerContainerName:    containerName,
+		DockerContainerCreated: c.container.Created.Format(time.RFC3339Nano),
+		DockerContainerCommand: c.getSanitizedCommand(),
+		DockerImageID:          c.Image(),
+		DockerLabels:           dockerLabels,
+		PodName:                podName,
+	}
+	parents := report.Parent{
+		Host:           c.hostID,
+		ContainerImage: c.Image(),
+		Pod:            podUid,
+	}
+	if !c.noEnvironmentVariables {
+		dockerEnvJson, err := json.Marshal(c.env())
+		if err == nil {
+			result.DockerEnv = string(dockerEnvJson)
+		}
+	}
+	return result, parents
 }
 
-func (c *container) GetNode() report.Node {
+func (c *container) GetParent() *report.Parent {
+	return &c.baseParent
+}
+
+func (c *container) GetNode() report.TopologyNode {
 	c.RLock()
 	defer c.RUnlock()
-	latest := map[string]string{
-		ContainerName:       strings.TrimPrefix(c.container.Name, "/"),
-		ContainerState:      c.StateString(),
-		ContainerStateHuman: c.State(),
-	}
+	c.baseNode.Timestamp = time.Now().UTC().Format(time.RFC3339Nano)
+	c.baseNode.DockerContainerState = c.StateString()
+	c.baseNode.DockerContainerStateHuman = c.State()
 
 	if !c.container.State.Paused && c.container.State.Running {
-		uptimeSeconds := int(mtime.Now().Sub(c.container.State.StartedAt) / time.Second)
+		uptimeSeconds := int(time.Now().Sub(c.container.State.StartedAt) / time.Second)
 		networkMode := ""
 		if c.container.HostConfig != nil {
 			networkMode = c.container.HostConfig.NetworkMode
 		}
-		latest[ContainerUptime] = strconv.Itoa(uptimeSeconds)
-		//latest[ContainerRestartCount] = strconv.Itoa(c.container.RestartCount)
-		latest[ContainerNetworkMode] = networkMode
+		c.baseNode.Uptime = uptimeSeconds
+		c.baseNode.DockerContainerNetworkMode = networkMode
 	}
-
-	result := c.baseNode.WithLatests(latest)
-	result = result.WithMetrics(c.metrics())
-	return result
-}
-
-// ExtractContainerIPs returns the list of container IPs given a Node from the Container topology.
-func ExtractContainerIPs(nmd report.Node) []string {
-	v, _ := nmd.Sets.Lookup(ContainerIPs)
-	return []string(v)
-}
-
-// ExtractContainerIPsWithScopes returns the list of container IPs, prepended
-// with scopes, given a Node from the Container topology.
-func ExtractContainerIPsWithScopes(nmd report.Node) []string {
-	v, _ := nmd.Sets.Lookup(ContainerIPsWithScopes)
-	return []string(v)
+	c.baseNode.MemoryUsage, c.baseNode.MemoryMax, c.baseNode.CpuUsage, c.baseNode.CpuMax = c.metrics()
+	return report.TopologyNode{
+		Metadata: c.baseNode,
+		Parents:  c.GetParent(),
+	}
 }
 
 // ContainerIsStopped checks if the docker container is in one of our "stopped" states
 func ContainerIsStopped(c Container) bool {
 	state := c.StateString()
-	return (state != report.StateRunning && state != report.StateRestarting && state != report.StatePaused)
+	return state != report.StateRunning && state != report.StateRestarting && state != report.StatePaused
 }
 
 // splitImageName returns parts of the full image name (image name, image tag).

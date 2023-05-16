@@ -13,6 +13,7 @@ import { LinuxConnectorForm } from '@/components/hosts-connector/LinuxConnectorF
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { RegistriesConnector } from '@/features/onboard/pages/RegistriesConnector';
+import { RegistryType } from '@/types/common';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 const Connector = () => {
@@ -27,14 +28,57 @@ const Connector = () => {
 
   if (ACCOUNT_CONNECTOR.DOCKER === connectorType) {
     title = 'Connect a Docker Container';
+    description = 'Deploy all modules for Deepfence Scanner at your docker container.';
+  } else if (ACCOUNT_CONNECTOR.KUBERNETES === connectorType) {
+    title = 'Connect a Kubernetes Cluster';
+    description = 'Deploy all modules for Deepfence Scanner at your kubernetes cluster.';
+  } else if (ACCOUNT_CONNECTOR.LINUX === connectorType) {
+    title = 'Connect a Linux Machine';
+    description = 'Deploy all modules for Deepfence Scanner at your linux machine.';
+  } else if (ACCOUNT_CONNECTOR.AWS === connectorType) {
+    title = 'Connect to Amazon Web Services';
+    description = 'Deploy all modules for Deepfence Scanner at your aws cloud.';
+  } else if (ACCOUNT_CONNECTOR.AZURE === connectorType) {
+    title = 'Connect to Azure Cloud';
+    description = 'Deploy all modules for Deepfence Scanner at your azure cloud.';
+  } else if (ACCOUNT_CONNECTOR.GCP === connectorType) {
+    title = 'Connect to Google Cloud';
     description =
-      'Deploy all modules for Deepfence Compliance Scanner at your docker container.';
+      'Deploy all modules for Deepfence Scanner at your google cloud platform.';
+  } else if (RegistryType.azure_container_registry === connectorType) {
+    title = 'Connect to Azure Container Registry';
+    description = '';
+  } else if (RegistryType.docker_hub === connectorType) {
+    title = 'Connect to Docker Container Registry';
+    description = '';
+  } else if (RegistryType.docker_private_registry === connectorType) {
+    title = 'Connect to Docker Container Private Registry';
+    description = '';
+  } else if (RegistryType.ecr === connectorType) {
+    title = 'Connect to Amazon Elastic Container Registry';
+    description = '';
+  } else if (RegistryType.gitlab === connectorType) {
+    title = 'Connect to GitLab Registry';
+    description = '';
+  } else if (RegistryType.google_container_registry === connectorType) {
+    title = 'Connect to Google Registry';
+    description = '';
+  } else if (RegistryType.harbor === connectorType) {
+    title = 'Connect to Harbor Registry';
+    description = '';
+  } else if (RegistryType.jfrog_container_registry === connectorType) {
+    title = 'Connect to JFrog Registry';
+    description = '';
+  } else if (RegistryType.quay === connectorType) {
+    title = 'Connect to Quay Registry';
+    description = '';
   }
 
   const isRegistryConnector = useMemo(
-    () => !has(ACCOUNT_CONNECTOR, connectorType),
+    () => has(RegistryType, connectorType),
     [connectorType],
   );
+
   return (
     <div className="w-full">
       <ConnectorHeader title={title} description={description} />
@@ -55,13 +99,13 @@ const Connector = () => {
       ) : (
         <>
           <div className="flex flex-col mb-6 ml-14">
-            <p className="text-xs">
-              Note: After successfully run the commands above, your connector will appear
-              on MyConnector page, then you can perform scanning.
+            <p className="text-xs dark:text-gray-400 text-gray-900">
+              Note: After completing the steps above, your connector will appear on
+              MyConnector page and you will be able to scan them.
             </p>
           </div>
           <div className="flex">
-            <Button onClick={goBack} size="xs">
+            <Button onClick={goBack} size="xs" type="button">
               Go Back
             </Button>
             <div className="flex items-center ml-auto">
@@ -69,7 +113,7 @@ const Connector = () => {
                 color="primary"
                 size="xs"
                 className="ml-auto"
-                type="submit"
+                type="button"
                 onClick={() => {
                   navigate('/onboard/connectors/my-connectors');
                 }}

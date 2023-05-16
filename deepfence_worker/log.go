@@ -19,19 +19,19 @@ func NewZerologWaterMillAdapter(debug, trace bool) *zerologWaterMillAdapter {
 }
 
 func (zerologWaterMillAdapter) Error(msg string, err error, fields watermill.LogFields) {
-	log.Error().Fields(fields).Err(err).Msg(msg)
+	log.Error().CallerSkipFrame(2).Fields(fields).Err(err).Msg(msg)
 }
 func (zerologWaterMillAdapter) Info(msg string, fields watermill.LogFields) {
-	log.Info().Fields(fields).Msg(msg)
+	log.Info().CallerSkipFrame(2).Fields(fields).Msg(msg)
 }
 func (z zerologWaterMillAdapter) Debug(msg string, fields watermill.LogFields) {
 	if z.debug {
-		log.Debug().Fields(fields).Msg(msg)
+		log.Debug().CallerSkipFrame(2).Fields(fields).Msg(msg)
 	}
 }
 func (z zerologWaterMillAdapter) Trace(msg string, fields watermill.LogFields) {
 	if z.trace {
-		log.Trace().Fields(fields).Msg(msg)
+		log.Trace().CallerSkipFrame(2).Fields(fields).Msg(msg)
 	}
 }
 func (z zerologWaterMillAdapter) With(fields watermill.LogFields) watermill.LoggerAdapter {

@@ -144,7 +144,7 @@ func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgres
 	return true, nil
 }
 
-func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.Context, pgClient *postgresqlDb.Queries, ns string) error {
 	bSecret, err := json.Marshal(ra.Secret)
 	if err != nil {
 		return err
@@ -167,7 +167,34 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, pgClient *postgres
 		NonSecret:       bNonSecret, // rawNonSecretJSON,
 		Extras:          bExtras,    // rawExtrasJSON,
 	})
-	return err
+
+	cr, err := pgClient.GetContainerRegistryByTypeAndName(ctx, postgresqlDb.GetContainerRegistryByTypeAndNameParams{
+		RegistryType: ra.RegistryType,
+		Name:         ra.Name,
+	})
+
+	driver, err := directory.Neo4jClient(rContext)
+	if err != nil {
+		return err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	registryID := GetRegistryID(ra.RegistryType, ns)
+	query := `
+		MERGE (m:RegistryAccount{node_id: $node_id })
+		SET m.registry_type = $registry_type,
+		m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`
+	_, err = tx.Run(query, map[string]interface{}{"node_id": registryID, "registry_type": ra.RegistryType, "pgId": cr.ID})
+
+	return tx.Commit()
 }
 
 func (ru *RegistryUpdateReq) UpdateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r int32) error {
@@ -234,18 +261,12 @@ func (ru *RegistryUpdateReq) RegistryExists(ctx context.Context, pgClient *postg
 }
 
 func GetAESValueForEncryption(ctx context.Context, pgClient *postgresqlDb.Queries) (json.RawMessage, error) {
-	s := Setting{}
-	aes, err := s.GetSettingByKey(ctx, pgClient, commonConstants.AES_SECRET)
-	if err != nil {
-		return nil, err
-	}
-	var sValue SettingValue
-	err = json.Unmarshal(aes.Value, &sValue)
+	aes, err := GetSettingByKey(ctx, pgClient, commonConstants.AES_SECRET)
 	if err != nil {
 		return nil, err
 	}
 
-	b, err := json.Marshal(sValue.Value)
+	b, err := json.Marshal(aes.Value.Value)
 	if err != nil {
 		return nil, err
 	}

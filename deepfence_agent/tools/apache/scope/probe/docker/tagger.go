@@ -1,10 +1,6 @@
 package docker
 
 import (
-	"strconv"
-	"strings"
-
-	"github.com/weaveworks/common/mtime"
 	"github.com/weaveworks/scope/probe/process"
 	"github.com/weaveworks/scope/report"
 )
@@ -22,16 +18,17 @@ var (
 
 // Tagger is a tagger that tags Docker container information to process
 // nodes that have a PID.
-// It also populates the SwarmService topology if any of the associated docker labels are present.
 type Tagger struct {
 	registry   Registry
 	procWalker process.Walker
+	hostName   string
 }
 
 // NewTagger returns a usable Tagger.
-func NewTagger(registry Registry, procWalker process.Walker) *Tagger {
+func NewTagger(registry Registry, hostID string, procWalker process.Walker) *Tagger {
 	return &Tagger{
 		registry:   registry,
+		hostName:   hostID,
 		procWalker: procWalker,
 	}
 }
@@ -47,54 +44,18 @@ func (t *Tagger) Tag(r report.Report) (report.Report, error) {
 	}
 	t.tag(tree, &r.Process)
 
-	// Scan for Swarm service info
-	for containerID, container := range r.Container.Nodes {
-		serviceID, ok := container.Latest.Lookup(LabelPrefix + "com.docker.swarm.service.id")
-		if !ok {
-			continue
-		}
-		serviceName, ok := container.Latest.Lookup(LabelPrefix + "com.docker.swarm.service.name")
-		if !ok {
-			continue
-		}
-		stackNamespace, ok := container.Latest.Lookup(LabelPrefix + "com.docker.stack.namespace")
-		if !ok {
-			stackNamespace = DefaultNamespace
-		} else {
-			prefix := stackNamespace + "_"
-			if strings.HasPrefix(serviceName, prefix) {
-				serviceName = serviceName[len(prefix):]
-			}
-		}
-
-		nodeID := report.MakeSwarmServiceNodeID(serviceID)
-		node := report.MakeNodeWith(nodeID, map[string]string{
-			ServiceName:    serviceName,
-			StackNamespace: stackNamespace,
-		})
-		r.SwarmService.AddNode(node)
-
-		r.Container.Nodes[containerID] = container.WithParent(report.SwarmService, nodeID)
-	}
-
 	return r, nil
 }
 
-func (t *Tagger) tag(tree process.Tree, topology *report.Topology) {
-	for _, node := range topology.Nodes {
-		pidStr, ok := node.Latest.Lookup(process.PID)
-		if !ok {
+func (t *Tagger) tag(tree process.Tree, processTopology *report.Topology) {
+	for _, node := range *processTopology {
+		if node.Metadata.Pid < 0 {
 			continue
 		}
-
-		pid, err := strconv.ParseUint(pidStr, 10, 32)
-		if err != nil {
-			continue
-		}
-
 		var (
 			c         Container
-			candidate = int(pid)
+			candidate = node.Metadata.Pid
+			err       error
 		)
 
 		t.registry.LockedPIDLookup(func(lookup func(int) Container) {
@@ -115,16 +76,12 @@ func (t *Tagger) tag(tree process.Tree, topology *report.Topology) {
 			continue
 		}
 
-		node = node.WithLatest(ContainerID, mtime.Now(), c.ID())
-		node = node.WithParent(report.Container, report.MakeContainerNodeID(c.ID()))
-
-		// If we can work out the image name, add a parent tag for it
-		image, ok := t.registry.GetContainerImage(c.Image())
-		if ok && len(image.RepoTags) > 0 {
-			imageName := ImageNameWithoutTag(image.RepoTags[0])
-			node = node.WithParent(report.ContainerImage, report.MakeContainerImageNodeID(imageName))
+		if node.Parents.Host == "" {
+			node.Parents.Host = t.hostName
 		}
-
-		topology.ReplaceNode(node)
+		node.Parents.Container = c.ID()
+		if image, ok := t.registry.GetContainerImage(c.Image()); ok {
+			node.Parents.ContainerImage = image.ID
+		}
 	}
 }

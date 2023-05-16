@@ -1,13 +1,15 @@
 package kubernetes
 
 import (
+	"time"
+
 	"github.com/deepfence/df-utils/cloud_metadata"
 	"github.com/weaveworks/scope/report"
 )
 
 // KubernetesClusterResource represents a Kubernetes cluster
 type KubernetesClusterResource interface {
-	GetNode() report.Node
+	GetNode() report.TopologyNode
 }
 
 type kubernetesCluster struct {
@@ -19,10 +21,20 @@ func NewKubernetesClusterResource() KubernetesClusterResource {
 	return &kubernetesCluster{cloudProvider: cloud_metadata.DetectCloudServiceProvider()}
 }
 
-func (k *kubernetesCluster) GetNode() report.Node {
-	cloudProviderId := report.MakeCloudProviderNodeID(k.cloudProvider)
-	return report.MakeNodeWith(report.MakeKubernetesClusterNodeID(kubernetesClusterId), map[string]string{
-		k8sClusterName:       kubernetesClusterName,
-		report.CloudProvider: k.cloudProvider,
-	}).WithTopology(report.KubernetesCluster).WithParent(report.CloudProvider, cloudProviderId)
+func (k *kubernetesCluster) GetNode() report.TopologyNode {
+	metadata := report.Metadata{
+		Timestamp:             time.Now().UTC().Format(time.RFC3339Nano),
+		NodeID:                kubernetesClusterId,
+		NodeName:              kubernetesClusterName,
+		NodeType:              report.KubernetesCluster,
+		KubernetesClusterId:   kubernetesClusterId,
+		KubernetesClusterName: kubernetesClusterName,
+		CloudProvider:         k.cloudProvider,
+	}
+	return report.TopologyNode{
+		Metadata: metadata,
+		Parents: &report.Parent{
+			CloudProvider: k.cloudProvider,
+		},
+	}
 }

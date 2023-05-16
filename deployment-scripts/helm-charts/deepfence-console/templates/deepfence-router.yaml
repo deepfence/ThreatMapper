@@ -1,0 +1,195 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepfence-router
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: router
+spec:
+  {{- if not .Values.router.autoscaling.enabled }}
+  replicas: {{ .Values.router.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
+      component: router
+  template:
+    metadata:
+      {{- with .Values.router.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
+        component: router
+    spec:
+      serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.router.podSecurityContext | nindent 8 }}
+      containers:
+        - name: router
+          securityContext:
+            {{- toYaml .Values.router.securityContext | nindent 12 }}
+          image: "{{ .Values.router.image.repository }}:{{ .Values.router.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.router.image.pullPolicy }}
+          env:
+            - name: FORCE_HTTPS_REDIRECT
+              value: "{{ .Values.router.forceHttpsRedirect }}"
+          envFrom:
+            - configMapRef:
+                name: "deepfence-console-config"
+            - secretRef:
+                {{- if .Values.redis.create }}
+                name: "deepfence-console-secrets-redis"
+                {{- else }}
+                name: {{ .Values.redis.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.minio.create }}
+                name: "deepfence-console-secrets-minio"
+                {{- else }}
+                name: {{ .Values.minio.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.kafka.create }}
+                name: "deepfence-console-secrets-kafka"
+                {{- else }}
+                name: {{ .Values.kafka.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.postgresql.create }}
+                name: "deepfence-console-secrets-postgresql"
+                {{- else }}
+                name: {{ .Values.postgresql.secretName }}
+                {{- end }}
+            - secretRef:
+                {{- if .Values.neo4j.create }}
+                name: "deepfence-console-secrets-neo4j"
+                {{- else }}
+                name: {{ .Values.neo4j.secretName }}
+                {{- end }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          #     scheme: HTTPS
+          #   initialDelaySeconds: 60
+          #   periodSeconds: 20
+          #   timeoutSeconds: 10
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          #     scheme: HTTPS
+          #   initialDelaySeconds: 60
+          #   periodSeconds: 30
+          #   timeoutSeconds: 10
+          volumeMounts:
+            {{- if or .Values.router.tls.secretName (and .Values.router.tls.cert .Values.router.tls.key) }}
+            - name: certs
+              mountPath: /etc/deepfence/certs
+              readOnly: true
+            {{- end }}
+          resources:
+            {{- toYaml .Values.router.resources | nindent 12 }}
+      volumes:
+        {{- if .Values.router.tls.secretName }}
+        - name: certs
+          secret:
+            secretName: {{ .Values.router.tls.secretName }}
+        {{- else if and .Values.router.tls.cert .Values.router.tls.key }}
+        - name: certs
+          secret:
+            secretName: deepfence-router-tls
+        {{- end }}
+      {{- with .Values.router.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.router.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.router.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deepfence-router
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: router
+  {{- with .Values.router.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.router.service.type }}
+  ports:
+    - port: {{ .Values.router.service.httpsPort }}
+      targetPort: https
+      protocol: TCP
+      name: https
+    - port: {{ .Values.router.service.httpPort }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
+    component: router
+---
+{{- if .Values.router.autoscaling.enabled }}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: deepfence-router
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: router
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: deepfence-router
+  minReplicas: {{ .Values.router.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.router.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.router.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: {{ .Values.router.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.router.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: {{ .Values.router.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}
+---
+{{- if and .Values.router.tls.cert .Values.router.tls.key }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: deepfence-router-tls
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: router
+type: kubernetes.io/tls
+data:
+  tls.crt: |-
+{{ .Values.router.tls.cert | b64enc | indent 4}}
+  tls.key: |-
+{{ .Values.router.tls.key | b64enc | indent 4}}
+{{- end }}

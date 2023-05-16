@@ -1,18 +1,14 @@
-import cx from 'classnames';
 import { useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiDotsVertical } from 'react-icons/hi';
 import { useSearchParams } from 'react-router-dom';
 import {
-  Badge,
   Button,
   createColumnHelper,
   Dropdown,
   DropdownItem,
   getRowSelectionColumn,
   RowSelectionState,
-  Select,
-  SelectItem,
   Table,
 } from 'ui-components';
 
@@ -21,6 +17,7 @@ import {
   ConfigureScanModal,
   ConfigureScanModalProps,
 } from '@/components/ConfigureScanModal';
+import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
@@ -59,19 +56,19 @@ const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
               <div className="w-4 h-4">
                 <VulnerabilityIcon />
               </div>
-              Scan for vulnerability
+              Start Vulnerability Scan
             </DropdownItem>
             <DropdownItem onClick={() => setSelectedScanType(ScanTypeEnum.SecretScan)}>
               <div className="w-4 h-4">
                 <SecretsIcon />
               </div>
-              Scan for secret
+              Start Secret Scan
             </DropdownItem>
             <DropdownItem onClick={() => setSelectedScanType(ScanTypeEnum.MalwareScan)}>
               <div className="w-4 h-4">
                 <MalwareIcon />
               </div>
-              Scan for malware
+              Start Malware Scan
             </DropdownItem>
           </>
         }
@@ -138,65 +135,17 @@ export const RegistryImageTagsTable = ({
       }),
       columnHelper.accessor('vulnerability_scan_status', {
         header: () => 'Vulnerability Scan Status',
-        cell: (info) => (
-          <Badge
-            label={info.getValue().toUpperCase().replaceAll('_', ' ') || 'Not Scanned'}
-            className={cx({
-              'bg-green-100 dark:bg-green-600/10 text-green-600 dark:text-green-400':
-                info.getValue().toLowerCase() === 'completed',
-              'bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400':
-                info.getValue().toLowerCase() === 'error',
-              'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-                info.getValue().toLowerCase() === 'in_progress',
-              'bg-blue-100 dark:bg-blue-600/10 text-neutral-600 dark:text-neutral-400':
-                info.getValue().toLowerCase() === '' ||
-                info.getValue().toLowerCase() === 'not_scanned',
-            })}
-            size="sm"
-          />
-        ),
+        cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
       }),
       columnHelper.accessor('malware_scan_status', {
         header: () => 'Malware Scan Status',
-        cell: (info) => (
-          <Badge
-            label={info.getValue().toUpperCase().replaceAll('_', ' ') || 'Not Scanned'}
-            className={cx({
-              'bg-green-100 dark:bg-green-600/10 text-green-600 dark:text-green-400':
-                info.getValue().toLowerCase() === 'completed',
-              'bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400':
-                info.getValue().toLowerCase() === 'error',
-              'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-                info.getValue().toLowerCase() === 'in_progress',
-              'bg-blue-100 dark:bg-blue-600/10 text-neutral-600 dark:text-neutral-400':
-                info.getValue().toLowerCase() === '' ||
-                info.getValue().toLowerCase() === 'not_scanned',
-            })}
-            size="sm"
-          />
-        ),
+        cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
       }),
       columnHelper.accessor('secret_scan_status', {
         header: () => 'Secrets Scan Status',
-        cell: (info) => (
-          <Badge
-            label={info.getValue().toUpperCase().replaceAll('_', ' ') || 'Not Scanned'}
-            className={cx({
-              'bg-green-100 dark:bg-green-600/10 text-green-600 dark:text-green-400':
-                info.getValue().toLowerCase() === 'completed',
-              'bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400':
-                info.getValue().toLowerCase() === 'error',
-              'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-                info.getValue().toLowerCase() === 'in_progress',
-              'bg-blue-100 dark:bg-blue-600/10 text-neutral-600 dark:text-neutral-400':
-                info.getValue().toLowerCase() === '' ||
-                info.getValue().toLowerCase() === 'not_scanned',
-            })}
-            size="sm"
-          />
-        ),
+        cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
       }),
       columnHelper.display({
@@ -220,46 +169,48 @@ export const RegistryImageTagsTable = ({
   }, [rowSelectionState]);
 
   return (
-    <>
+    <div className="self-start">
       {selectedIds.length === 0 ? (
-        <div className="text-sm text-gray-400 font-medium py-2.5">No rows selected</div>
+        <div className="text-sm text-gray-400 font-medium pb-3">No rows selected</div>
       ) : (
-        <>
-          <div className="mb-2 w-[160px]">
-            <Select
-              placeholder="Select a scan"
-              value={selectedScanType}
-              sizing="xs"
-              onChange={(value) => {
-                setSelectedScanType(
-                  value as
-                    | typeof ScanTypeEnum.VulnerabilityScan
-                    | typeof ScanTypeEnum.SecretScan
-                    | typeof ScanTypeEnum.MalwareScan,
-                );
-              }}
-            >
-              <SelectItem value={ScanTypeEnum.VulnerabilityScan}>
-                <div className="w-4 h-4">
-                  <VulnerabilityIcon />
-                </div>
-                Vulnerability
-              </SelectItem>
-              <SelectItem value={ScanTypeEnum.SecretScan}>
-                <div className="w-4 h-4">
-                  <SecretsIcon />
-                </div>
-                Secret
-              </SelectItem>
-              <SelectItem value={ScanTypeEnum.MalwareScan}>
-                <div className="w-4 h-4">
-                  <MalwareIcon />
-                </div>
-                Malware
-              </SelectItem>
-            </Select>
-          </div>
-        </>
+        <div className="mb-1.5">
+          <Dropdown
+            triggerAsChild={true}
+            align="start"
+            content={
+              <>
+                <DropdownItem
+                  onClick={() => setSelectedScanType(ScanTypeEnum.VulnerabilityScan)}
+                >
+                  <div className="w-4 h-4">
+                    <VulnerabilityIcon />
+                  </div>
+                  Start Vulnerability Scan
+                </DropdownItem>
+                <DropdownItem
+                  onClick={() => setSelectedScanType(ScanTypeEnum.SecretScan)}
+                >
+                  <div className="w-4 h-4">
+                    <SecretsIcon />
+                  </div>
+                  Start Secret Scan
+                </DropdownItem>
+                <DropdownItem
+                  onClick={() => setSelectedScanType(ScanTypeEnum.MalwareScan)}
+                >
+                  <div className="w-4 h-4">
+                    <MalwareIcon />
+                  </div>
+                  Start Malware Scan
+                </DropdownItem>
+              </>
+            }
+          >
+            <Button size="xxs" outline color="primary">
+              Start Scan
+            </Button>
+          </Dropdown>
+        </div>
       )}
 
       <ConfigureScanModal
@@ -280,6 +231,7 @@ export const RegistryImageTagsTable = ({
         manualPagination
         enableColumnResizing
         enableSorting
+        approximatePagination
         totalRows={totalRows}
         pageSize={PAGE_SIZE}
         pageIndex={currentPage}
@@ -301,7 +253,7 @@ export const RegistryImageTagsTable = ({
           });
         }}
       />
-    </>
+    </div>
   );
 };
 

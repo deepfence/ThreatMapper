@@ -1,19 +1,28 @@
 import { Outlet, redirect } from 'react-router-dom';
 
-import { ErrorComponent } from '@/components/error/ErrorComponent';
+import { FiveZeroZero } from '@/components/error/500';
+import { scanPostureApiAction } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { scanMalwareApiAction } from '@/components/scan-configure-forms/MalwareScanConfigureForm';
-import { scanPostureApiAction } from '@/components/scan-configure-forms/PostureScanConfigureForm';
 import { scanSecretApiAction } from '@/components/scan-configure-forms/SecretScanConfigureForm';
 import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/VulnerabilityScanConfigureForm';
+import { module as logoutAction } from '@/features/auth/data-components/logoutAction';
+import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
+import { action as downloadScanAction } from '@/features/common/data-component/downloadScanAction';
+import { getApiTokenApiLoader } from '@/features/common/data-component/getApiTokenApiLoader';
+import { getUserApiLoader } from '@/features/common/data-component/getUserApiLoader';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
+import { searchCloudAccountsApiLoader } from '@/features/common/data-component/searchCloudAccountsApiLoader';
+import { searchCloudFiltersApiLoader } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { searchClustersApiLoader } from '@/features/common/data-component/searchClustersApiLoader';
 import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
 import { searchContainersApiLoader } from '@/features/common/data-component/searchContainersApiLoader';
 import { searchHostsApiLoader } from '@/features/common/data-component/searchHostsApiLoader';
-import { DashboardLayout } from '@/features/dashboard/layouts/DashboardLayout';
-import { dashboardLoader } from '@/features/dashboard/loaders/dashboardLoader';
-import { Dashboard } from '@/features/dashboard/pages/Dashboard';
+import { RootLayout } from '@/features/common/RootLayout';
+import { module as dashboard } from '@/features/dashboard/pages/Dashboard';
+import { module as integrationsLayout } from '@/features/integrations/layouts/IntegrationsLayout';
+import { module as downloadReport } from '@/features/integrations/pages/DownloadReport';
+import { module as addIntegration } from '@/features/integrations/pages/IntegrationAdd';
 import { module as integrations } from '@/features/integrations/pages/Integrations';
 import { module as malware } from '@/features/malwares/pages/Malware';
 import { module as malwareDetails } from '@/features/malwares/pages/MalwareDetailModal';
@@ -59,8 +68,30 @@ import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
 import { module as secretScans } from '@/features/secrets/pages/SecretScans';
+import { module as connectorInstructions } from '@/features/settings/pages/ConnectorInstructions';
+import { module as diagnosticLogs } from '@/features/settings/pages/DiagnosticLogs';
+import { module as emailConfiguration } from '@/features/settings/pages/EmailConfiguration';
+import { module as globalSettings } from '@/features/settings/pages/GlobalSettings';
+import { module as scanHistoryAndDbManagement } from '@/features/settings/pages/ScanHistoryAndDbManagement';
+import { module as scheduledJobs } from '@/features/settings/pages/ScheduledJobs';
+import { module as settings } from '@/features/settings/pages/Settings';
+import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
+import { module as userManagement } from '@/features/settings/pages/UserManagement';
+import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
+import { module as threatGraphLoader } from '@/features/threat-graph/data-components/threatGraphLoader';
+import { module as vulnerabilityTthreatGraphLoader } from '@/features/threat-graph/data-components/vulnerabilityThreatGraphLoader';
+import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
+import { module as nodeDetailsCloudService } from '@/features/topology/data-components/node-details/CloudService';
 import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
+import { module as nodeDetailsContainerImage } from '@/features/topology/data-components/node-details/ContainerImage';
 import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
+import { module as nodeDetailsPod } from '@/features/topology/data-components/node-details/Pod';
+import { module as nodeDetailsProcess } from '@/features/topology/data-components/node-details/Process';
+import { module as topologyTableContainers } from '@/features/topology/data-components/tables/ContainersTable';
+import { module as topologyTableHosts } from '@/features/topology/data-components/tables/HostsTable';
+import { module as topologyTableKunernetesCluster } from '@/features/topology/data-components/tables/KubernetesTable';
+import { module as topologyTablePods } from '@/features/topology/data-components/tables/PodsTable';
+import { module as topologyLoader } from '@/features/topology/data-components/topologyLoader';
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
 import { module as topologyTable } from '@/features/topology/pages/Table';
 import { module as topology } from '@/features/topology/pages/Topology';
@@ -77,6 +108,7 @@ import { CustomRouteObject } from '@/utils/router';
 export const privateRoutes: CustomRouteObject[] = [
   {
     path: '/onboard',
+    errorElement: <FiveZeroZero />,
     element: <OnboardLayout />,
     loader: rootOnboardLoader,
     children: [
@@ -151,16 +183,19 @@ export const privateRoutes: CustomRouteObject[] = [
   },
   {
     path: '/',
-    loader: dashboardLoader,
-    element: <DashboardLayout />,
-    errorElement: <ErrorComponent />,
+    loader: authenticatedRootLoader,
+    element: <RootLayout />,
+    errorElement: <FiveZeroZero />,
     children: [
       {
+        index: true,
+        loader: () => redirect('/dashboard', 302),
+      },
+      {
         path: 'dashboard',
-        element: <Dashboard />,
+        ...dashboard,
         meta: { title: 'Dashboard' },
       },
-      // registries
       {
         path: 'topology',
         ...topology,
@@ -170,12 +205,12 @@ export const privateRoutes: CustomRouteObject[] = [
             loader: () => redirect('/topology/graph', 301),
           },
           {
-            path: 'table',
+            path: 'table/:viewType?',
             ...topologyTable,
             meta: { title: 'Cloud Topology' },
           },
           {
-            path: 'graph',
+            path: 'graph/:viewType?',
             ...topologyGraph,
             meta: { title: 'Cloud Topology' },
           },
@@ -190,10 +225,32 @@ export const privateRoutes: CustomRouteObject[] = [
                 path: 'container/:nodeId',
                 ...nodeDetailsContainer,
               },
+              {
+                path: 'process/:nodeId',
+                ...nodeDetailsProcess,
+              },
+              {
+                path: 'container_image/:nodeId',
+                ...nodeDetailsContainerImage,
+              },
+              {
+                path: 'pod/:nodeId',
+                ...nodeDetailsPod,
+              },
+              {
+                path: 'cloud-service/:nodeType',
+                ...nodeDetailsCloudService,
+              },
             ],
           },
         ],
       },
+      {
+        path: 'threatgraph',
+        ...threatGraph,
+        meta: { title: 'Threat Graph' },
+      },
+      // registries
       {
         path: 'registries',
         ...registries,
@@ -230,6 +287,60 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'integrations',
         ...integrations,
         meta: { title: 'Integrations' },
+      },
+      {
+        path: 'integrations/notifications/add',
+        ...integrationsLayout,
+        meta: { title: 'Add Notifications' },
+        children: [
+          {
+            path: ':integrationType',
+            ...addIntegration,
+            meta: { title: 'Add Integration' },
+          },
+        ],
+      },
+      {
+        path: 'integrations/seim/add',
+        ...integrationsLayout,
+        meta: { title: 'Add Notifications' },
+        children: [
+          {
+            path: ':integrationType',
+            ...addIntegration,
+            meta: { title: 'Add Integration' },
+          },
+        ],
+      },
+      {
+        path: 'integrations/ticketing/add',
+        ...integrationsLayout,
+        meta: { title: 'Add Notifications' },
+        children: [
+          {
+            path: ':integrationType',
+            ...addIntegration,
+            meta: { title: 'Add Integration' },
+          },
+        ],
+      },
+      {
+        path: 'integrations/archival/add',
+        ...integrationsLayout,
+        meta: { title: 'Add Notifications' },
+        children: [
+          {
+            path: ':integrationType',
+            ...addIntegration,
+            meta: { title: 'Add Integration' },
+          },
+        ],
+      },
+      // report
+      {
+        path: 'integrations/download/report',
+        ...downloadReport,
+        meta: { title: 'Download Report' },
       },
       // vulnerability
       {
@@ -375,6 +486,61 @@ export const privateRoutes: CustomRouteObject[] = [
         ...postureAccounts,
         meta: { title: 'Posture Accounts' },
       },
+      {
+        path: 'settings',
+        ...settings,
+        meta: { title: 'Settings' },
+        children: [
+          {
+            index: true,
+            loader: () => redirect('/settings/user-management', 302),
+          },
+          {
+            path: 'diagnostic-logs',
+            ...diagnosticLogs,
+            meta: { title: 'Diagnostic Logs' },
+          },
+          {
+            path: 'user-management',
+            ...userManagement,
+            meta: { title: 'User Management' },
+          },
+          {
+            path: 'scan-history-and-db-management',
+            ...scanHistoryAndDbManagement,
+            meta: { title: 'Scan History & Database Management' },
+          },
+          {
+            path: 'scheduled-jobs',
+            ...scheduledJobs,
+            meta: { title: 'Scheduled Jobs' },
+          },
+          {
+            path: 'user-audit-logs',
+            ...userAuditLogs,
+            meta: { title: 'User Audit Logs' },
+          },
+          {
+            path: 'email-configuration',
+            ...emailConfiguration,
+            meta: { title: 'Email Configuration' },
+          },
+          {
+            path: 'global-settings',
+            ...globalSettings,
+            meta: { title: 'Global Settings' },
+          },
+          {
+            path: 'connection-instructions',
+            ...connectorInstructions,
+            meta: { title: 'Connector Instructions' },
+          },
+          {
+            path: 'connector-instructions/:connectorType',
+            ...connectorInstructions,
+          },
+        ],
+      },
     ],
   },
   {
@@ -396,18 +562,42 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'search/containers/:scanType',
         loader: searchContainersApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
       },
       {
         path: 'search/containerImages/:scanType',
         loader: searchContainerImagesApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
       },
       {
         path: 'search/hosts/:scanType',
         loader: searchHostsApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
       },
       {
         path: 'search/clusters',
         loader: searchClustersApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
+      },
+      {
+        path: 'search/cloud-accounts/:nodeType',
+        loader: searchCloudAccountsApiLoader,
+        shouldRevalidate: ({ formAction }) => {
+          if (formAction) return false;
+          return true;
+        },
       },
       {
         path: 'scan/vulnerability',
@@ -433,6 +623,58 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'list/controls/:nodeType/:checkType',
         loader: listControlsApiLoader,
         action: toggleControlApiAction,
+      },
+      {
+        path: 'search/cloud/filters/:scanId',
+        loader: searchCloudFiltersApiLoader,
+      },
+      {
+        path: 'threat-graph/details-modal',
+        ...threatGraphDetailModal,
+      },
+      {
+        path: 'topology',
+        ...topologyLoader,
+      },
+      {
+        path: 'topology/table/hosts',
+        ...topologyTableHosts,
+      },
+      {
+        path: 'topology/table/kubernetesCluster',
+        ...topologyTableKunernetesCluster,
+      },
+      {
+        path: 'topology/table/containers',
+        ...topologyTableContainers,
+      },
+      {
+        path: 'topology/table/pods',
+        ...topologyTablePods,
+      },
+      {
+        path: 'threat-graph',
+        ...threatGraphLoader,
+      },
+      {
+        path: 'threat-graph-vulnerability',
+        ...vulnerabilityTthreatGraphLoader,
+      },
+      {
+        path: 'auth/logout',
+        ...logoutAction,
+      },
+      {
+        path: 'auth/apiToken',
+        loader: getApiTokenApiLoader,
+      },
+      {
+        path: 'auth/user',
+        loader: getUserApiLoader,
+      },
+      {
+        path: 'scan/download',
+        action: downloadScanAction,
       },
     ],
   },

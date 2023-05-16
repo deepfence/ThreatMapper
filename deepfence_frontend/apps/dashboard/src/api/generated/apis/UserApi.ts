@@ -17,13 +17,14 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
+  ModelApiTokenResponse,
   ModelInviteUserRequest,
   ModelInviteUserResponse,
+  ModelLoginResponse,
   ModelMessageResponse,
   ModelPasswordResetRequest,
   ModelPasswordResetVerifyRequest,
   ModelRegisterInvitedUserRequest,
-  ModelResponseAccessToken,
   ModelUpdateUserIdRequest,
   ModelUpdateUserPasswordRequest,
   ModelUpdateUserRequest,
@@ -35,10 +36,14 @@ import {
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
+    ModelApiTokenResponseFromJSON,
+    ModelApiTokenResponseToJSON,
     ModelInviteUserRequestFromJSON,
     ModelInviteUserRequestToJSON,
     ModelInviteUserResponseFromJSON,
     ModelInviteUserResponseToJSON,
+    ModelLoginResponseFromJSON,
+    ModelLoginResponseToJSON,
     ModelMessageResponseFromJSON,
     ModelMessageResponseToJSON,
     ModelPasswordResetRequestFromJSON,
@@ -47,8 +52,6 @@ import {
     ModelPasswordResetVerifyRequestToJSON,
     ModelRegisterInvitedUserRequestFromJSON,
     ModelRegisterInvitedUserRequestToJSON,
-    ModelResponseAccessTokenFromJSON,
-    ModelResponseAccessTokenToJSON,
     ModelUpdateUserIdRequestFromJSON,
     ModelUpdateUserIdRequestToJSON,
     ModelUpdateUserPasswordRequestFromJSON,
@@ -147,13 +150,13 @@ export interface UserApiInterface {
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    getApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>>;
+    getApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelApiTokenResponse>>>;
 
     /**
      * Get logged in user\'s API Tokens
      * Get User\'s API Tokens
      */
-    getApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>>;
+    getApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelApiTokenResponse>>;
 
     /**
      * Get logged in user information
@@ -185,21 +188,6 @@ export interface UserApiInterface {
      * Get User by User ID
      */
     getUser(requestParameters: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelUser>;
-
-    /**
-     * Get activity logs for all users
-     * @summary Get activity logs for all users
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof UserApiInterface
-     */
-    getUserActivityLogsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>>;
-
-    /**
-     * Get activity logs for all users
-     * Get activity logs for all users
-     */
-    getUserActivityLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>>;
 
     /**
      * Get all users
@@ -240,13 +228,13 @@ export interface UserApiInterface {
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    registerInvitedUserRaw(requestParameters: RegisterInvitedUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>>;
+    registerInvitedUserRaw(requestParameters: RegisterInvitedUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelLoginResponse>>;
 
     /**
      * Register invited user
      * Register Invited User
      */
-    registerInvitedUser(requestParameters: RegisterInvitedUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken>;
+    registerInvitedUser(requestParameters: RegisterInvitedUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelLoginResponse>;
 
     /**
      * First user registration. Further users needs to be invited.
@@ -256,13 +244,13 @@ export interface UserApiInterface {
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    registerUserRaw(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>>;
+    registerUserRaw(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelLoginResponse>>;
 
     /**
      * First user registration. Further users needs to be invited.
      * Register User
      */
-    registerUser(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken>;
+    registerUser(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelLoginResponse>;
 
     /**
      * Reset user\'s API Tokens
@@ -271,13 +259,13 @@ export interface UserApiInterface {
      * @throws {RequiredError}
      * @memberof UserApiInterface
      */
-    resetApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>>;
+    resetApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelApiTokenResponse>>>;
 
     /**
      * Reset user\'s API Tokens
      * Reset User\'s API Tokens
      */
-    resetApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>>;
+    resetApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelApiTokenResponse>>;
 
     /**
      * Request for resetting the password
@@ -445,7 +433,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Get logged in user\'s API Tokens
      * Get User\'s API Tokens
      */
-    async getApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>> {
+    async getApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelApiTokenResponse>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -465,14 +453,14 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse<any>(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelApiTokenResponseFromJSON));
     }
 
     /**
      * Get logged in user\'s API Tokens
      * Get User\'s API Tokens
      */
-    async getApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>> {
+    async getApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelApiTokenResponse>> {
         const response = await this.getApiTokensRaw(initOverrides);
         return await response.value();
     }
@@ -550,42 +538,6 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      */
     async getUser(requestParameters: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelUser> {
         const response = await this.getUserRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Get activity logs for all users
-     * Get activity logs for all users
-     */
-    async getUserActivityLogsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/user-activity-log`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse<any>(response);
-    }
-
-    /**
-     * Get activity logs for all users
-     * Get activity logs for all users
-     */
-    async getUserActivityLogs(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>> {
-        const response = await this.getUserActivityLogsRaw(initOverrides);
         return await response.value();
     }
 
@@ -668,7 +620,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Register invited user
      * Register Invited User
      */
-    async registerInvitedUserRaw(requestParameters: RegisterInvitedUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>> {
+    async registerInvitedUserRaw(requestParameters: RegisterInvitedUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelLoginResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -683,14 +635,14 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
             body: ModelRegisterInvitedUserRequestToJSON(requestParameters.modelRegisterInvitedUserRequest),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelResponseAccessTokenFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelLoginResponseFromJSON(jsonValue));
     }
 
     /**
      * Register invited user
      * Register Invited User
      */
-    async registerInvitedUser(requestParameters: RegisterInvitedUserRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken> {
+    async registerInvitedUser(requestParameters: RegisterInvitedUserRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelLoginResponse> {
         const response = await this.registerInvitedUserRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -699,7 +651,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * First user registration. Further users needs to be invited.
      * Register User
      */
-    async registerUserRaw(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelResponseAccessToken>> {
+    async registerUserRaw(requestParameters: RegisterUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelLoginResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -714,14 +666,14 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
             body: ModelUserRegisterRequestToJSON(requestParameters.modelUserRegisterRequest),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelResponseAccessTokenFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelLoginResponseFromJSON(jsonValue));
     }
 
     /**
      * First user registration. Further users needs to be invited.
      * Register User
      */
-    async registerUser(requestParameters: RegisterUserRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelResponseAccessToken> {
+    async registerUser(requestParameters: RegisterUserRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelLoginResponse> {
         const response = await this.registerUserRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -730,7 +682,7 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
      * Reset user\'s API Tokens
      * Reset User\'s API Tokens
      */
-    async resetApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<object>>> {
+    async resetApiTokensRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelApiTokenResponse>>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -750,14 +702,14 @@ export class UserApi extends runtime.BaseAPI implements UserApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse<any>(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelApiTokenResponseFromJSON));
     }
 
     /**
      * Reset user\'s API Tokens
      * Reset User\'s API Tokens
      */
-    async resetApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<object>> {
+    async resetApiTokens(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelApiTokenResponse>> {
         const response = await this.resetApiTokensRaw(initOverrides);
         return await response.value();
     }

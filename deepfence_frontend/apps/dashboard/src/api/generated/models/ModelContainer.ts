@@ -13,12 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelComputeMetrics } from './ModelComputeMetrics';
-import {
-    ModelComputeMetricsFromJSON,
-    ModelComputeMetricsFromJSONTyped,
-    ModelComputeMetricsToJSON,
-} from './ModelComputeMetrics';
 import type { ModelContainerImage } from './ModelContainerImage';
 import {
     ModelContainerImageFromJSON,
@@ -40,28 +34,34 @@ import {
 export interface ModelContainer {
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof ModelContainer
      */
-    cloud_compliance_scan_status: string;
+    cpu_max: number;
     /**
      * 
      * @type {number}
      * @memberof ModelContainer
      */
-    cloud_compliances_count: number;
+    cpu_usage: number;
     /**
      * 
      * @type {string}
      * @memberof ModelContainer
      */
-    compliance_scan_status: string;
+    docker_container_command: string;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof ModelContainer
      */
-    compliances_count: number;
+    docker_container_created: string;
+    /**
+     * 
+     * @type {Array<any>}
+     * @memberof ModelContainer
+     */
+    docker_container_ips: Array<any> | null;
     /**
      * 
      * @type {string}
@@ -70,10 +70,40 @@ export interface ModelContainer {
     docker_container_name: string;
     /**
      * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    docker_container_network_mode: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    docker_container_networks: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    docker_container_ports: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    docker_container_state: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    docker_container_state_human: string;
+    /**
+     * 
      * @type {{ [key: string]: any; }}
      * @memberof ModelContainer
      */
-    docker_labels: { [key: string]: any; };
+    docker_labels: { [key: string]: any; } | null;
     /**
      * 
      * @type {string}
@@ -91,6 +121,12 @@ export interface ModelContainer {
      * @type {string}
      * @memberof ModelContainer
      */
+    malware_latest_scan_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
     malware_scan_status: string;
     /**
      * 
@@ -100,16 +136,16 @@ export interface ModelContainer {
     malwares_count: number;
     /**
      * 
-     * @type {{ [key: string]: any; }}
+     * @type {number}
      * @memberof ModelContainer
      */
-    metadata: { [key: string]: any; };
+    memory_max: number;
     /**
      * 
-     * @type {ModelComputeMetrics}
+     * @type {number}
      * @memberof ModelContainer
      */
-    metrics: ModelComputeMetrics;
+    memory_usage: number;
     /**
      * 
      * @type {string}
@@ -133,6 +169,12 @@ export interface ModelContainer {
      * @type {string}
      * @memberof ModelContainer
      */
+    secret_latest_scan_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
     secret_scan_status: string;
     /**
      * 
@@ -145,7 +187,19 @@ export interface ModelContainer {
      * @type {number}
      * @memberof ModelContainer
      */
+    uptime: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelContainer
+     */
     vulnerabilities_count: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelContainer
+     */
+    vulnerability_latest_scan_id: string;
     /**
      * 
      * @type {string}
@@ -159,24 +213,34 @@ export interface ModelContainer {
  */
 export function instanceOfModelContainer(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "cloud_compliance_scan_status" in value;
-    isInstance = isInstance && "cloud_compliances_count" in value;
-    isInstance = isInstance && "compliance_scan_status" in value;
-    isInstance = isInstance && "compliances_count" in value;
+    isInstance = isInstance && "cpu_max" in value;
+    isInstance = isInstance && "cpu_usage" in value;
+    isInstance = isInstance && "docker_container_command" in value;
+    isInstance = isInstance && "docker_container_created" in value;
+    isInstance = isInstance && "docker_container_ips" in value;
     isInstance = isInstance && "docker_container_name" in value;
+    isInstance = isInstance && "docker_container_network_mode" in value;
+    isInstance = isInstance && "docker_container_networks" in value;
+    isInstance = isInstance && "docker_container_ports" in value;
+    isInstance = isInstance && "docker_container_state" in value;
+    isInstance = isInstance && "docker_container_state_human" in value;
     isInstance = isInstance && "docker_labels" in value;
     isInstance = isInstance && "host_name" in value;
     isInstance = isInstance && "image" in value;
+    isInstance = isInstance && "malware_latest_scan_id" in value;
     isInstance = isInstance && "malware_scan_status" in value;
     isInstance = isInstance && "malwares_count" in value;
-    isInstance = isInstance && "metadata" in value;
-    isInstance = isInstance && "metrics" in value;
+    isInstance = isInstance && "memory_max" in value;
+    isInstance = isInstance && "memory_usage" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "processes" in value;
+    isInstance = isInstance && "secret_latest_scan_id" in value;
     isInstance = isInstance && "secret_scan_status" in value;
     isInstance = isInstance && "secrets_count" in value;
+    isInstance = isInstance && "uptime" in value;
     isInstance = isInstance && "vulnerabilities_count" in value;
+    isInstance = isInstance && "vulnerability_latest_scan_id" in value;
     isInstance = isInstance && "vulnerability_scan_status" in value;
 
     return isInstance;
@@ -192,24 +256,34 @@ export function ModelContainerFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
-        'cloud_compliance_scan_status': json['cloud_compliance_scan_status'],
-        'cloud_compliances_count': json['cloud_compliances_count'],
-        'compliance_scan_status': json['compliance_scan_status'],
-        'compliances_count': json['compliances_count'],
+        'cpu_max': json['cpu_max'],
+        'cpu_usage': json['cpu_usage'],
+        'docker_container_command': json['docker_container_command'],
+        'docker_container_created': json['docker_container_created'],
+        'docker_container_ips': json['docker_container_ips'],
         'docker_container_name': json['docker_container_name'],
+        'docker_container_network_mode': json['docker_container_network_mode'],
+        'docker_container_networks': json['docker_container_networks'],
+        'docker_container_ports': json['docker_container_ports'],
+        'docker_container_state': json['docker_container_state'],
+        'docker_container_state_human': json['docker_container_state_human'],
         'docker_labels': json['docker_labels'],
         'host_name': json['host_name'],
         'image': ModelContainerImageFromJSON(json['image']),
+        'malware_latest_scan_id': json['malware_latest_scan_id'],
         'malware_scan_status': json['malware_scan_status'],
         'malwares_count': json['malwares_count'],
-        'metadata': json['metadata'],
-        'metrics': ModelComputeMetricsFromJSON(json['metrics']),
+        'memory_max': json['memory_max'],
+        'memory_usage': json['memory_usage'],
         'node_id': json['node_id'],
         'node_name': json['node_name'],
         'processes': (json['processes'] === null ? null : (json['processes'] as Array<any>).map(ModelProcessFromJSON)),
+        'secret_latest_scan_id': json['secret_latest_scan_id'],
         'secret_scan_status': json['secret_scan_status'],
         'secrets_count': json['secrets_count'],
+        'uptime': json['uptime'],
         'vulnerabilities_count': json['vulnerabilities_count'],
+        'vulnerability_latest_scan_id': json['vulnerability_latest_scan_id'],
         'vulnerability_scan_status': json['vulnerability_scan_status'],
     };
 }
@@ -223,24 +297,34 @@ export function ModelContainerToJSON(value?: ModelContainer | null): any {
     }
     return {
         
-        'cloud_compliance_scan_status': value.cloud_compliance_scan_status,
-        'cloud_compliances_count': value.cloud_compliances_count,
-        'compliance_scan_status': value.compliance_scan_status,
-        'compliances_count': value.compliances_count,
+        'cpu_max': value.cpu_max,
+        'cpu_usage': value.cpu_usage,
+        'docker_container_command': value.docker_container_command,
+        'docker_container_created': value.docker_container_created,
+        'docker_container_ips': value.docker_container_ips,
         'docker_container_name': value.docker_container_name,
+        'docker_container_network_mode': value.docker_container_network_mode,
+        'docker_container_networks': value.docker_container_networks,
+        'docker_container_ports': value.docker_container_ports,
+        'docker_container_state': value.docker_container_state,
+        'docker_container_state_human': value.docker_container_state_human,
         'docker_labels': value.docker_labels,
         'host_name': value.host_name,
         'image': ModelContainerImageToJSON(value.image),
+        'malware_latest_scan_id': value.malware_latest_scan_id,
         'malware_scan_status': value.malware_scan_status,
         'malwares_count': value.malwares_count,
-        'metadata': value.metadata,
-        'metrics': ModelComputeMetricsToJSON(value.metrics),
+        'memory_max': value.memory_max,
+        'memory_usage': value.memory_usage,
         'node_id': value.node_id,
         'node_name': value.node_name,
         'processes': (value.processes === null ? null : (value.processes as Array<any>).map(ModelProcessToJSON)),
+        'secret_latest_scan_id': value.secret_latest_scan_id,
         'secret_scan_status': value.secret_scan_status,
         'secrets_count': value.secrets_count,
+        'uptime': value.uptime,
         'vulnerabilities_count': value.vulnerabilities_count,
+        'vulnerability_latest_scan_id': value.vulnerability_latest_scan_id,
         'vulnerability_scan_status': value.vulnerability_scan_status,
     };
 }

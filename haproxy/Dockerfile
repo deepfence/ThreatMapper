@@ -22,7 +22,8 @@ ENV ENABLE_AUTH=true \
     API_SERVICE_PORT=8080 \
     FILE_SERVER_HOST=deepfence-file-server \
     FILE_SERVER_PORT=9000 \
-    CUSTOMER_UNIQUE_ID=""
+    CUSTOMER_UNIQUE_ID="" \
+    FORCE_HTTPS_REDIRECT="true"
 
 COPY --from=minica-builder /go/minica.pem /usr/local/etc/haproxy/deepfence.crt
 COPY --from=minica-builder /go/minica-key.pem /usr/local/etc/haproxy/deepfence.key

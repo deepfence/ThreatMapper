@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta } from '@storybook/react';
 
 import Switch from '@/components/switch/Switch';
 
@@ -8,27 +8,31 @@ export default {
   argTypes: {
     onCheckedChange: { action: 'onCheckedChange' },
   },
-} as ComponentMeta<typeof Switch>;
+} as Meta<typeof Switch>;
 
-const Template: ComponentStory<typeof Switch> = (args) => <Switch {...args} />;
-
-export const DefaultSM = Template.bind({});
-DefaultSM.args = {
-  label: 'Toggle',
-};
-export const DefaultMd = Template.bind({});
-DefaultMd.args = {
-  label: 'Toggle',
-  size: 'md',
+export const DefaultSM = {
+  args: {
+    label: 'Toggle',
+  },
 };
 
-export const Disabled = Template.bind({});
-Disabled.args = {
-  label: 'Disabled',
-  disabled: true,
+export const DefaultMd = {
+  args: {
+    label: 'Toggle',
+    size: 'md',
+  },
 };
-export const DefaultOn = Template.bind({});
-DefaultOn.args = {
-  label: 'Toggle',
-  defaultChecked: true,
+
+export const Disabled = {
+  args: {
+    label: 'Disabled',
+    disabled: true,
+  },
+};
+
+export const DefaultOn = {
+  args: {
+    label: 'Toggle',
+    defaultChecked: true,
+  },
 };

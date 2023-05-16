@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -99,6 +100,9 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 	if err != nil {
 		return nil, "", err
 	}
+	if user.IsActive == false {
+		return nil, "", &ForbiddenError{errors.New("user is not active")}
+	}
 	grantType, err := utils.GetStringValueFromInterfaceMap(claims, "grant_type")
 	if err != nil {
 		return nil, "", err
@@ -119,9 +123,13 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err}, w)
 		return
 	}
-	u, statusCode, ctx, pgClient, err := model.GetUserByEmail(loginRequest.Email)
+	u, statusCode, ctx, pgClient, err := model.GetUserByEmail(strings.ToLower(loginRequest.Email))
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
+		return
+	}
+	if u.IsActive == false {
+		respondError(&ForbiddenError{errors.New("user is not active")}, w)
 		return
 	}
 	passwordValid, err := u.CompareHashAndPassword(ctx, pgClient, loginRequest.Password)
@@ -137,7 +145,11 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_LOGIN, u, true)
 
-	httpext.JSON(w, http.StatusOK, accessTokenResponse)
+	httpext.JSON(w, http.StatusOK, model.LoginResponse{
+		ResponseAccessToken: *accessTokenResponse,
+		OnboardingRequired:  model.IsOnboardingRequired(ctx),
+		PasswordInvalidated: u.PasswordInvalidated,
+	})
 }
 
 func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) {

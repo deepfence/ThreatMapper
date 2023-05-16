@@ -13,11 +13,6 @@ const (
 	Container         = "container"
 	Pod               = "pod"
 	Service           = "service"
-	Deployment        = "deployment"
-	ReplicaSet        = "replica_set"
-	DaemonSet         = "daemon_set"
-	StatefulSet       = "stateful_set"
-	CronJob           = "cron_job"
 	Namespace         = "namespace"
 	ContainerImage    = "container_image"
 	CloudProvider     = "cloud_provider"
@@ -25,7 +20,6 @@ const (
 	Host              = "host"
 	Overlay           = "overlay"
 	KubernetesCluster = "kubernetes_cluster"
-	Job               = "job"
 
 	// Shapes used for different nodes
 	Circle         = "circle"
@@ -247,15 +241,186 @@ var topologyNames = []string{
 	KubernetesCluster,
 	Pod,
 	Service,
-	Deployment,
-	ReplicaSet,
-	DaemonSet,
-	StatefulSet,
-	CronJob,
 	Namespace,
 	Host,
 	Overlay,
-	Job,
+}
+
+type TopologyNode struct {
+	Metadata  Metadata `json:"metadata,omitempty"`
+	Adjacency *IDList  `json:"adjacency,omitempty"`
+	Parents   *Parent  `json:"parents,omitempty"`
+	Sets      *Sets    `json:"sets,omitempty"`
+}
+
+func (t TopologyNode) Merge(o TopologyNode) {
+	t.Metadata = o.Metadata
+	t.Adjacency = o.Adjacency
+	t.Parents = o.Parents
+	t.Sets = o.Sets
+}
+
+func (t TopologyNode) UnsafeMerge(o TopologyNode) {
+	t.Metadata = o.Metadata
+	t.Adjacency = o.Adjacency
+	t.Parents = o.Parents
+	t.Sets = o.Sets
+}
+
+func (t TopologyNode) Copy() TopologyNode {
+	return TopologyNode{
+		Metadata:  t.Metadata,
+		Adjacency: t.Adjacency,
+		Parents:   t.Parents,
+		Sets:      t.Sets,
+	}
+}
+
+func (t TopologyNode) UnMerge(o TopologyNode) {
+}
+
+func (t TopologyNode) UnsafeUnMerge(o TopologyNode) {
+}
+
+type Topology map[string]TopologyNode
+
+func MakeTopology() Topology {
+	return map[string]TopologyNode{}
+}
+
+func (t Topology) ReplaceNode(node TopologyNode) {
+	t[node.Metadata.NodeID] = node
+}
+
+func (t Topology) AddNode(node TopologyNode) {
+	t[node.Metadata.NodeID] = node
+}
+
+func (t Topology) Merge(o Topology) {
+	for k, v := range o {
+		t[k] = v
+	}
+}
+
+func (t Topology) Copy() Topology {
+	newTopology := make(Topology)
+	for k, v := range t {
+		newTopology[k] = v
+	}
+	return newTopology
+}
+
+func (t Topology) UnsafeUnMerge(o Topology) {
+
+}
+
+func (t Topology) UnsafeMerge(o Topology) {
+	for k, v := range o {
+		t[k] = v
+	}
+}
+
+type TopologyAdjacency map[string]IDList
+
+func (t TopologyAdjacency) Copy() TopologyAdjacency {
+	newTopologyAdjacency := MakeTopologyAdjacency()
+	for k, v := range t {
+		newTopologyAdjacency[k] = v
+	}
+	return newTopologyAdjacency
+}
+
+func (t TopologyAdjacency) UnsafeMerge(o TopologyAdjacency) {
+	for k, v := range o {
+		t[k] = v
+	}
+}
+
+func (t TopologyAdjacency) UnsafeUnMerge(o TopologyAdjacency) {
+
+}
+
+func (t TopologyAdjacency) AddAdjacency(nodeId string, id string) {
+	if _, ok := t[nodeId]; !ok {
+		t[nodeId] = *MakeIDList(id)
+	} else {
+		t[nodeId] = t[nodeId].Add(id)
+	}
+}
+
+func MakeTopologyAdjacency() TopologyAdjacency {
+	return make(map[string]IDList)
+}
+
+type TopologySets map[string]Sets
+
+func MakeTopologySets() TopologySets {
+	return make(map[string]Sets)
+}
+
+func (p TopologySets) AddSet(nodeId string, sets Sets) {
+	p[nodeId] = sets
+}
+
+func (t TopologySets) Copy() TopologySets {
+	newTopologySets := MakeTopologySets()
+	for k, v := range t {
+		newTopologySets[k] = v
+	}
+	return newTopologySets
+}
+
+func (t TopologySets) UnsafeMerge(o TopologySets) {
+	for k, v := range o {
+		t[k].Merge(v)
+	}
+}
+
+func (t TopologySets) UnsafeUnMerge(o TopologySets) {
+
+}
+
+func (p Parent) Merge(o Parent) {
+	p.CloudProvider = o.CloudProvider
+	p.CloudRegion = o.CloudRegion
+	p.KubernetesCluster = o.KubernetesCluster
+	p.Host = o.Host
+	p.Container = o.Container
+	p.ContainerImage = o.ContainerImage
+	p.Namespace = o.Namespace
+	p.Pod = o.Pod
+}
+
+func (p Parent) Copy() Parent {
+	return Parent{
+		CloudProvider:     p.CloudProvider,
+		CloudRegion:       p.CloudRegion,
+		KubernetesCluster: p.KubernetesCluster,
+		Host:              p.Host,
+		Container:         p.Container,
+		ContainerImage:    p.ContainerImage,
+		Namespace:         p.Namespace,
+		Pod:               p.Pod,
+	}
+}
+
+func (p Parent) UnsafeMerge(o Parent) {
+	p.Merge(o)
+}
+
+func (p Parent) UnsafeUnMerge(o Parent) {
+
+}
+
+type Parent struct {
+	CloudProvider     string `json:"cloud_provider,omitempty"`
+	CloudRegion       string `json:"cloud_region,omitempty"`
+	KubernetesCluster string `json:"kubernetes_cluster,omitempty"`
+	Host              string `json:"host,omitempty"`
+	Container         string `json:"container,omitempty"`
+	ContainerImage    string `json:"container_image,omitempty"`
+	Namespace         string `json:"namespace,omitempty"`
+	Pod               string `json:"pod,omitempty"`
 }
 
 // Report is the core data type. It's produced by probes, and consumed and
@@ -303,31 +468,6 @@ type Report struct {
 	// present.
 	Service Topology
 
-	// Deployment nodes represent all Kubernetes deployments running on hosts running probes.
-	// Metadata includes things like deployment id, name etc. Edges are not
-	// present.
-	Deployment Topology
-
-	// ReplicaSet nodes represent all Kubernetes ReplicaSets running on hosts running probes.
-	// Metadata includes things like ReplicaSet id, name etc. Edges are not
-	// present.
-	ReplicaSet Topology
-
-	// DaemonSet nodes represent all Kubernetes DaemonSets running on hosts running probes.
-	// Metadata includes things like DaemonSet id, name etc. Edges are not
-	// present.
-	DaemonSet Topology
-
-	// StatefulSet nodes represent all Kubernetes Stateful Sets running on hosts running probes.
-	// Metadata includes things like Stateful Set id, name, etc. Edges are not
-	// present.
-	StatefulSet Topology
-
-	// CronJob nodes represent all Kubernetes Cron Jobs running on hosts running probes.
-	// Metadata includes things like Cron Job id, name, etc. Edges are not
-	// present.
-	CronJob Topology
-
 	// Namespace nodes represent all Kubernetes Namespaces running on hosts running probes.
 	// Metadata includes things like Namespace id, name, etc. Edges are not
 	// present.
@@ -347,9 +487,6 @@ type Report struct {
 	// overlaid on the infrastructure. The information is scraped by polling
 	// their status endpoints. Edges are present.
 	Overlay Topology
-
-	// Job represent all Kubernetes Job on hosts running probes.
-	Job Topology
 
 	DNS DNSRecords `json:"DNS,omitempty" deepequal:"nil==empty"`
 	// Backwards-compatibility for an accident in commit 951629a / release 1.11.6.
@@ -377,79 +514,99 @@ type Report struct {
 // MakeReport makes a clean report, ready to Merge() other reports into.
 func MakeReport() Report {
 	return Report{
-		Endpoint: MakeTopology(),
-
-		Process: MakeTopology().
-			WithShape(Square).
-			WithLabel("process", "processes"),
-
-		Container: MakeTopology().
-			WithShape(Hexagon).
-			WithLabel("container", "containers"),
-
-		ContainerImage: MakeTopology().
-			WithShape(Hexagon).
-			WithLabel("image", "images"),
-
-		Host: MakeTopology().
-			WithShape(Circle).
-			WithLabel("host", "hosts"),
-
-		CloudProvider: MakeTopology().
-			WithShape(Circle).
-			WithLabel("cloud provider", "cloud providers"),
-
-		CloudRegion: MakeTopology().
-			WithShape(Circle).
-			WithLabel("cloud region", "cloud regions"),
-
-		KubernetesCluster: MakeTopology().
-			WithShape(KubernetesCluster).
-			WithLabel("kubernetes cluster", "kubernetes clusters"),
-
-		Pod: MakeTopology().
-			WithShape(Pod).
-			WithLabel("pod", "pods"),
-
-		Service: MakeTopology().
-			WithShape(Heptagon).
-			WithLabel("service", "services"),
-
-		Deployment: MakeTopology().
-			WithShape(Heptagon).
-			WithLabel("deployment", "deployments"),
-
-		ReplicaSet: MakeTopology().
-			WithShape(Triangle).
-			WithLabel("replica set", "replica sets"),
-
-		DaemonSet: MakeTopology().
-			WithShape(Pentagon).
-			WithLabel("daemonset", "daemonsets"),
-
-		StatefulSet: MakeTopology().
-			WithShape(Octagon).
-			WithLabel("stateful set", "stateful sets"),
-
-		CronJob: MakeTopology().
-			WithShape(Triangle).
-			WithLabel("cron job", "cron jobs"),
-
-		Namespace: MakeTopology(),
-
-		Overlay: MakeTopology().
-			WithShape(Circle).
-			WithLabel("peer", "peers"),
-
-		Job: MakeTopology().
-			WithShape(DottedTriangle).
-			WithLabel("job", "jobs"),
-
-		DNS: DNSRecords{},
-
-		Window: 0,
-		ID:     fmt.Sprintf("%d", rand.Int63()),
+		Endpoint:          MakeTopology(),
+		Process:           MakeTopology(),
+		Container:         MakeTopology(),
+		CloudProvider:     MakeTopology(),
+		CloudRegion:       MakeTopology(),
+		KubernetesCluster: MakeTopology(),
+		Pod:               MakeTopology(),
+		Service:           MakeTopology(),
+		Namespace:         MakeTopology(),
+		ContainerImage:    MakeTopology(),
+		Host:              MakeTopology(),
+		Overlay:           MakeTopology(),
+		DNS:               DNSRecords{},
+		Window:            0,
+		ID:                fmt.Sprintf("%d", rand.Int63()),
 	}
+}
+
+func (r *Report) Clear() {
+	for k := range r.Endpoint {
+		delete(r.Endpoint, k)
+	}
+	for k := range r.Process {
+		delete(r.Process, k)
+	}
+	for k := range r.Container {
+		delete(r.Container, k)
+	}
+	for k := range r.CloudProvider {
+		delete(r.CloudProvider, k)
+	}
+	for k := range r.CloudRegion {
+		delete(r.CloudRegion, k)
+	}
+	for k := range r.KubernetesCluster {
+		delete(r.KubernetesCluster, k)
+	}
+	for k := range r.Pod {
+		delete(r.Pod, k)
+	}
+	for k := range r.Service {
+		delete(r.Service, k)
+	}
+	for k := range r.Namespace {
+		delete(r.Namespace, k)
+	}
+	for k := range r.ContainerImage {
+		delete(r.ContainerImage, k)
+	}
+	for k := range r.Host {
+		delete(r.Host, k)
+	}
+	for k := range r.Overlay {
+		delete(r.Overlay, k)
+	}
+}
+
+// Copy returns a value copy of the report.
+func (r Report) Copy() Report {
+	newReport := Report{
+		TS:       r.TS,
+		DNS:      r.DNS.Copy(),
+		Window:   r.Window,
+		Shortcut: r.Shortcut,
+		ID:       fmt.Sprintf("%d", rand.Int63()),
+	}
+	newReport.WalkPairedTopologies(&r, func(newTopology, oldTopology *Topology) {
+		*newTopology = oldTopology.Copy()
+	})
+	return newReport
+}
+
+// UnsafeMerge merges another Report into the receiver. The original is modified.
+func (r *Report) UnsafeMerge(other Report) {
+	// Merged report has the earliest non-zero timestamp
+	if !other.TS.IsZero() && (r.TS.IsZero() || other.TS.Before(r.TS)) {
+		r.TS = other.TS
+	}
+	r.DNS = r.DNS.Merge(other.DNS)
+	r.Window = r.Window + other.Window
+	r.WalkPairedTopologies(&other, func(ourTopology, theirTopology *Topology) {
+		ourTopology.UnsafeMerge(*theirTopology)
+	})
+}
+
+// UnsafeUnMerge removes any information from r that would be added by merging other.
+// The original is modified.
+func (r *Report) UnsafeUnMerge(other Report) {
+	// TODO: DNS, Sampling, Plugins
+	r.Window = r.Window - other.Window
+	r.WalkPairedTopologies(&other, func(ourTopology, theirTopology *Topology) {
+		ourTopology.UnsafeUnMerge(*theirTopology)
+	})
 }
 
 // WalkTopologies iterates through the Topologies of the report,
@@ -498,47 +655,49 @@ func (r *Report) topology(name string) *Topology {
 		return &r.Pod
 	case Service:
 		return &r.Service
-	case Deployment:
-		return &r.Deployment
-	case ReplicaSet:
-		return &r.ReplicaSet
-	case DaemonSet:
-		return &r.DaemonSet
-	case StatefulSet:
-		return &r.StatefulSet
-	case CronJob:
-		return &r.CronJob
 	case Namespace:
 		return &r.Namespace
 	case Host:
 		return &r.Host
 	case Overlay:
 		return &r.Overlay
-	case Job:
-		return &r.Job
 	}
 	return nil
 }
 
-// Summary returns a human-readable string summarising the contents, for diagnostic purposes
-func (r Report) Summary() string {
-	ret := ""
-	if len(r.Host.Nodes) == 1 {
-		for k := range r.Host.Nodes {
-			ret = k + ": "
-		}
+// Topology returns one of the report's topologies, selected by name.
+func (r Report) Topology(name string) (Topology, bool) {
+	if t := r.topology(name); t != nil {
+		return *t, true
 	}
-	count := 0
-	r.WalkNamedTopologies(func(n string, t *Topology) {
-		if len(t.Nodes) > 0 {
-			count++
-			if count > 1 {
-				ret = ret + ", "
-			}
-			ret = ret + fmt.Sprintf("%s:%d", n, len(t.Nodes))
-		}
-	})
-	return ret
+	return Topology{}, false
+}
+
+// Sampling describes how the packet data sources for this report were
+// sampled. It can be used to calculate effective sample rates. We can't
+// just put the rate here, because that can't be accurately merged. Counts
+// in e.g. edge metadata structures have already been adjusted to
+// compensate for the sample rate.
+type Sampling struct {
+	Count uint64 // observed and processed
+	Total uint64 // observed overall
+}
+
+// Rate returns the effective sampling rate.
+func (s Sampling) Rate() float64 {
+	if s.Total <= 0 {
+		return 1.0
+	}
+	return float64(s.Count) / float64(s.Total)
+}
+
+// Merge combines two sampling structures via simple addition and returns the
+// result. The original is not modified.
+func (s Sampling) Merge(other Sampling) Sampling {
+	return Sampling{
+		Count: s.Count + other.Count,
+		Total: s.Total + other.Total,
+	}
 }
 
 const (

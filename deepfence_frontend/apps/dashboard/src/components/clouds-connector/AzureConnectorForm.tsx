@@ -2,26 +2,40 @@ import cx from 'classnames';
 import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, Step, Stepper, Typography } from 'ui-components';
 
-import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
+import { CopyToClipboard } from '@/components/CopyToClipboard';
+import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
 
 export const AzureConnectorForm = () => {
+  const { status, data } = useGetApiToken();
+  const dfApiKey =
+    status !== 'idle'
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.api_token === undefined
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.api_token;
   const code = `provider "azurerm" {
-    features {}
-    subscription_id = "<SUBSCRIPTION_ID eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX>"
-  }
-  
-  module "cloud-scanner_example_single-subscription" {
-    source              = "deepfence/cloud-scanner/azure//examples/single-subscription"
-    version             = "0.1.0"
-    mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
-    mgmt-console-port   = "443"
-    deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  }
-  `;
+  features {}
+  subscription_id = "<SUBSCRIPTION_ID eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX>"
+}
+
+module "cloud-scanner_example_single-subscription" {
+  source              = "deepfence/cloud-scanner/azure//examples/single-subscription"
+  version             = "0.2.0"
+  mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
+  mgmt-console-port   = "443"
+  deepfence-key       = "${dfApiKey}"
+  name                = "deepfence-cloud-scanner"
+}
+
+variable "image" {
+  type        = string
+  default     = "quay.io/deepfenceio/cloud-scanner:1.5.0"
+}
+`;
 
   return (
     <Stepper>
-      <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation">
+      <Step indicator={<HiViewGridAdd />} title="Teraform">
         <div className={`${Typography.size.sm} dark:text-gray-200`}>
           Connect to your Azure Cloud Account via Teraform. Find out more information by{' '}
           <a
@@ -49,7 +63,7 @@ export const AzureConnectorForm = () => {
             >
               {code}
             </pre>
-            <CopyToClipboardIcon text={code} />
+            <CopyToClipboard data={code} asIcon />
           </Card>
         </div>
       </Step>
@@ -69,7 +83,7 @@ export const AzureConnectorForm = () => {
               >
                 terraform init
               </pre>
-              <CopyToClipboardIcon text={'terraform init'} className="top-4" />
+              <CopyToClipboard data={'terraform init'} className="top-4" asIcon />
             </div>
             <div className="relative">
               <pre
@@ -81,7 +95,7 @@ export const AzureConnectorForm = () => {
               >
                 terraform plan
               </pre>
-              <CopyToClipboardIcon text={'terraform plan'} className="top-0" />
+              <CopyToClipboard data={'terraform plan'} className="top-0" asIcon />
             </div>
             <div className="relative">
               <pre
@@ -93,7 +107,7 @@ export const AzureConnectorForm = () => {
               >
                 terraform apply
               </pre>
-              <CopyToClipboardIcon text={'terraform apply'} className="top-0" />
+              <CopyToClipboard data={'terraform apply'} className="top-0" asIcon />
             </div>
           </Card>
         </div>

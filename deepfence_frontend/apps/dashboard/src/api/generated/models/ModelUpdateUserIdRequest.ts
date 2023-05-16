@@ -42,7 +42,7 @@ export interface ModelUpdateUserIdRequest {
      * @type {string}
      * @memberof ModelUpdateUserIdRequest
      */
-    role: ModelUpdateUserIdRequestRoleEnum;
+    role?: ModelUpdateUserIdRequestRoleEnum;
 }
 
 
@@ -62,7 +62,6 @@ export type ModelUpdateUserIdRequestRoleEnum = typeof ModelUpdateUserIdRequestRo
  */
 export function instanceOfModelUpdateUserIdRequest(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "role" in value;
 
     return isInstance;
 }
@@ -80,7 +79,7 @@ export function ModelUpdateUserIdRequestFromJSONTyped(json: any, ignoreDiscrimin
         'first_name': !exists(json, 'first_name') ? undefined : json['first_name'],
         'is_active': !exists(json, 'is_active') ? undefined : json['is_active'],
         'last_name': !exists(json, 'last_name') ? undefined : json['last_name'],
-        'role': json['role'],
+        'role': !exists(json, 'role') ? undefined : json['role'],
     };
 }
 

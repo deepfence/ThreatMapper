@@ -8,7 +8,7 @@ import { RegisterActionReturnType } from '@/features/auth/actions/registerAction
 export const RegisterUser = () => {
   const fetcher = useFetcher<RegisterActionReturnType>();
 
-  const { data } = fetcher;
+  const { data, state } = fetcher;
 
   return (
     <fetcher.Form method="post">
@@ -113,7 +113,14 @@ export const RegisterUser = () => {
         </p>
       )}
       <div className="flex flex-col w-full mt-6">
-        <Button size="md" color="primary" className="w-full" type="submit">
+        <Button
+          size="md"
+          color="primary"
+          className="w-full"
+          type="submit"
+          disabled={state !== 'idle'}
+          loading={state !== 'idle'}
+        >
           Register
         </Button>
       </div>

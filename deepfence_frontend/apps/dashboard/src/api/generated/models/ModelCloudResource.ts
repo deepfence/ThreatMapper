@@ -24,6 +24,36 @@ export interface ModelCloudResource {
      * @type {string}
      * @memberof ModelCloudResource
      */
+    account_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudResource
+     */
+    cloud_compliance_latest_scan_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudResource
+     */
+    cloud_compliance_scan_status: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelCloudResource
+     */
+    cloud_compliances_count: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudResource
+     */
+    cloud_region: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudResource
+     */
     node_id: string;
     /**
      * 
@@ -37,6 +67,12 @@ export interface ModelCloudResource {
      * @memberof ModelCloudResource
      */
     node_type: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelCloudResource
+     */
+    type_label: string;
 }
 
 /**
@@ -44,9 +80,15 @@ export interface ModelCloudResource {
  */
 export function instanceOfModelCloudResource(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "account_id" in value;
+    isInstance = isInstance && "cloud_compliance_latest_scan_id" in value;
+    isInstance = isInstance && "cloud_compliance_scan_status" in value;
+    isInstance = isInstance && "cloud_compliances_count" in value;
+    isInstance = isInstance && "cloud_region" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "node_name" in value;
     isInstance = isInstance && "node_type" in value;
+    isInstance = isInstance && "type_label" in value;
 
     return isInstance;
 }
@@ -61,9 +103,15 @@ export function ModelCloudResourceFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
+        'account_id': json['account_id'],
+        'cloud_compliance_latest_scan_id': json['cloud_compliance_latest_scan_id'],
+        'cloud_compliance_scan_status': json['cloud_compliance_scan_status'],
+        'cloud_compliances_count': json['cloud_compliances_count'],
+        'cloud_region': json['cloud_region'],
         'node_id': json['node_id'],
         'node_name': json['node_name'],
         'node_type': json['node_type'],
+        'type_label': json['type_label'],
     };
 }
 
@@ -76,9 +124,15 @@ export function ModelCloudResourceToJSON(value?: ModelCloudResource | null): any
     }
     return {
         
+        'account_id': value.account_id,
+        'cloud_compliance_latest_scan_id': value.cloud_compliance_latest_scan_id,
+        'cloud_compliance_scan_status': value.cloud_compliance_scan_status,
+        'cloud_compliances_count': value.cloud_compliances_count,
+        'cloud_region': value.cloud_region,
         'node_id': value.node_id,
         'node_name': value.node_name,
         'node_type': value.node_type,
+        'type_label': value.type_label,
     };
 }
 

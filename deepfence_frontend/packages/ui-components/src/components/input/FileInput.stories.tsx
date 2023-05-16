@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 import { useState } from 'react';
 
 import FileInput from '@/components/input/FileInput';
@@ -7,9 +7,9 @@ export default {
   title: 'Components/FileUpload',
   component: FileInput,
   argTypes: {},
-} as ComponentMeta<typeof FileInput>;
+} as Meta<typeof FileInput>;
 
-const Template: ComponentStory<typeof FileInput> = (args) => {
+const Template: StoryFn<typeof FileInput> = (args) => {
   const [file, setFile] = useState<File>();
   return (
     <FileInput
@@ -25,17 +25,26 @@ const Template: ComponentStory<typeof FileInput> = (args) => {
   );
 };
 
-export const SmallInput = Template.bind({});
-SmallInput.args = {
-  sizing: 'sm',
+export const SmallInput = {
+  render: Template,
+
+  args: {
+    sizing: 'sm',
+  },
 };
 
-export const DefaultInput = Template.bind({});
-DefaultInput.args = {
-  sizing: 'md',
+export const DefaultInput = {
+  render: Template,
+
+  args: {
+    sizing: 'md',
+  },
 };
 
-export const LargeInput = Template.bind({});
-LargeInput.args = {
-  sizing: 'lg',
+export const LargeInput = {
+  render: Template,
+
+  args: {
+    sizing: 'lg',
+  },
 };

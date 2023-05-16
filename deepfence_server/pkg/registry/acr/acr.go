@@ -66,7 +66,7 @@ func (d *RegistryACR) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (d *RegistryACR) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
+func (d *RegistryACR) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
 	return listImagesRegistryV2(d.NonSecret.AzureRegistryURL, "",
 		d.NonSecret.AzureRegistryUsername, d.Secret.AzureRegistryPassword)
 }

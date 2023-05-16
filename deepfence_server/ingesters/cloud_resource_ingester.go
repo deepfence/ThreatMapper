@@ -21,6 +21,7 @@ type CloudResource struct {
 	BlockPublicAcls                bool             `json:"block_public_acls,omitempty"`
 	BlockPublicPolicy              bool             `json:"block_public_policy,omitempty"`
 	BucketPolicyIsPublic           bool             `json:"bucket_policy_is_public,omitempty"`
+	CloudProvider                  string           `json:"cloud_provider,omitempty"`
 	RestrictPublicBuckets          bool             `json:"restrict_public_buckets,omitempty"`
 	ID                             string           `json:"id"`
 	IgnorePublicAcls               bool             `json:"ignore_public_acls,omitempty"`
@@ -36,7 +37,7 @@ type CloudResource struct {
 	ServiceName                    string           `json:"service_name,omitempty"`
 	TaskDefinitionArn              string           `json:"task_definition_arn,omitempty"`
 	VpcID                          string           `json:"vpc_id,omitempty"`
-	AllowBlobPublicAccess          string           `json:"allow_blob_public_access,omitempty"`
+	AllowBlobPublicAccess          bool             `json:"allow_blob_public_access,omitempty"`
 	PublicAccess                   string           `json:"public_access,omitempty"`
 	GroupId                        string           `json:"group_id,omitempty"`
 	CidrIpv4                       string           `json:"cidr_ipv4,omitempty"`
@@ -108,8 +109,13 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 	// Add everything
 	_, err = tx.Run(`
 		UNWIND $batch as row
+		WITH row, COALESCE(row.region, 'global') as cloud_region
+		MERGE (cp:CloudProvider{node_id:row.cloud_provider})
+		MERGE (cr:CloudRegion{node_id:cloud_region})
+		MERGE (cp) -[:HOSTS]-> (cr)
 		MERGE (n:CloudResource{node_id:COALESCE(row.arn, row.ID, row.ResourceID)})
-		SET n+=row, n.node_type = row.resource_id, n.cloud_region = COALESCE(row.region, 'global')`,
+		MERGE (cr) -[:HOSTS]-> (n)
+		SET n+=row, n.node_name = n.name, n.node_type = row.resource_id, n.cloud_region = cloud_region, n.updated_at = TIMESTAMP(), cp.active = true, cp.pseudo = false, n.active = true`,
 		map[string]interface{}{
 			"batch": batch,
 		},
@@ -321,6 +327,13 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 			bb["arn"] = bb["vm_id"]
 		}
 	}
+	accountId, present := bb["account_id"]
+	if present {
+		splits := strings.Split(fmt.Sprintf("%v", accountId), "-")
+		if len(splits) > 2 {
+			bb["cloud_provider"] = splits[2]
+		}
+	}
 
 	return bb
 }
@@ -328,4 +341,7 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 func (c *CloudResourceIngester) PushToDB(batches ReportIngestionData) error {
 	//DUMMY
 	return nil
+}
+
+func (c *CloudResourceIngester) Close() {
 }

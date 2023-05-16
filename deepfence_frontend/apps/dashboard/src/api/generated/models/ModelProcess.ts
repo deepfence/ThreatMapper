@@ -13,13 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ModelComputeMetrics } from './ModelComputeMetrics';
-import {
-    ModelComputeMetricsFromJSON,
-    ModelComputeMetricsFromJSONTyped,
-    ModelComputeMetricsToJSON,
-} from './ModelComputeMetrics';
-
 /**
  * 
  * @export
@@ -34,22 +27,28 @@ export interface ModelProcess {
     cmdline: string;
     /**
      * 
-     * @type {{ [key: string]: any; }}
+     * @type {number}
      * @memberof ModelProcess
      */
-    metadata: { [key: string]: any; };
+    cpu_max: number;
     /**
      * 
-     * @type {ModelComputeMetrics}
+     * @type {number}
      * @memberof ModelProcess
      */
-    metrics: ModelComputeMetrics;
+    cpu_usage: number;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof ModelProcess
      */
-    name: string;
+    memory_max: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelProcess
+     */
+    memory_usage: number;
     /**
      * 
      * @type {string}
@@ -61,19 +60,31 @@ export interface ModelProcess {
      * @type {string}
      * @memberof ModelProcess
      */
-    pid: string;
+    node_name: string;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof ModelProcess
      */
-    ppid: string;
+    open_files_count: number;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof ModelProcess
      */
-    threads: string;
+    pid: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelProcess
+     */
+    ppid: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ModelProcess
+     */
+    threads: number;
 }
 
 /**
@@ -82,10 +93,13 @@ export interface ModelProcess {
 export function instanceOfModelProcess(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "cmdline" in value;
-    isInstance = isInstance && "metadata" in value;
-    isInstance = isInstance && "metrics" in value;
-    isInstance = isInstance && "name" in value;
+    isInstance = isInstance && "cpu_max" in value;
+    isInstance = isInstance && "cpu_usage" in value;
+    isInstance = isInstance && "memory_max" in value;
+    isInstance = isInstance && "memory_usage" in value;
     isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "node_name" in value;
+    isInstance = isInstance && "open_files_count" in value;
     isInstance = isInstance && "pid" in value;
     isInstance = isInstance && "ppid" in value;
     isInstance = isInstance && "threads" in value;
@@ -104,10 +118,13 @@ export function ModelProcessFromJSONTyped(json: any, ignoreDiscriminator: boolea
     return {
         
         'cmdline': json['cmdline'],
-        'metadata': json['metadata'],
-        'metrics': ModelComputeMetricsFromJSON(json['metrics']),
-        'name': json['name'],
+        'cpu_max': json['cpu_max'],
+        'cpu_usage': json['cpu_usage'],
+        'memory_max': json['memory_max'],
+        'memory_usage': json['memory_usage'],
         'node_id': json['node_id'],
+        'node_name': json['node_name'],
+        'open_files_count': json['open_files_count'],
         'pid': json['pid'],
         'ppid': json['ppid'],
         'threads': json['threads'],
@@ -124,10 +141,13 @@ export function ModelProcessToJSON(value?: ModelProcess | null): any {
     return {
         
         'cmdline': value.cmdline,
-        'metadata': value.metadata,
-        'metrics': ModelComputeMetricsToJSON(value.metrics),
-        'name': value.name,
+        'cpu_max': value.cpu_max,
+        'cpu_usage': value.cpu_usage,
+        'memory_max': value.memory_max,
+        'memory_usage': value.memory_usage,
         'node_id': value.node_id,
+        'node_name': value.node_name,
+        'open_files_count': value.open_files_count,
         'pid': value.pid,
         'ppid': value.ppid,
         'threads': value.threads,

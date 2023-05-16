@@ -23,10 +23,6 @@ spec:
         - name: deepfence-cluster-agent
           image: "{{ .Values.image.clusterAgentImageName }}:{{ .Values.image.clusterAgentImageTag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          args:
-            - cluster-agent
-            - "{{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}"
-            - "{{ required "managementConsolePort is required" .Values.managementConsolePort }}"
           env:
             - name: MGMT_CONSOLE_URL
               value: "{{ required "managementConsoleUrl is required" .Values.managementConsoleUrl }}"

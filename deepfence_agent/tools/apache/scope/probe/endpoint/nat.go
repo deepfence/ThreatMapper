@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package endpoint
@@ -59,13 +60,13 @@ func (n natMapper) applyNAT(rpt report.Report, scope string) {
 		realEndpointID := report.MakeEndpointNodeIDB(scope, 0, mapping.originalIP, mapping.originalPort)
 		copyEndpointID := report.MakeEndpointNodeIDB(scope, 0, mapping.rewrittenIP, mapping.rewrittenPort)
 
-		node, ok := rpt.Endpoint.Nodes[realEndpointID]
+		node, ok := rpt.Endpoint[realEndpointID]
 		if !ok {
 			return
 		}
 
-		rpt.Endpoint.AddNode(node.WithID(copyEndpointID).WithLatests(map[string]string{
-			CopyOf: realEndpointID,
-		}))
+		copyMetadata := node.Metadata.WithID(copyEndpointID)
+		copyMetadata.CopyOf = realEndpointID
+		rpt.Endpoint.AddNode(report.TopologyNode{Metadata: copyMetadata})
 	})
 }

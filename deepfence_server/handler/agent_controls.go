@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
@@ -15,15 +16,11 @@ import (
 func (h *Handler) GetAgentControls(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	data, err := io.ReadAll(r.Body)
-	if err != nil {
-		respondWith(ctx, w, http.StatusBadRequest, err)
-		return
-	}
-
 	var agentId model.AgentId
+	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
 
-	err = json.Unmarshal(data, &agentId)
+	err := decoder.Decode(&agentId)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
@@ -37,7 +34,7 @@ func (h *Handler) GetAgentControls(w http.ResponseWriter, r *http.Request) {
 	}
 
 	res := ctl.AgentControls{
-		BeatRateSec: 30,
+		BeatRateSec: 30 * ingesters.Push_back.Load(),
 		Commands:    actions,
 	}
 	err = httpext.JSON(w, http.StatusOK, res)
@@ -71,13 +68,13 @@ func (h *Handler) GetAgentInitControls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actions, err := controls.GetPendingAgentScans(ctx, agentId.NodeId)
+	actions, err := controls.GetPendingAgentScans(ctx, agentId.NodeId, agentId.AvailableWorkload)
 	if err != nil {
 		log.Warn().Msgf("Cannot get actions: %s, skipping", err)
 	}
 
 	res := ctl.AgentControls{
-		BeatRateSec: 30,
+		BeatRateSec: 30 * ingesters.Push_back.Load(),
 		Commands:    actions,
 	}
 	err = httpext.JSON(w, http.StatusOK, res)

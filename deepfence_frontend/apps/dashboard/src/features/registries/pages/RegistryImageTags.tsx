@@ -25,6 +25,7 @@ import {
   ModelRegistryImagesReq,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { FilterHeader } from '@/components/forms/FilterHeader';
 import { RegistryImageTagsTable } from '@/features/registries/components/RegistryImageTagsTable';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -53,6 +54,7 @@ const getMalwareScanStatus = (searchParams: URLSearchParams) => {
 
 async function getTags(
   nodeId: string,
+  imageId: string,
   searchParams: URLSearchParams,
 ): Promise<{
   tags: ModelContainerImage[];
@@ -66,7 +68,9 @@ async function getTags(
 
   const imageTagsRequest: ModelRegistryImagesReq = {
     image_filter: {
-      filter_in: {},
+      filter_in: {
+        docker_image_name: [imageId],
+      },
     },
     registry_id: nodeId,
     window: {
@@ -148,19 +152,19 @@ const loader = async ({
   params,
   request,
 }: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataTypeForImageTags>> => {
-  const { account, nodeId } = params as {
+  const { account, nodeId, imageId } = params as {
     account: string;
     nodeId: string;
     imageId: string;
   };
 
-  if (!account || !nodeId) {
+  if (!account || !nodeId || !imageId) {
     throw new Error('Account Type, Node Id and Image Id are required');
   }
   const searchParams = new URL(request.url).searchParams;
 
   return typedDefer({
-    tableData: getTags(nodeId, searchParams),
+    tableData: getTags(nodeId, imageId, searchParams),
   });
 };
 
@@ -178,11 +182,17 @@ const HeaderComponent = () => {
     searchParams.has('secretScanStatus') ||
     searchParams.has('malwareScanStatus');
 
+  const onResetFilters = () => {
+    setSearchParams(() => {
+      return {};
+    });
+  };
+
   return (
     <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <Breadcrumb separator={<HiChevronRight />} transparent>
         <BreadcrumbLink>
-          <DFLink to={'/registries'}>REGISTRIES</DFLink>
+          <DFLink to={'/registries'}>Registries</DFLink>
         </BreadcrumbLink>
         <BreadcrumbLink>
           <DFLink
@@ -218,8 +228,9 @@ const HeaderComponent = () => {
             triggerAsChild
             elementToFocusOnCloseRef={elementToFocusOnClose}
             content={
-              <div className="dark:text-white p-4">
-                <Form className="flex flex-col gap-y-6">
+              <div className="dark:text-white">
+                <FilterHeader onReset={onResetFilters} />
+                <Form className="flex flex-col gap-y-6  p-4">
                   <fieldset>
                     <legend className="text-sm font-medium">
                       Vulnerability Scan Status
@@ -588,11 +599,11 @@ const RegistryImageTags = () => {
   return (
     <>
       <HeaderComponent />
-      <div className="p-4">
+      <div className="p-2">
         <Suspense
           fallback={
             <>
-              <div className="h-4 w-28 mt-4 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+              <div className="h-4 w-28 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
               <TableSkeleton columns={8} rows={10} size={'sm'} />
             </>
           }

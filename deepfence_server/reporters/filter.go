@@ -26,34 +26,51 @@ type OrderSpec struct {
 	Descending bool   `json:"descending" required:"true"`
 }
 
+type CompareFilter struct {
+	FieldName   string      `json:"field_name" required:"true"`
+	FieldValue  interface{} `json:"field_value" required:"true"`
+	GreaterThan bool        `json:"greater_than" required:"true"`
+}
+
 type OrderFilter struct {
 	OrderFields []OrderSpec `json:"order_fields" required:"true"`
 }
 
 type FieldsFilters struct {
-	ContainsFilter ContainsFilter `json:"contains_filter" required:"true"`
-	MatchFilter    MatchFilter    `json:"match_filter" required:"true"`
-	OrderFilter    OrderFilter    `json:"order_filter" required:"true"`
+	ContainsFilter    ContainsFilter  `json:"contains_filter" required:"true"`
+	NotContainsFilter ContainsFilter  `json:"not_contains_filter"`
+	MatchFilter       MatchFilter     `json:"match_filter" required:"true"`
+	OrderFilter       OrderFilter     `json:"order_filter" required:"true"`
+	CompareFilters    []CompareFilter `json:"compare_filter" required:"true"`
 }
 
-func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilter) []string {
+func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilter, in bool) []string {
 	conditions := []string{}
+
+	reverse_operator := ""
+	if !in {
+		reverse_operator = " NOT "
+	}
 	for k, vs := range filter.FieldsValues {
 		if k == "node_type" {
 			labels := []string{}
 			for i := range vs {
 				switch vs[i] {
 				case "host":
-					labels = append(labels, fmt.Sprintf("%s:Node", cypherNodeName))
+					labels = append(labels, fmt.Sprintf("%s%s:Node", reverse_operator, cypherNodeName))
 				case "image":
-					labels = append(labels, fmt.Sprintf("%s:ContainerImage", cypherNodeName))
+					labels = append(labels, fmt.Sprintf("%s%s:ContainerImage", reverse_operator, cypherNodeName))
 				case "container_image":
-					labels = append(labels, fmt.Sprintf("%s:ContainerImage", cypherNodeName))
+					labels = append(labels, fmt.Sprintf("%s%s:ContainerImage", reverse_operator, cypherNodeName))
 				case "container":
-					labels = append(labels, fmt.Sprintf("%s:Container", cypherNodeName))
+					labels = append(labels, fmt.Sprintf("%s%s:Container", reverse_operator, cypherNodeName))
 				}
 			}
-			conditions = append(conditions, strings.Join(labels, " OR "))
+			if in {
+				conditions = append(conditions, strings.Join(labels, " OR "))
+			} else {
+				conditions = append(conditions, strings.Join(labels, " AND "))
+			}
 		} else {
 			var values []string
 			for i := range vs {
@@ -64,8 +81,20 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 				}
 			}
 
-			conditions = append(conditions, fmt.Sprintf("%s.%s IN [%s]", cypherNodeName, k, strings.Join(values, ",")))
+			conditions = append(conditions, fmt.Sprintf("%s.%s %sIN [%s]", cypherNodeName, k, reverse_operator, strings.Join(values, ",")))
 		}
+	}
+	return conditions
+}
+
+func compareFilter2CypherConditions(cypherNodeName string, filters []CompareFilter) []string {
+	var conditions []string
+	for _, filter := range filters {
+		compareOperator := ">"
+		if !filter.GreaterThan {
+			compareOperator = "<"
+		}
+		conditions = append(conditions, fmt.Sprintf("%s.%s %s %s", cypherNodeName, filter.FieldName, compareOperator, filter.FieldValue))
 	}
 	return conditions
 }
@@ -128,11 +157,15 @@ func ParseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.O
 		return ""
 	}
 
-	conditions := containsFilter2CypherConditions(cypherNodeName, f.ContainsFilter)
+	conditions := containsFilter2CypherConditions(cypherNodeName, f.ContainsFilter, true)
+
+	conditions = append(conditions, containsFilter2CypherConditions(cypherNodeName, f.NotContainsFilter, false)...)
 
 	conditions = append(conditions, matchFilter2CypherConditions(cypherNodeName, f.MatchFilter)...)
 
 	conditions = append(conditions, orderFilter2CypherWhere(cypherNodeName, f.OrderFilter)...)
+
+	conditions = append(conditions, compareFilter2CypherConditions(cypherNodeName, f.CompareFilters)...)
 
 	if len(conditions) == 0 {
 		return ""
@@ -151,7 +184,7 @@ func ContainsFilter2CypherWhereConditions(cypherNodeName string, filter Contains
 		return ""
 	}
 
-	conditions := containsFilter2CypherConditions(cypherNodeName, filter)
+	conditions := containsFilter2CypherConditions(cypherNodeName, filter, true)
 
 	if len(conditions) == 0 {
 		return ""

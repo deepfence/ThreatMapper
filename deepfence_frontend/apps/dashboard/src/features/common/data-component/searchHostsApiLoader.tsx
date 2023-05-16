@@ -6,18 +6,35 @@ import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ScanTypeEnum } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 
-export type HostsListType = {
-  nodeId: string;
-  hostName: string;
+export type SearchHostsLoaderDataType = {
+  hosts: {
+    nodeId: string;
+    hostName: string;
+    nodeName: string;
+  }[];
+  hasNext: boolean;
 };
 
 export const searchHostsApiLoader = async ({
+  request,
   params,
-}: LoaderFunctionArgs): Promise<HostsListType[]> => {
+}: LoaderFunctionArgs): Promise<SearchHostsLoaderDataType> => {
+  const searchParams = new URL(request.url).searchParams;
   const scanType = params?.scanType;
+
   if (!scanType) {
-    throw new Error('Scan For is required');
+    throw new Error('Scan Type is required');
   }
+  const searchText = searchParams?.get('searchText')?.toString();
+  const size = parseInt(searchParams?.get('size')?.toString() ?? '0', 10);
+
+  const matchFilter = { filter_in: {} };
+  if (searchText?.length) {
+    matchFilter.filter_in = {
+      node_name: [searchText],
+    };
+  }
+
   let filterValue = '';
   if (scanType === ScanTypeEnum.SecretScan) {
     filterValue = 'secrets_count';
@@ -25,7 +42,10 @@ export const searchHostsApiLoader = async ({
     filterValue = 'vulnerabilities_count';
   } else if (scanType === ScanTypeEnum.MalwareScan) {
     filterValue = 'malwares_count';
-  } else if (scanType === ScanTypeEnum.ComplianceScan) {
+  } else if (
+    scanType === ScanTypeEnum.ComplianceScan ||
+    scanType === ScanTypeEnum.CloudComplianceScan
+  ) {
     filterValue = 'compliances_count';
   }
 
@@ -37,7 +57,9 @@ export const searchHostsApiLoader = async ({
           node_filter: {
             filters: {
               contains_filter: {
-                filter_in: {},
+                filter_in: {
+                  pseudo: [false],
+                },
               },
               order_filter: {
                 order_fields: [
@@ -47,15 +69,18 @@ export const searchHostsApiLoader = async ({
                   },
                 ],
               },
-              match_filter: {
-                filter_in: {},
-              },
+              match_filter: matchFilter,
+              compare_filter: null,
             },
             in_field_filter: null,
+            window: {
+              offset: 0,
+              size: 0,
+            },
           },
           window: {
             offset: 0,
-            size: 100,
+            size: size + 1,
           },
         },
       },
@@ -78,36 +103,58 @@ export const searchHostsApiLoader = async ({
   }
 
   if (result === null) {
-    return [];
-  }
-  return result.map((res) => {
     return {
-      nodeId: res.node_id,
-      hostName: res.host_name,
+      hosts: [],
+      hasNext: false,
     };
-  });
+  }
+  return {
+    hosts: result.slice(0, size).map((res) => {
+      return {
+        nodeId: res.node_id,
+        hostName: res.host_name,
+        nodeName: res.node_name,
+      };
+    }),
+    hasNext: result.length > size,
+  };
 };
 
 export const useGetHostsList = ({
   scanType,
+  searchText,
+  size,
 }: {
-  scanType: ScanTypeEnum;
+  scanType: ScanTypeEnum | 'none';
+  searchText?: string;
+  size: number;
 }): {
   status: 'idle' | 'loading' | 'submitting';
-  hosts: HostsListType[];
+  hosts: SearchHostsLoaderDataType['hosts'];
+  hasNext: boolean;
 } => {
-  const fetcher = useFetcher<HostsListType[]>();
+  const fetcher = useFetcher<SearchHostsLoaderDataType>();
 
   useEffect(() => {
-    fetcher.load(
-      generatePath('/data-component/search/hosts/:scanType', {
-        scanType,
-      }),
-    );
-  }, [scanType]);
+    if (scanType) {
+      const searchParams = new URLSearchParams();
+      searchParams.set('searchText', searchText ?? '');
+      searchParams.set('size', size.toString());
+
+      fetcher.load(
+        generatePath(
+          `/data-component/search/hosts/:scanType/?${searchParams.toString()}`,
+          {
+            scanType,
+          },
+        ),
+      );
+    }
+  }, [scanType, searchText, size]);
 
   return {
     status: fetcher.state,
-    hosts: fetcher.data ?? [],
+    hosts: fetcher.data?.hosts ?? [],
+    hasNext: fetcher.data?.hasNext ?? false,
   };
 };

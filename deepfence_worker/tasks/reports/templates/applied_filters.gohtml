@@ -1,0 +1,22 @@
+{{define "applied-filters"}}
+<h4>Applied filters</h4>
+<div class="summary-report-table" style="width: 100%;">
+    <table style="table-layout: fixed; word-break: break-word;">
+        <tr>
+            <th>Scan Type</th>
+            <th>Node Type</th>
+            {{ $scan_types := list "vulnerability" "secret" "malware" }}
+            {{ if mustHas .ScanType $scan_types }}
+            <th>Severity</th>
+            {{ else }}
+            <th>Check Type</th>
+            {{ end }}
+        </tr>
+        <tr>
+            <th> {{ .AppliedFilters.ScanType }}</th>
+            <th> {{ .AppliedFilters.NodeType }}</th>
+            <th> {{ .AppliedFilters.SeverityOrCheckType }}</th>
+        </tr>
+    </table>
+</div>
+{{end}}

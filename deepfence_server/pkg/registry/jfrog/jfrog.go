@@ -69,7 +69,7 @@ func (d *RegistryJfrog) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (d *RegistryJfrog) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
+func (d *RegistryJfrog) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
 	return listImagesRegistryV2(d.NonSecret.JfrogRegistryURL, d.NonSecret.JfrogRepository,
 		d.NonSecret.JfrogUsername, d.Secret.JfrogPassword)
 }

@@ -69,19 +69,19 @@ func GetDiagnosticLogs(ctx context.Context) (*GetDiagnosticLogsResponse, error) 
 
 func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, pathPrefix string) []DiagnosticLogsLink {
 	objects := mc.ListFiles(ctx, pathPrefix, false, 0, true)
-	diagnosticLogsResponse := make([]DiagnosticLogsLink, 0)
-	for _, obj := range objects {
+	diagnosticLogsResponse := make([]DiagnosticLogsLink, len(objects))
+	for i, obj := range objects {
 		message := ""
 		urlLink, err := mc.ExposeFile(ctx, obj.Key, false, DiagnosisLinkExpiry, url.Values{})
 		if err != nil {
 			message = err.Error()
 		}
-		diagnosticLogsResponse = append(diagnosticLogsResponse, DiagnosticLogsLink{
+		diagnosticLogsResponse[i] = DiagnosticLogsLink{
 			UrlLink:   urlLink,
 			Label:     filepath.Base(obj.Key),
 			Message:   message,
 			CreatedAt: obj.LastModified.Format("2006-01-02 15:04:05"),
-		})
+		}
 	}
 	return diagnosticLogsResponse
 }

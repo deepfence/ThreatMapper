@@ -1,5 +1,6 @@
-import { themes } from '@storybook/theming';
+import { withThemeByClassName } from '@storybook/addon-styling';
 import '../src/index.css'; // import tailwind styles
+import './storybook-global.css'; // import tailwind styles
 
 export const parameters = {
   actions: { argTypesRegex: '^on[A-Z].*' },
@@ -9,11 +10,14 @@ export const parameters = {
       date: /Date$/,
     },
   },
-  darkMode: {
-    darkClass: 'dark',
-    classTarget: 'html',
-    stylePreview: true,
-    dark: { ...themes.dark, appContentBg: '#111928' },
-    light: { ...themes.normal, appContentBg: '#F9FAFB' },
-  },
 };
+
+export const decorators = [
+  withThemeByClassName({
+    themes: {
+      light: 'light',
+      dark: 'dark',
+    },
+    defaultTheme: 'light',
+  }),
+];

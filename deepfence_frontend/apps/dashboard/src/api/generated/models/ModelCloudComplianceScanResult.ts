@@ -46,6 +46,12 @@ export interface ModelCloudComplianceScanResult {
     compliances: Array<ModelCloudCompliance> | null;
     /**
      * 
+     * @type {number}
+     * @memberof ModelCloudComplianceScanResult
+     */
+    created_at: number;
+    /**
+     * 
      * @type {string}
      * @memberof ModelCloudComplianceScanResult
      */
@@ -114,6 +120,7 @@ export function instanceOfModelCloudComplianceScanResult(value: object): boolean
     isInstance = isInstance && "benchmark_type" in value;
     isInstance = isInstance && "compliance_percentage" in value;
     isInstance = isInstance && "compliances" in value;
+    isInstance = isInstance && "created_at" in value;
     isInstance = isInstance && "docker_container_name" in value;
     isInstance = isInstance && "docker_image_name" in value;
     isInstance = isInstance && "host_name" in value;
@@ -141,6 +148,7 @@ export function ModelCloudComplianceScanResultFromJSONTyped(json: any, ignoreDis
         'benchmark_type': json['benchmark_type'],
         'compliance_percentage': json['compliance_percentage'],
         'compliances': (json['compliances'] === null ? null : (json['compliances'] as Array<any>).map(ModelCloudComplianceFromJSON)),
+        'created_at': json['created_at'],
         'docker_container_name': json['docker_container_name'],
         'docker_image_name': json['docker_image_name'],
         'host_name': json['host_name'],
@@ -166,6 +174,7 @@ export function ModelCloudComplianceScanResultToJSON(value?: ModelCloudComplianc
         'benchmark_type': value.benchmark_type,
         'compliance_percentage': value.compliance_percentage,
         'compliances': (value.compliances === null ? null : (value.compliances as Array<any>).map(ModelCloudComplianceToJSON)),
+        'created_at': value.created_at,
         'docker_container_name': value.docker_container_name,
         'docker_image_name': value.docker_image_name,
         'host_name': value.host_name,

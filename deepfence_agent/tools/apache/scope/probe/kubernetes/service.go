@@ -2,7 +2,7 @@ package kubernetes
 
 import (
 	"fmt"
-	"strings"
+	"time"
 
 	"github.com/weaveworks/scope/report"
 
@@ -10,15 +10,10 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-// These constants are keys used in node metadata
-const (
-	PublicIP = report.KubernetesPublicIP
-)
-
 // Service represents a Kubernetes service
 type Service interface {
 	Meta
-	GetNode(probeID string) report.Node
+	GetNode() report.TopologyNode
 	Selector() labels.Selector
 	ClusterIP() string
 	LoadBalancerIP() string
@@ -49,35 +44,42 @@ func servicePortString(p apiv1.ServicePort) string {
 	return fmt.Sprintf("%d:%d/%s", p.Port, p.NodePort, p.Protocol)
 }
 
-func (s *service) GetNode(probeID string) report.Node {
-	latest := map[string]string{
-		IP:                    s.Spec.ClusterIP,
-		Type:                  string(s.Spec.Type),
-		k8sClusterId:          kubernetesClusterId,
-		k8sClusterName:        kubernetesClusterName,
-		report.ControlProbeID: probeID,
+func (s *service) GetNode() report.TopologyNode {
+	metadata := report.Metadata{
+		Timestamp:             time.Now().UTC().Format(time.RFC3339Nano),
+		NodeID:                s.UID(),
+		NodeType:              report.Service,
+		NodeName:              s.Name() + " / " + s.GetNamespace() + " / " + kubernetesClusterName,
+		KubernetesType:        string(s.Spec.Type),
+		KubernetesClusterId:   kubernetesClusterId,
+		KubernetesClusterName: kubernetesClusterName,
+		KubernetesIP:          s.Spec.ClusterIP,
+		KubernetesNamespace:   s.GetNamespace(),
 	}
 	if len(s.Status.LoadBalancer.Ingress) > 0 {
 		var ingressIp []string
 		for _, ing := range s.Status.LoadBalancer.Ingress {
 			ingressIp = append(ingressIp, ing.IP)
 		}
-		latest[report.KubernetesIngressIP] = strings.Join(ingressIp, ",")
+		metadata.KubernetesIngressIP = ingressIp
 	}
 	if s.Spec.LoadBalancerIP != "" {
-		latest[PublicIP] = s.Spec.LoadBalancerIP
+		metadata.KubernetesPublicIP = s.Spec.LoadBalancerIP
 	}
-	if len(s.Spec.Ports) != 0 {
-		portStr := ""
-		for _, p := range s.Spec.Ports {
-			portStr = portStr + servicePortString(p) + ","
+	if len(s.Spec.Ports) > 0 {
+		metadata.KubernetesPorts = make([]string, len(s.Spec.Ports))
+		for i, p := range s.Spec.Ports {
+			metadata.KubernetesPorts[i] = servicePortString(p)
 		}
-		latest[Ports] = portStr[:len(portStr)-1]
 	}
-	return s.MetaNode(report.MakeServiceNodeID(s.UID())).WithLatests(latest).
-		WithParent(report.KubernetesCluster, kubernetesClusterNodeId).
-		WithParent(report.CloudProvider, cloudProviderNodeId)
-	//.WithLatestActiveControls(Describe, GetKubeCniPlugin)
+	return report.TopologyNode{
+		Metadata: metadata,
+		Parents: &report.Parent{
+			CloudProvider:     cloudProviderNodeId,
+			KubernetesCluster: kubernetesClusterId,
+			Namespace:         kubernetesClusterId + "-" + s.GetNamespace(),
+		},
+	}
 }
 
 func (s *service) ClusterIP() string {

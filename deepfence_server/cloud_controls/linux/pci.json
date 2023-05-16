@@ -1,0 +1,614 @@
+[
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.15",
+    "description": "Ensure that the Docker socket file ownership is set to root:docker (Automated)",
+    "title": "Ensure that the Docker socket file ownership is set to root:docker (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chown root:docker /var/run/docker.sock. This sets the ownership to root and group ownership to docker for the default Docker socket file.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.15"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.15",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Configuration",
+    "category_hierarchy": [
+      "Docker Configuration"
+    ],
+    "control_id": "pci-1.2.2",
+    "description": "Ensure that the version of Docker is up to date (Manual)",
+    "title": "Ensure that the version of Docker is up to date (Manual)",
+    "tags": {},
+    "documentation": "You should monitor versions of Docker releases and make sure your software is updated as required.",
+    "parent_control_hierarchy": [
+      "Docker Configuration",
+      "1.2.2"
+    ],
+    "parent_control_breadcrumb": "Docker Configuration1.2.2",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.21",
+    "description": "Ensure that the /fenced/mnt/host/etc/sysconfig/docker file ownership is set to root:root (Automated)",
+    "title": "Ensure that the /fenced/mnt/host/etc/sysconfig/docker file ownership is set to root:root (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chown root:root /fenced/mnt/host/etc/sysconfig/docker. This sets the ownership and group ownership for the file to root.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.21"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.21",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.5",
+    "description": "Ensure that the /fenced/mnt/host/etc/docker directory ownership is set to root:root (Automated)",
+    "title": "Ensure that the /fenced/mnt/host/etc/docker directory ownership is set to root:root (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chown root:root /fenced/mnt/host/etc/docker. This sets the ownership and group ownership for the directory to root.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.5"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.5",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.8",
+    "description": "Ensure that registry certificate file permissions are set to 444 or more restrictively (Automated)",
+    "title": "Ensure that registry certificate file permissions are set to 444 or more restrictively (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chmod 444 /fenced/mnt/host/etc/docker/certs.d/<registry-name>/*. This would set the permissions for the registry certificate files to 444.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.8"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.8",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.17",
+    "description": "Ensure that the daemon.json file ownership is set to root:root (Automated)",
+    "title": "Ensure that the daemon.json file ownership is set to root:root (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chown root:root /fenced/mnt/host/etc/docker/daemon.json. This sets the ownership and group ownership for the file to root.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.17"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.17",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Audit",
+    "category_hierarchy": [
+      "Audit"
+    ],
+    "control_id": "pci-1.1.13",
+    "description": "Ensure auditing is configured for Docker files and directories - /etc/sysconfig/docker (Automated)",
+    "title": "Ensure auditing is configured for Docker files and directories - /etc/sysconfig/docker (Automated)",
+    "tags": {},
+    "documentation": "Install auditd. Add -w /fenced/mnt/host/etc/sysconfig/docker -k docker to the /fenced/mnt/host/etc/audit/rules.d/audit.rules file. Then restart the audit daemon using command service auditd restart.",
+    "parent_control_hierarchy": [
+      "Audit",
+      "1.1.13"
+    ],
+    "parent_control_breadcrumb": "Audit1.1.13",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.18",
+    "description": "Ensure that daemon.json file permissions are set to 644 or more restrictive (Automated)",
+    "title": "Ensure that daemon.json file permissions are set to 644 or more restrictive (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chmod 644 /fenced/mnt/host/etc/docker/daemon.json. This sets the file permissions for this file to 644.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.18"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.18",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.3",
+    "description": "Ensure that docker.socket file ownership is set to root:root (Automated)",
+    "title": "Ensure that docker.socket file ownership is set to root:root (Automated)",
+    "tags": {},
+    "documentation": "Find out the file location: systemctl show -p FragmentPath docker.socket. If the file does not exist, this recommendation is not applicable. If the file exists, run the command chown root:root <path> to set the ownership and group ownership for the file to root.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.3"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.3",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.22",
+    "description": "Ensure that the /fenced/mnt/host/etc/default/docker file permissions are set to 644 or more restrictively (Automated)",
+    "title": "Ensure that the /fenced/mnt/host/etc/default/docker file permissions are set to 644 or more restrictively (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chmod 644 /fenced/mnt/host/etc/default/docker. This sets the file permissions for this file to 644.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.22"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.22",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.4",
+    "description": "Ensure that docker.socket file permissions are set to 644 or more restrictive (Automated)",
+    "title": "Ensure that docker.socket file permissions are set to 644 or more restrictive (Automated)",
+    "tags": {},
+    "documentation": "Find out the file location: systemctl show -p FragmentPath docker.socket. If the file does not exist, this recommendation is not applicable. If the file does exist, you should run the command chmod 644 <path> to set the file permissions to 644.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.4"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.4",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Audit",
+    "category_hierarchy": [
+      "Audit"
+    ],
+    "control_id": "pci-1.1.6",
+    "description": "Ensure auditing is configured for Docker files and directories - /fenced/mnt/host/etc/docker (Automated)",
+    "title": "Ensure auditing is configured for Docker files and directories - /fenced/mnt/host/etc/docker (Automated)",
+    "tags": {},
+    "documentation": "Install auditd. Add -w /fenced/mnt/host/etc/docker -k docker to the /fenced/mnt/host/etc/audit/rules.d/audit.rules file. Then restart the audit daemon using command service auditd restart.",
+    "parent_control_hierarchy": [
+      "Audit",
+      "1.1.6"
+    ],
+    "parent_control_breadcrumb": "Audit1.1.6",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.20",
+    "description": "Ensure that the /fenced/mnt/host/etc/sysconfig/docker file permissions are set to 644 or more restrictively (Automated)",
+    "title": "Ensure that the /fenced/mnt/host/etc/sysconfig/docker file permissions are set to 644 or more restrictively (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chmod 644 /fenced/mnt/host/etc/sysconfig/docker. This sets the file permissions for this file to 644.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.20"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.20",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.10",
+    "description": "Ensure that TLS CA certificate file permissions are set to 444 or more restrictively (Automated)",
+    "title": "Ensure that TLS CA certificate file permissions are set to 444 or more restrictively (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chmod 444 <path to TLS CA certificate file>. This sets the file permissions on the TLS CA file to 444.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.10"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.10",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Audit",
+    "category_hierarchy": [
+      "Audit"
+    ],
+    "control_id": "pci-1.1.9",
+    "description": "Ensure auditing is configured for Docker files and directories - docker.socket (Automated)",
+    "title": "Ensure auditing is configured for Docker files and directories - docker.socket (Automated)",
+    "tags": {},
+    "documentation": "Install auditd. Add -w  -k docker to the /fenced/mnt/host/etc/audit/rules.d/audit.rules file. Then restart the audit daemon using command service auditd restart.",
+    "parent_control_hierarchy": [
+      "Audit",
+      "1.1.9"
+    ],
+    "parent_control_breadcrumb": "Audit1.1.9",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Container Runtime",
+    "category_hierarchy": [
+      "Container Runtime"
+    ],
+    "control_id": "pci-5.7",
+    "description": "Ensure privileged ports are not mapped within containers (Automated)",
+    "title": "Ensure privileged ports are not mapped within containers (Automated)",
+    "tags": {},
+    "documentation": "You should not map container ports to privileged host ports when starting a container. You should also, ensure that there is no such container to host privileged port mapping declarations in the Dockerfile.",
+    "parent_control_hierarchy": [
+      "Container Runtime",
+      "5.7"
+    ],
+    "parent_control_breadcrumb": "Container Runtime5.7",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Container Runtime",
+    "category_hierarchy": [
+      "Container Runtime"
+    ],
+    "control_id": "pci-5.5",
+    "description": "Ensure sensitive host system directories are not mounted on containers (Automated)",
+    "title": "Ensure sensitive host system directories are not mounted on containers (Automated)",
+    "tags": {},
+    "documentation": "You should not mount directories which are security sensitive on the host within containers, especially in read-write mode.",
+    "parent_control_hierarchy": [
+      "Container Runtime",
+      "5.5"
+    ],
+    "parent_control_breadcrumb": "Container Runtime5.5",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.11",
+    "description": "Ensure that Docker server certificate file ownership is set to root:root (Automated)",
+    "title": "Ensure that Docker server certificate file ownership is set to root:root (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chown root:root <path to Docker server certificate file>. This sets the individual ownership and the group ownership for the Docker server certificate file to root.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.11"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.11",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.9",
+    "description": "Ensure that TLS CA certificate file ownership is set to root:root (Automated)",
+    "title": "Ensure that TLS CA certificate file ownership is set to root:root (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chown root:root <path to TLS CA certificate file>. This sets the individual ownership and group ownership for the TLS CA certificate file to root.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.9"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.9",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Audit",
+    "category_hierarchy": [
+      "Audit"
+    ],
+    "control_id": "pci-1.1.5",
+    "description": "Ensure auditing is configured for Docker files and directories - /var/lib/docker (Automated)",
+    "title": "Ensure auditing is configured for Docker files and directories - /var/lib/docker (Automated)",
+    "tags": {},
+    "documentation": "Install auditd. Add -w /var/lib/docker -k docker to the /fenced/mnt/host/etc/audit/rules.d/audit.rules file. Then restart the audit daemon using command service auditd restart.",
+    "parent_control_hierarchy": [
+      "Audit",
+      "1.1.5"
+    ],
+    "parent_control_breadcrumb": "Audit1.1.5",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.12",
+    "description": "Ensure that the Docker server certificate file permissions are set to 444 or more restrictively (Automated)",
+    "title": "Ensure that the Docker server certificate file permissions are set to 444 or more restrictively (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chmod 444 <path to Docker server certificate file>. This sets the file permissions of the Docker server certificate file to 444.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.12"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.12",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.19",
+    "description": "Ensure that the /fenced/mnt/host/etc/default/docker file ownership is set to root:root (Automated)",
+    "title": "Ensure that the /fenced/mnt/host/etc/default/docker file ownership is set to root:root (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chown root:root /fenced/mnt/host/etc/default/docker. This sets the ownership and group ownership of the file to root.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.19"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.19",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Daemon Configuration",
+    "category_hierarchy": [
+      "Docker Daemon Configuration"
+    ],
+    "control_id": "pci-2.14",
+    "description": "Ensure containers are restricted from acquiring new privileges (Scored)",
+    "title": "Ensure containers are restricted from acquiring new privileges (Scored)",
+    "tags": {},
+    "documentation": "You should run the Docker daemon using command: dockerd --no-new-privileges",
+    "parent_control_hierarchy": [
+      "Docker Daemon Configuration",
+      "2.14"
+    ],
+    "parent_control_breadcrumb": "Docker Daemon Configuration2.14",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Daemon Configuration",
+    "category_hierarchy": [
+      "Docker Daemon Configuration"
+    ],
+    "control_id": "pci-2.5",
+    "description": "Ensure insecure registries are not used (Scored)",
+    "title": "Ensure insecure registries are not used (Scored)",
+    "tags": {},
+    "documentation": "You should ensure that no insecure registries are in use.",
+    "parent_control_hierarchy": [
+      "Docker Daemon Configuration",
+      "2.5"
+    ],
+    "parent_control_breadcrumb": "Docker Daemon Configuration2.5",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.6",
+    "description": "Ensure that /fenced/mnt/host/etc/docker directory permissions are set to 755 or more restrictively (Automated)",
+    "title": "Ensure that /fenced/mnt/host/etc/docker directory permissions are set to 755 or more restrictively (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chmod 755 /fenced/mnt/host/etc/docker. This sets the permissions for the directory to 755.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.6"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.6",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.16",
+    "description": "Ensure that the Docker socket file permissions are set to 660 or more restrictively (Automated)",
+    "title": "Ensure that the Docker socket file permissions are set to 660 or more restrictively (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chmod 660 /var/run/docker.sock. This sets the file permissions of the Docker socket file to 660.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.16"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.16",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.13",
+    "description": "Ensure that the Docker server certificate key file ownership is set to root:root (Automated)",
+    "title": "Ensure that the Docker server certificate key file ownership is set to root:root (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chown root:root <path to Docker server certificate key file>. This sets the individual ownership and group ownership for the Docker server certificate key file to root.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.13"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.13",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Daemon Configuration",
+    "category_hierarchy": [
+      "Docker Daemon Configuration"
+    ],
+    "control_id": "pci-2.7",
+    "description": "Ensure TLS authentication for Docker daemon is configured (Scored)",
+    "title": "Ensure TLS authentication for Docker daemon is configured (Scored)",
+    "tags": {},
+    "documentation": "Follow the steps mentioned in the Docker documentation or other references. By default, TLS authentication is not configured.",
+    "parent_control_hierarchy": [
+      "Docker Daemon Configuration",
+      "2.7"
+    ],
+    "parent_control_breadcrumb": "Docker Daemon Configuration2.7",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Audit",
+    "category_hierarchy": [
+      "Audit"
+    ],
+    "control_id": "pci-1.1.7",
+    "description": "Ensure auditing is configured for Docker files and directories - docker.service (Automated)",
+    "title": "Ensure auditing is configured for Docker files and directories - docker.service (Automated)",
+    "tags": {},
+    "documentation": "Install auditd. Add -w  -k docker to the /fenced/mnt/host/etc/audit/rules.d/audit.rules file. Then restart the audit daemon using command service auditd restart.",
+    "parent_control_hierarchy": [
+      "Audit",
+      "1.1.7"
+    ],
+    "parent_control_breadcrumb": "Audit1.1.7",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Audit",
+    "category_hierarchy": [
+      "Audit"
+    ],
+    "control_id": "pci-1.1.18",
+    "description": "Ensure auditing is configured for Docker files and directories - /usr/bin/runc (Automated)",
+    "title": "Ensure auditing is configured for Docker files and directories - /usr/bin/runc (Automated)",
+    "tags": {},
+    "documentation": "Install auditd. Add -w /usr/bin/runc -k docker to the /fenced/mnt/host/etc/audit/rules.d/audit.rules file. Then restart the audit daemon using command service auditd restart.",
+    "parent_control_hierarchy": [
+      "Audit",
+      "1.1.18"
+    ],
+    "parent_control_breadcrumb": "Audit1.1.18",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Audit",
+    "category_hierarchy": [
+      "Audit"
+    ],
+    "control_id": "pci-1.1.14",
+    "description": "Ensure auditing is configured for Docker files and directories - /usr/bin/containerd (Automated)",
+    "title": "Ensure auditing is configured for Docker files and directories - /usr/bin/containerd (Automated)",
+    "tags": {},
+    "documentation": "Install auditd. Add -w /usr/bin/containerd -k docker to the /fenced/mnt/host/etc/audit/rules.d/audit.rules file. Then restart the audit daemon using command service auditd restart.",
+    "parent_control_hierarchy": [
+      "Audit",
+      "1.1.14"
+    ],
+    "parent_control_breadcrumb": "Audit1.1.14",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.14",
+    "description": "Ensure that the Docker server certificate key file permissions are set to 400 (Automated)",
+    "title": "Ensure that the Docker server certificate key file permissions are set to 400 (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chmod 400 <path to Docker server certificate key file>. This sets the Docker server certificate key file permissions to 400.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.14"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.14",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.7",
+    "description": "Ensure that registry certificate file ownership is set to root:root (Automated)",
+    "title": "Ensure that registry certificate file ownership is set to root:root (Automated)",
+    "tags": {},
+    "documentation": "You should run the following command: chown root:root /fenced/mnt/host/etc/docker/certs.d/<registry-name>/*. This would set the individual ownership and group ownership for the registry certificate files to root.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.7"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.7",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Container Runtime",
+    "category_hierarchy": [
+      "Container Runtime"
+    ],
+    "control_id": "pci-5.30",
+    "description": "Ensure that the host's user namespaces are not shared (Automated)",
+    "title": "Ensure that the host's user namespaces are not shared (Automated)",
+    "tags": {},
+    "documentation": "You should not share user namespaces between host and containers.",
+    "parent_control_hierarchy": [
+      "Container Runtime",
+      "5.30"
+    ],
+    "parent_control_breadcrumb": "Container Runtime5.30",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Docker Files",
+    "category_hierarchy": [
+      "Docker Files"
+    ],
+    "control_id": "pci-3.2",
+    "description": "Ensure that docker.service file permissions are appropriately set (Automated)",
+    "title": "Ensure that docker.service file permissions are appropriately set (Automated)",
+    "tags": {},
+    "documentation": "Find out the file location: systemctl show -p FragmentPath docker.service. If the file does not exist, this recommendation is not applicable. If the file exists, run the command chmod 644 <path> to set the file permissions to 644.",
+    "parent_control_hierarchy": [
+      "Docker Files",
+      "3.2"
+    ],
+    "parent_control_breadcrumb": "Docker Files3.2",
+    "executable": false
+  },
+  {
+    "category_breadcrumb": "Audit",
+    "category_hierarchy": [
+      "Audit"
+    ],
+    "control_id": "pci-1.1.10",
+    "description": "Ensure auditing is configured for Docker files and directories - /fenced/mnt/host/etc/default/docker (Automated)",
+    "title": "Ensure auditing is configured for Docker files and directories - /fenced/mnt/host/etc/default/docker (Automated)",
+    "tags": {},
+    "documentation": "Install auditd. Add -w /fenced/mnt/host/etc/default/docker -k docker to the /fenced/mnt/host/etc/audit/rules.d/audit.rules file. Then restart the audit daemon using command service auditd restart.",
+    "parent_control_hierarchy": [
+      "Audit",
+      "1.1.10"
+    ],
+    "parent_control_breadcrumb": "Audit1.1.10",
+    "executable": false
+  }
+]

@@ -107,9 +107,9 @@ $(RUNSVINIT):
 shell:
 	/bin/bash
 
-prog/externalui/externalui.go:
-	mkdir -p prog/externalui
-	$(NO_CROSS_COMP); go run -mod vendor github.com/mjibson/esc -o $@ -pkg externalui -prefix client/build-external -include '\.html$$' client/build-external
+#prog/externalui/externalui.go:
+#	mkdir -p prog/externalui
+#	$(NO_CROSS_COMP); go run -mod vendor github.com/mjibson/esc -o $@ -pkg externalui -prefix client/build-external -include '\.html$$' client/build-external
 
 endif
 
@@ -139,7 +139,7 @@ ui-pkg-upload: client/bundle/weave-scope.tgz
 clean:
 	# $(GO) clean ./...
 	rm -rf $(SCOPE_EXPORT) $(SCOPE_BACKEND_BUILD_UPTODATE) \
-		$(SCOPE_EXE) $(RUNSVINIT) prog/staticui/staticui.go prog/externalui/externalui.go client/build/*.js client/build-external/*.js docker/weave .pkg \
+		$(SCOPE_EXE) $(RUNSVINIT) prog/staticui/staticui.go client/build/*.js client/build-external/*.js docker/weave .pkg \
 		$(CODECGEN_TARGETS) $(CODECGEN_DIR)/bin
 	rm -rf docker/deepfence*
 

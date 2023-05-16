@@ -1,0 +1,19 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="32" cy="32" r="32" fill="#0277BD"/>
+<path d="M38 26H26V38H38V26Z" fill="#AECBFA"/>
+<path d="M34 12H30V20H34V12Z" fill="#669DF6"/>
+<path d="M26 12H22V20H26V12Z" fill="#669DF6"/>
+<path d="M42 12H38V20H42V12Z" fill="#669DF6"/>
+<path d="M34 44H30V52H34V44Z" fill="#4285F4"/>
+<path d="M26 44H22V52H26V44Z" fill="#4285F4"/>
+<path d="M42 44H38V52H42V44Z" fill="#4285F4"/>
+<path d="M44 30V34H52V30H44Z" fill="#4285F4"/>
+<path d="M44 38V42H52V38H44Z" fill="#4285F4"/>
+<path d="M44 22V26H52V22H44Z" fill="#4285F4"/>
+<path d="M12 30V34H20V30H12Z" fill="#669DF6"/>
+<path d="M12 38V42H20V38H12Z" fill="#669DF6"/>
+<path d="M12 22V26H20V22H12Z" fill="#669DF6"/>
+<path d="M18 18V46H46V18H18ZM42 42H22V22H42V42Z" fill="#AECBFA"/>
+<path d="M26 38H38L32 32L26 38Z" fill="#669DF6"/>
+<path d="M32 32L38 38V26L32 32Z" fill="#4285F4"/>
+</svg>

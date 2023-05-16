@@ -1,0 +1,17 @@
+{{- if .Values.neo4j.create }}
+---
+kind: Secret
+apiVersion: v1
+type: Opaque
+metadata:
+  name: "deepfence-console-secrets-neo4j"
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: neo4j
+stringData:
+  DEEPFENCE_NEO4J_BOLT_PORT: "7687"
+  DEEPFENCE_NEO4J_HOST: deepfence-neo4j
+  DEEPFENCE_NEO4J_USER: {{ (splitList "/" .Values.neo4j.secrets.NEO4J_AUTH) | first | quote }} 
+  DEEPFENCE_NEO4J_PASSWORD: {{ (splitList "/" .Values.neo4j.secrets.NEO4J_AUTH) | last | quote }} 
+{{- end }}
+

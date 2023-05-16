@@ -39,12 +39,14 @@ const AvailableScansForNodeType: Record<string, ScanTypeEnum[]> = {
 export const Header = ({
   nodeId,
   nodeType,
+  label,
   onGoBack,
   showBackBtn,
   onStartScanClick,
 }: {
   nodeId: string;
   nodeType: string;
+  label?: string;
   onGoBack: () => void;
   showBackBtn: boolean;
   onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
@@ -63,7 +65,7 @@ export const Header = ({
             <img src={getNodeImage(nodeType)} alt={nodeType} width="100%" height="100%" />
           </div>
           <div className="truncate flex-1">
-            <TruncatedText text={nodeId} />
+            <TruncatedText text={label?.length ? label : nodeId} />
           </div>
           {availableScans.length ? (
             <Dropdown
@@ -131,7 +133,19 @@ export const Header = ({
                     </DropdownItem>
                   ) : null}
                   {availableScans.includes(ScanTypeEnum.ComplianceScan) ? (
-                    <DropdownItem>
+                    <DropdownItem
+                      onClick={(e) => {
+                        e.preventDefault();
+                        onStartScanClick({
+                          scanType: ScanTypeEnum.ComplianceScan,
+                          data: {
+                            nodeIds: [nodeId],
+                            nodeType: nodeType as any,
+                          },
+                          showAdvancedOptions: true,
+                        });
+                      }}
+                    >
                       <span className="h-6 w-6">
                         <PostureIcon />
                       </span>

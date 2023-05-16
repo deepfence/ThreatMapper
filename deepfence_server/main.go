@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -22,6 +23,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
+	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -47,6 +49,7 @@ var (
 	serveOpenapiDocs      = flag.Bool("api-docs", true, "serve openapi documentation")
 	enableHttpLogs        = flag.Bool("http-logs", false, "enable request logs")
 	kafkaBrokers          string
+	enable_debug          bool
 )
 
 type Config struct {
@@ -56,7 +59,17 @@ type Config struct {
 	Orchestrator           string
 }
 
+func init() {
+	enable_debug = os.Getenv("DF_ENABLE_DEBUG") != ""
+}
+
 func main() {
+
+	if enable_debug {
+		runtime.SetBlockProfileRate(1)
+		runtime.SetMutexProfileFraction(1)
+	}
+
 	flag.Parse()
 
 	openApiDocs := apiDocs.InitializeOpenAPIReflector()
@@ -100,6 +113,11 @@ func main() {
 	}
 
 	err = initializeTelemetry()
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
+
+	err = initMinio()
 	if err != nil {
 		log.Fatal().Msg(err.Error())
 	}
@@ -331,6 +349,10 @@ func initializeDatabase() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	err = model.InitializeScheduledTasks(ctx, pgClient)
+	if err != nil {
+		return nil, err
+	}
 	return jwtSecret, nil
 }
 
@@ -346,6 +368,9 @@ func initializeOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
 	openApiDocs.AddDiagnosisOperations()
 	openApiDocs.AddCloudNodeOperations()
 	openApiDocs.AddRegistryOperations()
+	openApiDocs.AddIntegrationOperations()
+	openApiDocs.AddReportsOperations()
+	openApiDocs.AddSettingsOperations()
 }
 
 func initializeInternalOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {
@@ -400,5 +425,24 @@ func initializeTelemetry() error {
 	otel.SetTextMapPropagator(
 		propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}),
 	)
+	return nil
+}
+
+func initMinio() error {
+	ctx := directory.NewContextWithNameSpace("database")
+	mc, err := directory.MinioClient(ctx)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return err
+	}
+	if err := mc.CreatePublicBucket(ctx); err != nil {
+		log.Error().Err(err).Msgf("failed to create bucket")
+		return err
+	}
+
+	go func() {
+		handler.PeriodicDownloadDB()
+	}()
+
 	return nil
 }

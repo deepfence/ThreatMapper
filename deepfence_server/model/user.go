@@ -28,23 +28,11 @@ const (
 	GrantTypeAPIToken = "api_token"
 )
 
-type MessageResponse struct {
-	Message string `json:"message" required:"true"`
-}
-
 var (
 	AccessTokenExpiry  = time.Minute * 30
-	RefreshTokenExpiry = time.Hour * 24
-	ErrorMessage       = map[string]string{
-		"first_name": "should only contain alphabets, numbers, space and hyphen",
-		"last_name":  "should only contain alphabets, numbers, space and hyphen",
-		"company":    "should only contain alphabets, numbers and valid characters",
-		"api_token":  "api_token must be UUID",
-		"email":      "invalid email address",
-		"password":   "should contain at least one upper case, lower case, digit and special character",
-	}
-	CompanyRegex  = regexp.MustCompile("^[A-Za-z][a-zA-Z0-9-\\s@\\.#&!]+$")
-	UserNameRegex = regexp.MustCompile("^[A-Za-z][A-Za-z .'-]+$")
+	RefreshTokenExpiry = time.Hour * 26
+	CompanyRegex       = regexp.MustCompile("^[A-Za-z][a-zA-Z0-9-\\s@\\.#&!]+$")
+	UserNameRegex      = regexp.MustCompile("^[A-Za-z][A-Za-z .'-]+$")
 )
 
 func init() {
@@ -57,6 +45,15 @@ func init() {
 			}
 		}
 	}
+}
+
+type ApiTokenResponse struct {
+	ID              int64     `json:"id"`
+	ApiToken        string    `json:"api_token"`
+	Name            string    `json:"name"`
+	CompanyID       int32     `json:"company_id"`
+	CreatedByUserID int64     `json:"created_by_user_id"`
+	CreatedAt       time.Time `json:"created_at"`
 }
 
 type ApiToken struct {
@@ -191,7 +188,7 @@ type UserRegisterRequest struct {
 	Email               string `json:"email" validate:"required,email" required:"true"`
 	Company             string `json:"company" validate:"required,company_name,min=2,max=32" required:"true"`
 	Password            string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
-	IsTemporaryPassword bool   `json:"is_temporary_password" required:"true"`
+	IsTemporaryPassword bool   `json:"is_temporary_password"`
 	ConsoleURL          string `json:"console_url" validate:"required,url" required:"true"`
 }
 
@@ -199,7 +196,7 @@ type RegisterInvitedUserRequest struct {
 	FirstName           string `json:"first_name" validate:"required,user_name,min=2,max=32" required:"true"`
 	LastName            string `json:"last_name" validate:"required,user_name,min=2,max=32" required:"true"`
 	Password            string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
-	IsTemporaryPassword bool   `json:"is_temporary_password" required:"true"`
+	IsTemporaryPassword bool   `json:"is_temporary_password"`
 	Code                string `json:"code" validate:"required,uuid4" required:"true"`
 }
 
@@ -236,16 +233,16 @@ type UpdateUserPasswordRequest struct {
 type UpdateUserRequest struct {
 	FirstName string `json:"first_name" validate:"required,user_name,min=2,max=32"`
 	LastName  string `json:"last_name" validate:"required,user_name,min=2,max=32"`
-	IsActive  bool   `json:"is_active" validate:"required"`
-	Role      string `json:"role" validate:"required,oneof=admin standard-user read-only-user" required:"true" enum:"admin,standard-user,read-only-user"`
+	IsActive  bool   `json:"is_active"`
+	Role      string `json:"role" validate:"required,oneof=admin standard-user read-only-user" enum:"admin,standard-user,read-only-user"`
 }
 
 type UpdateUserIdRequest struct {
 	ID        int64  `path:"id" validate:"required"`
 	FirstName string `json:"first_name" validate:"required,user_name,min=2,max=32"`
 	LastName  string `json:"last_name" validate:"required,user_name,min=2,max=32"`
-	IsActive  bool   `json:"is_active" validate:"required"`
-	Role      string `json:"role" validate:"required,oneof=admin standard-user read-only-user" required:"true" enum:"admin,standard-user,read-only-user"`
+	IsActive  bool   `json:"is_active"`
+	Role      string `json:"role" validate:"required,oneof=admin standard-user read-only-user" enum:"admin,standard-user,read-only-user"`
 }
 
 type User struct {
@@ -328,7 +325,7 @@ func GetUserByEmail(email string) (*User, int, context.Context, *postgresqlDb.Qu
 	pgClient, err := directory.PostgresClient(ctx)
 	err = user.LoadFromDbByEmail(ctx, pgClient)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, http.StatusNotFound, ctx, pgClient, errors.New(utils.ErrorUserNotFound)
+		return nil, http.StatusNotFound, ctx, pgClient, UserNotFoundErr
 	} else if err != nil {
 		return nil, http.StatusInternalServerError, ctx, pgClient, err
 	}
@@ -389,6 +386,10 @@ func (u *User) UpdatePassword(ctx context.Context, pgClient *postgresqlDb.Querie
 		return err
 	}
 	return nil
+}
+
+func (u *User) Delete(ctx context.Context, pgClient *postgresqlDb.Queries) error {
+	return pgClient.DeleteUser(ctx, u.ID)
 }
 
 func (u *User) Update(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.User, error) {

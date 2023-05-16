@@ -9,8 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/weaveworks/scope/common/xfer"
 	"github.com/weaveworks/scope/test"
+)
+
+const (
+	AppPort = 80
 )
 
 func TestResolverCases(t *testing.T) {
@@ -161,7 +164,7 @@ func TestResolver(t *testing.T) {
 	// Initial resolve should just give us IPs
 	assertAdd(
 		url.URL{Scheme: "http", Host: ip1 + port},
-		url.URL{Scheme: "http", Host: fmt.Sprintf("%s:%d", ip2, xfer.AppPort)},
+		url.URL{Scheme: "http", Host: fmt.Sprintf("%s:%d", ip2, AppPort)},
 	)
 
 	// Trigger another resolve with a tick; again,
@@ -169,7 +172,7 @@ func TestResolver(t *testing.T) {
 	c <- time.Now()
 	assertAdd(
 		url.URL{Scheme: "http", Host: ip1 + port},
-		url.URL{Scheme: "http", Host: fmt.Sprintf("%s:%d", ip2, xfer.AppPort)},
+		url.URL{Scheme: "http", Host: fmt.Sprintf("%s:%d", ip2, AppPort)},
 	)
 
 	ip3 := "1.2.3.4"
@@ -177,7 +180,7 @@ func TestResolver(t *testing.T) {
 	c <- time.Now() // trigger a resolve
 	assertAdd(
 		url.URL{Scheme: "http", Host: ip3 + port},
-		url.URL{Scheme: "http", Host: ip1 + port}, url.URL{Scheme: "http", Host: fmt.Sprintf("%s:%d", ip2, xfer.AppPort)},
+		url.URL{Scheme: "http", Host: ip1 + port}, url.URL{Scheme: "http", Host: fmt.Sprintf("%s:%d", ip2, AppPort)},
 	)
 
 	ip4 := "10.10.10.10"
@@ -187,7 +190,7 @@ func TestResolver(t *testing.T) {
 		url.URL{Scheme: "http", Host: ip3 + port},
 		url.URL{Scheme: "http", Host: ip4 + port},
 		url.URL{Scheme: "http", Host: ip1 + port},
-		url.URL{Scheme: "http", Host: fmt.Sprintf("%s:%d", ip2, xfer.AppPort)},
+		url.URL{Scheme: "http", Host: fmt.Sprintf("%s:%d", ip2, AppPort)},
 	)
 
 	done := make(chan struct{})

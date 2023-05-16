@@ -3,6 +3,7 @@ ARG IMAGE_REPOSITORY=deepfenceio
 FROM $IMAGE_REPOSITORY/deepfence_package_scanner_ce:$DF_IMG_TAG AS packagescanner
 FROM $IMAGE_REPOSITORY/deepfence_secret_scanner_ce:$DF_IMG_TAG AS secretscanner
 FROM $IMAGE_REPOSITORY/deepfence_malware_scanner_ce:$DF_IMG_TAG AS yarahunter
+FROM surnet/alpine-wkhtmltopdf:3.17.0-0.12.6-full as wkhtmltopdf
 
 FROM alpine:3.17 AS builder-yara
 
@@ -43,16 +44,18 @@ COPY --from=builder-yara /usr/local/yara.tar.gz /usr/local/yara.tar.gz
 RUN tar -xzf /usr/local/yara.tar.gz -C /usr/local/ \
     && rm /usr/local/yara.tar.gz
 
-RUN apk update && apk add --no-cache --upgrade curl tar libstdc++ libgcc docker skopeo python3 py3-pip bash podman gcc musl-dev pkgconfig g++ git protoc \
-    jansson-dev \
-    libc-dev \
-    openssl-dev \
+RUN apk update && apk add --no-cache --upgrade \
+    curl tar libstdc++ libgcc docker skopeo python3 \
+    py3-pip bash podman gcc musl-dev pkgconfig \
+    g++ git protoc jansson-dev libc-dev openssl-dev \
     && apk add hyperscan-dev --repository=https://dl-cdn.alpinelinux.org/alpine/v3.13/community \
     && git clone https://github.com/deepfence/yara-rules
+
 ENV PKG_CONFIG_PATH=/usr/local/include/hs/:$(PKG_CONFIG_PATH) \
     CGO_CFLAGS="-I/usr/local/include/hyperscan/src" \
     LD_LIBRARY_PATH=/usr/local/lib:/usr/local/include/hs/lib:$LD_LIBRARY_PATH \
     PKG_CONFIG_PATH=/usr/local/yara/lib/pkgconfig:$(PKG_CONFIG_PATH)
+
 # "make vendor" is run before separately to avoid docker cache invalidation
 RUN make deepfence_worker
 
@@ -61,10 +64,11 @@ LABEL MAINTAINER="Deepfence Inc"
 LABEL deepfence.role=system
 
 ADD deepfence_server/cloud_controls /cloud_controls
-RUN apk add --no-cache kafkacat docker openrc bash skopeo \
-    jansson-dev \
-    libmagic
-RUN apk add hyperscan --repository=https://dl-cdn.alpinelinux.org/alpine/v3.13/community 
+RUN apk add --no-cache kafkacat docker openrc bash skopeo jansson-dev \
+        libmagic libstdc++ libx11 libxrender libxext libssl1.1 ca-certificates \
+        fontconfig freetype ttf-droid ttf-freefont ttf-liberation
+RUN apk add hyperscan --repository=https://dl-cdn.alpinelinux.org/alpine/v3.13/community \
+    && apk add --no-cache postgresql-client --repository=https://dl-cdn.alpinelinux.org/alpine/v3.14/main
 
 ENV DEEPFENCE_KAFKA_TOPIC_PARTITIONS=3 \
     DEEPFENCE_KAFKA_TOPIC_PARTITIONS_TASKS=3 \
@@ -77,6 +81,8 @@ ENV DEEPFENCE_KAFKA_TOPIC_PARTITIONS=3 \
 # RUN apk add --no-cache --update bash curl \
 #     && apk upgrade \
 #     && curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin v0.55.0
+
+COPY --from=wkhtmltopdf /bin/wkhtmltopdf /bin/libwkhtmltox.so /bin/
 
 COPY --from=packagescanner /usr/local/bin/syft /usr/local/bin/syft
 COPY --from=packagescanner /usr/local/bin/grype /usr/local/bin/grype
@@ -91,10 +97,12 @@ COPY --from=build /go/deepfence_worker/entrypoint.sh /entrypoint.sh
 COPY --from=build /go/deepfence_worker/yara-rules /usr/local/yara-rules
 
 COPY --from=builder-yara /usr/local/yara.tar.gz /usr/local/yara.tar.gz
-# extract
+# extract yara 
 RUN tar -xzf /usr/local/yara.tar.gz -C /usr/local/ \
     && rm /usr/local/yara.tar.gz \
     && chmod +x /entrypoint.sh
+
+ENV GRYPE_DB_UPDATE_URL="http://deepfence-file-server:9000/database/database/vulnerability/listing.json"
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["/usr/local/bin/deepfence_worker"]

@@ -36,7 +36,7 @@ export interface ModelRegisterInvitedUserRequest {
      * @type {boolean}
      * @memberof ModelRegisterInvitedUserRequest
      */
-    is_temporary_password: boolean;
+    is_temporary_password?: boolean;
     /**
      * 
      * @type {string}
@@ -58,7 +58,6 @@ export function instanceOfModelRegisterInvitedUserRequest(value: object): boolea
     let isInstance = true;
     isInstance = isInstance && "code" in value;
     isInstance = isInstance && "first_name" in value;
-    isInstance = isInstance && "is_temporary_password" in value;
     isInstance = isInstance && "last_name" in value;
     isInstance = isInstance && "password" in value;
 
@@ -77,7 +76,7 @@ export function ModelRegisterInvitedUserRequestFromJSONTyped(json: any, ignoreDi
         
         'code': json['code'],
         'first_name': json['first_name'],
-        'is_temporary_password': json['is_temporary_password'],
+        'is_temporary_password': !exists(json, 'is_temporary_password') ? undefined : json['is_temporary_password'],
         'last_name': json['last_name'],
         'password': json['password'],
     };

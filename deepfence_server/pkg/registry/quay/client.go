@@ -13,10 +13,10 @@ import (
 
 var client = &http.Client{Timeout: 10 * time.Second}
 
-func listImages(url, namespace, token string) ([]model.ContainerImage, error) {
+func listImages(url, namespace, token string) ([]model.IngestedContainerImage, error) {
 
 	var (
-		images []model.ContainerImage
+		images []model.IngestedContainerImage
 	)
 
 	repos, err := listRepos(url, namespace, token)
@@ -139,16 +139,15 @@ func listRepoTags(url, namespace, token, repoName string) (Tags, error) {
 	return repoTags.Tags, err
 }
 
-func getImageWithTags(repo Repositories, tags Tags) []model.ContainerImage {
-	var imageAndTag []model.ContainerImage
+func getImageWithTags(repo Repositories, tags Tags) []model.IngestedContainerImage {
+	var imageAndTag []model.IngestedContainerImage
 
 	for tag, data := range tags {
-		tt := model.ContainerImage{
-			ID:      model.DigestToID(data.ManifestDigest),
-			Name:    repo.Name,
-			Tag:     tag,
-			Size:    fmt.Sprint(data.Size),
-			Metrics: model.ComputeMetrics{},
+		tt := model.IngestedContainerImage{
+			ID:   model.DigestToID(data.ManifestDigest),
+			Name: repo.Name,
+			Tag:  tag,
+			Size: fmt.Sprint(data.Size),
 			Metadata: model.Metadata{
 				"status":       repo.State,
 				"last_pushed":  repo.LastModified,

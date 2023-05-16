@@ -1,33 +1,54 @@
+import { Suspense } from 'react';
 import { IconContext } from 'react-icons';
-import {
-  FaAws,
-  FaBook,
-  FaBullhorn,
-  FaCopyright,
-  FaFire,
-  FaGoogle,
-  FaInstalod,
-  FaMagento,
-  FaMicrosoft,
-  FaMixer,
-  FaReact,
-  FaSearchengin,
-  FaSlack,
-} from 'react-icons/fa';
-import { HiArrowSmRight } from 'react-icons/hi';
+import { FaBook, FaBullhorn, FaCopyright, FaFire } from 'react-icons/fa';
+import { HiDownload, HiOutlineChevronRight } from 'react-icons/hi';
+import { useLoaderData } from 'react-router-dom';
 import { Card } from 'ui-components';
 
-import { DFLink } from '@/components/DFLink';
+import { ModelIntegrationListResp } from '@/api/generated';
+import { LinkButton } from '@/components/LinkButton';
+import {
+  AwsSecurityHub,
+  ElasticSearch,
+  GoogleChronicle,
+  HttpEndpoint,
+  Jira,
+  MicrosoftTeams,
+  PagerDuty,
+  S3,
+  Slack,
+  Splunk,
+  SumoLogic,
+} from '@/constants/logos';
+import { IntegrationType } from '@/features/integrations/components/IntegrationForm';
+import { DFAwait } from '@/utils/suspense';
+
+import { loader } from './IntegrationAdd';
+
+export const integrationTypeToNameMapping: { [key: string]: string } = {
+  slack: 'Slack',
+  teams: 'Microsoft Teams',
+  pagerduty: 'Pager Duty',
+  http_endpoint: 'HTTP Endpoint',
+  jira: 'Jira',
+  s3: 'S3',
+  splunk: 'Splunk',
+  elasticsearch: 'Elasticsearch',
+  sumologic: 'Sumo Logic',
+  googlechronicle: 'Google Chronicle',
+  aws_security_hub: 'AWS Security Hub',
+  email: 'Email',
+};
 
 const IntegrationsData = [
   {
     name: 'Notification',
     icon: (
       <>
-        <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
+        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
           <IconContext.Provider
             value={{
-              className: 'text-gray-600 dark:text-gray-200',
+              className: 'text-blue-600 dark:text-blue-400',
             }}
           >
             <FaBullhorn />
@@ -37,62 +58,38 @@ const IntegrationsData = [
     ),
     types: [
       {
-        name: 'Slack',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-red-400',
-            }}
-          >
-            <FaSlack />
-          </IconContext.Provider>
-        ),
+        name: integrationTypeToNameMapping[IntegrationType.slack],
+        id: IntegrationType.slack,
+        icon: <img src={Slack} alt="Slack Logo" />,
+        path: '/integrations/notifications/add/slack',
       },
       {
-        name: 'Microsoft Teams',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-blue-400',
-            }}
-          >
-            <FaMicrosoft />
-          </IconContext.Provider>
-        ),
+        name: integrationTypeToNameMapping[IntegrationType.microsoftTeams],
+        id: IntegrationType.microsoftTeams,
+        icon: <img src={MicrosoftTeams} alt="MicrosoftTeams Logo" />,
+        path: '/integrations/notifications/add/teams',
       },
       {
-        name: 'Page Duty',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-green-400',
-            }}
-          >
-            <FaMagento />
-          </IconContext.Provider>
-        ),
+        name: integrationTypeToNameMapping[IntegrationType.pagerDuty],
+        id: IntegrationType.pagerDuty,
+        icon: <img src={PagerDuty} alt="PagerDuty Logo" />,
+        path: '/integrations/notifications/add/pagerduty',
       },
       {
-        name: 'HTTP Endpoint',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-blue-400',
-            }}
-          >
-            <FaMixer />
-          </IconContext.Provider>
-        ),
+        name: integrationTypeToNameMapping[IntegrationType.httpEndpoint],
+        id: IntegrationType.httpEndpoint,
+        icon: <img src={HttpEndpoint} alt="HttpEndpoint Logo" />,
+        path: '/integrations/notifications/add/http_endpoint',
       },
     ],
   },
   {
-    name: 'SEIM',
+    name: 'SIEM/SOAR',
     icon: (
-      <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
+      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
         <IconContext.Provider
           value={{
-            className: 'text-gray-600 dark:text-gray-200',
+            className: 'text-blue-600 dark:text-blue-400',
           }}
         >
           <FaBook />
@@ -101,62 +98,44 @@ const IntegrationsData = [
     ),
     types: [
       {
-        name: 'Splunk',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-green-400',
-            }}
-          >
-            <FaReact />
-          </IconContext.Provider>
-        ),
+        name: integrationTypeToNameMapping[IntegrationType.splunk],
+        id: IntegrationType.splunk,
+        icon: <img src={Splunk} alt="Splunk Logo" />,
+        path: '/integrations/seim/add/splunk',
       },
       {
-        name: 'Elasticsearch',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-blue-400',
-            }}
-          >
-            <FaSearchengin />
-          </IconContext.Provider>
-        ),
+        name: integrationTypeToNameMapping[IntegrationType.elasticsearch],
+        id: IntegrationType.elasticsearch,
+        icon: <img src={ElasticSearch} alt="ElasticSearch Logo" />,
+        path: '/integrations/seim/add/elasticsearch',
       },
       {
-        name: 'Sumo Logic',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-green-400',
-            }}
-          >
-            <FaInstalod />
-          </IconContext.Provider>
-        ),
+        name: integrationTypeToNameMapping[IntegrationType.sumoLogic],
+        id: IntegrationType.sumoLogic,
+        icon: <img src={SumoLogic} alt="SumoLogic Logo" />,
+        path: '/integrations/seim/add/sumologic',
       },
       {
-        name: 'Google Chronicle',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-blue-400',
-            }}
-          >
-            <FaGoogle />
-          </IconContext.Provider>
-        ),
+        name: integrationTypeToNameMapping[IntegrationType.googleChronicle],
+        id: IntegrationType.googleChronicle,
+        icon: <img src={GoogleChronicle} alt="GoogleChronicle Logo" />,
+        path: '/integrations/seim/add/googlechronicle',
+      },
+      {
+        name: integrationTypeToNameMapping[IntegrationType.awsSecurityHub],
+        id: IntegrationType.awsSecurityHub,
+        icon: <img src={AwsSecurityHub} alt="AwsSecurityHub Logo" />,
+        path: '/integrations/seim/add/aws_security_hub',
       },
     ],
   },
   {
     name: 'Ticketing',
     icon: (
-      <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
+      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 flex items-center justify-center rounded-sm">
         <IconContext.Provider
           value={{
-            className: 'text-gray-600 dark:text-gray-200',
+            className: 'text-blue-600 dark:text-blue-400',
           }}
         >
           <FaCopyright />
@@ -165,26 +144,20 @@ const IntegrationsData = [
     ),
     types: [
       {
-        name: 'Jira',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-blue-400',
-            }}
-          >
-            <FaCopyright />
-          </IconContext.Provider>
-        ),
+        name: integrationTypeToNameMapping[IntegrationType.jira],
+        id: IntegrationType.jira,
+        icon: <img src={Jira} alt="Jira Logo" />,
+        path: '/integrations/ticketing/add/jira',
       },
     ],
   },
   {
     name: 'Archival',
     icon: (
-      <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
+      <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 flex items-center justify-center rounded-sm">
         <IconContext.Provider
           value={{
-            className: 'text-gray-600 dark:text-gray-200',
+            className: 'text-blue-600 dark:text-blue-400',
           }}
         >
           <FaFire />
@@ -193,86 +166,130 @@ const IntegrationsData = [
     ),
     types: [
       {
-        name: 'S3',
-        icon: (
-          <IconContext.Provider
-            value={{
-              className: 'w-10 h-10 text-yellow-400',
-            }}
-          >
-            <FaAws />
-          </IconContext.Provider>
-        ),
+        name: integrationTypeToNameMapping[IntegrationType.s3],
+        id: IntegrationType.s3,
+        icon: <img src={S3} alt="AWS S3 Logo" />,
+        path: '/integrations/archival/add/s3',
       },
     ],
   },
 ];
 
 const Integrations = () => {
+  const loaderData = useLoaderData() as {
+    data: ModelIntegrationListResp[];
+  };
+
   return (
-    <div className="flex flex-col space-y-8">
-      {IntegrationsData.map((integration) => {
-        return (
-          <section key={integration.name} className="flex flex-col">
-            <div className="flex items-center pl-2 mb-2 text-gray-700">
+    <>
+      <div className="flex p-2 w-full shadow bg-white dark:bg-gray-800 items-center">
+        <span className="text-md font-medium text-gray-700 dark:text-gray-200">
+          Integrations
+        </span>
+      </div>
+      <div className="p-2 gap-y-4 flex flex-col">
+        <Card className="w-fit">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 flex items-center justify-center rounded-sm">
               <IconContext.Provider
                 value={{
-                  className: 'w-4 h-4 text-gray-700',
+                  className: 'text-blue-600 dark:text-blue-400',
                 }}
               >
-                {integration.icon}
+                <HiDownload />
               </IconContext.Provider>
-              <h2 className="px-4 tracking-wider text-gary-900 dark:text-gray-200 font-semibold">
-                {integration.name.toUpperCase()}
-              </h2>
             </div>
-            <div className="pl-2 flex flex-wrap gap-4">
-              {integration?.types?.map((type) => {
-                return (
-                  <Card key={type.name} className="p-4 flex flex-col shrink-0 gap-y-1">
-                    <div className="flex items-center justify-between w-full">
-                      <h4 className="text-gray-900 text-md dark:text-white mr-4">
-                        {type.name}
-                      </h4>
-                      <div className="ml-auto">
-                        <DFLink to={'/'} className="flex items-center hover:no-underline">
-                          <span className="text-xs text-blue-600 dark:text-blue-500">
-                            Configure
-                          </span>
-                          <IconContext.Provider
-                            value={{
-                              className: 'text-blue-600 dark:text-blue-500 ',
+            <h2 className="px-4 tracking-wider text-gary-900 dark:text-gray-200 font-semibold">
+              Reports Download
+            </h2>
+            <div className="px-2">
+              <LinkButton to="/integrations/download/report" sizing="sm">
+                Generate and download PDF/Excel Reports&nbsp;
+                <HiOutlineChevronRight />
+              </LinkButton>
+            </div>
+          </div>
+        </Card>
+        {IntegrationsData.map((integration) => {
+          return (
+            <section key={integration.name} className="flex flex-col">
+              <div className="flex items-center">
+                <IconContext.Provider
+                  value={{
+                    className: 'w-4 h-4',
+                  }}
+                >
+                  {integration.icon}
+                </IconContext.Provider>
+                <h2 className="px-4 tracking-wider text-gary-900 dark:text-gray-200 font-semibold">
+                  {integration.name}
+                </h2>
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {integration?.types?.map((type) => {
+                  return (
+                    <Card key={type.name} className="p-2 flex flex-col shrink-0 pb-3">
+                      <div className="flex items-center justify-between w-full">
+                        <h4 className="text-gray-900 font-medium text-sm dark:text-white mr-4">
+                          {type.name}
+                        </h4>
+                        <div className="flex ml-auto">
+                          <LinkButton to={type.path} sizing="xs">
+                            <>
+                              Go to details&nbsp;
+                              <HiOutlineChevronRight />
+                            </>
+                          </LinkButton>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-x-6 mt-2">
+                        <div className="border-r border-gray-200 dark:border-gray-700">
+                          <div className="px-4 flex justify-center items-center h-8 w-20 m-w-[32px] m-h-[32px]">
+                            {type.icon}
+                          </div>
+                        </div>
+                        <Suspense
+                          fallback={
+                            <div className="w-16">
+                              <div className="h-8 w-4 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                              <div className="mt-2 h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                            </div>
+                          }
+                        >
+                          <DFAwait resolve={loaderData?.data}>
+                            {(resolvedData: { data?: ModelIntegrationListResp[] }) => {
+                              const { data = [] } = resolvedData ?? {};
+                              const len = data.filter(
+                                (integration) => integration.integration_type === type.id,
+                              ).length;
+
+                              return (
+                                <div className="flex flex-col">
+                                  <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
+                                    {len}
+                                  </span>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    {`Connection${len > 1 ? 's' : ''}`}
+                                  </span>
+                                </div>
+                              );
                             }}
-                          >
-                            <HiArrowSmRight />
-                          </IconContext.Provider>
-                        </DFLink>
+                          </DFAwait>
+                        </Suspense>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-x-6">
-                      <div className="p-4 flex border-r border-gray-200 dark:border-gray-700 w-20 h-20">
-                        {type.icon}
-                      </div>
-                      <div className="flex flex-col gap-x-4">
-                        <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">
-                          23
-                        </span>
-                        <span className="text-xs text-gray-400 dark:text-gray-500">
-                          Connections
-                        </span>
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          </section>
-        );
-      })}
-    </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    </>
   );
 };
 
 export const module = {
   element: <Integrations />,
+  loader,
 };

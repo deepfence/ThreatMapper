@@ -10,11 +10,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/acr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/dockerhub"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/dockerprivate"
+	registryECR "github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/ecr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/gcr"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/gitlab"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/harbor"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/jfrog"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/quay"
@@ -77,7 +80,7 @@ func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCred
 		return regCreds{}, err
 	}
 
-	key, err := encryption.GetAESValueForEncryption(ctx, pgClient)
+	key, err := model.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return regCreds{}, err
@@ -104,9 +107,122 @@ func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCred
 		return dockerprivateCreds(reg, aes)
 	case constants.JFROG:
 		return jfrogCreds(reg, aes)
+	case constants.ECR:
+		return ecrCreds(reg, aes)
+	case constants.GITLAB:
+		return gitlabCreds(reg, aes)
 	default:
 		return regCreds{}, nil
 	}
+}
+
+func gitlabCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (regCreds, error) {
+	var (
+		err       error
+		hub       gitlab.RegistryGitlab
+		nonsecret gitlab.NonSecret
+		secret    gitlab.Secret
+	)
+
+	err = json.Unmarshal(reg.NonSecret, &nonsecret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	err = json.Unmarshal(reg.EncryptedSecret, &secret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	hub = gitlab.RegistryGitlab{
+		Name:      reg.Name,
+		Secret:    secret,
+		NonSecret: nonsecret,
+	}
+
+	err = hub.DecryptSecret(aes)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	return regCreds{
+		URL:           hub.NonSecret.GitlabRegistryURL,
+		UserName:      "gitlab-ci-token",
+		Password:      hub.Secret.GitlabToken,
+		NameSpace:     "",
+		ImagePrefix:   httpReplacer.Replace(hub.NonSecret.GitlabRegistryURL),
+		SkipTLSVerify: false,
+		UseHttp:       useHttp(hub.NonSecret.GitlabRegistryURL),
+	}, nil
+
+}
+func ecrCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (regCreds, error) {
+	var (
+		err       error
+		hub       registryECR.RegistryECR
+		nonsecret registryECR.NonSecret
+		secret    registryECR.Secret
+	)
+	err = json.Unmarshal(reg.NonSecret, &nonsecret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+	err = json.Unmarshal(reg.EncryptedSecret, &secret)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	hub = registryECR.RegistryECR{
+		Name:      reg.Name,
+		Secret:    secret,
+		NonSecret: nonsecret,
+	}
+
+	err = hub.DecryptSecret(aes)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+
+	var awsConfig aws.Config
+	var svc *ecr.ECR
+	var creds *credentials.Credentials
+
+	if hub.NonSecret.UseIAMRole == "false" {
+		awsConfig.WithCredentials(credentials.NewStaticCredentials(hub.NonSecret.AWSAccessKeyID, hub.Secret.AWSSecretAccessKey, ""))
+	}
+	mySession := session.Must(session.NewSession(&awsConfig))
+
+	if hub.NonSecret.UseIAMRole == "true" {
+		creds = stscreds.NewCredentials(mySession, hub.NonSecret.TargetAccountRoleARN)
+		svc = ecr.New(mySession, &aws.Config{
+			Credentials: creds,
+			Region:      aws.String(hub.NonSecret.AWSRegionName),
+		})
+	} else {
+		svc = ecr.New(mySession, aws.NewConfig().WithRegion(hub.NonSecret.AWSRegionName))
+	}
+
+	var authorizationTokenRequestInput ecr.GetAuthorizationTokenInput
+	if hub.NonSecret.AWSAccountID != "" {
+		authorizationTokenRequestInput.SetRegistryIds([]*string{aws.String(hub.NonSecret.AWSAccountID)})
+	}
+	authorizationTokenResponse, err := svc.GetAuthorizationToken(&authorizationTokenRequestInput)
+	if err != nil {
+		return regCreds{}, err
+	}
+	authorizationData := authorizationTokenResponse.AuthorizationData
+	if len(authorizationData) == 0 {
+		return regCreds{}, errors.New("no authorization data found")
+	}
+	authData := *authorizationData[0]
+	return regCreds{
+		URL:           *authData.ProxyEndpoint,
+		UserName:      *authData.AuthorizationToken,
+		Password:      "",
+		NameSpace:     "",
+		ImagePrefix:   "",
+		SkipTLSVerify: false,
+		UseHttp:       useHttp(*authData.ProxyEndpoint),
+	}, nil
 }
 
 func dockerHubCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (regCreds, error) {
@@ -378,6 +494,7 @@ func jfrogCreds(reg postgresql_db.GetContainerRegistryRow, aes encryption.AES) (
 	}, nil
 }
 
+// todo: unused
 func GetDockerCredentials(registryData map[string]interface{}) (string, string, string) {
 	var registryType string
 	registryType, ok := registryData["registry_type"].(string)
@@ -457,6 +574,7 @@ func GetDockerCredentials(registryData map[string]interface{}) (string, string, 
 	}
 }
 
+// todo: remove this!!!
 func getDefaultDockerCredentials(registryData map[string]interface{}, registryUrlKey, registryUsernameKey, registryPasswordKey string) (string, string, string) {
 	var dockerUsername, dockerPassword, dockerRegistryUrl string
 	var ok bool

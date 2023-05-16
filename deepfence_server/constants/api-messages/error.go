@@ -7,3 +7,8 @@ const (
 	ErrRegistryAuthFailed = "Authentication failed for given credentials"
 	ErrRegistryIdMissing  = "registry id is missing"
 )
+
+// Integration errors
+const (
+	ErrIntegrationExists = "integration with this configuration already exists"
+)

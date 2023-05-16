@@ -2,26 +2,21 @@ package cri
 
 import (
 	"context"
-	dfUtils "github.com/deepfence/df-utils"
+	"encoding/json"
 	"os"
 	"strings"
 	"time"
 
+	dfUtils "github.com/deepfence/df-utils"
 	"github.com/dustin/go-humanize"
 	client "github.com/weaveworks/scope/cri/runtime"
 	"github.com/weaveworks/scope/probe/docker"
 	"github.com/weaveworks/scope/report"
 )
 
-const (
-	k8sClusterId   = report.KubernetesClusterId
-	k8sClusterName = report.KubernetesClusterName
-	IsUiVm         = "is_ui_vm"
-)
-
 // Reporter generate Reports containing Container and ContainerImage topologies
 type Reporter struct {
-	isUIvm                string
+	isConsoleVm           bool
 	hostID                string
 	cri                   client.RuntimeServiceClient
 	criImageClient        client.ImageServiceClient
@@ -31,17 +26,13 @@ type Reporter struct {
 
 // NewReporter makes a new Reporter
 func NewReporter(cri client.RuntimeServiceClient, hostID string, criImageClient client.ImageServiceClient) *Reporter {
-	isUIvm := "false"
-	if dfUtils.IsThisHostUIMachine() {
-		isUIvm = "true"
-	}
 	reporter := &Reporter{
 		hostID:                hostID,
 		cri:                   cri,
 		criImageClient:        criImageClient,
-		isUIvm:                isUIvm,
-		kubernetesClusterName: os.Getenv(k8sClusterName),
-		kubernetesClusterId:   os.Getenv(k8sClusterId),
+		isConsoleVm:           dfUtils.IsThisHostUIMachine(),
+		kubernetesClusterName: os.Getenv(report.KubernetesClusterName),
+		kubernetesClusterId:   os.Getenv(report.KubernetesClusterId),
 	}
 
 	return reporter
@@ -63,16 +54,13 @@ func (r *Reporter) Report() (report.Report, error) {
 		return report.MakeReport(), err
 	}
 
-	result.Container = result.Container.Merge(containerTopol)
-	result.ContainerImage = result.ContainerImage.Merge(imageTopol)
+	result.Container.Merge(containerTopol)
+	result.ContainerImage.Merge(imageTopol)
 	return result, nil
 }
 
 func (r *Reporter) containerTopology(imageMetadataMap map[string]ImageMetadata) (report.Topology, error) {
-	result := report.MakeTopology().
-		WithMetadataTemplates(docker.ContainerMetadataTemplates).
-		WithTableTemplates(docker.ContainerTableTemplates)
-
+	result := report.MakeTopology()
 	ctx := context.Background()
 	resp, err := r.cri.ListContainers(ctx, &client.ListContainersRequest{})
 	if err != nil {
@@ -80,13 +68,14 @@ func (r *Reporter) containerTopology(imageMetadataMap map[string]ImageMetadata) 
 	}
 
 	for _, c := range resp.Containers {
-		result.AddNode(r.getNode(c, imageMetadataMap))
+		metadata := r.getNode(c, imageMetadataMap)
+		result.AddNode(metadata)
 	}
 
 	return result, nil
 }
 
-func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]ImageMetadata) report.Node {
+func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]ImageMetadata) report.TopologyNode {
 	imageMetadata, ok := imageMetadataMap[c.ImageRef]
 	var imageID, imageName, imageTag string
 	if ok {
@@ -97,29 +86,41 @@ func (r *Reporter) getNode(c *client.Container, imageMetadataMap map[string]Imag
 		imageID = trimImageID(c.Image.GetImage())
 		imageName, imageTag = docker.ParseImageDigest(c.ImageRef)
 	}
-	latests := map[string]string{
-		docker.ContainerName:       c.Metadata.Name,
-		docker.ContainerID:         c.Id,
-		docker.ContainerState:      getState(c),
-		docker.ContainerStateHuman: getState(c),
-		//docker.ContainerRestartCount: fmt.Sprintf("%v", c.Metadata.Attempt),
-		docker.ImageID:   imageID,
-		docker.ImageName: imageName,
-		docker.ImageTag:  imageTag,
-		IsUiVm:           r.isUIvm,
-		"host_name":      r.hostID,
+	var dockerLabels string
+	podName := c.Labels["io.kubernetes.pod.name"]
+	podUid := c.Labels["io.kubernetes.pod.uid"]
+	dockerLabelsJson, err := json.Marshal(c.Labels)
+	if err == nil {
+		dockerLabels = string(dockerLabelsJson)
 	}
-	if r.kubernetesClusterName != "" {
-		latests[k8sClusterName] = r.kubernetesClusterName
+	metadata := report.Metadata{
+		Timestamp:                 time.Now().UTC().Format(time.RFC3339Nano),
+		NodeType:                  report.Container,
+		NodeID:                    c.Id,
+		NodeName:                  c.Metadata.Name + " / " + r.hostID,
+		HostName:                  r.hostID,
+		DockerContainerName:       c.Metadata.Name,
+		DockerContainerState:      getState(c),
+		DockerContainerStateHuman: getState(c),
+		ImageName:                 imageName,
+		ImageTag:                  imageTag,
+		DockerImageID:             imageID,
+		ImageNameWithTag:          imageName + ":" + imageTag,
+		IsConsoleVm:               r.isConsoleVm,
+		KubernetesClusterName:     r.kubernetesClusterName,
+		KubernetesClusterId:       r.kubernetesClusterId,
+		DockerLabels:              dockerLabels,
+		PodName:                   podName,
 	}
-	if r.kubernetesClusterId != "" {
-		latests[k8sClusterId] = r.kubernetesClusterId
+	return report.TopologyNode{
+		Metadata: metadata,
+		Parents: &report.Parent{
+			KubernetesCluster: r.kubernetesClusterId,
+			Host:              r.hostID,
+			ContainerImage:    imageID,
+			Pod:               podUid,
+		},
 	}
-	result := report.MakeNodeWith(report.MakeContainerNodeID(c.Id), latests).WithParents(report.MakeSets().
-		Add(report.ContainerImage, report.MakeStringSet(report.MakeContainerImageNodeID(imageID))),
-	)
-	result = result.AddPrefixPropertyList(docker.LabelPrefix, c.Labels)
-	return result
 }
 
 func getState(c *client.Container) string {
@@ -145,9 +146,7 @@ type ImageMetadata struct {
 }
 
 func (r *Reporter) containerImageTopology() (report.Topology, map[string]ImageMetadata, error) {
-	result := report.MakeTopology().
-		WithMetadataTemplates(docker.ContainerImageMetadataTemplates).
-		WithTableTemplates(docker.ContainerImageTableTemplates)
+	result := report.MakeTopology()
 
 	ctx := context.Background()
 	resp, err := r.criImageClient.ListImages(ctx, &client.ListImagesRequest{})
@@ -157,7 +156,7 @@ func (r *Reporter) containerImageTopology() (report.Topology, map[string]ImageMe
 
 	imageMetadataMap := make(map[string]ImageMetadata, len(resp.Images))
 	for _, img := range resp.Images {
-		imageNode, imageMetadata := getImage(img)
+		imageNode, imageMetadata := r.getImage(img)
 		if imageMetadata.ImageRef != "" {
 			imageMetadataMap[imageMetadata.ImageRef] = imageMetadata
 		}
@@ -167,14 +166,16 @@ func (r *Reporter) containerImageTopology() (report.Topology, map[string]ImageMe
 	return result, imageMetadataMap, nil
 }
 
-func getImage(image *client.Image) (report.Node, ImageMetadata) {
+func (r *Reporter) getImage(image *client.Image) (report.TopologyNode, ImageMetadata) {
 	// logrus.Infof("images: %v", image)
 	// image format: sha256:ab21abc2d2c34c2b2d2c23bbcf23gg23f23
-	imageID := trimImageID(image.Id)
-	latests := map[string]string{
-		docker.ImageID:        imageID,
-		docker.ImageSize:      humanize.Bytes(uint64(image.Size())),
-		docker.ImageCreatedAt: time.Unix(0, 0).Format("2006-01-02T15:04:05") + "Z",
+	metadata := report.Metadata{
+		Timestamp:            time.Now().UTC().Format(time.RFC3339Nano),
+		NodeType:             report.ContainerImage,
+		NodeID:               image.Id,
+		DockerImageSize:      humanize.Bytes(uint64(image.Size())),
+		DockerImageCreatedAt: time.Unix(0, 0).Format("2006-01-02T15:04:05") + "Z",
+		HostName:             r.hostID,
 	}
 	var imageRef string
 	if len(image.RepoDigests) > 0 {
@@ -182,23 +183,29 @@ func getImage(image *client.Image) (report.Node, ImageMetadata) {
 	}
 	if len(image.RepoTags) > 0 {
 		imageFullName := image.RepoTags[0]
-		latests[docker.ImageName] = docker.ImageNameWithoutTag(imageFullName)
-		latests[docker.ImageTag] = docker.ImageNameTag(imageFullName)
+		metadata.ImageName = docker.ImageNameWithoutTag(imageFullName)
+		metadata.ImageTag = docker.ImageNameTag(imageFullName)
+		metadata.NodeName = metadata.ImageName + ":" + metadata.ImageTag
+		metadata.ImageNameWithTag = metadata.NodeName
 	} else if len(image.RepoDigests) > 0 {
-		latests[docker.ImageName], latests[docker.ImageTag] = docker.ParseImageDigest(image.RepoDigests[0])
+		metadata.ImageName, metadata.ImageTag = docker.ParseImageDigest(image.RepoDigests[0])
+		metadata.NodeName = metadata.ImageName + ":" + metadata.ImageTag
+		metadata.ImageNameWithTag = metadata.NodeName
 	} else {
-		latests[docker.ImageName] = ""
-		latests[docker.ImageTag] = ""
+		metadata.ImageName = ""
+		metadata.ImageTag = ""
+		metadata.NodeName = image.Id
 	}
-	result := report.MakeNodeWith(report.MakeContainerImageNodeID(imageID), latests)
-	// todo: remove if useless
-	result = result.AddPrefixPropertyList(docker.LabelPrefix, nil)
-	return result, ImageMetadata{
-		ImageName: latests[docker.ImageName],
-		ImageTag:  latests[docker.ImageTag],
-		ImageID:   imageID,
-		ImageRef:  imageRef,
-	}
+	return report.TopologyNode{
+			Metadata: metadata,
+			Parents:  &report.Parent{Host: r.hostID},
+		},
+		ImageMetadata{
+			ImageName: metadata.ImageName,
+			ImageTag:  metadata.ImageTag,
+			ImageID:   image.Id,
+			ImageRef:  imageRef,
+		}
 }
 
 // CRI sometimes prefixes ids with a "type" annotation, but it renders a bit

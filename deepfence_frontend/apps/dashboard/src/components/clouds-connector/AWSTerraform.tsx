@@ -3,26 +3,40 @@ import { memo } from 'react';
 import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, Step, Stepper, Typography } from 'ui-components';
 
-import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
+import { CopyToClipboard } from '@/components/CopyToClipboard';
+import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
 
 export const AWSTerraform = memo(() => {
+  const { status, data } = useGetApiToken();
+  const dfApiKey =
+    status !== 'idle'
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.api_token === undefined
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.api_token;
   const code = `provider "aws" {
   region = "<AWS-REGION>; eg. us-east-1"
 }
 
-module "cloud-scanner_example_single-account-ecs" {
+module "deepfence-cloud-scanner_example_single-account" {
   source = "deepfence/cloud-scanner/aws//examples/single-account-ecs"
-  version = "0.1.0"
+  version = "0.3.0"
   mgmt-console-url = "<Console URL> eg. XXX.XXX.XX.XXX"
   mgmt-console-port = "443"
-  deepfence-key = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+  deepfence-key = "${dfApiKey}"
+  name = "deepfence-cloud-scanner"
+}
+
+variable "image" {
+  type        = string
+  default     = "[quay.io/deepfenceio/cloud-scanner:1.5.0](http://quay.io/deepfenceio/cloud-scanner:1.5.0)"
 }
 `;
 
   return (
     <div className="w-full sm:w-1/2">
       <Stepper>
-        <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation">
+        <Step indicator={<HiViewGridAdd />} title="Teraform">
           <div className={`${Typography.size.sm} dark:text-gray-200`}>
             Connect to your AWS Cloud Account via Teraform. Find out more information by{' '}
             <a
@@ -50,7 +64,7 @@ module "cloud-scanner_example_single-account-ecs" {
               >
                 {code}
               </pre>
-              <CopyToClipboardIcon text={code} />
+              <CopyToClipboard data={code} asIcon />
             </Card>
           </div>
         </Step>
@@ -70,7 +84,7 @@ module "cloud-scanner_example_single-account-ecs" {
                 >
                   terraform init
                 </pre>
-                <CopyToClipboardIcon text={'terraform init'} className="top-4" />
+                <CopyToClipboard data={'terraform init'} className="top-4" asIcon />
               </div>
               <div className="relative">
                 <pre
@@ -82,7 +96,7 @@ module "cloud-scanner_example_single-account-ecs" {
                 >
                   terraform plan
                 </pre>
-                <CopyToClipboardIcon text={'terraform plan'} className="top-0" />
+                <CopyToClipboard data={'terraform plan'} className="top-0" asIcon />
               </div>
               <div className="relative">
                 <pre
@@ -94,7 +108,7 @@ module "cloud-scanner_example_single-account-ecs" {
                 >
                   terraform apply
                 </pre>
-                <CopyToClipboardIcon text={'terraform apply'} className="top-0" />
+                <CopyToClipboard data={'terraform apply'} className="top-0" asIcon />
               </div>
             </Card>
           </div>

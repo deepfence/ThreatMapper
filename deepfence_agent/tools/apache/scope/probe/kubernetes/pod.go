@@ -1,19 +1,12 @@
 package kubernetes
 
 import (
-	"strconv"
-	"strings"
+	"encoding/json"
+	"time"
 
 	"github.com/weaveworks/scope/report"
 
 	apiv1 "k8s.io/api/core/v1"
-)
-
-// These constants are keys used in node metadata
-const (
-	State           = report.KubernetesState
-	IsInHostNetwork = report.KubernetesIsInHostNetwork
-	RestartCount    = report.KubernetesRestartCount
 )
 
 // Pod represents a Kubernetes pod
@@ -21,7 +14,7 @@ type Pod interface {
 	Meta
 	AddParent(topology, id string)
 	NodeName() string
-	GetNode(probeID string) report.Node
+	GetNode() report.TopologyNode
 	RestartCount() uint
 	ContainerNames() []string
 	VolumeClaimNames() []string
@@ -30,16 +23,18 @@ type Pod interface {
 type pod struct {
 	*apiv1.Pod
 	Meta
-	parents report.Sets
-	Node    *apiv1.Node
+	parents  report.Sets
+	Node     *apiv1.Node
+	HostName string
 }
 
 // NewPod creates a new Pod
-func NewPod(p *apiv1.Pod) Pod {
+func NewPod(p *apiv1.Pod, hostName string) Pod {
 	return &pod{
-		Pod:     p,
-		Meta:    meta{p.ObjectMeta},
-		parents: report.MakeSets(),
+		Pod:      p,
+		Meta:     meta{p.ObjectMeta},
+		parents:  report.MakeSets(),
+		HostName: hostName,
 	}
 }
 
@@ -87,31 +82,37 @@ func (p *pod) VolumeClaimNames() []string {
 	return claimNames
 }
 
-func (p *pod) GetNode(probeID string) report.Node {
-	latests := map[string]string{
-		State:                 p.State(),
-		IP:                    p.Status.PodIP,
-		k8sClusterId:          kubernetesClusterId,
-		k8sClusterName:        kubernetesClusterName,
-		report.ControlProbeID: probeID,
-		RestartCount:          strconv.FormatUint(uint64(p.RestartCount()), 10),
+func (p *pod) GetNode() report.TopologyNode {
+	var labelsStr string
+	labels, err := json.Marshal(p.Labels())
+	if err == nil {
+		labelsStr = string(labels)
 	}
-
-	if len(p.VolumeClaimNames()) > 0 {
-		// PVC name consist of lower case alphanumeric characters, "-" or "."
-		// and must start and end with an alphanumeric character.
-		latests[VolumeClaim] = strings.Join(p.VolumeClaimNames(), report.ScopeDelim)
+	metadata := report.Metadata{
+		Timestamp:                 time.Now().UTC().Format(time.RFC3339Nano),
+		NodeID:                    p.UID(),
+		NodeName:                  p.Name() + " / " + p.Namespace() + " / " + kubernetesClusterName,
+		PodName:                   p.Name(),
+		NodeType:                  report.Pod,
+		KubernetesClusterName:     kubernetesClusterName,
+		KubernetesClusterId:       kubernetesClusterId,
+		KubernetesState:           p.State(),
+		KubernetesIP:              p.Status.PodIP,
+		KubernetesIsInHostNetwork: p.Pod.Spec.HostNetwork,
+		KubernetesNamespace:       p.Namespace(),
+		HostName:                  p.HostName,
+		KubernetesCreated:         p.Created(),
+		KubernetesLabels:          labelsStr,
 	}
-
-	if p.Pod.Spec.HostNetwork {
-		latests[IsInHostNetwork] = "true"
+	return report.TopologyNode{
+		Metadata: metadata,
+		Parents: &report.Parent{
+			CloudProvider:     cloudProviderNodeId,
+			KubernetesCluster: kubernetesClusterId,
+			Host:              p.HostName,
+			Namespace:         kubernetesClusterId + "-" + p.GetNamespace(),
+		},
 	}
-	p.parents = p.parents.AddString(report.KubernetesCluster, kubernetesClusterNodeId)
-	p.parents = p.parents.AddString(report.CloudProvider, cloudProviderNodeId)
-	return p.MetaNode(report.MakePodNodeID(p.UID())).WithLatests(latests).
-		WithParents(p.parents)
-	//  WithLatestActiveControls(DeletePod)
-	//	WithLatestActiveControls(GetLogs, DeletePod, Describe)
 }
 
 func (p *pod) ContainerNames() []string {

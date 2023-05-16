@@ -2,6 +2,7 @@ package reporters_scan
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -74,7 +75,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 	return tx.Commit()
 }
 
-func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId string, docIds []string) error {
+func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string, docIds []string) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -147,6 +148,50 @@ func DeleteScanResult(ctx context.Context, scanType utils.Neo4jScanType, scanId 
 			return err
 		}
 	}
+
+	// update nodes scan result
+	query := ""
+	switch scanType {
+	case utils.NEO4J_VULNERABILITY_SCAN:
+		query = `MATCH (n)
+		WHERE n.vulnerability_latest_scan_id="%s"
+		SET n.vulnerability_latest_scan_id="", n.vulnerabilities_count=0, n.vulnerability_scan_status=""`
+	case utils.NEO4J_SECRET_SCAN:
+		query = `MATCH (n)
+		WHERE n.secret_latest_scan_id="%s"
+		SET n.secret_latest_scan_id="", n.secrets_count=0, n.secret_scan_status=""`
+	case utils.NEO4J_MALWARE_SCAN:
+		query = `MATCH (n)
+		WHERE n.malware_latest_scan_id="%s"
+		SET n.malware_latest_scan_id="", n.malwares_count=0, n.malware_scan_status=""`
+	case utils.NEO4J_COMPLIANCE_SCAN:
+		query = `MATCH (n)
+		WHERE n.compliance_latest_scan_id="%s"
+		SET n.compliance_latest_scan_id="", n.compliances_count=0, n.compliance_scan_status=""`
+	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
+		query = `MATCH (n)
+		WHERE n.cloud_compliance_latest_scan_id="%s"
+		SET n.cloud_compliance_latest_scan_id="", n.cloud_compliances_count=0, n.cloud_compliance_scan_status=""`
+	}
+
+	if len(query) < 1 {
+		return nil
+	}
+
+	tx4, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx4.Close()
+	_, err = tx4.Run(fmt.Sprintf(query, scanId), map[string]interface{}{})
+	if err != nil {
+		return err
+	}
+	err = tx4.Commit()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

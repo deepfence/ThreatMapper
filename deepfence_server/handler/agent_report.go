@@ -4,98 +4,59 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"io"
 	"net/http"
+	"sync"
 
-	"github.com/bytedance/sonic"
+	jsoniter "github.com/json-iterator/go"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	reportUtils "github.com/deepfence/golang_deepfence_sdk/utils/report"
 )
 
-var agent_report_ingesters map[directory.NamespaceID]*ingesters.Ingester[report.Report]
+var agent_report_ingesters sync.Map
 
 func init() {
-	agent_report_ingesters = map[directory.NamespaceID]*ingesters.Ingester[report.Report]{}
+	agent_report_ingesters = sync.Map{}
 }
 
-func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[report.Report], error) {
+func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[*report.Report], error) {
 	nid, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	ing, has := agent_report_ingesters[nid]
+	ing, has := agent_report_ingesters.Load(nid)
 	if has {
-		return ing, nil
+		return ing.(*ingesters.Ingester[*report.Report]), nil
 	}
 	new_entry, err := ingesters.NewNeo4jCollector(ctx)
 	if err != nil {
 		return nil, err
 	}
-	agent_report_ingesters[nid] = &new_entry
-	return &new_entry, nil
+	true_new_entry, loaded := agent_report_ingesters.LoadOrStore(nid, &new_entry)
+	if loaded {
+		new_entry.Close()
+	}
+	return true_new_entry.(*ingesters.Ingester[*report.Report]), nil
 }
 
 func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	//contentType := r.Header.Get("Content-Type")
-	//var isMsgpack int
-	//switch {
-	//case strings.HasPrefix(contentType, "application/msgpack"):
-	//	isMsgpack = 1
-	//case strings.HasPrefix(contentType, "application/json"):
-	//	isMsgpack = 0
-	//case strings.HasPrefix(contentType, "application/binc"):
-	//	isMsgpack = 2
-	//default:
-	//	respondWith(ctx, w, http.StatusBadRequest, fmt.Errorf("Unsupported Content-Type: %v", contentType))
-	//	return
-	//}
-	data, err := io.ReadAll(r.Body)
-	r.Body.Close()
-	if err != nil {
-		log.Error().Msgf("Error reading all: %v", err)
-		respondWith(ctx, w, http.StatusBadRequest, err)
-		return
-	}
-
-	var rawReport reportUtils.RawReport
-
-	err = sonic.Unmarshal(data, &rawReport)
-	if err != nil {
-		log.Error().Msgf("Error unmarshal: %v", err)
-		respondWith(ctx, w, http.StatusBadRequest, err)
-		return
-	}
-	b64, err := base64.StdEncoding.DecodeString(rawReport.GetPayload())
-	if err != nil {
-		log.Error().Msgf("Error b64 reader: %v", err)
-		respondWith(ctx, w, http.StatusBadRequest, err)
-		return
-	}
-	sr := bytes.NewReader(b64)
-	gzr, err := gzip.NewReader(sr)
+	gzr, err := gzip.NewReader(r.Body)
 	if err != nil {
 		log.Error().Msgf("Error gzip reader: %v", err)
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
-	data, err = io.ReadAll(gzr)
-	if err != nil {
-		log.Error().Msgf("Error read all raw: %v", err)
-		respondWith(ctx, w, http.StatusBadRequest, err)
-		return
-	}
-	rpt := report.MakeReport()
-	err = sonic.Unmarshal(data, &rpt)
 
-	//if err := codec.NewDecoderBytes([]byte(rawReport.GetPayload()), &codec.JsonHandle{}).Decode(&rpt); err != nil {
+	rpt := ingesters.ReportPool.Get().(*report.Report)
+	rpt.Clear()
+	dec_inner := jsoniter.NewDecoder(gzr)
+	err = dec_inner.Decode(&rpt)
 	if err != nil {
 		log.Error().Msgf("Error sonic unmarshal: %v", err)
 		respondWith(ctx, w, http.StatusBadRequest, err)
@@ -136,7 +97,7 @@ func (h *Handler) IngestSyncAgentReport(w http.ResponseWriter, r *http.Request) 
 
 	var rpt ingesters.ReportIngestionData
 
-	err = json.Unmarshal(data, &rpt)
+	err = jsoniter.Unmarshal(data, &rpt)
 	if err != nil {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return

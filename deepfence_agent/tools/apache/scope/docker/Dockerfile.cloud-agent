@@ -2,7 +2,7 @@ FROM debian:bullseye-slim
 LABEL maintainer="Deepfence Inc"
 LABEL deepfence.role=system
 
-ENV CHECKPOINT_DISABLE=true DOCKERVERSION=20.10.8 MGMT_CONSOLE_PORT=443
+ENV DOCKERVERSION=20.10.8 MGMT_CONSOLE_PORT=443
 
 WORKDIR /home/deepfence
 RUN apt-get update
@@ -38,16 +38,19 @@ COPY fluentbit/out_deepfence/out_deepfence.so /opt/td-agent-bit/bin/
 USER deepfence
 COPY scope/docker/deepfence_exe /home/deepfence/
 COPY deepfence/supervisord_cluster_agent.conf /home/deepfence/supervisord-temp.conf
+COPY scope/docker/run_cluster_agent.sh /home/deepfence/
+COPY scope/docker/entrypoint.sh /home/deepfence/
 
 WORKDIR /opt/steampipe
 USER root
 COPY scope/probe/kubernetes/kubeconfig /home/deepfence/.kube/config
 COPY scope/probe/kubernetes/token.sh /home/deepfence/token.sh
-RUN chown -R deepfence /opt/ /home/deepfence /var/log /var/run/ /etc/td-agent-bit/
+RUN chown -R deepfence /opt/ /home/deepfence /var/log /var/run/ /etc/td-agent-bit/ \
+    && chmod +x /home/deepfence/*.sh
 
 USER deepfence
 RUN steampipe plugin install steampipe \
     && steampipe plugin install kubernetes \
     && git clone https://github.com/turbot/steampipe-mod-kubernetes-compliance.git
 
-ENTRYPOINT ["/home/deepfence/deepfence_exe"]
+ENTRYPOINT ["/home/deepfence/entrypoint.sh"]

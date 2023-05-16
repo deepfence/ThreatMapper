@@ -1,0 +1,11 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="32" cy="32" r="32" fill="#0277BD"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M16.7292 28.75V35.0208L32.0001 43.1458V36.875L16.7292 28.75Z" fill="#AECBFA"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M16.7292 38.4375V44.7083L32.0001 52.8333V46.5625L16.7292 38.4375Z" fill="#AECBFA"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M32 43.1458L47.2708 35.0208V28.75L32 36.875V43.1458Z" fill="#669DF6"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M32 52.8333L47.2708 44.7083V38.4375L32 46.5625V52.8333Z" fill="#669DF6"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M47.2708 25.5625V19.2917L32 11.1667V17.4375L47.2708 25.5625Z" fill="#4285F4"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M32.0001 11.1667L16.7292 19.2917V25.5625L32.0001 17.4375V11.1667Z" fill="#669DF6"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M16.7292 19.2292V25.5209L32.0001 33.6459V27.3542L16.7292 19.2292Z" fill="#AECBFA"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M32 33.6459L47.2708 25.5209V19.2292L32 27.3542V33.6459Z" fill="#669DF6"/>
+</svg>

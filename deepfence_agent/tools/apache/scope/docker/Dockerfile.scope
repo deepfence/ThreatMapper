@@ -1,14 +1,3 @@
 FROM weaveworks/cloud-agent
 LABEL maintainer="Deepfence Inc"
 LABEL deepfence.role=system
-ENV CHECKPOINT_DISABLE=1 \
-    DF_PROG_NAME="discovery" \
-    ELASTICSEARCH_SCHEME="http" \
-    ELASTICSEARCH_HOST=deepfence-es \
-    ELASTICSEARCH_PORT=9200 \
-    REDIS_HOST=deepfence-redis \
-    REDIS_PORT=6379 \
-    REDIS_DB_NUMBER=0
-
-COPY scope/docker/entrypoint.sh /home/deepfence/
-ENTRYPOINT ["/home/deepfence/entrypoint.sh"]

@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta, StoryFn } from '@storybook/react';
 
 import {
   Accordion,
@@ -10,7 +10,7 @@ import {
 export default {
   title: 'Components/Accordion',
   component: Accordion,
-} as ComponentMeta<typeof Accordion>;
+} as Meta<typeof Accordion>;
 
 const Items = [
   `Lorem Ipsum is simply dummy text of the printing and typesetting industry.`,
@@ -18,7 +18,7 @@ const Items = [
   'Item 3',
 ];
 
-const DefaultTemplate: ComponentStory<typeof Accordion> = (args) => {
+const DefaultTemplate: StoryFn<typeof Accordion> = (args) => {
   return (
     <Accordion {...args} className="w-1/2">
       {Items.map((item: string) => {
@@ -36,8 +36,11 @@ const DefaultTemplate: ComponentStory<typeof Accordion> = (args) => {
   );
 };
 
-export const Default = DefaultTemplate.bind({});
-Default.args = {
-  type: 'multiple',
-  defaultValue: ['Item 2'],
+export const Default = {
+  render: DefaultTemplate,
+
+  args: {
+    type: 'multiple',
+    defaultValue: ['Item 2'],
+  },
 };

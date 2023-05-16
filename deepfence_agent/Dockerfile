@@ -13,7 +13,11 @@ ENV CHECKPOINT_DISABLE=true \
     DF_TLS_ON="1" \
     MGMT_CONSOLE_PORT=443 \
     DF_KUBERNETES_ON="N" \
-    PACKAGE_SCAN_CONCURRENCY=1
+    PACKAGE_SCAN_CONCURRENCY=1 \
+    MGMT_CONSOLE_URL_SCHEMA=https \
+    DEEPFENCE_KEY="" \
+    MGMT_CONSOLE_URL_INTERNAL=127.0.0.1 \
+    MGMT_CONSOLE_PORT_INTERNAL=8081
 
 RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && mkdir -p /usr/share/man/man1 /usr/share/man/man2 /usr/share/man/man3 /usr/share/man/man4 /usr/share/man/man5 /usr/share/man/man6 /usr/share/man/man7 /usr/share/man/man8 \
@@ -56,20 +60,12 @@ COPY supervisord.conf /home/deepfence/supervisord-temp.conf
 COPY run_discovery.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
 COPY plugins/bin /home/deepfence/bin
-
-
+COPY plugins/yara-rules /home/deepfence/bin/yara-hunter/yara-rules
 
 COPY --from=build /usr/local/bin/syft /usr/local/bin/syft
-COPY --from=malware_build  /home/deepfence/usr/YaraHunter /home/deepfence/usr/YaraHunter
-COPY --from=malware_build  /home/deepfence/usr /home/deepfence/usr
-COPY --from=malware_build /home/deepfence/usr/config.yaml /home/deepfence/usr/yara-hunter/config.yaml
-COPY --from=malware_build /usr/local/yara /usr/local/yara
 COPY --from=malware_build /usr/local/yara/lib /usr/local/lib
 
-
-
-RUN mkdir -p /home/deepfence/bin/yara-hunter \
-    && apt-get update --allow-insecure-repositories \
+RUN apt-get update --allow-insecure-repositories \
     && apt-get -qq -y --no-install-recommends install libjansson4 libssl1.1 libmagic1 bash curl python3-pip \
     && rm -rf /usr/local/bin/compliance_check/*.go \
     && chmod 700 /usr/local/bin/getCloudInstanceId \

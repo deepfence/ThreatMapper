@@ -20,6 +20,7 @@ import (
 type SearchFilter struct {
 	InFieldFilter []string                `json:"in_field_filter" required:"true"` // Fields to return
 	Filters       reporters.FieldsFilters `json:"filters" required:"true"`
+	Window        model.FetchWindow       `json:"window" required:"true"`
 }
 
 type SearchNodeReq struct {
@@ -36,6 +37,84 @@ type SearchScanReq struct {
 type SearchCountResp struct {
 	Count      int              `json:"count" required:"true"`
 	Categories map[string]int32 `json:"categories" required:"true"`
+}
+
+type NodeCountResp struct {
+	CloudProviders    int64 `json:"cloud_provider" required:"true"`
+	Host              int64 `json:"host" required:"true"`
+	Container         int64 `json:"container" required:"true"`
+	ContainerImage    int64 `json:"container_image" required:"true"`
+	Pod               int64 `json:"pod" required:"true"`
+	KubernetesCluster int64 `json:"kubernetes_cluster" required:"true"`
+	Namespace         int64 `json:"namespace" required:"true"`
+}
+
+type ResultGroup struct {
+	Name     string `json:"name"`
+	Count    int64  `json:"count"`
+	Severity string `json:"severity"`
+}
+
+type ResultGroupResp struct {
+	Groups []ResultGroup `json:"groups"`
+}
+
+func CountNodes(ctx context.Context) (NodeCountResp, error) {
+	res := NodeCountResp{}
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session, err := driver.Session(neo4j.AccessModeRead)
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	query := `
+		MATCH (n)
+		WHERE (n:Node OR n:Container OR n:ContainerImage OR n:KubernetesCluster OR n:Pod OR n:CloudProvider)
+		AND n.pseudo=false AND n.active=true
+		RETURN labels(n), count(labels(n)), count(distinct n.kubernetes_namespace);`
+	r, err := tx.Run(query,
+		map[string]interface{}{})
+	if err != nil {
+		return res, err
+	}
+	recs, err := r.Collect()
+	if err != nil {
+		return res, err
+	}
+	for _, rec := range recs {
+		neo4jNodeTypes := rec.Values[0].([]interface{})
+		count := rec.Values[1].(int64)
+		for _, neo4jNodeType := range neo4jNodeTypes {
+			switch neo4jNodeType {
+			case "Node":
+				res.Host = count
+			case "Container":
+				res.Container = count
+			case "ContainerImage":
+				res.ContainerImage = count
+			case "KubernetesCluster":
+				res.KubernetesCluster = count
+			case "Pod":
+				res.Pod = count
+				res.Namespace = rec.Values[2].(int64)
+			case "CloudProvider":
+				res.CloudProviders = count
+			}
+		}
+	}
+
+	return res, nil
 }
 
 func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
@@ -64,7 +143,8 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
 		` OPTIONAL MATCH (n) -[:IS]-> (e)
 		RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e ` +
-		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) + fw.FetchWindow2CypherQuery()
+		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) +
+		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{})
@@ -104,6 +184,8 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 			for k, v := range is_node.(dbtype.Node).Props {
 				if k != "node_id" {
 					node_map[k] = v
+				} else {
+					node_map[dummy.ExtendedField()] = v
 				}
 			}
 		}
@@ -226,13 +308,20 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 	defer tx.Close()
 
 	query := `
-		MATCH (n:` + string(scan_type) + `)` +
-		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(scan_filter.Filters), true) +
-		` MATCH (n:` + string(scan_type) + `) -[:SCANNED]-> (m)` +
+		MATCH (:` + string(scan_type) + `) -[:SCANNED]-> (m)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("m", mo.Some(resource_filter.Filters), true) +
-		` WITH DISTINCT m, max(n.updated_at) as latest
-	    MATCH (n:` + string(scan_type) + `{updated_at:latest}) -[:SCANNED]-> (m)` +
-		` RETURN n.node_id as scan_id, n.status, n.updated_at, m.node_id, labels(m) as node_type, m.node_name` +
+		`
+	    WITH distinct m
+		CALL {
+	    WITH m
+		MATCH (n:` + string(scan_type) + `) -[:SCANNED]-> (m)` +
+		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(scan_filter.Filters), true) +
+		`
+	    RETURN n
+	    ORDER BY n.updated_at DESC` +
+		scan_filter.Window.FetchWindow2CypherQuery() +
+		`}
+	    RETURN n.node_id as scan_id, n.status, n.status_message, n.updated_at, m.node_id, labels(m) as node_type, m.node_name` +
 		reporters.OrderFilter2CypherCondition("n", scan_filter.Filters.OrderFilter) +
 		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
@@ -258,10 +347,11 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 		res = append(res, model.ScanInfo{
 			ScanId:         rec.Values[0].(string),
 			Status:         rec.Values[1].(string),
-			UpdatedAt:      rec.Values[2].(int64),
-			NodeId:         rec.Values[3].(string),
-			NodeType:       reporters_scan.Labels2NodeType(rec.Values[4].([]interface{})),
-			NodeName:       rec.Values[5].(string),
+			StatusMessage:  rec.Values[2].(string),
+			UpdatedAt:      rec.Values[3].(int64),
+			NodeId:         rec.Values[4].(string),
+			NodeType:       reporters_scan.Labels2NodeType(rec.Values[5].([]interface{})),
+			NodeName:       rec.Values[6].(string),
 			SeverityCounts: counts,
 		})
 	}

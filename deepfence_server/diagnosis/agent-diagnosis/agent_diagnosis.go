@@ -60,9 +60,6 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 	if err != nil {
 		return err
 	}
-	if err != nil {
-		return err
-	}
 	rec, err := res.Collect()
 	if err != nil {
 		return err
@@ -71,7 +68,7 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 	for i := range rec {
 		foundNodeIds = append(foundNodeIds, rec[i].Values[0].(string))
 		if rec[i].Values[1] != nil {
-			return errors.New(fmt.Sprintf("Diagnostic logs already scheduled for node %v", rec[i].Values[1]))
+			return errors.New(fmt.Sprintf("Diagnostic logs already scheduled for node %v (status: %v)", rec[i].Values[0], rec[i].Values[1]))
 		}
 	}
 
@@ -167,7 +164,8 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 			return err
 		}
 		if _, err = tx.Run(fmt.Sprintf(`
-		MERGE (n:AgentDiagnosticLogs{node_id: $node_id, status: $status, retries: 0, trigger_action: $action, updated_at: TIMESTAMP()})
+		MERGE (n:AgentDiagnosticLogs{node_id: $node_id})
+		SET n.status=$status, n.retries=0, n.trigger_action=$action, n.updated_at=TIMESTAMP()
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCHEDULEDLOGS]->(m)`, controls.ResourceTypeToNeo4j(controls.StringToResourceType(nodeIdentifier.NodeType))),
 			map[string]interface{}{

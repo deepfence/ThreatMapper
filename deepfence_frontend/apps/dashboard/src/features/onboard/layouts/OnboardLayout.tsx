@@ -14,11 +14,11 @@ export const rootOnboardLoader: LoaderFunction = async ({ request }) => {
 
 export const OnboardLayout = () => {
   return (
-    <div className="bg-white dark:bg-gray-900">
-      <div className="mx-16 pt-[64px] pb-8 min-h-screen">
+    <div className="bg-white dark:bg-gray-900 h-screen overflow-auto">
+      <div className="px-16 pt-[64px] pb-8">
         <Outlet />
       </div>
-      <OnboardAppHeader />
+      <OnboardAppHeader showGotoDashboard={true} />
     </div>
   );
 };

@@ -27,28 +27,10 @@ export interface GraphNodeInfo {
     cloud_compliance_count: number;
     /**
      * 
-     * @type {string}
-     * @memberof GraphNodeInfo
-     */
-    cloud_compliance_scan_id: string;
-    /**
-     * 
      * @type {number}
      * @memberof GraphNodeInfo
      */
     compliance_count: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof GraphNodeInfo
-     */
-    compliance_scan_id: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof GraphNodeInfo
-     */
-    image_name: string;
     /**
      * 
      * @type {string}
@@ -69,22 +51,10 @@ export interface GraphNodeInfo {
     secrets_count: number;
     /**
      * 
-     * @type {string}
-     * @memberof GraphNodeInfo
-     */
-    secrets_scan_id: string;
-    /**
-     * 
      * @type {number}
      * @memberof GraphNodeInfo
      */
     vulnerability_count: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof GraphNodeInfo
-     */
-    vulnerability_scan_id: string;
 }
 
 /**
@@ -93,16 +63,11 @@ export interface GraphNodeInfo {
 export function instanceOfGraphNodeInfo(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "cloud_compliance_count" in value;
-    isInstance = isInstance && "cloud_compliance_scan_id" in value;
     isInstance = isInstance && "compliance_count" in value;
-    isInstance = isInstance && "compliance_scan_id" in value;
-    isInstance = isInstance && "image_name" in value;
     isInstance = isInstance && "name" in value;
     isInstance = isInstance && "node_id" in value;
     isInstance = isInstance && "secrets_count" in value;
-    isInstance = isInstance && "secrets_scan_id" in value;
     isInstance = isInstance && "vulnerability_count" in value;
-    isInstance = isInstance && "vulnerability_scan_id" in value;
 
     return isInstance;
 }
@@ -118,16 +83,11 @@ export function GraphNodeInfoFromJSONTyped(json: any, ignoreDiscriminator: boole
     return {
         
         'cloud_compliance_count': json['cloud_compliance_count'],
-        'cloud_compliance_scan_id': json['cloud_compliance_scan_id'],
         'compliance_count': json['compliance_count'],
-        'compliance_scan_id': json['compliance_scan_id'],
-        'image_name': json['image_name'],
         'name': json['name'],
         'node_id': json['node_id'],
         'secrets_count': json['secrets_count'],
-        'secrets_scan_id': json['secrets_scan_id'],
         'vulnerability_count': json['vulnerability_count'],
-        'vulnerability_scan_id': json['vulnerability_scan_id'],
     };
 }
 
@@ -141,16 +101,11 @@ export function GraphNodeInfoToJSON(value?: GraphNodeInfo | null): any {
     return {
         
         'cloud_compliance_count': value.cloud_compliance_count,
-        'cloud_compliance_scan_id': value.cloud_compliance_scan_id,
         'compliance_count': value.compliance_count,
-        'compliance_scan_id': value.compliance_scan_id,
-        'image_name': value.image_name,
         'name': value.name,
         'node_id': value.node_id,
         'secrets_count': value.secrets_count,
-        'secrets_scan_id': value.secrets_scan_id,
         'vulnerability_count': value.vulnerability_count,
-        'vulnerability_scan_id': value.vulnerability_scan_id,
     };
 }
 

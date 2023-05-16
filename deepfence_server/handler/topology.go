@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 
-	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/render/detailed"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/scope/report"
 	reporters_graph "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
@@ -15,11 +15,25 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
-var topology_reporters map[directory.NamespaceID]reporters_graph.TopologyReporter
+var (
+	inboundInternetNode = detailed.NodeSummary{
+		ID:                "in-the-internet",
+		Label:             "The Internet (Inbound)",
+		ImmediateParentID: "",
+		Type:              "pseudo",
+	}
+	outboundInternetNode = detailed.NodeSummary{
+		ID:                "out-the-internet",
+		Label:             "The Internet (Outbound)",
+		ImmediateParentID: "",
+		Type:              "pseudo",
+	}
+)
+
+var topology_reporters sync.Map
 
 func init() {
-	agent_report_ingesters = map[directory.NamespaceID]*ingesters.Ingester[report.Report]{}
-	topology_reporters = map[directory.NamespaceID]reporters_graph.TopologyReporter{}
+	topology_reporters = sync.Map{}
 }
 
 func getTopologyReporter(ctx context.Context) (reporters_graph.TopologyReporter, error) {
@@ -28,16 +42,19 @@ func getTopologyReporter(ctx context.Context) (reporters_graph.TopologyReporter,
 		return nil, err
 	}
 
-	ing, has := topology_reporters[nid]
+	ing, has := topology_reporters.Load(nid)
 	if has {
-		return ing, nil
+		return ing.(reporters_graph.TopologyReporter), nil
 	}
 	new_entry, err := reporters_graph.NewNeo4jCollector(ctx)
 	if err != nil {
 		return nil, err
 	}
-	topology_reporters[nid] = new_entry
-	return new_entry, nil
+	true_entry, loaded := topology_reporters.LoadOrStore(nid, new_entry)
+	if loaded {
+		new_entry.Close()
+	}
+	return true_entry.(reporters_graph.TopologyReporter), nil
 }
 
 func (h *Handler) GetTopologyGraph(w http.ResponseWriter, req *http.Request) {
@@ -120,30 +137,6 @@ func (h *Handler) getTopologyGraph(w http.ResponseWriter, req *http.Request, get
 	respondWith(ctx, w, http.StatusOK, GraphResult{Nodes: newTopo, Edges: newConnections})
 }
 
-func nodeStubToMetadata(stub reporters_graph.NodeStub) []report.MetadataRow {
-	return []report.MetadataRow{
-		{
-			ID:       "id",
-			Label:    "ID",
-			Value:    string(stub.ID),
-			Priority: 1,
-		},
-		{
-			ID:       "label",
-			Label:    "Label",
-			Value:    stub.Name,
-			Priority: 2,
-		},
-	}
-}
-
-func nodeStubToSummary(stub reporters_graph.NodeStub) detailed.BasicNodeSummary {
-	return detailed.BasicNodeSummary{
-		ID:    string(stub.ID),
-		Label: stub.Name,
-	}
-}
-
 func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, region_filter, kubernetes_filter, host_filter []string) (detailed.NodeSummaries, detailed.TopologyConnectionSummaries) {
 	nodes := detailed.NodeSummaries{}
 	edges := detailed.TopologyConnectionSummaries{}
@@ -179,15 +172,16 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		if target == "internet" {
 			target = "out-the-internet"
 		}
-		log.Info().Msgf("%v -> %v\n", source, target)
+		//log.Info().Msgf("%v -> %v\n", source, target)
 		edges[source+target] = detailed.ConnectionSummary{Source: source, Target: target}
 	}
 
 	for _, cp_stub := range graph.Providers {
 		cp := string(cp_stub.ID)
 		nodes[cp] = detailed.NodeSummary{
+			ID:                string(cp_stub.ID),
+			Label:             cp_stub.Name,
 			ImmediateParentID: "",
-			BasicNodeSummary:  nodeStubToSummary(cp_stub),
 			Type:              report.CloudProvider,
 		}
 	}
@@ -196,8 +190,9 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		for _, cr_stub := range crs {
 			cr := string(cr_stub.ID)
 			nodes[cr] = detailed.NodeSummary{
+				ID:                string(cr_stub.ID),
+				Label:             cr_stub.Name,
 				ImmediateParentID: string(cp),
-				BasicNodeSummary:  nodeStubToSummary(cr_stub),
 				Type:              report.KubernetesCluster,
 			}
 		}
@@ -207,8 +202,9 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		for _, cr_stub := range crs {
 			cr := string(cr_stub.ID)
 			nodes[cr] = detailed.NodeSummary{
+				ID:                string(cr_stub.ID),
+				Label:             cr_stub.Name,
 				ImmediateParentID: string(cp),
-				BasicNodeSummary:  nodeStubToSummary(cr_stub),
 				Type:              report.CloudRegion,
 			}
 		}
@@ -218,74 +214,45 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		for _, host_stub := range n {
 			host := string(host_stub.ID)
 			nodes[host] = detailed.NodeSummary{
+				ID:                string(host_stub.ID),
+				Label:             host_stub.Name,
 				ImmediateParentID: string(cr),
-				BasicNodeSummary:  nodeStubToSummary(host_stub),
-				Metrics: []report.MetricRow{
-					{ID: report.HostCPUUsage, Metric: &report.Metric{}, Label: "CPU", Value: 0.0, Format: report.PercentFormat, Priority: 1},
-					{ID: report.HostMemoryUsage, Metric: &report.Metric{}, Label: "Memory", Value: 0.0, Format: report.FilesizeFormat, Priority: 2},
-					{ID: report.Load1, Metric: &report.Metric{}, Label: "Load (1m)", Value: 0.0, Format: report.DefaultFormat, Group: "load", Priority: 11},
-				},
-				Metadata: []report.MetadataRow{
-					{ID: report.KernelVersion, Label: "Kernel version", Value: report.FromLatest, Priority: 1},
-					{ID: report.Uptime, Label: "Uptime", Value: report.FromLatest, Priority: 2},
-					{ID: report.HostName, Label: "Hostname", Value: host, Priority: 11},
-					{ID: report.OS, Label: "OS", Value: report.FromLatest, Priority: 12},
-					{ID: report.HostLocalNetworks, Label: "Local networks", Value: report.FromSets, Priority: 13},
-					{ID: report.InterfaceNames, Label: "Interface Names", Value: report.FromLatest, Priority: 15},
-					//PublicIpAddr:   {ID: PublicIpAddr, Label: "Public IP Address", Value: report.FromLatest, Priority: 16},
-					{ID: report.ProbeId, Label: "Probe ID", Value: report.FromLatest, Priority: 17},
-					//ScopeVersion:  {ID: ScopeVersion, Label: "Scope version", Value: report.FromLatest, Priority: 14},
-					{ID: report.InterfaceIPs, Label: "All Interface IP's", Value: report.FromLatest, Priority: 21},
-					{ID: report.CloudProvider, Label: "Cloud Provider", Value: report.FromLatest, Priority: 22},
-					{ID: report.CloudRegion, Label: "Cloud Region", Value: report.FromLatest, Priority: 23},
-					{ID: report.CloudMetadata, Label: "Cloud Metadata", Value: report.FromLatest, Priority: 24},
-					{ID: report.KubernetesClusterId, Label: "Kubernetes Cluster Id", Value: report.FromLatest, Priority: 25},
-					{ID: report.KubernetesClusterName, Label: "Kubernetes Cluster Name", Value: report.FromLatest, Priority: 26},
-					{ID: report.UserDfndTags, Label: "User Defined Tags", Value: report.FromLatest, Priority: 27},
-					{ID: report.AgentVersion, Label: "Sensor Version", Value: report.FromLatest, Priority: 28},
-					{ID: report.IsUiVm, Label: "UI vm", Value: "yes", Priority: 29},
-					{ID: report.AgentRunning, Label: "Sensor", Value: "yes", Priority: 33},
-				},
-				Type: report.Host,
+				Type:              report.Host,
 			}
 		}
+	}
+
+	NodeIDs2strings := func(arr []reporters_graph.NodeID) []string {
+		res := []string{}
+		for i := range arr {
+			res = append(res, string(arr[i]))
+		}
+		return res
 	}
 
 	for cp, crs := range graph.CloudServices {
 		for _, cr_stub := range crs {
 			cr := string(cr_stub.ID)
 			nodes[cr] = detailed.NodeSummary{
+				ID:                string(cr_stub.ID),
+				Label:             cr_stub.Name,
 				ImmediateParentID: string(cp),
-				BasicNodeSummary:  nodeStubToSummary(cr_stub.NodeStub),
 				Type:              cr_stub.ResourceType,
+				IDs:               NodeIDs2strings(cr_stub.IDs),
 			}
 		}
 	}
 
-	nodes["in-the-internet"] = detailed.NodeSummary{
-		ImmediateParentID: "",
-		BasicNodeSummary: detailed.BasicNodeSummary{
-			ID:    "in-the-internet",
-			Label: "The Internet",
-		},
-		Type: "pseudo",
-	}
-
-	nodes["out-the-internet"] = detailed.NodeSummary{
-		ImmediateParentID: "",
-		BasicNodeSummary: detailed.BasicNodeSummary{
-			ID:    "out-the-internet",
-			Label: "The Internet",
-		},
-		Type: "pseudo",
-	}
+	nodes["in-the-internet"] = inboundInternetNode
+	nodes["out-the-internet"] = outboundInternetNode
 
 	for h, n := range graph.Processes {
 		for _, id_stub := range n {
 			id := string(id_stub.ID)
 			nodes[id] = detailed.NodeSummary{
+				ID:                string(id_stub.ID),
+				Label:             id_stub.Name,
 				ImmediateParentID: string(h),
-				BasicNodeSummary:  nodeStubToSummary(id_stub),
 				Type:              report.Process,
 			}
 		}
@@ -295,8 +262,9 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		for _, id_stub := range n {
 			id := string(id_stub.ID)
 			nodes[id] = detailed.NodeSummary{
+				ID:                string(id_stub.ID),
+				Label:             id_stub.Name,
 				ImmediateParentID: string(h),
-				BasicNodeSummary:  nodeStubToSummary(id_stub),
 				Type:              report.Pod,
 			}
 		}
@@ -306,8 +274,9 @@ func graphToSummaries(graph reporters_graph.RenderedGraph, provider_filter, regi
 		for _, id_stub := range n {
 			id := string(id_stub.ID)
 			nodes[id] = detailed.NodeSummary{
+				ID:                string(id_stub.ID),
+				Label:             id_stub.Name,
 				ImmediateParentID: string(h),
-				BasicNodeSummary:  nodeStubToSummary(id_stub),
 				Type:              report.Container,
 			}
 		}

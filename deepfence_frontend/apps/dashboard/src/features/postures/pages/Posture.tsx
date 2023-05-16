@@ -1,63 +1,33 @@
 import cx from 'classnames';
 import { Suspense } from 'react';
-import { IconContext } from 'react-icons';
-import { HiArrowSmRight } from 'react-icons/hi';
+import { HiOutlineChevronRight } from 'react-icons/hi';
 import { useLoaderData } from 'react-router-dom';
 import { Card } from 'ui-components';
 
 import { getCloudNodesApiClient } from '@/api/api';
 import { ModelCloudNodeProvidersListResp } from '@/api/generated';
-import LogoAws from '@/assets/logo-aws.svg';
-import LogoAwsWhite from '@/assets/logo-aws-white.svg';
-import LogoAzure from '@/assets/logo-azure.svg';
-import LogoGoogle from '@/assets/logo-google.svg';
-import LogoK8 from '@/assets/logo-k8.svg';
-import LogoLinux from '@/assets/logo-linux.svg';
-import { DFLink } from '@/components/DFLink';
-import { Mode, useTheme } from '@/theme/ThemeContext';
+import { LinkButton } from '@/components/LinkButton';
+import { getPostureLogo } from '@/constants/logos';
+import { useTheme } from '@/theme/ThemeContext';
 import { ApiError, makeRequest } from '@/utils/api';
+import { abbreviateNumber, formatPercentage } from '@/utils/number';
 import { typedDefer } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
-
-const logoMap = (accountType: string, mode: Mode) => {
-  const map: {
-    [k: string]: {
-      label: string;
-      icon: string;
-    };
-  } = {
-    aws: {
-      label: 'AWS',
-      icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
-    },
-    aws_org: {
-      label: 'AWS ORG',
-      icon: mode === 'dark' ? LogoAwsWhite : LogoAws,
-    },
-    azure: {
-      label: 'Azure',
-      icon: LogoGoogle,
-    },
-    gcp: {
-      label: 'GCP',
-      icon: LogoAzure,
-    },
-    kubernetes: {
-      label: 'KUBERNETES',
-      icon: LogoK8,
-    },
-    linux: {
-      label: 'HOSTS',
-      icon: LogoLinux,
-    },
-  };
-  return map[accountType];
-};
 
 export type LoaderDataType = {
   error?: string;
   message?: string;
   data: Awaited<ReturnType<typeof getCloudNodeProviders>>;
+};
+
+export const providersToNameMapping: { [key: string]: string } = {
+  aws: 'AWS',
+  aws_org: 'AWS Organizations',
+  gcp: 'GCP',
+  gcp_org: 'GCP Organizations',
+  azure: 'Azure',
+  linux: 'Linux Hosts',
+  kubernetes: 'Kubernetes',
 };
 
 async function getCloudNodeProviders(): Promise<ModelCloudNodeProvidersListResp> {
@@ -81,29 +51,32 @@ const loader = async () => {
   });
 };
 
+const isProviderLinuxOrKubernetes = (provider: string) => {
+  return provider === 'linux' || provider === 'kubernetes';
+};
 const CardSkeleton = () => {
   return (
     <>
       {Array.from(Array(5).keys()).map((k) => (
         <Card
-          className="p-4 animate-pulse items-center gap-2 min-w-[330px] min-h-[150px]"
+          className="p-2 animate-pulse items-center gap-2 min-w-[330px] min-h-[150px]"
           key={k}
         >
           <div className="flex items-center justify-between w-full">
-            <div className="h-2 w-10 bg-slate-200"></div>
-            <div className="h-2 w-20 bg-slate-200 ml-auto mt-2"></div>
+            <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700"></div>
+            <div className="h-2 w-20 bg-gray-200 dark:bg-gray-700 rounded-md ml-auto mt-2"></div>
           </div>
           <div className="flex items-center gap-6">
             <div className="flex self-start flex-col border-r border-gray-200 dark:border-gray-700 w-20 h-20">
-              <div className="rounded-full bg-slate-200 h-10 w-10"></div>
-              <div className="h-4 w-10 bg-slate-200 mt-2"></div>
-              <div className="h-2 w-10 bg-slate-200 mt-2"></div>
+              <div className="rounded-full bg-gray-200 dark:bg-gray-700 h-10 w-10"></div>
+              <div className="h-4 w-10 bg-gray-200 dark:bg-gray-700 mt-2"></div>
+              <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700 mt-2"></div>
             </div>
             <div className="flex gap-x-4 justify-center items-center">
               <div className="grid grid-cols-3 gap-4">
-                <div className="h-2 w-10 bg-slate-200 rounded"></div>
-                <div className="h-2 w-10 bg-slate-200 rounded"></div>
-                <div className="h-2 w-10 bg-slate-200 rounded"></div>
+                <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
               </div>
             </div>
           </div>
@@ -126,43 +99,37 @@ const AccountSummary = () => {
               const {
                 name = '',
                 node_count,
-                node_label,
                 scan_count,
                 compliance_percentage = 0,
                 resource_count,
+                node_label,
               } = provider;
-              const account = logoMap(name, mode);
+              const account = getPostureLogo(name, mode);
+
               return (
-                <Card key={name} className="p-4 flex flex-col gap-y-1">
-                  <div className="flex items-center justify-between w-full">
-                    <h4 className="text-gray-900 text-sm dark:text-white mr-4 uppercase">
-                      {name}
+                <Card key={name} className="p-2 pb-3 flex flex-col">
+                  <div className="flex items-center w-full">
+                    <h4 className="text-gray-900 text-sm font-medium dark:text-white mr-4">
+                      {providersToNameMapping[name]}
                     </h4>
-                    <div className="ml-auto">
-                      <DFLink
-                        to={`/posture/accounts/${name}`}
-                        className="flex items-center hover:no-underline"
-                      >
-                        <span className="text-xs text-blue-600 dark:text-blue-500">
-                          Go to details
-                        </span>
-                        <IconContext.Provider
-                          value={{
-                            className: 'text-blue-600 dark:text-blue-500 ',
-                          }}
-                        >
-                          <HiArrowSmRight />
-                        </IconContext.Provider>
-                      </DFLink>
+                    <div className="flex ml-auto">
+                      <LinkButton to={`/posture/accounts/${name}`} sizing="xs">
+                        <>
+                          Go to details&nbsp;
+                          <HiOutlineChevronRight />
+                        </>
+                      </LinkButton>
                     </div>
                   </div>
-                  <div className="mt-2 flex items-center gap-x-6">
+                  <div className="mt-2 flex gap-x-6 items-center">
                     <div className="pr-2 flex flex-col gap-y-2 border-r border-gray-200 dark:border-gray-700">
-                      <img src={account.icon} alt="logo" width={40} height={40} />
-                      <div className="flex flex-col gap-x-4">
+                      <div className="px-4 flex justify-center items-center h-8 w-20 max-h-9">
+                        <img src={account.icon} alt="logo" />
+                      </div>
+                      <div className="flex flex-col items-center">
                         <span
-                          className={cx('text-md rounded-lg px-1 font-medium w-fit', {
-                            'bg-[#de425b]/30 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
+                          className={cx('text-base rounded-lg px-1 font-medium w-fit', {
+                            'bg-[#FF8A4C]/30 dark:bg-[#FF8A4C]/20 text-[#FF5A1F] dark:text-[#FF5A1F]':
                               compliance_percentage > 60 && compliance_percentage < 100,
                             'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
                               compliance_percentage > 30 && compliance_percentage < 90,
@@ -171,35 +138,39 @@ const AccountSummary = () => {
                             'text-gray-700 dark:text-gray-400': !compliance_percentage,
                           })}
                         >
-                          {compliance_percentage.toFixed(2)}%
+                          {formatPercentage(compliance_percentage, {
+                            maximumFractionDigits: 1,
+                          })}
                         </span>
-                        <span className="text-xs text-gray-400 dark:text-gray-500">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           Compliance
                         </span>
                       </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
-                        {node_count}
+                    <div className="flex flex-col min-w-[70px]">
+                      <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
+                        {abbreviateNumber(node_count ?? 0)}
                       </span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
-                        {name === 'host' ? 'Hosts' : 'Accounts'}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
-                        {resource_count}
-                      </span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
-                        Resources
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {node_label}
                       </span>
                     </div>
+                    {!isProviderLinuxOrKubernetes(name) ? (
+                      <div className="flex flex-col min-w-[70px]">
+                        <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
+                          {abbreviateNumber(resource_count ?? 0)}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          Resources
+                        </span>
+                      </div>
+                    ) : null}
 
-                    <div className="flex flex-col">
-                      <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
-                        {scan_count}
+                    <div className="flex flex-col min-w-[70px]">
+                      <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
+                        {abbreviateNumber(scan_count ?? 0)}
                       </span>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         Scans
                       </span>
                     </div>
@@ -217,12 +188,12 @@ const AccountSummary = () => {
 const Posture = () => {
   return (
     <>
-      <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-        <span className="text-md font-medium text-gray-700 dark:text-gray-200 uppercase">
+      <div className="flex p-2 w-full items-center shadow bg-white dark:bg-gray-800">
+        <span className="text-md font-medium text-gray-700 dark:text-gray-200">
           Posture
         </span>
       </div>
-      <div className="p-4 flex flex-row flex-wrap gap-4">
+      <div className="p-2 flex flex-row flex-wrap gap-2">
         <AccountSummary />
       </div>
     </>

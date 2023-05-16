@@ -20,6 +20,12 @@ func addAuditLog(record *kgo.Record) {
 
 func processAuditLog(ctx context.Context, auditC chan *kgo.Record) {
 	defer close(auditC)
+
+	pgClient, err := directory.PostgresClient(directory.WithGlobalContext(ctx))
+	if err != nil {
+		log.Error().Err(err).Msg("failed to get db connection")
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -28,14 +34,6 @@ func processAuditLog(ctx context.Context, auditC chan *kgo.Record) {
 		case record := <-auditC:
 
 			spanCtx, span := otel.Tracer("audit-log").Start(ctx, "ingest-audit-log")
-
-			pgClient, err := directory.PostgresClient(directory.WithGlobalContext(spanCtx))
-			if err != nil {
-				log.Error().Err(err).Msg("failed to get db connection")
-				span.RecordError(err)
-				span.End()
-				continue
-			}
 
 			var params postgresql_db.CreateAuditLogParams
 

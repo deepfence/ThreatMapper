@@ -1,8 +1,9 @@
 import cx from 'classnames';
 import { isEmpty } from 'lodash-es';
 import { Suspense } from 'react';
+import { HiOutlineChevronRight } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
-import { Link, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
+import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { Card, CircleSpinner, Typography } from 'ui-components';
 
 import { getSecretApiClient } from '@/api/api';
@@ -11,6 +12,7 @@ import {
   ModelScanInfo,
   ModelSecretScanResult,
 } from '@/api/generated';
+import { LinkButton } from '@/components/LinkButton';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { statusScanApiFunctionMap } from '@/features/onboard/pages/ScanInProgress';
@@ -72,6 +74,7 @@ async function getScanSummary(scanIds: string[]): Promise<ScanData[]> {
               match_filter: {
                 filter_in: {},
               },
+              compare_filter: null,
             },
             scan_id: scanId,
             window: {
@@ -312,15 +315,12 @@ const SecretScanSummary = () => {
         description={'Summary of secret scan result'}
       />
 
-      <Link
-        to="/secret"
-        className={cx(
-          `${Typography.size.sm} `,
-          'underline underline-offset-2 ml-auto bg-transparent text-blue-600 dark:text-blue-500',
-        )}
-      >
-        Go to Secret Dashboard to view details scan result
-      </Link>
+      <LinkButton to={'/secret'} sizing="xs">
+        <>
+          Go to Secret Dashboard to view details scan result&nbsp;
+          <HiOutlineChevronRight />
+        </>
+      </LinkButton>
 
       <div className="flex flex-col gap-4 mt-4">
         <Suspense

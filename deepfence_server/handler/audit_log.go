@@ -67,9 +67,10 @@ func (h *Handler) AuditUserActivity(
 ) {
 
 	var (
-		user_id = 0.0
-		role_id = 0.0
-		claims  = map[string]interface{}{}
+		user_id     = 0.0
+		role_id     = 0.0
+		userIdValid = false
+		claims      = map[string]interface{}{}
 	)
 
 	token, err := GetTokenFromRequest(h.TokenAuth, req)
@@ -78,12 +79,14 @@ func (h *Handler) AuditUserActivity(
 	} else {
 		claims := token.PrivateClaims()
 		user_id = claims["user_id"].(float64)
+		userIdValid = true
 		role_id = claims["role_id"].(float64)
 	}
 
 	if event == EVENT_AUTH && action == ACTION_LOGIN {
 		user := resources.(*model.User)
 		user_id = float64(user.ID)
+		userIdValid = true
 		role_id = float64(user.RoleID)
 	}
 
@@ -105,11 +108,14 @@ func (h *Handler) AuditUserActivity(
 	}
 
 	params := postgresql_db.CreateAuditLogParams{
-		Event:      event,
-		Action:     action,
-		Resources:  sql.NullString{String: string(resourceStr), Valid: true},
-		Success:    success,
-		UserID:     int32(user_id),
+		Event:     event,
+		Action:    action,
+		Resources: resourceStr,
+		Success:   success,
+		UserID: sql.NullInt32{
+			Int32: int32(user_id),
+			Valid: userIdValid,
+		},
 		UserRoleID: int32(role_id),
 		CreatedAt:  time.Now(),
 	}

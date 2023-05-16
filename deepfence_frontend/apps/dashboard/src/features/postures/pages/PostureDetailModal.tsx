@@ -2,7 +2,7 @@ import cx from 'classnames';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { omit, pick, truncate } from 'lodash-es';
-import { Suspense, useState } from 'react';
+import { Suspense } from 'react';
 import { LoaderFunctionArgs, useLoaderData, useSearchParams } from 'react-router-dom';
 import {
   Badge,
@@ -15,7 +15,7 @@ import {
 
 import { getSearchApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelCompliance } from '@/api/generated';
-import { CopyToClipboardAsJson } from '@/components/CopyToClipboardIcon';
+import { CopyToClipboard } from '@/components/CopyToClipboard';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { STATUSES } from '@/features/postures/pages/PostureScanResults';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -51,8 +51,13 @@ async function getCompliances(complianceId: string) {
               match_filter: {
                 filter_in: {},
               },
+              compare_filter: null,
             },
             in_field_filter: null,
+            window: {
+              offset: 0,
+              size: 0,
+            },
           },
           window: {
             offset: 0,
@@ -85,9 +90,7 @@ async function getCompliances(complianceId: string) {
     };
   }
 
-  const res = result[0];
-
-  return res;
+  return result[0];
 }
 const loader = async ({
   params,
@@ -131,7 +134,7 @@ const Header = () => {
                     label={compliane?.compliance_check_type?.toUpperCase()}
                     size="sm"
                   />
-                  <CopyToClipboardAsJson data={compliane} />
+                  <CopyToClipboard data={compliane} />
                 </div>
                 <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7">
                   {dayjs(compliane.updated_at).fromNow() || '-'}
@@ -146,7 +149,6 @@ const Header = () => {
 };
 
 const DetailsComponent = () => {
-  const [openDetails, setOpenDetails] = useState(true);
   const loaderData = useLoaderData() as LoaderDataType;
 
   return (
@@ -158,7 +160,7 @@ const DetailsComponent = () => {
               return (
                 <div className="flex items-center p-4 justify-center">
                   <h3 className="text-md text-gray-900 dark:text-gray-400">
-                    No compliance found
+                    No details found
                   </h3>
                 </div>
               );
@@ -176,16 +178,9 @@ const DetailsComponent = () => {
             return (
               <div className="text-gray-900 dark:text-gray-300">
                 <section>
-                  <button
-                    className="flex mb-2 font-medium text-xs w-full"
-                    onClick={() => {
-                      setOpenDetails(!openDetails);
-                    }}
-                  >
-                    <span className="tracking-wider font-medium text-base dark:text-white">
-                      DETAILS
-                    </span>
-                  </button>
+                  <h3 className="flex mb-2 font-medium text-sm w-full racking-wider dark:text-white">
+                    DETAILS
+                  </h3>
 
                   <>
                     <div>
@@ -234,7 +229,7 @@ const DetailsComponent = () => {
                     </div>
                     <div className="mt-6 flex flex-wrap gap-y-4">
                       {getObjectKeys(others).map((key) => {
-                        const label = key.toUpperCase();
+                        const label = key.replaceAll('_', ' ').toUpperCase();
                         const isNullOrEmpty = others[key] === '' || others[key] == null;
                         return (
                           <div key={key} className="flex flex-col grow basis-1/2 px-2">

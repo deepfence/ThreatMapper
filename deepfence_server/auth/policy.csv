@@ -5,6 +5,7 @@ p, standard-user, user, write
 p, standard-user, user, read
 p, read-only-user, user, read
 
+p, admin, all-users, delete
 p, admin, all-users, write
 p, admin, all-users, read
 p, standard-user, all-users, read
@@ -42,6 +43,14 @@ p, standard-user, diagnosis, generate
 p, admin, diagnosis, read
 p, standard-user, diagnosis, read
 
+p, admin, report, generate
+p, standard-user, report, generate
+p, admin, report, read
+p, standard-user, report, read
+p, read-only-user, report, read
+p, admin, report, delete
+p, standard-user, report, delete
+
 p, admin, container-registry, start
 p, admin, container-registry, stop
 p, admin, container-registry, read
@@ -51,3 +60,21 @@ p, standard-user, container-registry, start
 p, standard-user, container-registry, stop
 p, standard-user, container-registry, read
 p, read-only-user, container-registry, read
+
+p, admin, integration, write
+p, admin, integration, read
+p, admin, integration, delete
+p, standard-user, integration, write
+p, standard-user, integration, read
+
+p, admin, report, generate
+p, admin, report, download
+p, admin, report, delete
+p, standard-user, report, generate
+p, standard-user, report, download
+
+p, admin, settings, read
+p, admin, settings, write
+p, admin, settings, delete
+p, standard-user, settings, read
+p, standard-user, settings, write

@@ -119,14 +119,6 @@ const (
 	HostCPUUsage      = "host_cpu_usage_percent"
 	HostMemoryUsage   = "host_mem_usage_bytes"
 	ScopeVersion      = "host_scope_version"
-	InterfaceNames    = "interfaceNames"
-	ProbeId           = "probeId"
-	InterfaceIPs      = "interface_ips"
-	UserDfndTags      = "user_defined_tags"
-	AgentVersion      = "version"
-	IsUiVm            = "is_ui_vm"
-	AgentRunning      = "agent_running"
-	CloudMetadata     = "cloud_metadata"
 
 	CloudProviderServerless = "Serverless"
 	// probe/overlay/weave
@@ -134,27 +126,21 @@ const (
 	WeavePeerNickName = "weave_peer_nick_name"
 )
 
-/*
-Lookup table to allow msgpack/json decoder to avoid heap allocation
-
-	for common ps.Map keys. The map is static so we don't have to lock
-	access from multiple threads and don't have to worry about it
-	getting clogged with values that are only used once.
+/* Lookup table to allow msgpack/json decoder to avoid heap allocation
+   for common ps.Map keys. The map is static so we don't have to lock
+   access from multiple threads and don't have to worry about it
+   getting clogged with values that are only used once.
 */
 var commonKeys = map[string]string{
-	Endpoint:               Endpoint,
-	Process:                Process,
-	Container:              Container,
-	Pod:                    Pod,
-	Service:                Service,
-	Deployment:             Deployment,
-	ReplicaSet:             ReplicaSet,
-	DaemonSet:              DaemonSet,
-	StatefulSet:            StatefulSet,
-	CronJob:                CronJob,
-	ContainerImage:         ContainerImage,
-	Host:                   Host,
-	Overlay:                Overlay,
+	Endpoint:       Endpoint,
+	Process:        Process,
+	Container:      Container,
+	Pod:            Pod,
+	Service:        Service,
+	ContainerImage: ContainerImage,
+	Host:           Host,
+	Overlay:        Overlay,
+
 	HostNodeID:             HostNodeID,
 	ControlProbeID:         ControlProbeID,
 	DoesNotMakeConnections: DoesNotMakeConnections,

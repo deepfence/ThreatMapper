@@ -27,6 +27,7 @@ import type {
   ModelScanTriggerResp,
   ModelSecretScanResult,
   ModelSecretScanTriggerReq,
+  SearchResultGroupResp,
   SearchSearchCountResp,
 } from '../models';
 import {
@@ -54,6 +55,8 @@ import {
     ModelSecretScanResultToJSON,
     ModelSecretScanTriggerReqFromJSON,
     ModelSecretScanTriggerReqToJSON,
+    SearchResultGroupRespFromJSON,
+    SearchResultGroupRespToJSON,
     SearchSearchCountRespFromJSON,
     SearchSearchCountRespToJSON,
 } from '../models';
@@ -112,6 +115,21 @@ export interface SecretScanApiInterface {
      * Get Secret Scans Results
      */
     countResultsSecretScan(requestParameters: CountResultsSecretScanRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp>;
+
+    /**
+     * Group Secret Scans results by severity/rule
+     * @summary Group Secret Results
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SecretScanApiInterface
+     */
+    groupResultsSecretsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchResultGroupResp>>;
+
+    /**
+     * Group Secret Scans results by severity/rule
+     * Group Secret Results
+     */
+    groupResultsSecrets(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchResultGroupResp>;
 
     /**
      * Ingest secrets scan status from the agent
@@ -268,6 +286,42 @@ export class SecretScanApi extends runtime.BaseAPI implements SecretScanApiInter
      */
     async countResultsSecretScan(requestParameters: CountResultsSecretScanRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchSearchCountResp> {
         const response = await this.countResultsSecretScanRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Group Secret Scans results by severity/rule
+     * Group Secret Results
+     */
+    async groupResultsSecretsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchResultGroupResp>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/scan/results/count/group/secret`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchResultGroupRespFromJSON(jsonValue));
+    }
+
+    /**
+     * Group Secret Scans results by severity/rule
+     * Group Secret Results
+     */
+    async groupResultsSecrets(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchResultGroupResp> {
+        const response = await this.groupResultsSecretsRaw(initOverrides);
         return await response.value();
     }
 

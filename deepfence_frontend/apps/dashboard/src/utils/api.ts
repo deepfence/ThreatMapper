@@ -3,6 +3,7 @@ import { redirect } from 'react-router-dom';
 import { getAuthenticationApiClient } from '@/api/api';
 import { ModelResponseAccessToken, ResponseError } from '@/api/generated';
 import storage from '@/utils/storage';
+import { sleep } from '@/utils/timers';
 
 export class ApiError<T> {
   private _value: T;
@@ -102,13 +103,78 @@ async function refreshAccessTokenIfPossible(): Promise<boolean> {
   return true;
 }
 
-function redirectToLogin() {
-  return redirect('/auth/login');
+export function redirectToLogin() {
+  const searchParams = new URLSearchParams();
+  const url = new URL(window.location.href);
+  searchParams.append('redirectTo', `${url.pathname}${url.search}`);
+  return redirect(`/auth/login?${searchParams.toString()}`);
 }
 
 export async function requireLogin() {
   const auth = storage.getAuth();
   if (auth) return;
   storage.clearAuth();
-  throw redirect('/auth/login');
+  throw redirectToLogin();
 }
+
+export function validateRedirectToUrl(redirectTo: string) {
+  if (!redirectTo) return true;
+  if (!redirectTo.startsWith('/')) return false;
+  return true;
+}
+
+type Result<T, E> =
+  | {
+      ok: true;
+      value: T;
+    }
+  | {
+      ok: false;
+      error: E;
+    };
+
+type Func<T extends any[], R> = (...a: T) => R;
+
+export function apiWrapper<F extends Func<any[], any>>({
+  fn,
+  options,
+}: {
+  fn: F;
+  options?: {
+    handleAuthError?: boolean;
+  };
+}): Func<Parameters<F>, Promise<Result<Awaited<ReturnType<F>>, ResponseError>>> {
+  return async (...args: Parameters<F>) => {
+    try {
+      const value = await fn(...args);
+      return { ok: true, value: value };
+    } catch (error) {
+      if (isResponseError(error)) {
+        if (error.response.status === 401 && options?.handleAuthError !== false) {
+          if (await refreshAccessTokenIfPossible()) {
+            return apiWrapper({ fn, options })(...args);
+          }
+        }
+        return { ok: false, error };
+      }
+
+      console.error(`unknown error while calling ${fn.name}`);
+      console.error(error);
+      throw error;
+    }
+  };
+}
+
+export const retryUntilResponseHasValue = async <F extends Func<any[], any>>(
+  fn: F,
+  fnParams: Parameters<F>,
+  checkResonseHasValue: (response: Awaited<ReturnType<F>>) => Promise<boolean>,
+): Promise<ReturnType<F>> => {
+  const response = await fn(...fnParams);
+  const isPresent = await checkResonseHasValue(response);
+  if (!isPresent) {
+    await sleep(3000);
+    return retryUntilResponseHasValue(fn, fnParams, checkResonseHasValue);
+  }
+  return response;
+};

@@ -13,6 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { ReportersCompareFilter } from './ReportersCompareFilter';
+import {
+    ReportersCompareFilterFromJSON,
+    ReportersCompareFilterFromJSONTyped,
+    ReportersCompareFilterToJSON,
+} from './ReportersCompareFilter';
 import type { ReportersContainsFilter } from './ReportersContainsFilter';
 import {
     ReportersContainsFilterFromJSON,
@@ -40,6 +46,12 @@ import {
 export interface ReportersFieldsFilters {
     /**
      * 
+     * @type {Array<ReportersCompareFilter>}
+     * @memberof ReportersFieldsFilters
+     */
+    compare_filter: Array<ReportersCompareFilter> | null;
+    /**
+     * 
      * @type {ReportersContainsFilter}
      * @memberof ReportersFieldsFilters
      */
@@ -50,6 +62,12 @@ export interface ReportersFieldsFilters {
      * @memberof ReportersFieldsFilters
      */
     match_filter: ReportersMatchFilter;
+    /**
+     * 
+     * @type {ReportersContainsFilter}
+     * @memberof ReportersFieldsFilters
+     */
+    not_contains_filter?: ReportersContainsFilter;
     /**
      * 
      * @type {ReportersOrderFilter}
@@ -63,6 +81,7 @@ export interface ReportersFieldsFilters {
  */
 export function instanceOfReportersFieldsFilters(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "compare_filter" in value;
     isInstance = isInstance && "contains_filter" in value;
     isInstance = isInstance && "match_filter" in value;
     isInstance = isInstance && "order_filter" in value;
@@ -80,8 +99,10 @@ export function ReportersFieldsFiltersFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         
+        'compare_filter': (json['compare_filter'] === null ? null : (json['compare_filter'] as Array<any>).map(ReportersCompareFilterFromJSON)),
         'contains_filter': ReportersContainsFilterFromJSON(json['contains_filter']),
         'match_filter': ReportersMatchFilterFromJSON(json['match_filter']),
+        'not_contains_filter': !exists(json, 'not_contains_filter') ? undefined : ReportersContainsFilterFromJSON(json['not_contains_filter']),
         'order_filter': ReportersOrderFilterFromJSON(json['order_filter']),
     };
 }
@@ -95,8 +116,10 @@ export function ReportersFieldsFiltersToJSON(value?: ReportersFieldsFilters | nu
     }
     return {
         
+        'compare_filter': (value.compare_filter === null ? null : (value.compare_filter as Array<any>).map(ReportersCompareFilterToJSON)),
         'contains_filter': ReportersContainsFilterToJSON(value.contains_filter),
         'match_filter': ReportersMatchFilterToJSON(value.match_filter),
+        'not_contains_filter': ReportersContainsFilterToJSON(value.not_contains_filter),
         'order_filter': ReportersOrderFilterToJSON(value.order_filter),
     };
 }

@@ -31,8 +31,11 @@ export {
   SlidingModalFooter,
   SlidingModalHeader,
 } from '@/components/modal/SlidingModal';
+export { Pagination } from '@/components/pagination/Pagination';
 export { Popover } from '@/components/popover/Popover';
 export { default as Radio } from '@/components/radio/Radio';
+export { Combobox, ComboboxOption } from '@/components/select/Combobox';
+export { Listbox, ListboxOption } from '@/components/select/Listbox';
 export { Select, SelectItem } from '@/components/select/Select';
 export { default as Separator } from '@/components/separator/Separator';
 export { CircleSpinner } from '@/components/spinner/CircleSpinner';

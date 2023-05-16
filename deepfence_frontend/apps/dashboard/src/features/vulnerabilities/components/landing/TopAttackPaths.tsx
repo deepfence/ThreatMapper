@@ -1,53 +1,55 @@
-import { HiArrowSmRight } from 'react-icons/hi';
-import { IconContext } from 'react-icons/lib';
-import { Card, Tabs } from 'ui-components';
+import { useMemo, useState } from 'react';
+import { Card, Radio, Separator } from 'ui-components';
 
-import { DFLink } from '@/components/DFLink';
-import { DagreGraph } from '@/features/vulnerabilities/components/landing/DagreGraph';
-
-export const attackPathTabs: Array<{
-  label: string;
-  value: string;
-}> = [
-  {
-    label: 'Most attack paths',
-    value: 'most',
-  },
-  {
-    label: 'Direct internet exposure',
-    value: 'direct',
-  },
-  {
-    label: 'Indirect internet exposure',
-    value: 'indirect',
-  },
-];
+import { GraphVulnerabilityThreatGraphRequestGraphTypeEnum } from '@/api/generated';
+import { VulnerabilityThreatGraphComponent } from '@/features/threat-graph/components/VulnerabilityThreatGraph';
 
 export const TopAttackPaths = () => {
+  const [attackPathType, setAttackPathType] =
+    useState<GraphVulnerabilityThreatGraphRequestGraphTypeEnum>(
+      GraphVulnerabilityThreatGraphRequestGraphTypeEnum.MostVulnerableAttackPaths,
+    );
+
+  const filters = useMemo(() => {
+    return {
+      type: attackPathType,
+    };
+  }, [attackPathType]);
+
   return (
     <Card className="h-full p-2">
-      <div className="p-2 flex items-center">
-        <h4 className="text-gray-900 text-sm dark:text-white">Top Attack Paths</h4>
-        <DFLink
-          to={'/vulnerability/scans'}
-          className="flex items-center hover:no-underline active:no-underline focus:no-underline ml-auto mr-2"
-        >
-          <span className="text-xs text-blue-600 dark:text-blue-500">
-            Go to ThreatGraph
-          </span>
-          <IconContext.Provider
-            value={{
-              className: 'text-blue-600 dark:text-blue-500 ',
-            }}
-          >
-            <HiArrowSmRight />
-          </IconContext.Provider>
-        </DFLink>
+      <div className="flex items-center pb-2">
+        <h4 className="text-gray-900 font-medium text-base dark:text-white">
+          Top Attack Paths
+        </h4>
       </div>
-      <div className="flex items-center justify-center pt-2">
-        <Tabs value={'most'} tabs={attackPathTabs} size="xs" variant="tab">
-          <DagreGraph />
-        </Tabs>
+      <Separator />
+      <div className="flex flex-col items-center justify-center h-[96%]">
+        <Radio
+          value={attackPathType}
+          className="mt-4 self-start"
+          options={[
+            {
+              label: 'Most vulnerable attack paths',
+              value:
+                GraphVulnerabilityThreatGraphRequestGraphTypeEnum.MostVulnerableAttackPaths,
+            },
+            {
+              label: 'Paths with direct internet exposure',
+              value:
+                GraphVulnerabilityThreatGraphRequestGraphTypeEnum.DirectInternetExposure,
+            },
+            {
+              label: 'Paths with indirect internet exposure',
+              value:
+                GraphVulnerabilityThreatGraphRequestGraphTypeEnum.IndirectInternetExposure,
+            },
+          ]}
+          onValueChange={(value: GraphVulnerabilityThreatGraphRequestGraphTypeEnum) => {
+            setAttackPathType(value);
+          }}
+        />
+        <VulnerabilityThreatGraphComponent filters={filters} />
       </div>
     </Card>
   );

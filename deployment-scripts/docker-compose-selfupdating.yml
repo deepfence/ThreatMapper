@@ -27,23 +27,9 @@ x-service-variables: &common-creds
 
 services:
 
-  #deepfence-init-container:
-  #  container_name: df-init-container
-  #  image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_init_ce:${DF_IMG_TAG:-1.4.1}
-  #  privileged: true
-  #  ulimits:
-  #    core: 0
-  #  network_mode: "host"
-  #  pid: "host"
-  #  restart: "no"
-  #  logging:
-  #    driver: "json-file"
-  #    options:
-  #      max-size: "1g"
-
   deepfence-postgres:
     container_name: deepfence-postgres
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_postgres_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_postgres_ce:${DF_IMG_TAG:-2.0.0}
     ulimits:
       core: 0
     restart: on-failure
@@ -58,7 +44,7 @@ services:
 
   deepfence-redis:
     container_name: deepfence-redis
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_redis_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_redis_ce:${DF_IMG_TAG:-2.0.0}
     environment:
       INITIALIZE_REDIS: "Y"
     ulimits:
@@ -105,7 +91,7 @@ services:
 
   deepfence-console-agent:
     container_name: deepfence-console-agent
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_agent_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_agent_ce:${DF_IMG_TAG:-2.0.0}
     ulimits:
       core: 0
     deploy:
@@ -134,13 +120,14 @@ services:
 
   deepfence-router:
     container_name: deepfence-router
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_router_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_router_ce:${DF_IMG_TAG:-2.0.0}
     ulimits:
       core: 0
     networks:
       - deepfence_net
     restart: always
     environment:
+      FORCE_HTTPS_REDIRECT: "true"
       KAFKA_REST_PROXY: "deepfence-rest-proxy:8082"
     ports:
       - "80:80"
@@ -154,7 +141,7 @@ services:
 
   deepfence-file-server:
     container_name: deepfence-file-server
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_file_server_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_file_server_ce:${DF_IMG_TAG:-2.0.0}
     ulimits:
       core: 0
     networks:
@@ -172,7 +159,7 @@ services:
 
   deepfence-server:
     container_name: deepfence-server
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_server_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_server_ce:${DF_IMG_TAG:-2.0.0}
     ulimits:
       core: 0
     tmpfs:
@@ -180,7 +167,7 @@ services:
     environment:
       <<: *common-creds
       ELASTICSEARCH_SCHEME: "http"
-      DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES: 1440
+      DEEPFENCE_ACCESS_TOKEN_EXPIRY_MINUTES: 5
       DEEPFENCE_CONSOLE_ORCHESTRATOR: "docker"
     networks:
       - deepfence_net
@@ -201,7 +188,7 @@ services:
 
   deepfence-worker:
     container_name: deepfence-worker
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-2.0.0}
     ulimits:
       core: 0
     restart: on-failure
@@ -222,7 +209,7 @@ services:
 
   deepfence-scheduler:
     container_name: deepfence-scheduler
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-2.0.0}
     ulimits:
       core: 0
     restart: on-failure
@@ -243,7 +230,7 @@ services:
 
   deepfence-ui:
     container_name: deepfence-ui
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_ui_ce:${DF_IMG_TAG:-1.4.1}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_ui_ce:${DF_IMG_TAG:-2.0.0}
     ulimits:
       core: 0
     networks:
@@ -257,7 +244,7 @@ services:
         max-size: "1g"
 
   deepfence-kafka-broker:
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_kafka_broker_ce:${DF_IMG_TAG:-1.3.0}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_kafka_broker_ce:${DF_IMG_TAG:-2.0.0}
     hostname: deepfence-kafka-broker
     container_name: deepfence-kafka-broker
     # environment:
@@ -275,7 +262,7 @@ services:
         max-size: "1g"
 
   deepfence-ingester:
-    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-1.3.0}
+    image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-2.0.0}
     hostname: deepfence-ingester
     container_name: deepfence-ingester
     ports:

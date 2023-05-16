@@ -1,8 +1,9 @@
 import cx from 'classnames';
 import { groupBy, isEmpty } from 'lodash-es';
 import { Suspense } from 'react';
+import { HiOutlineChevronRight } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
-import { Link, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
+import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { Card, CircleSpinner, Separator, Typography } from 'ui-components';
 
 import { getCloudComplianceApiClient, getComplianceApiClient } from '@/api/api';
@@ -13,6 +14,7 @@ import {
   ModelComplianceScanResult,
   ModelScanInfo,
 } from '@/api/generated';
+import { LinkButton } from '@/components/LinkButton';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { statusScanApiFunctionMap } from '@/features/onboard/pages/ScanInProgress';
@@ -68,6 +70,7 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
               match_filter: {
                 filter_in: {},
               },
+              compare_filter: null,
             },
             scan_id: scanId,
             window: {
@@ -181,6 +184,7 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
               match_filter: {
                 filter_in: {},
               },
+              compare_filter: null,
             },
             scan_id: scanId,
             window: {
@@ -486,15 +490,12 @@ const ComplianceScanSummary = () => {
         description={'Summary of compliance scan result'}
       />
 
-      <Link
-        to="/dashboard"
-        className={cx(
-          `${Typography.size.sm} `,
-          'underline underline-offset-2 ml-auto bg-transparent text-blue-600 dark:text-blue-500',
-        )}
-      >
-        Go to Posture dashboard to view detailed scan results
-      </Link>
+      <LinkButton to={'/posture'} sizing="xs">
+        <>
+          Go to Posture dashboard to view detailed scan results&nbsp;
+          <HiOutlineChevronRight />
+        </>
+      </LinkButton>
 
       <div className="flex flex-col gap-4 mt-4">
         <Suspense

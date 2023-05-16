@@ -1,31 +1,28 @@
 import { Suspense } from 'react';
-import { FaCloud, FaImages, FaTags } from 'react-icons/fa';
-import { HiArrowSmRight } from 'react-icons/hi';
+import {
+  HiDocumentText,
+  HiOutlineChevronRight,
+  HiPhotograph,
+  HiTag,
+} from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import { useLoaderData } from 'react-router-dom';
-import { Button, Card } from 'ui-components';
+import { Card } from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ModelSummary } from '@/api/generated/models/ModelSummary';
-import LogoAWS from '@/assets/logo-aws.svg';
-import LogoAzure from '@/assets/logo-azure-registry.svg';
-import LogoDocker from '@/assets/logo-docker.svg';
-import LogoGitlab from '@/assets/logo-gitlab.svg';
-import LogoGoogle from '@/assets/logo-google.svg';
-import LogoHarbor from '@/assets/logo-harbor.svg';
-import LogoJFrog from '@/assets/logo-jfrog.svg';
-import LogoQuay from '@/assets/logo-quay.svg';
-import { DFLink } from '@/components/DFLink';
-import { RegistryType } from '@/features/common/data-component/RegistryConnectorForm';
+import { LinkButton } from '@/components/LinkButton';
+import { getRegistryLogo } from '@/constants/logos';
+import { useTheme } from '@/theme/ThemeContext';
+import { RegistryType } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
+import { abbreviateNumber } from '@/utils/number';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
 interface RegistryResponseType extends ModelSummary {
-  name: string;
   type: string;
-  icon: string;
 }
 
 export type LoaderDataType = {
@@ -61,43 +58,11 @@ async function getRegistriesSummary(): Promise<RegistryResponseType[]> {
   }
   const response: RegistryResponseType[] = [];
   for (const [key, value] of Object.entries(result as ReponseType)) {
-    let icon = '';
-    let name = '';
-    if (key === RegistryType.azure_container_registry) {
-      icon = LogoAzure;
-      name = 'Azure Registry';
-    } else if (key === RegistryType.docker_hub) {
-      icon = LogoDocker;
-      name = 'Docker Registry';
-    } else if (key === RegistryType.docker_private_registry) {
-      icon = LogoDocker;
-      name = 'Docker Private Registry';
-    } else if (key === RegistryType.ecr) {
-      icon = LogoAWS;
-      name = 'Amazon ECR';
-    } else if (key === RegistryType.gitlab) {
-      icon = LogoGitlab;
-      name = 'Gitlab Registry';
-    } else if (key === RegistryType.google_container_registry) {
-      icon = LogoGoogle;
-      name = 'Google Registry';
-    } else if (key === RegistryType.harbor) {
-      icon = LogoHarbor;
-      name = 'Harbor Registry';
-    } else if (key === RegistryType.jfrog_container_registry) {
-      icon = LogoJFrog;
-      name = 'JFrog Registry';
-    } else if (key === RegistryType.quay) {
-      icon = LogoQuay;
-      name = 'Quay Registry';
-    }
     response.push({
       registries: value.registries,
       images: value.images,
       tags: value.tags,
       type: key,
-      name,
-      icon,
     });
   }
 
@@ -114,20 +79,20 @@ const RegistrySkeleton = () => {
   return (
     <>
       {Array.from(Array(9).keys()).map((k) => (
-        <Card className="p-4 animate-pulse items-center gap-2 min-w-[400px]" key={k}>
+        <Card className="p-2 animate-pulse items-center gap-2 min-w-[400px]" key={k}>
           <div className="flex items-center justify-between w-full">
-            <div className="h-2 w-24 bg-slate-200"></div>
-            <div className="h-2 w-20 bg-slate-200 ml-auto mt-2"></div>
+            <div className="h-2 w-24 bg-gray-200 dark:bg-gray-700"></div>
+            <div className="h-2 w-20 bg-gray-200 dark:bg-gray-700 rounded-md ml-auto mt-2"></div>
           </div>
           <div className="flex items-center gap-6">
             <div className="px-4 flex items-center border-r border-gray-200 dark:border-gray-700 w-20 h-20">
-              <div className="rounded-full bg-slate-200 h-10 w-10"></div>
+              <div className="rounded-full bg-gray-200 dark:bg-gray-700 h-10 w-10"></div>
             </div>
             <div className="flex gap-x-4 justify-center items-center">
               <div className="grid grid-cols-3 gap-4">
-                <div className="h-2 w-20 bg-slate-200 rounded col-span-1"></div>
-                <div className="h-2 w-20 bg-slate-200 rounded col-span-1"></div>
-                <div className="h-2 w-20 bg-slate-200 rounded col-span-1"></div>
+                <div className="h-2 w-20 bg-gray-200 dark:bg-gray-700 rounded col-span-1"></div>
+                <div className="h-2 w-20 bg-gray-200 dark:bg-gray-700 rounded col-span-1"></div>
+                <div className="h-2 w-20 bg-gray-200 dark:bg-gray-700 rounded col-span-1"></div>
               </div>
             </div>
           </div>
@@ -138,80 +103,83 @@ const RegistrySkeleton = () => {
 };
 
 const Registry = ({ registry }: { registry: RegistryResponseType }) => {
+  const { mode } = useTheme();
+  const { icon, name } = getRegistryLogo(
+    registry.type as unknown as keyof typeof RegistryType,
+    mode,
+  );
+
   return (
-    <Card className="p-4 items-center gap-2" key={registry.type}>
-      <div className="flex items-center justify-between w-full">
-        <h4 className="text-gray-900 text-md dark:text-white">{registry.name}</h4>
-        <div className="flex ml-auto mt-2">
-          <DFLink to={`/registries/${registry.type}`}>
-            <Button
-              size="xs"
-              color="normal"
-              className="ml-auto text-blue-600 dark:text-blue-500"
-            >
-              Go to details
-              <IconContext.Provider
-                value={{
-                  className: '',
-                }}
-              >
-                <HiArrowSmRight />
-              </IconContext.Provider>
-            </Button>
-          </DFLink>
+    <Card className="p-2 pb-3 flex flex-col" key={registry.type}>
+      <div className="flex items-center w-full">
+        <h4 className="text-gray-900 font-medium text-sm dark:text-white mr-4">{name}</h4>
+        <div className="flex ml-auto">
+          <LinkButton to={`/registries/${registry.type}`} sizing="xs">
+            <>
+              Go to details&nbsp;
+              <HiOutlineChevronRight />
+            </>
+          </LinkButton>
         </div>
       </div>
-      <div className="flex items-center gap-6">
-        <div className="px-4 flex items-center border-r border-gray-200 dark:border-gray-700 w-20 h-20">
-          <img height="100%" width="100%" src={registry.icon} alt="logo" />
+      <div className="flex items-center gap-x-6 mt-2">
+        <div className="gap-y-2 border-r border-gray-200 dark:border-gray-700">
+          <div className="px-4 flex justify-center items-center h-8 w-20 m-w-[32px] m-h-[32px]">
+            <img height="100%" width="100%" src={icon} alt="logo" />
+          </div>
         </div>
+
         <div className="flex gap-x-4 justify-center items-center">
           <div className="flex flex-col justify-center">
-            <div className="pr-4 flex items-center gap-x-2">
-              <IconContext.Provider
-                value={{
-                  className: 'h-4 w-4 text-blue-500 dark:text-blue-400',
-                }}
-              >
-                <FaCloud />
-              </IconContext.Provider>
-              <span className="text-[2rem] text-gray-900 dark:text-gray-200 font-light">
-                {registry.registries}
-              </span>
-            </div>
-            <span className="text-xs text-gray-400 dark:text-gray-500">
-              Total Registries
+            <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
+              {abbreviateNumber(registry.registries ?? 0)}
             </span>
-          </div>
-          <div className="gap-x-2 flex flex-col justify-center">
-            <div className="pr-4 flex items-center gap-x-2">
+            <div className="flex items-center gap-x-1 min-w-[90px]">
               <IconContext.Provider
                 value={{
-                  className: 'h-4 w-4 text-teal-500 dark:text-teal-400',
+                  className: 'h-5 w-5 text-blue-500 dark:text-blue-400',
                 }}
               >
-                <FaImages />
+                <HiDocumentText />
               </IconContext.Provider>
-              <span className="text-[2rem] text-gray-900 dark:text-gray-200 font-light">
-                {registry.images}
-              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{`Registr${
+                registry.registries && registry.registries > 1 ? 'ies' : 'y'
+              }`}</span>
             </div>
-            <span className="text-xs text-gray-400 dark:text-gray-500">Total Images</span>
           </div>
           <div className="gap-x-2 flex flex-col justify-center">
-            <div className="pr-4 flex items-center gap-x-2">
+            <span className="text-[2rem] text-gray-900 dark:text-gray-200 font-light">
+              {abbreviateNumber(registry.images ?? 0)}
+            </span>
+            <div className="flex items-center gap-x-1 min-w-[70px]">
               <IconContext.Provider
                 value={{
-                  className: 'h-4 w-4 text-indigo-600 dark:text-indigo-400',
+                  className: 'h-5 w-5 text-blue-500 dark:text-blue-400',
                 }}
               >
-                <FaTags />
+                <HiPhotograph />
               </IconContext.Provider>
-              <span className="text-[2rem] text-gray-900 dark:text-gray-200 font-light">
-                {registry.tags}
-              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{`Image${
+                registry.images && registry.images > 1 ? 's' : ''
+              }`}</span>
             </div>
-            <span className="text-xs text-gray-400 dark:text-gray-500">Total Tags</span>
+          </div>
+          <div className="gap-x-2 flex flex-col justify-center">
+            <span className="text-[2rem] text-gray-900 dark:text-gray-200 font-light">
+              {abbreviateNumber(registry.tags ?? 0)}
+            </span>
+            <div className="flex items-center gap-x-1 min-w-[90px]">
+              <IconContext.Provider
+                value={{
+                  className: 'h-5 w-5 text-blue-500 dark:text-blue-400',
+                }}
+              >
+                <HiTag />
+              </IconContext.Provider>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{`Tag${
+                registry.tags && registry.tags > 1 ? 's' : ''
+              }`}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -221,20 +189,31 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
 
 const Registries = () => {
   const loaderData = useLoaderData() as LoaderDataType;
+  const { mode } = useTheme();
 
   return (
     <>
       <div className="flex p-2 pl-2 w-full shadow bg-white dark:bg-gray-800">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-          REGISTRIES
+        <span className="text-md font-medium text-gray-700 dark:text-gray-200">
+          Registries
         </span>
       </div>
-      <div className="flex gap-6 flex-wrap mt-6 ml-6">
+      <div className="flex gap-2 flex-wrap my-2 pl-2">
         <Suspense fallback={<RegistrySkeleton />}>
           <DFAwait resolve={loaderData.data}>
             {(resolvedData: LoaderDataType['data']) => {
               return resolvedData.map((registry) => {
-                return <Registry key={registry.name} registry={registry} />;
+                return (
+                  <Registry
+                    key={
+                      getRegistryLogo(
+                        registry.type as unknown as keyof typeof RegistryType,
+                        mode,
+                      ).name
+                    }
+                    registry={registry}
+                  />
+                );
               });
             }}
           </DFAwait>

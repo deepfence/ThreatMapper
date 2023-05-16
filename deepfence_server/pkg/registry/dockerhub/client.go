@@ -16,7 +16,7 @@ import (
 
 var client = &http.Client{Timeout: 10 * time.Second}
 
-func getImagesList(u, p, ns string) ([]model.ContainerImage, error) {
+func getImagesList(u, p, ns string) ([]model.IngestedContainerImage, error) {
 	token, cookies, err := getAuthTokenAndCookies(u, p)
 	if err != nil {
 		return nil, err
@@ -101,12 +101,12 @@ func getAuthTokenAndCookies(u, p string) (string, []*http.Cookie, error) {
 	return dAuth["token"], resp.Cookies(), nil
 }
 
-func getRepoTags(repoB []byte, ns, token string, cookies []*http.Cookie) ([]model.ContainerImage, error) {
-	var imagesWithTag []model.ContainerImage
+func getRepoTags(repoB []byte, ns, token string, cookies []*http.Cookie) ([]model.IngestedContainerImage, error) {
+	var imagesWithTag []model.IngestedContainerImage
 	var repo model.RegistryImages
 	err := json.Unmarshal(repoB, &repo)
 	if err != nil {
-		return []model.ContainerImage{}, err
+		return []model.IngestedContainerImage{}, err
 	}
 	for _, r := range repo.Results {
 		imgTag, err := getRepoTag(r.Name, ns, token, cookies)
@@ -157,16 +157,15 @@ func getRepoTag(repoName, ns, token string, cookies []*http.Cookie) (ImageTag, e
 	return imgTag, nil
 }
 
-func getImageWithTags(imageName string, tag ImageTag) []model.ContainerImage {
-	var imageAndTag []model.ContainerImage
+func getImageWithTags(imageName string, tag ImageTag) []model.IngestedContainerImage {
+	var imageAndTag []model.IngestedContainerImage
 	for _, tr := range tag.Results {
 		for _, i := range tr.Images {
-			tt := model.ContainerImage{
-				ID:      model.DigestToID(i.Digest),
-				Name:    imageName,
-				Tag:     tr.Name,
-				Size:    fmt.Sprint(i.Size),
-				Metrics: model.ComputeMetrics{},
+			tt := model.IngestedContainerImage{
+				ID:   model.DigestToID(i.Digest),
+				Name: imageName,
+				Tag:  tr.Name,
+				Size: fmt.Sprint(i.Size),
 				Metadata: model.Metadata{
 					"status":       i.Status,
 					"last_pushed":  i.LastPushed.Unix(),

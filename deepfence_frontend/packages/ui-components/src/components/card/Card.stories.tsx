@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta } from '@storybook/react';
 
 import { Card } from '@/components/card/Card';
 import { Typography } from '@/components/typography/Typography';
@@ -6,9 +6,7 @@ import { Typography } from '@/components/typography/Typography';
 export default {
   title: 'Components/Card',
   component: Card,
-} as ComponentMeta<typeof Card>;
-
-const Template: ComponentStory<typeof Card> = (args) => <Card {...args} />;
+} as Meta<typeof Card>;
 
 const Content = () => (
   <div className="w-[300px] p-4">
@@ -22,7 +20,8 @@ const Content = () => (
   </div>
 );
 
-export const Default = Template.bind({});
-Default.args = {
-  children: <Content />,
+export const Default = {
+  args: {
+    children: <Content />,
+  },
 };

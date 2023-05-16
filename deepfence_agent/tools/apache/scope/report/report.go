@@ -3,40 +3,23 @@ package report
 import (
 	"fmt"
 	"math/rand"
-	"strings"
 	"time"
-
-	"github.com/weaveworks/scope/common/xfer"
 )
 
 // Names of the various topologies.
 const (
-	Endpoint              = "endpoint"
-	Process               = "process"
-	Container             = "container"
-	Pod                   = "pod"
-	Service               = "service"
-	Deployment            = "deployment"
-	ReplicaSet            = "replica_set"
-	DaemonSet             = "daemon_set"
-	StatefulSet           = "stateful_set"
-	CronJob               = "cron_job"
-	Namespace             = "namespace"
-	ContainerImage        = "container_image"
-	CloudProvider         = "cloud_provider"
-	CloudRegion           = "cloud_region"
-	Host                  = "host"
-	Overlay               = "overlay"
-	KubernetesCluster     = "kubernetes_cluster"
-	ECSService            = "ecs_service"
-	ECSTask               = "ecs_task"
-	SwarmService          = "swarm_service"
-	PersistentVolume      = "persistent_volume"
-	PersistentVolumeClaim = "persistent_volume_claim"
-	StorageClass          = "storage_class"
-	VolumeSnapshot        = "volume_snapshot"
-	VolumeSnapshotData    = "volume_snapshot_data"
-	Job                   = "job"
+	Endpoint          = "endpoint"
+	Process           = "process"
+	Container         = "container"
+	Pod               = "pod"
+	Service           = "service"
+	Namespace         = "namespace"
+	ContainerImage    = "container_image"
+	CloudProvider     = "cloud_provider"
+	CloudRegion       = "cloud_region"
+	Host              = "host"
+	Overlay           = "overlay"
+	KubernetesCluster = "kubernetes_cluster"
 
 	// Shapes used for different nodes
 	Circle         = "circle"
@@ -258,23 +241,186 @@ var topologyNames = []string{
 	KubernetesCluster,
 	Pod,
 	Service,
-	Deployment,
-	ReplicaSet,
-	DaemonSet,
-	StatefulSet,
-	CronJob,
 	Namespace,
 	Host,
 	Overlay,
-	ECSTask,
-	ECSService,
-	SwarmService,
-	PersistentVolume,
-	PersistentVolumeClaim,
-	StorageClass,
-	VolumeSnapshot,
-	VolumeSnapshotData,
-	Job,
+}
+
+type TopologyNode struct {
+	Metadata  Metadata `json:"metadata,omitempty"`
+	Adjacency *IDList  `json:"adjacency,omitempty"`
+	Parents   *Parent  `json:"parents,omitempty"`
+	Sets      *Sets    `json:"sets,omitempty"`
+}
+
+func (t TopologyNode) Merge(o TopologyNode) {
+	t.Metadata = o.Metadata
+	t.Adjacency = o.Adjacency
+	t.Parents = o.Parents
+	t.Sets = o.Sets
+}
+
+func (t TopologyNode) UnsafeMerge(o TopologyNode) {
+	t.Metadata = o.Metadata
+	t.Adjacency = o.Adjacency
+	t.Parents = o.Parents
+	t.Sets = o.Sets
+}
+
+func (t TopologyNode) Copy() TopologyNode {
+	return TopologyNode{
+		Metadata:  t.Metadata,
+		Adjacency: t.Adjacency,
+		Parents:   t.Parents,
+		Sets:      t.Sets,
+	}
+}
+
+func (t TopologyNode) UnMerge(o TopologyNode) {
+}
+
+func (t TopologyNode) UnsafeUnMerge(o TopologyNode) {
+}
+
+type Topology map[string]TopologyNode
+
+func MakeTopology() Topology {
+	return map[string]TopologyNode{}
+}
+
+func (t Topology) ReplaceNode(node TopologyNode) {
+	t[node.Metadata.NodeID] = node
+}
+
+func (t Topology) AddNode(node TopologyNode) {
+	t[node.Metadata.NodeID] = node
+}
+
+func (t Topology) Merge(o Topology) {
+	for k, v := range o {
+		t[k] = v
+	}
+}
+
+func (t Topology) Copy() Topology {
+	newTopology := make(Topology)
+	for k, v := range t {
+		newTopology[k] = v
+	}
+	return newTopology
+}
+
+func (t Topology) UnsafeUnMerge(o Topology) {
+
+}
+
+func (t Topology) UnsafeMerge(o Topology) {
+	for k, v := range o {
+		t[k] = v
+	}
+}
+
+type TopologyAdjacency map[string]IDList
+
+func (t TopologyAdjacency) Copy() TopologyAdjacency {
+	newTopologyAdjacency := MakeTopologyAdjacency()
+	for k, v := range t {
+		newTopologyAdjacency[k] = v
+	}
+	return newTopologyAdjacency
+}
+
+func (t TopologyAdjacency) UnsafeMerge(o TopologyAdjacency) {
+	for k, v := range o {
+		t[k] = v
+	}
+}
+
+func (t TopologyAdjacency) UnsafeUnMerge(o TopologyAdjacency) {
+
+}
+
+func (t TopologyAdjacency) AddAdjacency(nodeId string, id string) {
+	if _, ok := t[nodeId]; !ok {
+		t[nodeId] = *MakeIDList(id)
+	} else {
+		t[nodeId] = t[nodeId].Add(id)
+	}
+}
+
+func MakeTopologyAdjacency() TopologyAdjacency {
+	return make(map[string]IDList)
+}
+
+type TopologySets map[string]Sets
+
+func MakeTopologySets() TopologySets {
+	return make(map[string]Sets)
+}
+
+func (p TopologySets) AddSet(nodeId string, sets Sets) {
+	p[nodeId] = sets
+}
+
+func (t TopologySets) Copy() TopologySets {
+	newTopologySets := MakeTopologySets()
+	for k, v := range t {
+		newTopologySets[k] = v
+	}
+	return newTopologySets
+}
+
+func (t TopologySets) UnsafeMerge(o TopologySets) {
+	for k, v := range o {
+		t[k].Merge(v)
+	}
+}
+
+func (t TopologySets) UnsafeUnMerge(o TopologySets) {
+
+}
+
+func (p Parent) Merge(o Parent) {
+	p.CloudProvider = o.CloudProvider
+	p.CloudRegion = o.CloudRegion
+	p.KubernetesCluster = o.KubernetesCluster
+	p.Host = o.Host
+	p.Container = o.Container
+	p.ContainerImage = o.ContainerImage
+	p.Namespace = o.Namespace
+	p.Pod = o.Pod
+}
+
+func (p Parent) Copy() Parent {
+	return Parent{
+		CloudProvider:     p.CloudProvider,
+		CloudRegion:       p.CloudRegion,
+		KubernetesCluster: p.KubernetesCluster,
+		Host:              p.Host,
+		Container:         p.Container,
+		ContainerImage:    p.ContainerImage,
+		Namespace:         p.Namespace,
+		Pod:               p.Pod,
+	}
+}
+
+func (p Parent) UnsafeMerge(o Parent) {
+	p.Merge(o)
+}
+
+func (p Parent) UnsafeUnMerge(o Parent) {
+
+}
+
+type Parent struct {
+	CloudProvider     string `json:"cloud_provider,omitempty"`
+	CloudRegion       string `json:"cloud_region,omitempty"`
+	KubernetesCluster string `json:"kubernetes_cluster,omitempty"`
+	Host              string `json:"host,omitempty"`
+	Container         string `json:"container,omitempty"`
+	ContainerImage    string `json:"container_image,omitempty"`
+	Namespace         string `json:"namespace,omitempty"`
+	Pod               string `json:"pod,omitempty"`
 }
 
 // Report is the core data type. It's produced by probes, and consumed and
@@ -322,31 +468,6 @@ type Report struct {
 	// present.
 	Service Topology
 
-	// Deployment nodes represent all Kubernetes deployments running on hosts running probes.
-	// Metadata includes things like deployment id, name etc. Edges are not
-	// present.
-	Deployment Topology
-
-	// ReplicaSet nodes represent all Kubernetes ReplicaSets running on hosts running probes.
-	// Metadata includes things like ReplicaSet id, name etc. Edges are not
-	// present.
-	ReplicaSet Topology
-
-	// DaemonSet nodes represent all Kubernetes DaemonSets running on hosts running probes.
-	// Metadata includes things like DaemonSet id, name etc. Edges are not
-	// present.
-	DaemonSet Topology
-
-	// StatefulSet nodes represent all Kubernetes Stateful Sets running on hosts running probes.
-	// Metadata includes things like Stateful Set id, name, etc. Edges are not
-	// present.
-	StatefulSet Topology
-
-	// CronJob nodes represent all Kubernetes Cron Jobs running on hosts running probes.
-	// Metadata includes things like Cron Job id, name, etc. Edges are not
-	// present.
-	CronJob Topology
-
 	// Namespace nodes represent all Kubernetes Namespaces running on hosts running probes.
 	// Metadata includes things like Namespace id, name, etc. Edges are not
 	// present.
@@ -362,52 +483,14 @@ type Report struct {
 	// probes with each published report. Edges are not present.
 	Host Topology
 
-	// ECS Task nodes are AWS ECS tasks, which represent a group of containers.
-	// Metadata is limited for now, more to come later. Edges are not present.
-	ECSTask Topology
-
-	// ECS Service nodes are AWS ECS services, which represent a specification for a
-	// desired count of tasks with a task definition template.
-	// Metadata is limited for now, more to come later. Edges are not present.
-	ECSService Topology
-
-	// Swarm Service nodes are Docker Swarm services, which represent a specification for a
-	// group of tasks (either one per host, or a desired count).
-	// Edges are not present.
-	SwarmService Topology
-
 	// Overlay nodes are active peers in any software-defined network that's
 	// overlaid on the infrastructure. The information is scraped by polling
 	// their status endpoints. Edges are present.
 	Overlay Topology
 
-	// Persistent Volume nodes represent all Kubernetes Persistent Volumes running on hosts running probes.
-	// Metadata is limited for now, more to come later.
-	PersistentVolume Topology
-
-	// Persistent Volume Claim nodes represent all Kubernetes Persistent Volume Claims running on hosts running probes.
-	// Metadata is limited for now, more to come later.
-	PersistentVolumeClaim Topology
-
-	// Storage Class represent all kubernetes Storage Classes on hosts running probes.
-	// Metadata is limited for now, more to come later.
-	StorageClass Topology
-
-	// VolumeSnapshot represent all Kubernetes Volume Snapshots on hosts running probes.
-	VolumeSnapshot Topology
-
-	// VolumeSnapshotData represent all Kubernetes Volume Snapshot Data on hosts running probes.
-	VolumeSnapshotData Topology
-
-	// Job represent all Kubernetes Job on hosts running probes.
-	Job Topology
-
 	DNS DNSRecords `json:"DNS,omitempty" deepequal:"nil==empty"`
 	// Backwards-compatibility for an accident in commit 951629a / release 1.11.6.
 	BugDNS DNSRecords `json:"nodes,omitempty"`
-
-	// Sampling data for this report.
-	Sampling Sampling
 
 	// Window is the amount of time that this report purports to represent.
 	// Windows must be carefully merged. They should only be added when
@@ -421,8 +504,6 @@ type Report struct {
 	// bypassing the usual spy interval, publish interval and app ws interval.
 	Shortcut bool
 
-	Plugins xfer.PluginSpecs
-
 	// ID a random identifier for this report, used when caching
 	// rendered views of the report.  Reports with the same id
 	// must be equal, but we don't require that equal reports have
@@ -433,114 +514,60 @@ type Report struct {
 // MakeReport makes a clean report, ready to Merge() other reports into.
 func MakeReport() Report {
 	return Report{
-		Endpoint: MakeTopology(),
+		Endpoint:          MakeTopology(),
+		Process:           MakeTopology(),
+		Container:         MakeTopology(),
+		CloudProvider:     MakeTopology(),
+		CloudRegion:       MakeTopology(),
+		KubernetesCluster: MakeTopology(),
+		Pod:               MakeTopology(),
+		Service:           MakeTopology(),
+		Namespace:         MakeTopology(),
+		ContainerImage:    MakeTopology(),
+		Host:              MakeTopology(),
+		Overlay:           MakeTopology(),
+		DNS:               DNSRecords{},
+		Window:            0,
+		ID:                fmt.Sprintf("%d", rand.Int63()),
+	}
+}
 
-		Process: MakeTopology().
-			WithShape(Square).
-			WithLabel("process", "processes"),
-
-		Container: MakeTopology().
-			WithShape(Hexagon).
-			WithLabel("container", "containers"),
-
-		ContainerImage: MakeTopology().
-			WithShape(Hexagon).
-			WithLabel("image", "images"),
-
-		Host: MakeTopology().
-			WithShape(Circle).
-			WithLabel("host", "hosts"),
-
-		CloudProvider: MakeTopology().
-			WithShape(Circle).
-			WithLabel("cloud provider", "cloud providers"),
-
-		CloudRegion: MakeTopology().
-			WithShape(Circle).
-			WithLabel("cloud region", "cloud regions"),
-
-		KubernetesCluster: MakeTopology().
-			WithShape(KubernetesCluster).
-			WithLabel("kubernetes cluster", "kubernetes clusters"),
-
-		Pod: MakeTopology().
-			WithShape(Pod).
-			WithLabel("pod", "pods"),
-
-		Service: MakeTopology().
-			WithShape(Heptagon).
-			WithLabel("service", "services"),
-
-		Deployment: MakeTopology().
-			WithShape(Heptagon).
-			WithLabel("deployment", "deployments"),
-
-		ReplicaSet: MakeTopology().
-			WithShape(Triangle).
-			WithLabel("replica set", "replica sets"),
-
-		DaemonSet: MakeTopology().
-			WithShape(Pentagon).
-			WithLabel("daemonset", "daemonsets"),
-
-		StatefulSet: MakeTopology().
-			WithShape(Octagon).
-			WithLabel("stateful set", "stateful sets"),
-
-		CronJob: MakeTopology().
-			WithShape(Triangle).
-			WithLabel("cron job", "cron jobs"),
-
-		Namespace: MakeTopology(),
-
-		Overlay: MakeTopology().
-			WithShape(Circle).
-			WithLabel("peer", "peers"),
-
-		ECSTask: MakeTopology().
-			WithShape(Heptagon).
-			WithLabel("task", "tasks"),
-
-		ECSService: MakeTopology().
-			WithShape(Heptagon).
-			WithLabel("service", "services"),
-
-		SwarmService: MakeTopology().
-			WithShape(Heptagon).
-			WithLabel("service", "services"),
-
-		PersistentVolume: MakeTopology().
-			WithShape(Cylinder).
-			WithLabel("persistent volume", "persistent volumes"),
-
-		PersistentVolumeClaim: MakeTopology().
-			WithShape(DottedCylinder).
-			WithLabel("persistent volume claim", "persistent volume claims"),
-
-		StorageClass: MakeTopology().
-			WithShape(StorageSheet).
-			WithLabel("storage class", "storage classes"),
-
-		VolumeSnapshot: MakeTopology().
-			WithShape(DottedCylinder).
-			WithTag(Camera).
-			WithLabel("volume snapshot", "volume snapshots"),
-
-		VolumeSnapshotData: MakeTopology().
-			WithShape(Cylinder).
-			WithTag(Camera).
-			WithLabel("volume snapshot data", "volume snapshot data"),
-
-		Job: MakeTopology().
-			WithShape(DottedTriangle).
-			WithLabel("job", "jobs"),
-
-		DNS: DNSRecords{},
-
-		Sampling: Sampling{},
-		Window:   0,
-		Plugins:  xfer.MakePluginSpecs(),
-		ID:       fmt.Sprintf("%d", rand.Int63()),
+func (r *Report) Clear() {
+	for k := range r.Endpoint {
+		delete(r.Endpoint, k)
+	}
+	for k := range r.Process {
+		delete(r.Process, k)
+	}
+	for k := range r.Container {
+		delete(r.Container, k)
+	}
+	for k := range r.CloudProvider {
+		delete(r.CloudProvider, k)
+	}
+	for k := range r.CloudRegion {
+		delete(r.CloudRegion, k)
+	}
+	for k := range r.KubernetesCluster {
+		delete(r.KubernetesCluster, k)
+	}
+	for k := range r.Pod {
+		delete(r.Pod, k)
+	}
+	for k := range r.Service {
+		delete(r.Service, k)
+	}
+	for k := range r.Namespace {
+		delete(r.Namespace, k)
+	}
+	for k := range r.ContainerImage {
+		delete(r.ContainerImage, k)
+	}
+	for k := range r.Host {
+		delete(r.Host, k)
+	}
+	for k := range r.Overlay {
+		delete(r.Overlay, k)
 	}
 }
 
@@ -549,10 +576,8 @@ func (r Report) Copy() Report {
 	newReport := Report{
 		TS:       r.TS,
 		DNS:      r.DNS.Copy(),
-		Sampling: r.Sampling,
 		Window:   r.Window,
 		Shortcut: r.Shortcut,
-		Plugins:  r.Plugins.Copy(),
 		ID:       fmt.Sprintf("%d", rand.Int63()),
 	}
 	newReport.WalkPairedTopologies(&r, func(newTopology, oldTopology *Topology) {
@@ -568,9 +593,7 @@ func (r *Report) UnsafeMerge(other Report) {
 		r.TS = other.TS
 	}
 	r.DNS = r.DNS.Merge(other.DNS)
-	r.Sampling = r.Sampling.Merge(other.Sampling)
 	r.Window = r.Window + other.Window
-	r.Plugins = r.Plugins.Merge(other.Plugins)
 	r.WalkPairedTopologies(&other, func(ourTopology, theirTopology *Topology) {
 		ourTopology.UnsafeMerge(*theirTopology)
 	})
@@ -632,40 +655,12 @@ func (r *Report) topology(name string) *Topology {
 		return &r.Pod
 	case Service:
 		return &r.Service
-	case Deployment:
-		return &r.Deployment
-	case ReplicaSet:
-		return &r.ReplicaSet
-	case DaemonSet:
-		return &r.DaemonSet
-	case StatefulSet:
-		return &r.StatefulSet
-	case CronJob:
-		return &r.CronJob
 	case Namespace:
 		return &r.Namespace
 	case Host:
 		return &r.Host
 	case Overlay:
 		return &r.Overlay
-	case ECSTask:
-		return &r.ECSTask
-	case ECSService:
-		return &r.ECSService
-	case SwarmService:
-		return &r.SwarmService
-	case PersistentVolume:
-		return &r.PersistentVolume
-	case PersistentVolumeClaim:
-		return &r.PersistentVolumeClaim
-	case StorageClass:
-		return &r.StorageClass
-	case VolumeSnapshot:
-		return &r.VolumeSnapshot
-	case VolumeSnapshotData:
-		return &r.VolumeSnapshotData
-	case Job:
-		return &r.Job
 	}
 	return nil
 }
@@ -676,58 +671,6 @@ func (r Report) Topology(name string) (Topology, bool) {
 		return *t, true
 	}
 	return Topology{}, false
-}
-
-// Validate checks the report for various inconsistencies.
-func (r Report) Validate() error {
-	var errs []string
-	for _, name := range topologyNames {
-		if err := r.topology(name).Validate(); err != nil {
-			errs = append(errs, err.Error())
-		}
-	}
-	if r.Sampling.Count > r.Sampling.Total {
-		errs = append(errs, fmt.Sprintf("sampling count (%d) bigger than total (%d)", r.Sampling.Count, r.Sampling.Total))
-	}
-	if len(errs) > 0 {
-		return fmt.Errorf("%d error(s): %s", len(errs), strings.Join(errs, "; "))
-	}
-	return nil
-}
-
-// DropTopologiesOver - as a protection against overloading the app
-// server, drop topologies that have really large node counts. In
-// practice we only see this with runaway numbers of zombie processes.
-func (r Report) DropTopologiesOver(limit int) (Report, []string) {
-	dropped := []string{}
-	r.WalkNamedTopologies(func(name string, topology *Topology) {
-		if topology != nil && len(topology.Nodes) > limit {
-			topology.Nodes = Nodes{}
-			dropped = append(dropped, name)
-		}
-	})
-	return r, dropped
-}
-
-// Summary returns a human-readable string summarising the contents, for diagnostic purposes
-func (r Report) Summary() string {
-	ret := ""
-	if len(r.Host.Nodes) == 1 {
-		for k := range r.Host.Nodes {
-			ret = k + ": "
-		}
-	}
-	count := 0
-	r.WalkNamedTopologies(func(n string, t *Topology) {
-		if len(t.Nodes) > 0 {
-			count++
-			if count > 1 {
-				ret = ret + ", "
-			}
-			ret = ret + fmt.Sprintf("%s:%d", n, len(t.Nodes))
-		}
-	})
-	return ret
 }
 
 // Sampling describes how the packet data sources for this report were

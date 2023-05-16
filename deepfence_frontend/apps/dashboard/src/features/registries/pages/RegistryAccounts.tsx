@@ -26,6 +26,7 @@ import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { RegistryAccountsTable } from '@/features/registries/components/RegistryAccountsTable';
 import { action } from '@/features/registries/components/RegistryAccountsTable';
 import { Mode, useTheme } from '@/theme/ThemeContext';
+import { registryTypeToNameMapping } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -127,10 +128,12 @@ const HeaderComponent = ({ nodeType }: { nodeType: string }) => {
     <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <Breadcrumb separator={<HiChevronRight />} transparent>
         <BreadcrumbLink>
-          <DFLink to={'/registries'}>REGISTRIES</DFLink>
+          <DFLink to={'/registries'}>Registries</DFLink>
         </BreadcrumbLink>
         <BreadcrumbLink>
-          <span className="inherit cursor-auto">{nodeType}</span>
+          <span className="inherit cursor-auto">
+            {registryTypeToNameMapping[nodeType]}
+          </span>
         </BreadcrumbLink>
       </Breadcrumb>
       <div className="ml-auto flex items-center gap-x-4">

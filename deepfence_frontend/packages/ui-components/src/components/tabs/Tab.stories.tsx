@@ -1,4 +1,4 @@
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { Meta } from '@storybook/react';
 import { useState } from 'react';
 import { FaAdn, FaAffiliatetheme, FaAirbnb } from 'react-icons/fa';
 
@@ -10,9 +10,7 @@ export default {
   argTypes: {
     onValueChange: { action: 'onValueChange' },
   },
-} as ComponentMeta<typeof Tab>;
-
-const Template: ComponentStory<typeof Tab> = (args) => <Tab {...args} />;
+} as Meta<typeof Tab>;
 
 const tabs = [
   {
@@ -28,9 +26,11 @@ const tabs = [
     value: 'Tab3',
   },
 ];
-export const Default = Template.bind({});
-Default.args = {
-  tabs,
+
+export const Default = {
+  args: {
+    tabs,
+  },
 };
 
 const tabs2 = [
@@ -60,7 +60,11 @@ const WithContent = () => {
     </Tab>
   );
 };
-export const TabWithContent = WithContent.bind({});
+
+export const TabWithContent = {
+  render: WithContent,
+};
+
 const WithBackgroundComp = () => {
   const [tab, setTab] = useState('tab1');
   return (
@@ -77,38 +81,47 @@ const WithBackgroundComp = () => {
     </Tab>
   );
 };
-export const TabWithBackground = WithBackgroundComp.bind({});
 
-export const DefaultXS = Template.bind({});
-DefaultXS.args = {
-  tabs,
-  variant: 'tab',
-  size: 'xs',
-};
-export const DefaultSM = Template.bind({});
-DefaultSM.args = {
-  tabs,
-  variant: 'tab',
-  size: 'sm',
+export const TabWithBackground = {
+  render: WithBackgroundComp,
 };
 
-export const DefaultMD = Template.bind({});
-DefaultMD.args = {
-  tabs,
-  variant: 'tab',
-  size: 'md',
+export const DefaultXS = {
+  args: {
+    tabs,
+    variant: 'tab',
+    size: 'xs',
+  },
 };
 
-export const DefaultLG = Template.bind({});
-DefaultLG.args = {
-  tabs,
-  variant: 'tab',
-  size: 'lg',
+export const DefaultSM = {
+  args: {
+    tabs,
+    variant: 'tab',
+    size: 'sm',
+  },
 };
 
-export const DefaultXL = Template.bind({});
-DefaultXL.args = {
-  tabs,
-  variant: 'tab',
-  size: 'xl',
+export const DefaultMD = {
+  args: {
+    tabs,
+    variant: 'tab',
+    size: 'md',
+  },
+};
+
+export const DefaultLG = {
+  args: {
+    tabs,
+    variant: 'tab',
+    size: 'lg',
+  },
+};
+
+export const DefaultXL = {
+  args: {
+    tabs,
+    variant: 'tab',
+    size: 'xl',
+  },
 };

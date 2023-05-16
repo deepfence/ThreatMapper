@@ -4,21 +4,21 @@ export const SEVERITY_COLORS: {
   [x in VulnerabilitySeverityType]: string;
 } = {
   critical: '#de425b',
-  high: '#f58055',
-  medium: '#ffd577',
-  low: '#d6e184',
+  high: '#ee7750',
+  medium: '#f1a958',
+  low: '#edd777',
   unknown: '#9CA3AF',
 };
 
 export const POSTURE_STATUS_COLORS: {
   [x in PostureSeverityType]: string;
 } = {
-  alarm: '#F05252',
+  alarm: '#de425b',
   info: '#3F83F8',
-  ok: '#0E9F6E',
-  skip: '#6B7280',
+  ok: '#488f31',
+  skip: '#9CA3AF',
 
-  pass: '#0E9F6E',
-  warn: '#f58055',
-  note: '#d6e184',
+  pass: '#488f31',
+  warn: '#f1a958',
+  note: '#edd777',
 };

@@ -6,16 +6,31 @@ import { getLookupApiClient } from '@/api/api';
 import { ModelHost } from '@/api/generated';
 import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
 import { Header } from '@/features/topology/components/node-details/Header';
-import { Metadata } from '@/features/topology/components/node-details/Metadata';
 import {
+  Metadata,
+  toTopologyMetadataString,
+} from '@/features/topology/components/node-details/Metadata';
+import {
+  ConnectionsTable,
   ContainerTable,
   ImageTable,
   ProcessTable,
 } from '@/features/topology/components/node-details/SummaryTables';
+import {
+  getComplianceScanCounts,
+  getMalwareScanCounts,
+  getSecretScanCounts,
+  getVulnerabilityScanCounts,
+} from '@/features/topology/components/scan-results/loaderHelpers';
+import { ScanResult } from '@/features/topology/components/scan-results/ScanResult';
 import { ApiError, makeRequest } from '@/utils/api';
 
-type LoaderData = {
+export type LoaderData = {
   hostData: ModelHost;
+  vulnerabilityScanCounts: Awaited<ReturnType<typeof getVulnerabilityScanCounts>>;
+  secretScanCounts: Awaited<ReturnType<typeof getSecretScanCounts>>;
+  malwareScanCounts: Awaited<ReturnType<typeof getMalwareScanCounts>>;
+  complianceScanCounts: Awaited<ReturnType<typeof getComplianceScanCounts>>;
 };
 
 const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
@@ -24,6 +39,7 @@ const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
   if (!nodeId) {
     throw new Error('nodeId is required');
   }
+
   const lookupResult = await makeRequest({
     apiFunction: getLookupApiClient().lookupHost,
     apiArgs: [
@@ -39,12 +55,20 @@ const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
       },
     ],
   });
-  if (ApiError.isApiError(lookupResult)) {
+  if (ApiError.isApiError(lookupResult) || !lookupResult.length) {
     throw new Error(`Failed to load host: ${nodeId}`);
   }
 
   return {
     hostData: lookupResult[0],
+    vulnerabilityScanCounts: await getVulnerabilityScanCounts(
+      lookupResult[0].vulnerability_latest_scan_id,
+    ),
+    secretScanCounts: await getSecretScanCounts(lookupResult[0].secret_latest_scan_id),
+    malwareScanCounts: await getMalwareScanCounts(lookupResult[0].malware_latest_scan_id),
+    complianceScanCounts: await getComplianceScanCounts(
+      lookupResult[0].compliance_latest_scan_id,
+    ),
   };
 };
 
@@ -91,6 +115,7 @@ export const Host = ({
     <Header
       onStartScanClick={onStartScanClick}
       nodeId={nodeId}
+      label={fetcher.data?.hostData?.node_name}
       nodeType="host"
       onGoBack={onGoBack}
       showBackBtn={showBackBtn}
@@ -125,17 +150,62 @@ export const Host = ({
             {tab === 'metadata' && (
               <Metadata
                 data={{
-                  kernel_version: fetcher.data?.hostData?.kernel_version ?? '-',
-                  interface_ips: fetcher.data?.hostData?.interface_ips ?? '-',
-                  interface_names: fetcher.data?.hostData?.interfaceNames ?? '-',
-                  uptime: fetcher.data?.hostData?.uptime ?? '-',
-                  ...fetcher.data?.hostData.cloud_metadata,
+                  node_name: toTopologyMetadataString(fetcher.data?.hostData?.node_name),
+                  version: toTopologyMetadataString(fetcher.data?.hostData?.version),
+                  instance_id: toTopologyMetadataString(
+                    fetcher.data?.hostData?.instance_id,
+                  ),
+                  cloud_provider: toTopologyMetadataString(
+                    fetcher.data?.hostData?.cloud_provider,
+                  ),
+                  cloud_region: toTopologyMetadataString(
+                    fetcher.data?.hostData?.cloud_region,
+                  ),
+                  uptime: toTopologyMetadataString(fetcher.data?.hostData?.uptime),
+                  is_console_vm: toTopologyMetadataString(
+                    fetcher.data?.hostData?.is_console_vm,
+                  ),
+                  kernel_version: toTopologyMetadataString(
+                    fetcher.data?.hostData?.kernel_version,
+                  ),
+                  os: toTopologyMetadataString(fetcher.data?.hostData?.os),
+                  local_networks: toTopologyMetadataString(
+                    fetcher.data?.hostData?.local_networks,
+                  ),
+
+                  local_cidr: toTopologyMetadataString(
+                    fetcher.data?.hostData?.local_cidr,
+                  ),
+                  instance_type: toTopologyMetadataString(
+                    fetcher.data?.hostData?.instance_type,
+                  ),
+                  public_ip: toTopologyMetadataString(fetcher.data?.hostData?.public_ip),
+                  private_ip: toTopologyMetadataString(
+                    fetcher.data?.hostData?.private_ip,
+                  ),
+                  availability_zone: toTopologyMetadataString(
+                    fetcher.data?.hostData?.availability_zone,
+                  ),
+                  resource_group: toTopologyMetadataString(
+                    fetcher.data?.hostData?.resource_group,
+                  ),
                 }}
               />
             )}
             {tab === 'connections-and-processes' && (
               <>
-                <ProcessTable processes={fetcher.data?.hostData.processes ?? []} />
+                <ProcessTable
+                  processes={fetcher.data?.hostData.processes ?? []}
+                  onNodeClick={onNodeClick}
+                />
+                <ConnectionsTable
+                  type="inbound"
+                  connections={fetcher.data?.hostData.inbound_connections ?? []}
+                />
+                <ConnectionsTable
+                  type="outbound"
+                  connections={fetcher.data?.hostData.outbound_connections ?? []}
+                />
               </>
             )}
             {tab === 'containers-and-images' && (
@@ -149,6 +219,20 @@ export const Host = ({
                   onNodeClick={onNodeClick}
                 />
               </>
+            )}
+            {tab === 'scan-results' && (
+              <ScanResult
+                vulnerabilityScanStatus={
+                  fetcher.data?.hostData?.vulnerability_scan_status
+                }
+                secretScanStatus={fetcher.data?.hostData?.secret_scan_status}
+                malwareScanStatus={fetcher.data?.hostData?.malware_scan_status}
+                complianceScanStatus={fetcher.data?.hostData?.compliance_scan_status}
+                vulnerabilityScanSummary={fetcher.data?.vulnerabilityScanCounts}
+                secretScanSummary={fetcher.data?.secretScanCounts}
+                malwareScanSummary={fetcher.data?.malwareScanCounts}
+                complianceScanSummary={fetcher.data?.complianceScanCounts}
+              />
             )}
           </div>
         </Tabs>

@@ -7,6 +7,7 @@ import {
   HiRefresh,
 } from 'react-icons/hi';
 import { useLoaderData, useRevalidator } from 'react-router-dom';
+import { useInterval } from 'react-use';
 import {
   Button,
   createColumnHelper,
@@ -78,15 +79,17 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
           cloud_filter: [],
           field_filters: {
             contains_filter: { filter_in: null },
-            order_filter: null as any,
+            order_filter: { order_fields: [] },
             match_filter: {
               filter_in: {},
             },
+            compare_filter: null,
           },
           host_filter: [],
           kubernetes_filter: [],
           pod_filter: [],
           region_filter: [],
+          container_filter: [],
         },
       },
     ],
@@ -99,15 +102,17 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
           cloud_filter: [],
           field_filters: {
             contains_filter: { filter_in: null },
-            order_filter: null as any,
+            order_filter: { order_fields: [] },
             match_filter: {
               filter_in: {},
             },
+            compare_filter: null,
           },
           host_filter: [],
           kubernetes_filter: [],
           pod_filter: [],
           region_filter: [],
+          container_filter: [],
         },
       },
     ],
@@ -247,6 +252,11 @@ function MyConnectors() {
   const { navigate } = usePageNavigation();
   const navigatedRef = useRef(false);
   const loaderData = useLoaderData() as LoaderData;
+  const revalidator = useRevalidator();
+
+  useInterval(() => {
+    revalidator.revalidate();
+  }, 300000);
 
   return (
     <Tabs
@@ -434,6 +444,7 @@ function MyConnectorsTable({ data }: LoaderData) {
       <Table
         size="sm"
         data={data}
+        noDataText="No connectors found"
         columns={columns}
         expanded={expandedState}
         onExpandedChange={setExpandedState}

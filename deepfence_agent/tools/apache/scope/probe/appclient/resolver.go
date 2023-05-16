@@ -9,8 +9,6 @@ import (
 
 	"github.com/miekg/dns"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/weaveworks/scope/common/xfer"
 )
 
 const (
@@ -169,7 +167,7 @@ func ParseTargets(urls []string) ([]Target, error) {
 			}
 		} else {
 			if prefixAdded {
-				port = xfer.AppPort
+				port = 80
 			} else if strings.HasPrefix(u, "https://") {
 				port = 443
 			} else {

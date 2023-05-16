@@ -17,9 +17,9 @@ type Tagger struct {
 // in the host topology.
 func NewTagger(hostID, cloudProvider, cloudRegion string) Tagger {
 	return Tagger{
-		hostNodeID:          report.MakeHostNodeID(hostID),
-		cloudProviderNodeID: report.MakeCloudProviderNodeID(cloudProvider),
-		cloudRegionNodeID:   report.MakeCloudRegionNodeID(cloudRegion + "-" + cloudProvider),
+		hostNodeID:          hostID,
+		cloudProviderNodeID: cloudProvider,
+		cloudRegionNodeID:   cloudRegion + "-" + cloudProvider,
 	}
 }
 
@@ -28,17 +28,17 @@ func (Tagger) Name() string { return "Host" }
 
 // Tag implements Tagger.
 func (t Tagger) Tag(r report.Report) (report.Report, error) {
-	var (
-		metadata = map[string]string{report.HostNodeID: t.hostNodeID}
-	)
+	//var (
+	//metadata = map[string]string{report.HostNodeID: t.hostNodeID}
+	//)
 
 	// Explicitly don't tag Endpoints, Addresses and Overlay nodes - These topologies include pseudo nodes,
 	// and as such do their own host tagging.
 	// Don't tag Pods so they can be reported centrally.
-	for _, topology := range []report.Topology{r.Process, r.Container, r.ContainerImage, r.Host} {
-		for _, node := range topology.Nodes {
-			topology.ReplaceNode(node.WithLatests(metadata).WithParent(report.Host, t.hostNodeID).WithParent(CloudRegion, t.cloudRegionNodeID).WithParent(CloudProvider, t.cloudProviderNodeID))
-		}
-	}
+	//for _, topology := range []report.Topology{r.Process, r.Container, r.ContainerImage, r.Host} {
+	//	for _, node := range topology {
+	//		topology.ReplaceNode(node.WithLatests(metadata).WithParent(report.Host, t.hostNodeID).WithParent(CloudRegion, t.cloudRegionNodeID).WithParent(CloudProvider, t.cloudProviderNodeID))
+	//	}
+	//}
 	return r, nil
 }

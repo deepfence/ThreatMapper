@@ -2,9 +2,18 @@ import cx from 'classnames';
 import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, Step, Stepper, Typography } from 'ui-components';
 
-import { CopyToClipboardIcon } from '@/components/CopyToClipboardIcon';
+import { CopyToClipboard } from '@/components/CopyToClipboard';
+import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
 
 export const LinuxConnectorForm = () => {
+  const { status, data } = useGetApiToken();
+  const dfApiKey =
+    status !== 'idle'
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.api_token === undefined
+      ? '---DEEPFENCE-API-KEY---'
+      : data?.api_token;
+
   const code = `
 docker run -dit \\
 --cpus=".2" \\
@@ -19,7 +28,7 @@ docker run -dit \\
 -e USER_DEFINED_TAGS="" \\
 -e MGMT_CONSOLE_URL="${window.location.host ?? '---CONSOLE-IP---'}" \\
 -e MGMT_CONSOLE_PORT="443" \\
--e DEEPFENCE_KEY="${localStorage.getItem('dfApiKey') ?? '---DEEPFENCE-API-KEY---'}" \\
+-e DEEPFENCE_KEY="${dfApiKey}" \\
 deepfenceio/deepfence_agent_ce:latest`;
 
   return (
@@ -53,7 +62,7 @@ deepfenceio/deepfence_agent_ce:latest`;
             >
               {code}
             </pre>
-            <CopyToClipboardIcon text={code} />
+            <CopyToClipboard data={code} asIcon />
           </Card>
         </div>
       </Step>

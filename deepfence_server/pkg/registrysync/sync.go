@@ -47,7 +47,7 @@ import (
 func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registry.Registry, pgId int32) error {
 
 	// decrypt secret
-	aesValue, err := encryption.GetAESValueForEncryption(ctx, pgClient)
+	aesValue, err := model.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	return insertToNeo4j(ctx, list, r, pgId)
 }
 
-func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registry.Registry, pgId int32) error {
+func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r registry.Registry, pgId int32) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -101,14 +101,19 @@ func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registr
 		MERGE (n:ContainerImage{node_id:row.node_id})
 		MERGE (s:ImageStub{node_id: row.docker_image_name})
 		MERGE (n) -[:IS]-> (s)
-		MERGE (m:RegistryAccount{node_id: $node_id })
+		MERGE (m:RegistryAccount{node_id:$node_id})
 		MERGE (m) -[:HOSTS]-> (n)
 		SET n+= row, n.updated_at = TIMESTAMP(),
 		m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END),
 		n.node_type='container_image',
 		m.registry_type=$registry_type,
+		n.pseudo=false,
+		n.active=true,
 		n.node_name=n.docker_image_name+":"+n.docker_image_tag`,
-		map[string]interface{}{"batch": imageMap, "node_id": registryId, "pgId": pgId, "registry_type": r.GetRegistryType()})
+		map[string]interface{}{
+			"batch": imageMap, "node_id": registryId,
+			"pgId": pgId, "registry_type": r.GetRegistryType(),
+		})
 	if err != nil {
 		return err
 	}
@@ -116,7 +121,7 @@ func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registr
 	return tx.Commit()
 }
 
-func RegistryImagesToMaps(ms []model.ContainerImage) []map[string]interface{} {
+func RegistryImagesToMaps(ms []model.IngestedContainerImage) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
 		res = append(res, toMap(v))
@@ -124,7 +129,7 @@ func RegistryImagesToMaps(ms []model.ContainerImage) []map[string]interface{} {
 	return res
 }
 
-func toMap(i model.ContainerImage) map[string]interface{} {
+func toMap(i model.IngestedContainerImage) map[string]interface{} {
 	out, err := json.Marshal(i)
 	if err != nil {
 		return nil

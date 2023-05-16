@@ -47,8 +47,13 @@ async function getScans(searchParams: URLSearchParams): Promise<{
         order_filter: {
           order_fields: [],
         },
+        compare_filter: null,
       },
       in_field_filter: null,
+      window: {
+        offset: 0,
+        size: 0,
+      },
     },
     scan_filters: {
       filters: {
@@ -68,8 +73,13 @@ async function getScans(searchParams: URLSearchParams): Promise<{
             },
           ],
         },
+        compare_filter: null,
       },
       in_field_filter: null,
+      window: {
+        offset: 0,
+        size: 0,
+      },
     },
     window: {
       offset: page * PAGE_SIZE,
@@ -170,11 +180,11 @@ const RuntimeBom = () => {
           );
         },
         header: () => 'Type',
-        minSize: 200,
-        size: 300,
-        maxSize: 500,
+        minSize: 50,
+        size: 100,
+        maxSize: 200,
       }),
-      columnHelper.accessor('node_id', {
+      columnHelper.accessor('node_name', {
         enableSorting: false,
         cell: (info) => {
           return (
@@ -189,12 +199,12 @@ const RuntimeBom = () => {
                 }}
                 href="#"
               >
-                <span className="truncate capitalize">{info.getValue()}</span>
+                <span className="truncate">{info.getValue()}</span>
               </DFLink>
             </div>
           );
         },
-        header: () => 'Name',
+        header: () => 'Node',
         minSize: 200,
         size: 300,
         maxSize: 500,
@@ -209,7 +219,7 @@ const RuntimeBom = () => {
       <div className="flex px-2 items-center w-full shadow bg-white dark:bg-gray-800 h-10">
         <Breadcrumb separator={<HiChevronRight />} transparent>
           <BreadcrumbLink>
-            <DFLink to={'/vulnerability'}>VULNERABILITIES</DFLink>
+            <DFLink to={'/vulnerability'}>Vulnerabilities</DFLink>
           </BreadcrumbLink>
           <BreadcrumbLink>
             <span className="inherit cursor-auto">Runtime BOM</span>
