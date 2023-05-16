@@ -172,6 +172,8 @@ models/ReportersMatchFilter.ts
 models/ReportersOrderFilter.ts
 models/ReportersOrderSpec.ts
 models/SearchNodeCountResp.ts
+models/SearchResultGroup.ts
+models/SearchResultGroupResp.ts
 models/SearchSearchCountResp.ts
 models/SearchSearchFilter.ts
 models/SearchSearchNodeReq.ts

@@ -150,6 +150,8 @@ export * from './ReportersMatchFilter';
 export * from './ReportersOrderFilter';
 export * from './ReportersOrderSpec';
 export * from './SearchNodeCountResp';
+export * from './SearchResultGroup';
+export * from './SearchResultGroupResp';
 export * from './SearchSearchCountResp';
 export * from './SearchSearchFilter';
 export * from './SearchSearchNodeReq';

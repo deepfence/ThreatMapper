@@ -4245,6 +4245,141 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/scan/results/count/group/malware": {
+      "get": {
+        "tags": ["Malware Scan"],
+        "summary": "Group Malware Results",
+        "description": "Group Malware Scans results by severity/rule",
+        "operationId": "groupResultsMalwares",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchResultGroupResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/scan/results/count/group/malware/class": {
+      "get": {
+        "tags": ["Malware Scan"],
+        "summary": "Group Malware Results By Class",
+        "description": "Group Malware Scans results by severity/class",
+        "operationId": "groupResultsMalwaresClass",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchResultGroupResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/scan/results/count/group/secret": {
+      "get": {
+        "tags": ["Secret Scan"],
+        "summary": "Group Secret Results",
+        "description": "Group Secret Scans results by severity/rule",
+        "operationId": "groupResultsSecrets",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchResultGroupResp" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/scan/results/count/malware": {
       "post": {
         "tags": ["Malware Scan"],
@@ -10862,7 +10997,7 @@
           "resources": { "type": "string" },
           "role": { "type": "string" },
           "success": { "type": "boolean" },
-          "user_id": { "type": "integer" },
+          "user_id": { "$ref": "#/components/schemas/SqlNullInt32" },
           "user_role_id": { "type": "integer" }
         }
       },
@@ -10907,7 +11042,6 @@
           "docker_env": { "type": "string" },
           "docker_image_created_at": { "type": "string" },
           "docker_image_id": { "type": "string" },
-          "docker_image_labels": { "type": "string" },
           "docker_image_name": { "type": "string" },
           "docker_image_name_with_tag": { "type": "string" },
           "docker_image_size": { "type": "string" },
@@ -10931,7 +11065,7 @@
           "kubernetes_is_in_host_network": { "type": "boolean" },
           "kubernetes_labels": { "type": "string" },
           "kubernetes_namespace": { "type": "string" },
-          "kubernetes_ports": { "type": "array", "items": { "type": "integer" } },
+          "kubernetes_ports": { "type": "array", "items": { "type": "string" } },
           "kubernetes_public_ip": { "type": "string" },
           "kubernetes_state": { "type": "string" },
           "kubernetes_type": { "type": "string" },
@@ -11052,6 +11186,24 @@
           "pod": { "type": "integer" }
         }
       },
+      "SearchResultGroup": {
+        "type": "object",
+        "properties": {
+          "count": { "type": "integer" },
+          "name": { "type": "string" },
+          "severity": { "type": "string" }
+        }
+      },
+      "SearchResultGroupResp": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SearchResultGroup" },
+            "nullable": true
+          }
+        }
+      },
       "SearchSearchCountResp": {
         "required": ["count", "categories"],
         "type": "object",
@@ -11094,6 +11246,7 @@
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
+      "SqlNullInt32": { "type": "object" },
       "SqlNullTime": { "type": "object" },
       "UtilsAdvancedReportFilters": {
         "type": "object",
