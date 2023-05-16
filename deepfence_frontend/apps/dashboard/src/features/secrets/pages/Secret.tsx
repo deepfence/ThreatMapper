@@ -2,15 +2,13 @@ import { Suspense } from 'react';
 import { useLoaderData } from 'react-router-dom';
 
 import { getSearchApiClient, getSecretApiClient } from '@/api/api';
-import {
-  ModelContainer,
-  ModelContainerImage,
-  ModelHost,
-  ModelNodeIdentifierNodeTypeEnum,
-} from '@/api/generated';
+import { ModelNodeIdentifierNodeTypeEnum } from '@/api/generated';
+import { SEVERITY_COLORS } from '@/constants/charts';
+import { SecretCountByRulenameCard } from '@/features/secrets/components/landing/SecretCountByRulenameCard';
 import { TopNSecretCard } from '@/features/secrets/components/landing/TopNSecretCard';
 import { TopNSecretChartData } from '@/features/secrets/components/landing/TopNSecretChart';
-import { ApiError, makeRequest } from '@/utils/api';
+import { SecretSeverityType } from '@/types/common';
+import { ApiError, apiWrapper, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
@@ -141,22 +139,82 @@ async function getTop5SecretAssetsData(nodeType: 'image' | 'host' | 'container')
     }, []);
 }
 
-type LoaderData = {
+const getSecretCountsByRulename = async () => {
+  const getSecretsCountByRulename = apiWrapper({
+    fn: getSecretApiClient().getSecretsCountByRulename,
+  });
+
+  const results = await getSecretsCountByRulename();
+
+  if (!results.ok) {
+    console.error(results.error);
+    throw new Error('error getting secret counts by rulename');
+  }
+
+  type SecretCountByRulenameResults = Array<{
+    name: string;
+    itemStyle?: {
+      color: string;
+    };
+    children: Array<
+      SecretCountByRulenameResults[number] & {
+        value: number;
+      }
+    >;
+  }>;
+  const res: SecretCountByRulenameResults = [];
+  results.value.groups?.forEach((group) => {
+    const existingGroup = res.find((r) => r.name === group.severity);
+
+    if (!existingGroup) {
+      res.push({
+        name: group.severity ?? '',
+        itemStyle: {
+          color: SEVERITY_COLORS[(group.severity ?? 'unknown') as SecretSeverityType],
+        },
+        children: [
+          {
+            name: group.name ?? '',
+            children: [],
+            value: group.count ?? 0,
+            itemStyle: {
+              color: SEVERITY_COLORS[(group.severity ?? 'unknown') as SecretSeverityType],
+            },
+          },
+        ],
+      });
+    } else {
+      existingGroup.children.push({
+        name: group.name ?? '',
+        children: [],
+        value: group.count ?? 0,
+        itemStyle: {
+          color: SEVERITY_COLORS[(group.severity ?? 'unknown') as SecretSeverityType],
+        },
+      });
+    }
+  });
+  return res;
+};
+
+export type SecretLandingLoaderData = {
   imageSeverityResults: Array<TopNSecretChartData>;
   hostSeverityResults: Array<TopNSecretChartData>;
   containerSeverityResults: Array<TopNSecretChartData>;
+  secretCountsByRulename: Awaited<ReturnType<typeof getSecretCountsByRulename>>;
 };
 
-const loader = async (): Promise<TypedDeferredData<LoaderData>> => {
+const loader = async (): Promise<TypedDeferredData<SecretLandingLoaderData>> => {
   return typedDefer({
     imageSeverityResults: getTop5SecretAssetsData('image'),
     hostSeverityResults: getTop5SecretAssetsData('host'),
     containerSeverityResults: getTop5SecretAssetsData('container'),
+    secretCountsByRulename: getSecretCountsByRulename(),
   });
 };
 
 const Secret = () => {
-  const loaderData = useLoaderData() as LoaderData;
+  const loaderData = useLoaderData() as SecretLandingLoaderData;
   return (
     <div>
       <div className="flex p-2 items-center w-full shadow bg-white dark:bg-gray-800 h-10">
@@ -177,7 +235,7 @@ const Secret = () => {
             }
           >
             <DFAwait resolve={loaderData.containerSeverityResults}>
-              {(resolvedData: LoaderData['containerSeverityResults']) => {
+              {(resolvedData: SecretLandingLoaderData['containerSeverityResults']) => {
                 return (
                   <TopNSecretCard
                     title="Top Secret Containers"
@@ -201,7 +259,7 @@ const Secret = () => {
             }
           >
             <DFAwait resolve={loaderData.hostSeverityResults}>
-              {(resolvedData: LoaderData['hostSeverityResults']) => {
+              {(resolvedData: SecretLandingLoaderData['hostSeverityResults']) => {
                 return (
                   <TopNSecretCard
                     title="Top Secret Hosts"
@@ -225,7 +283,7 @@ const Secret = () => {
             }
           >
             <DFAwait resolve={loaderData.imageSeverityResults}>
-              {(resolvedData: LoaderData['imageSeverityResults']) => {
+              {(resolvedData: SecretLandingLoaderData['imageSeverityResults']) => {
                 return (
                   <TopNSecretCard
                     title="Top Secret Container Images"
@@ -236,6 +294,12 @@ const Secret = () => {
               }}
             </DFAwait>
           </Suspense>
+        </div>
+        <div className="col-span-12">
+          <SecretCountByRulenameCard
+            title="Secret counts by Rule names"
+            link="/secret/scans"
+          />
         </div>
       </div>
     </div>

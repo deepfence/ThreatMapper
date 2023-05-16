@@ -63,10 +63,10 @@ export interface PostgresqlDbGetAuditLogsRow {
     success?: boolean;
     /**
      * 
-     * @type {number}
+     * @type {object}
      * @memberof PostgresqlDbGetAuditLogsRow
      */
-    user_id?: number;
+    user_id?: object;
     /**
      * 
      * @type {number}
