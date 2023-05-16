@@ -387,7 +387,7 @@ class CveScanECRImages(CveScanRegistryImages):
 
     def docker_login(self):
         # Docker login to ecr
-        if self.registry_id:
+        if self.registry_id and self.is_public != "true":
             tmp_auth_token = self.ecr_client.get_authorization_token(registryIds=[self.registry_id])
         else:
             tmp_auth_token = self.ecr_client.get_authorization_token()
@@ -411,7 +411,7 @@ class CveScanECRImages(CveScanRegistryImages):
                     raise DFError('access key, secret key and region are required')
         token = None
         try:
-            if self.registry_id:
+            if self.registry_id and self.is_public != "true":
                 token = self.ecr_client.get_authorization_token(registryIds=[self.registry_id])
             else:
                 token = self.ecr_client.get_authorization_token()
