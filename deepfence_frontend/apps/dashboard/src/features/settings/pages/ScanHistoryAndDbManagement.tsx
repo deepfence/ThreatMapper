@@ -55,7 +55,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
 
   if (actionType === ActionEnumType.DELETE) {
     const duration = parseInt(formData.get('duration')?.toString() ?? '0', 10);
-    const severityOrStatus = formData.get('severityOrStatus');
     const scanType = formData
       .get('selectedResource')
       ?.toString() as ModelBulkDeleteScansRequestScanTypeEnumType;
@@ -78,14 +77,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           greater_than: false,
         },
       ];
-    }
-
-    if (severityOrStatus !== 'all') {
-      modelBulkDeleteScansRequest.filters.contains_filter = {
-        filter_in: {
-          severity: [severityOrStatus],
-        },
-      };
     }
 
     const deleteScanHistory = apiWrapper({
@@ -165,7 +156,6 @@ const DeleteConfirmationModal = ({
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
   data: {
     duration: number;
-    severityOrStatus: string;
     selectedResource: string;
   };
 }) => {
@@ -207,7 +197,6 @@ const DeleteConfirmationModal = ({
               onClick={() => {
                 const formData = new FormData();
                 formData.append('actionType', ActionEnumType.DELETE);
-                formData.append('severityOrStatus', data.severityOrStatus);
                 formData.append('selectedResource', data.selectedResource);
                 formData.append('duration', data.duration.toString());
                 fetcher.submit(formData, {
@@ -303,14 +292,12 @@ const ScanHistoryAndDbManagement = () => {
   const [selectedResource, setSelectedResource] = useState<string>(
     ModelBulkDeleteScansRequestScanTypeEnumType.Vulnerability,
   );
-  const [selectedSeveritiesOrStatuses, setSelectedSeveritiesOrStatuses] = useState('all');
   const [duration, setDuration] = useState(1);
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     if (selectedResource === ModelBulkDeleteScansRequestScanTypeEnumType.Compliance) {
-      setSelectedSeveritiesOrStatuses('all');
       setSeverityOrResources('status');
     }
   }, [selectedResource]);
@@ -323,7 +310,6 @@ const ScanHistoryAndDbManagement = () => {
           setShowDialog={setShowDeleteDialog}
           data={{
             duration,
-            severityOrStatus: selectedSeveritiesOrStatuses,
             selectedResource,
           }}
         />
@@ -382,26 +368,6 @@ const ScanHistoryAndDbManagement = () => {
               onValueChange={(value) => {
                 setSelectedResource(value);
                 setSeverityOrResources('severity');
-              }}
-            />
-          </div>
-          <div>
-            <h6 className="text-gray-600 dark:text-white text-base font-medium pb-2">
-              Choose
-              {severityOrStatus === 'severity' ? ' Severity ' : ' Status '}
-            </h6>
-            <Radio
-              name="severityOrStatus"
-              value={selectedSeveritiesOrStatuses}
-              options={(
-                getStatusesOrSeverityByResource(
-                  selectedResource as ModelBulkDeleteScansRequestScanTypeEnumType,
-                ) ?? []
-              ).map((type) => {
-                return { label: capitalize(type), value: type };
-              })}
-              onValueChange={(value) => {
-                setSelectedSeveritiesOrStatuses(value);
               }}
             />
           </div>
