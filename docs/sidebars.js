@@ -119,7 +119,17 @@ const sidebars = {
         'threatmapper/operations/scanning',
         'threatmapper/operations/sboms',
         'threatmapper/operations/compliance',
-        'threatmapper/operations/scanning-registries',
+        {
+          type: 'category',
+          label: 'Scanning Registries',
+          link: {
+            type: 'doc',
+            id: 'threatmapper/registries/index'
+          },
+          items: [
+            'threatmapper/registries/aws-ecr',
+          ],
+        },
         'threatmapper/operations/scanning-ci',
         'threatmapper/operations/support',
       ],

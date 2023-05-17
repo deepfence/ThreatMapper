@@ -17,3 +17,12 @@ Select the appropriate registry type, and **+ Add Registry**.  The credentials f
 ThreatMapper will index the artifacts in the Registry.  You can scan them manually, and you can define a periodic schedule to scan.  Results can be found on the **Vulnerabilities** report, and will be raised through any configured notifications.
 
 ![Scan Results](../img/registry-3.jpg)
+
+More detailed instructions are as follows:
+
+```mdx-code-block
+import DocCardList from '@theme/DocCardList';
+import {useCurrentSidebarCategory} from '@docusaurus/theme-common';
+
+<DocCardList items={useCurrentSidebarCategory().items}/>
+```
