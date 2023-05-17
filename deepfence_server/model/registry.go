@@ -144,20 +144,20 @@ func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgres
 	return true, nil
 }
 
-func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.Context, pgClient *postgresqlDb.Queries, ns string) error {
+func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.Context, pgClient *postgresqlDb.Queries, ns string) (int32, error) {
 	bSecret, err := json.Marshal(ra.Secret)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	bNonSecret, err := json.Marshal(ra.NonSecret)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	bExtras, err := json.Marshal(ra.Extras)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	_, err = pgClient.CreateContainerRegistry(ctx, postgresqlDb.CreateContainerRegistryParams{
@@ -175,7 +175,7 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 
 	driver, err := directory.Neo4jClient(rContext)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
@@ -183,7 +183,7 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 
 	tx, err := session.BeginTransaction()
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer tx.Close()
 
@@ -194,7 +194,7 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 		m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`
 	_, err = tx.Run(query, map[string]interface{}{"node_id": registryID, "registry_type": ra.RegistryType, "pgId": cr.ID})
 
-	return tx.Commit()
+	return cr.ID, tx.Commit()
 }
 
 func (ru *RegistryUpdateReq) UpdateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r int32) error {

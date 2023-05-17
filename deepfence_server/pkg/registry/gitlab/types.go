@@ -13,5 +13,5 @@ type NonSecret struct {
 }
 
 type Secret struct {
-	GitlabToken string `json:"gitlab_token"`
+	GitlabToken string `json:"gitlab_access_token"`
 }
