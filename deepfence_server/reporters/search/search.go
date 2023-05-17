@@ -199,8 +199,9 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 
 func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]model.CloudNodeAccountInfo, error) {
 	var res []model.CloudNodeAccountInfo
+	cloudProvider := filter.Filters.ContainsFilter.FieldsValues["cloud_provider"][0].(string)
 	dummy := model.CloudNodeAccountInfo{
-		CloudProvider: filter.Filters.ContainsFilter.FieldsValues["cloud_provider"][0].(string),
+		CloudProvider: cloudProvider,
 	}
 
 	driver, err := directory.Neo4jClient(ctx)
@@ -235,7 +236,8 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 			RETURN s1.node_id AS last_scan_id, s1.status AS last_scan_status
 			ORDER BY s1.updated_at DESC LIMIT 1
 		}
-		RETURN x as node_id, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
+		CALL {WITH x MATCH (n:CloudNode{node_id: x}) RETURN n.node_name as node_name}
+		RETURN x as node_id, node_name, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
 		reporters.OrderFilter2CypherCondition("", filter.Filters.OrderFilter) + fw.FetchWindow2CypherQuery()
 
 	log.Info().Msgf("search cloud node query: %v", query)
@@ -271,10 +273,11 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		} else {
 			node_map = map[string]interface{}{}
 			baseValuesCount := 0
-			for _, nodeMapKey := range []string{"node_id", "compliance_percentage", "last_scan_id", "last_scan_status"} {
+			for _, nodeMapKey := range []string{"node_id", "node_name", "compliance_percentage", "last_scan_id", "last_scan_status"} {
 				node_map[nodeMapKey] = rec.Values[baseValuesCount]
 				baseValuesCount = baseValuesCount + 1
 			}
+			node_map["cloud_provider"] = cloudProvider
 			for i := range filter.InFieldFilter {
 				node_map[filter.InFieldFilter[i]] = rec.Values[i+baseValuesCount]
 			}
