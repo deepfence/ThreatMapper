@@ -16,7 +16,7 @@ RUN apk update \
   && yarn cache clean
 
 
-FROM alpine:3.14.2
+FROM alpine:3.18
 LABEL deepfence.role=system
 
 WORKDIR /home/deepfence

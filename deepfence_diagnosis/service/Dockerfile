@@ -1,10 +1,10 @@
-FROM golang:1.19-alpine3.17 AS build
+FROM golang:1.19-alpine3.18 AS build
 RUN apk add --no-cache git
 ADD . /go/diagnosis/
 WORKDIR /go/diagnosis/
 RUN go build -o diagnosis *.go
 
-FROM alpine:3.17
+FROM alpine:3.18
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 

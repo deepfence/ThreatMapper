@@ -1,4 +1,4 @@
-FROM alpine:3.14.2
+FROM alpine:3.18
 LABEL deepfence.role=system
 ENV VERSION=v10.19.0 NPM_VERSION=6 YARN_VERSION=latest
 # ENV VERSION=v10.18.1 NPM_VERSION=6 YARN_VERSION=latest
