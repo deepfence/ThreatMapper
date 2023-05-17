@@ -14,6 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	scopeHostname "github.com/weaveworks/scope/common/hostname"
+	"github.com/weaveworks/scope/probe/appclient"
 
 	_ "embed"
 
@@ -70,21 +71,18 @@ func (p *Probe) dummyPublishLoop(i int) {
 	}
 
 	// Add jitter
-	rand.Seed(time.Now().UnixNano())
-
-	min := 0
-	max := 600
-
-	jitter := int32(rand.Intn(max-min+1) + min)
-
-	<-time.After(time.Second*time.Duration(jitter))
+	<-time.After(time.Second * time.Duration(i/70))
 
 	for {
 		select {
-		case <-time.After(time.Second*time.Duration(p.publisher.PublishInterval())):
+		case <-time.After(time.Second * time.Duration(p.publisher.PublishInterval())):
 			err = p.publisher.Publish(rpt)
 			if err == nil {
 				publishCount++
+			} else if err == appclient.PushBackError {
+				rand.Seed(time.Now().UnixNano())
+				randomDelay := rand.Intn(30)
+				time.Sleep(time.Duration(randomDelay) * time.Second)
 			} else {
 				// If we failed to send then drop back to full report next time
 				publishCount = 0

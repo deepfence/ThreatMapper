@@ -4,10 +4,12 @@
 package probe
 
 import (
+	"math/rand"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/weaveworks/scope/probe/appclient"
 	"github.com/weaveworks/scope/report"
 )
 
@@ -46,6 +48,10 @@ func (p *Probe) publishLoop() {
 					lastFullReport = rpt
 				}
 				publishCount++
+			} else if err == appclient.PushBackError {
+				rand.Seed(time.Now().UnixNano())
+				randomDelay := rand.Intn(30)
+				time.Sleep(time.Duration(randomDelay) * time.Second)
 			} else {
 				// If we failed to send then drop back to full report next time
 				publishCount = 0

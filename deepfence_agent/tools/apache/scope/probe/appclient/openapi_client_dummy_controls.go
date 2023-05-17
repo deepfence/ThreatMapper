@@ -5,7 +5,6 @@ package appclient
 
 import (
 	"context"
-	"math/rand"
 	"os"
 	"strconv"
 	"sync/atomic"
@@ -96,14 +95,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 		} else {
 			go func() {
 				// Add jitter
-				rand.Seed(time.Now().UnixNano())
-
-				min := 0
-				max := 600
-
-				jitter := int32(rand.Intn(max-min+1) + min)
-
-				<-time.After(time.Second * time.Duration(jitter))
+				<-time.After(time.Second * time.Duration(i/70))
 
 				req := ct.API().ControlsAPI.GetAgentControls(context.Background())
 				agentId := openapi.NewModelAgentId(getMaxAllocatable(), dummyNodeId)
