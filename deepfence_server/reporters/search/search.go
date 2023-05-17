@@ -235,7 +235,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 			RETURN s1.node_id AS last_scan_id, s1.status AS last_scan_status
 			ORDER BY s1.updated_at DESC LIMIT 1
 		}
-		RETURN x, compliance_percentage, COALESCE(last_scan_id, ''), COALESCE(last_scan_status, '') ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
+		RETURN x as node_id, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
 		reporters.OrderFilter2CypherCondition("", filter.Filters.OrderFilter) + fw.FetchWindow2CypherQuery()
 
 	log.Info().Msgf("search cloud node query: %v", query)
@@ -256,7 +256,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 
 	for _, rec := range recs {
 		var node_map map[string]interface{}
-		if len(filter.InFieldFilter) == 0 {
+		if len(filter.InFieldFilter) != 0 {
 			data, has := rec.Get("n")
 			if !has {
 				log.Warn().Msgf("Missing neo4j entry")
