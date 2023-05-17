@@ -56,6 +56,30 @@ func searchScansFilter(params sdkUtils.ReportParams) rptSearch.SearchScanReq {
 		},
 	}
 
+	if len(params.Filters.AdvancedReportFilters.HostName) > 0 {
+		filters.NodeFilter.Filters.ContainsFilter.FieldsValues["host_name"] = sdkUtils.StringArrayToInterfaceArray(params.Filters.AdvancedReportFilters.HostName)
+	}
+
+	if len(params.Filters.AdvancedReportFilters.KubernetesClusterName) > 0 {
+		filters.NodeFilter.Filters.ContainsFilter.FieldsValues["kubernetes_cluster_name"] = sdkUtils.StringArrayToInterfaceArray(params.Filters.AdvancedReportFilters.KubernetesClusterName)
+	}
+
+	if len(params.Filters.AdvancedReportFilters.PodName) > 0 {
+		filters.NodeFilter.Filters.ContainsFilter.FieldsValues["pod_name"] = sdkUtils.StringArrayToInterfaceArray(params.Filters.AdvancedReportFilters.PodName)
+	}
+
+	if len(params.Filters.AdvancedReportFilters.ContainerName) > 0 {
+		filters.NodeFilter.Filters.ContainsFilter.FieldsValues["node_id"] = sdkUtils.StringArrayToInterfaceArray(params.Filters.AdvancedReportFilters.ContainerName)
+	}
+
+	if len(params.Filters.AdvancedReportFilters.ImageName) > 0 {
+		filters.NodeFilter.Filters.ContainsFilter.FieldsValues["node_id"] = sdkUtils.StringArrayToInterfaceArray(params.Filters.AdvancedReportFilters.ImageName)
+	}
+
+	if len(params.Filters.AdvancedReportFilters.AccountId) > 0 {
+		filters.NodeFilter.Filters.ContainsFilter.FieldsValues["account_id"] = sdkUtils.StringArrayToInterfaceArray(params.Filters.AdvancedReportFilters.AccountId)
+	}
+
 	if len(params.Filters.ScanId) > 0 {
 		filters.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
