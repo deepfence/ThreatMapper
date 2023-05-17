@@ -21,7 +21,7 @@ import { DFLink } from '@/components/DFLink';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
-import { ApiError, makeRequest } from '@/utils/api';
+import { ApiError, apiWrapper, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -31,19 +31,20 @@ type LoaderDataType = {
   data?: DiagnosisGetDiagnosticLogsResponse;
 };
 const getDiagnosticLogs = async (): Promise<LoaderDataType> => {
-  const diagnosticLogsPromise = await makeRequest({
-    apiFunction: getDiagnosisApiClient().getDiagnosticLogs,
-    apiArgs: [],
-  });
+  const getDiagnosticLogs = apiWrapper({ fn: getDiagnosisApiClient().getDiagnosticLogs });
+  const response = await getDiagnosticLogs();
 
-  if (ApiError.isApiError(diagnosticLogsPromise)) {
-    return {
-      message: 'Error in getting diagnostic logs',
-    };
+  if (!response.ok) {
+    if (response.error.response.status === 403) {
+      return {
+        message: 'You do not have enough permissions to view diagnostic logs',
+      };
+    }
+    throw response.error;
   }
 
   return {
-    data: diagnosticLogsPromise,
+    data: response.value,
   };
 };
 

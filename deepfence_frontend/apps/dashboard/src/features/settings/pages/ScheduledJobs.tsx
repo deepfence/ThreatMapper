@@ -16,7 +16,7 @@ import {
 import { getSettingsApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, PostgresqlDbScheduler } from '@/api/generated';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
-import { ApiError, makeRequest } from '@/utils/api';
+import { ApiError, apiWrapper, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -26,21 +26,25 @@ type LoaderDataType = {
   data?: PostgresqlDbScheduler[];
 };
 const getData = async (): Promise<LoaderDataType> => {
-  const response = await makeRequest({
-    apiFunction: getSettingsApiClient().getScheduledTasks,
-    apiArgs: [],
+  const getScheduledTasks = await apiWrapper({
+    fn: getSettingsApiClient().getScheduledTasks,
   });
 
-  if (ApiError.isApiError(response)) {
-    return {
-      message: 'Error in getting Scheduled Jobs list',
-    };
-  }
+  const response = await getScheduledTasks();
 
+  if (!response.ok) {
+    if (response.error.response.status === 403) {
+      return {
+        message: 'You do not have enough permissions to view sheduled jobs',
+      };
+    }
+    throw response.error;
+  }
   return {
-    data: response,
+    data: response.value,
   };
 };
+
 const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
   return typedDefer({
     data: getData(),
