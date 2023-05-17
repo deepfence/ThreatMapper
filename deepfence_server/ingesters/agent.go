@@ -145,6 +145,8 @@ func (nc *neo4jIngester) runEnqueueReport(num_received *atomic.Int32) {
 	report_buffer := rptBufferPool.Get().(map[string]*report.Report)
 	send := false
 	stats := 0
+	ticker := time.NewTicker(enqueer_timeout)
+	defer ticker.Stop()
 loop:
 	for {
 		select {
@@ -162,10 +164,12 @@ loop:
 			report_buffer[hostNodeId] = rpt
 			send = len(report_buffer) == db_batch_size
 			stats += 1
-		case <-time.After(enqueer_timeout):
+		// case <-time.After(enqueer_timeout):
+		case <-ticker.C:
 			send = len(report_buffer) != 0
 		}
 		if send {
+			ticker.Reset(enqueer_timeout)
 			send = false
 			log.Info().Msgf("Sending %v unique reports over %v received", len(report_buffer), stats)
 			num_received.Add(int32(len(report_buffer)))
@@ -284,7 +288,7 @@ loop:
 			}
 			buffer[elements] = resolver
 			elements += 1
-			send = elements == resolver_batch_size 
+			send = elements == resolver_batch_size
 		case <-time.After(resolver_timeout):
 			send = elements != 0
 		}
@@ -890,7 +894,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
 		twice := false
 		// Received num at the time of push back change
 		prev_received_num := int32(0)
-		loop:
+	loop:
 		for {
 			select {
 			case <-time.After(agent_base_timeout * time.Duration(Push_back.Load())):
@@ -899,11 +903,11 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
 			}
 			current_num_received := num_received.Swap(0)
 			current_num_ingested := num_ingested.Swap(0)
-			if current_num_ingested < (current_num_received / 4) * 3 {
+			if current_num_ingested < (current_num_received/4)*3 {
 				Push_back.Add(1 * current_num_received / current_num_received)
 				twice = false
 				prev_received_num = current_num_received
-			} else if current_num_received < (prev_received_num / 4) * 3 {
+			} else if current_num_received < (prev_received_num/4)*3 {
 				if Push_back.Load() > 1 && twice {
 					Push_back.Add(-1)
 					twice = false
@@ -911,7 +915,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
 				}
 				twice = true
 			}
-	log.Info().Msgf("Received: %v, pushed: %v, Push back: %v", current_num_received, current_num_ingested, Push_back.Load())
+			log.Info().Msgf("Received: %v, pushed: %v, Push back: %v", current_num_received, current_num_ingested, Push_back.Load())
 		}
 	}()
 
