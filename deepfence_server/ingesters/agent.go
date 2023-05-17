@@ -893,6 +893,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
 		prev_received_num := int32(0)
 		ticker := time.NewTicker(agent_base_timeout * time.Duration(Push_back.Load()))
 		defer ticker.Stop()
+		update_ticker := false
 	loop:
 		for {
 			select {
@@ -906,13 +907,19 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
 				Push_back.Add(1 * current_num_received / current_num_received)
 				twice = false
 				prev_received_num = current_num_received
+				update_ticker = true
 			} else if current_num_received < (prev_received_num/4)*3 {
 				if Push_back.Load() > 1 && twice {
 					Push_back.Add(-1)
 					twice = false
 					prev_received_num = current_num_received
+					update_ticker = true
 				}
 				twice = true
+			}
+			if update_ticker {
+				update_ticker = false
+				ticker.Reset(agent_base_timeout * time.Duration(Push_back.Load()))
 			}
 			log.Info().Msgf("Received: %v, pushed: %v, Push back: %v", current_num_received, current_num_ingested, Push_back.Load())
 		}
