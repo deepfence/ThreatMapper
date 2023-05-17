@@ -200,7 +200,7 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]model.CloudNodeAccountInfo, error) {
 	var res []model.CloudNodeAccountInfo
 	dummy := model.CloudNodeAccountInfo{
-		CloudProvider: filter.Filters.MatchFilter.FieldsValues["cloud_provider"][0].(string),
+		CloudProvider: filter.Filters.ContainsFilter.FieldsValues["cloud_provider"][0].(string),
 	}
 
 	driver, err := directory.Neo4jClient(ctx)
