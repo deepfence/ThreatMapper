@@ -39,7 +39,12 @@ type ConfigIDPathReq struct {
 
 func (e *EmailConfigurationAdd) Create(ctx context.Context, pgClient *postgresqlDb.Queries) error {
 	_, err := pgClient.GetSetting(ctx, EmailConfigurationKey)
-	if !errors.Is(err, sql.ErrNoRows) {
+	if errors.Is(err, sql.ErrNoRows) {
+		// valid case
+	} else if err != nil {
+		log.Error().Msgf(err.Error())
+		return err
+	} else {
 		return errors.New("email Configuration already exists")
 	}
 	aesValue, err := GetAESValueForEncryption(ctx, pgClient)
@@ -71,7 +76,7 @@ func (e *EmailConfigurationAdd) Create(ctx context.Context, pgClient *postgresql
 		}
 	}
 	if e.AmazonSecretKey != "" {
-		e.Password, err = aes.Encrypt(e.AmazonSecretKey)
+		e.AmazonSecretKey, err = aes.Encrypt(e.AmazonSecretKey)
 		if err != nil {
 			log.Error().Msgf(err.Error())
 			return err

@@ -23,8 +23,8 @@ import (
 const (
 	REDIS_NETWORK_MAP_KEY   = "network_map"
 	REDIS_IPPORTPID_MAP_KEY = "ipportpid_map"
-	workers_num             = 2
-	default_db_input_size   = 10
+	workers_num             = 15
+	default_db_input_size   = 15
 	db_batch_size           = 1_000
 	resolver_batch_size     = 1_000
 	default_ingester_size   = 15_000
@@ -134,12 +134,17 @@ type neo4jIngester struct {
 	resolvers_update chan EndpointResolvers
 	resolvers_input  chan *report.Report
 	preparers_input  chan *report.Report
+	done             chan struct{}
 }
 
-func (nc *neo4jIngester) runEnqueueReport() {
-	report_buffer := map[string]*report.Report{}
-	timeout := time.After(enqueer_timeout)
-	i := 0
+var rptBufferPool = sync.Pool{
+	New: func() interface{} { return make(map[string]*report.Report, db_batch_size) },
+}
+
+func (nc *neo4jIngester) runEnqueueReport(num_received *atomic.Int32) {
+	report_buffer := rptBufferPool.Get().(map[string]*report.Report)
+	send := false
+	stats := 0
 loop:
 	for {
 		select {
@@ -155,22 +160,29 @@ loop:
 				}
 			}
 			report_buffer[hostNodeId] = rpt
-			i += 1
-		case <-timeout:
-			log.Info().Msgf("Sending %v unique reports over %v received", len(report_buffer), i)
-			if len(report_buffer) != 0 {
-				select {
-				case nc.ingester <- report_buffer:
-					report_buffer = map[string]*report.Report{}
-					i = 0
-				default:
-					log.Warn().Msgf("ingester channel full")
-					for _, v := range report_buffer {
-						ReportPool.Put(v)
-					}
+			send = len(report_buffer) == db_batch_size
+			stats += 1
+		case <-time.After(enqueer_timeout):
+			send = len(report_buffer) != 0
+		}
+		if send {
+			send = false
+			log.Info().Msgf("Sending %v unique reports over %v received", len(report_buffer), stats)
+			num_received.Add(int32(len(report_buffer)))
+			stats = 0
+			select {
+			case nc.ingester <- report_buffer:
+				report_buffer = rptBufferPool.Get().(map[string]*report.Report)
+				for k := range report_buffer {
+					delete(report_buffer, k)
 				}
+			default:
+				log.Warn().Msgf("ingester channel full")
+				for _, v := range report_buffer {
+					ReportPool.Put(v)
+				}
+				rptBufferPool.Put(report_buffer)
 			}
-			timeout = time.After(enqueer_timeout)
 		}
 	}
 	log.Info().Msgf("runEnqueueReport ended")
@@ -260,26 +272,34 @@ func computeResolvers(rpt *report.Report, buf *bytes.Buffer) EndpointResolvers {
 }
 
 func (nc *neo4jIngester) resolversUpdater() {
+	buffer := make([]EndpointResolvers, resolver_batch_size)
+	elements := 0
+	send := false
 loop:
 	for {
 		select {
-		case <-time.After(resolver_timeout):
-			elements := min(len(nc.resolvers_update), resolver_batch_size)
-			if elements == 0 {
-				continue
-			}
-			span := telemetry.NewSpan(context.Background(), "ingester", "ResolversUpdater")
-			batch_resolver, open := <-nc.resolvers_update
+		case resolver, open := <-nc.resolvers_update:
 			if !open {
 				break loop
 			}
+			buffer[elements] = resolver
+			elements += 1
+			send = elements == resolver_batch_size 
+		case <-time.After(resolver_timeout):
+			send = elements != 0
+		}
+
+		if send {
+			send = false
+			span := telemetry.NewSpan(context.Background(), "ingester", "ResolversUpdater")
+			batch_resolver := buffer[0]
 			for i := 1; i < elements; i++ {
-				resolver := <-nc.resolvers_update
-				batch_resolver.merge(&resolver)
+				batch_resolver.merge(&buffer[i])
 			}
 			nc.resolvers.clean_maps()
 			nc.resolvers.push_maps(&batch_resolver)
 			span.End()
+			elements = 0
 		}
 	}
 	log.Info().Msgf("resolversUpdater ended")
@@ -520,6 +540,7 @@ func (nc *neo4jIngester) Close() {
 	close(nc.resolvers_update)
 	close(nc.resolvers_input)
 	close(nc.preparers_input)
+	close(nc.done)
 }
 
 func (nc *neo4jIngester) Ingest(ctx context.Context, rpt *report.Report) error {
@@ -719,14 +740,15 @@ func (nc *neo4jIngester) runIngester() {
 			case nc.resolvers_input <- rpt:
 			default:
 				ReportPool.Put(rpt)
-				log.Warn().Msgf("resolvers channel full")
+				log.Warn().Msgf("ingester to resolvers channel full")
 			}
 		}
+		rptBufferPool.Put(reports)
 	}
 	log.Info().Msgf("runIngester ended")
 }
 
-func (nc *neo4jIngester) runDBBatcher(db_pusher chan ReportIngestionData, notify_full chan struct{}, num_pushes atomic.Int32) {
+func (nc *neo4jIngester) runDBBatcher(db_pusher chan ReportIngestionData, num_pushes *atomic.Int32) {
 	batch := make([]ReportIngestionData, db_batch_size)
 	size := 0
 	send := false
@@ -755,18 +777,13 @@ loop:
 			for i := 1; i < size; i++ {
 				final_batch.merge(&batch[i])
 			}
-			log.Debug().Msgf("Pushing %v reports to DB", size)
-			size = 0
-			num_pushes.Add(1)
 			select {
 			case db_pusher <- final_batch:
+				num_pushes.Add(int32(size))
 			default:
 				log.Warn().Msgf("DB channel full")
-				select {
-				case notify_full <- struct{}{}:
-				default:
-				}
 			}
+			size = 0
 		}
 		if reset_timeout {
 			reset_timeout = false
@@ -811,7 +828,7 @@ func (nc *neo4jIngester) runResolver() {
 		select {
 		case nc.resolvers_update <- r:
 		default:
-			log.Warn().Msgf("resolvers channel full")
+			log.Warn().Msgf("update channel full")
 		}
 	}
 	log.Info().Msgf("runResolver ended")
@@ -839,6 +856,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
 		return nil, err
 	}
 
+	done := make(chan struct{})
 	nc := &neo4jIngester{
 		driver:           driver,
 		resolvers:        rdb,
@@ -848,6 +866,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
 		resolvers_update: make(chan EndpointResolvers, ingester_size),
 		resolvers_input:  make(chan *report.Report, ingester_size),
 		preparers_input:  make(chan *report.Report, ingester_size),
+		done:             done,
 	}
 
 	for i := 0; i < workers_num; i++ {
@@ -855,34 +874,40 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
 		go nc.runPreparer()
 	}
 
-	notify_full := make(chan struct{}, 1)
-	num_pushes := atomic.Int32{}
+	num_ingested := atomic.Int32{}
+	num_received := atomic.Int32{}
 	db_pusher := make(chan ReportIngestionData, db_input_size)
-	go nc.runDBBatcher(db_pusher, notify_full, num_pushes)
+	go nc.runDBBatcher(db_pusher, &num_ingested)
 	go nc.runDBPusher(db_pusher)
 
 	go nc.resolversUpdater()
 
 	go nc.runIngester()
-	go nc.runEnqueueReport()
+	go nc.runEnqueueReport(&num_received)
 
 	// Push back decreaser
 	go func() {
-		prev_num_pushes := int32(0)
+		twice := false
+		loop:
 		for {
 			select {
 			case <-time.After(agent_base_timeout * time.Duration(Push_back.Load())):
+			case <-done:
+				break loop
 			}
-			select {
-			case <-notify_full:
+			if num_ingested.Load() < (num_received.Load() / 3) * 2 {
 				Push_back.Add(1)
-			default:
-				if Push_back.Load() > 1 && prev_num_pushes > num_pushes.Load() {
+				twice = false
+			} else if num_ingested.Load() == num_received.Load() {
+				if Push_back.Load() > 1 && twice {
 					Push_back.Add(-1)
+					twice = false
 				}
-				prev_num_pushes = num_pushes.Swap(0)
+				twice = true
 			}
-			log.Info().Msgf("Push back: %v", Push_back.Load())
+	log.Info().Msgf("Received: %v, pushed: %v, Push back: %v", num_received.Load(), num_ingested.Load(), Push_back.Load())
+			num_received.Store(0)
+			num_ingested.Store(0)
 		}
 	}()
 

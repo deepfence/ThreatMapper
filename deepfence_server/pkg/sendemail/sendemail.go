@@ -58,22 +58,26 @@ func NewEmailSender() (EmailSender, error) {
 	}
 }
 
-func (c *emailSenderCommon) getEmailBody(recipients []string, subject string, text string, html string, attachments map[string][]byte) []byte {
+func (c *emailSenderCommon) getEmailBody(from string, recipients []string, subject string, text string, html string, attachments map[string][]byte) []byte {
+	isPlainText := text != ""
 	buf := bytes.NewBuffer(nil)
 	withAttachments := len(attachments) > 0
-	buf.WriteString(fmt.Sprintf("Subject: %s\n", subject))
-	buf.WriteString(fmt.Sprintf("To: %s\n", strings.Join(recipients, ",")))
-	buf.WriteString("MIME-Version: 1.0\n")
+	buf.WriteString(fmt.Sprintf("From: %s\r\n", from))
+	buf.WriteString(fmt.Sprintf("Subject: %s\r\n", subject))
+	buf.WriteString(fmt.Sprintf("To: %s\r\n", strings.Join(recipients, ",")))
 	writer := multipart.NewWriter(buf)
 	boundary := writer.Boundary()
 	if withAttachments {
-		buf.WriteString(fmt.Sprintf("Content-Type: multipart/mixed; boundary=%s\n", boundary))
-		buf.WriteString(fmt.Sprintf("--%s\n", boundary))
+		buf.WriteString(fmt.Sprintf("Content-Type: multipart/mixed; boundary=%s\r\n", boundary))
+		buf.WriteString(fmt.Sprintf("--%s\r\n", boundary))
+	} else if isPlainText == true {
+		buf.WriteString("Content-Type: text/plain; charset=utf-8\r\n")
 	} else {
-		buf.WriteString("Content-Type: text/plain; charset=utf-8\n")
+		buf.WriteString("Content-Type: text/html; charset=utf-8\r\n")
 	}
 
-	if text != "" {
+	buf.WriteString("\r\n")
+	if isPlainText == true {
 		buf.WriteString(text)
 	} else {
 		buf.WriteString(html)
@@ -81,15 +85,15 @@ func (c *emailSenderCommon) getEmailBody(recipients []string, subject string, te
 
 	if withAttachments {
 		for k, v := range attachments {
-			buf.WriteString(fmt.Sprintf("\n\n--%s\n", boundary))
-			buf.WriteString(fmt.Sprintf("Content-Type: %s\n", http.DetectContentType(v)))
-			buf.WriteString("Content-Transfer-Encoding: base64\n")
-			buf.WriteString(fmt.Sprintf("Content-Disposition: attachment; filename=%s\n", k))
+			buf.WriteString(fmt.Sprintf("\r\n--%s\r\n", boundary))
+			buf.WriteString(fmt.Sprintf("Content-Type: %s\r\n", http.DetectContentType(v)))
+			buf.WriteString("Content-Transfer-Encoding: base64\r\n")
+			buf.WriteString(fmt.Sprintf("Content-Disposition: attachment; filename=%s\r\n", k))
 
 			b := make([]byte, base64.StdEncoding.EncodedLen(len(v)))
 			base64.StdEncoding.Encode(b, v)
 			buf.Write(b)
-			buf.WriteString(fmt.Sprintf("\n--%s", boundary))
+			buf.WriteString(fmt.Sprintf("\r\n--%s", boundary))
 		}
 		buf.WriteString("--")
 	}
@@ -150,13 +154,9 @@ func (e *emailSenderSES) Send(recipients []string, subject string, text string, 
 	}
 	svc := ses.New(sess)
 	input := &ses.SendRawEmailInput{
-		FromArn: aws.String(""),
 		RawMessage: &ses.RawMessage{
-			Data: e.getEmailBody(recipients, subject, text, html, attachments),
+			Data: e.getEmailBody(e.emailConfig.EmailID, recipients, subject, text, html, attachments),
 		},
-		ReturnPathArn: aws.String(""),
-		Source:        aws.String(""),
-		SourceArn:     aws.String(""),
 	}
 	_, err = svc.SendRawEmail(input)
 	return err
@@ -191,6 +191,6 @@ func (e *emailSenderSMTP) Send(recipients []string, subject string, text string,
 		smtp.PlainAuth("", e.emailConfig.EmailID, e.emailConfig.Password, e.emailConfig.Smtp),
 		e.emailConfig.EmailID,
 		recipients,
-		e.getEmailBody(recipients, subject, text, html, attachments),
+		e.getEmailBody(e.emailConfig.EmailID, recipients, subject, text, html, attachments),
 	)
 }
