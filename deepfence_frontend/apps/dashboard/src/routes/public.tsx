@@ -11,6 +11,7 @@ import {
 import { Login } from '@/features/auth/pages/Login';
 import { RegisterUser } from '@/features/auth/pages/RegisterUser';
 import { module as registerWithInvite } from '@/features/auth/pages/RegisterWithInvite';
+import { module as resetPassword } from '@/features/auth/pages/ResetPassword';
 import { CustomRouteObject } from '@/utils/router';
 
 export const publicRoutes: CustomRouteObject[] = [
@@ -43,6 +44,11 @@ export const publicRoutes: CustomRouteObject[] = [
         path: 'invite-accept',
         ...registerWithInvite,
         meta: { title: 'Register' },
+      },
+      {
+        path: 'reset-passowrd/verify',
+        ...resetPassword,
+        meta: { title: 'Reset Password' },
       },
     ],
   },
