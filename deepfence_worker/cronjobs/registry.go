@@ -19,7 +19,8 @@ func SyncRegistry(msg *message.Message) error {
 	postgresCtx := directory.NewGlobalContext()
 	pgClient, err := directory.PostgresClient(postgresCtx)
 	if err != nil {
-		return err
+		log.Error().Msgf("unable to get postgres client: %v", err)
+		return nil
 	}
 
 	var registries []postgresql_db.GetContainerRegistriesRow
@@ -29,31 +30,38 @@ func SyncRegistry(msg *message.Message) error {
 	if msg.Payload != nil {
 		err = json.Unmarshal(msg.Payload, &rsp)
 		if err != nil {
-			log.Error().Msgf("unable to unmarshal payload: %v", err)
+			log.Warn().Msgf("unable to unmarshal payload: %v, error: %v syncing all registries...", msg.Payload, err)
 			registries, err = pgClient.GetContainerRegistries(postgresCtx)
 			if err != nil {
-				return err
+				log.Error().Msgf("unable to get registries: %v", err)
+				return nil
 			}
 		}
 
 		if rsp.PgID != 0 {
 			r, err := pgClient.GetContainerRegistry(postgresCtx, rsp.PgID)
 			if err != nil {
-				return err
+				log.Error().Msgf("unable to get registry: %v", err)
+				return nil
 			}
 			// kludge: marshal and unmarshal back r to postgresql_db.GetContainerRegistriesRow
 			rByte, err := json.Marshal(r)
 			if err != nil {
-				return err
+				log.Error().Msgf("unable to marshal registry: %v", err)
+				return nil
 			}
 			var getContainerRegistriesRow postgresql_db.GetContainerRegistriesRow
 			err = json.Unmarshal(rByte, &getContainerRegistriesRow)
+			if err != nil {
+				log.Error().Msgf("unable to unmarshal registry: %v", err)
+				return nil
+			}
 			registries = append(registries, getContainerRegistriesRow)
 		}
 	} else {
 		registries, err = pgClient.GetContainerRegistries(postgresCtx)
 		if err != nil {
-			return err
+			log.Error().Msgf("unable to get registries: %v", err)
 		}
 	}
 
