@@ -360,7 +360,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 }
 
 func SearchCloudNodeReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]model.CloudNodeAccountInfo, error) {
-	hosts, err := searchCloudNode[T](ctx, filter, fw)
+	hosts, err := searchCloudNode(ctx, filter, fw)
 	if err != nil {
 		return nil, err
 	}
