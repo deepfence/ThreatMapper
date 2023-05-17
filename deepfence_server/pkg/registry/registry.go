@@ -274,7 +274,7 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 				GitlabRegistryURL: nonSecret["gitlab_registry_url"],
 			},
 			Secret: gitlab.Secret{
-				GitlabToken: secret["gitlab_token"],
+				GitlabToken: secret["gitlab_access_token"],
 			},
 		}
 		return r, nil
