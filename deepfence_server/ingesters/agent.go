@@ -164,12 +164,10 @@ loop:
 			report_buffer[hostNodeId] = rpt
 			send = len(report_buffer) == db_batch_size
 			stats += 1
-		// case <-time.After(enqueer_timeout):
 		case <-ticker.C:
 			send = len(report_buffer) != 0
 		}
 		if send {
-			ticker.Reset(enqueer_timeout)
 			send = false
 			log.Info().Msgf("Sending %v unique reports over %v received", len(report_buffer), stats)
 			num_received.Add(int32(len(report_buffer)))
@@ -187,6 +185,7 @@ loop:
 				}
 				rptBufferPool.Put(report_buffer)
 			}
+			ticker.Reset(enqueer_timeout)
 		}
 	}
 	log.Info().Msgf("runEnqueueReport ended")
@@ -279,6 +278,8 @@ func (nc *neo4jIngester) resolversUpdater() {
 	buffer := make([]EndpointResolvers, resolver_batch_size)
 	elements := 0
 	send := false
+	ticker := time.NewTicker(resolver_timeout)
+	defer ticker.Stop()
 loop:
 	for {
 		select {
@@ -289,7 +290,7 @@ loop:
 			buffer[elements] = resolver
 			elements += 1
 			send = elements == resolver_batch_size
-		case <-time.After(resolver_timeout):
+		case <-ticker.C:
 			send = elements != 0
 		}
 
@@ -304,6 +305,7 @@ loop:
 			nc.resolvers.push_maps(&batch_resolver)
 			span.End()
 			elements = 0
+			ticker.Reset(resolver_timeout)
 		}
 	}
 	log.Info().Msgf("resolversUpdater ended")
@@ -756,8 +758,8 @@ func (nc *neo4jIngester) runDBBatcher(db_pusher chan ReportIngestionData, num_pu
 	batch := make([]ReportIngestionData, db_batch_size)
 	size := 0
 	send := false
-	reset_timeout := false
-	timeout := time.After(db_batch_timeout)
+	ticker := time.NewTicker(db_batch_timeout)
+	defer ticker.Stop()
 loop:
 	for {
 		select {
@@ -767,31 +769,26 @@ loop:
 			}
 			batch[size] = report
 			size += 1
-			if size == len(batch) {
-				send = true
-				reset_timeout = true
-			}
-		case <-timeout:
-			send = true
-			reset_timeout = true
+			send = size == len(batch)
+		case <-ticker.C:
+			send = size != 0
 		}
-		if send && size > 0 {
-			send = false
-			final_batch := batch[0]
-			for i := 1; i < size; i++ {
-				final_batch.merge(&batch[i])
+		if send {
+			if size > 0 {
+				send = false
+				final_batch := batch[0]
+				for i := 1; i < size; i++ {
+					final_batch.merge(&batch[i])
+				}
+				select {
+				case db_pusher <- final_batch:
+					num_pushes.Add(int32(size))
+				default:
+					log.Warn().Msgf("DB channel full")
+				}
+				size = 0
+				ticker.Reset(db_batch_timeout)
 			}
-			select {
-			case db_pusher <- final_batch:
-				num_pushes.Add(int32(size))
-			default:
-				log.Warn().Msgf("DB channel full")
-			}
-			size = 0
-		}
-		if reset_timeout {
-			reset_timeout = false
-			timeout = time.After(db_batch_timeout)
 		}
 	}
 	log.Info().Msgf("runDBPusher ended")
@@ -894,10 +891,12 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
 		twice := false
 		// Received num at the time of push back change
 		prev_received_num := int32(0)
+		ticker := time.NewTicker(agent_base_timeout * time.Duration(Push_back.Load()))
+		defer ticker.Stop()
 	loop:
 		for {
 			select {
-			case <-time.After(agent_base_timeout * time.Duration(Push_back.Load())):
+			case <-ticker.C:
 			case <-done:
 				break loop
 			}
