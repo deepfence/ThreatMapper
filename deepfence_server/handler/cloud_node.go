@@ -59,9 +59,10 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		for monitoredAccountId, monitoredNodeId := range monitoredAccountIds {
 			var monitoredNode map[string]interface{}
 			monitoredNode = map[string]interface{}{
-				"node_id":        monitoredNodeId,
-				"cloud_provider": req.CloudProvider,
-				"node_name":      monitoredAccountId,
+				"node_id":         monitoredNodeId,
+				"cloud_provider":  req.CloudProvider,
+				"node_name":       monitoredAccountId,
+				"organisation_id": orgNodeId,
 			}
 			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeId)
 			if err != nil {
