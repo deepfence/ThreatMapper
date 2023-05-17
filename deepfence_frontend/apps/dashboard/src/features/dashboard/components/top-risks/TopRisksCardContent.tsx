@@ -114,12 +114,12 @@ export const TopRisksCardContent = ({
           })}
         </div>
 
-        <div className="flex mt-2 items-center gap-4">
+        <div className="flex mt-2 gap-4">
           <div className="h-[140px] basis-[140px]">
             <TopRisksDonutChart theme={mode} severityBreakdown={data.severityBreakdown} />
           </div>
           <div className="flex flex-col gap-y-2 flex-1 truncate">
-            <h6 className={`mb-1 text-sm font-normal`}>Most Affected Resources</h6>
+            <h6 className={`mt-2 mb-1 text-sm font-normal`}>Most Affected Resources</h6>
             {data.top5Assets.length === 0 && (
               <span className="text-xs">No data Available</span>
             )}
