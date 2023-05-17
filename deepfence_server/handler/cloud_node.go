@@ -62,7 +62,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 				"node_id":         monitoredNodeId,
 				"cloud_provider":  req.CloudProvider,
 				"node_name":       monitoredAccountId,
-				"organisation_id": orgNodeId,
+				"organization_id": orgNodeId,
 			}
 			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeId)
 			if err != nil {

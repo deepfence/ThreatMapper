@@ -223,20 +223,19 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 	query := `
 		MATCH (n:` + dummy.NodeType() + `)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-		`WITH n.node_id AS node_id, ` + reporters.FieldFilterCypherWithAlias("n", filter.InFieldFilter) +
-		`UNWIND node_id AS x
+		`WITH n.node_id AS node_id UNWIND node_id AS x
 		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `)-[:DETECTED]->(c:` + dummy.ScanResultType() + `)
-		WITH x, ` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, COUNT(c) AS total_compliance_count
+		WITH x ` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, COUNT(c) AS total_compliance_count
 		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `)-[:DETECTED]->(c1:` + dummy.ScanResultType() + `)
 		WHERE c1.status IN $pass_status
-		WITH x, ` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage
+		WITH x` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage
 		CALL {
 			WITH x
 			OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s1:` + string(dummy.ScanType()) + `)
 			RETURN s1.node_id AS last_scan_id, s1.status AS last_scan_status
 			ORDER BY s1.updated_at DESC LIMIT 1
 		}
-		RETURN x, compliance_percentage, COALESCE(last_scan_id, ''), COALESCE(last_scan_status, ''), ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
+		RETURN x, compliance_percentage, COALESCE(last_scan_id, ''), COALESCE(last_scan_status, '') ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
 		reporters.OrderFilter2CypherCondition("", filter.Filters.OrderFilter) + fw.FetchWindow2CypherQuery()
 
 	log.Info().Msgf("search cloud node query: %v", query)
