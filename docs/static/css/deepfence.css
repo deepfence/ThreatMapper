@@ -15,31 +15,6 @@
   --ifm-navbar-shadow: 0px 2px 6px rgba(0,0,0,0.2);
   --ifm-breadcrumb-border-radius: 0;
   --ifm-breadcrumb-item-background-active: none;
-
- /* --ifm-h1-font-size: 2.0rem;
-  --ifm-h2-font-size: 1.0rem;
-  --ifm-h3-font-size: 1.0rem;
-  --ifm-h4-font-size: 1.0rem;*/
-
-}
-
-
-article header h1 {
-/*  font-size: 5rem !important;*/
-  font-family: "Noto Sans Display" !important;
-}
-article header h2 {
-/*  font-size: 5rem !important;*/
-  font-family: "Noto Sans Display" !important;
-  font-weight:  bold !important;
-}
-article header h3 {
-/*  font-size: 1.3rem !important;*/
-  font-family: "Noto Sans Display" !important;
-}
-article header h4 {
-/*  font-size: 1.1rem !important;*/
-  font-family: "Noto Sans Display" !important;
 }
 
 
@@ -48,7 +23,11 @@ pre code {
   background-color: var(--ifm-code-background) !important;
 }
 
-/* Navbar dropdown - for titles */
+/* Navbar */
+
+.navbar__item {
+  padding-top: 8px;  /* to align the base of the text with the base of the text in the logo */
+}
 
 .nav-dropdown-title {
   font-size: 0.9rem !important;
@@ -57,33 +36,138 @@ pre code {
   padding-left: 8px;
 }
 
+a.navbar__link:hover {
+  color: var(--ifm-nav-color-active);
+}
+
+.header-deepfence-link:hover {
+  opacity: 0.6;
+}
+
+.header-deepfence-link::before {
+  content: '';
+  width: 24px;
+  height: 24px;
+  display: flex;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cg%3E%3Cg transform='matrix%28.19676 0 0 .19512 .10156 4.1099%29'%3E%3Cpolygon class='st0' points='0 0 10.1 13.3 25.4 13.3 31.1 13.3 34.4 17.3 39 22.5 63.5 53.1 60.6 56.7 33.2 22.5 28.6 17.3 13.4 17.3 18 22.5 53 66.3 60.6 75.8 68.2 66.3 71.1 62.7 78.7 53.1 71.1 43.6 54.2 22.5 46.9 13.3 43.6 9.2 36.3 0 21 0 15.3 0'/%3E%3Cpolygon points='76.4 17.5 91.9 36.7 103.2 22.5 107.2 17.5'/%3E%3Cpolygon points='113.8 9.2 121.2 0 105.9 0 57.2 0 42 0 49.4 9.2 52.6 13.3 60 22.5 74 40 81.6 49.5 89.2 40 89.3 39.9 71.2 17.5 67.9 13.4 73.1 13.4 110.5 13.4 110.6 13.3'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
+  no-repeat;
+  padding-bottom: 4px;
+}
+
+[data-theme='dark'] .header-deepfence-link::before {
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cg%3E%3Cg transform='matrix%28.19676 0 0 .19512 .10156 4.1099%29' fill='white'%3E%3Cpolygon class='st0' points='0 0 10.1 13.3 25.4 13.3 31.1 13.3 34.4 17.3 39 22.5 63.5 53.1 60.6 56.7 33.2 22.5 28.6 17.3 13.4 17.3 18 22.5 53 66.3 60.6 75.8 68.2 66.3 71.1 62.7 78.7 53.1 71.1 43.6 54.2 22.5 46.9 13.3 43.6 9.2 36.3 0 21 0 15.3 0'/%3E%3Cpolygon points='76.4 17.5 91.9 36.7 103.2 22.5 107.2 17.5'/%3E%3Cpolygon points='113.8 9.2 121.2 0 105.9 0 57.2 0 42 0 49.4 9.2 52.6 13.3 60 22.5 74 40 81.6 49.5 89.2 40 89.3 39.9 71.2 17.5 67.9 13.4 73.1 13.4 110.5 13.4 110.6 13.3'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
+  no-repeat;
+}
 
 
-/* hide the toc */
-/*.theme-doc-toc-desktop {*/
+.header-github-link:hover {
+  opacity: 0.6;
+}
+
+.header-github-link::before {
+  content: '';
+  width: 24px;
+  height: 24px;
+  display: flex;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/%3E%3C/svg%3E")
+  no-repeat;
+  padding-bottom: 4px;
+  margin-right: 8px;
+
+}
+
+[data-theme='dark'] .header-github-link::before {
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='white' d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/%3E%3C/svg%3E")
+  no-repeat;
+}
+
+/* hide the toc, but leave the space
+   For reference, can also suppress the toc completely with frontmatter hide_table_of_contents: true */
+/*.table-of-contents, .theme-doc-toc-desktop, .theme-doc-toc-mobile {*/
 /*  display: none;*/
 /*}*/
-/*.table-of-contents {*/
-/*  display: none;*/
-/*}*/
+
+
+/* Style the announcement bar, using similar styles to the footer */
+
+div[role=banner] {
+  background-color: #303846 !important;
+  color: white;
+}
+div[role=banner] a:hover {
+  color: var(--ifm-nav-color-active);
+}
+div[role=banner] button {
+  color: var(--ifm-nav-color-active);
+  border: 0;
+  opacity: 1;
+}
+
+
+/* Style the sidebar */
 
 .theme-doc-sidebar-container {
-  background-color: rgba(127,127,127,0.1);
+  background-image: url(/img/backgrounds/df-home-bg.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
   font-family: "Noto Sans Display" !important;
   font-size: 0.9rem !important;
+}
+
+[data-theme='dark'] .theme-doc-sidebar-container {
+  background-image: url(/img/backgrounds/df-home-bg.jpg);
+}
+
+
+/* this is needed for the minimised sidebar */
+.navbar-sidebar__brand {
+  background-color: var(--ifm-navbar-background-color);
+}
+.navbar-sidebar {
+  background-image: url(/img/backgrounds/df-home-bg.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  font-family: "Noto Sans Display" !important;
+  font-size: 0.9rem !important;
+}
+[data-theme='dark'] .navbar-sidebar {
+  background-image: url(/img/backgrounds/df-home-bg.jpg);
+}
+
+.navbar-sidebar .nav-dropdown-title {
+  color: var(--ifm-menu-color);
+}
+.navbar-sidebar .navbar-sidebar__item {
+  color: var(--ifm-menu-color);
 }
 
 .sidebar-title {
   font-size: 1rem !important;
   padding: var(--ifm-menu-link-padding-vertical) var(--ifm-menu-link-padding-horizontal);
-  border-bottom: 1px solid var(--ifm-color-primary-darkest);
+  border-bottom: 1px solid var(--ifm-nav-color-active);
+  color: var(--ifm-menu-color);
+}
+
+/* cards */
+
+.card {
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;
+}
+
+.card:hover {
+  border: none !important;
+  transition: none !important;
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 8px 0px;
 }
 
 
+/* button behaviour */
 
 .deepfence-button {
-  background-color: var(--ifm-color-button); 
-  border: 1px solid var(--ifm-color-button); 
+  background-color: var(--ifm-color-button);
+  border: 1px solid var(--ifm-color-button);
   color: var(--ifm-color-button-text);
   padding: 7px 16px;
   margin: 4px 16px;
@@ -96,16 +180,69 @@ pre code {
 }
 
 .deepfence-button:hover {
-  background-color: var(--ifm-color-button-hover); 
+  background-color: var(--ifm-color-button-hover);
   color: var(--ifm-color-button-text-hover);
 }
 
+/* Edit this page (github) links.
+  The Hasura guys and girls are CSS gods! */
 
-/* Pagination Links at footer of page */
+a.theme-edit-this-page {
+  align-items: center;
+  display: flex;
+  height: 30px;
+  color: var(--ifm-color-primary-darkest) !important;
+}
+
+a.theme-edit-this-page svg {
+  display: none;
+}
+
+a.theme-edit-this-page:before, a.theme-edit-this-page:after {
+  content: "";
+  display: inline-block;
+  transform: translateX(0);
+  transition: transform var(--ifm-transition-fast) linear;
+}
+a.theme-edit-this-page:before {
+  margin-right: 0.5rem;
+  background-color: var(--ifm-color-primary-darkest);
+  -webkit-mask-image: url("/img/github.svg");
+  mask-image: url("/img/github.svg");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+
+  width: 24px;
+  height: 24px;
+}
+
+a.theme-edit-this-page:after {
+  margin-left: 0.25rem;
+  /* https://stackoverflow.com/questions/13367868/how-to-modify-the-fill-color-of-an-svg-image-when-being-served-as-background-ima?noredirect=1&lq=1 */
+  background-color: var(--ifm-color-primary-darkest);
+  -webkit-mask-image: url("/img/arrow_right.svg");
+  mask-image: url("/img/arrow_right.svg");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  width: 1rem;
+  height: 1rem;
+  margin-bottom: -0.25rem;
+}
+a.theme-edit-this-page:hover {
+  text-decoration: none;
+}
+a.theme-edit-this-page:hover:after {
+  transform: translateX(.5rem);
+}
+
+
+
+
+/* Pagination Links at end of article */
 
 .pagination-nav__link {
-  background-color: var(--ifm-color-button); 
-  border: 1px solid var(--ifm-color-button); 
+  background-color: var(--ifm-color-button);
+  border: 1px solid var(--ifm-color-button);
   color: var(--ifm-color-button-text);
   padding: 7px 16px;
   margin: 4px 16px;
@@ -122,65 +259,354 @@ pre code {
   padding-top: 7px;
 }
 .pagination-nav__link:hover {
-  background-color: var(--ifm-color-button-hover); 
+  background-color: var(--ifm-color-button-hover);
   color: var(--ifm-color-button-text-hover);
 }
 
-/* Informational cards */
-
-.card {
-  background-color: rgba(127,127,127,0.1);
-  border-radius: 6px;
-  transition-duration: 0.4s;
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 2px 0px !important;
+/* Footer Links at end of article */
+.footer a {
+  color: white;
+}
+.footer a:hover {
+  color: var(--ifm-nav-color-active);
 }
 
 
+/* For reference, Deepfence palettes */
+:root {
+  --df-blue1: #16c7f3;
+  --df-blue2: #1f73b4;
+  --df-blue3: #1d3372;
+  --df-pink1: #e54ced;
+  --df-pink2: #8a199c;
+  --df-gray1: #67677f;
+  --df-gray2: #4f4f62;
+  --df-gray3: #353544;
+}
+
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #1d3371;
-  --ifm-color-primary-dark: #1a2e66;
-  --ifm-color-primary-darker: #192b60;
-  --ifm-color-primary-darkest: #14244f;
-  --ifm-color-primary-light: #20387c;
-  --ifm-color-primary-lighter: #213b82;
-  --ifm-color-primary-lightest: #264293;
+  --ifm-color-primary: #1d3372;
+  --ifm-color-primary-dark: #1a2e67;
+  --ifm-color-primary-darker: #192b61;
+  --ifm-color-primary-darkest: #142450;
+  --ifm-color-primary-light: #20387d;
+  --ifm-color-primary-lighter: #213b83;
+  --ifm-color-primary-lightest: #264294;
+
   --ifm-code-font-size: 90%; /*95%;*/
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
 
 
   /* var(--ifm-alert-border-color) - light and dark */
   --ifm-color-button: rgb(76, 179, 212);
-
   /* var(--ifm-alert-background-color) - light */
   --ifm-color-button-text: rgb(238, 249, 253);
   --ifm-color-button-hover: rgb(238, 249, 253);
-
   /* var(--ifm-alert-background-color) - dark */
   --ifm-color-button-text-hover: rgb(25, 60, 71);
 
 
+  /* Cards: styled after info alerts: --ifm-alert-background-color, etc */
+  --ifm-card-background-color: rgb(238, 249, 253);
+  --ifm-card-border-radius: 0rem;
+  --ifm-global-shadow-lw: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;
 
+  --ifm-nav-color-active: rgb(76, 179, 212);
+
+  /* homepage */
+  --ifm-homepage-card-title: #16c7f3;
+  --ifm-productcard-bg: rgb( 128, 128, 128, 0 );
+
+  /* for the blue sidebar menu */
+  --ifm-menu-color-background-active: rgb( 128, 128, 128, 0.2 );
+  --ifm-menu-color: rgb(238, 249, 253) !important;
+  --ifm-menu-color-active: #16c7f3;
+  --ifm-toc-border-color: #67677f !important;
+  --ifm-menu-link-sublist-icon-filter: invert(75%) !important;
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme='dark'] {
-  --ifm-color-primary: #16c7f5;
-  --ifm-color-primary-dark: #0ab9e6;
-  --ifm-color-primary-darker: #09afda;
-  --ifm-color-primary-darkest: #0890b3;
-  --ifm-color-primary-light: #30cdf6;
-  --ifm-color-primary-lighter: #3cd0f7;
-  --ifm-color-primary-lightest: #63d9f8;
+  --ifm-color-primary: #e54ced;
+  --ifm-color-primary-dark: #e130ea;
+  --ifm-color-primary-darker: #df21e9;
+  --ifm-color-primary-darkest: #be14c7;
+  --ifm-color-primary-light: #e968f0;
+  --ifm-color-primary-lighter: #eb77f1;
+  --ifm-color-primary-lightest: #f1a1f6;
+
+  --ifm-code-font-size: 90%; /*95%;*/
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 
+
   /* var(--ifm-alert-border-color) - light and dark */
-  --ifm-color-button: rgb(76, 179, 212);
-
+  --ifm-color-button: #891B9C;
   /* var(--ifm-alert-background-color) - dark */
-  --ifm-color-button-text: rgb(25, 60, 71);
-  --ifm-color-button-hover: rgb(25, 60, 71);
-
+  --ifm-color-button-text: rgb(238, 249, 253);
+  --ifm-color-button-hover: #e867f0;
   /* var(--ifm-alert-background-color) - light */
-  --ifm-color-button-text-hover: rgb(238, 249, 253);
+  --ifm-color-button-text-hover: rgb(25, 60, 71);
+
+
+  /* Cards: styled after info alerts: --ifm-alert-background-color, etc */
+  --ifm-card-background-color: rgb(25, 60, 71);
+  --ifm-card-border-radius: 0;
+  --ifm-global-shadow-lw: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;
+
+  --ifm-nav-color-active: #e867f0;
+
+  /* homepage */
+  --ifm-homepage-card-title: #e54ced;
+  --ifm-productcard-bg: rgb( 128, 128, 128, 0.05 );
+
+  /* for the blue sidebar menu */
+  --ifm-sidebar-menu-color-background-active: rgb( 128, 128, 128, 0.2 );
+  --ifm-sidebar-menu-color: rgb(238, 249, 253) !important;
+  --ifm-sidebar-menu-color-active: #e867f0;
+  --ifm-menu-color-active: #e867f0;
+  --ifm-sidebar-toc-border-color: #353544 !important;
+  --ifm-sidebar-menu-link-sublist-icon-filter: invert(75%) !important;
+}
+
+#hero {
+  background-image: url(/img/backgrounds/df-home-bg.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+
+  color: white !important;
+}
+
+[data-theme='dark'] #hero {
+  background-image: url(/img/backgrounds/df-home-bg.jpg);
+}
+
+.homepage-section {
+  margin-bottom: 3rem;
+}
+#hero .homepage-section {
+  margin-bottom: 0;
+}
+
+.section-description {
+  margin: 0rem 0 1.25rem 0;
+  margin-top: -0.5rem;
+}
+
+.section-content {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.two-cols .section-content {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#video {
+  grid-column: 2 / span 2
+}
+
+
+/* Card types: card (parent) and homepage or product */
+#hero .homepage-card {
+  background: rgb( 128, 128, 128, 0.2 );
+}
+
+.homepage-card .title {
+  color: var(--ifm-homepage-card-title);
+}
+
+.product-card {
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px 0px;
+  background: var(--ifm-productcard-bg);
+  position: relative;
+}
+
+.product-card:hover {
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 8px 0px;
+}
+
+.product-card .title {
+  overflow: auto;
+  white-space: nowrap;
+}
+.product-card .title img {
+  vertical-align:middle;
+}
+.product-card .title .heading {
+  display: inline-block;
+}
+
+.product-card .description {
+  padding-bottom: 3.5rem !important;
+}
+
+.product-card .footnotes {
+  height: 2.75rem;
+  vertical-align: middle;
+  font-size: 11px;
+  font-weight: 600;
+  position:absolute; bottom:0;
+  background: rgb( 128, 128, 128, 0.05 );
+  border-top: 1px solid rgb( 128, 128, 128, 0.2 );
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 0.75rem;
+}
+
+.product-card .footnotes div {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+
+.product-card .footnotes div.link {
+  padding-bottom: 2px;
+}
+.product-card .footnotes div.link svg {
+  height: 18px;
+  width: auto;
+  vertical-align: middle;
+  fill: var(--ifm-font-color-base);
+  padding-bottom: 2px;
+}
+
+.product-card .footnotes a {
+  color: var(--ifm-font-color-base);
+}
+.product-card .footnotes a:hover {
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+}
+
+/*.product-card .footnotes .docs:before {
+  content: " ";
+  background: url(/img/docs.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+  padding-right: 18px !important;
+}
+
+.product-card .footnotes .readmore:before {
+  content: " ";
+  background: url(/img/more.svg);
+  background-size: contain;
+  background-repeat: no-repeat;
+  padding-right: 18px !important;
+}*/
+
+
+
+
+.social-card {
+  align-items: stretch;
+  display: flex;
+  flex-direction: row !important;
+  gap: 0 !important;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  vertical-align: middle;
+}
+
+.social-card a {
+  display: inline-block;
+  vertical-align: middle;
+  text-decoration: none;
+}
+
+.social-card img {
+  padding: 0.5rem;
+  height: 6rem;
+  vertical-align: middle;
+  transition: transform .2s;
+}
+.social-card img:hover {
+  transform: scale(1.1);
+}
+
+.social-card svg {
+  padding: 0.5rem;
+  height: 6rem;
+  width: auto;
+  vertical-align: middle;
+  transition: transform .2s;
+  fill: var(--ifm-font-color-base);
+}
+.social-card svg:hover {
+  transform: scale(1.1);
+}
+
+.social-card .swagcontainer {
+  display: flex;
+  align-items: center;
+  margin-left: 1.5rem;
+  padding: 0 0.5rem;
+  transition: transform .2s;
+}
+
+.social-card .swagcontainer:hover {
+  transform: scale(1.1);
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 8px 0px;
+  text-decoration: none;
+
+}
+.social-card .swagcontainer img:hover {
+  transform: none;
+}
+
+.social-card .swagcontainer .swagtext {
+  padding-left: 6px;
+  display: inline;
+  line-height: 1.5;
+  font-size: 14px;
+  color: var(--ifm-font-color-base);
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+
+  text-decoration: none;
+}
+
+.card-content .title {
+  padding: 0.75rem 0.75rem 0 0.75rem;
+}
+
+.card-content .heading {
+  font-size: 16px;
+  letter-spacing: -0.5px;
+  font-weight: 400;
+}
+
+.card-content .description {
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 0 0.75rem 0.75rem 0.75rem;
+}
+
+.card-content .icon {
+  width: 48px;
+  height: 48px;
+  padding-right: 8px;
+}
+
+
+
+
+
+
+@media screen and (max-width: 768px) {
+  .section-content {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  .two-cols .section-content {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  #video {
+    grid-column: 1;
+  }
 }
