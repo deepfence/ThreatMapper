@@ -212,6 +212,18 @@ func CleanUpDB(msg *message.Message) error {
 	}
 
 	if _, err = session.Run(`
+		MATCH (n:CloudNode)
+		WHERE n.updated_at < TIMESTAMP()-$old_time_ms
+		WITH n LIMIT 100000
+		SET n.active = false`,
+		map[string]interface{}{
+			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+		}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
+		return err
+	}
+
+	if _, err = session.Run(`
 		MATCH (n:CloudResource)
 		WHERE n.updated_at < TIMESTAMP()-$old_time_ms
 		AND NOT exists((n) <-[:SCANNED]-())

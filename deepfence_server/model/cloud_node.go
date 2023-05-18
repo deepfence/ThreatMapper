@@ -219,7 +219,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 			if _, err := tx.Run(`
 			WITH $param as row
 			MERGE (n:CloudNode{node_id:row.node_id})
-			SET n+= row, n.updated_at = TIMESTAMP()`,
+			SET n+= row, n.active = true, n.updated_at = TIMESTAMP()`,
 				map[string]interface{}{
 					"param": nodeDetails,
 				}); err != nil {
@@ -230,13 +230,23 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 			MATCH (m:CloudNode{node_id: $parent_node_id})
 			WITH $param as row, m
 			MERGE (n:CloudNode{node_id:row.node_id}) <-[:IS_CHILD]- (m)
-			SET n+= row, n.updated_at = TIMESTAMP()`,
+			SET n+= row, n.active = true, n.updated_at = TIMESTAMP()`,
 				map[string]interface{}{
 					"param":          nodeDetails,
 					"parent_node_id": parentNodeId,
 				}); err != nil {
 				return err
 			}
+		}
+	} else {
+		if _, err := tx.Run(`
+			WITH $param as row
+			MATCH (n:CloudNode{node_id:row.node_id})
+			SET n+= row, n.active = true, n.updated_at = TIMESTAMP()`,
+			map[string]interface{}{
+				"param": nodeDetails,
+			}); err != nil {
+			return err
 		}
 	}
 
