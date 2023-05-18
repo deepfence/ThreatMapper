@@ -1458,6 +1458,7 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                     eoption={{
                       series: [
                         {
+                          cursor: 'default',
                           color: [
                             POSTURE_STATUS_COLORS['alarm'],
                             POSTURE_STATUS_COLORS['info'],

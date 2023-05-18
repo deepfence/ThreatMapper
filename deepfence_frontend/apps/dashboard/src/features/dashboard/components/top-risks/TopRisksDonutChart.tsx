@@ -27,6 +27,7 @@ function getChartOptions(severityBreakdown: {
         radius: ['70%', '90%'],
         top: '10%',
         avoidLabelOverlap: true,
+        cursor: 'default',
         label: {
           show: false,
           position: 'center',

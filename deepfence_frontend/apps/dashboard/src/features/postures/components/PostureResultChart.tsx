@@ -20,6 +20,7 @@ const option: EChartsOption = {
       type: 'pie',
       radius: ['70%', '90%'],
       avoidLabelOverlap: true,
+      cursor: 'default',
       label: {
         show: false,
         position: 'center',

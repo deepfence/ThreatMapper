@@ -42,6 +42,7 @@ const MostExploitableChartVertial = ({
         top: '10%',
         bottom: '5%',
         avoidLabelOverlap: true,
+        cursor: 'default',
         label: {
           show: false,
           position: 'center',
