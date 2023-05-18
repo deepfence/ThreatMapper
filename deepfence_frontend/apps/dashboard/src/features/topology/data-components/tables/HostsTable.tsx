@@ -61,6 +61,7 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
     searchParams.get('compliance_scan_status')?.split(',') ?? [];
   const cloudProvider = searchParams.get('cloud_provider')?.split(',') ?? [];
   const order = getOrderFromSearchParams(searchParams);
+
   const searchSearchNodeReq: SearchSearchNodeReq = {
     node_filter: {
       in_field_filter: [],
@@ -69,6 +70,7 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
         contains_filter: {
           filter_in: {
             pseudo: [false],
+            active: [true],
           },
         },
         match_filter: {
