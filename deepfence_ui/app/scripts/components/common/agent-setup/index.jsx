@@ -120,7 +120,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
       <p>
         For more details reference our{' '}
         <a
-          href="https://community.deepfence.io/docs/threatmapper/sensors/docker"
+          href="https://community.deepfence.io/threatmapper/docs/sensors/docker"
           target="_blank"
           rel="noreferrer"
         >
@@ -248,7 +248,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
       <p>
         For more details reference our{' '}
         <a
-          href="https://community.deepfence.io/docs/threatmapper/sensors/kubernetes"
+          href="https://community.deepfence.io/threatmapper/docs/sensors/kubernetes"
           target="_blank"
           rel="noreferrer"
         >

@@ -1,6 +1,6 @@
 ![Deepfence Logo](images/readme/deepfence-logo.png)
 
-[![GitHub 协议](https://img.shields.io/github/license/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/blob/master/LICENSE) [![GitHub 点赞数](https://img.shields.io/github/stars/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/stargazers) [![Hacktoberfest](https://img.shields.io/github/hacktoberfest/2022/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues) [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues) [![文档](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/docs/threatmapper) [![Demo](https://img.shields.io/badge/threatmapper-demo-green)](https://community.deepfence.io/docs/threatmapper/demo) [![Docker pulls](https://img.shields.io/docker/pulls/deepfenceio/deepfence_agent_ce)](https://hub.docker.com/r/deepfenceio/deepfence_agent_ce) [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ) [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
+[![GitHub 协议](https://img.shields.io/github/license/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/blob/master/LICENSE) [![GitHub 点赞数](https://img.shields.io/github/stars/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/stargazers) [![Hacktoberfest](https://img.shields.io/github/hacktoberfest/2022/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues) [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues) [![文档](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/threatmapper/docs) [![Demo](https://img.shields.io/badge/threatmapper-demo-green)](https://community.deepfence.io/threatmapper/docs/demo) [![Docker pulls](https://img.shields.io/docker/pulls/deepfenceio/deepfence_agent_ce)](https://hub.docker.com/r/deepfenceio/deepfence_agent_ce) [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ) [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
 
 ## :tada: ThreatMapper 1.4 发布
 
@@ -29,9 +29,9 @@ Deepfence ThreatMapper 在您的生产平台中搜寻威胁，并根据漏洞利
   </tr>
 </table>
 
- * 在产品文档中[了解更多有关 ThreatMapper](https://community.deepfence.io/docs/threatmapper/) 的信息。
+ * 在产品文档中[了解更多有关 ThreatMapper](https://community.deepfence.io/threatmapper/docs/) 的信息。
 
- * [在实时演示沙箱中查看 ThreatMapper](https://community.deepfence.io/docs/threatmapper/demo) 的运行情况。
+ * [在实时演示沙箱中查看 ThreatMapper](https://community.deepfence.io/threatmapper/docs/demo) 的运行情况。
 
 ## 何时使用 ThreatMapper
 
@@ -56,7 +56,7 @@ ThreatMapper 由两个部分构成：
 
 ### 管理控制台
 
-首先，您要在合适的 docker 主机或 Kubernetes 集群上，[部署管理控制台](https://community.deepfence.io/docs/threatmapper/console/)。  例如，在 Docker 上：
+首先，您要在合适的 docker 主机或 Kubernetes 集群上，[部署管理控制台](https://community.deepfence.io/threatmapper/docs/console/)。  例如，在 Docker 上：
 
 ```shell script
 # Docker installation process for ThreatMapper Management Console
@@ -66,25 +66,25 @@ wget https://github.com/deepfence/ThreatMapper/raw/master/deployment-scripts/doc
 docker-compose -f docker-compose.yml up --detach
 ```
 
-管理控制台启动并运行后，您可以[注册管理员账户并获取 API 密钥](https://community.deepfence.io/docs/threatmapper/console/initial-configuration)。
+管理控制台启动并运行后，您可以[注册管理员账户并获取 API 密钥](https://community.deepfence.io/threatmapper/docs/console/initial-configuration)。
 
 ### 云扫描器任务
 
-ThreatMapper [云扫描器任务](https://community.deepfence.io/docs/threatmapper/cloudscanner/)负责查询云提供商 API，以收集配置和识别偏离合规性基准的情况。
+ThreatMapper [云扫描器任务](https://community.deepfence.io/threatmapper/docs/cloudscanner/)负责查询云提供商 API，以收集配置和识别偏离合规性基准的情况。
 
 该任务是使用 Terraform 模块部署的。 ThreatMapper Manager 控制台将提供可以与Terraforme一起部署的基本配置。 或者您可以参考专家配置来微调部署([AWS](https://github.com/deepfence/terraform-aws-cloud-scanner), [Azure](https://github.com/deepfence/terraform-azure-cloud-scanner), [GCP](https://github.com/deepfence/terraform-gcp-cloud-scanner))。
 
 ### 传感器代理
 
-在您的生产或开发平台上安装[传感器代理](https://community.deepfence.io/docs/threatmapper/sensors/)。 传感器向管理控制台报告；告知发现了什么服务，并提供遥测和生成软件依赖项清单。
+在您的生产或开发平台上安装[传感器代理](https://community.deepfence.io/threatmapper/docs/sensors/)。 传感器向管理控制台报告；告知发现了什么服务，并提供遥测和生成软件依赖项清单。
 
 ThreatMapper 传感器支持以下生产平台：
 
- * [Kubernetes](https://community.deepfence.io/docs/threatmapper/sensors/kubernetes/): Kubernetes 集群使用 helm 图表将 ThreatMapper 传感器作为守护传感器进行部署。
- * [Docker](https://community.deepfence.io/docs/threatmapper/sensors/docker/): ThreatMapper 传感器作为轻量容器部署。
- * [Amazon ECS](https://community.deepfence.io/docs/threatmapper/sensors/aws-ecs): ThreatMapper 传感器是用任务定义作为守护服务进行部署的。
- * [AWS Fargate](https://community.deepfence.io/docs/threatmapper/sensors/aws-fargate): ThreatMapper 传感器是用任务定义作为 sidecar 容器进行部署的。
- * [裸机或虚拟机](https://community.deepfence.io/docs/threatmapper/sensors/linux-host/)：ThreatMapper 传感器被部署在轻量级 Docker 运行时中。
+ * [Kubernetes](https://community.deepfence.io/threatmapper/docs/sensors/kubernetes/): Kubernetes 集群使用 helm 图表将 ThreatMapper 传感器作为守护传感器进行部署。
+ * [Docker](https://community.deepfence.io/threatmapper/docs/sensors/docker/): ThreatMapper 传感器作为轻量容器部署。
+ * [Amazon ECS](https://community.deepfence.io/threatmapper/docs/sensors/aws-ecs): ThreatMapper 传感器是用任务定义作为守护服务进行部署的。
+ * [AWS Fargate](https://community.deepfence.io/threatmapper/docs/sensors/aws-fargate): ThreatMapper 传感器是用任务定义作为 sidecar 容器进行部署的。
+ * [裸机或虚拟机](https://community.deepfence.io/threatmapper/docs/sensors/linux-host/)：ThreatMapper 传感器被部署在轻量级 Docker 运行时中。
 
 例如，运行以下命令在 Docker 主机上启动 ThreatMapper 传感器：
 
@@ -95,11 +95,11 @@ docker run -dit --cpus=".2" --name=deepfence-agent --restart on-failure --pid=ho
   deepfenceio/deepfence_agent_ce:1.4.1
 ```
 
-在 Kubernetes 平台上，将使用 [helm 图表](https://community.deepfence.io/docs/threatmapper/sensors/kubernetes/) 安装传感器
+在 Kubernetes 平台上，将使用 [helm 图表](https://community.deepfence.io/threatmapper/docs/sensors/kubernetes/) 安装传感器
 
 ### 下一步
 
-访问 [Deepfence ThreatMapper 文档](https://community.deepfence.io/docs/threatmapper/)，了解如何开始，以及如何使用 ThreatMapper。
+访问 [Deepfence ThreatMapper 文档](https://community.deepfence.io/threatmapper/docs/)，了解如何开始，以及如何使用 ThreatMapper。
 
 
 # 联系方式
@@ -109,7 +109,7 @@ docker run -dit --cpus=".2" --name=deepfence-agent --restart on-failure --pid=ho
 * [Deepfence 社区网站](https://community.deepfence.io)
 * [<img src="https://img.shields.io/badge/slack-@deepfence-brightgreen.svg?logo=slack" />](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ) 有问题，需要帮助？  您可以在 Slack 上找到 Deepfence 团队
 * [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues) 您想获取新功能或发现了问题？  提交一个 issue
-* [![文档](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/docs/threatmapper/) 阅读 [Deepfence ThreatMapper 文档](https://community.deepfence.io/docs/threatmapper/)
+* [![文档](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/threatmapper/docs/) 阅读 [Deepfence ThreatMapper 文档](https://community.deepfence.io/threatmapper/docs/)
 * [productsecurity@deepfence.io](SECURITY.md)：发现安全问题？  请您私信告知我们
 * 了解更多信息，请您访问 [deepfence.io](https://deepfence.io/)
 
