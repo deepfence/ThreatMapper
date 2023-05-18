@@ -38,7 +38,9 @@ func respondWith(ctx context.Context, w http.ResponseWriter, code int, response 
 		log.Error().Msgf("Error %d: %v", code, err)
 		response = err.Error()
 	} else if 500 <= code && code < 600 {
-		log.Error().Msgf("Non-error %d: %v", code, response)
+		if code != 503 {
+			log.Error().Msgf("Non-error %d: %v", code, response)
+		}
 	} else if ctx.Err() != nil {
 		log.Debug().Msgf("Context error %v", ctx.Err())
 		code = 499

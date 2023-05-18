@@ -22,7 +22,7 @@ func init() {
 	agent_report_ingesters = sync.Map{}
 }
 
-func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[*report.Report], error) {
+func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[report.CompressedReport], error) {
 	nid, err := directory.ExtractNamespace(ctx)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[*report.Re
 
 	ing, has := agent_report_ingesters.Load(nid)
 	if has {
-		return ing.(*ingesters.Ingester[*report.Report]), nil
+		return ing.(*ingesters.Ingester[report.CompressedReport]), nil
 	}
 	new_entry, err := ingesters.NewNeo4jCollector(ctx)
 	if err != nil {
@@ -40,28 +40,17 @@ func getAgentReportIngester(ctx context.Context) (*ingesters.Ingester[*report.Re
 	if loaded {
 		new_entry.Close()
 	}
-	return true_new_entry.(*ingesters.Ingester[*report.Report]), nil
+	return true_new_entry.(*ingesters.Ingester[report.CompressedReport]), nil
+}
+
+var bufferPool = sync.Pool{
+	New: func() any {
+		return new(bytes.Buffer)
+	},
 }
 
 func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-
-	gzr, err := gzip.NewReader(r.Body)
-	if err != nil {
-		log.Error().Msgf("Error gzip reader: %v", err)
-		respondWith(ctx, w, http.StatusBadRequest, err)
-		return
-	}
-
-	rpt := ingesters.ReportPool.Get().(*report.Report)
-	rpt.Clear()
-	dec_inner := jsoniter.NewDecoder(gzr)
-	err = dec_inner.Decode(&rpt)
-	if err != nil {
-		log.Error().Msgf("Error sonic unmarshal: %v", err)
-		respondWith(ctx, w, http.StatusBadRequest, err)
-		return
-	}
 
 	ingester, err := getAgentReportIngester(ctx)
 	if err != nil {
@@ -70,11 +59,41 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := (*ingester).Ingest(ctx, rpt); err != nil {
+	if !(*ingester).IsReady() {
+		respondWith(ctx, w, http.StatusServiceUnavailable, err)
+		return
+	}
+
+	buffer := bufferPool.Get().(*bytes.Buffer)
+	buffer.Reset()
+	_, err = io.Copy(buffer, r.Body)
+	if err != nil {
+		bufferPool.Put(buffer)
+		log.Error().Msgf("Error reading body: %v", err)
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+
+	gzr, err := gzip.NewReader(buffer)
+	if err != nil {
+		bufferPool.Put(buffer)
+		log.Error().Msgf("Error gzip reader: %v", err)
+		respondWith(ctx, w, http.StatusBadRequest, err)
+		return
+	}
+	decoder := jsoniter.NewDecoder(gzr)
+	if err := (*ingester).Ingest(ctx, report.CompressedReport{
+		Decoder: decoder,
+		Cleanup: func() {
+			bufferPool.Put(buffer)
+		},
+	}); err != nil {
+		bufferPool.Put(buffer)
 		log.Error().Msgf("Error Adding report: %v", err)
 		respondWith(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -103,16 +122,17 @@ func (h *Handler) IngestSyncAgentReport(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	ingester, err := getAgentReportIngester(ctx)
-	if err != nil {
-		respondWith(ctx, w, http.StatusBadRequest, err)
-		return
-	}
+	//TODO
+	//ingester, err := getAgentReportIngester(ctx)
+	//if err != nil {
+	//	respondWith(ctx, w, http.StatusBadRequest, err)
+	//	return
+	//}
 
-	if err := (*ingester).PushToDB(rpt); err != nil {
-		log.Error().Msgf("Error pushing report: %v", err)
-		respondWith(ctx, w, http.StatusInternalServerError, err)
-		return
-	}
+	//if err := (*ingester).PushToDB(rpt); err != nil {
+	//	log.Error().Msgf("Error pushing report: %v", err)
+	//	respondWith(ctx, w, http.StatusInternalServerError, err)
+	//	return
+	//}
 	w.WriteHeader(http.StatusOK)
 }

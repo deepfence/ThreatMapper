@@ -219,6 +219,15 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 	rhc.RetryMax = 3
 	rhc.RetryWaitMin = 1 * time.Second
 	rhc.RetryWaitMax = 10 * time.Second
+	rhc.CheckRetry = func(ctx context.Context, resp *http.Response, err error) (bool, error) {
+		if err != nil || resp == nil {
+			return false, err
+		}
+		if resp.StatusCode == http.StatusServiceUnavailable {
+			return false, err
+		}
+		return rhttp.DefaultRetryPolicy(ctx, resp, err)
+	}
 	rhc.Logger = log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile)
 	if schema == "https" {
 		if len(certPath) > 0 && len(certKey) > 0 {

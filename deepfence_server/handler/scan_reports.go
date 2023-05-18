@@ -492,6 +492,7 @@ func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Re
 }
 
 func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
+
 	var params utils.ScanSbomRequest
 	err := httpext.DecodeJSON(r, httpext.QueryParams, MaxSbomRequestSize, &params)
 	if err != nil {
@@ -505,6 +506,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 			model.ErrorResponse{Message: "scan_id is required to process sbom"})
 		return
 	}
+
 	// decompress sbom
 	b64, err := base64.StdEncoding.DecodeString(params.SBOM)
 	if err != nil {
