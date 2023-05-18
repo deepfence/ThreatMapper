@@ -65,6 +65,55 @@ type CloudNodeAccountInfo struct {
 	LastScanStatus       string  `json:"last_scan_status"`
 }
 
+func (CloudNodeAccountInfo) NodeType() string {
+	return "CloudNode"
+}
+
+func (CloudNodeAccountInfo) ExtendedField() string {
+	return ""
+}
+
+func (v CloudNodeAccountInfo) ScanType() utils.Neo4jScanType {
+	switch v.CloudProvider {
+	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg:
+		return utils.NEO4J_CLOUD_COMPLIANCE_SCAN
+	case PostureProviderKubernetes, PostureProviderLinux:
+		return utils.NEO4J_COMPLIANCE_SCAN
+	default:
+		return utils.NEO4J_CLOUD_COMPLIANCE_SCAN
+	}
+}
+
+func (v CloudNodeAccountInfo) ScanResultType() string {
+	switch v.CloudProvider {
+	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg:
+		return "CloudComplianceResult"
+	case PostureProviderKubernetes, PostureProviderLinux:
+		return "Compliance"
+	default:
+		return "CloudComplianceResult"
+	}
+}
+
+func (v CloudNodeAccountInfo) GetPassStatus() []string {
+	switch v.CloudProvider {
+	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg, PostureProviderKubernetes:
+		return []string{"ok", "info", "skip"}
+	case PostureProviderLinux:
+		return []string{"warn", "pass"}
+	default:
+		return []string{"skip", "ok", "info", "pass", "warn"}
+	}
+}
+
+func (v CloudNodeAccountInfo) GetCategory() string {
+	return v.CloudProvider
+}
+
+func (CloudNodeAccountInfo) GetJsonCategory() string {
+	return "cloud_provider"
+}
+
 type CloudComplianceBenchmark struct {
 	Id             string   `json:"id"`
 	ComplianceType string   `json:"compliance_type"`

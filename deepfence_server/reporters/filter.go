@@ -128,7 +128,12 @@ func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) stri
 		return ""
 	}
 
-	list := formatOrderField(cypherNodeName+".%s", filter.OrderFields, false)
+	var list []string
+	if cypherNodeName == "" {
+		list = formatOrderField("%s", filter.OrderFields, false)
+	} else {
+		list = formatOrderField(cypherNodeName+".%s", filter.OrderFields, false)
+	}
 
 	if len(list) == 0 {
 		return ""
@@ -193,19 +198,38 @@ func ContainsFilter2CypherWhereConditions(cypherNodeName string, filter Contains
 	return fmt.Sprintf("%s %s", first_clause, strings.Join(conditions, " AND "))
 }
 
-func FieldFilterCypher(node_name string, fields []string) string {
+func FieldFilterCypher(nodeName string, fields []string) string {
 	tmp := []string{}
 	if len(fields) != 0 {
 		for i := range fields {
 			if fields[i] != "" {
-				tmp = append(tmp, fmt.Sprintf("%s.%s", node_name, fields[i]))
+				if nodeName == "" {
+					tmp = append(tmp, fmt.Sprintf("%s", fields[i]))
+				} else {
+					tmp = append(tmp, fmt.Sprintf("%s.%s", nodeName, fields[i]))
+				}
 			}
 		}
 		if len(tmp) != 0 {
 			return strings.Join(tmp, ",")
 		}
 	}
-	return node_name
+	return nodeName
+}
+
+func FieldFilterCypherWithAlias(nodeName string, fields []string) string {
+	tmp := []string{}
+	if len(fields) != 0 {
+		for i := range fields {
+			if fields[i] != "" {
+				tmp = append(tmp, fmt.Sprintf("%s.%s AS %s", nodeName, fields[i], fields[i]))
+			}
+		}
+		if len(tmp) != 0 {
+			return strings.Join(tmp, ",")
+		}
+	}
+	return nodeName
 }
 
 func matchFilter2CypherConditions(cypherNodeName string, filter MatchFilter) []string {

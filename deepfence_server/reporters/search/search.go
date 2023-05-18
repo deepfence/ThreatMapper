@@ -197,6 +197,98 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	return res, nil
 }
 
+func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]model.CloudNodeAccountInfo, error) {
+	var res []model.CloudNodeAccountInfo
+	cloudProvider := filter.Filters.ContainsFilter.FieldsValues["cloud_provider"][0].(string)
+	dummy := model.CloudNodeAccountInfo{
+		CloudProvider: cloudProvider,
+	}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return res, err
+	}
+
+	session, err := driver.Session(neo4j.AccessModeRead)
+	if err != nil {
+		return res, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	query := `
+		MATCH (n:` + dummy.NodeType() + `)` +
+		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
+		`WITH n.node_id AS node_id UNWIND node_id AS x
+		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `)-[:DETECTED]->(c:` + dummy.ScanResultType() + `)
+		WITH x ` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, COUNT(c) AS total_compliance_count
+		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `)-[:DETECTED]->(c1:` + dummy.ScanResultType() + `)
+		WHERE c1.status IN $pass_status
+		WITH x` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage
+		CALL {
+			WITH x
+			OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s1:` + string(dummy.ScanType()) + `)
+			RETURN s1.node_id AS last_scan_id, s1.status AS last_scan_status
+			ORDER BY s1.updated_at DESC LIMIT 1
+		}
+		CALL {WITH x MATCH (n:CloudNode{node_id: x}) RETURN n.node_name as node_name}
+		RETURN x as node_id, node_name, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
+		reporters.OrderFilter2CypherCondition("", filter.Filters.OrderFilter) + fw.FetchWindow2CypherQuery()
+
+	log.Info().Msgf("search cloud node query: %v", query)
+	r, err := tx.Run(query,
+		map[string]interface{}{
+			"pass_status": dummy.GetPassStatus(),
+		})
+
+	if err != nil {
+		return res, err
+	}
+
+	recs, err := r.Collect()
+
+	if err != nil {
+		return res, err
+	}
+
+	for _, rec := range recs {
+		var node_map map[string]interface{}
+		if len(filter.InFieldFilter) != 0 {
+			data, has := rec.Get("n")
+			if !has {
+				log.Warn().Msgf("Missing neo4j entry")
+				continue
+			}
+			da, ok := data.(dbtype.Node)
+			if !ok {
+				log.Warn().Msgf("Missing neo4j entry")
+				continue
+			}
+			node_map = da.Props
+		} else {
+			node_map = map[string]interface{}{}
+			baseValuesCount := 0
+			for _, nodeMapKey := range []string{"node_id", "node_name", "compliance_percentage", "last_scan_id", "last_scan_status"} {
+				node_map[nodeMapKey] = rec.Values[baseValuesCount]
+				baseValuesCount = baseValuesCount + 1
+			}
+			node_map["cloud_provider"] = cloudProvider
+			for i := range filter.InFieldFilter {
+				node_map[filter.InFieldFilter[i]] = rec.Values[i+baseValuesCount]
+			}
+		}
+		var node model.CloudNodeAccountInfo
+		utils.FromMap(node_map, &node)
+		res = append(res, node)
+	}
+	return res, nil
+}
+
 func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanType, scan_filter SearchFilter, resource_filter SearchFilter, fw model.FetchWindow) ([]model.ScanInfo, error) {
 	res := []model.ScanInfo{}
 
@@ -267,6 +359,14 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 	}
 
 	return res, nil
+}
+
+func SearchCloudNodeReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]model.CloudNodeAccountInfo, error) {
+	hosts, err := searchCloudNode(ctx, filter, fw)
+	if err != nil {
+		return nil, err
+	}
+	return hosts, nil
 }
 
 func SearchReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
