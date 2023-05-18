@@ -279,17 +279,20 @@ const UniqueVulnerabilities = () => {
       columnHelper.accessor('exploit_poc', {
         enableSorting: false,
         enableResizing: false,
-        cell: () => (
-          <DFLink to="#">
-            <IconContext.Provider
-              value={{
-                className: 'w-4 h-4',
-              }}
-            >
-              <HiExternalLink />
-            </IconContext.Provider>
-          </DFLink>
-        ),
+        cell: (info) => {
+          if (!info.getValue().length) return null;
+          return (
+            <DFLink href={info.getValue()} target="_blank">
+              <IconContext.Provider
+                value={{
+                  className: 'w-4 h-4',
+                }}
+              >
+                <HiExternalLink />
+              </IconContext.Provider>
+            </DFLink>
+          );
+        },
         header: () => 'Exploit',
         minSize: 60,
         size: 60,
