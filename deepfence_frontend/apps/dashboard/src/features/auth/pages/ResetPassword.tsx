@@ -5,7 +5,7 @@ import { Button, TextInput, Typography } from 'ui-components';
 import { getUserApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import LogoDarkBlue from '@/assets/logo-deepfence-dark-blue.svg';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 export type ResetPasswordActionReturnType = {
   error?: string;
@@ -32,37 +32,31 @@ const action = async ({
       },
     };
   }
-
-  const r = await makeRequest({
-    apiFunction: getUserApiClient().verifyResetPasswordRequest,
-    apiArgs: [
-      {
-        modelPasswordResetVerifyRequest: {
-          code: code as string,
-          password: body.password as string,
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<ResetPasswordActionReturnType>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          fieldErrors: {
-            password: modelResponse.error_fields?.password as string,
-          },
-        });
-      } else if (r.status === 403) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          error: modelResponse.message,
-        });
-      }
+  const verifyResetPasswordRequest = apiWrapper({
+    fn: getUserApiClient().verifyResetPasswordRequest,
+  });
+  const response = await verifyResetPasswordRequest({
+    modelPasswordResetVerifyRequest: {
+      code: code as string,
+      password: body.password as string,
     },
   });
 
-  if (ApiError.isApiError(r)) {
-    return r.value();
+  if (!response.ok) {
+    if (response.error.response.status === 404) {
+      return {
+        error: 'Verification URL expired. Please request a new one.',
+      };
+    } else if (response.error.response.status === 400) {
+      const modelResponse: ApiDocsBadRequestResponse =
+        await response.error.response.json();
+      return {
+        fieldErrors: {
+          password: modelResponse.error_fields?.password as string,
+        },
+      };
+    }
+    throw response.error;
   }
 
   return {

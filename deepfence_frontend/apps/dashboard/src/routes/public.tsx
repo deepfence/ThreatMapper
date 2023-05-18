@@ -46,7 +46,7 @@ export const publicRoutes: CustomRouteObject[] = [
         meta: { title: 'Register' },
       },
       {
-        path: 'reset-passowrd/verify',
+        path: 'reset-passowrd',
         ...resetPassword,
         meta: { title: 'Reset Password' },
       },
