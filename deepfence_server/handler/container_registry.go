@@ -430,7 +430,15 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	log.Info().Msgf("IDs: %v", pgIds)
+
+	log.Info().Msgf("delete registry ID's: %v and registry account %s", pgIds, id)
+
+	if err := model.DeleteRegistryAccount(r.Context(), id); err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+
 	for _, id := range pgIds {
 		err = model.DeleteRegistry(ctx, pgClient, int32(id))
 		if err != nil {

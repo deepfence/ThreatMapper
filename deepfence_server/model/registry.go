@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"mime/multipart"
 	"time"
 
@@ -460,6 +461,34 @@ func GetRegistryPgIds(ctx context.Context, node_id string) ([]int64, error) {
 	}
 
 	return res, err
+}
+
+func DeleteRegistryAccount(ctx context.Context, node_id string) error {
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	query := fmt.Sprintf("MATCH (n:RegistryAccount{node_id:'%s'}) DETACH DELETE n", node_id)
+	log.Info().Msgf("delete registry account query: %s", query)
+
+	_, err = tx.Run(query, map[string]interface{}{})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		return err
+	}
+
+	return tx.Commit()
 }
 
 func toScansCount(scans []interface{}) Summary {
