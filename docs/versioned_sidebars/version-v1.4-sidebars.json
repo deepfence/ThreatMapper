@@ -98,7 +98,17 @@
         "operations/scanning",
         "operations/sboms",
         "operations/compliance",
-        "operations/scanning-registries",
+        {
+          "type": "category",
+          "label": "Scanning Registries",
+          "link": {
+            "type": "doc",
+            "id": "registries/index"
+          },
+          "items": [
+            "registries/aws-ecr"
+          ]
+        },
         "operations/scanning-ci",
         "operations/support"
       ]

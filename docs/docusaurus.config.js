@@ -113,6 +113,10 @@ const config = {
               },
               {
                 type: 'html',
+                value: '<a class="dropdown__link" href="/docs/ebpfguard">eBPFGuard</a>',
+              },
+              {
+                type: 'html',
                 value: '<a class="dropdown__link" href="/docs/flowmeter">FlowMeter</a>',
               },
               {
@@ -166,6 +170,10 @@ const config = {
                 href: 'https://github.com/deepfence/PacketStreamer',
               },
               {
+                label: 'eBPFGuard',
+                href: 'https://github.com/deepfence/ebpfguard',
+              },
+              {
                 label: 'FlowMeter',
                 href: 'https://github.com/deepfence/FlowMeter',
               },
@@ -187,7 +195,10 @@ const config = {
                 html: '<a class="footer__link-item" href="/docs/packetstreamer">PacketStreamer</a>',
               },
               {
-                html: '<a class="footer__link-item" href="/docs/flowmeter">PacketStreamer</a>',
+                html: '<a class="footer__link-item" href="/docs/ebpfguard">eBPFGuard</a>',
+              },
+              {
+                html: '<a class="footer__link-item" href="/docs/flowmeter">FlowMeter</a>',
               },
             ],
           },
