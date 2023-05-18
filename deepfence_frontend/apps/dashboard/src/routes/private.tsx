@@ -475,7 +475,7 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Posture Scans Results' },
         children: [
           {
-            path: ':complianceId',
+            path: ':complianceId/*',
             ...postureCloudDetails,
             meta: { title: 'Posture Details' },
           },

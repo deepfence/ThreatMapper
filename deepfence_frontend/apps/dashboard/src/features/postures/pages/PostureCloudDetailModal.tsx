@@ -97,14 +97,14 @@ async function getCompliances(complianceId: string) {
 const loader = async ({
   params,
 }: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
-  const { complianceId } = params;
-
-  if (!complianceId) {
+  const { complianceId, ['*']: sufix } = params;
+  const complianceIdStr = complianceId + '/' + sufix;
+  if (!complianceIdStr) {
     throw new Error('Compliance Id is required');
   }
 
   return typedDefer({
-    data: getCompliances(complianceId),
+    data: getCompliances(complianceIdStr),
   });
 };
 
