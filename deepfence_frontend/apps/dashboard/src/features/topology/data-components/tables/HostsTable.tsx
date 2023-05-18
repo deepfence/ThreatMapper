@@ -61,7 +61,6 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
     searchParams.get('compliance_scan_status')?.split(',') ?? [];
   const cloudProvider = searchParams.get('cloud_provider')?.split(',') ?? [];
   const order = getOrderFromSearchParams(searchParams);
-  const active = searchParams.get('active');
 
   const searchSearchNodeReq: SearchSearchNodeReq = {
     node_filter: {
@@ -71,7 +70,7 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
         contains_filter: {
           filter_in: {
             pseudo: [false],
-            active: [active === 'true'],
+            active: [true],
           },
         },
         match_filter: {
@@ -172,7 +171,6 @@ export const HostsTable = () => {
     secretScanStatus: [],
     malwareScanStatus: [],
     complianceScanStatus: [],
-    active: true,
   });
   const [sortState, setSortState] = useState<SortingState>([]);
   const [page, setPage] = useState(0);
@@ -184,7 +182,6 @@ export const HostsTable = () => {
   function fetchHostsData() {
     const searchParams = new URLSearchParams();
     searchParams.set('page', page.toString());
-    searchParams.set('active', filters.active.toString());
     if (filters.vulnerabilityScanStatus.length) {
       searchParams.set(
         'vulnerability_scan_status',
@@ -495,7 +492,6 @@ interface HostsFilters {
   malwareScanStatus: Array<string>;
   complianceScanStatus: Array<string>;
   cloudProvider: Array<string>;
-  active: boolean;
 }
 
 function Filters({
@@ -527,7 +523,6 @@ function Filters({
                     malwareScanStatus: [],
                     complianceScanStatus: [],
                     cloudProvider: [],
-                    active: true,
                   });
                 }}
               />
@@ -713,21 +708,6 @@ function Filters({
                             ),
                           });
                         }
-                      }}
-                    />
-                  </div>
-                </fieldset>
-                <fieldset>
-                  <legend className="text-sm font-medium">Active</legend>
-                  <div className="flex gap-x-4 mt-1">
-                    <Checkbox
-                      label="Active"
-                      checked={filters.active}
-                      onCheckedChange={(state) => {
-                        onFiltersChange({
-                          ...filters,
-                          active: state === true,
-                        });
                       }}
                     />
                   </div>

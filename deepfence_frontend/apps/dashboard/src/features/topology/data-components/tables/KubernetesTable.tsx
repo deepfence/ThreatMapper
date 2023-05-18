@@ -50,7 +50,9 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
       filters: {
         compare_filter: null,
         contains_filter: {
-          filter_in: null,
+          filter_in: {
+            active: [true],
+          },
         },
         match_filter: {
           filter_in: null,
