@@ -462,7 +462,7 @@ func (h *Handler) getImages(w http.ResponseWriter, r *http.Request) ([]model.Con
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return images, err
 	}
 
@@ -506,7 +506,7 @@ func (h *Handler) getImageStubs(w http.ResponseWriter, r *http.Request) ([]model
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return images, err
 	}
 
@@ -549,7 +549,7 @@ func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 	}
 	err := h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -575,7 +575,7 @@ func (h *Handler) SummaryByRegistryType(w http.ResponseWriter, r *http.Request) 
 	}
 	err := h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 

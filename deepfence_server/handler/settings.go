@@ -135,7 +135,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	req.ID = settingId
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	currentSettings, err := model.GetSettingByKey(ctx, pgClient, req.Key)

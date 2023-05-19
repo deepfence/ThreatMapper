@@ -60,7 +60,7 @@ var (
 	}
 )
 
-func ParseValidatorError(errMsg string) map[string]string {
+func ParseValidatorError(errMsg string, skipOverwriteErrorMessage bool) map[string]string {
 	fields := make(map[string]string)
 	validate := func(errMsg string) (string, string, string) {
 		s := strings.SplitN(errMsg, "'", 3)
@@ -82,6 +82,10 @@ func ParseValidatorError(errMsg string) map[string]string {
 	for _, msg := range strings.Split(errMsg, "\n") {
 		errKey, errFullKey, errMessage = validate(msg)
 		if errKey == "" {
+			continue
+		}
+		if skipOverwriteErrorMessage == true {
+			fields[errKey] = errMessage
 			continue
 		}
 		if errVal, ok := ErrorMessage[errFullKey]; ok {

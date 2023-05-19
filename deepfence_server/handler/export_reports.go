@@ -25,11 +25,11 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	var req model.ReportReq
 	req.ReportID = chi.URLParam(r, "report_id")
 	if err := h.Validator.Struct(req); err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	if err := h.Validator.Struct(req); err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -118,7 +118,7 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	var req model.ReportReq
 	req.ReportID = chi.URLParam(r, "report_id")
 	if err := h.Validator.Struct(req); err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	driver, err := directory.Neo4jClient(r.Context())

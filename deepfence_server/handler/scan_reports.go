@@ -1170,7 +1170,7 @@ func (h *Handler) scanResultMaskHandler(w http.ResponseWriter, r *http.Request, 
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	switch action {
@@ -1196,7 +1196,7 @@ func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	switch action {
@@ -1298,7 +1298,7 @@ func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, ac
 	}
 	err := h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	switch action {
@@ -1347,7 +1347,7 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -1356,7 +1356,7 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 	scansList, err := reporters_scan.GetScansList(r.Context(),
 		utils.DetectedNodeScanType[req.ScanType], nil, req.Filters, model.FetchWindow{})
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -1383,7 +1383,7 @@ func (h *Handler) GetAllNodesInScanResultBulkHandler(w http.ResponseWriter, r *h
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	resp, err := reporters_scan.GetNodesInScanResults(r.Context(), utils.Neo4jScanType(req.ScanType), req.ResultIDs)
@@ -1405,7 +1405,7 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
