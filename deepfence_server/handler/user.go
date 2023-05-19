@@ -304,7 +304,10 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 	inviteURL := fmt.Sprintf("%s/auth/invite-accept?invite_code=%s", consoleUrl, code)
 	if inviteUserRequest.Action == UserInviteSendEmail {
 		emailSender, err := sendemail.NewEmailSender()
-		if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondError(&BadDecoding{errors.New("Not configured to send emails. Please configure it in Settings->Email Configuration\"")}, w)
+			return
+		} else if err != nil {
 			respondError(err, w)
 			return
 		}
