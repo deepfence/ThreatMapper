@@ -329,17 +329,18 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 			nodeRes, err := tx.Run(fmt.Sprintf(`
 			MATCH (o:%s{cloud_provider:$cloud_provider+'_org'})
 			WITH COUNT(DISTINCT o.node_id) AS account_count
-			OPTIONAL MATCH (p:CloudResource)
-			WHERE p.cloud_provider = $cloud_provider
+			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider}) -[:OWNS]-> (p:CloudResource)
+			WHERE m.organization_id IS NOT NULL
 			WITH account_count, COUNT(distinct p.arn) AS resource_count
 			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s{cloud_provider: $cloud_provider})<-[:IS_CHILD]-(o:%s{cloud_provider:$cloud_provider+'_org'})
 			WITH account_count, resource_count, COUNT(DISTINCT n.node_id) AS scan_count
-			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudComplianceResult), (o:%s{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
+			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudCompliance), (o:%s{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
+			WHERE m.organization_id IS NOT NULL
 			WITH account_count, resource_count, scan_count, COUNT(c) AS total_compliance_count
-			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:CloudComplianceResult), (o:%s{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
-			WHERE c1.status IN ['ok', 'info', 'skip']
+			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:CloudCompliance), (o:%s{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (m:%s{cloud_provider: $cloud_provider})
+			WHERE c1.status IN ['ok', 'info', 'skip'] AND m.organization_id IS NOT NULL
 			RETURN account_count, resource_count, scan_count,
-				CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage`, neo4jNodeType, scanType,
+				CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage`, neo4jNodeType, neo4jNodeType, scanType,
 				neo4jNodeType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, neo4jNodeType, neo4jNodeType,
 				scanType, neo4jNodeType, neo4jNodeType),
 				map[string]interface{}{
@@ -361,14 +362,13 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 			nodeRes, err := tx.Run(fmt.Sprintf(`
 			MATCH (m:%s{cloud_provider: $cloud_provider})
 			WITH COUNT(DISTINCT m.node_id) AS account_count
-			OPTIONAL MATCH (p:CloudResource)
-			WHERE p.cloud_provider = $cloud_provider
+			OPTIONAL MATCH (p:CloudResource{cloud_provider: $cloud_provider})
 			WITH account_count, COUNT(distinct p.arn) AS resource_count
 			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s{cloud_provider: $cloud_provider})
 			WITH account_count, resource_count, COUNT(DISTINCT n.node_id) AS scan_count
-			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudComplianceResult)
+			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:CloudCompliance)
 			WITH account_count, resource_count, scan_count, COUNT(c) AS total_compliance_count
-			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:CloudComplianceResult)
+			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:CloudCompliance)
 			WHERE c1.status IN ['ok', 'info', 'skip']
 			RETURN account_count, resource_count, scan_count,
 				CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage`, neo4jNodeType, scanType,
