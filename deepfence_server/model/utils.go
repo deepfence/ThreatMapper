@@ -53,6 +53,7 @@ var (
 		"UpdateUserPasswordRequest.NewPassword": "should contain at least one upper case, lower case, digit and special character",
 		"LoginRequest.Password":                 "incorrect password",
 		"RegisterInvitedUserRequest.Password":   "should contain at least one upper case, lower case, digit and special character",
+		"PasswordResetVerifyRequest.Password":   "should contain at least one upper case, lower case, digit and special character",
 
 		"api_token": "api_token must be UUID",
 		"email":     "invalid email address",
