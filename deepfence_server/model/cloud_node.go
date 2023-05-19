@@ -219,7 +219,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 			if _, err := tx.Run(`
 			WITH $param as row
 			MERGE (n:CloudNode{node_id:row.node_id})
-			SET n+= row, n.updated_at = TIMESTAMP()`,
+			SET n+= row, n.active = true, n.updated_at = TIMESTAMP()`,
 				map[string]interface{}{
 					"param": nodeDetails,
 				}); err != nil {
@@ -230,13 +230,23 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 			MATCH (m:CloudNode{node_id: $parent_node_id})
 			WITH $param as row, m
 			MERGE (n:CloudNode{node_id:row.node_id}) <-[:IS_CHILD]- (m)
-			SET n+= row, n.updated_at = TIMESTAMP()`,
+			SET n+= row, n.active = true, n.updated_at = TIMESTAMP()`,
 				map[string]interface{}{
 					"param":          nodeDetails,
 					"parent_node_id": parentNodeId,
 				}); err != nil {
 				return err
 			}
+		}
+	} else {
+		if _, err := tx.Run(`
+			WITH $param as row
+			MATCH (n:CloudNode{node_id:row.node_id})
+			SET n+= row, n.active = true, n.updated_at = TIMESTAMP()`,
+			map[string]interface{}{
+				"param": nodeDetails,
+			}); err != nil {
+			return err
 		}
 	}
 
@@ -418,20 +428,20 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	if isOrgListing {
 		res, err = tx.Run(fmt.Sprintf(`
 		MATCH (m:%s{cloud_provider:$cloud_provider+'_org'}) -[:IS_CHILD]-> (n:%s{cloud_provider: $cloud_provider})
-		WITH DISTINCT m.node_id AS node_id, m.node_name AS node_name, m.updated_at AS updated_at
+		WITH DISTINCT m.node_id AS node_id, m.node_name AS node_name, m.updated_at AS updated_at, m.active AS active
 		UNWIND node_id AS x
-		OPTIONAL MATCH (m:%s{cloud_provider:$cloud_provider+'_org', node_id: x}) -[:IS_CHILD]-> (n:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c:CloudComplianceResult)
-		WITH x, node_name, updated_at, COUNT(c) AS total_compliance_count
-		OPTIONAL MATCH (m:%s{cloud_provider:$cloud_provider+'_org', node_id: x}) -[:IS_CHILD]-> (n:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c1:CloudComplianceResult)
+		OPTIONAL MATCH (m:%s{cloud_provider:$cloud_provider+'_org', node_id: x}) -[:IS_CHILD]-> (n:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c:CloudCompliance)
+		WITH x, node_name, updated_at, COUNT(c) AS total_compliance_count, active
+		OPTIONAL MATCH (m:%s{cloud_provider:$cloud_provider+'_org', node_id: x}) -[:IS_CHILD]-> (n:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c1:CloudCompliance)
 		WHERE c1.status IN $pass_status
-		WITH x, node_name, $cloud_provider+'_org' AS cloud_provider, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage, updated_at
+		WITH x, node_name, $cloud_provider+'_org' AS cloud_provider, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage, updated_at, active
 		CALL {
 			WITH x
 			OPTIONAL MATCH (m:%s{cloud_provider:$cloud_provider+'_org', node_id: x}) -[:IS_CHILD]-> (n:%s{cloud_provider: $cloud_provider})<-[:SCANNED]-(s1:%s)
 			RETURN s1.node_id AS last_scan_id, s1.status AS last_scan_status
 			ORDER BY s1.updated_at DESC LIMIT 1
 		}
-		RETURN  x, node_name, cloud_provider, compliance_percentage, updated_at, COALESCE(last_scan_id, ''), COALESCE(last_scan_status, '')
+		RETURN  x, node_name, cloud_provider, compliance_percentage, active, updated_at, COALESCE(last_scan_id, ''), COALESCE(last_scan_status, '')
 		ORDER BY updated_at`, neo4jNodeType, neo4jNodeType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType,
 			neo4jNodeType, scanType, neo4jNodeType, scanType, utils.NodeTypeCloudNode)+fw.FetchWindow2CypherQuery(),
 			map[string]interface{}{"cloud_provider": cloudProvider, "pass_status": passStatus})
@@ -443,20 +453,20 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 		res, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s)
 		WHERE n.pseudo=false
-		WITH n.node_id AS node_id, n.node_name AS node_name, n.updated_at AS updated_at
+		WITH n.node_id AS node_id, n.node_name AS node_name, n.updated_at AS updated_at, n.active AS active
 		UNWIND node_id AS x
 		OPTIONAL MATCH (n:%s{node_id: x})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c:Compliance)
-		WITH x, node_name, updated_at, COUNT(c) AS total_compliance_count
+		WITH x, node_name, updated_at, COUNT(c) AS total_compliance_count, active
 		OPTIONAL MATCH (n:%s{node_id: x})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c1:Compliance)
 		WHERE c1.status IN $pass_status
-		WITH x, node_name, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage, updated_at
+		WITH x, node_name, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage, updated_at, active
 		CALL {
 			WITH x
 			OPTIONAL MATCH (n:%s{node_id: x})<-[:SCANNED]-(s1:%s)
 			RETURN s1.node_id AS last_scan_id, s1.status AS last_scan_status
 			ORDER BY s1.updated_at DESC LIMIT 1
 		}
-		RETURN x, node_name, $cloud_provider, compliance_percentage, updated_at, COALESCE(last_scan_id, ''), COALESCE(last_scan_status, '')
+		RETURN x, node_name, $cloud_provider, compliance_percentage, active, updated_at, COALESCE(last_scan_id, ''), COALESCE(last_scan_status, '')
 		ORDER BY updated_at`, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType, neo4jNodeType, scanType)+fw.FetchWindow2CypherQuery(),
 			map[string]interface{}{
 				"cloud_provider": cloudProvider,
@@ -468,20 +478,20 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	} else {
 		res, err = tx.Run(fmt.Sprintf(`
 		MATCH (n:%s{cloud_provider: $cloud_provider}) 
-		WITH n.node_id AS node_id, n.node_name AS node_name, n.cloud_provider AS cloud_provider, n.updated_at AS updated_at
+		WITH n.node_id AS node_id, n.node_name AS node_name, n.cloud_provider AS cloud_provider, n.updated_at AS updated_at, n.active AS active
 		UNWIND node_id AS x
-		OPTIONAL MATCH (n:%s{cloud_provider: $cloud_provider, node_id: x})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c:CloudComplianceResult)
-		WITH x, node_name, cloud_provider, updated_at, COUNT(c) AS total_compliance_count
-		OPTIONAL MATCH (n:%s{cloud_provider: $cloud_provider, node_id: x})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c1:CloudComplianceResult)
+		OPTIONAL MATCH (n:%s{cloud_provider: $cloud_provider, node_id: x})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c:CloudCompliance)
+		WITH x, node_name, cloud_provider, updated_at, COUNT(c) AS total_compliance_count, active
+		OPTIONAL MATCH (n:%s{cloud_provider: $cloud_provider, node_id: x})<-[:SCANNED]-(s:%s)-[:DETECTED]->(c1:CloudCompliance)
 		WHERE c1.status IN $pass_status
-		WITH x, node_name, cloud_provider, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage, updated_at
+		WITH x, node_name, cloud_provider, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage, updated_at, active
 		CALL {
 			WITH x
 			OPTIONAL MATCH (n:%s{cloud_provider: $cloud_provider, node_id: x})<-[:SCANNED]-(s1:%s)
 			RETURN s1.node_id AS last_scan_id, s1.status AS last_scan_status
 			ORDER BY s1.updated_at DESC LIMIT 1
 		}
-		RETURN x, node_name, cloud_provider, compliance_percentage, updated_at, COALESCE(last_scan_id, ''), COALESCE(last_scan_status, '')
+		RETURN x, node_name, cloud_provider, compliance_percentage, active, updated_at, COALESCE(last_scan_id, ''), COALESCE(last_scan_status, '')
 		ORDER BY updated_at`, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType, neo4jNodeType, scanType)+fw.FetchWindow2CypherQuery(),
 			map[string]interface{}{
 				"cloud_provider": cloudProvider,
@@ -504,9 +514,9 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 			NodeName:             rec.Values[1].(string),
 			CloudProvider:        rec.Values[2].(string),
 			CompliancePercentage: rec.Values[3].(float64),
-			Active:               true,
-			LastScanId:           rec.Values[5].(string),
-			LastScanStatus:       rec.Values[6].(string),
+			Active:               rec.Values[4].(bool),
+			LastScanId:           rec.Values[6].(string),
+			LastScanStatus:       rec.Values[7].(string),
 		}
 		cloud_node_accounts_info = append(cloud_node_accounts_info, tmp)
 	}
