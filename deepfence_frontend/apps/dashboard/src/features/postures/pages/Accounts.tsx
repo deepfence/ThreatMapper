@@ -724,11 +724,13 @@ const Accounts = () => {
                             if (state) {
                               setSearchParams((prev) => {
                                 prev.delete('active');
+                                prev.delete('page');
                                 prev.append('active', 'true');
                                 return prev;
                               });
                             } else {
                               setSearchParams((prev) => {
+                                prev.delete('page');
                                 prev.delete('active');
                                 return prev;
                               });
