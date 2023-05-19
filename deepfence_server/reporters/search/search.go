@@ -192,7 +192,7 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 		resourceName, isValue := rec.Get("resource_name")
 		resourceType, isValue := rec.Get("resource_type")
 		if isValue {
-			node_map["resource"] = resourceName.(string) + "/" + resourceType.(string)
+			node_map["resource"] = resourceType.(string) + "/" + resourceName.(string)
 		}
 		var node T
 		utils.FromMap(node_map, &node)
