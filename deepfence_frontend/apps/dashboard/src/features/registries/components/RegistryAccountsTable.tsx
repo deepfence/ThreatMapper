@@ -1,5 +1,5 @@
 import { capitalize } from 'lodash-es';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   HiArchive,
@@ -262,8 +262,8 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
           <div>
             <DFLink
               to={generatePath('/registries/images/:account/:nodeId', {
-                account,
-                nodeId: info.row.original.node_id ?? '',
+                account: encodeURIComponent(account),
+                nodeId: encodeURIComponent(info.row.original.node_id ?? ''),
               })}
             >
               {capitalize(info.getValue())}
