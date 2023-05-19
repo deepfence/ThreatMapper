@@ -141,8 +141,10 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	query := `
 		MATCH (n:` + dummy.NodeType() + `)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-		` OPTIONAL MATCH (n) -[:IS]-> (e) OPTIONAL MATCH (l) -[:DETECTED]-> (n) OPTIONAL MATCH (l) -[:SCANNED]-> (k)
-		RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, coalesce(k.node_name, '') as resource_name, coalesce(k.node_type, '') as resource_type ` +
+		` OPTIONAL MATCH (n) -[:IS]-> (e) CALL {
+        WITH n OPTIONAL MATCH (l) -[:DETECTED]-> (n) OPTIONAL MATCH (l) -[:SCANNED]-> (k) 
+        WITH distinct k RETURN collect((coalesce(k.node_name, '') + '/' + coalesce(k.node_type, ''))) as resources }
+		RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources ` +
 		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) +
 		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
@@ -189,10 +191,14 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 				}
 			}
 		}
-		resourceName, isValue := rec.Get("resource_name")
-		resourceType, isValue := rec.Get("resource_type")
+		resources, isValue := rec.Get("resources")
 		if isValue {
-			node_map["resource"] = resourceType.(string) + "/" + resourceName.(string)
+			resourceList := resources.([]interface{})
+			resourceListString := make([]string, len(resourceList))
+			for i, v := range resourceList {
+				resourceListString[i] = v.(string)
+			}
+			node_map["resources"] = resourceListString
 		}
 		var node T
 		utils.FromMap(node_map, &node)
