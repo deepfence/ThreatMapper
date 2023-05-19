@@ -867,7 +867,7 @@ const ScanResultTable = () => {
         cell: (info) => (
           <DFLink
             to={{
-              pathname: `./${info.row.original.node_id}`,
+              pathname: `./${encodeURIComponent(info.row.original.node_id)}`,
               search: searchParams.toString(),
             }}
             className="flex items-center gap-x-2"
