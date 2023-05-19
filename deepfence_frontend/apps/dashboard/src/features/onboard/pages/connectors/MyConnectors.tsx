@@ -68,7 +68,7 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
             size: 1000000,
           },
           fields_filter: {
-            contains_filter: { filter_in: { active: [true] } },
+            contains_filter: { filter_in: {} },
             match_filter: { filter_in: {} },
             order_filter: { order_fields: [] },
             compare_filter: null,
