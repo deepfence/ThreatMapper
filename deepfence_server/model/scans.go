@@ -250,6 +250,7 @@ type Secret struct {
 	Name                  string  `json:"name" required:"true"`
 	Part                  string  `json:"part" required:"true"`
 	SignatureToMatch      string  `json:"signature_to_match" required:"true"`
+	Resource              string  `json:"resource" required:"false"`
 }
 
 func (Secret) NodeType() string {
@@ -288,6 +289,7 @@ type Vulnerability struct {
 	UpdatedAt                  int64         `json:"updated_at" required:"true"`
 	ParsedAttackVector         string        `json:"parsed_attack_vector" required:"true"`
 	HasLiveConnection          bool          `json:"has_live_connection" required:"true"`
+	Resource                   string        `json:"resource" required:"false"`
 }
 
 func (Vulnerability) NodeType() string {
@@ -326,6 +328,7 @@ type Malware struct {
 	StringsToMatch   []interface{} `json:"strings_to_match"`
 	Summary          string        `json:"summary"`
 	Masked           bool          `json:"masked" required:"true"`
+	Resource         string        `json:"resource" required:"false"`
 }
 
 func (Malware) NodeType() string {
