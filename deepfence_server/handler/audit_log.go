@@ -153,6 +153,11 @@ func (h *Handler) GetAuditLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(auditLogs) == 0 {
+		//This is to handle when there's no data in DB
+		auditLogs = make([]postgresql_db.GetAuditLogsRow, 0)
+	}
+
 	err = httpext.JSON(w, http.StatusOK, auditLogs)
 	if err != nil {
 		log.Error().Msg(err.Error())
