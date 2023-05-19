@@ -145,7 +145,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	if req.ID != currentSettings.ID {
 		respondError(&ValidatorError{
-			errors.New("Key: 'SettingUpdateRequest.ID' Error:invalid")}, w)
+			err: errors.New("Key: 'SettingUpdateRequest.ID' Error:invalid id"), skipOverwriteErrorMessage: true}, w)
 		return
 	}
 	var value interface{}
@@ -155,7 +155,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 		var parsedUrl *url.URL
 		if parsedUrl, err = url.ParseRequestURI(consoleUrl); err != nil {
 			respondError(&ValidatorError{
-				errors.New("Key: 'SettingUpdateRequest.Value' Error:must be url")}, w)
+				err: errors.New("Key: 'SettingUpdateRequest.Value' Error:invalid url"), skipOverwriteErrorMessage: true}, w)
 			return
 		}
 		value = parsedUrl.Scheme + "://" + parsedUrl.Host
@@ -163,7 +163,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 		val, ok := req.Value.(float64)
 		if !ok {
 			respondError(&ValidatorError{
-				errors.New("Key: 'SettingUpdateRequest.Value' Error:must be integer")}, w)
+				err: errors.New("Key: 'SettingUpdateRequest.Value' Error:must be integer"), skipOverwriteErrorMessage: true}, w)
 			return
 		}
 		value = int(math.Round(val))
