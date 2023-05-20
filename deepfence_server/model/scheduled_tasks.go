@@ -94,7 +94,7 @@ func InitializeScheduledTasks(ctx context.Context, pgClient *postgresqlDb.Querie
 			Description: fmt.Sprintf("Vulnerability scan on all %ss", nodeTypeLabels[nodeType]),
 			CronExpr:    VULNERABILITY_SCAN_CRON,
 			Payload:     payloadJson,
-			IsEnabled:   true,
+			IsEnabled:   false,
 			IsSystem:    true,
 		})
 		if err != nil {
@@ -117,7 +117,7 @@ func InitializeScheduledTasks(ctx context.Context, pgClient *postgresqlDb.Querie
 			Description: fmt.Sprintf("Secret scan on all %ss", nodeTypeLabels[nodeType]),
 			CronExpr:    SECRET_SCAN_CRON,
 			Payload:     payloadJson,
-			IsEnabled:   true,
+			IsEnabled:   false,
 			IsSystem:    true,
 		})
 		if err != nil {
@@ -140,7 +140,7 @@ func InitializeScheduledTasks(ctx context.Context, pgClient *postgresqlDb.Querie
 			Description: fmt.Sprintf("Malware scan on all %ss", nodeTypeLabels[nodeType]),
 			CronExpr:    MALWARE_SCAN_CRON,
 			Payload:     payloadJson,
-			IsEnabled:   true,
+			IsEnabled:   false,
 			IsSystem:    true,
 		})
 		if err != nil {
@@ -163,7 +163,7 @@ func InitializeScheduledTasks(ctx context.Context, pgClient *postgresqlDb.Querie
 			Description: fmt.Sprintf("Compliance scan on all %ss", nodeTypeLabels[nodeType]),
 			CronExpr:    COMPLIANCE_SCAN_CRON,
 			Payload:     payloadJson,
-			IsEnabled:   true,
+			IsEnabled:   false,
 			IsSystem:    true,
 		})
 		if err != nil {
