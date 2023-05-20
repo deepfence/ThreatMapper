@@ -14,7 +14,7 @@ class JiraIntegrationForm extends React.PureComponent {
       username: '',
       password: '',
       jiraProjectKey: '',
-      jiraAssignee: '',
+      assignee: '',
       issueType: '',
       integration_type: 'jira',
       isAuthToken: true,
@@ -31,7 +31,7 @@ class JiraIntegrationForm extends React.PureComponent {
         username: this.state.username,
         password: this.state.password,
         jira_project_key: this.state.jiraProjectKey,
-        assignee: this.state.jiraAssignee,
+        assignee: this.state.assignee,
         issue_type: this.state.issueType,
         api_token: this.state.api_token,
       };
@@ -58,7 +58,7 @@ class JiraIntegrationForm extends React.PureComponent {
       issueType,
       api_token,
       isAuthToken,
-      jiraAssignee,
+      assignee,
     } = this.state;
 
     const { submitted } = this.props;
@@ -260,14 +260,14 @@ class JiraIntegrationForm extends React.PureComponent {
         <div className="row">
           <div className="col-md-4">
             <div className="form-group">
-              <label htmlFor="jiraAssignee">
+              <label htmlFor="assignee">
                 <i className="fa fa-user" aria-hidden="true" />
                 <input
                   type="text"
                   className="form-control"
-                  name="jiraAssignee"
+                  name="assignee"
                   placeholder="Jira Assignee (Optional)"
-                  value={jiraAssignee}
+                  value={assignee}
                   onChange={this.handleChange}
                   autoComplete="off"
                 />
