@@ -79,7 +79,7 @@ require (
 	github.com/cyphar/filepath-securejoin v0.2.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
-	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230426073046-3eb89c3b0565 // indirect
+	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230520084733-80a8ef45b860 // indirect
 	github.com/deepfence/vessel v0.9.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/cli v23.0.1+incompatible // indirect
@@ -97,7 +97,7 @@ require (
 	github.com/emicklei/go-restful/v3 v3.10.2 // indirect
 	github.com/facebookincubator/nvdtools v0.1.5 // indirect
 	github.com/fatih/color v1.14.1 // indirect
-	github.com/flier/gohs v1.2.1 // indirect
+	github.com/flier/gohs v1.2.2 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.0 // indirect
 	github.com/go-chi/chi/v5 v5.0.8 // indirect
 	github.com/go-chi/jwtauth/v5 v5.1.0 // indirect
