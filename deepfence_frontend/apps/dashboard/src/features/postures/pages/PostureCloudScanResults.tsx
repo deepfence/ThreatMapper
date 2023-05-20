@@ -88,7 +88,7 @@ import { PostureSeverityType, ScanStatusEnum, ScanTypeEnum } from '@/types/commo
 import { ApiError, apiWrapper, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
-import { isScanComplete } from '@/utils/scan';
+import { isScanComplete, isScanFailed } from '@/utils/scan';
 import { DFAwait } from '@/utils/suspense';
 import {
   getOrderFromSearchParams,
@@ -711,7 +711,11 @@ const HistoryDropdown = ({ nodeType }: { nodeType: string }) => {
                               color="danger"
                               outline
                               size="xxs"
-                              disabled={isCurrentScan}
+                              disabled={
+                                isCurrentScan ||
+                                !isScanComplete(item.status) ||
+                                !isScanFailed(item.status)
+                              }
                               className="rounded-lg bg-transparent"
                               icon={<HiOutlineTrash />}
                               onClick={(e) => {
