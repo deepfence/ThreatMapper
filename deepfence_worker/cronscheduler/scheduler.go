@@ -132,7 +132,7 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 10m", s.enqueueTask(sdkUtils.CleanUpPostgresqlTask))
+	_, err = s.cron.AddFunc("@every 5m", s.enqueueTask(sdkUtils.CleanUpPostgresqlTask))
 	if err != nil {
 		return err
 	}
