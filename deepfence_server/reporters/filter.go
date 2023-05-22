@@ -94,7 +94,7 @@ func compareFilter2CypherConditions(cypherNodeName string, filters []CompareFilt
 		if !filter.GreaterThan {
 			compareOperator = "<"
 		}
-		conditions = append(conditions, fmt.Sprintf("%s.%s %s %s", cypherNodeName, filter.FieldName, compareOperator, filter.FieldValue))
+		conditions = append(conditions, fmt.Sprintf("%s.%s %s %v", cypherNodeName, filter.FieldName, compareOperator, filter.FieldValue))
 	}
 	return conditions
 }
