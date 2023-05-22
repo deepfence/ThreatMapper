@@ -5,15 +5,15 @@ import (
 )
 
 type RegistryDockerPrivate struct {
-	Name         string    `json:"name"`
+	Name         string    `json:"name" validate:"required"`
 	NonSecret    NonSecret `json:"non_secret"`
 	Secret       Secret    `json:"secret"`
-	RegistryType string    `json:"registry_type"`
+	RegistryType string    `json:"registry_type" validate:"required"`
 }
 
 type NonSecret struct {
-	DockerRegistryURL string `json:"docker_registry_url"`
-	DockerUsername    string `json:"docker_username"`
+	DockerRegistryURL string `json:"docker_registry_url" validate:"required"`
+	DockerUsername    string `json:"docker_username" validate:"required"`
 }
 
 type Secret struct {
