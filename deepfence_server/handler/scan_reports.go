@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"bytes"
-	"compress/gzip"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -500,37 +498,19 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if params.ScanId == "" {
-		log.Error().Msgf("error scan id is empty, params: %+v", params)
-		httpext.JSON(w, http.StatusBadRequest,
-			model.ErrorResponse{Message: "scan_id is required to process sbom"})
-		return
-	}
-
-	// decompress sbom
 	b64, err := base64.StdEncoding.DecodeString(params.SBOM)
 	if err != nil {
 		log.Error().Err(err).Msgf("error b64 reader")
 		respondError(&BadDecoding{err}, w)
 		return
 	}
-	sr := bytes.NewReader(b64)
-	gzr, err := gzip.NewReader(sr)
-	if err != nil {
-		log.Error().Err(err).Msgf("error gzip reader")
-		respondError(&BadDecoding{err}, w)
-		return
-	}
-	defer gzr.Close()
-	sbom, err := io.ReadAll(gzr)
-	if err != nil {
-		log.Error().Err(err).Msgf("error read all decompressed sbom")
-		respondError(&BadDecoding{err}, w)
-		return
-	}
 
-	log.Info().Msgf("received sbom size: %.4fmb decompressed: %.4fmb",
-		float64(len(params.SBOM))/1000.0/1000.0, float64(len(sbom))/1000.0/1000.0)
+	if params.ScanId == "" {
+		log.Error().Msgf("error scan id is empty, params: %+v", params)
+		httpext.JSON(w, http.StatusBadRequest,
+			model.ErrorResponse{Message: "scan_id is required to process sbom"})
+		return
+	}
 
 	mc, err := directory.MinioClient(r.Context())
 	if err != nil {
@@ -539,9 +519,9 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file := path.Join("sbom", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
-	info, err := mc.UploadFile(r.Context(), file, []byte(sbom),
-		minio.PutObjectOptions{ContentType: "application/json"})
+	file := path.Join("sbom", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
+	info, err := mc.UploadFile(r.Context(), file, b64,
+		minio.PutObjectOptions{ContentType: "application/gzip"})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)
@@ -1436,10 +1416,10 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 		httpext.JSON(w, http.StatusOK, sbom)
 	case "download":
 		resp := model.DownloadReportResponse{}
-		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(req.ScanID)+".json")
+		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(req.ScanID)+".json.gz")
 		cd := url.Values{
 			"response-content-disposition": []string{
-				"attachment; filename=" + strconv.Quote(utils.ScanIdReplacer.Replace(req.ScanID)+".json")},
+				"attachment; filename=" + strconv.Quote(utils.ScanIdReplacer.Replace(req.ScanID)+".json.gz")},
 		}
 		url, err := mc.ExposeFile(r.Context(), sbomFile, true, DownloadReportUrlExpiry, cd)
 		if err != nil {

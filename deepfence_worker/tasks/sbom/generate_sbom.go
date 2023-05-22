@@ -1,6 +1,8 @@
 package sbom
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"os"
 	"path"
@@ -117,6 +119,16 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 		return nil, nil
 	}
 
+	gzpb64Sbom := bytes.Buffer{}
+	gzipwriter := gzip.NewWriter(&gzpb64Sbom)
+	_, err = gzipwriter.Write(rawSbom)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
+		return nil, nil
+	}
+	gzipwriter.Close()
+
 	// upload sbom to minio
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
@@ -125,9 +137,9 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 		return nil, nil
 	}
 
-	sbomFile := path.Join("/sbom/", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
-	info, err := mc.UploadFile(ctx, sbomFile, []byte(rawSbom),
-		minio.PutObjectOptions{ContentType: "application/json"})
+	sbomFile := path.Join("/sbom/", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
+	info, err := mc.UploadFile(ctx, sbomFile, gzpb64Sbom.Bytes(),
+		minio.PutObjectOptions{ContentType: "application/gzip"})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
