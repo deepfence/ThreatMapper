@@ -357,6 +357,7 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'vulnerability/scan-results/:scanId',
         ...vulnerabilityScanResults,
         meta: { title: 'Vulnerability Scan Results' },
+        id: 'vulnerability-scan-results',
         children: [
           {
             path: ':cveId',
@@ -409,6 +410,7 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'secret/scan-results/:scanId',
         ...secretScanResults,
         meta: { title: 'Secret Scan Results' },
+        id: 'secret-scan-results',
         children: [
           {
             path: ':secretId',

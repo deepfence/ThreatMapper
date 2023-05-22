@@ -3,7 +3,12 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { omit, pick, truncate } from 'lodash-es';
 import { Suspense } from 'react';
-import { LoaderFunctionArgs, useLoaderData, useSearchParams } from 'react-router-dom';
+import {
+  LoaderFunctionArgs,
+  useLoaderData,
+  useRouteLoaderData,
+  useSearchParams,
+} from 'react-router-dom';
 import {
   Badge,
   CircleSpinner,
@@ -18,6 +23,7 @@ import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ModelSecret } from '@/api/generated/models/ModelSecret';
 import { CopyToClipboard } from '@/components/CopyToClipboard';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
+import { LoaderDataType as ScanResultsLoaderDataType } from '@/features/secrets/pages/SecretScanResults';
 import { ApiError, makeRequest } from '@/utils/api';
 import { getObjectKeys } from '@/utils/array';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -107,7 +113,9 @@ const loader = async ({
 
 const Header = () => {
   const loaderData = useLoaderData() as LoaderDataType;
-
+  const scanResultsLoader = useRouteLoaderData(
+    'secret-scan-results',
+  ) as ScanResultsLoaderDataType;
   return (
     <SlidingModalHeader>
       <Suspense fallback={<CircleSpinner size="xs" />}>
@@ -147,9 +155,15 @@ const Header = () => {
                   />
                   <CopyToClipboard data={secret} />
                 </div>
-                <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7">
-                  {dayjs(secret?.updated_at).fromNow()}
-                </span>
+                <DFAwait resolve={scanResultsLoader?.data}>
+                  {(scanResults: ScanResultsLoaderDataType) => {
+                    return (
+                      <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7">
+                        {dayjs(scanResults.data?.timestamp).fromNow() || '-'}
+                      </span>
+                    );
+                  }}
+                </DFAwait>
               </div>
             );
           }}
