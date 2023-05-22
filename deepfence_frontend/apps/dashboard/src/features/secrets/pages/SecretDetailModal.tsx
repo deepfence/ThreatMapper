@@ -155,15 +155,17 @@ const Header = () => {
                   />
                   <CopyToClipboard data={secret} />
                 </div>
-                <DFAwait resolve={scanResultsLoader?.data}>
-                  {(scanResults: ScanResultsLoaderDataType) => {
-                    return (
-                      <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7 mt-2">
-                        {dayjs(scanResults.data?.timestamp).fromNow() || '-'}
-                      </span>
-                    );
-                  }}
-                </DFAwait>
+                {scanResultsLoader?.data ? (
+                  <DFAwait resolve={scanResultsLoader?.data}>
+                    {(scanResults: ScanResultsLoaderDataType) => {
+                      return (
+                        <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7 mt-2">
+                          {dayjs(scanResults.data?.timestamp).fromNow() || '-'}
+                        </span>
+                      );
+                    }}
+                  </DFAwait>
+                ) : null}
               </div>
             );
           }}
