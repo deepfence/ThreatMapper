@@ -312,6 +312,7 @@ export const ComplianceScanConfigureForm = ({
       };
     });
   });
+  console.log(tabs);
   const [defaultTab, setDefaultTab] = useState('');
 
   useEffect(() => {
@@ -382,7 +383,7 @@ export const ComplianceScanConfigureForm = ({
         <input type="text" name="_nodeType" readOnly hidden value={nodeType} />
 
         <Button
-          disabled={state !== 'idle'}
+          disabled={state !== 'idle' || !tabs.length}
           loading={state !== 'idle'}
           size="sm"
           color="primary"
