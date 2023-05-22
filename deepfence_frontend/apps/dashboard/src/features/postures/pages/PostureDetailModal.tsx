@@ -3,7 +3,12 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { omit, pick, truncate } from 'lodash-es';
 import { Suspense } from 'react';
-import { LoaderFunctionArgs, useLoaderData, useSearchParams } from 'react-router-dom';
+import {
+  LoaderFunctionArgs,
+  useLoaderData,
+  useRouteLoaderData,
+  useSearchParams,
+} from 'react-router-dom';
 import {
   Badge,
   CircleSpinner,
@@ -17,6 +22,7 @@ import { getSearchApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse, ModelCompliance } from '@/api/generated';
 import { CopyToClipboard } from '@/components/CopyToClipboard';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
+import { LoaderDataType as ScanResultsLoaderDataType } from '@/features/postures/pages/PostureScanResults';
 import { STATUSES } from '@/features/postures/pages/PostureScanResults';
 import { ApiError, makeRequest } from '@/utils/api';
 import { getObjectKeys } from '@/utils/array';
@@ -108,6 +114,9 @@ const loader = async ({
 
 const Header = () => {
   const loaderData = useLoaderData() as LoaderDataType;
+  const scanResultsLoader = useRouteLoaderData(
+    'posture-scan-results',
+  ) as ScanResultsLoaderDataType;
 
   return (
     <SlidingModalHeader>
@@ -122,7 +131,7 @@ const Header = () => {
               );
             }
             return (
-              <div className="flex flex-col w-full p-4">
+              <div className="flex flex-col w-full">
                 <div className="flex gap-x-2 items-center">
                   <span className="w-5 h-5 text-gray-500 dark:text-white">
                     <PostureIcon />
@@ -136,9 +145,15 @@ const Header = () => {
                   />
                   <CopyToClipboard data={compliane} />
                 </div>
-                <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7">
-                  {dayjs(compliane.updated_at).fromNow() || '-'}
-                </span>
+                <DFAwait resolve={scanResultsLoader?.data}>
+                  {(scanResults: ScanResultsLoaderDataType) => {
+                    return (
+                      <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7 mt-2">
+                        {dayjs(scanResults.data?.timestamp).fromNow() || '-'}
+                      </span>
+                    );
+                  }}
+                </DFAwait>
               </div>
             );
           }}

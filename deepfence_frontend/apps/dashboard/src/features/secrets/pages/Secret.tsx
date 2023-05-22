@@ -28,6 +28,7 @@ async function getTop5SecretAssetsData(nodeType: 'image' | 'host' | 'container')
                 filter_in: {
                   pseudo: [false],
                   active: [true],
+                  secret_scan_status: ['COMPLETE'],
                 },
               },
               match_filter: {

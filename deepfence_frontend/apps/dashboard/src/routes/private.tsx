@@ -357,6 +357,7 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'vulnerability/scan-results/:scanId',
         ...vulnerabilityScanResults,
         meta: { title: 'Vulnerability Scan Results' },
+        id: 'vulnerability-scan-results',
         children: [
           {
             path: ':cveId',
@@ -409,6 +410,7 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'secret/scan-results/:scanId',
         ...secretScanResults,
         meta: { title: 'Secret Scan Results' },
+        id: 'secret-scan-results',
         children: [
           {
             path: ':secretId',
@@ -461,6 +463,7 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'posture/scan-results/:nodeType/:scanId',
         ...postureScanResults,
         meta: { title: 'Posture Scans Results' },
+        id: 'posture-scan-results',
         children: [
           {
             path: ':complianceId',
@@ -473,6 +476,7 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'posture/cloud/scan-results/:nodeType/:scanId',
         ...postureCloudScanResults,
         meta: { title: 'Posture Scans Results' },
+        id: 'posture-cloud-scan-results',
         children: [
           {
             path: ':complianceId',
