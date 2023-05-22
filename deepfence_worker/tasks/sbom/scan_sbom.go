@@ -1,8 +1,11 @@
 package sbom
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"encoding/json"
+	"io"
 	"os"
 	"path"
 	"time"
@@ -33,6 +36,42 @@ type SbomParser struct {
 
 func NewSBOMScanner(ingest chan *kgo.Record) SbomParser {
 	return SbomParser{ingestC: ingest}
+}
+
+type UnzippedFile struct {
+	file   *os.File
+	buffer *bytes.Buffer
+}
+
+func NewUnzippedFile(file *os.File) UnzippedFile {
+	return UnzippedFile{
+		file:   file,
+		buffer: &bytes.Buffer{},
+	}
+}
+
+func (b UnzippedFile) Write(data []byte) (int, error) {
+	return b.buffer.Write(data)
+}
+
+func (b UnzippedFile) Close() error {
+	gzr, err := gzip.NewReader(b.buffer)
+	if err != nil {
+		return err
+	}
+	sbom, err := io.ReadAll(gzr)
+	if err != nil {
+		return err
+	}
+	err = gzr.Close()
+	if err != nil {
+		return err
+	}
+	_, err = b.file.Write(sbom)
+	if err != nil {
+		return err
+	}
+	return b.file.Close()
 }
 
 func (s SbomParser) ScanSBOM(msg *message.Message) error {
@@ -70,24 +109,29 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 		return nil
 	}
 
-	sbomFile := path.Join("/tmp", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
-	log.Info().Msgf("sbom file %s", sbomFile)
-	err = mc.DownloadFile(context.Background(), params.SBOMFilePath, sbomFile, minio.GetObjectOptions{})
+	sbomFilePath := path.Join("/tmp", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
+	f, err := os.Create(sbomFilePath)
+	if err != nil {
+		return err
+	}
+	log.Info().Msgf("sbom file %s", sbomFilePath)
+	sbomFile := NewUnzippedFile(f)
+	err = mc.DownloadFileTo(context.Background(), params.SBOMFilePath, sbomFile, minio.GetObjectOptions{})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
 		return nil
 	}
 	defer func() {
-		log.Info().Msgf("remove sbom file %s", sbomFile)
-		os.Remove(sbomFile)
+		log.Info().Msgf("remove sbom file %s", sbomFilePath)
+		os.Remove(sbomFilePath)
 	}()
 
 	log.Info().Msg("scanning sbom for vulnerabilities ...")
 	env := []string{
 		"GRYPE_DB_UPDATE_URL=http://deepfence-file-server:9000/database/database/vulnerability/listing.json",
 	}
-	vulnerabilities, err := grype.Scan(grypeBin, grypeConfig, sbomFile, &env)
+	vulnerabilities, err := grype.Scan(grypeBin, grypeConfig, sbomFilePath, &env)
 	if err != nil {
 		log.Error().Msgf("error: %s output: %s", err.Error(), string(vulnerabilities))
 		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
@@ -152,7 +196,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	}
 
 	// generate runtime sbom
-	runtimeSbom, err := generateRuntimeSBOM(sbomFile, report)
+	runtimeSbom, err := generateRuntimeSBOM(sbomFilePath, report)
 	if err != nil {
 		log.Error().Err(err).Msgf("failed to generate runtime sbom")
 		return nil
