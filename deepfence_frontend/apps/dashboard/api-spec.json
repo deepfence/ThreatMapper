@@ -5838,6 +5838,61 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/search/cloud-nodes": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Cloud Nodes",
+        "description": "Search across all the data associated with cloud nodes",
+        "operationId": "searchCloudNodes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelCloudNodeAccountInfo" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/search/cloud-resources": {
       "post": {
         "tags": ["Search"],
@@ -10149,6 +10204,11 @@
           "info": { "type": "string" },
           "masked": { "type": "boolean" },
           "node_id": { "type": "string" },
+          "resources": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "rule_id": { "type": "string" },
           "rule_name": { "type": "string" },
           "severity_score": { "type": "integer" },
@@ -10690,6 +10750,11 @@
           "part": { "type": "string" },
           "relative_ending_index": { "type": "integer" },
           "relative_starting_index": { "type": "integer" },
+          "resources": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "rule_id": { "type": "integer" },
           "score": { "type": "number" },
           "signature_to_match": { "type": "string" },
@@ -10904,6 +10969,11 @@
           "masked": { "type": "boolean" },
           "node_id": { "type": "string" },
           "parsed_attack_vector": { "type": "string" },
+          "resources": {
+            "type": "array",
+            "items": { "type": "string" },
+            "nullable": true
+          },
           "updated_at": { "type": "integer" },
           "urls": { "type": "array", "items": {}, "nullable": true }
         }

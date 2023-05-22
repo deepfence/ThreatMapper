@@ -2,7 +2,6 @@ import cx from 'classnames';
 import { IconContext } from 'react-icons';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 
-import { DFLink } from '@/components/DFLink';
 import { ScanTypeEnum } from '@/types/common';
 
 export const ScanStatusInProgress = ({ LogoIcon }: { LogoIcon: () => JSX.Element }) => {
@@ -37,7 +36,7 @@ export const ScanStatusInError = () => {
       </div>
       <span className="text-2xl font-medium text-red-500/80">Scan Error</span>
       <span className="text-sm text-gray-500 dark:text-gray-400">
-        Scan ran into an error, please check <DFLink to="#">details</DFLink>
+        Please check deepfence console logs for more details.
       </span>
     </div>
   );

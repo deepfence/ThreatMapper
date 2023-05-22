@@ -21,15 +21,11 @@ import {
   TableSkeleton,
 } from 'ui-components';
 
-import { getScanResultsApiClient, getSearchApiClient } from '@/api/api';
-import {
-  ModelNodesInScanResultRequestScanTypeEnum,
-  ModelScanResultBasicNode,
-  ModelVulnerability,
-  SearchSearchNodeReq,
-} from '@/api/generated';
+import { getSearchApiClient } from '@/api/api';
+import { ModelVulnerability, SearchSearchNodeReq } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { TruncatedText } from '@/components/TruncatedText';
 import { ApiError, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -47,13 +43,13 @@ type LoaderDataType = {
 const PAGE_SIZE = 15;
 
 async function getVulnerability(searchParams: URLSearchParams): Promise<{
-  vulnerabilities: Array<ModelVulnerability & { cve_affected_assets: string }>;
+  vulnerabilities: Array<ModelVulnerability>;
   currentPage: number;
   totalRows: number;
   message?: string;
 }> {
   const results: {
-    vulnerabilities: Array<ModelVulnerability & { cve_affected_assets: string }>;
+    vulnerabilities: Array<ModelVulnerability>;
     currentPage: number;
     totalRows: number;
     message?: string;
@@ -120,49 +116,7 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
     throw countsResult.value();
   }
 
-  const allNodes = await makeRequest({
-    apiFunction: getScanResultsApiClient().getAllNodesInScanResults,
-    apiArgs: [
-      {
-        modelNodesInScanResultRequest: {
-          result_ids: result.map((res) => res.cve_id),
-          scan_type: ModelNodesInScanResultRequestScanTypeEnum.VulnerabilityScan,
-        },
-      },
-    ],
-  });
-
-  if (ApiError.isApiError(allNodes)) {
-    throw allNodes.value();
-  }
-
-  if (result === null) {
-    // TODO: handle this with 404?
-    throw new Error('unable to get cve results');
-  }
-
-  const groupByNodes = allNodes.reduce<{ [k: string]: ModelScanResultBasicNode }>(
-    (acc, data) => {
-      const { result_id, ...rest } = data;
-      acc[result_id] = rest as ModelScanResultBasicNode;
-      return acc;
-    },
-    {},
-  );
-
-  results.vulnerabilities = result.map((vulnerability) => {
-    const resources = groupByNodes[vulnerability.cve_id];
-    const resourcesLen = resources?.basic_nodes?.length ?? 0;
-    let affectedAssets = resources?.basic_nodes?.[0]?.name ?? '';
-    if (affectedAssets && resourcesLen > 1) {
-      affectedAssets = `${affectedAssets} + ${resourcesLen - 1} more`;
-    }
-    return {
-      ...vulnerability,
-      cve_affected_assets: affectedAssets,
-    };
-  });
-
+  results.vulnerabilities = result;
   results.currentPage = page;
   results.totalRows = page * PAGE_SIZE + countsResult.count;
 
@@ -279,27 +233,32 @@ const UniqueVulnerabilities = () => {
       columnHelper.accessor('exploit_poc', {
         enableSorting: false,
         enableResizing: false,
-        cell: () => (
-          <DFLink to="#">
-            <IconContext.Provider
-              value={{
-                className: 'w-4 h-4',
-              }}
-            >
-              <HiExternalLink />
-            </IconContext.Provider>
-          </DFLink>
-        ),
+        cell: (info) => {
+          if (!info.getValue().length) return null;
+          return (
+            <DFLink href={info.getValue()} target="_blank">
+              <IconContext.Provider
+                value={{
+                  className: 'w-4 h-4',
+                }}
+              >
+                <HiExternalLink />
+              </IconContext.Provider>
+            </DFLink>
+          );
+        },
         header: () => 'Exploit',
         minSize: 60,
         size: 60,
         maxSize: 70,
       }),
-      columnHelper.accessor('cve_affected_assets', {
+      columnHelper.accessor('resources', {
         enableSorting: false,
         enableResizing: true,
-        cell: (info) => info.getValue(),
-        header: () => 'Vulnerable Resources',
+        cell: (info) => {
+          return <TruncatedText text={info.getValue()?.join(', ') ?? ''} />;
+        },
+        header: () => 'Affected Resources',
         minSize: 200,
         size: 200,
         maxSize: 240,

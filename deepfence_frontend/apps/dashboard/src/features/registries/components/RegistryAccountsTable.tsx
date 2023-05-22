@@ -1,5 +1,5 @@
 import { capitalize } from 'lodash-es';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   HiArchive,
@@ -207,7 +207,7 @@ const ActionDropdown = ({
                 <span className="text-gray-700 dark:text-gray-400">Scan</span>
               </DropdownItem>
             </DropdownSubMenu>
-            <DropdownItem className="text-sm">
+            {/* <DropdownItem className="text-sm">
               <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
                 <IconContext.Provider
                   value={{ className: 'text-gray-700 dark:text-gray-400' }}
@@ -216,7 +216,7 @@ const ActionDropdown = ({
                 </IconContext.Provider>
                 Edit
               </span>
-            </DropdownItem>
+            </DropdownItem> */}
             <DropdownItem
               className="text-sm"
               onClick={() => {
@@ -262,8 +262,8 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
           <div>
             <DFLink
               to={generatePath('/registries/images/:account/:nodeId', {
-                account,
-                nodeId: info.row.original.node_id ?? '',
+                account: encodeURIComponent(account),
+                nodeId: encodeURIComponent(info.row.original.node_id ?? ''),
               })}
             >
               {capitalize(info.getValue())}

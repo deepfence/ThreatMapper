@@ -42,9 +42,9 @@ export const AutoRefresh = () => {
   }, [spinning]);
 
   return (
-    <div className="flex items-stretch h-8 border-gray-300 rounded-lg border text-gray-500">
+    <div className="flex items-stretch h-8 border-gray-300 dark:border-gray-600 rounded-lg border text-gray-500 dark:text-gray-300">
       <button
-        className="w-8 h-full flex items-center justify-center border-gray-200 border-r-2"
+        className="w-8 h-full flex items-center justify-center border-gray-200 dark:border-gray-600 border-r-2"
         title="Refresh now"
         onClick={() => {
           if (state === 'idle') {

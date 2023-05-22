@@ -461,7 +461,6 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
         minSize: 30,
         size: 30,
         maxSize: 30,
-        header: () => null,
       }),
       columnHelper.accessor('node_name', {
         cell: (cell) => {
@@ -570,9 +569,9 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
           );
         },
         header: () => '',
-        minSize: 50,
-        size: 50,
-        maxSize: 50,
+        minSize: 20,
+        size: 20,
+        maxSize: 20,
         enableResizing: false,
       }),
     ],

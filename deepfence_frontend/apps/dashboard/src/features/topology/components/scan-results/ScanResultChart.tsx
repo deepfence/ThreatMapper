@@ -35,6 +35,7 @@ export const ScanResultChart = ({
             bottom: '-30%',
             radius: ['80%', '100%'],
             center: ['50%', '70%'],
+            cursor: 'default',
             // adjust the start angle
             startAngle: 180,
             label: {

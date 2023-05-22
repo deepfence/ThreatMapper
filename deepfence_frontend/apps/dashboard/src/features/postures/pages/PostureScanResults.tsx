@@ -1430,6 +1430,7 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                     eoption={{
                       series: [
                         {
+                          cursor: 'default',
                           color: statuses,
                         },
                       ],
