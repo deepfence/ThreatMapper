@@ -107,6 +107,7 @@ export const STATUSES: { [k: string]: string } = {
   ALARM: 'alarm',
   OK: 'ok',
   SKIP: 'skip',
+  DELETE: 'delete',
 };
 enum ActionEnumType {
   MASK = 'mask',
@@ -1108,7 +1109,13 @@ const FilterComponent = () => {
   if (params.nodeType === ACCOUNT_CONNECTOR.LINUX) {
     statuses = [STATUSES.INFO, STATUSES.PASS, STATUSES.WARN, STATUSES.NOTE];
   } else {
-    statuses = [STATUSES.ALARM, STATUSES.INFO, STATUSES.OK, STATUSES.SKIP];
+    statuses = [
+      STATUSES.ALARM,
+      STATUSES.INFO,
+      STATUSES.OK,
+      STATUSES.SKIP,
+      STATUSES.DELETE,
+    ];
   }
 
   let benchmarks: string[] = [];
