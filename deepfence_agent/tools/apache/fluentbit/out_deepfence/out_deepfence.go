@@ -113,12 +113,12 @@ func Authenticate(url string, apiToken string) (string, string, error) {
 
 	apiClient := dsc.NewAPIClient(cfg)
 
-	req := apiClient.AuthenticationApi.AuthToken(context.Background()).
+	req := apiClient.AuthenticationAPI.AuthToken(context.Background()).
 		ModelApiAuthRequest(
 			dsc.ModelApiAuthRequest{ApiToken: apiToken},
 		)
 
-	resp, _, err := apiClient.AuthenticationApi.AuthTokenExecute(req)
+	resp, _, err := apiClient.AuthenticationAPI.AuthTokenExecute(req)
 	if err != nil {
 		return "", "", err
 	}
@@ -149,9 +149,9 @@ func RefreshToken(url string, apiToken string) (string, string, error) {
 
 	apiClient := dsc.NewAPIClient(cfg)
 
-	req := apiClient.AuthenticationApi.AuthTokenRefresh(context.Background())
+	req := apiClient.AuthenticationAPI.AuthTokenRefresh(context.Background())
 
-	resp, _, err := apiClient.AuthenticationApi.AuthTokenRefreshExecute(req)
+	resp, _, err := apiClient.AuthenticationAPI.AuthTokenRefreshExecute(req)
 	if err != nil {
 		return "", "", err
 	}
