@@ -5,6 +5,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
+	"github.com/go-playground/validator/v10"
 )
 
 func New(requestByte []byte) (*RegistryECR, error) {
@@ -14,6 +15,10 @@ func New(requestByte []byte) (*RegistryECR, error) {
 		return &r, err
 	}
 	return &r, nil
+}
+
+func (d *RegistryECR) ValidateFields(v *validator.Validate) error {
+	return v.Struct(d)
 }
 
 func (e *RegistryECR) IsValidCredential() bool {

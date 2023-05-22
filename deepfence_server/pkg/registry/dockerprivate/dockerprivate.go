@@ -8,6 +8,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/go-playground/validator/v10"
 )
 
 func New(requestByte []byte) (*RegistryDockerPrivate, error) {
@@ -17,6 +18,10 @@ func New(requestByte []byte) (*RegistryDockerPrivate, error) {
 		return &r, err
 	}
 	return &r, nil
+}
+
+func (d *RegistryDockerPrivate) ValidateFields(v *validator.Validate) error {
+	return v.Struct(d)
 }
 
 func (d *RegistryDockerPrivate) IsValidCredential() bool {

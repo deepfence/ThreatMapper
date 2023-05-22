@@ -9,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/go-playground/validator/v10"
 )
 
 func New(data []byte) (*RegistryGCR, error) {
@@ -18,6 +19,10 @@ func New(data []byte) (*RegistryGCR, error) {
 		return nil, err
 	}
 	return &r, nil
+}
+
+func (d *RegistryGCR) ValidateFields(v *validator.Validate) error {
+	return v.Struct(d)
 }
 
 func (d *RegistryGCR) IsValidCredential() bool {
