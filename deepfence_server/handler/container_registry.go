@@ -95,7 +95,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	err = registry.ValidateFields(h.Validator)
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
