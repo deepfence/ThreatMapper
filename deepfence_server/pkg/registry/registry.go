@@ -16,6 +16,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/quay"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	"github.com/go-playground/validator/v10"
 	"github.com/pkg/errors"
 )
 
@@ -436,6 +437,7 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 // Registry is the interface for all the supported registries
 type Registry interface {
 	IsValidCredential() bool
+	ValidateFields(v *validator.Validate) error
 	EncryptSecret(aes encryption.AES) error
 	DecryptSecret(aes encryption.AES) error
 	EncryptExtras(aes encryption.AES) error
