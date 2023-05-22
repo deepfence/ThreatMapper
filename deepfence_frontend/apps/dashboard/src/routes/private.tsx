@@ -357,7 +357,7 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'vulnerability/scan-results/:scanId',
         ...vulnerabilityScanResults,
         meta: { title: 'Vulnerability Scan Results' },
-        id: 'vulnerability-scan-results',
+        id: 'vulnerability/scan-results',
         children: [
           {
             path: ':cveId',
@@ -370,6 +370,7 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'vulnerability/most-exploitable',
         ...mostExploitableVulnerabilities,
         meta: { title: 'Most Exploitable Vulnerabilities' },
+        id: 'vulnerability/most-exploitable',
         children: [
           {
             path: ':cveId',
@@ -382,6 +383,7 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'vulnerability/unique-vulnerabilities',
         ...uniqueVulnerabilities,
         meta: { title: 'Unique Vulnerabilities' },
+        id: 'vulnerability/unique-vulnerabilities',
         children: [
           {
             path: ':cveId',

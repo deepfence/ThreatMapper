@@ -148,7 +148,7 @@ const Header = () => {
                 <DFAwait resolve={scanResultsLoader?.data}>
                   {(scanResults: ScanResultsLoaderDataType) => {
                     return (
-                      <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7">
+                      <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7 mt-2 mt-2">
                         {dayjs(scanResults.data?.timestamp).fromNow() || '-'}
                       </span>
                     );
