@@ -131,7 +131,7 @@ const Header = () => {
               );
             }
             return (
-              <div className="flex flex-col w-full p-4">
+              <div className="flex flex-col w-full">
                 <div className="flex gap-x-2 items-center">
                   <span className="w-5 h-5 text-gray-500 dark:text-white">
                     <PostureIcon />
