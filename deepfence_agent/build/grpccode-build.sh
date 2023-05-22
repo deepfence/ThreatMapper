@@ -11,4 +11,4 @@ rm -rf ./tools/apache/scope/proto
 mkdir ./tools/apache/scope/proto 2>/dev/null
 cp /tmp/plugins/proto/*.go ./tools/apache/scope/proto
 cp /tmp/plugins/proto/*.go ./plugins/agent-plugins-grpc/proto
-mkdir -p ./plugins/proto && cp /tmp/plugins/proto/*.proto ./plugins/proto
+mkdir -p ./plugins/proto && cp /tmp/plugins/proto/*.go ./plugins/proto
