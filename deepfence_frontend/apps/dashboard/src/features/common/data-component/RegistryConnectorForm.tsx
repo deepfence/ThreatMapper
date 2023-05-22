@@ -14,7 +14,7 @@ import { HarborConnectorForm } from '@/components/registries-connector/HarborCon
 import { JfrogConnectorForm } from '@/components/registries-connector/JfrogConnectorForm';
 import { QuayConnectorForm } from '@/components/registries-connector/QuayConnectorForm';
 import { RegistryType } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 type ActionReturnType = {
   message?: string;
@@ -27,146 +27,39 @@ type FormProps = {
   registryType: string;
 };
 
+function unwrapNestedStruct(
+  obj: Record<string, string>,
+): Record<string, string | Record<string, string>> {
+  const results: Record<string, string | Record<string, string>> = {};
+  for (const key in obj) {
+    if (key.includes('.')) {
+      const [first, second] = key.split('.');
+      if (!results[first]) {
+        results[first] = {};
+      }
+      (results[first] as Record<string, string>)[second] = obj[key];
+    }
+  }
+
+  return results;
+}
+
 const getRequestBodyByRegistryType = (
   registryType: string,
   body: {
-    [k: string]: FormDataEntryValue;
+    [k: string]: string;
   },
 ): ModelRegistryAddReq => {
-  let requestParams: ModelRegistryAddReq = {
-    name: '',
-    registry_type: '',
-  };
-
-  switch (registryType) {
-    case RegistryType.docker_hub:
-      requestParams = {
-        name: body.registryName.toString(),
-        non_secret: {
-          docker_hub_namespace: body.namespace,
-          docker_hub_username: body.username,
-        },
-        secret: {
-          docker_hub_password: body.password,
-        },
-        registry_type: 'docker_hub',
-      };
-      break;
-    case RegistryType.docker_private_registry:
-      requestParams = {
-        name: body.registryName.toString(),
-        non_secret: {
-          docker_registry_url: body.registryUrl,
-          docker_username: body.username,
-        },
-        secret: {
-          docker_password: body.password,
-        },
-        registry_type: 'docker_private_registry',
-      };
-      break;
-    case RegistryType.harbor:
-      requestParams = {
-        name: body.registryName.toString(),
-        non_secret: {
-          harbor_registry_url: body.registryUrl,
-          harbor_project_name: body.projectName,
-          harbor_username: body.username,
-        },
-        secret: {
-          harbor_password: body.password,
-        },
-        registry_type: 'harbor',
-      };
-      break;
-    case RegistryType.quay:
-      requestParams = {
-        name: body.registryName.toString(),
-        non_secret: {
-          quay_registry_url: body.registryUrl,
-          quay_namespace: body.namespace,
-        },
-        secret: {
-          quay_access_token: body.accessToken,
-        },
-        registry_type: 'quay',
-      };
-      break;
-
-    case RegistryType.gitlab:
-      requestParams = {
-        name: body.registryName.toString(),
-        non_secret: {
-          gitlab_registry_url: body.registryUrl,
-          gitlab_server_url: body.serverUrl,
-        },
-        secret: {
-          gitlab_access_token: body.accessToken,
-        },
-        registry_type: 'gitlab',
-      };
-      break;
-    case RegistryType.jfrog_container_registry:
-      requestParams = {
-        name: body.registryName.toString(),
-        non_secret: {
-          jfrog_registry_url: body.registryUrl,
-          jfrog_repository: body.repository,
-          jfrog_username: body.username,
-        },
-        secret: {
-          jfrog_password: body.password,
-        },
-        registry_type: 'jfrog_container_registry',
-      };
-      break;
-    case RegistryType.azure_container_registry:
-      requestParams = {
-        name: body.registryName.toString(),
-        non_secret: {
-          azure_registry_url: body.registryUrl,
-          azure_registry_username: body.username,
-        },
-        secret: {
-          azure_registry_password: body.password,
-        },
-        registry_type: 'azure_container_registry',
-      };
-      break;
-    case RegistryType.ecr:
-      requestParams = {
-        name: body.registryName.toString(),
-        non_secret: {
-          aws_region_name: body.awsRegion,
-          ecr_registry_username: body.username,
-
-          registry_id: body.awsSecretKey,
-          use_iam_role: body.awsSecretKey,
-          target_account_role_arn: body.awsSecretKey,
-        },
-        secret: {
-          aws_access_key_id: body.awsAccessKey,
-          aws_secret_access_key: body.awsSecretKey,
-        },
-        registry_type: 'ecr',
-      };
-      break;
-    case RegistryType.google_container_registry:
-      requestParams = {
-        name: body.registryName.toString(),
-        non_secret: {
-          registry_url: body.registryUrl,
-        },
-        secret: {
-          service_account_json: body.authFile,
-        },
-        registry_type: 'google_container_registry',
-      };
-      break;
-    default:
-      break;
+  if (registryType in RegistryType) {
+    const requestParams: ModelRegistryAddReq = {
+      name: body.name,
+      registry_type: registryType,
+      ...unwrapNestedStruct(body),
+    };
+    return requestParams;
+  } else {
+    throw new Error('Invalid registry type');
   }
-  return requestParams;
 };
 
 export const registryConnectorActionApi = async ({
@@ -179,58 +72,45 @@ export const registryConnectorActionApi = async ({
     throw new Error('Registry Type is required');
   }
 
-  const formBody = Object.fromEntries(formData);
+  const formBody = Object.fromEntries(formData) as {
+    [k: string]: string;
+  };
 
   if (registryType === RegistryType.google_container_registry) {
-    const r = await makeRequest({
-      apiFunction: getRegistriesApiClient().addRegistryGCR,
-      apiArgs: [
-        {
-          name: formBody.registryName.toString(),
-          registryUrl: formBody.registryUrl.toString(),
-          serviceAccountJson: formData.get('authFile') as Blob,
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-            success: false,
-          });
-        }
-      },
-    });
-    if (ApiError.isApiError(r)) {
-      return r.value();
-    }
-  } else {
-    const r = await makeRequest({
-      apiFunction: getRegistriesApiClient().addRegistry,
-      apiArgs: [
-        {
-          modelRegistryAddReq: getRequestBodyByRegistryType(registryType, formBody),
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-            success: false,
-          });
-        }
-      },
+    const addRegistryGCR = apiWrapper({ fn: getRegistriesApiClient().addRegistryGCR });
+
+    const response = await addRegistryGCR({
+      name: formBody.name.toString(),
+      registryUrl: formBody.registry_url.toString(),
+      serviceAccountJson: formData.get('service_account_json') as Blob,
     });
 
-    if (ApiError.isApiError(r)) {
-      return r.value();
+    if (!response.ok) {
+      if (response.error.response.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse =
+          await response.error.response.json();
+        return {
+          success: false,
+          message: modelResponse.message ?? '',
+        };
+      }
+    }
+  } else {
+    const addRegistry = apiWrapper({ fn: getRegistriesApiClient().addRegistry });
+
+    const response = await addRegistry({
+      modelRegistryAddReq: getRequestBodyByRegistryType(registryType, formBody),
+    });
+
+    if (!response.ok) {
+      if (response.error.response.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse =
+          await response.error.response.json();
+        return {
+          success: false,
+          message: modelResponse.message ?? '',
+        };
+      }
     }
   }
 

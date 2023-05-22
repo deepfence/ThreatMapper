@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { FaPlay } from 'react-icons/fa';
 import { generatePath, useParams, useSearchParams } from 'react-router-dom';
 import {
   Button,

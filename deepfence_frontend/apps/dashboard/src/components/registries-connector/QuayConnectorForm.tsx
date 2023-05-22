@@ -3,6 +3,21 @@ import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 
+/*
+sample json
+  {
+    "name": "example_quay",
+    "non_secret": {
+      "quay_namespace": "namespace",
+      "quay_registry_url": "https://quay.io"
+    },
+    "secret": {
+      "quay_access_token": "access_token"
+    },
+    "registry_type": "quay"
+  }
+*/
+
 export const QuayConnectorForm = () => {
   return (
     <>
@@ -30,7 +45,7 @@ export const QuayConnectorForm = () => {
               label="Registry Name"
               type={'text'}
               sizing="sm"
-              name="registryName"
+              name="name"
               placeholder="Registry Name"
             />
             <TextInput
@@ -38,7 +53,7 @@ export const QuayConnectorForm = () => {
               label="Registry URL"
               type={'text'}
               sizing="sm"
-              name="registryUrl"
+              name="non_secret.quay_registry_url"
               placeholder="Registry URL"
             />
             <TextInput
@@ -46,16 +61,15 @@ export const QuayConnectorForm = () => {
               label="Namespace"
               type={'text'}
               sizing="sm"
-              name="namespace"
+              name="non_secret.quay_namespace"
               placeholder="Namespace"
             />
-
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
               label="OAuth 2 Access Token (Optional)"
               type={'password'}
               sizing="sm"
-              name="accessToken"
+              name="secret.quay_access_token"
               placeholder="OAuth Access Token"
             />
           </Card>

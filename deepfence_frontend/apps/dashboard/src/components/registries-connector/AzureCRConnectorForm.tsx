@@ -3,6 +3,21 @@ import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 
+/*
+sample json
+  {
+    "name": "example_acr",
+    "non_secret": {
+      "azure_registry_url": "https://example.azurecr.io",
+      "azure_registry_username": "username"
+    },
+    "secret": {
+      "azure_registry_password": "password"
+    },
+    "registry_type": "azure_container_registry"
+  }
+*/
+
 export const AzureCRConnectorForm = () => {
   return (
     <Stepper>
@@ -26,7 +41,7 @@ export const AzureCRConnectorForm = () => {
             label="Registry Name"
             type={'text'}
             sizing="sm"
-            name="registryName"
+            name="name"
             placeholder="Registry Name"
           />
           <TextInput
@@ -34,7 +49,7 @@ export const AzureCRConnectorForm = () => {
             label="Registry URL"
             type={'text'}
             sizing="sm"
-            name="registryUrl"
+            name="non_secret.azure_registry_url"
             placeholder="Registry URL"
           />
           <TextInput
@@ -42,7 +57,7 @@ export const AzureCRConnectorForm = () => {
             label="Username"
             type={'text'}
             sizing="sm"
-            name="username"
+            name="non_secret.azure_registry_username"
             placeholder="Username"
           />
           <TextInput
@@ -50,7 +65,7 @@ export const AzureCRConnectorForm = () => {
             label="Password"
             type={'password'}
             sizing="sm"
-            name="password"
+            name="secret.azure_registry_password"
             placeholder="••••••••"
           />
         </Card>

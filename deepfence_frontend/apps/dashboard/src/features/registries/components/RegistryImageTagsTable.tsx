@@ -138,13 +138,13 @@ export const RegistryImageTagsTable = ({
         cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
       }),
-      columnHelper.accessor('malware_scan_status', {
-        header: () => 'Malware Scan Status',
+      columnHelper.accessor('secret_scan_status', {
+        header: () => 'Secrets Scan Status',
         cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
       }),
-      columnHelper.accessor('secret_scan_status', {
-        header: () => 'Secrets Scan Status',
+      columnHelper.accessor('malware_scan_status', {
+        header: () => 'Malware Scan Status',
         cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
       }),

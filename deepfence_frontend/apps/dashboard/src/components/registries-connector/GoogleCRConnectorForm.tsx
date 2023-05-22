@@ -3,6 +3,17 @@ import { Card, FileInput, Step, Stepper, TextInput, Typography } from 'ui-compon
 
 import { DFLink } from '@/components/DFLink';
 
+/*
+sample json
+  curl --request POST \
+  --url https://xxx.xxx.xxx.xxx/deepfence/registryaccount/gcr \
+  --header 'Authorization: Bearer' \
+  --header 'content-type: multipart/form-data' \
+  --form service_account_json=@service_account_json \
+  --form name=test-gcr \
+  --form registry_url=https://asia-south1-docker.pkg.dev
+*/
+
 export const GoogleCRConnectorForm = () => {
   return (
     <Stepper>
@@ -26,7 +37,7 @@ export const GoogleCRConnectorForm = () => {
             label="Registry Name"
             type={'text'}
             sizing="sm"
-            name="registryName"
+            name="name"
             placeholder="Registry Name"
           />
           <TextInput
@@ -34,15 +45,14 @@ export const GoogleCRConnectorForm = () => {
             label="Registry URL"
             type={'text'}
             sizing="sm"
-            name="registryUrl"
+            name="registry_url"
             placeholder="Registry URL"
           />
-
           <FileInput
             className="w-3/4 min-[200px] max-w-xs"
             label="Select your file"
             sizing="sm"
-            name="authFile"
+            name="service_account_json"
           />
         </Card>
       </Step>

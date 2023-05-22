@@ -7,6 +7,21 @@ type FormProps = {
   errorMessage: string;
 };
 
+/**
+sample request body
+  {
+    "name": "example_dockerhub",
+    "non_secret": {
+      "docker_hub_namespace": "namespace",
+      "docker_hub_username": "username"
+    },
+    "secret": {
+      "docker_hub_password": "password"
+    },
+    "registry_type": "docker_hub"
+  }
+*/
+
 export const DockerConnectorForm = ({ errorMessage }: FormProps) => {
   return (
     <>
@@ -31,7 +46,7 @@ export const DockerConnectorForm = ({ errorMessage }: FormProps) => {
               label="Registry Name"
               type={'text'}
               sizing="sm"
-              name="registryName"
+              name="name"
               placeholder="Registry Name"
             />
             <TextInput
@@ -39,7 +54,7 @@ export const DockerConnectorForm = ({ errorMessage }: FormProps) => {
               label="Namespace"
               type={'text'}
               sizing="sm"
-              name="namespace"
+              name="non_secret.docker_hub_namespace"
               placeholder="Namespace"
             />
             <TextInput
@@ -47,7 +62,7 @@ export const DockerConnectorForm = ({ errorMessage }: FormProps) => {
               label="Username"
               type={'text'}
               sizing="sm"
-              name="username"
+              name="non_secret.docker_hub_username"
               placeholder="Username"
             />
             <TextInput
@@ -55,13 +70,13 @@ export const DockerConnectorForm = ({ errorMessage }: FormProps) => {
               label="Password"
               type={'password'}
               sizing="sm"
-              name="password"
+              name="secret.docker_hub_password"
               placeholder="••••••••"
             />
+            {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
           </Card>
         </Step>
       </Stepper>
-      {errorMessage && <p className="text-red-500 text-sm ml-14 mb-6">{errorMessage}</p>}
     </>
   );
 };

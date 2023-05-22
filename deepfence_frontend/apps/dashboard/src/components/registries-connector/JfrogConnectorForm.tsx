@@ -3,6 +3,22 @@ import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 
+/*
+sample json
+  {
+    "name": "example_jfrog",
+    "non_secret": {
+      "jfrog_registry_url": "https://example.jfrog.io",
+      "jfrog_repository": "repository",
+      "jfrog_username": "username"
+    },
+    "secret": {
+      "jfrog_password": "password"
+    },
+    "registry_type": "jfrog_container_registry"
+  }
+*/
+
 export const JfrogConnectorForm = () => {
   return (
     <>
@@ -30,7 +46,7 @@ export const JfrogConnectorForm = () => {
               label="Registry Name"
               type={'text'}
               sizing="sm"
-              name="registryName"
+              name="name"
               placeholder="Registry Name"
             />
             <TextInput
@@ -38,7 +54,7 @@ export const JfrogConnectorForm = () => {
               label="Registry URL"
               type={'text'}
               sizing="sm"
-              name="registryUrl"
+              name="non_secret.jfrog_registry_url"
               placeholder="Registry URL"
             />
             <TextInput
@@ -46,7 +62,7 @@ export const JfrogConnectorForm = () => {
               label="Repository"
               type={'text'}
               sizing="sm"
-              name="repository"
+              name="non_secret.jfrog_repository"
               placeholder="Repository"
             />
             <TextInput
@@ -54,7 +70,7 @@ export const JfrogConnectorForm = () => {
               label="Username"
               type={'text'}
               sizing="sm"
-              name="username"
+              name="non_secret.jfrog_username"
               placeholder="Username"
             />
             <TextInput
@@ -62,7 +78,7 @@ export const JfrogConnectorForm = () => {
               label="Password"
               type={'password'}
               sizing="sm"
-              name="password"
+              name="secret.jfrog_password"
               placeholder="••••••••"
             />
           </Card>

@@ -3,6 +3,22 @@ import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 
+/*
+sample json
+  {
+    "name": "example_harbor",
+    "non_secret": {
+      "harbor_registry_url": "https://example.harbor.io",
+      "harbor_username": "username",
+      "harbor_project_name": "project_name"
+    },
+    "secret": {
+      "harbor_password": "password"
+    },
+    "registry_type": "harbor"
+  }
+*/
+
 export const HarborConnectorForm = () => {
   return (
     <>
@@ -30,7 +46,7 @@ export const HarborConnectorForm = () => {
               label="Registry Name"
               type={'text'}
               sizing="sm"
-              name="registryName"
+              name="name"
               placeholder="Registry Name"
             />
             <TextInput
@@ -38,7 +54,7 @@ export const HarborConnectorForm = () => {
               label="Registry URL"
               type={'text'}
               sizing="sm"
-              name="registryUrl"
+              name="non_secret.harbor_registry_url"
               placeholder="Registry URL"
             />
             <TextInput
@@ -46,7 +62,7 @@ export const HarborConnectorForm = () => {
               label="Project Name"
               type={'text'}
               sizing="sm"
-              name="projectName"
+              name="non_secret.harbor_project_name"
               placeholder="Project Name"
             />
             <TextInput
@@ -54,7 +70,7 @@ export const HarborConnectorForm = () => {
               label="Username"
               type={'text'}
               sizing="sm"
-              name="username"
+              name="non_secret.harbor_username"
               placeholder="Username"
             />
             <TextInput
@@ -62,7 +78,7 @@ export const HarborConnectorForm = () => {
               label="Password"
               type={'password'}
               sizing="sm"
-              name="password"
+              name="secret.harbor_password"
               placeholder="••••••••"
             />
           </Card>

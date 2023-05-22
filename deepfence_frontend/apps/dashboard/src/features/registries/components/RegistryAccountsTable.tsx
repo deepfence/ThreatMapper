@@ -1,4 +1,3 @@
-import { capitalize } from 'lodash-es';
 import { useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
@@ -6,7 +5,6 @@ import {
   HiChevronLeft,
   HiDotsVertical,
   HiOutlineExclamationCircle,
-  HiPencil,
 } from 'react-icons/hi';
 import {
   ActionFunctionArgs,
@@ -266,7 +264,7 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
                 nodeId: encodeURIComponent(info.row.original.node_id ?? ''),
               })}
             >
-              {capitalize(info.getValue())}
+              {info.getValue()}
             </DFLink>
           </div>
         ),

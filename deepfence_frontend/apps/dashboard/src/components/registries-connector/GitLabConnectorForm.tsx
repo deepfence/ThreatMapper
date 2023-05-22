@@ -3,6 +3,21 @@ import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 
+/*
+sample json
+  {
+    "name": "example_gitlab",
+    "non_secret": {
+      "gitlab_registry_url": "https://example.gitlab.io",
+      "gitlab_server_url": "https://gitlab.example.com"
+    },
+    "secret": {
+      "gitlab_access_token": "access_token"
+    },
+    "registry_type": "gitlab"
+  }
+*/
+
 export const GitLabConnectorForm = () => {
   return (
     <>
@@ -30,7 +45,7 @@ export const GitLabConnectorForm = () => {
               label="Registry Name"
               type={'text'}
               sizing="sm"
-              name="registryName"
+              name="name"
               placeholder="Registry Name"
             />
             <TextInput
@@ -38,7 +53,7 @@ export const GitLabConnectorForm = () => {
               label="Gitlab Server URL"
               type={'text'}
               sizing="sm"
-              name="serverUrl"
+              name="non_secret.gitlab_server_url"
               placeholder="Gilab Server URL"
             />
             <TextInput
@@ -46,7 +61,7 @@ export const GitLabConnectorForm = () => {
               label="GitLab Registry URL"
               type={'text'}
               sizing="sm"
-              name="registryUrl"
+              name="non_secret.gitlab_registry_url"
               placeholder="GitLab Registry URL"
             />
             <TextInput
@@ -54,7 +69,7 @@ export const GitLabConnectorForm = () => {
               label="Gitlab Access Token"
               type={'password'}
               sizing="sm"
-              name="accessToken"
+              name="secret.gitlab_access_token"
               placeholder="Gitlab Access Token"
             />
           </Card>
