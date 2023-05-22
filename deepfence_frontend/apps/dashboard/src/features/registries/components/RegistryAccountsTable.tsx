@@ -207,7 +207,7 @@ const ActionDropdown = ({
                 <span className="text-gray-700 dark:text-gray-400">Scan</span>
               </DropdownItem>
             </DropdownSubMenu>
-            <DropdownItem className="text-sm">
+            {/* <DropdownItem className="text-sm">
               <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
                 <IconContext.Provider
                   value={{ className: 'text-gray-700 dark:text-gray-400' }}
@@ -216,7 +216,7 @@ const ActionDropdown = ({
                 </IconContext.Provider>
                 Edit
               </span>
-            </DropdownItem>
+            </DropdownItem> */}
             <DropdownItem
               className="text-sm"
               onClick={() => {
