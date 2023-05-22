@@ -91,6 +91,14 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// validate fields
+	err = registry.ValidateFields(h.Validator)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&ValidatorError{err}, w)
+		return
+	}
+
 	// validate if registry credential is correct
 	if !registry.IsValidCredential() {
 		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryAuthFailed})
