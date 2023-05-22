@@ -65,6 +65,10 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 		return err
 	}
 	for _, scan := range list.ScansInfo {
+		err := json.Unmarshal(integrationRow.Filters, &filters)
+		if err != nil {
+			return err
+		}
 		results, _, err := reporters_scan.GetScanResults[T](ctx, utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId, filters.FieldsFilters, model.FetchWindow{})
 		iByte, err := json.Marshal(integrationRow)
 		if err != nil {

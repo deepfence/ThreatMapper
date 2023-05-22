@@ -42,12 +42,12 @@ func SendAgentDiagnosticLogs(req ctl.SendAgentDiagnosticLogsRequest, pathsToZip 
 }
 
 func publishDiagnosticLogsStatus(ctx context.Context, httpsClient *client.APIClient, nodeId string, status string, message string) error {
-	httpReq := httpsClient.DiagnosisApi.UpdateAgentDiagnosticLogsStatus(ctx, nodeId)
+	httpReq := httpsClient.DiagnosisAPI.UpdateAgentDiagnosticLogsStatus(ctx, nodeId)
 	httpReq = httpReq.DiagnosisDiagnosticLogsStatus(client.DiagnosisDiagnosticLogsStatus{
 		Message: &message,
 		Status:  status,
 	})
-	res, err := httpsClient.DiagnosisApi.UpdateAgentDiagnosticLogsStatusExecute(httpReq)
+	res, err := httpsClient.DiagnosisAPI.UpdateAgentDiagnosticLogsStatusExecute(httpReq)
 	if err != nil {
 		return err
 	}

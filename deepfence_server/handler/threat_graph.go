@@ -60,7 +60,7 @@ func (h *Handler) GetVulnerabilityThreatGraph(w http.ResponseWriter, r *http.Req
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	vulnerabilityThreatGraph, err := reporters_graph.GetVulnerabilityThreatGraph(r.Context(), req.GraphType)

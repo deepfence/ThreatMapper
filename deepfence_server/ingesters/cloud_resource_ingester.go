@@ -89,6 +89,10 @@ func NewCloudResourceIngester() Ingester[[]CloudResource] {
 	return &CloudResourceIngester{}
 }
 
+func (tc *CloudResourceIngester) IsReady() bool {
+	return true
+}
+
 func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource) error {
 	driver, err := directory.Neo4jClient(ctx)
 	session, err := driver.Session(neo4j.AccessModeWrite)
@@ -338,7 +342,7 @@ func (c *CloudResource) ToMap() map[string]interface{} {
 	return bb
 }
 
-func (c *CloudResourceIngester) PushToDB(batches ReportIngestionData) error {
+func (c *CloudResourceIngester) PushToDB(batches ReportIngestionData, session neo4j.Session) error {
 	//DUMMY
 	return nil
 }

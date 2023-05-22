@@ -23,11 +23,11 @@ import (
 const (
 	REDIS_NETWORK_MAP_KEY   = "network_map"
 	REDIS_IPPORTPID_MAP_KEY = "ipportpid_map"
-	workers_num             = 15
-	default_db_input_size   = 15
+	workers_num             = 25
+	default_db_input_size   = 100
 	db_batch_size           = 1_000
 	resolver_batch_size     = 1_000
-	default_ingester_size   = 15_000
+	default_ingester_size   = default_db_input_size * db_batch_size
 	db_batch_timeout        = time.Second * 10
 	resolver_timeout        = time.Second * 10
 	max_network_maps_size   = 1024 * 1024 * 1024 // 1 GB per maps
@@ -43,7 +43,7 @@ var (
 	db_input_size int
 )
 
-var ReportPool = sync.Pool{
+var reportPool = sync.Pool{
 	New: func() any {
 		rpt := report.MakeReport()
 		return &rpt
@@ -127,68 +127,15 @@ func (erc *EndpointResolversCache) Close() {
 
 type neo4jIngester struct {
 	driver           neo4j.Driver
-	enqueuer         chan *report.Report
-	ingester         chan map[string]*report.Report
+	ingester         chan report.CompressedReport
 	resolvers        EndpointResolversCache
 	batcher          chan ReportIngestionData
 	resolvers_update chan EndpointResolvers
-	resolvers_input  chan *report.Report
 	preparers_input  chan *report.Report
 	done             chan struct{}
-}
-
-var rptBufferPool = sync.Pool{
-	New: func() interface{} { return make(map[string]*report.Report, db_batch_size) },
-}
-
-func (nc *neo4jIngester) runEnqueueReport(num_received *atomic.Int32) {
-	report_buffer := rptBufferPool.Get().(map[string]*report.Report)
-	send := false
-	stats := 0
-	ticker := time.NewTicker(enqueer_timeout)
-	defer ticker.Stop()
-loop:
-	for {
-		select {
-		case rpt, open := <-nc.enqueuer:
-			if !open {
-				break loop
-			}
-			var hostNodeId string
-			for _, n := range rpt.Host {
-				hostNodeId = n.Metadata.HostName
-				if len(rpt.Host) > 1 {
-					log.Error().Msgf("multiple hosts in one report: %v", hostNodeId)
-				}
-			}
-			report_buffer[hostNodeId] = rpt
-			send = len(report_buffer) == db_batch_size
-			stats += 1
-		case <-ticker.C:
-			send = len(report_buffer) != 0
-		}
-		if send {
-			send = false
-			log.Info().Msgf("Sending %v unique reports over %v received", len(report_buffer), stats)
-			num_received.Add(int32(len(report_buffer)))
-			stats = 0
-			select {
-			case nc.ingester <- report_buffer:
-				report_buffer = rptBufferPool.Get().(map[string]*report.Report)
-				for k := range report_buffer {
-					delete(report_buffer, k)
-				}
-			default:
-				log.Warn().Msgf("ingester channel full")
-				for _, v := range report_buffer {
-					ReportPool.Put(v)
-				}
-				rptBufferPool.Put(report_buffer)
-			}
-			ticker.Reset(enqueer_timeout)
-		}
-	}
-	log.Info().Msgf("runEnqueueReport ended")
+	db_pusher        chan ReportIngestionData
+	num_ingested     atomic.Int32
+	num_received     atomic.Int32
 }
 
 type ReportIngestionData struct {
@@ -275,7 +222,7 @@ func computeResolvers(rpt *report.Report, buf *bytes.Buffer) EndpointResolvers {
 }
 
 func (nc *neo4jIngester) resolversUpdater() {
-	buffer := make([]EndpointResolvers, resolver_batch_size)
+	buffer := [resolver_batch_size]EndpointResolvers{}
 	elements := 0
 	send := false
 	ticker := time.NewTicker(resolver_timeout)
@@ -291,7 +238,7 @@ loop:
 			elements += 1
 			send = elements == resolver_batch_size
 		case <-ticker.C:
-			send = elements != 0
+			send = elements > 0
 		}
 
 		if send {
@@ -540,32 +487,32 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 
 func (nc *neo4jIngester) Close() {
 	nc.resolvers.Close()
-	close(nc.enqueuer)
 	close(nc.ingester)
 	close(nc.batcher)
 	close(nc.resolvers_update)
-	close(nc.resolvers_input)
 	close(nc.preparers_input)
 	close(nc.done)
 }
 
-func (nc *neo4jIngester) Ingest(ctx context.Context, rpt *report.Report) error {
+func (nc *neo4jIngester) Ingest(ctx context.Context, crpt report.CompressedReport) error {
 	select {
-	case nc.enqueuer <- rpt:
+	case nc.ingester <- crpt:
+		nc.num_received.Add(1)
 	default:
-		ReportPool.Put(rpt)
+		breaker.Store(true)
+		crpt.Cleanup()
 		return fmt.Errorf("enqueuer channel full")
 	}
 	return nil
 }
 
-func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
-	session, err := nc.driver.Session(neo4j.AccessModeWrite)
-	if err != nil {
-		return err
-	}
-	defer session.Close()
+var breaker atomic.Bool
 
+func (nc *neo4jIngester) IsReady() bool {
+	return !breaker.Load()
+}
+
+func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Session) error {
 	tx, err := session.BeginTransaction()
 	if err != nil {
 		return err
@@ -712,7 +659,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 	if _, err = tx.Run(`
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.node_id}) -[r:CONNECTS]-> (:Node)
-		DETACH DELETE r`,
+		DELETE r`,
 		map[string]interface{}{"batch": batches.Hosts}); err != nil {
 		return err
 	}
@@ -720,7 +667,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 	if _, err = tx.Run(`
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: 'in-the-internet'}) -[r:CONNECTS]-> (n:Node{node_id: row.node_id})
-		DETACH DELETE r`, map[string]interface{}{"batch": batches.Hosts}); err != nil {
+		DELETE r`, map[string]interface{}{"batch": batches.Hosts}); err != nil {
 		return err
 	}
 
@@ -740,22 +687,27 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData) error {
 }
 
 func (nc *neo4jIngester) runIngester() {
-	for reports := range nc.ingester {
-		for _, rpt := range reports {
-			select {
-			case nc.resolvers_input <- rpt:
-			default:
-				ReportPool.Put(rpt)
-				log.Warn().Msgf("ingester to resolvers channel full")
-			}
+	for crpt := range nc.ingester {
+		rpt := reportPool.Get().(*report.Report)
+		if err := crpt.FillReport(rpt); err != nil {
+			log.Error().Msgf("Failed to unmarshal report")
+			crpt.Cleanup()
+			reportPool.Put(rpt)
+			continue
 		}
-		rptBufferPool.Put(reports)
+		crpt.Cleanup()
+		select {
+		case nc.preparers_input <- rpt:
+		default:
+			log.Warn().Msgf("preparer channel full")
+			nc.preparers_input <- rpt
+		}
 	}
 	log.Info().Msgf("runIngester ended")
 }
 
-func (nc *neo4jIngester) runDBBatcher(db_pusher chan ReportIngestionData, num_pushes *atomic.Int32) {
-	batch := make([]ReportIngestionData, db_batch_size)
+func (nc *neo4jIngester) runDBBatcher(db_pusher chan ReportIngestionData) {
+	batch := [db_batch_size]ReportIngestionData{}
 	size := 0
 	send := false
 	ticker := time.NewTicker(db_batch_timeout)
@@ -771,7 +723,7 @@ loop:
 			size += 1
 			send = size == len(batch)
 		case <-ticker.C:
-			send = size != 0
+			send = size > 0
 		}
 		if send {
 			if size > 0 {
@@ -782,10 +734,13 @@ loop:
 				}
 				select {
 				case db_pusher <- final_batch:
-					num_pushes.Add(int32(size))
 				default:
 					log.Warn().Msgf("DB channel full")
+					breaker.Store(true)
+					// Send report & wait
+					db_pusher <- final_batch
 				}
+				nc.num_ingested.Add(int32(size))
 				size = 0
 				ticker.Reset(db_batch_timeout)
 			}
@@ -794,57 +749,46 @@ loop:
 	log.Info().Msgf("runDBPusher ended")
 }
 
-func (nc *neo4jIngester) runDBPusher(db_pusher chan ReportIngestionData) {
+func (nc *neo4jIngester) runDBPusher(db_pusher, db_pusher_retry chan ReportIngestionData) {
+
+	session, err := nc.driver.Session(neo4j.AccessModeWrite)
+	if err != nil {
+		log.Error().Msgf("Failed to open session: %v", err)
+		return
+	}
+	defer session.Close()
+
 	for batches := range db_pusher {
 		span := telemetry.NewSpan(context.Background(), "ingester", "PushAgentReportsToDB")
-		retry := 0
-		for {
-			err := nc.PushToDB(batches)
-			if err != nil {
-				log.Error().Msgf("push to neo4j err: %v", err)
-				if retry == 1 {
-					span.EndWithErr(err)
-					break
-				}
-				retry += 1
-			} else {
-				span.End()
-				break
-			}
+		err := nc.PushToDB(batches, session)
+		if err != nil {
+			log.Error().Msgf("push to neo4j err: %v", err)
+			db_pusher_retry <- batches
+			span.EndWithErr(err)
+		} else {
+			span.End()
 		}
 	}
 	log.Info().Msgf("runDBPusher ended")
 }
 
-func (nc *neo4jIngester) runResolver() {
+func (nc *neo4jIngester) runPreparer() {
 	var buf bytes.Buffer
-	for rpt := range nc.resolvers_input {
+	for rpt := range nc.preparers_input {
 		r := computeResolvers(rpt, &buf)
-		select {
-		case nc.preparers_input <- rpt:
-		default:
-			ReportPool.Put(rpt)
-			log.Warn().Msgf("preparer channel full")
-		}
+		data := prepareNeo4jIngestion(rpt, &nc.resolvers, &buf)
+		reportPool.Put(rpt)
 		select {
 		case nc.resolvers_update <- r:
 		default:
 			log.Warn().Msgf("update channel full")
+			nc.resolvers_update <- r
 		}
-	}
-	log.Info().Msgf("runResolver ended")
-}
-
-func (nc *neo4jIngester) runPreparer() {
-	var buf bytes.Buffer
-	for rpt := range nc.preparers_input {
-		batches := prepareNeo4jIngestion(rpt, &nc.resolvers, &buf)
-		ReportPool.Put(rpt)
-		nc.batcher <- batches
+		nc.batcher <- data
 	}
 }
 
-func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
+func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], error) {
 	driver, err := directory.Neo4jClient(ctx)
 
 	if err != nil {
@@ -858,33 +802,54 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
 	}
 
 	done := make(chan struct{})
+	db_pusher := make(chan ReportIngestionData, db_input_size)
+	db_pusher_retry := make(chan ReportIngestionData, db_input_size)
 	nc := &neo4jIngester{
 		driver:           driver,
 		resolvers:        rdb,
-		enqueuer:         make(chan *report.Report, ingester_size),
-		ingester:         make(chan map[string]*report.Report, 2),
+		ingester:         make(chan report.CompressedReport, ingester_size),
 		batcher:          make(chan ReportIngestionData, ingester_size),
-		resolvers_update: make(chan EndpointResolvers, ingester_size),
-		resolvers_input:  make(chan *report.Report, ingester_size),
-		preparers_input:  make(chan *report.Report, ingester_size),
+		resolvers_update: make(chan EndpointResolvers, db_batch_size),
+		preparers_input:  make(chan *report.Report, ingester_size/2),
 		done:             done,
+		db_pusher:        db_pusher,
+		num_ingested:     atomic.Int32{},
+		num_received:     atomic.Int32{},
 	}
 
 	for i := 0; i < workers_num; i++ {
-		go nc.runResolver()
 		go nc.runPreparer()
+		go nc.runDBPusher(db_pusher, db_pusher_retry)
+		go nc.runDBPusher(db_pusher_retry, db_pusher)
 	}
 
-	num_ingested := atomic.Int32{}
-	num_received := atomic.Int32{}
-	db_pusher := make(chan ReportIngestionData, db_input_size)
-	go nc.runDBBatcher(db_pusher, &num_ingested)
-	go nc.runDBPusher(db_pusher)
+	go nc.runDBBatcher(db_pusher)
 
 	go nc.resolversUpdater()
 
 	go nc.runIngester()
-	go nc.runEnqueueReport(&num_received)
+
+	go func() {
+		// Received num at the time of push back change
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+	loop:
+		for {
+			select {
+			case <-ticker.C:
+			case <-done:
+				break loop
+			}
+
+			log.Info().Msgf("Q: %v, %v, %v, %v, %v, %v",
+				len(nc.ingester),
+				len(nc.preparers_input),
+				len(nc.resolvers_update),
+				len(nc.batcher),
+				len(nc.db_pusher),
+				len(db_pusher_retry))
+		}
+	}()
 
 	// Push back decreaser
 	go func() {
@@ -901,8 +866,10 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
 			case <-done:
 				break loop
 			}
-			current_num_received := num_received.Swap(0)
-			current_num_ingested := num_ingested.Swap(0)
+
+			current_num_received := nc.num_received.Swap(0)
+			current_num_ingested := nc.num_ingested.Swap(0)
+
 			if current_num_ingested < (current_num_received/4)*3 {
 				Push_back.Add(1 * current_num_received / current_num_received)
 				twice = false
@@ -916,6 +883,10 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[*report.Report], error) {
 					update_ticker = true
 				}
 				twice = true
+			}
+			if breaker.Swap(false) {
+				Push_back.Add(1)
+				update_ticker = true
 			}
 			if update_ticker {
 				update_ticker = false

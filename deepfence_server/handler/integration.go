@@ -41,7 +41,7 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 	}
 	err = obj.ValidateConfig(h.Validator)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -68,7 +68,7 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 	/*err = i.SendNotification("validating integration")
 	if err != nil {
 		log.Error().Msgf("%v", err)
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}*/
 

@@ -26,7 +26,7 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Validator.Struct(apiAuthRequest)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	ctx := directory.WithGlobalContext(r.Context())
@@ -120,7 +120,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Validator.Struct(loginRequest)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	u, statusCode, ctx, pgClient, err := model.GetUserByEmail(strings.ToLower(loginRequest.Email))

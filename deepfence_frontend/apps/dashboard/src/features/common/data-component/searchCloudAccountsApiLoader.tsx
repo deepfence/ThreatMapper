@@ -30,6 +30,12 @@ export const searchCloudAccountsApiLoader = async ({
         offset: 0,
         size: Number.MAX_SAFE_INTEGER,
       },
+      fields_filter: {
+        contains_filter: { filter_in: { active: [true] } },
+        match_filter: { filter_in: {} },
+        order_filter: { order_fields: [] },
+        compare_filter: null,
+      },
     },
   });
 

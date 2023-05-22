@@ -3,7 +3,7 @@ import { EChartsOption, PieSeriesOption, SeriesOption } from 'echarts';
 import { ReactECharts } from '@/components/ReactEcharts';
 import { Mode } from '@/theme/ThemeContext';
 
-const option: EChartsOption = {
+let option: EChartsOption = {
   backgroundColor: 'transparent',
   tooltip: {
     trigger: 'item',
@@ -42,11 +42,15 @@ export const PostureResultChart = ({
     return null;
   }
 
-  option.dataset = {
-    source: Object.keys(data).map((key) => ({
-      Compliances: key,
-      value: data[key],
-    })),
+  option = {
+    ...option,
+    dataset: {
+      ...option.dataset,
+      source: Object.keys(data).map((key) => ({
+        Compliances: key,
+        value: data[key],
+      })),
+    },
   };
 
   if (eoption && option && option.series) {

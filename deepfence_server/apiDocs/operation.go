@@ -218,6 +218,10 @@ func (d *OpenApiDocs) AddSearchOperations() {
 		"Search Cloud Compliance Scan results", "Search across all the data associated with cloud-compliance scan",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new([]ScanInfo))
 
+	d.AddOperation("searchCloudNodes", http.MethodPost, "/deepfence/search/cloud-nodes",
+		"Search Cloud Nodes", "Search across all the data associated with cloud nodes",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]CloudNodeAccountInfo))
+
 	d.AddOperation("getCloudComplianceFilters", http.MethodPost, "/deepfence/filters/cloud-compliance",
 		"Get Cloud Compliance Filters", "Get all applicable filter values for cloud compliance",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(FiltersReq), new(FiltersResult))

@@ -11,12 +11,15 @@ import (
 	reporters_search "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
+	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
 func RunScheduledTasks(msg *message.Message) error {
-	ctx := msg.Context()
+	namespace := msg.Metadata.Get(directory.NamespaceKey)
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
+
 	messagePayload := map[string]interface{}{}
 	if err := json.Unmarshal(msg.Payload, &messagePayload); err != nil {
 		log.Error().Msg(err.Error())
@@ -24,8 +27,8 @@ func RunScheduledTasks(msg *message.Message) error {
 	}
 
 	nodeIds := []model.NodeIdentifier{}
-	payload := messagePayload["payload"].(map[string]string)
-	nodeType := payload["node_type"]
+	payload := messagePayload["payload"].(map[string]interface{})
+	nodeType := payload["node_type"].(string)
 	searchFilter := reporters_search.SearchFilter{
 		InFieldFilter: []string{"node_id"},
 		Filters: reporters.FieldsFilters{
@@ -78,7 +81,7 @@ func RunScheduledTasks(msg *message.Message) error {
 
 	scanTrigger := model.ScanTriggerCommon{NodeIds: nodeIds, Filters: model.ScanFilter{}}
 
-	switch payload["action"] {
+	switch messagePayload["action"].(string) {
 	case utils.VULNERABILITY_SCAN:
 		actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
 			registryIdStr := ""

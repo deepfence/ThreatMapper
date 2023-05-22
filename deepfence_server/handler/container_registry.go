@@ -430,7 +430,15 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	log.Info().Msgf("IDs: %v", pgIds)
+
+	log.Info().Msgf("delete registry ID's: %v and registry account %s", pgIds, id)
+
+	if err := model.DeleteRegistryAccount(r.Context(), id); err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+
 	for _, id := range pgIds {
 		err = model.DeleteRegistry(ctx, pgClient, int32(id))
 		if err != nil {
@@ -454,7 +462,7 @@ func (h *Handler) getImages(w http.ResponseWriter, r *http.Request) ([]model.Con
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return images, err
 	}
 
@@ -498,7 +506,7 @@ func (h *Handler) getImageStubs(w http.ResponseWriter, r *http.Request) ([]model
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return images, err
 	}
 
@@ -541,7 +549,7 @@ func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 	}
 	err := h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -567,7 +575,7 @@ func (h *Handler) SummaryByRegistryType(w http.ResponseWriter, r *http.Request) 
 	}
 	err := h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 

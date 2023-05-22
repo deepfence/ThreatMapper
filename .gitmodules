@@ -16,11 +16,11 @@
 	branch = v2
 [submodule "golang_deepfence_sdk"]
 	path = golang_deepfence_sdk
-	url = git@github.com:deepfence/golang_deepfence_sdk.git
+	url = https://github.com/deepfence/golang_deepfence_sdk.git
 	branch = main
 [submodule "deepfence_agent/plugins/YaraHunter"]
 	path = deepfence_agent/plugins/YaraHunter
-	url = git@github.com:deepfence/YaraHunter.git
+	url = https://github.com/deepfence/YaraHunter.git
 	branch = v2
 [submodule "deepfence_agent/plugins/yara-rules"]
 	path = deepfence_agent/plugins/yara-rules

@@ -1,8 +1,6 @@
 package cronjobs
 
 import (
-	"time"
-
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
@@ -17,19 +15,13 @@ func CleanUpPostgresDB(msg *message.Message) error {
 	if err != nil {
 		return err
 	}
-	dateTime := string(msg.Payload)
-	ts, err := time.Parse("2006-01-02T15:04:05.999Z", dateTime)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return nil
-	}
 
-	err = pgClient.DeletePasswordResetByExpiry(ctx, ts)
+	err = pgClient.DeletePasswordResetByExpiry(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
 
-	err = pgClient.DeleteUserInviteByExpiry(ctx, ts)
+	err = pgClient.DeleteUserInviteByExpiry(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}

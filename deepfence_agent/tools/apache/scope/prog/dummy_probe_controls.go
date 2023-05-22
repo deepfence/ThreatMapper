@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	_ "embed"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -21,8 +22,6 @@ import (
 	"github.com/weaveworks/scope/probe/controls"
 
 	dsc "github.com/deepfence/golang_deepfence_sdk/client"
-
-	_ "embed"
 )
 
 //go:embed dummy/sbom.json
@@ -146,10 +145,10 @@ func sendDummySbomToConsole(init_req ctl.StartVulnerabilityScanRequest) error {
 
 	data.SetSbom(string(c_sbom))
 
-	req := httpsClient.Client().VulnerabilityApi.IngestSbom(context.Background())
+	req := httpsClient.Client().VulnerabilityAPI.IngestSbom(context.Background())
 	req = req.UtilsScanSbomRequest(data)
 
-	resp, err := httpsClient.Client().VulnerabilityApi.IngestSbomExecute(req)
+	resp, err := httpsClient.Client().VulnerabilityAPI.IngestSbomExecute(req)
 	if err != nil {
 		log.Error(err)
 		return err

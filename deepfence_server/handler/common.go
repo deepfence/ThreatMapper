@@ -38,7 +38,9 @@ func respondWith(ctx context.Context, w http.ResponseWriter, code int, response 
 		log.Error().Msgf("Error %d: %v", code, err)
 		response = err.Error()
 	} else if 500 <= code && code < 600 {
-		log.Error().Msgf("Non-error %d: %v", code, response)
+		if code != 503 {
+			log.Error().Msgf("Non-error %d: %v", code, response)
+		}
 	} else if ctx.Err() != nil {
 		log.Debug().Msgf("Context error %v", ctx.Err())
 		code = 499
@@ -74,7 +76,8 @@ func (i *InternalServerError) Error() string {
 }
 
 type ValidatorError struct {
-	err error
+	err                       error
+	skipOverwriteErrorMessage bool
 }
 
 func (bd *ValidatorError) Error() string {
@@ -100,7 +103,7 @@ func (bd *NotFoundError) Error() string {
 func respondWithErrorCode(err error, w http.ResponseWriter, code int) error {
 	var errorFields map[string]string
 	if code == http.StatusBadRequest {
-		errorFields = model.ParseValidatorError(err.Error())
+		errorFields = model.ParseValidatorError(err.Error(), false)
 	}
 	return httpext.JSON(w, code, model.ErrorResponse{Message: err.Error(), ErrorFields: errorFields})
 }
@@ -119,7 +122,7 @@ func respondError(err error, w http.ResponseWriter) error {
 		code = http.StatusBadRequest
 	case *ValidatorError:
 		code = http.StatusBadRequest
-		errorFields = model.ParseValidatorError(err.Error())
+		errorFields = model.ParseValidatorError(err.Error(), err.(*ValidatorError).skipOverwriteErrorMessage)
 	case *ForbiddenError:
 		code = http.StatusForbidden
 	case *NotFoundError:

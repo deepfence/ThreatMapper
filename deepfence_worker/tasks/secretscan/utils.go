@@ -10,11 +10,12 @@ import (
 
 type SecretScanStatus struct {
 	utils.SecretScanParameters
-	ScanStatus string `json:"scan_status,omitempty"`
+	ScanStatus  string `json:"scan_status,omitempty"`
+	ScanMessage string `json:"scan_message,omitempty"`
 }
 
-func NewSecretScanStatus(params utils.SecretScanParameters, Status string) SecretScanStatus {
-	return SecretScanStatus{SecretScanParameters: params, ScanStatus: Status}
+func NewSecretScanStatus(params utils.SecretScanParameters, Status string, msg string) SecretScanStatus {
+	return SecretScanStatus{SecretScanParameters: params, ScanStatus: Status, ScanMessage: msg}
 }
 
 func SendScanStatus(ingestC chan *kgo.Record, status SecretScanStatus, rh []kgo.RecordHeader) error {

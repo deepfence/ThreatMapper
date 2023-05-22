@@ -37,6 +37,9 @@ func NewEmailSender() (EmailSender, error) {
 		return nil, err
 	}
 	setting, err := pgClient.GetSetting(ctx, model.EmailConfigurationKey)
+	if err != nil {
+		return nil, err
+	}
 	var emailConfig model.EmailConfigurationAdd
 	err = json.Unmarshal(setting.Value, &emailConfig)
 	if err != nil {

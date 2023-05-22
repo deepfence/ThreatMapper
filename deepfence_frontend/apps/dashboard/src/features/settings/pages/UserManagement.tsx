@@ -42,7 +42,7 @@ import { useGetCurrentUser } from '@/features/common/data-component/getUserApiLo
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { ApiError, makeRequest } from '@/utils/api';
+import { ApiError, apiWrapper, makeRequest } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
@@ -51,19 +51,20 @@ type LoaderDataType = {
   data?: ModelUser[];
 };
 const getUsers = async (): Promise<LoaderDataType> => {
-  const usersPromise = await makeRequest({
-    apiFunction: getUserApiClient().getUsers,
-    apiArgs: [],
-  });
+  const getUsers = apiWrapper({ fn: getUserApiClient().getUsers });
+  const users = await getUsers();
 
-  if (ApiError.isApiError(usersPromise)) {
-    return {
-      message: 'Error in getting users list',
-    };
+  if (!users.ok) {
+    if (users.error.response?.status === 403) {
+      return {
+        message: 'You do not have enough permissions to view users',
+      };
+    }
+    throw users.error;
   }
 
   return {
-    data: usersPromise,
+    data: users.value,
   };
 };
 const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {

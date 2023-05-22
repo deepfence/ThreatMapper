@@ -154,17 +154,6 @@ func computeThreatGraph(session neo4j.Session) error {
 	}
 
 	if _, err = tx.Run(`
-		MATCH (n) -[:HOSTS]-> (m)
-		WHERE n:Node OR n:CloudResource
-		SET n.sum_cve = n.sum_cve + COALESCE(m.vulnerabilities_count, 0),
-		n.sum_secrets = n.sum_secrets + COALESCE(m.secrets_count, 0),
-		n.sum_malware = n.sum_malware + COALESCE(m.malwares_count, 0),
-		n.sum_compliance = n.sum_compliance + COALESCE(m.compliances_count, 0),
-		n.sum_cloud_compliance = n.sum_cloud_compliance + COALESCE(m.cloud_compliances_count, 0)`, map[string]interface{}{}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run(`
 		MATCH (n:Node {node_id:'in-the-internet'})-[d:CONNECTS*]->(m:Node)
 		WITH SIZE(d) as depth, m with min(depth) as min_depth, m
 		SET m.depth = min_depth`, map[string]interface{}{}); err != nil {

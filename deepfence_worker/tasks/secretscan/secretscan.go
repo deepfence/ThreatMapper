@@ -61,21 +61,22 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 		return nil
 	}
 
+	// send inprogress status
+	SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_INPROGRESS, ""), rh)
+
 	// get registry credentials
 	authDir, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
+		SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
 		return nil
 	}
-	// defer func() {
-	// 	log.Info().Msgf("remove auth directory %s", authDir)
-	// 	if err := os.RemoveAll(authDir); err != nil {
-	// 		log.Error().Msg(err.Error())
-	// 	}
-	// }()
-
-	SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_INPROGRESS), rh)
+	defer func() {
+		log.Info().Msgf("remove auth directory %s", authDir)
+		if err := os.RemoveAll(authDir); err != nil {
+			log.Error().Msg(err.Error())
+		}
+	}()
 
 	// pull image
 	var imageName string
@@ -104,16 +105,17 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	if out, err := workerUtils.RunCommand(cmd); err != nil {
 		log.Error().Err(err).Msg(cmd.String())
 		log.Error().Msgf("output: %s", out.String())
-		SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_FAILED), rh)
+		SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
 		return nil
 	}
 
 	// init secret scan
-	SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_INPROGRESS), rh)
+	SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_INPROGRESS, ""), rh)
 
 	scanResult, err := secretScan.ExtractAndScanFromTar(dir, imageName)
 	// secretScan.ExtractAndScanFromTar(tarPath,)
 	if err != nil {
+		SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
 		log.Error().Msg(err.Error())
 		return nil
 	}
@@ -139,7 +141,7 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 		}
 	}
 	// scan status
-	if err := SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_SUCCESS), rh); err != nil {
+	if err := SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_SUCCESS, ""), rh); err != nil {
 		log.Error().Msgf("error sending scan status: %s", err.Error())
 	}
 

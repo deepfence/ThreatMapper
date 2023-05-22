@@ -31,6 +31,14 @@ func (ve *NodeNotFoundError) Error() string {
 	return fmt.Sprintf("Node %v not found", ve.NodeId)
 }
 
+type NodeNotActiveError struct {
+	NodeId string
+}
+
+func (ve *NodeNotActiveError) Error() string {
+	return fmt.Sprintf("Node %v is currently not active", ve.NodeId)
+}
+
 type WriteDBTransaction struct {
 	Tx neo4j.Transaction
 }
@@ -171,7 +179,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	}
 	res, err := tx.Run(fmt.Sprintf(`
 		OPTIONAL MATCH (n:%s{node_id:$node_id})
-		RETURN n IS NOT NULL AS Exists`, neo4jNodeType),
+		RETURN n IS NOT NULL AS Exists, n.active`, neo4jNodeType),
 		map[string]interface{}{
 			"node_id": nodeId,
 		})
@@ -186,6 +194,12 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 
 	if !rec.Values[0].(bool) {
 		return &NodeNotFoundError{
+			NodeId: nodeId,
+		}
+	}
+
+	if !rec.Values[1].(bool) {
+		return &NodeNotActiveError{
 			NodeId: nodeId,
 		}
 	}

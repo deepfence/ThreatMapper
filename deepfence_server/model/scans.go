@@ -236,20 +236,21 @@ type CloudComplianceScanResult struct {
 
 type Secret struct {
 	// Secret + Rule neo4j node
-	NodeId                string  `json:"node_id" required:"true"`
-	StartingIndex         int32   `json:"starting_index" required:"true"`
-	RelativeStartingIndex int32   `json:"relative_starting_index" required:"true"`
-	RelativeEndingIndex   int32   `json:"relative_ending_index" required:"true"`
-	FullFilename          string  `json:"full_filename" required:"true"`
-	MatchedContent        string  `json:"matched_content" required:"true"`
-	Masked                bool    `json:"masked" required:"true"`
-	UpdatedAt             int64   `json:"updated_at" required:"true"`
-	Level                 string  `json:"level" required:"true"`
-	Score                 float64 `json:"score" required:"true"`
-	RuleID                int32   `json:"rule_id" required:"true"`
-	Name                  string  `json:"name" required:"true"`
-	Part                  string  `json:"part" required:"true"`
-	SignatureToMatch      string  `json:"signature_to_match" required:"true"`
+	NodeId                string   `json:"node_id" required:"true"`
+	StartingIndex         int32    `json:"starting_index" required:"true"`
+	RelativeStartingIndex int32    `json:"relative_starting_index" required:"true"`
+	RelativeEndingIndex   int32    `json:"relative_ending_index" required:"true"`
+	FullFilename          string   `json:"full_filename" required:"true"`
+	MatchedContent        string   `json:"matched_content" required:"true"`
+	Masked                bool     `json:"masked" required:"true"`
+	UpdatedAt             int64    `json:"updated_at" required:"true"`
+	Level                 string   `json:"level" required:"true"`
+	Score                 float64  `json:"score" required:"true"`
+	RuleID                int32    `json:"rule_id" required:"true"`
+	Name                  string   `json:"name" required:"true"`
+	Part                  string   `json:"part" required:"true"`
+	SignatureToMatch      string   `json:"signature_to_match" required:"true"`
+	Resources             []string `json:"resources" required:"false"`
 }
 
 func (Secret) NodeType() string {
@@ -288,6 +289,7 @@ type Vulnerability struct {
 	UpdatedAt                  int64         `json:"updated_at" required:"true"`
 	ParsedAttackVector         string        `json:"parsed_attack_vector" required:"true"`
 	HasLiveConnection          bool          `json:"has_live_connection" required:"true"`
+	Resources                  []string      `json:"resources" required:"false"`
 }
 
 func (Vulnerability) NodeType() string {
@@ -326,6 +328,7 @@ type Malware struct {
 	StringsToMatch   []interface{} `json:"strings_to_match"`
 	Summary          string        `json:"summary"`
 	Masked           bool          `json:"masked" required:"true"`
+	Resources        []string      `json:"resources" required:"false"`
 }
 
 func (Malware) NodeType() string {

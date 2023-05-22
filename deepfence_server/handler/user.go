@@ -30,6 +30,15 @@ const (
 var (
 	True  = new(bool)
 	False = new(bool)
+
+	emailNotConfiguredError = ValidatorError{
+		err:                       errors.New("Key: 'email' Error:Not configured to send emails. Please configure it in Settings->Email Configuration"),
+		skipOverwriteErrorMessage: true,
+	}
+	incorrectOldPasswordError = ValidatorError{
+		err:                       errors.New("Key: 'old_password' Error:incorrect old password"),
+		skipOverwriteErrorMessage: true,
+	}
 )
 
 func init() {
@@ -47,7 +56,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Validator.Struct(registerRequest)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	ctx := directory.WithGlobalContext(r.Context())
@@ -158,7 +167,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Validator.Struct(registerRequest)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	ctx := directory.WithGlobalContext(r.Context())
@@ -246,7 +255,7 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Validator.Struct(inviteUserRequest)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
@@ -304,7 +313,10 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 	inviteURL := fmt.Sprintf("%s/auth/invite-accept?invite_code=%s", consoleUrl, code)
 	if inviteUserRequest.Action == UserInviteSendEmail {
 		emailSender, err := sendemail.NewEmailSender()
-		if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondError(&emailNotConfiguredError, w)
+			return
+		} else if err != nil {
 			respondError(err, w)
 			return
 		}
@@ -395,7 +407,7 @@ func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	toLogout := false
@@ -473,7 +485,7 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
@@ -483,8 +495,7 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	passwordValid, err := user.CompareHashAndPassword(ctx, pgClient, req.OldPassword)
 	if err != nil || !passwordValid {
-		respondError(&ValidatorError{
-			errors.New("Key: 'UpdateUserPasswordRequest.OldPassword' Error:incorrect old password")}, w)
+		respondError(&incorrectOldPasswordError, w)
 		return
 	}
 	err = user.SetPassword(req.NewPassword)
@@ -559,7 +570,7 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Validator.Struct(resetPasswordRequest)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	user, statusCode, ctx, pgClient, err := model.GetUserByEmail(strings.ToLower(resetPasswordRequest.Email))
@@ -622,7 +633,7 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 	}
 	err = h.Validator.Struct(passwordResetVerifyRequest)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	ctx := directory.WithGlobalContext(r.Context())

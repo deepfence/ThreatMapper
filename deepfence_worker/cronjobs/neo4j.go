@@ -40,6 +40,7 @@ func getResourceCleanUpTimeout(ctx context.Context) time.Duration {
 }
 
 func CleanUpDB(msg *message.Message) error {
+	log.Info().Msgf("Clean up DB Starting")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 
@@ -206,6 +207,18 @@ func CleanUpDB(msg *message.Message) error {
 		map[string]interface{}{
 			"time_ms":     diagnosticLogsCleanUpTimeout.Milliseconds(),
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
+		}); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:CloudNode)
+		WHERE n.updated_at < TIMESTAMP()-$old_time_ms
+		WITH n LIMIT 100000
+		SET n.active = false`,
+		map[string]interface{}{
+			"old_time_ms": dbReportCleanUpTimeout.Milliseconds(),
 		}); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err

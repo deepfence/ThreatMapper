@@ -105,7 +105,7 @@ type LoaderDataType = {
 const PAGE_SIZE = 15;
 
 const getActiveStatus = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('active');
+  return searchParams.get('active');
 };
 
 const action = async ({
@@ -189,6 +189,12 @@ export async function getAccounts(
           window: {
             offset: 0 * PAGE_SIZE,
             size: PAGE_SIZE,
+          },
+          fields_filter: {
+            contains_filter: { filter_in: { active: active === 'true' ? [true] : [] } },
+            match_filter: { filter_in: {} },
+            order_filter: { order_fields: [] },
+            compare_filter: null,
           },
         },
       },
@@ -709,55 +715,22 @@ const Accounts = () => {
                   <FilterHeader onReset={onResetFilters} />
                   <div className="flex flex-col gap-y-6 p-4">
                     <fieldset>
-                      <legend className="text-sm font-medium">Active</legend>
                       <div className="flex gap-x-4 mt-1">
                         <Checkbox
-                          label="No"
-                          checked={searchParams.getAll('active').includes('true')}
+                          label="Active"
+                          checked={searchParams.get('active') === 'true'}
                           onCheckedChange={(state) => {
                             if (state) {
                               setSearchParams((prev) => {
+                                prev.delete('active');
+                                prev.delete('page');
                                 prev.append('active', 'true');
-                                prev.delete('page');
                                 return prev;
                               });
                             } else {
                               setSearchParams((prev) => {
-                                const prevStatuses = prev.getAll('active');
-                                prev.delete('active');
-                                prevStatuses
-                                  .filter((active) => active !== 'true')
-                                  .forEach((active) => {
-                                    prev.append('active', active);
-                                  });
-                                prev.delete('active');
                                 prev.delete('page');
-                                return prev;
-                              });
-                            }
-                          }}
-                        />
-                        <Checkbox
-                          label="Yes"
-                          checked={searchParams.getAll('active').includes('false')}
-                          onCheckedChange={(state) => {
-                            if (state) {
-                              setSearchParams((prev) => {
-                                prev.append('active', 'false');
-                                prev.delete('page');
-                                return prev;
-                              });
-                            } else {
-                              setSearchParams((prev) => {
-                                const prevStatuses = prev.getAll('false');
                                 prev.delete('active');
-                                prevStatuses
-                                  .filter((active) => active !== 'false')
-                                  .forEach((active) => {
-                                    prev.append('active', active);
-                                  });
-                                prev.delete('active');
-                                prev.delete('page');
                                 return prev;
                               });
                             }
