@@ -27,7 +27,7 @@ import { RegistryAccountsTable } from '@/features/registries/components/Registry
 import { action } from '@/features/registries/components/RegistryAccountsTable';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { registryTypeToNameMapping } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -50,32 +50,27 @@ async function getRegistrySummaryByType(accountType: string): Promise<{
   summary: ModelSummary;
   message?: string;
 }> {
-  const registrySummary = await makeRequest({
-    apiFunction: getRegistriesApiClient().getRegistrySummaryByType,
-    apiArgs: [
-      {
-        registryType: accountType,
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
+  const getRegistrySummaryByType = apiWrapper({
+    fn: getRegistriesApiClient().getRegistrySummaryByType,
+  });
+  const registrySummary = await getRegistrySummaryByType({
+    registryType: accountType,
   });
 
-  if (ApiError.isApiError(registrySummary)) {
-    throw registrySummary.value();
+  if (!registrySummary.ok) {
+    if (registrySummary.error.response.status === 400) {
+      const modelResponse: ApiDocsBadRequestResponse =
+        await registrySummary.error.response.json();
+      return {
+        message: modelResponse.message,
+        summary: {},
+      };
+    }
+    throw registrySummary.error;
   }
 
   return {
-    summary: registrySummary,
+    summary: registrySummary.value,
   };
 }
 
@@ -83,28 +78,24 @@ async function getRegistryAccounts(): Promise<{
   accounts: ModelRegistryListResp[];
   message?: string;
 }> {
-  const listAccounts = await makeRequest({
-    apiFunction: getRegistriesApiClient().listRegistries,
-    apiArgs: [],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
-  });
+  const listRegistries = apiWrapper({ fn: getRegistriesApiClient().listRegistries });
 
-  if (ApiError.isApiError(listAccounts)) {
-    throw listAccounts.value();
+  const listAccounts = await listRegistries();
+
+  if (!listAccounts.ok) {
+    if (listAccounts.error.response.status === 400) {
+      const modelResponse: ApiDocsBadRequestResponse =
+        await listAccounts.error.response.json();
+      return {
+        message: modelResponse.message,
+        accounts: [],
+      };
+    }
+    throw listAccounts.error;
   }
 
   return {
-    accounts: listAccounts,
+    accounts: listAccounts.value,
   };
 }
 

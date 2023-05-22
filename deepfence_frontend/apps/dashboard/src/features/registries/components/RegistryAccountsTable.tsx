@@ -40,7 +40,7 @@ import {
   SecretScanNodeTypeEnum,
   VulnerabilityScanNodeTypeEnum,
 } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 
 export type ActionReturnType = {
@@ -53,27 +53,21 @@ export const action = async ({
 }: ActionFunctionArgs): Promise<ActionReturnType> => {
   const formData = await request.formData();
   const id = formData.get('_nodeId')?.toString() ?? '';
-  const r = await makeRequest({
-    apiFunction: getRegistriesApiClient().deleteRegistry,
-    apiArgs: [
-      {
-        registryId: id,
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<ActionReturnType>({ success: false });
-      if (r.status === 400 || r.status === 404) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message ?? '',
-          success: false,
-        });
-      }
-    },
+  const deleteRegistry = apiWrapper({ fn: getRegistriesApiClient().deleteRegistry });
+
+  const r = await deleteRegistry({
+    registryId: id,
   });
 
-  if (ApiError.isApiError(r)) {
-    return r.value();
+  if (!r.ok) {
+    if (r.error.response.status === 400 || r.error.response.status === 404) {
+      const modelResponse: ApiDocsBadRequestResponse = await r.error.response.json();
+      return {
+        message: modelResponse.message ?? '',
+        success: false,
+      };
+    }
+    throw r.error;
   }
 
   toast('Registry account deleted sucessfully');
