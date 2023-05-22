@@ -1444,14 +1444,6 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                       <h5 className="text-xs text-gray-500 dark:text-gray-200 mb-2">
                         Total count
                       </h5>
-                      <div>
-                        <span className="text-sm text-gray-900 dark:text-gray-200">
-                          {0}
-                        </span>
-                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                          Active containers
-                        </span>
-                      </div>
                     </div>
                   </div>
                 </div>
