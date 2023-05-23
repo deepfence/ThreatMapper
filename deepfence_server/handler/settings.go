@@ -4,11 +4,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"math"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 
@@ -151,22 +150,20 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	var value interface{}
 	switch currentSettings.Key {
 	case model.ConsoleURLSettingKey:
-		consoleUrl := fmt.Sprintf("%s", req.Value)
 		var parsedUrl *url.URL
-		if parsedUrl, err = url.ParseRequestURI(consoleUrl); err != nil {
+		if parsedUrl, err = url.ParseRequestURI(strings.TrimSpace(req.Value)); err != nil {
 			respondError(&ValidatorError{
 				err: errors.New("Key: 'SettingUpdateRequest.Value' Error:invalid url"), skipOverwriteErrorMessage: true}, w)
 			return
 		}
 		value = parsedUrl.Scheme + "://" + parsedUrl.Host
 	case model.InactiveNodesDeleteScanResultsKey:
-		val, ok := req.Value.(float64)
-		if !ok {
+		value, err = strconv.ParseInt(strings.TrimSpace(req.Value), 10, 64)
+		if err != nil {
 			respondError(&ValidatorError{
 				err: errors.New("Key: 'SettingUpdateRequest.Value' Error:must be integer"), skipOverwriteErrorMessage: true}, w)
 			return
 		}
-		value = int(math.Round(val))
 	}
 	setting := model.Setting{
 		ID:  req.ID,
