@@ -175,11 +175,9 @@ const action = async ({
     }
 
     if (_notificationType === 'CloudTrail Alert') {
-      _notificationType = 'cloudtrial_alert';
+      _notificationType = 'CloudTrailAlert';
     } else if (_notificationType === 'User Activities') {
-      _notificationType = 'user_activities';
-    } else {
-      _notificationType = _notificationType.toLowerCase();
+      _notificationType = 'UserActivities';
     }
 
     // filters
