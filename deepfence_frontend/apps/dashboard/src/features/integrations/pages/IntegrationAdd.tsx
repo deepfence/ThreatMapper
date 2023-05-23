@@ -83,7 +83,7 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
       };
     case IntegrationType.email:
       return {
-        email: formBody.email,
+        email_id: formBody.email,
       };
     case IntegrationType.splunk:
       return {
