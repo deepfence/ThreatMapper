@@ -275,7 +275,7 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
         cell: (info) => {
           const date = info.getValue();
           if (date !== undefined) {
-            return formatMilliseconds(date);
+            return formatMilliseconds(date * 1000);
           }
           return '';
         },

@@ -124,7 +124,7 @@ export const RegistryImageTagsTable = ({
         cell: (info) => {
           const metadata = info.row.original.metadata;
           const date = metadata['last_updated'];
-          return formatMilliseconds(date);
+          return formatMilliseconds(date * 1000);
         },
         maxSize: 50,
       }),
