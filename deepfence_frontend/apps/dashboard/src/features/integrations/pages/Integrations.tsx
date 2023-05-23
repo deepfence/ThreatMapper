@@ -10,6 +10,7 @@ import { LinkButton } from '@/components/LinkButton';
 import {
   AwsSecurityHub,
   ElasticSearch,
+  Email,
   GoogleChronicle,
   HttpEndpoint,
   Jira,
@@ -80,6 +81,12 @@ const IntegrationsData = [
         id: IntegrationType.httpEndpoint,
         icon: <img src={HttpEndpoint} alt="HttpEndpoint Logo" />,
         path: '/integrations/notifications/add/http_endpoint',
+      },
+      {
+        name: integrationTypeToNameMapping[IntegrationType.email],
+        id: IntegrationType.email,
+        icon: <img src={Email} alt="Email Logo" />,
+        path: '/integrations/notifications/add/email',
       },
     ],
   },
