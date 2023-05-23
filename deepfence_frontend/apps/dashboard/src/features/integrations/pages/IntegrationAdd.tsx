@@ -31,7 +31,14 @@ export enum ActionEnumType {
   DELETE = 'delete',
   ADD = 'add',
 }
-
+const severityMap: {
+  [key: string]: string;
+} = {
+  Vulnerability: 'cve_severity',
+  Secret: 'level',
+  Malware: 'file_severity',
+  Compliance: 'status',
+};
 const getIntegrations = async (): Promise<{
   message?: string;
   data?: ModelIntegrationListResp[];
@@ -283,7 +290,9 @@ const action = async ({
       const filters = _filters.fields_filters.contains_filter.filter_in;
       const newFilter = {
         ...filters,
-        severity: severityFilter.map((severity) => severity.toLowerCase()),
+        [severityMap[_notificationType] || 'severity']: severityFilter.map((severity) =>
+          severity.toLowerCase(),
+        ),
       };
       _filters.fields_filters.contains_filter.filter_in = newFilter;
     }
