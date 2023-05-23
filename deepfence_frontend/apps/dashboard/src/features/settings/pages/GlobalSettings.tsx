@@ -80,7 +80,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
   if (ApiError.isApiError(r)) {
     let message = '';
     if (r.value()?.message === undefined) {
-      message = 'Error in getting user audit logs';
+      message = 'Error in getting global settings';
     }
     message = r.value().message || '';
     return {
