@@ -1,4 +1,3 @@
-import { capitalize } from 'lodash-es';
 import { useEffect, useState } from 'react';
 import { FaHistory } from 'react-icons/fa';
 import { HiBadgeCheck, HiDatabase, HiOutlineExclamationCircle } from 'react-icons/hi';
@@ -94,6 +93,11 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           deleteSuccess: false,
           message: modelResponse?.message,
         };
+      } else if (deleteScanHistoryResponse.error.response.status === 403) {
+        return {
+          deleteSuccess: false,
+          message: 'You do not have enough permissions to delete scan history',
+        };
       }
       throw deleteScanHistoryResponse.error;
     }
@@ -120,6 +124,11 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
         return {
           uploadSuccess: false,
           message: modelResponse?.message,
+        };
+      } else if (uploadApiResponse.error.response.status === 403) {
+        return {
+          uploadSuccess: false,
+          message: 'You do not have enough permissions to upload file',
         };
       }
       throw uploadApiResponse.error;

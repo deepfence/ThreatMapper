@@ -222,9 +222,8 @@ export const action = async ({
             success: false,
           });
         } else if (r.status === 403) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
           return error.set({
-            message: modelResponse.message,
+            message: 'You do not have enough permissions to invite user',
             success: false,
           });
         }

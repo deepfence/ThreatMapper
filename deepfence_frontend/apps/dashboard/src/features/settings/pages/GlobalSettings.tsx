@@ -69,9 +69,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           success: false,
         });
       } else if (r.status === 403) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
         return error.set({
-          message: modelResponse.message,
+          message: 'You do not have enough permissions to update settings',
           success: false,
         });
       }
@@ -79,7 +78,15 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
   });
 
   if (ApiError.isApiError(r)) {
-    return r.value();
+    let message = '';
+    if (r.value()?.message === undefined) {
+      message = 'Error in getting user audit logs';
+    }
+    message = r.value().message || '';
+    return {
+      message,
+      success: false,
+    };
   }
   return {
     success: true,

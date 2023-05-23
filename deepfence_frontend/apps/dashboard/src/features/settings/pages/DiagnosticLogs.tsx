@@ -126,6 +126,10 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
           return error.set({
             message: modelResponse.message ?? '',
           });
+        } else if (r.status === 403) {
+          return error.set({
+            message: 'You do not have enough permissions to view diagnostic logs',
+          });
         }
       },
     });
@@ -148,16 +152,22 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
           return error.set({
             message: modelResponse.message ?? '',
           });
+        } else if (r.status === 403) {
+          return error.set({
+            message: 'You do not have enough permissions to view diagnostic logs',
+          });
         }
       },
     });
   }
 
   if (ApiError.isApiError(result)) {
-    if (result.value()?.message !== undefined) {
-      const message = 'Something went wrong on generating the logs';
-      return message;
+    let message = '';
+    if (result.value()?.message === undefined) {
+      message = 'Something went wrong on generating the logs';
     }
+    message = result.value().message || '';
+    return message;
   }
   toast('You have successfully generated the logs');
 
@@ -332,13 +342,21 @@ const AgentDiagnosticLogsTable = () => {
   );
 };
 const ConsoleDiagnosticLogsComponent = () => {
+  const loaderData = useLoaderData() as LoaderDataType;
+  const fetcher = useFetcher<string>();
+  const { data } = fetcher;
+
   return (
     <div className="bg-green-100 dark:bg-green-900/75 text-gray-500 dark:text-gray-300 px-4 pt-4 pb-6 w-fit rounded-lg flex flex-col max-w-[300px]">
       <h4 className="text-lg font-medium pb-2">Console Diagnostic Logs</h4>
       <span className="text-sm text-gray-500 dark:text-gray-300">
         Generate a link to download pdf for your console
       </span>
-      <Form method="post">
+      <fetcher.Form method="post">
+        {loaderData.message ? (
+          <p className="text-sm text-red-500 pt-2">{loaderData.message}</p>
+        ) : null}
+        {data ? <p className="text-sm text-red-500 pt-2">{data}</p> : null}
         <input
           type="text"
           name="actionType"
@@ -349,7 +367,7 @@ const ConsoleDiagnosticLogsComponent = () => {
         <Button size="xs" className="text-center mt-3 w-full" color="success">
           Get Logs
         </Button>
-      </Form>
+      </fetcher.Form>
     </div>
   );
 };
