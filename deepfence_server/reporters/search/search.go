@@ -79,40 +79,54 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 	defer tx.Close()
 
 	query := `
-		MATCH (n)
-		WHERE (n:Node OR n:Container OR n:ContainerImage OR n:KubernetesCluster OR n:Pod OR n:CloudProvider)
-		AND n.pseudo=false AND n.active=true
-		RETURN labels(n), count(labels(n)), count(distinct n.kubernetes_namespace);`
+		CALL {	
+			MATCH (n:Node)
+			WHERE n.pseudo = false AND n.active = true
+			return count(n) as n1
+		}
+		CALL {	
+			MATCH (n:Container)
+			WHERE n.pseudo = false AND n.active = true
+			return count(n) as n2
+		}
+		CALL {	
+			MATCH (n:ContainerImage)
+			WHERE n.pseudo = false AND n.active = true
+			return count(n) as n3
+		}
+		CALL {	
+			MATCH (n:KubernetesCluster)
+			WHERE n.pseudo = false AND n.active = true
+			return count(n) as n4
+		}
+		CALL {	
+			MATCH (n:Pod)
+			WHERE n.pseudo = false AND n.active = true
+			return count(n) as n5, count(distinct n.kubernetes_namespace) as nn5
+		}
+		CALL {	
+			MATCH (n:CloudProvider)
+			WHERE n.pseudo = false AND n.active = true
+			return count(n) as n6
+		}
+		return n1, n2, n3, n4, n5, nn5, n6`
 	r, err := tx.Run(query,
 		map[string]interface{}{})
 	if err != nil {
 		return res, err
 	}
-	recs, err := r.Collect()
+	rec, err := r.Single()
 	if err != nil {
 		return res, err
 	}
-	for _, rec := range recs {
-		neo4jNodeTypes := rec.Values[0].([]interface{})
-		count := rec.Values[1].(int64)
-		for _, neo4jNodeType := range neo4jNodeTypes {
-			switch neo4jNodeType {
-			case "Node":
-				res.Host = count
-			case "Container":
-				res.Container = count
-			case "ContainerImage":
-				res.ContainerImage = count
-			case "KubernetesCluster":
-				res.KubernetesCluster = count
-			case "Pod":
-				res.Pod = count
-				res.Namespace = rec.Values[2].(int64)
-			case "CloudProvider":
-				res.CloudProviders = count
-			}
-		}
-	}
+
+	res.Host = rec.Values[0].(int64)
+	res.Container = rec.Values[1].(int64)
+	res.ContainerImage = rec.Values[2].(int64)
+	res.KubernetesCluster = rec.Values[3].(int64)
+	res.Pod = rec.Values[4].(int64)
+	res.Namespace = rec.Values[5].(int64)
+	res.CloudProviders = rec.Values[6].(int64)
 
 	return res, nil
 }
