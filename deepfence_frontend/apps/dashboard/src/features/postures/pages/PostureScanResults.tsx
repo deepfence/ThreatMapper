@@ -985,6 +985,7 @@ const ScanResusltTable = () => {
             } else if (
               scanStatusResult?.status === ScanStatusEnum.complete &&
               data &&
+              data.pagination.currentPage === 0 &&
               data.compliances.length === 0
             ) {
               return (

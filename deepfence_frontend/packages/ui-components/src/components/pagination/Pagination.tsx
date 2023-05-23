@@ -25,33 +25,37 @@ type OwnProps = {
 type Props = Partial<Pick<UsePaginationOptions, 'currentPage' | 'siblingCount'>> &
   OwnProps;
 
-const PageButton = memo(
-  ({ label, onPageChange, disabled, className, ...rest }: PageButtonProps) => {
-    return (
-      <button
-        className={twMerge(
-          // we donot want border to be overlap so we use border right here
-          cx(
-            'flex justify-center items-center outline-none',
-            'px-3 py-1.5 border-r border-y border-gray-300 dark:border-gray-700',
-            'hover:bg-gray-100 hover:text-gray-700',
-            'dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white',
-            'focus:outline-none focus:ring-1 focus:ring-inset focus:ring-blue-600 dark:focus:ring-blue-800',
-          ),
-          className,
-        )}
-        onClick={() => {
-          onPageChange?.();
-        }}
-        type="button"
-        disabled={disabled}
-        {...rest}
-      >
-        {label}
-      </button>
-    );
-  },
-);
+const PageButton = ({
+  label,
+  onPageChange,
+  disabled,
+  className,
+  ...rest
+}: PageButtonProps) => {
+  return (
+    <button
+      className={twMerge(
+        // we donot want border to be overlap so we use border right here
+        cx(
+          'flex justify-center items-center outline-none',
+          'px-3 py-1.5 border-r border-y border-gray-300 dark:border-gray-700',
+          'hover:bg-gray-100 hover:text-gray-700',
+          'dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white',
+          'focus:outline-none focus:ring-1 focus:ring-inset focus:ring-blue-600 dark:focus:ring-blue-800',
+        ),
+        className,
+      )}
+      onClick={() => {
+        onPageChange?.();
+      }}
+      type="button"
+      disabled={disabled}
+      {...rest}
+    >
+      {label}
+    </button>
+  );
+};
 
 export const Pagination = ({
   currentPage = 1,
@@ -62,15 +66,14 @@ export const Pagination = ({
   sizing = 'sm',
   approximatePagination = false,
 }: Props) => {
-  const totalNumberOfPages = Math.ceil(totalRows / pageSize);
+  let totalNumberOfPages = Math.ceil(totalRows / pageSize);
+  let likelyToHaveMorePages = false;
 
-  /* For an approximatePagination, we could not confirm exact page numbers, and 
-     for number of pages at given current page, there is chances to have more number of pages, is such situation
-     dots are shown to ui to indicate more pages are available.
-  */
-  const likelyToHaveMorePages = approximatePagination
-    ? totalRows >= totalNumberOfPages * pageSize
-    : false;
+  // if approximate pagination we only check for 10 pages
+  if (approximatePagination && totalNumberOfPages - currentPage + 1 >= 10) {
+    totalNumberOfPages = totalNumberOfPages - 1;
+    likelyToHaveMorePages = true;
+  }
 
   const pagination = usePagination({
     currentPage,

@@ -1041,6 +1041,7 @@ const SecretTable = () => {
             } else if (
               scanStatusResult?.status === ScanStatusEnum.complete &&
               data &&
+              data.pagination.currentPage === 0 &&
               data.tableData.length === 0
             ) {
               return (
