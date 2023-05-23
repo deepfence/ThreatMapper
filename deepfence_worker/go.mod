@@ -31,7 +31,6 @@ require (
 	github.com/deepfence/agent-plugins-grpc v1.0.2
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230520084733-80a8ef45b860
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
-	github.com/hillu/go-yara/v4 v4.2.4
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/minio/minio-go/v7 v7.0.52
 	github.com/neo4j/neo4j-go-driver/v4 v4.4.7
@@ -126,6 +125,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.2 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
+	github.com/hillu/go-yara/v4 v4.2.4 // indirect
 	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/imdario/mergo v0.3.15 // indirect
 	github.com/jcmturner/aescts/v2 v2.0.0 // indirect
