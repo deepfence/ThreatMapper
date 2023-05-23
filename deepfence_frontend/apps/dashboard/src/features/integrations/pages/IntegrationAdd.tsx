@@ -81,6 +81,10 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
         url: formBody.apiUrl,
         auth_key: formBody.authorizationKey,
       };
+    case IntegrationType.email:
+      return {
+        email: formBody.email,
+      };
     case IntegrationType.splunk:
       return {
         endpoint_url: formBody.url,
