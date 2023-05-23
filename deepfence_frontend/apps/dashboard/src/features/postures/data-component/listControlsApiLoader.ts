@@ -24,9 +24,11 @@ type ActionFunctionType =
   | ReturnType<typeof getControlsApiClient>['enableControl']
   | ReturnType<typeof getControlsApiClient>['disableControl'];
 
+type LoaderDataType = { message: string; controls: ModelCloudNodeComplianceControl[] };
+
 export const listControlsApiLoader = async ({
   params,
-}: LoaderFunctionArgs): Promise<ModelCloudNodeComplianceControl[]> => {
+}: LoaderFunctionArgs): Promise<LoaderDataType> => {
   const checkType = params.checkType;
   const nodeType = params.nodeType;
 
@@ -58,19 +60,26 @@ export const listControlsApiLoader = async ({
         return error.set({
           message: modelResponse.message,
         });
+      } else if (r.status === 403) {
+        return error.set({
+          message: 'You do not have enough permissions to view controls',
+        });
       }
     },
   });
 
   if (ApiError.isApiError(result)) {
-    throw result.value();
+    return { message: result.value().message ?? '', controls: [] };
   }
 
   if (!result) {
-    return [];
+    return {
+      message: '',
+      controls: [],
+    };
   }
 
-  return result.controls ?? [];
+  return { controls: result.controls ?? [], message: '' };
 };
 
 export const toggleControlApiAction = async ({
@@ -128,13 +137,15 @@ export const toggleControlApiAction = async ({
 export const useGetControlsList = (): {
   status: 'idle' | 'loading' | 'submitting';
   controls: ModelCloudNodeComplianceControl[];
+  message: string;
   load: (checkType: string, nodeType: string) => void;
 } => {
-  const fetcher = useFetcher<ModelCloudNodeComplianceControl[]>();
+  const fetcher = useFetcher<LoaderDataType>();
 
   return {
     status: fetcher.state,
-    controls: fetcher.data ?? [],
+    controls: fetcher.data?.controls ?? [],
+    message: fetcher.data?.message ?? '',
     load: (checkType: string, nodeType: string) => {
       fetcher.load(
         generatePath('/data-component/list/controls/:nodeType/:checkType', {
