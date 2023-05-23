@@ -2,10 +2,7 @@ import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
-
-type FormProps = {
-  errorMessage: string;
-};
+import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
 
 /**
 sample request body
@@ -22,7 +19,7 @@ sample request body
   }
 */
 
-export const DockerConnectorForm = ({ errorMessage }: FormProps) => {
+export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormProps) => {
   return (
     <>
       <Stepper>
@@ -48,6 +45,8 @@ export const DockerConnectorForm = ({ errorMessage }: FormProps) => {
               sizing="sm"
               name="name"
               placeholder="Registry Name"
+              helperText={fieldErrors?.name}
+              color={fieldErrors?.name ? 'error' : 'default'}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
@@ -55,6 +54,10 @@ export const DockerConnectorForm = ({ errorMessage }: FormProps) => {
               type={'text'}
               sizing="sm"
               name="non_secret.docker_hub_namespace"
+              color={
+                fieldErrors?.['non_secret.docker_hub_namespace'] ? 'error' : 'default'
+              }
+              helperText={fieldErrors?.['non_secret.docker_hub_namespace']}
               placeholder="Namespace"
             />
             <TextInput
@@ -63,6 +66,10 @@ export const DockerConnectorForm = ({ errorMessage }: FormProps) => {
               type={'text'}
               sizing="sm"
               name="non_secret.docker_hub_username"
+              color={
+                fieldErrors?.['non_secret.docker_hub_username'] ? 'error' : 'default'
+              }
+              helperText={fieldErrors?.['non_secret.docker_hub_username']}
               placeholder="Username"
             />
             <TextInput
@@ -71,6 +78,8 @@ export const DockerConnectorForm = ({ errorMessage }: FormProps) => {
               type={'password'}
               sizing="sm"
               name="secret.docker_hub_password"
+              color={fieldErrors?.['secret.docker_hub_password'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['secret.docker_hub_password']}
               placeholder="••••••••"
             />
             {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}

@@ -18,6 +18,7 @@ import { apiWrapper } from '@/utils/api';
 
 type ActionReturnType = {
   message?: string;
+  fieldErrors?: Record<string, string>;
   success: boolean;
 };
 
@@ -92,6 +93,7 @@ export const registryConnectorActionApi = async ({
         return {
           success: false,
           message: modelResponse.message ?? '',
+          fieldErrors: modelResponse.error_fields ?? {},
         };
       }
     }
@@ -109,6 +111,7 @@ export const registryConnectorActionApi = async ({
         return {
           success: false,
           message: modelResponse.message ?? '',
+          fieldErrors: modelResponse.error_fields ?? {},
         };
       }
     }
@@ -118,6 +121,11 @@ export const registryConnectorActionApi = async ({
   return {
     success: true,
   };
+};
+
+export type RegistryFormProps = {
+  errorMessage?: string;
+  fieldErrors?: Record<string, string>;
 };
 
 export const RegistryConnectorForm = ({
@@ -140,26 +148,65 @@ export const RegistryConnectorForm = ({
       encType="multipart/form-data"
     >
       {registryType === RegistryType.docker_hub && (
-        <DockerRegistryConnectorForm errorMessage={fetcher?.data?.message ?? ''} />
+        <DockerRegistryConnectorForm
+          errorMessage={fetcher?.data?.message}
+          fieldErrors={fetcher?.data?.fieldErrors}
+        />
       )}
 
-      {registryType === RegistryType.ecr && <AmazonECRConnectorForm />}
-      {registryType === RegistryType.azure_container_registry && <AzureCRConnectorForm />}
+      {registryType === RegistryType.ecr && (
+        <AmazonECRConnectorForm
+          errorMessage={fetcher?.data?.message}
+          fieldErrors={fetcher?.data?.fieldErrors}
+        />
+      )}
+      {registryType === RegistryType.azure_container_registry && (
+        <AzureCRConnectorForm
+          errorMessage={fetcher?.data?.message}
+          fieldErrors={fetcher?.data?.fieldErrors}
+        />
+      )}
       {registryType === RegistryType.google_container_registry && (
-        <GoogleCRConnectorForm />
+        <GoogleCRConnectorForm
+          errorMessage={fetcher?.data?.message}
+          fieldErrors={fetcher?.data?.fieldErrors}
+        />
       )}
 
       {registryType === RegistryType.docker_private_registry && (
-        <DockerPriavateConnectorForm />
+        <DockerPriavateConnectorForm
+          errorMessage={fetcher?.data?.message}
+          fieldErrors={fetcher?.data?.fieldErrors}
+        />
       )}
 
-      {registryType === RegistryType.harbor && <HarborConnectorForm />}
+      {registryType === RegistryType.harbor && (
+        <HarborConnectorForm
+          errorMessage={fetcher?.data?.message}
+          fieldErrors={fetcher?.data?.fieldErrors}
+        />
+      )}
 
-      {registryType === RegistryType.gitlab && <GitLabConnectorForm />}
+      {registryType === RegistryType.gitlab && (
+        <GitLabConnectorForm
+          errorMessage={fetcher?.data?.message}
+          fieldErrors={fetcher?.data?.fieldErrors}
+        />
+      )}
 
-      {registryType === RegistryType.jfrog_container_registry && <JfrogConnectorForm />}
+      {registryType === RegistryType.jfrog_container_registry && (
+        <JfrogConnectorForm
+          errorMessage={fetcher?.data?.message}
+          fieldErrors={fetcher?.data?.fieldErrors}
+        />
+      )}
 
-      {registryType === RegistryType.quay && <QuayConnectorForm />}
+      {registryType === RegistryType.quay && (
+        <QuayConnectorForm
+          errorMessage={fetcher?.data?.message}
+          fieldErrors={fetcher?.data?.fieldErrors}
+        />
+      )}
 
       <input type="text" name="registryType" hidden readOnly value={registryType} />
       {renderButton(fetcher.state)}

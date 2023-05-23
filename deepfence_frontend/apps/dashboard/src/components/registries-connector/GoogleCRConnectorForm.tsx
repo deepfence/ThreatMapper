@@ -2,6 +2,7 @@ import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, FileInput, Step, Stepper, TextInput, Typography } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
+import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
 
 /*
 sample json
@@ -14,7 +15,10 @@ sample json
   --form registry_url=https://asia-south1-docker.pkg.dev
 */
 
-export const GoogleCRConnectorForm = () => {
+export const GoogleCRConnectorForm = ({
+  errorMessage,
+  fieldErrors,
+}: RegistryFormProps) => {
   return (
     <Stepper>
       <Step indicator={<HiViewGridAdd />} title="Google Registry Connection">
@@ -38,7 +42,9 @@ export const GoogleCRConnectorForm = () => {
             type={'text'}
             sizing="sm"
             name="name"
-            placeholder="Registry Name"
+            placeholder="Registry Name" //TODO: double check this form
+            color={fieldErrors?.['name'] ? 'error' : 'default'}
+            helperText={fieldErrors?.['name']}
           />
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
@@ -47,13 +53,17 @@ export const GoogleCRConnectorForm = () => {
             sizing="sm"
             name="registry_url"
             placeholder="Registry URL"
+            color={fieldErrors?.['registry_url'] ? 'error' : 'default'}
+            helperText={fieldErrors?.['registry_url']}
           />
           <FileInput
             className="w-3/4 min-[200px] max-w-xs"
             label="Select your file"
             sizing="sm"
             name="service_account_json"
+            helperText={fieldErrors?.['service_account_json']}
           />
+          {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
         </Card>
       </Step>
     </Stepper>

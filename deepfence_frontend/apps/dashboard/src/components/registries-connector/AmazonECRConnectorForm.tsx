@@ -3,6 +3,7 @@ import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, Step, Stepper, Switch, TextInput, Typography } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
+import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
 /*
 sample json
   {
@@ -21,7 +22,10 @@ sample json
     "registry_type": "ecr"
   }
 */
-export const AmazonECRConnectorForm = () => {
+export const AmazonECRConnectorForm = ({
+  errorMessage,
+  fieldErrors,
+}: RegistryFormProps) => {
   const [isPublic, setIsPublic] = useState(false);
   const [useIAMRole, setUseIAMRole] = useState(false);
   return (
@@ -48,6 +52,8 @@ export const AmazonECRConnectorForm = () => {
             sizing="sm"
             name="name"
             placeholder="Registry Name"
+            color={fieldErrors?.['name'] ? 'error' : 'default'}
+            helperText={fieldErrors?.['name']}
           />
           <div className="flex flex-col gap-4 mt-4">
             <Switch
@@ -77,6 +83,10 @@ export const AmazonECRConnectorForm = () => {
                   sizing="sm"
                   name="non_secret.aws_access_key_id"
                   placeholder="AWS Access Key"
+                  color={
+                    fieldErrors?.['non_secret.aws_access_key_id'] ? 'error' : 'default'
+                  }
+                  helperText={fieldErrors?.['non_secret.aws_access_key_id']}
                 />
                 <TextInput
                   className="w-3/4 min-[200px] max-w-xs"
@@ -85,6 +95,10 @@ export const AmazonECRConnectorForm = () => {
                   sizing="sm"
                   name="secret.aws_secret_access_key"
                   placeholder="AWS Secret Key"
+                  color={
+                    fieldErrors?.['secret.aws_secret_access_key'] ? 'error' : 'default'
+                  }
+                  helperText={fieldErrors?.['secret.aws_secret_access_key']}
                 />
               </>
             ) : (
@@ -96,6 +110,8 @@ export const AmazonECRConnectorForm = () => {
                   sizing="sm"
                   name="non_secret.aws_account_id"
                   placeholder="AWS Account ID"
+                  color={fieldErrors?.['non_secret.aws_account_id'] ? 'error' : 'default'}
+                  helperText={fieldErrors?.['non_secret.aws_account_id']}
                 />
                 <TextInput
                   className="w-3/4 min-[200px] max-w-xs"
@@ -104,6 +120,12 @@ export const AmazonECRConnectorForm = () => {
                   sizing="sm"
                   name="non_secret.target_account_role_arn"
                   placeholder="Target Account Role ARN"
+                  color={
+                    fieldErrors?.['non_secret.target_account_role_arn']
+                      ? 'error'
+                      : 'default'
+                  }
+                  helperText={fieldErrors?.['non_secret.target_account_role_arn']}
                 />
               </>
             )}
@@ -115,9 +137,12 @@ export const AmazonECRConnectorForm = () => {
                 sizing="sm"
                 name="non_secret.aws_region_name"
                 placeholder="AWS Region"
+                color={fieldErrors?.['non_secret.aws_region_name'] ? 'error' : 'default'}
+                helperText={fieldErrors?.['non_secret.aws_region_name']}
               />
             ) : null}
           </div>
+          {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
         </Card>
       </Step>
     </Stepper>

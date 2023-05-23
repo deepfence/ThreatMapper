@@ -2,6 +2,7 @@ import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
+import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
 
 /*
 sample json
@@ -18,7 +19,10 @@ sample json
   }
 */
 
-export const AzureCRConnectorForm = () => {
+export const AzureCRConnectorForm = ({
+  errorMessage,
+  fieldErrors,
+}: RegistryFormProps) => {
   return (
     <Stepper>
       <Step indicator={<HiViewGridAdd />} title="Azure Registry Connection">
@@ -43,6 +47,8 @@ export const AzureCRConnectorForm = () => {
             sizing="sm"
             name="name"
             placeholder="Registry Name"
+            color={fieldErrors?.['name'] ? 'error' : 'default'}
+            helperText={fieldErrors?.['name']}
           />
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
@@ -51,6 +57,8 @@ export const AzureCRConnectorForm = () => {
             sizing="sm"
             name="non_secret.azure_registry_url"
             placeholder="Registry URL"
+            color={fieldErrors?.['non_secret.azure_registry_url'] ? 'error' : 'default'}
+            helperText={fieldErrors?.['non_secret.azure_registry_url']}
           />
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
@@ -59,6 +67,10 @@ export const AzureCRConnectorForm = () => {
             sizing="sm"
             name="non_secret.azure_registry_username"
             placeholder="Username"
+            color={
+              fieldErrors?.['non_secret.azure_registry_username'] ? 'error' : 'default'
+            }
+            helperText={fieldErrors?.['non_secret.azure_registry_username']}
           />
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
@@ -67,7 +79,10 @@ export const AzureCRConnectorForm = () => {
             sizing="sm"
             name="secret.azure_registry_password"
             placeholder="••••••••"
+            color={fieldErrors?.['secret.azure_registry_password'] ? 'error' : 'default'}
+            helperText={fieldErrors?.['secret.azure_registry_password']}
           />
+          {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
         </Card>
       </Step>
     </Stepper>
