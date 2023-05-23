@@ -1363,13 +1363,13 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, s := range scansList.ScansInfo {
+		log.Info().Msgf("delete scan %s %s", req.ScanType, s.ScanId)
 		err := reporters_scan.DeleteScan(r.Context(),
 			utils.DetectedNodeScanType[req.ScanType], s.ScanId, []string{})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to delete scan id %s", s.ScanId)
 			continue
 		}
-		log.Info().Msgf("delete scan %s %s", req.ScanType, s.ScanId)
 	}
 
 	httpext.JSON(w, http.StatusOK, nil)

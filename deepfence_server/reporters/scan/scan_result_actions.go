@@ -3,11 +3,14 @@ package reporters_scan
 import (
 	"context"
 	"fmt"
+	"path"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -145,6 +148,25 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 		}
 		err = tx3.Commit()
 		if err != nil {
+			return err
+		}
+
+		// remove sbom
+		mc, err := directory.MinioClient(ctx)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to get minio client")
+			return err
+		}
+		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(scanId)+".json")
+		err = mc.DeleteFile(ctx, sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
+		if err != nil {
+			log.Error().Err(err).Msgf("failed to delete sbom for scan id %s", scanId)
+			return err
+		}
+		runtimeSbomFile := path.Join("sbom", "runtime-"+utils.ScanIdReplacer.Replace(scanId)+".json")
+		err = mc.DeleteFile(ctx, runtimeSbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
+		if err != nil {
+			log.Error().Err(err).Msgf("failed to delete runtime sbom for scan id %s", scanId)
 			return err
 		}
 	}
