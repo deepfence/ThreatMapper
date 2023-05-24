@@ -1,4 +1,5 @@
 import cx from 'classnames';
+import { capitalize } from 'lodash-es';
 import { Suspense, useMemo, useRef } from 'react';
 import { IconContext } from 'react-icons';
 import { FiFilter } from 'react-icons/fi';
