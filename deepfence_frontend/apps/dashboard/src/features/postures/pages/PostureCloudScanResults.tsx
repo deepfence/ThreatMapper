@@ -403,6 +403,16 @@ const action = async ({
           return error.set({
             message: modelResponse.message ?? '',
           });
+        } else if (r.status === 403) {
+          if (actionType === ActionEnumType.DELETE) {
+            return error.set({
+              message: 'You do not have enough permissions to delete compliance',
+            });
+          } else if (actionType === ActionEnumType.NOTIFY) {
+            return error.set({
+              message: 'You do not have enough permissions to notify',
+            });
+          }
         }
       },
     });
@@ -445,6 +455,12 @@ const action = async ({
     });
 
     if (!result.ok) {
+      if (result.error.response.status === 403) {
+        return {
+          message: 'You do not have enough permissions to delete scan',
+          success: false,
+        };
+      }
       throw new Error('Error deleting scan');
     }
   }
@@ -510,7 +526,7 @@ const DeleteConfirmationModal = ({
             <span>Are you sure you want to delete?</span>
           </h3>
           {fetcher.data?.message && (
-            <p className="text-sm text-red-500 pt-2">{fetcher.data?.message}</p>
+            <p className="text-sm text-red-500 pb-3">{fetcher.data?.message}</p>
           )}
           <div className="flex items-center justify-right gap-4">
             <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
@@ -569,7 +585,7 @@ const DeleteScanConfirmationModal = ({
             <span>Are you sure you want to delete the scan?</span>
           </h3>
           {fetcher.data?.message && (
-            <p className="text-sm text-red-500 pt-2">{fetcher.data?.message}</p>
+            <p className="text-sm text-red-500 pb-3">{fetcher.data?.message}</p>
           )}
           <div className="flex items-center justify-right gap-4">
             <Button size="xs" onClick={() => onOpenChange(false)} type="button" outline>
