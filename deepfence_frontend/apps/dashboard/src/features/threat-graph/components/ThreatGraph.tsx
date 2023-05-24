@@ -43,7 +43,7 @@ export const ThreatGraphComponent = ({
   }, [filters]);
 
   useEffect(() => {
-    if (!graph || !data) return;
+    if (!graph || !data || isGraphEmpty(data)) return;
     graph.data(getGraphData(data));
     graph.render();
   }, [graph, data]);
