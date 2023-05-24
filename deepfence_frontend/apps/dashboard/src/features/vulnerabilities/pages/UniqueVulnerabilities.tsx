@@ -1,5 +1,4 @@
 import cx from 'classnames';
-import { capitalize } from 'lodash-es';
 import { Suspense, useMemo } from 'react';
 import { IconContext } from 'react-icons';
 import { HiChevronRight, HiExternalLink } from 'react-icons/hi';
@@ -209,7 +208,7 @@ const UniqueVulnerabilities = () => {
       }),
       columnHelper.accessor('cve_attack_vector', {
         enableResizing: false,
-        cell: (info) => capitalize(info.getValue()),
+        cell: (info) => info.getValue(),
         header: () => 'Attack Vector',
         minSize: 100,
         size: 120,
