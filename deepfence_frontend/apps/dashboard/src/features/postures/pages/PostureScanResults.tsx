@@ -704,8 +704,8 @@ const HistoryDropdown = ({ nodeType }: { nodeType: string }) => {
                               size="xxs"
                               disabled={
                                 isCurrentScan ||
-                                !isScanComplete(item.status) ||
-                                !isScanFailed(item.status)
+                                (!isScanComplete(item.status) &&
+                                  !isScanFailed(item.status))
                               }
                               className="rounded-lg bg-transparent"
                               icon={<HiOutlineTrash />}
@@ -985,6 +985,7 @@ const ScanResusltTable = () => {
             } else if (
               scanStatusResult?.status === ScanStatusEnum.complete &&
               data &&
+              data.pagination.currentPage === 0 &&
               data.compliances.length === 0
             ) {
               return (
