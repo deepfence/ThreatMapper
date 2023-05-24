@@ -237,7 +237,7 @@ const UniqueVulnerabilities = () => {
       }),
       columnHelper.accessor('cve_attack_vector', {
         enableResizing: false,
-        cell: (info) => capitalize(info.getValue()),
+        cell: (info) => info.getValue(),
         header: () => 'Attack Vector',
         minSize: 100,
         size: 120,

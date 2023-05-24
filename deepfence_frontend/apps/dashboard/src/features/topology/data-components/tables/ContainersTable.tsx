@@ -3,12 +3,13 @@ import { FiFilter } from 'react-icons/fi';
 import { LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 import {
   Button,
-  Checkbox,
   createColumnHelper,
   Dropdown,
   DropdownItem,
   getRowSelectionColumn,
   IconButton,
+  Listbox,
+  ListboxOption,
   Popover,
   RowSelectionState,
   SortingState,
@@ -41,6 +42,14 @@ import {
 } from '@/types/common';
 import { ApiError, makeRequest } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
+import {
+  MALWARE_SCAN_STATUS_GROUPS,
+  MalwareScanGroupedStatus,
+  SECRET_SCAN_STATUS_GROUPS,
+  SecretScanGroupedStatus,
+  VULNERABILITY_SCAN_STATUS_GROUPS,
+  VulnerabilityScanGroupedStatus,
+} from '@/utils/scan';
 import { getOrderFromSearchParams, getPageFromSearchParams } from '@/utils/table';
 
 type LoaderData = {
@@ -53,10 +62,13 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   const searchParams = new URL(request.url).searchParams;
   const page = getPageFromSearchParams(searchParams);
 
-  const vulnerabilityScanStatus =
-    searchParams.get('vulnerability_scan_status')?.split(',') ?? [];
-  const secretScanStatus = searchParams.get('secret_scan_status')?.split(',') ?? [];
-  const malwareScanStatus = searchParams.get('malware_scan_status')?.split(',') ?? [];
+  const vulnerabilityScanStatus = ((searchParams
+    .get('vulnerability_scan_status')
+    ?.split(',') ?? [])[0] ?? null) as VulnerabilityScanGroupedStatus | null;
+  const secretScanStatus = ((searchParams.get('secret_scan_status')?.split(',') ??
+    [])[0] ?? null) as SecretScanGroupedStatus | null;
+  const malwareScanStatus = ((searchParams.get('malware_scan_status')?.split(',') ??
+    [])[0] ?? null) as MalwareScanGroupedStatus | null;
 
   const order = getOrderFromSearchParams(searchParams);
 
@@ -84,23 +96,45 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
     },
     window: { offset: page * PAGE_SIZE, size: PAGE_SIZE },
   };
-  if (vulnerabilityScanStatus.length) {
-    searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
-      ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-      vulnerability_scan_status: vulnerabilityScanStatus,
-    };
+  if (vulnerabilityScanStatus) {
+    if (vulnerabilityScanStatus === VulnerabilityScanGroupedStatus.neverScanned) {
+      searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
+        ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
+        vulnerability_latest_scan_id: [''],
+      };
+    } else {
+      searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
+        ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
+        vulnerability_scan_status:
+          VULNERABILITY_SCAN_STATUS_GROUPS[vulnerabilityScanStatus],
+      };
+    }
   }
-  if (secretScanStatus.length) {
-    searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
-      ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-      secret_scan_status: secretScanStatus,
-    };
+  if (secretScanStatus) {
+    if (secretScanStatus === SecretScanGroupedStatus.neverScanned) {
+      searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
+        ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
+        secret_latest_scan_id: [''],
+      };
+    } else {
+      searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
+        ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
+        secret_scan_status: SECRET_SCAN_STATUS_GROUPS[secretScanStatus],
+      };
+    }
   }
-  if (malwareScanStatus.length) {
-    searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
-      ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-      malware_scan_status: malwareScanStatus,
-    };
+  if (malwareScanStatus) {
+    if (malwareScanStatus === MalwareScanGroupedStatus.neverScanned) {
+      searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
+        ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
+        malware_latest_scan_id: [''],
+      };
+    } else {
+      searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
+        ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
+        malware_scan_status: MALWARE_SCAN_STATUS_GROUPS[malwareScanStatus],
+      };
+    }
   }
 
   if (order) {
@@ -278,142 +312,138 @@ function Filters({
               />
               <div className="flex flex-col gap-y-6 p-4">
                 <fieldset>
-                  <legend className="text-sm font-medium">
-                    Vulnerability Scan Status
-                  </legend>
                   <div className="flex gap-x-4 mt-1">
-                    <Checkbox
-                      label="Never Scanned"
-                      checked={filters.vulnerabilityScanStatus.includes('')}
-                      onCheckedChange={(state) => {
-                        if (state) {
-                          onFiltersChange({
-                            ...filters,
-                            vulnerabilityScanStatus: [
-                              ...filters.vulnerabilityScanStatus,
-                              '',
-                            ],
-                          });
-                        } else {
-                          onFiltersChange({
-                            ...filters,
-                            vulnerabilityScanStatus:
-                              filters.vulnerabilityScanStatus.filter(
-                                (item) => item !== '',
-                              ),
-                          });
-                        }
+                    <Listbox
+                      placeholder="Select a status"
+                      sizing="sm"
+                      value={filters.vulnerabilityScanStatus[0] ?? null}
+                      onChange={(val) => {
+                        onFiltersChange({
+                          ...filters,
+                          vulnerabilityScanStatus: [val],
+                        });
                       }}
-                    />
-                    <Checkbox
-                      label="Complete"
-                      checked={filters.vulnerabilityScanStatus.includes('COMPLETE')}
-                      onCheckedChange={(state) => {
-                        if (state) {
-                          onFiltersChange({
-                            ...filters,
-                            vulnerabilityScanStatus: [
-                              ...filters.vulnerabilityScanStatus,
-                              'COMPLETE',
-                            ],
-                          });
-                        } else {
-                          onFiltersChange({
-                            ...filters,
-                            vulnerabilityScanStatus:
-                              filters.vulnerabilityScanStatus.filter(
-                                (item) => item !== 'COMPLETE',
-                              ),
-                          });
-                        }
-                      }}
-                    />
+                      label="Vulnerability Scan Status"
+                    >
+                      {[
+                        {
+                          label: 'Never Scanned',
+                          value: VulnerabilityScanGroupedStatus.neverScanned,
+                        },
+                        {
+                          label: 'Starting',
+                          value: VulnerabilityScanGroupedStatus.starting,
+                        },
+                        {
+                          label: 'In progress',
+                          value: VulnerabilityScanGroupedStatus.inProgress,
+                        },
+                        {
+                          label: 'Complete',
+                          value: VulnerabilityScanGroupedStatus.complete,
+                        },
+                        {
+                          label: 'Error',
+                          value: VulnerabilityScanGroupedStatus.error,
+                        },
+                      ].map((val) => {
+                        return (
+                          <ListboxOption key={val.value} value={val.value}>
+                            {val.label}
+                          </ListboxOption>
+                        );
+                      })}
+                    </Listbox>
                   </div>
                 </fieldset>
                 <fieldset>
-                  <legend className="text-sm font-medium">Secret Scan Status</legend>
                   <div className="flex gap-x-4 mt-1">
-                    <Checkbox
-                      label="Never Scanned"
-                      checked={filters.secretScanStatus.includes('')}
-                      onCheckedChange={(state) => {
-                        if (state) {
-                          onFiltersChange({
-                            ...filters,
-                            secretScanStatus: [...filters.secretScanStatus, ''],
-                          });
-                        } else {
-                          onFiltersChange({
-                            ...filters,
-                            secretScanStatus: filters.secretScanStatus.filter(
-                              (item) => item !== '',
-                            ),
-                          });
-                        }
+                    <Listbox
+                      sizing="sm"
+                      placeholder="Select a status"
+                      value={filters.secretScanStatus[0] ?? null}
+                      onChange={(val) => {
+                        onFiltersChange({
+                          ...filters,
+                          secretScanStatus: [val],
+                        });
                       }}
-                    />
-                    <Checkbox
-                      label="Complete"
-                      checked={filters.secretScanStatus.includes('COMPLETE')}
-                      onCheckedChange={(state) => {
-                        if (state) {
-                          onFiltersChange({
-                            ...filters,
-                            secretScanStatus: [...filters.secretScanStatus, 'COMPLETE'],
-                          });
-                        } else {
-                          onFiltersChange({
-                            ...filters,
-                            secretScanStatus: filters.secretScanStatus.filter(
-                              (item) => item !== 'COMPLETE',
-                            ),
-                          });
-                        }
-                      }}
-                    />
+                      label="Secret Scan Status"
+                    >
+                      {[
+                        {
+                          label: 'Never Scanned',
+                          value: SecretScanGroupedStatus.neverScanned,
+                        },
+                        {
+                          label: 'Starting',
+                          value: SecretScanGroupedStatus.starting,
+                        },
+                        {
+                          label: 'In progress',
+                          value: SecretScanGroupedStatus.inProgress,
+                        },
+                        {
+                          label: 'Complete',
+                          value: SecretScanGroupedStatus.complete,
+                        },
+                        {
+                          label: 'Error',
+                          value: SecretScanGroupedStatus.error,
+                        },
+                      ].map((val) => {
+                        return (
+                          <ListboxOption key={val.value} value={val.value}>
+                            {val.label}
+                          </ListboxOption>
+                        );
+                      })}
+                    </Listbox>
                   </div>
                 </fieldset>
                 <fieldset>
-                  <legend className="text-sm font-medium">Malware Scan Status</legend>
                   <div className="flex gap-x-4 mt-1">
-                    <Checkbox
-                      label="Never Scanned"
-                      checked={filters.malwareScanStatus.includes('')}
-                      onCheckedChange={(state) => {
-                        if (state) {
-                          onFiltersChange({
-                            ...filters,
-                            malwareScanStatus: [...filters.malwareScanStatus, ''],
-                          });
-                        } else {
-                          onFiltersChange({
-                            ...filters,
-                            malwareScanStatus: filters.malwareScanStatus.filter(
-                              (item) => item !== '',
-                            ),
-                          });
-                        }
+                    <Listbox
+                      sizing="sm"
+                      placeholder="Select a status"
+                      value={filters.malwareScanStatus[0] ?? null}
+                      onChange={(val) => {
+                        onFiltersChange({
+                          ...filters,
+                          malwareScanStatus: [val],
+                        });
                       }}
-                    />
-                    <Checkbox
-                      label="Complete"
-                      checked={filters.malwareScanStatus.includes('COMPLETE')}
-                      onCheckedChange={(state) => {
-                        if (state) {
-                          onFiltersChange({
-                            ...filters,
-                            malwareScanStatus: [...filters.malwareScanStatus, 'COMPLETE'],
-                          });
-                        } else {
-                          onFiltersChange({
-                            ...filters,
-                            malwareScanStatus: filters.malwareScanStatus.filter(
-                              (item) => item !== 'COMPLETE',
-                            ),
-                          });
-                        }
-                      }}
-                    />
+                      label="Malware Scan Status"
+                    >
+                      {[
+                        {
+                          label: 'Never Scanned',
+                          value: MalwareScanGroupedStatus.neverScanned,
+                        },
+                        {
+                          label: 'Starting',
+                          value: MalwareScanGroupedStatus.starting,
+                        },
+                        {
+                          label: 'In progress',
+                          value: MalwareScanGroupedStatus.inProgress,
+                        },
+                        {
+                          label: 'Complete',
+                          value: MalwareScanGroupedStatus.complete,
+                        },
+                        {
+                          label: 'Error',
+                          value: MalwareScanGroupedStatus.error,
+                        },
+                      ].map((val) => {
+                        return (
+                          <ListboxOption key={val.value} value={val.value}>
+                            {val.label}
+                          </ListboxOption>
+                        );
+                      })}
+                    </Listbox>
                   </div>
                 </fieldset>
               </div>
