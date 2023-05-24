@@ -31,7 +31,7 @@ spec:
         - name: minio
           securityContext:
             {{- toYaml .Values.minio.securityContext | nindent 12 }}
-          image: "{{ .Values.minio.image.repository }}:{{ .Values.minio.image.tag }}"
+          image: "{{ .Values.global.imageRepoPrefix }}/{{ .Values.minio.image.repository }}:{{ default .Values.global.imageTag .Values.minio.image.tag }}"
           imagePullPolicy: {{ .Values.minio.image.pullPolicy }}
           envFrom:
             - secretRef:

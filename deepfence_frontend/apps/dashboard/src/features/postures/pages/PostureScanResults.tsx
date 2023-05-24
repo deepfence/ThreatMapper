@@ -354,6 +354,7 @@ type ActionFunctionType =
 
 type ActionData = {
   success: boolean;
+  message?: string;
 } | null;
 
 const action = async ({
@@ -398,6 +399,16 @@ const action = async ({
           return error.set({
             message: modelResponse.message ?? '',
           });
+        } else if (r.status === 403) {
+          if (actionType === ActionEnumType.DELETE) {
+            return error.set({
+              message: 'You do not have enough permissions to delete compliance',
+            });
+          } else if (actionType === ActionEnumType.NOTIFY) {
+            return error.set({
+              message: 'You do not have enough permissions to notify',
+            });
+          }
         }
       },
     });
@@ -440,6 +451,12 @@ const action = async ({
     });
 
     if (!result.ok) {
+      if (result.error.response.status === 403) {
+        return {
+          message: 'You do not have enough permissions to delete scan',
+          success: false,
+        };
+      }
       throw new Error('Error deleting scan');
     }
   }
@@ -447,7 +464,10 @@ const action = async ({
   if (ApiError.isApiError(result)) {
     if (result.value()?.message !== undefined) {
       const message = result.value()?.message ?? 'Something went wrong';
-      toast.error(message);
+      return {
+        success: false,
+        message,
+      };
     }
   }
 
@@ -504,6 +524,9 @@ const DeleteConfirmationModal = ({
             <br />
             <span>Are you sure you want to delete?</span>
           </h3>
+          {fetcher.data?.message && (
+            <p className="text-sm text-red-500 pb-3">{fetcher.data?.message}</p>
+          )}
           <div className="flex items-center justify-right gap-4">
             <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
               No, Cancel
@@ -559,6 +582,9 @@ const DeleteScanConfirmationModal = ({
           <h3 className="mb-4 font-normal text-center text-sm">
             <span>Are you sure you want to delete the scan?</span>
           </h3>
+          {fetcher.data?.message && (
+            <p className="text-sm text-red-500 pb-3">{fetcher.data?.message}</p>
+          )}
           <div className="flex items-center justify-right gap-4">
             <Button size="xs" onClick={() => onOpenChange(false)} type="button" outline>
               No, Cancel
@@ -976,7 +1002,7 @@ const ScanResusltTable = () => {
             const { data, scanStatusResult } = resolvedData;
 
             if (scanStatusResult?.status === ScanStatusEnum.error) {
-              return <ScanStatusInError />;
+              return <ScanStatusInError errorMessage={scanStatusResult.status_message} />;
             } else if (
               scanStatusResult?.status !== ScanStatusEnum.error &&
               scanStatusResult?.status !== ScanStatusEnum.complete

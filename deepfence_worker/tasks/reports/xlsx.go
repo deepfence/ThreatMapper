@@ -119,7 +119,7 @@ func xlsxSave(xlsx *excelize.File, params utils.ReportParams) (string, error) {
 }
 
 func xlsxSetHeader(xlsx *excelize.File, sheet string, headers map[string]string) {
-	for k, v := range vulnerabilityHeader {
+	for k, v := range headers {
 		xlsx.SetCellValue(sheet, k, v)
 	}
 }

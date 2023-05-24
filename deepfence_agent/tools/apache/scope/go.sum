@@ -482,8 +482,8 @@ github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 h1:HbphB4TFFXpv7MNrT52FGrrgVXF1
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0/go.mod h1:DZGJHZMqrU4JJqFAWUS2UO1+lbSKsdiOoYi9Zzey7Fc=
 github.com/deepfence/compliance v0.1.3-0.20230523055258-4cae3116258c h1:9sSZJckAreZM9jqwSfS6OL/ivHieKP9cPYQYIo5CAoQ=
 github.com/deepfence/compliance v0.1.3-0.20230523055258-4cae3116258c/go.mod h1:tW9pM3AXpzXzDGHT+v5nETnNx9i2ekz1Q8yBiuzzWZY=
-github.com/deepfence/kubernetes-scanner v0.0.0-20230523063904-1881931444e1 h1:yS4GW3ZyYrw1KuF+62gW+hoZ16m95iMkOBTBQSOhqHk=
-github.com/deepfence/kubernetes-scanner v0.0.0-20230523063904-1881931444e1/go.mod h1:QUk7RF3qmKqVOjYMz+G/VYz27XTP4jqjysFEFFN6fVw=
+github.com/deepfence/kubernetes-scanner v0.0.0-20230524091442-d3f9e5b26f71 h1:TBIWIQ6+D+46fOUC5vmcQAZVcX++kgPL9iIKisQt3Io=
+github.com/deepfence/kubernetes-scanner v0.0.0-20230524091442-d3f9e5b26f71/go.mod h1:QUk7RF3qmKqVOjYMz+G/VYz27XTP4jqjysFEFFN6fVw=
 github.com/docker/docker v23.0.2+incompatible h1:q81C2qQ/EhPm8COZMUGOQYh4qLv4Xu6CXELJ3WK/mlU=
 github.com/docker/docker v23.0.2+incompatible/go.mod h1:eEKB0N0r5NX/I1kEveEz05bcu8tLC/8azJZsviup8Sk=
 github.com/docker/go-connections v0.4.0 h1:El9xVISelRB7BuFusrZozjnkIM5YnzCViNKohAFqRJQ=
