@@ -20,7 +20,6 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom';
-import { toast } from 'sonner';
 import {
   Breadcrumb,
   BreadcrumbLink,
@@ -110,7 +109,7 @@ const getActiveStatus = (searchParams: URLSearchParams) => {
 
 const action = async ({
   request,
-}: ActionFunctionArgs): Promise<{ success?: boolean } | null> => {
+}: ActionFunctionArgs): Promise<{ success?: boolean; message?: string } | null> => {
   const formData = await request.formData();
   const actionType = formData.get('actionType');
   const scanId = formData.get('scanId');
@@ -140,6 +139,10 @@ const action = async ({
           return error.set({
             message: modelResponse.message ?? '',
           });
+        } else if (r.status === 403) {
+          return error.set({
+            message: 'You do not have enough permissions to delete scan',
+          });
         }
       },
     });
@@ -147,7 +150,10 @@ const action = async ({
       if (result.value()?.message !== undefined) {
         const message =
           result.value()?.message ?? 'Something went wrong, please try again';
-        toast.error(message);
+        return {
+          success: false,
+          message,
+        };
       }
     }
 
@@ -278,6 +284,9 @@ const DeleteConfirmationModal = ({
             <br />
             <span>Are you sure you want to delete?</span>
           </h3>
+          {fetcher.data?.message && (
+            <p className="text-sm text-red-500 pb-3">{fetcher.data?.message}</p>
+          )}
           <div className="flex items-center justify-right gap-4">
             <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
               No, Cancel

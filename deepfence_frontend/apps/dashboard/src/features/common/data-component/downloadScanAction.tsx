@@ -50,6 +50,9 @@ export const action = async ({ request }: ActionFunctionArgs): Promise<null> => 
         toast.error('Something went wrong, please try again');
         return null;
       }
+    } else if (getReportIdApiResponse.error.response.status === 403) {
+      toast.error('You do not have enough permissions to download');
+      return null;
     }
     throw getReportIdApiResponse.error;
   }
