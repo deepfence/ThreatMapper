@@ -340,9 +340,8 @@ const ScanHistoryAndDbManagement = () => {
         </div>
 
         <p className="mt-1 text-gray-700 dark:text-gray-100 text-sm">
-          Choose resource, its
-          {severityOrStatus === 'severity' ? ' severity ' : ' status '}
-          and scan duration for which you want to delete for scan history
+          Please specify the resource and duration you would like to delete from the scan
+          history.
         </p>
         <div className="mt-2 flex gap-x-16">
           <div>
