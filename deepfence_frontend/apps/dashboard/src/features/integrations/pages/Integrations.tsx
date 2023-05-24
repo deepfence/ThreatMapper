@@ -257,8 +257,18 @@ const Integrations = () => {
                           }
                         >
                           <DFAwait resolve={loaderData?.data}>
-                            {(resolvedData: { data?: ModelIntegrationListResp[] }) => {
-                              const { data = [] } = resolvedData ?? {};
+                            {(resolvedData: {
+                              data?: ModelIntegrationListResp[];
+                              message?: string;
+                            }) => {
+                              const { data = [], message } = resolvedData ?? {};
+
+                              if (message && message.length) {
+                                return (
+                                  <h4 className="text-red-500 text-sm">{message}</h4>
+                                );
+                              }
+
                               const len = data.filter(
                                 (integration) => integration.integration_type === type.id,
                               ).length;

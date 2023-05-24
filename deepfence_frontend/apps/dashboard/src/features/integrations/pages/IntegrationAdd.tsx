@@ -39,9 +39,24 @@ const getIntegrations = async (): Promise<{
   const integrationPromise = await makeRequest({
     apiFunction: getIntegrationApiClient().listIntegration,
     apiArgs: [],
+    errorHandler: async (r) => {
+      const error = new ApiError<{
+        message?: string;
+      }>({});
+      if (r.status === 403) {
+        return error.set({
+          message: 'You do not have enough permissions to view integrations',
+        });
+      }
+    },
   });
 
   if (ApiError.isApiError(integrationPromise)) {
+    if (integrationPromise.value().message) {
+      return {
+        message: integrationPromise.value().message,
+      };
+    }
     return {
       message: 'Error in getting integrations',
     };
@@ -323,6 +338,11 @@ const action = async ({
           const modelResponse: ApiDocsBadRequestResponse = await r.json();
           return error.set({
             message: modelResponse.message ?? '',
+            success: false,
+          });
+        } else if (r.status === 403) {
+          return error.set({
+            message: 'You do not have enough permissions to add integration',
             success: false,
           });
         }
