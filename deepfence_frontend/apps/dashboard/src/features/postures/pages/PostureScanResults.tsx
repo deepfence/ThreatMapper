@@ -704,8 +704,8 @@ const HistoryDropdown = ({ nodeType }: { nodeType: string }) => {
                               size="xxs"
                               disabled={
                                 isCurrentScan ||
-                                !isScanComplete(item.status) ||
-                                !isScanFailed(item.status)
+                                (!isScanComplete(item.status) &&
+                                  !isScanFailed(item.status))
                               }
                               className="rounded-lg bg-transparent"
                               icon={<HiOutlineTrash />}
