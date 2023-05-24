@@ -148,11 +148,11 @@ const ThreatGraphHeader = () => {
                           value: 'malware',
                         },
                         {
-                          label: 'Compliance',
+                          label: 'Posture',
                           value: 'compliance',
                         },
                         {
-                          label: 'Cloud Compliance',
+                          label: 'Cloud Posture',
                           value: 'cloud_compliance',
                         },
                       ]}

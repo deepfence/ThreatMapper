@@ -227,11 +227,11 @@ const SCAN_TYPE_MAP: Record<ScanTypeEnum, { label: string; logo: () => JSX.Eleme
     logo: MalwareIcon,
   },
   [ScanTypeEnum.ComplianceScan]: {
-    label: 'Compliance',
+    label: 'Posture',
     logo: PostureIcon,
   },
   [ScanTypeEnum.CloudComplianceScan]: {
-    label: 'Compliance',
+    label: 'Posture',
     logo: PostureIcon,
   },
 };

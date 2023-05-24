@@ -65,7 +65,7 @@ const ScanResultHeading = ({
     title = 'Malware Scan';
     scanResultPath = '/malware/scan-results';
   } else if (type === ScanTypeEnum.ComplianceScan) {
-    title = 'Compliance Scan';
+    title = 'Posture Scan';
   }
   return (
     <div className="flex items-center gap-x-3">

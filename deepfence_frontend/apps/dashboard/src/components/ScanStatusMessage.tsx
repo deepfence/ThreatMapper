@@ -58,8 +58,8 @@ export const NoIssueFound = ({
         {scanType === ScanTypeEnum.VulnerabilityScan && 'Vulnerability Scan'}
         {scanType === ScanTypeEnum.SecretScan && 'Secret Scan'}
         {scanType === ScanTypeEnum.MalwareScan && 'Malware Scan'}
-        {scanType === ScanTypeEnum.ComplianceScan && 'Compliance Scan'}
-        {scanType === ScanTypeEnum.CloudComplianceScan && 'Cloud Compliance Scan'}
+        {scanType === ScanTypeEnum.ComplianceScan && 'Posture Scan'}
+        {scanType === ScanTypeEnum.CloudComplianceScan && 'Cloud Posture Scan'}
       </span>
       <span className="text-sm text-gray-500 dark:text-gray-400">
         You have no
@@ -67,9 +67,9 @@ export const NoIssueFound = ({
           ' vulnerabilities for vulnerability scan'}
         {scanType === ScanTypeEnum.SecretScan && ' secrets for secret scan'}
         {scanType === ScanTypeEnum.MalwareScan && ' malwares for malware scan'}
-        {scanType === ScanTypeEnum.ComplianceScan && ' compliances for compliance scan'}
+        {scanType === ScanTypeEnum.ComplianceScan && ' compliances for posture scan'}
         {scanType === ScanTypeEnum.CloudComplianceScan &&
-          ' compliances for Cloud Compliance Scan'}
+          ' compliances for cloud posture Scan'}
       </span>
     </div>
   );

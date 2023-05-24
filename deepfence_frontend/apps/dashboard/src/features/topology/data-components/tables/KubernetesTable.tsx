@@ -201,7 +201,7 @@ function BulkActionButton({ nodeIds }: { nodeIds: Array<string> }) {
               <span className="h-6 w-6">
                 <PostureIcon />
               </span>
-              <span>Start Compliance Scan</span>
+              <span>Start Posture Scan</span>
             </DropdownItem>
           </>
         }
