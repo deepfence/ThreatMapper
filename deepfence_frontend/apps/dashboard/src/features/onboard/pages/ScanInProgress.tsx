@@ -423,10 +423,10 @@ const ScanInProgress = () => {
               getRowCanExpand={() => {
                 return true;
               }}
-              renderSubComponent={() => {
+              renderSubComponent={({ row }) => {
                 return (
-                  <p className="dark:text-gray-200 py-2 px-4 overflow-auto text-sm">
-                    Error message will be displayed here
+                  <p className="text-red-500 py-2 px-4 overflow-auto text-sm">
+                    {row.original.status_message}
                   </p>
                 );
               }}

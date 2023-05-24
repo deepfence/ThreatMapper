@@ -22,7 +22,7 @@ export const ScanStatusInProgress = ({ LogoIcon }: { LogoIcon: () => JSX.Element
   );
 };
 
-export const ScanStatusInError = () => {
+export const ScanStatusInError = ({ errorMessage }: { errorMessage: string }) => {
   return (
     <div className={cx('flex flex-col items-center justify-center mt-40')}>
       <div className="bg-red-100 dark:bg-red-500/10 rounded-lg flex items-center justify-center p-4">
@@ -35,6 +35,7 @@ export const ScanStatusInError = () => {
         </IconContext.Provider>
       </div>
       <span className="text-2xl font-medium text-red-500/80">Scan Error</span>
+      <p className="text-red-500 py-2 px-4 overflow-auto text-sm">{errorMessage}</p>
       <span className="text-sm text-gray-500 dark:text-gray-400">
         Please check deepfence console logs for more details.
       </span>

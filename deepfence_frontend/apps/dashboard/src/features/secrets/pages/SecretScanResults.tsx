@@ -1032,7 +1032,7 @@ const SecretTable = () => {
             const { data, scanStatusResult } = resolvedData;
 
             if (scanStatusResult?.status === ScanStatusEnum.error) {
-              return <ScanStatusInError />;
+              return <ScanStatusInError errorMessage={scanStatusResult.status_message} />;
             } else if (
               scanStatusResult?.status !== ScanStatusEnum.error &&
               scanStatusResult?.status !== ScanStatusEnum.complete
