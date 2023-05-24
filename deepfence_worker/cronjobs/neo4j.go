@@ -309,7 +309,7 @@ func RetryScansDB(msg *message.Message) error {
 	defer tx.Close()
 
 	if _, err = tx.Run(`
-		MATCH (n) -[:SCANNED]-> (:Node)
+		MATCH (n) -[:SCANNED]-> ()
 		WHERE n.status = $old_status
 		AND n.updated_at < TIMESTAMP()-$time_ms
 		AND n.retries < 3
