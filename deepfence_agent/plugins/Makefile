@@ -30,8 +30,9 @@ proto: ./agent-plugins-grpc/proto/*.proto
 
 clean:
 	-rm -rf $(PWD)/bin/secret-scanner/
-	-rm -rf $(PWD)/bin/YaraHunter/
+	-rm -rf $(PWD)/bin/yara-hunter/
 	-rm $(PWD)/bin/package-scanner
+	-rm $(PWD)/bin/compliance
 	(cd agent-plugins-grpc && make clean)
 
 .PHONY: clean localinit
