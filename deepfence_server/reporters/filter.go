@@ -83,7 +83,11 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 				}
 			}
 
-			conditions = append(conditions, fmt.Sprintf("%s.%s %sIN [%s]", cypherNodeName, k, reverse_operator, strings.Join(values, ",")))
+			if in {
+				conditions = append(conditions, fmt.Sprintf("%s.%s IN [%s]", cypherNodeName, k, strings.Join(values, ",")))
+			} else {
+				conditions = append(conditions, fmt.Sprintf(" NOT coalesce(%s.%s, '') IN [%s]", cypherNodeName, k, strings.Join(values, ",")))
+			}
 		}
 	}
 	return conditions
