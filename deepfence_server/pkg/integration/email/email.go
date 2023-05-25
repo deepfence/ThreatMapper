@@ -20,7 +20,7 @@ func New(b []byte) (*Email, error) {
 }
 
 func (e Email) FormatMessage(message []map[string]interface{}) string {
-	entiremsg := "*" + s.Resource + "*\n\n"
+	entiremsg := "*" + e.Resource + "*\n\n"
 	for k, v := range message {
 		entiremsg = entiremsg + fmt.Sprintf("#%d\n", k+1)
 		for key, val := range v {
