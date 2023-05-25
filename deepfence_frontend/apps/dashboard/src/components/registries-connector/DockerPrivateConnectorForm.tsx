@@ -61,10 +61,8 @@ export const DockerPriavateConnectorForm = ({
               sizing="sm"
               name="non_secret.docker_registry_url"
               placeholder="Registry URL"
-              color={
-                fieldErrors?.['non_secret.docker_registry_url'] ? 'error' : 'default'
-              }
-              helperText={fieldErrors?.['non_secret.docker_registry_url']}
+              color={fieldErrors?.['docker_registry_url'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['docker_registry_url']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
@@ -73,8 +71,8 @@ export const DockerPriavateConnectorForm = ({
               sizing="sm"
               name="non_secret.docker_username"
               placeholder="Username"
-              color={fieldErrors?.['non_secret.docker_username'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['non_secret.docker_username']}
+              color={fieldErrors?.['docker_username'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['docker_username']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
@@ -83,8 +81,8 @@ export const DockerPriavateConnectorForm = ({
               sizing="sm"
               name="secret.docker_password"
               placeholder="••••••••"
-              color={fieldErrors?.['secret.docker_password'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['secret.docker_password']}
+              color={fieldErrors?.['docker_password'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['docker_password']}
             />
             {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
           </Card>

@@ -58,8 +58,8 @@ export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPro
               sizing="sm"
               name="non_secret.quay_registry_url"
               placeholder="Registry URL"
-              color={fieldErrors?.['non_secret.quay_registry_url'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['non_secret.quay_registry_url']}
+              color={fieldErrors?.['quay_registry_url'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['quay_registry_url']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
@@ -68,8 +68,8 @@ export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPro
               sizing="sm"
               name="non_secret.quay_namespace"
               placeholder="Namespace"
-              color={fieldErrors?.['non_secret.quay_namespace'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['non_secret.quay_namespace']}
+              color={fieldErrors?.['quay_namespace'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['quay_namespace']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
@@ -78,8 +78,8 @@ export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPro
               sizing="sm"
               name="secret.quay_access_token"
               placeholder="OAuth Access Token"
-              color={fieldErrors?.['secret.quay_access_token'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['secret.quay_access_token']}
+              color={fieldErrors?.['quay_access_token'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['quay_access_token']}
             />
             {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
           </Card>

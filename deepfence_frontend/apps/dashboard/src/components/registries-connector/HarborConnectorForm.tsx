@@ -59,10 +59,8 @@ export const HarborConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
               sizing="sm"
               name="non_secret.harbor_registry_url"
               placeholder="Registry URL"
-              color={
-                fieldErrors?.['non_secret.harbor_registry_url'] ? 'error' : 'default'
-              }
-              helperText={fieldErrors?.['non_secret.harbor_registry_url']}
+              color={fieldErrors?.['harbor_registry_url'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['harbor_registry_url']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
@@ -71,10 +69,8 @@ export const HarborConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
               sizing="sm"
               name="non_secret.harbor_project_name"
               placeholder="Project Name"
-              color={
-                fieldErrors?.['non_secret.harbor_project_name'] ? 'error' : 'default'
-              }
-              helperText={fieldErrors?.['non_secret.harbor_project_name']}
+              color={fieldErrors?.['harbor_project_name'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['harbor_project_name']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
@@ -83,8 +79,8 @@ export const HarborConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
               sizing="sm"
               name="non_secret.harbor_username"
               placeholder="Username"
-              color={fieldErrors?.['non_secret.harbor_username'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['non_secret.harbor_username']}
+              color={fieldErrors?.['harbor_username'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['harbor_username']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
@@ -93,8 +89,8 @@ export const HarborConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
               sizing="sm"
               name="secret.harbor_password"
               placeholder="••••••••"
-              color={fieldErrors?.['secret.harbor_password'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['secret.harbor_password']}
+              color={fieldErrors?.['harbor_password'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['harbor_password']}
             />
           </Card>
           {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}

@@ -59,8 +59,8 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
               sizing="sm"
               name="non_secret.jfrog_registry_url"
               placeholder="Registry URL"
-              color={fieldErrors?.['non_secret.jfrog_registry_url'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['non_secret.jfrog_registry_url']}
+              color={fieldErrors?.['jfrog_registry_url'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['jfrog_registry_url']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
@@ -69,8 +69,8 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
               sizing="sm"
               name="non_secret.jfrog_repository"
               placeholder="Repository"
-              color={fieldErrors?.['non_secret.jfrog_repository'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['non_secret.jfrog_repository']}
+              color={fieldErrors?.['jfrog_repository'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['jfrog_repository']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
@@ -79,8 +79,8 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
               sizing="sm"
               name="non_secret.jfrog_username"
               placeholder="Username"
-              color={fieldErrors?.['non_secret.jfrog_username'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['non_secret.jfrog_username']}
+              color={fieldErrors?.['jfrog_username'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['jfrog_username']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
@@ -89,8 +89,8 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
               sizing="sm"
               name="secret.jfrog_password"
               placeholder="••••••••"
-              color={fieldErrors?.['secret.jfrog_password'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['secret.jfrog_password']}
+              color={fieldErrors?.['jfrog_password'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['jfrog_password']}
             />
             {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
           </Card>

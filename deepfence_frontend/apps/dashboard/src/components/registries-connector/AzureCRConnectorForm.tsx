@@ -57,8 +57,8 @@ export const AzureCRConnectorForm = ({
             sizing="sm"
             name="non_secret.azure_registry_url"
             placeholder="Registry URL"
-            color={fieldErrors?.['non_secret.azure_registry_url'] ? 'error' : 'default'}
-            helperText={fieldErrors?.['non_secret.azure_registry_url']}
+            color={fieldErrors?.['azure_registry_url'] ? 'error' : 'default'}
+            helperText={fieldErrors?.['azure_registry_url']}
           />
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
@@ -67,10 +67,8 @@ export const AzureCRConnectorForm = ({
             sizing="sm"
             name="non_secret.azure_registry_username"
             placeholder="Username"
-            color={
-              fieldErrors?.['non_secret.azure_registry_username'] ? 'error' : 'default'
-            }
-            helperText={fieldErrors?.['non_secret.azure_registry_username']}
+            color={fieldErrors?.['azure_registry_username'] ? 'error' : 'default'}
+            helperText={fieldErrors?.['azure_registry_username']}
           />
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
@@ -79,8 +77,8 @@ export const AzureCRConnectorForm = ({
             sizing="sm"
             name="secret.azure_registry_password"
             placeholder="••••••••"
-            color={fieldErrors?.['secret.azure_registry_password'] ? 'error' : 'default'}
-            helperText={fieldErrors?.['secret.azure_registry_password']}
+            color={fieldErrors?.['azure_registry_password'] ? 'error' : 'default'}
+            helperText={fieldErrors?.['azure_registry_password']}
           />
           {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
         </Card>

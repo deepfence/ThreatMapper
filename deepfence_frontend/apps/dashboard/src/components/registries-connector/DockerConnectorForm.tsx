@@ -54,10 +54,8 @@ export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
               type={'text'}
               sizing="sm"
               name="non_secret.docker_hub_namespace"
-              color={
-                fieldErrors?.['non_secret.docker_hub_namespace'] ? 'error' : 'default'
-              }
-              helperText={fieldErrors?.['non_secret.docker_hub_namespace']}
+              color={fieldErrors?.['docker_hub_namespace'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['docker_hub_namespace']}
               placeholder="Namespace"
             />
             <TextInput
@@ -66,10 +64,8 @@ export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
               type={'text'}
               sizing="sm"
               name="non_secret.docker_hub_username"
-              color={
-                fieldErrors?.['non_secret.docker_hub_username'] ? 'error' : 'default'
-              }
-              helperText={fieldErrors?.['non_secret.docker_hub_username']}
+              color={fieldErrors?.['docker_hub_username'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['docker_hub_username']}
               placeholder="Username"
             />
             <TextInput
@@ -78,8 +74,8 @@ export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
               type={'password'}
               sizing="sm"
               name="secret.docker_hub_password"
-              color={fieldErrors?.['secret.docker_hub_password'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['secret.docker_hub_password']}
+              color={fieldErrors?.['docker_hub_password'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['docker_hub_password']}
               placeholder="••••••••"
             />
             {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}

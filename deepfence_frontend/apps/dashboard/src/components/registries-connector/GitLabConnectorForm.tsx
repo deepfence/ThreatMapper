@@ -58,8 +58,8 @@ export const GitLabConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
               sizing="sm"
               name="non_secret.gitlab_server_url"
               placeholder="Gilab Server URL"
-              color={fieldErrors?.['non_secret.gitlab_server_url'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['non_secret.gitlab_server_url']}
+              color={fieldErrors?.['gitlab_server_url'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['gitlab_server_url']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
@@ -68,10 +68,8 @@ export const GitLabConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
               sizing="sm"
               name="non_secret.gitlab_registry_url"
               placeholder="GitLab Registry URL"
-              color={
-                fieldErrors?.['non_secret.gitlab_registry_url'] ? 'error' : 'default'
-              }
-              helperText={fieldErrors?.['non_secret.gitlab_registry_url']}
+              color={fieldErrors?.['gitlab_registry_url'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['gitlab_registry_url']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
@@ -80,8 +78,8 @@ export const GitLabConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
               sizing="sm"
               name="secret.gitlab_access_token"
               placeholder="Gitlab Access Token"
-              color={fieldErrors?.['secret.gitlab_access_token'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['secret.gitlab_access_token']}
+              color={fieldErrors?.['gitlab_access_token'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['gitlab_access_token']}
             />
             {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
           </Card>
