@@ -43,7 +43,7 @@ export const ThreatGraphComponent = ({
   }, [filters]);
 
   useEffect(() => {
-    if (!graph || !data) return;
+    if (!graph || !data || isGraphEmpty(data)) return;
     graph.data(getGraphData(data));
     graph.render();
   }, [graph, data]);
@@ -72,7 +72,7 @@ export const ThreatGraphComponent = ({
         </div>
       ) : null}
       {!loading && isGraphEmpty(data) ? (
-        <div className="absolute inset-0 flex gap-2 flex-col items-center justify-center p-6">
+        <div className="absolute inset-0 flex gap-2 flex-col items-center justify-center p-6 bg-white dark:bg-gray-800">
           <div>
             <IconContext.Provider
               value={{ className: 'text-[3rem] text-blue-600 dark:text-blue-400' }}

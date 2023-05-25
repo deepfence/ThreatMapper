@@ -64,6 +64,8 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 					labels = append(labels, fmt.Sprintf("%s%s:ContainerImage", reverse_operator, cypherNodeName))
 				case "container":
 					labels = append(labels, fmt.Sprintf("%s%s:Container", reverse_operator, cypherNodeName))
+				case "cluster":
+					labels = append(labels, fmt.Sprintf("%s%s:KubernetesCluster", reverse_operator, cypherNodeName))
 				}
 			}
 			if in {
@@ -81,7 +83,11 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 				}
 			}
 
-			conditions = append(conditions, fmt.Sprintf("%s.%s %sIN [%s]", cypherNodeName, k, reverse_operator, strings.Join(values, ",")))
+			if in {
+				conditions = append(conditions, fmt.Sprintf("%s.%s IN [%s]", cypherNodeName, k, strings.Join(values, ",")))
+			} else {
+				conditions = append(conditions, fmt.Sprintf(" NOT coalesce(%s.%s, '') IN [%s]", cypherNodeName, k, strings.Join(values, ",")))
+			}
 		}
 	}
 	return conditions
@@ -94,7 +100,7 @@ func compareFilter2CypherConditions(cypherNodeName string, filters []CompareFilt
 		if !filter.GreaterThan {
 			compareOperator = "<"
 		}
-		conditions = append(conditions, fmt.Sprintf("%s.%s %s %s", cypherNodeName, filter.FieldName, compareOperator, filter.FieldValue))
+		conditions = append(conditions, fmt.Sprintf("%s.%s %s %v", cypherNodeName, filter.FieldName, compareOperator, filter.FieldValue))
 	}
 	return conditions
 }

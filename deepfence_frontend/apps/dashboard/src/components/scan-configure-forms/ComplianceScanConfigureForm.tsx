@@ -106,6 +106,11 @@ export const scanPostureApiAction = async ({
           message: modelResponse.message ?? '',
           success: false,
         });
+      } else if (r.status === 403) {
+        return error.set({
+          message: 'You do not have enough permissions to start scan',
+          success: false,
+        });
       }
     },
   });
@@ -187,7 +192,12 @@ export const ControlsTable = memo(
   }) => {
     const [selectedTab, setSelectedTab] = useState(defaultTab);
 
-    const { controls: controlsList, status, load: fetchControls } = useGetControlsList();
+    const {
+      controls: controlsList,
+      status,
+      load: fetchControls,
+      message,
+    } = useGetControlsList();
     const isLoading = status === 'loading';
 
     const columnHelper = createColumnHelper<ModelCloudNodeComplianceControl>();
@@ -278,14 +288,20 @@ export const ControlsTable = memo(
                     className={'w-screen'}
                   />
                 ) : (
-                  <Table
-                    size="sm"
-                    data={controlsList}
-                    columns={columns}
-                    enablePagination
-                    enableColumnResizing
-                    enableSorting
-                  />
+                  <>
+                    {message ? (
+                      <p className="text-red-500 text-sm py-3">{message}</p>
+                    ) : (
+                      <Table
+                        size="sm"
+                        data={controlsList}
+                        columns={columns}
+                        enablePagination
+                        enableColumnResizing
+                        enableSorting
+                      />
+                    )}
+                  </>
                 )}
               </Tabs>
             ) : null}

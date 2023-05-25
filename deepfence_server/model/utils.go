@@ -45,15 +45,46 @@ func ValidatePassword(fl validator.FieldLevel) bool {
 
 var (
 	ErrorMessage = map[string]string{
-		"UserRegisterRequest.FirstName":         "should only contain alphabets, numbers, space and hyphen",
-		"UserRegisterRequest.LastName":          "should only contain alphabets, numbers, space and hyphen",
-		"UserRegisterRequest.Company":           "should only contain alphabets, numbers and valid characters",
-		"UserRegisterRequest.Password":          "should contain at least one upper case, lower case, digit and special character",
-		"UpdateUserPasswordRequest.OldPassword": "incorrect old password",
-		"UpdateUserPasswordRequest.NewPassword": "should contain at least one upper case, lower case, digit and special character",
-		"LoginRequest.Password":                 "incorrect password",
-		"RegisterInvitedUserRequest.Password":   "should contain at least one upper case, lower case, digit and special character",
-		"PasswordResetVerifyRequest.Password":   "should contain at least one upper case, lower case, digit and special character",
+		"UserRegisterRequest.FirstName":                     "should only contain alphabets, numbers, space and hyphen",
+		"UserRegisterRequest.LastName":                      "should only contain alphabets, numbers, space and hyphen",
+		"UserRegisterRequest.Company":                       "should only contain alphabets, numbers and valid characters",
+		"UserRegisterRequest.Password":                      "should contain at least one upper case, lower case, digit and special character",
+		"UpdateUserPasswordRequest.OldPassword":             "incorrect old password",
+		"UpdateUserPasswordRequest.NewPassword":             "should contain at least one upper case, lower case, digit and special character",
+		"LoginRequest.Password":                             "incorrect password",
+		"RegisterInvitedUserRequest.Password":               "should contain at least one upper case, lower case, digit and special character",
+		"PasswordResetVerifyRequest.Password":               "should contain at least one upper case, lower case, digit and special character",
+		"RegistryDockerHub.Name":                            "should only contain alphabets, numbers, space and hyphen",
+		"RegistryDockerHub.NonSecret.DockerHubUsername":     "should only contain alphabets, numbers, space and hyphen",
+		"RegistryDockerHub.Secret.DockerHubPassword":        "should only contain alphabets, numbers, space and hyphen",
+		"RegistryDockerPrivate.Name":                        "should only contain alphabets, numbers, space and hyphen",
+		"RegistryDockerPrivate.NonSecret.DockerRegistryURL": "invalid docker registry url",
+		"RegistryDockerPrivate.NonSecret.DockerUsername":    "should only contain alphabets, numbers, space and hyphen",
+		"RegistryACR.Name":                                  "invalid name",
+		"RegistryACR.NonSecret.AzureRegistryURL":            "invalid azure registry url",
+		"RegistryACR.NonSecret.AzureRegistryUsername":       "invalid azure registry username",
+		"RegistryECR.Name":                                  "should only contain alphabets, numbers, space and hyphen",
+		"RegistryECR.NonSecret.UseIAMRole":                  "invalid use iam role",
+		"RegistryECR.NonSecret.IsPublic":                    "invalid is public",
+		"RegistryGitlab.Name":                               "should only contain alphabets, numbers, space and hyphen",
+		"RegistryGitlab.NonSecret.GitlabRegistryURL":        "invalid gitlab registry url",
+		"RegistryGitlab.NonSecret.GitlabServerURL":          "invalid gitlab server url",
+		"RegistryHarbor.Name":                               "should only contain alphabets, numbers, space and hyphen",
+		"RegistryHarbor.NonSecret.HarborRegistryURL":        "invalid harbor registry url",
+		"RegistryHarbor.NonSecret.HarborUsername":           "invalid harbor username",
+		"RegistryHarbor.Secret.HarborProjectName":           "invalid harbor project name",
+		"RegistryQuay.Name":                                 "should only contain alphabets, numbers, space and hyphen",
+		"RegistryQuay.NonSecret.QuayRegistryURL":            "invalid quay registry url",
+		"RegistryQuay.NonSecret.QuayNamespace":              "invalid quay namespace",
+		"RegistryJfrog.Name":                                "should only contain alphabets, numbers, space and hyphen",
+		"RegistryJfrog.NonSecret.JfrogRegistryURL":          "invalid jfrog registry url",
+		"RegistryJfrog.NonSecret.JfrogUsername":             "invalid jfrog username",
+		"RegistryJfrog.NonSecret.JfrogProjectName":          "invalid jfrog project name",
+		"RegistryGCR.Name":                                  "should only contain alphabets, numbers, space and hyphen",
+		"RegistryGCR.NonSecret.RegistryURL":                 "invalid gcr registry url",
+		"RegistryGCR.NonSecret.ProjectID":                   "invalid project id",
+		"RegistryGCR.Secret.ProjectID":                      "invalid project id",
+		"RegistryGCR.Secret.ProjectKeyId":                   "invalid project key id",
 
 		"api_token": "api_token must be UUID",
 		"email":     "invalid email address",
@@ -73,6 +104,8 @@ func ParseValidatorError(errMsg string, skipOverwriteErrorMessage bool) map[stri
 			structKey := strings.Split(s[1], ".")
 			if len(structKey) == 2 {
 				return utils.ToSnakeCase(structKey[1]), s[1], errMessage
+			} else if len(structKey) == 3 {
+				return utils.ToSnakeCase(structKey[2]), s[1], errMessage
 			}
 			return utils.ToSnakeCase(s[1]), s[1], errMessage
 		}

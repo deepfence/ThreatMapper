@@ -31,7 +31,7 @@ spec:
         - name: postgresql
           securityContext:
             {{- toYaml .Values.postgresql.securityContext | nindent 12 }}
-          image: "{{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}"
+          image: "{{ .Values.global.imageRepoPrefix }}/{{ .Values.postgresql.image.repository }}:{{ default .Values.global.imageTag .Values.postgresql.image.tag }}"
           imagePullPolicy: {{ .Values.postgresql.image.pullPolicy }}
           envFrom:
             - secretRef:

@@ -53,9 +53,9 @@ type SettingsResponse struct {
 }
 
 type SettingUpdateRequest struct {
-	ID    int64       `path:"id" validate:"required" required:"true"`
-	Key   string      `json:"key" validate:"required,oneof=console_url inactive_delete_scan_results" required:"true" enum:"console_url,inactive_delete_scan_results"`
-	Value interface{} `json:"value" validate:"required" required:"true"`
+	ID    int64  `path:"id" validate:"required" required:"true"`
+	Key   string `json:"key" validate:"required,oneof=console_url inactive_delete_scan_results" required:"true" enum:"console_url,inactive_delete_scan_results"`
+	Value string `json:"value" validate:"required" required:"true"`
 }
 
 func (s *Setting) Create(ctx context.Context, pgClient *postgresqlDb.Queries) (*postgresqlDb.Setting, error) {

@@ -93,10 +93,10 @@ const configMap: ConfigProps = {
       'Malware Scan has been initiated, it will be completed in few moments.',
   },
   compliance: {
-    scanningText: 'Your Compliance Scan is currently running...',
-    headerText: 'Compliance Scan',
+    scanningText: 'Your Posture Scan is currently running...',
+    headerText: 'Posture Scan',
     subHeaderText:
-      'Compliance Scan has been initiated, it will be completed in few moments.',
+      'Posture Scan has been initiated, it will be completed in few moments.',
   },
   alert: {
     scanningText: 'Your Vulnerability Scan is currently running...',
@@ -423,10 +423,10 @@ const ScanInProgress = () => {
               getRowCanExpand={() => {
                 return true;
               }}
-              renderSubComponent={() => {
+              renderSubComponent={({ row }) => {
                 return (
-                  <p className="dark:text-gray-200 py-2 px-4 overflow-auto text-sm">
-                    Error message will be displayed here
+                  <p className="text-red-500 py-2 px-4 overflow-auto text-sm">
+                    {row.original.status_message}
                   </p>
                 );
               }}

@@ -183,7 +183,7 @@ const NotificationType = () => {
         <SelectItem value={'Vulnerability'}>Vulnerability</SelectItem>
         <SelectItem value={'Secret'}>Secret</SelectItem>
         <SelectItem value={'Malware'}>Malware</SelectItem>
-        <SelectItem value={'Compliance'}>Compliance</SelectItem>
+        <SelectItem value={'Compliance'}>Posture</SelectItem>
 
         {CloudTrailIntegration.includes(integrationType) && (
           <SelectItem value={CLOUD_TRAIL_ALERT}>CloudTrail Alert</SelectItem>

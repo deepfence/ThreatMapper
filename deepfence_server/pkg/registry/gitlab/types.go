@@ -1,15 +1,15 @@
 package gitlab
 
 type RegistryGitlab struct {
-	Name         string    `json:"name"`
+	Name         string    `json:"name" validate:"required"`
 	NonSecret    NonSecret `json:"non_secret"`
 	Secret       Secret    `json:"secret"`
-	RegistryType string    `json:"registry_type"`
+	RegistryType string    `json:"registry_type" validate:"required"`
 }
 
 type NonSecret struct {
-	GitlabRegistryURL string `json:"gitlab_registry_url"`
-	GitlabServerURL   string `json:"gitlab_server_url"`
+	GitlabRegistryURL string `json:"gitlab_registry_url" validate:"required"`
+	GitlabServerURL   string `json:"gitlab_server_url" validate:"required"`
 }
 
 type Secret struct {

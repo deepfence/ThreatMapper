@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"bytes"
-	"compress/gzip"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -99,6 +97,50 @@ func GetImageFromId(ctx context.Context, node_id string) (string, string, error)
 	return name, tag, nil
 }
 
+func GetContainerKubeClusterNameFromId(ctx context.Context, node_id string) (string, string, error) {
+	var clusterID string
+	var clusterName string
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return clusterID, clusterName, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return clusterID, clusterName, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return clusterID, clusterName, err
+	}
+	defer tx.Close()
+
+	res, err := tx.Run(`
+		MATCH (n:Container{node_id:$node_id})
+		RETURN n.kubernetes_cluster_id, n.kubernetes_cluster_name`,
+		map[string]interface{}{"node_id": node_id})
+	if err != nil {
+		return clusterID, clusterName, err
+	}
+
+	rec, err := res.Single()
+	if err != nil {
+		return clusterID, clusterName, err
+	}
+
+	if vi, ok := rec.Get("n.kubernetes_cluster_id"); ok && vi != nil {
+		clusterID = vi.(string)
+	}
+	if vt, ok := rec.Get("n.kubernetes_cluster_name"); ok && vt != nil {
+		clusterName = vt.(string)
+	}
+
+	return clusterID, clusterName, nil
+}
+
 func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
 	var reqs model.VulnerabilityScanTriggerReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqs)
@@ -137,6 +179,16 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 			} else {
 				binArgs["image_name"] = name + ":" + tag
 				log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
+			}
+		}
+
+		if nodeTypeInternal == ctl.Container {
+			clusterID, clusterName, err := GetContainerKubeClusterNameFromId(r.Context(), req.NodeId)
+			if err != nil {
+				log.Error().Msgf("container kube cluster name not found %s", err.Error())
+			} else if len(clusterName) > 0 {
+				binArgs["kubernetes_cluster_name"] = clusterName
+				log.Info().Msgf("node_id=%s clusterName=%s clusterID=%s", req.NodeId, clusterName, clusterID)
 			}
 		}
 
@@ -500,37 +552,19 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if params.ScanId == "" {
-		log.Error().Msgf("error scan id is empty, params: %+v", params)
-		httpext.JSON(w, http.StatusBadRequest,
-			model.ErrorResponse{Message: "scan_id is required to process sbom"})
-		return
-	}
-
-	// decompress sbom
 	b64, err := base64.StdEncoding.DecodeString(params.SBOM)
 	if err != nil {
 		log.Error().Err(err).Msgf("error b64 reader")
 		respondError(&BadDecoding{err}, w)
 		return
 	}
-	sr := bytes.NewReader(b64)
-	gzr, err := gzip.NewReader(sr)
-	if err != nil {
-		log.Error().Err(err).Msgf("error gzip reader")
-		respondError(&BadDecoding{err}, w)
-		return
-	}
-	defer gzr.Close()
-	sbom, err := io.ReadAll(gzr)
-	if err != nil {
-		log.Error().Err(err).Msgf("error read all decompressed sbom")
-		respondError(&BadDecoding{err}, w)
-		return
-	}
 
-	log.Info().Msgf("received sbom size: %.4fmb decompressed: %.4fmb",
-		float64(len(params.SBOM))/1000.0/1000.0, float64(len(sbom))/1000.0/1000.0)
+	if params.ScanId == "" {
+		log.Error().Msgf("error scan id is empty, params: %+v", params)
+		httpext.JSON(w, http.StatusBadRequest,
+			model.ErrorResponse{Message: "scan_id is required to process sbom"})
+		return
+	}
 
 	mc, err := directory.MinioClient(r.Context())
 	if err != nil {
@@ -539,9 +573,9 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file := path.Join("sbom", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
-	info, err := mc.UploadFile(r.Context(), file, []byte(sbom),
-		minio.PutObjectOptions{ContentType: "application/json"})
+	file := path.Join("sbom", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
+	info, err := mc.UploadFile(r.Context(), file, b64,
+		minio.PutObjectOptions{ContentType: "application/gzip"})
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)
@@ -1363,13 +1397,13 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, s := range scansList.ScansInfo {
+		log.Info().Msgf("delete scan %s %s", req.ScanType, s.ScanId)
 		err := reporters_scan.DeleteScan(r.Context(),
 			utils.DetectedNodeScanType[req.ScanType], s.ScanId, []string{})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to delete scan id %s", s.ScanId)
 			continue
 		}
-		log.Info().Msgf("delete scan %s %s", req.ScanType, s.ScanId)
 	}
 
 	httpext.JSON(w, http.StatusOK, nil)
@@ -1436,10 +1470,10 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 		httpext.JSON(w, http.StatusOK, sbom)
 	case "download":
 		resp := model.DownloadReportResponse{}
-		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(req.ScanID)+".json")
+		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(req.ScanID)+".json.gz")
 		cd := url.Values{
 			"response-content-disposition": []string{
-				"attachment; filename=" + strconv.Quote(utils.ScanIdReplacer.Replace(req.ScanID)+".json")},
+				"attachment; filename=" + strconv.Quote(utils.ScanIdReplacer.Replace(req.ScanID)+".json.gz")},
 		}
 		url, err := mc.ExposeFile(r.Context(), sbomFile, true, DownloadReportUrlExpiry, cd)
 		if err != nil {

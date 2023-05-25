@@ -69,9 +69,8 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
           success: false,
         });
       } else if (r.status === 403) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
         return error.set({
-          message: modelResponse.message,
+          message: 'You do not have enough permissions to update settings',
           success: false,
         });
       }
@@ -79,7 +78,15 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
   });
 
   if (ApiError.isApiError(r)) {
-    return r.value();
+    let message = '';
+    if (r.value()?.message === undefined) {
+      message = 'Error in getting global settings';
+    }
+    message = r.value().message || '';
+    return {
+      message,
+      success: false,
+    };
   }
   return {
     success: true,
@@ -90,11 +97,31 @@ const getData = async (): Promise<LoaderDataType> => {
   const response = await makeRequest({
     apiFunction: getSettingsApiClient().getSettings,
     apiArgs: [],
+    errorHandler: async (r) => {
+      const error = new ApiError<{
+        message?: string;
+      }>({});
+      if (r.status === 400 || r.status === 409) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message ?? '',
+        });
+      } else if (r.status === 403) {
+        return error.set({
+          message: 'You do not have enough permissions to view settings',
+        });
+      }
+    },
   });
 
   if (ApiError.isApiError(response)) {
+    let message = '';
+    if (response.value()?.message === undefined) {
+      message = 'Something went wrong on generating the logs';
+    }
+    message = response.value().message || '';
     return {
-      message: 'Error in getting settings list',
+      message,
     };
   }
 

@@ -31,7 +31,14 @@ export enum ActionEnumType {
   DELETE = 'delete',
   ADD = 'add',
 }
-
+const severityMap: {
+  [key: string]: string;
+} = {
+  Vulnerability: 'cve_severity',
+  Secret: 'level',
+  Malware: 'file_severity',
+  Compliance: 'status',
+};
 const getIntegrations = async (): Promise<{
   message?: string;
   data?: ModelIntegrationListResp[];
@@ -39,9 +46,24 @@ const getIntegrations = async (): Promise<{
   const integrationPromise = await makeRequest({
     apiFunction: getIntegrationApiClient().listIntegration,
     apiArgs: [],
+    errorHandler: async (r) => {
+      const error = new ApiError<{
+        message?: string;
+      }>({});
+      if (r.status === 403) {
+        return error.set({
+          message: 'You do not have enough permissions to view integrations',
+        });
+      }
+    },
   });
 
   if (ApiError.isApiError(integrationPromise)) {
+    if (integrationPromise.value().message) {
+      return {
+        message: integrationPromise.value().message,
+      };
+    }
     return {
       message: 'Error in getting integrations',
     };
@@ -80,6 +102,10 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
       return {
         url: formBody.apiUrl,
         auth_key: formBody.authorizationKey,
+      };
+    case IntegrationType.email:
+      return {
+        email_id: formBody.email,
       };
     case IntegrationType.splunk:
       return {
@@ -175,11 +201,9 @@ const action = async ({
     }
 
     if (_notificationType === 'CloudTrail Alert') {
-      _notificationType = 'cloudtrial_alert';
+      _notificationType = 'CloudTrailAlert';
     } else if (_notificationType === 'User Activities') {
-      _notificationType = 'user_activities';
-    } else {
-      _notificationType = _notificationType.toLowerCase();
+      _notificationType = 'UserActivities';
     }
 
     // filters
@@ -285,7 +309,9 @@ const action = async ({
       const filters = _filters.fields_filters.contains_filter.filter_in;
       const newFilter = {
         ...filters,
-        severity: severityFilter.map((severity) => severity.toLowerCase()),
+        [severityMap[_notificationType] || 'severity']: severityFilter.map((severity) =>
+          severity.toLowerCase(),
+        ),
       };
       _filters.fields_filters.contains_filter.filter_in = newFilter;
     }
@@ -323,6 +349,11 @@ const action = async ({
           const modelResponse: ApiDocsBadRequestResponse = await r.json();
           return error.set({
             message: modelResponse.message ?? '',
+            success: false,
+          });
+        } else if (r.status === 403) {
+          return error.set({
+            message: 'You do not have enough permissions to add integration',
             success: false,
           });
         }

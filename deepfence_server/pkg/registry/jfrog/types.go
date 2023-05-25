@@ -5,16 +5,16 @@ import (
 )
 
 type RegistryJfrog struct {
-	Name         string    `json:"name"`
+	Name         string    `json:"name" validate:"required"`
 	NonSecret    NonSecret `json:"non_secret"`
 	Secret       Secret    `json:"secret"`
-	RegistryType string    `json:"registry_type"`
+	RegistryType string    `json:"registry_type" validate:"required"`
 }
 
 type NonSecret struct {
-	JfrogRegistryURL string `json:"jfrog_registry_url"`
-	JfrogRepository  string `json:"jfrog_repository"`
-	JfrogUsername    string `json:"jfrog_username"`
+	JfrogRegistryURL string `json:"jfrog_registry_url" validate:"required"`
+	JfrogRepository  string `json:"jfrog_repository" validate:"required"`
+	JfrogUsername    string `json:"jfrog_username" validate:"required"`
 }
 
 type Secret struct {

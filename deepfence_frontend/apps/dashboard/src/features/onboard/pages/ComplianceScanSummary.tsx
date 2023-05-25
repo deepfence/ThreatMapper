@@ -486,8 +486,8 @@ const ComplianceScanSummary = () => {
   return (
     <div className="flex flex-col">
       <ConnectorHeader
-        title={'Compliance Scan Results Summary'}
-        description={'Summary of compliance scan result'}
+        title={'Posture Scan Results Summary'}
+        description={'Summary of posture scan result'}
       />
 
       <LinkButton to={'/posture'} sizing="xs">

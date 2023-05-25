@@ -66,6 +66,11 @@ export const action = async ({
         message: modelResponse.message ?? '',
         success: false,
       };
+    } else if (r.error.response.status === 403) {
+      return {
+        message: 'You do not have enough permissions to delete registry',
+        success: false,
+      };
     }
     throw r.error;
   }

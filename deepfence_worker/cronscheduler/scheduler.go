@@ -149,7 +149,7 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
-	_, err = s.cron.AddFunc("@every 300s", s.enqueueTask(sdkUtils.SyncRegistryTask))
+	_, err = s.cron.AddFunc("@every 12h", s.enqueueTask(sdkUtils.SyncRegistryTask))
 	if err != nil {
 		return err
 	}

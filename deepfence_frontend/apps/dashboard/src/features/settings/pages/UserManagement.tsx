@@ -222,9 +222,8 @@ export const action = async ({
             success: false,
           });
         } else if (r.status === 403) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
           return error.set({
-            message: modelResponse.message,
+            message: 'You do not have enough permissions to invite user',
             success: false,
           });
         }
@@ -932,6 +931,9 @@ const DeleteConfirmationModal = ({
             <br />
             <span>Are you sure you want to delete?</span>
           </h3>
+          {fetcher.data?.message && (
+            <p className="text-sm text-red-500 pt-2">{fetcher.data?.message}</p>
+          )}
           <div className="flex items-center justify-right gap-4">
             <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
               No, Cancel

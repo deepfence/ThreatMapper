@@ -3,16 +3,16 @@ package harbor
 import "time"
 
 type RegistryHarbor struct {
-	Name         string    `json:"name"`
+	Name         string    `json:"name" validate:"required"`
 	NonSecret    NonSecret `json:"non_secret"`
 	Secret       Secret    `json:"secret"`
-	RegistryType string    `json:"registry_type"`
+	RegistryType string    `json:"registry_type" validate:"required"`
 }
 
 type NonSecret struct {
-	HarborRegistryURL string `json:"harbor_registry_url"`
-	HarborUsername    string `json:"harbor_username"`
-	HarborProjectName string `json:"harbor_project_name"`
+	HarborRegistryURL string `json:"harbor_registry_url" validate:"required"`
+	HarborUsername    string `json:"harbor_username" validate:"required"`
+	HarborProjectName string `json:"harbor_project_name" validate:"required"`
 }
 
 type Secret struct {

@@ -5,7 +5,7 @@ import { useLoaderData } from 'react-router-dom';
 import { createColumnHelper, Table, TableSkeleton } from 'ui-components';
 
 import { getSettingsApiClient } from '@/api/api';
-import { PostgresqlDbGetAuditLogsRow } from '@/api/generated';
+import { ApiDocsBadRequestResponse, PostgresqlDbGetAuditLogsRow } from '@/api/generated';
 import { CopyToClipboard } from '@/components/CopyToClipboard';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { ApiError, makeRequest } from '@/utils/api';
@@ -21,11 +21,31 @@ const getData = async (): Promise<LoaderDataType> => {
   const response = await makeRequest({
     apiFunction: getSettingsApiClient().getUserActivityLogs,
     apiArgs: [],
+    errorHandler: async (r) => {
+      const error = new ApiError<{
+        message?: string;
+      }>({});
+      if (r.status === 400 || r.status === 409) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message ?? '',
+        });
+      } else if (r.status === 403) {
+        return error.set({
+          message: 'You do not have enough permissions to view user audit logs',
+        });
+      }
+    },
   });
 
   if (ApiError.isApiError(response)) {
+    let message = '';
+    if (response.value()?.message === undefined) {
+      message = 'Error in getting user audit logs';
+    }
+    message = response.value().message || '';
     return {
-      message: 'Error in getting user audit logs',
+      message,
     };
   }
 

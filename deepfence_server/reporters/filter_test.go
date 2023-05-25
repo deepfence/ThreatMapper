@@ -110,7 +110,7 @@ func TestNotContainersFieldFilters2CypherWhereConditions(t *testing.T) {
 		},
 	}
 	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
-	assert.Equal(t, cypher, " WHERE  n.toto  NOT IN ['foo','bar']", "should be equal")
+	assert.Equal(t, cypher, " WHERE   NOT coalesce(n.toto, '') IN ['foo','bar']", "should be equal")
 
 	ff = FieldsFilters{
 		NotContainsFilter: ContainsFilter{

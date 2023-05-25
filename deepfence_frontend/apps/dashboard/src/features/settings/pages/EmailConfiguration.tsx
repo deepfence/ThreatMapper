@@ -157,11 +157,31 @@ const getData = async (): Promise<LoaderDataType> => {
   const configurations = await makeRequest({
     apiFunction: getSettingsApiClient().getEmailConfiguration,
     apiArgs: [],
+    errorHandler: async (r) => {
+      const error = new ApiError<{
+        message?: string;
+      }>({});
+      if (r.status === 400 || r.status === 409) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.json();
+        return error.set({
+          message: modelResponse.message ?? '',
+        });
+      } else if (r.status === 403) {
+        return error.set({
+          message: 'You do not have enough permissions to view email configurations',
+        });
+      }
+    },
   });
 
   if (ApiError.isApiError(configurations)) {
+    let message = '';
+    if (configurations.value()?.message === undefined) {
+      message = 'Error in getting email configuration';
+    }
+    message = configurations.value().message || '';
     return {
-      message: 'Error in getting email configuration',
+      message,
     };
   }
   return {
@@ -358,8 +378,12 @@ const EmailConfiguration = () => {
         <Suspense fallback={<CircleSpinner size="xs" />}>
           <DFAwait resolve={loaderData.data}>
             {(resolvedData: LoaderDataType) => {
-              const { data: configData = [] } = resolvedData;
+              const { data: configData = [], message } = resolvedData;
+
               const configuration: ModelEmailConfigurationResp = configData[0];
+              if (message) {
+                return <p className="text-sm text-red-500">{message}</p>;
+              }
               return (
                 <>
                   {showDeleteDialog && (

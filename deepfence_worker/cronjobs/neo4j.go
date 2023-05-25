@@ -16,10 +16,10 @@ import (
 
 const (
 	diagnosticLogsCleanUpTimeout           = time.Hour * 6
-	dbReportCleanUpTimeout                 = time.Minute * 2
+	dbReportCleanUpTimeoutBase             = time.Minute * 2
+	dbScanTimeoutBase                      = time.Minute * 2
 	dbRegistryCleanUpTimeout               = time.Minute * 30
-	dbScanTimeout                          = time.Minute * 2
-	dbUpgradeTimeout                       = time.Minute * 10
+	dbUpgradeTimeout                       = time.Minute * 30
 	defaultDBScannedResourceCleanUpTimeout = time.Hour * 24 * 30
 )
 
@@ -39,6 +39,22 @@ func getResourceCleanUpTimeout(ctx context.Context) time.Duration {
 	return defaultDBScannedResourceCleanUpTimeout
 }
 
+func getPushBackValue(session neo4j.Session) int32 {
+	res, err := session.Run(`
+		MATCH (n:Node{node_id:"`+ConsoleAgentId+`"})
+		RETURN n.push_back
+		`,
+		map[string]interface{}{})
+	if err != nil {
+		return 1
+	}
+	rec, err := res.Single()
+	if err != nil {
+		return 1
+	}
+	return int32(rec.Values[0].(int64))
+}
+
 func CleanUpDB(msg *message.Message) error {
 	log.Info().Msgf("Clean up DB Starting")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
@@ -52,6 +68,10 @@ func CleanUpDB(msg *message.Message) error {
 	}
 	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
+
+	pushBack := getPushBackValue(session)
+	dbReportCleanUpTimeout := dbReportCleanUpTimeoutBase * time.Duration(pushBack)
+	dbScanTimeout := dbScanTimeoutBase * time.Duration(pushBack)
 
 	// Set inactives
 	if _, err = session.Run(`
@@ -308,8 +328,11 @@ func RetryScansDB(msg *message.Message) error {
 	}
 	defer tx.Close()
 
+	pushBack := getPushBackValue(session)
+	dbScanTimeout := dbScanTimeoutBase * time.Duration(pushBack)
+
 	if _, err = tx.Run(`
-		MATCH (n) -[:SCANNED]-> (:Node)
+		MATCH (n) -[:SCANNED]-> ()
 		WHERE n.status = $old_status
 		AND n.updated_at < TIMESTAMP()-$time_ms
 		AND n.retries < 3
@@ -354,6 +377,9 @@ func RetryUpgradeAgent(msg *message.Message) error {
 		return err
 	}
 	defer tx.Close()
+
+	pushBack := getPushBackValue(session)
+	dbScanTimeout := dbScanTimeoutBase * time.Duration(pushBack)
 
 	if _, err = tx.Run(`
 		MATCH (:AgentVersion) -[n:SCHEDULED]-> (:Node)
@@ -422,7 +448,7 @@ func ApplyGraphDBStartup(msg *message.Message) error {
 
 	session.Run("MERGE (n:Node{node_id:'in-the-internet'}) SET n.node_name='The Internet (Inbound)', n.pseudo=true, n.cloud_provider='internet', n.cloud_region='internet', n.depth=0, n.active=true", map[string]interface{}{})
 	session.Run("MERGE (n:Node{node_id:'out-the-internet'}) SET n.node_name='The Internet (Outbound)', n.pseudo=true, n.cloud_provider='internet', n.cloud_region='internet', n.depth=0, n.active=true", map[string]interface{}{})
-	session.Run("MERGE (n:Node{node_id:'deepfence-console-cron'}) SET n.node_name='Console', n.pseudo=true, n.cloud_provider='internet', n.cloud_region='internet', n.depth=0", map[string]interface{}{})
+	session.Run("MERGE (n:Node{node_id:'"+ConsoleAgentId+"'}) SET n.node_name='Console', n.pseudo=true, n.cloud_provider='internet', n.cloud_region='internet', n.depth=0, n.push_back=COALESCE(n.push_back,1)", map[string]interface{}{})
 
 	// Indexes for fast searching & ordering
 	addIndexOnIssuesCount(session, "ContainerImage")

@@ -13,13 +13,12 @@ const getPaginationRange = ({
   siblingCount,
   currentPage,
   likelyToHaveMorePages,
-}: {
-  totalNumberOfPages: number;
-  siblingCount: number;
-  currentPage: number;
-  likelyToHaveMorePages: boolean;
-}): (number | 'DOTS')[] => {
+}: UsePaginationOptions): (number | 'DOTS')[] => {
   const dots: Dots = 'DOTS';
+
+  if (currentPage > totalNumberOfPages) {
+    totalNumberOfPages = currentPage;
+  }
 
   if (totalNumberOfPages <= siblingCount * 2 + 5) {
     if (likelyToHaveMorePages) {
@@ -46,30 +45,30 @@ const getPaginationRange = ({
     }
   }
 
-  const restult: (number | 'DOTS')[] = [];
+  const result: (number | 'DOTS')[] = [];
 
   if (middleArray[0] !== 1) {
-    restult.push(1);
+    result.push(1);
   }
   if (middleArray[0] > 2) {
-    restult.push(dots);
+    result.push(dots);
   }
 
-  restult.push(...middleArray);
+  result.push(...middleArray);
 
   if (middleArray[middleArray.length - 1] < totalNumberOfPages - 1) {
-    restult.push(dots);
+    result.push(dots);
   }
 
   if (middleArray[middleArray.length - 1] !== totalNumberOfPages) {
-    restult.push(totalNumberOfPages);
+    result.push(totalNumberOfPages);
   }
 
   if (likelyToHaveMorePages) {
-    restult.push(dots);
+    result.push(dots);
   }
 
-  return restult;
+  return result;
 };
 
 // a range function which takes a start and end as parameters and returns an array of numbers between them

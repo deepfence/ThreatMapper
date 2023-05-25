@@ -28,7 +28,7 @@ spec:
         - name: scheduler
           securityContext:
             {{- toYaml .Values.scheduler.securityContext | nindent 12 }}
-          image: "{{ .Values.scheduler.image.repository }}:{{ .Values.scheduler.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.global.imageRepoPrefix }}/{{ .Values.scheduler.image.repository }}:{{ default .Values.global.imageTag .Values.scheduler.image.tag }}"
           imagePullPolicy: {{ .Values.scheduler.image.pullPolicy }}
           env:
             - name: DEEPFENCE_MODE

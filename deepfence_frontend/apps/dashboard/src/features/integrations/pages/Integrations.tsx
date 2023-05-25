@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { FaBook, FaBullhorn, FaCopyright, FaFire } from 'react-icons/fa';
 import { HiDownload, HiOutlineChevronRight } from 'react-icons/hi';
@@ -6,10 +6,12 @@ import { useLoaderData } from 'react-router-dom';
 import { Card } from 'ui-components';
 
 import { ModelIntegrationListResp } from '@/api/generated';
+import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { LinkButton } from '@/components/LinkButton';
 import {
   AwsSecurityHub,
   ElasticSearch,
+  Email,
   GoogleChronicle,
   HttpEndpoint,
   Jira,
@@ -80,6 +82,12 @@ const IntegrationsData = [
         id: IntegrationType.httpEndpoint,
         icon: <img src={HttpEndpoint} alt="HttpEndpoint Logo" />,
         path: '/integrations/notifications/add/http_endpoint',
+      },
+      {
+        name: integrationTypeToNameMapping[IntegrationType.email],
+        id: IntegrationType.email,
+        icon: <img src={Email} alt="Email Logo" />,
+        path: '/integrations/notifications/add/email',
       },
     ],
   },
@@ -180,6 +188,8 @@ const Integrations = () => {
     data: ModelIntegrationListResp[];
   };
 
+  const [error, setError] = useState<string>();
+
   return (
     <>
       <div className="flex p-2 w-full shadow bg-white dark:bg-gray-800 items-center">
@@ -210,80 +220,98 @@ const Integrations = () => {
             </div>
           </div>
         </Card>
-        {IntegrationsData.map((integration) => {
-          return (
-            <section key={integration.name} className="flex flex-col">
-              <div className="flex items-center">
-                <IconContext.Provider
-                  value={{
-                    className: 'w-4 h-4',
-                  }}
-                >
-                  {integration.icon}
-                </IconContext.Provider>
-                <h2 className="px-4 tracking-wider text-gary-900 dark:text-gray-200 font-semibold">
-                  {integration.name}
-                </h2>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {integration?.types?.map((type) => {
-                  return (
-                    <Card key={type.name} className="p-2 flex flex-col shrink-0 pb-3">
-                      <div className="flex items-center justify-between w-full">
-                        <h4 className="text-gray-900 font-medium text-sm dark:text-white mr-4">
-                          {type.name}
-                        </h4>
-                        <div className="flex ml-auto">
-                          <LinkButton to={type.path} sizing="xs">
-                            <>
-                              Go to details&nbsp;
-                              <HiOutlineChevronRight />
-                            </>
-                          </LinkButton>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-x-6 mt-2">
-                        <div className="border-r border-gray-200 dark:border-gray-700">
-                          <div className="px-4 flex justify-center items-center h-8 w-20 m-w-[32px] m-h-[32px]">
-                            {type.icon}
+        <ErrorBoundary
+          fallback={
+            <div>
+              <p className="text-red-500 text-sm">{error}</p>
+            </div>
+          }
+        >
+          {IntegrationsData.map((integration) => {
+            return (
+              <section key={integration.name} className="flex flex-col">
+                <div className="flex items-center">
+                  <IconContext.Provider
+                    value={{
+                      className: 'w-4 h-4',
+                    }}
+                  >
+                    {integration.icon}
+                  </IconContext.Provider>
+                  <h2 className="px-4 tracking-wider text-gary-900 dark:text-gray-200 font-semibold">
+                    {integration.name}
+                  </h2>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {integration?.types?.map((type) => {
+                    return (
+                      <Card key={type.name} className="p-2 flex flex-col shrink-0 pb-3">
+                        <div className="flex items-center justify-between w-full">
+                          <h4 className="text-gray-900 font-medium text-sm dark:text-white mr-4">
+                            {type.name}
+                          </h4>
+                          <div className="flex ml-auto">
+                            <LinkButton to={type.path} sizing="xs">
+                              <>
+                                Go to details&nbsp;
+                                <HiOutlineChevronRight />
+                              </>
+                            </LinkButton>
                           </div>
                         </div>
-                        <Suspense
-                          fallback={
-                            <div className="w-16">
-                              <div className="h-8 w-4 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
-                              <div className="mt-2 h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                        <div className="flex items-center gap-x-6 mt-2">
+                          <div className="border-r border-gray-200 dark:border-gray-700">
+                            <div className="px-4 flex justify-center items-center h-8 w-20 m-w-[32px] m-h-[32px]">
+                              {type.icon}
                             </div>
-                          }
-                        >
-                          <DFAwait resolve={loaderData?.data}>
-                            {(resolvedData: { data?: ModelIntegrationListResp[] }) => {
-                              const { data = [] } = resolvedData ?? {};
-                              const len = data.filter(
-                                (integration) => integration.integration_type === type.id,
-                              ).length;
+                          </div>
+                          <Suspense
+                            fallback={
+                              <div className="w-16">
+                                <div className="h-8 w-4 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                                <div className="mt-2 h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                              </div>
+                            }
+                          >
+                            <DFAwait resolve={loaderData?.data}>
+                              {(resolvedData: {
+                                data?: ModelIntegrationListResp[];
+                                message?: string;
+                              }) => {
+                                const { data = [], message } = resolvedData ?? {};
 
-                              return (
-                                <div className="flex flex-col">
-                                  <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
-                                    {len}
-                                  </span>
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                                    {`Connection${len > 1 ? 's' : ''}`}
-                                  </span>
-                                </div>
-                              );
-                            }}
-                          </DFAwait>
-                        </Suspense>
-                      </div>
-                    </Card>
-                  );
-                })}
-              </div>
-            </section>
-          );
-        })}
+                                if (message && message.length) {
+                                  setError(message);
+                                  throw new Error();
+                                }
+
+                                const len = data.filter(
+                                  (integration) =>
+                                    integration.integration_type === type.id,
+                                ).length;
+
+                                return (
+                                  <div className="flex flex-col">
+                                    <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
+                                      {len}
+                                    </span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                      {`Connection${len > 1 ? 's' : ''}`}
+                                    </span>
+                                  </div>
+                                );
+                              }}
+                            </DFAwait>
+                          </Suspense>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
+        </ErrorBoundary>
       </div>
     </>
   );

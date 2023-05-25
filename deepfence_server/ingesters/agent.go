@@ -17,6 +17,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/telemetry"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j/db"
 	redis2 "github.com/redis/go-redis/v9"
 )
 
@@ -38,6 +39,7 @@ const (
 )
 
 var (
+	breaker       atomic.Bool
 	Push_back     atomic.Int32
 	ingester_size int
 	db_input_size int
@@ -51,6 +53,7 @@ var reportPool = sync.Pool{
 }
 
 func init() {
+	breaker.Store(false)
 	Push_back.Store(default_push_back)
 	push := os.Getenv("DF_INGEST_PUSH_BACK")
 	if push != "" {
@@ -506,8 +509,6 @@ func (nc *neo4jIngester) Ingest(ctx context.Context, crpt report.CompressedRepor
 	return nil
 }
 
-var breaker atomic.Bool
-
 func (nc *neo4jIngester) IsReady() bool {
 	return !breaker.Load()
 }
@@ -851,11 +852,23 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 		}
 	}()
 
-	// Push back decreaser
+	// Push back updater
 	go func() {
 		twice := false
 		// Received num at the time of push back change
 		prev_received_num := int32(0)
+		newValue, err := GetPushBack(nc.driver)
+		if err != nil {
+			log.Error().Msgf("Fail to get push back value: %v", err)
+		} else {
+			Push_back.Store(newValue)
+		}
+		session, err := driver.Session(neo4j.AccessModeWrite)
+		if err != nil {
+			log.Error().Msgf("Fail to get session for push back", err)
+			return
+		}
+		defer session.Close()
 		ticker := time.NewTicker(agent_base_timeout * time.Duration(Push_back.Load()))
 		defer ticker.Stop()
 		update_ticker := false
@@ -870,14 +883,15 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 			current_num_received := nc.num_received.Swap(0)
 			current_num_ingested := nc.num_ingested.Swap(0)
 
+			toAdd := int32(0)
 			if current_num_ingested < (current_num_received/4)*3 {
-				Push_back.Add(1 * current_num_received / current_num_received)
+				toAdd = current_num_received / current_num_received
 				twice = false
 				prev_received_num = current_num_received
 				update_ticker = true
 			} else if current_num_received < (prev_received_num/4)*3 {
 				if Push_back.Load() > 1 && twice {
-					Push_back.Add(-1)
+					toAdd = -1
 					twice = false
 					prev_received_num = current_num_received
 					update_ticker = true
@@ -885,13 +899,20 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 				twice = true
 			}
 			if breaker.Swap(false) {
-				Push_back.Add(1)
+				toAdd = 1
 				update_ticker = true
 			}
+
+			err := UpdatePushBack(session, &Push_back, toAdd)
+			if err != nil {
+				log.Error().Msgf("push back err: %v", err)
+			}
+
 			if update_ticker {
 				update_ticker = false
 				ticker.Reset(agent_base_timeout * time.Duration(Push_back.Load()))
 			}
+
 			log.Info().Msgf("Received: %v, pushed: %v, Push back: %v", current_num_received, current_num_ingested, Push_back.Load())
 		}
 	}()
@@ -933,4 +954,75 @@ func extractPidFromNodeID(hni string) int {
 func metadataToMap(n report.Metadata) map[string]interface{} {
 	// convert struct to map
 	return utils.StructToMap(n)
+}
+
+//TODO: improve syncro
+func UpdatePushBack(session neo4j.Session, newValue *atomic.Int32, add int32) error {
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	var rec *db.Record
+	if add != 0 {
+		str := strconv.Itoa(int(newValue.Load()+add))
+
+		res, err := tx.Run(`
+			MATCH (n:Node{node_id:"deepfence-console-cron"})
+			CALL apoc.atomic.update(n, 'push_back','`+str+`')
+			YIELD oldValue, newValue
+			return newValue`,
+			map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		rec, err = res.Single()
+		if err != nil {
+			return err
+		}
+	} else {
+		res, err := tx.Run(`
+			MATCH (n:Node{node_id:"deepfence-console-cron"})
+			RETURN n.push_back`,
+			map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+		rec, err = res.Single()
+		if err != nil {
+			return err
+		}
+	}
+
+	newValue.Store(int32(rec.Values[0].(int64)))
+
+	return tx.Commit()
+}
+
+func GetPushBack(driver neo4j.Driver) (int32, error) {
+	session, err := driver.Session(neo4j.AccessModeRead)
+	if err != nil {
+		return 0, err
+	}
+	defer session.Close()
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Close()
+
+	res, err := tx.Run(`
+		MATCH (n:Node{node_id:"deepfence-console-cron"})
+		RETURN n.push_back
+		`,
+		map[string]interface{}{})
+	if err != nil {
+		return 0, err
+	}
+	rec, err := res.Single()
+	if err != nil {
+		return 0, err
+	}
+	return int32(rec.Values[0].(int64)), nil
 }

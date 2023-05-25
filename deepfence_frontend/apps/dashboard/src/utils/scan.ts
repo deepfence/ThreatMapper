@@ -57,3 +57,79 @@ export const getScanLink = ({
   }
   throw new Error('Invalid scan type');
 };
+
+export enum VulnerabilityScanGroupedStatus {
+  'neverScanned' = 'neverScanned',
+  'starting' = 'starting',
+  'inProgress' = 'inProgress',
+  'error' = 'error',
+  'complete' = 'complete',
+}
+
+export const VULNERABILITY_SCAN_STATUS_GROUPS: Record<
+  VulnerabilityScanGroupedStatus,
+  Array<string>
+> = {
+  neverScanned: ['NEVER_SCANNED'],
+  starting: ['STARTING'],
+  inProgress: ['IN_PROGRESS', 'GENERATING_SBOM', 'SCAN_IN_PROGRESS'],
+  error: ['ERROR'],
+  complete: ['COMPLETE'],
+};
+
+export enum SecretScanGroupedStatus {
+  'neverScanned' = 'neverScanned',
+  'starting' = 'starting',
+  'inProgress' = 'inProgress',
+  'error' = 'error',
+  'complete' = 'complete',
+}
+
+export const SECRET_SCAN_STATUS_GROUPS: Record<
+  VulnerabilityScanGroupedStatus,
+  Array<string>
+> = {
+  neverScanned: ['NEVER_SCANNED'],
+  starting: ['STARTING'],
+  inProgress: ['IN_PROGRESS'],
+  error: ['ERROR'],
+  complete: ['COMPLETE'],
+};
+
+export enum MalwareScanGroupedStatus {
+  'neverScanned' = 'neverScanned',
+  'starting' = 'starting',
+  'inProgress' = 'inProgress',
+  'error' = 'error',
+  'complete' = 'complete',
+}
+
+export const MALWARE_SCAN_STATUS_GROUPS: Record<
+  VulnerabilityScanGroupedStatus,
+  Array<string>
+> = {
+  neverScanned: ['NEVER_SCANNED'],
+  starting: ['STARTING'],
+  inProgress: ['IN_PROGRESS'],
+  error: ['ERROR'],
+  complete: ['COMPLETE'],
+};
+
+export enum ComplianceScanGroupedStatus {
+  'neverScanned' = 'neverScanned',
+  'starting' = 'starting',
+  'inProgress' = 'inProgress',
+  'error' = 'error',
+  'complete' = 'complete',
+}
+
+export const COMPLIANCE_SCAN_STATUS_GROUPS: Record<
+  VulnerabilityScanGroupedStatus,
+  Array<string>
+> = {
+  neverScanned: ['NEVER_SCANNED'],
+  starting: ['STARTING'],
+  inProgress: ['IN_PROGRESS', 'SCAN_IN_PROGRESS'],
+  error: ['ERROR'],
+  complete: ['COMPLETE'],
+};
