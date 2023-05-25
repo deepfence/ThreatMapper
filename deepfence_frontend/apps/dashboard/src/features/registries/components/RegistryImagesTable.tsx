@@ -68,8 +68,8 @@ export const RegistryImagesTable = ({
           return (
             <DFLink
               to={generatePath('/registries/imagetags/:account/:nodeId/:imageId', {
-                account: account,
-                nodeId,
+                account: encodeURIComponent(account),
+                nodeId: encodeURIComponent(nodeId),
                 imageId: encodeURIComponent(info.row.original.name ?? ''),
               })}
             >

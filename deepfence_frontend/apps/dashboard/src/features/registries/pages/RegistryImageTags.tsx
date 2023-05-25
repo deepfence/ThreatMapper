@@ -176,7 +176,7 @@ const HeaderComponent = () => {
         <BreadcrumbLink>
           <DFLink
             to={generatePath('/registries/:account', {
-              account,
+              account: encodeURIComponent(account),
             })}
           >
             {account}
@@ -186,8 +186,8 @@ const HeaderComponent = () => {
         <BreadcrumbLink>
           <DFLink
             to={generatePath('/registries/images/:account/:nodeId', {
-              account,
-              nodeId,
+              account: encodeURIComponent(account),
+              nodeId: encodeURIComponent(nodeId),
             })}
           >
             {nodeId}

@@ -136,7 +136,7 @@ const HeaderComponent = ({ nodeType }: { nodeType: string }) => {
           onClick={() => {
             navigate(
               generatePath('/registries/add/:account', {
-                account: nodeType,
+                account: encodeURIComponent(nodeType),
               }),
             );
           }}

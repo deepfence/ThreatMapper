@@ -160,7 +160,7 @@ const HeaderComponent = () => {
         <BreadcrumbLink>
           <DFLink
             to={generatePath('/registries/:account', {
-              account,
+              account: encodeURIComponent(account),
             })}
           >
             {account}
