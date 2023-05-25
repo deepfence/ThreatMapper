@@ -1526,11 +1526,22 @@ func FindNodesMatching(ctx context.Context,
 		return res, err
 	}
 	res = append(res, rh...)
-	ri, err := get_node_ids(tx, image_ids, controls.Image, filter.ImageScanFilter)
-	if err != nil {
-		return res, err
+
+	if len(filter.ImageScanFilter.FieldsValues["docker_image_name"]) > 0 &&
+		len(filter.ImageScanFilter.FieldsValues["docker_image_tag"]) > 0 {
+		ri, err := GetImagesFromAdvanceFilter(ctx, image_ids, filter.ImageScanFilter)
+		if err != nil {
+			return res, err
+		}
+		res = append(res, ri...)
+	} else {
+		ri, err := get_node_ids(tx, image_ids, controls.Image, filter.ImageScanFilter)
+		if err != nil {
+			return res, err
+		}
+		res = append(res, ri...)
 	}
-	res = append(res, ri...)
+
 	rc, err := get_node_ids(tx, container_ids, controls.Container, filter.ContainerScanFilter)
 	if err != nil {
 		return res, err
@@ -1547,6 +1558,86 @@ func FindNodesMatching(ctx context.Context,
 	}
 	res = append(res, rk...)
 
+	return res, nil
+}
+
+func GetImagesFromAdvanceFilter(ctx context.Context, ids []model.NodeIdentifier, filter reporters.ContainsFilter) ([]model.NodeIdentifier, error) {
+	res := []model.NodeIdentifier{}
+
+	driver, err := directory.Neo4jClient(ctx)
+
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	for i := range filter.FieldsValues["docker_image_name"] {
+		rr, err := tx.Run(`
+		MATCH (n:ContainerImage)
+		WHERE n.node_id IN $ids
+		AND n.docker_image_name = $image_name
+		RETURN n.node_id, n.updated_at, n.docker_image_tag
+		`, map[string]interface{}{
+			"ids":        reporters_scan.NodeIdentifierToIdList(ids),
+			"image_name": filter.FieldsValues["docker_image_name"][i],
+		})
+		if err != nil {
+			return res, err
+		}
+
+		rec, err := rr.Collect()
+		if err != nil {
+			return res, err
+		}
+
+		if len(rec) == 0 {
+			return res, nil
+		}
+
+		switch filter.FieldsValues["docker_image_tag"][0] {
+		case "latest":
+			for j := range rec {
+				if rec[j].Values[2].(string) == filter.FieldsValues["docker_image_tag"][0] {
+					res = append(res, model.NodeIdentifier{
+						NodeId:   rec[j].Values[0].(string),
+						NodeType: controls.ResourceTypeToString(controls.Image),
+					})
+					break
+				}
+			}
+		case "all":
+			for j := range rec {
+				res = append(res, model.NodeIdentifier{
+					NodeId:   rec[j].Values[0].(string),
+					NodeType: controls.ResourceTypeToString(controls.Image),
+				})
+			}
+		case "recent": // kludge: what if the image tag is actually named "recent"?
+			recentNodeID := rec[0].Values[0].(string)
+			recentTimeUNIX := rec[0].Values[1].(int64)
+			for j := range rec {
+				recentTime := time.Unix(recentTimeUNIX, 0)
+				t := time.Unix(rec[j].Values[1].(int64), 0)
+				if t.After(recentTime) {
+					recentTimeUNIX = rec[j].Values[1].(int64)
+					recentNodeID = rec[j].Values[0].(string)
+				}
+			}
+			res = append(res, model.NodeIdentifier{
+				NodeId:   recentNodeID,
+				NodeType: controls.ResourceTypeToString(controls.Image),
+			})
+		}
+	}
 	return res, nil
 }
 
