@@ -32,7 +32,7 @@ import {
   GraphStorageManager,
 } from '@/features/topology/utils/topology-data';
 
-const MAX_NODES_COUNT_THRESHOLD = 200;
+const MAX_NODES_COUNT_THRESHOLD = 10;
 
 export const TopologyGraph = () => {
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
@@ -285,7 +285,7 @@ function useGraphDataManager() {
       setDataDiffWithAction({ action, diff });
     } else {
       toast(
-        'There are too many nodes to display on the graph view. Please use the Table view to see all nodes.',
+        'There are too many nodes to display on the Graph view. Please use the Table view to see all nodes.',
       );
     }
   }, [fetcher.data]);
