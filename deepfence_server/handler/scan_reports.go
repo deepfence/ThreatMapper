@@ -548,6 +548,7 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	var params utils.ScanSbomRequest
 	err := httpext.DecodeJSON(r, httpext.QueryParams, MaxSbomRequestSize, &params)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to decode message")
 		respondError(&BadDecoding{err}, w)
 		return
 	}
