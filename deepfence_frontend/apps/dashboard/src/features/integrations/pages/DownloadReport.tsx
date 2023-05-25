@@ -825,7 +825,7 @@ const ComplianceForm = ({
   );
 };
 
-const CommomForm = ({
+const CommonForm = ({
   setProvider,
   resource,
   provider,
@@ -929,7 +929,7 @@ const DownloadForm = () => {
           ) : null}
 
           {resource !== 'CloudCompliance' && resource !== 'Compliance' ? (
-            <CommomForm
+            <CommonForm
               setProvider={setProvider}
               resource={resource}
               provider={provider}
