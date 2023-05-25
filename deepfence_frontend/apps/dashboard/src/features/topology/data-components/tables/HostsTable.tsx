@@ -91,6 +91,9 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
         order_filter: {
           order_fields: [],
         },
+        not_contains_filter: {
+          filter_in: {},
+        },
       },
       window: {
         offset: 0,
@@ -101,9 +104,14 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   };
   if (vulnerabilityScanStatus) {
     if (vulnerabilityScanStatus === VulnerabilityScanGroupedStatus.neverScanned) {
-      searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
-        ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-        vulnerability_latest_scan_id: [''],
+      searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in = {
+        ...searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in,
+        vulnerability_scan_status: [
+          ...VULNERABILITY_SCAN_STATUS_GROUPS.complete,
+          ...VULNERABILITY_SCAN_STATUS_GROUPS.error,
+          ...VULNERABILITY_SCAN_STATUS_GROUPS.inProgress,
+          ...VULNERABILITY_SCAN_STATUS_GROUPS.starting,
+        ],
       };
     } else {
       searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
@@ -115,9 +123,14 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   }
   if (secretScanStatus) {
     if (secretScanStatus === SecretScanGroupedStatus.neverScanned) {
-      searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
-        ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-        secret_latest_scan_id: [''],
+      searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in = {
+        ...searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in,
+        secret_scan_status: [
+          ...SECRET_SCAN_STATUS_GROUPS.complete,
+          ...SECRET_SCAN_STATUS_GROUPS.error,
+          ...SECRET_SCAN_STATUS_GROUPS.inProgress,
+          ...SECRET_SCAN_STATUS_GROUPS.starting,
+        ],
       };
     } else {
       searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
@@ -128,9 +141,14 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   }
   if (malwareScanStatus) {
     if (malwareScanStatus === MalwareScanGroupedStatus.neverScanned) {
-      searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
-        ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-        malware_latest_scan_id: [''],
+      searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in = {
+        ...searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in,
+        malware_scan_status: [
+          ...MALWARE_SCAN_STATUS_GROUPS.complete,
+          ...MALWARE_SCAN_STATUS_GROUPS.error,
+          ...MALWARE_SCAN_STATUS_GROUPS.inProgress,
+          ...MALWARE_SCAN_STATUS_GROUPS.starting,
+        ],
       };
     } else {
       searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
@@ -141,9 +159,14 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   }
   if (complianceScanStatus) {
     if (complianceScanStatus === ComplianceScanGroupedStatus.neverScanned) {
-      searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
-        ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-        malware_latest_scan_id: [''],
+      searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in = {
+        ...searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in,
+        compliance_scan_status: [
+          ...COMPLIANCE_SCAN_STATUS_GROUPS.complete,
+          ...COMPLIANCE_SCAN_STATUS_GROUPS.error,
+          ...COMPLIANCE_SCAN_STATUS_GROUPS.inProgress,
+          ...COMPLIANCE_SCAN_STATUS_GROUPS.starting,
+        ],
       };
     } else {
       searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
