@@ -26,7 +26,7 @@ import { ModelVulnerability, SearchSearchNodeReq } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 import {
@@ -88,37 +88,35 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
     );
   }
 
-  const result = await makeRequest({
-    apiFunction: getSearchApiClient().searchVulnerabilities,
-    apiArgs: [{ searchSearchNodeReq: searchVulnerabilitiesRequestParams }],
+  const searchVulnerabilitiesApi = apiWrapper({
+    fn: getSearchApiClient().searchVulnerabilities,
   });
-
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  const searchVulnerabilitiesResponse = await searchVulnerabilitiesApi({
+    searchSearchNodeReq: searchVulnerabilitiesRequestParams,
+  });
+  if (!searchVulnerabilitiesResponse.ok) {
+    throw searchVulnerabilitiesResponse.error;
   }
 
-  const countsResult = await makeRequest({
-    apiFunction: getSearchApiClient().searchVulnerabilitiesCount,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          ...searchVulnerabilitiesRequestParams,
-          window: {
-            ...searchVulnerabilitiesRequestParams.window,
-            size: 10 * PAGE_SIZE,
-          },
-        },
+  const searchVulnerabilitiesCountApi = apiWrapper({
+    fn: getSearchApiClient().searchVulnerabilitiesCount,
+  });
+  const searchVulnerabilitiesCountResponse = await searchVulnerabilitiesCountApi({
+    searchSearchNodeReq: {
+      ...searchVulnerabilitiesRequestParams,
+      window: {
+        ...searchVulnerabilitiesRequestParams.window,
+        size: 10 * PAGE_SIZE,
       },
-    ],
+    },
   });
-
-  if (ApiError.isApiError(countsResult)) {
-    throw countsResult.value();
+  if (!searchVulnerabilitiesCountResponse.ok) {
+    throw searchVulnerabilitiesCountResponse.error;
   }
 
-  results.vulnerabilities = result;
+  results.vulnerabilities = searchVulnerabilitiesResponse.value;
   results.currentPage = page;
-  results.totalRows = page * PAGE_SIZE + countsResult.count;
+  results.totalRows = page * PAGE_SIZE + searchVulnerabilitiesCountResponse.value.count;
 
   return results;
 }
