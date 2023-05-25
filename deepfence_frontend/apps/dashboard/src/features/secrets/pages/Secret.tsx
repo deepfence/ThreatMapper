@@ -42,7 +42,13 @@ async function getTop5SecretAssetsData(nodeType: 'image' | 'host' | 'container')
               },
             ],
           },
-          compare_filter: null,
+          compare_filter: [
+            {
+              field_name: 'secrets_count',
+              field_value: 0,
+              greater_than: true,
+            },
+          ],
         },
         in_field_filter: [],
         window: {

@@ -2,8 +2,24 @@ import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
+import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
 
-export const QuayConnectorForm = () => {
+/*
+sample json
+  {
+    "name": "example_quay",
+    "non_secret": {
+      "quay_namespace": "namespace",
+      "quay_registry_url": "https://quay.io"
+    },
+    "secret": {
+      "quay_access_token": "access_token"
+    },
+    "registry_type": "quay"
+  }
+*/
+
+export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormProps) => {
   return (
     <>
       <Stepper>
@@ -30,38 +46,45 @@ export const QuayConnectorForm = () => {
               label="Registry Name"
               type={'text'}
               sizing="sm"
-              name="registryName"
+              name="name"
               placeholder="Registry Name"
+              color={fieldErrors?.['name'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['name']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
               label="Registry URL"
               type={'text'}
               sizing="sm"
-              name="registryUrl"
+              name="non_secret.quay_registry_url"
               placeholder="Registry URL"
+              color={fieldErrors?.['quay_registry_url'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['quay_registry_url']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
               label="Namespace"
               type={'text'}
               sizing="sm"
-              name="namespace"
+              name="non_secret.quay_namespace"
               placeholder="Namespace"
+              color={fieldErrors?.['quay_namespace'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['quay_namespace']}
             />
-
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
               label="OAuth 2 Access Token (Optional)"
               type={'password'}
               sizing="sm"
-              name="accessToken"
+              name="secret.quay_access_token"
               placeholder="OAuth Access Token"
+              color={fieldErrors?.['quay_access_token'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['quay_access_token']}
             />
+            {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
           </Card>
         </Step>
       </Stepper>
-      {/* <p className="text-red-500 text-sm ml-14">{errorMessage}</p> */}
     </>
   );
 };

@@ -2,8 +2,24 @@ import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
+import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
 
-export const GitLabConnectorForm = () => {
+/*
+sample json
+  {
+    "name": "example_gitlab",
+    "non_secret": {
+      "gitlab_registry_url": "https://example.gitlab.io",
+      "gitlab_server_url": "https://gitlab.example.com"
+    },
+    "secret": {
+      "gitlab_access_token": "access_token"
+    },
+    "registry_type": "gitlab"
+  }
+*/
+
+export const GitLabConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormProps) => {
   return (
     <>
       <Stepper>
@@ -30,37 +46,45 @@ export const GitLabConnectorForm = () => {
               label="Registry Name"
               type={'text'}
               sizing="sm"
-              name="registryName"
+              name="name"
               placeholder="Registry Name"
+              color={fieldErrors?.['name'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['name']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
               label="Gitlab Server URL"
               type={'text'}
               sizing="sm"
-              name="serverUrl"
+              name="non_secret.gitlab_server_url"
               placeholder="Gilab Server URL"
+              color={fieldErrors?.['gitlab_server_url'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['gitlab_server_url']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
               label="GitLab Registry URL"
               type={'text'}
               sizing="sm"
-              name="registryUrl"
+              name="non_secret.gitlab_registry_url"
               placeholder="GitLab Registry URL"
+              color={fieldErrors?.['gitlab_registry_url'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['gitlab_registry_url']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
               label="Gitlab Access Token"
               type={'password'}
               sizing="sm"
-              name="accessToken"
+              name="secret.gitlab_access_token"
               placeholder="Gitlab Access Token"
+              color={fieldErrors?.['gitlab_access_token'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['gitlab_access_token']}
             />
+            {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
           </Card>
         </Step>
       </Stepper>
-      {/* <p className="text-red-500 text-sm ml-14">{errorMessage}</p> */}
     </>
   );
 };

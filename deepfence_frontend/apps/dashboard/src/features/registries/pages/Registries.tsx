@@ -16,7 +16,7 @@ import { LinkButton } from '@/components/LinkButton';
 import { getRegistryLogo } from '@/constants/logos';
 import { useTheme } from '@/theme/ThemeContext';
 import { RegistryType } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { abbreviateNumber } from '@/utils/number';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -35,29 +35,25 @@ type Keys = keyof typeof RegistryType;
 type ReponseType = { [K in Keys]: RegistryResponseType };
 
 async function getRegistriesSummary(): Promise<RegistryResponseType[]> {
-  const result = await makeRequest({
-    apiFunction: getRegistriesApiClient().getRegistriesSummary,
-    apiArgs: [],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
+  const getRegistriesSummary = apiWrapper({
+    fn: getRegistriesApiClient().getRegistriesSummary,
   });
+  const result = await getRegistriesSummary();
 
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  if (!result.ok) {
+    if (result.error.response.status === 400) {
+      const modelResponse: ApiDocsBadRequestResponse = await result.error.response.json();
+      throw new Error(modelResponse.message ?? '');
+    }
+    throw result.error;
   }
-  if (result === null) {
+
+  if (result.value === null) {
     // TODO: handle this case with 404 status maybe
-    throw new Error('Error getting registries');
+    throw new Error('Error getting registries summary');
   }
   const response: RegistryResponseType[] = [];
-  for (const [key, value] of Object.entries(result as ReponseType)) {
+  for (const [key, value] of Object.entries(result.value as ReponseType)) {
     response.push({
       registries: value.registries,
       images: value.images,
