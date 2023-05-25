@@ -105,7 +105,11 @@ func respondWithErrorCode(err error, w http.ResponseWriter, code int) error {
 	if code == http.StatusBadRequest {
 		errorFields = model.ParseValidatorError(err.Error(), false)
 	}
-	return httpext.JSON(w, code, model.ErrorResponse{Message: err.Error(), ErrorFields: errorFields})
+	if len(errorFields) > 0 {
+		return httpext.JSON(w, code, model.ErrorResponse{Message: "", ErrorFields: errorFields})
+	} else {
+		return httpext.JSON(w, code, model.ErrorResponse{Message: err.Error(), ErrorFields: errorFields})
+	}
 }
 
 func respondError(err error, w http.ResponseWriter) error {
