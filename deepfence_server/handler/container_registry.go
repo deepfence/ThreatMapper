@@ -226,6 +226,14 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// validate fields
+	err = registry.ValidateFields(h.Validator)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
 	// todo: get aes key, has to be a better way to avoid getting this everytime
 	aesValue, err := model.GetAESValueForEncryption(ctx, pgClient)
 	if err != nil {
@@ -341,6 +349,14 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	// validate fields
+	err = registry.ValidateFields(h.Validator)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 

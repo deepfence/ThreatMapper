@@ -45,15 +45,20 @@ func ValidatePassword(fl validator.FieldLevel) bool {
 
 var (
 	ErrorMessage = map[string]string{
-		"UserRegisterRequest.FirstName":                     "should only contain alphabets, numbers, space and hyphen",
-		"UserRegisterRequest.LastName":                      "should only contain alphabets, numbers, space and hyphen",
-		"UserRegisterRequest.Company":                       "should only contain alphabets, numbers and valid characters",
-		"UserRegisterRequest.Password":                      "should contain at least one upper case, lower case, digit and special character",
-		"UpdateUserPasswordRequest.OldPassword":             "incorrect old password",
-		"UpdateUserPasswordRequest.NewPassword":             "should contain at least one upper case, lower case, digit and special character",
-		"LoginRequest.Password":                             "incorrect password",
-		"RegisterInvitedUserRequest.Password":               "should contain at least one upper case, lower case, digit and special character",
-		"PasswordResetVerifyRequest.Password":               "should contain at least one upper case, lower case, digit and special character",
+		"UserRegisterRequest.FirstName": "should only contain alphabets, numbers, space and hyphen",
+		"UserRegisterRequest.LastName":  "should only contain alphabets, numbers, space and hyphen",
+		"UserRegisterRequest.Company":   "should only contain alphabets, numbers and valid characters",
+		"UserRegisterRequest.Password":  "should contain at least one upper case, lower case, digit and special character",
+
+		"UpdateUserPasswordRequest.OldPassword": "incorrect old password",
+		"UpdateUserPasswordRequest.NewPassword": "should contain at least one upper case, lower case, digit and special character",
+
+		"LoginRequest.Password": "incorrect password",
+
+		"RegisterInvitedUserRequest.Password": "should contain at least one upper case, lower case, digit and special character",
+
+		"PasswordResetVerifyRequest.Password": "should contain at least one upper case, lower case, digit and special character",
+
 		"RegistryDockerHub.Name":                            "should only contain alphabets, numbers, space and hyphen",
 		"RegistryDockerHub.NonSecret.DockerHubUsername":     "should only contain alphabets, numbers, space and hyphen",
 		"RegistryDockerHub.Secret.DockerHubPassword":        "should only contain alphabets, numbers, space and hyphen",
