@@ -29,7 +29,7 @@ require (
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
 	github.com/deepfence/YaraHunter v0.0.0-00010101000000-000000000000
 	github.com/deepfence/agent-plugins-grpc v1.0.2
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230520084733-80a8ef45b860
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230522070136-8df1ba5e9d1d
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/minio/minio-go/v7 v7.0.52
@@ -78,7 +78,7 @@ require (
 	github.com/cyphar/filepath-securejoin v0.2.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
-	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230520084733-80a8ef45b860 // indirect
+	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230522070136-8df1ba5e9d1d // indirect
 	github.com/deepfence/vessel v0.9.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/cli v23.0.1+incompatible // indirect
