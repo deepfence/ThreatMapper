@@ -123,7 +123,7 @@ async function getTags(
   return {
     tags: result.value,
     currentPage: page,
-    totalRows: resultCounts.value.count || 0,
+    totalRows: page * PAGE_SIZE + (resultCounts.value.count || 0),
   };
 }
 

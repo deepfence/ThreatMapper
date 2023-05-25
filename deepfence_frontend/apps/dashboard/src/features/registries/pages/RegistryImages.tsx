@@ -124,7 +124,7 @@ async function getImages(
   return {
     images: result.value,
     currentPage: page,
-    totalRows: resultCounts.value.count || 0,
+    totalRows: page * PAGE_SIZE + (resultCounts.value.count || 0),
   };
 }
 
