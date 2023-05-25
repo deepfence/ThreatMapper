@@ -32,7 +32,7 @@ import {
   GraphStorageManager,
 } from '@/features/topology/utils/topology-data';
 
-const MAX_NODES_COUNT_THRESHOLD = 2000;
+const MAX_NODES_COUNT_THRESHOLD = 200;
 
 export const TopologyGraph = () => {
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
@@ -49,12 +49,8 @@ export const TopologyGraph = () => {
   }>({ open: false, x: 0, y: 0 });
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const { graph } = useG6raph(container, {}, {});
-  const {
-    dataDiffWithAction,
-    isRefreshInProgress,
-    totalNodesCount,
-    ...graphDataManagerFunctions
-  } = useGraphDataManager();
+  const { dataDiffWithAction, isRefreshInProgress, ...graphDataManagerFunctions } =
+    useGraphDataManager();
   const graphDataManagerFunctionsRef = useRef(graphDataManagerFunctions);
 
   graphDataManagerFunctionsRef.current = graphDataManagerFunctions;
@@ -64,10 +60,6 @@ export const TopologyGraph = () => {
   });
 
   useEffect(() => {
-    if (totalNodesCount > MAX_NODES_COUNT_THRESHOLD) {
-      toast.message('There are so many nodes available, please switch to table view');
-      return;
-    }
     if (dataDiffWithAction.diff && dataDiffWithAction.action) {
       updateGraph(graph!, dataDiffWithAction.diff, dataDiffWithAction.action);
       if (dataDiffWithAction.action.type === 'expandNode') {
@@ -284,9 +276,18 @@ function useGraphDataManager() {
   useEffect(() => {
     if (!fetcher.data) return;
     const action = fetcher.data.action;
-    storageManager.setGraphData(fetcher.data.data);
-    const diff = storageManager.getDiff();
-    setDataDiffWithAction({ action, diff });
+    if (
+      GraphStorageManager.getTotalNodesCount(fetcher.data.data) <
+      MAX_NODES_COUNT_THRESHOLD
+    ) {
+      storageManager.setGraphData(fetcher.data.data);
+      const diff = storageManager.getDiff();
+      setDataDiffWithAction({ action, diff });
+    } else {
+      toast(
+        'There are too many nodes to display on the graph view. Please use the Table view to see all nodes.',
+      );
+    }
   }, [fetcher.data]);
 
   return {
@@ -295,6 +296,5 @@ function useGraphDataManager() {
     isNodeExpanded: storageManager.isNodeExpanded,
     isEmpty: storageManager.isEmpty,
     isRefreshInProgress: fetcher.state !== 'idle',
-    totalNodesCount: storageManager.getTotalNodesCount(),
   };
 }

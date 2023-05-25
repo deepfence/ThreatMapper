@@ -150,7 +150,6 @@ export class GraphStorageManager {
     this.getTreeData = this.getTreeData.bind(this);
     this.getNodesForIds = this.getNodesForIds.bind(this);
     this.isEmpty = this.isEmpty.bind(this);
-    this.getTotalNodesCount = this.getTotalNodesCount.bind(this);
   }
   getApiData() {
     return this.data;
@@ -164,8 +163,8 @@ export class GraphStorageManager {
   getFilters() {
     return this.filters;
   }
-  getTotalNodesCount() {
-    return Object.keys(this.data?.nodes ?? {}).length;
+  static getTotalNodesCount(data?: ApiDocsGraphResult) {
+    return Object.keys(data?.nodes ?? {}).length;
   }
   setGraphData(data: ApiDocsGraphResult) {
     this.previousData = this.data;
