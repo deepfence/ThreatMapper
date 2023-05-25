@@ -7,6 +7,7 @@ import {
 } from 'react-icons/hi';
 import { useFetcher, useParams } from 'react-router-dom';
 import { useEffectOnce, useMeasure } from 'react-use';
+import { toast } from 'sonner';
 import { CircleSpinner, Dropdown, DropdownItem } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
@@ -31,6 +32,8 @@ import {
   GraphStorageManager,
 } from '@/features/topology/utils/topology-data';
 
+const MAX_NODES_COUNT_THRESHOLD = 2000;
+
 export const TopologyGraph = () => {
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
   const [clickedItem, setClickedItem] = useState<{
@@ -46,8 +49,12 @@ export const TopologyGraph = () => {
   }>({ open: false, x: 0, y: 0 });
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const { graph } = useG6raph(container, {}, {});
-  const { dataDiffWithAction, isRefreshInProgress, ...graphDataManagerFunctions } =
-    useGraphDataManager();
+  const {
+    dataDiffWithAction,
+    isRefreshInProgress,
+    totalNodesCount,
+    ...graphDataManagerFunctions
+  } = useGraphDataManager();
   const graphDataManagerFunctionsRef = useRef(graphDataManagerFunctions);
 
   graphDataManagerFunctionsRef.current = graphDataManagerFunctions;
@@ -57,6 +64,12 @@ export const TopologyGraph = () => {
   });
 
   useEffect(() => {
+    if (totalNodesCount > MAX_NODES_COUNT_THRESHOLD) {
+      toast.message(
+        'There are so many nodes available, please use table view to view them',
+      );
+      return;
+    }
     if (dataDiffWithAction.diff && dataDiffWithAction.action) {
       updateGraph(graph!, dataDiffWithAction.diff, dataDiffWithAction.action);
       if (dataDiffWithAction.action.type === 'expandNode') {
@@ -284,5 +297,6 @@ function useGraphDataManager() {
     isNodeExpanded: storageManager.isNodeExpanded,
     isEmpty: storageManager.isEmpty,
     isRefreshInProgress: fetcher.state !== 'idle',
+    totalNodesCount: storageManager.getTotalNodesCount(),
   };
 }
