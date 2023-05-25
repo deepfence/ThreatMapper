@@ -3,15 +3,15 @@ package ecr
 import "time"
 
 type RegistryECR struct {
-	Name         string    `json:"name"`
+	Name         string    `json:"name" validate:"required"`
 	NonSecret    NonSecret `json:"non_secret"`
 	Secret       Secret    `json:"secret"`
-	RegistryType string    `json:"registry_type"`
+	RegistryType string    `json:"registry_type" validate:"required"`
 }
 
 type NonSecret struct {
-	UseIAMRole           string `json:"use_iam_role"`
-	IsPublic             string `json:"is_public"`
+	UseIAMRole           string `json:"use_iam_role" validate:"required`
+	IsPublic             string `json:"is_public" validate:"required`
 	AWSAccessKeyID       string `json:"aws_access_key_id"`
 	AWSRegionName        string `json:"aws_region_name"`
 	AWSAccountID         string `json:"aws_account_id"` // legacy: registry_id
