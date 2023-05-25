@@ -155,11 +155,11 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	query := `
 		MATCH (n:` + dummy.NodeType() + `)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
+		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) +
 		` OPTIONAL MATCH (n) -[:IS]-> (e) CALL {
         WITH n OPTIONAL MATCH (l) -[:DETECTED]-> (n) OPTIONAL MATCH (l) -[:SCANNED]-> (k) 
         WITH distinct k RETURN collect((coalesce(k.node_name, '') + '/' + coalesce(k.node_type, ''))) as resources }
 		RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources ` +
-		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) +
 		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
@@ -347,9 +347,9 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 	    RETURN n
 	    ORDER BY n.updated_at DESC` +
 		scan_filter.Window.FetchWindow2CypherQuery() +
-		`}
-	    RETURN n.node_id as scan_id, n.status, n.status_message, n.updated_at, m.node_id, labels(m) as node_type, m.node_name` +
-		reporters.OrderFilter2CypherCondition("n", scan_filter.Filters.OrderFilter) +
+		`}` +
+		` RETURN n.node_id as scan_id, n.status as status, n.status_message as status_message, n.updated_at as updated_at, m.node_id as node_id, m.node_type as node_type, m.node_name as node_name` +
+		reporters.OrderFilter2CypherCondition("", scan_filter.Filters.OrderFilter) +
 		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
@@ -377,7 +377,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 			StatusMessage:  rec.Values[2].(string),
 			UpdatedAt:      rec.Values[3].(int64),
 			NodeId:         rec.Values[4].(string),
-			NodeType:       reporters_scan.Labels2NodeType(rec.Values[5].([]interface{})),
+			NodeType:       rec.Values[5].(string),
 			NodeName:       rec.Values[6].(string),
 			SeverityCounts: counts,
 		})
