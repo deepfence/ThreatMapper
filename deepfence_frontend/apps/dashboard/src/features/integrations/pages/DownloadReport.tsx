@@ -69,7 +69,11 @@ const nonComplianceNode = (resourceType: string) => {
       Aws: UtilsReportFiltersNodeTypeEnum.Aws,
       Azure: UtilsReportFiltersNodeTypeEnum.Azure,
       Gcp: UtilsReportFiltersNodeTypeEnum.Gcp,
-      Linux: UtilsReportFiltersNodeTypeEnum.Linux,
+    };
+  } else if (resourceType === 'Compliance') {
+    return {
+      Host: UtilsReportFiltersNodeTypeEnum.Host,
+      Kubernetes: 'Kubernetes',
     };
   }
   return {
@@ -562,8 +566,10 @@ const getBenchmarkList = (nodeType: string) => {
       return complianceType.gcp;
     case 'Azure':
       return complianceType.azure;
-    case 'Linux':
+    case 'Host':
       return complianceType.host;
+    case 'Kubernetes':
+      return complianceType.kubernetes_cluster;
     default:
       console.error('Provider type should be matched');
       return [];
@@ -729,7 +735,7 @@ const CloudComplianceForm = ({
         placeholder="Select Provider"
         sizing="xs"
       >
-        {['Aws', 'Google', 'Azure', 'Linux'].map((resource) => {
+        {['Aws', 'Google', 'Azure'].map((resource) => {
           return (
             <SelectItem value={resource} key={resource}>
               {resource}
@@ -764,7 +770,62 @@ const CloudComplianceForm = ({
   );
 };
 
-const CommomForm = ({
+const ComplianceForm = ({
+  setProvider,
+  resource,
+  provider,
+}: {
+  setProvider: React.Dispatch<React.SetStateAction<string>>;
+  resource: string;
+  provider: string;
+}) => {
+  const [benchmarkType, setBenchmarkType] = useState('');
+
+  return (
+    <>
+      <Select
+        label="Select Node Type"
+        value={provider}
+        name="nodeType"
+        onChange={(value) => {
+          setProvider(value);
+        }}
+        placeholder="Select Node Type"
+        sizing="xs"
+      >
+        {Object.keys(nonComplianceNode(resource)).map((resource) => {
+          return (
+            <SelectItem value={resource} key={resource}>
+              {resource}
+            </SelectItem>
+          );
+        })}
+      </Select>
+      {provider && (
+        <Select
+          value={benchmarkType}
+          name="severity[]"
+          onChange={(value) => {
+            setBenchmarkType(value);
+          }}
+          placeholder="Select check type"
+          label="Select Check Type"
+          sizing="xs"
+        >
+          {getBenchmarkList(provider)?.map((provider) => {
+            return (
+              <SelectItem value={provider} key={provider}>
+                {provider}
+              </SelectItem>
+            );
+          })}
+        </Select>
+      )}
+    </>
+  );
+};
+
+const CommonForm = ({
   setProvider,
   resource,
   provider,
@@ -855,12 +916,20 @@ const DownloadForm = () => {
             })}
           </Select>
 
+          {resource === 'Compliance' ? (
+            <ComplianceForm
+              setProvider={setProvider}
+              provider={provider}
+              resource={resource}
+            />
+          ) : null}
+
           {resource === 'CloudCompliance' ? (
             <CloudComplianceForm setProvider={setProvider} provider={provider} />
           ) : null}
 
-          {resource !== 'CloudCompliance' ? (
-            <CommomForm
+          {resource !== 'CloudCompliance' && resource !== 'Compliance' ? (
+            <CommonForm
               setProvider={setProvider}
               resource={resource}
               provider={provider}
