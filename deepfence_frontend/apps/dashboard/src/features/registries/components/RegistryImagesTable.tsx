@@ -210,7 +210,7 @@ function getScanOptions(
       data: {
         nodeIds,
         nodeType: SecretScanNodeTypeEnum.image,
-        images: [],
+        images,
       },
     };
   }
@@ -222,7 +222,7 @@ function getScanOptions(
       data: {
         nodeIds,
         nodeType: MalwareScanNodeTypeEnum.image,
-        images: [],
+        images,
       },
     };
   }
