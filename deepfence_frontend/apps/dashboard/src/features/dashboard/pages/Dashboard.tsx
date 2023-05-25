@@ -1,16 +1,9 @@
 import {
   getCloudNodesApiClient,
-  getMalwareApiClient,
   getRegistriesApiClient,
   getSearchApiClient,
-  getSecretApiClient,
-  getVulnerabilityApiClient,
 } from '@/api/api';
-import {
-  ModelCloudNodeProvidersListResp,
-  ModelNodeIdentifierNodeTypeEnum,
-  SearchNodeCountResp,
-} from '@/api/generated';
+import { ModelCloudNodeProvidersListResp, SearchNodeCountResp } from '@/api/generated';
 import { NodeCounts } from '@/features/dashboard/components/NodeCounts';
 import { Posture } from '@/features/dashboard/components/Posture';
 import { TopAttackPaths } from '@/features/dashboard/components/TopAttackPath';
@@ -112,7 +105,13 @@ async function getTop5VulnerableAssetsData(): Promise<
                       },
                     ],
                   },
-                  compare_filter: null,
+                  compare_filter: [
+                    {
+                      field_name: 'vulnerabilities_count',
+                      field_value: 0,
+                      greater_than: true,
+                    },
+                  ],
                 },
                 in_field_filter: [],
                 window: {
@@ -309,7 +308,13 @@ async function getTop5SecretAssetsData(): Promise<
                       },
                     ],
                   },
-                  compare_filter: null,
+                  compare_filter: [
+                    {
+                      field_name: 'secrets_count',
+                      field_value: 0,
+                      greater_than: true,
+                    },
+                  ],
                 },
                 in_field_filter: [],
                 window: {
@@ -505,7 +510,13 @@ async function getTop5MalwaresAssetsData(): Promise<
                       },
                     ],
                   },
-                  compare_filter: null,
+                  compare_filter: [
+                    {
+                      field_name: 'malwares_count',
+                      field_value: 0,
+                      greater_than: true,
+                    },
+                  ],
                 },
                 in_field_filter: [],
                 window: {

@@ -24,7 +24,7 @@ const RegistryConnectorLayout = () => {
           <BreadcrumbLink>
             <DFLink
               to={generatePath('/registries/:account', {
-                account: params.account,
+                account: encodeURIComponent(params.account),
               })}
             >
               {registryTypeToNameMapping[params.account]}

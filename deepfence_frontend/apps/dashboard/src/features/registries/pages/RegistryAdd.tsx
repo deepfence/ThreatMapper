@@ -20,7 +20,7 @@ const RegistryAdd = () => {
         onSuccess={() => {
           navigate(
             generatePath('/registries/:account', {
-              account,
+              account: encodeURIComponent(account),
             }),
           );
         }}
