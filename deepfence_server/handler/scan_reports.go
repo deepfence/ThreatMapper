@@ -97,6 +97,50 @@ func GetImageFromId(ctx context.Context, node_id string) (string, string, error)
 	return name, tag, nil
 }
 
+func GetContainerKubeClusterNameFromId(ctx context.Context, node_id string) (string, string, error) {
+	var clusterID string
+	var clusterName string
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return clusterID, clusterName, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return clusterID, clusterName, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return clusterID, clusterName, err
+	}
+	defer tx.Close()
+
+	res, err := tx.Run(`
+		MATCH (n:Container{node_id:$node_id})
+		RETURN n.kubernetes_cluster_id, n.kubernetes_cluster_name`,
+		map[string]interface{}{"node_id": node_id})
+	if err != nil {
+		return clusterID, clusterName, err
+	}
+
+	rec, err := res.Single()
+	if err != nil {
+		return clusterID, clusterName, err
+	}
+
+	if vi, ok := rec.Get("n.kubernetes_cluster_id"); ok && vi != nil {
+		clusterID = vi.(string)
+	}
+	if vt, ok := rec.Get("n.kubernetes_cluster_name"); ok && vt != nil {
+		clusterName = vt.(string)
+	}
+
+	return clusterID, clusterName, nil
+}
+
 func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
 	var reqs model.VulnerabilityScanTriggerReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqs)
@@ -135,6 +179,16 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 			} else {
 				binArgs["image_name"] = name + ":" + tag
 				log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
+			}
+		}
+
+		if nodeTypeInternal == ctl.Container {
+			clusterID, clusterName, err := GetContainerKubeClusterNameFromId(r.Context(), req.NodeId)
+			if err != nil {
+				log.Error().Msgf("container kube cluster name not found %s", err.Error())
+			} else if len(clusterName) > 0 {
+				binArgs["kubernetes_cluster_name"] = clusterName
+				log.Info().Msgf("node_id=%s clusterName=%s clusterID=%s", req.NodeId, clusterName, clusterID)
 			}
 		}
 
