@@ -65,9 +65,7 @@ export const TopologyGraph = () => {
 
   useEffect(() => {
     if (totalNodesCount > MAX_NODES_COUNT_THRESHOLD) {
-      toast.message(
-        'There are so many nodes available, please use table view to view them',
-      );
+      toast.message('There are so many nodes available, please switch to table view');
       return;
     }
     if (dataDiffWithAction.diff && dataDiffWithAction.action) {
