@@ -12,6 +12,10 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
+var (
+	MissingNode = errors.New("Missing node_id")
+)
+
 func GetAgentActions(ctx context.Context, nodeId string, work_num_to_extract int) ([]controls.Action, []error) {
 	// Append more actions here
 	actions := []controls.Action{}
@@ -24,6 +28,9 @@ func GetAgentActions(ctx context.Context, nodeId string, work_num_to_extract int
 	work_num_to_extract -= len(upgrade_actions)
 	if upgrade_err == nil {
 		actions = append(actions, upgrade_actions...)
+	} else if upgrade_err == MissingNode {
+		// early return to avoid unnecessary checks
+		return actions, []error{upgrade_err}
 	}
 
 	scan_actions, scan_err := ExtractStartingAgentScans(ctx, nodeId, work_num_to_extract)
@@ -44,7 +51,7 @@ func GetAgentActions(ctx context.Context, nodeId string, work_num_to_extract int
 func GetPendingAgentScans(ctx context.Context, nodeId string, availableWorkload int) ([]controls.Action, error) {
 	res := []controls.Action{}
 	if len(nodeId) == 0 {
-		return res, errors.New("Missing node_id")
+		return res, MissingNode
 	}
 
 	client, err := directory.Neo4jClient(ctx)
@@ -141,7 +148,7 @@ func hasAgentDiagnosticLogRequests(client neo4j.Driver, nodeId string, nodeType 
 func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeId string, nodeType controls.ScanResource, max_work int) ([]controls.Action, error) {
 	res := []controls.Action{}
 	if len(nodeId) == 0 {
-		return res, errors.New("Missing node_id")
+		return res, MissingNode
 	}
 
 	client, err := directory.Neo4jClient(ctx)
@@ -235,7 +242,7 @@ func hasPendingAgentScans(client neo4j.Driver, nodeId string, max_work int) (boo
 func ExtractStartingAgentScans(ctx context.Context, nodeId string, max_work int) ([]controls.Action, error) {
 	res := []controls.Action{}
 	if len(nodeId) == 0 {
-		return res, errors.New("Missing node_id")
+		return res, MissingNode
 	}
 
 	client, err := directory.Neo4jClient(ctx)
@@ -331,7 +338,7 @@ func hasPendingAgentUpgrade(client neo4j.Driver, nodeId string, max_work int) (b
 func ExtractPendingAgentUpgrade(ctx context.Context, nodeId string, max_work int) ([]controls.Action, error) {
 	res := []controls.Action{}
 	if len(nodeId) == 0 {
-		return res, errors.New("Missing node_id")
+		return res, MissingNode
 	}
 
 	client, err := directory.Neo4jClient(ctx)
