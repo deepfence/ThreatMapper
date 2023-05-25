@@ -66,8 +66,8 @@ export const AWSCloudFormation = () => {
         <Step indicator="2" title="Deploy">
           <div className={`${Typography.size.sm} dark:text-gray-200`}>
             <p>
-              Deploy all modules for Deepfence Compliance Scanner for a single account.
-              For information on AWS Organizations and account types, see AWS docs.
+              Deploy all modules for Deepfence Posture Scanner for a single account. For
+              information on AWS Organizations and account types, see AWS docs.
             </p>
             <p className={`${Typography.size.sm} text-blue-600 dark:text-blue-500 mt-2`}>
               <a

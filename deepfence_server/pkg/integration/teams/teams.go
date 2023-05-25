@@ -22,9 +22,9 @@ func New(b []byte) (*Teams, error) {
 func (t Teams) FormatMessage(message []map[string]interface{}) string {
 	entiremsg := "*" + t.NotificationType + "*\n\n"
 	for k, v := range message {
-		entiremsg = entiremsg + fmt.Sprintf("#%d\n", k)
+		entiremsg = entiremsg + fmt.Sprintf("#%d\n", k+1)
 		for key, val := range v {
-			entiremsg = fmt.Sprintf("%s:%s", key, val)
+			entiremsg = fmt.Sprintf("%s:%s\n", key, val)
 		}
 		entiremsg = entiremsg + "\n"
 	}
