@@ -196,11 +196,11 @@ const UniqueVulnerabilities = () => {
         cell: (info) => info.getValue(),
         header: () => 'Package',
         minSize: 100,
-        size: 200,
-        maxSize: 250,
+        size: 120,
+        maxSize: 125,
       }),
       columnHelper.accessor('cve_severity', {
-        enableResizing: false,
+        enableResizing: true,
         cell: (info) => (
           <Badge
             label={info.getValue().toUpperCase()}
@@ -220,17 +220,17 @@ const UniqueVulnerabilities = () => {
           />
         ),
         header: () => 'Severity',
-        minSize: 70,
+        minSize: 80,
         size: 80,
-        maxSize: 90,
+        maxSize: 100,
       }),
       columnHelper.accessor('cve_cvss_score', {
-        enableResizing: false,
+        enableResizing: true,
         cell: (info) => info.getValue(),
         header: () => 'Score',
         minSize: 70,
-        size: 80,
-        maxSize: 90,
+        size: 60,
+        maxSize: 85,
       }),
       columnHelper.accessor('cve_attack_vector', {
         enableResizing: false,
@@ -241,7 +241,7 @@ const UniqueVulnerabilities = () => {
         maxSize: 250,
       }),
       columnHelper.accessor('has_live_connection', {
-        enableResizing: false,
+        enableResizing: true,
         cell: (info) => (
           <div
             className={cx('h-2.5 w-2.5 rounded-full', {
@@ -251,15 +251,15 @@ const UniqueVulnerabilities = () => {
           ></div>
         ),
         header: () => 'Live',
-        minSize: 40,
-        size: 60,
-        maxSize: 50,
+        minSize: 60,
+        size: 70,
+        maxSize: 70,
       }),
       columnHelper.accessor('exploit_poc', {
         enableSorting: false,
-        enableResizing: false,
+        enableResizing: true,
         cell: (info) => {
-          if (!info.getValue().length) return null;
+          if (!info.getValue().length) return '-';
           return (
             <DFLink href={info.getValue()} target="_blank">
               <IconContext.Provider
@@ -284,18 +284,18 @@ const UniqueVulnerabilities = () => {
           return <TruncatedText text={info.getValue()?.join(', ') ?? ''} />;
         },
         header: () => 'Affected Resources',
-        minSize: 200,
-        size: 200,
-        maxSize: 240,
+        minSize: 180,
+        size: 180,
+        maxSize: 190,
       }),
       columnHelper.accessor('cve_description', {
         enableSorting: false,
         enableResizing: true,
-        cell: (info) => info.getValue(),
+        cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
         header: () => 'Description',
         minSize: 200,
-        size: 250,
-        maxSize: 400,
+        size: 200,
+        maxSize: 210,
       }),
     ];
 
