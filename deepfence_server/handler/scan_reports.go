@@ -1599,8 +1599,6 @@ func GetImagesFromAdvanceFilter(ctx context.Context, ids []model.NodeIdentifier,
 			return res, err
 		}
 
-		log.Info().Msgf("[GetImagesFromAdvanceFilter] rec: %v", rec)
-
 		if len(rec) == 0 {
 			return res, nil
 		}
@@ -1623,11 +1621,9 @@ func GetImagesFromAdvanceFilter(ctx context.Context, ids []model.NodeIdentifier,
 					NodeType: controls.ResourceTypeToString(controls.Image),
 				})
 			}
-		case "recent":
-			log.Info().Msg("[GetImagesFromAdvanceFilter] recent called")
+		case "recent": // kludge: what if the image tag is actually named "recent"?
 			recentNodeID := rec[0].Values[0].(string)
 			recentTimeUNIX := rec[0].Values[1].(int64)
-			log.Info().Msgf("[GetImagesFromAdvanceFilter] recentNodeID: %v, recentTimeUNIX: %v", recentNodeID, recentTimeUNIX)
 			for j := range rec {
 				recentTime := time.Unix(recentTimeUNIX, 0)
 				t := time.Unix(rec[j].Values[1].(int64), 0)
@@ -1635,7 +1631,6 @@ func GetImagesFromAdvanceFilter(ctx context.Context, ids []model.NodeIdentifier,
 					recentTimeUNIX = rec[j].Values[1].(int64)
 					recentNodeID = rec[j].Values[0].(string)
 				}
-				log.Info().Msgf("[GetImagesFromAdvanceFilter] recentTime %v, t %v, recentNodeID %v", recentTime, t, recentNodeID)
 			}
 			res = append(res, model.NodeIdentifier{
 				NodeId:   recentNodeID,
@@ -1643,7 +1638,6 @@ func GetImagesFromAdvanceFilter(ctx context.Context, ids []model.NodeIdentifier,
 			})
 		}
 	}
-	log.Info().Msgf("[GetImagesFromAdvanceFilter] res: %v", res)
 	return res, nil
 }
 
@@ -1715,9 +1709,6 @@ func StartMultiScan(ctx context.Context,
 	req model.ScanTriggerCommon,
 	actionBuilder func(string, model.NodeIdentifier, int32) (ctl.Action, error)) ([]string, string, error) {
 
-	// log parameter
-	log.Info().Msgf("StartMultiScan: gen_bulk_id %v, scan_type %v, req %+v", gen_bulk_id, scan_type, req)
-
 	driver, err := directory.Neo4jClient(ctx)
 
 	if err != nil {
@@ -1737,35 +1728,25 @@ func StartMultiScan(ctx context.Context,
 
 	regular, k8s, registry := extractBulksNodes(req.NodeIds)
 
-	log.Info().Msgf("StartMultiScan: regular %+v, k8s %+v, registry %+v", regular, k8s, registry)
-
 	image_nodes, err := reporters_scan.GetRegistriesImageIDs(ctx, registry)
 	if err != nil {
 		return nil, "", err
 	}
-
-	log.Info().Msgf("StartMultiScan: image_nodes %+v", image_nodes)
 
 	k8s_host_nodes, err := reporters_scan.GetKubernetesHostsIDs(ctx, k8s)
 	if err != nil {
 		return nil, "", err
 	}
 
-	log.Info().Msgf("StartMultiScan: k8s_host_nodes %+v", k8s_host_nodes)
-
 	k8s_image_nodes, err := reporters_scan.GetKubernetesImageIDs(ctx, k8s)
 	if err != nil {
 		return nil, "", err
 	}
 
-	log.Info().Msgf("StartMultiScan: k8s_image_nodes %+v", k8s_image_nodes)
-
 	k8s_container_nodes, err := reporters_scan.GetKubernetesContainerIDs(ctx, k8s)
 	if err != nil {
 		return nil, "", err
 	}
-
-	log.Info().Msgf("StartMultiScan: k8s_container_nodes %+v", k8s_container_nodes)
 
 	reqs := regular
 	if len(k8s) != 0 || len(registry) != 0 {
@@ -1783,8 +1764,6 @@ func StartMultiScan(ctx context.Context,
 	} else {
 		reqs = req.NodeIds
 	}
-	log.Info().Msgf("-----------")
-	log.Info().Msgf("StartMultiScan: reqs %+v", reqs)
 
 	defer tx.Close()
 	scanIds := []string{}
@@ -1827,16 +1806,13 @@ func StartMultiScan(ctx context.Context,
 		scanIds = append(scanIds, scanId)
 	}
 
-	log.Info().Msgf("StartMultiScan: scanIds %+v", scanIds)
 	if len(scanIds) == 0 {
 		return []string{}, "", nil
 	}
 
-	log.Info().Msgf("StartMultiScan: gen_bulk_id %v, scan_type %v, scanIds %+v", gen_bulk_id, scan_type, scanIds)
 	var bulkId string
 	if gen_bulk_id {
 		bulkId = bulkScanId()
-		log.Info().Msgf("StartMultiScan: bulkId %s", bulkId)
 		err = ingesters.AddBulkScan(ingesters.WriteDBTransaction{Tx: tx}, scan_type, bulkId, scanIds)
 		if err != nil {
 			log.Error().Msgf("%v", err)
