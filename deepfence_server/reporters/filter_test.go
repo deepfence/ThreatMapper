@@ -143,35 +143,42 @@ func TestOrderFilter2CypherCondition(t *testing.T) {
 	}
 
 	cypher = OrderFilter2CypherCondition(node_name, ff)
-	assert.Equal(t, cypher, " ORDER BY n.toto ", "should be equal")
+	assert.Equal(t, cypher, " WITH n ORDER BY n.toto ", "should be equal")
 
 	ff = OrderFilter{
 		OrderFields: []OrderSpec{{FieldName: "toto", Descending: true}},
 	}
 
 	cypher = OrderFilter2CypherCondition(node_name, ff)
-	assert.Equal(t, cypher, " ORDER BY n.toto DESC ", "should be equal")
+	assert.Equal(t, cypher, " WITH n ORDER BY n.toto DESC ", "should be equal")
 
 	ff = OrderFilter{
 		OrderFields: []OrderSpec{{FieldName: "toto"}, {FieldName: "titi"}},
 	}
 
 	cypher = OrderFilter2CypherCondition(node_name, ff)
-	assert.Equal(t, cypher, " ORDER BY n.toto,n.titi ", "should be equal")
+	assert.Equal(t, cypher, " WITH n ORDER BY n.toto \n WITH n ORDER BY n.titi ", "should be equal")
 
 	ff = OrderFilter{
 		OrderFields: []OrderSpec{{FieldName: "toto", Descending: true}, {FieldName: "titi", Descending: true}},
 	}
 
 	cypher = OrderFilter2CypherCondition(node_name, ff)
-	assert.Equal(t, cypher, " ORDER BY n.toto DESC,n.titi DESC ", "should be equal")
+	assert.Equal(t, cypher, " WITH n ORDER BY n.toto DESC \n WITH n ORDER BY n.titi DESC ", "should be equal")
 
 	ff = OrderFilter{
 		OrderFields: []OrderSpec{{FieldName: "toto"}, {FieldName: "titi", Descending: true}},
 	}
 
 	cypher = OrderFilter2CypherCondition(node_name, ff)
-	assert.Equal(t, cypher, " ORDER BY n.toto,n.titi DESC ", "should be equal")
+	assert.Equal(t, cypher, " WITH n ORDER BY n.toto \n WITH n ORDER BY n.titi DESC ", "should be equal")
+
+	ff = OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "toto", Size: 10}, {FieldName: "titi", Descending: true, Size: 5}},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff)
+	assert.Equal(t, cypher, " WITH n LIMIT 10 ORDER BY n.toto \n WITH n LIMIT 5 ORDER BY n.titi DESC ", "should be equal")
 
 }
 

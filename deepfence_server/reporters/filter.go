@@ -24,6 +24,7 @@ type MatchFilter struct {
 type OrderSpec struct {
 	FieldName  string `json:"field_name" required:"true"`
 	Descending bool   `json:"descending" required:"true"`
+	Size       int    `json:"size"`
 }
 
 type CompareFilter struct {
@@ -137,15 +138,29 @@ func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) stri
 	var list []string
 	if cypherNodeName == "" {
 		list = formatOrderField("%s", filter.OrderFields, false)
-	} else {
-		list = formatOrderField(cypherNodeName+".%s", filter.OrderFields, false)
+		if len(list) == 0 {
+			return ""
+		}
+
+		return fmt.Sprintf(" ORDER BY %s ", strings.Join(list, ","))
 	}
 
+	list = formatOrderField(cypherNodeName+".%s", filter.OrderFields, false)
 	if len(list) == 0 {
 		return ""
 	}
 
-	return fmt.Sprintf(" ORDER BY %s ", strings.Join(list, ","))
+	var list2 []string
+	for i, orderby := range list {
+		size := filter.OrderFields[i].Size
+		if size != 0 {
+			list2 = append(list2, fmt.Sprintf(" WITH %s LIMIT %d ORDER BY %s ", cypherNodeName, size, orderby))
+		} else {
+			list2 = append(list2, fmt.Sprintf(" WITH %s ORDER BY %s ", cypherNodeName, orderby))
+		}
+	}
+
+	return strings.Join(list2, "\n")
 }
 
 func orderFilter2CypherWhere(cypherNodeName string, filter OrderFilter) []string {
