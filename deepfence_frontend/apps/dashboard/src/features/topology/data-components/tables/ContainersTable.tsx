@@ -87,6 +87,9 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
         order_filter: {
           order_fields: [],
         },
+        not_contains_filter: {
+          filter_in: {},
+        },
       },
       in_field_filter: null,
       window: {
@@ -98,9 +101,14 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   };
   if (vulnerabilityScanStatus) {
     if (vulnerabilityScanStatus === VulnerabilityScanGroupedStatus.neverScanned) {
-      searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
-        ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-        vulnerability_latest_scan_id: [''],
+      searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in = {
+        ...searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in,
+        vulnerability_scan_status: [
+          ...VULNERABILITY_SCAN_STATUS_GROUPS.complete,
+          ...VULNERABILITY_SCAN_STATUS_GROUPS.error,
+          ...VULNERABILITY_SCAN_STATUS_GROUPS.inProgress,
+          ...VULNERABILITY_SCAN_STATUS_GROUPS.starting,
+        ],
       };
     } else {
       searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
@@ -112,9 +120,14 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   }
   if (secretScanStatus) {
     if (secretScanStatus === SecretScanGroupedStatus.neverScanned) {
-      searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
-        ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-        secret_latest_scan_id: [''],
+      searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in = {
+        ...searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in,
+        secret_scan_status: [
+          ...SECRET_SCAN_STATUS_GROUPS.complete,
+          ...SECRET_SCAN_STATUS_GROUPS.error,
+          ...SECRET_SCAN_STATUS_GROUPS.inProgress,
+          ...SECRET_SCAN_STATUS_GROUPS.starting,
+        ],
       };
     } else {
       searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
@@ -125,9 +138,14 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   }
   if (malwareScanStatus) {
     if (malwareScanStatus === MalwareScanGroupedStatus.neverScanned) {
-      searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
-        ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-        malware_latest_scan_id: [''],
+      searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in = {
+        ...searchSearchNodeReq.node_filter.filters.not_contains_filter!.filter_in,
+        malware_scan_status: [
+          ...MALWARE_SCAN_STATUS_GROUPS.complete,
+          ...MALWARE_SCAN_STATUS_GROUPS.error,
+          ...MALWARE_SCAN_STATUS_GROUPS.inProgress,
+          ...MALWARE_SCAN_STATUS_GROUPS.starting,
+        ],
       };
     } else {
       searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
@@ -310,7 +328,7 @@ function Filters({
                   });
                 }}
               />
-              <div className="flex flex-col gap-y-6 p-4">
+              <div className="flex flex-col gap-y-2 p-4">
                 <fieldset>
                   <div className="flex gap-x-4 mt-1">
                     <Listbox
