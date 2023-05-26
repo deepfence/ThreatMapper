@@ -318,9 +318,19 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			})
 			r.Route("/scan/results", func(r chi.Router) {
 				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListVulnerabilityScanResultsHandler))
-				r.Post("/secret", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListSecretScanResultsHandler))
+
+				r.Route("/secret", func(r chi.Router) {
+					r.Post("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListSecretScanResultsHandler))
+					r.Post("/rules", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListSecretScanResultRulesHandler))
+				})
+
+				r.Route("/malware", func(r chi.Router) {
+					r.Post("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListMalwareScanResultsHandler))
+					r.Post("/rules", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListMalwareScanResultRulesHandler))
+					r.Post("/class", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListMalwareScanResultClassHandler))
+				})
+
 				r.Post("/compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListComplianceScanResultsHandler))
-				r.Post("/malware", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListMalwareScanResultsHandler))
 				r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListCloudComplianceScanResultsHandler))
 
 				r.Route("/count", func(r chi.Router) {
