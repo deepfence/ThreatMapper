@@ -22,7 +22,7 @@ You can add your private and public ECR repositories to ThreatMapper to scan for
 ### Using Credentials
 
 4. Fill in the credentials(`AWS Access Key`, `AWS Secret Key`) for the user with access to the ECR registry.
-5. For private registry, fill in the `AWS Region` where the registry is located. Else, for public registry, toggle `Public Registry Information`.
+5. For private registry, fill in the `AWS Region` where the registry is located. Else, for public registry, toggle `Public Registry`.
 
     ![ECR Add Registry Using Credentials Form](../img/registry-5.png)
 
@@ -37,7 +37,7 @@ The Deepfence Console needs to be deployed on AWS EC2 instance in the same AWS a
     2. Assign the instance profile to the EC2 instance on which the Deepfence Console is hosted.
 
         ![EC2 Instance Role Assignment](../img/registry-7.png)
-5. For private registry, fill in the `AWS Region` where the registry is located. Else, for public registry, toggle `Public Registry Information`.
+5. For private registry, fill in the `AWS Region` where the registry is located. Else, for public registry, toggle `Public Registry`.
 6. Leave the `AWS Account ID` and `Target Account Role ARN` fields blank as they are only used for the cross-account scenario below.
 
     ![ECR Add Registry Using IAM Role Form](../img/registry-8.png)
@@ -61,7 +61,7 @@ If a user has an ECR registry in one AWS account and Deepfence Console is deploy
 6. Assign the instance profile role ARN created above to the Deepfence Console EC2 instance.
 
     ![EC2 Instance Role Assignment](../img/registry-7.png)
-7. For private registry, fill in the `AWS Region` where the registry is located. Else, for public registry, toggle `Public Registry Information`.
+7. For private registry, fill in the `AWS Region` where the registry is located. Else, for public registry, toggle `Public Registry`.
 8. Fill the account id of the target account where registry is located in the `AWS Account ID` field. In the `Target Account Role ARN` field, paste the value of the `RoleARN` from the above steps.
 
     ![ECR Add Cross Account Registry Using IAM Role Form](../img/registry-11.png)

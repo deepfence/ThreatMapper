@@ -3,23 +3,23 @@ package ecr
 import "time"
 
 type RegistryECR struct {
-	Name         string    `json:"name" validate:"required"`
-	NonSecret    NonSecret `json:"non_secret"`
-	Secret       Secret    `json:"secret"`
+	Name         string    `json:"name" validate:"required,min=2,max=64"`
+	NonSecret    NonSecret `json:"non_secret" validate:"required"`
+	Secret       Secret    `json:"secret" validate:"omitempty"`
 	RegistryType string    `json:"registry_type" validate:"required"`
 }
 
 type NonSecret struct {
-	UseIAMRole           string `json:"use_iam_role" validate:"required`
-	IsPublic             string `json:"is_public" validate:"required`
-	AWSAccessKeyID       string `json:"aws_access_key_id"`
-	AWSRegionName        string `json:"aws_region_name"`
-	AWSAccountID         string `json:"aws_account_id"` // legacy: registry_id
-	TargetAccountRoleARN string `json:"target_account_role_arn"`
+	UseIAMRole           string `json:"use_iam_role" validate:"required,oneof=true false"`
+	IsPublic             string `json:"is_public" validate:"required,oneof=true false"`
+	AWSAccessKeyID       string `json:"aws_access_key_id" validate:"omitempty,min=16,max=128"`
+	AWSRegionName        string `json:"aws_region_name" validate:"omitempty,oneof=us-east-1 us-east-2 us-west-1 us-west-2 af-south-1 ap-east-1 ap-south-1 ap-northeast-1 ap-northeast-2 ap-northeast-3 ap-southeast-1 ap-southeast-2 ap-southeast-3 ca-central-1 eu-central-1 eu-west-1 eu-west-2 eu-west-3 eu-south-1 eu-north-1 me-south-1 me-central-1 sa-east-1 us-gov-east-1 us-gov-west-1"`
+	AWSAccountID         string `json:"aws_account_id" validate:"omitempty,len=8"` // legacy: registry_id
+	TargetAccountRoleARN string `json:"target_account_role_arn" validate:"omitempty,startswith=arn,min=8"`
 }
 
 type Secret struct {
-	AWSSecretAccessKey string `json:"aws_secret_access_key"`
+	AWSSecretAccessKey string `json:"aws_secret_access_key" validate:"omitempty,min=16,max=128"`
 }
 
 type ImageWithTag struct {

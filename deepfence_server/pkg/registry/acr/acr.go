@@ -18,6 +18,7 @@ func New(data []byte) (*RegistryACR, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &r, nil
 }
 

@@ -23,7 +23,7 @@ import (
 )
 
 type RegistryAddReq struct {
-	Name         string                 `json:"name" validate:"required,nospace,min=2,max=20" required:"true"`
+	Name         string                 `json:"name" validate:"required,min=2,max=64" required:"true"`
 	NonSecret    map[string]interface{} `json:"non_secret"`
 	Secret       map[string]interface{} `json:"secret"`
 	Extras       map[string]interface{} `json:"extras"`
@@ -31,14 +31,14 @@ type RegistryAddReq struct {
 }
 
 type RegistryGCRAddReq struct {
-	Name               string         `formData:"name" json:"name" validate:"required,nospace,min=2,max=20" required:"true"`
+	Name               string         `formData:"name" json:"name" validate:"required,min=2,max=64" required:"true"`
 	RegistryURL        string         `formData:"registry_url" json:"registry_url" validate:"required,url" required:"true"`
 	ServiceAccountJson multipart.File `formData:"service_account_json" json:"service_account_json" validate:"required,nospace" required:"true"`
 }
 
 type RegistryUpdateReq struct {
 	Id           string                 `path:"registry_id" validate:"required" required:"true"`
-	Name         string                 `json:"name" validate:"required,nospace,min=2,max=20" required:"true"`
+	Name         string                 `json:"name" validate:"required,min=2,max=64" required:"true"`
 	NonSecret    map[string]interface{} `json:"non_secret"`
 	Secret       map[string]interface{} `json:"secret"`
 	Extras       map[string]interface{} `json:"extras"`

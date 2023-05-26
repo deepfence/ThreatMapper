@@ -58,7 +58,7 @@ export const AmazonECRConnectorForm = ({
           <div className="flex flex-col gap-4 mt-4">
             <Switch
               name="non_secret.is_public"
-              label="Public Registry Information"
+              label="Public Registry"
               checked={isPublic}
               onCheckedChange={(checked) => {
                 setIsPublic(checked);
