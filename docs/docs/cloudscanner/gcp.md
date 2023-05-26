@@ -37,6 +37,7 @@ variable "image" {
   default     = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:2.0.0"
 }
 ```
+Ensure that the `name` parameter is set to some unique string to avoid collision with existing resource names in the project of deployment
 
 Then run
 ```shell

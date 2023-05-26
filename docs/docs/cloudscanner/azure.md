@@ -29,6 +29,7 @@ variable "image" {
   default     = "quay.io/deepfenceio/cloud-scanner:2.0.0"
 }
 ```
+Ensure that the `name` parameter is set to some unique string to avoid collision with existing resource names in the subscription
 
 Then run
 ```shell
