@@ -32,6 +32,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/samber/lo"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -871,6 +872,21 @@ func (h *Handler) ListSecretScanResultsHandler(w http.ResponseWriter, r *http.Re
 		Secrets: entries, ScanResultsCommon: common, SeverityCounts: counts})
 }
 
+func (h *Handler) ListSecretScanResultRulesHandler(w http.ResponseWriter, r *http.Request) {
+	entries, _, err := listScanResultsHandler[model.Secret](w, r, utils.NEO4J_SECRET_SCAN)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	rules := []string{}
+	for _, e := range entries {
+		rules = append(rules, e.Name)
+	}
+
+	httpext.JSON(w, http.StatusOK, model.SecretScanResultRules{Rules: lo.Uniq(rules)})
+}
+
 func (h *Handler) ListComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
 	entries, common, err := listScanResultsHandler[model.Compliance](w, r, utils.NEO4J_COMPLIANCE_SCAN)
 	if err != nil {
@@ -899,6 +915,36 @@ func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.R
 	}
 
 	httpext.JSON(w, http.StatusOK, model.MalwareScanResult{Malwares: entries, ScanResultsCommon: common, SeverityCounts: counts})
+}
+
+func (h *Handler) ListMalwareScanResultRulesHandler(w http.ResponseWriter, r *http.Request) {
+	entries, _, err := listScanResultsHandler[model.Malware](w, r, utils.NEO4J_MALWARE_SCAN)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	rules := []string{}
+	for _, e := range entries {
+		rules = append(rules, e.RuleName)
+	}
+
+	httpext.JSON(w, http.StatusOK, model.MalwareScanResultRules{Rules: lo.Uniq(rules)})
+}
+
+func (h *Handler) ListMalwareScanResultClassHandler(w http.ResponseWriter, r *http.Request) {
+	entries, _, err := listScanResultsHandler[model.Malware](w, r, utils.NEO4J_MALWARE_SCAN)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	class := []string{}
+	for _, e := range entries {
+		class = append(class, e.Class)
+	}
+
+	httpext.JSON(w, http.StatusOK, model.MalwareScanResultRules{Rules: lo.Uniq(class)})
 }
 
 func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {

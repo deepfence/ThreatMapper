@@ -41,6 +41,7 @@ require (
 	github.com/redis/go-redis/v9 v9.0.4
 	github.com/riandyrn/otelchi v0.5.1
 	github.com/rs/zerolog v1.29.1
+	github.com/samber/lo v1.38.1
 	github.com/samber/mo v1.8.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/swaggest/openapi-go v0.2.29
@@ -137,6 +138,7 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/github.com/Shopify/sarama/otelsarama v0.40.0 // indirect
 	go.opentelemetry.io/otel/metric v0.38.0 // indirect
 	go.opentelemetry.io/otel/trace v1.15.1 // indirect
+	golang.org/x/exp v0.0.0-20230202163644-54bba9f4231b // indirect
 	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.9.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect

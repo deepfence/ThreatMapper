@@ -468,12 +468,21 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("resultsSecretScan", http.MethodPost, "/deepfence/scan/results/secret",
 		"Get Secret Scans Results", "Get Secret Scans results on agent or registry",
 		http.StatusOK, []string{tagSecretScan}, bearerToken, new(ScanResultsReq), new(SecretScanResult))
+	d.AddOperation("resultsRulesSecretScan", http.MethodPost, "/deepfence/scan/results/secret/rules",
+		"Get Secret Scans Result Rules", "Get Secret Scans detected rules names",
+		http.StatusOK, []string{tagSecretScan}, bearerToken, new(ScanResultsReq), new(SecretScanResultRules))
 	d.AddOperation("resultsComplianceScan", http.MethodPost, "/deepfence/scan/results/compliance",
 		"Get Compliance Scans Results", "Get Compliance Scans results on agent or registry",
 		http.StatusOK, []string{tagCompliance}, bearerToken, new(ScanResultsReq), new(ComplianceScanResult))
 	d.AddOperation("resultsMalwareScan", http.MethodPost, "/deepfence/scan/results/malware",
 		"Get Malware Scans Results", "Get Malware Scans results on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanResultsReq), new(MalwareScanResult))
+	d.AddOperation("resultsRulesMalwareScan", http.MethodPost, "/deepfence/scan/results/malware/rules",
+		"Get Malware Scans Result Rules", "Get Malware Scans detected rules names",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanResultsReq), new(MalwareScanResultRules))
+	d.AddOperation("resultsClassMalwareScan", http.MethodPost, "/deepfence/scan/results/malware/class",
+		"Get Malware Scans Results", "Get Malware Scans detected class names",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanResultsReq), new(MalwareScanResultClass))
 	d.AddOperation("resultsCloudComplianceScan", http.MethodPost, "/deepfence/scan/results/cloud-compliance",
 		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(CloudComplianceScanResult))

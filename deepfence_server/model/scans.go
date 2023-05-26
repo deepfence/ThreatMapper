@@ -204,6 +204,10 @@ type SecretScanResult struct {
 	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
 }
 
+type SecretScanResultRules struct {
+	Rules []string `json:"rules" required:"true"`
+}
+
 type VulnerabilityScanResult struct {
 	ScanResultsCommon
 	Vulnerabilities []Vulnerability  `json:"vulnerabilities" required:"true"`
@@ -214,6 +218,14 @@ type MalwareScanResult struct {
 	ScanResultsCommon
 	Malwares       []Malware        `json:"malwares" required:"true"`
 	SeverityCounts map[string]int32 `json:"severity_counts" required:"true"`
+}
+
+type MalwareScanResultRules struct {
+	Rules []string `json:"rules" required:"true"`
+}
+
+type MalwareScanResultClass struct {
+	Class []string `json:"class" required:"true"`
 }
 
 type ComplianceScanResult struct {
