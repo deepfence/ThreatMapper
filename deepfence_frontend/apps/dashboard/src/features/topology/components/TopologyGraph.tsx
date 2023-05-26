@@ -32,7 +32,7 @@ import {
   GraphStorageManager,
 } from '@/features/topology/utils/topology-data';
 
-const MAX_NODES_COUNT_THRESHOLD = 10;
+const MAX_NODES_COUNT_THRESHOLD = 200;
 
 export const TopologyGraph = () => {
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
