@@ -109,6 +109,7 @@ func GetSecretScannerJobCount() int32 {
 		fmt.Printf("error in creating secret scanner client: %s\n", err.Error())
 		return 0
 	}
+	defer conn.Close()
 	client := pb.NewScannersClient(conn)
 	jobReport, err := client.ReportJobsStatus(context.Background(), &pb.Empty{})
 	if err != nil {
