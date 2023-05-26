@@ -800,7 +800,7 @@ const SecretScans = () => {
                   <Form className="flex flex-col gap-y-4 p-4">
                     <fieldset>
                       <legend className="text-sm font-medium">Type</legend>
-                      <div className="flex gap-x-4">
+                      <div className="flex gap-x-4 mt-1">
                         <Checkbox
                           label="Host"
                           checked={searchParams.getAll('nodeType').includes('host')}
@@ -882,7 +882,7 @@ const SecretScans = () => {
                     </fieldset>
                     <fieldset>
                       <legend className="text-sm font-medium">Status</legend>
-                      <div className="flex gap-x-4">
+                      <div className="flex gap-x-4 mt-1">
                         <Checkbox
                           label="Completed"
                           checked={searchParams.getAll('status').includes('complete')}

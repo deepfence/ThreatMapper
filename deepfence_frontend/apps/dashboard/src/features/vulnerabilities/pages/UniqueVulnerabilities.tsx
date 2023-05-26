@@ -371,7 +371,7 @@ const UniqueVulnerabilities = () => {
                     </fieldset>
                     <fieldset>
                       <legend className="text-sm font-medium">Live Connection</legend>
-                      <div className="flex gap-x-4">
+                      <div className="flex gap-x-4 mt-1">
                         <Checkbox
                           label="Active"
                           checked={searchParams

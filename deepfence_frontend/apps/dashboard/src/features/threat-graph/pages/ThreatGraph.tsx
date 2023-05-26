@@ -161,7 +161,7 @@ const ThreatGraphHeader = () => {
                 </fieldset>
                 <fieldset>
                   <legend className="text-sm font-medium">Scope</legend>
-                  <div className="flex gap-y-4">
+                  <div className="flex gap-y-4 mt-1">
                     <Checkbox
                       label="Show only Cloud Resources"
                       checked={searchParams.get('cloud_resource_only') === 'true'}
