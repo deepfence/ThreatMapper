@@ -6,9 +6,7 @@ title: Scanning Production Workloads
 
 Once the ThreatMapper Management Console has been deployed and Sensor Agents have been deployed to your production platforms, the Management Console will begin to discover the workloads and infrastructure in your production platforms.
 
-The Management Console will also begin to initialize its cache of Threat Feeds - check the **Admin Profile: Settings** -> **Diagnosis** page for the latest status.
-
-![Diagnosis](../img/diagnosis-status.jpg)
+The Management Console will also begin to initialize its cache of Threat Feeds.
 
 
 ## Running the First Scan
@@ -19,14 +17,13 @@ The first thing you may want to do is to start a Vulnerability scan of some of y
    * ThreatMapper excludes some resources from the Scan. It will not scan system containers, and some resources are placeholders for the elements in the topology graph
    * Select the 'Scan' button for the selected object
 
-   ![Vulnerability Scan - select an object](../img/vulnscan-1.jpg)
+   ![Vulnerability Scan - select an object](../img/scan-1.png)
 
 
 2. Chose what you would like to scan:
    * ThreatMapper scans the base operating system, and optionally runs language scans on the object.
-   * Under **Advanced Options**, you can choose to extend the scan to a wider set of objects, such as a Kubernetes namespace or entire Kubernetes cluster.
 
-   ![Vulnerability Scan - choose what to scan](../img/vulnscan-2.jpg)
+   ![Vulnerability Scan - choose what to scan](../img/scan-2.png)
 
 3. Start the scan:
    * The ThreatMapper Sensor will inspect the local environment, identifying objects that are scannable (such as containers and language installs).  The agent unpacks running containers to inspect each layer.
