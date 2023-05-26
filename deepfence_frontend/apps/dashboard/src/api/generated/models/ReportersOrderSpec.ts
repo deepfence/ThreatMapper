@@ -31,6 +31,12 @@ export interface ReportersOrderSpec {
      * @memberof ReportersOrderSpec
      */
     field_name: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ReportersOrderSpec
+     */
+    size?: number;
 }
 
 /**
@@ -56,6 +62,7 @@ export function ReportersOrderSpecFromJSONTyped(json: any, ignoreDiscriminator: 
         
         'descending': json['descending'],
         'field_name': json['field_name'],
+        'size': !exists(json, 'size') ? undefined : json['size'],
     };
 }
 
@@ -70,6 +77,7 @@ export function ReportersOrderSpecToJSON(value?: ReportersOrderSpec | null): any
         
         'descending': value.descending,
         'field_name': value.field_name,
+        'size': value.size,
     };
 }
 

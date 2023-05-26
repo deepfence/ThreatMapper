@@ -30,7 +30,7 @@ export interface ModelRegistryUpdateReq {
      * @type {string}
      * @memberof ModelRegistryUpdateReq
      */
-    name?: string;
+    name: string;
     /**
      * 
      * @type {{ [key: string]: any; }}
@@ -42,7 +42,7 @@ export interface ModelRegistryUpdateReq {
      * @type {string}
      * @memberof ModelRegistryUpdateReq
      */
-    registry_type?: string;
+    registry_type: string;
     /**
      * 
      * @type {{ [key: string]: any; }}
@@ -56,6 +56,8 @@ export interface ModelRegistryUpdateReq {
  */
 export function instanceOfModelRegistryUpdateReq(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "name" in value;
+    isInstance = isInstance && "registry_type" in value;
 
     return isInstance;
 }
@@ -71,9 +73,9 @@ export function ModelRegistryUpdateReqFromJSONTyped(json: any, ignoreDiscriminat
     return {
         
         'extras': !exists(json, 'extras') ? undefined : json['extras'],
-        'name': !exists(json, 'name') ? undefined : json['name'],
+        'name': json['name'],
         'non_secret': !exists(json, 'non_secret') ? undefined : json['non_secret'],
-        'registry_type': !exists(json, 'registry_type') ? undefined : json['registry_type'],
+        'registry_type': json['registry_type'],
         'secret': !exists(json, 'secret') ? undefined : json['secret'],
     };
 }

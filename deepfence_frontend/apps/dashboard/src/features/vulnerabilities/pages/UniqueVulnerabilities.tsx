@@ -360,7 +360,7 @@ const UniqueVulnerabilities = () => {
                           });
                         }}
                       >
-                        {['critical', 'high', 'medium', 'low'].map((key) => {
+                        {['critical', 'high', 'medium', 'low', 'unknown'].map((key) => {
                           return (
                             <ListboxOption key={key} value={key}>
                               {capitalize(key)}
