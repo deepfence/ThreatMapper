@@ -193,7 +193,7 @@ func CleanUpDB(msg *message.Message) error {
 	}
 
 	if _, err = session.Run(`
-		MATCH (n) -[:SCANNED]-> (:Node)
+		MATCH (n) -[:SCANNED]-> ()
 		WHERE n.retries >= 3
 		WITH n LIMIT 100000
 		SET n.status = $new_status`,
