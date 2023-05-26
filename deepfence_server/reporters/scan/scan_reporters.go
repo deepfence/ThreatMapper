@@ -715,7 +715,7 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	defer tx.Close()
 
 	query := `
-	MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
+	MATCH (m:` + string(scan_type) + `{node_id: $scan_id, status: "` + utils.SCAN_STATUS_SUCCESS + `"}) -[r:DETECTED]-> (d)
 	WHERE r.masked = false
 	RETURN d.` + type2sev_field(scan_type) + `, COUNT(*)`
 
