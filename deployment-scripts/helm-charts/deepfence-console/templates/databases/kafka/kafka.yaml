@@ -37,7 +37,7 @@ spec:
                     - key: name
                       operator: In
                       values:
-                        - {{ include "deepfence-console.fullname" . }}-kafka-broker
+                        - kafka-broker
                 topologyKey: kubernetes.io/hostname
       initContainers:
         - name: init
