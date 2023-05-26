@@ -73,9 +73,6 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
 
   const order = getOrderFromSearchParams(searchParams);
   const hosts = searchParams.get('hosts')?.split(',') ?? [];
-  const filterIn: {
-    [key: string]: string[];
-  } = hosts.length ? { host_name: hosts } : {};
   const searchSearchNodeReq: SearchSearchNodeReq = {
     node_filter: {
       filters: {
@@ -83,7 +80,7 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
         contains_filter: {
           filter_in: {
             active: [true],
-            ...filterIn,
+            ...(hosts.length ? { host_name: hosts } : {}),
           },
         },
         match_filter: {

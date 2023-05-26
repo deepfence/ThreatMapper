@@ -40,9 +40,6 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   const kubernetesStatus = searchParams.get('kubernetes_state');
   const hosts = searchParams.get('hosts')?.split(',') ?? [];
   const clustors = searchParams.get('clustors')?.split(',') ?? [];
-  const filterIn: {
-    [key: string]: string[];
-  } = hosts.length ? { host_name: hosts, kubernetes_cluster_name: clustors } : {};
   const searchSearchNodeReq: SearchSearchNodeReq = {
     node_filter: {
       filters: {
@@ -50,7 +47,8 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
         contains_filter: {
           filter_in: {
             active: [true],
-            ...filterIn,
+            ...(hosts.length ? { host_name: hosts } : {}),
+            ...(clustors.length ? { kubernetes_cluster_name: clustors } : {}),
           },
         },
         match_filter: {
