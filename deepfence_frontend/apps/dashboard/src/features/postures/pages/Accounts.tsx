@@ -724,6 +724,7 @@ const Accounts = () => {
                   <FilterHeader onReset={onResetFilters} />
                   <div className="flex flex-col gap-y-6 p-4">
                     <fieldset>
+                      <legend className="text-sm font-medium">Status</legend>
                       <div className="flex gap-x-4 mt-1">
                         <Checkbox
                           label="Active"

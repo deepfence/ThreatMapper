@@ -214,7 +214,7 @@ const HeaderComponent = () => {
                     <legend className="text-sm font-medium">
                       Vulnerability Scan Status
                     </legend>
-                    <div className="flex gap-x-4">
+                    <div className="flex gap-x-4 mt-1">
                       <Checkbox
                         label="Completed"
                         checked={searchParams
@@ -328,7 +328,7 @@ const HeaderComponent = () => {
 
                   <fieldset>
                     <legend className="text-sm font-medium">Secret Scan Status</legend>
-                    <div className="flex gap-x-4">
+                    <div className="flex gap-x-4 mt-1">
                       <Checkbox
                         label="Completed"
                         checked={searchParams
@@ -442,7 +442,7 @@ const HeaderComponent = () => {
 
                   <fieldset>
                     <legend className="text-sm font-medium">Malware Scan Status</legend>
-                    <div className="flex gap-x-4">
+                    <div className="flex gap-x-4 mt-1">
                       <Checkbox
                         label="Completed"
                         checked={searchParams
