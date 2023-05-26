@@ -24,6 +24,8 @@ import { module as integrationsLayout } from '@/features/integrations/layouts/In
 import { module as downloadReport } from '@/features/integrations/pages/DownloadReport';
 import { module as addIntegration } from '@/features/integrations/pages/IntegrationAdd';
 import { module as integrations } from '@/features/integrations/pages/Integrations';
+import { module as malwareClassesForScan } from '@/features/malwares/data-components/malwareScanClassesApiLoader';
+import { module as malwareRulesForScan } from '@/features/malwares/data-components/malwareScanRulesApiLoader';
 import { module as malware } from '@/features/malwares/pages/Malware';
 import { module as malwareDetails } from '@/features/malwares/pages/MalwareDetailModal';
 import { module as malwareScanResults } from '@/features/malwares/pages/MalwareScanResults';
@@ -64,6 +66,7 @@ import { module as registryAccounts } from '@/features/registries/pages/Registry
 import { module as registryAdd } from '@/features/registries/pages/RegistryAdd';
 import { module as registryImages } from '@/features/registries/pages/RegistryImages';
 import { module as registryImageTags } from '@/features/registries/pages/RegistryImageTags';
+import { module as secretRulesForScan } from '@/features/secrets/data-components/secretScanRulesApiLoader';
 import { module as secret } from '@/features/secrets/pages/Secret';
 import { module as secretDetails } from '@/features/secrets/pages/SecretDetailModal';
 import { module as secretScanResults } from '@/features/secrets/pages/SecretScanResults';
@@ -679,6 +682,18 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'scan/download',
         action: downloadScanAction,
+      },
+      {
+        path: 'secret/rules/scan/:scanId',
+        ...secretRulesForScan,
+      },
+      {
+        path: 'malware/rules/scan/:scanId',
+        ...malwareRulesForScan,
+      },
+      {
+        path: 'malware/classes/scan/:scanId',
+        ...malwareClassesForScan,
       },
     ],
   },
