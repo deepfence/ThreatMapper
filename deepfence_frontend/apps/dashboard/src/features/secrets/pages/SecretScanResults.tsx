@@ -53,7 +53,6 @@ import {
 
 import { getScanResultsApiClient, getSecretApiClient } from '@/api/api';
 import {
-  ApiDocsBadRequestResponse,
   ModelScanInfo,
   ModelScanResultsReq,
   UtilsReportFiltersNodeTypeEnum,
@@ -82,7 +81,7 @@ import { SecretsResultChart } from '@/features/secrets/components/landing/Secret
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { ScanStatusEnum, ScanTypeEnum, SecretSeverityType } from '@/types/common';
-import { ApiError, apiWrapper, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { isScanComplete, isScanFailed } from '@/utils/scan';
@@ -140,38 +139,30 @@ async function getScans(
   searchParams: URLSearchParams,
 ): Promise<LoaderDataType> {
   // status api
-  const statusResult = await makeRequest({
-    apiFunction: getSecretApiClient().statusSecretScan,
-    apiArgs: [
-      {
-        modelScanStatusReq: {
-          scan_ids: [scanId],
-          bulk_scan_id: '',
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<LoaderDataType>({
-        message: '',
-      });
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
+  const statusSecretScanApi = apiWrapper({
+    fn: getSecretApiClient().statusSecretScan,
+  });
+  const statusSecretScanResponse = await statusSecretScanApi({
+    modelScanStatusReq: {
+      scan_ids: [scanId],
+      bulk_scan_id: '',
     },
   });
-
-  if (ApiError.isApiError(statusResult)) {
-    return statusResult.value();
+  if (!statusSecretScanResponse.ok) {
+    if (statusSecretScanResponse.error.response.status === 400) {
+      return { message: statusSecretScanResponse.error.message };
+    }
+    throw statusSecretScanResponse.error;
   }
 
-  if (!statusResult || !statusResult?.statuses?.[scanId]) {
+  if (
+    !statusSecretScanResponse.value ||
+    !statusSecretScanResponse.value?.statuses?.[scanId]
+  ) {
     throw new Error('Scan status not found');
   }
 
-  const scanStatus = statusResult?.statuses?.[scanId].status;
+  const scanStatus = statusSecretScanResponse.value?.statuses?.[scanId].status;
 
   const isScanRunning =
     scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;
@@ -179,7 +170,7 @@ async function getScans(
 
   if (isScanRunning || isScanError) {
     return {
-      scanStatusResult: statusResult.statuses[scanId],
+      scanStatusResult: statusSecretScanResponse.value.statuses[scanId],
     };
   }
 
@@ -223,62 +214,61 @@ async function getScans(
     });
   }
 
-  const result = await makeRequest({
-    apiFunction: getSecretApiClient().resultSecretScan,
-    apiArgs: [{ modelScanResultsReq: scanResultsReq }],
+  const resultSecretScanApi = apiWrapper({
+    fn: getSecretApiClient().resultSecretScan,
   });
 
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  const resultSecretScanResponse = await resultSecretScanApi({
+    modelScanResultsReq: scanResultsReq,
+  });
+  if (!resultSecretScanResponse.ok) {
+    throw resultSecretScanResponse.error;
   }
 
-  if (result === null) {
+  if (resultSecretScanResponse.value === null) {
     // TODO: handle this case with 404 status maybe
     throw new Error('Error getting scan results');
   }
-  const totalSeverity = Object.values(result.severity_counts ?? {}).reduce(
-    (acc, value) => {
-      acc = acc + value;
-      return acc;
-    },
-    0,
-  );
+  const totalSeverity = Object.values(
+    resultSecretScanResponse.value.severity_counts ?? {},
+  ).reduce((acc, value) => {
+    acc = acc + value;
+    return acc;
+  }, 0);
 
-  const resultCounts = await makeRequest({
-    apiFunction: getSecretApiClient().resultCountSecretScan,
-    apiArgs: [
-      {
-        modelScanResultsReq: {
-          ...scanResultsReq,
-          window: {
-            ...scanResultsReq.window,
-            size: 10 * scanResultsReq.window.size,
-          },
-        },
+  const resultCountSecretScanApi = apiWrapper({
+    fn: getSecretApiClient().resultCountSecretScan,
+  });
+  const resultCounts = await resultCountSecretScanApi({
+    modelScanResultsReq: {
+      ...scanResultsReq,
+      window: {
+        ...scanResultsReq.window,
+        size: 10 * scanResultsReq.window.size,
       },
-    ],
+    },
   });
 
-  if (ApiError.isApiError(resultCounts)) {
-    throw resultCounts.value();
+  if (!resultCounts.ok) {
+    throw resultCounts.error;
   }
 
   return {
-    scanStatusResult: statusResult.statuses[scanId],
+    scanStatusResult: statusSecretScanResponse.value.statuses[scanId],
     data: {
       totalSeverity,
       severityCounts: {
-        critical: result.severity_counts?.['critical'] ?? 0,
-        high: result.severity_counts?.['high'] ?? 0,
-        medium: result.severity_counts?.['medium'] ?? 0,
-        low: result.severity_counts?.['low'] ?? 0,
-        unknown: result.severity_counts?.['unknown'] ?? 0,
+        critical: resultSecretScanResponse.value.severity_counts?.['critical'] ?? 0,
+        high: resultSecretScanResponse.value.severity_counts?.['high'] ?? 0,
+        medium: resultSecretScanResponse.value.severity_counts?.['medium'] ?? 0,
+        low: resultSecretScanResponse.value.severity_counts?.['low'] ?? 0,
+        unknown: resultSecretScanResponse.value.severity_counts?.['unknown'] ?? 0,
       },
-      timestamp: result.updated_at,
-      tableData: result.secrets ?? [],
+      timestamp: resultSecretScanResponse.value.updated_at,
+      tableData: resultSecretScanResponse.value.secrets ?? [],
       pagination: {
         currentPage: page,
-        totalRows: page * PAGE_SIZE + resultCounts.count,
+        totalRows: page * PAGE_SIZE + resultCounts.value.count,
       },
     },
   };
@@ -318,77 +308,75 @@ const action = async ({
       actionType === ActionEnumType.DELETE
         ? getScanResultsApiClient().deleteScanResult
         : getScanResultsApiClient().notifyScanResult;
-    result = await makeRequest({
-      apiFunction: apiFunction,
-      apiArgs: [
-        {
-          modelScanResultsActionRequest: {
-            result_ids: [...ids],
-            scan_id: _scanId,
-            scan_type: ScanTypeEnum.SecretScan,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<{
-          message?: string;
-        }>({});
-        if (r.status === 400 || r.status === 409) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-          });
-        } else if (r.status === 403) {
-          if (actionType === ActionEnumType.DELETE) {
-            return error.set({
-              message: 'You do not have enough permissions to delete secret',
-            });
-          } else if (actionType === ActionEnumType.NOTIFY) {
-            return error.set({
-              message: 'You do not have enough permissions to notify',
-            });
-          }
-        }
+
+    const apiFunctionApi = apiWrapper({
+      fn: apiFunction,
+    });
+    result = await apiFunctionApi({
+      modelScanResultsActionRequest: {
+        result_ids: [...ids],
+        scan_id: _scanId,
+        scan_type: ScanTypeEnum.SecretScan,
       },
     });
+    if (!result.ok) {
+      if (result.error.response.status === 400 || result.error.response.status === 409) {
+        return {
+          success: false,
+          message: result.error.message ?? '',
+        };
+      } else if (result.error.response.status === 403) {
+        if (actionType === ActionEnumType.DELETE) {
+          return {
+            success: false,
+            message: 'You do not have enough permissions to delete secret',
+          };
+        } else if (actionType === ActionEnumType.NOTIFY) {
+          return {
+            success: false,
+            message: 'You do not have enough permissions to notify',
+          };
+        }
+      }
+    }
   } else if (actionType === ActionEnumType.MASK || actionType === ActionEnumType.UNMASK) {
     apiFunction =
       actionType === ActionEnumType.MASK
         ? getScanResultsApiClient().maskScanResult
         : getScanResultsApiClient().unmaskScanResult;
-    result = await makeRequest({
-      apiFunction: apiFunction,
-      apiArgs: [
-        {
-          modelScanResultsMaskRequest: {
-            mask_across_hosts_and_images: mask === 'maskHostAndImages',
-            result_ids: [...ids],
-            scan_id: _scanId,
-            scan_type: ScanTypeEnum.SecretScan,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<{
-          message?: string;
-        }>({});
-        if (r.status === 400 || r.status === 409) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-          });
-        } else if (r.status === 403) {
-          if (actionType === ActionEnumType.MASK) {
-            toast.error('You do not have enough permissions to mask');
-          } else if (actionType === ActionEnumType.UNMASK) {
-            toast.error('You do not have enough permissions to unmask');
-          }
-          return error.set({
-            message: '',
-          });
-        }
+    const apiFunctionApi = apiWrapper({
+      fn: apiFunction,
+    });
+    result = await apiFunctionApi({
+      modelScanResultsMaskRequest: {
+        mask_across_hosts_and_images: mask === 'maskHostAndImages',
+        result_ids: [...ids],
+        scan_id: _scanId,
+        scan_type: ScanTypeEnum.SecretScan,
       },
     });
+    if (!result.ok) {
+      if (result.error.response.status === 400 || result.error.response.status === 409) {
+        return {
+          success: false,
+          message: result.error.message ?? '',
+        };
+      } else if (result.error.response.status === 403) {
+        if (actionType === ActionEnumType.MASK) {
+          toast.error('You do not have enough permissions to mask');
+          return {
+            success: false,
+            message: 'You do not have enough permissions to mask',
+          };
+        } else if (actionType === ActionEnumType.UNMASK) {
+          toast.error('You do not have enough permissions to unmask');
+          return {
+            success: false,
+            message: 'You do not have enough permissions to unmask',
+          };
+        }
+      }
+    }
   } else if (actionType === ActionEnumType.DELETE_SCAN) {
     const deleteScan = apiWrapper({
       fn: getScanResultsApiClient().deleteScanResultsForScanID,
@@ -407,16 +395,6 @@ const action = async ({
         };
       }
       throw new Error('Error deleting scan');
-    }
-  }
-
-  if (ApiError.isApiError(result)) {
-    if (result.value()?.message !== undefined) {
-      const message = result.value()?.message ?? 'Something went wrong';
-      return {
-        success: false,
-        message,
-      };
     }
   }
 

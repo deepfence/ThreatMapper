@@ -8,115 +8,115 @@ import { SecretCountByRulenameCard } from '@/features/secrets/components/landing
 import { TopNSecretCard } from '@/features/secrets/components/landing/TopNSecretCard';
 import { TopNSecretChartData } from '@/features/secrets/components/landing/TopNSecretChart';
 import { SecretSeverityType } from '@/types/common';
-import { ApiError, apiWrapper, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
 async function getTop5SecretAssetsData(nodeType: 'image' | 'host' | 'container') {
-  const top5Nodes = await makeRequest({
-    apiFunction: {
+  const top5NodesApi = apiWrapper({
+    fn: {
       [ModelNodeIdentifierNodeTypeEnum.Image]: getSearchApiClient().searchContainerImages,
       [ModelNodeIdentifierNodeTypeEnum.Host]: getSearchApiClient().searchHosts,
       [ModelNodeIdentifierNodeTypeEnum.Container]: getSearchApiClient().searchContainers,
     }[nodeType],
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          node_filter: {
-            filters: {
-              contains_filter: {
-                filter_in: {
-                  pseudo: [false],
-                  active: [true],
-                  secret_scan_status: ['COMPLETE'],
-                },
-              },
-              match_filter: {
-                filter_in: {},
-              },
-              order_filter: {
-                order_fields: [
-                  {
-                    field_name: 'secrets_count',
-                    descending: true,
-                  },
-                ],
-              },
-              compare_filter: [
-                {
-                  field_name: 'secrets_count',
-                  field_value: 0,
-                  greater_than: true,
-                },
-              ],
-            },
-            in_field_filter: [],
-            window: {
-              offset: 0,
-              size: 0,
+  });
+  const top5Nodes = await top5NodesApi({
+    searchSearchNodeReq: {
+      node_filter: {
+        filters: {
+          contains_filter: {
+            filter_in: {
+              pseudo: [false],
+              active: [true],
+              secret_scan_status: ['COMPLETE'],
             },
           },
-          window: {
-            offset: 0,
-            size: 5,
+          match_filter: {
+            filter_in: {},
           },
+          order_filter: {
+            order_fields: [
+              {
+                field_name: 'secrets_count',
+                descending: true,
+              },
+            ],
+          },
+          compare_filter: [
+            {
+              field_name: 'secrets_count',
+              field_value: 0,
+              greater_than: true,
+            },
+          ],
+        },
+        in_field_filter: [],
+        window: {
+          offset: 0,
+          size: 0,
         },
       },
-    ],
+      window: {
+        offset: 0,
+        size: 5,
+      },
+    },
   });
-  if (ApiError.isApiError(top5Nodes)) {
+  if (!top5Nodes.ok) {
     throw new Error('error getting top 5 container images');
   }
-  const top5NodeScans = await makeRequest({
-    apiFunction: getSearchApiClient().searchSecretsScan,
-    apiArgs: [
-      {
-        searchSearchScanReq: {
-          node_filters: {
-            filters: {
-              compare_filter: [],
-              contains_filter: { filter_in: {} },
-              match_filter: { filter_in: {} },
-              order_filter: { order_fields: [] },
-              not_contains_filter: { filter_in: {} },
-            },
-            in_field_filter: [],
-            window: { offset: 0, size: 0 },
-          },
-          scan_filters: {
-            filters: {
-              compare_filter: [],
-              contains_filter: {
-                filter_in: {
-                  node_id: top5Nodes
-                    .map((node) => node.secret_latest_scan_id)
-                    .filter((scanId) => {
-                      return !!scanId?.length;
-                    }),
-                },
-              },
-              match_filter: { filter_in: {} },
-              order_filter: { order_fields: [] },
-              not_contains_filter: { filter_in: {} },
-            },
-            in_field_filter: [],
-            window: { offset: 0, size: 0 },
-          },
-          window: {
-            offset: 0,
-            size: 5,
-          },
-        },
-      },
-    ],
+
+  const top5NodeScansApi = apiWrapper({
+    fn: getSearchApiClient().searchSecretsScan,
   });
-  if (ApiError.isApiError(top5NodeScans)) {
+  const top5NodeScans = await top5NodeScansApi({
+    searchSearchScanReq: {
+      node_filters: {
+        filters: {
+          compare_filter: [],
+          contains_filter: { filter_in: {} },
+          match_filter: { filter_in: {} },
+          order_filter: { order_fields: [] },
+          not_contains_filter: { filter_in: {} },
+        },
+        in_field_filter: [],
+        window: { offset: 0, size: 0 },
+      },
+      scan_filters: {
+        filters: {
+          compare_filter: [],
+          contains_filter: {
+            filter_in: {
+              node_id: top5Nodes.value
+                .map((node) => node.secret_latest_scan_id)
+                .filter((scanId) => {
+                  return !!scanId?.length;
+                }),
+            },
+          },
+          match_filter: { filter_in: {} },
+          order_filter: { order_fields: [] },
+          not_contains_filter: { filter_in: {} },
+        },
+        in_field_filter: [],
+        window: { offset: 0, size: 0 },
+      },
+      window: {
+        offset: 0,
+        size: 5,
+      },
+    },
+  });
+
+  if (!top5NodeScans.ok) {
     throw new Error('error getting top 5 scans');
   }
 
-  return top5Nodes
+  return top5Nodes.value
     .map((node) => {
-      const latestScan = top5NodeScans.find((scan) => scan.node_id === node.node_id);
+      const latestScan = top5NodeScans.value.find(
+        (scan) => scan.node_id === node.node_id,
+      );
       if (!latestScan) {
         return null;
       }

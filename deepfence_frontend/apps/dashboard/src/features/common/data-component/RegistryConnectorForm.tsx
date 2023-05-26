@@ -39,6 +39,8 @@ function unwrapNestedStruct(
         results[first] = {};
       }
       (results[first] as Record<string, string>)[second] = obj[key];
+    } else {
+      results[key] = obj[key];
     }
   }
 
