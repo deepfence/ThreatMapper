@@ -27,10 +27,10 @@ export interface ModelSettingUpdateRequest {
     key: ModelSettingUpdateRequestKeyEnum;
     /**
      * 
-     * @type {any}
+     * @type {string}
      * @memberof ModelSettingUpdateRequest
      */
-    value: any | null;
+    value: string;
 }
 
 

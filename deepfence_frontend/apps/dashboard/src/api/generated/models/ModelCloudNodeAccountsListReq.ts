@@ -12,7 +12,6 @@
  * Do not edit the class manually.
  */
 
-import { ReportersFieldsFilters, ReportersFieldsFiltersFromJSON } from '@/api/generated/models/ReportersFieldsFilters';
 import { exists, mapValues } from '../runtime';
 import type { ModelFetchWindow } from './ModelFetchWindow';
 import {
@@ -39,12 +38,6 @@ export interface ModelCloudNodeAccountsListReq {
      * @memberof ModelCloudNodeAccountsListReq
      */
     window: ModelFetchWindow;
-    /**
-     * 
-     * @type {ReportersFieldsFilters}
-     * @memberof ModelScanListReq
-     */
-    fields_filter: ReportersFieldsFilters;
 }
 
 /**
@@ -69,7 +62,6 @@ export function ModelCloudNodeAccountsListReqFromJSONTyped(json: any, ignoreDisc
         
         'cloud_provider': !exists(json, 'cloud_provider') ? undefined : json['cloud_provider'],
         'window': ModelFetchWindowFromJSON(json['window']),
-        'fields_filter': ReportersFieldsFiltersFromJSON(json['fields_filter']),
     };
 }
 
@@ -84,7 +76,6 @@ export function ModelCloudNodeAccountsListReqToJSON(value?: ModelCloudNodeAccoun
         
         'cloud_provider': value.cloud_provider,
         'window': ModelFetchWindowToJSON(value.window),
-        'fields_filter': ReportersFieldsFiltersFromJSON(value.fields_filter),
     };
 }
 

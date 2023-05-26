@@ -10489,6 +10489,7 @@
         "nullable": true
       },
       "ModelRegistryUpdateReq": {
+        "required": ["name", "registry_type"],
         "type": "object",
         "properties": {
           "extras": { "type": "object", "additionalProperties": {}, "nullable": true },
@@ -10821,7 +10822,7 @@
             "enum": ["console_url", "inactive_delete_scan_results"],
             "type": "string"
           },
-          "value": {}
+          "value": { "type": "string" }
         }
       },
       "ModelSettingsResponse": {
@@ -11232,7 +11233,8 @@
         "type": "object",
         "properties": {
           "descending": { "type": "boolean" },
-          "field_name": { "type": "string" }
+          "field_name": { "type": "string" },
+          "size": { "type": "integer" }
         }
       },
       "SearchNodeCountResp": {

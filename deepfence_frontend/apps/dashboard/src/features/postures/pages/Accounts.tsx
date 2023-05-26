@@ -103,10 +103,6 @@ type LoaderDataType = {
 
 const PAGE_SIZE = 15;
 
-const getActiveStatus = (searchParams: URLSearchParams) => {
-  return searchParams.get('active');
-};
-
 const action = async ({
   request,
 }: ActionFunctionArgs): Promise<{ success?: boolean; message?: string } | null> => {
@@ -172,7 +168,6 @@ export async function getAccounts(
   totalRows: number;
   message?: string;
 }> {
-  const active = getActiveStatus(searchParams);
   const page = getPageFromSearchParams(searchParams);
   // const scanResultsReq: ListCloudNodeAccountRequest = {
   //   cloud_provider: '',
@@ -195,12 +190,6 @@ export async function getAccounts(
           window: {
             offset: 0 * PAGE_SIZE,
             size: PAGE_SIZE,
-          },
-          fields_filter: {
-            contains_filter: { filter_in: { active: active === 'true' ? [true] : [] } },
-            match_filter: { filter_in: {} },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
           },
         },
       },
@@ -455,13 +444,19 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
     typeof ScanTypeEnum.ComplianceScan | typeof ScanTypeEnum.CloudComplianceScan
   >();
   const [scanNodeIds, setScanNodeIds] = useState<string[]>();
-  const accounts = data?.accounts ?? [];
+  let accounts = data?.accounts ?? [];
   const totalRows = data?.totalRows ?? 0;
   const currentPage = data?.currentPage ?? 0;
   const cloudProvider = accounts[0]?.cloud_provider ?? '';
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [scanIdToDelete, setScanIdToDelete] = useState('');
   const [scanTypeToDelete, setScanTypeToDelete] = useState<ScanTypeEnum>();
+
+  if (searchParams.get('active')) {
+    accounts = accounts.filter((account) => {
+      return account.active;
+    });
+  }
 
   const nodeType = getNodeTypeByProviderName(cloudProvider);
   const columns = useMemo(
