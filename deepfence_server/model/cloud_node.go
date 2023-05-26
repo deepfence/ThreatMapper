@@ -300,11 +300,11 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 			MATCH (m:%s%s)
 			WHERE m.pseudo=false
 			WITH COUNT(DISTINCT m.node_id) AS account_count
-			MATCH (n:%s)-[:SCANNED]->(m:%s)
+			OPTIONAL MATCH (n:%s)-[:SCANNED]->(m:%s)
 			WITH account_count, COUNT(DISTINCT n.node_id) AS scan_count
-			MATCH (m:%s)<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:Compliance)
+			OPTIONAL MATCH (m:%s)<-[:SCANNED]-(n:%s)-[:DETECTED]->(c:Compliance)
 			WITH account_count, scan_count, COUNT(c) AS total_compliance_count
-			MATCH (m:%s)<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:Compliance)
+			OPTIONAL MATCH (m:%s)<-[:SCANNED]-(n:%s)-[:DETECTED]->(c1:Compliance)
 			WHERE c1.status IN ['ok', 'info', 'skip']
 			RETURN account_count, scan_count, CASE WHEN total_compliance_count = 0 THEN 0.0 ELSE COUNT(c1.status)*100.0/total_compliance_count END AS compliance_percentage`,
 				neo4jNodeType, nonKubeFilter, scanType, neo4jNodeType, neo4jNodeType, scanType, neo4jNodeType, scanType)
