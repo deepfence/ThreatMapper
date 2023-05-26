@@ -13,6 +13,7 @@ export type SearchableHostListProps = {
   onChange?: (value: string[]) => void;
   defaultSelectedHosts?: string[];
   reset?: boolean;
+  valueKey?: 'nodeId' | 'hostName' | 'nodeName';
 };
 
 const PAGE_SIZE = 15;
@@ -22,6 +23,7 @@ export const SearchableHostList = ({
   onChange,
   defaultSelectedHosts,
   reset,
+  valueKey = 'nodeId',
 }: SearchableHostListProps) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
@@ -127,7 +129,7 @@ export const SearchableHostList = ({
       >
         {searchState.hostsList.map((host, index) => {
           return (
-            <ComboboxOption key={`${host.nodeId}-${index}`} value={host.nodeId}>
+            <ComboboxOption key={`${host.nodeId}-${index}`} value={host[valueKey]}>
               {host.nodeName}
             </ComboboxOption>
           );

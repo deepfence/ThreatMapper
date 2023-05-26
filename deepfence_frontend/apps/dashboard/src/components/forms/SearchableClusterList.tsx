@@ -11,10 +11,12 @@ export const SearchableClusterList = ({
   onChange,
   defaultSelectedClusters,
   reset,
+  valueKey = 'clusterId',
 }: {
   onChange?: (value: string[]) => void;
   defaultSelectedClusters?: string[];
   reset?: boolean;
+  valueKey?: 'clusterName' | 'clusterId';
 }) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
@@ -115,7 +117,7 @@ export const SearchableClusterList = ({
           return (
             <ComboboxOption
               key={`${cluster.clusterId}-${index}`}
-              value={cluster.clusterId}
+              value={cluster[valueKey]}
             >
               {cluster.clusterName}
             </ComboboxOption>

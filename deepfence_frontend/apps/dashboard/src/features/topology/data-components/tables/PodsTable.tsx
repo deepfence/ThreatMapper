@@ -39,10 +39,10 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
 
   const kubernetesStatus = searchParams.get('kubernetes_state');
   const hosts = searchParams.get('hosts')?.split(',') ?? [];
-  const clusters = searchParams.get('clusters')?.split(',') ?? [];
+  const clustors = searchParams.get('clustors')?.split(',') ?? [];
   const filterIn: {
     [key: string]: string[];
-  } = hosts.length ? { host_name: hosts, kubernetes_cluster_name: clusters } : {};
+  } = hosts.length ? { host_name: hosts, kubernetes_cluster_name: clustors } : {};
   const searchSearchNodeReq: SearchSearchNodeReq = {
     node_filter: {
       filters: {
@@ -229,6 +229,7 @@ function Filters({
                 <fieldset>
                   <SearchableHostList
                     scanType="none"
+                    valueKey="hostName"
                     defaultSelectedHosts={filters.hosts ?? []}
                     reset={!isFilterApplied}
                     onChange={(value) => {
@@ -242,6 +243,7 @@ function Filters({
                 <fieldset>
                   <SearchableClusterList
                     defaultSelectedClusters={filters.clustors ?? []}
+                    valueKey="clusterName"
                     reset={!isFilterApplied}
                     onChange={(value) => {
                       onFiltersChange({
@@ -302,6 +304,9 @@ export const PodsTable = () => {
     }
     if (filters.hosts.length) {
       searchParams.set('hosts', filters.hosts.join(','));
+    }
+    if (filters.clustors.length) {
+      searchParams.set('clustors', filters.clustors.join(','));
     }
 
     if (sortState.length) {

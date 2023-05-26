@@ -474,6 +474,7 @@ function Filters({
                 <fieldset>
                   <SearchableHostList
                     scanType="none"
+                    valueKey="hostName"
                     defaultSelectedHosts={filters.hosts ?? []}
                     reset={!isFilterApplied}
                     onChange={(value) => {
