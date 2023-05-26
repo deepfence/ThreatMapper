@@ -110,7 +110,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 
 	log.Debug().Msgf("config: %+v", cfg)
 
-	SendScanStatus(s.ingestC, NewSbomScanStatus(params, "GENERATING_SBOM", "", nil), rh)
+	SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil), rh)
 
 	rawSbom, err := syft.GenerateSBOM(cfg)
 	if err != nil {
@@ -149,7 +149,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 
 	// write sbom to minio and return details another task will scan sbom
 
-	SendScanStatus(s.ingestC, NewSbomScanStatus(params, "GENERATED_SBOM", "", nil), rh)
+	SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil), rh)
 
 	params.SBOMFilePath = sbomFile
 
