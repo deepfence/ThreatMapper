@@ -154,7 +154,7 @@ func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) stri
 	for i, orderby := range list {
 		size := filter.OrderFields[i].Size
 		if size != 0 {
-			list2 = append(list2, fmt.Sprintf(" WITH %s LIMIT %d ORDER BY %s ", cypherNodeName, size, orderby))
+			list2 = append(list2, fmt.Sprintf(" WITH %s ORDER BY %s LIMIT %d ", cypherNodeName, orderby, size))
 		} else {
 			list2 = append(list2, fmt.Sprintf(" WITH %s ORDER BY %s ", cypherNodeName, orderby))
 		}

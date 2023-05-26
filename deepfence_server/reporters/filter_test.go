@@ -178,7 +178,7 @@ func TestOrderFilter2CypherCondition(t *testing.T) {
 	}
 
 	cypher = OrderFilter2CypherCondition(node_name, ff)
-	assert.Equal(t, cypher, " WITH n LIMIT 10 ORDER BY n.toto \n WITH n LIMIT 5 ORDER BY n.titi DESC ", "should be equal")
+	assert.Equal(t, cypher, " WITH n ORDER BY n.toto LIMIT 10 \n WITH n ORDER BY n.titi DESC LIMIT 5 ", "should be equal")
 
 }
 
