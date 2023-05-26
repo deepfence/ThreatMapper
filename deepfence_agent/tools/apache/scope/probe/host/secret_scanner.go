@@ -76,11 +76,15 @@ func StartSecretsScan(req ctl.StartSecretScanRequest) error {
 		}
 	}
 
-	ssClient, err := newSecretScannerClient()
+	conn, err := grpc.Dial("unix://"+ebpfSocketPath, grpc.WithAuthority("dummy"),
+		grpc.WithInsecure())
 	if err != nil {
+		fmt.Printf("error in creating secret scanner client: %s\n", err.Error())
 		return err
 	}
+	defer conn.Close()
 
+	ssClient := pb.NewSecretScannerClient(conn)
 	_, err = ssClient.FindSecretInfo(context.Background(), &greq)
 
 	if err != nil {
@@ -90,16 +94,6 @@ func StartSecretsScan(req ctl.StartSecretScanRequest) error {
 
 	fmt.Println("Secret scan start for" + req.BinArgs["scan_id"])
 	return nil
-}
-
-func newSecretScannerClient() (pb.SecretScannerClient, error) {
-	conn, err := grpc.Dial("unix://"+ebpfSocketPath, grpc.WithAuthority("dummy"),
-		grpc.WithInsecure())
-	if err != nil {
-		fmt.Printf("error in creating secret scanner client: %s\n", err.Error())
-		return nil, err
-	}
-	return pb.NewSecretScannerClient(conn), nil
 }
 
 func GetSecretScannerJobCount() int32 {
