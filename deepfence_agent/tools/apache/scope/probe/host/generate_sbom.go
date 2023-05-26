@@ -27,7 +27,7 @@ func init() {
 	}
 }
 
-func createPackageScannerClient() (pb.PackageScannerClient, error) {
+func createPackageScannerConn() (*grpc.ClientConn, error) {
 	maxMsgSize := 1024 * 1024 * 1 // 1 mb
 	conn, err := grpc.Dial(
 		"unix://"+packageScannerSocket,
@@ -38,7 +38,7 @@ func createPackageScannerClient() (pb.PackageScannerClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return pb.NewPackageScannerClient(conn), nil
+	return conn, nil
 }
 
 func GenerateSbomForVulnerabilityScan(nodeType, imageName, imageId, scanId, containerId,
@@ -47,10 +47,13 @@ func GenerateSbomForVulnerabilityScan(nodeType, imageName, imageId, scanId, cont
 
 	hostName := scopeHostname.Get()
 
-	packageScannerClient, err := createPackageScannerClient()
+	conn, err := createPackageScannerConn()
 	if err != nil {
 		return err
 	}
+	defer conn.Close()
+
+	packageScannerClient := pb.NewPackageScannerClient(conn)
 	var source string
 	if nodeType == "host" {
 		source = scanPath
@@ -159,6 +162,7 @@ func GetPackageScannerJobCount() int32 {
 		log.Errorf("error in creating package scanner client: %s", err.Error())
 		return 0
 	}
+	defer conn.Close()
 	client := pb.NewScannersClient(conn)
 	jobReport, err := client.ReportJobsStatus(context.Background(), &pb.Empty{})
 	if err != nil {

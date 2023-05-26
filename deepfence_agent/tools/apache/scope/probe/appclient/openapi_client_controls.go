@@ -48,9 +48,11 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 			req := ct.API().ControlsAPI.GetKubernetesClusterControls(context.Background())
 			agentId := openapi.NewModelAgentId(getMaxAllocatable(), nodeId)
 			req = req.ModelAgentId(*agentId)
+			ticker := time.NewTicker(time.Second * time.Duration(ct.PublishInterval()/2))
 			for {
+				ticker.Reset(time.Second * time.Duration(ct.PublishInterval()/2))
 				select {
-				case <-time.After(time.Second * time.Duration(ct.PublishInterval()/2)):
+				case <-ticker.C:
 				case <-ct.stopControlListening:
 					break
 				}
@@ -78,9 +80,11 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 			req := ct.API().ControlsAPI.GetAgentControls(context.Background())
 			agentId := openapi.NewModelAgentId(getMaxAllocatable(), nodeId)
 			req = req.ModelAgentId(*agentId)
+			ticker := time.NewTicker(time.Second * time.Duration(ct.PublishInterval()/2))
 			for {
+				ticker.Reset(time.Second * time.Duration(ct.PublishInterval()/2))
 				select {
-				case <-time.After(time.Second * time.Duration(ct.PublishInterval()/2)):
+				case <-ticker.C:
 				case <-ct.stopControlListening:
 					break
 				}
