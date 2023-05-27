@@ -56,6 +56,7 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
               className="w-3/4 min-[200px] max-w-xs"
               label="Registry URL"
               type={'text'}
+              hint="e.g. https://jfrog.company.com"
               sizing="sm"
               name="non_secret.jfrog_registry_url"
               placeholder="Registry URL"
@@ -66,6 +67,7 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
               className="w-3/4 min-[200px] max-w-xs"
               label="Repository"
               type={'text'}
+              hint="e.g. docker"
               sizing="sm"
               name="non_secret.jfrog_repository"
               placeholder="Repository"
@@ -92,6 +94,24 @@ export const JfrogConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPr
               color={fieldErrors?.['jfrog_password'] ? 'error' : 'default'}
               helperText={fieldErrors?.['jfrog_password']}
             />
+            <div className="text-xs">
+              <div className="text-sm">
+                Using Certificate based Docker client Authentication?
+              </div>
+              <div>
+                A custom certificate is configured by creating a directory under
+                /etc/docker/certs.d on Deepfence console machine, using the same name as
+                the registry&apos;s hostname provided above. All *.crt files are added to
+                this directory as CA roots.{' '}
+                <DFLink
+                  href="https://docs.docker.com/engine/security/certificates/"
+                  target="_blank"
+                >
+                  https://docs.docker.com/engine/security/certificates/
+                </DFLink>{' '}
+              </div>
+              <div className="mt-2">Supported Versions: 6.19.1 and above</div>
+            </div>
             {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
           </Card>
         </Step>

@@ -110,6 +110,7 @@ export const AmazonECRConnectorForm = ({
                   sizing="sm"
                   name="non_secret.aws_account_id"
                   placeholder="AWS Account ID"
+                  hint="(Optional) Pull from registries belonging to other AWS Accounts"
                   color={fieldErrors?.['non_secret.aws_account_id'] ? 'error' : 'default'}
                   helperText={fieldErrors?.['non_secret.aws_account_id']}
                 />
@@ -120,6 +121,7 @@ export const AmazonECRConnectorForm = ({
                   sizing="sm"
                   name="non_secret.target_account_role_arn"
                   placeholder="Target Account Role ARN"
+                  hint="(Optional) Pull from registries belonging to other AWS Accounts"
                   color={
                     fieldErrors?.['non_secret.target_account_role_arn']
                       ? 'error'
