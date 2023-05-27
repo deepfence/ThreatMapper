@@ -4588,6 +4588,110 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/scan/results/malware/class": {
+      "post": {
+        "tags": ["Malware Scan"],
+        "summary": "Get Malware Scans Results",
+        "description": "Get Malware Scans detected class names",
+        "operationId": "resultsClassMalwareScan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanResultsReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelMalwareScanResultClass" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/scan/results/malware/rules": {
+      "post": {
+        "tags": ["Malware Scan"],
+        "summary": "Get Malware Scans Result Rules",
+        "description": "Get Malware Scans detected rules names",
+        "operationId": "resultsRulesMalwareScan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanResultsReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelMalwareScanResultRules" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/scan/results/secret": {
       "post": {
         "tags": ["Secret Scan"],
@@ -4607,6 +4711,58 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ModelSecretScanResult" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/scan/results/secret/rules": {
+      "post": {
+        "tags": ["Secret Scan"],
+        "summary": "Get Secret Scans Result Rules",
+        "description": "Get Secret Scans detected rules names",
+        "operationId": "resultsRulesSecretScan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelScanResultsReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelSecretScanResultRules" }
               }
             }
           },
@@ -10256,6 +10412,20 @@
           "updated_at": { "type": "integer", "format": "int64" }
         }
       },
+      "ModelMalwareScanResultClass": {
+        "required": ["class"],
+        "type": "object",
+        "properties": {
+          "class": { "type": "array", "items": { "type": "string" }, "nullable": true }
+        }
+      },
+      "ModelMalwareScanResultRules": {
+        "required": ["rules"],
+        "type": "object",
+        "properties": {
+          "rules": { "type": "array", "items": { "type": "string" }, "nullable": true }
+        }
+      },
       "ModelMalwareScanTriggerReq": {
         "required": ["node_ids", "filters"],
         "type": "object",
@@ -10800,6 +10970,13 @@
             "nullable": true
           },
           "updated_at": { "type": "integer", "format": "int64" }
+        }
+      },
+      "ModelSecretScanResultRules": {
+        "required": ["rules"],
+        "type": "object",
+        "properties": {
+          "rules": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
       },
       "ModelSecretScanTriggerReq": {

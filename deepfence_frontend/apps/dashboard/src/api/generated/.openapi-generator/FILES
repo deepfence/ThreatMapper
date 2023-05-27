@@ -113,6 +113,8 @@ models/ModelLoginRequest.ts
 models/ModelLoginResponse.ts
 models/ModelMalware.ts
 models/ModelMalwareScanResult.ts
+models/ModelMalwareScanResultClass.ts
+models/ModelMalwareScanResultRules.ts
 models/ModelMalwareScanTriggerReq.ts
 models/ModelMessageResponse.ts
 models/ModelNodeIdentifier.ts
@@ -147,6 +149,7 @@ models/ModelScanStatusResp.ts
 models/ModelScanTriggerResp.ts
 models/ModelSecret.ts
 models/ModelSecretScanResult.ts
+models/ModelSecretScanResultRules.ts
 models/ModelSecretScanTriggerReq.ts
 models/ModelSettingUpdateRequest.ts
 models/ModelSettingsResponse.ts

@@ -102,6 +102,7 @@ export function getSecretApiClient() {
     statusSecretScan: secretApi.statusSecretScan.bind(secretApi),
     listSecretScans: secretApi.listSecretScan.bind(secretApi),
     getSecretsCountByRulename: secretApi.groupResultsSecrets.bind(secretApi),
+    getSecretRulesForScan: secretApi.resultsRulesSecretScan.bind(secretApi),
   };
 }
 
@@ -158,6 +159,8 @@ export function getMalwareApiClient() {
     listMalwareScans: malwareApi.listMalwareScan.bind(malwareApi),
     getMalwareCountByRulename: malwareApi.groupResultsMalwares.bind(malwareApi),
     getMalwareCountByClass: malwareApi.groupResultsMalwaresClass.bind(malwareApi),
+    getMalwareRulesForScan: malwareApi.resultsRulesMalwareScan.bind(malwareApi),
+    getMalwareClassesForScan: malwareApi.resultsClassMalwareScan.bind(malwareApi),
   };
 }
 
