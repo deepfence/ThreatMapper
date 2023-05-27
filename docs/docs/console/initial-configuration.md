@@ -17,17 +17,17 @@ You will need the IP address for the management console:
 
 1. Open the Console in a browser (https://your-ip-address/):
     
-   | ![Initial Login](../img/threatmapper-reg-1.png) |
-   |:-----------------------------------------------:|
-   |                  Initial Login                  |
+   | ![Initial Login](../img/registration-1.png) |
+   |:-------------------------------------------:|
+   |                Initial Login                |
 
    You will likely encounter a warning about an invalid SSL/TLS certificate, because the console is using an internally-generated self-signed cert. You can bypass that warning. See below for how to provide your own TLS certificate.
 
 2. Create a new account. Once one user has been registered, additional users are added by invitation from an admin user:
 
-    | ![Account Registration](../img/threatmapper-reg-2.png) |
-    |:------------------------------------------------------:|
-    |                  Account Registration                  |
+    | ![Account Registration](../img/registration-2.png) |
+    |:--------------------------------------------------:|
+    |                Account Registration                |
     
     Account Registration details are private to your Management Console, and are not shared with Deepfence or other third parties.
 
