@@ -56,16 +56,16 @@ export const AmazonECRConnectorForm = ({
             helperText={fieldErrors?.['name']}
           />
           <div className="flex flex-col gap-4 mt-4">
+            <input hidden value={String(isPublic)} name="non_secret.is_public" />
             <Switch
-              name="non_secret.is_public"
               label="Public Registry"
               checked={isPublic}
               onCheckedChange={(checked) => {
                 setIsPublic(checked);
               }}
             />
+            <input hidden value={String(useIAMRole)} name="non_secret.use_iam_role" />
             <Switch
-              name="non_secret.use_iam_role"
               label="Use AWS IAM Role"
               checked={useIAMRole}
               onCheckedChange={(checked) => {
