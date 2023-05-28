@@ -3,30 +3,30 @@ import { useFetcher } from 'react-router-dom';
 
 import { getUserApiClient } from '@/api/api';
 import { ModelApiTokenResponse } from '@/api/generated';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 export const getApiTokenApiLoader = async (): Promise<{
   error?: string;
   apiToken?: ModelApiTokenResponse;
 }> => {
-  const token = await makeRequest({
-    apiFunction: getUserApiClient().getApiTokens,
-    apiArgs: [],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ error?: string }>({});
-      if (r.status === 404 || r.status === 401) {
-        return error.set({
-          error: 'Unable to get api token',
-        });
-      }
-    },
+  const getApiTokensApi = apiWrapper({
+    fn: getUserApiClient().getApiTokens,
   });
-
-  if (ApiError.isApiError(token)) {
-    return token.value();
+  const getApiTokensResponse = await getApiTokensApi();
+  if (!getApiTokensResponse.ok) {
+    if (
+      getApiTokensResponse.error.response.status === 404 ||
+      getApiTokensResponse.error.response.status === 401
+    ) {
+      return {
+        error: 'Unable to get api token',
+      };
+    }
+    throw getApiTokensResponse.error;
   }
+
   return {
-    apiToken: token[0],
+    apiToken: getApiTokensResponse.value[0],
   };
 };
 

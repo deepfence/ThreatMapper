@@ -2,9 +2,8 @@ import { useEffect } from 'react';
 import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 
 import { getSearchApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ScanTypeEnum } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 export type SearchContainersLoaderDataType = {
   containers: {
@@ -44,71 +43,57 @@ export const searchContainersApiLoader = async ({
     filterValue = 'compliances_count';
   }
 
-  const result = await makeRequest({
-    apiFunction: getSearchApiClient().searchContainers,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          node_filter: {
-            filters: {
-              contains_filter: {
-                filter_in: {},
-              },
-              order_filter: {
-                order_fields: [
-                  {
-                    field_name: filterValue,
-                    descending: true,
-                  },
-                ],
-              },
-              match_filter: matchFilter,
-              compare_filter: null,
-            },
-            in_field_filter: null,
-            window: {
-              offset: 0,
-              size: 0,
-            },
+  const searchContainersApi = apiWrapper({
+    fn: getSearchApiClient().searchContainers,
+  });
+  const searchContainersResponse = await searchContainersApi({
+    searchSearchNodeReq: {
+      node_filter: {
+        filters: {
+          contains_filter: {
+            filter_in: {},
           },
-          window: {
-            offset: 0,
-            size: size + 1,
+          order_filter: {
+            order_fields: [
+              {
+                field_name: filterValue,
+                descending: true,
+              },
+            ],
           },
+          match_filter: matchFilter,
+          compare_filter: null,
+        },
+        in_field_filter: null,
+        window: {
+          offset: 0,
+          size: 0,
         },
       },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
+      window: {
+        offset: 0,
+        size: size + 1,
+      },
     },
   });
-
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  if (!searchContainersResponse.ok) {
+    throw searchContainersResponse.error;
   }
 
-  if (result === null) {
+  if (searchContainersResponse.value === null) {
     return {
       containers: [],
       hasNext: false,
     };
   }
   return {
-    containers: result.slice(0, size).map((res) => {
+    containers: searchContainersResponse.value.slice(0, size).map((res) => {
       return {
         nodeId: res.node_id,
         nodeName: res.docker_container_name,
       };
     }),
-    hasNext: result.length > size,
+    hasNext: searchContainersResponse.value.length > size,
   };
 };
 
