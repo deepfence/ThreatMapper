@@ -112,7 +112,7 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	// init secret scan
 	SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_INPROGRESS, ""), rh)
 
-	scanResult, err := secretScan.ExtractAndScanFromTar(dir, imageName, nil)
+	scanResult, err := secretScan.ExtractAndScanFromTar(dir, imageName)
 	// secretScan.ExtractAndScanFromTar(tarPath,)
 	if err != nil {
 		SendScanStatus(s.ingestC, NewSecretScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error()), rh)
