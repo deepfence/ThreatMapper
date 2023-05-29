@@ -9,8 +9,10 @@ NC='\033[0m'  # No color
 CHECKMARK="${GREEN}✔${NC}"
 CROSS="${RED}✘${NC}"
 
-# Default image tag
+# Default values
 DEFAULT_IMAGE_TAG="2.0.0"
+DEFAULT_STORAGE_CLASS="standard"
+DEFAULT_NEO4J_PASSWORD="e16908ffa5b9f8e9d4ed"
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -41,6 +43,22 @@ elif [[ -n $DF_IMG_TAG ]]; then
 else
     IMAGE_TAG=$DEFAULT_IMAGE_TAG
     echo -e "${CHECKMARK} Using default image tag: $IMAGE_TAG"
+fi
+
+# Prompt for storage class in case of Kubernetes deployment
+if [[ $DEPLOYMENT == "kubernetes" ]]; then
+    if [[ -z $STORAGE_CLASS ]]; then
+        read -p "Enter storage class (default: $DEFAULT_STORAGE_CLASS): " input_storage_class
+        STORAGE_CLASS=${input_storage_class:-$DEFAULT_STORAGE_CLASS}
+    fi
+    echo -e "${CHECKMARK} Using storage class: $STORAGE_CLASS"
+
+    # Prompt for Neo4j password in case of Kubernetes deployment
+    if [[ -z $NEO4J_PASSWORD ]]; then
+        read -p "Enter Neo4j password (default: $DEFAULT_NEO4J_PASSWORD): " input_neo4j_password
+        NEO4J_PASSWORD=${input_neo4j_password:-$DEFAULT_NEO4J_PASSWORD}
+    fi
+    echo -e "${CHECKMARK} Using Neo4j password"
 fi
 
 # Check minimum system requirements for Docker
@@ -159,7 +177,23 @@ docker_deployment() {
 # Deploy using Kubernetes and Helm
 kubernetes_deployment() {
     echo -e "${GREEN}Performing Kubernetes deployment with image tag: $IMAGE_TAG${NC}"
-    # Execute helm chart apply or any other necessary commands
+
+    # Set values in Helm chart values.yaml
+    VALUES_FILE="deployment-scripts/helm-charts/deepfence-console/values.yaml"
+    
+    # Set storage class
+    if [[ -n $STORAGE_CLASS ]]; then
+        helm upgrade --install deepfence-console deployment-scripts/helm-charts/deepfence-console --set image.tag=$IMAGE_TAG --set storageClass=$STORAGE_CLASS -f $VALUES_FILE
+    else
+        helm upgrade --install deepfence-console deployment-scripts/helm-charts/deepfence-console --set image.tag=$IMAGE_TAG --set storageClass=$DEFAULT_STORAGE_CLASS -f $VALUES_FILE
+    fi
+
+    # Set Neo4j password
+    if [[ -n $NEO4J_PASSWORD ]]; then
+        helm upgrade --install deepfence-console deployment-scripts/helm-charts/deepfence-console --set image.tag=$IMAGE_TAG --set neo4jPassword=$NEO4J_PASSWORD -f $VALUES_FILE
+    else
+        helm upgrade --install deepfence-console deployment-scripts/helm-charts/deepfence-console --set image.tag=$IMAGE_TAG --set neo4jPassword=$DEFAULT_NEO4J_PASSWORD -f $VALUES_FILE
+    fi
 }
 
 # Main script flow
