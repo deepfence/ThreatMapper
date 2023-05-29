@@ -2,7 +2,7 @@ import { ActionFunction, redirect } from 'react-router-dom';
 
 import { getUserApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import storage from '@/utils/storage';
 
 export type RegisterActionReturnType = {
@@ -34,51 +34,44 @@ export const registerAction: ActionFunction = async ({
       },
     };
   }
-
-  const r = await makeRequest({
-    apiFunction: getUserApiClient().registerUser,
-    apiArgs: [
-      {
-        modelUserRegisterRequest: {
-          first_name: body.firstName as string,
-          last_name: body.lastName as string,
-          email: body.email as string,
-          password: body.password as string,
-          company: body.company as string,
-          console_url: body.consoleUrl as string,
-          is_temporary_password: false,
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<RegisterActionReturnType>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          fieldErrors: {
-            firstName: modelResponse.error_fields?.first_name as string,
-            lastName: modelResponse.error_fields?.last_name as string,
-            email: modelResponse.error_fields?.email as string,
-            password: modelResponse.error_fields?.password as string,
-            company: modelResponse.error_fields?.company as string,
-          },
-        });
-      } else if (r.status === 403) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          error: modelResponse.message,
-        });
-      }
+  const registerUserApi = apiWrapper({
+    fn: getUserApiClient().registerUser,
+  });
+  const registerUserResponse = await registerUserApi({
+    modelUserRegisterRequest: {
+      first_name: body.firstName as string,
+      last_name: body.lastName as string,
+      email: body.email as string,
+      password: body.password as string,
+      company: body.company as string,
+      console_url: body.consoleUrl as string,
+      is_temporary_password: false,
     },
   });
-
-  if (ApiError.isApiError(r)) {
-    return r.value();
+  if (!registerUserResponse.ok) {
+    if (registerUserResponse.error.response.status === 400) {
+      const modelResponse: ApiDocsBadRequestResponse =
+        await registerUserResponse.error.response.json();
+      return {
+        fieldErrors: {
+          firstName: modelResponse.error_fields?.first_name as string,
+          lastName: modelResponse.error_fields?.last_name as string,
+          email: modelResponse.error_fields?.email as string,
+          password: modelResponse.error_fields?.password as string,
+          company: modelResponse.error_fields?.company as string,
+        },
+      };
+    } else if (registerUserResponse.error.response.status === 403) {
+      return {
+        error: 'You do not have enough permissions to register user',
+      };
+    }
+    throw registerUserResponse.error;
   }
 
   storage.setAuth({
-    accessToken: r.access_token,
-    refreshToken: r.refresh_token,
+    accessToken: registerUserResponse.value.access_token,
+    refreshToken: registerUserResponse.value.refresh_token,
   });
   throw redirect('/onboard', 302);
 };

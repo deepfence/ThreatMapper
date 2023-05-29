@@ -1,11 +1,11 @@
 import cx from 'classnames';
 import { ActionFunctionArgs, Link, useFetcher } from 'react-router-dom';
-import { Button, CircleSpinner, TextInput, Typography } from 'ui-components';
+import { Button, TextInput, Typography } from 'ui-components';
 
 import { getUserApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
 import LogoDarkBlue from '@/assets/logo-deepfence-dark-blue.svg';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 export type actionReturnType = {
   error?: string;
@@ -22,39 +22,34 @@ export const forgotPasswordAction = async ({
   const formData = await request.formData();
   const body = Object.fromEntries(formData);
 
-  const r = await makeRequest({
-    apiFunction: getUserApiClient().resetPasswordRequest,
-    apiArgs: [
-      {
-        modelPasswordResetRequest: {
-          email: body.email as string,
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<actionReturnType>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          fieldErrors: {
-            email: modelResponse.error_fields?.email as string,
-          },
-        });
-      } else if (r.status === 403) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          error: modelResponse.message,
-        });
-      }
+  const resetPasswordRequestApi = apiWrapper({
+    fn: getUserApiClient().resetPasswordRequest,
+  });
+  const resetPasswordResponse = await resetPasswordRequestApi({
+    modelPasswordResetRequest: {
+      email: body.email as string,
     },
   });
-
-  if (ApiError.isApiError(r)) {
-    return r.value();
+  if (!resetPasswordResponse.ok) {
+    if (resetPasswordResponse.error.response.status === 400) {
+      const modelResponse: ApiDocsBadRequestResponse =
+        await resetPasswordResponse.error.response.json();
+      return {
+        fieldErrors: {
+          email: modelResponse.error_fields?.email as string,
+        },
+      };
+    } else if (resetPasswordResponse.error.response.status === 403) {
+      return {
+        success: false,
+        error: 'You do not have enough permissions to reset password',
+      };
+    }
+    throw resetPasswordResponse.error;
   }
   return {
     success: true,
-    message: r.message,
+    message: resetPasswordResponse.value.message,
   };
 };
 
