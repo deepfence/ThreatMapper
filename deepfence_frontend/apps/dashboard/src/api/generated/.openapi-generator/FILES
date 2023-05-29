@@ -3,6 +3,7 @@ apis/AuthenticationApi.ts
 apis/CloudNodesApi.ts
 apis/CloudResourcesApi.ts
 apis/CloudScannerApi.ts
+apis/CommonApi.ts
 apis/ComplianceApi.ts
 apis/ControlsApi.ts
 apis/DiagnosisApi.ts

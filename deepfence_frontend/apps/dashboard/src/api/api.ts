@@ -5,6 +5,7 @@ import {
   AuthenticationApi,
   CloudNodesApi,
   CloudScannerApi,
+  CommonApi,
   ComplianceApi,
   Configuration,
   ControlsApi,
@@ -310,5 +311,12 @@ export function getSettingsApiClient() {
       settingsApi.uploadVulnerabilityDatabase.bind(settingsApi),
     getScheduledTasks: settingsApi.getScheduledTasks.bind(settingsApi),
     updateScheduledTask: settingsApi.updateScheduledTask.bind(settingsApi),
+  };
+}
+
+export function getCommonApiClient() {
+  const commonApi = new CommonApi(configuration);
+  return {
+    getEula: commonApi.eula.bind(commonApi),
   };
 }

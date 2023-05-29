@@ -195,7 +195,10 @@ const RegisterWithInvite = () => {
       )}
       <div className={`py-4 flex flex-col text-center ${Typography.size.xs} leading-6`}>
         By Signing up you agree to our
-        <Link to="/" className="text-blue-600 dark:text-blue-500">
+        <Link
+          to="/end-user-license-agreement"
+          className="text-blue-600 dark:text-blue-500"
+        >
           License Agreement
         </Link>
       </div>
