@@ -571,7 +571,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 	query = `
 		MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
 		OPTIONAL MATCH (d) -[:IS]-> (e)
-	WITH apoc.map.merge(d{.*, masked: coalesce(d.masked or r.masked, false), name: coalesce(e.name, d.name, '')}, e{.*, node_id:NULL}) as d` +
+	WITH apoc.map.merge( e{.*}, d{.*, masked: coalesce(d.masked or r.masked, false), name: coalesce(e.name, d.name, '')}) as d` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
 		reporters.OrderFilter2CypherCondition("d", ff.OrderFilter) +
 		` RETURN d ` +
