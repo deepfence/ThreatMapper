@@ -42,7 +42,7 @@ import { useGetCurrentUser } from '@/features/common/data-component/getUserApiLo
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { ApiError, apiWrapper, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
@@ -114,27 +114,25 @@ export const action = async ({
 
   if (_actionType === ActionEnumType.DELETE) {
     const id = Number(formData.get('userId'));
-    const r = await makeRequest({
-      apiFunction: getUserApiClient().deleteUser,
-      apiArgs: [
-        {
-          id,
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({ success: false });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-            success: false,
-          });
-        }
-      },
+    const deleteApi = apiWrapper({
+      fn: getUserApiClient().deleteUser,
     });
-
-    if (ApiError.isApiError(r)) {
-      return r.value();
+    const deleteResponse = await deleteApi({
+      id,
+    });
+    if (!deleteResponse.ok) {
+      if (deleteResponse.error.response.status === 400) {
+        return {
+          success: false,
+          message: deleteResponse.error.message,
+        };
+      } else if (deleteResponse.error.response.status === 403) {
+        return {
+          success: false,
+          message: 'You do not have enough permissions to delete user',
+        };
+      }
+      throw deleteResponse.error;
     }
 
     return {
@@ -152,42 +150,35 @@ export const action = async ({
       };
     }
 
-    const r = await makeRequest({
-      apiFunction: getUserApiClient().updatePassword,
-      apiArgs: [
-        {
-          modelUpdateUserPasswordRequest: {
-            old_password: body.old_password as string,
-            new_password: body.new_password as string,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            fieldErrors: {
-              old_password: modelResponse.error_fields?.old_password as string,
-              new_password: modelResponse.error_fields?.new_password as string,
-            },
-            success: false,
-          });
-        } else if (r.status === 403) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message,
-            success: false,
-          });
-        }
+    const updateApi = apiWrapper({
+      fn: getUserApiClient().updatePassword,
+    });
+    const updateResponse = await updateApi({
+      modelUpdateUserPasswordRequest: {
+        old_password: body.old_password as string,
+        new_password: body.new_password as string,
       },
     });
-
-    if (ApiError.isApiError(r)) {
-      return r.value();
+    if (!updateResponse.ok) {
+      if (updateResponse.error.response.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse =
+          await updateResponse.error.response.json();
+        return {
+          fieldErrors: {
+            old_password: modelResponse.error_fields?.old_password as string,
+            new_password: modelResponse.error_fields?.new_password as string,
+          },
+          success: false,
+        };
+      } else if (updateResponse.error.response.status === 403) {
+        return {
+          success: false,
+          message: 'You do not have enough permissions to update password',
+        };
+      }
+      throw updateResponse.error;
     }
+
     return {
       success: true,
     };
@@ -197,46 +188,36 @@ export const action = async ({
     const _role: ModelUpdateUserIdRequestRoleEnum =
       ModelUpdateUserIdRequestRoleEnum[role];
 
-    const r = await makeRequest({
-      apiFunction: getUserApiClient().inviteUser,
-      apiArgs: [
-        {
-          modelInviteUserRequest: {
-            action: body.intent as ModelInviteUserRequestActionEnum,
-            email: body.email as string,
-            role: _role,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            fieldErrors: {
-              email: modelResponse.error_fields?.email as string,
-              role: modelResponse.error_fields?.role as string,
-            },
-            success: false,
-          });
-        } else if (r.status === 403) {
-          return error.set({
-            message: 'You do not have enough permissions to invite user',
-            success: false,
-          });
-        }
+    const inviteApi = apiWrapper({
+      fn: getUserApiClient().inviteUser,
+    });
+    const inviteResponse = await inviteApi({
+      modelInviteUserRequest: {
+        action: body.intent as ModelInviteUserRequestActionEnum,
+        email: body.email as string,
+        role: _role,
       },
     });
-
-    if (ApiError.isApiError(r)) {
-      return r.value();
+    if (!inviteResponse.ok) {
+      if (inviteResponse.error.response.status === 400) {
+        return {
+          success: false,
+          message: inviteResponse.error.message,
+        };
+      } else if (inviteResponse.error.response.status === 403) {
+        return {
+          success: false,
+          message: 'You do not have enough permissions to invite user',
+        };
+      }
+      throw inviteResponse.error;
     }
+
     if (body.intent == ModelInviteUserRequestActionEnum.GetInviteLink) {
-      r.invite_url && navigator.clipboard.writeText(r.invite_url);
+      inviteResponse.value.invite_url &&
+        navigator.clipboard.writeText(inviteResponse.value.invite_url);
       toast.success('User invite URL copied !');
-      return { ...r, success: true };
+      return { ...inviteResponse.value, success: true };
     } else if (body.intent === ModelInviteUserRequestActionEnum.SendInviteEmail) {
       return { successMessage: 'User invite sent successfully', success: true };
     }
@@ -251,47 +232,40 @@ export const action = async ({
     const _role: ModelUpdateUserIdRequestRoleEnum =
       ModelUpdateUserIdRequestRoleEnum[role];
 
-    const r = await makeRequest({
-      apiFunction: getUserApiClient().updateUser,
-      apiArgs: [
-        {
-          id: Number(body.id),
-          modelUpdateUserIdRequest: {
-            first_name: body.firstName as string,
-            last_name: body.lastName as string,
-            role: _role,
-            is_active: body.status === 'Active',
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            fieldErrors: {
-              firstName: modelResponse.error_fields?.first_name as string,
-              lastName: modelResponse.error_fields?.last_name as string,
-              status: modelResponse.error_fields?.is_active as string,
-              role: modelResponse.error_fields?.role as string,
-            },
-            success: false,
-          });
-        } else if (r.status === 403) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message,
-            success: false,
-          });
-        }
+    const updateApi = apiWrapper({
+      fn: getUserApiClient().updateUser,
+    });
+    const updateResponse = await updateApi({
+      id: Number(body.id),
+      modelUpdateUserIdRequest: {
+        first_name: body.firstName as string,
+        last_name: body.lastName as string,
+        role: _role,
+        is_active: body.status === 'Active',
       },
     });
-
-    if (ApiError.isApiError(r)) {
-      return r.value();
+    if (!updateResponse.ok) {
+      if (updateResponse.error.response.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse =
+          await updateResponse.error.response.json();
+        return {
+          fieldErrors: {
+            firstName: modelResponse.error_fields?.first_name as string,
+            lastName: modelResponse.error_fields?.last_name as string,
+            status: modelResponse.error_fields?.is_active as string,
+            role: modelResponse.error_fields?.role as string,
+          },
+          success: false,
+        };
+      } else if (updateResponse.error.response.status === 403) {
+        return {
+          success: false,
+          message: 'You do not have enough permissions to update user',
+        };
+      }
+      throw updateResponse.error;
     }
+
     return {
       success: true,
     };
