@@ -53,6 +53,7 @@ export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
               label="Namespace"
               type={'text'}
               sizing="sm"
+              hint="e.g. nginx"
               name="non_secret.docker_hub_namespace"
               color={fieldErrors?.['docker_hub_namespace'] ? 'error' : 'default'}
               helperText={fieldErrors?.['docker_hub_namespace']}
@@ -78,6 +79,7 @@ export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
               helperText={fieldErrors?.['docker_hub_password']}
               placeholder="••••••••"
             />
+            <div className="text-xs">Supported Versions: API version v2</div>
             {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
           </Card>
         </Step>

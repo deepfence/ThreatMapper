@@ -3,19 +3,19 @@ package dockerhub
 import "time"
 
 type RegistryDockerHub struct {
-	Name         string    `json:"name" validate:"required"`
-	NonSecret    NonSecret `json:"non_secret"`
-	Secret       Secret    `json:"secret"`
+	Name         string    `json:"name" validate:"required,min=2,max=64"`
+	NonSecret    NonSecret `json:"non_secret" validate:"required"`
+	Secret       Secret    `json:"secret" validate:"required"`
 	RegistryType string    `json:"registry_type" validate:"required"`
 }
 
 type NonSecret struct {
-	DockerHubNamespace string `json:"docker_hub_namespace" validate:"required"`
-	DockerHubUsername  string `json:"docker_hub_username" validate:"required"`
+	DockerHubNamespace string `json:"docker_hub_namespace" validate:"required,min=2"`
+	DockerHubUsername  string `json:"docker_hub_username" validate:"required,min=2"`
 }
 
 type Secret struct {
-	DockerHubPassword string `json:"docker_hub_password"`
+	DockerHubPassword string `json:"docker_hub_password" validate:"required,min=2"`
 }
 
 type ImageWithTag struct {

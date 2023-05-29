@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: router
+    name: deepfence-router
 spec:
   {{- if not .Values.router.autoscaling.enabled }}
   replicas: {{ .Values.router.replicaCount }}
@@ -13,6 +14,7 @@ spec:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
       component: router
+      name: deepfence-router
   template:
     metadata:
       {{- with .Values.router.podAnnotations }}
@@ -22,6 +24,7 @@ spec:
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
         component: router
+        name: deepfence-router
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
@@ -122,6 +125,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
 ---
+{{- if .Values.router.service.create }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -129,6 +133,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: router
+    name: deepfence-router
   {{- with .Values.router.service.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -147,6 +152,8 @@ spec:
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
     component: router
+    name: deepfence-router
+{{- end }}
 ---
 {{- if .Values.router.autoscaling.enabled }}
 apiVersion: autoscaling/v2beta1
@@ -156,6 +163,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: router
+    name: deepfence-router
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -186,6 +194,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: router
+    name: deepfence-router
 type: kubernetes.io/tls
 data:
   tls.crt: |-

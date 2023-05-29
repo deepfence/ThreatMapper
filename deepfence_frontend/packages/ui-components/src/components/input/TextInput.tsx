@@ -3,9 +3,11 @@ import cx from 'classnames';
 import { cva, VariantProps } from 'cva';
 import React, { ComponentProps, forwardRef, useId } from 'react';
 import { IconContext } from 'react-icons';
+import { HiOutlineInformationCircle } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
 import HelperText from '@/components/input/HelperText';
+import { Tooltip } from '@/main';
 import { ObjectWithNonNullableValues } from '@/types/utils';
 
 export type SizeType = 'sm' | 'md' | 'lg';
@@ -193,6 +195,7 @@ export interface TextInputProps
   helperText?: string;
   className?: string;
   required?: boolean;
+  hint?: string;
 }
 
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
@@ -208,6 +211,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       className = '',
       required,
       id,
+      hint,
       ...rest
     },
     ref,
@@ -217,13 +221,28 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     return (
       <div className={twMerge('flex flex-col gap-2 w-full', className)}>
         {label && (
-          <LabelPrimitive.Root
-            htmlFor={_id}
-            className="text-sm font-medium text-gray-900 dark:text-white"
-          >
-            {required && <span>*</span>}
-            {label}
-          </LabelPrimitive.Root>
+          <div className="flex gap-2 items-center">
+            <LabelPrimitive.Root
+              htmlFor={_id}
+              className="text-sm font-medium text-gray-900 dark:text-white"
+            >
+              {required && <span>*</span>}
+              {label}
+            </LabelPrimitive.Root>
+            {!!hint?.length && (
+              <Tooltip content={hint} triggerAsChild>
+                <button type="button" tabIndex={-1}>
+                  <IconContext.Provider
+                    value={{
+                      className: 'text-gray-600 dark:text-gray-200 h-4 w-4',
+                    }}
+                  >
+                    <HiOutlineInformationCircle />
+                  </IconContext.Provider>
+                </button>
+              </Tooltip>
+            )}
+          </div>
         )}
         <div className="relative">
           {startIcon && (

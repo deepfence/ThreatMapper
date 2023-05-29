@@ -41,11 +41,11 @@ import {
   DropdownSubMenu,
   getRowSelectionColumn,
   IconButton,
+  Listbox,
+  ListboxOption,
   Modal,
   Popover,
   RowSelectionState,
-  Select,
-  SelectItem,
   SortingState,
   Table,
   TableSkeleton,
@@ -77,6 +77,7 @@ import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { ScanHistoryApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
+import { SecretRulesForScan } from '@/features/secrets/components/filters/SecretRulesForScanSelect';
 import { SecretsResultChart } from '@/features/secrets/components/landing/SecretsResultChart';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { Mode, useTheme } from '@/theme/ThemeContext';
@@ -127,6 +128,9 @@ const PAGE_SIZE = 15;
 const getSeveritySearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('severity');
 };
+const getRulesSearch = (searchParams: URLSearchParams) => {
+  return searchParams.getAll('rules');
+};
 const getMaskSearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('mask');
 };
@@ -176,6 +180,7 @@ async function getScans(
 
   const severity = getSeveritySearch(searchParams);
   const page = getPageFromSearchParams(searchParams);
+  const rules = getRulesSearch(searchParams);
   const order = getOrderFromSearchParams(searchParams);
 
   const mask = getMaskSearch(searchParams);
@@ -199,6 +204,9 @@ async function getScans(
 
   if (severity.length) {
     scanResultsReq.fields_filter.contains_filter.filter_in!['level'] = severity;
+  }
+  if (rules.length) {
+    scanResultsReq.fields_filter.contains_filter.filter_in!['name'] = rules;
   }
 
   if ((mask.length || unmask.length) && !(mask.length && unmask.length)) {
@@ -902,7 +910,6 @@ const ActionDropdown = ({
   );
 };
 const SecretTable = () => {
-  const fetcher = useFetcher();
   const loaderData = useLoaderData() as LoaderDataType;
   const columnHelper = createColumnHelper<ModelSecret>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -1173,6 +1180,7 @@ const HeaderComponent = ({
   const isFilterApplied =
     searchParams.has('severity') ||
     searchParams.has('mask') ||
+    searchParams.has('rules') ||
     searchParams.has('unmask');
 
   const onResetFilters = () => {
@@ -1250,7 +1258,7 @@ const HeaderComponent = ({
                         <div className="ml-auto w-[300px]">
                           <div className="dark:text-white">
                             <FilterHeader onReset={onResetFilters} />
-                            <div className="flex flex-col gap-y-6  p-4">
+                            <div className="flex flex-col gap-y-4  p-4">
                               <fieldset>
                                 <legend className="text-sm font-medium">
                                   Mask And Unmask
@@ -1313,13 +1321,13 @@ const HeaderComponent = ({
                                 </div>
                               </fieldset>
                               <fieldset>
-                                <Select
-                                  noPortal
+                                <Listbox
                                   name="severity"
                                   label={'Severity'}
                                   placeholder="Select Severity"
+                                  multiple
                                   value={searchParams.getAll('severity')}
-                                  sizing="xs"
+                                  sizing="sm"
                                   onChange={(value) => {
                                     setSearchParams((prev) => {
                                       prev.delete('severity');
@@ -1334,13 +1342,29 @@ const HeaderComponent = ({
                                   {['critical', 'high', 'medium', 'low', 'unknown'].map(
                                     (severity: string) => {
                                       return (
-                                        <SelectItem value={severity} key={severity}>
+                                        <ListboxOption value={severity} key={severity}>
                                           {capitalize(severity)}
-                                        </SelectItem>
+                                        </ListboxOption>
                                       );
                                     },
                                   )}
-                                </Select>
+                                </Listbox>
+                              </fieldset>
+                              <fieldset>
+                                <SecretRulesForScan
+                                  scanId={scan_id}
+                                  selectedRules={searchParams.getAll('rules')}
+                                  onChange={(value) => {
+                                    setSearchParams((prev) => {
+                                      prev.delete('rules');
+                                      value.forEach((rule) => {
+                                        prev.append('rules', rule);
+                                      });
+                                      prev.delete('page');
+                                      return prev;
+                                    });
+                                  }}
+                                />
                               </fieldset>
                             </div>
                           </div>

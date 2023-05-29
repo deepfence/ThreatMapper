@@ -263,7 +263,7 @@ function getScanOptions(
 ): ConfigureScanModalProps['scanOptions'] {
   if (scanType === ScanTypeEnum.VulnerabilityScan) {
     return {
-      showAdvancedOptions: true,
+      showAdvancedOptions: nodeIds.length === 1,
       scanType,
       data: {
         nodeIds,
@@ -274,7 +274,7 @@ function getScanOptions(
 
   if (scanType === ScanTypeEnum.SecretScan) {
     return {
-      showAdvancedOptions: true,
+      showAdvancedOptions: nodeIds.length === 1,
       scanType,
       data: {
         nodeIds,
@@ -285,7 +285,7 @@ function getScanOptions(
 
   if (scanType === ScanTypeEnum.MalwareScan) {
     return {
-      showAdvancedOptions: true,
+      showAdvancedOptions: nodeIds.length === 1,
       scanType,
       data: {
         nodeIds,

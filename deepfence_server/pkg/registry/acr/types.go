@@ -3,19 +3,19 @@ package acr
 import "time"
 
 type RegistryACR struct {
-	Name         string    `json:"name" validate:"required"`
-	NonSecret    NonSecret `json:"non_secret"`
-	Secret       Secret    `json:"secret"`
+	Name         string    `json:"name" validate:"required,min=2,max=64"`
+	NonSecret    NonSecret `json:"non_secret" validate:"required"`
+	Secret       Secret    `json:"secret" validate:"required"`
 	RegistryType string    `json:"registry_type" validate:"required"`
 }
 
 type NonSecret struct {
-	AzureRegistryURL      string `json:"azure_registry_url" validate:"required"`
-	AzureRegistryUsername string `json:"azure_registry_username" validate:"required"`
+	AzureRegistryURL      string `json:"azure_registry_url" validate:"required,url"`
+	AzureRegistryUsername string `json:"azure_registry_username" validate:"required,min=1"`
 }
 
 type Secret struct {
-	AzureRegistryPassword string `json:"azure_registry_password"`
+	AzureRegistryPassword string `json:"azure_registry_password" validate:"required,min=1"`
 }
 
 type ReposResp struct {

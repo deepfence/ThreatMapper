@@ -81,7 +81,7 @@ export const Header = ({
                             nodeIds: [nodeId],
                             nodeType: nodeType as any, // TODO
                           },
-                          showAdvancedOptions: false,
+                          showAdvancedOptions: true,
                           scanType: ScanTypeEnum.VulnerabilityScan,
                         });
                       }}
@@ -102,7 +102,7 @@ export const Header = ({
                             nodeType: nodeType as any, // TODO
                           },
                           scanType: ScanTypeEnum.SecretScan,
-                          showAdvancedOptions: false,
+                          showAdvancedOptions: true,
                         });
                       }}
                     >
@@ -122,7 +122,7 @@ export const Header = ({
                             nodeType: nodeType as any,
                           },
                           scanType: ScanTypeEnum.MalwareScan,
-                          showAdvancedOptions: false,
+                          showAdvancedOptions: true,
                         });
                       }}
                     >

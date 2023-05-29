@@ -578,7 +578,13 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 	file := path.Join("sbom", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
 	info, err := mc.UploadFile(r.Context(), file, b64,
 		minio.PutObjectOptions{ContentType: "application/gzip"})
-	if err != nil {
+	// TODO: remove this error check, it should not happen
+	// happens only when scan is retried and sbom is re-uploaded
+	if err != nil && strings.Contains(err.Error(), "Already exists here") {
+		log.Warn().Msg(err.Error())
+		httpext.JSON(w, http.StatusOK, info)
+		return
+	} else if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)
 		return
@@ -944,7 +950,7 @@ func (h *Handler) ListMalwareScanResultClassHandler(w http.ResponseWriter, r *ht
 		class = append(class, e.Class)
 	}
 
-	httpext.JSON(w, http.StatusOK, model.MalwareScanResultRules{Rules: lo.Uniq(class)})
+	httpext.JSON(w, http.StatusOK, model.MalwareScanResultClass{Class: lo.Uniq(class)})
 }
 
 func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {

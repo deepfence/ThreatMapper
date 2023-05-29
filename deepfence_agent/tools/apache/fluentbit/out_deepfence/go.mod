@@ -7,7 +7,7 @@ replace github.com/deepfence/golang_deepfence_sdk/client => ../../../../../golan
 replace github.com/deepfence/golang_deepfence_sdk/utils => ../../../../../golang_deepfence_sdk/utils/
 
 require (
-	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-20230123091013-6f8a19aeeb9d
+	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-00010101000000-000000000000
 	github.com/fluent/fluent-bit-go v0.0.0-20221129124408-1c1d505c91a5
 	github.com/hashicorp/go-retryablehttp v0.7.2
