@@ -15,25 +15,25 @@ registry:
 image:
   # deepfence agent runs as a daemonset in all nodes in the cluster
   name: deepfenceio/deepfence_agent_ce
-  tag: ramanan
+  tag: 2.0.0
   # cluster agent runs as a single pod
   clusterAgentImageName: deepfenceio/deepfence_discovery_ce
-  clusterAgentImageTag: ramanan
+  clusterAgentImageTag: 2.0.0
   pullPolicy: Always
   pullSecretName: deepfence-docker-secret
 
-managementConsoleUrl: "159.65.255.214"
+managementConsoleUrl: ""
 managementConsolePort: "443"
 
 # Auth: Get deepfence api key from UI -> Settings -> User Management
-deepfenceKey: "f5830d82-0ce6-45ae-a515-d612a10e428d"
+deepfenceKey: ""
 # If kubernetes secret is already defined externally, change following value to false
 createDeepfenceKeySecret: true
 
 # Set custom name for the cluster and hostname prefix for agent vm's to easily identify in Deepfence UI.
 # Example: prod-cluster or dev1-cluster
 # It will be suffixed with hostname - prod-cluster-aks-agentpool-123456-vmss000001
-clusterName: "tm-agent"
+clusterName: ""
 
 # Suffix cloud instance id to hostnames
 instanceIdSuffix: "N"
