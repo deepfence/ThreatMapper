@@ -5,12 +5,11 @@ import { Button, Checkbox, Radio } from 'ui-components';
 
 import { getSecretApiClient } from '@/api/api';
 import {
-  ApiDocsBadRequestResponse,
   ModelNodeIdentifierNodeTypeEnum,
   ModelSecretScanTriggerReq,
 } from '@/api/generated';
 import { SecretScanNodeTypeEnum } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 export type SecretScanConfigureFormProps = {
   showAdvancedOptions: boolean;
@@ -94,42 +93,35 @@ export const scanSecretApiAction = async ({
       node_type: _nodeType as ModelNodeIdentifierNodeTypeEnum,
     })),
   };
-
-  const r = await makeRequest({
-    apiFunction: getSecretApiClient().startSecretScan,
-    apiArgs: [
-      {
-        modelSecretScanTriggerReq: requestBody,
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<ScanActionReturnType>({
-        success: false,
-      });
-      if (r.status === 400 || r.status === 409) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message ?? '',
-          success: false,
-        });
-      } else if (r.status === 403) {
-        return error.set({
-          message: 'You do not have enough permissions to start scan',
-          success: false,
-        });
-      }
-    },
+  const startSecretScanApi = apiWrapper({
+    fn: getSecretApiClient().startSecretScan,
   });
-
-  if (ApiError.isApiError(r)) {
-    return r.value();
+  const startSecretScanResponse = await startSecretScanApi({
+    modelSecretScanTriggerReq: requestBody,
+  });
+  if (!startSecretScanResponse.ok) {
+    if (
+      startSecretScanResponse.error.response.status === 400 ||
+      startSecretScanResponse.error.response.status === 409
+    ) {
+      return {
+        success: false,
+        message: startSecretScanResponse.error.message ?? '',
+      };
+    } else if (startSecretScanResponse.error.response.status === 403) {
+      return {
+        success: false,
+        message: 'You do not have enough permissions to start scan',
+      };
+    }
+    throw startSecretScanResponse.error;
   }
 
   toast('Scan has been sucessfully started');
   return {
     success: true,
     data: {
-      bulkScanId: r.bulk_scan_id,
+      bulkScanId: startSecretScanResponse.value.bulk_scan_id,
       nodeType,
     },
   };
