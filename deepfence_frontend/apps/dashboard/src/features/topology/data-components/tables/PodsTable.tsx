@@ -13,15 +13,11 @@ import {
 } from 'ui-components';
 
 import { getSearchApiClient } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelPod,
-  SearchSearchNodeReq,
-} from '@/api/generated';
+import { ModelPod, SearchSearchNodeReq } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterHeader } from '@/components/forms/FilterHeader';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { getOrderFromSearchParams, getPageFromSearchParams } from '@/utils/table';
 
 type LoaderData = {
@@ -79,47 +75,34 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
       descending: order.descending,
     });
   }
-  const podsData = await makeRequest({
-    apiFunction: getSearchApiClient().searchPods,
-    apiArgs: [
-      {
-        searchSearchNodeReq,
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
+  const searchPodsApi = apiWrapper({
+    fn: getSearchApiClient().searchPods,
   });
-  if (ApiError.isApiError(podsData)) {
-    throw podsData.value();
-  }
-  const podsDataCount = await makeRequest({
-    apiFunction: getSearchApiClient().countPods,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          ...searchSearchNodeReq,
-          window: {
-            ...searchSearchNodeReq.window,
-            size: 10 * searchSearchNodeReq.window.size,
-          },
-        },
-      },
-    ],
+  const podsData = await searchPodsApi({
+    searchSearchNodeReq,
   });
-  if (ApiError.isApiError(podsDataCount)) {
-    throw podsDataCount;
+  if (!podsData.ok) {
+    throw podsData.error;
   }
 
-  if (podsDataCount === null) {
+  const countPodsApi = apiWrapper({
+    fn: getSearchApiClient().countPods,
+  });
+  const podsDataCount = await countPodsApi({
+    searchSearchNodeReq: {
+      ...searchSearchNodeReq,
+      window: {
+        ...searchSearchNodeReq.window,
+        size: 10 * searchSearchNodeReq.window.size,
+      },
+    },
+  });
+
+  if (!podsDataCount.ok) {
+    throw podsDataCount.error;
+  }
+
+  if (podsDataCount.value === null) {
     return {
       pods: [],
       currentPage: 0,
@@ -127,9 +110,9 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
     };
   }
   return {
-    pods: podsData,
+    pods: podsData.value,
     currentPage: page,
-    totalRows: page * PAGE_SIZE + podsDataCount.count,
+    totalRows: page * PAGE_SIZE + podsDataCount.value.count,
   };
 };
 interface IFilters {

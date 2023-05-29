@@ -18,11 +18,7 @@ import {
 } from 'ui-components';
 
 import { getSearchApiClient } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelContainer,
-  SearchSearchNodeReq,
-} from '@/api/generated';
+import { ModelContainer, SearchSearchNodeReq } from '@/api/generated';
 import {
   ConfigureScanModal,
   ConfigureScanModalProps,
@@ -40,7 +36,7 @@ import {
   SecretScanNodeTypeEnum,
   VulnerabilityScanNodeTypeEnum,
 } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import {
   MALWARE_SCAN_STATUS_GROUPS,
@@ -161,47 +157,34 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
       descending: order.descending,
     });
   }
-  const containersData = await makeRequest({
-    apiFunction: getSearchApiClient().searchContainers,
-    apiArgs: [
-      {
-        searchSearchNodeReq,
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
+  const searchContainersApi = apiWrapper({
+    fn: getSearchApiClient().searchContainers,
   });
-  if (ApiError.isApiError(containersData)) {
-    throw containersData.value();
-  }
-  const containersDataCount = await makeRequest({
-    apiFunction: getSearchApiClient().countContainers,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          ...searchSearchNodeReq,
-          window: {
-            ...searchSearchNodeReq.window,
-            size: 10 * searchSearchNodeReq.window.size,
-          },
-        },
-      },
-    ],
+  const containersData = await searchContainersApi({
+    searchSearchNodeReq,
   });
-  if (ApiError.isApiError(containersDataCount)) {
-    throw containersDataCount;
+  if (!containersData.ok) {
+    throw containersData.error;
   }
 
-  if (containersData === null) {
+  const countContainersApi = apiWrapper({
+    fn: getSearchApiClient().countContainers,
+  });
+  const containersDataCount = await countContainersApi({
+    searchSearchNodeReq: {
+      ...searchSearchNodeReq,
+      window: {
+        ...searchSearchNodeReq.window,
+        size: 10 * searchSearchNodeReq.window.size,
+      },
+    },
+  });
+
+  if (!containersDataCount.ok) {
+    throw containersDataCount.error;
+  }
+
+  if (containersData.value === null) {
     return {
       containers: [],
       currentPage: 0,
@@ -209,9 +192,9 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
     };
   }
   return {
-    containers: containersData,
+    containers: containersData.value,
     currentPage: page,
-    totalRows: page * PAGE_SIZE + containersDataCount.count,
+    totalRows: page * PAGE_SIZE + containersDataCount.value.count,
   };
 };
 

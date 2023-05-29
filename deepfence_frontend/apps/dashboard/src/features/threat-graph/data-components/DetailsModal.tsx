@@ -18,7 +18,7 @@ import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
 import { ScanTypeEnum } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { getScanLink } from '@/utils/scan';
 
 const loader = async ({
@@ -38,50 +38,47 @@ const loader = async ({
     };
   }
   if (nodeType === 'host') {
-    const hostLookupResult = await makeRequest({
-      apiFunction: getLookupApiClient().lookupHost,
-      apiArgs: [
-        {
-          lookupLookupFilter: {
-            in_field_filter: [],
-            node_ids: nodeIds,
-            window: {
-              offset: 0,
-              size: nodeIds.length,
-            },
-          },
-        },
-      ],
+    const lookupHostApi = apiWrapper({
+      fn: getLookupApiClient().lookupHost,
     });
-    if (ApiError.isApiError(hostLookupResult)) {
+    const hostLookupResult = await lookupHostApi({
+      lookupLookupFilter: {
+        in_field_filter: [],
+        node_ids: nodeIds,
+        window: {
+          offset: 0,
+          size: nodeIds.length,
+        },
+      },
+    });
+
+    if (!hostLookupResult.ok) {
       throw new Error('Error getting hostLookupResult');
     }
     return {
       nodeType,
-      nodeData: hostLookupResult,
+      nodeData: hostLookupResult.value,
     };
   } else {
-    const cloudResourceLookup = await makeRequest({
-      apiFunction: getLookupApiClient().lookupCloudResources,
-      apiArgs: [
-        {
-          lookupLookupFilter: {
-            in_field_filter: [],
-            node_ids: nodeIds,
-            window: {
-              offset: 0,
-              size: nodeIds.length,
-            },
-          },
-        },
-      ],
+    const lookupCloudResourcesApi = apiWrapper({
+      fn: getLookupApiClient().lookupCloudResources,
     });
-    if (ApiError.isApiError(cloudResourceLookup)) {
+    const cloudResourceLookup = await lookupCloudResourcesApi({
+      lookupLookupFilter: {
+        in_field_filter: [],
+        node_ids: nodeIds,
+        window: {
+          offset: 0,
+          size: nodeIds.length,
+        },
+      },
+    });
+    if (!cloudResourceLookup.ok) {
       throw new Error('Error getting cloudResourceLookup');
     }
     return {
       nodeType,
-      nodeData: cloudResourceLookup,
+      nodeData: cloudResourceLookup.value,
     };
   }
 };
