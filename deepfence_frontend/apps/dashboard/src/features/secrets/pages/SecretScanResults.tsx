@@ -181,7 +181,10 @@ async function getScans(
   const severity = getSeveritySearch(searchParams);
   const page = getPageFromSearchParams(searchParams);
   const rules = getRulesSearch(searchParams);
-  const order = getOrderFromSearchParams(searchParams);
+  const order = getOrderFromSearchParams(searchParams) || {
+    sortBy: 'level',
+    descending: true,
+  };
 
   const mask = getMaskSearch(searchParams);
   const unmask = getUnmaskSearch(searchParams);
