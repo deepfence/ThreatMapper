@@ -28,7 +28,7 @@ import {
 import { DFLink } from '@/components/DFLink';
 import { NoConnectors } from '@/components/hosts-connector/NoConnectors';
 import { connectorLayoutTabs } from '@/features/onboard/layouts/ConnectorsLayout';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { getRegistryDisplayId } from '@/utils/registry';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -57,70 +57,68 @@ type LoaderData = {
 };
 
 async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
-  const awsResultsPromise = makeRequest({
-    apiFunction: getCloudNodesApiClient().listCloudNodeAccount,
-    apiArgs: [
-      {
-        modelCloudNodeAccountsListReq: {
-          cloud_provider: 'aws',
-          window: {
-            offset: 0,
-            size: 1000000,
-          },
-        },
+  const listCloudNodeAccountApi = apiWrapper({
+    fn: getCloudNodesApiClient().listCloudNodeAccount,
+  });
+  const awsResultsPromise = listCloudNodeAccountApi({
+    modelCloudNodeAccountsListReq: {
+      cloud_provider: 'aws',
+      window: {
+        offset: 0,
+        size: 1000000,
       },
-    ],
+    },
   });
-  const hostsResultsPromise = makeRequest({
-    apiFunction: getTopologyApiClient().getHostsTopologyGraph,
-    apiArgs: [
-      {
-        graphTopologyFilters: {
-          cloud_filter: [],
-          field_filters: {
-            contains_filter: { filter_in: null },
-            order_filter: { order_fields: [] },
-            match_filter: {
-              filter_in: {},
-            },
-            compare_filter: null,
-          },
-          host_filter: [],
-          kubernetes_filter: [],
-          pod_filter: [],
-          region_filter: [],
-          container_filter: [],
+
+  const getHostsTopologyGraphApi = apiWrapper({
+    fn: getTopologyApiClient().getHostsTopologyGraph,
+  });
+  const hostsResultsPromise = getHostsTopologyGraphApi({
+    graphTopologyFilters: {
+      cloud_filter: [],
+      field_filters: {
+        contains_filter: { filter_in: null },
+        order_filter: { order_fields: [] },
+        match_filter: {
+          filter_in: {},
         },
+        compare_filter: null,
       },
-    ],
+      host_filter: [],
+      kubernetes_filter: [],
+      pod_filter: [],
+      region_filter: [],
+      container_filter: [],
+    },
   });
-  const kubernetesResultsPromise = makeRequest({
-    apiFunction: getTopologyApiClient().getKubernetesTopologyGraph,
-    apiArgs: [
-      {
-        graphTopologyFilters: {
-          cloud_filter: [],
-          field_filters: {
-            contains_filter: { filter_in: null },
-            order_filter: { order_fields: [] },
-            match_filter: {
-              filter_in: {},
-            },
-            compare_filter: null,
-          },
-          host_filter: [],
-          kubernetes_filter: [],
-          pod_filter: [],
-          region_filter: [],
-          container_filter: [],
+
+  const getKubernetesTopologyGraphApi = apiWrapper({
+    fn: getTopologyApiClient().getKubernetesTopologyGraph,
+  });
+  const kubernetesResultsPromise = getKubernetesTopologyGraphApi({
+    graphTopologyFilters: {
+      cloud_filter: [],
+      field_filters: {
+        contains_filter: { filter_in: null },
+        order_filter: { order_fields: [] },
+        match_filter: {
+          filter_in: {},
         },
+        compare_filter: null,
       },
-    ],
+      host_filter: [],
+      kubernetes_filter: [],
+      pod_filter: [],
+      region_filter: [],
+      container_filter: [],
+    },
   });
-  const registriesResultsPromise = makeRequest({
-    apiFunction: getRegistriesApiClient().listRegistries,
-    apiArgs: [],
+
+  const listRegistriesApi = apiWrapper({
+    fn: getRegistriesApiClient().listRegistries,
   });
+  const registriesResultsPromise = listRegistriesApi();
+
   const [awsResults, hostsResults, kubernetesResults, registriesResults] =
     await Promise.all([
       awsResultsPromise,
@@ -130,25 +128,25 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
     ]);
 
   if (
-    ApiError.isApiError(awsResults) ||
-    ApiError.isApiError(hostsResults) ||
-    ApiError.isApiError(kubernetesResults) ||
-    ApiError.isApiError(registriesResults)
+    !awsResults.ok ||
+    !hostsResults.ok ||
+    !kubernetesResults.ok ||
+    !registriesResults.ok
   ) {
     // TODO(manan) handle error cases
     return [];
   }
 
   const data: LoaderData['data'] = [];
-  if (awsResults.total) {
+  if (awsResults.value.total) {
     data.push({
       id: 'aws',
       urlId: 'aws',
       urlType: 'aws',
       accountType: 'AWS',
-      count: awsResults.total,
+      count: awsResults.value.total,
       connections: (
-        awsResults.cloud_node_accounts_info?.map((result) => ({
+        awsResults.value.cloud_node_accounts_info?.map((result) => ({
           id: `aws-${result.node_id}`,
           urlId: result.node_id ?? '',
           accountType: 'AWS',
@@ -163,9 +161,9 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
     });
   }
 
-  if (hostsResults.nodes) {
-    const hosts = Object.keys(hostsResults.nodes)
-      .map((key) => hostsResults.nodes[key])
+  if (hostsResults.value.nodes) {
+    const hosts = Object.keys(hostsResults.value.nodes)
+      .map((key) => hostsResults.value.nodes[key])
       .filter((node) => {
         return node.type === 'host';
       })
@@ -191,9 +189,9 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
       });
     }
   }
-  if (kubernetesResults.nodes) {
-    const clusters = Object.keys(kubernetesResults.nodes)
-      .map((key) => kubernetesResults.nodes[key])
+  if (kubernetesResults.value.nodes) {
+    const clusters = Object.keys(kubernetesResults.value.nodes)
+      .map((key) => kubernetesResults.value.nodes[key])
       .filter((node) => {
         return node.type === 'kubernetes_cluster';
       })
@@ -220,14 +218,14 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
     }
   }
 
-  if (registriesResults.length) {
+  if (registriesResults.value.length) {
     data.push({
       id: 'registry',
       urlId: 'registry',
       urlType: 'registry',
       accountType: 'Container Registries',
-      count: registriesResults.length,
-      connections: registriesResults.map((registry) => ({
+      count: registriesResults.value.length,
+      connections: registriesResults.value.map((registry) => ({
         id: `registry-${registry.id}`,
         urlId: `${registry.id ?? ''}`,
         urlType: 'registry',
