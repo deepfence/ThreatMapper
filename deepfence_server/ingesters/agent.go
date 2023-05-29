@@ -25,7 +25,7 @@ const (
 	REDIS_NETWORK_MAP_KEY   = "network_map"
 	REDIS_IPPORTPID_MAP_KEY = "ipportpid_map"
 	workers_num             = 25
-	default_db_input_size   = 100
+	default_db_input_size   = 30
 	db_batch_size           = 1_000
 	resolver_batch_size     = 1_000
 	default_ingester_size   = default_db_input_size * db_batch_size
@@ -81,15 +81,17 @@ type EndpointResolvers struct {
 	ipport_ippid map[string]string
 }
 
-type EndpointResolversCache struct {
-	rdb *redis2.Client
+func (er *EndpointResolvers) clean() {
+	for k := range er.network_map {
+		delete(er.network_map, k)
+	}
+	for k := range er.ipport_ippid {
+		delete(er.ipport_ippid, k)
+	}
 }
 
-func NewEndpointResolvers() EndpointResolvers {
-	return EndpointResolvers{
-		network_map:  map[string]string{},
-		ipport_ippid: map[string]string{},
-	}
+type EndpointResolversCache struct {
+	rdb *redis2.Client
 }
 
 func newEndpointResolversCache(ctx context.Context) (EndpointResolversCache, error) {
@@ -174,27 +176,98 @@ func (r *EndpointResolvers) merge(other *EndpointResolvers) {
 	}
 }
 
-func (nd *ReportIngestionData) merge(other *ReportIngestionData) {
-	nd.Process_batch = append(nd.Process_batch, other.Process_batch...)
-	nd.Host_batch = append(nd.Host_batch, other.Host_batch...)
-	nd.Container_batch = append(nd.Container_batch, other.Container_batch...)
-	nd.Container_image_batch = append(nd.Container_image_batch, other.Container_image_batch...)
-	nd.Pod_batch = append(nd.Pod_batch, other.Pod_batch...)
-	nd.Kubernetes_cluster_batch = append(nd.Kubernetes_cluster_batch, other.Kubernetes_cluster_batch...)
-	nd.Process_edges_batch = append(nd.Process_edges_batch, other.Process_edges_batch...)
-	nd.Container_process_edges_batch = append(nd.Container_process_edges_batch, other.Container_process_edges_batch...)
-	nd.Container_edges_batch = append(nd.Container_edges_batch, other.Container_edges_batch...)
-	nd.Pod_edges_batch = append(nd.Pod_edges_batch, other.Pod_edges_batch...)
-	nd.Endpoint_edges_batch = append(nd.Endpoint_edges_batch, other.Endpoint_edges_batch...)
-	nd.Container_image_edge_batch = append(nd.Container_image_edge_batch, other.Container_image_edge_batch...)
-	nd.Kubernetes_cluster_edge_batch = append(nd.Kubernetes_cluster_edge_batch, other.Kubernetes_cluster_edge_batch...)
-	//nd.Endpoint_batch = append(nd.Endpoint_batch, other.Endpoint_batch...)
-	//nd.Endpoint_edges = append(nd.Endpoint_edges, other.Endpoint_edges...)
-	nd.Hosts = append(nd.Hosts, other.Hosts...)
+func mergeIngestionData(other []ReportIngestionData) ReportIngestionData {
+
+	size_process_batch := 0
+	size_host_batch := 0
+	size_container_batch := 0
+	size_container_image_batch := 0
+	size_pod_batch := 0
+	size_kubernetes_cluster_batch := 0
+	size_process_edges_batch := 0
+	size_container_process_edges_batch := 0
+	size_container_edges_batch := 0
+	size_pod_edges_batch := 0
+	size_endpoint_edges_batch := 0
+	size_container_image_edge_batch := 0
+	size_kubernetes_cluster_edge_batch := 0
+	size_hosts := 0
+
+	for i := range other {
+		size_process_batch += len(other[i].Process_batch)
+		size_host_batch += len(other[i].Host_batch)
+		size_container_batch += len(other[i].Container_batch)
+		size_container_image_batch += len(other[i].Container_image_batch)
+		size_pod_batch += len(other[i].Pod_batch)
+		size_kubernetes_cluster_batch += len(other[i].Kubernetes_cluster_batch)
+		size_process_edges_batch += len(other[i].Process_edges_batch)
+		size_container_process_edges_batch += len(other[i].Container_process_edges_batch)
+		size_container_edges_batch += len(other[i].Container_edges_batch)
+		size_pod_edges_batch += len(other[i].Pod_edges_batch)
+		size_endpoint_edges_batch += len(other[i].Endpoint_edges_batch)
+		size_container_image_edge_batch += len(other[i].Container_image_edge_batch)
+		size_kubernetes_cluster_edge_batch += len(other[i].Kubernetes_cluster_edge_batch)
+		size_hosts += len(other[i].Host_batch)
+	}
+
+	process_batch := make([]map[string]interface{}, 0, size_process_batch)
+	host_batch := make([]map[string]interface{}, 0, size_host_batch)
+	container_batch := make([]map[string]interface{}, 0, size_container_batch)
+	container_image_batch := make([]map[string]interface{}, 0, size_container_image_batch)
+	pod_batch := make([]map[string]interface{}, 0, size_pod_batch)
+	kubernetes_cluster_batch := make([]map[string]interface{}, 0, size_kubernetes_cluster_batch)
+	process_edges_batch := make([]map[string]interface{}, 0, size_process_edges_batch)
+	container_process_edges_batch := make([]map[string]interface{}, 0, size_container_process_edges_batch)
+	container_edges_batch := make([]map[string]interface{}, 0, size_container_edges_batch)
+	pod_edges_batch := make([]map[string]interface{}, 0, size_pod_edges_batch)
+	endpoint_edges_batch := make([]map[string]interface{}, 0, size_endpoint_edges_batch)
+	container_image_edge_batch := make([]map[string]interface{}, 0, size_container_image_edge_batch)
+	kubernetes_cluster_edge_batch := make([]map[string]interface{}, 0, size_kubernetes_cluster_edge_batch)
+	hosts := make([]map[string]interface{}, 0, size_hosts)
+
+	for i := range other {
+		process_batch = append(process_batch, other[i].Process_batch...)
+		host_batch = append(host_batch, other[i].Host_batch...)
+		container_batch = append(container_batch, other[i].Container_batch...)
+		container_image_batch = append(container_image_batch, other[i].Container_image_batch...)
+		pod_batch = append(pod_batch, other[i].Pod_batch...)
+		kubernetes_cluster_batch = append(kubernetes_cluster_batch, other[i].Kubernetes_cluster_batch...)
+		process_edges_batch = append(process_edges_batch, other[i].Process_edges_batch...)
+		container_process_edges_batch = append(container_process_edges_batch, other[i].Container_process_edges_batch...)
+		container_edges_batch = append(container_edges_batch, other[i].Container_edges_batch...)
+		pod_edges_batch = append(pod_edges_batch, other[i].Pod_edges_batch...)
+		endpoint_edges_batch = append(endpoint_edges_batch, other[i].Endpoint_edges_batch...)
+		container_image_edge_batch = append(container_image_edge_batch, other[i].Container_image_edge_batch...)
+		kubernetes_cluster_edge_batch = append(kubernetes_cluster_edge_batch, other[i].Kubernetes_cluster_edge_batch...)
+		//nd.Endpoint_batch = append(nd.Endpoint_batch, other[i].Endpoint_batch...)
+		//nd.Endpoint_edges = append(nd.Endpoint_edges, other[i].Endpoint_edges...)
+		hosts = append(hosts, other[i].Hosts...)
+	}
+
+	return ReportIngestionData{
+		Process_batch:                 process_batch,
+		Host_batch:                    host_batch,
+		Container_batch:               container_batch,
+		Container_image_batch:         container_image_batch,
+		Pod_batch:                     pod_batch,
+		Kubernetes_cluster_batch:      kubernetes_cluster_batch,
+		Process_edges_batch:           process_edges_batch,
+		Container_process_edges_batch: container_process_edges_batch,
+		Container_edges_batch:         container_edges_batch,
+		Pod_edges_batch:               pod_edges_batch,
+		Endpoint_edges_batch:          endpoint_edges_batch,
+		Container_image_edge_batch:    container_image_edge_batch,
+		Kubernetes_cluster_edge_batch: kubernetes_cluster_edge_batch,
+		Hosts:                         hosts,
+	}
+
 }
 
 func computeResolvers(rpt *report.Report, buf *bytes.Buffer) EndpointResolvers {
-	resolvers := NewEndpointResolvers()
+	resolvers := EndpointResolvers{
+		network_map:  map[string]string{},
+		ipport_ippid: map[string]string{},
+	}
 
 	for _, n := range rpt.Host {
 		if n.Metadata.InterfaceIps == nil {
@@ -225,7 +298,10 @@ func computeResolvers(rpt *report.Report, buf *bytes.Buffer) EndpointResolvers {
 }
 
 func (nc *neo4jIngester) resolversUpdater() {
-	buffer := [resolver_batch_size]EndpointResolvers{}
+	final_batch := EndpointResolvers{
+		network_map:  map[string]string{},
+		ipport_ippid: map[string]string{},
+	}
 	elements := 0
 	send := false
 	ticker := time.NewTicker(resolver_timeout)
@@ -237,7 +313,7 @@ loop:
 			if !open {
 				break loop
 			}
-			buffer[elements] = resolver
+			final_batch.merge(&resolver)
 			elements += 1
 			send = elements == resolver_batch_size
 		case <-ticker.C:
@@ -247,15 +323,11 @@ loop:
 		if send {
 			send = false
 			span := telemetry.NewSpan(context.Background(), "ingester", "ResolversUpdater")
-			batch_resolver := buffer[0]
-			for i := 1; i < elements; i++ {
-				batch_resolver.merge(&buffer[i])
-			}
 			nc.resolvers.clean_maps()
-			nc.resolvers.push_maps(&batch_resolver)
+			nc.resolvers.push_maps(&final_batch)
 			span.End()
+			final_batch.clean()
 			elements = 0
-			ticker.Reset(resolver_timeout)
 		}
 	}
 	log.Info().Msgf("resolversUpdater ended")
@@ -292,7 +364,7 @@ func connections2maps(connections []Connection) []map[string]interface{} {
 			unique_maps[connection_id]["right_pids"] = append(v["right_pids"], connection.right_pid)
 		}
 	}
-	res := []map[string]interface{}{}
+	res := make([]map[string]interface{}, 0, len(unique_maps))
 	for k, v := range unique_maps {
 		source_dest := strings.Split(k, delim)
 		internal := map[string]interface{}{}
@@ -313,23 +385,59 @@ func connections2maps(connections []Connection) []map[string]interface{} {
 	return res
 }
 
+func NewReportIngestionData() ReportIngestionData {
+	return ReportIngestionData{
+		Process_batch:                 []map[string]interface{}{},
+		Host_batch:                    []map[string]interface{}{},
+		Container_batch:               []map[string]interface{}{},
+		Pod_batch:                     []map[string]interface{}{},
+		Container_image_batch:         []map[string]interface{}{},
+		Kubernetes_cluster_batch:      []map[string]interface{}{},
+		Process_edges_batch:           []map[string]interface{}{},
+		Container_edges_batch:         []map[string]interface{}{},
+		Container_process_edges_batch: []map[string]interface{}{},
+		Pod_edges_batch:               []map[string]interface{}{},
+		Pod_host_edges_batch:          []map[string]interface{}{},
+		Endpoint_edges_batch:          []map[string]interface{}{},
+		Container_image_edge_batch:    []map[string]interface{}{},
+		Kubernetes_cluster_edge_batch: []map[string]interface{}{},
+		Hosts:                         []map[string]interface{}{},
+	}
+}
+
 func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache, buf *bytes.Buffer) ReportIngestionData {
-	hosts := make([]map[string]interface{}, 0, len(rpt.Host))
-	host_batch := make([]map[string]interface{}, 0, len(rpt.Host))
-	kubernetes_batch := make([]map[string]interface{}, 0, len(rpt.KubernetesCluster))
+
+	res := ReportIngestionData{
+		Hosts:                         make([]map[string]interface{}, 0, len(rpt.Host)),
+		Process_batch:                 make([]map[string]interface{}, 0, len(rpt.Process)),
+		Host_batch:                    make([]map[string]interface{}, 0, len(rpt.Host)),
+		Container_batch:               make([]map[string]interface{}, 0, len(rpt.Container)),
+		Pod_batch:                     make([]map[string]interface{}, 0, len(rpt.Pod)),
+		Container_image_batch:         make([]map[string]interface{}, 0, len(rpt.ContainerImage)),
+		Kubernetes_cluster_batch:      make([]map[string]interface{}, 0, len(rpt.KubernetesCluster)),
+		Process_edges_batch:           nil,
+		Container_edges_batch:         nil,
+		Container_process_edges_batch: nil,
+		Pod_edges_batch:               nil,
+		Pod_host_edges_batch:          nil,
+		Endpoint_edges_batch:          nil,
+		Container_image_edge_batch:    nil,
+		Kubernetes_cluster_edge_batch: nil,
+	}
+
 	kubernetes_edges_batch := map[string][]string{}
 
 	for _, n := range rpt.Host {
-		hosts = append(hosts, map[string]interface{}{"node_id": n.Metadata.NodeID})
+		res.Hosts = append(res.Hosts, map[string]interface{}{"node_id": n.Metadata.NodeID})
 		metadataMap := metadataToMap(n.Metadata)
 		if n.Metadata.KubernetesClusterId != "" {
 			kubernetes_edges_batch[n.Metadata.KubernetesClusterId] = append(kubernetes_edges_batch[n.Metadata.KubernetesClusterId], n.Metadata.NodeID)
 		}
-		host_batch = append(host_batch, metadataMap)
+		res.Host_batch = append(res.Host_batch, metadataMap)
 	}
 
 	for _, n := range rpt.KubernetesCluster {
-		kubernetes_batch = append(kubernetes_batch, metadataToMap(n.Metadata))
+		res.Kubernetes_cluster_batch = append(res.Kubernetes_cluster_batch, metadataToMap(n.Metadata))
 	}
 
 	processes_to_keep := map[string]struct{}{}
@@ -345,7 +453,6 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		processes_to_keep[host_pid] = struct{}{}
 	}
 
-	endpoint_edges_batch := make([]map[string]interface{}, 0, len(rpt.Endpoint))
 	//endpoint_batch := []map[string]string{}
 	//endpoint_edges := []map[string]string{}
 
@@ -408,45 +515,41 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			}
 		}
 	}
-	endpoint_edges_batch = connections2maps(connections)
+	res.Endpoint_edges_batch = connections2maps(connections)
 
-	process_batch := make([]map[string]interface{}, 0, len(rpt.Process))
 	process_edges_batch := map[string][]string{}
 	container_process_edges_batch := map[string][]string{}
 	for _, n := range rpt.Process {
 		if _, ok := processes_to_keep[n.Metadata.NodeID]; !ok {
 			continue
 		}
-		process_batch = append(process_batch, metadataToMap(n.Metadata))
+		res.Process_batch = append(res.Process_batch, metadataToMap(n.Metadata))
 		process_edges_batch[n.Metadata.HostName] = append(process_edges_batch[n.Metadata.HostName], n.Metadata.NodeID)
 		if len(n.Parents.Container) != 0 {
 			container_process_edges_batch[n.Parents.Container] = append(container_process_edges_batch[n.Parents.Container], n.Metadata.NodeID)
 		}
 	}
 
-	container_batch := make([]map[string]interface{}, 0, len(rpt.Container))
 	container_edges_batch := map[string][]string{}
 	for _, n := range rpt.Container {
 		if n.Metadata.HostName == "" {
 			continue
 		}
-		container_batch = append(container_batch, metadataToMap(n.Metadata))
+		res.Container_batch = append(res.Container_batch, metadataToMap(n.Metadata))
 		container_edges_batch[n.Metadata.HostName] = append(container_edges_batch[n.Metadata.HostName], n.Metadata.NodeID)
 	}
 
-	container_image_batch := make([]map[string]interface{}, 0, len(rpt.ContainerImage))
 	container_image_edges_batch := map[string][]string{}
 	for _, n := range rpt.ContainerImage {
 		if n.Metadata.HostName == "" {
 			continue
 		}
-		container_image_batch = append(container_image_batch, metadataToMap(n.Metadata))
+		res.Container_image_batch = append(res.Container_image_batch, metadataToMap(n.Metadata))
 		container_image_edges_batch[n.Metadata.HostName] = append(container_image_edges_batch[n.Metadata.HostName], n.Metadata.NodeID)
 	}
 
 	// Note: Pods are provided alone with an extra report
 	// Therefore, it cannot rely on any previously computed data
-	pod_batch := make([]map[string]interface{}, 0, len(rpt.Pod))
 	pod_edges_batch := map[string][]string{}
 	pod_host_edges_batch := map[string][]string{}
 	for _, n := range rpt.Pod {
@@ -458,34 +561,20 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 				n.Metadata.HostName = val
 			}
 		}
-		pod_batch = append(pod_batch, metadataToMap(n.Metadata))
+		res.Pod_batch = append(res.Pod_batch, metadataToMap(n.Metadata))
 		pod_edges_batch[n.Metadata.KubernetesClusterId] = append(pod_edges_batch[n.Metadata.KubernetesClusterId], n.Metadata.NodeID)
 		pod_host_edges_batch[n.Metadata.HostName] = append(pod_host_edges_batch[n.Metadata.HostName], n.Metadata.NodeID)
 	}
 
-	return ReportIngestionData{
-		Endpoint_edges_batch: endpoint_edges_batch,
+	res.Process_edges_batch = concatMaps(process_edges_batch)
+	res.Container_edges_batch = concatMaps(container_edges_batch)
+	res.Container_process_edges_batch = concatMaps(container_process_edges_batch)
+	res.Pod_edges_batch = concatMaps(pod_edges_batch)
+	res.Pod_host_edges_batch = concatMaps(pod_host_edges_batch)
+	res.Container_image_edge_batch = concatMaps(container_image_edges_batch)
+	res.Kubernetes_cluster_edge_batch = concatMaps(kubernetes_edges_batch)
 
-		Process_batch:            process_batch,
-		Host_batch:               host_batch,
-		Container_batch:          container_batch,
-		Pod_batch:                pod_batch,
-		Container_image_batch:    container_image_batch,
-		Kubernetes_cluster_batch: kubernetes_batch,
-
-		Process_edges_batch:           concatMaps(process_edges_batch),
-		Container_edges_batch:         concatMaps(container_edges_batch),
-		Container_process_edges_batch: concatMaps(container_process_edges_batch),
-		Pod_edges_batch:               concatMaps(pod_edges_batch),
-		Pod_host_edges_batch:          concatMaps(pod_host_edges_batch),
-		Container_image_edge_batch:    concatMaps(container_image_edges_batch),
-		Kubernetes_cluster_edge_batch: concatMaps(kubernetes_edges_batch),
-
-		//Endpoint_batch: endpoint_batch,
-		//Endpoint_edges: endpoint_edges,
-
-		Hosts: hosts,
-	}
+	return res
 }
 
 func (nc *neo4jIngester) Close() {
@@ -697,12 +786,7 @@ func (nc *neo4jIngester) runIngester() {
 			continue
 		}
 		crpt.Cleanup()
-		select {
-		case nc.preparers_input <- rpt:
-		default:
-			log.Warn().Msgf("preparer channel full")
-			nc.preparers_input <- rpt
-		}
+		nc.preparers_input <- rpt
 	}
 	log.Info().Msgf("runIngester ended")
 }
@@ -722,17 +806,14 @@ loop:
 			}
 			batch[size] = report
 			size += 1
-			send = size == len(batch)
+			send = size == db_batch_size
 		case <-ticker.C:
 			send = size > 0
 		}
 		if send {
 			if size > 0 {
 				send = false
-				final_batch := batch[0]
-				for i := 1; i < size; i++ {
-					final_batch.merge(&batch[i])
-				}
+				final_batch := mergeIngestionData(batch[:size])
 				select {
 				case db_pusher <- final_batch:
 				default:
@@ -743,6 +824,7 @@ loop:
 				}
 				nc.num_ingested.Add(int32(size))
 				size = 0
+				final_batch = NewReportIngestionData()
 				ticker.Reset(db_batch_timeout)
 			}
 		}
@@ -788,12 +870,7 @@ func (nc *neo4jIngester) runPreparer() {
 		r := computeResolvers(rpt, &buf)
 		data := prepareNeo4jIngestion(rpt, &nc.resolvers, &buf)
 		reportPool.Put(rpt)
-		select {
-		case nc.resolvers_update <- r:
-		default:
-			log.Warn().Msgf("update channel full")
-			nc.resolvers_update <- r
-		}
+		nc.resolvers_update <- r
 		nc.batcher <- data
 	}
 }
@@ -819,8 +896,8 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 		resolvers:        rdb,
 		ingester:         make(chan report.CompressedReport, ingester_size),
 		batcher:          make(chan ReportIngestionData, ingester_size),
-		resolvers_update: make(chan EndpointResolvers, db_batch_size),
-		preparers_input:  make(chan *report.Report, ingester_size/2),
+		resolvers_update: make(chan EndpointResolvers, db_batch_size*2),
+		preparers_input:  make(chan *report.Report, db_batch_size*2),
 		done:             done,
 		db_pusher:        db_pusher,
 		num_ingested:     atomic.Int32{},
@@ -828,16 +905,17 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 	}
 
 	for i := 0; i < workers_num; i++ {
+		go nc.runIngester()
 		go nc.runPreparer()
+	}
+
+	for i := 0; i < db_input_size; i++ {
 		go nc.runDBPusher(db_pusher, db_pusher_retry)
 		go nc.runDBPusher(db_pusher_retry, db_pusher)
 	}
 
 	go nc.runDBBatcher(db_pusher)
-
 	go nc.resolversUpdater()
-
-	go nc.runIngester()
 
 	go func() {
 		// Received num at the time of push back change
@@ -863,7 +941,6 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 
 	// Push back updater
 	go func() {
-		twice := false
 		// Received num at the time of push back change
 		prev_received_num := int32(0)
 		newValue, err := GetPushBack(nc.driver)
@@ -892,23 +969,20 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 			current_num_received := nc.num_received.Swap(0)
 			current_num_ingested := nc.num_ingested.Swap(0)
 
+			// Keep the highest number of reports
+			prev_received_num = max(prev_received_num, current_num_received)
+
 			toAdd := int32(0)
-			if current_num_ingested < (current_num_received/4)*3 {
-				toAdd = current_num_received / current_num_received
-				twice = false
+			if breaker.Swap(false) || current_num_ingested < (current_num_received/4)*3 {
+				toAdd = max(current_num_received, 1) / max(current_num_ingested, 1)
 				prev_received_num = current_num_received
 				update_ticker = true
 			} else if current_num_received < (prev_received_num/4)*3 {
-				if Push_back.Load() > 1 && twice {
-					toAdd = -1
-					twice = false
-					prev_received_num = current_num_received
-					update_ticker = true
+				toAdd = -1 * max(prev_received_num, 1) / max(current_num_received, 1)
+				if Push_back.Load()+toAdd <= 0 {
+					toAdd = -1*Push_back.Load() + 1
 				}
-				twice = true
-			}
-			if breaker.Swap(false) {
-				toAdd = 1
+				prev_received_num = current_num_received
 				update_ticker = true
 			}
 
@@ -936,10 +1010,11 @@ func min(a, b int) int {
 	return b
 }
 
-func mapMerge(a, b *[]map[string]string) {
-	for k, v := range *b {
-		(*a)[k] = v
+func max(a, b int32) int32 {
+	if a < b {
+		return b
 	}
+	return a
 }
 
 func extractIPPortFromEndpointID(node_id string) (string, string) {
