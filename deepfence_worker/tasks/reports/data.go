@@ -95,17 +95,26 @@ func searchScansFilter(params sdkUtils.ReportParams) rptSearch.SearchScanReq {
 	return filters
 }
 
-func levelFilter(key string, value []string) reporters.FieldsFilters {
-	if len(value) > 0 {
-		return reporters.FieldsFilters{
-			MatchFilter: reporters.MatchFilter{
-				FieldsValues: map[string][]interface{}{
-					key: sdkUtils.StringArrayToInterfaceArray(value),
-				},
-			},
-		}
+func scanResultFilter(levelKey string, levelValues []string, masked []bool) reporters.FieldsFilters {
+
+	filter := reporters.FieldsFilters{
+		MatchFilter: reporters.MatchFilter{
+			FieldsValues: map[string][]interface{}{},
+		},
+		ContainsFilter: reporters.ContainsFilter{
+			FieldsValues: map[string][]interface{}{},
+		},
 	}
-	return reporters.FieldsFilters{}
+
+	if len(levelValues) > 0 {
+		filter.MatchFilter.FieldsValues[levelKey] = sdkUtils.StringArrayToInterfaceArray(levelValues)
+	}
+
+	if len(masked) > 0 {
+		filter.ContainsFilter.FieldsValues["masked"] = sdkUtils.BoolArrayToInterfaceArray(masked)
+	}
+
+	return filter
 }
 
 func getVulnerabilityData(ctx context.Context, session neo4j.Session, params sdkUtils.ReportParams) (*Info[model.Vulnerability], error) {
@@ -134,7 +143,8 @@ func getVulnerabilityData(ctx context.Context, session neo4j.Session, params sdk
 
 	log.Info().Msgf("vulnerability scan info: %+v", scans)
 
-	severityFilter := levelFilter("cve_severity", params.Filters.SeverityOrCheckType)
+	severityFilter := scanResultFilter("cve_severity",
+		params.Filters.SeverityOrCheckType, params.Filters.AdvancedReportFilters.Masked)
 
 	nodeWiseData := NodeWiseData[model.Vulnerability]{
 		SeverityCount: make(map[string]map[string]int32),
@@ -195,7 +205,8 @@ func getSecretData(ctx context.Context, session neo4j.Session, params sdkUtils.R
 
 	log.Info().Msgf("secret scan info: %+v", scans)
 
-	severityFilter := levelFilter("level", params.Filters.SeverityOrCheckType)
+	severityFilter := scanResultFilter("level",
+		params.Filters.SeverityOrCheckType, params.Filters.AdvancedReportFilters.Masked)
 
 	nodeWiseData := NodeWiseData[model.Secret]{
 		SeverityCount: make(map[string]map[string]int32),
@@ -256,7 +267,8 @@ func getMalwareData(ctx context.Context, session neo4j.Session, params sdkUtils.
 
 	log.Info().Msgf("malware scan info: %+v", scans)
 
-	severityFilter := levelFilter("file_severity", params.Filters.SeverityOrCheckType)
+	severityFilter := scanResultFilter("file_severity",
+		params.Filters.SeverityOrCheckType, params.Filters.AdvancedReportFilters.Masked)
 
 	nodeWiseData := NodeWiseData[model.Malware]{
 		SeverityCount: make(map[string]map[string]int32),
@@ -317,7 +329,8 @@ func getComplianceData(ctx context.Context, session neo4j.Session, params sdkUti
 
 	log.Info().Msgf("compliance scan info: %+v", scans)
 
-	severityFilter := levelFilter("compliance_check_type", params.Filters.SeverityOrCheckType)
+	severityFilter := scanResultFilter("compliance_check_type",
+		params.Filters.SeverityOrCheckType, params.Filters.AdvancedReportFilters.Masked)
 
 	nodeWiseData := NodeWiseData[model.Compliance]{
 		SeverityCount: make(map[string]map[string]int32),
@@ -379,7 +392,8 @@ func getCloudComplianceData(ctx context.Context, session neo4j.Session, params s
 
 	log.Info().Msgf("cloud compliance scan info: %+v", scans)
 
-	severityFilter := levelFilter("compliance_check_type", params.Filters.SeverityOrCheckType)
+	severityFilter := scanResultFilter("compliance_check_type",
+		params.Filters.SeverityOrCheckType, params.Filters.AdvancedReportFilters.Masked)
 
 	nodeWiseData := NodeWiseData[model.CloudCompliance]{
 		SeverityCount: make(map[string]map[string]int32),
