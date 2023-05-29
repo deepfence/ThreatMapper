@@ -750,8 +750,15 @@ loop:
 	log.Info().Msgf("runDBPusher ended")
 }
 
-func (nc *neo4jIngester) runDBPusher(db_pusher, db_pusher_retry chan ReportIngestionData) {
+func isTransientError(err error) bool {
+	// Check if the error is a deadlock error
+	if neoErr, ok := err.(*db.Neo4jError); ok {
+		return strings.HasPrefix(neoErr.Code, "Neo.TransientError")
+	}
+	return false
+}
 
+func (nc *neo4jIngester) runDBPusher(db_pusher, db_pusher_retry chan ReportIngestionData) {
 	session, err := nc.driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
 		log.Error().Msgf("Failed to open session: %v", err)
@@ -764,8 +771,10 @@ func (nc *neo4jIngester) runDBPusher(db_pusher, db_pusher_retry chan ReportInges
 		err := nc.PushToDB(batches, session)
 		if err != nil {
 			log.Error().Msgf("push to neo4j err: %v", err)
-			db_pusher_retry <- batches
 			span.EndWithErr(err)
+			if isTransientError(err) {
+				db_pusher_retry <- batches
+			}
 		} else {
 			span.End()
 		}
@@ -956,7 +965,7 @@ func metadataToMap(n report.Metadata) map[string]interface{} {
 	return utils.StructToMap(n)
 }
 
-//TODO: improve syncro
+// TODO: improve syncro
 func UpdatePushBack(session neo4j.Session, newValue *atomic.Int32, add int32) error {
 	tx, err := session.BeginTransaction()
 	if err != nil {
@@ -966,7 +975,7 @@ func UpdatePushBack(session neo4j.Session, newValue *atomic.Int32, add int32) er
 
 	var rec *db.Record
 	if add != 0 {
-		str := strconv.Itoa(int(newValue.Load()+add))
+		str := strconv.Itoa(int(newValue.Load() + add))
 
 		res, err := tx.Run(`
 			MATCH (n:Node{node_id:"deepfence-console-cron"})
