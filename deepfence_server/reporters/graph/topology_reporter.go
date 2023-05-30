@@ -68,6 +68,9 @@ func (nc *neo4jTopologyReporter) GetConnections(tx neo4j.Transaction) ([]Connect
 	res := []ConnectionSummary{}
 	var buf bytes.Buffer
 	for _, edge := range edges {
+		if edge.Values[3] == nil || edge.Values[7] == nil {
+			continue
+		}
 		if edge.Values[2].(string) != edge.Values[6].(string) {
 			left_pids := edge.Values[3].([]interface{})
 			right_pids := edge.Values[7].([]interface{})

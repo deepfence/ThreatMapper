@@ -2,69 +2,28 @@
 title: Managed Database
 ---
 
-# Managed Elasticsearch and PostgreSQL
+# Managed PostgreSQL and Neo4j
 
-For production deployment of Deepfence Management Console, we recommend using cloud/vendor managed Elasticsearch and PostgreSQL services.
+For production deployment of Deepfence Management Console, we recommend using cloud/vendor managed PostgreSQL and Neo4j services.
 
-# Elasticsearch
+# Neo4j
 
-## Amazon Opensearch Service
+Please use the following settings to configure the Neo4j AuraDB Professional / Enterprise service
 
-Please use the following settings to configure the Elasticsearch service
+| Option  | Recommended Value |
+|---------|-------------------|
+| Memory  | 8GB               |
+| CPU     | 2 CPU             |
+| Storage | 16GB              |
 
-| Option                             | Recommended Value                                    |
-|------------------------------------|------------------------------------------------------|
-| Deployment type                    | Production                                           |
-| Version                            | 7.10                                                 |
-| Auto-Tune                          | Enable                                               |
-| Availability Zones                 | 2-AZ  / 3-AZ depending on requirements               |
-| Number of nodes                    | 2 / 3                                                |
-| Instance type                      | t3.medium.search / m6g.large.search or better        |
-| Storage type                       | EBS                                                  |
-| EBS volume type                    | gp3                                                  |
-| EBS storage size per node          | >100 GiB                                             |
-| Master node - Instance type        | m6g.large.search / r6g.large.search                  |
-| Master - Number of nodes           | 3                                                    |
-| Public access                      | No (provide access only to management console nodes) |
-| Enable fine-grained access control | Yes                                                  |
-| Create master user                 | Set username and password                            |
-| Password                           | Should only contain alphabets, numbers and -         |
-| Access policy                      | Only use fine-grained access control                 |
-| Encryption                         | Yes                                                  |
-
-In console helm chart, set the values for elasticsearch accordingly.
+In docker-compose.yml, set the values for postgresql accordingly.
 ```yaml
-db:
-  elasticsearch:
-    scheme: "https"
-    host: search-deepfence-aaaaaa.us-east-1.es.amazonaws.com
-    port: "443"
-    # Accepted characters for username and password: alphabets, numbers and -
-    user: "<user>"
-    password: "<password>"
-```
-
-## Elastic Cloud
-
-Please use the following settings to configure the Elasticsearch service
-
-| Option           | Recommended Value  |
-|------------------|--------------------|
-| Version          | 7.17.6             |
-| Hardware profile | General purpose    |
-| Size             | 4 GB RAM or better |
-
-
-In console helm chart, set the values for elasticsearch accordingly.
-```yaml
-db:
-  elasticsearch:
-    scheme: "https"
-    host: deepfence-012345.es.us-east-1.aws.found.io
-    port: "443"
-    # Accepted characters for username and password: alphabets, numbers and -
-    user: "<user>"
-    password: "<password>"
+x-service-variables: &common-creds
+    DEEPFENCE_NEO4J_USER: neo4j
+    DEEPFENCE_NEO4J_PASSWORD: <password>
+    NEO4J_AUTH: neo4j/<password>
+    DEEPFENCE_NEO4J_BOLT_PORT: 7687
+    DEEPFENCE_NEO4J_HOST: abcdefgh.databases.neo4j.io
 ```
 
 # PostgreSQL
@@ -87,14 +46,13 @@ Please use the following settings to configure the Elasticsearch service
 | Database authentication | Password authentication                              |
 | Initial database name   | deepfence                                            |
 
-In console helm chart, set the values for postgresql accordingly.
+In docker-compose.yml, set the values for postgresql accordingly.
 ```yaml
-db:
-  postgresUserDb:
-    host: pg-db-1.aaaaaa.us-east-1.rds.amazonaws.com
-    port: "5432"
-    user: "postgres"
-    password: "<password>"
-    dbname: "deepfence"
-    sslmode: "disable"
+x-service-variables: &common-creds
+    DEEPFENCE_POSTGRES_USER_DB_USER: postgres
+    DEEPFENCE_POSTGRES_USER_DB_PASSWORD: <password>
+    DEEPFENCE_POSTGRES_USER_DB_HOST: pg-db-1.aaaaaa.us-east-1.rds.amazonaws.com
+    DEEPFENCE_POSTGRES_USER_DB_NAME: deepfence
+    DEEPFENCE_POSTGRES_USER_DB_PORT: 5432
+    DEEPFENCE_POSTGRES_USER_DB_SSLMODE: disable
 ```

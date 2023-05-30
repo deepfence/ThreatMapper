@@ -192,7 +192,10 @@ async function getScans(
 
   const status = getStatusSearch(searchParams);
   const page = getPageFromSearchParams(searchParams);
-  const order = getOrderFromSearchParams(searchParams);
+  const order = getOrderFromSearchParams(searchParams) || {
+    sortBy: 'status',
+    descending: true,
+  };
   const mask = getMaskSearch(searchParams);
   const unmask = getUnmaskSearch(searchParams);
   const benchmarkTypes = getBenchmarkType(searchParams);

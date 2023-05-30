@@ -37,6 +37,8 @@ const (
 	WebhookURL     = "webhook_url"
 	IntegrationKey = "integration_key"
 	APIKey         = "api_key"
+
+	DeepfenceCommunityEmailId = "community@deepfence.io"
 )
 
 var SensitiveFields = map[string]struct{}{

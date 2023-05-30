@@ -75,7 +75,6 @@ export const action = async ({
     throw r.error;
   }
 
-  toast('Registry account deleted sucessfully');
   return {
     success: true,
   };

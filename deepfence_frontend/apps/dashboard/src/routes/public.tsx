@@ -4,6 +4,7 @@ import { registerAction } from '@/features/auth/actions/registerAction';
 import { AuthLayout } from '@/features/auth/layouts/AuthLayout';
 import { loginLoader } from '@/features/auth/loaders/loginLoader';
 import { registerLoader } from '@/features/auth/loaders/registerLoader';
+import { module as eula } from '@/features/auth/pages/EULA';
 import {
   ForgotPassword,
   forgotPasswordAction,
@@ -51,5 +52,11 @@ export const publicRoutes: CustomRouteObject[] = [
         meta: { title: 'Reset Password' },
       },
     ],
+  },
+  {
+    path: 'end-user-license-agreement',
+    ...eula,
+    meta: { title: 'End User License Agreement' },
+    errorElement: <FiveZeroZero />,
   },
 ];

@@ -5,10 +5,8 @@ import { isNil } from 'lodash-es';
 import React, { useEffect, useId } from 'react';
 import { FaCheck, FaMinus } from 'react-icons/fa';
 
-import { Typography } from '@/components/typography/Typography';
-
 export type CheckboxProps = CheckboxPrimitive.CheckboxProps & {
-  label?: string;
+  label?: React.ReactNode;
   rounded?: boolean;
 };
 
@@ -72,7 +70,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
           )}
         </CheckboxPrimitive.Indicator>
       </CheckboxPrimitive.Root>
-      {label?.length ? (
+      {!isNil(label) ? (
         <LabelPrimitive.Label
           htmlFor={_id}
           className={cx('ml-2 text-sm font-medium text-gray-900 dark:text-gray-300')}

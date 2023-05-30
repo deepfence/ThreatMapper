@@ -5,12 +5,14 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: scheduler
+    name: deepfence-scheduler
 spec:
   replicas: 1
   selector:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
       component: scheduler
+      name: deepfence-scheduler
   template:
     metadata:
       {{- with .Values.scheduler.podAnnotations }}
@@ -20,6 +22,7 @@ spec:
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
         component: scheduler
+        name: deepfence-scheduler
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
@@ -100,6 +103,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: scheduler
+    name: deepfence-scheduler
 spec:
   type: {{ .Values.scheduler.service.type }}
   ports:
@@ -110,3 +114,5 @@ spec:
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
     component: scheduler
+    name: deepfence-scheduler
+

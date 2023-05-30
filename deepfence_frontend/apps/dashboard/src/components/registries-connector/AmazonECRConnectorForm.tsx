@@ -56,16 +56,16 @@ export const AmazonECRConnectorForm = ({
             helperText={fieldErrors?.['name']}
           />
           <div className="flex flex-col gap-4 mt-4">
+            <input hidden value={String(isPublic)} name="non_secret.is_public" />
             <Switch
-              name="non_secret.is_public"
               label="Public Registry"
               checked={isPublic}
               onCheckedChange={(checked) => {
                 setIsPublic(checked);
               }}
             />
+            <input hidden value={String(useIAMRole)} name="non_secret.use_iam_role" />
             <Switch
-              name="non_secret.use_iam_role"
               label="Use AWS IAM Role"
               checked={useIAMRole}
               onCheckedChange={(checked) => {
@@ -110,6 +110,7 @@ export const AmazonECRConnectorForm = ({
                   sizing="sm"
                   name="non_secret.aws_account_id"
                   placeholder="AWS Account ID"
+                  hint="(Optional) Pull from registries belonging to other AWS Accounts"
                   color={fieldErrors?.['non_secret.aws_account_id'] ? 'error' : 'default'}
                   helperText={fieldErrors?.['non_secret.aws_account_id']}
                 />
@@ -120,6 +121,7 @@ export const AmazonECRConnectorForm = ({
                   sizing="sm"
                   name="non_secret.target_account_role_arn"
                   placeholder="Target Account Role ARN"
+                  hint="(Optional) Pull from registries belonging to other AWS Accounts"
                   color={
                     fieldErrors?.['non_secret.target_account_role_arn']
                       ? 'error'

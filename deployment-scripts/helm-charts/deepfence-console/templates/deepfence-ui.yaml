@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: ui
+    name: deepfence-ui
 spec:
   {{- if not .Values.ui.autoscaling.enabled }}
   replicas: {{ .Values.ui.replicaCount }}
@@ -13,6 +14,7 @@ spec:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
       component: ui
+      name: deepfence-ui
   template:
     metadata:
       {{- with .Values.ui.podAnnotations }}
@@ -22,6 +24,7 @@ spec:
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
         component: ui
+        name: deepfence-ui
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
@@ -103,6 +106,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: ui
+    name: deepfence-ui
 spec:
   type: {{ .Values.ui.service.type }}
   ports:
@@ -113,6 +117,7 @@ spec:
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
     component: ui
+    name: deepfence-ui
 ---
 {{- if .Values.ui.autoscaling.enabled }}
 apiVersion: autoscaling/v2beta1
@@ -122,6 +127,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: ui
+    name: deepfence-ui
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

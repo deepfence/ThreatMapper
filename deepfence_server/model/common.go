@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strconv"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -16,6 +17,7 @@ const (
 
 var (
 	UserNotFoundErr = errors.New("user not found")
+	EULAResponse    = MessageResponse{Message: constants.EndUserLicenceAgreement}
 )
 
 type MessageResponse struct {

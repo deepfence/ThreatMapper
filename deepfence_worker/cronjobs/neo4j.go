@@ -42,8 +42,7 @@ func getResourceCleanUpTimeout(ctx context.Context) time.Duration {
 func getPushBackValue(session neo4j.Session) int32 {
 	res, err := session.Run(`
 		MATCH (n:Node{node_id:"`+ConsoleAgentId+`"})
-		RETURN n.push_back
-		`,
+		RETURN n.push_back`,
 		map[string]interface{}{})
 	if err != nil {
 		return 1
@@ -57,6 +56,7 @@ func getPushBackValue(session neo4j.Session) int32 {
 
 func CleanUpDB(msg *message.Message) error {
 	log.Info().Msgf("Clean up DB Starting")
+	defer log.Info().Msgf("Clean up DB Done")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 
