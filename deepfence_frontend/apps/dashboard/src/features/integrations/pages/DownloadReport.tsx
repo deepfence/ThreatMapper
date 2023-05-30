@@ -53,7 +53,6 @@ import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { TruncatedText } from '@/components/TruncatedText';
 import { useGetCloudAccountsList } from '@/features/common/data-component/searchCloudAccountsApiLoader';
-import { getNodeTypeByProviderName } from '@/features/postures/pages/Accounts';
 import { ActionReturnType } from '@/features/registries/components/RegistryAccountsTable';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { CloudNodeType, isCloudNode, ScanTypeEnum } from '@/types/common';
@@ -63,7 +62,7 @@ import { download } from '@/utils/download';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
-const nonComplianceNode = (resourceType: string) => {
+const getNodeType = (resourceType: string) => {
   if (resourceType === 'CloudCompliance') {
     return {
       Aws: UtilsReportFiltersNodeTypeEnum.Aws,
@@ -73,7 +72,7 @@ const nonComplianceNode = (resourceType: string) => {
   } else if (resourceType === 'Compliance') {
     return {
       Host: UtilsReportFiltersNodeTypeEnum.Host,
-      Kubernetes: 'Kubernetes',
+      Kubernetes: UtilsReportFiltersNodeTypeEnum.Cluster,
     };
   }
   return {
@@ -157,7 +156,10 @@ const action = async ({
     const _resource: UtilsReportFiltersScanTypeEnum =
       UtilsReportFiltersScanTypeEnum[resource];
 
-    const nodeType = body.nodeType as keyof typeof UtilsReportFiltersNodeTypeEnum;
+    let nodeType = body.nodeType as keyof typeof UtilsReportFiltersNodeTypeEnum;
+    if (nodeType.toString() === 'Kubernetes') {
+      nodeType = 'Cluster';
+    }
     const _nodeType: UtilsReportFiltersNodeTypeEnum =
       UtilsReportFiltersNodeTypeEnum[nodeType];
 
@@ -586,6 +588,26 @@ const API_SCAN_TYPE_MAP: {
   CloudCompliance: ScanTypeEnum.CloudComplianceScan,
 };
 
+const getNodeTypeByProviderName = (providerName: string): string | undefined => {
+  switch (providerName) {
+    case 'linux':
+    case 'host':
+      return 'host';
+    case 'aws':
+      return 'aws';
+    case 'gcp':
+      return 'gcp';
+    case 'gcp_org':
+      return 'gcp_org';
+    case 'azure':
+      return 'azure';
+    case 'kubernetes':
+      return 'cluster';
+    default:
+      return;
+  }
+};
+
 const AdvancedFilter = ({
   resourceType,
   provider,
@@ -797,7 +819,7 @@ const ComplianceForm = ({
         placeholder="Select Node Type"
         sizing="xs"
       >
-        {Object.keys(nonComplianceNode(resource)).map((resource) => {
+        {Object.keys(getNodeType(resource)).map((resource) => {
           return (
             <SelectItem value={resource} key={resource}>
               {resource}
@@ -855,7 +877,7 @@ const CommonForm = ({
         placeholder="Select Node Type"
         sizing="xs"
       >
-        {Object.keys(nonComplianceNode(resource)).map((resource) => {
+        {Object.keys(getNodeType(resource)).map((resource) => {
           return (
             <SelectItem value={resource} key={resource}>
               {resource}

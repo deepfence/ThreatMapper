@@ -81,6 +81,12 @@ export interface IngestersReportIngestionData {
     kubernetes_cluster_edge_batch: Array<{ [key: string]: any; }> | null;
     /**
      * 
+     * @type {number}
+     * @memberof IngestersReportIngestionData
+     */
+    num_merged: number;
+    /**
+     * 
      * @type {Array<{ [key: string]: any; }>}
      * @memberof IngestersReportIngestionData
      */
@@ -126,6 +132,7 @@ export function instanceOfIngestersReportIngestionData(value: object): boolean {
     isInstance = isInstance && "hosts" in value;
     isInstance = isInstance && "kubernetes_cluster_batch" in value;
     isInstance = isInstance && "kubernetes_cluster_edge_batch" in value;
+    isInstance = isInstance && "num_merged" in value;
     isInstance = isInstance && "pod_batch" in value;
     isInstance = isInstance && "pod_edges_batch" in value;
     isInstance = isInstance && "pod_host_edges_batch" in value;
@@ -155,6 +162,7 @@ export function IngestersReportIngestionDataFromJSONTyped(json: any, ignoreDiscr
         'hosts': json['hosts'],
         'kubernetes_cluster_batch': json['kubernetes_cluster_batch'],
         'kubernetes_cluster_edge_batch': json['kubernetes_cluster_edge_batch'],
+        'num_merged': json['num_merged'],
         'pod_batch': json['pod_batch'],
         'pod_edges_batch': json['pod_edges_batch'],
         'pod_host_edges_batch': json['pod_host_edges_batch'],
@@ -182,6 +190,7 @@ export function IngestersReportIngestionDataToJSON(value?: IngestersReportIngest
         'hosts': value.hosts,
         'kubernetes_cluster_batch': value.kubernetes_cluster_batch,
         'kubernetes_cluster_edge_batch': value.kubernetes_cluster_edge_batch,
+        'num_merged': value.num_merged,
         'pod_batch': value.pod_batch,
         'pod_edges_batch': value.pod_edges_batch,
         'pod_host_edges_batch': value.pod_host_edges_batch,
