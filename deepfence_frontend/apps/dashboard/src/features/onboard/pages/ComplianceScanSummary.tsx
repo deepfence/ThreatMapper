@@ -8,17 +8,17 @@ import { Card, CircleSpinner, Separator, Typography } from 'ui-components';
 
 import { getCloudComplianceApiClient, getComplianceApiClient } from '@/api/api';
 import {
-  ApiDocsBadRequestResponse,
   ModelCloudComplianceScanResult,
   ModelComplianceScanInfo,
   ModelComplianceScanResult,
   ModelScanInfo,
+  ResponseError,
 } from '@/api/generated';
 import { LinkButton } from '@/components/LinkButton';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { statusScanApiFunctionMap } from '@/features/onboard/pages/ScanInProgress';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
@@ -55,36 +55,34 @@ export type LoaderDataType = {
 
 const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> => {
   const bulkRequest = scanIds.map((scanId) => {
-    return makeRequest({
-      apiFunction: getCloudComplianceApiClient().resultCloudComplianceScan,
-      apiArgs: [
-        {
-          modelScanResultsReq: {
-            fields_filter: {
-              contains_filter: {
-                filter_in: {},
-              },
-              order_filter: {
-                order_fields: [],
-              },
-              match_filter: {
-                filter_in: {},
-              },
-              compare_filter: null,
-            },
-            scan_id: scanId,
-            window: {
-              offset: 0,
-              size: 1000000,
-            },
+    const resultCloudComplianceScanApi = apiWrapper({
+      fn: getCloudComplianceApiClient().resultCloudComplianceScan,
+    });
+    return resultCloudComplianceScanApi({
+      modelScanResultsReq: {
+        fields_filter: {
+          contains_filter: {
+            filter_in: {},
           },
+          order_filter: {
+            order_fields: [],
+          },
+          match_filter: {
+            filter_in: {},
+          },
+          compare_filter: null,
         },
-      ],
+        scan_id: scanId,
+        window: {
+          offset: 0,
+          size: 1000000,
+        },
+      },
     });
   });
   const responses = await Promise.all(bulkRequest);
   const initial: {
-    err: ApiError<void>[];
+    err: ResponseError[];
     accNonEmpty: ModelCloudComplianceScanResult[];
     accEmpty: ModelCloudComplianceScanResult[];
   } = {
@@ -93,14 +91,13 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
     accEmpty: [],
   };
   responses.forEach((response) => {
-    if (ApiError.isApiError(response)) {
-      // TODO: handle any one request has an error on this bulk request
-      return initial.err.push(response);
+    if (!response.ok) {
+      return initial.err.push(response.error);
     } else {
-      if (isEmpty(response.status_counts)) {
-        initial.accEmpty.push(response);
+      if (isEmpty(response.value.status_counts)) {
+        initial.accEmpty.push(response.value);
       } else {
-        initial.accNonEmpty.push(response);
+        initial.accNonEmpty.push(response.value);
       }
     }
   });
@@ -169,36 +166,34 @@ const getCloudComplianceScanSummary = async (scanIds: string[]): Promise<ScanDat
 
 const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> => {
   const bulkRequest = scanIds.map((scanId) => {
-    return makeRequest({
-      apiFunction: getComplianceApiClient().resultComplianceScan,
-      apiArgs: [
-        {
-          modelScanResultsReq: {
-            fields_filter: {
-              contains_filter: {
-                filter_in: {},
-              },
-              order_filter: {
-                order_fields: [],
-              },
-              match_filter: {
-                filter_in: {},
-              },
-              compare_filter: null,
-            },
-            scan_id: scanId,
-            window: {
-              offset: 0,
-              size: 1000000,
-            },
+    const resultComplianceScanApi = apiWrapper({
+      fn: getComplianceApiClient().resultComplianceScan,
+    });
+    return resultComplianceScanApi({
+      modelScanResultsReq: {
+        fields_filter: {
+          contains_filter: {
+            filter_in: {},
           },
+          order_filter: {
+            order_fields: [],
+          },
+          match_filter: {
+            filter_in: {},
+          },
+          compare_filter: null,
         },
-      ],
+        scan_id: scanId,
+        window: {
+          offset: 0,
+          size: 1000000,
+        },
+      },
     });
   });
   const responses = await Promise.all(bulkRequest);
   const initial: {
-    err: ApiError<void>[];
+    err: ResponseError[];
     accNonEmpty: ModelComplianceScanResult[];
     accEmpty: ModelComplianceScanResult[];
   } = {
@@ -208,14 +203,15 @@ const getComplianceScanSummary = async (scanIds: string[]): Promise<ScanData[]> 
   };
 
   responses.forEach((response) => {
-    if (ApiError.isApiError(response)) {
-      // TODO: handle any one request has an error on this bulk request
-      return initial.err.push(response);
+    if (!response.ok) {
+      return initial.err.push(response.error);
     } else {
-      if (isEmpty(response.status_counts || response.status_counts === null)) {
-        initial.accEmpty.push(response);
+      if (
+        isEmpty(response.value.status_counts || response.value.status_counts === null)
+      ) {
+        initial.accEmpty.push(response.value);
       } else {
-        initial.accNonEmpty.push(response);
+        initial.accNonEmpty.push(response.value);
       }
     }
   });
@@ -299,39 +295,30 @@ async function getScanStatus(
   if (nodeType === 'cloud_account') {
     scanType = 'cloudCompliance';
   }
-  const result = await makeRequest({
-    apiFunction: statusScanApiFunctionMap[scanType],
-    apiArgs: [
-      {
-        modelScanStatusReq: {
-          bulk_scan_id: bulkScanId,
-          scan_ids: [],
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<LoaderDataType>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
+  const statusScanApi = apiWrapper({
+    fn: statusScanApiFunctionMap[scanType],
+  });
+  const statusScanResponse = await statusScanApi({
+    modelScanStatusReq: {
+      bulk_scan_id: bulkScanId,
+      scan_ids: [],
     },
   });
-
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  if (!statusScanResponse.ok) {
+    throw statusScanResponse.error;
   }
 
-  if (result === null) {
+  if (statusScanResponse.value === null) {
     return [];
   }
-  if (result.statuses && Array.isArray(result.statuses)) {
-    return result.statuses;
+  if (
+    statusScanResponse.value.statuses &&
+    Array.isArray(statusScanResponse.value.statuses)
+  ) {
+    return statusScanResponse.value.statuses;
   }
 
-  return Object.values(result.statuses ?? {});
+  return Object.values(statusScanResponse.value.statuses ?? {});
 }
 
 const loader = async ({

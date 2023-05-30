@@ -10,7 +10,7 @@ import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { Header } from '@/features/topology/components/node-details/Header';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { getPageFromSearchParams } from '@/utils/table';
 
 export type LoaderData = {
@@ -53,39 +53,37 @@ const loader = async ({ params, request }: LoaderFunctionArgs): Promise<LoaderDa
     window: { offset: page * PAGE_SIZE, size: PAGE_SIZE },
   };
 
-  const resourcesResults = await makeRequest({
-    apiFunction: getSearchApiClient().searchCloudResources,
-    apiArgs: [
-      {
-        searchSearchNodeReq,
-      },
-    ],
+  const searchCloudResourcesApi = apiWrapper({
+    fn: getSearchApiClient().searchCloudResources,
   });
-  if (ApiError.isApiError(resourcesResults)) {
+  const resourcesResults = await searchCloudResourcesApi({
+    searchSearchNodeReq,
+  });
+  if (!resourcesResults.ok) {
     throw new Error(`Failed to load cloud resoures : ${nodeType}`);
   }
-  const resourcesCountResults = await makeRequest({
-    apiFunction: getSearchApiClient().searchCloudResourcesCount,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          ...searchSearchNodeReq,
-          window: {
-            ...searchSearchNodeReq.window,
-            size: 10 * searchSearchNodeReq.window.size,
-          },
-        },
-      },
-    ],
+
+  const searchCloudResourcesCountApi = apiWrapper({
+    fn: getSearchApiClient().searchCloudResourcesCount,
   });
-  if (ApiError.isApiError(resourcesCountResults)) {
+  const resourcesCountResults = await searchCloudResourcesCountApi({
+    searchSearchNodeReq: {
+      ...searchSearchNodeReq,
+      window: {
+        ...searchSearchNodeReq.window,
+        size: 10 * searchSearchNodeReq.window.size,
+      },
+    },
+  });
+
+  if (!resourcesCountResults.ok) {
     throw new Error(`Failed to load cloud resoures count : ${nodeType}`);
   }
 
   return {
-    resources: resourcesResults,
+    resources: resourcesResults.value,
     currentPage: page,
-    totalRows: page * PAGE_SIZE + resourcesCountResults.count,
+    totalRows: page * PAGE_SIZE + resourcesCountResults.value.count,
   };
 };
 

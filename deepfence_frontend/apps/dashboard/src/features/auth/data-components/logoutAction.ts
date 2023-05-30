@@ -1,32 +1,24 @@
 import { toast } from 'sonner';
 
 import { getAuthenticationApiClient } from '@/api/api';
-import { ApiError, makeRequest, redirectToLogin } from '@/utils/api';
+import { apiWrapper, redirectToLogin } from '@/utils/api';
 import storage from '@/utils/storage';
 
 const action = async (): Promise<{
   error?: string;
 }> => {
-  const r = await makeRequest({
-    apiFunction: getAuthenticationApiClient().logout,
-    apiArgs: [],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        error: string;
-      }>({
-        error: '',
-      });
-      if (r.status === 404) {
-        return error.set({
-          error: 'Unable to logout, something is wrong',
-        });
-      }
-    },
+  const logoutApi = apiWrapper({
+    fn: getAuthenticationApiClient().logout,
   });
-
-  if (ApiError.isApiError(r)) {
-    toast.error(r.value().error);
-    return r.value();
+  const logoutResponse = await logoutApi();
+  if (!logoutResponse.ok) {
+    if (logoutResponse.error.response.status === 404) {
+      return {
+        error: logoutResponse.error.message,
+      };
+    }
+    toast.error(logoutResponse.error.message);
+    throw logoutResponse.error;
   }
 
   storage.clearAuth();

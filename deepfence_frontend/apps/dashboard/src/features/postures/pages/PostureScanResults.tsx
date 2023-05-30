@@ -52,7 +52,6 @@ import {
 
 import { getComplianceApiClient, getScanResultsApiClient } from '@/api/api';
 import {
-  ApiDocsBadRequestResponse,
   ModelCompliance,
   ModelScanInfo,
   ModelScanResultsReq,
@@ -84,7 +83,7 @@ import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { PostureSeverityType, ScanStatusEnum, ScanTypeEnum } from '@/types/common';
-import { ApiError, apiWrapper, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { isScanComplete, isScanFailed } from '@/utils/scan';
@@ -157,38 +156,29 @@ async function getScans(
   searchParams: URLSearchParams,
 ): Promise<LoaderDataType> {
   // status api
-  const statusResult = await makeRequest({
-    apiFunction: getComplianceApiClient().statusComplianceScan,
-    apiArgs: [
-      {
-        modelScanStatusReq: {
-          scan_ids: [scanId],
-          bulk_scan_id: '',
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<LoaderDataType>({
-        message: '',
-      });
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
+  const statusComplianceScanApi = apiWrapper({
+    fn: getComplianceApiClient().statusComplianceScan,
+  });
+  const statusResult = await statusComplianceScanApi({
+    modelScanStatusReq: {
+      scan_ids: [scanId],
+      bulk_scan_id: '',
     },
   });
-
-  if (ApiError.isApiError(statusResult)) {
-    return statusResult.value();
+  if (!statusResult.ok) {
+    if (statusResult.error.response.status === 400) {
+      return {
+        message: statusResult.error.message,
+      };
+    }
+    throw statusResult.error;
   }
 
-  if (!statusResult || !statusResult?.statuses?.[scanId]) {
+  if (!statusResult.value || !statusResult.value?.statuses?.[scanId]) {
     throw new Error('Scan status not found');
   }
 
-  const scanStatus = statusResult?.statuses?.[scanId].status;
+  const scanStatus = statusResult?.value.statuses?.[scanId].status;
 
   const isScanRunning =
     scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;
@@ -196,7 +186,7 @@ async function getScans(
 
   if (isScanRunning || isScanError) {
     return {
-      scanStatusResult: statusResult.statuses[scanId],
+      scanStatusResult: statusResult.value.statuses[scanId],
     };
   }
 
@@ -251,83 +241,81 @@ async function getScans(
   let result = null;
   let resultCounts = null;
 
-  result = await makeRequest({
-    apiFunction: getComplianceApiClient().resultComplianceScan,
-    apiArgs: [
-      {
-        modelScanResultsReq: scanResultsReq,
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400 || r.status === 404) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message ?? '',
-        });
-      }
-    },
+  const resultCloudComplianceScanApi = apiWrapper({
+    fn: getComplianceApiClient().resultComplianceScan,
   });
-  resultCounts = await makeRequest({
-    apiFunction: getComplianceApiClient().resultCountComplianceScan,
-    apiArgs: [
-      {
-        modelScanResultsReq: {
-          ...scanResultsReq,
-          window: {
-            ...scanResultsReq.window,
-            size: 10 * scanResultsReq.window.size,
-          },
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400 || r.status === 404) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
+  result = await resultCloudComplianceScanApi({
+    modelScanResultsReq: scanResultsReq,
   });
-  if (ApiError.isApiError(result)) {
-    return result.value();
-  }
-  if (ApiError.isApiError(resultCounts)) {
-    return resultCounts.value();
+  if (!result.ok) {
+    if (result.error.response.status === 400 || result.error.response.status === 404) {
+      return {
+        message: result.error.message ?? '',
+      };
+    }
+    throw result.error;
   }
 
-  const totalStatus = Object.values(result.status_counts ?? {}).reduce((acc, value) => {
-    acc = acc + value;
-    return acc;
-  }, 0);
+  const resultCountComplianceScanApi = apiWrapper({
+    fn: getComplianceApiClient().resultCountComplianceScan,
+  });
+  resultCounts = await resultCountComplianceScanApi({
+    modelScanResultsReq: {
+      ...scanResultsReq,
+      window: {
+        ...scanResultsReq.window,
+        size: 10 * scanResultsReq.window.size,
+      },
+    },
+  });
+
+  if (!resultCounts.ok) {
+    if (
+      resultCounts.error.response.status === 400 ||
+      resultCounts.error.response.status === 404
+    ) {
+      return {
+        message: resultCounts.error.message ?? '',
+      };
+    }
+    throw resultCounts.error;
+  }
+
+  const totalStatus = Object.values(result.value.status_counts ?? {}).reduce(
+    (acc, value) => {
+      acc = acc + value;
+      return acc;
+    },
+    0,
+  );
 
   const linuxComplianceStatus = {
-    info: result.status_counts?.[STATUSES.INFO] ?? 0,
-    pass: result.status_counts?.[STATUSES.PASS] ?? 0,
-    warn: result.status_counts?.[STATUSES.WARN] ?? 0,
-    note: result.status_counts?.[STATUSES.NOTE] ?? 0,
+    info: result.value.status_counts?.[STATUSES.INFO] ?? 0,
+    pass: result.value.status_counts?.[STATUSES.PASS] ?? 0,
+    warn: result.value.status_counts?.[STATUSES.WARN] ?? 0,
+    note: result.value.status_counts?.[STATUSES.NOTE] ?? 0,
   };
 
   const clusterComplianceStatus = {
-    alarm: result.status_counts?.[STATUSES.ALARM] ?? 0,
-    info: result.status_counts?.[STATUSES.INFO] ?? 0,
-    ok: result.status_counts?.[STATUSES.OK] ?? 0,
-    skip: result.status_counts?.[STATUSES.SKIP] ?? 0,
+    alarm: result.value.status_counts?.[STATUSES.ALARM] ?? 0,
+    info: result.value.status_counts?.[STATUSES.INFO] ?? 0,
+    ok: result.value.status_counts?.[STATUSES.OK] ?? 0,
+    skip: result.value.status_counts?.[STATUSES.SKIP] ?? 0,
   };
 
   return {
-    scanStatusResult: statusResult.statuses[scanId],
+    scanStatusResult: statusResult.value.statuses[scanId],
     data: {
       totalStatus,
       statusCounts:
-        result.node_type === 'host' ? linuxComplianceStatus : clusterComplianceStatus,
-      timestamp: result.updated_at,
-      compliances: result.compliances ?? [],
+        result.value.node_type === 'host'
+          ? linuxComplianceStatus
+          : clusterComplianceStatus,
+      timestamp: result.value.updated_at,
+      compliances: result.value.compliances ?? [],
       pagination: {
         currentPage: page,
-        totalRows: page * PAGE_SIZE + resultCounts.count,
+        totalRows: page * PAGE_SIZE + resultCounts.value.count,
       },
     },
   };
@@ -382,67 +370,66 @@ const action = async ({
       actionType === ActionEnumType.DELETE
         ? getScanResultsApiClient().deleteScanResult
         : getScanResultsApiClient().notifyScanResult;
-    result = await makeRequest({
-      apiFunction: apiFunction,
-      apiArgs: [
-        {
-          modelScanResultsActionRequest: {
-            result_ids: [...ids],
-            scan_id: _scanId,
-            scan_type: ScanTypeEnum.ComplianceScan,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<{
-          message?: string;
-        }>({});
-        if (r.status === 400 || r.status === 409) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-          });
-        } else if (r.status === 403) {
-          if (actionType === ActionEnumType.DELETE) {
-            return error.set({
-              message: 'You do not have enough permissions to delete compliance',
-            });
-          } else if (actionType === ActionEnumType.NOTIFY) {
-            return error.set({
-              message: 'You do not have enough permissions to notify',
-            });
-          }
-        }
+    const resultApi = apiWrapper({
+      fn: apiFunction,
+    });
+    result = await resultApi({
+      modelScanResultsActionRequest: {
+        result_ids: [...ids],
+        scan_id: _scanId,
+        scan_type: ScanTypeEnum.ComplianceScan,
       },
     });
+    if (!result.ok) {
+      if (result.error.response.status === 400 || result.error.response.status === 409) {
+        return {
+          success: false,
+          message: result.error.message,
+        };
+      } else if (result.error.response.status === 403) {
+        if (actionType === ActionEnumType.DELETE) {
+          return {
+            success: false,
+            message: 'You do not have enough permissions to delete compliance',
+          };
+        } else if (actionType === ActionEnumType.NOTIFY) {
+          return {
+            success: false,
+            message: 'You do not have enough permissions to notify',
+          };
+        }
+      }
+    }
   } else if (actionType === ActionEnumType.MASK || actionType === ActionEnumType.UNMASK) {
     apiFunction =
       actionType === ActionEnumType.MASK
         ? getScanResultsApiClient().maskScanResult
         : getScanResultsApiClient().unmaskScanResult;
-    result = await makeRequest({
-      apiFunction: apiFunction,
-      apiArgs: [
-        {
-          modelScanResultsMaskRequest: {
-            result_ids: [...ids],
-            scan_id: _scanId,
-            scan_type: ScanTypeEnum.ComplianceScan,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<{
-          message?: string;
-        }>({});
-        if (r.status === 400 || r.status === 409) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-          });
-        }
+    const resultApi = apiWrapper({
+      fn: apiFunction,
+    });
+    result = await resultApi({
+      modelScanResultsMaskRequest: {
+        result_ids: [...ids],
+        scan_id: _scanId,
+        scan_type: ScanTypeEnum.ComplianceScan,
       },
     });
+    if (!result.ok) {
+      if (actionType === ActionEnumType.MASK) {
+        toast.error('You do not have enough permissions to mask');
+        return {
+          success: false,
+          message: 'You do not have enough permissions to mask',
+        };
+      } else if (actionType === ActionEnumType.UNMASK) {
+        toast.error('You do not have enough permissions to unmask');
+        return {
+          success: false,
+          message: 'You do not have enough permissions to unmask',
+        };
+      }
+    }
   } else if (actionType === ActionEnumType.DELETE_SCAN) {
     const deleteScan = apiWrapper({
       fn: getScanResultsApiClient().deleteScanResultsForScanID,
@@ -461,16 +448,6 @@ const action = async ({
         };
       }
       throw new Error('Error deleting scan');
-    }
-  }
-
-  if (ApiError.isApiError(result)) {
-    if (result.value()?.message !== undefined) {
-      const message = result.value()?.message ?? 'Something went wrong';
-      return {
-        success: false,
-        message,
-      };
     }
   }
 

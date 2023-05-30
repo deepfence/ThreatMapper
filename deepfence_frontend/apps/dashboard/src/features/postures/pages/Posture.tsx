@@ -9,7 +9,7 @@ import { ModelCloudNodeProvidersListResp } from '@/api/generated';
 import { LinkButton } from '@/components/LinkButton';
 import { getPostureLogo } from '@/constants/logos';
 import { useTheme } from '@/theme/ThemeContext';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { abbreviateNumber, formatPercentage } from '@/utils/number';
 import { typedDefer } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -31,19 +31,19 @@ export const providersToNameMapping: { [key: string]: string } = {
 };
 
 async function getCloudNodeProviders(): Promise<ModelCloudNodeProvidersListResp> {
-  const result = await makeRequest({
-    apiFunction: getCloudNodesApiClient().listCloudProviders,
-    apiArgs: [],
+  const listCloudProvidersApi = apiWrapper({
+    fn: getCloudNodesApiClient().listCloudProviders,
   });
+  const result = await listCloudProvidersApi();
 
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  if (!result.ok) {
+    throw result.error;
   }
 
-  if (!result.providers) {
-    result.providers = [];
+  if (!result.value.providers) {
+    result.value.providers = [];
   }
-  return result;
+  return result.value;
 }
 const loader = async () => {
   return typedDefer({

@@ -20,14 +20,10 @@ import {
 } from 'ui-components';
 
 import { getSettingsApiClient } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelEmailConfigurationAdd,
-  ModelEmailConfigurationResp,
-} from '@/api/generated';
+import { ModelEmailConfigurationAdd, ModelEmailConfigurationResp } from '@/api/generated';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
@@ -76,27 +72,20 @@ export const action = async ({
   }
   if (_actionType === ActionEnumType.DELETE) {
     const id = formData.get('id');
-    const r = await makeRequest({
-      apiFunction: getSettingsApiClient().deleteEmailConfiguration,
-      apiArgs: [
-        {
-          configId: id as string,
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({ success: false });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-            success: false,
-          });
-        }
-      },
+    const deleteApi = apiWrapper({
+      fn: getSettingsApiClient().deleteEmailConfiguration,
     });
-
-    if (ApiError.isApiError(r)) {
-      return r.value();
+    const deleteResponse = await deleteApi({
+      configId: id as string,
+    });
+    if (!deleteResponse.ok) {
+      if (deleteResponse.error.response.status === 400) {
+        return {
+          success: false,
+          message: deleteResponse.error.message,
+        };
+      }
+      throw deleteResponse.error;
     }
 
     toast('Email configuration deleted sucessfully');
@@ -117,32 +106,21 @@ export const action = async ({
       data.port = body.port as string;
       data.password = body.password as string;
     }
-    const r = await makeRequest({
-      apiFunction: getSettingsApiClient().addEmailConfiguration,
-      apiArgs: [
-        {
-          modelEmailConfigurationAdd: data,
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<AddEmailConfigurationReturnType>({ success: false });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-            success: false,
-          });
-        }
-      },
+    const addApi = apiWrapper({
+      fn: getSettingsApiClient().addEmailConfiguration,
     });
-
-    if (ApiError.isApiError(r)) {
-      return {
-        message: r.value().message,
-        success: false,
-      };
+    const addResponse = await addApi({
+      modelEmailConfigurationAdd: data,
+    });
+    if (!addResponse.ok) {
+      if (addResponse.error.response.status === 400) {
+        return {
+          success: false,
+          message: addResponse.error.message,
+        };
+      }
+      throw addResponse.error;
     }
-
     toast('Email configuration added sucessfully');
   }
   return {
@@ -154,38 +132,28 @@ type LoaderDataType = {
   data?: ModelEmailConfigurationResp[];
 };
 const getData = async (): Promise<LoaderDataType> => {
-  const configurations = await makeRequest({
-    apiFunction: getSettingsApiClient().getEmailConfiguration,
-    apiArgs: [],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400 || r.status === 409) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message ?? '',
-        });
-      } else if (r.status === 403) {
-        return error.set({
-          message: 'You do not have enough permissions to view email configurations',
-        });
-      }
-    },
+  const emailApi = apiWrapper({
+    fn: getSettingsApiClient().getEmailConfiguration,
   });
-
-  if (ApiError.isApiError(configurations)) {
-    let message = '';
-    if (configurations.value()?.message === undefined) {
-      message = 'Error in getting email configuration';
+  const emailResponse = await emailApi();
+  if (!emailResponse.ok) {
+    if (
+      emailResponse.error.response.status === 400 ||
+      emailResponse.error.response.status === 409
+    ) {
+      return {
+        message: emailResponse.error.message,
+      };
+    } else if (emailResponse.error.response.status === 403) {
+      return {
+        message: 'You do not have enough permissions to view email configurations',
+      };
     }
-    message = configurations.value().message || '';
-    return {
-      message,
-    };
+    throw emailResponse.error;
   }
+
   return {
-    data: configurations,
+    data: emailResponse.value,
   };
 };
 const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
