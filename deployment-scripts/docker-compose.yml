@@ -61,7 +61,7 @@ services:
 
   deepfence-neo4j:
     container_name: deepfence-neo4j
-    image: neo4j:4.4.12
+    image: neo4j:4.4.21
     ulimits:
       core: 0
     restart: on-failure
@@ -72,8 +72,6 @@ services:
     environment:
       <<: *common-creds
       NEO4J_dbms_memory_pagecache_size: 2600m
-      NEO4J_dbms_memory_heap_initial__size: 4000m
-      NEO4J_dbms_memory_heap_max__size: 4000m
       NEO4JLABS_PLUGINS: '["apoc"]'
     ports:
       - "0.0.0.0:7474:7474"
