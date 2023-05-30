@@ -337,6 +337,7 @@ loop:
 			final_batch := mergeResolvers(batch[:elements])
 			nc.resolvers.clean_maps()
 			nc.resolvers.push_maps(&final_batch)
+			batch = [db_batch_size]EndpointResolvers{}
 			span.End()
 			elements = 0
 		}
@@ -836,6 +837,7 @@ loop:
 				nc.num_ingested.Add(int32(size))
 				size = 0
 				final_batch = NewReportIngestionData()
+				batch = [db_batch_size]ReportIngestionData{}
 				ticker.Reset(db_batch_timeout)
 			}
 		}
