@@ -2,10 +2,12 @@ package cronjobs
 
 import (
 	"sync/atomic"
+	"time"
 
 	"github.com/ThreeDotsLabs/watermill/message"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -35,7 +37,9 @@ func ComputeThreat(msg *message.Message) error {
 }
 
 func computeThreatExploitability(session neo4j.Session) error {
-	tx, err := session.BeginTransaction()
+	log.Info().Msgf("Compute threat Starting")
+	defer log.Info().Msgf("Compute threat Done")
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(600 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -80,7 +84,7 @@ func computeThreatExploitability(session neo4j.Session) error {
 }
 
 func computeThreatGraph(session neo4j.Session) error {
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(600 * time.Second))
 	if err != nil {
 		return err
 	}
