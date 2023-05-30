@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/sendemail"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
@@ -493,6 +494,10 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 		respondWithErrorCode(err, w, statusCode)
 		return
 	}
+	if user.Email == constants.DeepfenceCommunityEmailId {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
 	passwordValid, err := user.CompareHashAndPassword(ctx, pgClient, req.OldPassword)
 	if err != nil || !passwordValid {
 		respondError(&incorrectOldPasswordError, w)
@@ -571,6 +576,10 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 	err = h.Validator.Struct(resetPasswordRequest)
 	if err != nil {
 		respondError(&ValidatorError{err: err}, w)
+		return
+	}
+	if resetPasswordRequest.Email == constants.DeepfenceCommunityEmailId {
+		httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 		return
 	}
 	user, statusCode, ctx, pgClient, err := model.GetUserByEmail(strings.ToLower(resetPasswordRequest.Email))

@@ -6,7 +6,7 @@ title: The Threat Graph
 
 The Threat Graph visualization provides an interactive view of your entire threat landscape. It presents the threats exposed on each node - vulnerabilities, secrets and compliance issues - and displays the connections between each based on live and recent network flows.
 
-| ![Threat Graph](../img/threat-graph-1.jpg) |
+| ![Threat Graph](../img/threat-graph-1.png) |
 | :--: |
 | Threat Graph |
 
@@ -42,22 +42,22 @@ You can quickly narrow down from potentially thousands of alerts to a refined an
 
 ## Example: Workload Issues
 
-Select a runtime workload, such as an 'haproxy' container, to list the issues detected against that asset:
+Select a runtime workload, such as a host, to list the issues detected against that asset:
 
-| ![Threat Graph](../img/threat-graph-5.jpg) |
+| ![Threat Graph](../img/threat-graph-5.png) |
 | :--: |
 | Threat Graph - Investigate Workload Issues |
 
 You can then review the issues detected against that workload.
 
-| ![Threat Graph](../img/threat-graph-6.jpg) |
+| ![Threat Graph](../img/threat-graph-6.png) |
 | :--: |
 | Threat Graph - View Vulnerabilities |
 
 If needed, you can drill down to the vulnerability specifics:
 
-| ![Threat Graph](../img/threat-graph-7.jpg) |
-| :--: |
+|  ![Threat Graph](../img/threat-graph-7.png)   |
+|:-------------------------------------------:|
 | Threat Graph - View Vulnerability Specifics |
 
 Once again, the Threat Graph enables you to quickly narrow down from potentially thousands of alerts to a refined and accurate set of issues and attack paths that you can fix.

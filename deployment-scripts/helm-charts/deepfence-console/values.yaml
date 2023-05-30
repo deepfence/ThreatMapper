@@ -189,7 +189,7 @@ neo4j:
 
 # ingress for console 
 ingress:
-  enable: true
+  enable: false
   ## name of the ingress class for ingress provider installed on the cluster, cannot be empty
   ## Example: nginx
   class: nginx
@@ -227,9 +227,11 @@ router:
   podSecurityContext: {}
   securityContext: {}
   service:
+    ## useful if deepfence-router chart is not installed
+    create: false
     # useful for configuring loadbalancer options on supported clouds
     annotations: {}  
-      # service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
+    ## service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
     type: ClusterIP  # set service type to cluster ip and enable ingress if available
     httpsPort: 443
     httpPort: 80

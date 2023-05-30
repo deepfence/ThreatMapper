@@ -134,6 +134,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			// Get access token for api key
 			r.Post("/auth/token", dfHandler.ApiAuthHandler)
 
+			r.Get("/end-user-license-agreement", dfHandler.EULAHandler)
+
 			if serveOpenapiDocs {
 				log.Info().Msgf("OpenAPI documentation: http://0.0.0.0%s/deepfence/openapi.json", serverPort)
 				log.Info().Msgf("Swagger UI : http://0.0.0.0%s/deepfence/swagger-ui/", serverPort)

@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   HiArchive,
@@ -722,7 +722,9 @@ const CloudComplianceForm = ({
   provider: string;
 }) => {
   const [benchmarkType, setBenchmarkType] = useState('');
-
+  useEffect(() => {
+    setBenchmarkType('');
+  }, [provider]);
   return (
     <div className="flex flex-col gap-y-4">
       <Select
@@ -780,7 +782,9 @@ const ComplianceForm = ({
   provider: string;
 }) => {
   const [benchmarkType, setBenchmarkType] = useState('');
-
+  useEffect(() => {
+    setBenchmarkType('');
+  }, [resource, provider]);
   return (
     <>
       <Select
@@ -836,6 +840,9 @@ const CommonForm = ({
 }) => {
   const [severity, setSeverity] = useState([]);
 
+  useEffect(() => {
+    setSeverity([]);
+  }, [resource, provider]);
   return (
     <>
       <Select
