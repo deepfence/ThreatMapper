@@ -60,7 +60,7 @@ func NewBulkProcessor(name string, fn commitFn) *BulkProcessor {
 		commitFn:      fn,
 		numWorkers:    1,
 		bulkActions:   1_000,
-		flushInterval: 30 * time.Second,
+		flushInterval: 10 * time.Second,
 		requestsC:     make(chan BulkRequest, 2*1_000),
 	}
 }
