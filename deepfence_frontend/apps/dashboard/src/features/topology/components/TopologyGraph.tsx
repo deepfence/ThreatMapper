@@ -7,6 +7,7 @@ import {
 } from 'react-icons/hi';
 import { useFetcher, useParams } from 'react-router-dom';
 import { useEffectOnce, useMeasure } from 'react-use';
+import { toast } from 'sonner';
 import { CircleSpinner, Dropdown, DropdownItem } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
@@ -30,6 +31,8 @@ import {
   getTopologyDiff,
   GraphStorageManager,
 } from '@/features/topology/utils/topology-data';
+
+const MAX_NODES_COUNT_THRESHOLD = 200;
 
 export const TopologyGraph = () => {
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
@@ -273,9 +276,18 @@ function useGraphDataManager() {
   useEffect(() => {
     if (!fetcher.data) return;
     const action = fetcher.data.action;
-    storageManager.setGraphData(fetcher.data.data);
-    const diff = storageManager.getDiff();
-    setDataDiffWithAction({ action, diff });
+    if (
+      GraphStorageManager.getTotalNodesCount(fetcher.data.data) <
+      MAX_NODES_COUNT_THRESHOLD
+    ) {
+      storageManager.setGraphData(fetcher.data.data);
+      const diff = storageManager.getDiff();
+      setDataDiffWithAction({ action, diff });
+    } else {
+      toast(
+        'There are too many nodes to display on the Graph view. Please use the Table view to see all nodes.',
+      );
+    }
   }, [fetcher.data]);
 
   return {

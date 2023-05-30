@@ -163,6 +163,9 @@ export class GraphStorageManager {
   getFilters() {
     return this.filters;
   }
+  static getTotalNodesCount(data?: ApiDocsGraphResult) {
+    return Object.keys(data?.nodes ?? {}).length;
+  }
   setGraphData(data: ApiDocsGraphResult) {
     this.previousData = this.data;
     this.data = data;
