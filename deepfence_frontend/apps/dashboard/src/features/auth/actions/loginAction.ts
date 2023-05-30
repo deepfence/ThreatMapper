@@ -22,6 +22,7 @@ export const loginAction: ActionFunction = async ({
 
   const login = apiWrapper({
     fn: getAuthenticationApiClient().login,
+    options: { handleAuthError: false },
   });
 
   const loginResponse = await login({

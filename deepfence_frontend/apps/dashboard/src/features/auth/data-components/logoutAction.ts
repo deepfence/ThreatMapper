@@ -9,7 +9,6 @@ const action = async (): Promise<{
 }> => {
   const logoutApi = apiWrapper({
     fn: getAuthenticationApiClient().logout,
-    options: { handleAuthError: false },
   });
   const logoutResponse = await logoutApi();
   if (!logoutResponse.ok) {
