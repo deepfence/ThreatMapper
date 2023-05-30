@@ -234,7 +234,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/compliance/scans", dfHandler.SearchComplianceScans)
 				r.Post("/cloud-compliance/scans", dfHandler.SearchCloudComplianceScans)
 
-				r.Post("/cloud-nodes", dfHandler.SearchCloudNodes)
+				r.Post("/cloud-accounts", dfHandler.SearchCloudNodes)
 
 				r.Route("/count", func(r chi.Router) {
 					r.Get("/nodes", dfHandler.NodeCount)
@@ -249,6 +249,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Post("/cloud-resources", dfHandler.SearchCloudResourcesCount)
 					r.Post("/kubernetes-clusters", dfHandler.SearchKubernetesClustersCount)
 					r.Post("/pods", dfHandler.SearchPodsCount)
+					r.Post("/cloud-accounts", dfHandler.SearchCloudAccountCount)
 
 					r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScansCount)
 					r.Post("/secret/scans", dfHandler.SearchSecretScansCount)

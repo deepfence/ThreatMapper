@@ -207,6 +207,10 @@ func (h *Handler) SearchPodsCount(w http.ResponseWriter, r *http.Request) {
 	SearchCountHandler[model.Pod](w, r)
 }
 
+func (h *Handler) SearchCloudAccountCount(w http.ResponseWriter, r *http.Request) {
+	SearchCountHandler[model.CloudNodeAccountInfo](w, r)
+}
+
 func (h *Handler) SearchCompliancesCount(w http.ResponseWriter, r *http.Request) {
 	SearchCountHandler[model.Compliance](w, r)
 }

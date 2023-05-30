@@ -222,7 +222,7 @@ func (d *OpenApiDocs) AddSearchOperations() {
 		"Search Cloud Compliance Scan results", "Search across all the data associated with cloud-compliance scan",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new([]ScanInfo))
 
-	d.AddOperation("searchCloudNodes", http.MethodPost, "/deepfence/search/cloud-nodes",
+	d.AddOperation("searchCloudAccounts", http.MethodPost, "/deepfence/search/cloud-accounts",
 		"Search Cloud Nodes", "Search across all the data associated with cloud nodes",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]CloudNodeAccountInfo))
 
@@ -302,6 +302,10 @@ func (d *OpenApiDocs) AddSearchOperations() {
 	d.AddOperation("countCloudComplianceScans", http.MethodPost, "/deepfence/search/count/cloud-compliance/scans",
 		"Count Cloud Compliance Scan results", "Count across all the data associated with cloud-compliance scans",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
+
+	d.AddOperation("countCloudAccounts", http.MethodPost, "/deepfence/search/count/cloud-accounts",
+		"Count Cloud Nodes", "Search across all the data associated with cloud nodes",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 }
 
 func (d *OpenApiDocs) AddControlsOperations() {

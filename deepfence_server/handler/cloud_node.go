@@ -15,6 +15,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func (h *Handler) RegisterCloudNodeAccountCount(w http.ResponseWriter, r *http.Request) {
+	return
+}
+
 func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http.Request) {
 	req, err := extractCloudNodeDetails(w, r)
 	if err != nil {
