@@ -24,11 +24,11 @@ import (
 const (
 	REDIS_NETWORK_MAP_KEY   = "network_map"
 	REDIS_IPPORTPID_MAP_KEY = "ipportpid_map"
-	uncompress_workers_num  = 50
+	uncompress_workers_num  = 25
 	preparer_workers_num    = 5
-	default_db_input_size   = 20
-	db_batch_size           = 1_000
-	resolver_batch_size     = 1_000
+	default_db_input_size   = 10
+	db_batch_size           = 2_000
+	resolver_batch_size     = 2_000
 	default_ingester_size   = default_db_input_size * db_batch_size
 	db_batch_timeout        = time.Second * 10
 	resolver_timeout        = time.Second * 10
@@ -37,7 +37,7 @@ const (
 	agent_base_timeout      = time.Second * 30
 	localhost_ip            = "127.0.0.1"
 	default_push_back       = 1
-	map_ttl                 = 60*time.Second
+	map_ttl                 = 60 * time.Second
 )
 
 var (
@@ -101,8 +101,8 @@ func newEndpointResolversCache(ctx context.Context) (EndpointResolversCache, err
 }
 
 type CacheEntry struct {
-	value string
-	last_updated   time.Time
+	value        string
+	last_updated time.Time
 }
 
 func (erc *EndpointResolversCache) clean_maps() {
@@ -535,7 +535,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 								local_memoization[ip] = struct{}{}
 								continue
 							}
-							right_ippid, ok := resolvers.get_ip_pid(ip + port, ttl)
+							right_ippid, ok := resolvers.get_ip_pid(ip+port, ttl)
 							if ok {
 								rightpid := extractPidFromNodeID(right_ippid)
 								connections = append(connections, Connection{

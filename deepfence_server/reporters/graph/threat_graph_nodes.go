@@ -42,7 +42,7 @@ func GetVulnerabilityThreatGraph(ctx context.Context, graphType string) ([]Vulne
 	defer tx.Close()
 
 	res, err := tx.Run(`
-		MATCH (n:Node{node_id:"in-the-internet"}) -[:CONNECTS*1..20]-> (m)
+		MATCH (n:Node{node_id:"in-the-internet"}) -[:CONNECTS*1..3]-> (m)
 		WITH DISTINCT m.node_id as id, m.vulnerabilities_count as count
 		WHERE count > 0
 		RETURN id
