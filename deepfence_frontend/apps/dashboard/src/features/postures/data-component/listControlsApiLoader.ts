@@ -7,12 +7,9 @@ import {
 import { toast } from 'sonner';
 
 import { getControlsApiClient } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelCloudNodeControlReqCloudProviderEnum,
-} from '@/api/generated';
+import { ModelCloudNodeControlReqCloudProviderEnum } from '@/api/generated';
 import { ModelCloudNodeComplianceControl } from '@/api/generated/models/ModelCloudNodeComplianceControl';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 export enum ActionEnumType {
   START_SCAN = 'start_scan',
@@ -40,46 +37,40 @@ export const listControlsApiLoader = async ({
     throw new Error('Check Type is required');
   }
 
-  const result = await makeRequest({
-    apiFunction: getControlsApiClient().listControls,
-    apiArgs: [
-      {
-        modelCloudNodeControlReq: {
-          cloud_provider: nodeType as ModelCloudNodeControlReqCloudProviderEnum,
-          compliance_type: checkType,
-          node_id: '',
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      } else if (r.status === 403) {
-        return error.set({
-          message: 'You do not have enough permissions to view controls',
-        });
-      }
+  const listControlsApi = apiWrapper({
+    fn: getControlsApiClient().listControls,
+  });
+  const result = await listControlsApi({
+    modelCloudNodeControlReq: {
+      cloud_provider: nodeType as ModelCloudNodeControlReqCloudProviderEnum,
+      compliance_type: checkType,
+      node_id: '',
     },
   });
-
-  if (ApiError.isApiError(result)) {
-    return { message: result.value().message ?? '', controls: [] };
+  if (!result.ok) {
+    if (result.error.response.status === 400) {
+      return {
+        message: result.error.message,
+        controls: [],
+      };
+    }
+    if (result.error.response.status === 403) {
+      return {
+        message: 'You do not have enough permissions to view controls',
+        controls: [],
+      };
+    }
+    throw result.error;
   }
 
-  if (!result) {
+  if (!result.value) {
     return {
       message: '',
       controls: [],
     };
   }
 
-  return { controls: result.controls ?? [], message: '' };
+  return { controls: result.value.controls ?? [], message: '' };
 };
 
 export const toggleControlApiAction = async ({
@@ -97,34 +88,19 @@ export const toggleControlApiAction = async ({
         ? getControlsApiClient().enableControl
         : getControlsApiClient().disableControl;
 
-    result = await makeRequest({
-      apiFunction: apiFunction,
-      apiArgs: [
-        {
-          modelCloudNodeEnableDisableReq: {
-            control_ids: [controlId],
-            node_id: nodeId,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<{
-          message?: string;
-        }>({});
-        if (r.status === 400 || r.status === 409) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-          });
-        }
+    const controlsApi = apiWrapper({
+      fn: apiFunction,
+    });
+    result = await controlsApi({
+      modelCloudNodeEnableDisableReq: {
+        control_ids: [controlId],
+        node_id: nodeId,
       },
     });
-  }
-
-  if (ApiError.isApiError(result)) {
-    if (result.value()?.message !== undefined) {
-      const message = result.value()?.message ?? 'Something went wrong';
-      toast.error(message);
+    if (!result.ok) {
+      if (result.error.response.status === 400 || result.error.response.status === 409) {
+        toast.error(result.error.message);
+      }
     }
   }
 

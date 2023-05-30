@@ -13,11 +13,7 @@ import {
 } from 'ui-components';
 
 import { getSearchApiClient } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelKubernetesCluster,
-  SearchSearchNodeReq,
-} from '@/api/generated';
+import { ModelKubernetesCluster, SearchSearchNodeReq } from '@/api/generated';
 import {
   ConfigureScanModal,
   ConfigureScanModalProps,
@@ -33,7 +29,7 @@ import {
   SecretScanNodeTypeEnum,
   VulnerabilityScanNodeTypeEnum,
 } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { getPageFromSearchParams } from '@/utils/table';
 
 type LoaderData = {
@@ -69,47 +65,34 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
     },
     window: { offset: page * PAGE_SIZE, size: PAGE_SIZE },
   };
-  const clusterData = await makeRequest({
-    apiFunction: getSearchApiClient().searchKubernetesClusters,
-    apiArgs: [
-      {
-        searchSearchNodeReq,
+  const searchKubernetesClustersApi = apiWrapper({
+    fn: getSearchApiClient().searchKubernetesClusters,
+  });
+  const clusterData = await searchKubernetesClustersApi({
+    searchSearchNodeReq,
+  });
+  if (!clusterData.ok) {
+    throw clusterData.error;
+  }
+
+  const countKubernetesClustersApi = apiWrapper({
+    fn: getSearchApiClient().countKubernetesClusters,
+  });
+  const clustersDataCount = await countKubernetesClustersApi({
+    searchSearchNodeReq: {
+      ...searchSearchNodeReq,
+      window: {
+        ...searchSearchNodeReq.window,
+        size: 10 * searchSearchNodeReq.window.size,
       },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
     },
   });
-  if (ApiError.isApiError(clusterData)) {
-    throw clusterData.value();
-  }
-  const clustersDataCount = await makeRequest({
-    apiFunction: getSearchApiClient().countKubernetesClusters,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          ...searchSearchNodeReq,
-          window: {
-            ...searchSearchNodeReq.window,
-            size: 10 * searchSearchNodeReq.window.size,
-          },
-        },
-      },
-    ],
-  });
-  if (ApiError.isApiError(clustersDataCount)) {
+
+  if (!clustersDataCount.ok) {
     throw clustersDataCount;
   }
 
-  if (clusterData === null) {
+  if (clusterData.value === null) {
     return {
       clusters: [],
       currentPage: 0,
@@ -117,9 +100,9 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
     };
   }
   return {
-    clusters: clusterData,
+    clusters: clusterData.value,
     currentPage: page,
-    totalRows: page * PAGE_SIZE + clustersDataCount.count,
+    totalRows: page * PAGE_SIZE + clustersDataCount.value.count,
   };
 };
 

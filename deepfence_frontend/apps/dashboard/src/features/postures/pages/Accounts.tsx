@@ -39,7 +39,6 @@ import {
 
 import { getCloudNodesApiClient, getScanResultsApiClient } from '@/api/api';
 import {
-  ApiDocsBadRequestResponse,
   ModelCloudNodeAccountInfo,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
@@ -54,7 +53,7 @@ import { useDownloadScan } from '@/features/common/data-component/downloadScanAc
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { ComplianceScanNodeTypeEnum, ScanTypeEnum } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { isScanComplete } from '@/utils/scan';
 import { DFAwait } from '@/utils/suspense';
@@ -118,37 +117,22 @@ const action = async ({
     if (!scanId) {
       throw new Error('Invalid action');
     }
-    const result = await makeRequest({
-      apiFunction: getScanResultsApiClient().deleteScanResultsForScanID,
-      apiArgs: [
-        {
-          scanId: scanId.toString(),
-          scanType: scanType as ScanTypeEnum,
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<{
-          message?: string;
-        }>({});
-        if (r.status === 400 || r.status === 409) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-          });
-        } else if (r.status === 403) {
-          return error.set({
-            message: 'You do not have enough permissions to delete scan',
-          });
-        }
-      },
+    const deleteScanResultsForScanIDApi = apiWrapper({
+      fn: getScanResultsApiClient().deleteScanResultsForScanID,
     });
-    if (ApiError.isApiError(result)) {
-      if (result.value()?.message !== undefined) {
-        const message =
-          result.value()?.message ?? 'Something went wrong, please try again';
+    const result = await deleteScanResultsForScanIDApi({
+      scanId: scanId.toString(),
+      scanType: scanType as ScanTypeEnum,
+    });
+    if (!result.ok) {
+      if (result.error.response.status === 400 || result.error.response.status === 409) {
         return {
           success: false,
-          message,
+          message: result.error.message,
+        };
+      } else if (result.error.response.status === 403) {
+        return {
+          message: 'You do not have enough permissions to delete scan',
         };
       }
     }
@@ -181,36 +165,24 @@ export async function getAccounts(
   //     active.length ? true : false,
   //   ];
   // }
-  const result = await makeRequest({
-    apiFunction: getCloudNodesApiClient().listCloudNodeAccount,
-    apiArgs: [
-      {
-        modelCloudNodeAccountsListReq: {
-          cloud_provider: nodeType,
-          window: {
-            offset: 0 * PAGE_SIZE,
-            size: PAGE_SIZE,
-          },
-        },
+  const deleteScanResultsForScanIDApi = apiWrapper({
+    fn: getCloudNodesApiClient().listCloudNodeAccount,
+  });
+  const result = await deleteScanResultsForScanIDApi({
+    modelCloudNodeAccountsListReq: {
+      cloud_provider: nodeType,
+      window: {
+        offset: 0 * PAGE_SIZE,
+        size: PAGE_SIZE,
       },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<LoaderDataType>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
     },
   });
-
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  if (!result.ok) {
+    throw result.error;
   }
 
   return {
-    accounts: result.cloud_node_accounts_info ?? [],
+    accounts: result.value.cloud_node_accounts_info ?? [],
     currentPage: 0,
     totalRows: 15,
   };

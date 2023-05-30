@@ -2,18 +2,19 @@ import { Outlet, ShouldRevalidateFunction, useLoaderData } from 'react-router-do
 
 import { getSearchApiClient } from '@/api/api';
 import { TopologyHeader } from '@/features/topology/components/TopologyHeader';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 
 async function getNodeCounts() {
-  const nodeCounts = await makeRequest({
-    apiFunction: getSearchApiClient().getNodeCounts,
-    apiArgs: [],
+  const getNodeCountsApi = apiWrapper({
+    fn: getSearchApiClient().getNodeCounts,
   });
-  if (ApiError.isApiError(nodeCounts)) {
+  const nodeCounts = await getNodeCountsApi();
+
+  if (!nodeCounts.ok) {
     throw new Error('Node counts failed');
   }
-  return nodeCounts;
+  return nodeCounts.value;
 }
 
 type LoaderData = {

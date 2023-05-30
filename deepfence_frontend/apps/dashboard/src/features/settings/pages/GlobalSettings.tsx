@@ -15,14 +15,10 @@ import {
 } from 'ui-components';
 
 import { getSettingsApiClient } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelSettingsResponse,
-  ModelSettingUpdateRequestKeyEnum,
-} from '@/api/generated';
+import { ModelSettingsResponse, ModelSettingUpdateRequestKeyEnum } from '@/api/generated';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
@@ -43,90 +39,56 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
   const formData = await request.formData();
   const body = Object.fromEntries(formData);
 
-  const r = await makeRequest({
-    apiFunction: getSettingsApiClient().updateSettings,
-    apiArgs: [
-      {
-        id: Number(body.id),
-        modelSettingUpdateRequest: {
-          key: body.key as ModelSettingUpdateRequestKeyEnum,
-          value: body.value as string,
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<ActionReturnType>({
-        success: false,
-      });
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-
-        return error.set({
-          fieldErrors: {
-            value: modelResponse.error_fields?.value as string,
-          },
-          message: modelResponse.message ?? '',
-          success: false,
-        });
-      } else if (r.status === 403) {
-        return error.set({
-          message: 'You do not have enough permissions to update settings',
-          success: false,
-        });
-      }
+  const updateApi = apiWrapper({
+    fn: getSettingsApiClient().updateSettings,
+  });
+  const updateResponse = await updateApi({
+    id: Number(body.id),
+    modelSettingUpdateRequest: {
+      key: body.key as ModelSettingUpdateRequestKeyEnum,
+      value: body.value as string,
     },
   });
-
-  if (ApiError.isApiError(r)) {
-    let message = '';
-    if (r.value()?.message === undefined) {
-      message = 'Error in getting global settings';
+  if (!updateResponse.ok) {
+    if (updateResponse.error.response.status === 400) {
+      return {
+        success: false,
+        message: updateResponse.error.message,
+      };
+    } else if (updateResponse.error.response.status === 403) {
+      return {
+        success: false,
+        message: 'You do not have enough permissions to update settings',
+      };
     }
-    message = r.value().message || '';
-    return {
-      message,
-      success: false,
-    };
+    throw updateResponse.error;
   }
+
   return {
     success: true,
   };
 };
 
 const getData = async (): Promise<LoaderDataType> => {
-  const response = await makeRequest({
-    apiFunction: getSettingsApiClient().getSettings,
-    apiArgs: [],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400 || r.status === 409) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message ?? '',
-        });
-      } else if (r.status === 403) {
-        return error.set({
-          message: 'You do not have enough permissions to view settings',
-        });
-      }
-    },
+  const settingsApi = apiWrapper({
+    fn: getSettingsApiClient().getSettings,
   });
-
-  if (ApiError.isApiError(response)) {
-    let message = '';
-    if (response.value()?.message === undefined) {
-      message = 'Something went wrong on generating the logs';
+  const settingsResponse = await settingsApi();
+  if (!settingsResponse.ok) {
+    if (settingsResponse.error.response.status === 400) {
+      return {
+        message: settingsResponse.error.message,
+      };
+    } else if (settingsResponse.error.response.status === 403) {
+      return {
+        message: 'You do not have enough permissions to view settings',
+      };
     }
-    message = response.value().message || '';
-    return {
-      message,
-    };
+    throw settingsResponse.error;
   }
 
   return {
-    data: response,
+    data: settingsResponse.value,
   };
 };
 
