@@ -47,7 +47,6 @@ import { Checkbox } from 'ui-components';
 
 import { getScanResultsApiClient, getSearchApiClient } from '@/api/api';
 import {
-  ApiDocsBadRequestResponse,
   ModelScanInfo,
   SearchSearchScanReq,
   UtilsReportFiltersNodeTypeEnum,
@@ -533,6 +532,7 @@ const SecretScans = () => {
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('node_type', {
+        enableSorting: false,
         cell: (info) => {
           return (
             <div className="flex items-center gap-x-2">
