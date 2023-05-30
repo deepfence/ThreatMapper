@@ -7,7 +7,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -24,7 +23,7 @@ import (
 const (
 	REDIS_NETWORK_MAP_KEY   = "network_map"
 	REDIS_IPPORTPID_MAP_KEY = "ipportpid_map"
-	workers_num             = 25
+	workers_num             = 50
 	default_db_input_size   = 30
 	db_batch_size           = 1_000
 	resolver_batch_size     = 1_000
@@ -44,13 +43,6 @@ var (
 	ingester_size int
 	db_input_size int
 )
-
-var reportPool = sync.Pool{
-	New: func() any {
-		rpt := report.MakeReport()
-		return &rpt
-	},
-}
 
 func init() {
 	breaker.Store(false)
@@ -136,7 +128,7 @@ type neo4jIngester struct {
 	resolvers        EndpointResolversCache
 	batcher          chan ReportIngestionData
 	resolvers_update chan EndpointResolvers
-	preparers_input  chan *report.Report
+	preparers_input  chan report.Report
 	done             chan struct{}
 	db_pusher        chan ReportIngestionData
 	num_ingested     atomic.Int32
@@ -790,11 +782,10 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 
 func (nc *neo4jIngester) runIngester() {
 	for crpt := range nc.ingester {
-		rpt := reportPool.Get().(*report.Report)
-		if err := crpt.FillReport(rpt); err != nil {
+		rpt := report.MakeReport()
+		if err := crpt.FillReport(&rpt); err != nil {
 			log.Error().Msgf("Failed to unmarshal report")
 			crpt.Cleanup()
-			reportPool.Put(rpt)
 			continue
 		}
 		crpt.Cleanup()
@@ -880,9 +871,8 @@ func (nc *neo4jIngester) runDBPusher(db_pusher, db_pusher_retry chan ReportInges
 func (nc *neo4jIngester) runPreparer() {
 	var buf bytes.Buffer
 	for rpt := range nc.preparers_input {
-		r := computeResolvers(rpt, &buf)
-		data := prepareNeo4jIngestion(rpt, &nc.resolvers, &buf)
-		reportPool.Put(rpt)
+		r := computeResolvers(&rpt, &buf)
+		data := prepareNeo4jIngestion(&rpt, &nc.resolvers, &buf)
 		nc.resolvers_update <- r
 		nc.batcher <- data
 	}
@@ -910,7 +900,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 		ingester:         make(chan report.CompressedReport, ingester_size),
 		batcher:          make(chan ReportIngestionData, ingester_size),
 		resolvers_update: make(chan EndpointResolvers, db_batch_size*2),
-		preparers_input:  make(chan *report.Report, db_batch_size*2),
+		preparers_input:  make(chan report.Report, db_batch_size*2),
 		done:             done,
 		db_pusher:        db_pusher,
 		num_ingested:     atomic.Int32{},
