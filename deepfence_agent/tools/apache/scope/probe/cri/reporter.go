@@ -68,8 +68,11 @@ func (r *Reporter) containerTopology(imageMetadataMap map[string]ImageMetadata) 
 	}
 
 	for _, c := range resp.Containers {
-		metadata := r.getNode(c, imageMetadataMap)
-		result.AddNode(metadata)
+		node := r.getNode(c, imageMetadataMap)
+		if node.Metadata.DockerContainerState == report.StateCreated || node.Metadata.DockerContainerState == report.StateExited {
+			continue
+		}
+		result.AddNode(node)
 	}
 
 	return result, nil
