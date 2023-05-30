@@ -166,14 +166,28 @@ type ReportIngestionData struct {
 	Hosts []map[string]interface{} `json:"hosts" required:"true"`
 }
 
-func (r *EndpointResolvers) merge(other *EndpointResolvers) {
-	for k, v := range other.network_map {
-		r.network_map[k] = v
+func mergeResolvers(others []EndpointResolvers) EndpointResolvers {
+	size_network_map := 0
+	size_ipport_ippid := 0
+	for i := range others {
+		size_network_map += len(others[i].network_map)
+		size_ipport_ippid += len(others[i].ipport_ippid)
 	}
 
-	for k, v := range other.ipport_ippid {
-		r.ipport_ippid[k] = v
+	res := EndpointResolvers{
+		network_map:  make(map[string]string, size_network_map),
+		ipport_ippid: make(map[string]string, size_ipport_ippid),
 	}
+
+	for i := range others {
+		for k, v := range others[i].network_map {
+			res.network_map[k] = v
+		}
+		for k, v := range others[i].ipport_ippid {
+			res.ipport_ippid[k] = v
+		}
+	}
+	return res
 }
 
 func mergeIngestionData(other []ReportIngestionData) ReportIngestionData {
@@ -298,10 +312,7 @@ func computeResolvers(rpt *report.Report, buf *bytes.Buffer) EndpointResolvers {
 }
 
 func (nc *neo4jIngester) resolversUpdater() {
-	final_batch := EndpointResolvers{
-		network_map:  map[string]string{},
-		ipport_ippid: map[string]string{},
-	}
+	batch := [db_batch_size]EndpointResolvers{}
 	elements := 0
 	send := false
 	ticker := time.NewTicker(resolver_timeout)
@@ -313,7 +324,7 @@ loop:
 			if !open {
 				break loop
 			}
-			final_batch.merge(&resolver)
+			batch[elements] = resolver
 			elements += 1
 			send = elements == resolver_batch_size
 		case <-ticker.C:
@@ -323,10 +334,10 @@ loop:
 		if send {
 			send = false
 			span := telemetry.NewSpan(context.Background(), "ingester", "ResolversUpdater")
+			final_batch := mergeResolvers(batch[:elements])
 			nc.resolvers.clean_maps()
 			nc.resolvers.push_maps(&final_batch)
 			span.End()
-			final_batch.clean()
 			elements = 0
 		}
 	}
