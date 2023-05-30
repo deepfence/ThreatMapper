@@ -10,7 +10,7 @@ import {
   Metadata,
   toTopologyMetadataString,
 } from '@/features/topology/components/node-details/Metadata';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 export type LoaderData = {
   processData: ModelProcess;
@@ -22,28 +22,26 @@ const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
   if (!nodeId) {
     throw new Error('nodeId is required');
   }
-
-  const lookupResult = await makeRequest({
-    apiFunction: getLookupApiClient().lookupProcess,
-    apiArgs: [
-      {
-        lookupLookupFilter: {
-          node_ids: [nodeId],
-          in_field_filter: null,
-          window: {
-            offset: 0,
-            size: 1,
-          },
-        },
-      },
-    ],
+  const lookupProcessApi = apiWrapper({
+    fn: getLookupApiClient().lookupProcess,
   });
-  if (ApiError.isApiError(lookupResult) || !lookupResult.length) {
+  const lookupResult = await lookupProcessApi({
+    lookupLookupFilter: {
+      node_ids: [nodeId],
+      in_field_filter: null,
+      window: {
+        offset: 0,
+        size: 1,
+      },
+    },
+  });
+
+  if (!lookupResult.ok || !lookupResult.value.length) {
     throw new Error(`Failed to load host: ${nodeId}`);
   }
 
   return {
-    processData: lookupResult[0],
+    processData: lookupResult.value[0],
   };
 };
 

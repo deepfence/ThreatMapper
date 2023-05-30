@@ -23,7 +23,7 @@ import {
   getVulnerabilityScanCounts,
 } from '@/features/topology/components/scan-results/loaderHelpers';
 import { ScanResult } from '@/features/topology/components/scan-results/ScanResult';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 export type LoaderData = {
   hostData: ModelHost;
@@ -40,34 +40,37 @@ const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
     throw new Error('nodeId is required');
   }
 
-  const lookupResult = await makeRequest({
-    apiFunction: getLookupApiClient().lookupHost,
-    apiArgs: [
-      {
-        lookupLookupFilter: {
-          node_ids: [nodeId],
-          in_field_filter: null,
-          window: {
-            offset: 0,
-            size: 1,
-          },
-        },
-      },
-    ],
+  const lookupHostApi = apiWrapper({
+    fn: getLookupApiClient().lookupHost,
   });
-  if (ApiError.isApiError(lookupResult) || !lookupResult.length) {
+  const lookupResult = await lookupHostApi({
+    lookupLookupFilter: {
+      node_ids: [nodeId],
+      in_field_filter: null,
+      window: {
+        offset: 0,
+        size: 1,
+      },
+    },
+  });
+
+  if (!lookupResult.ok || !lookupResult.value.length) {
     throw new Error(`Failed to load host: ${nodeId}`);
   }
 
   return {
-    hostData: lookupResult[0],
+    hostData: lookupResult.value[0],
     vulnerabilityScanCounts: await getVulnerabilityScanCounts(
-      lookupResult[0].vulnerability_latest_scan_id,
+      lookupResult.value[0].vulnerability_latest_scan_id,
     ),
-    secretScanCounts: await getSecretScanCounts(lookupResult[0].secret_latest_scan_id),
-    malwareScanCounts: await getMalwareScanCounts(lookupResult[0].malware_latest_scan_id),
+    secretScanCounts: await getSecretScanCounts(
+      lookupResult.value[0].secret_latest_scan_id,
+    ),
+    malwareScanCounts: await getMalwareScanCounts(
+      lookupResult.value[0].malware_latest_scan_id,
+    ),
     complianceScanCounts: await getComplianceScanCounts(
-      lookupResult[0].compliance_latest_scan_id,
+      lookupResult.value[0].compliance_latest_scan_id,
     ),
   };
 };

@@ -11,7 +11,7 @@ import {
   toTopologyMetadataString,
 } from '@/features/topology/components/node-details/Metadata';
 import { ContainerTable } from '@/features/topology/components/node-details/SummaryTables';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 export type LoaderData = {
   podData: ModelPod;
@@ -23,28 +23,26 @@ const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
   if (!nodeId) {
     throw new Error('nodeId is required');
   }
-
-  const lookupResult = await makeRequest({
-    apiFunction: getLookupApiClient().lookupPod,
-    apiArgs: [
-      {
-        lookupLookupFilter: {
-          node_ids: [nodeId],
-          in_field_filter: null,
-          window: {
-            offset: 0,
-            size: 1,
-          },
-        },
-      },
-    ],
+  const lookupPodApi = apiWrapper({
+    fn: getLookupApiClient().lookupPod,
   });
-  if (ApiError.isApiError(lookupResult) || !lookupResult.length) {
+  const lookupResult = await lookupPodApi({
+    lookupLookupFilter: {
+      node_ids: [nodeId],
+      in_field_filter: null,
+      window: {
+        offset: 0,
+        size: 1,
+      },
+    },
+  });
+
+  if (!lookupResult.ok || !lookupResult.value.length) {
     throw new Error(`Failed to load host: ${nodeId}`);
   }
 
   return {
-    podData: lookupResult[0],
+    podData: lookupResult.value[0],
   };
 };
 

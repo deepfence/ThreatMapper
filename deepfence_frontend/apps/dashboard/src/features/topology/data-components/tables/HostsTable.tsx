@@ -39,7 +39,7 @@ import {
   SecretScanNodeTypeEnum,
   VulnerabilityScanNodeTypeEnum,
 } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import {
   COMPLIANCE_SCAN_STATUS_GROUPS,
   ComplianceScanGroupedStatus,
@@ -188,40 +188,38 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
     });
   }
 
-  const hostsData = await makeRequest({
-    apiFunction: getSearchApiClient().searchHosts,
-    apiArgs: [
-      {
-        searchSearchNodeReq,
-      },
-    ],
+  const getThreatGraphApi = apiWrapper({
+    fn: getSearchApiClient().searchHosts,
   });
-  if (ApiError.isApiError(hostsData)) {
+  const hostsData = await getThreatGraphApi({
+    searchSearchNodeReq,
+  });
+
+  if (!hostsData.ok) {
     throw hostsData;
   }
 
-  const hostsDataCount = await makeRequest({
-    apiFunction: getSearchApiClient().searchHostsCount,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          ...searchSearchNodeReq,
-          window: {
-            ...searchSearchNodeReq.window,
-            size: 10 * searchSearchNodeReq.window.size,
-          },
-        },
-      },
-    ],
+  const searchHostsCountApi = apiWrapper({
+    fn: getSearchApiClient().searchHostsCount,
   });
-  if (ApiError.isApiError(hostsDataCount)) {
+  const hostsDataCount = await searchHostsCountApi({
+    searchSearchNodeReq: {
+      ...searchSearchNodeReq,
+      window: {
+        ...searchSearchNodeReq.window,
+        size: 10 * searchSearchNodeReq.window.size,
+      },
+    },
+  });
+
+  if (!hostsDataCount.ok) {
     throw hostsDataCount;
   }
 
   return {
-    hosts: hostsData,
+    hosts: hostsData.value,
     currentPage: page,
-    totalRows: page * PAGE_SIZE + hostsDataCount.count,
+    totalRows: page * PAGE_SIZE + hostsDataCount.value.count,
   };
 };
 

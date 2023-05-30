@@ -37,11 +37,11 @@ import {
   getSecretApiClient,
   getVulnerabilityApiClient,
 } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelScanInfo } from '@/api/generated';
+import { ModelScanInfo } from '@/api/generated';
 import { ModelComplianceScanInfo } from '@/api/generated/models/ModelComplianceScanInfo';
 import { ScanLoader } from '@/components/ScanLoader';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export type LoaderDataType = {
@@ -116,44 +116,32 @@ async function getScanStatus(
     scanType = 'cloudCompliance';
   }
 
-  const result = await makeRequest({
-    apiFunction: statusScanApiFunctionMap[scanType],
-    apiArgs: [
-      {
-        modelScanStatusReq: {
-          scan_ids: [],
-          bulk_scan_id: bulkScanId,
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<LoaderDataType>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
+  const statusScanApi = apiWrapper({
+    fn: statusScanApiFunctionMap[scanType],
+  });
+  const statusResponse = await statusScanApi({
+    modelScanStatusReq: {
+      scan_ids: [],
+      bulk_scan_id: bulkScanId,
     },
   });
-
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  if (!statusResponse.ok) {
+    throw statusResponse.error;
   }
 
-  if (result === null) {
+  if (statusResponse.value === null) {
     return {
       data: [],
     };
   }
-  if (result.statuses && Array.isArray(result.statuses)) {
+  if (statusResponse.value.statuses && Array.isArray(statusResponse.value.statuses)) {
     return {
-      data: result.statuses,
+      data: statusResponse.value.statuses,
     };
   }
 
   return {
-    data: Object.values(result.statuses ?? {}),
+    data: Object.values(statusResponse.value.statuses ?? {}),
   };
 }
 

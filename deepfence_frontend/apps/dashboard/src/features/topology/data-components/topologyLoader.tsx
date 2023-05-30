@@ -5,7 +5,7 @@ import { getTopologyApiClient } from '@/api/api';
 import { ApiDocsGraphResult } from '@/api/generated';
 import { TopologyAction } from '@/features/topology/types/graph';
 import { GraphStorageManager, NodeType } from '@/features/topology/utils/topology-data';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 export interface TopologyLoaderData {
   data: ApiDocsGraphResult;
@@ -78,28 +78,26 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<TopologyLoaderDa
     pod: getTopologyApiClient().getPodsTopologyGraph,
     container: getTopologyApiClient().getContainersTopologyGraph,
   };
-  const graphData = await makeRequest({
-    apiFunction: apiFuncMap[type as (typeof TopologyViewTypes)[number]]!,
-    apiArgs: [
-      {
-        graphTopologyFilters: {
-          ...filters,
-          field_filters: {
-            contains_filter: { filter_in: {} },
-            match_filter: { filter_in: {} },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
-          },
-        },
+  const getGraphDataApi = apiWrapper({
+    fn: apiFuncMap[type as (typeof TopologyViewTypes)[number]]!,
+  });
+  const graphData = await getGraphDataApi({
+    graphTopologyFilters: {
+      ...filters,
+      field_filters: {
+        contains_filter: { filter_in: {} },
+        match_filter: { filter_in: {} },
+        order_filter: { order_fields: [] },
+        compare_filter: null,
       },
-    ],
+    },
   });
 
-  if (ApiError.isApiError(graphData)) {
+  if (!graphData.ok) {
     throw new Error('unknown response');
   }
   return {
-    data: graphData,
+    data: graphData.value,
     action: action,
   };
 };
