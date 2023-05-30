@@ -36,6 +36,7 @@ export const registerAction: ActionFunction = async ({
   }
   const registerUserApi = apiWrapper({
     fn: getUserApiClient().registerUser,
+    options: { handleAuthError: false },
   });
   const registerUserResponse = await registerUserApi({
     modelUserRegisterRequest: {
