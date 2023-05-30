@@ -24,6 +24,7 @@ export const forgotPasswordAction = async ({
 
   const resetPasswordRequestApi = apiWrapper({
     fn: getUserApiClient().resetPasswordRequest,
+    options: { handleAuthError: false },
   });
   const resetPasswordResponse = await resetPasswordRequestApi({
     modelPasswordResetRequest: {
