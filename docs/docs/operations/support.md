@@ -12,7 +12,7 @@ You can download recent log files from the management console, and from each sen
  * Go to **Settings** > **Diagnosis**
  * Download the diagnostic logs from the management console, or from a selected sensor agent instance
 
-   ![Diagnosis](../img/diagnosis-status.jpg)
+   ![Diagnosis](../img/diagnostic-logs.png)
 
 
 ## Getting Support

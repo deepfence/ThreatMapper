@@ -8,3 +8,10 @@ export function getRegistryDisplayId(registry: ModelRegistryListResp): string {
   // we give up
   return '-';
 }
+
+export const isNodeTypeARegistryType = (nodeType: string) => {
+  return nodeType === 'imageTag' || nodeType == 'image';
+};
+export const isNodeTypeARegistryTagType = (nodeType: string) => {
+  return nodeType === 'imageTag';
+};

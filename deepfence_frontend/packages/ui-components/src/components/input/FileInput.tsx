@@ -1,9 +1,12 @@
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { cva, VariantProps } from 'cva';
 import { ChangeEvent, ComponentProps, forwardRef, useId } from 'react';
+import { IconContext } from 'react-icons';
+import { HiOutlineInformationCircle } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
 import HelperText from '@/components/input/HelperText';
+import { Tooltip } from '@/main';
 import { ObjectWithNonNullableValues } from '@/types/utils';
 
 export type SizeType = 'sm' | 'md' | 'lg';
@@ -43,12 +46,13 @@ export interface TextInputProps
   helperText?: string;
   required?: boolean;
   accept?: string;
+  hint?: string;
   onChoosen?: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const FileInput = forwardRef<HTMLInputElement, TextInputProps>(
   (
-    { sizing, label, helperText, className = '', required, id, onChoosen, ...rest },
+    { sizing, label, helperText, hint, className = '', required, id, onChoosen, ...rest },
     ref,
   ) => {
     const internalId = useId();
@@ -57,13 +61,28 @@ export const FileInput = forwardRef<HTMLInputElement, TextInputProps>(
     return (
       <div className={twMerge('flex flex-col gap-2 w-full', className)}>
         {label && (
-          <LabelPrimitive.Root
-            htmlFor={_id}
-            className="text-sm font-medium text-gray-900 dark:text-white"
-          >
-            {required && <span>*</span>}
-            {label}
-          </LabelPrimitive.Root>
+          <div className="flex gap-2 items-center">
+            <LabelPrimitive.Root
+              htmlFor={_id}
+              className="text-sm font-medium text-gray-900 dark:text-white"
+            >
+              {required && <span>*</span>}
+              {label}
+            </LabelPrimitive.Root>
+            {!!hint?.length && (
+              <Tooltip content={hint} triggerAsChild>
+                <button type="button" tabIndex={-1}>
+                  <IconContext.Provider
+                    value={{
+                      className: 'text-gray-600 dark:text-gray-200 h-4 w-4',
+                    }}
+                  >
+                    <HiOutlineInformationCircle />
+                  </IconContext.Provider>
+                </button>
+              </Tooltip>
+            )}
+          </div>
         )}
 
         <input

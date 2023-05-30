@@ -950,7 +950,7 @@ func (h *Handler) ListMalwareScanResultClassHandler(w http.ResponseWriter, r *ht
 		class = append(class, e.Class)
 	}
 
-	httpext.JSON(w, http.StatusOK, model.MalwareScanResultRules{Rules: lo.Uniq(class)})
+	httpext.JSON(w, http.StatusOK, model.MalwareScanResultClass{Class: lo.Uniq(class)})
 }
 
 func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {

@@ -348,7 +348,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 	    ORDER BY n.updated_at DESC` +
 		scan_filter.Window.FetchWindow2CypherQuery() +
 		`}` +
-		` RETURN n.node_id as scan_id, n.status as status, n.status_message as status_message, n.updated_at as updated_at, m.node_id as node_id, m.node_type as node_type, m.node_name as node_name` +
+		` RETURN n.node_id as scan_id, n.status as status, n.status_message as status_message, n.updated_at as updated_at, m.node_id as node_id, COALESCE(m.node_type, m.cloud_provider) as node_type, m.node_name as node_name` +
 		reporters.OrderFilter2CypherCondition("", scan_filter.Filters.OrderFilter) +
 		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("search query: %v", query)

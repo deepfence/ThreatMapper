@@ -25,6 +25,7 @@ import {
 } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { FilterHeader } from '@/components/forms/FilterHeader';
+import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
@@ -67,7 +68,7 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
     [])[0] ?? null) as MalwareScanGroupedStatus | null;
 
   const order = getOrderFromSearchParams(searchParams);
-
+  const hosts = searchParams.get('hosts')?.split(',') ?? [];
   const searchSearchNodeReq: SearchSearchNodeReq = {
     node_filter: {
       filters: {
@@ -75,6 +76,7 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
         contains_filter: {
           filter_in: {
             active: [true],
+            ...(hosts.length ? { host_name: hosts } : {}),
           },
         },
         match_filter: {
@@ -281,6 +283,7 @@ interface IFilters {
   vulnerabilityScanStatus: Array<string>;
   secretScanStatus: Array<string>;
   malwareScanStatus: Array<string>;
+  hosts: Array<string>;
 }
 function Filters({
   filters,
@@ -308,6 +311,7 @@ function Filters({
                     vulnerabilityScanStatus: [],
                     secretScanStatus: [],
                     malwareScanStatus: [],
+                    hosts: [],
                   });
                 }}
               />
@@ -447,6 +451,20 @@ function Filters({
                     </Listbox>
                   </div>
                 </fieldset>
+                <fieldset>
+                  <SearchableHostList
+                    scanType="none"
+                    valueKey="hostName"
+                    defaultSelectedHosts={filters.hosts ?? []}
+                    reset={!isFilterApplied}
+                    onChange={(value) => {
+                      onFiltersChange({
+                        ...filters,
+                        hosts: [...value],
+                      });
+                    }}
+                  />
+                </fieldset>
               </div>
             </div>
           </div>
@@ -474,6 +492,7 @@ export const ContainersTable = () => {
     vulnerabilityScanStatus: [],
     secretScanStatus: [],
     malwareScanStatus: [],
+    hosts: [],
   });
 
   function fetchClustersData() {
@@ -491,6 +510,9 @@ export const ContainersTable = () => {
     }
     if (filters.malwareScanStatus.length) {
       searchParams.set('malware_scan_status', filters.malwareScanStatus.join(','));
+    }
+    if (filters.hosts.length) {
+      searchParams.set('hosts', filters.hosts.join(','));
     }
 
     if (sortState.length) {

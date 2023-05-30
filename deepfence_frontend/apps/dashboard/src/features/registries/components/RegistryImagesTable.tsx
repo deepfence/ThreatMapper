@@ -145,7 +145,7 @@ export const RegistryImagesTable = ({
         onOpenChange={() => setSelectedScanType(undefined)}
         scanOptions={
           selectedScanType
-            ? getScanOptions(selectedScanType, [nodeId], selectedIds)
+            ? getScanOptions(selectedScanType, selectedIds, selectedIds)
             : undefined
         }
       />

@@ -7,6 +7,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: neo4j
+    name: deepfence-neo4j
 spec:
   serviceName: deepfence-neo4j
   replicas: 1
@@ -14,6 +15,7 @@ spec:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
       component: neo4j
+      name: deepfence-neo4j
   template:
     metadata:
       {{- with .Values.neo4j.podAnnotations }}
@@ -23,6 +25,7 @@ spec:
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
         component: neo4j
+        name: deepfence-neo4j
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
@@ -94,6 +97,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: neo4j
+    name: deepfence-neo4j
 spec:
   type: ClusterIP
   ports:
@@ -108,4 +112,5 @@ spec:
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
     component: neo4j
+    name: deepfence-neo4j
 {{- end }}

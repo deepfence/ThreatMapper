@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: server
+    name: deepfence-server
 spec:
   {{- if not .Values.server.autoscaling.enabled }}
   replicas: {{ .Values.server.replicaCount }}
@@ -13,6 +14,7 @@ spec:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
       component: server
+      name: deepfence-server
   template:
     metadata:
       {{- with .Values.server.podAnnotations }}
@@ -22,6 +24,7 @@ spec:
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
         component: server
+        name: deepfence-server
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       automountServiceAccountToken: true
@@ -116,6 +119,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: server
+    name: deepfence-server
 spec:
   type: ClusterIP
   ports:
@@ -130,6 +134,7 @@ spec:
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
     component: server
+    name: deepfence-server
 ---
 {{- if .Values.server.autoscaling.enabled }}
 apiVersion: autoscaling/v2beta1
@@ -139,6 +144,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: server
+    name: deepfence-server
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

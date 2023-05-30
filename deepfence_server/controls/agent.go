@@ -21,16 +21,18 @@ func GetAgentActions(ctx context.Context, nodeId string, work_num_to_extract int
 	actions := []controls.Action{}
 
 	if work_num_to_extract == 0 {
-		return actions, []error{nil, nil}
+		return actions, []error{}
+	}
+
+	// early return to avoid unnecessary checks
+	if err := CheckNodeExist(ctx, nodeId); err != nil {
+		return actions, []error{err}
 	}
 
 	upgrade_actions, upgrade_err := ExtractPendingAgentUpgrade(ctx, nodeId, work_num_to_extract)
 	work_num_to_extract -= len(upgrade_actions)
 	if upgrade_err == nil {
 		actions = append(actions, upgrade_actions...)
-	} else if upgrade_err == MissingNode {
-		// early return to avoid unnecessary checks
-		return actions, []error{upgrade_err}
 	}
 
 	scan_actions, scan_err := ExtractStartingAgentScans(ctx, nodeId, work_num_to_extract)
@@ -400,5 +402,47 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeId string, max_work int
 	}
 
 	return res, err
+
+}
+
+func CheckNodeExist(ctx context.Context, nodeId string) error {
+
+	if len(nodeId) == 0 {
+		return MissingNode
+	}
+
+	client, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	session, err := client.Session(neo4j.AccessModeRead)
+	if err != nil {
+		return err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	r, err := tx.Run(`
+		MATCH (n:Node{node_id:$id}) 
+		RETURN n.node_id`,
+		map[string]interface{}{"id": nodeId})
+
+	if err != nil {
+		return err
+	}
+
+	_, err = r.Single()
+
+	if err != nil {
+		return MissingNode
+	}
+
+	return nil
 
 }
