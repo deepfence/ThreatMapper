@@ -59,6 +59,7 @@ const action = async ({
       const modelResponse: ApiDocsBadRequestResponse =
         await registerInvitedUserResponse.error.response.json();
       return {
+        error: modelResponse.message || modelResponse.error_fields?.code,
         fieldErrors: {
           firstName: modelResponse.error_fields?.first_name as string,
           lastName: modelResponse.error_fields?.last_name as string,
