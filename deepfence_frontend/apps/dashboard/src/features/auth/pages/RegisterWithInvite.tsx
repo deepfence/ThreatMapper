@@ -43,6 +43,7 @@ const action = async ({
   }
   const registerInvitedUserApi = apiWrapper({
     fn: getUserApiClient().registerInvitedUser,
+    options: { handleAuthError: false },
   });
   const registerInvitedUserResponse = await registerInvitedUserApi({
     modelRegisterInvitedUserRequest: {
@@ -65,8 +66,10 @@ const action = async ({
         },
       };
     } else if (registerInvitedUserResponse.error.response.status === 403) {
+      const resp =
+        (await registerInvitedUserResponse.error.response.json()) as ApiDocsBadRequestResponse;
       return {
-        error: 'You do not have enough permissions to invite user',
+        error: resp.message ?? 'You do not have enough permissions to invite user',
       };
     }
     throw registerInvitedUserResponse.error;
