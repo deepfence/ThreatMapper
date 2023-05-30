@@ -2,7 +2,7 @@ import { LoaderFunctionArgs } from 'react-router-dom';
 
 import { getThreatGraphApiClient } from '@/api/api';
 import { GraphProviderThreatGraph, GraphThreatFiltersTypeEnum } from '@/api/generated';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 export type ThreatGraphLoaderData = Awaited<ReturnType<typeof loader>>;
 
@@ -16,28 +16,27 @@ const loader = async ({
   const awsAccountIds = searchParams.getAll('aws_account_ids');
   const gcpAccountIds = searchParams.getAll('gcp_account_ids');
   const azureAccountIds = searchParams.getAll('azure_account_ids');
-  const threatGraph = await makeRequest({
-    apiFunction: getThreatGraphApiClient().getThreatGraph,
-    apiArgs: [
-      {
-        graphThreatFilters: {
-          aws_filter: {
-            account_ids: awsAccountIds,
-          },
-          azure_filter: {
-            account_ids: azureAccountIds,
-          },
-          gcp_filter: { account_ids: gcpAccountIds },
-          cloud_resource_only: cloudResourceOnly,
-          type: type ?? 'all',
-        },
-      },
-    ],
+  const getThreatGraphApi = apiWrapper({
+    fn: getThreatGraphApiClient().getThreatGraph,
   });
-  if (ApiError.isApiError(threatGraph)) {
+  const threatGraph = await getThreatGraphApi({
+    graphThreatFilters: {
+      aws_filter: {
+        account_ids: awsAccountIds,
+      },
+      azure_filter: {
+        account_ids: azureAccountIds,
+      },
+      gcp_filter: { account_ids: gcpAccountIds },
+      cloud_resource_only: cloudResourceOnly,
+      type: type ?? 'all',
+    },
+  });
+
+  if (!threatGraph.ok) {
     throw new Error('Error getting threatgraph');
   }
-  return threatGraph;
+  return threatGraph.value;
 };
 
 export const module = {
