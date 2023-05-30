@@ -20,6 +20,8 @@ import {
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterHeader } from '@/components/forms/FilterHeader';
+import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
+import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import { ApiError, makeRequest } from '@/utils/api';
 import { getOrderFromSearchParams, getPageFromSearchParams } from '@/utils/table';
@@ -36,7 +38,8 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   const order = getOrderFromSearchParams(searchParams);
 
   const kubernetesStatus = searchParams.get('kubernetes_state');
-
+  const hosts = searchParams.get('hosts')?.split(',') ?? [];
+  const clustors = searchParams.get('clustors')?.split(',') ?? [];
   const searchSearchNodeReq: SearchSearchNodeReq = {
     node_filter: {
       filters: {
@@ -44,6 +47,8 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
         contains_filter: {
           filter_in: {
             active: [true],
+            ...(hosts.length ? { host_name: hosts } : {}),
+            ...(clustors.length ? { kubernetes_cluster_name: clustors } : {}),
           },
         },
         match_filter: {
@@ -134,6 +139,8 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
 };
 interface IFilters {
   kubernetesStatus: string[];
+  hosts: Array<string>;
+  clustors: Array<string>;
 }
 function Filters({
   filters,
@@ -160,6 +167,8 @@ function Filters({
                 onReset={() => {
                   onFiltersChange({
                     kubernetesStatus: [],
+                    hosts: [],
+                    clustors: [],
                   });
                 }}
               />
@@ -215,6 +224,33 @@ function Filters({
                     />
                   </div>
                 </fieldset>
+                <fieldset>
+                  <SearchableHostList
+                    scanType="none"
+                    valueKey="hostName"
+                    defaultSelectedHosts={filters.hosts ?? []}
+                    reset={!isFilterApplied}
+                    onChange={(value) => {
+                      onFiltersChange({
+                        ...filters,
+                        hosts: [...value],
+                      });
+                    }}
+                  />
+                </fieldset>
+                <fieldset>
+                  <SearchableClusterList
+                    defaultSelectedClusters={filters.clustors ?? []}
+                    valueKey="clusterName"
+                    reset={!isFilterApplied}
+                    onChange={(value) => {
+                      onFiltersChange({
+                        ...filters,
+                        clustors: [...value],
+                      });
+                    }}
+                  />
+                </fieldset>
               </div>
             </div>
           </div>
@@ -241,6 +277,8 @@ export const PodsTable = () => {
 
   const [filters, setFilters] = useState<IFilters>({
     kubernetesStatus: [],
+    hosts: [],
+    clustors: [],
   });
 
   function fetchPodsData() {
@@ -261,6 +299,12 @@ export const PodsTable = () => {
       } else {
         searchParams.delete('kubernetes_state');
       }
+    }
+    if (filters.hosts.length) {
+      searchParams.set('hosts', filters.hosts.join(','));
+    }
+    if (filters.clustors.length) {
+      searchParams.set('clustors', filters.clustors.join(','));
     }
 
     if (sortState.length) {

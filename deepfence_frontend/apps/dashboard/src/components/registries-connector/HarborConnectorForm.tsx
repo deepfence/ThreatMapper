@@ -92,8 +92,26 @@ export const HarborConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
               color={fieldErrors?.['harbor_password'] ? 'error' : 'default'}
               helperText={fieldErrors?.['harbor_password']}
             />
+            <div className="text-xs">
+              <div className="text-sm">
+                Using Certificate based Docker client Authentication?
+              </div>
+              <div>
+                A custom certificate is configured by creating a directory under
+                /etc/docker/certs.d on Deepfence console machine, using the same name as
+                the registry&apos;s hostname provided above. All *.crt files are added to
+                this directory as CA roots.{' '}
+                <DFLink
+                  href="https://docs.docker.com/engine/security/certificates/"
+                  target="_blank"
+                >
+                  https://docs.docker.com/engine/security/certificates/
+                </DFLink>{' '}
+              </div>
+              <div className="mt-2">Supported Versions: 1.8.2 and above</div>
+            </div>
+            {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
           </Card>
-          {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
         </Step>
       </Stepper>
     </>

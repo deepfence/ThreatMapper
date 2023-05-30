@@ -16,8 +16,8 @@ Deepfence ThreatMapper hunts for hidden threats in your production platforms, an
 Your 'Shift Left' initiatives enable you to deliver secure applications to production. ThreatMapper picks up once your applications have been deployed to production.
 
 
-| ![ThreatMapper Overview](img/threatmapper-overview.jpg) |
-| :--: |
+|     ![ThreatMapper Overview](img/threatmapper-overview.jpg)     |
+|:---------------------------------------------------------------:|
 | ThreatMapper Overview - Development, Pre-Deployment, Production |
 
 #### Discover:
@@ -48,8 +48,8 @@ Infrastructure APIs are handled using **Cloud Scanner** tasks which reside withi
 On-host data is provided by ThreatMapper sensor agents.  These are deployed against each production host, and they forward SBOMs and telemetry securely to your dedicated console.   
 
 | ![ThreatMapper Components](img/threatmapper-components.jpg) |
-| :--: |
-| ThreatMapper Components |
+|:-----------------------------------------------------------:|
+|                   ThreatMapper Components                   |
 
 ## Learn More
 

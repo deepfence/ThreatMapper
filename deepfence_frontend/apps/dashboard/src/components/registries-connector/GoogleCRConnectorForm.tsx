@@ -53,12 +53,14 @@ export const GoogleCRConnectorForm = ({
             sizing="sm"
             name="registry_url"
             placeholder="Registry URL"
+            hint="e.g.: https://us.gcr.io"
             color={fieldErrors?.['registry_url'] ? 'error' : 'default'}
             helperText={fieldErrors?.['registry_url']}
           />
           <FileInput
             className="w-3/4 min-[200px] max-w-xs"
             label="Select your file"
+            hint="Please enable Cloud Resource Manager API and Container Registry API in Google Cloud"
             sizing="sm"
             name="service_account_json"
             helperText={fieldErrors?.['service_account_json']}
