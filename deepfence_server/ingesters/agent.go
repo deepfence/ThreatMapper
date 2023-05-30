@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -36,6 +37,7 @@ const (
 	agent_base_timeout      = time.Second * 30
 	localhost_ip            = "127.0.0.1"
 	default_push_back       = 1
+	map_ttl                 = 60*time.Second
 )
 
 var (
@@ -84,14 +86,23 @@ func (er *EndpointResolvers) clean() {
 }
 
 type EndpointResolversCache struct {
-	rdb *redis2.Client
+	rdb       *redis2.Client
+	net_cache sync.Map
+	pid_cache sync.Map
 }
 
 func newEndpointResolversCache(ctx context.Context) (EndpointResolversCache, error) {
 	rdb, err := directory.RedisClient(ctx)
 	return EndpointResolversCache{
-		rdb: rdb,
+		rdb:       rdb,
+		net_cache: sync.Map{},
+		pid_cache: sync.Map{},
 	}, err
+}
+
+type CacheEntry struct {
+	value string
+	last_updated   time.Time
 }
 
 func (erc *EndpointResolversCache) clean_maps() {
@@ -110,13 +121,35 @@ func (erc *EndpointResolversCache) push_maps(er *EndpointResolvers) {
 	erc.rdb.HSet(context.Background(), REDIS_IPPORTPID_MAP_KEY, er.ipport_ippid)
 }
 
-func (erc *EndpointResolversCache) get_host(ip string) (string, bool) {
+func (erc *EndpointResolversCache) get_host(ip string, ttl time.Time) (string, bool) {
+	if v, ok := erc.net_cache.Load(ip); ok {
+		value := v.(CacheEntry).value
+		entry_ttl := v.(CacheEntry).last_updated
+		if ttl.Before(entry_ttl) {
+			return value, value != ""
+		}
+	}
 	res, err := erc.rdb.HGet(context.Background(), REDIS_NETWORK_MAP_KEY, ip).Result()
+	if err != nil {
+		res = ""
+	}
+	erc.net_cache.Store(ip, CacheEntry{value: res, last_updated: ttl.Add(map_ttl)})
 	return res, err == nil
 }
 
-func (erc *EndpointResolversCache) get_ip_pid(ip_port string) (string, bool) {
+func (erc *EndpointResolversCache) get_ip_pid(ip_port string, ttl time.Time) (string, bool) {
+	if v, ok := erc.pid_cache.Load(ip_port); ok {
+		value := v.(CacheEntry).value
+		entry_ttl := v.(CacheEntry).last_updated
+		if ttl.Before(entry_ttl) {
+			return value, value != ""
+		}
+	}
 	res, err := erc.rdb.HGet(context.Background(), REDIS_IPPORTPID_MAP_KEY, ip_port).Result()
+	if err != nil {
+		res = ""
+	}
+	erc.pid_cache.Store(ip_port, CacheEntry{value: res, last_updated: ttl.Add(map_ttl)})
 	return res, err == nil
 }
 
@@ -465,6 +498,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	//endpoint_batch := []map[string]string{}
 	//endpoint_edges := []map[string]string{}
 
+	ttl := time.Now().Add(-map_ttl)
 	connections := []Connection{}
 	local_memoization := map[string]struct{}{}
 	for _, n := range rpt.Endpoint {
@@ -473,7 +507,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			continue
 		}
 		if n.Metadata.HostName == "" {
-			if val, ok := resolvers.get_host(node_ip); ok {
+			if val, ok := resolvers.get_host(node_ip, ttl); ok {
 				n.Metadata.HostName = val
 			} else {
 				continue
@@ -496,12 +530,12 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 						if _, has := local_memoization[ip]; has {
 							continue
 						}
-						if host, ok := resolvers.get_host(ip); ok {
+						if host, ok := resolvers.get_host(ip, ttl); ok {
 							if n.Metadata.HostName == host {
 								local_memoization[ip] = struct{}{}
 								continue
 							}
-							right_ippid, ok := resolvers.get_ip_pid(ip + port)
+							right_ippid, ok := resolvers.get_ip_pid(ip + port, ttl)
 							if ok {
 								rightpid := extractPidFromNodeID(right_ippid)
 								connections = append(connections, Connection{
@@ -566,7 +600,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			continue
 		}
 		if n.Metadata.HostName == "" {
-			if val, ok := resolvers.get_host(n.Metadata.KubernetesIP); ok {
+			if val, ok := resolvers.get_host(n.Metadata.KubernetesIP, ttl); ok {
 				n.Metadata.HostName = val
 			}
 		}
