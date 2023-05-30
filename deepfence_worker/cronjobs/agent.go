@@ -157,7 +157,7 @@ func ingestAgentVersion(ctx context.Context, tags_to_url map[string]string) erro
 	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
 	if err != nil {
 		return err
 	}
