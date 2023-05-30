@@ -26,7 +26,7 @@ func GetAgentActions(ctx context.Context, nodeId string, work_num_to_extract int
 
 	// early return to avoid unnecessary checks
 	if err := CheckNodeExist(ctx, nodeId); err != nil {
-		return actions, []error{err}
+		return actions, []error{}
 	}
 
 	upgrade_actions, upgrade_err := ExtractPendingAgentUpgrade(ctx, nodeId, work_num_to_extract)
