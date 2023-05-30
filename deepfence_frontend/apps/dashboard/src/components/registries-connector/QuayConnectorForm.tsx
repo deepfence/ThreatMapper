@@ -56,6 +56,7 @@ export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPro
               label="Registry URL"
               type={'text'}
               sizing="sm"
+              hint="e.g. https://quay.io"
               name="non_secret.quay_registry_url"
               placeholder="Registry URL"
               color={fieldErrors?.['quay_registry_url'] ? 'error' : 'default'}
@@ -66,6 +67,7 @@ export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPro
               label="Namespace"
               type={'text'}
               sizing="sm"
+              hint="Organization name"
               name="non_secret.quay_namespace"
               placeholder="Namespace"
               color={fieldErrors?.['quay_namespace'] ? 'error' : 'default'}
@@ -76,11 +78,29 @@ export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormPro
               label="OAuth 2 Access Token (Optional)"
               type={'password'}
               sizing="sm"
+              hint="(Optional) It is needed only for private images"
               name="secret.quay_access_token"
               placeholder="OAuth Access Token"
               color={fieldErrors?.['quay_access_token'] ? 'error' : 'default'}
               helperText={fieldErrors?.['quay_access_token']}
             />
+            <div className="text-xs">
+              <div className="text-sm">
+                Using Certificate based Docker client Authentication?
+              </div>
+              <div>
+                A custom certificate is configured by creating a directory under
+                /etc/docker/certs.d on Deepfence console machine, using the same name as
+                the registry&apos;s hostname provided above. All *.crt files are added to
+                this directory as CA roots.
+                <DFLink
+                  href="https://docs.docker.com/engine/security/certificates/"
+                  target="_blank"
+                >
+                  https://docs.docker.com/engine/security/certificates/
+                </DFLink>{' '}
+              </div>
+            </div>
             {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
           </Card>
         </Step>

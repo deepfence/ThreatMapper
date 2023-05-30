@@ -36,8 +36,8 @@ For Windows Server hosts, experimental support exists, but it is not suitable fo
 
 For your convenience, the ThreatMapper management console provides the default installation commands to install the agent on a docker host or in a kubernetes cluster:
 
-|![Agent Setup](../img/agent-setup.jpg)|
-| :--: |
+| ![Agent Setup](../img/agent-setup-2.png) |
+|:----------------------------------------:|
 | Default Agent Setup (URL and Key masked) |
 
 More detailed instructions are as follows:

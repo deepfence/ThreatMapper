@@ -212,7 +212,7 @@ const DetailsComponent = () => {
                           },
                         )}
                       >
-                        <span className="text-xs text-gray-500">CVSS score</span>
+                        <span className="text-xs text-gray-500">Severity score</span>
                         <span className="text-md">{fixed.score || '-'}</span>
                       </div>
                       <p className="text-sm pr-2 mb-2 text-justify">{fixed.name}</p>

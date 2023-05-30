@@ -7,6 +7,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: postgresql
+    name: deepfence-postgresql
 spec:
   serviceName: deepfence-postgresql
   replicas: 1
@@ -14,6 +15,7 @@ spec:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
       component: postgresql
+      name: deepfence-postgresql
   template:
     metadata:
       {{- with .Values.postgresql.podAnnotations }}
@@ -23,6 +25,7 @@ spec:
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
         component: postgresql
+        name: deepfence-postgresql
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
@@ -85,6 +88,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: postgresql
+    name: deepfence-postgresql
 spec:
   type: ClusterIP
   ports:
@@ -95,4 +99,5 @@ spec:
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
     component: postgresql
+    name: deepfence-postgresql
 {{- end }}

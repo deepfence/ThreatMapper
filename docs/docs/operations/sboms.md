@@ -18,8 +18,8 @@ SBOMs are associated with vulnerability scans.
 
 Navigate to the **Vulnerabilities** > **Vulnerability Scan** results page, and locate the scan for which you would like to obtain the SBOM:
 
-![Vulnerability Scan results](../img/sbom-1.jpg)
+![Vulnerability Scan results](../img/sbom-1.png)
 
 You can page through the SBOM results, or download the results as a detailed JSON file:
 
-![Software Bill of Materials](../img/sbom-2.jpg)
+![Software Bill of Materials](../img/sbom-2.png)

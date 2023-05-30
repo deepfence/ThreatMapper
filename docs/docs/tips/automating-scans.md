@@ -30,6 +30,11 @@ ThreatMapper can scan registries, looking for vulnerabilities in containers.  Sc
 
 ### Use Case: Periodically Running Scans ("cron")
 
+#### UI
+Schedule is set by default in ThreatMapper to scan all containers and hosts once a week. They can be enabled if needed.
+![Scheduled Jobs](../img/scheduled-jobs.png)
+
+#### API
 A good example for API-driven automation - you can create a script that enumerates your infrastructure and workloads, and then scans on-demand.
 
 
