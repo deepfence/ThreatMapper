@@ -985,11 +985,11 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 
 			toAdd := int32(0)
 			if breaker.Swap(false) || current_num_ingested < (current_num_received/4)*3 {
-				toAdd = max(current_num_received, 1) / max(current_num_ingested, 1)
+				toAdd = max(current_num_received/100, 1) / max(current_num_ingested/100, 1)
 				prev_received_num = current_num_received
 				update_ticker = true
 			} else if current_num_received < (prev_received_num/4)*3 {
-				toAdd = -1 * max(prev_received_num, 1) / max(current_num_received, 1)
+				toAdd = -1 * max(prev_received_num/100, 1) / max(current_num_received/100, 1)
 				if Push_back.Load()+toAdd <= 0 {
 					toAdd = -1*Push_back.Load() + 1
 				}
