@@ -5,6 +5,7 @@ import {
   AuthenticationApi,
   CloudNodesApi,
   CloudScannerApi,
+  CommonApi,
   ComplianceApi,
   Configuration,
   ControlsApi,
@@ -102,6 +103,7 @@ export function getSecretApiClient() {
     statusSecretScan: secretApi.statusSecretScan.bind(secretApi),
     listSecretScans: secretApi.listSecretScan.bind(secretApi),
     getSecretsCountByRulename: secretApi.groupResultsSecrets.bind(secretApi),
+    getSecretRulesForScan: secretApi.resultsRulesSecretScan.bind(secretApi),
   };
 }
 
@@ -158,6 +160,8 @@ export function getMalwareApiClient() {
     listMalwareScans: malwareApi.listMalwareScan.bind(malwareApi),
     getMalwareCountByRulename: malwareApi.groupResultsMalwares.bind(malwareApi),
     getMalwareCountByClass: malwareApi.groupResultsMalwaresClass.bind(malwareApi),
+    getMalwareRulesForScan: malwareApi.resultsRulesMalwareScan.bind(malwareApi),
+    getMalwareClassesForScan: malwareApi.resultsClassMalwareScan.bind(malwareApi),
   };
 }
 
@@ -307,5 +311,12 @@ export function getSettingsApiClient() {
       settingsApi.uploadVulnerabilityDatabase.bind(settingsApi),
     getScheduledTasks: settingsApi.getScheduledTasks.bind(settingsApi),
     updateScheduledTask: settingsApi.updateScheduledTask.bind(settingsApi),
+  };
+}
+
+export function getCommonApiClient() {
+  const commonApi = new CommonApi(configuration);
+  return {
+    getEula: commonApi.eula.bind(commonApi),
   };
 }

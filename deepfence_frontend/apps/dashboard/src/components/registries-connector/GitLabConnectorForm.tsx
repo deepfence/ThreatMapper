@@ -54,6 +54,7 @@ export const GitLabConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
               label="Gitlab Server URL"
+              hint="e.g. https://gitlab.example.com"
               type={'text'}
               sizing="sm"
               name="non_secret.gitlab_server_url"
@@ -64,6 +65,7 @@ export const GitLabConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
               label="GitLab Registry URL"
+              hint="e.g. registry.gitlab.example.com (for registries configured under its own domain) or gitlab.example.com:5050 (for registries configured under an existing gitlab domain, gitlab.example.com)"
               type={'text'}
               sizing="sm"
               name="non_secret.gitlab_registry_url"
@@ -81,6 +83,24 @@ export const GitLabConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormP
               color={fieldErrors?.['gitlab_access_token'] ? 'error' : 'default'}
               helperText={fieldErrors?.['gitlab_access_token']}
             />
+            <div className="text-xs">
+              <div className="text-sm">
+                Using Certificate based Docker client Authentication?{' '}
+              </div>
+              <div>
+                A custom certificate is configured by creating a directory under
+                /etc/docker/certs.d on Deepfence console machine, using the same name as
+                the registry&apos;s hostname provided above. All *.crt files are added to
+                this directory as CA roots.
+                <DFLink
+                  href="https://docs.docker.com/engine/security/certificates/"
+                  target="_blank"
+                >
+                  https://docs.docker.com/engine/security/certificates/
+                </DFLink>{' '}
+              </div>
+              <div className="mt-2">Supported Versions: 11.8 and above</div>
+            </div>
             {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
           </Card>
         </Step>

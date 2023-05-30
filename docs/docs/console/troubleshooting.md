@@ -27,9 +27,9 @@ Restart Docker daemon
 If you have not configured [SES / SMTP](manage-users.md#configuring-google-smtp) and need to reset the password, please follow these steps
 - In docker
 ```shell
-docker exec -it deepfence-api bash -c "flask reset-password"
+docker exec -it deepfence-server bash -c "reset-password"
 ```
 - In kubernetes
 ```shell
-kubectl exec -it deploy/deepfence-api -c deepfence-api -- bash -c "flask reset-password"
+kubectl exec -it deploy/deepfence-server -c deepfence-server -- bash -c "reset-password"
 ```

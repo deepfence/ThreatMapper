@@ -67,6 +67,9 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 					labels = append(labels, fmt.Sprintf("%s%s:Container", reverse_operator, cypherNodeName))
 				case "cluster":
 					labels = append(labels, fmt.Sprintf("%s%s:KubernetesCluster", reverse_operator, cypherNodeName))
+				case "aws", "gcp", "azure":
+					labels = append(labels, fmt.Sprintf("%s%s:CloudNode", reverse_operator, cypherNodeName))
+					conditions = append(conditions, fmt.Sprintf("%s%s.cloud_provider = '%s' ", reverse_operator, cypherNodeName, vs[i]))
 				}
 			}
 			if in {

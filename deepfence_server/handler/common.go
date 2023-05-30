@@ -24,6 +24,10 @@ func (h *Handler) Ping(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "pong")
 }
 
+func (h *Handler) EULAHandler(w http.ResponseWriter, r *http.Request) {
+	httpext.JSON(w, http.StatusOK, model.EULAResponse)
+}
+
 func (h *Handler) OpenApiDocsHandler(w http.ResponseWriter, r *http.Request) {
 	apiDocs, err := h.OpenApiDocs.Json()
 	if err != nil {

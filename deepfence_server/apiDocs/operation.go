@@ -82,6 +82,10 @@ func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("registerInvitedUser", http.MethodPost, "/deepfence/user/invite/register",
 		"Register Invited User", "Register invited user",
 		http.StatusOK, []string{tagUser}, nil, new(RegisterInvitedUserRequest), new(LoginResponse))
+
+	d.AddOperation("eula", http.MethodGet, "/deepfence/end-user-license-agreement",
+		"Get End User License Agreement", "Get End User License Agreement",
+		http.StatusOK, []string{tagCommon}, nil, nil, new(MessageResponse))
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {

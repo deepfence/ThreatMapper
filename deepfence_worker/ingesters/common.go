@@ -94,10 +94,30 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 	}
 }
 
+// also handles status deduplication
 func statusesToMaps[T any](data []T) []map[string]interface{} {
-	statuses := []map[string]interface{}{}
+	statusBuff := map[string]map[string]interface{}{}
 	for _, i := range data {
-		statuses = append(statuses, ToMap(i))
+		new := ToMap(i)
+		scan_id := new["scan_id"].(string)
+		new_status := new["scan_status"].(string)
+
+		old, found := statusBuff[scan_id]
+		if !found {
+			statusBuff[scan_id] = new
+		} else {
+			old_status := old["scan_status"].(string)
+			if new_status != old_status {
+				if new_status == utils.SCAN_STATUS_SUCCESS || new_status == utils.SCAN_STATUS_FAILED {
+					statusBuff[scan_id] = new
+				}
+			}
+		}
+	}
+
+	statuses := []map[string]interface{}{}
+	for _, v := range statusBuff {
+		statuses = append(statuses, v)
 	}
 	return statuses
 }

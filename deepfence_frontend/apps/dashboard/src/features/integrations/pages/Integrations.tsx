@@ -9,7 +9,7 @@ import { ModelIntegrationListResp } from '@/api/generated';
 import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { LinkButton } from '@/components/LinkButton';
 import {
-  AwsSecurityHub,
+  // AwsSecurityHub,
   ElasticSearch,
   Email,
   GoogleChronicle,
@@ -129,12 +129,12 @@ const IntegrationsData = [
         icon: <img src={GoogleChronicle} alt="GoogleChronicle Logo" />,
         path: '/integrations/seim/add/googlechronicle',
       },
-      {
-        name: integrationTypeToNameMapping[IntegrationType.awsSecurityHub],
-        id: IntegrationType.awsSecurityHub,
-        icon: <img src={AwsSecurityHub} alt="AwsSecurityHub Logo" />,
-        path: '/integrations/seim/add/aws_security_hub',
-      },
+      // {
+      //   name: integrationTypeToNameMapping[IntegrationType.awsSecurityHub],
+      //   id: IntegrationType.awsSecurityHub,
+      //   icon: <img src={AwsSecurityHub} alt="AwsSecurityHub Logo" />,
+      //   path: '/integrations/seim/add/aws_security_hub',
+      // },
     ],
   },
   {
