@@ -24,11 +24,11 @@ import (
 const (
 	REDIS_NETWORK_MAP_KEY   = "network_map"
 	REDIS_IPPORTPID_MAP_KEY = "ipportpid_map"
-	uncompress_workers_num  = 25
-	preparer_workers_num    = 5
-	default_db_input_size   = 10
-	db_batch_size           = 2_000
-	resolver_batch_size     = 2_000
+	uncompress_workers_num  = 10
+	preparer_workers_num    = 10
+	default_db_input_size   = 15
+	db_batch_size           = 1_000
+	resolver_batch_size     = 1_000
 	default_ingester_size   = default_db_input_size * db_batch_size
 	db_batch_timeout        = time.Second * 10
 	resolver_timeout        = time.Second * 10
@@ -856,14 +856,7 @@ loop:
 			if size > 0 {
 				send = false
 				final_batch := mergeIngestionData(batch[:size])
-				select {
-				case db_pusher <- final_batch:
-				default:
-					log.Warn().Msgf("DB channel full")
-					breaker.Store(true)
-					// Send report & wait
-					db_pusher <- final_batch
-				}
+				db_pusher <- final_batch
 				size = 0
 				batch = [db_batch_size]ReportIngestionData{}
 				ticker.Reset(db_batch_timeout)
@@ -893,10 +886,17 @@ func (nc *neo4jIngester) runDBPusher(db_pusher, db_pusher_retry chan ReportInges
 		span := telemetry.NewSpan(context.Background(), "ingester", "PushAgentReportsToDB")
 		err := nc.PushToDB(batches, session)
 		if err != nil {
-			log.Error().Msgf("push to neo4j err: %v", err)
-			span.EndWithErr(err)
 			if isTransientError(err) {
-				db_pusher_retry <- batches
+				select {
+				case db_pusher_retry <- batches:
+					span.End()
+				default:
+					log.Error().Msgf("skip to neo4j err: %v", err)
+					span.EndWithErr(err)
+				}
+			} else {
+				log.Error().Msgf("push to neo4j err: %v", err)
+				span.EndWithErr(err)
 			}
 		} else {
 			nc.num_ingested.Add(int32(batches.NumMerged))
@@ -940,7 +940,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 		driver:           driver,
 		resolvers:        rdb,
 		ingester:         make(chan report.CompressedReport, ingester_size),
-		batcher:          make(chan ReportIngestionData, ingester_size),
+		batcher:          make(chan ReportIngestionData, db_batch_size),
 		resolvers_update: make(chan EndpointResolvers, db_batch_size),
 		preparers_input:  make(chan report.Report, db_batch_size),
 		done:             done,
@@ -958,10 +958,10 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 		go nc.runDBPusher(db_pusher_retry, db_pusher)
 	}
 
-	go nc.runDBBatcher(db_pusher)
 	go nc.resolversUpdater()
 
 	for i := 0; i < preparer_workers_num; i++ {
+		go nc.runDBBatcher(db_pusher)
 		go nc.runPreparer()
 	}
 
@@ -984,6 +984,12 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 				len(nc.batcher),
 				len(nc.db_pusher),
 				len(db_pusher_retry))
+
+			if len(nc.ingester) == 0 {
+				if breaker.Swap(false) {
+					Push_back.Add(1)
+				}
+			}
 		}
 	}()
 
@@ -1018,7 +1024,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 			current_num_ingested := nc.num_ingested.Swap(0)
 
 			toAdd := int32(0)
-			if breaker.Swap(false) || current_num_ingested < (current_num_received/4)*3 {
+			if current_num_ingested < (current_num_received/4)*3 {
 				toAdd = max(current_num_received/100, 1) / max(current_num_ingested/100, 1)
 				prev_received_num = current_num_received
 				update_ticker = true
