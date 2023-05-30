@@ -73,6 +73,7 @@ export const UtilsReportFiltersNodeTypeEnum = {
     Container: 'container',
     ContainerImage: 'container_image',
     Linux: 'linux',
+    Cluster: 'cluster',
     Aws: 'aws',
     Gcp: 'gcp',
     Azure: 'azure'

@@ -9281,7 +9281,8 @@
           "endpoint_edges_batch",
           "container_image_edge_batch",
           "kubernetes_cluster_edge_batch",
-          "hosts"
+          "hosts",
+          "num_merged"
         ],
         "type": "object",
         "properties": {
@@ -9335,6 +9336,7 @@
             "items": { "type": "object", "additionalProperties": {} },
             "nullable": true
           },
+          "num_merged": { "type": "integer" },
           "pod_batch": {
             "type": "array",
             "items": { "type": "object", "additionalProperties": {} },
@@ -11568,6 +11570,7 @@
               "container",
               "container_image",
               "linux",
+              "cluster",
               "aws",
               "gcp",
               "azure"
