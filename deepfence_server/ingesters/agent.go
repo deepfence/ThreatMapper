@@ -23,8 +23,9 @@ import (
 const (
 	REDIS_NETWORK_MAP_KEY   = "network_map"
 	REDIS_IPPORTPID_MAP_KEY = "ipportpid_map"
-	workers_num             = 50
-	default_db_input_size   = 30
+	uncompress_workers_num  = 50
+	preparer_workers_num    = 5
+	default_db_input_size   = 20
 	db_batch_size           = 1_000
 	resolver_batch_size     = 1_000
 	default_ingester_size   = default_db_input_size * db_batch_size
@@ -155,7 +156,8 @@ type ReportIngestionData struct {
 	//Endpoint_batch []map[string]string
 	//Endpoint_edges []map[string]string
 
-	Hosts []map[string]interface{} `json:"hosts" required:"true"`
+	Hosts     []map[string]interface{} `json:"hosts" required:"true"`
+	NumMerged int                      `json:"num_merged" required:"true"`
 }
 
 func mergeResolvers(others []EndpointResolvers) EndpointResolvers {
@@ -265,6 +267,7 @@ func mergeIngestionData(other []ReportIngestionData) ReportIngestionData {
 		Container_image_edge_batch:    container_image_edge_batch,
 		Kubernetes_cluster_edge_batch: kubernetes_cluster_edge_batch,
 		Hosts:                         hosts,
+		NumMerged:                     len(other),
 	}
 
 }
@@ -406,6 +409,7 @@ func NewReportIngestionData() ReportIngestionData {
 		Container_image_edge_batch:    []map[string]interface{}{},
 		Kubernetes_cluster_edge_batch: []map[string]interface{}{},
 		Hosts:                         []map[string]interface{}{},
+		NumMerged:                     1,
 	}
 }
 
@@ -427,6 +431,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 		Endpoint_edges_batch:          nil,
 		Container_image_edge_batch:    nil,
 		Kubernetes_cluster_edge_batch: nil,
+		NumMerged:                     1,
 	}
 
 	kubernetes_edges_batch := map[string][]string{}
@@ -825,9 +830,7 @@ loop:
 					// Send report & wait
 					db_pusher <- final_batch
 				}
-				nc.num_ingested.Add(int32(size))
 				size = 0
-				final_batch = NewReportIngestionData()
 				batch = [db_batch_size]ReportIngestionData{}
 				ticker.Reset(db_batch_timeout)
 			}
@@ -862,6 +865,7 @@ func (nc *neo4jIngester) runDBPusher(db_pusher, db_pusher_retry chan ReportInges
 				db_pusher_retry <- batches
 			}
 		} else {
+			nc.num_ingested.Add(int32(batches.NumMerged))
 			span.End()
 		}
 	}
@@ -873,8 +877,12 @@ func (nc *neo4jIngester) runPreparer() {
 	for rpt := range nc.preparers_input {
 		r := computeResolvers(&rpt, &buf)
 		data := prepareNeo4jIngestion(&rpt, &nc.resolvers, &buf)
-		nc.resolvers_update <- r
-		nc.batcher <- data
+		select {
+		case nc.batcher <- data:
+			nc.resolvers_update <- r
+		case nc.resolvers_update <- r:
+			nc.batcher <- data
+		}
 	}
 }
 
@@ -899,17 +907,16 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 		resolvers:        rdb,
 		ingester:         make(chan report.CompressedReport, ingester_size),
 		batcher:          make(chan ReportIngestionData, ingester_size),
-		resolvers_update: make(chan EndpointResolvers, db_batch_size*2),
-		preparers_input:  make(chan report.Report, db_batch_size*2),
+		resolvers_update: make(chan EndpointResolvers, db_batch_size),
+		preparers_input:  make(chan report.Report, db_batch_size),
 		done:             done,
 		db_pusher:        db_pusher,
 		num_ingested:     atomic.Int32{},
 		num_received:     atomic.Int32{},
 	}
 
-	for i := 0; i < workers_num; i++ {
+	for i := 0; i < uncompress_workers_num; i++ {
 		go nc.runIngester()
-		go nc.runPreparer()
 	}
 
 	for i := 0; i < db_input_size; i++ {
@@ -919,6 +926,10 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 
 	go nc.runDBBatcher(db_pusher)
 	go nc.resolversUpdater()
+
+	for i := 0; i < preparer_workers_num; i++ {
+		go nc.runPreparer()
+	}
 
 	go func() {
 		// Received num at the time of push back change
@@ -972,9 +983,6 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 			current_num_received := nc.num_received.Swap(0)
 			current_num_ingested := nc.num_ingested.Swap(0)
 
-			// Keep the highest number of reports
-			prev_received_num = max(prev_received_num, current_num_received)
-
 			toAdd := int32(0)
 			if breaker.Swap(false) || current_num_ingested < (current_num_received/4)*3 {
 				toAdd = max(current_num_received, 1) / max(current_num_ingested, 1)
@@ -988,6 +996,9 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 				prev_received_num = current_num_received
 				update_ticker = true
 			}
+
+			// Keep the highest number of reports
+			prev_received_num = max(prev_received_num, current_num_received)
 
 			err := UpdatePushBack(session, &Push_back, toAdd)
 			if err != nil {
