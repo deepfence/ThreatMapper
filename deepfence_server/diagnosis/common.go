@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/url"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -82,6 +83,7 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 			message = err.Error()
 		}
 		fileName := filepath.Base(obj.Key)
+		fileName = strings.TrimPrefix(fileName, "deepfence-agent-logs-")
 		diagnosticLogsResponse[i] = DiagnosticLogsLink{
 			UrlLink:   urlLink,
 			FileName:  fileName,
@@ -90,6 +92,9 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 			CreatedAt: obj.LastModified.Format("2006-01-02 15:04:05"),
 		}
 	}
+	sort.Slice(diagnosticLogsResponse, func(i, j int) bool {
+		return diagnosticLogsResponse[i].CreatedAt > diagnosticLogsResponse[j].CreatedAt
+	})
 	return diagnosticLogsResponse
 }
 
@@ -151,7 +156,6 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 
 		if pos, ok := minioAgentLogsKeys[fileName.(string)]; ok {
 			diagnosticLogs[pos].Label = nodeName.(string)
-			diagnosticLogs[pos].CreatedAt = updatedAtTime.Format("2006-01-02 15:04:05")
 			diagnosticLogs[pos].Message = message.(string)
 		} else {
 			diagnosticLogs = append(diagnosticLogs, DiagnosticLogsLink{
@@ -163,5 +167,8 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 			})
 		}
 	}
+	sort.Slice(diagnosticLogs, func(i, j int) bool {
+		return diagnosticLogs[i].CreatedAt > diagnosticLogs[j].CreatedAt
+	})
 	return diagnosticLogs
 }
