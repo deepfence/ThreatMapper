@@ -72,7 +72,7 @@ spec:
         resources:
           requests:
             storage: "{{ .Values.redis.volumeSize }}"
-        storageClassName: {{ .Values.redis.storageClass }}
+        storageClassName: {{ default .Values.global.storageClass .Values.redis.storageClass }}
 ---
 apiVersion: v1
 kind: Service

@@ -109,7 +109,7 @@ spec:
         resources:
           requests:
             storage: "{{ .Values.kafka.volumeSize }}"
-        storageClassName: {{ .Values.kafka.storageClass }}
+        storageClassName: {{ default .Values.global.storageClass .Values.kafka.storageClass }}
 ---
 apiVersion: v1
 kind: Service
