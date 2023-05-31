@@ -29,12 +29,17 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
-        -n|--no-prompt)
-        NO_PROMPT=true
-        shift
+        -h|--help)
+        echo "Usage: $0 [OPTIONS]"
+        echo "Options:"
+        echo "  -d, --deployment     Specify the deployment type: 'docker' or 'kubernetes'"
+        echo "  -t, --image-tag      Specify the image tag for the Deepfence components (default: $DEFAULT_IMAGE_TAG)"
+        echo "  -h, --help           Display usage instructions"
+        exit 0
         ;;
         *) # Unknown option
-        shift
+        echo "Unknown option: $key"
+        exit 1
         ;;
     esac
 done
