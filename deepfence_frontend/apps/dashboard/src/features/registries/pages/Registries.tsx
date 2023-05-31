@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   HiDocumentText,
   HiOutlineChevronRight,
@@ -6,71 +6,19 @@ import {
   HiTag,
 } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
-import { useLoaderData } from 'react-router-dom';
 import { Card } from 'ui-components';
 
-import { getRegistriesApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ModelSummary } from '@/api/generated/models/ModelSummary';
 import { LinkButton } from '@/components/LinkButton';
 import { getRegistryLogo } from '@/constants/logos';
-import { useRegistrySummary } from '@/queries/registries';
+import { registrySummaryQuery } from '@/queries/registries';
 import { useTheme } from '@/theme/ThemeContext';
 import { RegistryType } from '@/types/common';
-import { apiWrapper } from '@/utils/api';
 import { abbreviateNumber } from '@/utils/number';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
-import { DFAwait } from '@/utils/suspense';
 
 interface RegistryResponseType extends ModelSummary {
   type: string;
 }
-
-export type LoaderDataType = {
-  error?: string;
-  message?: string;
-  data: RegistryResponseType[];
-};
-
-type Keys = keyof typeof RegistryType;
-type ReponseType = { [K in Keys]: RegistryResponseType };
-
-async function getRegistriesSummary(): Promise<RegistryResponseType[]> {
-  const getRegistriesSummary = apiWrapper({
-    fn: getRegistriesApiClient().getRegistriesSummary,
-  });
-  const result = await getRegistriesSummary();
-
-  if (!result.ok) {
-    if (result.error.response.status === 400) {
-      const modelResponse: ApiDocsBadRequestResponse = await result.error.response.json();
-      throw new Error(modelResponse.message ?? '');
-    }
-    throw result.error;
-  }
-
-  if (result.value === null) {
-    // TODO: handle this case with 404 status maybe
-    throw new Error('Error getting registries summary');
-  }
-  const response: RegistryResponseType[] = [];
-  for (const [key, value] of Object.entries(result.value as ReponseType)) {
-    response.push({
-      registries: value.registries,
-      images: value.images,
-      tags: value.tags,
-      type: key,
-    });
-  }
-
-  return response;
-}
-
-const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
-  return typedDefer({
-    data: getRegistriesSummary(),
-  });
-};
 
 const RegistrySkeleton = () => {
   return (
@@ -185,7 +133,7 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
 };
 
 const Registries = () => {
-  const { data, isLoading } = useRegistrySummary();
+  const { data, isLoading } = useQuery(registrySummaryQuery());
   const { mode } = useTheme();
 
   return (
@@ -216,6 +164,5 @@ const Registries = () => {
 };
 
 export const module = {
-  loader,
   element: <Registries />,
 };

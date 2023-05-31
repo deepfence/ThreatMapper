@@ -1,23 +1,33 @@
+import { UseQueryOptions } from '@tanstack/react-query';
+
 import { getRegistriesApiClient } from '@/api/api';
 import { ModelSummary } from '@/api/generated';
-import { useAuthedQuery } from '@/queries/client';
+import { apiWrapper } from '@/utils/api';
 
-interface RegistryResponseType extends ModelSummary {
-  type: string;
-}
-
-export function useRegistrySummary() {
-  return useAuthedQuery('registrySummary', async () => {
-    const response: RegistryResponseType[] = [];
-    const result = await getRegistriesApiClient().getRegistriesSummary();
-    for (const [key, value] of Object.entries(result)) {
-      response.push({
-        registries: value.registries,
-        images: value.images,
-        tags: value.tags,
-        type: key,
+export function registrySummaryQuery() {
+  return {
+    queryKey: ['registrySummary'],
+    queryFn: async () => {
+      interface RegistryResponseType extends ModelSummary {
+        type: string;
+      }
+      const response: RegistryResponseType[] = [];
+      const getRegistriesSummary = apiWrapper({
+        fn: getRegistriesApiClient().getRegistriesSummary,
       });
-    }
-    return response;
-  });
+      const result = await getRegistriesSummary();
+      if (!result.ok) {
+        throw result.error;
+      }
+      for (const [key, value] of Object.entries(result.value)) {
+        response.push({
+          registries: value.registries,
+          images: value.images,
+          tags: value.tags,
+          type: key,
+        });
+      }
+      return response;
+    },
+  } satisfies UseQueryOptions;
 }
