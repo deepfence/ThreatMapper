@@ -1,4 +1,3 @@
-import { capitalize } from 'lodash-es';
 import { useEffect, useState } from 'react';
 import { FaHistory } from 'react-icons/fa';
 import { HiBadgeCheck, HiDatabase, HiOutlineExclamationCircle } from 'react-icons/hi';
@@ -55,7 +54,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
 
   if (actionType === ActionEnumType.DELETE) {
     const duration = parseInt(formData.get('duration')?.toString() ?? '0', 10);
-    const severityOrStatus = formData.get('severityOrStatus');
     const scanType = formData
       .get('selectedResource')
       ?.toString() as ModelBulkDeleteScansRequestScanTypeEnumType;
@@ -80,14 +78,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
       ];
     }
 
-    if (severityOrStatus !== 'all') {
-      modelBulkDeleteScansRequest.filters.contains_filter = {
-        filter_in: {
-          severity: [severityOrStatus],
-        },
-      };
-    }
-
     const deleteScanHistory = apiWrapper({
       fn: getScanResultsApiClient().bulkDeleteScansHistory,
     });
@@ -102,6 +92,11 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
         return {
           deleteSuccess: false,
           message: modelResponse?.message,
+        };
+      } else if (deleteScanHistoryResponse.error.response.status === 403) {
+        return {
+          deleteSuccess: false,
+          message: 'You do not have enough permissions to delete scan history',
         };
       }
       throw deleteScanHistoryResponse.error;
@@ -129,6 +124,11 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
         return {
           uploadSuccess: false,
           message: modelResponse?.message,
+        };
+      } else if (uploadApiResponse.error.response.status === 403) {
+        return {
+          uploadSuccess: false,
+          message: 'You do not have enough permissions to upload file',
         };
       }
       throw uploadApiResponse.error;
@@ -165,7 +165,6 @@ const DeleteConfirmationModal = ({
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
   data: {
     duration: number;
-    severityOrStatus: string;
     selectedResource: string;
   };
 }) => {
@@ -207,7 +206,6 @@ const DeleteConfirmationModal = ({
               onClick={() => {
                 const formData = new FormData();
                 formData.append('actionType', ActionEnumType.DELETE);
-                formData.append('severityOrStatus', data.severityOrStatus);
                 formData.append('selectedResource', data.selectedResource);
                 formData.append('duration', data.duration.toString());
                 fetcher.submit(formData, {
@@ -303,14 +301,12 @@ const ScanHistoryAndDbManagement = () => {
   const [selectedResource, setSelectedResource] = useState<string>(
     ModelBulkDeleteScansRequestScanTypeEnumType.Vulnerability,
   );
-  const [selectedSeveritiesOrStatuses, setSelectedSeveritiesOrStatuses] = useState('all');
   const [duration, setDuration] = useState(1);
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     if (selectedResource === ModelBulkDeleteScansRequestScanTypeEnumType.Compliance) {
-      setSelectedSeveritiesOrStatuses('all');
       setSeverityOrResources('status');
     }
   }, [selectedResource]);
@@ -323,7 +319,6 @@ const ScanHistoryAndDbManagement = () => {
           setShowDialog={setShowDeleteDialog}
           data={{
             duration,
-            severityOrStatus: selectedSeveritiesOrStatuses,
             selectedResource,
           }}
         />
@@ -345,9 +340,8 @@ const ScanHistoryAndDbManagement = () => {
         </div>
 
         <p className="mt-1 text-gray-700 dark:text-gray-100 text-sm">
-          Choose resource, its
-          {severityOrStatus === 'severity' ? ' severity ' : ' status '}
-          and scan duration for which you want to delete for scan history
+          Please specify the resource and duration you would like to delete from the scan
+          history.
         </p>
         <div className="mt-2 flex gap-x-16">
           <div>
@@ -382,26 +376,6 @@ const ScanHistoryAndDbManagement = () => {
               onValueChange={(value) => {
                 setSelectedResource(value);
                 setSeverityOrResources('severity');
-              }}
-            />
-          </div>
-          <div>
-            <h6 className="text-gray-600 dark:text-white text-base font-medium pb-2">
-              Choose
-              {severityOrStatus === 'severity' ? ' Severity ' : ' Status '}
-            </h6>
-            <Radio
-              name="severityOrStatus"
-              value={selectedSeveritiesOrStatuses}
-              options={(
-                getStatusesOrSeverityByResource(
-                  selectedResource as ModelBulkDeleteScansRequestScanTypeEnumType,
-                ) ?? []
-              ).map((type) => {
-                return { label: capitalize(type), value: type };
-              })}
-              onValueChange={(value) => {
-                setSelectedSeveritiesOrStatuses(value);
               }}
             />
           </div>

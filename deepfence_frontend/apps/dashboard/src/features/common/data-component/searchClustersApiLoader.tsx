@@ -2,8 +2,7 @@ import { useEffect } from 'react';
 import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 
 import { getSearchApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse } from '@/api/generated';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 export type SearchClustersLoaderDataType = {
   clusters: {
@@ -27,55 +26,40 @@ export const searchClustersApiLoader = async ({
       node_name: [searchText],
     };
   }
-
-  const result = await makeRequest({
-    apiFunction: getSearchApiClient().searchKubernetesClusters,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          node_filter: {
-            filters: {
-              compare_filter: null,
-              contains_filter: {
-                filter_in: null,
-              },
-              match_filter: matchFilter,
-
-              order_filter: {
-                order_fields: null,
-              },
-            },
-            in_field_filter: null,
-            window: {
-              offset: 0,
-              size: 0,
-            },
+  const searchKubernetesClustersApi = apiWrapper({
+    fn: getSearchApiClient().searchKubernetesClusters,
+  });
+  const searchKubernetesClustersResponse = await searchKubernetesClustersApi({
+    searchSearchNodeReq: {
+      node_filter: {
+        filters: {
+          compare_filter: null,
+          contains_filter: {
+            filter_in: null,
           },
-          window: {
-            offset: 0,
-            size: size + 1,
+          match_filter: matchFilter,
+
+          order_filter: {
+            order_fields: null,
           },
         },
+        in_field_filter: null,
+        window: {
+          offset: 0,
+          size: 0,
+        },
       },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
+      window: {
+        offset: 0,
+        size: size + 1,
+      },
     },
   });
-
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  if (!searchKubernetesClustersResponse.ok) {
+    throw searchKubernetesClustersResponse.error;
   }
 
-  if (result === null) {
+  if (searchKubernetesClustersResponse.value === null) {
     return {
       clusters: [],
       hasNext: false,
@@ -83,13 +67,13 @@ export const searchClustersApiLoader = async ({
   }
 
   return {
-    clusters: result.slice(0, size).map((res) => {
+    clusters: searchKubernetesClustersResponse.value.slice(0, size).map((res) => {
       return {
         clusterId: res.node_id,
         clusterName: res.node_name,
       };
     }),
-    hasNext: result.length > size,
+    hasNext: searchKubernetesClustersResponse.value.length > size,
   };
 };
 

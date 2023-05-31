@@ -11,7 +11,8 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/email"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/sendemail"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
@@ -30,6 +31,15 @@ const (
 var (
 	True  = new(bool)
 	False = new(bool)
+
+	emailNotConfiguredError = ValidatorError{
+		err:                       errors.New("Key: 'email' Error:Not configured to send emails. Please configure it in Settings->Email Configuration"),
+		skipOverwriteErrorMessage: true,
+	}
+	incorrectOldPasswordError = ValidatorError{
+		err:                       errors.New("Key: 'old_password' Error:incorrect old password"),
+		skipOverwriteErrorMessage: true,
+	}
 )
 
 func init() {
@@ -47,7 +57,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Validator.Struct(registerRequest)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	ctx := directory.WithGlobalContext(r.Context())
@@ -158,7 +168,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Validator.Struct(registerRequest)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	ctx := directory.WithGlobalContext(r.Context())
@@ -246,7 +256,7 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Validator.Struct(inviteUserRequest)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
@@ -302,19 +312,31 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	inviteURL := fmt.Sprintf("%s/auth/invite-accept?invite_code=%s", consoleUrl, code)
-	message := ""
 	if inviteUserRequest.Action == UserInviteSendEmail {
-		err = email.SendUserInviteEmail(ctx, inviteUserRequest.Email, user, inviteURL)
+		emailSender, err := sendemail.NewEmailSender()
+		if errors.Is(err, sql.ErrNoRows) {
+			respondError(&emailNotConfiguredError, w)
+			return
+		} else if err != nil {
+			respondError(err, w)
+			return
+		}
+		err = emailSender.Send(
+			[]string{inviteUserRequest.Email},
+			"Deepfence - Invitation to join ThreatMapper",
+			fmt.Sprintf(sendemail.UserInviteEmail, user.FirstName, user.LastName, user.Email, inviteURL),
+			"",
+			nil,
+		)
 		if err != nil {
 			respondError(err, w)
 			return
 		}
-		message = "Invite sent"
 	}
 
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_INVITE, userInvite, true)
 
-	httpext.JSON(w, http.StatusOK, model.InviteUserResponse{InviteExpiryHours: 48, InviteURL: inviteURL, Message: message})
+	httpext.JSON(w, http.StatusOK, model.InviteUserResponse{InviteExpiryHours: 48, InviteURL: inviteURL, Message: "Invite sent"})
 }
 
 func (h *Handler) userModel(pgUser postgresql_db.GetUsersRow) model.User {
@@ -386,7 +408,7 @@ func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	toLogout := false
@@ -464,7 +486,7 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
@@ -472,10 +494,13 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 		respondWithErrorCode(err, w, statusCode)
 		return
 	}
+	if user.Email == constants.DeepfenceCommunityEmailId {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
 	passwordValid, err := user.CompareHashAndPassword(ctx, pgClient, req.OldPassword)
 	if err != nil || !passwordValid {
-		respondError(&ValidatorError{
-			errors.New("Key: 'UpdateUserPasswordRequest.OldPassword' Error:incorrect old password")}, w)
+		respondError(&incorrectOldPasswordError, w)
 		return
 	}
 	err = user.SetPassword(req.NewPassword)
@@ -550,7 +575,11 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Validator.Struct(resetPasswordRequest)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
+		return
+	}
+	if resetPasswordRequest.Email == constants.DeepfenceCommunityEmailId {
+		httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 		return
 	}
 	user, statusCode, ctx, pgClient, err := model.GetUserByEmail(strings.ToLower(resetPasswordRequest.Email))
@@ -567,14 +596,33 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	expiry := utils.GetCurrentDatetime().Add(10 * time.Minute)
+	resetCode := utils.NewUUID()
 	_, err = pgClient.CreatePasswordReset(ctx, postgresql_db.CreatePasswordResetParams{
-		Code: utils.NewUUID(), Expiry: expiry, UserID: user.ID,
+		Code: resetCode, Expiry: expiry, UserID: user.ID,
 	})
 	if err != nil {
 		respondError(err, w)
 		return
 	}
-	err = email.SendForgotPasswordEmail(ctx, user)
+	consoleUrl, err := model.GetManagementConsoleURL(ctx, pgClient)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+	emailSender, err := sendemail.NewEmailSender()
+	if err != nil {
+		pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
+		respondError(err, w)
+		return
+	}
+	resetPasswordURL := fmt.Sprintf("%s/auth/reset-password?code=%s", consoleUrl, resetCode)
+	err = emailSender.Send(
+		[]string{resetPasswordRequest.Email},
+		"Deepfence - Password Reset",
+		fmt.Sprintf(sendemail.PasswordResetEmail, user.FirstName, user.LastName, resetPasswordURL, 10),
+		"",
+		nil,
+	)
 	if err != nil {
 		pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
 		respondError(err, w)
@@ -594,7 +642,7 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 	}
 	err = h.Validator.Struct(passwordResetVerifyRequest)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	ctx := directory.WithGlobalContext(r.Context())

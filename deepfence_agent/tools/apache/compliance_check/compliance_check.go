@@ -140,8 +140,7 @@ func main() {
 		addToAllLog("Error initializing df client " + err.Error())
 		os.Exit(1)
 	}
-	// err = dfClient.SendScanStatustoConsole("", "QUEUED", 0, resultMap)
-	err = dfClient.WriteScanStatusToFile(dfLogDir, "", "QUEUED", 0, resultMap)
+	err = dfClient.WriteScanStatusToFile(dfLogDir, "", "IN_PROGRESS", 0, resultMap)
 	if err != nil {
 		addToAllLog("Error in sending Queued status to console" + err.Error())
 	}
@@ -149,11 +148,6 @@ func main() {
 	command := ""
 	stopLoggingInProgress := make(chan bool)
 	go func() {
-		// err := dfClient.SendScanStatustoConsole("", "INPROGRESS", 0, resultMap)
-		err := dfClient.WriteScanStatusToFile(dfLogDir, "", "INPROGRESS", 0, resultMap)
-		if err != nil {
-			addToAllLog("Error in sending in progress status to console" + err.Error())
-		}
 		ticker := time.NewTicker(2 * time.Minute)
 		for {
 			select {

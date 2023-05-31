@@ -15,7 +15,7 @@ import {
 import { getVulnerabilityApiClient } from '@/api/api';
 import { ModelSbomResponse } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 type LoaderData = {
   sbom: ModelSbomResponse[];
@@ -29,29 +29,26 @@ export const sbomApiLoader = async ({
   if (!scanId) {
     throw new Error('ScanId is required');
   }
-  const sbomData = await makeRequest({
-    apiFunction: getVulnerabilityApiClient().getSbom,
-    apiArgs: [
-      {
-        modelSbomRequest: {
-          scan_id: scanId,
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      if (r.status >= 500) {
-        return new ApiError<LoaderData>({
-          sbom: [],
-          message: 'Error getting SBOM data.',
-        });
-      }
+  const sbomDataApi = apiWrapper({
+    fn: getVulnerabilityApiClient().getSbom,
+  });
+  const sbomResponse = await sbomDataApi({
+    modelSbomRequest: {
+      scan_id: scanId,
     },
   });
-  if (ApiError.isApiError(sbomData)) {
-    return sbomData.value();
+  if (!sbomResponse.ok) {
+    if (sbomResponse.error.response.status >= 500) {
+      return {
+        sbom: [],
+        message: 'Error getting SBOM data',
+      };
+    }
+    throw sbomResponse.error;
   }
+
   return {
-    sbom: sbomData,
+    sbom: sbomResponse.value,
   };
 };
 
@@ -131,6 +128,19 @@ export const SbomModal = ({
               size="sm"
             />
           );
+        },
+        sortingFn: (rowA, rowB) => {
+          const severityA = rowA.original.severity?.toLowerCase() || 'default';
+          const severityB = rowB.original.severity?.toLowerCase() || 'default';
+          const severityMap: { [key: string]: number } = {
+            critical: 4,
+            high: 3,
+            medium: 2,
+            low: 1,
+            unknown: 0,
+            default: 0,
+          };
+          return severityMap[severityA] - severityMap[severityB];
         },
         header: () => 'Severity',
         minSize: 50,

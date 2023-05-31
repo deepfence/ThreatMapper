@@ -3,7 +3,6 @@ import { IconContext } from 'react-icons';
 import { FaPencilAlt } from 'react-icons/fa';
 import { HiDotsVertical, HiGlobeAlt } from 'react-icons/hi';
 import { ActionFunctionArgs, useFetcher, useLoaderData } from 'react-router-dom';
-import { toast } from 'sonner';
 import {
   Button,
   createColumnHelper,
@@ -16,13 +15,10 @@ import {
 } from 'ui-components';
 
 import { getSettingsApiClient } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelSettingsResponse,
-  ModelSettingUpdateRequestKeyEnum,
-} from '@/api/generated';
+import { ModelSettingsResponse, ModelSettingUpdateRequestKeyEnum } from '@/api/generated';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
-import { ApiError, makeRequest } from '@/utils/api';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
@@ -43,64 +39,56 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
   const formData = await request.formData();
   const body = Object.fromEntries(formData);
 
-  const r = await makeRequest({
-    apiFunction: getSettingsApiClient().updateSettings,
-    apiArgs: [
-      {
-        id: Number(body.id),
-        modelSettingUpdateRequest: {
-          key: body.key as ModelSettingUpdateRequestKeyEnum,
-          value: body.value as string,
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<ActionReturnType>({
-        success: false,
-      });
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-
-        return error.set({
-          fieldErrors: {
-            value: modelResponse.error_fields?.value as string,
-          },
-          message: modelResponse.message ?? '',
-          success: false,
-        });
-      } else if (r.status === 403) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-          success: false,
-        });
-      }
+  const updateApi = apiWrapper({
+    fn: getSettingsApiClient().updateSettings,
+  });
+  const updateResponse = await updateApi({
+    id: Number(body.id),
+    modelSettingUpdateRequest: {
+      key: body.key as ModelSettingUpdateRequestKeyEnum,
+      value: body.value as string,
     },
   });
-
-  if (ApiError.isApiError(r)) {
-    return r.value();
+  if (!updateResponse.ok) {
+    if (updateResponse.error.response.status === 400) {
+      return {
+        success: false,
+        message: updateResponse.error.message,
+      };
+    } else if (updateResponse.error.response.status === 403) {
+      return {
+        success: false,
+        message: 'You do not have enough permissions to update settings',
+      };
+    }
+    throw updateResponse.error;
   }
-  toast.success('Global settings details updated successfully');
+
   return {
-    success: false,
+    success: true,
   };
 };
 
 const getData = async (): Promise<LoaderDataType> => {
-  const response = await makeRequest({
-    apiFunction: getSettingsApiClient().getSettings,
-    apiArgs: [],
+  const settingsApi = apiWrapper({
+    fn: getSettingsApiClient().getSettings,
   });
-
-  if (ApiError.isApiError(response)) {
-    return {
-      message: 'Error in getting settings list',
-    };
+  const settingsResponse = await settingsApi();
+  if (!settingsResponse.ok) {
+    if (settingsResponse.error.response.status === 400) {
+      return {
+        message: settingsResponse.error.message,
+      };
+    } else if (settingsResponse.error.response.status === 403) {
+      return {
+        message: 'You do not have enough permissions to view settings',
+      };
+    }
+    throw settingsResponse.error;
   }
 
   return {
-    data: response,
+    data: settingsResponse.value,
   };
 };
 
@@ -128,37 +116,41 @@ const EditGlobalSettingModal = ({
       onOpenChange={() => setShowDialog(false)}
       title="Update Setting"
     >
-      <fetcher.Form
-        method="post"
-        className="flex flex-col gap-y-3 pt-2 pb-6 mx-8 w-[260px]"
-      >
-        <TextInput type="hidden" className="hidden" name="id" value={setting?.id} />
-        <TextInput type="hidden" className="hidden" name="key" value={setting?.key} />
-        <TextInput
-          label={setting?.label}
-          type={'text'}
-          placeholder={setting?.key}
-          name="value"
-          color={data?.fieldErrors?.value ? 'error' : 'default'}
-          sizing="sm"
-          defaultValue={setting?.value}
-          helperText={data?.fieldErrors?.value}
-          required
-        />
-        <div className={`text-red-600 dark:text-red-500 text-sm`}>
-          {!data?.success && data?.message && <span>{data.message}</span>}
-        </div>
-        <Button
-          color="primary"
-          className=" pl-3"
-          type="submit"
-          size="sm"
-          disabled={state !== 'idle'}
-          loading={state !== 'idle'}
+      {!data?.success ? (
+        <fetcher.Form
+          method="post"
+          className="flex flex-col gap-y-3 pt-2 pb-6 mx-8 w-[260px]"
         >
-          Update
-        </Button>
-      </fetcher.Form>
+          <TextInput type="hidden" className="hidden" name="id" value={setting?.id} />
+          <TextInput type="hidden" className="hidden" name="key" value={setting?.key} />
+          <TextInput
+            label={setting?.label}
+            type={'text'}
+            placeholder={setting?.key}
+            name="value"
+            color={data?.fieldErrors?.value ? 'error' : 'default'}
+            sizing="sm"
+            defaultValue={setting?.value}
+            helperText={data?.fieldErrors?.value}
+            required
+          />
+          <div className={`text-red-600 dark:text-red-500 text-sm`}>
+            {!data?.success && data?.message && <span>{data.message}</span>}
+          </div>
+          <Button
+            color="primary"
+            className=" pl-3"
+            type="submit"
+            size="sm"
+            disabled={state !== 'idle'}
+            loading={state !== 'idle'}
+          >
+            Update
+          </Button>
+        </fetcher.Form>
+      ) : (
+        <SuccessModalContent text="Global Settings successfully updated!" />
+      )}
     </Modal>
   );
 };

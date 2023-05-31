@@ -54,17 +54,17 @@ func (tc *ThreatGraphReporter) GetThreatGraph(filter ThreatFilters) (ThreatGraph
 		}
 		for _, root := range depths[1] {
 			visited := map[int64]struct{}{}
-			attack_paths := build_attack_paths(aggreg[cp], root, visited)
+			attackPaths := build_attack_paths(aggreg[cp], root, visited)
 			paths := [][]string{}
 
-			for _, Attack_path := range attack_paths {
+			for _, attackPath := range attackPaths {
 				path := []string{}
-				for i := range Attack_path {
-					index := Attack_path[int64(len(Attack_path)-1)-int64(i)]
+				for i := range attackPath {
+					index := attackPath[int64(len(attackPath)-1)-int64(i)]
 					path = append(path, node_info[index].Id)
 				}
 				paths = append(paths, append([]string{"The Internet"}, path...))
-				index := Attack_path[len(Attack_path)-1]
+				index := attackPath[len(attackPath)-1]
 				entry := ThreatNodeInfo{
 					Label:                 node_info[index].Label,
 					Id:                    node_info[index].Id,
@@ -200,17 +200,40 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(filters ThreatFilters) (map[str
 		return nil, err
 	}
 
+	awsAccountIdsFilterSet := len(filters.AwsFilter.AccountIds) > 0
+	gcpAccountIdsFilterSet := len(filters.GcpFilter.AccountIds) > 0
+	azureAccountIdsFilterSet := len(filters.AzureFilter.AccountIds) > 0
+	cloudAccountIdsFilterSet := awsAccountIdsFilterSet || gcpAccountIdsFilterSet || azureAccountIdsFilterSet
+
 	all := map[string]AttackPaths{}
-	for _, cloud_provider := range CLOUD_ALL {
+	for _, cloudProvider := range CLOUD_ALL {
+		if cloudAccountIdsFilterSet {
+			switch cloudProvider {
+			case CLOUD_AWS:
+				if awsAccountIdsFilterSet == false {
+					continue
+				}
+			case CLOUD_GCP:
+				if gcpAccountIdsFilterSet == false {
+					continue
+				}
+			case CLOUD_AZURE:
+				if azureAccountIdsFilterSet == false {
+					continue
+				}
+			case CLOUD_PRIVATE:
+				continue
+			}
+		}
 		var res neo4j.Result
-		if cloud_provider != CLOUD_PRIVATE {
+		if cloudProvider != CLOUD_PRIVATE {
 			if res, err = tx.Run(`
 				CALL apoc.nodes.group(['ThreatCloudResource','ThreatNode'], ['node_type', 'depth', 'cloud_provider'],
 				[{`+"`*`"+`: 'count', sum_cve: 'sum', sum_secrets: 'sum', sum_compliance: 'sum', sum_cloud_compliance: 'sum',
 				node_id:'collect', vulnerabilities_count: 'collect', secrets_count:'collect', compliances_count:'collect', cloud_compliances_count: 'collect'},
 				{`+"`*`"+`: 'count'}], {selfRels: false})
 				YIELD node, relationships
-				WHERE apoc.any.property(node, 'cloud_provider') = '`+cloud_provider+`'
+				WHERE apoc.any.property(node, 'cloud_provider') = '`+cloudProvider+`'
 				RETURN node, relationships
 				`, map[string]interface{}{}); err != nil {
 			}
@@ -257,7 +280,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(filters ThreatFilters) (map[str
 			nodes_depth[node_datum.depth] = append(nodes_depth[node_datum.depth], node.Id)
 		}
 
-		all[cloud_provider] = AttackPaths{
+		all[cloudProvider] = AttackPaths{
 			nodes_tree:  nodes_tree,
 			nodes_data:  nodes_data,
 			nodes_depth: nodes_depth,

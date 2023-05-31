@@ -87,7 +87,10 @@ func (r *Reporter) containerTopology(localAddrs []net.IP) report.Topology {
 	result := report.MakeTopology()
 	nodes := []report.TopologyNode{}
 	r.registry.WalkContainers(func(c Container) {
-		nodes = append(nodes, c.GetNode())
+		node := c.GetNode()
+		if node.Metadata.DockerContainerState != "exited" && node.Metadata.DockerContainerState != "created" {
+			nodes = append(nodes, node)
+		}
 	})
 
 	// Copy the IP addresses from other containers where they share network

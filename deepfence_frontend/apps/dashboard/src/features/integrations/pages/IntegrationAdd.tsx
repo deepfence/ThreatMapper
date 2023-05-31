@@ -3,22 +3,16 @@ import { toast } from 'sonner';
 
 import { getIntegrationApiClient } from '@/api/api';
 import {
-  ApiDocsBadRequestResponse,
   ModelIntegrationListResp,
   ModelNodeIdentifier,
   ModelNodeIdentifierNodeTypeEnum,
   ReportersFieldsFilters,
 } from '@/api/generated';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 
 import { IntegrationForm, IntegrationType } from '../components/IntegrationForm';
 import { IntegrationTable } from '../components/IntegrationTable';
-
-type ActionReturnType = {
-  message?: string;
-  success: boolean;
-};
 
 type LoaderDataType = {
   data: ReturnType<typeof getIntegrations>;
@@ -31,24 +25,36 @@ export enum ActionEnumType {
   DELETE = 'delete',
   ADD = 'add',
 }
-
+const severityMap: {
+  [key: string]: string;
+} = {
+  Vulnerability: 'cve_severity',
+  Secret: 'level',
+  Malware: 'file_severity',
+  Compliance: 'status',
+};
 const getIntegrations = async (): Promise<{
   message?: string;
   data?: ModelIntegrationListResp[];
 }> => {
-  const integrationPromise = await makeRequest({
-    apiFunction: getIntegrationApiClient().listIntegration,
-    apiArgs: [],
+  const listIntegrationApi = apiWrapper({
+    fn: getIntegrationApiClient().listIntegration,
   });
-
-  if (ApiError.isApiError(integrationPromise)) {
-    return {
-      message: 'Error in getting integrations',
-    };
+  const integrationResponse = await listIntegrationApi();
+  if (!integrationResponse.ok) {
+    if (integrationResponse.error.response.status === 403) {
+      return {
+        message: 'You do not have enough permissions to view integrations',
+      };
+    } else {
+      return {
+        message: 'Error in getting integrations',
+      };
+    }
   }
 
   return {
-    data: integrationPromise,
+    data: integrationResponse.value,
   };
 };
 
@@ -80,6 +86,10 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
       return {
         url: formBody.apiUrl,
         auth_key: formBody.authorizationKey,
+      };
+    case IntegrationType.email:
+      return {
+        email_id: formBody.email,
       };
     case IntegrationType.splunk:
       return {
@@ -175,11 +185,9 @@ const action = async ({
     }
 
     if (_notificationType === 'CloudTrail Alert') {
-      _notificationType = 'cloudtrial_alert';
+      _notificationType = 'CloudTrailAlert';
     } else if (_notificationType === 'User Activities') {
-      _notificationType = 'user_activities';
-    } else {
-      _notificationType = _notificationType.toLowerCase();
+      _notificationType = 'UserActivities';
     }
 
     // filters
@@ -285,7 +293,9 @@ const action = async ({
       const filters = _filters.fields_filters.contains_filter.filter_in;
       const newFilter = {
         ...filters,
-        severity: severityFilter.map((severity) => severity.toLowerCase()),
+        [severityMap[_notificationType] || 'severity']: severityFilter.map((severity) =>
+          severity.toLowerCase(),
+        ),
       };
       _filters.fields_filters.contains_filter.filter_in = newFilter;
     }
@@ -303,33 +313,27 @@ const action = async ({
 
     _filters.node_ids = nodeIds;
 
-    const r = await makeRequest({
-      apiFunction: getIntegrationApiClient().addIntegration,
-      apiArgs: [
-        {
-          modelIntegrationAddReq: {
-            integration_type: _integrationType,
-            notification_type: _notificationType,
-            config: getConfigBodyNotificationType(formData, _integrationType as string),
-            filters: _filters,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-            success: false,
-          });
-        }
+    const addIntegrationApi = apiWrapper({
+      fn: getIntegrationApiClient().addIntegration,
+    });
+    const r = await addIntegrationApi({
+      modelIntegrationAddReq: {
+        integration_type: _integrationType,
+        notification_type: _notificationType,
+        config: getConfigBodyNotificationType(formData, _integrationType as string),
+        filters: _filters,
       },
     });
-    if (ApiError.isApiError(r)) {
-      return r.value();
+    if (!r.ok) {
+      if (r.error.response.status === 400) {
+        return {
+          message: r.error.message ?? '',
+        };
+      } else if (r.error.response.status === 403) {
+        return {
+          message: 'You do not have enough permissions to add integration',
+        };
+      }
     }
     toast('Integration added successfully');
   } else if (_actionType === ActionEnumType.DELETE) {
@@ -340,30 +344,18 @@ const action = async ({
         message: 'An id is required to delete an integration',
       };
     }
-    const r = await makeRequest({
-      apiFunction: getIntegrationApiClient().deleteIntegration,
-      apiArgs: [
-        {
-          integrationId: id,
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-            success: false,
-          });
-        }
-      },
+    const deleteIntegrationApi = apiWrapper({
+      fn: getIntegrationApiClient().deleteIntegration,
     });
-    if (ApiError.isApiError(r)) {
-      return {
-        message: 'Error in adding integrations',
-      };
+    const r = await deleteIntegrationApi({
+      integrationId: id,
+    });
+    if (!r.ok) {
+      if (r.error.response.status === 400) {
+        return {
+          message: r.error.message ?? 'Error in deleting integrations',
+        };
+      }
     }
     toast('Integration deleted successfully');
     return {

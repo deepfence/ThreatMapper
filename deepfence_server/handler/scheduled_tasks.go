@@ -37,7 +37,7 @@ func (h *Handler) UpdateScheduledTask(w http.ResponseWriter, r *http.Request) {
 	req.ID = id
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	err = model.UpdateScheduledTask(ctx, id, req)

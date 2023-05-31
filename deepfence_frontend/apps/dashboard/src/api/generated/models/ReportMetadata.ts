@@ -150,12 +150,6 @@ export interface ReportMetadata {
      * @type {string}
      * @memberof ReportMetadata
      */
-    docker_image_labels?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ReportMetadata
-     */
     docker_image_name?: string;
     /**
      * 
@@ -291,10 +285,10 @@ export interface ReportMetadata {
     kubernetes_namespace?: string;
     /**
      * 
-     * @type {Array<number>}
+     * @type {Array<string>}
      * @memberof ReportMetadata
      */
-    kubernetes_ports?: Array<number>;
+    kubernetes_ports?: Array<string>;
     /**
      * 
      * @type {string}
@@ -487,7 +481,6 @@ export function ReportMetadataFromJSONTyped(json: any, ignoreDiscriminator: bool
         'docker_env': !exists(json, 'docker_env') ? undefined : json['docker_env'],
         'docker_image_created_at': !exists(json, 'docker_image_created_at') ? undefined : json['docker_image_created_at'],
         'docker_image_id': !exists(json, 'docker_image_id') ? undefined : json['docker_image_id'],
-        'docker_image_labels': !exists(json, 'docker_image_labels') ? undefined : json['docker_image_labels'],
         'docker_image_name': !exists(json, 'docker_image_name') ? undefined : json['docker_image_name'],
         'docker_image_name_with_tag': !exists(json, 'docker_image_name_with_tag') ? undefined : json['docker_image_name_with_tag'],
         'docker_image_size': !exists(json, 'docker_image_size') ? undefined : json['docker_image_size'],
@@ -570,7 +563,6 @@ export function ReportMetadataToJSON(value?: ReportMetadata | null): any {
         'docker_env': value.docker_env,
         'docker_image_created_at': value.docker_image_created_at,
         'docker_image_id': value.docker_image_id,
-        'docker_image_labels': value.docker_image_labels,
         'docker_image_name': value.docker_image_name,
         'docker_image_name_with_tag': value.docker_image_name_with_tag,
         'docker_image_size': value.docker_image_size,

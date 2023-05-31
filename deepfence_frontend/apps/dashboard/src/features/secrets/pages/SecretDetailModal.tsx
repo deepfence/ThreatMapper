@@ -3,7 +3,12 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { omit, pick, truncate } from 'lodash-es';
 import { Suspense } from 'react';
-import { LoaderFunctionArgs, useLoaderData, useSearchParams } from 'react-router-dom';
+import {
+  LoaderFunctionArgs,
+  useLoaderData,
+  useRouteLoaderData,
+  useSearchParams,
+} from 'react-router-dom';
 import {
   Badge,
   CircleSpinner,
@@ -14,11 +19,11 @@ import {
 } from 'ui-components';
 
 import { getSearchApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ModelSecret } from '@/api/generated/models/ModelSecret';
 import { CopyToClipboard } from '@/components/CopyToClipboard';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
-import { ApiError, makeRequest } from '@/utils/api';
+import { LoaderDataType as ScanResultsLoaderDataType } from '@/features/secrets/pages/SecretScanResults';
+import { apiWrapper } from '@/utils/api';
 import { getObjectKeys } from '@/utils/array';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -33,63 +38,54 @@ type LoaderDataType = {
 };
 
 async function getSecrets(secretId: string) {
-  const result = await makeRequest({
-    apiFunction: getSearchApiClient().searchSecrets,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          node_filter: {
-            filters: {
-              contains_filter: {
-                filter_in: {
-                  node_id: [secretId],
-                },
-              },
-              order_filter: {
-                order_fields: [],
-              },
-              match_filter: {
-                filter_in: {},
-              },
-              compare_filter: null,
-            },
-            in_field_filter: null,
-            window: {
-              offset: 0,
-              size: 0,
+  const searchSecretsApi = apiWrapper({
+    fn: getSearchApiClient().searchSecrets,
+  });
+  const searchSecretsResponse = await searchSecretsApi({
+    searchSearchNodeReq: {
+      node_filter: {
+        filters: {
+          contains_filter: {
+            filter_in: {
+              node_id: [secretId],
             },
           },
-          window: {
-            offset: 0,
-            size: 1,
+          order_filter: {
+            order_fields: [],
           },
+          match_filter: {
+            filter_in: {},
+          },
+          compare_filter: null,
+        },
+        in_field_filter: null,
+        window: {
+          offset: 0,
+          size: 0,
         },
       },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<LoaderDataType>({
-        data: undefined,
-      });
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-          data: undefined,
-        });
-      }
+      window: {
+        offset: 0,
+        size: 1,
+      },
     },
   });
-
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  if (!searchSecretsResponse.ok) {
+    if (searchSecretsResponse.error.response.status === 400) {
+      return {
+        message: searchSecretsResponse.error.message,
+        data: undefined,
+      };
+    }
+    throw searchSecretsResponse.error;
   }
 
-  if (result === null || result.length === 0) {
+  if (searchSecretsResponse.value === null || searchSecretsResponse.value.length === 0) {
     return {
       data: undefined,
     };
   }
-  return result[0];
+  return searchSecretsResponse.value[0];
 }
 const loader = async ({
   params,
@@ -107,7 +103,9 @@ const loader = async ({
 
 const Header = () => {
   const loaderData = useLoaderData() as LoaderDataType;
-
+  const scanResultsLoader = useRouteLoaderData(
+    'secret-scan-results',
+  ) as ScanResultsLoaderDataType;
   return (
     <SlidingModalHeader>
       <Suspense fallback={<CircleSpinner size="xs" />}>
@@ -147,9 +145,17 @@ const Header = () => {
                   />
                   <CopyToClipboard data={secret} />
                 </div>
-                <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7">
-                  {dayjs(secret?.updated_at).fromNow()}
-                </span>
+                {scanResultsLoader?.data ? (
+                  <DFAwait resolve={scanResultsLoader?.data}>
+                    {(scanResults: ScanResultsLoaderDataType) => {
+                      return (
+                        <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7 mt-2">
+                          {dayjs(scanResults.data?.timestamp).fromNow() || '-'}
+                        </span>
+                      );
+                    }}
+                  </DFAwait>
+                ) : null}
               </div>
             );
           }}
@@ -206,7 +212,7 @@ const DetailsComponent = () => {
                           },
                         )}
                       >
-                        <span className="text-xs text-gray-500">CVSS score</span>
+                        <span className="text-xs text-gray-500">Severity score</span>
                         <span className="text-md">{fixed.score || '-'}</span>
                       </div>
                       <p className="text-sm pr-2 mb-2 text-justify">{fixed.name}</p>

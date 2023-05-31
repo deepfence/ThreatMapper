@@ -24,7 +24,7 @@ func (h *Handler) GenerateConsoleDiagnosticLogs(w http.ResponseWriter, r *http.R
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	err = h.ConsoleDiagnosis.GenerateDiagnosticLogs(r.Context(), strconv.Itoa(req.Tail))
@@ -46,7 +46,7 @@ func (h *Handler) UpdateAgentDiagnosticLogsStatus(w http.ResponseWriter, r *http
 	req.NodeID = chi.URLParam(r, "node_id")
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	err = agentdiagnosis.UpdateAgentDiagnosticLogsStatus(r.Context(), req)
@@ -67,7 +67,7 @@ func (h *Handler) GenerateAgentDiagnosticLogs(w http.ResponseWriter, r *http.Req
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	err = agentdiagnosis.GenerateAgentDiagnosticLogs(r.Context(), req.NodeIds, strconv.Itoa(req.Tail))

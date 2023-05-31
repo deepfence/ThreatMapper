@@ -1,9 +1,11 @@
 import cx from 'classnames';
 import { capitalize } from 'lodash-es';
-import { Suspense, useMemo } from 'react';
+import { Suspense, useMemo, useRef } from 'react';
 import { IconContext } from 'react-icons';
+import { FiFilter } from 'react-icons/fi';
 import { HiChevronRight, HiExternalLink } from 'react-icons/hi';
 import {
+  Form,
   LoaderFunctionArgs,
   Outlet,
   useLoaderData,
@@ -14,23 +16,25 @@ import {
   Badge,
   Breadcrumb,
   BreadcrumbLink,
+  Checkbox,
   CircleSpinner,
   createColumnHelper,
+  IconButton,
+  Listbox,
+  ListboxOption,
+  Popover,
   SortingState,
   Table,
   TableSkeleton,
 } from 'ui-components';
 
-import { getScanResultsApiClient, getSearchApiClient } from '@/api/api';
-import {
-  ModelNodesInScanResultRequestScanTypeEnum,
-  ModelScanResultBasicNode,
-  ModelVulnerability,
-  SearchSearchNodeReq,
-} from '@/api/generated';
+import { getSearchApiClient } from '@/api/api';
+import { ModelVulnerability, SearchSearchNodeReq } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { FilterHeader } from '@/components/forms/FilterHeader';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
-import { ApiError, makeRequest } from '@/utils/api';
+import { TruncatedText } from '@/components/TruncatedText';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 import {
@@ -46,14 +50,20 @@ type LoaderDataType = {
 };
 const PAGE_SIZE = 15;
 
+const getSeveritySearch = (searchParams: URLSearchParams) => {
+  return searchParams.getAll('severity');
+};
+const getLiveConnectionSearch = (searchParams: URLSearchParams) => {
+  return searchParams.getAll('liveConnection');
+};
 async function getVulnerability(searchParams: URLSearchParams): Promise<{
-  vulnerabilities: Array<ModelVulnerability & { cve_affected_assets: string }>;
+  vulnerabilities: Array<ModelVulnerability>;
   currentPage: number;
   totalRows: number;
   message?: string;
 }> {
   const results: {
-    vulnerabilities: Array<ModelVulnerability & { cve_affected_assets: string }>;
+    vulnerabilities: Array<ModelVulnerability>;
     currentPage: number;
     totalRows: number;
     message?: string;
@@ -65,7 +75,8 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
 
   const page = getPageFromSearchParams(searchParams);
   const order = getOrderFromSearchParams(searchParams);
-
+  const severity = getSeveritySearch(searchParams);
+  const liveConnection = getLiveConnectionSearch(searchParams);
   const searchVulnerabilitiesRequestParams: SearchSearchNodeReq = {
     node_filter: {
       filters: {
@@ -92,79 +103,47 @@ async function getVulnerability(searchParams: URLSearchParams): Promise<{
     );
   }
 
-  const result = await makeRequest({
-    apiFunction: getSearchApiClient().searchVulnerabilities,
-    apiArgs: [{ searchSearchNodeReq: searchVulnerabilitiesRequestParams }],
-  });
-
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  if (severity.length) {
+    searchVulnerabilitiesRequestParams.node_filter.filters.contains_filter.filter_in![
+      'cve_severity'
+    ] = severity;
   }
-
-  const countsResult = await makeRequest({
-    apiFunction: getSearchApiClient().searchVulnerabilitiesCount,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          ...searchVulnerabilitiesRequestParams,
-          window: {
-            ...searchVulnerabilitiesRequestParams.window,
-            size: 10 * PAGE_SIZE,
-          },
-        },
-      },
-    ],
-  });
-
-  if (ApiError.isApiError(countsResult)) {
-    throw countsResult.value();
-  }
-
-  const allNodes = await makeRequest({
-    apiFunction: getScanResultsApiClient().getAllNodesInScanResults,
-    apiArgs: [
-      {
-        modelNodesInScanResultRequest: {
-          result_ids: result.map((res) => res.cve_id),
-          scan_type: ModelNodesInScanResultRequestScanTypeEnum.VulnerabilityScan,
-        },
-      },
-    ],
-  });
-
-  if (ApiError.isApiError(allNodes)) {
-    throw allNodes.value();
-  }
-
-  if (result === null) {
-    // TODO: handle this with 404?
-    throw new Error('unable to get cve results');
-  }
-
-  const groupByNodes = allNodes.reduce<{ [k: string]: ModelScanResultBasicNode }>(
-    (acc, data) => {
-      const { result_id, ...rest } = data;
-      acc[result_id] = rest as ModelScanResultBasicNode;
-      return acc;
-    },
-    {},
-  );
-
-  results.vulnerabilities = result.map((vulnerability) => {
-    const resources = groupByNodes[vulnerability.cve_id];
-    const resourcesLen = resources?.basic_nodes?.length ?? 0;
-    let affectedAssets = resources?.basic_nodes?.[0]?.name ?? '';
-    if (affectedAssets && resourcesLen > 1) {
-      affectedAssets = `${affectedAssets} + ${resourcesLen - 1} more`;
+  if (liveConnection.length) {
+    if (liveConnection.length === 1) {
+      searchVulnerabilitiesRequestParams.node_filter.filters.contains_filter.filter_in![
+        'has_live_connection'
+      ] = [liveConnection[0] === 'active'];
     }
-    return {
-      ...vulnerability,
-      cve_affected_assets: affectedAssets,
-    };
+  }
+  const searchVulnerabilitiesApi = apiWrapper({
+    fn: getSearchApiClient().searchVulnerabilities,
   });
+  const searchVulnerabilitiesResponse = await searchVulnerabilitiesApi({
+    searchSearchNodeReq: searchVulnerabilitiesRequestParams,
+  });
+  if (!searchVulnerabilitiesResponse.ok) {
+    throw searchVulnerabilitiesResponse.error;
+  }
 
+  const searchVulnerabilitiesCountApi = apiWrapper({
+    fn: getSearchApiClient().searchVulnerabilitiesCount,
+  });
+  const searchVulnerabilitiesCountResponse = await searchVulnerabilitiesCountApi({
+    searchSearchNodeReq: {
+      ...searchVulnerabilitiesRequestParams,
+      window: {
+        ...searchVulnerabilitiesRequestParams.window,
+        size: 10 * PAGE_SIZE,
+      },
+    },
+  });
+  if (!searchVulnerabilitiesCountResponse.ok) {
+    throw searchVulnerabilitiesCountResponse.error;
+  }
+
+  results.vulnerabilities = searchVulnerabilitiesResponse.value;
   results.currentPage = page;
-  results.totalRows = page * PAGE_SIZE + countsResult.count;
+  results.totalRows = page * PAGE_SIZE + searchVulnerabilitiesCountResponse.value.count;
 
   return results;
 }
@@ -217,11 +196,11 @@ const UniqueVulnerabilities = () => {
         cell: (info) => info.getValue(),
         header: () => 'Package',
         minSize: 100,
-        size: 200,
-        maxSize: 250,
+        size: 120,
+        maxSize: 125,
       }),
       columnHelper.accessor('cve_severity', {
-        enableResizing: false,
+        enableResizing: true,
         cell: (info) => (
           <Badge
             label={info.getValue().toUpperCase()}
@@ -241,28 +220,28 @@ const UniqueVulnerabilities = () => {
           />
         ),
         header: () => 'Severity',
-        minSize: 70,
+        minSize: 80,
         size: 80,
-        maxSize: 90,
+        maxSize: 100,
       }),
       columnHelper.accessor('cve_cvss_score', {
-        enableResizing: false,
+        enableResizing: true,
         cell: (info) => info.getValue(),
         header: () => 'Score',
         minSize: 70,
-        size: 80,
-        maxSize: 90,
+        size: 60,
+        maxSize: 85,
       }),
       columnHelper.accessor('cve_attack_vector', {
         enableResizing: false,
-        cell: (info) => capitalize(info.getValue()),
+        cell: (info) => info.getValue(),
         header: () => 'Attack Vector',
         minSize: 100,
         size: 120,
         maxSize: 250,
       }),
       columnHelper.accessor('has_live_connection', {
-        enableResizing: false,
+        enableResizing: true,
         cell: (info) => (
           <div
             className={cx('h-2.5 w-2.5 rounded-full', {
@@ -272,51 +251,67 @@ const UniqueVulnerabilities = () => {
           ></div>
         ),
         header: () => 'Live',
-        minSize: 40,
-        size: 60,
-        maxSize: 50,
+        minSize: 60,
+        size: 70,
+        maxSize: 70,
       }),
       columnHelper.accessor('exploit_poc', {
         enableSorting: false,
-        enableResizing: false,
-        cell: () => (
-          <DFLink to="#">
-            <IconContext.Provider
-              value={{
-                className: 'w-4 h-4',
-              }}
-            >
-              <HiExternalLink />
-            </IconContext.Provider>
-          </DFLink>
-        ),
+        enableResizing: true,
+        cell: (info) => {
+          if (!info.getValue().length) return '-';
+          return (
+            <DFLink href={info.getValue()} target="_blank">
+              <IconContext.Provider
+                value={{
+                  className: 'w-4 h-4',
+                }}
+              >
+                <HiExternalLink />
+              </IconContext.Provider>
+            </DFLink>
+          );
+        },
         header: () => 'Exploit',
         minSize: 60,
         size: 60,
         maxSize: 70,
       }),
-      columnHelper.accessor('cve_affected_assets', {
+      columnHelper.accessor('resources', {
         enableSorting: false,
         enableResizing: true,
-        cell: (info) => info.getValue(),
-        header: () => 'Vulnerable Resources',
-        minSize: 200,
-        size: 200,
-        maxSize: 240,
+        cell: (info) => {
+          return <TruncatedText text={info.getValue()?.join(', ') ?? ''} />;
+        },
+        header: () => 'Affected Resources',
+        minSize: 180,
+        size: 180,
+        maxSize: 190,
       }),
       columnHelper.accessor('cve_description', {
         enableSorting: false,
         enableResizing: true,
-        cell: (info) => info.getValue(),
+        cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
         header: () => 'Description',
         minSize: 200,
-        size: 250,
-        maxSize: 400,
+        size: 200,
+        maxSize: 210,
       }),
     ];
 
     return columns;
-  }, []);
+  }, [searchParams]);
+
+  const elementToFocusOnClose = useRef(null);
+
+  const isFilterApplied =
+    searchParams.has('severity') || searchParams.has('liveConnection');
+
+  const onResetFilters = () => {
+    setSearchParams(() => {
+      return {};
+    });
+  };
 
   return (
     <div>
@@ -333,6 +328,121 @@ const UniqueVulnerabilities = () => {
         <span className="ml-2 max-h-5 flex items-center">
           {navigation.state === 'loading' ? <CircleSpinner size="xs" /> : null}
         </span>
+        <div className="ml-auto flex gap-x-4">
+          <div className="relative gap-x-4">
+            {isFilterApplied && (
+              <span className="absolute -left-[2px] -top-[2px] inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
+            )}
+
+            <Popover
+              triggerAsChild
+              elementToFocusOnCloseRef={elementToFocusOnClose}
+              content={
+                <div className="dark:text-white">
+                  <FilterHeader onReset={onResetFilters} />
+                  <Form className="flex flex-col gap-y-4 p-4">
+                    <fieldset>
+                      <legend className="text-sm font-medium">Severity</legend>
+                      <Listbox
+                        sizing="sm"
+                        name="severity"
+                        placeholder="Select Severity"
+                        multiple={true}
+                        value={searchParams.getAll('severity')}
+                        onChange={(value) => {
+                          setSearchParams((prev) => {
+                            prev.delete('severity');
+                            value.forEach((v) => {
+                              prev.append('severity', v.toLowerCase());
+                            });
+                            prev.delete('page');
+                            return prev;
+                          });
+                        }}
+                      >
+                        {['critical', 'high', 'medium', 'low', 'unknown'].map((key) => {
+                          return (
+                            <ListboxOption key={key} value={key}>
+                              {capitalize(key)}
+                            </ListboxOption>
+                          );
+                        })}
+                      </Listbox>
+                    </fieldset>
+                    <fieldset>
+                      <legend className="text-sm font-medium">Live Connection</legend>
+                      <div className="flex gap-x-4 mt-1">
+                        <Checkbox
+                          label="Active"
+                          checked={searchParams
+                            .getAll('liveConnection')
+                            .includes('active')}
+                          onCheckedChange={(state) => {
+                            if (state) {
+                              setSearchParams((prev) => {
+                                prev.append('liveConnection', 'active');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            } else {
+                              setSearchParams((prev) => {
+                                const prevStatuses = prev.getAll('liveConnection');
+                                prev.delete('liveConnection');
+                                prev.delete('page');
+                                prevStatuses
+                                  .filter((status) => status !== 'active')
+                                  .forEach((status) => {
+                                    prev.append('liveConnection', status);
+                                  });
+                                return prev;
+                              });
+                            }
+                          }}
+                        />
+                        <Checkbox
+                          label="InActive"
+                          checked={searchParams
+                            .getAll('liveConnection')
+                            .includes('inActive')}
+                          onCheckedChange={(state) => {
+                            if (state) {
+                              setSearchParams((prev) => {
+                                prev.append('liveConnection', 'inActive');
+                                prev.delete('page');
+                                return prev;
+                              });
+                            } else {
+                              setSearchParams((prev) => {
+                                const prevStatuses = prev.getAll('liveConnection');
+                                prev.delete('liveConnection');
+                                prevStatuses
+                                  .filter((status) => status !== 'inActive')
+                                  .forEach((status) => {
+                                    prev.append('liveConnection', status);
+                                  });
+                                prev.delete('page');
+                                return prev;
+                              });
+                            }
+                          }}
+                        />
+                      </div>
+                    </fieldset>
+                  </Form>
+                </div>
+              }
+            >
+              <IconButton
+                className="ml-auto rounded-lg"
+                size="xs"
+                outline
+                color="primary"
+                ref={elementToFocusOnClose}
+                icon={<FiFilter />}
+              />
+            </Popover>
+          </div>
+        </div>
       </div>
       <div className="m-2">
         <Suspense fallback={<TableSkeleton columns={9} rows={10} size={'md'} />}>
@@ -347,6 +457,7 @@ const UniqueVulnerabilities = () => {
                   manualPagination
                   enableRowSelection
                   enableColumnResizing
+                  approximatePagination
                   totalRows={resolvedData.totalRows}
                   pageSize={PAGE_SIZE}
                   pageIndex={resolvedData.currentPage}

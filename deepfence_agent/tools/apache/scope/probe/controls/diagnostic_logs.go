@@ -23,31 +23,31 @@ func SendAgentDiagnosticLogs(req ctl.SendAgentDiagnosticLogsRequest, pathsToZip 
 	fileName := "/tmp/" + req.FileName
 	err = utils.RecursiveZip(pathsToZip, excludePathPrefixes, fileName)
 	if err != nil {
-		publishDiagnosticLogsStatus(ctx, httpsClient, req.NodeId, utils.SCAN_STATUS_FAILED, err.Error())
+		publishDiagnosticLogsStatus(ctx, httpsClient.Client(), req.NodeId, utils.SCAN_STATUS_FAILED, err.Error())
 		return err
 	}
 	defer os.RemoveAll(fileName)
 
 	resp, statusCode, err := utils.UploadFile(req.UploadURL, fileName)
 	if err != nil {
-		publishDiagnosticLogsStatus(ctx, httpsClient, req.NodeId, utils.SCAN_STATUS_FAILED, err.Error())
+		publishDiagnosticLogsStatus(ctx, httpsClient.Client(), req.NodeId, utils.SCAN_STATUS_FAILED, err.Error())
 		return err
 	}
 	if statusCode != http.StatusOK {
-		publishDiagnosticLogsStatus(ctx, httpsClient, req.NodeId, utils.SCAN_STATUS_FAILED, string(resp))
+		publishDiagnosticLogsStatus(ctx, httpsClient.Client(), req.NodeId, utils.SCAN_STATUS_FAILED, string(resp))
 		return errors.New(string(resp))
 	}
 
-	return publishDiagnosticLogsStatus(ctx, httpsClient, req.NodeId, utils.SCAN_STATUS_SUCCESS, "")
+	return publishDiagnosticLogsStatus(ctx, httpsClient.Client(), req.NodeId, utils.SCAN_STATUS_SUCCESS, "")
 }
 
 func publishDiagnosticLogsStatus(ctx context.Context, httpsClient *client.APIClient, nodeId string, status string, message string) error {
-	httpReq := httpsClient.DiagnosisApi.UpdateAgentDiagnosticLogsStatus(ctx, nodeId)
+	httpReq := httpsClient.DiagnosisAPI.UpdateAgentDiagnosticLogsStatus(ctx, nodeId)
 	httpReq = httpReq.DiagnosisDiagnosticLogsStatus(client.DiagnosisDiagnosticLogsStatus{
 		Message: &message,
 		Status:  status,
 	})
-	res, err := httpsClient.DiagnosisApi.UpdateAgentDiagnosticLogsStatusExecute(httpReq)
+	res, err := httpsClient.DiagnosisAPI.UpdateAgentDiagnosticLogsStatusExecute(httpReq)
 	if err != nil {
 		return err
 	}

@@ -134,6 +134,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			// Get access token for api key
 			r.Post("/auth/token", dfHandler.ApiAuthHandler)
 
+			r.Get("/end-user-license-agreement", dfHandler.EULAHandler)
+
 			if serveOpenapiDocs {
 				log.Info().Msgf("OpenAPI documentation: http://0.0.0.0%s/deepfence/openapi.json", serverPort)
 				log.Info().Msgf("Swagger UI : http://0.0.0.0%s/deepfence/swagger-ui/", serverPort)
@@ -232,6 +234,8 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/compliance/scans", dfHandler.SearchComplianceScans)
 				r.Post("/cloud-compliance/scans", dfHandler.SearchCloudComplianceScans)
 
+				r.Post("/cloud-accounts", dfHandler.SearchCloudNodes)
+
 				r.Route("/count", func(r chi.Router) {
 					r.Get("/nodes", dfHandler.NodeCount)
 					r.Post("/hosts", dfHandler.SearchHostsCount)
@@ -245,6 +249,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Post("/cloud-resources", dfHandler.SearchCloudResourcesCount)
 					r.Post("/kubernetes-clusters", dfHandler.SearchKubernetesClustersCount)
 					r.Post("/pods", dfHandler.SearchPodsCount)
+					r.Post("/cloud-accounts", dfHandler.SearchCloudAccountCount)
 
 					r.Post("/vulnerability/scans", dfHandler.SearchVulnerabilityScansCount)
 					r.Post("/secret/scans", dfHandler.SearchSecretScansCount)
@@ -316,9 +321,19 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 			})
 			r.Route("/scan/results", func(r chi.Router) {
 				r.Post("/vulnerability", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListVulnerabilityScanResultsHandler))
-				r.Post("/secret", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListSecretScanResultsHandler))
+
+				r.Route("/secret", func(r chi.Router) {
+					r.Post("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListSecretScanResultsHandler))
+					r.Post("/rules", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListSecretScanResultRulesHandler))
+				})
+
+				r.Route("/malware", func(r chi.Router) {
+					r.Post("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListMalwareScanResultsHandler))
+					r.Post("/rules", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListMalwareScanResultRulesHandler))
+					r.Post("/class", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListMalwareScanResultClassHandler))
+				})
+
 				r.Post("/compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListComplianceScanResultsHandler))
-				r.Post("/malware", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListMalwareScanResultsHandler))
 				r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.ListCloudComplianceScanResultsHandler))
 
 				r.Route("/count", func(r chi.Router) {
@@ -327,6 +342,13 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Post("/compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CountComplianceScanResultsHandler))
 					r.Post("/malware", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CountMalwareScanResultsHandler))
 					r.Post("/cloud-compliance", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.CountCloudComplianceScanResultsHandler))
+					r.Route("/group", func(r chi.Router) {
+						r.Get("/secret", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GroupSecretResultsHandler))
+						r.Route("/malware", func(r chi.Router) {
+							r.Get("/", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GroupMalwareResultsHandler))
+							r.Get("/class", dfHandler.AuthHandler(ResourceScanReport, PermissionRead, dfHandler.GroupMalwareClassResultsHandler))
+						})
+					})
 				})
 			})
 

@@ -1,14 +1,13 @@
 import { useMemo, useState } from 'react';
-import { Card, Radio, Separator } from 'ui-components';
+import { Card, Separator } from 'ui-components';
 
 import { GraphVulnerabilityThreatGraphRequestGraphTypeEnum } from '@/api/generated';
 import { VulnerabilityThreatGraphComponent } from '@/features/threat-graph/components/VulnerabilityThreatGraph';
 
 export const TopAttackPaths = () => {
-  const [attackPathType, setAttackPathType] =
-    useState<GraphVulnerabilityThreatGraphRequestGraphTypeEnum>(
-      GraphVulnerabilityThreatGraphRequestGraphTypeEnum.MostVulnerableAttackPaths,
-    );
+  const [attackPathType] = useState<GraphVulnerabilityThreatGraphRequestGraphTypeEnum>(
+    GraphVulnerabilityThreatGraphRequestGraphTypeEnum.MostVulnerableAttackPaths,
+  );
 
   const filters = useMemo(() => {
     return {
@@ -17,7 +16,7 @@ export const TopAttackPaths = () => {
   }, [attackPathType]);
 
   return (
-    <Card className="h-full p-2">
+    <Card className="h-full p-2 min-h-[500px]">
       <div className="flex items-center pb-2">
         <h4 className="text-gray-900 font-medium text-base dark:text-white">
           Top Attack Paths
@@ -25,7 +24,7 @@ export const TopAttackPaths = () => {
       </div>
       <Separator />
       <div className="flex flex-col items-center justify-center h-[96%]">
-        <Radio
+        {/* <Radio
           value={attackPathType}
           className="mt-4 self-start"
           options={[
@@ -48,7 +47,7 @@ export const TopAttackPaths = () => {
           onValueChange={(value: GraphVulnerabilityThreatGraphRequestGraphTypeEnum) => {
             setAttackPathType(value);
           }}
-        />
+        /> */}
         <VulnerabilityThreatGraphComponent filters={filters} />
       </div>
     </Card>

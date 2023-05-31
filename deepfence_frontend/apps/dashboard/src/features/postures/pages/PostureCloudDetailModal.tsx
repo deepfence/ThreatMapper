@@ -3,7 +3,12 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { omit, pick, truncate } from 'lodash-es';
 import { Suspense, useState } from 'react';
-import { LoaderFunctionArgs, useLoaderData, useSearchParams } from 'react-router-dom';
+import {
+  LoaderFunctionArgs,
+  useLoaderData,
+  useRouteLoaderData,
+  useSearchParams,
+} from 'react-router-dom';
 import {
   Badge,
   CircleSpinner,
@@ -14,11 +19,12 @@ import {
 } from 'ui-components';
 
 import { getSearchApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelCloudCompliance } from '@/api/generated';
+import { ModelCloudCompliance } from '@/api/generated';
 import { CopyToClipboard } from '@/components/CopyToClipboard';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
+import { LoaderDataType as ScanResultsLoaderDataType } from '@/features/postures/pages/PostureCloudScanResults';
 import { STATUSES } from '@/features/postures/pages/PostureScanResults';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { getObjectKeys } from '@/utils/array';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -33,64 +39,50 @@ type LoaderDataType = {
 };
 
 async function getCompliances(complianceId: string) {
-  const result = await makeRequest({
-    apiFunction: getSearchApiClient().searchCloudCompliances,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          node_filter: {
-            filters: {
-              contains_filter: {
-                filter_in: {
-                  node_id: [complianceId],
-                },
-              },
-              order_filter: {
-                order_fields: [],
-              },
-              match_filter: {
-                filter_in: {},
-              },
-              compare_filter: null,
-            },
-            in_field_filter: null,
-            window: {
-              offset: 0,
-              size: 0,
+  const searchCloudCompliancesApi = apiWrapper({
+    fn: getSearchApiClient().searchCloudCompliances,
+  });
+  const result = await searchCloudCompliancesApi({
+    searchSearchNodeReq: {
+      node_filter: {
+        filters: {
+          contains_filter: {
+            filter_in: {
+              node_id: [complianceId],
             },
           },
-          window: {
-            offset: 0,
-            size: 1,
+          order_filter: {
+            order_fields: [],
           },
+          match_filter: {
+            filter_in: {},
+          },
+          compare_filter: null,
+        },
+        in_field_filter: null,
+        window: {
+          offset: 0,
+          size: 0,
         },
       },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<LoaderDataType>({
-        data: undefined,
-      });
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-          data: undefined,
-        });
-      }
+      window: {
+        offset: 0,
+        size: 1,
+      },
     },
   });
 
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  if (!result.ok) {
+    throw result.error;
   }
 
-  if (result === null || result.length === 0) {
+  if (result.value === null || result.value.length === 0) {
     return {
       data: undefined,
     };
   }
 
-  const res = result[0];
+  const res = result.value[0];
 
   return res;
 }
@@ -110,6 +102,9 @@ const loader = async ({
 
 const Header = () => {
   const loaderData = useLoaderData() as LoaderDataType;
+  const scanResultsLoader = useRouteLoaderData(
+    'posture-cloud-scan-results',
+  ) as ScanResultsLoaderDataType;
 
   return (
     <SlidingModalHeader>
@@ -138,9 +133,15 @@ const Header = () => {
                   />
                   <CopyToClipboard data={compliane} />
                 </div>
-                <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7">
-                  {dayjs(compliane.updated_at).fromNow() || '-'}
-                </span>
+                <DFAwait resolve={scanResultsLoader?.data}>
+                  {(scanResults: ScanResultsLoaderDataType) => {
+                    return (
+                      <span className="font-normal text-xs text-gray-500 dark:text-gray-400 ml-7 mt-2">
+                        {dayjs(scanResults.data?.timestamp).fromNow() || '-'}
+                      </span>
+                    );
+                  }}
+                </DFAwait>
               </div>
             );
           }}

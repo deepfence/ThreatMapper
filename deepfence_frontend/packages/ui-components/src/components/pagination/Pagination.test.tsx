@@ -74,7 +74,7 @@ describe(`Component Pagination`, () => {
     const { getAllByRole, getAllByTestId } = renderUI(
       <Pagination
         currentPage={8}
-        totalRows={90}
+        totalRows={100}
         onPageChange={onPageChange}
         siblingCount={2}
       />,
@@ -91,7 +91,6 @@ describe(`Component Pagination`, () => {
     /*
       Only Right dot page is present if current page is at the begining of page. 
     */
-    const totalRenderPage = 11; // includes Previous, Next and Dots pages
     const onPageChange = vi.fn();
     const { getAllByRole, getAllByTestId } = renderUI(
       <Pagination
@@ -106,7 +105,7 @@ describe(`Component Pagination`, () => {
     const dotsPage = getAllByTestId('pagination-button-dots');
     // only right dot page is present
     expect(dotsPage.length).toEqual(1);
-    expect(pages[totalRenderPage - 3]).toEqual(dotsPage[0]);
+    expect(pages[pages.length - 3]).toEqual(dotsPage[0]);
   });
 
   it(`previous and next click work correctly`, () => {
@@ -197,20 +196,19 @@ describe(`Component Pagination`, () => {
         />
       );
     };
-    const totalRenderPage = 11;
     const { getAllByRole, getByRole, getAllByTestId } = renderUI(<UI />);
     const dotsPage = getAllByTestId('pagination-button-dots');
     let pages = getAllByRole('button');
-    expect(pages[totalRenderPage - 3]).toEqual(dotsPage[0]);
+    expect(pages[pages.length - 3]).toEqual(dotsPage[0]);
 
-    // goto page 3
-    const page7 = getByRole('button', {
-      name: /7/,
+    // goto page 10
+    const page10 = getByRole('button', {
+      name: /10/,
     });
-    fireEvent.click(page7);
+    fireEvent.click(page10);
     pages = getAllByRole('button');
     // expect right dot disappear
-    expect(pages[totalRenderPage - 3]).not.toEqual(dotsPage[0]);
+    expect(pages[pages.length - 3]).not.toEqual(dotsPage[0]);
     expect(
       getByRole('button', {
         name: /8/,

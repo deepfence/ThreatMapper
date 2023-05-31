@@ -2,8 +2,23 @@ import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, FileInput, Step, Stepper, TextInput, Typography } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
+import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
 
-export const GoogleCRConnectorForm = () => {
+/*
+sample json
+  curl --request POST \
+  --url https://xxx.xxx.xxx.xxx/deepfence/registryaccount/gcr \
+  --header 'Authorization: Bearer' \
+  --header 'content-type: multipart/form-data' \
+  --form service_account_json=@service_account_json \
+  --form name=test-gcr \
+  --form registry_url=https://asia-south1-docker.pkg.dev
+*/
+
+export const GoogleCRConnectorForm = ({
+  errorMessage,
+  fieldErrors,
+}: RegistryFormProps) => {
   return (
     <Stepper>
       <Step indicator={<HiViewGridAdd />} title="Google Registry Connection">
@@ -26,24 +41,31 @@ export const GoogleCRConnectorForm = () => {
             label="Registry Name"
             type={'text'}
             sizing="sm"
-            name="registryName"
-            placeholder="Registry Name"
+            name="name"
+            placeholder="Registry Name" //TODO: double check this form
+            color={fieldErrors?.['name'] ? 'error' : 'default'}
+            helperText={fieldErrors?.['name']}
           />
           <TextInput
             className="w-3/4 min-[200px] max-w-xs"
             label="Registry URL"
             type={'text'}
             sizing="sm"
-            name="registryUrl"
+            name="registry_url"
             placeholder="Registry URL"
+            hint="e.g.: https://us.gcr.io"
+            color={fieldErrors?.['registry_url'] ? 'error' : 'default'}
+            helperText={fieldErrors?.['registry_url']}
           />
-
           <FileInput
             className="w-3/4 min-[200px] max-w-xs"
             label="Select your file"
+            hint="Please enable Cloud Resource Manager API and Container Registry API in Google Cloud"
             sizing="sm"
-            name="authFile"
+            name="service_account_json"
+            helperText={fieldErrors?.['service_account_json']}
           />
+          {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
         </Card>
       </Step>
     </Stepper>

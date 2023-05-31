@@ -91,15 +91,6 @@ export const Login = () => {
           {data.error}
         </div>
       )}
-      <Link
-        to="/register"
-        className={cx(
-          `${Typography.size.xs} `,
-          'bg-transparent justify-center text-blue-600 dark:text-blue-500 flex mt-4',
-        )}
-      >
-        Single Sign-On (SSO)
-      </Link>
     </fetcher.Form>
   );
 };

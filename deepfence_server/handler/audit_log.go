@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -66,9 +67,10 @@ func (h *Handler) AuditUserActivity(
 ) {
 
 	var (
-		user_id = 0.0
-		role_id = 0.0
-		claims  = map[string]interface{}{}
+		user_id     = 0.0
+		role_id     = 0.0
+		userIdValid = false
+		claims      = map[string]interface{}{}
 	)
 
 	token, err := GetTokenFromRequest(h.TokenAuth, req)
@@ -77,12 +79,14 @@ func (h *Handler) AuditUserActivity(
 	} else {
 		claims := token.PrivateClaims()
 		user_id = claims["user_id"].(float64)
+		userIdValid = true
 		role_id = claims["role_id"].(float64)
 	}
 
 	if event == EVENT_AUTH && action == ACTION_LOGIN {
 		user := resources.(*model.User)
 		user_id = float64(user.ID)
+		userIdValid = true
 		role_id = float64(user.RoleID)
 	}
 
@@ -104,11 +108,14 @@ func (h *Handler) AuditUserActivity(
 	}
 
 	params := postgresql_db.CreateAuditLogParams{
-		Event:      event,
-		Action:     action,
-		Resources:  resourceStr,
-		Success:    success,
-		UserID:     int32(user_id),
+		Event:     event,
+		Action:    action,
+		Resources: resourceStr,
+		Success:   success,
+		UserID: sql.NullInt32{
+			Int32: int32(user_id),
+			Valid: userIdValid,
+		},
 		UserRoleID: int32(role_id),
 		CreatedAt:  time.Now(),
 	}
@@ -144,6 +151,11 @@ func (h *Handler) GetAuditLogs(w http.ResponseWriter, r *http.Request) {
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
 		return
+	}
+
+	if len(auditLogs) == 0 {
+		//This is to handle when there's no data in DB
+		auditLogs = make([]postgresql_db.GetAuditLogsRow, 0)
 	}
 
 	err = httpext.JSON(w, http.StatusOK, auditLogs)

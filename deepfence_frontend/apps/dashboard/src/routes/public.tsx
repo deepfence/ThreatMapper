@@ -4,6 +4,7 @@ import { registerAction } from '@/features/auth/actions/registerAction';
 import { AuthLayout } from '@/features/auth/layouts/AuthLayout';
 import { loginLoader } from '@/features/auth/loaders/loginLoader';
 import { registerLoader } from '@/features/auth/loaders/registerLoader';
+import { module as eula } from '@/features/auth/pages/EULA';
 import {
   ForgotPassword,
   forgotPasswordAction,
@@ -11,6 +12,7 @@ import {
 import { Login } from '@/features/auth/pages/Login';
 import { RegisterUser } from '@/features/auth/pages/RegisterUser';
 import { module as registerWithInvite } from '@/features/auth/pages/RegisterWithInvite';
+import { module as resetPassword } from '@/features/auth/pages/ResetPassword';
 import { CustomRouteObject } from '@/utils/router';
 
 export const publicRoutes: CustomRouteObject[] = [
@@ -44,6 +46,17 @@ export const publicRoutes: CustomRouteObject[] = [
         ...registerWithInvite,
         meta: { title: 'Register' },
       },
+      {
+        path: 'reset-password',
+        ...resetPassword,
+        meta: { title: 'Reset Password' },
+      },
     ],
+  },
+  {
+    path: 'end-user-license-agreement',
+    ...eula,
+    meta: { title: 'End User License Agreement' },
+    errorElement: <FiveZeroZero />,
   },
 ];

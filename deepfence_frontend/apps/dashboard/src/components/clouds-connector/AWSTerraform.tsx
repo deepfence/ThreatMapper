@@ -18,19 +18,25 @@ export const AWSTerraform = memo(() => {
   region = "<AWS-REGION>; eg. us-east-1"
 }
 
-module "cloud-scanner_example_single-account-ecs" {
+module "deepfence-cloud-scanner_example_single-account" {
   source = "deepfence/cloud-scanner/aws//examples/single-account-ecs"
-  version = "0.1.0"
+  version = "0.3.0"
   mgmt-console-url = "<Console URL> eg. XXX.XXX.XX.XXX"
   mgmt-console-port = "443"
   deepfence-key = "${dfApiKey}"
+  name = "deepfence-cloud-scanner"
+}
+
+variable "image" {
+  type        = string
+  default     = "[quay.io/deepfenceio/cloud-scanner:1.5.0](http://quay.io/deepfenceio/cloud-scanner:1.5.0)"
 }
 `;
 
   return (
     <div className="w-full sm:w-1/2">
       <Stepper>
-        <Step indicator={<HiViewGridAdd />} title="Teraform Cloud Formation">
+        <Step indicator={<HiViewGridAdd />} title="Teraform">
           <div className={`${Typography.size.sm} dark:text-gray-200`}>
             Connect to your AWS Cloud Account via Teraform. Find out more information by{' '}
             <a

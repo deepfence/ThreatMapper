@@ -89,9 +89,9 @@ func computeThreatGraph(session neo4j.Session) error {
 	if _, err = tx.Run(`
 		MATCH (s:VulnerabilityScan) -[:SCANNED]-> (m)
 		WITH distinct m, max(s.updated_at) as most_recent
-		MATCH (m) <-[:SCANNED]- (s:VulnerabilityScan{updated_at: most_recent})-[:DETECTED]->(c:Vulnerability)
-		WITH s, m, count(distinct c) as vulnerabilities_count
-		SET m.vulnerabilities_count = vulnerabilities_count`, map[string]interface{}{}); err != nil {
+		OPTIONAL MATCH (m) <-[:SCANNED]- (s:VulnerabilityScan{updated_at: most_recent})-[:DETECTED]->(c:Vulnerability)
+		WITH s, m, count(distinct c.node_id) as vulnerabilities_count
+		SET m.vulnerabilities_count = (CASE WHEN s.status = "COMPLETE" THEN vulnerabilities_count ELSE null END)`, map[string]interface{}{}); err != nil {
 		return err
 	}
 
@@ -150,17 +150,6 @@ func computeThreatGraph(session neo4j.Session) error {
 		n.sum_malware = COALESCE(n.malwares_count, 0),
 		n.sum_compliance = COALESCE(n.compliances_count, 0),
 		n.sum_cloud_compliance = COALESCE(n.cloud_compliances_count, 0)`, map[string]interface{}{}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run(`
-		MATCH (n) -[:HOSTS]-> (m)
-		WHERE n:Node OR n:CloudResource
-		SET n.sum_cve = n.sum_cve + COALESCE(m.vulnerabilities_count, 0),
-		n.sum_secrets = n.sum_secrets + COALESCE(m.secrets_count, 0),
-		n.sum_malware = n.sum_malware + COALESCE(m.malwares_count, 0),
-		n.sum_compliance = n.sum_compliance + COALESCE(m.compliances_count, 0),
-		n.sum_cloud_compliance = n.sum_cloud_compliance + COALESCE(m.cloud_compliances_count, 0)`, map[string]interface{}{}); err != nil {
 		return err
 	}
 

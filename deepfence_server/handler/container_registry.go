@@ -1,12 +1,16 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
 	"strconv"
 
+	"github.com/ThreeDotsLabs/watermill"
+	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	api_messages "github.com/deepfence/ThreatMapper/deepfence_server/constants/api-messages"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
@@ -15,6 +19,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/go-chi/chi/v5"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 	"github.com/samber/mo"
@@ -86,6 +91,14 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// validate fields
+	err = registry.ValidateFields(h.Validator)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
 	// validate if registry credential is correct
 	if !registry.IsValidCredential() {
 		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryAuthFailed})
@@ -138,12 +151,19 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	req.Extras = registry.GetExtras()
 
 	// add to registry db
-	err = req.CreateRegistry(ctx, r.Context(), pgClient, registry.GetNamespace())
+	pgID, err := req.CreateRegistry(ctx, r.Context(), pgClient, registry.GetNamespace())
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		respondError(&InternalServerError{err}, w)
 		return
 	}
+
+	err = h.SyncRegistry(r.Context(), pgID)
+	if err != nil {
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+
 	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryCreated})
 }
 
@@ -203,6 +223,14 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msgf("%v", err)
 		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	// validate fields
+	err = registry.ValidateFields(h.Validator)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -324,6 +352,14 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	// validate fields
+	err = registry.ValidateFields(h.Validator)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&ValidatorError{err: err}, w)
+		return
+	}
+
 	// validate if registry credential is correct
 	if !registry.IsValidCredential() {
 		httpext.JSON(w, http.StatusBadRequest, model.ErrorResponse{Message: api_messages.ErrRegistryAuthFailed})
@@ -385,12 +421,19 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	req.Extras = registry.GetExtras()
 
 	// add to registry db
-	err = req.CreateRegistry(ctx, r.Context(), pgClient, registry.GetNamespace())
+	pgID, err := req.CreateRegistry(ctx, r.Context(), pgClient, registry.GetNamespace())
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		respondError(&InternalServerError{err}, w)
 		return
 	}
+
+	err = h.SyncRegistry(r.Context(), pgID)
+	if err != nil {
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+
 	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryCreated})
 }
 
@@ -411,7 +454,15 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	log.Info().Msgf("IDs: %v", pgIds)
+
+	log.Info().Msgf("delete registry ID's: %v and registry account %s", pgIds, id)
+
+	if err := model.DeleteRegistryAccount(r.Context(), id); err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&InternalServerError{err}, w)
+		return
+	}
+
 	for _, id := range pgIds {
 		err = model.DeleteRegistry(ctx, pgClient, int32(id))
 		if err != nil {
@@ -435,7 +486,7 @@ func (h *Handler) getImages(w http.ResponseWriter, r *http.Request) ([]model.Con
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return images, err
 	}
 
@@ -479,7 +530,7 @@ func (h *Handler) getImageStubs(w http.ResponseWriter, r *http.Request) ([]model
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return images, err
 	}
 
@@ -522,7 +573,7 @@ func (h *Handler) RegistrySummary(w http.ResponseWriter, r *http.Request) {
 	}
 	err := h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -548,7 +599,7 @@ func (h *Handler) SummaryByRegistryType(w http.ResponseWriter, r *http.Request) 
 	}
 	err := h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -580,4 +631,32 @@ func (h *Handler) Summary(w http.ResponseWriter, r *http.Request) {
 	log.Info().Msgf("all registries summary %+v", counts)
 
 	httpext.JSON(w, http.StatusOK, counts)
+}
+
+func (h *Handler) SyncRegistry(rCtx context.Context, pgID int32) error {
+	log.Info().Msgf("sync registry with id=%d", pgID)
+	payload, err := json.Marshal(utils.RegistrySyncParams{
+		PgID: pgID,
+	})
+	if err != nil {
+		log.Error().Msgf("cannot marshal payload:", err)
+		return err
+	}
+
+	msg := message.NewMessage(watermill.NewUUID(), payload)
+	namespace, err := directory.ExtractNamespace(rCtx)
+	if err != nil {
+		log.Error().Msgf("cannot extract namespace:", err)
+		return err
+	}
+	msg.Metadata = map[string]string{directory.NamespaceKey: string(namespace)}
+	msg.SetContext(directory.NewContextWithNameSpace(namespace))
+	middleware.SetCorrelationID(watermill.NewShortUUID(), msg)
+
+	err = h.TasksPublisher.Publish(utils.SyncRegistryTask, msg)
+	if err != nil {
+		log.Error().Msgf("cannot publish message:", err)
+		return err
+	}
+	return nil
 }

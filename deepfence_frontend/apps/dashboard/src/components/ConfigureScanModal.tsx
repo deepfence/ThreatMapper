@@ -63,7 +63,7 @@ export const ConfigureScanModal = ({
     scanOptions.scanType === ScanTypeEnum.ComplianceScan ||
     scanOptions.scanType === ScanTypeEnum.CloudComplianceScan
   ) {
-    title = `Configure compliance scan`;
+    title = `Configure posture scan`;
   }
 
   return (

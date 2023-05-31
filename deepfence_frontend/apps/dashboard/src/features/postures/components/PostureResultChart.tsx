@@ -3,7 +3,7 @@ import { EChartsOption, PieSeriesOption, SeriesOption } from 'echarts';
 import { ReactECharts } from '@/components/ReactEcharts';
 import { Mode } from '@/theme/ThemeContext';
 
-const option: EChartsOption = {
+let option: EChartsOption = {
   backgroundColor: 'transparent',
   tooltip: {
     trigger: 'item',
@@ -20,6 +20,7 @@ const option: EChartsOption = {
       type: 'pie',
       radius: ['70%', '90%'],
       avoidLabelOverlap: true,
+      cursor: 'default',
       label: {
         show: false,
         position: 'center',
@@ -41,11 +42,15 @@ export const PostureResultChart = ({
     return null;
   }
 
-  option.dataset = {
-    source: Object.keys(data).map((key) => ({
-      Compliances: key,
-      value: data[key],
-    })),
+  option = {
+    ...option,
+    dataset: {
+      ...option.dataset,
+      source: Object.keys(data).map((key) => ({
+        Compliances: key,
+        value: data[key],
+      })),
+    },
   };
 
   if (eoption && option && option.series) {

@@ -1,6 +1,6 @@
 import cx from 'classnames';
 import { capitalize } from 'lodash-es';
-import { Suspense, useCallback, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FaHistory } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import {
@@ -10,7 +10,9 @@ import {
   HiDotsVertical,
   HiEye,
   HiEyeOff,
+  HiOutlineDownload,
   HiOutlineExclamationCircle,
+  HiOutlineTrash,
 } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import {
@@ -50,10 +52,11 @@ import {
 
 import { getCloudComplianceApiClient, getScanResultsApiClient } from '@/api/api';
 import {
-  ApiDocsBadRequestResponse,
   ModelCloudCompliance,
   ModelComplianceScanInfo,
   ModelScanResultsReq,
+  UtilsReportFiltersNodeTypeEnum,
+  UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterHeader } from '@/components/forms/FilterHeader';
@@ -65,6 +68,7 @@ import {
 } from '@/components/header/HeaderSkeleton';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import {
   NoIssueFound,
   ScanStatusInError,
@@ -72,15 +76,18 @@ import {
 } from '@/components/ScanStatusMessage';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { POSTURE_STATUS_COLORS } from '@/constants/charts';
-import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
+import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
+import { ScanHistoryApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
 import { useGetCloudFilters } from '@/features/common/data-component/searchCloudFiltersApiLoader';
 import { PostureResultChart } from '@/features/postures/components/PostureResultChart';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { PostureSeverityType, ScanStatusEnum, ScanTypeEnum } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { isScanComplete, isScanFailed } from '@/utils/scan';
 import { DFAwait } from '@/utils/suspense';
 import {
   getOrderFromSearchParams,
@@ -107,6 +114,7 @@ enum ActionEnumType {
   DELETE = 'delete',
   DOWNLOAD = 'download',
   NOTIFY = 'notify',
+  DELETE_SCAN = 'delete_scan',
 }
 
 type ScanResult = {
@@ -153,33 +161,25 @@ async function getScans(
   searchParams: URLSearchParams,
 ): Promise<LoaderDataType> {
   // status api
-  const statusResult = await makeRequest({
-    apiFunction: getCloudComplianceApiClient().statusCloudComplianceScan,
-    apiArgs: [
-      {
-        modelScanStatusReq: {
-          scan_ids: [scanId],
-          bulk_scan_id: '',
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<LoaderDataType>({
-        message: '',
-      });
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
+  const statusCloudComplianceScanApi = apiWrapper({
+    fn: getCloudComplianceApiClient().statusCloudComplianceScan,
+  });
+  const statusResult = await statusCloudComplianceScanApi({
+    modelScanStatusReq: {
+      scan_ids: [scanId],
+      bulk_scan_id: '',
     },
   });
 
-  if (ApiError.isApiError(statusResult)) {
-    return statusResult.value();
+  if (!statusResult.ok) {
+    if (statusResult.error.response.status === 400) {
+      return {
+        message: statusResult.error.message,
+      };
+    }
+    throw statusResult.error;
   }
-  const statuses = statusResult?.statuses?.[0];
+  const statuses = statusResult.value?.statuses?.[0];
 
   if (!statusResult || !statuses || !statuses.scan_id) {
     throw new Error('Scan status not found');
@@ -198,7 +198,10 @@ async function getScans(
   }
   const status = getStatusSearch(searchParams);
   const page = getPageFromSearchParams(searchParams);
-  const order = getOrderFromSearchParams(searchParams);
+  const order = getOrderFromSearchParams(searchParams) || {
+    sortBy: 'status',
+    descending: true,
+  };
   const mask = getMaskSearch(searchParams);
   const unmask = getUnmaskSearch(searchParams);
   const benchmarkTypes = getBenchmarkType(searchParams);
@@ -249,77 +252,71 @@ async function getScans(
   let result = null;
   let resultCounts = null;
 
-  result = await makeRequest({
-    apiFunction: getCloudComplianceApiClient().resultCloudComplianceScan,
-    apiArgs: [
-      {
-        modelScanResultsReq: scanResultsReq,
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400 || r.status === 404) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message ?? '',
-        });
-      }
-    },
+  const resultCloudComplianceScanApi = apiWrapper({
+    fn: getCloudComplianceApiClient().resultCloudComplianceScan,
   });
-  resultCounts = await makeRequest({
-    apiFunction: getCloudComplianceApiClient().resultCountCloudComplianceScan,
-    apiArgs: [
-      {
-        modelScanResultsReq: {
-          ...scanResultsReq,
-          window: {
-            ...scanResultsReq.window,
-            size: 10 * scanResultsReq.window.size,
-          },
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400 || r.status === 404) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
+  result = await resultCloudComplianceScanApi({
+    modelScanResultsReq: scanResultsReq,
   });
-
-  if (ApiError.isApiError(result)) {
-    return result.value();
-  }
-  if (ApiError.isApiError(resultCounts)) {
-    return resultCounts.value();
+  if (!result.ok) {
+    if (result.error.response.status === 400 || result.error.response.status === 404) {
+      return {
+        message: result.error.message ?? '',
+      };
+    }
+    throw result.error;
   }
 
-  const totalStatus = Object.values(result.status_counts ?? {}).reduce((acc, value) => {
-    acc = acc + value;
-    return acc;
-  }, 0);
+  const resultCountCloudComplianceScanApi = apiWrapper({
+    fn: getCloudComplianceApiClient().resultCountCloudComplianceScan,
+  });
+  resultCounts = await resultCountCloudComplianceScanApi({
+    modelScanResultsReq: {
+      ...scanResultsReq,
+      window: {
+        ...scanResultsReq.window,
+        size: 10 * scanResultsReq.window.size,
+      },
+    },
+  });
+  if (!resultCounts.ok) {
+    if (
+      resultCounts.error.response.status === 400 ||
+      resultCounts.error.response.status === 404
+    ) {
+      return {
+        message: resultCounts.error.message ?? '',
+      };
+    }
+    throw resultCounts.error;
+  }
+
+  const totalStatus = Object.values(result.value.status_counts ?? {}).reduce(
+    (acc, value) => {
+      acc = acc + value;
+      return acc;
+    },
+    0,
+  );
 
   const cloudComplianceStatus = {
-    alarm: result.status_counts?.[STATUSES.ALARM] ?? 0,
-    info: result.status_counts?.[STATUSES.INFO] ?? 0,
-    ok: result.status_counts?.[STATUSES.OK] ?? 0,
-    skip: result.status_counts?.[STATUSES.SKIP] ?? 0,
+    alarm: result.value.status_counts?.[STATUSES.ALARM] ?? 0,
+    info: result.value.status_counts?.[STATUSES.INFO] ?? 0,
+    ok: result.value.status_counts?.[STATUSES.OK] ?? 0,
+    skip: result.value.status_counts?.[STATUSES.SKIP] ?? 0,
   };
 
   return {
     scanStatusResult: statuses,
     data: {
       totalStatus,
-      nodeName: result.node_id,
+      nodeName: result.value.node_id,
       statusCounts: cloudComplianceStatus,
-      timestamp: result.updated_at,
-      compliances: result.compliances ?? [],
+      timestamp: result.value.updated_at,
+      compliances: result.value.compliances ?? [],
       pagination: {
         currentPage: page,
-        totalRows: page * PAGE_SIZE + resultCounts.count,
+        totalRows: page * PAGE_SIZE + resultCounts.value.count,
       },
     },
   };
@@ -347,10 +344,15 @@ type ActionFunctionType =
   | ReturnType<typeof getScanResultsApiClient>['notifyScanResult']
   | ReturnType<typeof getScanResultsApiClient>['unmaskScanResult'];
 
+type ActionData = {
+  success: boolean;
+  message?: string;
+} | null;
+
 const action = async ({
   params: { scanId = '' },
   request,
-}: ActionFunctionArgs): Promise<null> => {
+}: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
   const ids = (formData.getAll('ids[]') ?? []) as string[];
   const actionType = formData.get('actionType');
@@ -369,68 +371,93 @@ const action = async ({
       actionType === ActionEnumType.DELETE
         ? getScanResultsApiClient().deleteScanResult
         : getScanResultsApiClient().notifyScanResult;
-    result = await makeRequest({
-      apiFunction: apiFunction,
-      apiArgs: [
-        {
-          modelScanResultsActionRequest: {
-            result_ids: [...ids],
-            scan_id: _scanId,
-            scan_type: ScanTypeEnum.CloudComplianceScan,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<{
-          message?: string;
-        }>({});
-        if (r.status === 400 || r.status === 409) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-          });
-        }
+    const resultApi = apiWrapper({
+      fn: apiFunction,
+    });
+
+    result = await resultApi({
+      modelScanResultsActionRequest: {
+        result_ids: [...ids],
+        scan_id: _scanId,
+        scan_type: ScanTypeEnum.CloudComplianceScan,
       },
     });
+
+    if (!result.ok) {
+      if (result.error.response.status === 400 || result.error.response.status === 409) {
+        return {
+          success: false,
+          message: result.error.message,
+        };
+      } else if (result.error.response.status === 403) {
+        if (actionType === ActionEnumType.DELETE) {
+          return {
+            success: false,
+            message: 'You do not have enough permissions to delete compliance',
+          };
+        } else if (actionType === ActionEnumType.NOTIFY) {
+          return {
+            success: false,
+            message: 'You do not have enough permissions to notify',
+          };
+        }
+      }
+    }
   } else if (actionType === ActionEnumType.MASK || actionType === ActionEnumType.UNMASK) {
     apiFunction =
       actionType === ActionEnumType.MASK
         ? getScanResultsApiClient().maskScanResult
         : getScanResultsApiClient().unmaskScanResult;
-    result = await makeRequest({
-      apiFunction: apiFunction,
-      apiArgs: [
-        {
-          modelScanResultsMaskRequest: {
-            result_ids: [...ids],
-            scan_id: _scanId,
-            scan_type: ScanTypeEnum.CloudComplianceScan,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<{
-          message?: string;
-        }>({});
-        if (r.status === 400 || r.status === 409) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-          });
-        }
+    const resultApi = apiWrapper({
+      fn: apiFunction,
+    });
+    result = await resultApi({
+      modelScanResultsMaskRequest: {
+        result_ids: [...ids],
+        scan_id: _scanId,
+        scan_type: ScanTypeEnum.CloudComplianceScan,
       },
     });
-  }
+    if (!result.ok) {
+      if (actionType === ActionEnumType.MASK) {
+        toast.error('You do not have enough permissions to mask');
+        return {
+          success: false,
+          message: 'You do not have enough permissions to mask',
+        };
+      } else if (actionType === ActionEnumType.UNMASK) {
+        toast.error('You do not have enough permissions to unmask');
+        return {
+          success: false,
+          message: 'You do not have enough permissions to unmask',
+        };
+      }
+    }
+  } else if (actionType === ActionEnumType.DELETE_SCAN) {
+    const deleteScan = apiWrapper({
+      fn: getScanResultsApiClient().deleteScanResultsForScanID,
+    });
 
-  if (ApiError.isApiError(result)) {
-    if (result.value()?.message !== undefined) {
-      const message = result.value()?.message ?? 'Something went wrong';
-      toast.error(message);
+    const result = await deleteScan({
+      scanId: formData.get('scanId') as string,
+      scanType: ScanTypeEnum.CloudComplianceScan,
+    });
+
+    if (!result.ok) {
+      if (result.error.response.status === 403) {
+        return {
+          message: 'You do not have enough permissions to delete scan',
+          success: false,
+        };
+      }
+      throw new Error('Error deleting scan');
     }
   }
 
-  if (actionType === ActionEnumType.DELETE) {
-    toast.success('Deleted successfully');
+  if (actionType === ActionEnumType.DELETE || actionType === ActionEnumType.DELETE_SCAN) {
+    return {
+      success: true,
+    };
   } else if (actionType === ActionEnumType.NOTIFY) {
     toast.success('Notified successfully');
   } else if (actionType === ActionEnumType.MASK) {
@@ -450,7 +477,7 @@ const DeleteConfirmationModal = ({
   ids: string[];
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<ActionData>();
 
   const onDeleteAction = useCallback(
     (actionType: string) => {
@@ -466,50 +493,120 @@ const DeleteConfirmationModal = ({
 
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          The selected compliances will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, Cancel
-          </Button>
-          <Button
-            size="xs"
-            color="danger"
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              onDeleteAction(ActionEnumType.DELETE);
-              setShowDialog(false);
+      {!fetcher.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
             }}
           >
-            Yes, I&apos;m sure
-          </Button>
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            The selected compliances will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+          {fetcher.data?.message && (
+            <p className="text-sm text-red-500 pb-3">{fetcher.data?.message}</p>
+          )}
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              size="xs"
+              color="danger"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteAction(ActionEnumType.DELETE);
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
     </Modal>
   );
 };
 
-const HistoryDropdown = () => {
+const DeleteScanConfirmationModal = ({
+  open,
+  onOpenChange,
+  scanId,
+}: {
+  scanId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => {
+  const fetcher = useFetcher<ActionData>();
+  const onDeleteScan = () => {
+    const formData = new FormData();
+    formData.append('actionType', ActionEnumType.DELETE_SCAN);
+    formData.append('scanId', scanId);
+    fetcher.submit(formData, {
+      method: 'post',
+    });
+  };
+  return (
+    <Modal open={open} onOpenChange={onOpenChange}>
+      {!fetcher.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
+            }}
+          >
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            <span>Are you sure you want to delete the scan?</span>
+          </h3>
+          {fetcher.data?.message && (
+            <p className="text-sm text-red-500 pb-3">{fetcher.data?.message}</p>
+          )}
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => onOpenChange(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              loading={fetcher.state === 'loading'}
+              disabled={fetcher.state === 'loading'}
+              size="xs"
+              color="danger"
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteScan();
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <SuccessModalContent text="Scan deleted successfully!" />
+      )}
+    </Modal>
+  );
+};
+
+const HistoryDropdown = ({ nodeType }: { nodeType: string }) => {
   const { navigate } = usePageNavigation();
-  const fetcher = useFetcher<ApiLoaderDataType>();
+  const fetcher = useFetcher<ScanHistoryApiLoaderDataType>();
   const loaderData = useLoaderData() as LoaderDataType;
   const params = useParams() as {
     scanId: string;
     nodeType: string;
   };
   const isScanHistoryLoading = fetcher.state === 'loading';
+  const { downloadScan } = useDownloadScan();
+
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [scanIdToDelete, setScanIdToDelete] = useState<string | null>(null);
 
   const onHistoryClick = (nodeId: string) => {
     fetcher.load(
@@ -522,101 +619,147 @@ const HistoryDropdown = () => {
   };
 
   return (
-    <Suspense
-      fallback={
-        <IconButton
-          size="xs"
-          color="primary"
-          outline
-          className="rounded-lg bg-transparent"
-          icon={<FaHistory />}
-          type="button"
-          loading
-        />
-      }
-    >
-      <DFAwait resolve={loaderData.data ?? []}>
-        {(resolvedData: LoaderDataType) => {
-          const { scanStatusResult } = resolvedData;
-          const { scan_id, node_id, node_type } = scanStatusResult ?? {};
-          if (!scan_id || !node_id || !node_type) {
-            throw new Error('Scan id, node id or node type is missing');
-          }
+    <>
+      <Suspense
+        fallback={
+          <Button
+            size="xs"
+            color="primary"
+            outline
+            className="rounded-lg bg-transparent"
+            startIcon={<FaHistory />}
+            type="button"
+            loading
+          >
+            Scan History
+          </Button>
+        }
+      >
+        <DFAwait resolve={loaderData.data ?? []}>
+          {(resolvedData: LoaderDataType) => {
+            const { scanStatusResult } = resolvedData;
+            const { scan_id, node_id, node_type } = scanStatusResult ?? {};
+            if (!scan_id || !node_id || !node_type) {
+              throw new Error('Scan id, node id or node type is missing');
+            }
 
-          return (
-            <Dropdown
-              triggerAsChild
-              onOpenChange={(open) => {
-                if (open) onHistoryClick(node_id);
-              }}
-              content={
-                <>
-                  {fetcher?.data?.data?.map((item) => {
-                    return (
-                      <DropdownItem
-                        className="text-sm"
-                        key={item.scanId}
-                        onClick={() => {
-                          navigate(
-                            generatePath(
-                              '/posture/cloud/scan-results/:nodeType/:scanId',
-                              {
-                                scanId: item.scanId,
-                                nodeType: params.nodeType,
-                              },
-                            ),
-                            {
-                              replace: true,
-                            },
-                          );
-                        }}
-                      >
-                        <span
-                          className={twMerge(
-                            cx(
-                              'flex items-center text-gray-700 dark:text-gray-400 gap-x-4',
-                              {
-                                'text-blue-600 dark:text-blue-500':
-                                  item.scanId === scan_id,
-                              },
-                            ),
-                          )}
-                        >
-                          <Badge
-                            label={item.status}
-                            className={cx({
-                              'bg-green-100 dark:bg-green-600/10 text-green-600 dark:text-green-400':
-                                item.status.toLowerCase() === 'complete',
-                              'bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400':
-                                item.status.toLowerCase() === 'error',
-                              'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-                                item.status.toLowerCase() !== 'complete' &&
-                                item.status.toLowerCase() !== 'error',
-                            })}
-                            size="sm"
-                          />
-                          {formatMilliseconds(item.updatedAt)}
-                        </span>
-                      </DropdownItem>
-                    );
-                  })}
-                </>
-              }
-            >
-              <IconButton
-                size="xs"
-                color="primary"
-                outline
-                className="rounded-lg bg-transparent"
-                icon={<FaHistory />}
-                type="button"
-                loading={isScanHistoryLoading}
-              />
-            </Dropdown>
-          );
-        }}
-      </DFAwait>
-    </Suspense>
+            return (
+              <Popover
+                open={popoverOpen}
+                triggerAsChild
+                onOpenChange={(open) => {
+                  if (open) onHistoryClick(node_id);
+                  setPopoverOpen(open);
+                }}
+                content={
+                  <div className="p-4 max-h-80 overflow-y-auto flex flex-col gap-2">
+                    {fetcher.state === 'loading' && !fetcher.data?.data?.length && (
+                      <div className="flex items-center justify-center p-4">
+                        <CircleSpinner size="lg" />
+                      </div>
+                    )}
+                    {[...(fetcher?.data?.data ?? [])].reverse().map((item) => {
+                      const isCurrentScan = item.scanId === scan_id;
+                      return (
+                        <div key={item.scanId} className="flex gap-2 justify-between">
+                          <button
+                            className="flex gap-2 justify-between flex-grow"
+                            onClick={() => {
+                              navigate(
+                                generatePath(
+                                  '/posture/cloud/scan-results/:nodeType/:scanId',
+                                  {
+                                    scanId: item.scanId,
+                                    nodeType: params.nodeType,
+                                  },
+                                ),
+                                {
+                                  replace: true,
+                                },
+                              );
+                              setPopoverOpen(false);
+                            }}
+                          >
+                            <span
+                              className={twMerge(
+                                cx(
+                                  'flex items-center text-gray-700 dark:text-gray-400 gap-x-4',
+                                  {
+                                    'text-blue-600 dark:text-blue-500': isCurrentScan,
+                                  },
+                                ),
+                              )}
+                            >
+                              {formatMilliseconds(item.updatedAt)}
+                            </span>
+                            <ScanStatusBadge status={item.status} />
+                          </button>
+                          <div className="flex gap-1">
+                            <IconButton
+                              color="primary"
+                              outline
+                              size="xxs"
+                              disabled={!isScanComplete(item.status)}
+                              className="rounded-lg bg-transparent"
+                              icon={<HiOutlineDownload />}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                downloadScan({
+                                  scanId: item.scanId,
+                                  scanType:
+                                    UtilsReportFiltersScanTypeEnum.CloudCompliance,
+                                  nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
+                                });
+                              }}
+                            />
+                            <IconButton
+                              color="danger"
+                              outline
+                              size="xxs"
+                              disabled={
+                                isCurrentScan ||
+                                (!isScanComplete(item.status) &&
+                                  !isScanFailed(item.status))
+                              }
+                              className="rounded-lg bg-transparent"
+                              icon={<HiOutlineTrash />}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setScanIdToDelete(item.scanId);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                }
+              >
+                <Button
+                  size="xs"
+                  color="primary"
+                  outline
+                  startIcon={<FaHistory />}
+                  type="button"
+                  loading={isScanHistoryLoading}
+                >
+                  Scan History
+                </Button>
+              </Popover>
+            );
+          }}
+        </DFAwait>
+      </Suspense>
+      {scanIdToDelete && (
+        <DeleteScanConfirmationModal
+          scanId={scanIdToDelete}
+          open={!!scanIdToDelete}
+          onOpenChange={(open) => {
+            if (!open) setScanIdToDelete(null);
+          }}
+        />
+      )}
+    </>
   );
 };
 
@@ -624,13 +767,16 @@ const ActionDropdown = ({
   ids,
   align,
   triggerButton,
+  setIdsToDelete,
+  setShowDeleteDialog,
 }: {
   ids: string[];
   align: 'center' | 'end' | 'start';
   triggerButton: React.ReactNode;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const fetcher = useFetcher();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const onTableAction = useCallback(
     (actionType: string) => {
@@ -645,67 +791,61 @@ const ActionDropdown = ({
   );
 
   return (
-    <>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        ids={ids}
-        setShowDialog={setShowDeleteDialog}
-      />
-      <Dropdown
-        triggerAsChild={true}
-        align={align}
-        content={
-          <>
-            <DropdownItem onClick={() => onTableAction(ActionEnumType.MASK)}>
+    <Dropdown
+      triggerAsChild={true}
+      align={align}
+      content={
+        <>
+          <DropdownItem onClick={() => onTableAction(ActionEnumType.MASK)}>
+            <IconContext.Provider
+              value={{ className: 'text-gray-700 dark:text-gray-400' }}
+            >
+              <HiEyeOff />
+            </IconContext.Provider>
+            <span className="text-gray-700 dark:text-gray-400">Mask</span>
+          </DropdownItem>
+          <DropdownItem onClick={() => onTableAction(ActionEnumType.UNMASK)}>
+            <IconContext.Provider
+              value={{ className: 'text-gray-700 dark:text-gray-400' }}
+            >
+              <HiEye />
+            </IconContext.Provider>
+            <span className="text-gray-700 dark:text-gray-400">Un mask</span>
+          </DropdownItem>
+          <DropdownItem
+            className="text-sm"
+            onClick={() => onTableAction(ActionEnumType.NOTIFY)}
+          >
+            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
               <IconContext.Provider
                 value={{ className: 'text-gray-700 dark:text-gray-400' }}
               >
-                <HiEyeOff />
+                <HiBell />
               </IconContext.Provider>
-              <span className="text-gray-700 dark:text-gray-400">Mask</span>
-            </DropdownItem>
-            <DropdownItem onClick={() => onTableAction(ActionEnumType.UNMASK)}>
+              Notify
+            </span>
+          </DropdownItem>
+          <DropdownItem
+            className="text-sm"
+            onClick={() => {
+              setIdsToDelete(ids);
+              setShowDeleteDialog(true);
+            }}
+          >
+            <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
               <IconContext.Provider
-                value={{ className: 'text-gray-700 dark:text-gray-400' }}
+                value={{ className: 'text-red-700 dark:text-red-400' }}
               >
-                <HiEye />
+                <HiArchive />
               </IconContext.Provider>
-              <span className="text-gray-700 dark:text-gray-400">Un mask</span>
-            </DropdownItem>
-            <DropdownItem
-              className="text-sm"
-              onClick={() => onTableAction(ActionEnumType.NOTIFY)}
-            >
-              <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-                <IconContext.Provider
-                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
-                >
-                  <HiBell />
-                </IconContext.Provider>
-                Notify
-              </span>
-            </DropdownItem>
-            <DropdownItem
-              className="text-sm"
-              onClick={() => {
-                setShowDeleteDialog(true);
-              }}
-            >
-              <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
-                <IconContext.Provider
-                  value={{ className: 'text-red-700 dark:text-red-400' }}
-                >
-                  <HiArchive />
-                </IconContext.Provider>
-                Delete
-              </span>
-            </DropdownItem>
-          </>
-        }
-      >
-        {triggerButton}
-      </Dropdown>
-    </>
+              Delete
+            </span>
+          </DropdownItem>
+        </>
+      }
+    >
+      {triggerButton}
+    </Dropdown>
   );
 };
 const ScanResultTable = () => {
@@ -715,6 +855,13 @@ const ScanResultTable = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [sort, setSort] = useSortingState();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [idsToDelete, setIdsToDelete] = useState<string[]>([]);
+  useEffect(() => {
+    if (idsToDelete.length) {
+      setRowSelectionState({});
+    }
+  }, [loaderData.data]);
 
   const columns = useMemo(() => {
     const columns = [
@@ -729,7 +876,7 @@ const ScanResultTable = () => {
         cell: (info) => (
           <DFLink
             to={{
-              pathname: `./${info.row.original.node_id}`,
+              pathname: `./${encodeURIComponent(info.row.original.node_id)}`,
               search: searchParams.toString(),
             }}
             className="flex items-center gap-x-2"
@@ -821,6 +968,8 @@ const ScanResultTable = () => {
           <ActionDropdown
             ids={[cell.row.original.node_id]}
             align="end"
+            setIdsToDelete={setIdsToDelete}
+            setShowDeleteDialog={setShowDeleteDialog}
             triggerButton={
               <Button size="xs" color="normal">
                 <IconContext.Provider
@@ -851,7 +1000,7 @@ const ScanResultTable = () => {
             const { data, scanStatusResult } = resolvedData;
 
             if (scanStatusResult?.status === ScanStatusEnum.error) {
-              return <ScanStatusInError />;
+              return <ScanStatusInError errorMessage={scanStatusResult.status_message} />;
             } else if (
               scanStatusResult?.status !== ScanStatusEnum.error &&
               scanStatusResult?.status !== ScanStatusEnum.complete
@@ -860,6 +1009,7 @@ const ScanResultTable = () => {
             } else if (
               scanStatusResult?.status === ScanStatusEnum.complete &&
               data &&
+              data.pagination.currentPage === 0 &&
               data.compliances.length === 0
             ) {
               return (
@@ -885,6 +1035,8 @@ const ScanResultTable = () => {
                       <ActionDropdown
                         ids={Object.keys(rowSelectionState)}
                         align="start"
+                        setIdsToDelete={setIdsToDelete}
+                        setShowDeleteDialog={setShowDeleteDialog}
                         triggerButton={
                           <Button size="xxs" color="primary" outline>
                             Actions
@@ -894,7 +1046,13 @@ const ScanResultTable = () => {
                     </div>
                   </>
                 )}
-
+                {showDeleteDialog && (
+                  <DeleteConfirmationModal
+                    showDialog={showDeleteDialog}
+                    ids={idsToDelete}
+                    setShowDialog={setShowDeleteDialog}
+                  />
+                )}
                 <Table
                   size="sm"
                   data={data.compliances}
@@ -904,6 +1062,7 @@ const ScanResultTable = () => {
                   onRowSelectionChange={setRowSelectionState}
                   enablePagination
                   manualPagination
+                  approximatePagination
                   enableColumnResizing
                   totalRows={data.pagination.totalRows}
                   pageSize={PAGE_SIZE}
@@ -1238,7 +1397,7 @@ const HeaderComponent = () => {
                     <span className="text-gray-400 text-[10px]">Last scan</span>
                   </div>
 
-                  <HistoryDropdown />
+                  <HistoryDropdown nodeType={node_type} />
 
                   <div className="relative">
                     {isFilterApplied && (
@@ -1291,14 +1450,6 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                       <h5 className="text-xs text-gray-500 dark:text-gray-200 mb-2">
                         Total count
                       </h5>
-                      <div>
-                        <span className="text-sm text-gray-900 dark:text-gray-200">
-                          {0}
-                        </span>
-                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                          Active containers
-                        </span>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -1309,6 +1460,7 @@ const StatusCountComponent = ({ theme }: { theme: Mode }) => {
                     eoption={{
                       series: [
                         {
+                          cursor: 'default',
                           color: [
                             POSTURE_STATUS_COLORS['alarm'],
                             POSTURE_STATUS_COLORS['info'],

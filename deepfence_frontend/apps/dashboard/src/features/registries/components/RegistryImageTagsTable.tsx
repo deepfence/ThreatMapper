@@ -1,11 +1,8 @@
-import cx from 'classnames';
 import { useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { FaPlay } from 'react-icons/fa';
 import { HiDotsVertical } from 'react-icons/hi';
 import { useSearchParams } from 'react-router-dom';
 import {
-  Badge,
   Button,
   createColumnHelper,
   Dropdown,
@@ -20,6 +17,7 @@ import {
   ConfigureScanModal,
   ConfigureScanModalProps,
 } from '@/components/ConfigureScanModal';
+import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
@@ -126,7 +124,7 @@ export const RegistryImageTagsTable = ({
         cell: (info) => {
           const metadata = info.row.original.metadata;
           const date = metadata['last_updated'];
-          return formatMilliseconds(date);
+          return formatMilliseconds(date * 1000);
         },
         maxSize: 50,
       }),
@@ -137,65 +135,17 @@ export const RegistryImageTagsTable = ({
       }),
       columnHelper.accessor('vulnerability_scan_status', {
         header: () => 'Vulnerability Scan Status',
-        cell: (info) => (
-          <Badge
-            label={info.getValue().toUpperCase().replaceAll('_', ' ') || 'Not Scanned'}
-            className={cx({
-              'bg-green-100 dark:bg-green-600/10 text-green-600 dark:text-green-400':
-                info.getValue().toLowerCase() === 'completed',
-              'bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400':
-                info.getValue().toLowerCase() === 'error',
-              'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-                info.getValue().toLowerCase() === 'in_progress',
-              'bg-blue-100 dark:bg-blue-600/10 text-neutral-600 dark:text-neutral-400':
-                info.getValue().toLowerCase() === '' ||
-                info.getValue().toLowerCase() === 'not_scanned',
-            })}
-            size="sm"
-          />
-        ),
-        maxSize: 50,
-      }),
-      columnHelper.accessor('malware_scan_status', {
-        header: () => 'Malware Scan Status',
-        cell: (info) => (
-          <Badge
-            label={info.getValue().toUpperCase().replaceAll('_', ' ') || 'Not Scanned'}
-            className={cx({
-              'bg-green-100 dark:bg-green-600/10 text-green-600 dark:text-green-400':
-                info.getValue().toLowerCase() === 'completed',
-              'bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400':
-                info.getValue().toLowerCase() === 'error',
-              'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-                info.getValue().toLowerCase() === 'in_progress',
-              'bg-blue-100 dark:bg-blue-600/10 text-neutral-600 dark:text-neutral-400':
-                info.getValue().toLowerCase() === '' ||
-                info.getValue().toLowerCase() === 'not_scanned',
-            })}
-            size="sm"
-          />
-        ),
+        cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
       }),
       columnHelper.accessor('secret_scan_status', {
         header: () => 'Secrets Scan Status',
-        cell: (info) => (
-          <Badge
-            label={info.getValue().toUpperCase().replaceAll('_', ' ') || 'Not Scanned'}
-            className={cx({
-              'bg-green-100 dark:bg-green-600/10 text-green-600 dark:text-green-400':
-                info.getValue().toLowerCase() === 'completed',
-              'bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400':
-                info.getValue().toLowerCase() === 'error',
-              'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-                info.getValue().toLowerCase() === 'in_progress',
-              'bg-blue-100 dark:bg-blue-600/10 text-neutral-600 dark:text-neutral-400':
-                info.getValue().toLowerCase() === '' ||
-                info.getValue().toLowerCase() === 'not_scanned',
-            })}
-            size="sm"
-          />
-        ),
+        cell: (info) => <ScanStatusBadge status={info.getValue()} />,
+        maxSize: 50,
+      }),
+      columnHelper.accessor('malware_scan_status', {
+        header: () => 'Malware Scan Status',
+        cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
       }),
       columnHelper.display({
@@ -281,6 +231,7 @@ export const RegistryImageTagsTable = ({
         manualPagination
         enableColumnResizing
         enableSorting
+        approximatePagination
         totalRows={totalRows}
         pageSize={PAGE_SIZE}
         pageIndex={currentPage}
@@ -312,7 +263,7 @@ function getScanOptions(
 ): ConfigureScanModalProps['scanOptions'] {
   if (scanType === ScanTypeEnum.VulnerabilityScan) {
     return {
-      showAdvancedOptions: true,
+      showAdvancedOptions: nodeIds.length === 1,
       scanType,
       data: {
         nodeIds,
@@ -323,7 +274,7 @@ function getScanOptions(
 
   if (scanType === ScanTypeEnum.SecretScan) {
     return {
-      showAdvancedOptions: true,
+      showAdvancedOptions: nodeIds.length === 1,
       scanType,
       data: {
         nodeIds,
@@ -334,7 +285,7 @@ function getScanOptions(
 
   if (scanType === ScanTypeEnum.MalwareScan) {
     return {
-      showAdvancedOptions: true,
+      showAdvancedOptions: nodeIds.length === 1,
       scanType,
       data: {
         nodeIds,

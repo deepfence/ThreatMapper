@@ -5,7 +5,7 @@ import {
   getVulnerabilityApiClient,
 } from '@/api/api';
 import { ScanSummary } from '@/features/topology/types/node-details';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 export const getSecretScanCounts = async (
   secretScanId?: string,
@@ -13,38 +13,37 @@ export const getSecretScanCounts = async (
   if (!secretScanId || !secretScanId.length) {
     return null;
   }
-  const secretScanResults = await makeRequest({
-    apiFunction: getSecretApiClient().resultSecretScan,
-    apiArgs: [
-      {
-        modelScanResultsReq: {
-          scan_id: secretScanId,
-          window: {
-            offset: 0,
-            size: 1,
-          },
-          fields_filter: {
-            contains_filter: {
-              filter_in: {},
-            },
-            match_filter: {
-              filter_in: {},
-            },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
-          },
-        },
-      },
-    ],
+  const resultSecretScanApi = apiWrapper({
+    fn: getSecretApiClient().resultSecretScan,
   });
-  if (ApiError.isApiError(secretScanResults)) {
+  const secretScanResults = await resultSecretScanApi({
+    modelScanResultsReq: {
+      scan_id: secretScanId,
+      window: {
+        offset: 0,
+        size: 1,
+      },
+      fields_filter: {
+        contains_filter: {
+          filter_in: {},
+        },
+        match_filter: {
+          filter_in: {},
+        },
+        order_filter: { order_fields: [] },
+        compare_filter: null,
+      },
+    },
+  });
+
+  if (!secretScanResults.ok) {
     console.error(secretScanResults);
     throw new Error("Couldn't get secret scan results");
   }
   return {
     scanId: secretScanId,
-    timestamp: secretScanResults.created_at,
-    counts: secretScanResults.severity_counts ?? {},
+    timestamp: secretScanResults.value.created_at,
+    counts: secretScanResults.value.severity_counts ?? {},
   };
 };
 
@@ -54,38 +53,37 @@ export const getVulnerabilityScanCounts = async (
   if (!vulnerabilityScanId || !vulnerabilityScanId.length) {
     return null;
   }
-  const vulnerabilityScanResults = await makeRequest({
-    apiFunction: getVulnerabilityApiClient().resultVulnerabilityScan,
-    apiArgs: [
-      {
-        modelScanResultsReq: {
-          scan_id: vulnerabilityScanId,
-          window: {
-            offset: 0,
-            size: 1,
-          },
-          fields_filter: {
-            contains_filter: {
-              filter_in: {},
-            },
-            match_filter: {
-              filter_in: {},
-            },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
-          },
-        },
-      },
-    ],
+  const resultVulnerabilityScanApi = apiWrapper({
+    fn: getVulnerabilityApiClient().resultVulnerabilityScan,
   });
-  if (ApiError.isApiError(vulnerabilityScanResults)) {
+  const vulnerabilityScanResults = await resultVulnerabilityScanApi({
+    modelScanResultsReq: {
+      scan_id: vulnerabilityScanId,
+      window: {
+        offset: 0,
+        size: 1,
+      },
+      fields_filter: {
+        contains_filter: {
+          filter_in: {},
+        },
+        match_filter: {
+          filter_in: {},
+        },
+        order_filter: { order_fields: [] },
+        compare_filter: null,
+      },
+    },
+  });
+
+  if (!vulnerabilityScanResults.ok) {
     console.error(vulnerabilityScanResults);
     throw new Error("Couldn't get vulnerability scan results");
   }
   return {
     scanId: vulnerabilityScanId,
-    timestamp: vulnerabilityScanResults.created_at,
-    counts: vulnerabilityScanResults.severity_counts ?? {},
+    timestamp: vulnerabilityScanResults.value.created_at,
+    counts: vulnerabilityScanResults.value.severity_counts ?? {},
   };
 };
 
@@ -95,38 +93,37 @@ export const getMalwareScanCounts = async (
   if (!malwareScanId || !malwareScanId.length) {
     return null;
   }
-  const malwareScanResults = await makeRequest({
-    apiFunction: getMalwareApiClient().resultMalwareScan,
-    apiArgs: [
-      {
-        modelScanResultsReq: {
-          scan_id: malwareScanId,
-          window: {
-            offset: 0,
-            size: 1,
-          },
-          fields_filter: {
-            contains_filter: {
-              filter_in: {},
-            },
-            match_filter: {
-              filter_in: {},
-            },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
-          },
-        },
-      },
-    ],
+  const resultMalwareScanApi = apiWrapper({
+    fn: getMalwareApiClient().resultMalwareScan,
   });
-  if (ApiError.isApiError(malwareScanResults)) {
+  const malwareScanResults = await resultMalwareScanApi({
+    modelScanResultsReq: {
+      scan_id: malwareScanId,
+      window: {
+        offset: 0,
+        size: 1,
+      },
+      fields_filter: {
+        contains_filter: {
+          filter_in: {},
+        },
+        match_filter: {
+          filter_in: {},
+        },
+        order_filter: { order_fields: [] },
+        compare_filter: null,
+      },
+    },
+  });
+
+  if (!malwareScanResults.ok) {
     console.error(malwareScanResults);
     throw new Error("Couldn't get malware scan results");
   }
   return {
     scanId: malwareScanId,
-    timestamp: malwareScanResults.created_at,
-    counts: malwareScanResults.severity_counts ?? {},
+    timestamp: malwareScanResults.value.created_at,
+    counts: malwareScanResults.value.severity_counts ?? {},
   };
 };
 
@@ -136,37 +133,36 @@ export const getComplianceScanCounts = async (
   if (!complianceScanId || !complianceScanId.length) {
     return null;
   }
-  const complianceScanResults = await makeRequest({
-    apiFunction: getComplianceApiClient().resultComplianceScan,
-    apiArgs: [
-      {
-        modelScanResultsReq: {
-          scan_id: complianceScanId,
-          window: {
-            offset: 0,
-            size: 1,
-          },
-          fields_filter: {
-            contains_filter: {
-              filter_in: {},
-            },
-            match_filter: {
-              filter_in: {},
-            },
-            order_filter: { order_fields: [] },
-            compare_filter: null,
-          },
-        },
-      },
-    ],
+  const resultComplianceScanApi = apiWrapper({
+    fn: getComplianceApiClient().resultComplianceScan,
   });
-  if (ApiError.isApiError(complianceScanResults)) {
+  const complianceScanResults = await resultComplianceScanApi({
+    modelScanResultsReq: {
+      scan_id: complianceScanId,
+      window: {
+        offset: 0,
+        size: 1,
+      },
+      fields_filter: {
+        contains_filter: {
+          filter_in: {},
+        },
+        match_filter: {
+          filter_in: {},
+        },
+        order_filter: { order_fields: [] },
+        compare_filter: null,
+      },
+    },
+  });
+
+  if (!complianceScanResults.ok) {
     console.error(complianceScanResults);
     throw new Error("Couldn't get posture scan results");
   }
   return {
     scanId: complianceScanId,
-    timestamp: complianceScanResults.created_at,
-    counts: complianceScanResults.status_counts ?? {},
+    timestamp: complianceScanResults.value.created_at,
+    counts: complianceScanResults.value.status_counts ?? {},
   };
 };

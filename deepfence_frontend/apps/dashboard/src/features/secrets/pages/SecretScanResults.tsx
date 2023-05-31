@@ -1,6 +1,6 @@
 import cx from 'classnames';
 import { capitalize } from 'lodash-es';
-import { Suspense, useCallback, useMemo, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FaHistory } from 'react-icons/fa';
 import { FiFilter } from 'react-icons/fi';
 import {
@@ -11,7 +11,9 @@ import {
   HiDotsVertical,
   HiEye,
   HiEyeOff,
+  HiOutlineDownload,
   HiOutlineExclamationCircle,
+  HiOutlineTrash,
 } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import {
@@ -39,11 +41,11 @@ import {
   DropdownSubMenu,
   getRowSelectionColumn,
   IconButton,
+  Listbox,
+  ListboxOption,
   Modal,
   Popover,
   RowSelectionState,
-  Select,
-  SelectItem,
   SortingState,
   Table,
   TableSkeleton,
@@ -51,9 +53,10 @@ import {
 
 import { getScanResultsApiClient, getSecretApiClient } from '@/api/api';
 import {
-  ApiDocsBadRequestResponse,
   ModelScanInfo,
   ModelScanResultsReq,
+  UtilsReportFiltersNodeTypeEnum,
+  UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
 import { ModelSecret } from '@/api/generated/models/ModelSecret';
 import { DFLink } from '@/components/DFLink';
@@ -64,6 +67,7 @@ import {
   SquareSkeleton,
   TimestampSkeleton,
 } from '@/components/header/HeaderSkeleton';
+import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import {
   NoIssueFound,
   ScanStatusInError,
@@ -71,13 +75,17 @@ import {
 } from '@/components/ScanStatusMessage';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
-import { ApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
+import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
+import { ScanHistoryApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
+import { SecretRulesForScan } from '@/features/secrets/components/filters/SecretRulesForScanSelect';
 import { SecretsResultChart } from '@/features/secrets/components/landing/SecretsResultChart';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { Mode, useTheme } from '@/theme/ThemeContext';
 import { ScanStatusEnum, ScanTypeEnum, SecretSeverityType } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
+import { isScanComplete, isScanFailed } from '@/utils/scan';
 import { DFAwait } from '@/utils/suspense';
 import {
   getOrderFromSearchParams,
@@ -94,6 +102,7 @@ enum ActionEnumType {
   UNMASK = 'unmask',
   DELETE = 'delete',
   NOTIFY = 'notify',
+  DELETE_SCAN = 'delete_scan',
 }
 
 type ScanResult = {
@@ -119,6 +128,9 @@ const PAGE_SIZE = 15;
 const getSeveritySearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('severity');
 };
+const getRulesSearch = (searchParams: URLSearchParams) => {
+  return searchParams.getAll('rules');
+};
 const getMaskSearch = (searchParams: URLSearchParams) => {
   return searchParams.getAll('mask');
 };
@@ -131,38 +143,30 @@ async function getScans(
   searchParams: URLSearchParams,
 ): Promise<LoaderDataType> {
   // status api
-  const statusResult = await makeRequest({
-    apiFunction: getSecretApiClient().statusSecretScan,
-    apiArgs: [
-      {
-        modelScanStatusReq: {
-          scan_ids: [scanId],
-          bulk_scan_id: '',
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<LoaderDataType>({
-        message: '',
-      });
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
+  const statusSecretScanApi = apiWrapper({
+    fn: getSecretApiClient().statusSecretScan,
+  });
+  const statusSecretScanResponse = await statusSecretScanApi({
+    modelScanStatusReq: {
+      scan_ids: [scanId],
+      bulk_scan_id: '',
     },
   });
-
-  if (ApiError.isApiError(statusResult)) {
-    return statusResult.value();
+  if (!statusSecretScanResponse.ok) {
+    if (statusSecretScanResponse.error.response.status === 400) {
+      return { message: statusSecretScanResponse.error.message };
+    }
+    throw statusSecretScanResponse.error;
   }
 
-  if (!statusResult || !statusResult?.statuses?.[scanId]) {
+  if (
+    !statusSecretScanResponse.value ||
+    !statusSecretScanResponse.value?.statuses?.[scanId]
+  ) {
     throw new Error('Scan status not found');
   }
 
-  const scanStatus = statusResult?.statuses?.[scanId].status;
+  const scanStatus = statusSecretScanResponse.value?.statuses?.[scanId].status;
 
   const isScanRunning =
     scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;
@@ -170,13 +174,17 @@ async function getScans(
 
   if (isScanRunning || isScanError) {
     return {
-      scanStatusResult: statusResult.statuses[scanId],
+      scanStatusResult: statusSecretScanResponse.value.statuses[scanId],
     };
   }
 
   const severity = getSeveritySearch(searchParams);
   const page = getPageFromSearchParams(searchParams);
-  const order = getOrderFromSearchParams(searchParams);
+  const rules = getRulesSearch(searchParams);
+  const order = getOrderFromSearchParams(searchParams) || {
+    sortBy: 'level',
+    descending: true,
+  };
 
   const mask = getMaskSearch(searchParams);
   const unmask = getUnmaskSearch(searchParams);
@@ -200,6 +208,9 @@ async function getScans(
   if (severity.length) {
     scanResultsReq.fields_filter.contains_filter.filter_in!['level'] = severity;
   }
+  if (rules.length) {
+    scanResultsReq.fields_filter.contains_filter.filter_in!['name'] = rules;
+  }
 
   if ((mask.length || unmask.length) && !(mask.length && unmask.length)) {
     scanResultsReq.fields_filter.contains_filter.filter_in!['masked'] = [
@@ -214,62 +225,61 @@ async function getScans(
     });
   }
 
-  const result = await makeRequest({
-    apiFunction: getSecretApiClient().resultSecretScan,
-    apiArgs: [{ modelScanResultsReq: scanResultsReq }],
+  const resultSecretScanApi = apiWrapper({
+    fn: getSecretApiClient().resultSecretScan,
   });
 
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  const resultSecretScanResponse = await resultSecretScanApi({
+    modelScanResultsReq: scanResultsReq,
+  });
+  if (!resultSecretScanResponse.ok) {
+    throw resultSecretScanResponse.error;
   }
 
-  if (result === null) {
+  if (resultSecretScanResponse.value === null) {
     // TODO: handle this case with 404 status maybe
     throw new Error('Error getting scan results');
   }
-  const totalSeverity = Object.values(result.severity_counts ?? {}).reduce(
-    (acc, value) => {
-      acc = acc + value;
-      return acc;
-    },
-    0,
-  );
+  const totalSeverity = Object.values(
+    resultSecretScanResponse.value.severity_counts ?? {},
+  ).reduce((acc, value) => {
+    acc = acc + value;
+    return acc;
+  }, 0);
 
-  const resultCounts = await makeRequest({
-    apiFunction: getSecretApiClient().resultCountSecretScan,
-    apiArgs: [
-      {
-        modelScanResultsReq: {
-          ...scanResultsReq,
-          window: {
-            ...scanResultsReq.window,
-            size: 10 * scanResultsReq.window.size,
-          },
-        },
+  const resultCountSecretScanApi = apiWrapper({
+    fn: getSecretApiClient().resultCountSecretScan,
+  });
+  const resultCounts = await resultCountSecretScanApi({
+    modelScanResultsReq: {
+      ...scanResultsReq,
+      window: {
+        ...scanResultsReq.window,
+        size: 10 * scanResultsReq.window.size,
       },
-    ],
+    },
   });
 
-  if (ApiError.isApiError(resultCounts)) {
-    throw resultCounts.value();
+  if (!resultCounts.ok) {
+    throw resultCounts.error;
   }
 
   return {
-    scanStatusResult: statusResult.statuses[scanId],
+    scanStatusResult: statusSecretScanResponse.value.statuses[scanId],
     data: {
       totalSeverity,
       severityCounts: {
-        critical: result.severity_counts?.['critical'] ?? 0,
-        high: result.severity_counts?.['high'] ?? 0,
-        medium: result.severity_counts?.['medium'] ?? 0,
-        low: result.severity_counts?.['low'] ?? 0,
-        unknown: result.severity_counts?.['unknown'] ?? 0,
+        critical: resultSecretScanResponse.value.severity_counts?.['critical'] ?? 0,
+        high: resultSecretScanResponse.value.severity_counts?.['high'] ?? 0,
+        medium: resultSecretScanResponse.value.severity_counts?.['medium'] ?? 0,
+        low: resultSecretScanResponse.value.severity_counts?.['low'] ?? 0,
+        unknown: resultSecretScanResponse.value.severity_counts?.['unknown'] ?? 0,
       },
-      timestamp: result.updated_at,
-      tableData: result.secrets ?? [],
+      timestamp: resultSecretScanResponse.value.updated_at,
+      tableData: resultSecretScanResponse.value.secrets ?? [],
       pagination: {
         currentPage: page,
-        totalRows: page * PAGE_SIZE + resultCounts.count,
+        totalRows: page * PAGE_SIZE + resultCounts.value.count,
       },
     },
   };
@@ -281,10 +291,15 @@ type ActionFunctionType =
   | ReturnType<typeof getScanResultsApiClient>['notifyScanResult']
   | ReturnType<typeof getScanResultsApiClient>['unmaskScanResult'];
 
+type ActionData = {
+  success: boolean;
+  message?: string;
+} | null;
+
 const action = async ({
   params: { scanId = '' },
   request,
-}: ActionFunctionArgs): Promise<null> => {
+}: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
   const ids = (formData.getAll('ids[]') ?? []) as string[];
   const actionType = formData.get('actionType');
@@ -304,69 +319,100 @@ const action = async ({
       actionType === ActionEnumType.DELETE
         ? getScanResultsApiClient().deleteScanResult
         : getScanResultsApiClient().notifyScanResult;
-    result = await makeRequest({
-      apiFunction: apiFunction,
-      apiArgs: [
-        {
-          modelScanResultsActionRequest: {
-            result_ids: [...ids],
-            scan_id: _scanId,
-            scan_type: ScanTypeEnum.SecretScan,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<{
-          message?: string;
-        }>({});
-        if (r.status === 400 || r.status === 409) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-          });
-        }
+
+    const apiFunctionApi = apiWrapper({
+      fn: apiFunction,
+    });
+    result = await apiFunctionApi({
+      modelScanResultsActionRequest: {
+        result_ids: [...ids],
+        scan_id: _scanId,
+        scan_type: ScanTypeEnum.SecretScan,
       },
     });
+    if (!result.ok) {
+      if (result.error.response.status === 400 || result.error.response.status === 409) {
+        return {
+          success: false,
+          message: result.error.message ?? '',
+        };
+      } else if (result.error.response.status === 403) {
+        if (actionType === ActionEnumType.DELETE) {
+          return {
+            success: false,
+            message: 'You do not have enough permissions to delete secret',
+          };
+        } else if (actionType === ActionEnumType.NOTIFY) {
+          return {
+            success: false,
+            message: 'You do not have enough permissions to notify',
+          };
+        }
+      }
+    }
   } else if (actionType === ActionEnumType.MASK || actionType === ActionEnumType.UNMASK) {
     apiFunction =
       actionType === ActionEnumType.MASK
         ? getScanResultsApiClient().maskScanResult
         : getScanResultsApiClient().unmaskScanResult;
-    result = await makeRequest({
-      apiFunction: apiFunction,
-      apiArgs: [
-        {
-          modelScanResultsMaskRequest: {
-            mask_across_hosts_and_images: mask === 'maskHostAndImages',
-            result_ids: [...ids],
-            scan_id: _scanId,
-            scan_type: ScanTypeEnum.SecretScan,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<{
-          message?: string;
-        }>({});
-        if (r.status === 400 || r.status === 409) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-          });
-        }
+    const apiFunctionApi = apiWrapper({
+      fn: apiFunction,
+    });
+    result = await apiFunctionApi({
+      modelScanResultsMaskRequest: {
+        mask_across_hosts_and_images: mask === 'maskHostAndImages',
+        result_ids: [...ids],
+        scan_id: _scanId,
+        scan_type: ScanTypeEnum.SecretScan,
       },
     });
-  }
+    if (!result.ok) {
+      if (result.error.response.status === 400 || result.error.response.status === 409) {
+        return {
+          success: false,
+          message: result.error.message ?? '',
+        };
+      } else if (result.error.response.status === 403) {
+        if (actionType === ActionEnumType.MASK) {
+          toast.error('You do not have enough permissions to mask');
+          return {
+            success: false,
+            message: 'You do not have enough permissions to mask',
+          };
+        } else if (actionType === ActionEnumType.UNMASK) {
+          toast.error('You do not have enough permissions to unmask');
+          return {
+            success: false,
+            message: 'You do not have enough permissions to unmask',
+          };
+        }
+      }
+    }
+  } else if (actionType === ActionEnumType.DELETE_SCAN) {
+    const deleteScan = apiWrapper({
+      fn: getScanResultsApiClient().deleteScanResultsForScanID,
+    });
 
-  if (ApiError.isApiError(result)) {
-    if (result.value()?.message !== undefined) {
-      const message = result.value()?.message ?? 'Something went wrong';
-      toast.error(message);
+    const result = await deleteScan({
+      scanId: formData.get('scanId') as string,
+      scanType: ScanTypeEnum.SecretScan,
+    });
+
+    if (!result.ok) {
+      if (result.error.response.status === 403) {
+        return {
+          success: false,
+          message: 'You do not have enough permissions to delete scan',
+        };
+      }
+      throw new Error('Error deleting scan');
     }
   }
 
-  if (actionType === ActionEnumType.DELETE) {
-    toast.success('Deleted successfully');
+  if (actionType === ActionEnumType.DELETE || actionType === ActionEnumType.DELETE_SCAN) {
+    return {
+      success: true,
+    };
   } else if (actionType === ActionEnumType.NOTIFY) {
     toast.success('Notified successfully');
   } else if (actionType === ActionEnumType.MASK) {
@@ -399,7 +445,7 @@ const DeleteConfirmationModal = ({
   ids: string[];
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<ActionData>();
 
   const onDeleteAction = useCallback(
     (actionType: string) => {
@@ -415,45 +461,114 @@ const DeleteConfirmationModal = ({
 
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          The selected secrets will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, Cancel
-          </Button>
-          <Button
-            size="xs"
-            color="danger"
-            onClick={(e) => {
-              e.preventDefault();
-              onDeleteAction(ActionEnumType.DELETE);
-              setShowDialog(false);
+      {!fetcher.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
             }}
           >
-            Yes, I&apos;m sure
-          </Button>
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            The selected secrets will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+          {fetcher.data?.message && (
+            <p className="text-sm text-red-500 pb-3">{fetcher.data?.message}</p>
+          )}
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              size="xs"
+              color="danger"
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteAction(ActionEnumType.DELETE);
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
     </Modal>
   );
 };
 
-const HistoryDropdown = () => {
+const DeleteScanConfirmationModal = ({
+  open,
+  onOpenChange,
+  scanId,
+}: {
+  scanId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => {
+  const fetcher = useFetcher<ActionData>();
+  const onDeleteScan = () => {
+    const formData = new FormData();
+    formData.append('actionType', ActionEnumType.DELETE_SCAN);
+    formData.append('scanId', scanId);
+    fetcher.submit(formData, {
+      method: 'post',
+    });
+  };
+  return (
+    <Modal open={open} onOpenChange={onOpenChange}>
+      {!fetcher.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
+            }}
+          >
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            <span>Are you sure you want to delete the scan?</span>
+          </h3>
+          {fetcher.data?.message && (
+            <p className="text-sm text-red-500 pb-3">{fetcher.data?.message}</p>
+          )}
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => onOpenChange(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              loading={fetcher.state === 'loading'}
+              disabled={fetcher.state === 'loading'}
+              size="xs"
+              color="danger"
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteScan();
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <SuccessModalContent text="Scan deleted successfully!" />
+      )}
+    </Modal>
+  );
+};
+
+const HistoryDropdown = ({ nodeType }: { nodeType: string }) => {
   const { navigate } = usePageNavigation();
-  const fetcher = useFetcher<ApiLoaderDataType>();
+  const fetcher = useFetcher<ScanHistoryApiLoaderDataType>();
   const loaderData = useLoaderData() as LoaderDataType;
   const isScanHistoryLoading = fetcher.state === 'loading';
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [scanIdToDelete, setScanIdToDelete] = useState<string | null>(null);
+  const { downloadScan } = useDownloadScan();
 
   const onHistoryClick = (nodeType: string, nodeId: string) => {
     fetcher.load(
@@ -466,96 +581,142 @@ const HistoryDropdown = () => {
   };
 
   return (
-    <Suspense
-      fallback={
-        <IconButton
-          size="xs"
-          color="primary"
-          outline
-          className="rounded-lg bg-transparent"
-          icon={<FaHistory />}
-          type="button"
-          loading
+    <>
+      <Suspense
+        fallback={
+          <Button
+            size="xs"
+            color="primary"
+            outline
+            className="rounded-lg bg-transparent"
+            startIcon={<FaHistory />}
+            type="button"
+            loading
+          >
+            Scan History
+          </Button>
+        }
+      >
+        <DFAwait resolve={loaderData.data ?? []}>
+          {(resolvedData: LoaderDataType) => {
+            const { scanStatusResult } = resolvedData;
+            const { scan_id, node_id, node_type } = scanStatusResult ?? {};
+            if (!scan_id || !node_id || !node_type) {
+              throw new Error('Scan id, node id or node type is missing');
+            }
+
+            return (
+              <Popover
+                open={popoverOpen}
+                triggerAsChild
+                onOpenChange={(open) => {
+                  if (open) onHistoryClick(node_type, node_id);
+                  setPopoverOpen(open);
+                }}
+                content={
+                  <div className="p-4 max-h-80 overflow-y-auto flex flex-col gap-2">
+                    {fetcher.state === 'loading' && !fetcher.data?.data?.length && (
+                      <div className="flex items-center justify-center p-4">
+                        <CircleSpinner size="lg" />
+                      </div>
+                    )}
+                    {[...(fetcher?.data?.data ?? [])].reverse().map((item) => {
+                      const isCurrentScan = item.scanId === scan_id;
+                      return (
+                        <div key={item.scanId} className="flex gap-2 justify-between">
+                          <button
+                            className="flex gap-2 justify-between flex-grow"
+                            onClick={() => {
+                              navigate(
+                                generatePath('/secret/scan-results/:scanId', {
+                                  scanId: item.scanId,
+                                }),
+                                {
+                                  replace: true,
+                                },
+                              );
+                              setPopoverOpen(false);
+                            }}
+                          >
+                            <span
+                              className={twMerge(
+                                cx(
+                                  'flex items-center text-gray-700 dark:text-gray-400 gap-x-4',
+                                  {
+                                    'text-blue-600 dark:text-blue-500': isCurrentScan,
+                                  },
+                                ),
+                              )}
+                            >
+                              {formatMilliseconds(item.updatedAt)}
+                            </span>
+                            <ScanStatusBadge status={item.status} />
+                          </button>
+                          <div className="flex gap-1">
+                            <IconButton
+                              color="primary"
+                              outline
+                              size="xxs"
+                              disabled={!isScanComplete(item.status)}
+                              className="rounded-lg bg-transparent"
+                              icon={<HiOutlineDownload />}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                downloadScan({
+                                  scanId: item.scanId,
+                                  scanType: UtilsReportFiltersScanTypeEnum.Secret,
+                                  nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
+                                });
+                              }}
+                            />
+                            <IconButton
+                              color="danger"
+                              outline
+                              size="xxs"
+                              disabled={
+                                isCurrentScan ||
+                                (!isScanComplete(item.status) &&
+                                  !isScanFailed(item.status))
+                              }
+                              className="rounded-lg bg-transparent"
+                              icon={<HiOutlineTrash />}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setScanIdToDelete(item.scanId);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                }
+              >
+                <Button
+                  size="xs"
+                  color="primary"
+                  outline
+                  startIcon={<FaHistory />}
+                  type="button"
+                  loading={isScanHistoryLoading}
+                >
+                  Scan History
+                </Button>
+              </Popover>
+            );
+          }}
+        </DFAwait>
+      </Suspense>
+      {scanIdToDelete && (
+        <DeleteScanConfirmationModal
+          scanId={scanIdToDelete}
+          open={!!scanIdToDelete}
+          onOpenChange={(open) => {
+            if (!open) setScanIdToDelete(null);
+          }}
         />
-      }
-    >
-      <DFAwait resolve={loaderData.data ?? []}>
-        {(resolvedData: LoaderDataType) => {
-          const { scanStatusResult } = resolvedData;
-          const { scan_id, node_id, node_type } = scanStatusResult ?? {};
-          if (!scan_id || !node_id || !node_type) {
-            throw new Error('Scan id, node id or node type is missing');
-          }
-          return (
-            <Dropdown
-              triggerAsChild
-              onOpenChange={(open) => {
-                if (open) onHistoryClick(node_type, node_id);
-              }}
-              content={
-                <>
-                  {fetcher?.data?.data?.map((item) => {
-                    return (
-                      <DropdownItem
-                        className="text-sm"
-                        key={item.scanId}
-                        onClick={() => {
-                          navigate(
-                            generatePath('/secret/scan-results/:scanId', {
-                              scanId: item.scanId,
-                            }),
-                            {
-                              replace: true,
-                            },
-                          );
-                        }}
-                      >
-                        <span
-                          className={twMerge(
-                            cx(
-                              'flex items-center text-gray-700 dark:text-gray-400 gap-x-4',
-                              {
-                                'text-blue-600 dark:text-blue-500':
-                                  item.scanId === scan_id,
-                              },
-                            ),
-                          )}
-                        >
-                          <Badge
-                            label={item.status}
-                            className={cx({
-                              'bg-green-100 dark:bg-green-600/10 text-green-600 dark:text-green-400':
-                                item.status.toLowerCase() === 'complete',
-                              'bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400':
-                                item.status.toLowerCase() === 'error',
-                              'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-                                item.status.toLowerCase() !== 'complete' &&
-                                item.status.toLowerCase() !== 'error',
-                            })}
-                            size="sm"
-                          />
-                          {formatMilliseconds(item.updatedAt)}
-                        </span>
-                      </DropdownItem>
-                    );
-                  })}
-                </>
-              }
-            >
-              <IconButton
-                size="xs"
-                color="primary"
-                outline
-                className="rounded-lg bg-transparent"
-                icon={<FaHistory />}
-                type="button"
-                loading={isScanHistoryLoading}
-              />
-            </Dropdown>
-          );
-        }}
-      </DFAwait>
-    </Suspense>
+      )}
+    </>
   );
 };
 
@@ -563,13 +724,16 @@ const ActionDropdown = ({
   ids,
   align,
   triggerButton,
+  setIdsToDelete,
+  setShowDeleteDialog,
 }: {
   ids: string[];
   align: 'center' | 'end' | 'start';
   triggerButton: React.ReactNode;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const fetcher = useFetcher();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const onTableAction = useCallback(
     (actionType: string, maskHostAndImages?: string) => {
@@ -590,11 +754,6 @@ const ActionDropdown = ({
 
   return (
     <>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        ids={ids}
-        setShowDialog={setShowDeleteDialog}
-      />
       <Dropdown
         triggerAsChild={true}
         align={align}
@@ -732,6 +891,7 @@ const ActionDropdown = ({
             <DropdownItem
               className="text-sm"
               onClick={() => {
+                setIdsToDelete(ids);
                 setShowDeleteDialog(true);
               }}
             >
@@ -753,13 +913,18 @@ const ActionDropdown = ({
   );
 };
 const SecretTable = () => {
-  const fetcher = useFetcher();
   const loaderData = useLoaderData() as LoaderDataType;
   const columnHelper = createColumnHelper<ModelSecret>();
   const [searchParams, setSearchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [sort, setSort] = useSortingState();
-
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [idsToDelete, setIdsToDelete] = useState<string[]>([]);
+  useEffect(() => {
+    if (idsToDelete.length) {
+      setRowSelectionState({});
+    }
+  }, [loaderData.data]);
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
@@ -854,6 +1019,8 @@ const SecretTable = () => {
           <ActionDropdown
             ids={[cell.row.original.node_id.toString()]}
             align="end"
+            setIdsToDelete={setIdsToDelete}
+            setShowDeleteDialog={setShowDeleteDialog}
             triggerButton={
               <Button size="xs" color="normal">
                 <IconContext.Provider
@@ -888,7 +1055,7 @@ const SecretTable = () => {
             const { data, scanStatusResult } = resolvedData;
 
             if (scanStatusResult?.status === ScanStatusEnum.error) {
-              return <ScanStatusInError />;
+              return <ScanStatusInError errorMessage={scanStatusResult.status_message} />;
             } else if (
               scanStatusResult?.status !== ScanStatusEnum.error &&
               scanStatusResult?.status !== ScanStatusEnum.complete
@@ -897,6 +1064,7 @@ const SecretTable = () => {
             } else if (
               scanStatusResult?.status === ScanStatusEnum.complete &&
               data &&
+              data.pagination.currentPage === 0 &&
               data.tableData.length === 0
             ) {
               return (
@@ -918,6 +1086,8 @@ const SecretTable = () => {
                     <ActionDropdown
                       ids={selectedIds}
                       align="start"
+                      setIdsToDelete={setIdsToDelete}
+                      setShowDeleteDialog={setShowDeleteDialog}
                       triggerButton={
                         <Button size="xxs" color="primary" outline>
                           Actions
@@ -926,7 +1096,13 @@ const SecretTable = () => {
                     />
                   </div>
                 )}
-
+                {showDeleteDialog && (
+                  <DeleteConfirmationModal
+                    showDialog={showDeleteDialog}
+                    ids={idsToDelete}
+                    setShowDialog={setShowDeleteDialog}
+                  />
+                )}
                 <Table
                   size="sm"
                   data={data.tableData}
@@ -937,6 +1113,7 @@ const SecretTable = () => {
                   enablePagination
                   manualPagination
                   enableColumnResizing
+                  approximatePagination
                   totalRows={data.pagination.totalRows}
                   pageSize={PAGE_SIZE}
                   pageIndex={data.pagination.currentPage}
@@ -1006,6 +1183,7 @@ const HeaderComponent = ({
   const isFilterApplied =
     searchParams.has('severity') ||
     searchParams.has('mask') ||
+    searchParams.has('rules') ||
     searchParams.has('unmask');
 
   const onResetFilters = () => {
@@ -1069,7 +1247,7 @@ const HeaderComponent = ({
                     <span className="text-gray-400 text-[10px]">Last scan</span>
                   </div>
                   <div className="ml-auto">
-                    <HistoryDropdown />
+                    <HistoryDropdown nodeType={node_type} />
                   </div>
 
                   <div className="relative">
@@ -1083,7 +1261,7 @@ const HeaderComponent = ({
                         <div className="ml-auto w-[300px]">
                           <div className="dark:text-white">
                             <FilterHeader onReset={onResetFilters} />
-                            <div className="flex flex-col gap-y-6  p-4">
+                            <div className="flex flex-col gap-y-4  p-4">
                               <fieldset>
                                 <legend className="text-sm font-medium">
                                   Mask And Unmask
@@ -1146,13 +1324,13 @@ const HeaderComponent = ({
                                 </div>
                               </fieldset>
                               <fieldset>
-                                <Select
-                                  noPortal
+                                <Listbox
                                   name="severity"
                                   label={'Severity'}
                                   placeholder="Select Severity"
+                                  multiple
                                   value={searchParams.getAll('severity')}
-                                  sizing="xs"
+                                  sizing="sm"
                                   onChange={(value) => {
                                     setSearchParams((prev) => {
                                       prev.delete('severity');
@@ -1167,13 +1345,29 @@ const HeaderComponent = ({
                                   {['critical', 'high', 'medium', 'low', 'unknown'].map(
                                     (severity: string) => {
                                       return (
-                                        <SelectItem value={severity} key={severity}>
+                                        <ListboxOption value={severity} key={severity}>
                                           {capitalize(severity)}
-                                        </SelectItem>
+                                        </ListboxOption>
                                       );
                                     },
                                   )}
-                                </Select>
+                                </Listbox>
+                              </fieldset>
+                              <fieldset>
+                                <SecretRulesForScan
+                                  scanId={scan_id}
+                                  selectedRules={searchParams.getAll('rules')}
+                                  onChange={(value) => {
+                                    setSearchParams((prev) => {
+                                      prev.delete('rules');
+                                      value.forEach((rule) => {
+                                        prev.append('rules', rule);
+                                      });
+                                      prev.delete('page');
+                                      return prev;
+                                    });
+                                  }}
+                                />
                               </fieldset>
                             </div>
                           </div>

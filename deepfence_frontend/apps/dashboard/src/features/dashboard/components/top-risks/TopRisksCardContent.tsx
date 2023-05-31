@@ -22,10 +22,11 @@ export const TopRisksCardContentsSkeleton = () => {
             );
           })}
         </div>
-        <h6 className={`ml-2 mt-8 mb-4 text-sm font-normal`}>Most Affected Resources</h6>
+
         <div className="flex mt-2 items-center gap-4">
           <div className={`h-[140px] basis-[140px] rounded-full ${skeletonBg}`}></div>
           <div className="flex flex-col gap-y-2 flex-1 truncate">
+            <h6 className={`mt-8 mb-4 text-sm font-normal`}>Most Affected Resources</h6>
             {[1, 2, 3, 4, 5].map((idx) => {
               return (
                 <div key={idx} className="flex gap-x-2">
@@ -112,12 +113,16 @@ export const TopRisksCardContent = ({
             );
           })}
         </div>
-        <h6 className={`ml-2 mt-8 mb-4 text-sm font-normal`}>Most Affected Resources</h6>
-        <div className="flex mt-2 items-center gap-4">
+
+        <div className="flex mt-2 gap-4">
           <div className="h-[140px] basis-[140px]">
             <TopRisksDonutChart theme={mode} severityBreakdown={data.severityBreakdown} />
           </div>
           <div className="flex flex-col gap-y-2 flex-1 truncate">
+            <h6 className={`mt-2 mb-1 text-sm font-normal`}>Most Affected Resources</h6>
+            {data.top5Assets.length === 0 && (
+              <span className="text-xs">No data Available</span>
+            )}
             {data.top5Assets.map((node) => {
               return (
                 <div key={node.nodeName} className="flex gap-x-2">

@@ -10,32 +10,15 @@
 [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ)
 [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
 
-## :tada: Announcing ThreatMapper 1.4
+## :tada: Announcing ThreatMapper v2
 
-> [ThreatMapper 1.4.0](https://github.com/deepfence/ThreatMapper/releases/tag/v1.4.0) adds ThreatGraph, a rich visualization that uses runtime context such as network flows to prioritize threat scan results.  ThreatGraph enables organizations to narrow down attack path alerts from thousands to a handful of the most meaningful (and threatening). Release 1.4.0 also adds agentless cloud security posture management (CSPM) of cloud assets and agent-based posture management of hosts, evaluating posture against industry-standard compliance benchmarks.
+> [ThreatMapper 2.0.0](https://github.com/deepfence/ThreatMapper/releases/tag/v2.0.0) adds ThreatGraph, a rich visualization that uses runtime context such as network flows to prioritize threat scan results.  ThreatGraph enables organizations to narrow down attack path alerts from thousands to a handful of the most meaningful (and threatening). Release 2.0.0 also adds agentless cloud security posture management (CSPM) of cloud assets and agent-based posture management of hosts, evaluating posture against industry-standard compliance benchmarks.
 
 # ThreatMapper - Runtime Threat Management and Attack Path Enumeration for Cloud Native
 
 Deepfence ThreatMapper hunts for threats in your production platforms, and ranks these threats based on their risk-of-exploit. It uncovers vulnerable software components, exposed secrets and deviations from good security practice. ThreatMapper uses a combination of agent-based inspection and agent-less monitoring to provide the widest possible coverage to detect threats.
 
 With ThreatMapper's **ThreatGraph** visualization, you can then identify the issues that present the greatest risk to the security of your applications, and prioritize these for planned protection or remediation.
-
-<table width="100%">
-  <tr>
-  <td align="center" valign="top" width="33%"><a href="../../raw/master/images/readme/threatmapper-topology-full.jpg"><img src="images/readme/threatmapper-topology-thumb.jpg" border=0 align="center"/></a>
-    <br/><br/>
-    Learn the Topology
-  </td>
-  <td align="center" valign="top" width="33%"><a href="../../raw/master/images/readme/threatmapper-vulnerabilities-full.jpg"><img src="images/readme/threatmapper-vulnerabilities-thumb.jpg" border=0 align="center"/></a>
-    <br/><br/>
-    Identify Threats
-  </td>
-  <td align="center" valign="top" width="33%"><a href="../../raw/master/images/readme/threatmapper-threatgraph-full.jpg"><img src="images/readme/threatmapper-threatgraph-thumb.jpg" border=0 align="center"/></a>
-    <br/><br/>
-    Explore the ThreatGraph
-  </td>
-  </tr>
-</table>
 
 * [Learn more about ThreatMapper](https://community.deepfence.io/docs/threatmapper/) in the product documentation.
 
@@ -68,9 +51,8 @@ You [deploy the Management Console first](https://community.deepfence.io/docs/th
 
 ```shell script
 # Docker installation process for ThreatMapper Management Console
-sudo sysctl -w vm.max_map_count=262144 # see https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html
 
-wget https://github.com/deepfence/ThreatMapper/raw/master/deployment-scripts/docker-compose.yml
+wget https://github.com/deepfence/ThreatMapper/raw/main/deployment-scripts/docker-compose.yml
 docker-compose -f docker-compose.yml up --detach
 ```
 
@@ -100,7 +82,7 @@ For example, run the following command to start the ThreatMapper sensor on a Doc
 docker run -dit --cpus=".2" --name=deepfence-agent --restart on-failure --pid=host --net=host --privileged=true \
   -v /sys/kernel/debug:/sys/kernel/debug:rw -v /var/log/fenced -v /var/run/docker.sock:/var/run/docker.sock -v /:/fenced/mnt/host/:ro \
   -e MGMT_CONSOLE_URL="---CONSOLE-IP---" -e MGMT_CONSOLE_PORT="443" -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" -e USER_DEFINED_TAGS="" \
-  deepfenceio/deepfence_agent_ce:1.4.2
+  deepfenceio/deepfence_agent_ce:2.0.0
 ```
 
 On a Kubernetes platform, the sensors are installed using [helm chart](https://community.deepfence.io/docs/threatmapper/sensors/kubernetes/)

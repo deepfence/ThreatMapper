@@ -10,8 +10,8 @@ import { ScanTypeEnum } from '@/types/common';
 
 import {
   ActionEnumType,
-  CLOUD_TRAIL_ALERT,
-  USER_ACTIVITIES,
+  // CLOUD_TRAIL_ALERT,
+  // USER_ACTIVITIES,
 } from '../pages/IntegrationAdd';
 
 type IntegrationTypeProps = {
@@ -33,28 +33,28 @@ export const IntegrationType = {
   s3: 's3',
 } as const;
 
-const UserActivityIntegration: string[] = [
-  IntegrationType.splunk,
-  IntegrationType.sumoLogic,
-  IntegrationType.elasticsearch,
-  IntegrationType.googleChronicle,
-  IntegrationType.awsSecurityHub,
-  IntegrationType.jira,
-  IntegrationType.s3,
-];
+// const UserActivityIntegration: string[] = [
+//   IntegrationType.splunk,
+//   IntegrationType.sumoLogic,
+//   IntegrationType.elasticsearch,
+//   IntegrationType.googleChronicle,
+//   IntegrationType.awsSecurityHub,
+//   IntegrationType.jira,
+//   IntegrationType.s3,
+// ];
 
-const CloudTrailIntegration: string[] = [
-  IntegrationType.slack,
-  IntegrationType.pagerDuty,
-  IntegrationType.email,
-  IntegrationType.httpEndpoint,
-  IntegrationType.microsoftTeams,
-  IntegrationType.splunk,
-  IntegrationType.sumoLogic,
-  IntegrationType.elasticsearch,
-  IntegrationType.googleChronicle,
-  IntegrationType.awsSecurityHub,
-];
+// const CloudTrailIntegration: string[] = [
+//   IntegrationType.slack,
+//   IntegrationType.pagerDuty,
+//   IntegrationType.email,
+//   IntegrationType.httpEndpoint,
+//   IntegrationType.microsoftTeams,
+//   IntegrationType.splunk,
+//   IntegrationType.sumoLogic,
+//   IntegrationType.elasticsearch,
+//   IntegrationType.googleChronicle,
+//   IntegrationType.awsSecurityHub,
+// ];
 
 const TextInputType = ({ label, name }: { label: string; name: string }) => {
   return (
@@ -183,15 +183,15 @@ const NotificationType = () => {
         <SelectItem value={'Vulnerability'}>Vulnerability</SelectItem>
         <SelectItem value={'Secret'}>Secret</SelectItem>
         <SelectItem value={'Malware'}>Malware</SelectItem>
-        <SelectItem value={'Compliance'}>Compliance</SelectItem>
+        <SelectItem value={'Compliance'}>Posture</SelectItem>
 
-        {CloudTrailIntegration.includes(integrationType) && (
+        {/* {CloudTrailIntegration.includes(integrationType) && (
           <SelectItem value={CLOUD_TRAIL_ALERT}>CloudTrail Alert</SelectItem>
-        )}
+        )} */}
 
-        {UserActivityIntegration.includes(integrationType) ? (
+        {/* {UserActivityIntegration.includes(integrationType) ? (
           <SelectItem value={USER_ACTIVITIES}>User Activities</SelectItem>
-        ) : null}
+        ) : null} */}
       </Select>
 
       {notificationType &&

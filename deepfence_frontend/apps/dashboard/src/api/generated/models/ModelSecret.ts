@@ -75,6 +75,12 @@ export interface ModelSecret {
     relative_starting_index: number;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof ModelSecret
+     */
+    resources?: Array<string> | null;
+    /**
+     * 
      * @type {number}
      * @memberof ModelSecret
      */
@@ -147,6 +153,7 @@ export function ModelSecretFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'part': json['part'],
         'relative_ending_index': json['relative_ending_index'],
         'relative_starting_index': json['relative_starting_index'],
+        'resources': !exists(json, 'resources') ? undefined : json['resources'],
         'rule_id': json['rule_id'],
         'score': json['score'],
         'signature_to_match': json['signature_to_match'],
@@ -173,6 +180,7 @@ export function ModelSecretToJSON(value?: ModelSecret | null): any {
         'part': value.part,
         'relative_ending_index': value.relative_ending_index,
         'relative_starting_index': value.relative_starting_index,
+        'resources': value.resources,
         'rule_id': value.rule_id,
         'score': value.score,
         'signature_to_match': value.signature_to_match,

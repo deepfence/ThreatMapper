@@ -7,6 +7,6 @@ export const IconMapForNodeType: {
 } = {
   host: <HiOutlineServer />,
   container: <HiOutlineCube />,
-  image: <IoImageOutline />,
+  container_image: <IoImageOutline />,
   cluster: <SiKubernetes />,
 };

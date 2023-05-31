@@ -5,6 +5,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
+	"github.com/go-playground/validator/v10"
 )
 
 func New(requestByte []byte) (*RegistryECR, error) {
@@ -14,6 +15,10 @@ func New(requestByte []byte) (*RegistryECR, error) {
 		return &r, err
 	}
 	return &r, nil
+}
+
+func (d *RegistryECR) ValidateFields(v *validator.Validate) error {
+	return v.Struct(d)
 }
 
 func (e *RegistryECR) IsValidCredential() bool {
@@ -40,7 +45,7 @@ func (e *RegistryECR) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (e *RegistryECR) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
+func (e *RegistryECR) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
 	// based on iamrole we need to fetch images
 	if e.NonSecret.UseIAMRole == "true" {
 		return listImagesCrossAccount(e.NonSecret.AWSRegionName, e.NonSecret.AWSAccountID, e.NonSecret.TargetAccountRoleARN)

@@ -10,11 +10,13 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/dockerprivate"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/ecr"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/gcr"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/gitlab"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/harbor"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/jfrog"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/quay"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	"github.com/go-playground/validator/v10"
 	"github.com/pkg/errors"
 )
 
@@ -40,6 +42,8 @@ func GetRegistry(rType string, requestByte []byte) (Registry, error) {
 		r, err = jfrog.New(requestByte)
 	case constants.ECR:
 		r, err = ecr.New(requestByte)
+	case constants.GITLAB:
+		r, err = gitlab.New(requestByte)
 	}
 
 	return r, err
@@ -250,6 +254,32 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 			},
 		}
 		return r, err
+
+	case constants.GITLAB:
+		var nonSecret map[string]string
+		var secret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		err = json.Unmarshal(row.EncryptedSecret, &secret)
+		if err != nil {
+			return nil, err
+		}
+
+		r = &gitlab.RegistryGitlab{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: gitlab.NonSecret{
+				GitlabServerURL:   nonSecret["gitlab_server_url"],
+				GitlabRegistryURL: nonSecret["gitlab_registry_url"],
+			},
+			Secret: gitlab.Secret{
+				GitlabToken: secret["gitlab_access_token"],
+			},
+		}
+		return r, nil
+
 	}
 	return r, err
 }
@@ -385,6 +415,21 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 			},
 		}
 		return r, nil
+	case constants.GITLAB:
+		var nonSecret map[string]string
+		err := json.Unmarshal(row.NonSecret, &nonSecret)
+		if err != nil {
+			return nil, err
+		}
+		r = &gitlab.RegistryGitlab{
+			RegistryType: row.RegistryType,
+			Name:         row.Name,
+			NonSecret: gitlab.NonSecret{
+				GitlabServerURL:   nonSecret["gitlab_server_url"],
+				GitlabRegistryURL: nonSecret["gitlab_registry_url"],
+			},
+		}
+		return r, nil
 	}
 	return r, err
 }
@@ -392,13 +437,14 @@ func GetRegistryWithRegistrySafeRow(row postgresql_db.GetContainerRegistriesSafe
 // Registry is the interface for all the supported registries
 type Registry interface {
 	IsValidCredential() bool
+	ValidateFields(v *validator.Validate) error
 	EncryptSecret(aes encryption.AES) error
 	DecryptSecret(aes encryption.AES) error
 	EncryptExtras(aes encryption.AES) error
 	DecryptExtras(aes encryption.AES) error
 	GetSecret() map[string]interface{}
 	GetExtras() map[string]interface{}
-	FetchImagesFromRegistry() ([]model.ContainerImage, error)
+	FetchImagesFromRegistry() ([]model.IngestedContainerImage, error)
 	GetNamespace() string
 	GetRegistryType() string
 	GetUsername() string

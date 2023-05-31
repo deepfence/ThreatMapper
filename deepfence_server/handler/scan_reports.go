@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"bytes"
-	"compress/gzip"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -34,6 +32,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/minio/minio-go/v7"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/samber/lo"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -99,6 +98,50 @@ func GetImageFromId(ctx context.Context, node_id string) (string, string, error)
 	return name, tag, nil
 }
 
+func GetContainerKubeClusterNameFromId(ctx context.Context, node_id string) (string, string, error) {
+	var clusterID string
+	var clusterName string
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return clusterID, clusterName, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return clusterID, clusterName, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return clusterID, clusterName, err
+	}
+	defer tx.Close()
+
+	res, err := tx.Run(`
+		MATCH (n:Container{node_id:$node_id})
+		RETURN n.kubernetes_cluster_id, n.kubernetes_cluster_name`,
+		map[string]interface{}{"node_id": node_id})
+	if err != nil {
+		return clusterID, clusterName, err
+	}
+
+	rec, err := res.Single()
+	if err != nil {
+		return clusterID, clusterName, err
+	}
+
+	if vi, ok := rec.Get("n.kubernetes_cluster_id"); ok && vi != nil {
+		clusterID = vi.(string)
+	}
+	if vt, ok := rec.Get("n.kubernetes_cluster_name"); ok && vt != nil {
+		clusterName = vt.(string)
+	}
+
+	return clusterID, clusterName, nil
+}
+
 func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
 	var reqs model.VulnerabilityScanTriggerReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqs)
@@ -137,6 +180,16 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 			} else {
 				binArgs["image_name"] = name + ":" + tag
 				log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
+			}
+		}
+
+		if nodeTypeInternal == ctl.Container {
+			clusterID, clusterName, err := GetContainerKubeClusterNameFromId(r.Context(), req.NodeId)
+			if err != nil {
+				log.Error().Msgf("container kube cluster name not found %s", err.Error())
+			} else if len(clusterName) > 0 {
+				binArgs["kubernetes_cluster_name"] = clusterName
+				log.Info().Msgf("node_id=%s clusterName=%s clusterID=%s", req.NodeId, clusterName, clusterID)
 			}
 		}
 
@@ -492,9 +545,18 @@ func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Re
 }
 
 func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
+
 	var params utils.ScanSbomRequest
 	err := httpext.DecodeJSON(r, httpext.QueryParams, MaxSbomRequestSize, &params)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to decode message")
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	b64, err := base64.StdEncoding.DecodeString(params.SBOM)
+	if err != nil {
+		log.Error().Err(err).Msgf("error b64 reader")
 		respondError(&BadDecoding{err}, w)
 		return
 	}
@@ -505,30 +567,6 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 			model.ErrorResponse{Message: "scan_id is required to process sbom"})
 		return
 	}
-	// decompress sbom
-	b64, err := base64.StdEncoding.DecodeString(params.SBOM)
-	if err != nil {
-		log.Error().Err(err).Msgf("error b64 reader")
-		respondError(&BadDecoding{err}, w)
-		return
-	}
-	sr := bytes.NewReader(b64)
-	gzr, err := gzip.NewReader(sr)
-	if err != nil {
-		log.Error().Err(err).Msgf("error gzip reader")
-		respondError(&BadDecoding{err}, w)
-		return
-	}
-	defer gzr.Close()
-	sbom, err := io.ReadAll(gzr)
-	if err != nil {
-		log.Error().Err(err).Msgf("error read all decompressed sbom")
-		respondError(&BadDecoding{err}, w)
-		return
-	}
-
-	log.Info().Msgf("received sbom size: %.4fmb decompressed: %.4fmb",
-		float64(len(params.SBOM))/1000.0/1000.0, float64(len(sbom))/1000.0/1000.0)
 
 	mc, err := directory.MinioClient(r.Context())
 	if err != nil {
@@ -537,10 +575,16 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file := path.Join("sbom", utils.ScanIdReplacer.Replace(params.ScanId)+".json")
-	info, err := mc.UploadFile(r.Context(), file, []byte(sbom),
-		minio.PutObjectOptions{ContentType: "application/json"})
-	if err != nil {
+	file := path.Join("sbom", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
+	info, err := mc.UploadFile(r.Context(), file, b64,
+		minio.PutObjectOptions{ContentType: "application/gzip"})
+	// TODO: remove this error check, it should not happen
+	// happens only when scan is retried and sbom is re-uploaded
+	if err != nil && strings.Contains(err.Error(), "Already exists here") {
+		log.Warn().Msg(err.Error())
+		httpext.JSON(w, http.StatusOK, info)
+		return
+	} else if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)
 		return
@@ -834,6 +878,21 @@ func (h *Handler) ListSecretScanResultsHandler(w http.ResponseWriter, r *http.Re
 		Secrets: entries, ScanResultsCommon: common, SeverityCounts: counts})
 }
 
+func (h *Handler) ListSecretScanResultRulesHandler(w http.ResponseWriter, r *http.Request) {
+	entries, _, err := listScanResultsHandler[model.Secret](w, r, utils.NEO4J_SECRET_SCAN)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	rules := []string{}
+	for _, e := range entries {
+		rules = append(rules, e.Name)
+	}
+
+	httpext.JSON(w, http.StatusOK, model.SecretScanResultRules{Rules: lo.Uniq(rules)})
+}
+
 func (h *Handler) ListComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
 	entries, common, err := listScanResultsHandler[model.Compliance](w, r, utils.NEO4J_COMPLIANCE_SCAN)
 	if err != nil {
@@ -862,6 +921,36 @@ func (h *Handler) ListMalwareScanResultsHandler(w http.ResponseWriter, r *http.R
 	}
 
 	httpext.JSON(w, http.StatusOK, model.MalwareScanResult{Malwares: entries, ScanResultsCommon: common, SeverityCounts: counts})
+}
+
+func (h *Handler) ListMalwareScanResultRulesHandler(w http.ResponseWriter, r *http.Request) {
+	entries, _, err := listScanResultsHandler[model.Malware](w, r, utils.NEO4J_MALWARE_SCAN)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	rules := []string{}
+	for _, e := range entries {
+		rules = append(rules, e.RuleName)
+	}
+
+	httpext.JSON(w, http.StatusOK, model.MalwareScanResultRules{Rules: lo.Uniq(rules)})
+}
+
+func (h *Handler) ListMalwareScanResultClassHandler(w http.ResponseWriter, r *http.Request) {
+	entries, _, err := listScanResultsHandler[model.Malware](w, r, utils.NEO4J_MALWARE_SCAN)
+	if err != nil {
+		respondError(err, w)
+		return
+	}
+
+	class := []string{}
+	for _, e := range entries {
+		class = append(class, e.Class)
+	}
+
+	httpext.JSON(w, http.StatusOK, model.MalwareScanResultClass{Class: lo.Uniq(class)})
 }
 
 func (h *Handler) ListCloudComplianceScanResultsHandler(w http.ResponseWriter, r *http.Request) {
@@ -937,6 +1026,145 @@ func (h *Handler) CountCloudComplianceScanResultsHandler(w http.ResponseWriter, 
 
 	httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
 		Count: len(entries),
+	})
+}
+
+func groupSecrets(ctx context.Context) ([]reporters_search.ResultGroup, error) {
+	results := []reporters_search.ResultGroup{}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return results, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return results, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return results, err
+	}
+	defer tx.Close()
+
+	query := `MATCH (n:Secret)-[:IS]->(m:SecretRule)
+	RETURN m.name as name, n.level as severity, count(*) as count`
+
+	res, err := tx.Run(query, map[string]interface{}{})
+	if err != nil {
+		return results, err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return results, err
+	}
+
+	for _, rec := range recs {
+		results = append(results,
+			reporters_search.ResultGroup{
+				Name:     rec.Values[0].(string),
+				Severity: rec.Values[1].(string),
+				Count:    rec.Values[2].(int64),
+			},
+		)
+	}
+
+	return results, nil
+}
+
+func (h *Handler) GroupSecretResultsHandler(w http.ResponseWriter, r *http.Request) {
+
+	groups, err := groupSecrets(r.Context())
+	if err != nil {
+		log.Error().Err(err).Msg("failed to group secrets")
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
+		Groups: groups,
+	})
+}
+
+func groupMalwares(ctx context.Context, byClass bool) ([]reporters_search.ResultGroup, error) {
+	results := []reporters_search.ResultGroup{}
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return results, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	if err != nil {
+		return results, err
+	}
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return results, err
+	}
+	defer tx.Close()
+
+	query := `MATCH (n:Malware)-[:IS]->(m:MalwareRule)
+	RETURN m.rule_name as name, n.file_severity as severity, count(*) as count`
+
+	if byClass {
+		query = `MATCH (n:Malware)-[:IS]->(m:MalwareRule)
+		RETURN m.info as name, n.file_severity as severity, count(*) as count`
+	}
+
+	res, err := tx.Run(query, map[string]interface{}{})
+	if err != nil {
+		return results, err
+	}
+
+	recs, err := res.Collect()
+	if err != nil {
+		return results, err
+	}
+
+	for _, rec := range recs {
+		results = append(results,
+			reporters_search.ResultGroup{
+				Name:     rec.Values[0].(string),
+				Severity: rec.Values[1].(string),
+				Count:    rec.Values[2].(int64),
+			},
+		)
+	}
+
+	return results, nil
+}
+
+func (h *Handler) GroupMalwareResultsHandler(w http.ResponseWriter, r *http.Request) {
+
+	groups, err := groupMalwares(r.Context(), false)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to group malwares")
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
+		Groups: groups,
+	})
+}
+
+func (h *Handler) GroupMalwareClassResultsHandler(w http.ResponseWriter, r *http.Request) {
+
+	groups, err := groupMalwares(r.Context(), true)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to group malwares")
+		respondError(err, w)
+		return
+	}
+
+	httpext.JSON(w, http.StatusOK, reporters_search.ResultGroupResp{
+		Groups: groups,
 	})
 }
 
@@ -1031,7 +1259,7 @@ func (h *Handler) scanResultMaskHandler(w http.ResponseWriter, r *http.Request, 
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	switch action {
@@ -1057,12 +1285,12 @@ func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	switch action {
 	case "delete":
-		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
+		err = reporters_scan.DeleteScan(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
 	case "notify":
 		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
 	}
@@ -1159,7 +1387,7 @@ func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, ac
 	}
 	err := h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	switch action {
@@ -1181,7 +1409,7 @@ func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, ac
 		w.Write(data)
 
 	case "delete":
-		err = reporters_scan.DeleteScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{})
+		err = reporters_scan.DeleteScan(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{})
 		if err != nil {
 			respondError(err, w)
 			return
@@ -1208,27 +1436,27 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
-	log.Info().Msgf("delete %s scans filters %+v", req.ScanType, req.Filters)
+	log.Info().Msgf("bulk delete %s scans filters %+v", req.ScanType, req.Filters)
 
 	scansList, err := reporters_scan.GetScansList(r.Context(),
 		utils.DetectedNodeScanType[req.ScanType], nil, req.Filters, model.FetchWindow{})
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
 	for _, s := range scansList.ScansInfo {
-		err := reporters_scan.DeleteScanResult(r.Context(),
+		log.Info().Msgf("delete scan %s %s", req.ScanType, s.ScanId)
+		err := reporters_scan.DeleteScan(r.Context(),
 			utils.DetectedNodeScanType[req.ScanType], s.ScanId, []string{})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to delete scan id %s", s.ScanId)
 			continue
 		}
-		log.Info().Msgf("delete scan %s %s", req.ScanType, s.ScanId)
 	}
 
 	httpext.JSON(w, http.StatusOK, nil)
@@ -1244,7 +1472,7 @@ func (h *Handler) GetAllNodesInScanResultBulkHandler(w http.ResponseWriter, r *h
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 	resp, err := reporters_scan.GetNodesInScanResults(r.Context(), utils.Neo4jScanType(req.ScanType), req.ResultIDs)
@@ -1266,7 +1494,7 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 	}
 	err = h.Validator.Struct(req)
 	if err != nil {
-		respondError(&ValidatorError{err}, w)
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
@@ -1295,10 +1523,10 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 		httpext.JSON(w, http.StatusOK, sbom)
 	case "download":
 		resp := model.DownloadReportResponse{}
-		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(req.ScanID)+".json")
+		sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(req.ScanID)+".json.gz")
 		cd := url.Values{
 			"response-content-disposition": []string{
-				"attachment; filename=" + strconv.Quote(utils.ScanIdReplacer.Replace(req.ScanID)+".json")},
+				"attachment; filename=" + strconv.Quote(utils.ScanIdReplacer.Replace(req.ScanID)+".json.gz")},
 		}
 		url, err := mc.ExposeFile(r.Context(), sbomFile, true, DownloadReportUrlExpiry, cd)
 		if err != nil {
@@ -1351,11 +1579,22 @@ func FindNodesMatching(ctx context.Context,
 		return res, err
 	}
 	res = append(res, rh...)
-	ri, err := get_node_ids(tx, image_ids, controls.Image, filter.ImageScanFilter)
-	if err != nil {
-		return res, err
+
+	if len(filter.ImageScanFilter.FieldsValues["docker_image_name"]) > 0 &&
+		len(filter.ImageScanFilter.FieldsValues["docker_image_tag"]) > 0 {
+		ri, err := GetImagesFromAdvanceFilter(ctx, image_ids, filter.ImageScanFilter)
+		if err != nil {
+			return res, err
+		}
+		res = append(res, ri...)
+	} else {
+		ri, err := get_node_ids(tx, image_ids, controls.Image, filter.ImageScanFilter)
+		if err != nil {
+			return res, err
+		}
+		res = append(res, ri...)
 	}
-	res = append(res, ri...)
+
 	rc, err := get_node_ids(tx, container_ids, controls.Container, filter.ContainerScanFilter)
 	if err != nil {
 		return res, err
@@ -1372,6 +1611,86 @@ func FindNodesMatching(ctx context.Context,
 	}
 	res = append(res, rk...)
 
+	return res, nil
+}
+
+func GetImagesFromAdvanceFilter(ctx context.Context, ids []model.NodeIdentifier, filter reporters.ContainsFilter) ([]model.NodeIdentifier, error) {
+	res := []model.NodeIdentifier{}
+
+	driver, err := directory.Neo4jClient(ctx)
+
+	if err != nil {
+		return res, err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return res, err
+	}
+	defer tx.Close()
+
+	for i := range filter.FieldsValues["docker_image_name"] {
+		rr, err := tx.Run(`
+		MATCH (n:ContainerImage)
+		WHERE n.node_id IN $ids
+		AND n.docker_image_name = $image_name
+		RETURN n.node_id, n.updated_at, n.docker_image_tag
+		`, map[string]interface{}{
+			"ids":        reporters_scan.NodeIdentifierToIdList(ids),
+			"image_name": filter.FieldsValues["docker_image_name"][i],
+		})
+		if err != nil {
+			return res, err
+		}
+
+		rec, err := rr.Collect()
+		if err != nil {
+			return res, err
+		}
+
+		if len(rec) == 0 {
+			return res, nil
+		}
+
+		switch filter.FieldsValues["docker_image_tag"][0] {
+		case "latest":
+			for j := range rec {
+				if rec[j].Values[2].(string) == filter.FieldsValues["docker_image_tag"][0] {
+					res = append(res, model.NodeIdentifier{
+						NodeId:   rec[j].Values[0].(string),
+						NodeType: controls.ResourceTypeToString(controls.Image),
+					})
+					break
+				}
+			}
+		case "all":
+			for j := range rec {
+				res = append(res, model.NodeIdentifier{
+					NodeId:   rec[j].Values[0].(string),
+					NodeType: controls.ResourceTypeToString(controls.Image),
+				})
+			}
+		case "recent": // kludge: what if the image tag is actually named "recent"?
+			recentNodeID := rec[0].Values[0].(string)
+			recentTimeUNIX := rec[0].Values[1].(int64)
+			for j := range rec {
+				recentTime := time.Unix(recentTimeUNIX, 0)
+				t := time.Unix(rec[j].Values[1].(int64), 0)
+				if t.After(recentTime) {
+					recentTimeUNIX = rec[j].Values[1].(int64)
+					recentNodeID = rec[j].Values[0].(string)
+				}
+			}
+			res = append(res, model.NodeIdentifier{
+				NodeId:   recentNodeID,
+				NodeType: controls.ResourceTypeToString(controls.Image),
+			})
+		}
+	}
 	return res, nil
 }
 

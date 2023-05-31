@@ -9,6 +9,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/go-playground/validator/v10"
 )
 
 func New(data []byte) (*RegistryACR, error) {
@@ -17,7 +18,12 @@ func New(data []byte) (*RegistryACR, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &r, nil
+}
+
+func (d *RegistryACR) ValidateFields(v *validator.Validate) error {
+	return v.Struct(d)
 }
 
 func (d *RegistryACR) IsValidCredential() bool {
@@ -66,7 +72,7 @@ func (d *RegistryACR) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (d *RegistryACR) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
+func (d *RegistryACR) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
 	return listImagesRegistryV2(d.NonSecret.AzureRegistryURL, "",
 		d.NonSecret.AzureRegistryUsername, d.Secret.AzureRegistryPassword)
 }

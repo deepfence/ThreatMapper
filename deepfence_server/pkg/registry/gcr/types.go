@@ -1,21 +1,21 @@
 package gcr
 
 type RegistryGCR struct {
-	Name         string    `json:"name"`
-	NonSecret    NonSecret `json:"non_secret"`
-	Secret       Secret    `json:"secret"`
+	Name         string    `json:"name" validate:"required,min=2,max=64"`
+	NonSecret    NonSecret `json:"non_secret" validate:"required"`
+	Secret       Secret    `json:"secret" validate:"required"`
 	Extras       Extras    `json:"extras"`
-	RegistryType string    `json:"registry_type"`
+	RegistryType string    `json:"registry_type" validate:"required"`
 }
 
 type NonSecret struct {
-	RegistryURL string `json:"registry_url"`
-	ProjectId   string `json:"project_id"`
+	RegistryURL string `json:"registry_url" validate:"required,url"`
+	ProjectId   string `json:"project_id" validate:"required,min=6,max=30"`
 }
 
 type Secret struct {
-	ProjectId    string `json:"project_id"`
-	PrivateKeyId string `json:"private_key_id"`
+	ProjectId    string `json:"project_id" validate:"required,min=2,max=64"`
+	PrivateKeyId string `json:"private_key_id" validate:"required"`
 }
 
 type Extras struct {

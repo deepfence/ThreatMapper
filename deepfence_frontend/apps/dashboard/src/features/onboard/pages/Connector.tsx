@@ -99,9 +99,9 @@ const Connector = () => {
       ) : (
         <>
           <div className="flex flex-col mb-6 ml-14">
-            <p className="text-xs">
-              Note: After successfully run the commands above, your connector will appear
-              on MyConnector page, then you can perform scanning.
+            <p className="text-xs dark:text-gray-400 text-gray-900">
+              Note: After completing the steps above, your connector will appear on
+              MyConnector page and you will be able to scan them.
             </p>
           </div>
           <div className="flex">

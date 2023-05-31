@@ -5,7 +5,7 @@ package probe
 
 import (
 	"encoding/json"
-	"fmt"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -58,18 +58,30 @@ func (p *Probe) dummyPublishLoop(i int) {
 	var dummy_agent_sed []byte
 	hostname := scopeHostname.Get()
 	res := strings.ReplaceAll(dummy_agent, "agent-sed-string", hostname+strconv.Itoa(i))
+	res = strings.ReplaceAll(res, "region-sed-string", hostname)
 	dummy_agent_sed = []byte(res)
 	fmt.Printf("%v", res)
 	rpt := report.MakeReport()
 	err = json.Unmarshal(dummy_agent_sed, &rpt)
+
+	if err != nil {
+		log.Errorf("rpt unmarshal err: %v", err)
+		return
+	}
+
+	// Add jitter
+	rand.Seed(time.Now().UnixNano())
+
+	min := 0
+	max := 600
+
+	jitter := int32(rand.Intn(max-min+1) + min)
+
+	<-time.After(time.Second*time.Duration(jitter))
+
 	for {
 		select {
-		case <-time.After(time.Second * time.Duration(p.publisher.PublishInterval())):
-			if err != nil {
-				log.Errorf("rpt unmarshal err: %v", err)
-				continue
-			}
-
+		case <-time.After(time.Second*time.Duration(p.publisher.PublishInterval())):
 			err = p.publisher.Publish(rpt)
 			if err == nil {
 				publishCount++

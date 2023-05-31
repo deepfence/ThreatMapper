@@ -20,30 +20,30 @@ const sidebars = {
       className: 'sidebar-title',
     },
 
-    'threatmapper/index',
+    'index',
 
     {
       type: 'category',
       label: 'Architecture',
       link: {
         type: 'doc',
-        id: 'threatmapper/architecture/index'
+        id: 'architecture/index'
       },
       items: [
-        'threatmapper/architecture/console',
-        'threatmapper/architecture/cloudscanner',
-        'threatmapper/architecture/sensors',
-        'threatmapper/architecture/threatgraph',
+        'architecture/console',
+        'architecture/cloudscanner',
+        'architecture/sensors',
+        'architecture/threatgraph',
       ],
     },
-    'threatmapper/demo',
+    'demo',
 
     {
       type: 'category',
       label: 'Installation',
       link: {
         type: 'doc',
-        id: 'threatmapper/installation'
+        id: 'installation'
       },
       items: [
         {
@@ -51,17 +51,17 @@ const sidebars = {
           label: 'Management Console',
           link: {
             type: 'doc',
-            id: 'threatmapper/console/index'
+            id: 'console/index'
           },
           items: [
-            'threatmapper/console/requirements',
-            'threatmapper/console/docker',
-            'threatmapper/console/kubernetes',
-            'threatmapper/console/managed-database',
-            'threatmapper/console/initial-configuration',
-            'threatmapper/console/manage-users',
-            'threatmapper/console/database-export-import',
-            'threatmapper/console/troubleshooting',
+            'console/requirements',
+            'console/docker',
+            'console/kubernetes',
+            'console/managed-database',
+            'console/initial-configuration',
+            'console/manage-users',
+            'console/database-export-import',
+            'console/troubleshooting',
           ],
         },
 
@@ -70,13 +70,13 @@ const sidebars = {
           label: 'Cloud Scanner',
           link: {
             type: 'doc',
-            id: 'threatmapper/cloudscanner/index'
+            id: 'cloudscanner/index'
           },
           items: [
-            'threatmapper/cloudscanner/aws',
-            'threatmapper/cloudscanner/azure',
-            'threatmapper/cloudscanner/gcp',
-            'threatmapper/cloudscanner/other',
+            'cloudscanner/aws',
+            'cloudscanner/azure',
+            'cloudscanner/gcp',
+            'cloudscanner/other',
            ],
         },
 
@@ -85,7 +85,7 @@ const sidebars = {
           label: 'Kubernetes Scanner',
           link: {
             type: 'doc',
-            id: 'threatmapper/kubernetes-scanner/index'
+            id: 'kubernetes-scanner/index'
           },
           items: [],
         },
@@ -95,14 +95,14 @@ const sidebars = {
           label: 'Sensor Agent container',
           link: {
             type: 'doc',
-            id: 'threatmapper/sensors/index'
+            id: 'sensors/index'
           },
           items: [
-            'threatmapper/sensors/kubernetes',
-            'threatmapper/sensors/docker',
-            'threatmapper/sensors/aws-ecs',
-            'threatmapper/sensors/aws-fargate',
-            'threatmapper/sensors/linux-host',
+            'sensors/kubernetes',
+            'sensors/docker',
+            'sensors/aws-ecs',
+            'sensors/aws-fargate',
+            'sensors/linux-host',
           ],
         },
       ],
@@ -113,15 +113,25 @@ const sidebars = {
       label: 'Operations',
       link: {
         type: 'doc',
-        id: 'threatmapper/operations/index'
+        id: 'operations/index'
       },
       items: [
-        'threatmapper/operations/scanning',
-        'threatmapper/operations/sboms',
-        'threatmapper/operations/compliance',
-        'threatmapper/operations/scanning-registries',
-        'threatmapper/operations/scanning-ci',
-        'threatmapper/operations/support',
+        'operations/scanning',
+        'operations/sboms',
+        'operations/compliance',
+        {
+          type: 'category',
+          label: 'Scanning Registries',
+          link: {
+            type: 'doc',
+            id: 'registries/index'
+          },
+          items: [
+            'registries/aws-ecr',
+          ],
+        },
+        'operations/scanning-ci',
+        'operations/support',
       ],
     },
 
@@ -130,14 +140,14 @@ const sidebars = {
       label: 'Integrations',
       link: {
         type: 'doc',
-        id: 'threatmapper/integrations/index'
+        id: 'integrations/index'
       },
       items: [
-        'threatmapper/integrations/pagerduty',
-        'threatmapper/integrations/slack',
-        'threatmapper/integrations/microsoft-teams',
-        'threatmapper/integrations/sumo-logic',
-        'threatmapper/integrations/jira',
+        'integrations/pagerduty',
+        'integrations/slack',
+        'integrations/microsoft-teams',
+        'integrations/sumo-logic',
+        'integrations/jira',
       ],
     },
 
@@ -146,12 +156,12 @@ const sidebars = {
       label: 'Developers',
       link: {
         type: 'doc',
-        id: 'threatmapper/developers/index'
+        id: 'developers/index'
       },
       items: [
-        'threatmapper/developers/build',
-        'threatmapper/developers/deploy-console',
-        'threatmapper/developers/deploy-agent',
+        'developers/build',
+        'developers/deploy-console',
+        'developers/deploy-agent',
       ],
     },
 
@@ -166,7 +176,7 @@ const sidebars = {
       items: [
         {
           type: 'autogenerated',
-          dirName: 'threatmapper/tips',
+          dirName: 'tips',
         },
       ],
     },

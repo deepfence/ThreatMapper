@@ -18,13 +18,13 @@ import {
 } from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelImageStub } from '@/api/generated';
+import { ModelImageStub } from '@/api/generated';
 import { ModelSummary } from '@/api/generated/models/ModelSummary';
 import { DFLink } from '@/components/DFLink';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { RegistryImagesTable } from '@/features/registries/components/RegistryImagesTable';
 import { Mode, useTheme } from '@/theme/ThemeContext';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 import { getPageFromSearchParams } from '@/utils/table';
@@ -48,30 +48,19 @@ async function getRegistrySummaryById(nodeId: string): Promise<{
   message?: string;
   summary: ModelSummary;
 }> {
-  const registrySummary = await makeRequest({
-    apiFunction: getRegistriesApiClient().getRegistrySummary,
-    apiArgs: [
-      {
-        registryId: nodeId,
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
+  const getRegistrySummary = apiWrapper({
+    fn: getRegistriesApiClient().getRegistrySummary,
+  });
+  const registrySummary = await getRegistrySummary({
+    registryId: nodeId,
   });
 
-  if (ApiError.isApiError(registrySummary)) {
-    throw registrySummary.value();
+  if (!registrySummary.ok) {
+    throw registrySummary.error;
   }
 
   return {
-    summary: registrySummary,
+    summary: registrySummary.value,
   };
 }
 
@@ -95,59 +84,47 @@ async function getImages(
       size: PAGE_SIZE,
     },
   };
-  const result = await makeRequest({
-    apiFunction: getRegistriesApiClient().listImageStubs,
-    apiArgs: [
-      {
-        modelRegistryImageStubsReq: imageRequest,
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
+  const listImageStubs = apiWrapper({
+    fn: getRegistriesApiClient().listImageStubs,
   });
 
-  if (ApiError.isApiError(result)) {
-    throw result.value();
-  }
+  const result = await listImageStubs({
+    modelRegistryImageStubsReq: imageRequest,
+  });
 
-  if (!result) {
+  if (!result.ok) {
+    throw result.error;
+  }
+  if (!result.value) {
     return {
       images: [],
       currentPage: 0,
       totalRows: 0,
     };
   }
-  // count api
-  const resultCounts = await makeRequest({
-    apiFunction: getRegistriesApiClient().countImageStubs,
-    apiArgs: [
-      {
-        modelRegistryImageStubsReq: {
-          ...imageRequest,
-          window: {
-            ...imageRequest.window,
-            size: 10 * imageRequest.window.size,
-          },
-        },
-      },
-    ],
+
+  const countImageStubs = apiWrapper({
+    fn: getRegistriesApiClient().countImageStubs,
   });
 
-  if (ApiError.isApiError(resultCounts)) {
-    throw resultCounts.value();
+  const resultCounts = await countImageStubs({
+    modelRegistryImageStubsReq: {
+      ...imageRequest,
+      window: {
+        ...imageRequest.window,
+        size: 10 * imageRequest.window.size,
+      },
+    },
+  });
+
+  if (!resultCounts.ok) {
+    throw resultCounts.error;
   }
 
   return {
-    images: result,
+    images: result.value,
     currentPage: page,
-    totalRows: resultCounts.count || 0,
+    totalRows: page * PAGE_SIZE + (resultCounts.value.count || 0),
   };
 }
 
@@ -178,12 +155,12 @@ const HeaderComponent = () => {
     <div className="flex p-2 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
       <Breadcrumb separator={<HiChevronRight />} transparent>
         <BreadcrumbLink>
-          <DFLink to={'/registries'}>REGISTRIES</DFLink>
+          <DFLink to={'/registries'}>Registries</DFLink>
         </BreadcrumbLink>
         <BreadcrumbLink>
           <DFLink
             to={generatePath('/registries/:account', {
-              account,
+              account: encodeURIComponent(account),
             })}
           >
             {account}

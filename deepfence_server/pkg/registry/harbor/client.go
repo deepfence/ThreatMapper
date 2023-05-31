@@ -20,10 +20,10 @@ var client = &http.Client{
 	},
 }
 
-func listImages(url, project, username, password string) ([]model.ContainerImage, error) {
+func listImages(url, project, username, password string) ([]model.IngestedContainerImage, error) {
 
 	var (
-		images []model.ContainerImage
+		images []model.IngestedContainerImage
 	)
 
 	repos, err := listRepos(url, project, username, password)
@@ -131,15 +131,15 @@ func listArtifacts(url, username, password, project, repo string) ([]Artifact, e
 	return artifacts, err
 }
 
-func getImageWithTags(repo Repository, artifacts []Artifact) []model.ContainerImage {
-	var imageAndTag []model.ContainerImage
+func getImageWithTags(repo Repository, artifacts []Artifact) []model.IngestedContainerImage {
+	var imageAndTag []model.IngestedContainerImage
 
 	for _, artifact := range artifacts {
 		if artifact.Type != "IMAGE" {
 			continue
 		}
 		for _, tag := range artifact.Tags {
-			tt := model.ContainerImage{
+			tt := model.IngestedContainerImage{
 				ID:   model.DigestToID(artifact.Digest),
 				Name: repo.Name,
 				Tag:  tag.Name,

@@ -8,7 +8,8 @@ import {
 import cx from 'classnames';
 import { cva } from 'cva';
 import { isNil } from 'lodash-es';
-import { useId } from 'react';
+import { ReactNode, useEffect, useId, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { HiOutlineChevronDown } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import { twMerge } from 'tailwind-merge';
@@ -190,40 +191,42 @@ export function Listbox<TType, TActualType>({
             ),
           )}
         >
-          <div className="truncate text-start">
+          <span className="truncate text-start block">
             {getPlaceholderValue(value, getDisplayValue, placeholder)}
-          </div>
+          </span>
           <SelectArrow sizing={sizing} color={color} />
         </HUIListbox.Button>
-        <Transition
-          as={'div'}
-          enter="transition ease-out duration-1200"
-          enterFrom="opacity-0 -translate-y-1"
-          enterTo="opacity-100 translate-y-0"
-          leave="transition ease-in duration-1200"
-          leaveFrom="opacity-100 translate-y-0"
-          leaveTo="opacity-0 -translate-y-1"
-          ref={(ele) => refs.setFloating(ele)}
-          style={{
-            position: strategy,
-            top: y ?? 0,
-            left: x ?? 0,
-          }}
-        >
-          <HUIListbox.Options
-            className={twMerge(
-              cx(
-                'shadow-sm bg-white dark:bg-gray-700 w-full',
-                'rounded-md',
-                'border border-gray-200 dark:border-gray-600',
-                'focus:outline-none select-none',
-                'max-h-60 overflow-y-auto',
-              ),
-            )}
+        <Portal>
+          <Transition
+            as={'div'}
+            enter="transition ease-out duration-1200"
+            enterFrom="opacity-0 -translate-y-1"
+            enterTo="opacity-100 translate-y-0"
+            leave="transition ease-in duration-1200"
+            leaveFrom="opacity-100 translate-y-0"
+            leaveTo="opacity-0 -translate-y-1"
+            ref={(ele) => refs.setFloating(ele)}
+            style={{
+              position: strategy,
+              top: y ?? 0,
+              left: x ?? 0,
+            }}
           >
-            {children}
-          </HUIListbox.Options>
-        </Transition>
+            <HUIListbox.Options
+              className={twMerge(
+                cx(
+                  'shadow-sm bg-white dark:bg-gray-700 w-full',
+                  'rounded-md',
+                  'border border-gray-200 dark:border-gray-600',
+                  'focus:outline-none select-none',
+                  'max-h-60 overflow-y-auto',
+                ),
+              )}
+            >
+              {children}
+            </HUIListbox.Options>
+          </Transition>
+        </Portal>
       </div>
     </HUIListbox>
   );
@@ -261,11 +264,25 @@ function getPlaceholderValue<T extends unknown | unknown[]>(
   defaultPlaceholder?: string,
 ) {
   if (isNil(value) || (Array.isArray(value) && !value.length)) {
-    return defaultPlaceholder ?? 'Select...';
+    return (
+      <span className="text-gray-500 dark:text-gray-400 block">
+        {defaultPlaceholder ?? 'Select...'}
+      </span>
+    );
   } else if (getDisplayValue) {
     return getDisplayValue?.(value);
   } else if (Array.isArray(value)) {
     return `${value.length} selected`;
   }
   return '1 item selected';
+}
+
+function Portal(props: { children: ReactNode }) {
+  const { children } = props;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+  return createPortal(children, document.body);
 }

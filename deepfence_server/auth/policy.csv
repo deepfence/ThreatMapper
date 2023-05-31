@@ -37,6 +37,7 @@ p, admin, cloud-node, register
 p, admin, cloud-node, read
 p, standard-user, cloud-node, register
 p, standard-user, cloud-node, read
+p, read-only-user, cloud-node, read
 
 p, admin, diagnosis, generate
 p, standard-user, diagnosis, generate
@@ -72,6 +73,7 @@ p, admin, report, download
 p, admin, report, delete
 p, standard-user, report, generate
 p, standard-user, report, download
+p, read-only-user, report, download
 
 p, admin, settings, read
 p, admin, settings, write

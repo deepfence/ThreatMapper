@@ -20,11 +20,11 @@ func New(b []byte) (*Slack, error) {
 }
 
 func (s Slack) FormatMessage(message []map[string]interface{}) string {
-	entiremsg := "*" + s.NotificationType + "*\n\n"
+	entiremsg := "*" + s.Resource + "*\n\n"
 	for k, v := range message {
-		entiremsg = entiremsg + fmt.Sprintf("#%d\n", k)
+		entiremsg = entiremsg + fmt.Sprintf("#%d\n", k+1)
 		for key, val := range v {
-			entiremsg = fmt.Sprintf("%s:%s", key, val)
+			entiremsg += fmt.Sprintf("%s:%s\n", key, val)
 		}
 		entiremsg = entiremsg + "\n"
 	}

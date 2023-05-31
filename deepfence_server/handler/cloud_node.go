@@ -15,6 +15,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func (h *Handler) RegisterCloudNodeAccountCount(w http.ResponseWriter, r *http.Request) {
+	return
+}
+
 func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http.Request) {
 	req, err := extractCloudNodeDetails(w, r)
 	if err != nil {
@@ -42,9 +46,13 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		}
 		monitoredAccountIds[req.CloudAccount] = nodeId
 		orgNodeId := fmt.Sprintf("%s-%s-cloud-org", req.CloudProvider, orgAccountId)
+		orgCloudProvider := model.PostureProviderGCPOrg
+		if req.CloudProvider == model.PostureProviderAWS {
+			orgCloudProvider = model.PostureProviderAWSOrg
+		}
 		node := map[string]interface{}{
 			"node_id":        orgNodeId,
-			"cloud_provider": model.PostureProviderAWSOrg,
+			"cloud_provider": orgCloudProvider,
 			"node_name":      orgAccountId,
 		}
 		err = model.UpsertCloudComplianceNode(ctx, node, "")
@@ -55,9 +63,10 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 		for monitoredAccountId, monitoredNodeId := range monitoredAccountIds {
 			var monitoredNode map[string]interface{}
 			monitoredNode = map[string]interface{}{
-				"node_id":        monitoredNodeId,
-				"cloud_provider": req.CloudProvider,
-				"node_name":      monitoredAccountId,
+				"node_id":         monitoredNodeId,
+				"cloud_provider":  req.CloudProvider,
+				"node_name":       monitoredAccountId,
+				"organization_id": orgNodeId,
 			}
 			err = model.UpsertCloudComplianceNode(ctx, monitoredNode, orgNodeId)
 			if err != nil {

@@ -7,6 +7,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: kafka-broker
+    name: deepfence-kafka-broker
 spec:
   serviceName: deepfence-kafka-broker
   replicas: {{ .Values.kafka.replicaCount }}
@@ -14,6 +15,7 @@ spec:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
       component: kafka-broker
+      name: deepfence-kafka-broker
   template:
     metadata:
       {{- with .Values.kafka.podAnnotations }}
@@ -23,6 +25,7 @@ spec:
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
         component: kafka-broker
+        name: deepfence-kafka-broker
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
@@ -37,7 +40,7 @@ spec:
                     - key: name
                       operator: In
                       values:
-                        - {{ include "deepfence-console.fullname" . }}-kafka-broker
+                        - kafka-broker
                 topologyKey: kubernetes.io/hostname
       initContainers:
         - name: init
@@ -51,7 +54,7 @@ spec:
               mountPath: /data
       containers:
         - name: kafka
-          image:  "{{ .Values.kafka.image.repository }}:{{ .Values.kafka.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.global.imageRepoPrefix }}/{{ .Values.kafka.image.repository }}:{{ default .Values.global.imageTag .Values.kafka.image.tag }}"
           imagePullPolicy: {{ .Values.kafka.image.pullPolicy }}
           ports:
             - containerPort: 9092
@@ -115,12 +118,14 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: kafka-broker
+    name: deepfence-kafka-broker
 spec:
   type: ClusterIP
   clusterIP: None
   selector:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
       component: kafka-broker
+      name: deepfence-kafka-broker
   ports:
     - name: '9092'
       port: 9092

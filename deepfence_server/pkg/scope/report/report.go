@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 // Names of the various topologies.
@@ -421,6 +423,16 @@ type Parent struct {
 	ContainerImage    string `json:"container_image,omitempty"`
 	Namespace         string `json:"namespace,omitempty"`
 	Pod               string `json:"pod,omitempty"`
+}
+
+type CompressedReport struct {
+	Decoder *jsoniter.Decoder
+	Cleanup func()
+}
+
+func (cr *CompressedReport) FillReport(rpt *Report) error {
+	rpt.Clear()
+	return cr.Decoder.Decode(&rpt)
 }
 
 // Report is the core data type. It's produced by probes, and consumed and

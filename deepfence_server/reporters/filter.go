@@ -24,6 +24,7 @@ type MatchFilter struct {
 type OrderSpec struct {
 	FieldName  string `json:"field_name" required:"true"`
 	Descending bool   `json:"descending" required:"true"`
+	Size       int    `json:"size"`
 }
 
 type CompareFilter struct {
@@ -64,6 +65,11 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 					labels = append(labels, fmt.Sprintf("%s%s:ContainerImage", reverse_operator, cypherNodeName))
 				case "container":
 					labels = append(labels, fmt.Sprintf("%s%s:Container", reverse_operator, cypherNodeName))
+				case "cluster":
+					labels = append(labels, fmt.Sprintf("%s%s:KubernetesCluster", reverse_operator, cypherNodeName))
+				case "aws", "gcp", "azure":
+					labels = append(labels, fmt.Sprintf("%s%s:CloudNode", reverse_operator, cypherNodeName))
+					conditions = append(conditions, fmt.Sprintf("%s%s.cloud_provider = '%s' ", reverse_operator, cypherNodeName, vs[i]))
 				}
 			}
 			if in {
@@ -81,7 +87,11 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 				}
 			}
 
-			conditions = append(conditions, fmt.Sprintf("%s.%s %sIN [%s]", cypherNodeName, k, reverse_operator, strings.Join(values, ",")))
+			if in {
+				conditions = append(conditions, fmt.Sprintf("%s.%s IN [%s]", cypherNodeName, k, strings.Join(values, ",")))
+			} else {
+				conditions = append(conditions, fmt.Sprintf(" NOT coalesce(%s.%s, '') IN [%s]", cypherNodeName, k, strings.Join(values, ",")))
+			}
 		}
 	}
 	return conditions
@@ -94,7 +104,7 @@ func compareFilter2CypherConditions(cypherNodeName string, filters []CompareFilt
 		if !filter.GreaterThan {
 			compareOperator = "<"
 		}
-		conditions = append(conditions, fmt.Sprintf("%s.%s %s %s", cypherNodeName, filter.FieldName, compareOperator, filter.FieldValue))
+		conditions = append(conditions, fmt.Sprintf("%s.%s %s %v", cypherNodeName, filter.FieldName, compareOperator, filter.FieldValue))
 	}
 	return conditions
 }
@@ -128,13 +138,32 @@ func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) stri
 		return ""
 	}
 
-	list := formatOrderField(cypherNodeName+".%s", filter.OrderFields, false)
+	var list []string
+	if cypherNodeName == "" {
+		list = formatOrderField("%s", filter.OrderFields, false)
+		if len(list) == 0 {
+			return ""
+		}
 
+		return fmt.Sprintf(" ORDER BY %s ", strings.Join(list, ","))
+	}
+
+	list = formatOrderField(cypherNodeName+".%s", filter.OrderFields, false)
 	if len(list) == 0 {
 		return ""
 	}
 
-	return fmt.Sprintf(" ORDER BY %s ", strings.Join(list, ","))
+	var list2 []string
+	for i, orderby := range list {
+		size := filter.OrderFields[i].Size
+		if size != 0 {
+			list2 = append(list2, fmt.Sprintf(" WITH %s ORDER BY %s LIMIT %d ", cypherNodeName, orderby, size))
+		} else {
+			list2 = append(list2, fmt.Sprintf(" WITH %s ORDER BY %s ", cypherNodeName, orderby))
+		}
+	}
+
+	return strings.Join(list2, "\n")
 }
 
 func orderFilter2CypherWhere(cypherNodeName string, filter OrderFilter) []string {
@@ -193,19 +222,38 @@ func ContainsFilter2CypherWhereConditions(cypherNodeName string, filter Contains
 	return fmt.Sprintf("%s %s", first_clause, strings.Join(conditions, " AND "))
 }
 
-func FieldFilterCypher(node_name string, fields []string) string {
+func FieldFilterCypher(nodeName string, fields []string) string {
 	tmp := []string{}
 	if len(fields) != 0 {
 		for i := range fields {
 			if fields[i] != "" {
-				tmp = append(tmp, fmt.Sprintf("%s.%s", node_name, fields[i]))
+				if nodeName == "" {
+					tmp = append(tmp, fmt.Sprintf("%s", fields[i]))
+				} else {
+					tmp = append(tmp, fmt.Sprintf("%s.%s", nodeName, fields[i]))
+				}
 			}
 		}
 		if len(tmp) != 0 {
 			return strings.Join(tmp, ",")
 		}
 	}
-	return node_name
+	return nodeName
+}
+
+func FieldFilterCypherWithAlias(nodeName string, fields []string) string {
+	tmp := []string{}
+	if len(fields) != 0 {
+		for i := range fields {
+			if fields[i] != "" {
+				tmp = append(tmp, fmt.Sprintf("%s.%s AS %s", nodeName, fields[i], fields[i]))
+			}
+		}
+		if len(tmp) != 0 {
+			return strings.Join(tmp, ",")
+		}
+	}
+	return nodeName
 }
 
 func matchFilter2CypherConditions(cypherNodeName string, filter MatchFilter) []string {

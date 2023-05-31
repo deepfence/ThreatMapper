@@ -82,6 +82,10 @@ func (d *OpenApiDocs) AddUserOperations() {
 	d.AddOperation("registerInvitedUser", http.MethodPost, "/deepfence/user/invite/register",
 		"Register Invited User", "Register invited user",
 		http.StatusOK, []string{tagUser}, nil, new(RegisterInvitedUserRequest), new(LoginResponse))
+
+	d.AddOperation("eula", http.MethodGet, "/deepfence/end-user-license-agreement",
+		"Get End User License Agreement", "Get End User License Agreement",
+		http.StatusOK, []string{tagCommon}, nil, nil, new(MessageResponse))
 }
 
 func (d *OpenApiDocs) AddGraphOperations() {
@@ -218,6 +222,10 @@ func (d *OpenApiDocs) AddSearchOperations() {
 		"Search Cloud Compliance Scan results", "Search across all the data associated with cloud-compliance scan",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new([]ScanInfo))
 
+	d.AddOperation("searchCloudAccounts", http.MethodPost, "/deepfence/search/cloud-accounts",
+		"Search Cloud Nodes", "Search across all the data associated with cloud nodes",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]CloudNodeAccountInfo))
+
 	d.AddOperation("getCloudComplianceFilters", http.MethodPost, "/deepfence/filters/cloud-compliance",
 		"Get Cloud Compliance Filters", "Get all applicable filter values for cloud compliance",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(FiltersReq), new(FiltersResult))
@@ -294,6 +302,10 @@ func (d *OpenApiDocs) AddSearchOperations() {
 	d.AddOperation("countCloudComplianceScans", http.MethodPost, "/deepfence/search/count/cloud-compliance/scans",
 		"Count Cloud Compliance Scan results", "Count across all the data associated with cloud-compliance scans",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchScanReq), new(SearchCountResp))
+
+	d.AddOperation("countCloudAccounts", http.MethodPost, "/deepfence/search/count/cloud-accounts",
+		"Count Cloud Nodes", "Search across all the data associated with cloud nodes",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 }
 
 func (d *OpenApiDocs) AddControlsOperations() {
@@ -464,12 +476,21 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("resultsSecretScan", http.MethodPost, "/deepfence/scan/results/secret",
 		"Get Secret Scans Results", "Get Secret Scans results on agent or registry",
 		http.StatusOK, []string{tagSecretScan}, bearerToken, new(ScanResultsReq), new(SecretScanResult))
+	d.AddOperation("resultsRulesSecretScan", http.MethodPost, "/deepfence/scan/results/secret/rules",
+		"Get Secret Scans Result Rules", "Get Secret Scans detected rules names",
+		http.StatusOK, []string{tagSecretScan}, bearerToken, new(ScanResultsReq), new(SecretScanResultRules))
 	d.AddOperation("resultsComplianceScan", http.MethodPost, "/deepfence/scan/results/compliance",
 		"Get Compliance Scans Results", "Get Compliance Scans results on agent or registry",
 		http.StatusOK, []string{tagCompliance}, bearerToken, new(ScanResultsReq), new(ComplianceScanResult))
 	d.AddOperation("resultsMalwareScan", http.MethodPost, "/deepfence/scan/results/malware",
 		"Get Malware Scans Results", "Get Malware Scans results on agent or registry",
 		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanResultsReq), new(MalwareScanResult))
+	d.AddOperation("resultsRulesMalwareScan", http.MethodPost, "/deepfence/scan/results/malware/rules",
+		"Get Malware Scans Result Rules", "Get Malware Scans detected rules names",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanResultsReq), new(MalwareScanResultRules))
+	d.AddOperation("resultsClassMalwareScan", http.MethodPost, "/deepfence/scan/results/malware/class",
+		"Get Malware Scans Results", "Get Malware Scans detected class names",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, new(ScanResultsReq), new(MalwareScanResultClass))
 	d.AddOperation("resultsCloudComplianceScan", http.MethodPost, "/deepfence/scan/results/cloud-compliance",
 		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(CloudComplianceScanResult))
@@ -490,6 +511,17 @@ func (d *OpenApiDocs) AddScansOperations() {
 	d.AddOperation("countResultsCloudComplianceScan", http.MethodPost, "/deepfence/scan/results/count/cloud-compliance",
 		"Get Cloud Compliance Scan Results", "Get Cloud Compliance Scan results for cloud node",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new(ScanResultsReq), new(SearchCountResp))
+
+	// pie chart apis
+	d.AddOperation("groupResultsSecrets", http.MethodGet, "/deepfence/scan/results/count/group/secret",
+		"Group Secret Results", "Group Secret Scans results by severity/rule",
+		http.StatusOK, []string{tagSecretScan}, bearerToken, nil, new(ResultGroupResp))
+	d.AddOperation("groupResultsMalwares", http.MethodGet, "/deepfence/scan/results/count/group/malware",
+		"Group Malware Results", "Group Malware Scans results by severity/rule",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, nil, new(ResultGroupResp))
+	d.AddOperation("groupResultsMalwaresClass", http.MethodGet, "/deepfence/scan/results/count/group/malware/class",
+		"Group Malware Results By Class", "Group Malware Scans results by severity/class",
+		http.StatusOK, []string{tagMalwareScan}, bearerToken, nil, new(ResultGroupResp))
 
 	d.AddOperation("getAllNodesInScanResults", http.MethodPost, "/deepfence/scan/nodes-in-result",
 		"Get all nodes in given scan result ids", "Get all nodes in given scan result ids",

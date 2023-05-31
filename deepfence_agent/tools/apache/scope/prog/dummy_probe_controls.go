@@ -7,9 +7,13 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	_ "embed"
 	"encoding/base64"
 	"errors"
+	"fmt"
+	"math/rand"
 	"os/exec"
+	"time"
 
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	log "github.com/sirupsen/logrus"
@@ -18,8 +22,6 @@ import (
 	"github.com/weaveworks/scope/probe/controls"
 
 	dsc "github.com/deepfence/golang_deepfence_sdk/client"
-
-	_ "embed"
 )
 
 //go:embed dummy/sbom.json
@@ -105,6 +107,7 @@ func setAgentControls() {
 }
 
 func sendDummySbomToConsole(init_req ctl.StartVulnerabilityScanRequest) error {
+	//TODO: reuse existing client
 	httpsClient, err := common.NewClient()
 	if err != nil {
 		return err
@@ -142,10 +145,10 @@ func sendDummySbomToConsole(init_req ctl.StartVulnerabilityScanRequest) error {
 
 	data.SetSbom(string(c_sbom))
 
-	req := httpsClient.VulnerabilityApi.IngestSbom(context.Background())
+	req := httpsClient.Client().VulnerabilityAPI.IngestSbom(context.Background())
 	req = req.UtilsScanSbomRequest(data)
 
-	resp, err := httpsClient.VulnerabilityApi.IngestSbomExecute(req)
+	resp, err := httpsClient.Client().VulnerabilityAPI.IngestSbomExecute(req)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -154,4 +157,19 @@ func sendDummySbomToConsole(init_req ctl.StartVulnerabilityScanRequest) error {
 	log.Debugf("publish sbom to console response: %v", resp)
 
 	return nil
+}
+
+// Add jitter
+func init() {
+	rand.Seed(time.Now().UnixNano())
+
+	min := 0
+	max := 120
+
+	randomSeconds := rand.Intn(max-min+1) + min
+
+	sleepDuration := time.Duration(randomSeconds) * time.Second
+	fmt.Printf("Sleeping for %d seconds...\n", randomSeconds)
+
+	time.Sleep(sleepDuration)
 }

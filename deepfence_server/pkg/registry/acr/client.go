@@ -13,10 +13,10 @@ import (
 
 var client = &http.Client{Timeout: 10 * time.Second}
 
-func listImagesRegistryV2(url, namespace, userName, password string) ([]model.ContainerImage, error) {
+func listImagesRegistryV2(url, namespace, userName, password string) ([]model.IngestedContainerImage, error) {
 
 	var (
-		images []model.ContainerImage
+		images []model.IngestedContainerImage
 	)
 
 	repos, err := listCatalogRegistryV2(url, namespace, userName, password)
@@ -166,8 +166,8 @@ func getManifestsAzure(url, namespace, userName, password, repoName string) (Man
 	return manifests, err
 }
 
-func getImageWithTags(url, namespace, userName, password, repoName string, repoTags RepoTagsResp) []model.ContainerImage {
-	var imageAndTag []model.ContainerImage
+func getImageWithTags(url, namespace, userName, password, repoName string, repoTags RepoTagsResp) []model.IngestedContainerImage {
+	var imageAndTag []model.IngestedContainerImage
 	manifests, err := getManifestsAzure(url, namespace, userName, password, repoName)
 	if err != nil {
 		return imageAndTag
@@ -175,7 +175,7 @@ func getImageWithTags(url, namespace, userName, password, repoName string, repoT
 	for _, tag := range repoTags.Tags {
 		details := getImageDetails(tag, manifests)
 		if details != nil {
-			tt := model.ContainerImage{
+			tt := model.IngestedContainerImage{
 				ID:   model.DigestToID(details.Digest),
 				Name: repoName,
 				Tag:  tag,

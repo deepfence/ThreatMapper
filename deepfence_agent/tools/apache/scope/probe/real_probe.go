@@ -23,11 +23,12 @@ func (p *Probe) publishLoop() {
 	startTime := time.Now()
 	publishCount := 0
 	var lastFullReport report.Report
-
+	ticker := time.NewTicker(time.Second * time.Duration(p.publisher.PublishInterval()))
 	for {
 		var err error
+		ticker.Reset(time.Second * time.Duration(p.publisher.PublishInterval()))
 		select {
-		case <-time.After(time.Second * time.Duration(p.publisher.PublishInterval())):
+		case <-ticker.C:
 			rpt, count := p.drainAndSanitise(report.MakeReport(), p.spiedReports)
 			if count == 0 {
 				continue // No data has been collected - don't bother publishing.

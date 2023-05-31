@@ -8,6 +8,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/go-playground/validator/v10"
 )
 
 func New(requestByte []byte) (*RegistryJfrog, error) {
@@ -17,6 +18,10 @@ func New(requestByte []byte) (*RegistryJfrog, error) {
 		return &r, err
 	}
 	return &r, nil
+}
+
+func (d *RegistryJfrog) ValidateFields(v *validator.Validate) error {
+	return v.Struct(d)
 }
 
 func (d *RegistryJfrog) IsValidCredential() bool {
@@ -69,7 +74,7 @@ func (d *RegistryJfrog) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (d *RegistryJfrog) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
+func (d *RegistryJfrog) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
 	return listImagesRegistryV2(d.NonSecret.JfrogRegistryURL, d.NonSecret.JfrogRepository,
 		d.NonSecret.JfrogUsername, d.Secret.JfrogPassword)
 }

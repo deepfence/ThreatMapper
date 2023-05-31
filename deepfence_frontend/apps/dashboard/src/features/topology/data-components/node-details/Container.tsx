@@ -17,7 +17,7 @@ import {
   getVulnerabilityScanCounts,
 } from '@/features/topology/components/scan-results/loaderHelpers';
 import { ScanResult } from '@/features/topology/components/scan-results/ScanResult';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 type LoaderData = {
   containerData: ModelContainer;
@@ -32,32 +32,35 @@ const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
   if (!nodeId) {
     throw new Error('nodeId is required');
   }
-  const lookupResult = await makeRequest({
-    apiFunction: getLookupApiClient().lookupContainer,
-    apiArgs: [
-      {
-        lookupLookupFilter: {
-          node_ids: [nodeId],
-          in_field_filter: null,
-          window: {
-            offset: 0,
-            size: 1,
-          },
-        },
-      },
-    ],
+  const lookupContainerApi = apiWrapper({
+    fn: getLookupApiClient().lookupContainer,
   });
-  if (ApiError.isApiError(lookupResult)) {
+  const lookupResult = await lookupContainerApi({
+    lookupLookupFilter: {
+      node_ids: [nodeId],
+      in_field_filter: null,
+      window: {
+        offset: 0,
+        size: 1,
+      },
+    },
+  });
+
+  if (!lookupResult.ok) {
     throw new Error(`Failed to load host: ${nodeId}`);
   }
 
   return {
-    containerData: lookupResult[0],
+    containerData: lookupResult.value[0],
     vulnerabilityScanCounts: await getVulnerabilityScanCounts(
-      lookupResult[0].vulnerability_latest_scan_id,
+      lookupResult.value[0].vulnerability_latest_scan_id,
     ),
-    secretScanCounts: await getSecretScanCounts(lookupResult[0].secret_latest_scan_id),
-    malwareScanCounts: await getMalwareScanCounts(lookupResult[0].malware_latest_scan_id),
+    secretScanCounts: await getSecretScanCounts(
+      lookupResult.value[0].secret_latest_scan_id,
+    ),
+    malwareScanCounts: await getMalwareScanCounts(
+      lookupResult.value[0].malware_latest_scan_id,
+    ),
   };
 };
 

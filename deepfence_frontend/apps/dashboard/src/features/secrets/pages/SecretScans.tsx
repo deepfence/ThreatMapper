@@ -27,7 +27,6 @@ import {
   useNavigation,
   useSearchParams,
 } from 'react-router-dom';
-import { toast } from 'sonner';
 import {
   Badge,
   Breadcrumb,
@@ -46,15 +45,8 @@ import {
 } from 'ui-components';
 import { Checkbox } from 'ui-components';
 
+import { getScanResultsApiClient, getSearchApiClient } from '@/api/api';
 import {
-  getReportsApiClient,
-  getScanResultsApiClient,
-  getSearchApiClient,
-} from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelGenerateReportReqDurationEnum,
-  ModelGenerateReportReqReportTypeEnum,
   ModelScanInfo,
   SearchSearchScanReq,
   UtilsReportFiltersNodeTypeEnum,
@@ -68,16 +60,12 @@ import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
+import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { ScanTypeEnum } from '@/types/common';
-import {
-  ApiError,
-  apiWrapper,
-  makeRequest,
-  retryUntilResponseHasValue,
-} from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
-import { download } from '@/utils/download';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { isScanComplete } from '@/utils/scan';
 import { DFAwait } from '@/utils/suspense';
@@ -93,7 +81,6 @@ export interface FocusableElement {
 
 enum ActionEnumType {
   DELETE = 'delete',
-  DOWNLOAD = 'download',
 }
 
 const PAGE_SIZE = 15;
@@ -252,60 +239,37 @@ async function getScans(
       },
     ];
   }
-
-  const result = await makeRequest({
-    apiFunction: getSearchApiClient().searchSecretsScan,
-    apiArgs: [{ searchSearchScanReq: scanRequestParams }],
-    errorHandler: async (r) => {
-      const error = new ApiError(results);
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          ...results,
-          message: modelResponse.message,
-        });
-      }
-    },
+  const searchSecretsScanApi = apiWrapper({
+    fn: getSearchApiClient().searchSecretsScan,
   });
-
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  const result = await searchSecretsScanApi({
+    searchSearchScanReq: scanRequestParams,
+  });
+  if (!result.ok) {
+    throw result.error;
   }
 
-  const countsResult = await makeRequest({
-    apiFunction: getSearchApiClient().searchSecretScanCount,
-    apiArgs: [
-      {
-        searchSearchScanReq: {
-          ...scanRequestParams,
-          window: {
-            ...scanRequestParams.window,
-            size: 10 * scanRequestParams.window.size,
-          },
-        },
+  const countsResultApi = apiWrapper({
+    fn: getSearchApiClient().searchSecretScanCount,
+  });
+  const countsResult = await countsResultApi({
+    searchSearchScanReq: {
+      ...scanRequestParams,
+      window: {
+        ...scanRequestParams.window,
+        size: 10 * scanRequestParams.window.size,
       },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError(results);
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          ...results,
-          message: modelResponse.message,
-        });
-      }
     },
   });
-
-  if (ApiError.isApiError(countsResult)) {
-    throw countsResult.value();
+  if (!countsResult.ok) {
+    throw countsResult.error;
   }
 
-  if (result === null) {
+  if (result.value === null) {
     return results;
   }
 
-  results.scans = result.map((scan) => {
+  results.scans = result.value.map((scan) => {
     const severities = scan.severity_counts as {
       critical: number;
       high: number;
@@ -331,7 +295,7 @@ async function getScans(
   });
 
   results.currentPage = page;
-  results.totalRows = page * PAGE_SIZE + countsResult.count;
+  results.totalRows = page * PAGE_SIZE + countsResult.value.count;
 
   return results;
 }
@@ -352,9 +316,13 @@ const loader = async ({
 
 const action = async ({
   request,
-}: ActionFunctionArgs): Promise<{
-  url: string;
-} | null> => {
+}: ActionFunctionArgs): Promise<
+  | {
+      url: string;
+    }
+  | null
+  | { success: boolean; message?: string }
+> => {
   const formData = await request.formData();
   const actionType = formData.get('actionType');
   const scanId = formData.get('scanId');
@@ -364,119 +332,30 @@ const action = async ({
   }
 
   if (actionType === ActionEnumType.DELETE) {
-    const result = await makeRequest({
-      apiFunction: getScanResultsApiClient().deleteScanResultsForScanID,
-      apiArgs: [
-        {
-          scanId: scanId.toString(),
-          scanType: ScanTypeEnum.SecretScan,
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<{
-          message?: string;
-        }>({});
-        if (r.status === 400 || r.status === 409) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-          });
-        }
-      },
+    const resultApi = apiWrapper({
+      fn: getScanResultsApiClient().deleteScanResultsForScanID,
     });
-    if (ApiError.isApiError(result)) {
-      if (result.value()?.message !== undefined) {
-        const message = result.value()?.message ?? 'Something went wrong';
-        toast.error(message);
+    const result = await resultApi({
+      scanId: scanId.toString(),
+      scanType: ScanTypeEnum.SecretScan,
+    });
+    if (!result.ok) {
+      if (result.error.response.status === 400 || result.error.response.status === 409) {
+        return {
+          success: false,
+          message: result.error.message ?? '',
+        };
+      } else if (result.error.response.status === 403) {
+        return {
+          success: false,
+          message: 'You do not have enough permissions to delete scan',
+        };
       }
     }
 
-    toast.success('Scan deleted successfully');
-    return null;
-  } else if (actionType === ActionEnumType.DOWNLOAD) {
-    const nodeType = formData.get('nodeType') as UtilsReportFiltersNodeTypeEnum;
-    if (!nodeType) {
-      throw new Error('Node Type is required');
-    }
-    const getReportIdApi = apiWrapper({
-      fn: getReportsApiClient().generateReport,
-    });
-
-    const getReportIdApiResponse = await getReportIdApi({
-      modelGenerateReportReq: {
-        duration: ModelGenerateReportReqDurationEnum.NUMBER_0,
-        filters: {
-          node_type: nodeType,
-          scan_type: UtilsReportFiltersScanTypeEnum.Secret,
-        },
-        report_type: ModelGenerateReportReqReportTypeEnum.Xlsx,
-      },
-    });
-
-    if (!getReportIdApiResponse.ok) {
-      if (getReportIdApiResponse.error.response.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse =
-          await getReportIdApiResponse.error.response.json();
-        const error = modelResponse.error_fields?.message;
-        if (error) {
-          toast.error(error);
-          return null;
-        } else {
-          toast.error('Something went wrong, please try again');
-          return null;
-        }
-      }
-      throw getReportIdApiResponse.error;
-    }
-
-    const reportId = getReportIdApiResponse.value.report_id;
-    if (!reportId) {
-      toast.error('Somethings went wrong, please try again');
-      console.error('Report id is missing in api response');
-      return null;
-    }
-    const getReportApi = apiWrapper({
-      fn: getReportsApiClient().getReport,
-    });
-
-    const reportResponse = await retryUntilResponseHasValue(
-      getReportApi,
-      [{ reportId }],
-      async (response) => {
-        if (!response.ok) {
-          if (response.error.response.status === 400) {
-            const modelResponse: ApiDocsBadRequestResponse =
-              await response.error.response.json();
-            const error = modelResponse.error_fields?.message;
-            if (error) {
-              toast.error(error);
-              return true;
-            }
-          }
-          toast.error('Something went wrong, please try again');
-          return true;
-        } else {
-          const url = response.value.url;
-          if (!url) {
-            toast.success(
-              'Download in progress, it may take some time however you can always find it on Integrations > Report Downloads',
-            );
-          }
-          return !!url;
-        }
-      },
-    );
-
-    if (reportResponse.ok) {
-      const url = reportResponse.value.url;
-      if (url) {
-        download(url);
-      } else {
-        toast.error('Something went wrong, please try again');
-      }
-    }
-
-    return null;
+    return {
+      success: true,
+    };
   }
   return null;
 };
@@ -509,36 +388,42 @@ const DeleteConfirmationModal = ({
 
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          Selected scan will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, Cancel
-          </Button>
-          <Button
-            size="xs"
-            color="danger"
-            onClick={(e) => {
-              e.preventDefault();
-              onDeleteAction(ActionEnumType.DELETE);
-              setShowDialog(false);
+      {!fetcher.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
             }}
           >
-            Yes, I&apos;m sure
-          </Button>
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            Selected scan will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+          {fetcher.data?.message && (
+            <p className="text-sm text-red-500 pb-3">{fetcher.data?.message}</p>
+          )}
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              size="xs"
+              color="danger"
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteAction(ActionEnumType.DELETE);
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="Scan deleted successfully!" />
+      )}
     </Modal>
   );
 };
@@ -549,25 +434,28 @@ const ActionDropdown = ({
   nodeId,
   scanStatus,
   nodeType,
+  setShowDeleteDialog,
+  setScanIdToDelete,
+  setNodeIdToDelete,
 }: {
   icon: React.ReactNode;
   scanId: string;
   nodeId: string;
   scanStatus: string;
   nodeType: string;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  setScanIdToDelete: React.Dispatch<React.SetStateAction<string>>;
+  setNodeIdToDelete: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const fetcher = useFetcher();
   const [open, setOpen] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { downloadScan } = useDownloadScan();
 
   const onDownloadAction = useCallback(() => {
-    const formData = new FormData();
-    formData.append('actionType', ActionEnumType.DOWNLOAD);
-    formData.append('scanId', scanId);
-    formData.append('nodeId', nodeId);
-    formData.append('nodeType', nodeType);
-    fetcher.submit(formData, {
-      method: 'post',
+    downloadScan({
+      scanId,
+      nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
+      scanType: UtilsReportFiltersScanTypeEnum.Secret,
     });
   }, [scanId, nodeId, fetcher]);
 
@@ -576,58 +464,56 @@ const ActionDropdown = ({
   }, [fetcher]);
 
   return (
-    <>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        scanId={scanId}
-        nodeId={nodeId}
-        setShowDialog={setShowDeleteDialog}
-      />
-      <Dropdown
-        triggerAsChild
-        align="end"
-        open={open}
-        onOpenChange={setOpen}
-        content={
-          <>
-            <DropdownItem
-              className="text-sm"
-              onClick={(e) => {
-                if (!isScanComplete(scanStatus)) return;
-                e.preventDefault();
-                onDownloadAction();
-              }}
+    <Dropdown
+      triggerAsChild
+      align="end"
+      open={open}
+      onOpenChange={setOpen}
+      content={
+        <>
+          <DropdownItem
+            className="text-sm"
+            onClick={(e) => {
+              if (!isScanComplete(scanStatus)) return;
+              e.preventDefault();
+              onDownloadAction();
+            }}
+          >
+            <span
+              className={cx('flex items-center gap-x-2', {
+                'opacity-60 dark:opacity-30 cursor-default': !isScanComplete(scanStatus),
+              })}
             >
-              <span
-                className={cx('flex items-center gap-x-2', {
-                  'opacity-60 dark:opacity-30 cursor-default':
-                    !isScanComplete(scanStatus),
-                })}
+              <HiDownload />
+              Download Report
+            </span>
+          </DropdownItem>
+          <DropdownItem
+            className="text-sm"
+            onClick={() => {
+              setScanIdToDelete(scanId);
+              setNodeIdToDelete(nodeId);
+              setShowDeleteDialog(true);
+            }}
+          >
+            <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
+              <IconContext.Provider
+                value={{ className: 'text-red-700 dark:text-red-400' }}
               >
-                <HiDownload />
-                Download Report
-              </span>
-            </DropdownItem>
-            <DropdownItem className="text-sm" onClick={() => setShowDeleteDialog(true)}>
-              <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
-                <IconContext.Provider
-                  value={{ className: 'text-red-700 dark:text-red-400' }}
-                >
-                  <HiArchive />
-                </IconContext.Provider>
-                Delete
-              </span>
-            </DropdownItem>
-          </>
-        }
-      >
-        <Button className="ml-auto" size="xs" color="normal">
-          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-            {icon}
-          </IconContext.Provider>
-        </Button>
-      </Dropdown>
-    </>
+                <HiArchive />
+              </IconContext.Provider>
+              Delete
+            </span>
+          </DropdownItem>
+        </>
+      }
+    >
+      <Button className="ml-auto" size="xs" color="normal">
+        <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
+          {icon}
+        </IconContext.Provider>
+      </Button>
+    </Dropdown>
   );
 };
 
@@ -637,12 +523,16 @@ const SecretScans = () => {
   const loaderData = useLoaderData() as LoaderDataType;
   const navigation = useNavigation();
   const [sort, setSort] = useSortingState();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [scanIdToDelete, setScanIdToDelete] = useState('');
+  const [nodeIdToDelete, setNodeIdToDelete] = useState('');
 
   const columnHelper = createColumnHelper<ScanResult>();
 
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('node_type', {
+        enableSorting: false,
         cell: (info) => {
           return (
             <div className="flex items-center gap-x-2">
@@ -850,6 +740,9 @@ const SecretScans = () => {
             nodeId={cell.row.original.node_id}
             nodeType={cell.row.original.node_type}
             scanStatus={cell.row.original.status}
+            setScanIdToDelete={setScanIdToDelete}
+            setNodeIdToDelete={setNodeIdToDelete}
+            setShowDeleteDialog={setShowDeleteDialog}
           />
         ),
         header: () => '',
@@ -907,7 +800,7 @@ const SecretScans = () => {
                   <Form className="flex flex-col gap-y-4 p-4">
                     <fieldset>
                       <legend className="text-sm font-medium">Type</legend>
-                      <div className="flex gap-x-4">
+                      <div className="flex gap-x-4 mt-1">
                         <Checkbox
                           label="Host"
                           checked={searchParams.getAll('nodeType').includes('host')}
@@ -989,7 +882,7 @@ const SecretScans = () => {
                     </fieldset>
                     <fieldset>
                       <legend className="text-sm font-medium">Status</legend>
-                      <div className="flex gap-x-4">
+                      <div className="flex gap-x-4 mt-1">
                         <Checkbox
                           label="Completed"
                           checked={searchParams.getAll('status').includes('complete')}
@@ -1150,6 +1043,14 @@ const SecretScans = () => {
           </div>
         </div>
       </div>
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          scanId={scanIdToDelete}
+          nodeId={nodeIdToDelete}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
       <div className="m-2">
         <Suspense fallback={<TableSkeleton columns={7} rows={15} size={'md'} />}>
           <DFAwait resolve={loaderData.data}>
@@ -1162,6 +1063,7 @@ const SecretScans = () => {
                   enablePagination
                   manualPagination
                   enableColumnResizing
+                  approximatePagination
                   totalRows={resolvedData.totalRows}
                   pageSize={PAGE_SIZE}
                   pageIndex={resolvedData.currentPage}

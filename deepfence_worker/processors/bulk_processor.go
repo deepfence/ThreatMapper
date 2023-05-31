@@ -59,9 +59,9 @@ func NewBulkProcessor(name string, fn commitFn) *BulkProcessor {
 		name:          name,
 		commitFn:      fn,
 		numWorkers:    1,
-		bulkActions:   100,
-		flushInterval: 10 * time.Second,
-		requestsC:     make(chan BulkRequest, 200),
+		bulkActions:   1_000,
+		flushInterval: 30 * time.Second,
+		requestsC:     make(chan BulkRequest, 2*1_000),
 	}
 }
 

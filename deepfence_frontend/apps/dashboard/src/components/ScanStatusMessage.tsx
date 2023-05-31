@@ -2,7 +2,6 @@ import cx from 'classnames';
 import { IconContext } from 'react-icons';
 import { HiOutlineExclamationCircle } from 'react-icons/hi';
 
-import { DFLink } from '@/components/DFLink';
 import { ScanTypeEnum } from '@/types/common';
 
 export const ScanStatusInProgress = ({ LogoIcon }: { LogoIcon: () => JSX.Element }) => {
@@ -23,7 +22,7 @@ export const ScanStatusInProgress = ({ LogoIcon }: { LogoIcon: () => JSX.Element
   );
 };
 
-export const ScanStatusInError = () => {
+export const ScanStatusInError = ({ errorMessage }: { errorMessage: string }) => {
   return (
     <div className={cx('flex flex-col items-center justify-center mt-40')}>
       <div className="bg-red-100 dark:bg-red-500/10 rounded-lg flex items-center justify-center p-4">
@@ -36,8 +35,9 @@ export const ScanStatusInError = () => {
         </IconContext.Provider>
       </div>
       <span className="text-2xl font-medium text-red-500/80">Scan Error</span>
+      <p className="text-red-500 py-2 px-4 overflow-auto text-sm">{errorMessage}</p>
       <span className="text-sm text-gray-500 dark:text-gray-400">
-        Scan ran into an error, please check <DFLink to="#">details</DFLink>
+        Please check deepfence console logs for more details.
       </span>
     </div>
   );
@@ -59,8 +59,8 @@ export const NoIssueFound = ({
         {scanType === ScanTypeEnum.VulnerabilityScan && 'Vulnerability Scan'}
         {scanType === ScanTypeEnum.SecretScan && 'Secret Scan'}
         {scanType === ScanTypeEnum.MalwareScan && 'Malware Scan'}
-        {scanType === ScanTypeEnum.ComplianceScan && 'Compliance Scan'}
-        {scanType === ScanTypeEnum.CloudComplianceScan && 'Cloud Compliance Scan'}
+        {scanType === ScanTypeEnum.ComplianceScan && 'Posture Scan'}
+        {scanType === ScanTypeEnum.CloudComplianceScan && 'Cloud Posture Scan'}
       </span>
       <span className="text-sm text-gray-500 dark:text-gray-400">
         You have no
@@ -68,9 +68,9 @@ export const NoIssueFound = ({
           ' vulnerabilities for vulnerability scan'}
         {scanType === ScanTypeEnum.SecretScan && ' secrets for secret scan'}
         {scanType === ScanTypeEnum.MalwareScan && ' malwares for malware scan'}
-        {scanType === ScanTypeEnum.ComplianceScan && ' compliances for compliance scan'}
+        {scanType === ScanTypeEnum.ComplianceScan && ' compliances for posture scan'}
         {scanType === ScanTypeEnum.CloudComplianceScan &&
-          ' compliances for Cloud Compliance Scan'}
+          ' compliances for cloud posture Scan'}
       </span>
     </div>
   );

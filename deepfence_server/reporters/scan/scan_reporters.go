@@ -13,7 +13,6 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/db"
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
 	"github.com/samber/mo"
 )
 
@@ -572,10 +571,10 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 	query = `
 		MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
 		OPTIONAL MATCH (d) -[:IS]-> (e)
-		WITH d{.*, masked: coalesce(d.masked or r.masked, false)} as d, e` +
+	WITH apoc.map.merge( e{.*}, d{.*, masked: coalesce(d.masked or r.masked, false), name: coalesce(e.name, d.name, '')}) as d` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
-		` RETURN d,e ` +
 		reporters.OrderFilter2CypherCondition("d", ff.OrderFilter) +
+		` RETURN d ` +
 		fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("query: %v", query)
 	nres, err := tx.Run(query,
@@ -591,21 +590,6 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 
 	for _, rec := range recs {
 		var tmp T
-		tmp2 := rec.Values[0].(map[string]interface{})
-		is_node, _ := rec.Get("e")
-		if is_node != nil {
-			for k, v := range is_node.(dbtype.Node).Props {
-				if k != "node_id" {
-					if k == "masked" {
-						if _, ok := tmp2[k]; ok {
-							tmp2[k] = tmp2[k].(bool) || v.(bool)
-						}
-					} else {
-						tmp2[k] = v
-					}
-				}
-			}
-		}
 		utils.FromMap(rec.Values[0].(map[string]interface{}), &tmp)
 		res = append(res, tmp)
 	}
@@ -715,7 +699,7 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	defer tx.Close()
 
 	query := `
-	MATCH (m:` + string(scan_type) + `{node_id: $scan_id}) -[r:DETECTED]-> (d)
+	MATCH (m:` + string(scan_type) + `{node_id: $scan_id, status: "` + utils.SCAN_STATUS_SUCCESS + `"}) -[r:DETECTED]-> (d)
 	WHERE r.masked = false
 	RETURN d.` + type2sev_field(scan_type) + `, COUNT(*)`
 

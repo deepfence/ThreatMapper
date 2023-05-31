@@ -1,7 +1,6 @@
 import { Suspense, useMemo } from 'react';
 import {
   ActionFunctionArgs,
-  Form,
   useFetcher,
   useLoaderData,
   useRevalidator,
@@ -12,7 +11,6 @@ import { Button, createColumnHelper, Table, TableSkeleton } from 'ui-components'
 
 import { getDiagnosisApiClient } from '@/api/api';
 import {
-  ApiDocsBadRequestResponse,
   DiagnosisDiagnosticLogsLink,
   DiagnosisGetDiagnosticLogsResponse,
   DiagnosisNodeIdentifierNodeTypeEnum,
@@ -21,7 +19,7 @@ import { DFLink } from '@/components/DFLink';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -31,19 +29,20 @@ type LoaderDataType = {
   data?: DiagnosisGetDiagnosticLogsResponse;
 };
 const getDiagnosticLogs = async (): Promise<LoaderDataType> => {
-  const diagnosticLogsPromise = await makeRequest({
-    apiFunction: getDiagnosisApiClient().getDiagnosticLogs,
-    apiArgs: [],
-  });
+  const getDiagnosticLogs = apiWrapper({ fn: getDiagnosisApiClient().getDiagnosticLogs });
+  const response = await getDiagnosticLogs();
 
-  if (ApiError.isApiError(diagnosticLogsPromise)) {
-    return {
-      message: 'Error in getting diagnostic logs',
-    };
+  if (!response.ok) {
+    if (response.error.response.status === 403) {
+      return {
+        message: 'You do not have enough permissions to view diagnostic logs',
+      };
+    }
+    throw response.error;
   }
 
   return {
-    data: diagnosticLogsPromise,
+    data: response.value,
   };
 };
 
@@ -90,7 +89,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
   if (!actionType) {
     return 'You have not triggered any action';
   }
-  let result = null;
   if (actionType === ACTION_TYPE.AGENT_LOGS) {
     const _hosts = nodeIds.map((node) => {
       return {
@@ -106,58 +104,42 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
       };
     });
 
-    result = await makeRequest({
-      apiFunction: getDiagnosisApiClient().generateAgentDiagnosticLogs,
-      apiArgs: [
-        {
-          diagnosisGenerateAgentDiagnosticLogsRequest: {
-            node_ids: [..._hosts, ..._clusters],
-            tail: 10000,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<{
-          message?: string;
-        }>({});
-        if (r.status === 400 || r.status === 409) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-          });
-        }
+    const logsApi = apiWrapper({
+      fn: getDiagnosisApiClient().generateAgentDiagnosticLogs,
+    });
+    const logsResponse = await logsApi({
+      diagnosisGenerateAgentDiagnosticLogsRequest: {
+        node_ids: [..._hosts, ..._clusters],
+        tail: 10000,
       },
     });
+    if (!logsResponse.ok) {
+      if (logsResponse.error.response.status === 400) {
+        return logsResponse.error.message;
+      } else if (logsResponse.error.response.status === 403) {
+        return 'You do not have enough permissions to view diagnostic logs';
+      }
+      throw logsResponse.error;
+    }
   } else if (actionType === ACTION_TYPE.CONSOLE_LOGS) {
-    result = await makeRequest({
-      apiFunction: getDiagnosisApiClient().generateConsoleDiagnosticLogs,
-      apiArgs: [
-        {
-          diagnosisGenerateConsoleDiagnosticLogsRequest: {
-            tail: 10000,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<{
-          message?: string;
-        }>({});
-        if (r.status === 400 || r.status === 409) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-          });
-        }
+    const logsApi = apiWrapper({
+      fn: getDiagnosisApiClient().generateConsoleDiagnosticLogs,
+    });
+    const logsResponse = await logsApi({
+      diagnosisGenerateConsoleDiagnosticLogsRequest: {
+        tail: 10000,
       },
     });
-  }
-
-  if (ApiError.isApiError(result)) {
-    if (result.value()?.message !== undefined) {
-      const message = 'Something went wrong on generating the logs';
-      return message;
+    if (!logsResponse.ok) {
+      if (logsResponse.error.response.status === 400) {
+        return logsResponse.error.message;
+      } else if (logsResponse.error.response.status === 403) {
+        return 'You do not have enough permissions to view diagnostic logs';
+      }
+      throw logsResponse.error;
     }
   }
+
   toast('You have successfully generated the logs');
 
   return null;
@@ -331,13 +313,21 @@ const AgentDiagnosticLogsTable = () => {
   );
 };
 const ConsoleDiagnosticLogsComponent = () => {
+  const loaderData = useLoaderData() as LoaderDataType;
+  const fetcher = useFetcher<string>();
+  const { data } = fetcher;
+
   return (
     <div className="bg-green-100 dark:bg-green-900/75 text-gray-500 dark:text-gray-300 px-4 pt-4 pb-6 w-fit rounded-lg flex flex-col max-w-[300px]">
       <h4 className="text-lg font-medium pb-2">Console Diagnostic Logs</h4>
       <span className="text-sm text-gray-500 dark:text-gray-300">
         Generate a link to download pdf for your console
       </span>
-      <Form method="post">
+      <fetcher.Form method="post">
+        {loaderData.message ? (
+          <p className="text-sm text-red-500 pt-2">{loaderData.message}</p>
+        ) : null}
+        {data ? <p className="text-sm text-red-500 pt-2">{data}</p> : null}
         <input
           type="text"
           name="actionType"
@@ -348,7 +338,7 @@ const ConsoleDiagnosticLogsComponent = () => {
         <Button size="xs" className="text-center mt-3 w-full" color="success">
           Get Logs
         </Button>
-      </Form>
+      </fetcher.Form>
     </div>
   );
 };

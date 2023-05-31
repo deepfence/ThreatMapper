@@ -13,15 +13,13 @@ import {
 } from 'ui-components';
 
 import { getSearchApiClient } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelPod,
-  SearchSearchNodeReq,
-} from '@/api/generated';
+import { ModelPod, SearchSearchNodeReq } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterHeader } from '@/components/forms/FilterHeader';
+import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
+import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { getOrderFromSearchParams, getPageFromSearchParams } from '@/utils/table';
 
 type LoaderData = {
@@ -36,13 +34,18 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
   const order = getOrderFromSearchParams(searchParams);
 
   const kubernetesStatus = searchParams.get('kubernetes_state');
-
+  const hosts = searchParams.get('hosts')?.split(',') ?? [];
+  const clustors = searchParams.get('clustors')?.split(',') ?? [];
   const searchSearchNodeReq: SearchSearchNodeReq = {
     node_filter: {
       filters: {
         compare_filter: null,
         contains_filter: {
-          filter_in: null,
+          filter_in: {
+            active: [true],
+            ...(hosts.length ? { host_name: hosts } : {}),
+            ...(clustors.length ? { kubernetes_cluster_name: clustors } : {}),
+          },
         },
         match_filter: {
           filter_in: null,
@@ -77,47 +80,34 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
       descending: order.descending,
     });
   }
-  const podsData = await makeRequest({
-    apiFunction: getSearchApiClient().searchPods,
-    apiArgs: [
-      {
-        searchSearchNodeReq,
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
+  const searchPodsApi = apiWrapper({
+    fn: getSearchApiClient().searchPods,
   });
-  if (ApiError.isApiError(podsData)) {
-    throw podsData.value();
-  }
-  const podsDataCount = await makeRequest({
-    apiFunction: getSearchApiClient().countPods,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          ...searchSearchNodeReq,
-          window: {
-            ...searchSearchNodeReq.window,
-            size: 10 * searchSearchNodeReq.window.size,
-          },
-        },
-      },
-    ],
+  const podsData = await searchPodsApi({
+    searchSearchNodeReq,
   });
-  if (ApiError.isApiError(podsDataCount)) {
-    throw podsDataCount;
+  if (!podsData.ok) {
+    throw podsData.error;
   }
 
-  if (podsDataCount === null) {
+  const countPodsApi = apiWrapper({
+    fn: getSearchApiClient().countPods,
+  });
+  const podsDataCount = await countPodsApi({
+    searchSearchNodeReq: {
+      ...searchSearchNodeReq,
+      window: {
+        ...searchSearchNodeReq.window,
+        size: 10 * searchSearchNodeReq.window.size,
+      },
+    },
+  });
+
+  if (!podsDataCount.ok) {
+    throw podsDataCount.error;
+  }
+
+  if (podsDataCount.value === null) {
     return {
       pods: [],
       currentPage: 0,
@@ -125,13 +115,15 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
     };
   }
   return {
-    pods: podsData,
+    pods: podsData.value,
     currentPage: page,
-    totalRows: page * PAGE_SIZE + podsDataCount.count,
+    totalRows: page * PAGE_SIZE + podsDataCount.value.count,
   };
 };
 interface IFilters {
   kubernetesStatus: string[];
+  hosts: Array<string>;
+  clustors: Array<string>;
 }
 function Filters({
   filters,
@@ -158,6 +150,8 @@ function Filters({
                 onReset={() => {
                   onFiltersChange({
                     kubernetesStatus: [],
+                    hosts: [],
+                    clustors: [],
                   });
                 }}
               />
@@ -213,6 +207,33 @@ function Filters({
                     />
                   </div>
                 </fieldset>
+                <fieldset>
+                  <SearchableHostList
+                    scanType="none"
+                    valueKey="hostName"
+                    defaultSelectedHosts={filters.hosts ?? []}
+                    reset={!isFilterApplied}
+                    onChange={(value) => {
+                      onFiltersChange({
+                        ...filters,
+                        hosts: [...value],
+                      });
+                    }}
+                  />
+                </fieldset>
+                <fieldset>
+                  <SearchableClusterList
+                    defaultSelectedClusters={filters.clustors ?? []}
+                    valueKey="clusterName"
+                    reset={!isFilterApplied}
+                    onChange={(value) => {
+                      onFiltersChange({
+                        ...filters,
+                        clustors: [...value],
+                      });
+                    }}
+                  />
+                </fieldset>
               </div>
             </div>
           </div>
@@ -239,6 +260,8 @@ export const PodsTable = () => {
 
   const [filters, setFilters] = useState<IFilters>({
     kubernetesStatus: [],
+    hosts: [],
+    clustors: [],
   });
 
   function fetchPodsData() {
@@ -259,6 +282,12 @@ export const PodsTable = () => {
       } else {
         searchParams.delete('kubernetes_state');
       }
+    }
+    if (filters.hosts.length) {
+      searchParams.set('hosts', filters.hosts.join(','));
+    }
+    if (filters.clustors.length) {
+      searchParams.set('clustors', filters.clustors.join(','));
     }
 
     if (sortState.length) {
@@ -373,6 +402,7 @@ export const PodsTable = () => {
           enablePagination
           manualPagination
           enableRowSelection
+          approximatePagination
           rowSelectionState={rowSelectionState}
           onRowSelectionChange={setRowSelectionState}
           getRowId={(row) => row.node_id}

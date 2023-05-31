@@ -162,7 +162,8 @@ export const buttonCva = cva(
           // ring styles
           'focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700',
           // disabled styles
-          'disabled:opacity-50 dark:disabled:bg-gray-800 disabled:hover:bg-gray-100 dark:disabled:hover:bg-gray-800 disabled:dark:text-gray-400',
+          'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-gray-900',
+          'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-gray-400',
         ],
       },
       {
@@ -178,7 +179,8 @@ export const buttonCva = cva(
           // ring styles
           'focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800',
           // disabled styles
-          'disabled:bg-blue-400 dark:disabled:bg-blue-500 disabled:hover:bg-blue-400 dark:disabled:hover:bg-blue-500',
+          'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-blue-700',
+          'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-blue-500',
         ],
       },
       {
@@ -194,7 +196,8 @@ export const buttonCva = cva(
           // ring styles
           'focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900',
           // disabled styles
-          'disabled:bg-red-400 dark:disabled:bg-red-500 disabled:hover:bg-red-400 dark:disabled:hover:bg-red-500',
+          'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-red-700',
+          'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-red-500',
         ],
       },
       {
@@ -210,7 +213,8 @@ export const buttonCva = cva(
           // ring styles
           'focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800',
           // disabled styles
-          'disabled:bg-green-400 dark:disabled:bg-green-500 disabled:hover:bg-green-400 dark:disabled:hover:bg-green-500',
+          'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-green-700',
+          'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-green-500',
         ],
       },
       {

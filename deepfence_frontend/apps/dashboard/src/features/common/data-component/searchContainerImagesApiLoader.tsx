@@ -2,9 +2,8 @@ import { useEffect } from 'react';
 import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
 
 import { getSearchApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse } from '@/api/generated';
 import { ScanTypeEnum } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 export type SearchContainerImagesLoaderDataType = {
   containerImages: {
@@ -44,69 +43,58 @@ export const searchContainerImagesApiLoader = async ({
     filterValue = 'compliances_count';
   }
 
-  const result = await makeRequest({
-    apiFunction: getSearchApiClient().searchContainerImages,
-    apiArgs: [
-      {
-        searchSearchNodeReq: {
-          node_filter: {
-            filters: {
-              contains_filter: {
-                filter_in: {},
-              },
-              order_filter: {
-                order_fields: [
-                  {
-                    field_name: filterValue,
-                    descending: true,
-                  },
-                ],
-              },
-              match_filter: matchFilter,
-              compare_filter: null,
-            },
-            in_field_filter: ['node_id', 'docker_image_name', 'docker_image_tag'],
-            window: {
-              offset: 0,
-              size: 0,
-            },
+  const searchContainerImagesApi = apiWrapper({
+    fn: getSearchApiClient().searchContainerImages,
+  });
+  const searchContainerImagesResponse = await searchContainerImagesApi({
+    searchSearchNodeReq: {
+      node_filter: {
+        filters: {
+          contains_filter: {
+            filter_in: {},
           },
-          window: {
-            offset: 0,
-            size: size + 1,
+          order_filter: {
+            order_fields: [
+              {
+                field_name: filterValue,
+                descending: true,
+              },
+            ],
           },
+          match_filter: matchFilter,
+          compare_filter: null,
+        },
+        in_field_filter: ['node_id', 'docker_image_name', 'docker_image_tag'],
+        window: {
+          offset: 0,
+          size: 0,
         },
       },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
+      window: {
+        offset: 0,
+        size: size + 1,
+      },
     },
   });
 
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  if (!searchContainerImagesResponse.ok) {
+    throw searchContainerImagesResponse.error;
   }
 
-  if (result === null) {
+  if (searchContainerImagesResponse.value === null) {
     return {
       containerImages: [],
       hasNext: false,
     };
   }
   return {
-    containerImages: result.slice(0, size).map((res) => {
+    containerImages: searchContainerImagesResponse.value.slice(0, size).map((res) => {
       return {
         nodeId: res.node_id,
         containerImage: `${res.docker_image_name}:${res.docker_image_tag}`,
       };
     }),
-    hasNext: result.length > size,
+    hasNext: searchContainerImagesResponse.value.length > size,
   };
 };
 

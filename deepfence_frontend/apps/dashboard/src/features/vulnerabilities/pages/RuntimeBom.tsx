@@ -23,7 +23,7 @@ import { ModelScanInfo, SearchSearchScanReq } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { SbomModal } from '@/features/vulnerabilities/api/sbomApiLoader';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
@@ -95,42 +95,36 @@ async function getScans(searchParams: URLSearchParams): Promise<{
       },
     ];
   }
-  const scans = await makeRequest({
-    apiFunction: getSearchApiClient().searchVulnerabilityScan,
-    apiArgs: [
-      {
-        searchSearchScanReq: requestFilters,
-      },
-    ],
+  const searchVulnerabilityScanApi = apiWrapper({
+    fn: getSearchApiClient().searchVulnerabilityScan,
   });
-
-  if (ApiError.isApiError(scans)) {
+  const searchVulnerabilityScanResponse = await searchVulnerabilityScanApi({
+    searchSearchScanReq: requestFilters,
+  });
+  if (!searchVulnerabilityScanResponse.ok) {
     throw new Error('unknown response');
   }
 
-  const countsResult = await makeRequest({
-    apiFunction: getSearchApiClient().searchVulnerabilityScanCount,
-    apiArgs: [
-      {
-        searchSearchScanReq: {
-          ...requestFilters,
-          window: {
-            ...requestFilters.window,
-            size: 10 * requestFilters.window.size,
-          },
-        },
-      },
-    ],
+  const searchVulnerabilityScanCountApi = apiWrapper({
+    fn: getSearchApiClient().searchVulnerabilityScanCount,
   });
-
-  if (ApiError.isApiError(countsResult)) {
-    throw countsResult.value();
+  const searchVulnerabilityScanCountResponse = await searchVulnerabilityScanCountApi({
+    searchSearchScanReq: {
+      ...requestFilters,
+      window: {
+        ...requestFilters.window,
+        size: 10 * requestFilters.window.size,
+      },
+    },
+  });
+  if (!searchVulnerabilityScanCountResponse.ok) {
+    throw searchVulnerabilityScanCountResponse.error;
   }
 
   return {
-    scans,
+    scans: searchVulnerabilityScanResponse.value,
     currentPage: page,
-    totalRows: page * PAGE_SIZE + countsResult.count,
+    totalRows: page * PAGE_SIZE + searchVulnerabilityScanCountResponse.value.count,
   };
 }
 
@@ -180,11 +174,11 @@ const RuntimeBom = () => {
           );
         },
         header: () => 'Type',
-        minSize: 200,
-        size: 300,
-        maxSize: 500,
+        minSize: 50,
+        size: 100,
+        maxSize: 200,
       }),
-      columnHelper.accessor('node_id', {
+      columnHelper.accessor('node_name', {
         enableSorting: false,
         cell: (info) => {
           return (
@@ -199,12 +193,12 @@ const RuntimeBom = () => {
                 }}
                 href="#"
               >
-                <span className="truncate capitalize">{info.getValue()}</span>
+                <span className="truncate">{info.getValue()}</span>
               </DFLink>
             </div>
           );
         },
-        header: () => 'Name',
+        header: () => 'Node',
         minSize: 200,
         size: 300,
         maxSize: 500,

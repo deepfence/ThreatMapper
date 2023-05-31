@@ -1,19 +1,19 @@
 package quay
 
 type RegistryQuay struct {
-	Name         string    `json:"name"`
-	NonSecret    NonSecret `json:"non_secret"`
-	Secret       Secret    `json:"secret"`
-	RegistryType string    `json:"registry_type"`
+	Name         string    `json:"name" validate:"required,min=2,max=64"`
+	NonSecret    NonSecret `json:"non_secret" validate:"required"`
+	Secret       Secret    `json:"secret" validate:"required"`
+	RegistryType string    `json:"registry_type" validate:"required"`
 }
 
 type NonSecret struct {
-	QuayNamespace   string `json:"quay_namespace"`
-	QuayRegistryURL string `json:"quay_registry_url"`
+	QuayNamespace   string `json:"quay_namespace" validate:"required,min=2"`
+	QuayRegistryURL string `json:"quay_registry_url" validate:"required,url"`
 }
 
 type Secret struct {
-	QuayAccessToken string `json:"quay_access_token"`
+	QuayAccessToken string `json:"quay_access_token" validate:"required,min=2"`
 }
 
 type ReposResp struct {

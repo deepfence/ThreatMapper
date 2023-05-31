@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"mime/multipart"
 	"time"
 
@@ -22,7 +23,7 @@ import (
 )
 
 type RegistryAddReq struct {
-	Name         string                 `json:"name" validate:"required,nospace,min=2,max=20" required:"true"`
+	Name         string                 `json:"name" validate:"required,min=2,max=64" required:"true"`
 	NonSecret    map[string]interface{} `json:"non_secret"`
 	Secret       map[string]interface{} `json:"secret"`
 	Extras       map[string]interface{} `json:"extras"`
@@ -30,18 +31,18 @@ type RegistryAddReq struct {
 }
 
 type RegistryGCRAddReq struct {
-	Name               string         `formData:"name" json:"name" validate:"required,nospace,min=2,max=20" required:"true"`
-	RegistryURL        string         `formData:"registry_url" json:"registry_url" required:"true"`
+	Name               string         `formData:"name" json:"name" validate:"required,min=2,max=64" required:"true"`
+	RegistryURL        string         `formData:"registry_url" json:"registry_url" validate:"required,url" required:"true"`
 	ServiceAccountJson multipart.File `formData:"service_account_json" json:"service_account_json" validate:"required,nospace" required:"true"`
 }
 
 type RegistryUpdateReq struct {
 	Id           string                 `path:"registry_id" validate:"required" required:"true"`
-	Name         string                 `json:"name"`
+	Name         string                 `json:"name" validate:"required,min=2,max=64" required:"true"`
 	NonSecret    map[string]interface{} `json:"non_secret"`
 	Secret       map[string]interface{} `json:"secret"`
 	Extras       map[string]interface{} `json:"extras"`
-	RegistryType string                 `json:"registry_type"`
+	RegistryType string                 `json:"registry_type" validate:"required,nospace" required:"true"`
 }
 
 type RegistryIDPathReq struct {
@@ -144,20 +145,20 @@ func (ra *RegistryAddReq) RegistryExists(ctx context.Context, pgClient *postgres
 	return true, nil
 }
 
-func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.Context, pgClient *postgresqlDb.Queries, ns string) error {
+func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.Context, pgClient *postgresqlDb.Queries, ns string) (int32, error) {
 	bSecret, err := json.Marshal(ra.Secret)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	bNonSecret, err := json.Marshal(ra.NonSecret)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	bExtras, err := json.Marshal(ra.Extras)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	_, err = pgClient.CreateContainerRegistry(ctx, postgresqlDb.CreateContainerRegistryParams{
@@ -175,7 +176,7 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 
 	driver, err := directory.Neo4jClient(rContext)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
@@ -183,7 +184,7 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 
 	tx, err := session.BeginTransaction()
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer tx.Close()
 
@@ -194,7 +195,7 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 		m.container_registry_ids = REDUCE(distinctElements = [], element IN COALESCE(m.container_registry_ids, []) + $pgId | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`
 	_, err = tx.Run(query, map[string]interface{}{"node_id": registryID, "registry_type": ra.RegistryType, "pgId": cr.ID})
 
-	return tx.Commit()
+	return cr.ID, tx.Commit()
 }
 
 func (ru *RegistryUpdateReq) UpdateRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r int32) error {
@@ -460,6 +461,34 @@ func GetRegistryPgIds(ctx context.Context, node_id string) ([]int64, error) {
 	}
 
 	return res, err
+}
+
+func DeleteRegistryAccount(ctx context.Context, node_id string) error {
+
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction()
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	query := fmt.Sprintf("MATCH (n:RegistryAccount{node_id:'%s'}) DETACH DELETE n", node_id)
+	log.Info().Msgf("delete registry account query: %s", query)
+
+	_, err = tx.Run(query, map[string]interface{}{})
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		return err
+	}
+
+	return tx.Commit()
 }
 
 func toScansCount(scans []interface{}) Summary {

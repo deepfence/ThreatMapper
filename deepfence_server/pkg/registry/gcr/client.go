@@ -13,10 +13,10 @@ import (
 
 var client = &http.Client{Timeout: 10 * time.Second}
 
-func listImagesRegistryV2(url, namespace, userName, password string) ([]model.ContainerImage, error) {
+func listImagesRegistryV2(url, namespace, userName, password string) ([]model.IngestedContainerImage, error) {
 
 	var (
-		images []model.ContainerImage
+		images []model.IngestedContainerImage
 	)
 
 	repos, err := listCatalogRegistryV2(url, namespace, userName, password)
@@ -166,11 +166,11 @@ func listRepoTagsV2(url, namespace, userName, password, repoName string) (RepoTa
 // 	return manifests, err
 // }
 
-func getImageWithTags(url, namespace, userName, password, repoName string, repoTags RepoTagsResp) []model.ContainerImage {
-	var imageAndTag []model.ContainerImage
+func getImageWithTags(url, namespace, userName, password, repoName string, repoTags RepoTagsResp) []model.IngestedContainerImage {
+	var imageAndTag []model.IngestedContainerImage
 	for _, tag := range repoTags.Tags {
 		digest, details := getImageDetails(tag, repoTags)
-		tt := model.ContainerImage{
+		tt := model.IngestedContainerImage{
 			ID:   model.DigestToID(*digest),
 			Name: repoName,
 			Tag:  tag,

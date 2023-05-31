@@ -41,7 +41,8 @@ import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiL
 import { useGetCurrentUser } from '@/features/common/data-component/getUserApiLoader';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
-import { ApiError, makeRequest } from '@/utils/api';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
@@ -50,19 +51,20 @@ type LoaderDataType = {
   data?: ModelUser[];
 };
 const getUsers = async (): Promise<LoaderDataType> => {
-  const usersPromise = await makeRequest({
-    apiFunction: getUserApiClient().getUsers,
-    apiArgs: [],
-  });
+  const getUsers = apiWrapper({ fn: getUserApiClient().getUsers });
+  const users = await getUsers();
 
-  if (ApiError.isApiError(usersPromise)) {
-    return {
-      message: 'Error in getting users list',
-    };
+  if (!users.ok) {
+    if (users.error.response?.status === 403) {
+      return {
+        message: 'You do not have enough permissions to view users',
+      };
+    }
+    throw users.error;
   }
 
   return {
-    data: usersPromise,
+    data: users.value,
   };
 };
 const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
@@ -86,6 +88,7 @@ export type ActionReturnType = {
   success: boolean;
   invite_url?: string;
   invite_expiry_hours?: number;
+  successMessage?: string;
 };
 
 export enum ActionEnumType {
@@ -111,30 +114,27 @@ export const action = async ({
 
   if (_actionType === ActionEnumType.DELETE) {
     const id = Number(formData.get('userId'));
-    const r = await makeRequest({
-      apiFunction: getUserApiClient().deleteUser,
-      apiArgs: [
-        {
-          id,
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({ success: false });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-            success: false,
-          });
-        }
-      },
+    const deleteApi = apiWrapper({
+      fn: getUserApiClient().deleteUser,
     });
-
-    if (ApiError.isApiError(r)) {
-      return r.value();
+    const deleteResponse = await deleteApi({
+      id,
+    });
+    if (!deleteResponse.ok) {
+      if (deleteResponse.error.response.status === 400) {
+        return {
+          success: false,
+          message: deleteResponse.error.message,
+        };
+      } else if (deleteResponse.error.response.status === 403) {
+        return {
+          success: false,
+          message: 'You do not have enough permissions to delete user',
+        };
+      }
+      throw deleteResponse.error;
     }
 
-    toast('User account deleted sucessfully');
     return {
       success: true,
     };
@@ -150,43 +150,35 @@ export const action = async ({
       };
     }
 
-    const r = await makeRequest({
-      apiFunction: getUserApiClient().updatePassword,
-      apiArgs: [
-        {
-          modelUpdateUserPasswordRequest: {
-            old_password: body.old_password as string,
-            new_password: body.new_password as string,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            fieldErrors: {
-              old_password: modelResponse.error_fields?.old_password as string,
-              new_password: modelResponse.error_fields?.new_password as string,
-            },
-            success: false,
-          });
-        } else if (r.status === 403) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message,
-            success: false,
-          });
-        }
+    const updateApi = apiWrapper({
+      fn: getUserApiClient().updatePassword,
+    });
+    const updateResponse = await updateApi({
+      modelUpdateUserPasswordRequest: {
+        old_password: body.old_password as string,
+        new_password: body.new_password as string,
       },
     });
-
-    if (ApiError.isApiError(r)) {
-      return r.value();
+    if (!updateResponse.ok) {
+      if (updateResponse.error.response.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse =
+          await updateResponse.error.response.json();
+        return {
+          fieldErrors: {
+            old_password: modelResponse.error_fields?.old_password as string,
+            new_password: modelResponse.error_fields?.new_password as string,
+          },
+          success: false,
+        };
+      } else if (updateResponse.error.response.status === 403) {
+        return {
+          success: false,
+          message: 'You do not have enough permissions to update password',
+        };
+      }
+      throw updateResponse.error;
     }
-    toast.success('Password changed successfully');
+
     return {
       success: true,
     };
@@ -196,52 +188,38 @@ export const action = async ({
     const _role: ModelUpdateUserIdRequestRoleEnum =
       ModelUpdateUserIdRequestRoleEnum[role];
 
-    const r = await makeRequest({
-      apiFunction: getUserApiClient().inviteUser,
-      apiArgs: [
-        {
-          modelInviteUserRequest: {
-            action: body.intent as ModelInviteUserRequestActionEnum,
-            email: body.email as string,
-            role: _role,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            fieldErrors: {
-              email: modelResponse.error_fields?.email as string,
-              role: modelResponse.error_fields?.role as string,
-            },
-            success: false,
-          });
-        } else if (r.status === 403) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message,
-            success: false,
-          });
-        }
+    const inviteApi = apiWrapper({
+      fn: getUserApiClient().inviteUser,
+    });
+    const inviteResponse = await inviteApi({
+      modelInviteUserRequest: {
+        action: body.intent as ModelInviteUserRequestActionEnum,
+        email: body.email as string,
+        role: _role,
       },
     });
-
-    if (ApiError.isApiError(r)) {
-      return r.value();
+    if (!inviteResponse.ok) {
+      if (inviteResponse.error.response.status === 400) {
+        return {
+          success: false,
+          message: inviteResponse.error.message,
+        };
+      } else if (inviteResponse.error.response.status === 403) {
+        return {
+          success: false,
+          message: 'You do not have enough permissions to invite user',
+        };
+      }
+      throw inviteResponse.error;
     }
+
     if (body.intent == ModelInviteUserRequestActionEnum.GetInviteLink) {
-      r.invite_url && navigator.clipboard.writeText(r.invite_url);
-      toast.success('User invite URL copied');
-      return {
-        ...r,
-        success: true,
-      };
+      inviteResponse.value.invite_url &&
+        navigator.clipboard.writeText(inviteResponse.value.invite_url);
+      toast.success('User invite URL copied !');
+      return { ...inviteResponse.value, success: true };
     } else if (body.intent === ModelInviteUserRequestActionEnum.SendInviteEmail) {
-      toast.success('User invite sent successfully');
+      return { successMessage: 'User invite sent successfully', success: true };
     }
 
     return {
@@ -254,48 +232,43 @@ export const action = async ({
     const _role: ModelUpdateUserIdRequestRoleEnum =
       ModelUpdateUserIdRequestRoleEnum[role];
 
-    const r = await makeRequest({
-      apiFunction: getUserApiClient().updateUser,
-      apiArgs: [
-        {
-          id: Number(body.id),
-          modelUpdateUserIdRequest: {
-            first_name: body.firstName as string,
-            last_name: body.lastName as string,
-            role: _role,
-            is_active: body.status === 'Active',
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            fieldErrors: {
-              firstName: modelResponse.error_fields?.first_name as string,
-              lastName: modelResponse.error_fields?.last_name as string,
-              status: modelResponse.error_fields?.is_active as string,
-              role: modelResponse.error_fields?.role as string,
-            },
-            success: false,
-          });
-        } else if (r.status === 403) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message,
-            success: false,
-          });
-        }
+    const updateApi = apiWrapper({
+      fn: getUserApiClient().updateUser,
+    });
+    const updateResponse = await updateApi({
+      id: Number(body.id),
+      modelUpdateUserIdRequest: {
+        first_name: body.firstName as string,
+        last_name: body.lastName as string,
+        role: _role,
+        is_active: body.status === 'Active',
       },
     });
-
-    if (ApiError.isApiError(r)) {
-      return r.value();
+    if (!updateResponse.ok) {
+      if (updateResponse.error.response.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse =
+          await updateResponse.error.response.json();
+        return {
+          fieldErrors: {
+            firstName: modelResponse.error_fields?.first_name as string,
+            lastName: modelResponse.error_fields?.last_name as string,
+            status: modelResponse.error_fields?.is_active as string,
+            role: modelResponse.error_fields?.role as string,
+          },
+          success: false,
+        };
+      } else if (updateResponse.error.response.status === 403) {
+        return {
+          success: false,
+          message: 'You do not have enough permissions to update user',
+        };
+      }
+      throw updateResponse.error;
     }
-    toast.success('User details updated successfully');
+
+    return {
+      success: true,
+    };
   }
   return {
     success: false,
@@ -402,77 +375,86 @@ const InviteUserModal = ({
       onOpenChange={() => setShowDialog(false)}
       title="Invite User"
     >
-      <fetcher.Form
-        method="post"
-        className="flex flex-col gap-y-3 mt-2 mb-8 mx-8 w-[260px]"
-      >
-        <TextInput
-          label="Email"
-          type={'email'}
-          placeholder="Email"
-          name="email"
-          color={data?.fieldErrors?.email ? 'error' : 'default'}
-          sizing="sm"
-          required
-          helperText={data?.fieldErrors?.email}
-        />
-        <Select
-          noPortal
-          name="role"
-          label={'Role'}
-          placeholder="Role"
-          sizing="xs"
-          helperText={data?.fieldErrors?.role}
+      {data?.success && data?.successMessage ? (
+        <SuccessModalContent text={data?.successMessage}>
+          {data?.invite_url && (
+            <p
+              className={`mb-4 font-normal text-center text-sm text-green-500  w-[260px]`}
+            >
+              {data?.invite_url} , invite will expire after {data?.invite_expiry_hours}{' '}
+              hours
+            </p>
+          )}
+        </SuccessModalContent>
+      ) : (
+        <fetcher.Form
+          method="post"
+          className="flex flex-col gap-y-3 mt-2 mb-8 mx-8 w-[260px]"
         >
-          {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
-            return (
-              <SelectItem value={role} key={role}>
-                {role}
-              </SelectItem>
-            );
-          })}
-        </Select>
-        <div className={`text-red-600 dark:text-red-500 text-sm`}>
-          {!data?.success && data?.message && <span>{data.message}</span>}
-        </div>
-        <Button
-          color="primary"
-          size="sm"
-          type="submit"
-          name="intent"
-          disabled={state !== 'idle'}
-          loading={state !== 'idle'}
-          value={ModelInviteUserRequestActionEnum['SendInviteEmail']}
-        >
-          Send invite via email
-        </Button>
+          <TextInput
+            label="Email"
+            type={'email'}
+            placeholder="Email"
+            name="email"
+            color={data?.fieldErrors?.email ? 'error' : 'default'}
+            sizing="sm"
+            required
+            helperText={data?.fieldErrors?.email}
+          />
+          <Select
+            noPortal
+            name="role"
+            label={'Role'}
+            placeholder="Role"
+            sizing="xs"
+            helperText={data?.fieldErrors?.role}
+          >
+            {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
+              return (
+                <SelectItem value={role} key={role}>
+                  {role}
+                </SelectItem>
+              );
+            })}
+          </Select>
+          <div className={`text-red-600 dark:text-red-500 text-sm`}>
+            {!data?.success && data?.message && <span>{data.message}</span>}
+          </div>
+          <Button
+            color="primary"
+            size="sm"
+            type="submit"
+            name="intent"
+            value={ModelInviteUserRequestActionEnum['SendInviteEmail']}
+          >
+            Send invite via email
+          </Button>
 
-        <input
-          type="text"
-          name="_actionType"
-          hidden
-          readOnly
-          value={ActionEnumType.INVITE_USER}
-        />
+          <input
+            type="text"
+            name="_actionType"
+            hidden
+            readOnly
+            value={ActionEnumType.INVITE_USER}
+          />
 
-        <Button
-          outline
-          type="submit"
-          size="sm"
-          name="intent"
-          disabled={state !== 'idle'}
-          loading={state !== 'idle'}
-          value={ModelInviteUserRequestActionEnum['GetInviteLink']}
-        >
-          Copy invite link
-        </Button>
-        {data?.invite_url && (
-          <p className={`mt-1.5 text-sm text-green-500`}>
-            Invite URL:{data?.invite_url}, invite will expire after{' '}
-            {data?.invite_expiry_hours} hours
-          </p>
-        )}
-      </fetcher.Form>
+          <Button
+            outline
+            type="submit"
+            size="sm"
+            name="intent"
+            value={ModelInviteUserRequestActionEnum['GetInviteLink']}
+          >
+            Copy invite link
+          </Button>
+          {data?.invite_url && (
+            <p className={`mt-1.5 font-normal text-center text-sm text-green-500`}>
+              Invite URL: {data?.invite_url}, invite will expire after{' '}
+              {data?.invite_expiry_hours} hours
+            </p>
+          )}
+        </fetcher.Form>
+      )}
     </Modal>
   );
 };
@@ -499,75 +481,79 @@ const EditUserModal = ({
       onOpenChange={() => setShowDialog(false)}
       title="Update User"
     >
-      <fetcher.Form
-        method="post"
-        className="flex flex-col gap-y-3 mt-2 mb-8 mx-8 w-[260px]"
-      >
-        <input readOnly type="hidden" name="id" value={user?.id} />
-        <input
-          readOnly
-          type="hidden"
-          name="_actionType"
-          value={ActionEnumType.EDIT_USER}
-        />
-        <TextInput
-          label="First Name"
-          type={'text'}
-          placeholder="First Name"
-          name="firstName"
-          color={data?.fieldErrors?.firstName ? 'error' : 'default'}
-          sizing="sm"
-          defaultValue={user?.first_name}
-          helperText={data?.fieldErrors?.firstName}
-          required
-        />
-        <TextInput
-          label="Last Name"
-          type={'text'}
-          placeholder="Last Name"
-          name="lastName"
-          sizing="sm"
-          color={data?.fieldErrors?.lastName ? 'error' : 'default'}
-          defaultValue={user?.last_name}
-          helperText={data?.fieldErrors?.lastName}
-          required
-        />
-        <Select
-          noPortal
-          defaultValue={role}
-          name="role"
-          label={'Role'}
-          placeholder="Role"
-          sizing="xs"
-          helperText={data?.fieldErrors?.role}
+      {!data?.success ? (
+        <fetcher.Form
+          method="post"
+          className="flex flex-col gap-y-3 mt-2 mb-8 mx-8 w-[260px]"
         >
-          {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
-            return (
-              <SelectItem value={role} key={role}>
-                {role}
-              </SelectItem>
-            );
-          })}
-        </Select>
-        <Select
-          noPortal
-          name="status"
-          label={'Status'}
-          placeholder="Active"
-          sizing="xs"
-          defaultValue={user?.is_active ? 'Active' : 'inActive'}
-          helperText={data?.fieldErrors?.status}
-        >
-          <SelectItem value="Active">Active</SelectItem>
-          <SelectItem value="InActive">InActive</SelectItem>
-        </Select>
-        <div className={`text-red-600 dark:text-red-500 text-sm`}>
-          {!data?.success && data?.message && <span>{data.message}</span>}
-        </div>
-        <Button color="primary" type="submit" size="sm">
-          Update
-        </Button>
-      </fetcher.Form>
+          <input readOnly type="hidden" name="id" value={user?.id} />
+          <input
+            readOnly
+            type="hidden"
+            name="_actionType"
+            value={ActionEnumType.EDIT_USER}
+          />
+          <TextInput
+            label="First Name"
+            type={'text'}
+            placeholder="First Name"
+            name="firstName"
+            color={data?.fieldErrors?.firstName ? 'error' : 'default'}
+            sizing="sm"
+            defaultValue={user?.first_name}
+            helperText={data?.fieldErrors?.firstName}
+            required
+          />
+          <TextInput
+            label="Last Name"
+            type={'text'}
+            placeholder="Last Name"
+            name="lastName"
+            sizing="sm"
+            color={data?.fieldErrors?.lastName ? 'error' : 'default'}
+            defaultValue={user?.last_name}
+            helperText={data?.fieldErrors?.lastName}
+            required
+          />
+          <Select
+            noPortal
+            defaultValue={role}
+            name="role"
+            label={'Role'}
+            placeholder="Role"
+            sizing="xs"
+            helperText={data?.fieldErrors?.role}
+          >
+            {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
+              return (
+                <SelectItem value={role} key={role}>
+                  {role}
+                </SelectItem>
+              );
+            })}
+          </Select>
+          <Select
+            noPortal
+            name="status"
+            label={'Status'}
+            placeholder="Active"
+            sizing="xs"
+            defaultValue={user?.is_active ? 'Active' : 'inActive'}
+            helperText={data?.fieldErrors?.status}
+          >
+            <SelectItem value="Active">Active</SelectItem>
+            <SelectItem value="InActive">InActive</SelectItem>
+          </Select>
+          <div className={`text-red-600 dark:text-red-500 text-sm`}>
+            {!data?.success && data?.message && <span>{data.message}</span>}
+          </div>
+          <Button color="primary" type="submit" size="sm">
+            Update
+          </Button>
+        </fetcher.Form>
+      ) : (
+        <SuccessModalContent text="User details successfully updated!" />
+      )}
     </Modal>
   );
 };
@@ -811,10 +797,12 @@ const UserManagement = () => {
     <SettingsTab value="user-management">
       <div className="h-full mt-2">
         <APITokenComponent />
-        <InviteUserModal
-          showDialog={openInviteUserForm}
-          setShowDialog={setOpenInviteUserForm}
-        />
+        {openInviteUserForm && (
+          <InviteUserModal
+            showDialog={openInviteUserForm}
+            setShowDialog={setOpenInviteUserForm}
+          />
+        )}
         <div className="mt-4">
           <div className="flex justify-between">
             <div>
@@ -901,39 +889,44 @@ const DeleteConfirmationModal = ({
       method: 'post',
     });
   }, [userId, fetcher]);
-
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          Selected user will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, Cancel
-          </Button>
-          <Button
-            size="xs"
-            color="danger"
-            onClick={(e) => {
-              e.preventDefault();
-              onDeleteAction();
-              setShowDialog(false);
+      {!fetcher?.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
             }}
           >
-            Yes, I&apos;m sure
-          </Button>
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            Selected user will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+          {fetcher.data?.message && (
+            <p className="text-sm text-red-500 pt-2">{fetcher.data?.message}</p>
+          )}
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              size="xs"
+              color="danger"
+              onClick={(e) => {
+                e.preventDefault();
+                onDeleteAction();
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="User details successfully updated!" />
+      )}
     </Modal>
   );
 };

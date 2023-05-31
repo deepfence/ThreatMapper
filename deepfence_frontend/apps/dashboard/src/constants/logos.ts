@@ -1,6 +1,7 @@
 import { SearchNodeCountResp } from '@/api/generated';
 import AwsSecurityHub from '@/assets/aws_security_hub.svg';
 import ElasticSearch from '@/assets/elasticsearch.svg';
+import Email from '@/assets/email.svg';
 import GoogleChronicle from '@/assets/google_chronical.svg';
 import HttpEndpoint from '@/assets/http_endpoint.svg';
 import Jira from '@/assets/jira.svg';
@@ -46,6 +47,9 @@ export const getPostureLogo = (accountType: string, mode: Mode) => {
     },
     azure: {
       icon: LogoAzure,
+    },
+    gcp_org: {
+      icon: LogoGoogle,
     },
     gcp: {
       icon: LogoGoogle,
@@ -106,6 +110,7 @@ export function getNodesIcon(nodeType: keyof SearchNodeCountResp) {
 export {
   AwsSecurityHub,
   ElasticSearch,
+  Email,
   GoogleChronicle,
   HttpEndpoint,
   Jira,

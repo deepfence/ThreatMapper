@@ -19,15 +19,11 @@ import {
 } from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelContainerImage,
-  ModelRegistryImagesReq,
-} from '@/api/generated';
+import { ModelContainerImage, ModelRegistryImagesReq } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterHeader } from '@/components/forms/FilterHeader';
 import { RegistryImageTagsTable } from '@/features/registries/components/RegistryImageTagsTable';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 import { getPageFromSearchParams } from '@/utils/table';
@@ -92,29 +88,17 @@ async function getTags(
     imageTagsRequest.image_filter.filter_in!['malware_scan_status'] = malwareScanStatus;
   }
 
-  const result = await makeRequest({
-    apiFunction: getRegistriesApiClient().listImages,
-    apiArgs: [
-      {
-        modelRegistryImagesReq: imageTagsRequest,
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<{ message?: string }>({});
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message,
-        });
-      }
-    },
+  const listImages = apiWrapper({ fn: getRegistriesApiClient().listImages });
+
+  const result = await listImages({
+    modelRegistryImagesReq: imageTagsRequest,
   });
 
-  if (ApiError.isApiError(result)) {
-    throw result.value();
+  if (!result.ok) {
+    throw result.error;
   }
 
-  if (!result) {
+  if (!result.value) {
     return {
       tags: [],
       currentPage: 0,
@@ -122,29 +106,24 @@ async function getTags(
     };
   }
 
-  // count api
-  const resultCounts = await makeRequest({
-    apiFunction: getRegistriesApiClient().countImages,
-    apiArgs: [
-      {
-        modelRegistryImagesReq: {
-          ...imageTagsRequest,
-          window: {
-            ...imageTagsRequest.window,
-            size: 10 * imageTagsRequest.window.size,
-          },
-        },
+  const countImages = apiWrapper({ fn: getRegistriesApiClient().countImages });
+  const resultCounts = await countImages({
+    modelRegistryImagesReq: {
+      ...imageTagsRequest,
+      window: {
+        ...imageTagsRequest.window,
+        size: 10 * imageTagsRequest.window.size,
       },
-    ],
+    },
   });
 
-  if (ApiError.isApiError(resultCounts)) {
-    throw resultCounts.value();
+  if (!resultCounts.ok) {
+    throw resultCounts.error;
   }
   return {
-    tags: result,
+    tags: result.value,
     currentPage: page,
-    totalRows: resultCounts.count || 0,
+    totalRows: page * PAGE_SIZE + (resultCounts.value.count || 0),
   };
 }
 
@@ -197,7 +176,7 @@ const HeaderComponent = () => {
         <BreadcrumbLink>
           <DFLink
             to={generatePath('/registries/:account', {
-              account,
+              account: encodeURIComponent(account),
             })}
           >
             {account}
@@ -207,8 +186,8 @@ const HeaderComponent = () => {
         <BreadcrumbLink>
           <DFLink
             to={generatePath('/registries/images/:account/:nodeId', {
-              account,
-              nodeId,
+              account: encodeURIComponent(account),
+              nodeId: encodeURIComponent(nodeId),
             })}
           >
             {nodeId}
@@ -235,7 +214,7 @@ const HeaderComponent = () => {
                     <legend className="text-sm font-medium">
                       Vulnerability Scan Status
                     </legend>
-                    <div className="flex gap-x-4">
+                    <div className="flex gap-x-4 mt-1">
                       <Checkbox
                         label="Completed"
                         checked={searchParams
@@ -349,7 +328,7 @@ const HeaderComponent = () => {
 
                   <fieldset>
                     <legend className="text-sm font-medium">Secret Scan Status</legend>
-                    <div className="flex gap-x-4">
+                    <div className="flex gap-x-4 mt-1">
                       <Checkbox
                         label="Completed"
                         checked={searchParams
@@ -463,7 +442,7 @@ const HeaderComponent = () => {
 
                   <fieldset>
                     <legend className="text-sm font-medium">Malware Scan Status</legend>
-                    <div className="flex gap-x-4">
+                    <div className="flex gap-x-4 mt-1">
                       <Checkbox
                         label="Completed"
                         checked={searchParams

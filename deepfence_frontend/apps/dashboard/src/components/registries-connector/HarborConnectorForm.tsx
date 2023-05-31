@@ -2,8 +2,25 @@ import { HiViewGridAdd } from 'react-icons/hi';
 import { Card, Step, Stepper, TextInput, Typography } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
+import { RegistryFormProps } from '@/features/common/data-component/RegistryConnectorForm';
 
-export const HarborConnectorForm = () => {
+/*
+sample json
+  {
+    "name": "example_harbor",
+    "non_secret": {
+      "harbor_registry_url": "https://example.harbor.io",
+      "harbor_username": "username",
+      "harbor_project_name": "project_name"
+    },
+    "secret": {
+      "harbor_password": "password"
+    },
+    "registry_type": "harbor"
+  }
+*/
+
+export const HarborConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormProps) => {
   return (
     <>
       <Stepper>
@@ -30,45 +47,73 @@ export const HarborConnectorForm = () => {
               label="Registry Name"
               type={'text'}
               sizing="sm"
-              name="registryName"
+              name="name"
               placeholder="Registry Name"
+              color={fieldErrors?.['name'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['name']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
               label="Registry URL"
               type={'text'}
               sizing="sm"
-              name="registryUrl"
+              name="non_secret.harbor_registry_url"
               placeholder="Registry URL"
+              color={fieldErrors?.['harbor_registry_url'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['harbor_registry_url']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
               label="Project Name"
               type={'text'}
               sizing="sm"
-              name="projectName"
+              name="non_secret.harbor_project_name"
               placeholder="Project Name"
+              color={fieldErrors?.['harbor_project_name'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['harbor_project_name']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
               label="Username"
               type={'text'}
               sizing="sm"
-              name="username"
+              name="non_secret.harbor_username"
               placeholder="Username"
+              color={fieldErrors?.['harbor_username'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['harbor_username']}
             />
             <TextInput
               className="w-3/4 min-[200px] max-w-xs"
               label="Password"
               type={'password'}
               sizing="sm"
-              name="password"
+              name="secret.harbor_password"
               placeholder="••••••••"
+              color={fieldErrors?.['harbor_password'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['harbor_password']}
             />
+            <div className="text-xs">
+              <div className="text-sm">
+                Using Certificate based Docker client Authentication?
+              </div>
+              <div>
+                A custom certificate is configured by creating a directory under
+                /etc/docker/certs.d on Deepfence console machine, using the same name as
+                the registry&apos;s hostname provided above. All *.crt files are added to
+                this directory as CA roots.{' '}
+                <DFLink
+                  href="https://docs.docker.com/engine/security/certificates/"
+                  target="_blank"
+                >
+                  https://docs.docker.com/engine/security/certificates/
+                </DFLink>{' '}
+              </div>
+              <div className="mt-2">Supported Versions: 1.8.2 and above</div>
+            </div>
+            {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
           </Card>
         </Step>
       </Stepper>
-      {/* <p className="text-red-500 text-sm ml-14">{errorMessage}</p> */}
     </>
   );
 };

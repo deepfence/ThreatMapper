@@ -25,6 +25,7 @@ const option: EChartsOption = {
         show: false,
         position: 'center',
       },
+      cursor: 'default',
       color: [
         SEVERITY_COLORS['critical'],
         SEVERITY_COLORS['high'],

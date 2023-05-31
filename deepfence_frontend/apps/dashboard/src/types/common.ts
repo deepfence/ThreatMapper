@@ -41,6 +41,7 @@ export enum ComplianceScanNodeTypeEnum {
   aws = 'aws',
   aws_org = 'aws_org',
   gcp = 'gcp',
+  gcp_org = 'gcp_org',
   azure = 'azure',
   host = 'host',
   kubernetes_cluster = 'kubernetes_cluster',

@@ -279,6 +279,34 @@ func (p Process) id() string {
 	return p.ID
 }
 
+type IngestedContainerImage struct {
+	ID                     string   `json:"node_id" required:"true"`
+	NodeName               string   `json:"node_name" required:"true"`
+	Name                   string   `json:"docker_image_name" required:"true"`
+	Tag                    string   `json:"docker_image_tag" required:"true"`
+	Size                   string   `json:"docker_image_size" required:"true"`
+	DockerImageCreatedAt   string   `json:"docker_image_created_at" required:"true"`
+	DockerImageVirtualSize string   `json:"docker_image_virtual_size" required:"true"`
+	DockerImageID          string   `json:"docker_image_id" required:"true"`
+	Metadata               Metadata `json:"metadata" required:"true" nested_json:"true"`
+}
+
+func (IngestedContainerImage) NodeType() string {
+	return "ContainerImage"
+}
+
+func (IngestedContainerImage) ExtendedField() string {
+	return "docker_image_name"
+}
+
+func (IngestedContainerImage) GetCategory() string {
+	return ""
+}
+
+func (IngestedContainerImage) GetJsonCategory() string {
+	return ""
+}
+
 type ContainerImage struct {
 	ID                        string      `json:"node_id" required:"true"`
 	NodeName                  string      `json:"node_name" required:"true"`

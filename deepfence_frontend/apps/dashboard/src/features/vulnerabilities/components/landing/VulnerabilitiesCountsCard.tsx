@@ -40,7 +40,9 @@ const MostExploitableChartVertial = ({
         type: 'pie',
         radius: ['80%', '100%'],
         top: '10%',
+        bottom: '5%',
         avoidLabelOverlap: true,
+        cursor: 'default',
         label: {
           show: false,
           position: 'center',
@@ -116,7 +118,7 @@ export const VulnerabilitiesCountsCard = ({
               })}
             />
           </div>
-          <div className="flex-1 pt-4">
+          <div className="flex-1 pt-2">
             <div className="flex flex-col align-center justify-center">
               <div className="text-[2.5rem] text-gray-900 dark:text-gray-200 font-light text-center">
                 {abbreviateNumber(data.total)}

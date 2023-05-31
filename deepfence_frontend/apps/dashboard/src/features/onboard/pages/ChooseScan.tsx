@@ -40,17 +40,17 @@ type ScanTypeListProps = {
 };
 
 const complianceScanData = {
-  scanTitle: 'Compliance Scan',
+  scanTitle: 'Posture Scan',
   scanType: ScanTypeEnum.ComplianceScan,
-  description: `Compliance scan measures the level of compliance, and presents the overall compliance picture as a 'Threat Graph'. This will show how the platforms are exposed, the routes that an attacker may take to exploit the exposure.`,
-  buttonText: 'Configure Compliance Scan',
+  description: `Posture scan measures the level of compliance, and presents the overall compliance picture as a 'Threat Graph'. This will show how the platforms are exposed, the routes that an attacker may take to exploit the exposure.`,
+  buttonText: 'Configure Posture Scan',
 };
 
 const cloudComplianceScanData = {
-  scanTitle: 'Compliance Scan',
+  scanTitle: 'Posture Scan',
   scanType: ScanTypeEnum.CloudComplianceScan,
-  description: `Compliance scan measures the level of compliance, and presents the overall compliance picture as a 'Threat Graph'. This will show how the platforms are exposed, the routes that an attacker may take to exploit the exposure.`,
-  buttonText: 'Configure Compliance Scan',
+  description: `Posture scan measures the level of compliance, and presents the overall compliance picture as a 'Threat Graph'. This will show how the platforms are exposed, the routes that an attacker may take to exploit the exposure.`,
+  buttonText: 'Configure Posture Scan',
 };
 
 const vulnerabilityScanData = {

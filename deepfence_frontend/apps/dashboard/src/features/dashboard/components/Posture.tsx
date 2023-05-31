@@ -52,53 +52,70 @@ export const Posture = () => {
         </div>
       </div>
       <Separator />
-      <div className="px-4 grid grid-cols-2 gap-4">
+      <div className="px-4">
         <Suspense
-          fallback={[1, 2, 3, 4, 5, 6].map((idx) => {
-            return <PostureStatSkeleton key={idx} />;
-          })}
+          fallback={
+            <div className="grid grid-cols-2 gap-4">
+              {[1, 2, 3, 4, 5, 6].map((idx) => {
+                return <PostureStatSkeleton key={idx} />;
+              })}
+            </div>
+          }
         >
           <DFAwait resolve={loaderData.cloudProviders}>
             {(data: DashboardLoaderData['cloudProviders']) => {
-              return data.providers?.map((provider) => {
-                const providerName = provider.name ?? '';
-                const { icon } = getPostureLogo(providerName, mode);
-                return (
-                  <div
-                    key={providerName}
-                    className={cx('flex flex-col py-4 gap-1 dark:border-gray-700')}
-                  >
-                    <h4 className="text-gray-500 dark:text-gray-400 text-sm font-normal">
-                      {providersToNameMapping[providerName]}
-                    </h4>
-                    <div className="flex items-center gap-x-4">
-                      <div className="flex items-center basis-10 shrink-0 mr-2">
-                        <img src={icon} alt="logo" />
-                      </div>
-                      <div className="flex gap-x-6">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-2xl text-gray-900 dark:text-gray-200 font-light">
-                            {abbreviateNumber(provider.node_count ?? 0)}
-                          </span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            Accounts
-                          </span>
+              return (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    {data.providers?.slice(0, 6).map((provider) => {
+                      const providerName = provider.name ?? '';
+                      const { icon } = getPostureLogo(providerName, mode);
+                      return (
+                        <div
+                          key={providerName}
+                          className={cx('flex flex-col py-4 gap-1 dark:border-gray-700')}
+                        >
+                          <h4 className="text-gray-500 dark:text-gray-400 text-sm font-normal">
+                            {providersToNameMapping[providerName]}
+                          </h4>
+                          <div className="flex items-center gap-x-4">
+                            <div className="flex items-center basis-10 shrink-0 mr-2">
+                              <img src={icon} alt="logo" />
+                            </div>
+                            <div className="flex gap-x-6">
+                              <div className="flex flex-col gap-1">
+                                <span className="text-2xl text-gray-900 dark:text-gray-200 font-light">
+                                  {abbreviateNumber(provider.node_count ?? 0)}
+                                </span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  Accounts
+                                </span>
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <span className="text-2xl text-gray-900 dark:text-gray-200 font-light">
+                                  {formatPercentage(provider.compliance_percentage ?? 0, {
+                                    maximumFractionDigits: 1,
+                                  })}
+                                </span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  Compliance
+                                </span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-2xl text-gray-900 dark:text-gray-200 font-light">
-                            {formatPercentage(provider.compliance_percentage ?? 0, {
-                              maximumFractionDigits: 1,
-                            })}
-                          </span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            Compliance
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
-                );
-              });
+                  {(data.providers?.length ?? 0) > 6 && (
+                    <div className="flex justify-center mt-4">
+                      <LinkButton to={'/posture'} sizing="xs">
+                        +{(data.providers?.length ?? 0) - 6} More
+                      </LinkButton>
+                    </div>
+                  )}
+                </>
+              );
             }}
           </DFAwait>
         </Suspense>

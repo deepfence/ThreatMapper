@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { FaPlay } from 'react-icons/fa';
 import { generatePath, useParams, useSearchParams } from 'react-router-dom';
 import {
   Button,
@@ -69,8 +68,8 @@ export const RegistryImagesTable = ({
           return (
             <DFLink
               to={generatePath('/registries/imagetags/:account/:nodeId/:imageId', {
-                account: account,
-                nodeId,
+                account: encodeURIComponent(account),
+                nodeId: encodeURIComponent(nodeId),
                 imageId: encodeURIComponent(info.row.original.name ?? ''),
               })}
             >
@@ -146,7 +145,7 @@ export const RegistryImagesTable = ({
         onOpenChange={() => setSelectedScanType(undefined)}
         scanOptions={
           selectedScanType
-            ? getScanOptions(selectedScanType, [nodeId], selectedIds)
+            ? getScanOptions(selectedScanType, selectedIds, selectedIds)
             : undefined
         }
       />
@@ -161,6 +160,7 @@ export const RegistryImagesTable = ({
         manualPagination
         enableColumnResizing
         enableSorting
+        approximatePagination
         totalRows={totalRows}
         pageSize={PAGE_SIZE}
         pageIndex={currentPage}
@@ -210,7 +210,7 @@ function getScanOptions(
       data: {
         nodeIds,
         nodeType: SecretScanNodeTypeEnum.image,
-        images: [],
+        images,
       },
     };
   }
@@ -222,7 +222,7 @@ function getScanOptions(
       data: {
         nodeIds,
         nodeType: MalwareScanNodeTypeEnum.image,
-        images: [],
+        images,
       },
     };
   }

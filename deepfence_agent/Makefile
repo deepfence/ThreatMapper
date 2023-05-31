@@ -41,3 +41,4 @@ install:
 clean:
 	$(RM) tools/apache/deepfence/df-utils/getCloudInstanceId
 	cd tools/apache/scope && make realclean
+	(cd plugins && make clean)

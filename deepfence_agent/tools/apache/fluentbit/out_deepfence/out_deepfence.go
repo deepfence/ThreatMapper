@@ -113,12 +113,12 @@ func Authenticate(url string, apiToken string) (string, string, error) {
 
 	apiClient := dsc.NewAPIClient(cfg)
 
-	req := apiClient.AuthenticationApi.AuthToken(context.Background()).
+	req := apiClient.AuthenticationAPI.AuthToken(context.Background()).
 		ModelApiAuthRequest(
 			dsc.ModelApiAuthRequest{ApiToken: apiToken},
 		)
 
-	resp, _, err := apiClient.AuthenticationApi.AuthTokenExecute(req)
+	resp, _, err := apiClient.AuthenticationAPI.AuthTokenExecute(req)
 	if err != nil {
 		return "", "", err
 	}
@@ -149,9 +149,9 @@ func RefreshToken(url string, apiToken string) (string, string, error) {
 
 	apiClient := dsc.NewAPIClient(cfg)
 
-	req := apiClient.AuthenticationApi.AuthTokenRefresh(context.Background())
+	req := apiClient.AuthenticationAPI.AuthTokenRefresh(context.Background())
 
-	resp, _, err := apiClient.AuthenticationApi.AuthTokenRefreshExecute(req)
+	resp, _, err := apiClient.AuthenticationAPI.AuthTokenRefreshExecute(req)
 	if err != nil {
 		return "", "", err
 	}
@@ -219,6 +219,15 @@ func FLBPluginInit(plugin unsafe.Pointer) int {
 	rhc.RetryMax = 3
 	rhc.RetryWaitMin = 1 * time.Second
 	rhc.RetryWaitMax = 10 * time.Second
+	rhc.CheckRetry = func(ctx context.Context, resp *http.Response, err error) (bool, error) {
+		if err != nil || resp == nil {
+			return false, err
+		}
+		if resp.StatusCode == http.StatusServiceUnavailable {
+			return false, err
+		}
+		return rhttp.DefaultRetryPolicy(ctx, resp, err)
+	}
 	rhc.Logger = log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile)
 	if schema == "https" {
 		if len(certPath) > 0 && len(certKey) > 0 {

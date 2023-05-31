@@ -14,9 +14,9 @@ import {
 } from 'ui-components';
 
 import { getSettingsApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, PostgresqlDbScheduler } from '@/api/generated';
+import { PostgresqlDbScheduler } from '@/api/generated';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -26,21 +26,25 @@ type LoaderDataType = {
   data?: PostgresqlDbScheduler[];
 };
 const getData = async (): Promise<LoaderDataType> => {
-  const response = await makeRequest({
-    apiFunction: getSettingsApiClient().getScheduledTasks,
-    apiArgs: [],
+  const getScheduledTasks = apiWrapper({
+    fn: getSettingsApiClient().getScheduledTasks,
   });
 
-  if (ApiError.isApiError(response)) {
-    return {
-      message: 'Error in getting Scheduled Jobs list',
-    };
-  }
+  const response = await getScheduledTasks();
 
+  if (!response.ok) {
+    if (response.error.response.status === 403) {
+      return {
+        message: 'You do not have enough permissions to view sheduled jobs',
+      };
+    }
+    throw response.error;
+  }
   return {
-    data: response,
+    data: response.value,
   };
 };
+
 const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
   return typedDefer({
     data: getData(),
@@ -60,30 +64,28 @@ export const action = async ({
   const id = Number(body.id);
   const isEnabled = body.isEnabled === 'true';
 
-  const r = await makeRequest({
-    apiFunction: getSettingsApiClient().updateScheduledTask,
-    apiArgs: [
-      {
-        id,
-        modelUpdateScheduledTaskRequest: {
-          is_enabled: isEnabled,
-        },
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<ActionReturnType>({ success: false });
-      if (r.status === 400) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message ?? '',
-          success: false,
-        });
-      }
+  const updateApi = apiWrapper({
+    fn: getSettingsApiClient().updateScheduledTask,
+  });
+  const updateResponse = await updateApi({
+    id,
+    modelUpdateScheduledTaskRequest: {
+      is_enabled: isEnabled,
     },
   });
-
-  if (ApiError.isApiError(r)) {
-    return r.value();
+  if (!updateResponse.ok) {
+    if (updateResponse.error.response.status === 400) {
+      return {
+        success: false,
+        message: updateResponse.error.message,
+      };
+    } else if (updateResponse.error.response.status === 403) {
+      return {
+        success: false,
+        message: 'You do not have enough permissions to schedule jobs',
+      };
+    }
+    throw updateResponse.error;
   }
 
   toast('Scheduled job status updated sucessfully');

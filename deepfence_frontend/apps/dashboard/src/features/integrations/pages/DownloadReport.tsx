@@ -1,5 +1,5 @@
 import cx from 'classnames';
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   HiArchive,
@@ -37,7 +37,6 @@ import {
 
 import { getReportsApiClient } from '@/api/api';
 import {
-  ApiDocsBadRequestResponse,
   ModelGenerateReportReqDurationEnum,
   ModelGenerateReportReqReportTypeEnum,
   UtilsReportFiltersNodeTypeEnum,
@@ -53,22 +52,25 @@ import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { TruncatedText } from '@/components/TruncatedText';
 import { useGetCloudAccountsList } from '@/features/common/data-component/searchCloudAccountsApiLoader';
-import { getNodeTypeByProviderName } from '@/features/postures/pages/Accounts';
-import { ActionReturnType } from '@/features/registries/components/RegistryAccountsTable';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { CloudNodeType, isCloudNode, ScanTypeEnum } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { download } from '@/utils/download';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 
-const nonComplianceNode = (resourceType: string) => {
+const getNodeType = (resourceType: string) => {
   if (resourceType === 'CloudCompliance') {
     return {
       Aws: UtilsReportFiltersNodeTypeEnum.Aws,
       Azure: UtilsReportFiltersNodeTypeEnum.Azure,
       Gcp: UtilsReportFiltersNodeTypeEnum.Gcp,
-      Linux: UtilsReportFiltersNodeTypeEnum.Linux,
+    };
+  } else if (resourceType === 'Compliance') {
+    return {
+      Host: UtilsReportFiltersNodeTypeEnum.Host,
+      Kubernetes: UtilsReportFiltersNodeTypeEnum.Cluster,
     };
   }
   return {
@@ -99,19 +101,18 @@ const getReportList = async (): Promise<{
   message?: string;
   data?: ModelExportReport[];
 }> => {
-  const reportsPromise = await makeRequest({
-    apiFunction: getReportsApiClient().listReports,
-    apiArgs: [],
+  const listReportsApi = apiWrapper({
+    fn: getReportsApiClient().listReports,
   });
-
-  if (ApiError.isApiError(reportsPromise)) {
+  const reportsResponse = await listReportsApi();
+  if (!reportsResponse.ok) {
     return {
       message: 'Error in getting reports',
     };
   }
 
   return {
-    data: reportsPromise,
+    data: reportsResponse.value,
   };
 };
 
@@ -152,7 +153,10 @@ const action = async ({
     const _resource: UtilsReportFiltersScanTypeEnum =
       UtilsReportFiltersScanTypeEnum[resource];
 
-    const nodeType = body.nodeType as keyof typeof UtilsReportFiltersNodeTypeEnum;
+    let nodeType = body.nodeType as keyof typeof UtilsReportFiltersNodeTypeEnum;
+    if (nodeType.toString() === 'Kubernetes') {
+      nodeType = 'Cluster';
+    }
     const _nodeType: UtilsReportFiltersNodeTypeEnum =
       UtilsReportFiltersNodeTypeEnum[nodeType];
 
@@ -243,44 +247,34 @@ const action = async ({
       advanced_report_filters.masked = _masked;
     }
 
-    const r = await makeRequest({
-      apiFunction: getReportsApiClient().generateReport,
-      apiArgs: [
-        {
-          modelGenerateReportReq: {
-            duration: DURATION[duration],
-            filters: {
-              advanced_report_filters: advanced_report_filters,
-              include_dead_nodes: body.deadNodes === 'on',
-              node_type: _nodeType,
-              scan_type: _resource,
-              severity_or_check_type: (severity as string[]).map((sev) =>
-                sev.toLowerCase(),
-              ) as UtilsReportFiltersSeverityOrCheckTypeEnum,
-            },
-
-            report_type: _reportType,
-          },
+    const generateReportApi = apiWrapper({
+      fn: getReportsApiClient().generateReport,
+    });
+    const r = await generateReportApi({
+      modelGenerateReportReq: {
+        duration: DURATION[duration],
+        filters: {
+          advanced_report_filters: advanced_report_filters,
+          include_dead_nodes: body.deadNodes === 'on',
+          node_type: _nodeType,
+          scan_type: _resource,
+          severity_or_check_type: (severity as string[]).map((sev) =>
+            sev.toLowerCase(),
+          ) as UtilsReportFiltersSeverityOrCheckTypeEnum,
         },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-            success: false,
-          });
-        }
+
+        report_type: _reportType,
       },
     });
-    if (ApiError.isApiError(r)) {
-      return {
-        message: 'Error in adding integrations',
-      };
+    if (!r.ok) {
+      if (r.error.response.status === 400) {
+        return {
+          message: r.error.message || 'Error in adding integrations',
+          success: false,
+        };
+      }
     }
+
     toast('Generate Report has started');
     return {
       success: true,
@@ -293,32 +287,21 @@ const action = async ({
         message: 'An id is required to delete an integration',
       };
     }
-    const r = await makeRequest({
-      apiFunction: getReportsApiClient().deleteReport,
-      apiArgs: [
-        {
-          reportId: id,
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-            success: false,
-          });
-        }
-      },
+    const deleteReportApi = apiWrapper({
+      fn: getReportsApiClient().deleteReport,
     });
-    if (ApiError.isApiError(r)) {
-      return {
-        message: 'Error in adding report',
-      };
+    const r = await deleteReportApi({
+      reportId: id,
+    });
+    if (!r.ok) {
+      if (r.error.response.status === 400) {
+        return {
+          message: r.error.message ?? 'Error in deleting report',
+          success: false,
+        };
+      }
     }
-    toast('Report deleted successfully');
+
     return {
       deleteSuccess: true,
     };
@@ -341,49 +324,50 @@ const DeleteConfirmationModal = ({
     message: string;
   }>();
 
-  if (fetcher.data?.deleteSuccess) {
-    setShowDialog(false);
-  }
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          The selected report will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-
-        {fetcher.data?.message ? (
-          <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
-        ) : null}
-
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, Cancel
-          </Button>
-          <Button
-            size="xs"
-            color="danger"
-            onClick={() => {
-              const formData = new FormData();
-              formData.append('_actionType', ActionEnumType.DELETE);
-              formData.append('id', id);
-              fetcher.submit(formData, {
-                method: 'post',
-              });
+      {!fetcher.data?.deleteSuccess ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
             }}
           >
-            Yes, I&apos;m sure
-          </Button>
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            The selected report will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+
+          {fetcher.data?.message ? (
+            <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
+          ) : null}
+
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, Cancel
+            </Button>
+            <Button
+              size="xs"
+              color="danger"
+              onClick={() => {
+                const formData = new FormData();
+                formData.append('_actionType', ActionEnumType.DELETE);
+                formData.append('id', id);
+                fetcher.submit(formData, {
+                  method: 'post',
+                });
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
     </Modal>
   );
 };
@@ -399,11 +383,13 @@ const ActionDropdown = ({
 
   return (
     <>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        id={data.report_id ?? ''}
-        setShowDialog={setShowDeleteDialog}
-      />
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          id={data.report_id ?? ''}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
       <Dropdown
         triggerAsChild={true}
         align="end"
@@ -559,8 +545,10 @@ const getBenchmarkList = (nodeType: string) => {
       return complianceType.gcp;
     case 'Azure':
       return complianceType.azure;
-    case 'Linux':
+    case 'Host':
       return complianceType.host;
+    case 'Kubernetes':
+      return complianceType.kubernetes_cluster;
     default:
       console.error('Provider type should be matched');
       return [];
@@ -575,6 +563,26 @@ const API_SCAN_TYPE_MAP: {
   Malware: ScanTypeEnum.MalwareScan,
   Compliance: ScanTypeEnum.ComplianceScan,
   CloudCompliance: ScanTypeEnum.CloudComplianceScan,
+};
+
+const getNodeTypeByProviderName = (providerName: string): string | undefined => {
+  switch (providerName) {
+    case 'linux':
+    case 'host':
+      return 'host';
+    case 'aws':
+      return 'aws';
+    case 'gcp':
+      return 'gcp';
+    case 'gcp_org':
+      return 'gcp_org';
+    case 'azure':
+      return 'azure';
+    case 'kubernetes':
+      return 'cluster';
+    default:
+      return;
+  }
 };
 
 const AdvancedFilter = ({
@@ -713,7 +721,9 @@ const CloudComplianceForm = ({
   provider: string;
 }) => {
   const [benchmarkType, setBenchmarkType] = useState('');
-
+  useEffect(() => {
+    setBenchmarkType('');
+  }, [provider]);
   return (
     <div className="flex flex-col gap-y-4">
       <Select
@@ -726,7 +736,7 @@ const CloudComplianceForm = ({
         placeholder="Select Provider"
         sizing="xs"
       >
-        {['Aws', 'Google', 'Azure', 'Linux'].map((resource) => {
+        {['Aws', 'Google', 'Azure'].map((resource) => {
           return (
             <SelectItem value={resource} key={resource}>
               {resource}
@@ -761,7 +771,7 @@ const CloudComplianceForm = ({
   );
 };
 
-const CommomForm = ({
+const ComplianceForm = ({
   setProvider,
   resource,
   provider,
@@ -770,8 +780,10 @@ const CommomForm = ({
   resource: string;
   provider: string;
 }) => {
-  const [severity, setSeverity] = useState([]);
-
+  const [benchmarkType, setBenchmarkType] = useState('');
+  useEffect(() => {
+    setBenchmarkType('');
+  }, [resource, provider]);
   return (
     <>
       <Select
@@ -784,7 +796,65 @@ const CommomForm = ({
         placeholder="Select Node Type"
         sizing="xs"
       >
-        {Object.keys(nonComplianceNode(resource)).map((resource) => {
+        {Object.keys(getNodeType(resource)).map((resource) => {
+          return (
+            <SelectItem value={resource} key={resource}>
+              {resource}
+            </SelectItem>
+          );
+        })}
+      </Select>
+      {provider && (
+        <Select
+          value={benchmarkType}
+          name="severity[]"
+          onChange={(value) => {
+            setBenchmarkType(value);
+          }}
+          placeholder="Select check type"
+          label="Select Check Type"
+          sizing="xs"
+        >
+          {getBenchmarkList(provider)?.map((provider) => {
+            return (
+              <SelectItem value={provider} key={provider}>
+                {provider}
+              </SelectItem>
+            );
+          })}
+        </Select>
+      )}
+    </>
+  );
+};
+
+const CommonForm = ({
+  setProvider,
+  resource,
+  provider,
+}: {
+  setProvider: React.Dispatch<React.SetStateAction<string>>;
+  resource: string;
+  provider: string;
+}) => {
+  const [severity, setSeverity] = useState([]);
+
+  useEffect(() => {
+    setSeverity([]);
+  }, [resource, provider]);
+  return (
+    <>
+      <Select
+        label="Select Node Type"
+        value={provider}
+        name="nodeType"
+        onChange={(value) => {
+          setProvider(value);
+        }}
+        placeholder="Select Node Type"
+        sizing="xs"
+      >
+        {Object.keys(getNodeType(resource)).map((resource) => {
           return (
             <SelectItem value={resource} key={resource}>
               {resource}
@@ -852,12 +922,20 @@ const DownloadForm = () => {
             })}
           </Select>
 
+          {resource === 'Compliance' ? (
+            <ComplianceForm
+              setProvider={setProvider}
+              provider={provider}
+              resource={resource}
+            />
+          ) : null}
+
           {resource === 'CloudCompliance' ? (
             <CloudComplianceForm setProvider={setProvider} provider={provider} />
           ) : null}
 
-          {resource !== 'CloudCompliance' ? (
-            <CommomForm
+          {resource !== 'CloudCompliance' && resource !== 'Compliance' ? (
+            <CommonForm
               setProvider={setProvider}
               resource={resource}
               provider={provider}

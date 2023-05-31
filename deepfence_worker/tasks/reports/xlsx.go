@@ -119,7 +119,7 @@ func xlsxSave(xlsx *excelize.File, params utils.ReportParams) (string, error) {
 }
 
 func xlsxSetHeader(xlsx *excelize.File, sheet string, headers map[string]string) {
-	for k, v := range vulnerabilityHeader {
+	for k, v := range headers {
 		xlsx.SetCellValue(sheet, k, v)
 	}
 }
@@ -140,19 +140,20 @@ func vulnerabilityXLSX(ctx context.Context, session neo4j.Session, params utils.
 
 	xlsxSetHeader(xlsx, "Sheet1", vulnerabilityHeader)
 
-	for _, data := range data.NodeWiseData.ScanData {
-		for i, v := range data.ScanResults {
-			cellName, err := excelize.CoordinatesToCellName(1, i+2)
+	offset := 0
+	for _, nodeScanData := range data.NodeWiseData.ScanData {
+		for i, v := range nodeScanData.ScanResults {
+			cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
 			if err != nil {
 				log.Error().Err(err).Msg("error generating cell name")
 			}
 			value := []interface{}{
-				data.ScanInfo.UpdatedAt,
+				nodeScanData.ScanInfo.UpdatedAt,
 				v.Cve_attack_vector,
 				v.Cve_caused_by_package,
-				data.ScanInfo.NodeName,
-				data.ScanInfo.ScanID,
-				data.ScanInfo.NodeID,
+				nodeScanData.ScanInfo.NodeName,
+				nodeScanData.ScanInfo.ScanID,
+				nodeScanData.ScanInfo.NodeID,
 				v.Cve_cvss_score,
 				v.Cve_description,
 				v.Cve_fixed_in,
@@ -161,12 +162,13 @@ func vulnerabilityXLSX(ctx context.Context, session neo4j.Session, params utils.
 				v.Cve_severity,
 				v.Cve_overall_score,
 				v.Cve_type,
-				data.ScanInfo.HostName,
-				data.ScanInfo.HostName,
+				nodeScanData.ScanInfo.HostName,
+				nodeScanData.ScanInfo.HostName,
 				v.Masked,
 			}
 			xlsx.SetSheetRow("Sheet1", cellName, &value)
 		}
+		offset = offset + len(nodeScanData.ScanResults)
 	}
 
 	return xlsxSave(xlsx, params)
@@ -188,9 +190,10 @@ func secretXLSX(ctx context.Context, session neo4j.Session, params utils.ReportP
 
 	xlsxSetHeader(xlsx, "Sheet1", secretHeader)
 
-	for _, data := range data.NodeWiseData.ScanData {
-		for i, s := range data.ScanResults {
-			cellName, err := excelize.CoordinatesToCellName(1, i+2)
+	offset := 0
+	for _, nodeScanData := range data.NodeWiseData.ScanData {
+		for i, s := range nodeScanData.ScanResults {
+			cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
 			if err != nil {
 				log.Error().Err(err).Msg("error generating cell name")
 			}
@@ -200,13 +203,14 @@ func secretXLSX(ctx context.Context, session neo4j.Session, params utils.ReportP
 				s.Name,
 				s.RuleID,
 				s.Level,
-				data.ScanInfo.NodeName,
-				data.ScanInfo.ContainerName,
-				data.ScanInfo.KubernetesClusterName,
+				nodeScanData.ScanInfo.NodeName,
+				nodeScanData.ScanInfo.ContainerName,
+				nodeScanData.ScanInfo.KubernetesClusterName,
 				s.SignatureToMatch,
 			}
 			xlsx.SetSheetRow("Sheet1", cellName, &value)
 		}
+		offset = offset + len(nodeScanData.ScanResults)
 	}
 
 	return xlsxSave(xlsx, params)
@@ -228,9 +232,10 @@ func malwareXLSX(ctx context.Context, session neo4j.Session, params utils.Report
 
 	xlsxSetHeader(xlsx, "Sheet1", malwareHeader)
 
-	for _, data := range data.NodeWiseData.ScanData {
-		for i, m := range data.ScanResults {
-			cellName, err := excelize.CoordinatesToCellName(1, i+2)
+	offset := 0
+	for _, nodeScanData := range data.NodeWiseData.ScanData {
+		for i, m := range nodeScanData.ScanResults {
+			cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
 			if err != nil {
 				log.Error().Err(err).Msg("error generating cell name")
 			}
@@ -242,13 +247,14 @@ func malwareXLSX(ctx context.Context, session neo4j.Session, params utils.Report
 				m.FileSevScore,
 				m.FileSeverity,
 				m.Summary,
-				data.ScanInfo.NodeName,
-				data.ScanInfo.ContainerName,
-				data.ScanInfo.KubernetesClusterName,
-				data.ScanInfo.NodeType,
+				nodeScanData.ScanInfo.NodeName,
+				nodeScanData.ScanInfo.ContainerName,
+				nodeScanData.ScanInfo.KubernetesClusterName,
+				nodeScanData.ScanInfo.NodeType,
 			}
 			xlsx.SetSheetRow("Sheet1", cellName, &value)
 		}
+		offset = offset + len(nodeScanData.ScanResults)
 	}
 
 	return xlsxSave(xlsx, params)
@@ -270,22 +276,23 @@ func complianceXLSX(ctx context.Context, session neo4j.Session, params utils.Rep
 
 	xlsxSetHeader(xlsx, "Sheet1", complianceHeader)
 
-	for _, data := range data.NodeWiseData.ScanData {
-		for i, c := range data.ScanResults {
-			cellName, err := excelize.CoordinatesToCellName(1, i+2)
+	offset := 0
+	for _, nodeScanData := range data.NodeWiseData.ScanData {
+		for i, c := range nodeScanData.ScanResults {
+			cellName, err := excelize.CoordinatesToCellName(1, offset+i+2)
 			if err != nil {
 				log.Error().Err(err).Msg("error generating cell name")
 			}
 			value := []interface{}{
-				data.ScanInfo.UpdatedAt,
+				nodeScanData.ScanInfo.UpdatedAt,
 				c.ComplianceCheckType,
 				"",
 				"",
-				data.ScanInfo.HostName,
-				data.ScanInfo.HostName,
+				nodeScanData.ScanInfo.HostName,
+				nodeScanData.ScanInfo.HostName,
 				c.Masked,
 				c.ComplianceNodeId,
-				data.ScanInfo.NodeName,
+				nodeScanData.ScanInfo.NodeName,
 				c.ComplianceNodeType,
 				c.Status,
 				c.TestCategory,
@@ -295,6 +302,7 @@ func complianceXLSX(ctx context.Context, session neo4j.Session, params utils.Rep
 			}
 			xlsx.SetSheetRow("Sheet1", cellName, &value)
 		}
+		offset = offset + len(nodeScanData.ScanResults)
 	}
 
 	return xlsxSave(xlsx, params)

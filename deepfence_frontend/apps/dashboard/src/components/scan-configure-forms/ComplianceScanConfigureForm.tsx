@@ -7,17 +7,14 @@ import { Button, Checkbox, TableSkeleton, Tabs } from 'ui-components';
 import { CircleSpinner, createColumnHelper, Switch, Table } from 'ui-components';
 
 import { getComplianceApiClient } from '@/api/api';
-import {
-  ApiDocsBadRequestResponse,
-  ModelNodeIdentifierNodeTypeEnum,
-} from '@/api/generated';
+import { ModelNodeIdentifierNodeTypeEnum } from '@/api/generated';
 import { ModelCloudNodeComplianceControl } from '@/api/generated/models/ModelCloudNodeComplianceControl';
 import {
   ActionEnumType,
   useGetControlsList,
 } from '@/features/postures/data-component/listControlsApiLoader';
 import { ComplianceScanNodeTypeEnum } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 
 export const complianceType: {
   [key in ComplianceScanNodeTypeEnum]: string[];
@@ -25,6 +22,7 @@ export const complianceType: {
   aws: ['CIS', 'NIST', 'PCI', 'HIPAA', 'SOC2', 'GDPR'],
   aws_org: ['CIS', 'NIST', 'PCI', 'HIPAA', 'SOC2', 'GDPR'],
   gcp: ['CIS'],
+  gcp_org: ['CIS'],
   azure: ['CIS', 'NIST', 'HIPAA'],
   host: ['HIPAA', 'GDPR', 'PCI', 'NIST'],
   kubernetes_cluster: ['NSA-CISA'],
@@ -54,8 +52,10 @@ type TabsType = {
 
 export const CLOUDS = [
   ComplianceScanNodeTypeEnum.aws,
+  ComplianceScanNodeTypeEnum.aws_org,
   ComplianceScanNodeTypeEnum.azure,
   ComplianceScanNodeTypeEnum.gcp,
+  ComplianceScanNodeTypeEnum.gcp_org,
 ];
 
 export const scanPostureApiAction = async ({
@@ -73,48 +73,48 @@ export const scanPostureApiAction = async ({
     nodeType = 'cloud_account';
   }
 
-  const r = await makeRequest({
-    apiFunction: getComplianceApiClient().startComplianceScan,
-    apiArgs: [
-      {
-        modelComplianceScanTriggerReq: {
-          benchmark_types: checkTypes.toLowerCase().split(','),
-          filters: {
-            cloud_account_scan_filter: { filter_in: null },
-            kubernetes_cluster_scan_filter: { filter_in: null },
-            container_scan_filter: { filter_in: null },
-            host_scan_filter: { filter_in: null },
-            image_scan_filter: { filter_in: null },
-          },
-          node_ids: nodeIds.map((nodeId) => ({
-            node_id: nodeId,
-            node_type: nodeType as ModelNodeIdentifierNodeTypeEnum,
-          })),
-        },
+  const startComplianceScanApi = apiWrapper({
+    fn: getComplianceApiClient().startComplianceScan,
+  });
+  const startComplianceScanResponse = await startComplianceScanApi({
+    modelComplianceScanTriggerReq: {
+      benchmark_types: checkTypes.toLowerCase().split(','),
+      filters: {
+        cloud_account_scan_filter: { filter_in: null },
+        kubernetes_cluster_scan_filter: { filter_in: null },
+        container_scan_filter: { filter_in: null },
+        host_scan_filter: { filter_in: null },
+        image_scan_filter: { filter_in: null },
       },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<ScanActionReturnType>({
-        success: false,
-      });
-      if (r.status === 400 || r.status === 409) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message ?? '',
-          success: false,
-        });
-      }
+      node_ids: nodeIds.map((nodeId) => ({
+        node_id: nodeId,
+        node_type: nodeType as ModelNodeIdentifierNodeTypeEnum,
+      })),
     },
   });
 
-  if (ApiError.isApiError(r)) {
-    return r.value();
+  if (!startComplianceScanResponse.ok) {
+    if (
+      startComplianceScanResponse.error.response.status === 400 ||
+      startComplianceScanResponse.error.response.status === 409
+    ) {
+      return {
+        success: false,
+        message: startComplianceScanResponse.error.message ?? '',
+      };
+    } else if (startComplianceScanResponse.error.response.status === 403) {
+      return {
+        success: false,
+        message: 'You do not have enough permissions to start scan',
+      };
+    }
+    throw startComplianceScanResponse.error;
   }
   toast('Scan has been sucessfully started');
   return {
     success: true,
     data: {
-      bulkScanId: r.bulk_scan_id,
+      bulkScanId: startComplianceScanResponse.value.bulk_scan_id,
       nodeType,
     },
   };
@@ -184,7 +184,12 @@ export const ControlsTable = memo(
   }) => {
     const [selectedTab, setSelectedTab] = useState(defaultTab);
 
-    const { controls: controlsList, status, load: fetchControls } = useGetControlsList();
+    const {
+      controls: controlsList,
+      status,
+      load: fetchControls,
+      message,
+    } = useGetControlsList();
     const isLoading = status === 'loading';
 
     const columnHelper = createColumnHelper<ModelCloudNodeComplianceControl>();
@@ -275,14 +280,20 @@ export const ControlsTable = memo(
                     className={'w-screen'}
                   />
                 ) : (
-                  <Table
-                    size="sm"
-                    data={controlsList}
-                    columns={columns}
-                    enablePagination
-                    enableColumnResizing
-                    enableSorting
-                  />
+                  <>
+                    {message ? (
+                      <p className="text-red-500 text-sm py-3">{message}</p>
+                    ) : (
+                      <Table
+                        size="sm"
+                        data={controlsList}
+                        columns={columns}
+                        enablePagination
+                        enableColumnResizing
+                        enableSorting
+                      />
+                    )}
+                  </>
                 )}
               </Tabs>
             ) : null}
@@ -309,6 +320,7 @@ export const ComplianceScanConfigureForm = ({
       };
     });
   });
+  console.log(tabs);
   const [defaultTab, setDefaultTab] = useState('');
 
   useEffect(() => {
@@ -379,7 +391,7 @@ export const ComplianceScanConfigureForm = ({
         <input type="text" name="_nodeType" readOnly hidden value={nodeType} />
 
         <Button
-          disabled={state !== 'idle'}
+          disabled={state !== 'idle' || !tabs.length}
           loading={state !== 'idle'}
           size="sm"
           color="primary"

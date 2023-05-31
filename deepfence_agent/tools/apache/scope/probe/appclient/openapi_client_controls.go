@@ -18,7 +18,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 	if isClusterAgent {
 
 	} else {
-		req := ct.client.ControlsApi.GetAgentInitControls(context.Background())
+		req := ct.API().ControlsAPI.GetAgentInitControls(context.Background())
 		req = req.ModelInitAgentReq(
 			*openapi.NewModelInitAgentReq(
 				getMaxAllocatable(),
@@ -26,7 +26,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 				host.AgentVersionNo,
 			),
 		)
-		ctl, _, err := ct.client.ControlsApi.GetAgentInitControlsExecute(req)
+		ctl, _, err := ct.API().ControlsAPI.GetAgentInitControlsExecute(req)
 
 		ct.publishInterval.Store(ctl.Beatrate)
 
@@ -45,18 +45,20 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 
 	if isClusterAgent {
 		go func() {
-			req := ct.client.ControlsApi.GetKubernetesClusterControls(context.Background())
+			req := ct.API().ControlsAPI.GetKubernetesClusterControls(context.Background())
 			agentId := openapi.NewModelAgentId(getMaxAllocatable(), nodeId)
 			req = req.ModelAgentId(*agentId)
+			ticker := time.NewTicker(time.Second * time.Duration(ct.PublishInterval()/2))
 			for {
+				ticker.Reset(time.Second * time.Duration(ct.PublishInterval()/2))
 				select {
-				case <-time.After(time.Second * time.Duration(ct.PublishInterval()/2)):
+				case <-ticker.C:
 				case <-ct.stopControlListening:
 					break
 				}
 				agentId.SetAvailableWorkload(getMaxAllocatable())
 				req = req.ModelAgentId(*agentId)
-				ctl, _, err := ct.client.ControlsApi.GetKubernetesClusterControlsExecute(req)
+				ctl, _, err := ct.API().ControlsAPI.GetKubernetesClusterControlsExecute(req)
 				if err != nil {
 					logrus.Errorf("Getting controls failed: %v\n", err)
 					continue
@@ -75,18 +77,20 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 		}()
 	} else {
 		go func() {
-			req := ct.client.ControlsApi.GetAgentControls(context.Background())
+			req := ct.API().ControlsAPI.GetAgentControls(context.Background())
 			agentId := openapi.NewModelAgentId(getMaxAllocatable(), nodeId)
 			req = req.ModelAgentId(*agentId)
+			ticker := time.NewTicker(time.Second * time.Duration(ct.PublishInterval()/2))
 			for {
+				ticker.Reset(time.Second * time.Duration(ct.PublishInterval()/2))
 				select {
-				case <-time.After(time.Second * time.Duration(ct.PublishInterval()/2)):
+				case <-ticker.C:
 				case <-ct.stopControlListening:
 					break
 				}
 				agentId.SetAvailableWorkload(getMaxAllocatable())
 				req = req.ModelAgentId(*agentId)
-				ctl, _, err := ct.client.ControlsApi.GetAgentControlsExecute(req)
+				ctl, _, err := ct.API().ControlsAPI.GetAgentControlsExecute(req)
 				if err != nil {
 					logrus.Errorf("Getting controls failed: %v\n", err)
 					continue

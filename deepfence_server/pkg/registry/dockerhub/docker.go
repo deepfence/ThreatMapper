@@ -8,6 +8,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/go-playground/validator/v10"
 )
 
 const dockerHubURL = "https://hub.docker.com/v2"
@@ -19,6 +20,10 @@ func New(requestByte []byte) (*RegistryDockerHub, error) {
 		return &r, err
 	}
 	return &r, nil
+}
+
+func (d *RegistryDockerHub) ValidateFields(v *validator.Validate) error {
+	return v.Struct(d)
 }
 
 func (d *RegistryDockerHub) IsValidCredential() bool {
@@ -75,7 +80,7 @@ func (d *RegistryDockerHub) DecryptExtras(aes encryption.AES) error {
 	return nil
 }
 
-func (d *RegistryDockerHub) FetchImagesFromRegistry() ([]model.ContainerImage, error) {
+func (d *RegistryDockerHub) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
 	return getImagesList(d.NonSecret.DockerHubUsername, d.Secret.DockerHubPassword, d.NonSecret.DockerHubNamespace)
 }
 

@@ -11,6 +11,7 @@ import {
 } from 'ui-components';
 
 import { GraphNodeInfo } from '@/api/generated';
+import { FilterHeader } from '@/components/forms/FilterHeader';
 import { useGetCloudAccountsList } from '@/features/common/data-component/searchCloudAccountsApiLoader';
 import {
   ThreatGraphComponent,
@@ -110,8 +111,13 @@ const ThreatGraphHeader = () => {
           triggerAsChild
           elementToFocusOnCloseRef={elementToFocusOnClose}
           content={
-            <div className="dark:text-white p-4 min-w-[300px]">
-              <form className="flex flex-col gap-y-4">
+            <div className="dark:text-white min-w-[300px]">
+              <FilterHeader
+                onReset={() => {
+                  setSearchParams({});
+                }}
+              />
+              <form className="flex flex-col gap-y-4 px-4 pt-2 pb-4">
                 <fieldset>
                   <legend className="text-sm font-medium">Type</legend>
                   <div className="flex gap-y-4">
@@ -142,11 +148,11 @@ const ThreatGraphHeader = () => {
                           value: 'malware',
                         },
                         {
-                          label: 'Compliance',
+                          label: 'Posture',
                           value: 'compliance',
                         },
                         {
-                          label: 'Cloud Compliance',
+                          label: 'Cloud Posture',
                           value: 'cloud_compliance',
                         },
                       ]}
@@ -155,7 +161,7 @@ const ThreatGraphHeader = () => {
                 </fieldset>
                 <fieldset>
                   <legend className="text-sm font-medium">Scope</legend>
-                  <div className="flex gap-y-4">
+                  <div className="flex gap-y-4 mt-1">
                     <Checkbox
                       label="Show only Cloud Resources"
                       checked={searchParams.get('cloud_resource_only') === 'true'}

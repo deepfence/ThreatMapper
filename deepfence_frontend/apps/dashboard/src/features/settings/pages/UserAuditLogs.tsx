@@ -8,7 +8,7 @@ import { getSettingsApiClient } from '@/api/api';
 import { PostgresqlDbGetAuditLogsRow } from '@/api/generated';
 import { CopyToClipboard } from '@/components/CopyToClipboard';
 import { SettingsTab } from '@/features/settings/components/SettingsTab';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
@@ -18,19 +18,25 @@ type LoaderDataType = {
   data?: PostgresqlDbGetAuditLogsRow[];
 };
 const getData = async (): Promise<LoaderDataType> => {
-  const response = await makeRequest({
-    apiFunction: getSettingsApiClient().getUserActivityLogs,
-    apiArgs: [],
+  const userApi = apiWrapper({
+    fn: getSettingsApiClient().getUserActivityLogs,
   });
-
-  if (ApiError.isApiError(response)) {
-    return {
-      message: 'Error in getting user audit logs',
-    };
+  const userResponse = await userApi();
+  if (!userResponse.ok) {
+    if (userResponse.error.response.status === 400) {
+      return {
+        message: userResponse.error.message,
+      };
+    } else if (userResponse.error.response.status === 403) {
+      return {
+        message: 'You do not have enough permissions to view user audit logs',
+      };
+    }
+    throw userResponse.error;
   }
 
   return {
-    data: response,
+    data: userResponse.value,
   };
 };
 const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {

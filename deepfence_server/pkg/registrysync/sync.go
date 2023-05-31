@@ -77,7 +77,7 @@ func SyncRegistry(ctx context.Context, pgClient *postgresqlDb.Queries, r registr
 	return insertToNeo4j(ctx, list, r, pgId)
 }
 
-func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registry.Registry, pgId int32) error {
+func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r registry.Registry, pgId int32) error {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		return err
@@ -108,6 +108,7 @@ func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registr
 		n.node_type='container_image',
 		m.registry_type=$registry_type,
 		n.pseudo=false,
+		n.active=true,
 		n.node_name=n.docker_image_name+":"+n.docker_image_tag`,
 		map[string]interface{}{
 			"batch": imageMap, "node_id": registryId,
@@ -120,7 +121,7 @@ func insertToNeo4j(ctx context.Context, images []model.ContainerImage, r registr
 	return tx.Commit()
 }
 
-func RegistryImagesToMaps(ms []model.ContainerImage) []map[string]interface{} {
+func RegistryImagesToMaps(ms []model.IngestedContainerImage) []map[string]interface{} {
 	res := []map[string]interface{}{}
 	for _, v := range ms {
 		res = append(res, toMap(v))
@@ -128,7 +129,7 @@ func RegistryImagesToMaps(ms []model.ContainerImage) []map[string]interface{} {
 	return res
 }
 
-func toMap(i model.ContainerImage) map[string]interface{} {
+func toMap(i model.IngestedContainerImage) map[string]interface{} {
 	out, err := json.Marshal(i)
 	if err != nil {
 		return nil

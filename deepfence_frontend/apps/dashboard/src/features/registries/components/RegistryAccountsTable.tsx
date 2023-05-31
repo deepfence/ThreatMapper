@@ -1,12 +1,10 @@
-import { capitalize } from 'lodash-es';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   HiArchive,
   HiChevronLeft,
   HiDotsVertical,
   HiOutlineExclamationCircle,
-  HiPencil,
 } from 'react-icons/hi';
 import {
   ActionFunctionArgs,
@@ -35,13 +33,14 @@ import { DFLink } from '@/components/DFLink';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import {
   MalwareScanNodeTypeEnum,
   ScanTypeEnum,
   SecretScanNodeTypeEnum,
   VulnerabilityScanNodeTypeEnum,
 } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 
 export type ActionReturnType = {
@@ -54,30 +53,28 @@ export const action = async ({
 }: ActionFunctionArgs): Promise<ActionReturnType> => {
   const formData = await request.formData();
   const id = formData.get('_nodeId')?.toString() ?? '';
-  const r = await makeRequest({
-    apiFunction: getRegistriesApiClient().deleteRegistry,
-    apiArgs: [
-      {
-        registryId: id,
-      },
-    ],
-    errorHandler: async (r) => {
-      const error = new ApiError<ActionReturnType>({ success: false });
-      if (r.status === 400 || r.status === 404) {
-        const modelResponse: ApiDocsBadRequestResponse = await r.json();
-        return error.set({
-          message: modelResponse.message ?? '',
-          success: false,
-        });
-      }
-    },
+  const deleteRegistry = apiWrapper({ fn: getRegistriesApiClient().deleteRegistry });
+
+  const r = await deleteRegistry({
+    registryId: id,
   });
 
-  if (ApiError.isApiError(r)) {
-    return r.value();
+  if (!r.ok) {
+    if (r.error.response.status === 400 || r.error.response.status === 404) {
+      const modelResponse: ApiDocsBadRequestResponse = await r.error.response.json();
+      return {
+        message: modelResponse.message ?? '',
+        success: false,
+      };
+    } else if (r.error.response.status === 403) {
+      return {
+        message: 'You do not have enough permissions to delete registry',
+        success: false,
+      };
+    }
+    throw r.error;
   }
 
-  toast('Registry account deleted sucessfully');
   return {
     success: true,
   };
@@ -95,52 +92,57 @@ const DeleteConfirmationModal = ({
   const fetcher = useFetcher<ActionReturnType>();
   const { state, data } = fetcher;
 
-  useEffect(() => {
-    if (data?.success) {
-      setShowDialog(false);
-    }
-  }, [data]);
-
   return (
     <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      <div className="grid place-items-center p-6">
-        <IconContext.Provider
-          value={{
-            className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
-        <h3 className="mb-4 font-normal text-center text-sm">
-          The selected accounts will be deleted.
-          <br />
-          <span>Are you sure you want to delete?</span>
-        </h3>
-        {data?.message && <p className="text-red-500 text-sm mb-4">{data.message}</p>}
-        <div className="flex items-center justify-right gap-4">
-          <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-            No, cancel
-          </Button>
-          <fetcher.Form method="post">
-            <input type="text" name="_nodeId" hidden readOnly value={id} />
-            <Button
-              size="xs"
-              color="danger"
-              type="submit"
-              disabled={state !== 'idle'}
-              loading={state !== 'idle'}
-            >
-              Yes, I&apos;m sure
+      {!fetcher.data?.success ? (
+        <div className="grid place-items-center p-6">
+          <IconContext.Provider
+            value={{
+              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
+            }}
+          >
+            <HiOutlineExclamationCircle />
+          </IconContext.Provider>
+          <h3 className="mb-4 font-normal text-center text-sm">
+            The selected accounts will be deleted.
+            <br />
+            <span>Are you sure you want to delete?</span>
+          </h3>
+          {data?.message && <p className="text-red-500 text-sm mb-4">{data.message}</p>}
+          <div className="flex items-center justify-right gap-4">
+            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
+              No, cancel
             </Button>
-          </fetcher.Form>
+            <fetcher.Form method="post">
+              <input type="text" name="_nodeId" hidden readOnly value={id} />
+              <Button
+                size="xs"
+                color="danger"
+                type="submit"
+                disabled={state !== 'idle'}
+                loading={state !== 'idle'}
+              >
+                Yes, I&apos;m sure
+              </Button>
+            </fetcher.Form>
+          </div>
         </div>
-      </div>
+      ) : (
+        <SuccessModalContent text="Registry account deleted sucessfully!" />
+      )}
     </Modal>
   );
 };
 
-const ActionDropdown = ({ id }: { id: string }) => {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+const ActionDropdown = ({
+  id,
+  setIdsToDelete,
+  setShowDeleteDialog,
+}: {
+  id: string;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string>>;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   const [selectedScanType, setSelectedScanType] = useState<
     | typeof ScanTypeEnum.VulnerabilityScan
     | typeof ScanTypeEnum.SecretScan
@@ -149,11 +151,6 @@ const ActionDropdown = ({ id }: { id: string }) => {
 
   return (
     <>
-      <DeleteConfirmationModal
-        showDialog={showDeleteDialog}
-        id={id}
-        setShowDialog={setShowDeleteDialog}
-      />
       <ConfigureScanModal
         open={!!selectedScanType}
         onOpenChange={() => setSelectedScanType(undefined)}
@@ -206,7 +203,7 @@ const ActionDropdown = ({ id }: { id: string }) => {
                 <span className="text-gray-700 dark:text-gray-400">Scan</span>
               </DropdownItem>
             </DropdownSubMenu>
-            <DropdownItem className="text-sm">
+            {/* <DropdownItem className="text-sm">
               <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
                 <IconContext.Provider
                   value={{ className: 'text-gray-700 dark:text-gray-400' }}
@@ -215,10 +212,11 @@ const ActionDropdown = ({ id }: { id: string }) => {
                 </IconContext.Provider>
                 Edit
               </span>
-            </DropdownItem>
+            </DropdownItem> */}
             <DropdownItem
               className="text-sm"
               onClick={() => {
+                setIdsToDelete(id);
                 setShowDeleteDialog(true);
               }}
             >
@@ -248,6 +246,8 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
   const { account } = useParams() as {
     account: string;
   };
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [idsToDelete, setIdsToDelete] = useState<string>('');
 
   const columnHelper = createColumnHelper<ModelRegistryListResp>();
   const columns = useMemo(
@@ -258,11 +258,11 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
           <div>
             <DFLink
               to={generatePath('/registries/images/:account/:nodeId', {
-                account,
-                nodeId: info.row.original.node_id ?? '',
+                account: encodeURIComponent(account),
+                nodeId: encodeURIComponent(info.row.original.node_id ?? ''),
               })}
             >
-              {capitalize(info.getValue())}
+              {info.getValue()}
             </DFLink>
           </div>
         ),
@@ -279,7 +279,7 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
         cell: (info) => {
           const date = info.getValue();
           if (date !== undefined) {
-            return formatMilliseconds(date);
+            return formatMilliseconds(date * 1000);
           }
           return '';
         },
@@ -299,7 +299,13 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
           if (!cell.row.original.node_id) {
             throw new Error('Registry Account node id not found');
           }
-          return <ActionDropdown id={cell.row.original.node_id.toString()} />;
+          return (
+            <ActionDropdown
+              id={cell.row.original.node_id.toString()}
+              setIdsToDelete={setIdsToDelete}
+              setShowDeleteDialog={setShowDeleteDialog}
+            />
+          );
         },
         header: () => '',
         minSize: 20,
@@ -312,6 +318,13 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
   );
   return (
     <div className="self-start">
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          id={idsToDelete}
+          setShowDialog={setShowDeleteDialog}
+        />
+      )}
       <Table columns={columns} data={data} enableSorting size="sm" />
     </div>
   );

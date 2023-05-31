@@ -7,6 +7,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: minio
+    name: deepfence-file-server
 spec:
   serviceName: deepfence-file-server
   replicas: 1
@@ -14,6 +15,7 @@ spec:
     matchLabels:
       {{- include "deepfence-console.selectorLabels" . | nindent 6 }}
       component: minio
+      name: deepfence-file-server
   template:
     metadata:
       {{- with .Values.minio.podAnnotations }}
@@ -23,6 +25,7 @@ spec:
       labels:
         {{- include "deepfence-console.selectorLabels" . | nindent 8 }}
         component: minio
+        name: deepfence-file-server
     spec:
       serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
       securityContext:
@@ -31,7 +34,7 @@ spec:
         - name: minio
           securityContext:
             {{- toYaml .Values.minio.securityContext | nindent 12 }}
-          image: "{{ .Values.minio.image.repository }}:{{ .Values.minio.image.tag }}"
+          image: "{{ .Values.global.imageRepoPrefix }}/{{ .Values.minio.image.repository }}:{{ default .Values.global.imageTag .Values.minio.image.tag }}"
           imagePullPolicy: {{ .Values.minio.image.pullPolicy }}
           envFrom:
             - secretRef:
@@ -88,6 +91,7 @@ metadata:
   labels:
     {{- include "deepfence-console.labels" . | nindent 4 }}
     component: minio
+    name: deepfence-file-server
 spec:
   type: ClusterIP
   ports:
@@ -102,4 +106,5 @@ spec:
   selector:
     {{- include "deepfence-console.selectorLabels" . | nindent 4 }}
     component: minio
+    name: deepfence-file-server
 {{- end }}
