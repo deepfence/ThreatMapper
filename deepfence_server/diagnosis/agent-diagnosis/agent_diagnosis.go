@@ -165,13 +165,15 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 		}
 		if _, err = tx.Run(fmt.Sprintf(`
 		MERGE (n:AgentDiagnosticLogs{node_id: $node_id})
-		SET n.status=$status, n.retries=0, n.trigger_action=$action, n.updated_at=TIMESTAMP()
+		SET n.status=$status, n.retries=0, n.trigger_action=$action, n.updated_at=TIMESTAMP(), n.minio_path=$minio_file_name
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCHEDULEDLOGS]->(m)`, controls.ResourceTypeToNeo4j(controls.StringToResourceType(nodeIdentifier.NodeType))),
 			map[string]interface{}{
-				"status":  utils.SCAN_STATUS_STARTING,
-				"node_id": nodeIdentifier.NodeId,
-				"action":  string(b)}); err != nil {
+				"status":          utils.SCAN_STATUS_STARTING,
+				"node_id":         nodeIdentifier.NodeId,
+				"action":          string(b),
+				"minio_file_name": fileName,
+			}); err != nil {
 			return err
 		}
 	}
