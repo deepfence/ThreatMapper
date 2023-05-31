@@ -89,8 +89,7 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		},
 	}); err != nil {
 		bufferPool.Put(buffer)
-		log.Error().Msgf("Error Adding report: %v", err)
-		respondWith(ctx, w, http.StatusInternalServerError, err)
+		respondWith(ctx, w, http.StatusServiceUnavailable, err)
 		return
 	}
 
