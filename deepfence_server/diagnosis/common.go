@@ -83,11 +83,10 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 			message = err.Error()
 		}
 		fileName := filepath.Base(obj.Key)
-		fileName = strings.TrimPrefix(fileName, "deepfence-agent-logs-")
 		diagnosticLogsResponse[i] = DiagnosticLogsLink{
 			UrlLink:   urlLink,
 			FileName:  fileName,
-			Label:     strings.TrimSuffix(fileName, ".zip"),
+			Label:     strings.TrimSuffix(strings.TrimPrefix(fileName, "deepfence-agent-logs-"), ".zip"),
 			Message:   message,
 			CreatedAt: obj.LastModified.Format("2006-01-02 15:04:05"),
 		}
