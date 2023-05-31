@@ -152,9 +152,8 @@ func CleanUpDB(msg *message.Message) error {
 		return err
 	}
 
-	// container images
 	if _, err = session.Run(`
-		MATCH (n:ContainerImage) 
+		MATCH (n:ContainerImage)
 		WHERE n.active = false
 		AND NOT exists((n) <-[:SCANNED]-())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
