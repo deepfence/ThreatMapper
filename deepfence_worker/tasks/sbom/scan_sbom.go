@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path"
+	"sync"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -81,6 +82,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 		log.Error().Msg("tenant-id/namespace is empty")
 		return directory.ErrNamespaceNotFound
 	}
+
 	log.Info().Msgf("message tenant id %s", string(tenantID))
 
 	rh := []kgo.RecordHeader{
@@ -97,15 +99,21 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 		return nil
 	}
 
+	statusChan := make(chan SbomScanStatus)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	StartStatusReporter(statusChan, s.ingestC, rh, params, &wg)
+	defer wg.Wait()
+
 	// send inprogress status
-	SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil), rh)
+	statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil)
 
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tenantID))
 
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
+		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
 		return nil
 	}
 
@@ -119,7 +127,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	err = mc.DownloadFileTo(context.Background(), params.SBOMFilePath, sbomFile, minio.GetObjectOptions{})
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
+		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
 		return nil
 	}
 	defer func() {
@@ -134,7 +142,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	vulnerabilities, err := grype.Scan(grypeBin, grypeConfig, sbomFilePath, &env)
 	if err != nil {
 		log.Error().Msgf("error: %s output: %s", err.Error(), string(vulnerabilities))
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
+		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
 		return nil
 	}
 
@@ -151,7 +159,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	report, err := grype.PopulateFinalReport(vulnerabilities, cfg)
 	if err != nil {
 		log.Error().Msgf("error on generate vulnerability report: %s", err)
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
+		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
 		return nil
 	}
 
@@ -191,9 +199,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 		},
 	}
 
-	if err := SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_SUCCESS, "", &info), rh); err != nil {
-		log.Error().Msgf("error sending scan status: %s", err.Error())
-	}
+	statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_SUCCESS, "", &info)
 
 	// generate runtime sbom
 	runtimeSbom, err := generateRuntimeSBOM(sbomFilePath, report)
