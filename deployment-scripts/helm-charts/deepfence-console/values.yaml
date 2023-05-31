@@ -9,7 +9,8 @@ global:
   imageRepoPrefix: "docker.io"
   # this image tag is used every where for console services
   # to override set tag at service level
-  imageTag: 2.0.0 
+  imageTag: 2.0.0
+  storageClass: ""
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -33,7 +34,7 @@ imagePullSecret:
 kafka:
   # Specifies whether a kafka cluster should be created
   create: true
-  # if create false provide name of the existing secret 
+  # if create false provide name of the existing secret
   # secret format refer templates/console-secrets/kafka.yaml
   secretName: ""
   # if create true then below values are used to create kafka cluster
@@ -63,7 +64,7 @@ kafka:
 postgresql:
   # Specifies whether a postgres database instance should be created
   create: true
-  # if create false provide name of the existing secret 
+  # if create false provide name of the existing secret
   # secret format refer templates/console-secrets/postgresql.yaml
   secretName: ""
   # if create true then below values are used to create postgres database instance
@@ -96,10 +97,10 @@ postgresql:
 redis:
   # Specifies whether a postgres database instance should be created
   create: true
-  # if create false provide name of the existing secret 
+  # if create false provide name of the existing secret
   # secret format refer templates/console-secrets/redis.yaml
   secretName: ""
-  # if create true then below values are used to create postgres database instance 
+  # if create true then below values are used to create postgres database instance
   image:
     repository: deepfenceio/deepfence_redis_ce
     pullPolicy: Always
@@ -107,7 +108,7 @@ redis:
     # tag: 2.0.0
   storageClass: ""
   volumeSize: 5G
-  resources: 
+  resources:
     limits:
       # cpu: 100m
       memory: 1000Mi
@@ -124,11 +125,11 @@ redis:
 minio:
   # Specifies whether a postgres database instance should be created
   create: true
-  # if create false provide name of the existing secret 
+  # if create false provide name of the existing secret
   # secret format refer templates/console-secrets/minio.yaml
   secretName: ""
-  # if create true then below values are used to create postgres database instance 
-  secrets: 
+  # if create true then below values are used to create postgres database instance
+  secrets:
     MINIO_ROOT_USER: deepfence
     MINIO_ROOT_PASSWORD: deepfence
   image:
@@ -155,10 +156,10 @@ minio:
 neo4j:
   # Specifies whether a neo4j database instance should be created
   create: true
-  # if create false provide name of the existing secret 
+  # if create false provide name of the existing secret
   # secret format refer templates/console-secrets/neo4j.yaml
   secretName: ""
-  # if create true then below values are used to create neo4j database instance 
+  # if create true then below values are used to create neo4j database instance
   secrets:
     # format should be username/password
     NEO4J_AUTH: neo4j/e16908ffa5b9f8e9d4ed
@@ -173,7 +174,8 @@ neo4j:
     tag: 4.4.12
   storageClass: ""
   volumeSize: 30G
-  resources: {}
+  resources:
+    {}
     # limits:
     #   # cpu: 100m
     #   memory: 5000Mi
@@ -187,7 +189,7 @@ neo4j:
   tolerations: []
   affinity: {}
 
-# ingress for console 
+# ingress for console
 ingress:
   enable: false
   ## name of the ingress class for ingress provider installed on the cluster, cannot be empty
@@ -230,12 +232,13 @@ router:
     ## useful if deepfence-router chart is not installed
     create: false
     # useful for configuring loadbalancer options on supported clouds
-    annotations: {}  
+    annotations: {}
     ## service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
-    type: ClusterIP  # set service type to cluster ip and enable ingress if available
+    type: ClusterIP # set service type to cluster ip and enable ingress if available
     httpsPort: 443
     httpPort: 80
-  resources: {}
+  resources:
+    {}
     # limits:
     #   cpu: 100m
     #   memory: 128Mi
@@ -291,7 +294,8 @@ server:
     type: ClusterIP
     port: 8080
     internalPort: 8081
-  resources: {}
+  resources:
+    {}
     # limits:
     #   cpu: 100m
     #   memory: 128Mi
@@ -321,7 +325,8 @@ worker:
   service:
     type: ClusterIP
     port: 8080
-  resources: {}
+  resources:
+    {}
     # limits:
     #   cpu: 100m
     #   memory: 128Mi
@@ -351,7 +356,8 @@ ingester:
   service:
     type: ClusterIP
     port: 8080
-  resources: {}
+  resources:
+    {}
     # limits:
     #   cpu: 100m
     #   memory: 128Mi
@@ -377,7 +383,8 @@ scheduler:
   service:
     type: ClusterIP
     port: 8080
-  resources: {}
+  resources:
+    {}
     # limits:
     #   cpu: 100m
     #   memory: 128Mi
@@ -401,7 +408,8 @@ ui:
   service:
     type: ClusterIP
     port: 8081
-  resources: {}
+  resources:
+    {}
     # limits:
     #   cpu: 100m
     #   memory: 128Mi
@@ -420,4 +428,3 @@ ui:
   nodeSelector: {}
   tolerations: []
   affinity: {}
-

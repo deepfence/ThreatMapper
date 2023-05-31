@@ -88,7 +88,7 @@ spec:
         resources:
           requests:
             storage: "{{ .Values.neo4j.volumeSize }}"
-        storageClassName: {{ .Values.neo4j.storageClass }}
+        storageClassName: {{ default .Values.global.storageClass .Values.neo4j.storageClass }}
 ---
 apiVersion: v1
 kind: Service

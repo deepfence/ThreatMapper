@@ -82,7 +82,7 @@ spec:
         resources:
           requests:
             storage: "{{ .Values.minio.volumeSize }}"
-        storageClassName: {{ .Values.minio.storageClass }}
+        storageClassName: {{ default .Values.global.storageClass .Values.minio.storageClass }}
 ---
 apiVersion: v1
 kind: Service

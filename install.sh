@@ -11,8 +11,9 @@ CROSS="${RED}✘${NC}"
 
 # Default values
 DEFAULT_IMAGE_TAG="2.0.0"
-DEFAULT_STORAGE_CLASS="standard"
-DEFAULT_NEO4J_PASSWORD="e16908ffa5b9f8e9d4ed"
+DEFAULT_STORAGE_CLASS=""
+# Auto-generate default Neo4j password
+DEFAULT_NEO4J_PASSWORD=$(openssl rand -base64 12 | tr -dc 'a-zA-Z0-9' | head -c 12)
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -26,6 +27,10 @@ while [[ $# -gt 0 ]]; do
         -t|--image-tag)
         IMAGE_TAG="$2"
         shift
+        shift
+        ;;
+        -n|--no-prompt)
+        NO_PROMPT=true
         shift
         ;;
         *) # Unknown option
@@ -48,15 +53,23 @@ fi
 # Prompt for storage class in case of Kubernetes deployment
 if [[ $DEPLOYMENT == "kubernetes" ]]; then
     if [[ -z $STORAGE_CLASS ]]; then
-        read -p "Enter storage class (default: $DEFAULT_STORAGE_CLASS): " input_storage_class
-        STORAGE_CLASS=${input_storage_class:-$DEFAULT_STORAGE_CLASS}
+        if [[ $NO_PROMPT == true ]]; then
+            STORAGE_CLASS=$DEFAULT_STORAGE_CLASS
+        else
+            read -p "Enter storage class (default: <none>): " input_storage_class
+            STORAGE_CLASS=${input_storage_class:-$DEFAULT_STORAGE_CLASS}
+        fi
     fi
     echo -e "${CHECKMARK} Using storage class: $STORAGE_CLASS"
 
     # Prompt for Neo4j password in case of Kubernetes deployment
     if [[ -z $NEO4J_PASSWORD ]]; then
-        read -p "Enter Neo4j password (default: $DEFAULT_NEO4J_PASSWORD): " input_neo4j_password
-        NEO4J_PASSWORD=${input_neo4j_password:-$DEFAULT_NEO4J_PASSWORD}
+        if [[ $NO_PROMPT == true ]]; then
+            NEO4J_PASSWORD=$DEFAULT_NEO4J_PASSWORD
+        else
+            read -p "Enter Neo4j password (default: $DEFAULT_NEO4J_PASSWORD): " input_neo4j_password
+            NEO4J_PASSWORD=${input_neo4j_password:-$DEFAULT_NEO4J_PASSWORD}
+        fi
     fi
     echo -e "${CHECKMARK} Using Neo4j password"
 fi
@@ -144,8 +157,11 @@ check_kubernetes() {
     fi
     echo -e "${CHECKMARK} Helm check passed."
 
-    # Check cluster connectivity or any other cluster-specific checks
-    # Add your custom checks here
+    # Check if Kubernetes cluster is reachable
+    if ! kubectl cluster-info &> /dev/null; then
+        echo -e "${RED}Cannot connect to the Kubernetes cluster. Please make sure the cluster is running.${NC}"
+        exit 1
+    fi
 
     # Check CPU and RAM for each Kubernetes node
     check_kubernetes_node_requirements
@@ -179,21 +195,26 @@ kubernetes_deployment() {
     echo -e "${GREEN}Performing Kubernetes deployment with image tag: $IMAGE_TAG${NC}"
 
     # Set values in Helm chart values.yaml
-    VALUES_FILE="deployment-scripts/helm-charts/deepfence-console/values.yaml"
+    CONSOLE_VALUES_FILE="deployment-scripts/helm-charts/deepfence-console/values.yaml"
+    ROUTER_VALUES_FILE="deployment-scripts/helm-charts/deepfence-router/values.yaml"
     
-    # Set storage class
-    if [[ -n $STORAGE_CLASS ]]; then
-        helm upgrade --install deepfence-console deployment-scripts/helm-charts/deepfence-console --set image.tag=$IMAGE_TAG --set storageClass=$STORAGE_CLASS -f $VALUES_FILE
-    else
-        helm upgrade --install deepfence-console deployment-scripts/helm-charts/deepfence-console --set image.tag=$IMAGE_TAG --set storageClass=$DEFAULT_STORAGE_CLASS -f $VALUES_FILE
+    if [[ -z $STORAGE_CLASS ]]; then
+        STORAGE_CLASS=$DEFAULT_STORAGE_CLASS
     fi
 
-    # Set Neo4j password
-    if [[ -n $NEO4J_PASSWORD ]]; then
-        helm upgrade --install deepfence-console deployment-scripts/helm-charts/deepfence-console --set image.tag=$IMAGE_TAG --set neo4jPassword=$NEO4J_PASSWORD -f $VALUES_FILE
-    else
-        helm upgrade --install deepfence-console deployment-scripts/helm-charts/deepfence-console --set image.tag=$IMAGE_TAG --set neo4jPassword=$DEFAULT_NEO4J_PASSWORD -f $VALUES_FILE
+    if [[ -z $NEO4J_PASSWORD ]]; then
+        NEO4J_PASSWORD=$DEFAULT_NEO4J_PASSWORD
     fi
+
+    # Install deepfence-router
+    helm upgrade --install deepfence-router deployment-scripts/helm-charts/deepfence-router --set global.imageTag="$IMAGE_TAG" --set global.storageClass="$STORAGE_CLASS" -f $ROUTER_VALUES_FILE
+
+    # Install deepfence-console
+    helm upgrade --install deepfence-console deployment-scripts/helm-charts/deepfence-console --set global.imageTag="$IMAGE_TAG" --set global.storageClass="$STORAGE_CLASS" --set neo4j.secrets.NEO4J_AUTH=neo4j/$NEO4J_PASSWORD -f $CONSOLE_VALUES_FILE
+
+    # Wait for the deployment to complete
+    kubectl rollout status deployment/deepfence-console
+
 }
 
 # Main script flow
