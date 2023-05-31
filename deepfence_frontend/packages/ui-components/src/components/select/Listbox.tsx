@@ -191,9 +191,9 @@ export function Listbox<TType, TActualType>({
             ),
           )}
         >
-          <div className="truncate text-start">
+          <span className="truncate text-start block">
             {getPlaceholderValue(value, getDisplayValue, placeholder)}
-          </div>
+          </span>
           <SelectArrow sizing={sizing} color={color} />
         </HUIListbox.Button>
         <Portal>
@@ -264,7 +264,11 @@ function getPlaceholderValue<T extends unknown | unknown[]>(
   defaultPlaceholder?: string,
 ) {
   if (isNil(value) || (Array.isArray(value) && !value.length)) {
-    return defaultPlaceholder ?? 'Select...';
+    return (
+      <span className="text-gray-500 dark:text-gray-400 block">
+        {defaultPlaceholder ?? 'Select...'}
+      </span>
+    );
   } else if (getDisplayValue) {
     return getDisplayValue?.(value);
   } else if (Array.isArray(value)) {
