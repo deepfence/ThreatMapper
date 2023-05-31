@@ -176,23 +176,28 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 	switch scanType {
 	case utils.NEO4J_VULNERABILITY_SCAN:
 		query = `MATCH (n)
-		WHERE n.vulnerability_latest_scan_id="%s"
+		WHERE (n:Node OR n:Container or n:ContainerImage)
+		AND n.vulnerability_latest_scan_id="%s"
 		SET n.vulnerability_latest_scan_id="", n.vulnerabilities_count=0, n.vulnerability_scan_status=""`
 	case utils.NEO4J_SECRET_SCAN:
 		query = `MATCH (n)
-		WHERE n.secret_latest_scan_id="%s"
+		WHERE (n:Node OR n:Container or n:ContainerImage)
+		AND n.secret_latest_scan_id="%s"
 		SET n.secret_latest_scan_id="", n.secrets_count=0, n.secret_scan_status=""`
 	case utils.NEO4J_MALWARE_SCAN:
 		query = `MATCH (n)
-		WHERE n.malware_latest_scan_id="%s"
+		WHERE (n:Node OR n:Container or n:ContainerImage)
+		AND n.malware_latest_scan_id="%s"
 		SET n.malware_latest_scan_id="", n.malwares_count=0, n.malware_scan_status=""`
 	case utils.NEO4J_COMPLIANCE_SCAN:
 		query = `MATCH (n)
-		WHERE n.compliance_latest_scan_id="%s"
+		WHERE (n:Node OR n:KubernetesCluster)
+		AND n.compliance_latest_scan_id="%s"
 		SET n.compliance_latest_scan_id="", n.compliances_count=0, n.compliance_scan_status=""`
 	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
 		query = `MATCH (n)
-		WHERE n.cloud_compliance_latest_scan_id="%s"
+		WHERE (n:CloudResource)
+		AND n.cloud_compliance_latest_scan_id="%s"
 		SET n.cloud_compliance_latest_scan_id="", n.cloud_compliances_count=0, n.cloud_compliance_scan_status=""`
 	}
 
