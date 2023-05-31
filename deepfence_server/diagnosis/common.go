@@ -93,20 +93,20 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 }
 
 func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathPrefix string) []DiagnosticLogsLink {
-	minioAgentLogs := getDiagnosticLogsHelper(ctx, mc, AgentDiagnosisFileServerPrefix)
+	diagnosticLogs := getDiagnosticLogsHelper(ctx, mc, AgentDiagnosisFileServerPrefix)
 	minioAgentLogsKeys := make(map[string]int)
-	for i, log := range minioAgentLogs {
+	for i, log := range diagnosticLogs {
 		minioAgentLogsKeys[log.FileName] = i
 	}
 
 	// Get in progress ones from neo4j
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return minioAgentLogs
+		return diagnosticLogs
 	}
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	if err != nil {
-		return minioAgentLogs
+		return diagnosticLogs
 	}
 	defer session.Close()
 	tx, err := session.BeginTransaction()
@@ -116,11 +116,10 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 		MATCH (n:AgentDiagnosticLogs)-[:SCHEDULEDLOGS]->(m)
 		RETURN n.node_id, n.minio_file_name, n.message, n.updated_at, m.node_name`, map[string]interface{}{})
 	if err != nil {
-		return minioAgentLogs
+		return diagnosticLogs
 	}
 
 	nodeIdToName := make(map[string]string)
-	diagnosticLogs := []DiagnosticLogsLink{}
 	records, err := r.Collect()
 	for _, rec := range records {
 		var nodeId, fileName, message, updatedAt, nodeName interface{}
@@ -144,8 +143,8 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 		nodeIdToName[nodeId.(string)] = nodeName.(string)
 
 		if pos, ok := minioAgentLogsKeys[fileName.(string)]; ok {
-			minioAgentLogs[pos].Label = nodeName.(string)
-			minioAgentLogs[pos].CreatedAt = updatedAtTime.Format("2006-01-02 15:04:05")
+			diagnosticLogs[pos].Label = nodeName.(string)
+			diagnosticLogs[pos].CreatedAt = updatedAtTime.Format("2006-01-02 15:04:05")
 		} else {
 			diagnosticLogs = append(diagnosticLogs, DiagnosticLogsLink{
 				UrlLink:   "",
@@ -156,5 +155,5 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 			})
 		}
 	}
-	return minioAgentLogs
+	return diagnosticLogs
 }
