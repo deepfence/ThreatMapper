@@ -111,7 +111,7 @@ func CleanUpDB(msg *message.Message) error {
 		AND n.updated_at < TIMESTAMP()-$time_ms
 		WITH n LIMIT 100000
 		SET n.active=false`,
-		map[string]interface{}{"time_ms": dbReportCleanUpTimeoutBase.Milliseconds()}); err != nil {
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeoutBase.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -161,7 +161,7 @@ func CleanUpDB(msg *message.Message) error {
 		DETACH DELETE n`,
 		map[string]interface{}{
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
-		}); err != nil {
+		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
