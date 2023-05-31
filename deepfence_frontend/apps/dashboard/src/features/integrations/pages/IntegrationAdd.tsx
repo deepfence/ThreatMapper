@@ -3,22 +3,16 @@ import { toast } from 'sonner';
 
 import { getIntegrationApiClient } from '@/api/api';
 import {
-  ApiDocsBadRequestResponse,
   ModelIntegrationListResp,
   ModelNodeIdentifier,
   ModelNodeIdentifierNodeTypeEnum,
   ReportersFieldsFilters,
 } from '@/api/generated';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 
 import { IntegrationForm, IntegrationType } from '../components/IntegrationForm';
 import { IntegrationTable } from '../components/IntegrationTable';
-
-type ActionReturnType = {
-  message?: string;
-  success: boolean;
-};
 
 type LoaderDataType = {
   data: ReturnType<typeof getIntegrations>;
@@ -43,34 +37,24 @@ const getIntegrations = async (): Promise<{
   message?: string;
   data?: ModelIntegrationListResp[];
 }> => {
-  const integrationPromise = await makeRequest({
-    apiFunction: getIntegrationApiClient().listIntegration,
-    apiArgs: [],
-    errorHandler: async (r) => {
-      const error = new ApiError<{
-        message?: string;
-      }>({});
-      if (r.status === 403) {
-        return error.set({
-          message: 'You do not have enough permissions to view integrations',
-        });
-      }
-    },
+  const listIntegrationApi = apiWrapper({
+    fn: getIntegrationApiClient().listIntegration,
   });
-
-  if (ApiError.isApiError(integrationPromise)) {
-    if (integrationPromise.value().message) {
+  const integrationResponse = await listIntegrationApi();
+  if (!integrationResponse.ok) {
+    if (integrationResponse.error.response.status === 403) {
       return {
-        message: integrationPromise.value().message,
+        message: 'You do not have enough permissions to view integrations',
+      };
+    } else {
+      return {
+        message: 'Error in getting integrations',
       };
     }
-    return {
-      message: 'Error in getting integrations',
-    };
   }
 
   return {
-    data: integrationPromise,
+    data: integrationResponse.value,
   };
 };
 
@@ -329,38 +313,27 @@ const action = async ({
 
     _filters.node_ids = nodeIds;
 
-    const r = await makeRequest({
-      apiFunction: getIntegrationApiClient().addIntegration,
-      apiArgs: [
-        {
-          modelIntegrationAddReq: {
-            integration_type: _integrationType,
-            notification_type: _notificationType,
-            config: getConfigBodyNotificationType(formData, _integrationType as string),
-            filters: _filters,
-          },
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-            success: false,
-          });
-        } else if (r.status === 403) {
-          return error.set({
-            message: 'You do not have enough permissions to add integration',
-            success: false,
-          });
-        }
+    const addIntegrationApi = apiWrapper({
+      fn: getIntegrationApiClient().addIntegration,
+    });
+    const r = await addIntegrationApi({
+      modelIntegrationAddReq: {
+        integration_type: _integrationType,
+        notification_type: _notificationType,
+        config: getConfigBodyNotificationType(formData, _integrationType as string),
+        filters: _filters,
       },
     });
-    if (ApiError.isApiError(r)) {
-      return r.value();
+    if (!r.ok) {
+      if (r.error.response.status === 400) {
+        return {
+          message: r.error.message ?? '',
+        };
+      } else if (r.error.response.status === 403) {
+        return {
+          message: 'You do not have enough permissions to add integration',
+        };
+      }
     }
     toast('Integration added successfully');
   } else if (_actionType === ActionEnumType.DELETE) {
@@ -371,30 +344,18 @@ const action = async ({
         message: 'An id is required to delete an integration',
       };
     }
-    const r = await makeRequest({
-      apiFunction: getIntegrationApiClient().deleteIntegration,
-      apiArgs: [
-        {
-          integrationId: id,
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-            success: false,
-          });
-        }
-      },
+    const deleteIntegrationApi = apiWrapper({
+      fn: getIntegrationApiClient().deleteIntegration,
     });
-    if (ApiError.isApiError(r)) {
-      return {
-        message: 'Error in adding integrations',
-      };
+    const r = await deleteIntegrationApi({
+      integrationId: id,
+    });
+    if (!r.ok) {
+      if (r.error.response.status === 400) {
+        return {
+          message: r.error.message ?? 'Error in deleting integrations',
+        };
+      }
     }
     toast('Integration deleted successfully');
     return {
