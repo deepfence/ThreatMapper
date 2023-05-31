@@ -37,7 +37,6 @@ import {
 
 import { getReportsApiClient } from '@/api/api';
 import {
-  ApiDocsBadRequestResponse,
   ModelGenerateReportReqDurationEnum,
   ModelGenerateReportReqReportTypeEnum,
   UtilsReportFiltersNodeTypeEnum,
@@ -53,10 +52,9 @@ import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { TruncatedText } from '@/components/TruncatedText';
 import { useGetCloudAccountsList } from '@/features/common/data-component/searchCloudAccountsApiLoader';
-import { ActionReturnType } from '@/features/registries/components/RegistryAccountsTable';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { CloudNodeType, isCloudNode, ScanTypeEnum } from '@/types/common';
-import { ApiError, makeRequest } from '@/utils/api';
+import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 import { download } from '@/utils/download';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -103,19 +101,18 @@ const getReportList = async (): Promise<{
   message?: string;
   data?: ModelExportReport[];
 }> => {
-  const reportsPromise = await makeRequest({
-    apiFunction: getReportsApiClient().listReports,
-    apiArgs: [],
+  const listReportsApi = apiWrapper({
+    fn: getReportsApiClient().listReports,
   });
-
-  if (ApiError.isApiError(reportsPromise)) {
+  const reportsResponse = await listReportsApi();
+  if (!reportsResponse.ok) {
     return {
       message: 'Error in getting reports',
     };
   }
 
   return {
-    data: reportsPromise,
+    data: reportsResponse.value,
   };
 };
 
@@ -250,44 +247,34 @@ const action = async ({
       advanced_report_filters.masked = _masked;
     }
 
-    const r = await makeRequest({
-      apiFunction: getReportsApiClient().generateReport,
-      apiArgs: [
-        {
-          modelGenerateReportReq: {
-            duration: DURATION[duration],
-            filters: {
-              advanced_report_filters: advanced_report_filters,
-              include_dead_nodes: body.deadNodes === 'on',
-              node_type: _nodeType,
-              scan_type: _resource,
-              severity_or_check_type: (severity as string[]).map((sev) =>
-                sev.toLowerCase(),
-              ) as UtilsReportFiltersSeverityOrCheckTypeEnum,
-            },
-
-            report_type: _reportType,
-          },
+    const generateReportApi = apiWrapper({
+      fn: getReportsApiClient().generateReport,
+    });
+    const r = await generateReportApi({
+      modelGenerateReportReq: {
+        duration: DURATION[duration],
+        filters: {
+          advanced_report_filters: advanced_report_filters,
+          include_dead_nodes: body.deadNodes === 'on',
+          node_type: _nodeType,
+          scan_type: _resource,
+          severity_or_check_type: (severity as string[]).map((sev) =>
+            sev.toLowerCase(),
+          ) as UtilsReportFiltersSeverityOrCheckTypeEnum,
         },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-            success: false,
-          });
-        }
+
+        report_type: _reportType,
       },
     });
-    if (ApiError.isApiError(r)) {
-      return {
-        message: 'Error in adding integrations',
-      };
+    if (!r.ok) {
+      if (r.error.response.status === 400) {
+        return {
+          message: r.error.message || 'Error in adding integrations',
+          success: false,
+        };
+      }
     }
+
     toast('Generate Report has started');
     return {
       success: true,
@@ -300,31 +287,21 @@ const action = async ({
         message: 'An id is required to delete an integration',
       };
     }
-    const r = await makeRequest({
-      apiFunction: getReportsApiClient().deleteReport,
-      apiArgs: [
-        {
-          reportId: id,
-        },
-      ],
-      errorHandler: async (r) => {
-        const error = new ApiError<ActionReturnType>({
-          success: false,
-        });
-        if (r.status === 400) {
-          const modelResponse: ApiDocsBadRequestResponse = await r.json();
-          return error.set({
-            message: modelResponse.message ?? '',
-            success: false,
-          });
-        }
-      },
+    const deleteReportApi = apiWrapper({
+      fn: getReportsApiClient().deleteReport,
     });
-    if (ApiError.isApiError(r)) {
-      return {
-        message: 'Error in adding report',
-      };
+    const r = await deleteReportApi({
+      reportId: id,
+    });
+    if (!r.ok) {
+      if (r.error.response.status === 400) {
+        return {
+          message: r.error.message ?? 'Error in deleting report',
+          success: false,
+        };
+      }
     }
+
     return {
       deleteSuccess: true,
     };
