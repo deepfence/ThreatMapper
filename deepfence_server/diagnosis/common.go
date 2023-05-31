@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -48,7 +49,7 @@ type DiagnosticLogsStatus struct {
 type DiagnosticLogsLink struct {
 	UrlLink   string `json:"url_link"`
 	Label     string `json:"label"`
-	FileName  string `json:"file_name"`
+	FileName  string `json:"-"`
 	Message   string `json:"message"`
 	CreatedAt string `json:"created_at"`
 }
@@ -114,7 +115,7 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 
 	r, err := tx.Run(`
 		MATCH (n:AgentDiagnosticLogs)-[:SCHEDULEDLOGS]->(m)
-		RETURN n.node_id, n.minio_file_name, n.message, n.updated_at, m.node_name`, map[string]interface{}{})
+		RETURN n.node_id, n.minio_file_name, n.message, n.status, n.updated_at, m.node_name`, map[string]interface{}{})
 	if err != nil {
 		return diagnosticLogs
 	}
@@ -122,7 +123,7 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 	nodeIdToName := make(map[string]string)
 	records, err := r.Collect()
 	for _, rec := range records {
-		var nodeId, fileName, message, updatedAt, nodeName interface{}
+		var nodeId, fileName, message, status, updatedAt, nodeName interface{}
 		var ok bool
 		if nodeId, ok = rec.Get("n.node_id"); !ok || nodeId == nil {
 			nodeId = ""
@@ -133,6 +134,9 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 		if message, ok = rec.Get("n.message"); !ok || message == nil {
 			message = ""
 		}
+		if status, ok = rec.Get("n.status"); !ok || status == nil {
+			status = ""
+		}
 		if updatedAt, ok = rec.Get("n.updated_at"); !ok || updatedAt == nil {
 			updatedAt = 0
 		}
@@ -141,10 +145,14 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 		}
 		updatedAtTime := time.UnixMilli(updatedAt.(int64))
 		nodeIdToName[nodeId.(string)] = nodeName.(string)
+		if message.(string) == "" && status.(string) != utils.SCAN_STATUS_SUCCESS {
+			message = status.(string)
+		}
 
 		if pos, ok := minioAgentLogsKeys[fileName.(string)]; ok {
 			diagnosticLogs[pos].Label = nodeName.(string)
 			diagnosticLogs[pos].CreatedAt = updatedAtTime.Format("2006-01-02 15:04:05")
+			diagnosticLogs[pos].Message = message.(string)
 		} else {
 			diagnosticLogs = append(diagnosticLogs, DiagnosticLogsLink{
 				UrlLink:   "",
