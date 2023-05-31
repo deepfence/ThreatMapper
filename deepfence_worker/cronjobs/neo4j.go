@@ -18,7 +18,7 @@ const (
 	diagnosticLogsCleanUpTimeout           = time.Hour * 6
 	dbReportCleanUpTimeoutBase             = time.Minute * 2
 	dbScanTimeoutBase                      = time.Minute * 5
-	dbRegistryCleanUpTimeout               = time.Minute * 30
+	dbRegistryCleanUpTimeout               = time.Hour * 24
 	dbUpgradeTimeout                       = time.Minute * 30
 	defaultDBScannedResourceCleanUpTimeout = time.Hour * 24 * 30
 )
@@ -43,7 +43,7 @@ func getPushBackValue(session neo4j.Session) int32 {
 	res, err := session.Run(`
 		MATCH (n:Node{node_id:"`+ConsoleAgentId+`"})
 		RETURN n.push_back`,
-		map[string]interface{}{}, neo4j.WithTxTimeout(15 * time.Second))
+		map[string]interface{}{}, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return 1
 	}
@@ -91,12 +91,27 @@ func CleanUpDB(msg *message.Message) error {
 		return err
 	}
 
+	// registry images
 	if _, err = session.Run(`
-		MATCH (n:ContainerImage)
-		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		WITH n LIMIT 10000
+		MATCH (n:ContainerImage) 
+		WHERE exists((n)<-[:HOSTS]-(:RegistryAccount))
+		AND n.updated_at < TIMESTAMP()-$time_ms
+		WITH n LIMIT 100000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbRegistryCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
+		return err
+	}
+
+	// host images
+	if _, err = session.Run(`
+		MATCH (n:ContainerImage) 
+		WHERE exists((n)<-[:HOSTS]-(:Node)) 
+		AND NOT exists((n)<-[:HOSTS]-(:RegistryAccount))
+		AND n.updated_at < TIMESTAMP()-$time_ms
+		WITH n LIMIT 100000
+		SET n.active=false`,
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeoutBase.Milliseconds()}); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -137,8 +152,9 @@ func CleanUpDB(msg *message.Message) error {
 		return err
 	}
 
+	// container images
 	if _, err = session.Run(`
-		MATCH (n:ContainerImage)
+		MATCH (n:ContainerImage) 
 		WHERE n.active = false
 		AND NOT exists((n) <-[:SCANNED]-())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
@@ -146,7 +162,7 @@ func CleanUpDB(msg *message.Message) error {
 		DETACH DELETE n`,
 		map[string]interface{}{
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
-		}, txConfig); err != nil {
+		}); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
