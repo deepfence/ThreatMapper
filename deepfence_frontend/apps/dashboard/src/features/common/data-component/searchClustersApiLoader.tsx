@@ -35,7 +35,10 @@ export const searchClustersApiLoader = async ({
         filters: {
           compare_filter: null,
           contains_filter: {
-            filter_in: null,
+            filter_in: {
+              pseudo: [false],
+              active: [true],
+            },
           },
           match_filter: matchFilter,
 
