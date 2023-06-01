@@ -26,8 +26,8 @@ export const SearchableHostList = ({
   defaultSelectedHosts,
   reset,
   valueKey = 'nodeId',
-  active = true,
-  pseudo = false,
+  active,
+  pseudo,
 }: SearchableHostListProps) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;

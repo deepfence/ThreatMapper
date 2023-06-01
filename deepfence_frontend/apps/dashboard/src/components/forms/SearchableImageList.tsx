@@ -23,8 +23,8 @@ export const SearchableImageList = ({
   onChange,
   defaultSelectedImages,
   reset,
-  active = true,
-  pseudo = false,
+  active,
+  pseudo,
 }: Props) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;

@@ -113,8 +113,8 @@ export const useGetHostsList = ({
   scanType,
   searchText,
   size,
-  active = true,
-  pseudo = false,
+  active,
+  pseudo,
 }: {
   scanType: ScanTypeEnum | 'none';
   searchText?: string;
