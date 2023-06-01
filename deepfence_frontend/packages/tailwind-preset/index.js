@@ -48,6 +48,158 @@ module.exports = {
           'monospace',
         ],
       },
+      fontSize: {
+        h1: [
+          '30px',
+          {
+            lineHeight: '36px',
+            fontWeight: '600',
+          },
+        ],
+        h2: [
+          '24px',
+          {
+            lineHeight: '36px',
+            fontWeight: '600',
+          },
+        ],
+        h3: [
+          '18px',
+          {
+            lineHeight: '24px',
+            fontWeight: '600',
+          },
+        ],
+        h4: [
+          '18px',
+          {
+            lineHeight: '16px',
+            fontWeight: '400',
+          },
+        ],
+        h5: [
+          '14px',
+          {
+            lineHeight: '24px',
+            fontWeight: '700',
+          },
+        ],
+        h6: [
+          '14px',
+          {
+            lineHeight: '24px',
+            fontWeight: '600',
+          },
+        ],
+        p1: [
+          '14px',
+          {
+            lineHeight: '24px',
+            fontWeight: '400',
+          },
+        ],
+        p2: [
+          '14px',
+          {
+            lineHeight: '24px',
+            fontWeight: '400',
+          },
+        ],
+        p3: [
+          '13px',
+          {
+            lineHeight: '18px',
+            fontWeight: '700',
+          },
+        ],
+        p4: [
+          '13px',
+          {
+            lineHeight: '24px',
+            fontWeight: '400',
+          },
+        ],
+        p5: [
+          '13px',
+          {
+            lineHeight: '24px',
+            fontWeight: '400',
+          },
+        ],
+        p6: [
+          '12px',
+          {
+            lineHeight: '18px',
+            fontWeight: '600',
+          },
+        ],
+        p7: [
+          '12px',
+          {
+            lineHeight: '18px',
+            fontWeight: '400',
+          },
+        ],
+        p8: [
+          '11px',
+          {
+            lineHeight: '16px',
+            fontWeight: '400',
+          },
+        ],
+        p9: [
+          '10px',
+          {
+            lineHeight: '13px',
+            fontWeight: '400',
+          },
+        ],
+        t1: [
+          '12px',
+          {
+            lineHeight: '16px',
+            fontWeight: '800',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+          },
+        ],
+        t2: [
+          '12px',
+          {
+            lineHeight: '16px',
+            fontWeight: '700',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+          },
+        ],
+        t3: [
+          '11px',
+          {
+            lineHeight: '16px',
+            fontWeight: '800',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+          },
+        ],
+        t4: [
+          '11px',
+          {
+            lineHeight: '16px',
+            fontWeight: '600',
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+          },
+        ],
+        t5: [
+          '10px',
+          {
+            lineHeight: '16px',
+            fontWeight: '600',
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+          },
+        ],
+      },
       colors: {
         transparent: 'transparent',
         white: '#ffffff',
@@ -64,28 +216,6 @@ module.exports = {
           700: '#374151',
           800: '#1F2937',
           900: '#111827',
-          // zinc
-          // 50: '#fafafa',
-          // 100: '#f4f4f5',
-          // 200: '#e4e4e7',
-          // 300: '#d4d4d8',
-          // 400: '#a1a1aa',
-          // 500: '#71717a',
-          // 600: '#52525b',
-          // 700: '#3f3f46',
-          // 800: '#27272a',
-          // 900: '#18181b',
-          // natural
-          // 50: '#fafafa',
-          // 100: '#f5f5f5',
-          // 200: '#e5e5e5',
-          // 300: '#d4d4d4',
-          // 400: '#a3a3a3',
-          // 500: '#737373',
-          // 600: '#525252',
-          // 700: '#404040',
-          // 800: '#262626',
-          // 900: '#171717',
         },
         red: {
           50: '#FDF2F2',
