@@ -44,7 +44,6 @@ const (
 
 var (
 	breaker       atomic.Bool
-	broke         atomic.Bool
 	Push_back     atomic.Int32
 	ingester_size int
 	db_input_size int
@@ -172,6 +171,7 @@ type neo4jIngester struct {
 	db_pusher        chan ReportIngestionData
 	num_ingested     atomic.Int32
 	num_received     atomic.Int32
+	num_processed    atomic.Int32
 }
 
 type ReportIngestionData struct {
@@ -642,6 +642,7 @@ func (nc *neo4jIngester) Close() {
 func (nc *neo4jIngester) Ingest(ctx context.Context, crpt report.CompressedReport) error {
 	select {
 	case nc.ingester <- crpt:
+		nc.num_processed.Add(1)
 	default:
 		breaker.Store(true)
 		crpt.Cleanup()
@@ -972,8 +973,8 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 	done := make(chan struct{})
 	db_pusher := make(chan ReportIngestionData, db_input_size)
 	db_pusher_seq := make(chan ReportIngestionData, db_input_size)
-	db_pusher_retry := make(chan ReportIngestionData, db_input_size)
-	db_pusher_seq_retry := make(chan ReportIngestionData, db_input_size)
+	db_pusher_retry := make(chan ReportIngestionData, db_input_size/2)
+	db_pusher_seq_retry := make(chan ReportIngestionData, db_input_size/2)
 	nc := &neo4jIngester{
 		driver:           driver,
 		resolvers:        rdb,
@@ -985,6 +986,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 		db_pusher:        db_pusher,
 		num_ingested:     atomic.Int32{},
 		num_received:     atomic.Int32{},
+		num_processed:    atomic.Int32{},
 	}
 
 	for i := 0; i < uncompress_workers_num; i++ {
@@ -1038,9 +1040,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 				len(db_pusher_seq))
 
 			if len(nc.ingester) == 0 {
-				if breaker.Swap(false) {
-					broke.Store(true)
-				}
+				breaker.Store(false)
 			}
 		}
 	}()
@@ -1073,17 +1073,24 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 			}
 
 			current_num_received := nc.num_received.Swap(0)
+			current_num_accepted := nc.num_processed.Swap(0)
 			current_num_ingested := nc.num_ingested.Swap(0)
 
-			if current_num_received > (current_num_ingested/4)*3 {
-				Push_back.Add(1)
-			} else if !broke.Swap(false) && current_num_received < (prev_received_num/4)*3 {
-				ratio := max(prev_received_num/100, 1) / max(current_num_received/100, 1)
-				Push_back.Store(Push_back.Load() / ratio)
-				if Push_back.Load() <= 0 {
-					Push_back.Store(1)
-				}
+			new_value := int32(0)
+			if current_num_accepted > (current_num_ingested/4)*3 {
+				ratio := max(current_num_accepted, 1) / max(current_num_ingested, 1)
+				new_value = Push_back.Load() * ratio
+			} else if current_num_received < (prev_received_num/4)*3 {
+				ratio := max(prev_received_num, 1) / max(current_num_received, 1)
+				new_value = Push_back.Load() / ratio
 				prev_received_num = current_num_received
+			}
+			if new_value <= 0 {
+				Push_back.Store(1)
+			} else if new_value > max_push_back {
+				Push_back.Store(max_push_back)
+			} else {
+				Push_back.Store(new_value)
 			}
 
 			// Keep the highest number of reports
@@ -1097,7 +1104,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 
 			ticker.Reset(agent_base_timeout * time.Duration(Push_back.Load()))
 
-			log.Info().Msgf("Received: %v, pushed: %v, Push back: %v", current_num_received, current_num_ingested, Push_back.Load())
+			log.Info().Msgf("Received: %v, processed: %v, pushed: %v, Push back: %v", current_num_received, current_num_accepted, current_num_ingested, Push_back.Load())
 		}
 	}()
 
