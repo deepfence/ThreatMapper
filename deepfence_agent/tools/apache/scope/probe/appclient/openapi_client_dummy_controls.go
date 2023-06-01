@@ -14,7 +14,6 @@ import (
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
 	"github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/probe/controls"
-	"github.com/weaveworks/scope/probe/host"
 )
 
 var dummyNum int
@@ -30,38 +29,35 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 
 	for i := 0; i < dummyNum; i++ {
 
-		// Add jitter
-		<-time.After(time.Second * time.Duration(i/70))
-
 		dummyNodeId := nodeId + strconv.Itoa(i)
 
 		if isClusterAgent {
 
 		} else {
 
-			req := ct.API().ControlsAPI.GetAgentInitControls(context.Background())
-			req = req.ModelInitAgentReq(
-				*openapi.NewModelInitAgentReq(
-					getMaxAllocatable(),
-					dummyNodeId,
-					host.AgentVersionNo,
-				),
-			)
-			ctl, _, err := ct.API().ControlsAPI.GetAgentInitControlsExecute(req)
+			//req := ct.API().ControlsAPI.GetAgentInitControls(context.Background())
+			//req = req.ModelInitAgentReq(
+			//	*openapi.NewModelInitAgentReq(
+			//		getMaxAllocatable(),
+			//		dummyNodeId,
+			//		host.AgentVersionNo,
+			//	),
+			//)
+			//ctl, _, err := ct.API().ControlsAPI.GetAgentInitControlsExecute(req)
 
-			if err != nil {
-				ct.publishInterval.Store(30)
-			} else {
-				ct.publishInterval.Store(ctl.Beatrate)
-			}
+			//if err != nil {
+			ct.publishInterval.Store(60)
+			//} else {
+			//	ct.publishInterval.Store(ctl.Beatrate)
+			//}
 
-			for _, action := range ctl.Commands {
-				logrus.Infof("Init execute :%v", action.Id)
-				err := controls.ApplyControl(action)
-				if err != nil {
-					logrus.Errorf("Control %v failed: %v\n", action, err)
-				}
-			}
+			//for _, action := range ctl.Commands {
+			//	logrus.Infof("Init execute :%v", action.Id)
+			//	err := controls.ApplyControl(action)
+			//	if err != nil {
+			//		logrus.Errorf("Control %v failed: %v\n", action, err)
+			//	}
+			//}
 		}
 
 		if isClusterAgent {
@@ -96,6 +92,8 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 			}()
 		} else {
 			go func() {
+				// Add jitter
+				<-time.After(time.Second * time.Duration(i/70))
 				req := ct.API().ControlsAPI.GetAgentControls(context.Background())
 				agentId := openapi.NewModelAgentId(getMaxAllocatable(), dummyNodeId)
 				req = req.ModelAgentId(*agentId)

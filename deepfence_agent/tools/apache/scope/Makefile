@@ -23,7 +23,7 @@ RM=--rm
 RUN_FLAGS=-ti
 BUILD_IN_CONTAINER=true
 GO_ENV=GOGC=off
-GO_BUILD_TAGS='netgo osusergo unsafe'
+GO_BUILD_TAGS='netgo osusergo unsafe dummy'
 GO_BUILD_FLAGS=-mod vendor -ldflags "-extldflags \"-static\" -X main.version=$(SCOPE_VERSION)  -X github.com/weaveworks/scope/probe/host.agentCommitID=$(SCOPE_VERSION) -X github.com/weaveworks/scope/probe/host.agentBuildTime=$(AGENT_BUILD_TIME) -s -w" -tags $(GO_BUILD_TAGS)
 
 ifeq ($(GOARCH),arm)
