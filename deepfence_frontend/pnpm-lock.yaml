@@ -17,6 +17,7 @@ importers:
       '@antv/g6': ^4.8.7
       '@antv/g6-core': ^0.8.7
       '@antv/layout': ^0.3.17
+      '@lukemorales/query-key-factory': ^1.2.0
       '@openapitools/openapi-generator-cli': ^2.5.2
       '@playwright/test': ^1.30.0
       '@radix-ui/react-navigation-menu': ^1.1.1
@@ -71,6 +72,7 @@ importers:
       '@antv/g6': 4.8.7
       '@antv/g6-core': 0.8.7
       '@antv/layout': 0.3.17_dagre@0.8.5
+      '@lukemorales/query-key-factory': 1.2.0_fixw3wxmptuhd7zjdtbnpagdii
       '@radix-ui/react-navigation-menu': 1.1.1_biqbaboplfbrettd7655fr4n2y
       '@suspensive/react': 1.11.0_react@18.2.0
       '@suspensive/react-query': 1.11.0_aqbz6ghgul3ixyew7dzgpmfbhu
@@ -2616,6 +2618,15 @@ packages:
   /@juggle/resize-observer/3.4.0:
     resolution: {integrity: sha512-dfLbk+PwWvFzSxwk3n5ySL0hfBog779o8h68wK/7/APo/7cgyWp5jcXockbxdk5kFRkbeXWm4Fbi9FrdN381sA==}
     dev: true
+
+  /@lukemorales/query-key-factory/1.2.0_fixw3wxmptuhd7zjdtbnpagdii:
+    resolution: {integrity: sha512-ilUedLpJdpOCMKgxoncRkYEFF7C+K//IK/QWXHs0G6HjmZunT9XcrpWHNc5RjrBBqPhdxYNa7aUoEhjonwl4eQ==}
+    engines: {node: '>=14'}
+    peerDependencies:
+      '@tanstack/query-core': ^4.0.0
+    dependencies:
+      '@tanstack/query-core': 4.29.11
+    dev: false
 
   /@mdx-js/react/2.3.0_react@18.2.0:
     resolution: {integrity: sha512-zQH//gdOmuu7nt2oJR29vFhDv88oGPmVw6BggmrHeMI+xgEkp1B2dX9/bMBSYtK0dyLX/aOmesKS09g222K1/g==}

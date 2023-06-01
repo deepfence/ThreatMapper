@@ -20,6 +20,7 @@
     "@antv/g6": "^4.8.7",
     "@antv/g6-core": "^0.8.7",
     "@antv/layout": "^0.3.17",
+    "@lukemorales/query-key-factory": "^1.2.0",
     "@radix-ui/react-navigation-menu": "^1.1.1",
     "@suspensive/react": "^1.11.0",
     "@suspensive/react-query": "^1.11.0",
