@@ -120,6 +120,22 @@ func AddNewScan(tx WriteDBTransaction,
 		return err
 	}
 
+	latestScanIDFieldName, scanStatusFieldName := GetScanFieldNames(scan_type)
+	if _, err = tx.Run(fmt.Sprintf(`
+		MERGE (n:%s{node_id: $scan_id})
+		SET n.status = $status, n.updated_at = TIMESTAMP()
+		WITH n
+		OPTIONAL MATCH (n) -[:DETECTED]- (m)
+		WITH n
+		MATCH (n) -[:SCANNED]- (r)
+		SET r.%s=n.status, r.%s=n.node_id`,
+		scan_type, scanStatusFieldName, latestScanIDFieldName),
+		map[string]interface{}{
+			"scan_id": scan_id,
+			"status":  utils.SCAN_STATUS_STARTING}); err != nil {
+		return err
+	}
+
 	switch node_type {
 	case controls.Host:
 		if _, err = tx.Run(fmt.Sprintf(`
@@ -323,4 +339,26 @@ func AddBulkScan(tx WriteDBTransaction, scan_type utils.Neo4jScanType, bulk_scan
 	}
 
 	return nil
+}
+
+func GetScanFieldNames(scan_type utils.Neo4jScanType) (string, string) {
+	latestScanIdFieldName, scanStatusFieldName := "", ""
+	switch scan_type {
+	case utils.NEO4J_SECRET_SCAN:
+		latestScanIdFieldName = "secret_latest_scan_id"
+		scanStatusFieldName = "secret_scan_status"
+	case utils.NEO4J_VULNERABILITY_SCAN:
+		latestScanIdFieldName = "vulnerability_latest_scan_id"
+		scanStatusFieldName = "vulnerability_scan_status"
+	case utils.NEO4J_MALWARE_SCAN:
+		latestScanIdFieldName = "malware_latest_scan_id"
+		scanStatusFieldName = "malware_scan_status"
+	case utils.NEO4J_COMPLIANCE_SCAN:
+		latestScanIdFieldName = "compliance_latest_scan_id"
+		scanStatusFieldName = "compliance_scan_status"
+	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
+		latestScanIdFieldName = "cloud_compliance_latest_scan_id"
+		scanStatusFieldName = "cloud_compliance_scan_status"
+	}
+	return latestScanIdFieldName, scanStatusFieldName
 }

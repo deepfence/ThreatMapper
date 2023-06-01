@@ -219,11 +219,6 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 
 	h.AuditUserActivity(r, EVENT_VULNERABILITY_SCAN, ACTION_START, reqs, true)
 
-	for _, i := range scan_ids {
-		h.SendScanStatus(r.Context(), utils.VULNERABILITY_SCAN_STATUS,
-			NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
-	}
-
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -288,11 +283,6 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	h.AuditUserActivity(r, EVENT_SECRET_SCAN, ACTION_START, reqs, true)
-
-	for _, i := range scan_ids {
-		h.SendScanStatus(r.Context(), utils.SECRET_SCAN_STATUS,
-			NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
-	}
 
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
@@ -440,13 +430,6 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	h.AuditUserActivity(r, EVENT_MALWARE_SCAN, ACTION_START, reqs, true)
-
-	if err != nil {
-		for _, i := range scan_ids {
-			h.SendScanStatus(r.Context(), utils.MALWARE_SCAN_STATUS,
-				NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
-		}
-	}
 
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
