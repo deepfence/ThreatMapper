@@ -95,7 +95,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 				if err != nil {
 					logrus.Errorf("Getting controls failed: %v\n", err)
 					rand.Seed(time.Now().UnixNano())
-					randomDelay := rand.Intn(30)
+					randomDelay := rand.Intn(int(ct.PublishInterval() / 2))
 					time.Sleep(time.Duration(randomDelay) * time.Second)
 					continue
 				}
