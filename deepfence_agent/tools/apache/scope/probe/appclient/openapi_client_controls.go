@@ -5,6 +5,8 @@ package appclient
 
 import (
 	"context"
+	"math/rand"
+	"net/http"
 	"sync/atomic"
 	"time"
 
@@ -28,11 +30,11 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 		)
 		ctl, _, err := ct.API().ControlsAPI.GetAgentInitControlsExecute(req)
 
-		ct.publishInterval.Store(ctl.Beatrate)
-
 		if err != nil {
 			return err
 		}
+
+		ct.publishInterval.Store(ctl.Beatrate)
 
 		for _, action := range ctl.Commands {
 			logrus.Infof("Init execute :%v", action.Id)
@@ -90,9 +92,14 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 				}
 				agentId.SetAvailableWorkload(getMaxAllocatable())
 				req = req.ModelAgentId(*agentId)
-				ctl, _, err := ct.API().ControlsAPI.GetAgentControlsExecute(req)
+				ctl, resp, err := ct.API().ControlsAPI.GetAgentControlsExecute(req)
 				if err != nil {
 					logrus.Errorf("Getting controls failed: %v\n", err)
+					if resp.StatusCode == http.StatusServiceUnavailable {
+						rand.Seed(time.Now().UnixNano())
+						randomDelay := rand.Intn(30)
+						time.Sleep(time.Duration(randomDelay) * time.Second)
+					}
 					continue
 				}
 

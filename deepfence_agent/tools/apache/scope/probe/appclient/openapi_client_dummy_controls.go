@@ -5,6 +5,8 @@ package appclient
 
 import (
 	"context"
+	"math/rand"
+	"net/http"
 	"os"
 	"strconv"
 	"sync/atomic"
@@ -13,7 +15,7 @@ import (
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
 	"github.com/sirupsen/logrus"
 	"github.com/weaveworks/scope/probe/controls"
-	//"github.com/weaveworks/scope/probe/host"
+	"github.com/weaveworks/scope/probe/host"
 )
 
 var dummyNum int
@@ -106,12 +108,16 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 					}
 					agentId.SetAvailableWorkload(getMaxAllocatable())
 					req = req.ModelAgentId(*agentId)
-					ctl, _, err := ct.API().ControlsAPI.GetAgentControlsExecute(req)
+					ctl, resp, err := ct.API().ControlsAPI.GetAgentControlsExecute(req)
 					if err != nil {
 						logrus.Errorf("Getting controls failed: %v\n", err)
+						if resp.StatusCode == http.StatusServiceUnavailable {
+							rand.Seed(time.Now().UnixNano())
+							randomDelay := rand.Intn(30)
+							time.Sleep(time.Duration(randomDelay) * time.Second)
+						}
 						continue
 					}
-
 					ct.publishInterval.Store(ctl.Beatrate)
 
 					for _, action := range ctl.Commands {
