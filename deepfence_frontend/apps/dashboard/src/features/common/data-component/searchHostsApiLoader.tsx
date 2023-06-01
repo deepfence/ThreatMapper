@@ -25,6 +25,9 @@ export const searchHostsApiLoader = async ({
     throw new Error('Scan Type is required');
   }
   const searchText = searchParams?.get('searchText')?.toString();
+  const pseudo = searchParams?.get('pseudo')?.toString() || false;
+  const active = searchParams?.get('active')?.toString();
+
   const size = parseInt(searchParams?.get('size')?.toString() ?? '0', 10);
 
   const matchFilter = { filter_in: {} };
@@ -57,8 +60,8 @@ export const searchHostsApiLoader = async ({
         filters: {
           contains_filter: {
             filter_in: {
-              pseudo: [false],
-              active: [true],
+              ...(pseudo !== undefined && { pseudo: [pseudo === 'true'] }),
+              ...(active !== undefined && { active: [active === 'true'] }),
             },
           },
           order_filter: {
@@ -110,10 +113,14 @@ export const useGetHostsList = ({
   scanType,
   searchText,
   size,
+  active = true,
+  pseudo = false,
 }: {
   scanType: ScanTypeEnum | 'none';
   searchText?: string;
   size: number;
+  active?: boolean;
+  pseudo?: boolean;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   hosts: SearchHostsLoaderDataType['hosts'];
@@ -126,6 +133,12 @@ export const useGetHostsList = ({
       const searchParams = new URLSearchParams();
       searchParams.set('searchText', searchText ?? '');
       searchParams.set('size', size.toString());
+      if (active !== undefined) {
+        searchParams.set('active', active.toString());
+      }
+      if (pseudo !== undefined) {
+        searchParams.set('pseudo', pseudo.toString());
+      }
 
       fetcher.load(
         generatePath(

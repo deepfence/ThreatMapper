@@ -12,11 +12,15 @@ export const SearchableClusterList = ({
   defaultSelectedClusters,
   reset,
   valueKey = 'clusterId',
+  active,
+  pseudo,
 }: {
   onChange?: (value: string[]) => void;
   defaultSelectedClusters?: string[];
   reset?: boolean;
   valueKey?: 'clusterName' | 'clusterId';
+  active?: boolean;
+  pseudo?: boolean;
 }) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
@@ -37,6 +41,8 @@ export const SearchableClusterList = ({
   const { clusters, hasNext } = useGetClustersList({
     searchText: searchState.searchText,
     size: searchState.size,
+    active,
+    pseudo,
   });
 
   useEffect(() => {

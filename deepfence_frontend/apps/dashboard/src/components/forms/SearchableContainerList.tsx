@@ -13,6 +13,8 @@ export type Props = {
   onChange?: (value: string[]) => void;
   defaultSelectedContainers?: string[];
   reset?: boolean;
+  active?: boolean;
+  pseudo?: boolean;
 };
 const PAGE_SIZE = 15;
 export const SearchableContainerList = ({
@@ -20,6 +22,8 @@ export const SearchableContainerList = ({
   onChange,
   defaultSelectedContainers,
   reset,
+  active,
+  pseudo,
 }: Props) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
@@ -40,6 +44,8 @@ export const SearchableContainerList = ({
     scanType,
     searchText: searchState.searchText,
     size: searchState.size,
+    active,
+    pseudo,
   });
 
   useEffect(() => {

@@ -14,6 +14,8 @@ export type SearchableHostListProps = {
   defaultSelectedHosts?: string[];
   reset?: boolean;
   valueKey?: 'nodeId' | 'hostName' | 'nodeName';
+  active?: boolean;
+  pseudo?: boolean;
 };
 
 const PAGE_SIZE = 15;
@@ -24,6 +26,8 @@ export const SearchableHostList = ({
   defaultSelectedHosts,
   reset,
   valueKey = 'nodeId',
+  active = true,
+  pseudo = false,
 }: SearchableHostListProps) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
@@ -65,6 +69,8 @@ export const SearchableHostList = ({
     scanType,
     searchText: searchState.searchText,
     size: searchState.size,
+    active,
+    pseudo,
   });
 
   useEffect(() => {

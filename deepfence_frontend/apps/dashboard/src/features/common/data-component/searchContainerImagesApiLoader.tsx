@@ -24,6 +24,8 @@ export const searchContainerImagesApiLoader = async ({
   }
   const searchText = searchParams?.get('searchText')?.toString();
   const size = parseInt(searchParams?.get('size')?.toString() ?? '0', 10);
+  const pseudo = searchParams?.get('pseudo')?.toString() || false;
+  const active = searchParams?.get('active')?.toString();
 
   const matchFilter = { filter_in: {} };
   if (searchText?.length) {
@@ -51,7 +53,10 @@ export const searchContainerImagesApiLoader = async ({
       node_filter: {
         filters: {
           contains_filter: {
-            filter_in: {},
+            filter_in: {
+              ...(pseudo !== undefined && { pseudo: [pseudo === 'true'] }),
+              ...(active !== undefined && { active: [active === 'true'] }),
+            },
           },
           order_filter: {
             order_fields: [
@@ -102,10 +107,14 @@ export const useGetContainerImagesList = ({
   scanType,
   searchText,
   size = 0,
+  active = true,
+  pseudo = false,
 }: {
   scanType: ScanTypeEnum | 'none';
   searchText?: string;
   size: number;
+  active?: boolean;
+  pseudo?: boolean;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   containerImages: SearchContainerImagesLoaderDataType['containerImages'];
@@ -117,6 +126,13 @@ export const useGetContainerImagesList = ({
     const searchParams = new URLSearchParams();
     searchParams.set('searchText', searchText ?? '');
     searchParams.set('size', size.toString());
+    if (active !== undefined) {
+      searchParams.set('active', active.toString());
+    }
+    if (pseudo !== undefined) {
+      searchParams.set('pseudo', pseudo.toString());
+    }
+
     fetcher.load(
       generatePath(
         `/data-component/search/containerImages/:scanType/?${searchParams.toString()}`,

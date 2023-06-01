@@ -19,6 +19,8 @@ export const searchClustersApiLoader = async ({
 
   const searchText = searchParams?.get('searchText')?.toString();
   const size = parseInt(searchParams?.get('size')?.toString() ?? '0', 10);
+  const pseudo = searchParams?.get('pseudo')?.toString();
+  const active = searchParams?.get('active')?.toString();
 
   const matchFilter = { filter_in: {} };
   if (searchText?.length) {
@@ -36,8 +38,8 @@ export const searchClustersApiLoader = async ({
           compare_filter: null,
           contains_filter: {
             filter_in: {
-              pseudo: [false],
-              active: [true],
+              ...(pseudo !== undefined && { pseudo: [pseudo === 'true'] }),
+              ...(active !== undefined && { active: [active === 'true'] }),
             },
           },
           match_filter: matchFilter,
@@ -83,9 +85,13 @@ export const searchClustersApiLoader = async ({
 export const useGetClustersList = ({
   searchText,
   size,
+  active,
+  pseudo,
 }: {
   searchText?: string;
   size: number;
+  active?: boolean;
+  pseudo?: boolean;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   clusters: SearchClustersLoaderDataType['clusters'];
@@ -97,6 +103,12 @@ export const useGetClustersList = ({
     const searchParams = new URLSearchParams();
     searchParams.set('searchText', searchText ?? '');
     searchParams.set('size', size.toString());
+    if (active !== undefined) {
+      searchParams.set('active', active.toString());
+    }
+    if (pseudo !== undefined) {
+      searchParams.set('pseudo', pseudo.toString());
+    }
 
     fetcher.load(
       generatePath(`/data-component/search/clusters/?${searchParams.toString()}`),

@@ -13,6 +13,8 @@ export type Props = {
   onChange?: (value: string[]) => void;
   defaultSelectedImages?: string[];
   reset?: boolean;
+  active?: boolean;
+  pseudo?: boolean;
 };
 
 const PAGE_SIZE = 15;
@@ -21,6 +23,8 @@ export const SearchableImageList = ({
   onChange,
   defaultSelectedImages,
   reset,
+  active = true,
+  pseudo = false,
 }: Props) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
@@ -41,6 +45,8 @@ export const SearchableImageList = ({
     scanType,
     searchText: searchState.searchText,
     size: searchState.size,
+    active,
+    pseudo,
   });
 
   useEffect(() => {
