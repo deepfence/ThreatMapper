@@ -29,6 +29,9 @@ export const AutoRefresh = () => {
     () => {
       if (state === 'idle') {
         revalidate();
+        queryClient.refetchQueries({
+          type: 'active',
+        });
       }
     },
     refreshInSeconds === 0 ? null : refreshInSeconds * 1000,
