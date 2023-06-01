@@ -2,6 +2,7 @@ package reporters_lookup
 
 import (
 	"context"
+	"time"
 
 	commonConstants "github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
@@ -295,7 +296,7 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -380,14 +381,14 @@ func getNodeConnections[T reporters.Cypherable](ctx context.Context, ids []strin
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return inbound, outbound, err
 	}
 	defer tx.Close()
 
 	query := `
-			MATCH (n:` + dummy.NodeType() + `)-[c:CONNECTS]-(m) 
+			MATCH (n:` + dummy.NodeType() + `)-[c:CONNECTS]-(m)
 			WHERE n.node_id in $ids
 			RETURN n.node_id,m.node_id,m.node_name,sum(size(c.left_pids)),(startNode(c) = n)`
 	r, err := tx.Run(query, map[string]interface{}{"ids": ids})
@@ -436,7 +437,7 @@ func getIndirectFromIDs[T any](ctx context.Context, query string, ids []string) 
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, matchedId, err
 	}
@@ -534,7 +535,7 @@ func getContainerProcesses(ctx context.Context, ids []string) ([]model.Process, 
 
 func getContainerContainerImages(ctx context.Context, ids []string) ([]model.ContainerImage, map[string]string, error) {
 	return getIndirectFromIDs[model.ContainerImage](ctx, `
-		MATCH (n:Container) 
+		MATCH (n:Container)
 		WHERE n.node_id IN $ids
 		MATCH (m:ContainerImage{node_id:n.docker_image_id})
 		RETURN m, n.node_id`,

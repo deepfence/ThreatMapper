@@ -2,6 +2,7 @@ package ingesters
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
@@ -52,7 +53,7 @@ func CommitFuncStatus[Status any](ts utils.Neo4jScanType) func(ns string, data [
 		}
 		defer session.Close()
 
-		tx, err := session.BeginTransaction()
+		tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 		if err != nil {
 			return err
 		}

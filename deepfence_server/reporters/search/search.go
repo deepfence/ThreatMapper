@@ -2,6 +2,7 @@ package reporters_search
 
 import (
 	"context"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -72,39 +73,39 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
 	defer tx.Close()
 
 	query := `
-		CALL {	
+		CALL {
 			MATCH (n:Node)
 			WHERE n.pseudo = false AND n.active = true
 			return count(n) as n1
 		}
-		CALL {	
+		CALL {
 			MATCH (n:Container)
 			WHERE n.pseudo = false AND n.active = true
 			return count(n) as n2
 		}
-		CALL {	
+		CALL {
 			MATCH (n:ContainerImage)
 			WHERE n.pseudo = false AND n.active = true
 			return count(n) as n3
 		}
-		CALL {	
+		CALL {
 			MATCH (n:KubernetesCluster)
 			WHERE n.pseudo = false AND n.active = true
 			return count(n) as n4
 		}
-		CALL {	
+		CALL {
 			MATCH (n:Pod)
 			WHERE n.pseudo = false AND n.active = true
 			return count(n) as n5, count(distinct n.kubernetes_namespace) as nn5
 		}
-		CALL {	
+		CALL {
 			MATCH (n:CloudProvider)
 			WHERE n.pseudo = false AND n.active = true
 			return count(n) as n6
@@ -146,7 +147,7 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -157,7 +158,7 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
 		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) +
 		` OPTIONAL MATCH (n) -[:IS]-> (e) CALL {
-        WITH n OPTIONAL MATCH (l) -[:DETECTED]-> (n) OPTIONAL MATCH (l) -[:SCANNED]-> (k) 
+        WITH n OPTIONAL MATCH (l) -[:DETECTED]-> (n) OPTIONAL MATCH (l) -[:SCANNED]-> (k)
         WITH distinct k RETURN collect((coalesce(k.node_name, '') + '/' + coalesce(k.node_type, ''))) as resources }
 		RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources ` +
 		fw.FetchWindow2CypherQuery()
@@ -240,7 +241,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -328,7 +329,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}

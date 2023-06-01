@@ -8,10 +8,12 @@ import (
 	"reflect"
 	"sort"
 	"strconv"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/samber/mo"
 )
@@ -598,7 +600,8 @@ type RenderedGraph struct {
 	Connections []ConnectionSummary   `json:"connections" required:"true"`
 	//PublicCloudResources    map[NodeID][]ResourceStub `json:"public-cloud-resources" required:"true"`
 	//NonPublicCloudResources map[NodeID][]ResourceStub `json:"non-public-cloud-resources" required:"true"`
-	CloudServices map[NodeID][]ResourceStub `json:"cloud-services" required:"true"`
+	CloudServices      map[NodeID][]ResourceStub `json:"cloud-services" required:"true"`
+	SkippedConnections bool                      `json:"skipped_connections" required:"true"`
 }
 
 type TopologyFilters struct {
@@ -636,7 +639,7 @@ func (nc *neo4jTopologyReporter) getContainerGraph(ctx context.Context, filters 
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -671,7 +674,7 @@ func (nc *neo4jTopologyReporter) getPodGraph(ctx context.Context, filters Topolo
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -711,7 +714,7 @@ func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -758,7 +761,7 @@ func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters Topol
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -809,16 +812,19 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyF
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	connTx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
+	res.Connections, err = nc.GetConnections(connTx)
+	if err != nil {
+		log.Error().Msgf("Topology get connections: %v", err)
+		res.SkippedConnections = true
+	}
+	connTx.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
 	defer tx.Close()
-
-	res.Connections, err = nc.GetConnections(tx)
-	if err != nil {
-		return res, err
-	}
 
 	res.Providers, err = nc.getCloudProviders(tx)
 	if err != nil {

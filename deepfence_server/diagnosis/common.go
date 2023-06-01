@@ -114,7 +114,7 @@ func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathP
 		return diagnosticLogs
 	}
 	defer session.Close()
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	defer tx.Close()
 
 	r, err := tx.Run(`

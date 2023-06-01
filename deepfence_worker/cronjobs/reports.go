@@ -62,7 +62,7 @@ func CleanUpReports(msg *message.Message) error {
 }
 
 func deleteReport(ctx context.Context, session neo4j.Session, path string) error {
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		return err
