@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
@@ -287,7 +288,7 @@ func UpdateScanStatus(ctx context.Context, scan_type string, scan_id string, sta
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}

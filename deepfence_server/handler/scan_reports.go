@@ -69,7 +69,7 @@ func GetImageFromId(ctx context.Context, node_id string) (string, string, error)
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return name, tag, err
 	}
@@ -113,7 +113,7 @@ func GetContainerKubeClusterNameFromId(ctx context.Context, node_id string) (str
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return clusterID, clusterName, err
 	}
@@ -1043,7 +1043,7 @@ func groupSecrets(ctx context.Context) ([]reporters_search.ResultGroup, error) {
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return results, err
 	}
@@ -1103,7 +1103,7 @@ func groupMalwares(ctx context.Context, byClass bool) ([]reporters_search.Result
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return results, err
 	}
@@ -1568,7 +1568,7 @@ func FindNodesMatching(ctx context.Context,
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -1627,7 +1627,7 @@ func GetImagesFromAdvanceFilter(ctx context.Context, ids []model.NodeIdentifier,
 
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -1709,7 +1709,7 @@ func FindImageRegistryIds(ctx context.Context, image_id string) ([]int32, error)
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -1774,7 +1774,7 @@ func StartMultiScan(ctx context.Context,
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return nil, "", err
 	}
@@ -1888,7 +1888,7 @@ func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return nil, "", err
 	}

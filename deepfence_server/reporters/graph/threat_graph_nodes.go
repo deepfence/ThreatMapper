@@ -2,6 +2,7 @@ package reporters_graph
 
 import (
 	"context"
+	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -35,7 +36,7 @@ func GetVulnerabilityThreatGraph(ctx context.Context, graphType string) ([]Vulne
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(60 * time.Second))
 	if err != nil {
 		return vulnerabilityThreatGraph, err
 	}

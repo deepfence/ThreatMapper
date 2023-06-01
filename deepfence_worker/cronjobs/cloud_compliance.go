@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -54,7 +55,7 @@ func AddCloudControls(msg *message.Message) error {
 	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return nil

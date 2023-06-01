@@ -8,6 +8,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
@@ -135,7 +136,7 @@ func GenerateReport(msg *message.Message) error {
 }
 
 func updateReportState(ctx context.Context, session neo4j.Session, reportId, url, path, status string) {
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -143,7 +144,7 @@ func updateReportState(ctx context.Context, session neo4j.Session, reportId, url
 
 	// update url in neo4j report node
 	query := `
-	MATCH (n:Report{report_id:$uid}) 
+	MATCH (n:Report{report_id:$uid})
 	SET n.url=$url, n.updated_at=TIMESTAMP(), n.status = $status, n.storage_path = $path
 	RETURN n
 	`

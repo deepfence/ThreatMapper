@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
@@ -102,7 +103,7 @@ func (tc *CloudResourceIngester) Ingest(ctx context.Context, cs []CloudResource)
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -208,7 +209,7 @@ func (tc *CloudComplianceIngester) LinkNodesWithCloudResources(ctx context.Conte
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
@@ -187,7 +188,7 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -272,7 +273,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return postureProviders, err
 	}
@@ -412,7 +413,7 @@ func GetCloudComplianceNodesList(ctx context.Context, cloudProvider string, fw F
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return CloudNodeAccountsListResp{Total: 0}, err
 	}
@@ -572,7 +573,7 @@ func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloud
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return benchmarks, err
 	}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -71,7 +72,7 @@ func GetPendingAgentScans(ctx context.Context, nodeId string, availableWorkload 
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -124,7 +125,7 @@ func hasAgentDiagnosticLogRequests(client neo4j.Driver, nodeId string, nodeType 
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return false, err
 	}
@@ -168,7 +169,7 @@ func ExtractAgentDiagnosticLogRequests(ctx context.Context, nodeId string, nodeT
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -220,7 +221,7 @@ func hasPendingAgentScans(client neo4j.Driver, nodeId string, max_work int) (boo
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return false, err
 	}
@@ -262,7 +263,7 @@ func ExtractStartingAgentScans(ctx context.Context, nodeId string, max_work int)
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -316,7 +317,7 @@ func hasPendingAgentUpgrade(client neo4j.Driver, nodeId string, max_work int) (b
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return false, err
 	}
@@ -358,7 +359,7 @@ func ExtractPendingAgentUpgrade(ctx context.Context, nodeId string, max_work int
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -422,14 +423,14 @@ func CheckNodeExist(ctx context.Context, nodeId string) error {
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
 	defer tx.Close()
 
 	r, err := tx.Run(`
-		MATCH (n:Node{node_id:$id}) 
+		MATCH (n:Node{node_id:$id})
 		RETURN n.node_id`,
 		map[string]interface{}{"id": nodeId})
 

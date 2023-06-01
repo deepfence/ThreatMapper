@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -46,7 +47,7 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)
@@ -134,7 +135,7 @@ func (h *Handler) GetReport(w http.ResponseWriter, r *http.Request) {
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)
@@ -189,7 +190,7 @@ func (h *Handler) ListReports(w http.ResponseWriter, r *http.Request) {
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)
@@ -270,7 +271,7 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)

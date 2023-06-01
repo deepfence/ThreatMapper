@@ -1163,7 +1163,7 @@ func metadataToMap(n report.Metadata) map[string]interface{} {
 
 // TODO: improve syncro across multiple servers
 func UpdatePushBack(session neo4j.Session, newValue *atomic.Int32, prev int32) error {
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(5 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -1206,7 +1206,7 @@ func GetPushBack(driver neo4j.Driver) (int32, error) {
 		return 0, err
 	}
 	defer session.Close()
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(5 * time.Second))
 	if err != nil {
 		return 0, err
 	}
