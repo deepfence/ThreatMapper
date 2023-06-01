@@ -14,7 +14,6 @@ export type Props = {
   defaultSelectedImages?: string[];
   reset?: boolean;
   active?: boolean;
-  pseudo?: boolean;
 };
 
 const PAGE_SIZE = 15;
@@ -24,7 +23,6 @@ export const SearchableImageList = ({
   defaultSelectedImages,
   reset,
   active,
-  pseudo,
 }: Props) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
@@ -46,7 +44,6 @@ export const SearchableImageList = ({
     searchText: searchState.searchText,
     size: searchState.size,
     active,
-    pseudo,
   });
 
   useEffect(() => {

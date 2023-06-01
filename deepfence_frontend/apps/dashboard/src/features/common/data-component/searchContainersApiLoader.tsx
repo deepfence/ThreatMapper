@@ -24,7 +24,6 @@ export const searchContainersApiLoader = async ({
   const searchParams = new URL(request.url).searchParams;
   const searchText = searchParams?.get('searchText')?.toString();
   const size = parseInt(searchParams?.get('size')?.toString() ?? '0', 10);
-  const pseudo = searchParams?.get('pseudo')?.toString();
   const active = searchParams?.get('active')?.toString();
 
   const matchFilter = { filter_in: {} };
@@ -54,7 +53,7 @@ export const searchContainersApiLoader = async ({
         filters: {
           contains_filter: {
             filter_in: {
-              ...(pseudo !== undefined && { pseudo: [pseudo === 'true'] }),
+              pseudo: [false],
               ...(active !== undefined && { active: [active === 'true'] }),
             },
           },
@@ -107,13 +106,11 @@ export const useGetContainersList = ({
   searchText,
   size,
   active,
-  pseudo,
 }: {
   scanType: ScanTypeEnum | 'none';
   searchText?: string;
   size: number;
   active?: boolean;
-  pseudo?: boolean;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   containers: SearchContainersLoaderDataType['containers'];
@@ -127,9 +124,6 @@ export const useGetContainersList = ({
     searchParams.set('size', size.toString());
     if (active !== undefined) {
       searchParams.set('active', active.toString());
-    }
-    if (pseudo !== undefined) {
-      searchParams.set('pseudo', pseudo.toString());
     }
     fetcher.load(
       generatePath(

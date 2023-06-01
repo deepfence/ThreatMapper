@@ -15,7 +15,6 @@ export type SearchableHostListProps = {
   reset?: boolean;
   valueKey?: 'nodeId' | 'hostName' | 'nodeName';
   active?: boolean;
-  pseudo?: boolean;
 };
 
 const PAGE_SIZE = 15;
@@ -27,7 +26,6 @@ export const SearchableHostList = ({
   reset,
   valueKey = 'nodeId',
   active,
-  pseudo,
 }: SearchableHostListProps) => {
   const [searchState, setSearchState] = useState<{
     searchText: string;
@@ -70,7 +68,6 @@ export const SearchableHostList = ({
     searchText: searchState.searchText,
     size: searchState.size,
     active,
-    pseudo,
   });
 
   useEffect(() => {
