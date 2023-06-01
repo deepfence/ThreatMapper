@@ -1078,8 +1078,10 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 			if current_num_received > (current_num_ingested/4)*3 {
 				Push_back.Add(1)
 			} else if !broke.Swap(false) && current_num_received < (prev_received_num/4)*3 {
-				if Push_back.Load() > 1 {
-					Push_back.Add(-1)
+				ratio := max(prev_received_num/100, 1) / max(current_num_received/100, 1)
+				Push_back.Store(Push_back.Load() / ratio)
+				if Push_back.Load() <= 0 {
+					Push_back.Store(1)
 				}
 				prev_received_num = current_num_received
 			}
