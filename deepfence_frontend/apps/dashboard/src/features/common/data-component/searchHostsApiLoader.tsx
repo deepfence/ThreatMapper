@@ -25,6 +25,8 @@ export const searchHostsApiLoader = async ({
     throw new Error('Scan Type is required');
   }
   const searchText = searchParams?.get('searchText')?.toString();
+  const active = searchParams?.get('active')?.toString();
+
   const size = parseInt(searchParams?.get('size')?.toString() ?? '0', 10);
 
   const matchFilter = { filter_in: {} };
@@ -58,6 +60,7 @@ export const searchHostsApiLoader = async ({
           contains_filter: {
             filter_in: {
               pseudo: [false],
+              ...(active !== undefined && { active: [active === 'true'] }),
             },
           },
           order_filter: {
@@ -109,10 +112,12 @@ export const useGetHostsList = ({
   scanType,
   searchText,
   size,
+  active,
 }: {
   scanType: ScanTypeEnum | 'none';
   searchText?: string;
   size: number;
+  active?: boolean;
 }): {
   status: 'idle' | 'loading' | 'submitting';
   hosts: SearchHostsLoaderDataType['hosts'];
@@ -125,6 +130,9 @@ export const useGetHostsList = ({
       const searchParams = new URLSearchParams();
       searchParams.set('searchText', searchText ?? '');
       searchParams.set('size', size.toString());
+      if (active !== undefined) {
+        searchParams.set('active', active.toString());
+      }
 
       fetcher.load(
         generatePath(

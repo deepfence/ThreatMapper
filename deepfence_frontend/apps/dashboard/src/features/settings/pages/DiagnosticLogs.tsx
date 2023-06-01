@@ -366,8 +366,8 @@ const AgentDiagnosticLogsComponent = () => {
           hidden
           value={ACTION_TYPE.AGENT_LOGS}
         />
-        <SearchableHostList scanType="none" />
-        <SearchableClusterList />
+        <SearchableHostList scanType="none" active={true} />
+        <SearchableClusterList active={true} />
         <Button
           size="xs"
           className="text-center mt-3 w-full"
