@@ -223,7 +223,7 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 }
 
 func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]model.CloudNodeAccountInfo, error) {
-	var res []model.CloudNodeAccountInfo
+	res := []model.CloudNodeAccountInfo{}
 	cloudProvider := filter.Filters.ContainsFilter.FieldsValues["cloud_provider"][0].(string)
 	dummy := model.CloudNodeAccountInfo{
 		CloudProvider: cloudProvider,
