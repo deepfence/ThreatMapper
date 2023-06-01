@@ -129,7 +129,7 @@ check_kubernetes_node_requirements() {
 
     # Get the number of nodes in the Kubernetes cluster
     NODE_COUNT=$(kubectl get nodes --no-headers | wc -l)
-    if [[ $NODE_COUNT -lt 2 ]]; then
+    if [[ $NODE_COUNT -lt 3 ]]; then
         echo -e "${CROSS} Insufficient number of Kubernetes nodes. Minimum requirement: 3 nodes.${NC}"
         exit 1
     fi
