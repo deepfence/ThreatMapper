@@ -1,4 +1,4 @@
-{{define "compliance-summary-table"}}
+{{ define "compliance-summary-table" }}
 <h3>Summary</h3>
 <div class="summary-report-table" style="width: 100%;">
     <table style="table-layout: fixed; word-break: break-all;">
@@ -12,6 +12,10 @@
             <th>Total</th>
         </tr>
         {{ range $key, $value := .NodeWiseData.SeverityCount }}
+        {{ $scanData := index $.NodeWiseData.ScanData $key }}
+        {{ if not $scanData.ScanResults }}
+            {{ continue }}
+        {{ end }}
         <tr>
             <td style="width: 400px;"><a style="text-decoration : none;" href="#{{ $key }}">{{ $key }}</a></td>
             <td>{{ default 0 $value.pass }}</td>
@@ -25,4 +29,4 @@
     </table>
 </div>
 <div class="page-break"></div>
-{{end}}
+{{ end }}
