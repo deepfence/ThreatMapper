@@ -80,7 +80,7 @@ func (p *Probe) dummyPublishLoop(i int) {
 				publishCount++
 			} else if err == appclient.PushBackError {
 				rand.Seed(time.Now().UnixNano())
-				randomDelay := rand.Intn(int(p.publisher.PublishInterval() / 2))
+				randomDelay := rand.Intn(int(p.publisher.PublishInterval()))
 				time.Sleep(time.Duration(randomDelay) * time.Second)
 			} else {
 				// If we failed to send then drop back to full report next time
