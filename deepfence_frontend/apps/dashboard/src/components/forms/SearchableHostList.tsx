@@ -2,10 +2,7 @@ import { debounce } from 'lodash-es';
 import { useEffect, useState } from 'react';
 import { Combobox, ComboboxOption } from 'ui-components';
 
-import {
-  SearchHostsLoaderDataType,
-  useGetHostsList,
-} from '@/features/common/data-component/searchHostsApiLoader';
+import { useSearchHostsQuery } from '@/queries/search';
 import { ScanTypeEnum } from '@/types/common';
 
 export type SearchableHostListProps = {
@@ -14,6 +11,15 @@ export type SearchableHostListProps = {
   defaultSelectedHosts?: string[];
   reset?: boolean;
   valueKey?: 'nodeId' | 'hostName' | 'nodeName';
+};
+
+type SearchHostsLoaderDataType = {
+  hosts: {
+    nodeId: string;
+    hostName: string;
+    nodeName: string;
+  }[];
+  hasNext: boolean;
 };
 
 const PAGE_SIZE = 15;
@@ -57,15 +63,17 @@ export const SearchableHostList = ({
     }
   }, [reset]);
 
-  const {
-    hosts,
-    status: listHostStatus,
-    hasNext,
-  } = useGetHostsList({
+  const { data, isFetching } = useSearchHostsQuery({
     scanType,
     searchText: searchState.searchText,
-    size: searchState.size,
   });
+
+  console.log('data', data);
+
+  const { hosts, hasNext } = data ?? {
+    hosts: [],
+    hasNext: false,
+  };
 
   useEffect(() => {
     if (hosts.length > 0) {
@@ -123,7 +131,7 @@ export const SearchableHostList = ({
         getDisplayValue={() => {
           return searchState.searchText;
         }}
-        loading={listHostStatus !== 'idle'}
+        loading={isFetching}
         onQueryChange={searchHost}
         onEndReached={onEndReached}
       >

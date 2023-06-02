@@ -17,7 +17,6 @@ import { searchCloudFiltersApiLoader } from '@/features/common/data-component/se
 import { searchClustersApiLoader } from '@/features/common/data-component/searchClustersApiLoader';
 import { searchContainerImagesApiLoader } from '@/features/common/data-component/searchContainerImagesApiLoader';
 import { searchContainersApiLoader } from '@/features/common/data-component/searchContainersApiLoader';
-import { searchHostsApiLoader } from '@/features/common/data-component/searchHostsApiLoader';
 import { RootLayout } from '@/features/common/RootLayout';
 import { module as dashboard } from '@/features/dashboard/pages/Dashboard';
 import { module as integrationsLayout } from '@/features/integrations/layouts/IntegrationsLayout';
@@ -577,14 +576,6 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'search/containerImages/:scanType',
         loader: searchContainerImagesApiLoader,
-        shouldRevalidate: ({ formAction }) => {
-          if (formAction) return false;
-          return true;
-        },
-      },
-      {
-        path: 'search/hosts/:scanType',
-        loader: searchHostsApiLoader,
         shouldRevalidate: ({ formAction }) => {
           if (formAction) return false;
           return true;
