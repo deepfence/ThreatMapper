@@ -489,10 +489,12 @@ func (h *Handler) StopMalwareScanHandler(w http.ResponseWriter, r *http.Request)
 
 func (h *Handler) IngestCloudResourcesReportHandler(w http.ResponseWriter, r *http.Request) {
 	ingester := ingesters.NewCloudResourceIngester()
-	ingest_cloud_scan_report(w, r, ingester)
+	ingest_cloud_scan_report(w, r, ingester, h.IngestChan)
 }
 
-func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Request, ingester ingesters.Ingester[T]) {
+func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Request,
+	ingester ingesters.KafkaIngester[T],
+	ingestChan chan *kgo.Record) {
 
 	defer req.Body.Close()
 	if req.Method != "POST" {
@@ -516,7 +518,7 @@ func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Re
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}
-	err = ingester.Ingest(ctx, data)
+	err = ingester.Ingest(ctx, data, ingestChan)
 	if err != nil {
 		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)

@@ -403,7 +403,7 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 
 	d.AddOperation("ingestCloudResources", http.MethodPost, "/deepfence/ingest/cloud-resources",
 		"Ingest Cloud resources", "Ingest Clouds Resources found while scanning cloud provider",
-		http.StatusOK, []string{tagCloudResources}, bearerToken, new([]ingesters.CloudResource), nil)
+		http.StatusOK, []string{tagCloudResources}, bearerToken, new([]ingester.CloudResource), nil)
 }
 
 func (d *OpenApiDocs) AddScansOperations() {
