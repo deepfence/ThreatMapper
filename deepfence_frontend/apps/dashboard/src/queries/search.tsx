@@ -91,10 +91,11 @@ export const searchQueries = createQueryKeys('search', {
 export const useSearchHostsQuery = (filters: {
   scanType: string;
   searchText?: string;
+  size: number;
 }) => {
   return useInfiniteQuery({
     queryKey: ['searchHosts'],
-    queryFn: async ({ pageParam = 15 }) => {
+    queryFn: async ({ pageParam = filters.size }) => {
       const { scanType, searchText } = filters;
       const matchFilter = { filter_in: {} };
       if (searchText?.length) {

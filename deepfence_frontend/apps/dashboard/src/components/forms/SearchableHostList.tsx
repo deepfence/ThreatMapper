@@ -66,6 +66,7 @@ export const SearchableHostList = ({
   const { data, isFetching } = useSearchHostsQuery({
     scanType,
     searchText: searchState.searchText,
+    size: searchState.size,
   });
 
   console.log('data', data);
@@ -76,7 +77,7 @@ export const SearchableHostList = ({
   };
 
   useEffect(() => {
-    if (hosts.length > 0) {
+    if (hosts?.length > 0) {
       setSearchState((prev) => {
         return {
           ...prev,
