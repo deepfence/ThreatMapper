@@ -246,11 +246,18 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		return res, err
 	}
 	defer tx.Close()
+	nonKubeFilter := ""
+	if cloudProvider == model.PostureProviderLinux {
+		nonKubeFilter = "{kubernetes_cluster_id:'', node_type:'host'}"
+	}
+	if cloudProvider == model.PostureProviderLinux || cloudProvider == model.PostureProviderKubernetes {
+		delete(filter.Filters.ContainsFilter.FieldsValues, "cloud_provider")
+	}
 
 	query := `
-		MATCH (n:` + dummy.NodeType() + `)` +
+		MATCH (n:` + dummy.NodeType() + nonKubeFilter + `)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-		`WITH n.node_id AS node_id UNWIND node_id AS x
+		` WITH n.node_id AS node_id UNWIND node_id AS x
 		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `)-[:DETECTED]->(c:` + dummy.ScanResultType() + `)
 		WITH x ` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, COUNT(c) AS total_compliance_count
 		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `)-[:DETECTED]->(c1:` + dummy.ScanResultType() + `)
@@ -262,7 +269,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 			RETURN s1.node_id AS last_scan_id, s1.status AS last_scan_status
 			ORDER BY s1.updated_at DESC LIMIT 1
 		}
-		CALL {WITH x MATCH (n:CloudNode{node_id: x}) RETURN n.node_name as node_name}
+		CALL {WITH x MATCH (n:` + dummy.NodeType() + `{node_id: x}) RETURN n.node_name as node_name}
 		RETURN x as node_id, node_name, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
 		reporters.OrderFilter2CypherCondition("", filter.Filters.OrderFilter) + fw.FetchWindow2CypherQuery()
 
