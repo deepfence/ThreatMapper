@@ -55,7 +55,7 @@ func AddCloudControls(msg *message.Message) error {
 	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(300 * time.Second))
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return nil
