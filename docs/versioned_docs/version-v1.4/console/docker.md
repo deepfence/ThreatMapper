@@ -18,7 +18,7 @@ The following instructions explain how to get started with a docker-based instal
     sudo sysctl -w vm.max_map_count=262144
     ```
   
-2. Download the file [docker-compose.yml](https://github.com/deepfence/ThreatMapper/blob/master/deployment-scripts/docker-compose.yml) to the system that will host the Console
+2. Download the file [docker-compose.yml](https://github.com/deepfence/ThreatMapper/blob/release-1.4.3/deployment-scripts/docker-compose.yml) to the system that will host the Console
 
     ```bash
     wget https://github.com/deepfence/ThreatMapper/blob/release-1.4.3/deployment-scripts/docker-compose.yml

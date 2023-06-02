@@ -1,10 +1,10 @@
 ![Deepfence Logo](images/readme/deepfence-logo.png)
 
-[![GitHub 協定](https://img.shields.io/github/license/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/blob/master/LICENSE) [![GitHub 點讚數](https://img.shields.io/github/stars/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/stargazers) [![Hacktoberfest](https://img.shields.io/github/hacktoberfest/2022/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues) [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues) [![文件](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/threatmapper/docs) [![Demo](https://img.shields.io/badge/threatmapper-demo-green)](https://community.deepfence.io/threatmapper/docs/demo) [![Docker pulls](https://img.shields.io/docker/pulls/deepfenceio/deepfence_agent_ce)](https://hub.docker.com/r/deepfenceio/deepfence_agent_ce) [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ) [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
+[![GitHub 協定](https://img.shields.io/github/license/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/blob/master/LICENSE) [![GitHub 點讚數](https://img.shields.io/github/stars/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/stargazers) [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues) [![文件](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/threatmapper/docs) [![Demo](https://img.shields.io/badge/threatmapper-demo-green)](https://community.deepfence.io/threatmapper/docs/demo) [![Docker pulls](https://img.shields.io/docker/pulls/deepfenceio/deepfence_agent_ce)](https://hub.docker.com/r/deepfenceio/deepfence_agent_ce) [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ) [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
 
-## :tada: ThreatMapper 1.4 發佈
+## :tada: ThreatMapper 1.5 發佈
 
-> [ThreatMapper 1.4.0](https://github.com/deepfence/ThreatMapper/releases/tag/v1.4.0) 增加了威脅圖（ThreatGraph）功能，它的可視化效果豐富，使用運行環境（如網路流）來確定威脅掃描結果的優先順序。   ThreatGraph 可以幫助組織，將攻擊路徑警報數量從數千條縮小到最有意義（和最具威脅性）的幾條。 版本 1.4.0 還增加了雲資產的無代理雲安全狀態管理 （CSPM） 和主機基於代理的狀態管理，可根據行業標準合規性基準評估狀態。
+> [ThreatMapper 1.5.0](https://docs.deepfence.io/threatmapper/zh-TW/docs/installation/) 增加了威脅圖（ThreatGraph）功能，它的可視化效果豐富，使用運行環境（如網路流）來確定威脅掃描結果的優先順序。   ThreatGraph 可以幫助組織，將攻擊路徑警報數量從數千條縮小到最有意義（和最具威脅性）的幾條。 版本 1.5.0 還增加了雲資產的無代理雲安全狀態管理 （CSPM） 和主機基於代理的狀態管理，可根據行業標準合規性基準評估狀態。
 
 # ThreatMapper - 雲原生的運行時威脅管理和攻擊路徑枚舉
 
@@ -62,7 +62,7 @@ ThreatMapper 由兩個部分構成：
 # Docker installation process for ThreatMapper Management Console
 sudo sysctl -w vm.max_map_count=262144 # see https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html
 
-wget https://github.com/deepfence/ThreatMapper/raw/master/deployment-scripts/docker-compose.yml
+wget https://github.com/deepfence/ThreatMapper/raw/release-1.5/deployment-scripts/docker-compose.yml
 docker-compose -f docker-compose.yml up --detach
 ```
 
@@ -92,7 +92,7 @@ ThreatMapper 感測器支援以下生產平臺：
 docker run -dit --cpus=".2" --name=deepfence-agent --restart on-failure --pid=host --net=host --privileged=true \
   -v /sys/kernel/debug:/sys/kernel/debug:rw -v /var/log/fenced -v /var/run/docker.sock:/var/run/docker.sock -v /:/fenced/mnt/host/:ro \
   -e MGMT_CONSOLE_URL="---CONSOLE-IP---" -e MGMT_CONSOLE_PORT="443" -e DEEPFENCE_KEY="---DEEPFENCE-API-KEY---" -e USER_DEFINED_TAGS="" \
-  deepfenceio/deepfence_agent_ce:1.4.1
+  deepfenceio/deepfence_agent_ce:1.5.0
 ```
 
 在 Kubernetes 平臺上，將使用 [helm 圖表](https://community.deepfence.io/threatmapper/docs/sensors/kubernetes/)安裝感測器

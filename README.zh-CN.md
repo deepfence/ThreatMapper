@@ -1,10 +1,10 @@
 ![Deepfence Logo](images/readme/deepfence-logo.png)
 
-[![GitHub 协议](https://img.shields.io/github/license/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/blob/master/LICENSE) [![GitHub 点赞数](https://img.shields.io/github/stars/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/stargazers) [![Hacktoberfest](https://img.shields.io/github/hacktoberfest/2022/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues) [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues) [![文档](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/threatmapper/docs) [![Demo](https://img.shields.io/badge/threatmapper-demo-green)](https://community.deepfence.io/threatmapper/docs/demo) [![Docker pulls](https://img.shields.io/docker/pulls/deepfenceio/deepfence_agent_ce)](https://hub.docker.com/r/deepfenceio/deepfence_agent_ce) [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ) [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
+[![GitHub 协议](https://img.shields.io/github/license/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/blob/master/LICENSE) [![GitHub 点赞数](https://img.shields.io/github/stars/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/stargazers) [![GitHub issues](https://img.shields.io/github/issues/deepfence/ThreatMapper)](https://github.com/deepfence/ThreatMapper/issues) [![文档](https://img.shields.io/badge/documentation-read-green)](https://community.deepfence.io/threatmapper/docs) [![Demo](https://img.shields.io/badge/threatmapper-demo-green)](https://community.deepfence.io/threatmapper/docs/demo) [![Docker pulls](https://img.shields.io/docker/pulls/deepfenceio/deepfence_agent_ce)](https://hub.docker.com/r/deepfenceio/deepfence_agent_ce) [![Slack](https://img.shields.io/badge/slack-@deepfence-blue.svg?logo=slack)](https://join.slack.com/t/deepfence-community/shared_invite/zt-podmzle9-5X~qYx8wMaLt9bGWwkSdgQ) [![Twitter](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fdeepfence%2FThreatMapper)
 
-## :tada: ThreatMapper 1.4 发布
+## :tada: ThreatMapper 1.5 发布
 
-> [ThreatMapper 1.4.0](https://github.com/deepfence/ThreatMapper/releases/tag/v1.4.0) 增加了威胁图（ThreatGraph）功能，它的可视化效果丰富，使用运行环境（如网络流）来确定威胁扫描结果的优先级。  ThreatGraph 可以帮助组织，将攻击路径警报数量从数千条缩小到最有意义（和最具威胁性）的几条。 版本 1.4.0 还增加了云资产的无代理云安全状态管理 （CSPM） 和主机基于代理的状态管理，可根据行业标准合规性基准评估状态。
+> [ThreatMapper 1.5.0](https://docs.deepfence.io/threatmapper/zh-CN/docs/installation/) 增加了威胁图（ThreatGraph）功能，它的可视化效果丰富，使用运行环境（如网络流）来确定威胁扫描结果的优先级。  ThreatGraph 可以帮助组织，将攻击路径警报数量从数千条缩小到最有意义（和最具威胁性）的几条。 版本 1.5.0 还增加了云资产的无代理云安全状态管理 （CSPM） 和主机基于代理的状态管理，可根据行业标准合规性基准评估状态。
 
 # ThreatMapper - 云原生的运行时威胁管理和攻击路径枚举
 
@@ -62,7 +62,7 @@ ThreatMapper 由两个部分构成：
 # Docker installation process for ThreatMapper Management Console
 sudo sysctl -w vm.max_map_count=262144 # see https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html
 
-wget https://github.com/deepfence/ThreatMapper/raw/master/deployment-scripts/docker-compose.yml
+wget https://github.com/deepfence/ThreatMapper/raw/release-1.5/deployment-scripts/docker-compose.yml
 docker-compose -f docker-compose.yml up --detach
 ```
 
