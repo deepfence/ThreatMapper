@@ -12,10 +12,10 @@ You can install the Management Console on a single Docker host or [in a dedicate
 
 The following instructions explain how to get started with a docker-based installation on a single host system:
 
-1. Download the file [docker-compose.yml](https://github.com/deepfence/ThreatMapper/blob/main/deployment-scripts/docker-compose.yml) to the system that will host the Console
+1. Download the file [docker-compose.yml](https://github.com/deepfence/ThreatMapper/blob/release-2.0/deployment-scripts/docker-compose.yml) to the system that will host the Console
 
     ```bash
-    wget https://github.com/deepfence/ThreatMapper/raw/main/deployment-scripts/docker-compose.yml
+    wget https://github.com/deepfence/ThreatMapper/raw/release-2.0/deployment-scripts/docker-compose.yml
     ```
 
 2. Execute the following command to install and start the latest build of the Console
@@ -24,29 +24,7 @@ The following instructions explain how to get started with a docker-based instal
     docker compose up -d
     ```
 
-    :::tip
-    Alternatively, to install a named [tagged release](https://github.com/deepfence/ThreatMapper/releases), specify the release tag as follows:
-
-    ```bash
-    wget https://github.com/deepfence/ThreatMapper/raw/release-1.5/deployment-scripts/docker-compose.yml
-    env DF_IMG_TAG=2.0.0 docker compose up -d
-    ```
-    :::
-
 Now proceed to the [Initial Configuration](initial-configuration).
-
-### Upgrade the Management Console
-
-The simplest way to upgrade is to shut the console down and restart it with the upgraded containers.  The disk volumes with user configuration and scan results will persist across the upgrade process:
-
-```bash
-docker compose down
-
-# refresh the docker-compose file
-rm docker-compose.yml
-wget https://github.com/deepfence/ThreatMapper/raw/release-1.5/deployment-scripts/docker-compose.yml
-env DF_IMG_TAG=2.0.0 docker compose up -d
-```
 
 ### Remove the ThreatMapper Management Console
 

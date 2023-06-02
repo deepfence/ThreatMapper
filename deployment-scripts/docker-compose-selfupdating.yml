@@ -61,7 +61,7 @@ services:
 
   deepfence-neo4j:
     container_name: deepfence-neo4j
-    image: neo4j:4.4.12
+    image: neo4j:4.4.21
     ulimits:
       core: 0
     restart: on-failure

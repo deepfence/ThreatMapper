@@ -136,3 +136,6 @@ publish:
 	docker push $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG)
 	docker push $(IMAGE_REPOSITORY)/deepfence_agent_ce:$(DF_IMG_TAG)
 	docker push $(IMAGE_REPOSITORY)/deepfence_discovery_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_malware_scanner_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_secret_scanner_ce:$(DF_IMG_TAG)

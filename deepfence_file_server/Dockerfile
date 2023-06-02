@@ -1,4 +1,4 @@
-FROM alpine:3.17
+FROM alpine:3.18
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 

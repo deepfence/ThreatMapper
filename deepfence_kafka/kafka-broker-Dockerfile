@@ -1,4 +1,4 @@
-FROM confluentinc/cp-kafka:7.3.0
+FROM confluentinc/cp-kafka:7.4.0
 
 LABEL MAINTAINER="Deepfence Inc"
 LABEL deepfence.role=system
