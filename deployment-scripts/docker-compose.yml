@@ -185,6 +185,7 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
+    restart: on-failure
 
   deepfence-worker:
     container_name: deepfence-worker

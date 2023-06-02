@@ -1077,7 +1077,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 			current_num_ingested := nc.num_ingested.Swap(0)
 
 			new_value := Push_back.Load()
-			if current_num_received > ((current_num_ingested)/8)*7 {
+			if current_num_ingested < (current_num_received/8)*7 {
 				if current_num_received >= 100 {
 					ratio := max(current_num_accepted, 1) / max(current_num_ingested, 1)
 					// Limit ratio to x2
