@@ -5928,6 +5928,61 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/search/cloud-accounts": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Search Cloud Nodes",
+        "description": "Search across all the data associated with cloud nodes",
+        "operationId": "searchCloudAccounts",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ModelCloudNodeAccountInfo" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/search/cloud-compliance/scans": {
       "post": {
         "tags": ["Search"],
@@ -6004,61 +6059,6 @@
                 "schema": {
                   "type": "array",
                   "items": { "$ref": "#/components/schemas/ModelCloudCompliance" }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
-              }
-            }
-          },
-          "401": { "description": "Unauthorized" },
-          "403": { "description": "Forbidden" },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
-              }
-            }
-          }
-        },
-        "security": [{ "bearer_token": [] }]
-      }
-    },
-    "/deepfence/search/cloud-nodes": {
-      "post": {
-        "tags": ["Search"],
-        "summary": "Search Cloud Nodes",
-        "description": "Search across all the data associated with cloud nodes",
-        "operationId": "searchCloudNodes",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/ModelCloudNodeAccountInfo" }
                 }
               }
             }
@@ -6280,6 +6280,58 @@
                   "type": "array",
                   "items": { "$ref": "#/components/schemas/ModelContainer" }
                 }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/search/count/cloud-accounts": {
+      "post": {
+        "tags": ["Search"],
+        "summary": "Count Cloud Nodes",
+        "description": "Search across all the data associated with cloud nodes",
+        "operationId": "countCloudAccounts",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchSearchNodeReq" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchSearchCountResp" }
               }
             }
           },
