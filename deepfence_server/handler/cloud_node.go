@@ -22,6 +22,7 @@ func (h *Handler) RegisterCloudNodeAccountCount(w http.ResponseWriter, r *http.R
 func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http.Request) {
 	req, err := extractCloudNodeDetails(w, r)
 	if err != nil {
+		complianceError(w, "Extract cloud node details error")
 		return
 	}
 
