@@ -253,6 +253,8 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 	if cloudProvider == model.PostureProviderLinux || cloudProvider == model.PostureProviderKubernetes {
 		delete(filter.Filters.ContainsFilter.FieldsValues, "cloud_provider")
 	}
+	orderFilters := filter.Filters.OrderFilter
+	filter.Filters.OrderFilter = reporters.OrderFilter{}
 
 	query := `
 		MATCH (n:` + dummy.NodeType() + nonKubeFilter + `)` +
@@ -269,9 +271,9 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 			RETURN s1.node_id AS last_scan_id, s1.status AS last_scan_status
 			ORDER BY s1.updated_at DESC LIMIT 1
 		}
-		CALL {WITH x MATCH (n:` + dummy.NodeType() + `{node_id: x}) RETURN n.node_name as node_name}
-		RETURN x as node_id, node_name, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
-		reporters.OrderFilter2CypherCondition("", filter.Filters.OrderFilter) + fw.FetchWindow2CypherQuery()
+		CALL {WITH x MATCH (n:` + dummy.NodeType() + `{node_id: x}) RETURN n.node_name as node_name, n.active as active}
+		RETURN x as node_id, node_name, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
+		reporters.OrderFilter2CypherCondition("", orderFilters) + fw.FetchWindow2CypherQuery()
 
 	log.Info().Msgf("search cloud node query: %v", query)
 	r, err := tx.Run(query,
@@ -306,7 +308,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		} else {
 			node_map = map[string]interface{}{}
 			baseValuesCount := 0
-			for _, nodeMapKey := range []string{"node_id", "node_name", "compliance_percentage", "last_scan_id", "last_scan_status"} {
+			for _, nodeMapKey := range []string{"node_id", "node_name", "compliance_percentage", "last_scan_id", "last_scan_status", "active"} {
 				node_map[nodeMapKey] = rec.Values[baseValuesCount]
 				baseValuesCount = baseValuesCount + 1
 			}
