@@ -162,7 +162,7 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
         WITH distinct k RETURN collect((coalesce(k.node_name, '') + '/' + coalesce(k.node_type, ''))) as resources }
 		RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources ` +
 		fw.FetchWindow2CypherQuery()
-	log.Info().Msgf("search query: %v", query)
+	log.Debug().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{})
 
@@ -275,7 +275,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		RETURN x as node_id, node_name, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
 		reporters.OrderFilter2CypherCondition("", orderFilters) + fw.FetchWindow2CypherQuery()
 
-	log.Info().Msgf("search cloud node query: %v", query)
+	log.Debug().Msgf("search cloud node query: %v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{
 			"pass_status": dummy.GetPassStatus(),
@@ -361,7 +361,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 		` RETURN n.node_id as scan_id, n.status as status, n.status_message as status_message, n.updated_at as updated_at, m.node_id as node_id, COALESCE(m.node_type, m.cloud_provider) as node_type, m.node_name as node_name` +
 		reporters.OrderFilter2CypherCondition("", scan_filter.Filters.OrderFilter) +
 		fw.FetchWindow2CypherQuery()
-	log.Info().Msgf("search query: %v", query)
+	log.Debug().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{})
 
