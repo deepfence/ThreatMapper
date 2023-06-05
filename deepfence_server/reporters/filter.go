@@ -73,9 +73,9 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 				}
 			}
 			if in {
-				conditions = append(conditions, strings.Join(labels, " OR "))
+				conditions = append(conditions, fmt.Sprintf("(%s)", strings.Join(labels, " OR ")))
 			} else {
-				conditions = append(conditions, strings.Join(labels, " AND "))
+				conditions = append(conditions, fmt.Sprintf("(%s)", strings.Join(labels, " AND ")))
 			}
 		} else {
 			var values []string

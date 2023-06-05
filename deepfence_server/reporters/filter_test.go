@@ -87,7 +87,7 @@ func TestParseFieldFilters2CypherWhereConditions(t *testing.T) {
 		},
 	}
 	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
-	assert.Equal(t, cypher, " WHERE  n:Node OR n:ContainerImage", "should be equal")
+	assert.Equal(t, cypher, " WHERE  (n:Node OR n:ContainerImage)", "should be equal")
 
 }
 
@@ -118,7 +118,7 @@ func TestNotContainersFieldFilters2CypherWhereConditions(t *testing.T) {
 		},
 	}
 	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
-	assert.Equal(t, cypher, " WHERE   NOT n:Node AND  NOT n:ContainerImage", "should be equal")
+	assert.Equal(t, cypher, " WHERE  ( NOT n:Node AND  NOT n:ContainerImage)", "should be equal")
 }
 
 func TestOrderFilter2CypherCondition(t *testing.T) {
