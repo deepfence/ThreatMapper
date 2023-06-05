@@ -287,7 +287,6 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 	if err != nil {
 		return postureProviders, err
 	}
-	defer rdb.Close()
 
 	postureProvidersStr, err := rdb.Get(ctx, constants.RedisKeyPostureProviders).Result()
 	if errors.Is(err, redis.Nil) {

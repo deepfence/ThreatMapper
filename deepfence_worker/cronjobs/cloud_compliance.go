@@ -189,7 +189,6 @@ func CachePostureProviders(msg *message.Message) error {
 	if err != nil {
 		return err
 	}
-	defer rdb.Close()
 
 	var postureProviders []model.PostureProvider
 	for _, postureProviderName := range model.SupportedPostureProviders {
