@@ -71,9 +71,9 @@ module.exports = {
           },
         ],
         h4: [
-          '18px',
+          '16px',
           {
-            lineHeight: '16px',
+            lineHeight: '24px',
             fontWeight: '400',
           },
         ],
@@ -115,14 +115,14 @@ module.exports = {
         p4: [
           '13px',
           {
-            lineHeight: '24px',
+            lineHeight: '18px',
             fontWeight: '400',
           },
         ],
         p5: [
           '13px',
           {
-            lineHeight: '24px',
+            lineHeight: '18px',
             fontWeight: '400',
           },
         ],
@@ -261,7 +261,7 @@ module.exports = {
           page: '#020617',
           'grid-border': '#2C375F',
           tooltip: '#233C7D',
-          'grid-header': '#0D1426',
+          'grid-header': '#0F1E34',
           'top-header': '#0C1A33',
           'left-nav': '#0B121E',
           'breadcrumb-bar': '#11223B',
