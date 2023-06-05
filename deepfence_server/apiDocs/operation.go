@@ -389,7 +389,7 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 		"Ingest Cloud Compliances", "Ingest Cloud compliances found while scanning cloud provider",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new([]ingester.CloudCompliance), nil)
 
-	d.AddOperation("ingestCloudComplianceScanStatus", http.MethodPost, "/deepfence/ingest/cloud-compliance-scan-status",
+	d.AddOperation("ingestCloudComplianceScanStatus", http.MethodPost, "/deepfence/ingest/cloud-compliance-status",
 		"Ingest Cloud Compliances scan status", "Ingest Cloud compliances found while scanning cloud provider",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new([]ingester.CloudComplianceScanStatus), nil)
 
