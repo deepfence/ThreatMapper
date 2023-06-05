@@ -20,11 +20,16 @@ export const Loader = ({
   size?: SizeType;
   variant?: VariantType;
 }) => {
+  const sizeMap = new Map();
+  sizeMap.set('sm', 'w-3.5 h-3.5');
+  sizeMap.set('md', 'w-4 h-4');
+  sizeMap.set('lg', 'w-4 h-4');
+
   return (
     <CircleSpinner
       size={size}
       className={twMerge(
-        cva([], {
+        cva([sizeMap.get(size)], {
           variants: {
             color: {
               default: 'dark:text-bg-active-selection',
@@ -78,7 +83,6 @@ export const Loader = ({
 };
 export const buttonCva = cva(
   [
-    'font-normal',
     'disabled:cursor-not-allowed',
     'flex flex-row items-center justify-center',
     'focus:outline-none select-none',
@@ -86,9 +90,9 @@ export const buttonCva = cva(
   {
     variants: {
       size: {
-        sm: 'text-p8 px-3 py-1',
-        md: 'text-p8 px-3 py-[7px]',
-        lg: 'text-p8 px-3 py-2.5',
+        sm: 'px-3 py-1 text-t3',
+        md: 'px-3 py-[7px] text-t3',
+        lg: 'px-3 py-2.5 text-t3',
       },
       color: {
         default: [
@@ -377,7 +381,6 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       variant,
       color,
       disabled,
-      outline,
       startIcon,
       endIcon,
       className,

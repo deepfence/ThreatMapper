@@ -103,3 +103,26 @@ export const MediumWithLoading = {
     loading: true,
   },
 };
+export const SmallWithLoading = {
+  args: {
+    children: 'Loading',
+    size: 'sm',
+    loading: true,
+  },
+};
+export const LargeWithLoading = {
+  args: {
+    children: 'Loading',
+    size: 'lg',
+    loading: true,
+  },
+};
+
+export const LargeFlatButtonWithLoading = {
+  args: {
+    children: 'Loading',
+    size: 'lg',
+    loading: true,
+    variant: 'flat',
+  },
+};

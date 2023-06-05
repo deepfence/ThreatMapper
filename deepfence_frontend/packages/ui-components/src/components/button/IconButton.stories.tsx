@@ -87,3 +87,25 @@ export const MediumFlatVariant = {
     icon: <HiMenu />,
   },
 };
+
+export const MediumWithLoading = {
+  args: {
+    children: 'Loading',
+    size: 'md',
+    loading: true,
+  },
+};
+export const SmallWithLoading = {
+  args: {
+    children: 'Loading',
+    size: 'sm',
+    loading: true,
+  },
+};
+export const LargeWithLoading = {
+  args: {
+    children: 'Loading',
+    size: 'lg',
+    loading: true,
+  },
+};
