@@ -1,5 +1,6 @@
 import { cva } from 'cva';
-import { twMerge } from 'tailwind-merge';
+
+import { dfTwMerge } from '@/utils/twmerge';
 
 export type SizeType = 'sm' | 'md' | 'lg';
 
@@ -26,7 +27,7 @@ export const CircleSpinner = ({ size = 'md', className }: CircleSpinnerProps) =>
     <div className="inline-block bg-transparent" role="status">
       <svg
         aria-hidden="true"
-        className={twMerge(
+        className={dfTwMerge(
           spinnerCVA({
             size,
           }),

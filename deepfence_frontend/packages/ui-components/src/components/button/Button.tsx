@@ -2,10 +2,10 @@ import cx from 'classnames';
 import { cva, VariantProps } from 'cva';
 import React, { ComponentProps, useId } from 'react';
 import { IconContext } from 'react-icons';
-import { twMerge } from 'tailwind-merge';
 
 import { CircleSpinner } from '@/main';
 import { ObjectWithNonNullableValues } from '@/types/utils';
+import { dfTwMerge } from '@/utils/twmerge';
 
 export type ColorType = 'default' | 'error' | 'success';
 export type SizeType = 'lg' | 'md' | 'sm';
@@ -28,7 +28,7 @@ export const Loader = ({
   return (
     <CircleSpinner
       size={size}
-      className={twMerge(
+      className={dfTwMerge(
         cva([sizeMap.get(size)], {
           variants: {
             color: {
@@ -399,7 +399,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         id={_id}
         data-testid={`button-${_id}`}
         disabled={disabled}
-        className={twMerge(
+        className={dfTwMerge(
           buttonCva({
             size,
             color,
