@@ -228,8 +228,6 @@ module.exports = {
         },
         accent: {
           accent: '#3185FF',
-          error: '#F56682',
-          success: '#15B77E',
         },
         chart: {
           pink1: '#F1428A',

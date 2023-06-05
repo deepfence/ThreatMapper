@@ -36,7 +36,7 @@ export const iconButtonCVA = cva(
         ],
         error: [
           // bg styles
-          'bg-red-700 hover:bg-red-800 dark:bg-accent-error dark:hover:bg-red-700',
+          'bg-red-700 hover:bg-red-800 dark:bg-status-error dark:hover:bg-red-700',
           // text styles
           'text-white dark:text-black',
           // focus styles
@@ -46,7 +46,7 @@ export const iconButtonCVA = cva(
         ],
         success: [
           // bg styles
-          'bg-green-700 hover:bg-green-800 dark:bg-accent-success dark:hover:bg-green-700',
+          'bg-green-700 hover:bg-green-800 dark:bg-status-success dark:hover:bg-green-700',
           // text styles
           'text-white dark:text-black',
           // focus styles
@@ -89,9 +89,9 @@ export const iconButtonCVA = cva(
           // bg styles
           'dark:bg-transparent hover:bg-red-800 dark:hover:bg-red-600',
           // text styles
-          'text-red-700 hover:text-white dark:text-red-500 dark:hover:text-white',
+          'text-red-700 hover:text-white dark:text-status-error dark:hover:text-white',
           // border styles
-          'border border-red-700 dark:border-red-500',
+          'border border-red-700 dark:border-status-error',
           // ring styles
           'focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900',
           // disabled styles
@@ -106,9 +106,9 @@ export const iconButtonCVA = cva(
           // bg styles
           'dark:bg-transparent hover:bg-green-800 dark:hover:bg-green-600',
           // text styles
-          'text-green-700 hover:text-white dark:text-green-500 dark:hover:text-white',
+          'text-green-700 hover:text-white dark:text-status-success dark:hover:text-white',
           // border styles
-          'border border-green-700 dark:border-green-500',
+          'border border-green-700 dark:border-status-success',
           // ring styles
           'focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800',
           // disabled styles
@@ -140,7 +140,7 @@ export const iconButtonCVA = cva(
           // bg styles
           'dark:bg-transparent hover:bg-red-800 dark:hover:bg-red-600',
           // text styles
-          'text-red-700 hover:text-white dark:text-red-500 dark:hover:text-white',
+          'text-red-700 hover:text-white dark:text-status-error dark:hover:text-white',
           // border styles
           'border border-red-700 dark:border-none',
           // ring styles
@@ -157,7 +157,7 @@ export const iconButtonCVA = cva(
           // bg styles
           'dark:bg-transparent hover:bg-green-800 dark:hover:bg-green-600',
           // text styles
-          'text-green-700 hover:text-white dark:text-green-500 dark:hover:text-white',
+          'text-green-700 hover:text-white dark:text-status-success dark:hover:text-white',
           // border styles
           'border border-green-700 dark:border-none',
           // ring styles

@@ -96,11 +96,21 @@ export const MediumWithStartAndEndIcon = {
   },
 };
 
+export const MediumOutlineWithStartIcon = {
+  args: {
+    children: 'Refresh',
+    startIcon: <HiMenu />,
+    size: 'md',
+    variant: 'outline',
+  },
+};
+
 export const MediumWithLoading = {
   args: {
     children: 'Loading',
     size: 'md',
     loading: true,
+    color: 'error',
   },
 };
 export const SmallWithLoading = {
@@ -118,6 +128,14 @@ export const LargeWithLoading = {
   },
 };
 
+export const LargeOutlineWithLoading = {
+  args: {
+    children: 'Loading',
+    size: 'lg',
+    loading: true,
+    variant: 'outline',
+  },
+};
 export const LargeFlatButtonWithLoading = {
   args: {
     children: 'Loading',

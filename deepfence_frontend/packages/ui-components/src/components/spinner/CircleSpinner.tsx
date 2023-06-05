@@ -10,7 +10,7 @@ type CircleSpinnerProps = {
 };
 
 const spinnerCVA = cva(
-  ['text-gray-200 animate-spin dark:text-bg-active-selection fill-accent-accent'],
+  ['animate-spin dark:text-bg-active-selection fill-accent-accent'],
   {
     variants: {
       size: {
