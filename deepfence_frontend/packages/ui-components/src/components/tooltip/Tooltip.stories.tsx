@@ -50,6 +50,17 @@ export const Default = {
   },
 };
 
+export const WithLable = {
+  render: Template,
+
+  args: {
+    triggerAsChild: true,
+    placement: 'right',
+    label: 'Label',
+    content: 'Your message here. With long text, multiple lines.',
+  },
+};
+
 export const Controlled = {
   render: ControlledTemplate,
 
