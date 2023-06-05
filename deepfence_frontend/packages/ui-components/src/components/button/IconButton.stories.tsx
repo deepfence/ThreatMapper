@@ -1,6 +1,5 @@
 import { Meta } from '@storybook/react';
-import { useState } from 'react';
-import { FaPlus } from 'react-icons/fa';
+import { HiMenu } from 'react-icons/hi';
 
 import IconButton from '@/components/button/IconButton';
 
@@ -12,115 +11,79 @@ export default {
   },
 } as Meta<typeof IconButton>;
 
-export const Default = {
+export const Large = {
   args: {
-    icon: <FaPlus />,
+    children: 'Large',
+    size: 'lg',
+    icon: <HiMenu />,
   },
 };
-
-export const DefaultDisabled = {
+export const Medium = {
   args: {
-    disabled: true,
-    icon: <FaPlus />,
+    children: 'Medium',
+    size: 'md',
+    icon: <HiMenu />,
   },
 };
-
-export const PrimaryIconXs = {
+export const Small = {
   args: {
-    icon: <FaPlus />,
-    size: 'xs',
-    color: 'primary',
-  },
-};
-
-export const PrimaryIconSm = {
-  args: {
-    icon: <FaPlus />,
+    children: 'Small',
     size: 'sm',
-    color: 'primary',
+    icon: <HiMenu />,
   },
 };
 
-export const IconButtonWithLoader = () => {
-  const [state, setState] = useState(false);
-  return (
-    <div>
-      <IconButton
-        onClick={() => setState(true)}
-        loading={state}
-        color="primary"
-        icon={<FaPlus />}
-      >
-        Click to refresh
-      </IconButton>
-    </div>
-  );
-};
-
-export const PrimaryIconLg = {
+export const MediumSuccess = {
   args: {
-    icon: <FaPlus />,
-    size: 'lg',
-    color: 'primary',
-  },
-};
-
-export const PrimaryIconXl = {
-  args: {
-    icon: <FaPlus />,
-    size: 'xl',
-    color: 'primary',
-  },
-};
-
-export const PrimaryWithOutline = {
-  args: {
-    icon: <FaPlus />,
-    color: 'primary',
-    size: 'xs',
-    outline: true,
-  },
-};
-
-export const PrimaryWithOutlineLg = {
-  args: {
-    icon: <FaPlus />,
-    color: 'primary',
-    size: 'lg',
-    outline: true,
-  },
-};
-
-export const Danger = {
-  args: {
-    icon: <FaPlus />,
-    color: 'danger',
-    size: 'xs',
-  },
-};
-
-export const DangerWithOutline = {
-  args: {
-    icon: <FaPlus />,
-    color: 'danger',
-    size: 'xs',
-    outline: true,
-  },
-};
-
-export const Success = {
-  args: {
-    icon: <FaPlus />,
+    children: 'Medium',
+    size: 'md',
     color: 'success',
-    size: 'xs',
+    icon: <HiMenu />,
   },
 };
 
-export const SuccessWithOutline = {
+export const MediumError = {
   args: {
-    icon: <FaPlus />,
+    children: 'Medium',
+    size: 'md',
+    color: 'error',
+    icon: <HiMenu />,
+  },
+};
+
+export const MediumOutline = {
+  args: {
+    children: 'Medium',
+    size: 'md',
+    variant: 'outline',
+    icon: <HiMenu />,
+  },
+};
+
+export const MediumOutlineSuccess = {
+  args: {
+    children: 'Medium',
+    size: 'md',
+    variant: 'outline',
     color: 'success',
-    size: 'xs',
-    outline: true,
+    icon: <HiMenu />,
+  },
+};
+export const MediumOutlineError = {
+  args: {
+    children: 'Medium',
+    size: 'md',
+    variant: 'outline',
+    color: 'error',
+    icon: <HiMenu />,
+  },
+};
+
+export const MediumFlatVariant = {
+  args: {
+    children: 'Medium',
+    size: 'md',
+    variant: 'flat',
+    icon: <HiMenu />,
   },
 };

@@ -6,51 +6,39 @@ import { twMerge } from 'tailwind-merge';
 import { Loader } from '@/components/button/Button';
 import { ObjectWithNonNullableValues } from '@/types/utils';
 
-export type ColorType = 'default' | 'primary' | 'danger' | 'success' | 'normal';
-export type SizeType = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type ColorType = 'default' | 'error' | 'success';
+export type SizeType = 'lg' | 'md' | 'sm';
+export type VariantType = 'outline' | 'flat';
 
 export const iconButtonCVA = cva(
   [
     'flex flex-row items-center justify-center',
-    'rounded-full focus:outline-none select-none',
+    'rounded focus:outline-none select-none',
     'disabled:cursor-not-allowed',
   ],
   {
     variants: {
       size: {
-        xxs: `p-[6px]`,
-        xs: `p-[9px]`,
-        sm: `p-[13px]`,
-        md: `p-[15px]`,
-        lg: `p-[18px]`,
-        xl: `p-[20px]`,
+        sm: `p-[5px]`,
+        md: `p-[7px]`,
+        lg: `p-[10px]`,
       },
       color: {
         default: [
           // bg styles
-          'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700',
+          'bg-gray-100 dark:bg-accent-accent hover:bg-gray-200 dark:hover:bg-gray-700',
           // text styles
-          'text-gray-700 dark:text-gray-400 dark:hover:text-white',
+          'text-gray-700 dark:text-black dark:hover:text-white',
           // focus styles
           'focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700',
           // disabled styles
           'disabled:opacity-50 dark:disabled:bg-gray-800 disabled:hover:bg-gray-100 dark:disabled:hover:bg-gray-800 disabled:dark:text-gray-400',
         ],
-        primary: [
+        error: [
           // bg styles
-          'bg-blue-700 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-700',
+          'bg-red-700 hover:bg-red-800 dark:bg-accent-error dark:hover:bg-red-700',
           // text styles
-          'text-white',
-          // focus styles
-          'focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800',
-          // disabled styles
-          'disabled:bg-blue-400 dark:disabled:bg-blue-500 disabled:hover:bg-blue-400 dark:disabled:hover:bg-blue-500',
-        ],
-        danger: [
-          // bg styles
-          'bg-red-700 hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700',
-          // text styles
-          'text-white',
+          'text-white dark:text-black',
           // focus styles
           'focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900',
           // disabled styles
@@ -58,27 +46,18 @@ export const iconButtonCVA = cva(
         ],
         success: [
           // bg styles
-          'bg-green-700 hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700',
+          'bg-green-700 hover:bg-green-800 dark:bg-accent-success dark:hover:bg-green-700',
           // text styles
-          'text-white',
+          'text-white dark:text-black',
           // focus styles
           'focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800',
           // disabled styles
           'disabled:bg-green-400 dark:disabled:bg-green-500 disabled:hover:bg-green-400 dark:disabled:hover:bg-green-500',
         ],
-        normal: [
-          // bg styles
-          'bg-white hover:bg-gray-100 dark:bg-transparent dark:hover:bg-gray-800',
-          // text styles
-          'text-gray-700 dark:text-gray-200',
-          // focus styles
-          'focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-800',
-          // disabled styles
-          'disabled:text-gray-400 dark:disabled:text-gray-600 disabled:hover:bg-white dark:disabled:hover:bg-gray-900',
-        ],
       },
-      withOutline: {
-        true: 'bg-white',
+      variant: {
+        outline: '',
+        flat: '',
       },
     },
     defaultVariants: {
@@ -88,39 +67,24 @@ export const iconButtonCVA = cva(
     compoundVariants: [
       {
         color: 'default',
-        withOutline: true,
+        variant: 'outline',
         className: [
           // bg styles
-          'bg-transparent hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700',
+          'bg-transparent hover:bg-gray-100 dark:bg-transparent dark:hover:bg-gray-700',
           // text styles
-          'text-gray-900 hover:text-blue-700 dark:text-gray-400 dark:hover:text-white',
+          'text-gray-900 hover:text-blue-700 dark:text-accent-accent dark:hover:text-white',
           // border styles
-          'border border-gray-200 dark:border-gray-600',
+          'border border-gray-200 dark:border-accent-accent',
           // ring styles
           'focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700',
           // disabled styles
-          'disabled:opacity-50 dark:disabled:bg-gray-800 disabled:hover:bg-gray-100 dark:disabled:hover:bg-gray-800 disabled:dark:text-gray-400',
+          'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-gray-900',
+          'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-gray-400',
         ],
       },
       {
-        color: 'primary',
-        withOutline: true,
-        className: [
-          // bg styles
-          'dark:bg-transparent hover:bg-blue-800 dark:hover:bg-blue-600',
-          // text styles
-          'text-blue-700 hover:text-white dark:text-blue-500 dark:hover:text-white',
-          // border styles
-          'border border-blue-700 dark:border-blue-500',
-          // ring styles
-          'focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800',
-          // disabled styles
-          'disabled:bg-blue-400 dark:disabled:bg-blue-500 disabled:hover:bg-blue-400 dark:disabled:hover:bg-blue-500',
-        ],
-      },
-      {
-        color: 'danger',
-        withOutline: true,
+        color: 'error',
+        variant: 'outline',
         className: [
           // bg styles
           'dark:bg-transparent hover:bg-red-800 dark:hover:bg-red-600',
@@ -131,12 +95,13 @@ export const iconButtonCVA = cva(
           // ring styles
           'focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900',
           // disabled styles
-          'disabled:bg-red-400 dark:disabled:bg-red-500 disabled:hover:bg-red-400 dark:disabled:hover:bg-red-500',
+          'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-red-700',
+          'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-red-500',
         ],
       },
       {
         color: 'success',
-        withOutline: true,
+        variant: 'outline',
         className: [
           // bg styles
           'dark:bg-transparent hover:bg-green-800 dark:hover:bg-green-600',
@@ -147,21 +112,59 @@ export const iconButtonCVA = cva(
           // ring styles
           'focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800',
           // disabled styles
-          'disabled:bg-green-400 dark:disabled:bg-green-500 disabled:hover:bg-green-400 dark:disabled:hover:bg-green-500',
+          'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-green-700',
+          'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-green-500',
         ],
       },
       {
-        color: 'normal',
-        withOutline: true,
+        color: 'default',
+        variant: 'flat',
         className: [
           // bg styles
-          'bg-transparent hover:bg-gray-100 hover:dark:bg-gray-800',
+          'bg-transparent hover:bg-gray-100 dark:bg-transparent dark:hover:bg-gray-700',
           // text styles
-          'text-gray-700 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300',
+          'text-gray-900 hover:text-blue-700 dark:text-accent-accent dark:hover:text-white',
+          // border styles
+          'border border-gray-200 dark:border-none',
           // ring styles
-          'focus:ring-4 focus:ring-gray-100 dark:ring-gray-800',
+          'focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700',
           // disabled styles
-          'disabled:opacity-75 dark:disabled:opacity-100 dark:disabled:text-gray-600 disabled:hover:bg-transparent',
+          'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-gray-900',
+          'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-gray-400',
+        ],
+      },
+      {
+        color: 'error',
+        variant: 'flat',
+        className: [
+          // bg styles
+          'dark:bg-transparent hover:bg-red-800 dark:hover:bg-red-600',
+          // text styles
+          'text-red-700 hover:text-white dark:text-red-500 dark:hover:text-white',
+          // border styles
+          'border border-red-700 dark:border-none',
+          // ring styles
+          'focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900',
+          // disabled styles
+          'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-red-700',
+          'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-red-500',
+        ],
+      },
+      {
+        color: 'success',
+        variant: 'flat',
+        className: [
+          // bg styles
+          'dark:bg-transparent hover:bg-green-800 dark:hover:bg-green-600',
+          // text styles
+          'text-green-700 hover:text-white dark:text-green-500 dark:hover:text-white',
+          // border styles
+          'border border-green-700 dark:border-none',
+          // ring styles
+          'focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800',
+          // disabled styles
+          'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-green-700',
+          'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-green-500',
         ],
       },
     ],
@@ -172,26 +175,23 @@ interface IconButtonProps
   extends Omit<ComponentProps<'button'>, 'color'>,
     ObjectWithNonNullableValues<Omit<VariantProps<typeof iconButtonCVA>, 'withOutline'>> {
   icon?: React.ReactNode;
-  outline?: boolean;
+  variant?: VariantType;
   loading?: boolean;
 }
 
 const iconCva = cva('', {
   variants: {
     size: {
-      xxs: 'w-3 h-3',
-      xs: 'w-3 h-3',
       sm: 'w-3.5 h-3.5',
       md: 'w-4 h-4',
-      lg: 'w-[18px] h-[18px]',
-      xl: 'w-5 h-5',
+      lg: 'w-4 h-4',
     },
   },
 });
 
 const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
   (
-    { size = 'md', color, disabled, outline, icon, id, className, loading, ...props },
+    { size = 'md', color, disabled, variant, icon, id, className, loading, ...props },
     ref,
   ) => {
     const internalId = useId();
@@ -207,7 +207,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
           iconButtonCVA({
             size,
             color,
-            withOutline: outline,
+            variant,
           }),
           className,
         )}
@@ -226,7 +226,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         )}
         {loading && (
           <div className="flex justify-center">
-            <Loader color={color} size={size} outline={outline} />
+            <Loader color={color} size={size} variant={variant} />
           </div>
         )}
       </button>

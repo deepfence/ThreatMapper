@@ -1,28 +1,27 @@
 import { cva } from 'cva';
 import { twMerge } from 'tailwind-merge';
 
-export type SizeType = 'xxs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'default';
+export type SizeType = 'sm' | 'md' | 'lg';
 
 type CircleSpinnerProps = {
   size?: SizeType;
   className?: string;
 };
 
-const spinnerCVA = cva(['text-gray-200 animate-spin dark:text-gray-600 fill-blue-600'], {
-  variants: {
-    size: {
-      default: 'w-8 h-8',
-      xxs: 'w-2.5 h-2.5',
-      xs: 'w-3 h-3',
-      sm: 'w-3.5 h-3.5',
-      md: 'w-4 h-4',
-      lg: 'w-[18px] h-[18px]',
-      xl: 'w-5 h-5',
+const spinnerCVA = cva(
+  ['text-gray-200 animate-spin dark:text-bg-active-selection fill-accent-accent'],
+  {
+    variants: {
+      size: {
+        sm: 'w-[18px] h-[18px]',
+        md: 'w-[36px] h-[36px]',
+        lg: 'w-[72px] h-[72px]',
+      },
     },
   },
-});
+);
 
-export const CircleSpinner = ({ size = 'default', className }: CircleSpinnerProps) => {
+export const CircleSpinner = ({ size = 'md', className }: CircleSpinnerProps) => {
   return (
     <div className="inline-block bg-transparent" role="status">
       <svg

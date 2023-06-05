@@ -7,12 +7,6 @@ export default {
   component: CircleSpinner,
 } as Meta<typeof CircleSpinner>;
 
-export const XS = {
-  args: {
-    size: 'xs',
-  },
-};
-
 export const SM = {
   args: {
     size: 'sm',
@@ -29,14 +23,4 @@ export const LG = {
   args: {
     size: 'lg',
   },
-};
-
-export const XL = {
-  args: {
-    size: 'xl',
-  },
-};
-
-export const Default = {
-  args: {},
 };
