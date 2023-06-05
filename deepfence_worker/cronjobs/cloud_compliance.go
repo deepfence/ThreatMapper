@@ -247,6 +247,7 @@ func CachePostureProviders(msg *message.Message) error {
 			postureProvider.NodeLabel = "Organizations"
 			nodeRes, err := tx.Run(fmt.Sprintf(`
 			MATCH (o:%s{cloud_provider:$cloud_provider+'_org'})
+			WHERE m.active=true
 			WITH COUNT(DISTINCT o.node_id) AS account_count
 			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider}) -[:OWNS]-> (p:CloudResource)
 			WHERE m.organization_id IS NOT NULL
@@ -280,6 +281,7 @@ func CachePostureProviders(msg *message.Message) error {
 			postureProvider.NodeLabel = "Accounts"
 			nodeRes, err := tx.Run(fmt.Sprintf(`
 			MATCH (m:%s{cloud_provider: $cloud_provider})
+			WHERE m.active=true
 			WITH COUNT(DISTINCT m.node_id) AS account_count
 			OPTIONAL MATCH (p:CloudResource{cloud_provider: $cloud_provider})
 			WITH account_count, COUNT(distinct p.arn) AS resource_count

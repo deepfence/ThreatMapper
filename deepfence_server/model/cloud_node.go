@@ -313,22 +313,27 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 		}
 		CALL {
 			MATCH (m:CloudNode{cloud_provider:'%s'})
+			WHERE m.active=true
 			RETURN COUNT(m) as n3
 		}
 		CALL {
 			MATCH (m:CloudNode{cloud_provider:'%s'})
+			WHERE m.active=true
 			RETURN COUNT(m) as n4
 		}
 		CALL {
 			MATCH (m:CloudNode{cloud_provider:'%s'})
+			WHERE m.active=true
 			RETURN COUNT(m) as n5
 		}
 		CALL {
 			MATCH (m:CloudNode{cloud_provider:'%s'})
+			WHERE m.active=true
 			RETURN COUNT(m) as n6
 		}
 		CALL {
 			MATCH (m:CloudNode{cloud_provider:'%s'})
+			WHERE m.active=true
 			RETURN COUNT(m) as n7
 		}
 		return n1, n2, n3, n4, n5, n6, n7`, PostureProviderAWSOrg, PostureProviderGCPOrg, PostureProviderAWS, PostureProviderGCP, PostureProviderAzure)
