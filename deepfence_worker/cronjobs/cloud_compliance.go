@@ -238,6 +238,8 @@ func CachePostureProviders(msg *message.Message) error {
 					postureProvider.ScanCount = int(nodeRec.Values[1].(int64))
 					postureProvider.CompliancePercentage = nodeRec.Values[2].(float64)
 				}
+			} else {
+				log.Warn().Msg(err.Error())
 			}
 		} else if postureProviderName == model.PostureProviderAWSOrg || postureProviderName == model.PostureProviderGCPOrg {
 			cloudProvider := model.PostureProviderGCP
@@ -247,7 +249,7 @@ func CachePostureProviders(msg *message.Message) error {
 			postureProvider.NodeLabel = "Organizations"
 			nodeRes, err := tx.Run(fmt.Sprintf(`
 			MATCH (o:%s{cloud_provider:$cloud_provider+'_org'})
-			WHERE m.active=true
+			WHERE o.active=true
 			WITH COUNT(DISTINCT o.node_id) AS account_count
 			OPTIONAL MATCH (m:%s{cloud_provider: $cloud_provider}) -[:OWNS]-> (p:CloudResource)
 			WHERE m.organization_id IS NOT NULL
@@ -276,6 +278,8 @@ func CachePostureProviders(msg *message.Message) error {
 					postureProvider.ScanCount = int(nodeRec.Values[2].(int64))
 					postureProvider.CompliancePercentage = nodeRec.Values[3].(float64)
 				}
+			} else {
+				log.Warn().Msg(err.Error())
 			}
 		} else {
 			postureProvider.NodeLabel = "Accounts"
@@ -307,6 +311,8 @@ func CachePostureProviders(msg *message.Message) error {
 					postureProvider.ScanCount = int(nodeRec.Values[2].(int64))
 					postureProvider.CompliancePercentage = nodeRec.Values[3].(float64)
 				}
+			} else {
+				log.Warn().Msg(err.Error())
 			}
 		}
 		postureProviders = append(postureProviders, postureProvider)
