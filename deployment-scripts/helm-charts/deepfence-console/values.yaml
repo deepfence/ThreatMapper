@@ -428,3 +428,66 @@ ui:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+
+console_agents:
+  enabled: true
+  cluster_name: "tm-cluster"
+  enableGraphReport: true
+  userDefinedTags: ""
+  instanceIdSuffix: "N"
+  mountContainerRuntimeSocket:
+    dockerSock: false
+    # Change if socket path is not the following
+    dockerSockPath: "/var/run/docker.sock"
+    containerdSock: true
+    # Change if socket path is not the following
+    containerdSockPath: "/run/containerd/containerd.sock"
+    crioSock: false
+    # Change if socket path is not the following
+    crioSockPath: "/var/run/crio/crio.sock"
+  agent:
+    image:
+      repository: deepfenceio/deepfence_agent_ce
+      pullPolicy: Always
+      # Overrides the image tag whose default is .global.imageTag
+      # tag: 2.0.0
+    resources:
+      requests:
+        cpu: 150m
+        memory: 512Mi
+      limits:
+        cpu: 1500m
+        memory: 1536Mi
+    podAnnotations: {}
+    podSecurityContext: {}
+    securityContext: {}
+    nodeSelector: {"kubernetes.io/os": "linux"}
+    tolerations:   
+      - operator: "Exists"
+        effect: "NoSchedule"
+      - operator: "Exists"
+        effect: "NoExecute"
+    affinity: {}
+  cluster_agent:
+    image:
+      repository: deepfenceio/deepfence_discovery_ce
+      pullPolicy: Always
+      # Overrides the image tag whose default is .global.imageTag
+      # tag: 2.0.0
+    resources:
+      requests:
+        cpu: 25m
+        memory: 80Mi
+      limits:
+        cpu: 1500m
+        memory: 1536Mi
+    podAnnotations: {}
+    podSecurityContext: {}
+    securityContext: {}
+    nodeSelector: {"kubernetes.io/os": "linux"}
+    tolerations:
+      - operator: "Exists"
+        effect: "NoSchedule"
+      - operator: "Exists"
+        effect: "NoExecute"
+    affinity: {}
