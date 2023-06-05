@@ -1276,6 +1276,13 @@ func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request
 	switch action {
 	case "delete":
 		err = reporters_scan.DeleteScan(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
+		if req.ScanType == string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) {
+			err := h.CachePostureProviders(r.Context())
+			if err != nil {
+				respondError(err, w)
+				return
+			}
+		}
 	case "notify":
 		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
 	}
@@ -1398,6 +1405,13 @@ func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, ac
 		if err != nil {
 			respondError(err, w)
 			return
+		}
+		if req.ScanType == string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) {
+			err := h.CachePostureProviders(r.Context())
+			if err != nil {
+				respondError(err, w)
+				return
+			}
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}
