@@ -60,10 +60,10 @@ export const Dropdown: React.FC<DropdownProps & { loop?: boolean }> = (props) =>
           loop={loop}
           className={cx(
             'radix-side-top:animate-slide-up radix-side-bottom:animate-slide-down',
-            'shadow-md bg-white min-w-[195px]',
+            'shadow-md min-w-[195px]',
             'overflow-hidden',
             // bg
-            'dark:bg-bg-card',
+            'bg-white dark:bg-bg-card',
             // font size
             'text-p7',
             // border
@@ -85,7 +85,6 @@ export const DropdownItem: React.ForwardRefExoticComponent<
   const classes = dfTwMerge(
     cx(
       'flex items-center gap-3',
-      // disabled
       // paddings
       'px-6 pt-2 pb-1',
       // text
