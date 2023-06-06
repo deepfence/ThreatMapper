@@ -30,19 +30,20 @@ func missing(a, b []string) string {
 	return ""
 }
 
-func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifier) error {
+func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifier) (map[string]struct{}, error) {
+	inProgressNodeIds := map[string]struct{}{}
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return err
+		return inProgressNodeIds, err
 	}
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
-		return err
+		return inProgressNodeIds, err
 	}
 	defer session.Close()
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
-		return err
+		return inProgressNodeIds, err
 	}
 	defer tx.Close()
 	nodeIds := make([]string, len(nodeIdentifiers))
@@ -58,17 +59,18 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 			"complete": utils.SCAN_STATUS_SUCCESS,
 			"failed":   utils.SCAN_STATUS_FAILED})
 	if err != nil {
-		return err
+		return inProgressNodeIds, err
 	}
 	rec, err := res.Collect()
 	if err != nil {
-		return err
+		return inProgressNodeIds, err
 	}
 	var foundNodeIds []string
 	for i := range rec {
 		foundNodeIds = append(foundNodeIds, rec[i].Values[0].(string))
 		if rec[i].Values[1] != nil {
-			return errors.New(fmt.Sprintf("Diagnostic logs already scheduled for node %v (status: %v)", rec[i].Values[0], rec[i].Values[1]))
+			inProgressNodeIds[rec[i].Values[0].(string)] = struct{}{}
+			//return errors.New(fmt.Sprintf("Diagnostic logs already scheduled for node %v (status: %v)", rec[i].Values[0], rec[i].Values[1]))
 		}
 	}
 
@@ -79,9 +81,9 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 		}
 	}
 	if len(missingNodes) > 0 {
-		return errors.New(fmt.Sprintf("could not find nodes %v", missingNodes))
+		return inProgressNodeIds, errors.New(fmt.Sprintf("could not find nodes %v", missingNodes))
 	}
-	return nil
+	return inProgressNodeIds, nil
 }
 
 func UpdateAgentDiagnosticLogsStatus(ctx context.Context, status diagnosis.DiagnosticLogsStatus) error {
@@ -94,7 +96,7 @@ func UpdateAgentDiagnosticLogsStatus(ctx context.Context, status diagnosis.Diagn
 		return err
 	}
 	defer session.Close()
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	defer tx.Close()
 
 	_, err = tx.Run(`
@@ -108,7 +110,7 @@ func UpdateAgentDiagnosticLogsStatus(ctx context.Context, status diagnosis.Diagn
 }
 
 func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifier, tail string) error {
-	err := verifyNodeIds(ctx, nodeIdentifiers)
+	inProgressNodeIds, err := verifyNodeIds(ctx, nodeIdentifiers)
 	if err != nil {
 		return err
 	}
@@ -144,11 +146,14 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 		return err
 	}
 	defer session.Close()
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	defer tx.Close()
 
 	fileNameSuffix := "-" + time.Now().Format("2006-01-02-15-04-05") + ".zip"
 	for _, nodeIdentifier := range nodeIdentifiers {
+		if _, ok := inProgressNodeIds[nodeIdentifier.NodeId]; ok {
+			continue
+		}
 		fileName := "deepfence-agent-logs-" + nodeIdentifier.NodeId + fileNameSuffix
 		uploadUrl, err := mc.CreatePublicUploadURL(ctx, diagnosis.AgentDiagnosisFileServerPrefix+fileName, true, time.Minute*10, url.Values{})
 		if err != nil {
@@ -165,13 +170,15 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 		}
 		if _, err = tx.Run(fmt.Sprintf(`
 		MERGE (n:AgentDiagnosticLogs{node_id: $node_id})
-		SET n.status=$status, n.retries=0, n.trigger_action=$action, n.updated_at=TIMESTAMP()
+		SET n.status=$status, n.retries=0, n.trigger_action=$action, n.updated_at=TIMESTAMP(), n.minio_file_name=$minio_file_name
 		MERGE (m:%s{node_id:$node_id})
 		MERGE (n)-[:SCHEDULEDLOGS]->(m)`, controls.ResourceTypeToNeo4j(controls.StringToResourceType(nodeIdentifier.NodeType))),
 			map[string]interface{}{
-				"status":  utils.SCAN_STATUS_STARTING,
-				"node_id": nodeIdentifier.NodeId,
-				"action":  string(b)}); err != nil {
+				"status":          utils.SCAN_STATUS_STARTING,
+				"node_id":         nodeIdentifier.NodeId,
+				"action":          string(b),
+				"minio_file_name": fileName,
+			}); err != nil {
 			return err
 		}
 	}

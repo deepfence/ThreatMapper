@@ -147,7 +147,7 @@ func (c *container) StartGatheringStats(client StatsGatherer) error {
 		for s := range stats {
 			c.Lock()
 			if c.numPending >= len(c.pendingStats) {
-				log.Warnf("docker container: dropping stats for %s", c.container.ID)
+				log.Debugf("docker container: dropping stats for %s", c.container.ID)
 			} else {
 				c.latestStats = *s
 				c.pendingStats[c.numPending] = *s

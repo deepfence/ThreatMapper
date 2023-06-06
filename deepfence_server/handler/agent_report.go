@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"sync"
@@ -81,7 +82,7 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		respondWith(ctx, w, http.StatusBadRequest, err)
 		return
 	}
-	decoder := jsoniter.NewDecoder(gzr)
+	decoder := json.NewDecoder(gzr)
 	if err := (*ingester).Ingest(ctx, report.CompressedReport{
 		Decoder: decoder,
 		Cleanup: func() {
@@ -89,8 +90,7 @@ func (h *Handler) IngestAgentReport(w http.ResponseWriter, r *http.Request) {
 		},
 	}); err != nil {
 		bufferPool.Put(buffer)
-		log.Error().Msgf("Error Adding report: %v", err)
-		respondWith(ctx, w, http.StatusInternalServerError, err)
+		respondWith(ctx, w, http.StatusServiceUnavailable, err)
 		return
 	}
 

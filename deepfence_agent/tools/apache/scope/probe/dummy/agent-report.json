@@ -3369,9 +3369,9 @@
     }
   },
   "Container": {
-    "7c4bacb194461558e5ff2a7bb737e69b28bd06faf169cacbaa6089d0d144e60b": {
+    "agent-sed-string-7c4bacb194461558e5ff2a7bb737e69b28bd06faf169cacbaa6089d0d144e60b": {
       "metadata": {
-        "node_id": "7c4bacb194461558e5ff2a7bb737e69b28bd06faf169cacbaa6089d0d144e60b",
+        "node_id": "agent-sed-string-7c4bacb194461558e5ff2a7bb737e69b28bd06faf169cacbaa6089d0d144e60b",
         "node_type": "container",
         "node_name": "struts / agent-sed-string",
         "timestamp": "2023-05-05T14:19:09.350599816Z",
@@ -3444,9 +3444,9 @@
         }
       }
     },
-    "87410bc5807bdcede5b5c786c4dd5288b6c35e5f5a2ed8b4a7aac0f9cbbc9416": {
+    "agent-sed-string-87410bc5807bdcede5b5c786c4dd5288b6c35e5f5a2ed8b4a7aac0f9cbbc9416": {
       "metadata": {
-        "node_id": "87410bc5807bdcede5b5c786c4dd5288b6c35e5f5a2ed8b4a7aac0f9cbbc9416",
+        "node_id": "agent-sed-string-87410bc5807bdcede5b5c786c4dd5288b6c35e5f5a2ed8b4a7aac0f9cbbc9416",
         "node_type": "container",
         "node_name": "plone / agent-sed-string",
         "timestamp": "2023-05-05T14:19:09.350608115Z",
@@ -3519,9 +3519,9 @@
         }
       }
     },
-    "8ab99c249210aa564e6db356cea6770cf73a1d0f307ffb74d913039b7a70502c": {
+    "agent-sed-string-8ab99c249210aa564e6db356cea6770cf73a1d0f307ffb74d913039b7a70502c": {
       "metadata": {
-        "node_id": "8ab99c249210aa564e6db356cea6770cf73a1d0f307ffb74d913039b7a70502c",
+        "node_id": "agent-sed-string-8ab99c249210aa564e6db356cea6770cf73a1d0f307ffb74d913039b7a70502c",
         "node_type": "container",
         "node_name": "php-zendserver / agent-sed-string",
         "timestamp": "2023-05-05T14:19:09.350612751Z",
@@ -3594,9 +3594,9 @@
         }
       }
     },
-    "bfc6cb9ca6f298823efe0c90af0e1e1f911631cf22db5a4de0b3b723b75fbf2c": {
+    "agent-sed-string-bfc6cb9ca6f298823efe0c90af0e1e1f911631cf22db5a4de0b3b723b75fbf2c": {
       "metadata": {
-        "node_id": "bfc6cb9ca6f298823efe0c90af0e1e1f911631cf22db5a4de0b3b723b75fbf2c",
+        "node_id": "agent-sed-string-bfc6cb9ca6f298823efe0c90af0e1e1f911631cf22db5a4de0b3b723b75fbf2c",
         "node_type": "container",
         "node_name": "rails / agent-sed-string",
         "timestamp": "2023-05-05T14:19:09.35061718Z",
@@ -3668,9 +3668,9 @@
         }
       }
     },
-    "47d8531b788f6c3c8c0b3d04d8b1a96a52a5f8598389619ce037ba8ffda9e083": {
+    "agent-sed-string-47d8531b788f6c3c8c0b3d04d8b1a96a52a5f8598389619ce037ba8ffda9e083": {
       "metadata": {
-        "node_id": "47d8531b788f6c3c8c0b3d04d8b1a96a52a5f8598389619ce037ba8ffda9e083",
+        "node_id": "agent-sed-string-47d8531b788f6c3c8c0b3d04d8b1a96a52a5f8598389619ce037ba8ffda9e083",
         "node_type": "container",
         "node_name": "ghost / agent-sed-string",
         "timestamp": "2023-05-05T14:19:09.350539108Z",
@@ -3743,9 +3743,9 @@
         }
       }
     },
-    "49a9c0c327b5dc705f757828814db9677e427e13787c7e364c7a633fce51abd8": {
+    "agent-sed-string-49a9c0c327b5dc705f757828814db9677e427e13787c7e364c7a633fce51abd8": {
       "metadata": {
-        "node_id": "49a9c0c327b5dc705f757828814db9677e427e13787c7e364c7a633fce51abd8",
+        "node_id": "agent-sed-string-49a9c0c327b5dc705f757828814db9677e427e13787c7e364c7a633fce51abd8",
         "node_type": "container",
         "node_name": "deepfence-agent / agent-sed-string",
         "timestamp": "2023-05-05T14:19:09.350568518Z",
@@ -3818,9 +3818,9 @@
         }
       }
     },
-    "61c3b771a075b9e156381388990181c57546804ec0772dd36c4fb54b890dfa83": {
+    "agent-sed-string-61c3b771a075b9e156381388990181c57546804ec0772dd36c4fb54b890dfa83": {
       "metadata": {
-        "node_id": "61c3b771a075b9e156381388990181c57546804ec0772dd36c4fb54b890dfa83",
+        "node_id": "agent-sed-string-61c3b771a075b9e156381388990181c57546804ec0772dd36c4fb54b890dfa83",
         "node_type": "container",
         "node_name": "nginx / agent-sed-string",
         "timestamp": "2023-05-05T14:19:09.350575923Z",
@@ -3892,9 +3892,9 @@
         }
       }
     },
-    "71b88611c8d545635e3a3bd290f41c49d05d6cafda0ff45e71bf7eeec8bef6d9": {
+    "agent-sed-string-71b88611c8d545635e3a3bd290f41c49d05d6cafda0ff45e71bf7eeec8bef6d9": {
       "metadata": {
-        "node_id": "71b88611c8d545635e3a3bd290f41c49d05d6cafda0ff45e71bf7eeec8bef6d9",
+        "node_id": "agent-sed-string-71b88611c8d545635e3a3bd290f41c49d05d6cafda0ff45e71bf7eeec8bef6d9",
         "node_type": "container",
         "node_name": "fsharp / agent-sed-string",
         "timestamp": "2023-05-05T14:19:09.350594368Z",

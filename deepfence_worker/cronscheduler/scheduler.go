@@ -161,6 +161,10 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
+	_, err = s.cron.AddFunc("@every 60m", s.enqueueTask(sdkUtils.CachePostureProviders))
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -171,6 +175,7 @@ func (s *Scheduler) startImmediately() {
 	s.enqueueTask(sdkUtils.SyncRegistryTask)()
 	s.enqueueTask(sdkUtils.CloudComplianceTask)()
 	s.enqueueTask(sdkUtils.ReportCleanUpTask)()
+	s.enqueueTask(sdkUtils.CachePostureProviders)()
 }
 
 func (s *Scheduler) Run() {

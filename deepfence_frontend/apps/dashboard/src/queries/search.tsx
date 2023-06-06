@@ -5,7 +5,12 @@ import { ScanTypeEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 
 export const searchQueries = createQueryKeys('search', {
-  hosts: (filters: { scanType: string; searchText?: string; size: number }) => {
+  hosts: (filters: {
+    scanType: string;
+    searchText?: string;
+    size: number;
+    active?: boolean;
+  }) => {
     return {
       queryKey: [{ filters }],
       queryFn: async ({
@@ -17,7 +22,7 @@ export const searchQueries = createQueryKeys('search', {
           nodeName: string;
         }[];
       }> => {
-        const { scanType, searchText, size } = filters;
+        const { scanType, searchText, size, active } = filters;
         const matchFilter = { filter_in: {} };
         if (searchText?.length) {
           matchFilter.filter_in = {
@@ -47,6 +52,7 @@ export const searchQueries = createQueryKeys('search', {
                 contains_filter: {
                   filter_in: {
                     pseudo: [false],
+                    ...(active !== undefined && { active: [active === true] }),
                   },
                 },
                 order_filter: {

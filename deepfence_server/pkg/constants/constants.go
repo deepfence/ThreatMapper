@@ -47,3 +47,7 @@ var SensitiveFields = map[string]struct{}{
 	IntegrationKey: {},
 	APIKey:         {},
 }
+
+const (
+	RedisKeyPostureProviders = "PostureProviders"
+)

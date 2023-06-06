@@ -18,7 +18,7 @@ const (
 	diagnosticLogsCleanUpTimeout           = time.Hour * 6
 	dbReportCleanUpTimeoutBase             = time.Minute * 2
 	dbScanTimeoutBase                      = time.Minute * 5
-	dbRegistryCleanUpTimeout               = time.Minute * 30
+	dbRegistryCleanUpTimeout               = time.Hour * 24
 	dbUpgradeTimeout                       = time.Minute * 30
 	defaultDBScannedResourceCleanUpTimeout = time.Hour * 24 * 30
 )
@@ -43,7 +43,7 @@ func getPushBackValue(session neo4j.Session) int32 {
 	res, err := session.Run(`
 		MATCH (n:Node{node_id:"`+ConsoleAgentId+`"})
 		RETURN n.push_back`,
-		map[string]interface{}{})
+		map[string]interface{}{}, neo4j.WithTxTimeout(15*time.Second))
 	if err != nil {
 		return 1
 	}
@@ -66,31 +66,52 @@ func CleanUpDB(msg *message.Message) error {
 	if err != nil {
 		return err
 	}
+
+	read_session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	pushBack := getPushBackValue(read_session)
+	read_session.Close()
+
 	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
-	pushBack := getPushBackValue(session)
 	dbReportCleanUpTimeout := dbReportCleanUpTimeoutBase * time.Duration(pushBack)
 	dbScanTimeout := dbScanTimeoutBase * time.Duration(pushBack)
+
+	txConfig := neo4j.WithTxTimeout(15 * time.Second)
 
 	// Set inactives
 	if _, err = session.Run(`
 		MATCH (n:Node)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND NOT n.node_id IN ["in-the-internet", "out-the-internet"]
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		SET n.active=false`,
-		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
 
+	// registry images
 	if _, err = session.Run(`
-		MATCH (n:ContainerImage)
-		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		MATCH (n:ContainerImage) 
+		WHERE exists((n)<-[:HOSTS]-(:RegistryAccount))
+		AND n.updated_at < TIMESTAMP()-$time_ms
 		WITH n LIMIT 100000
 		SET n.active=false`,
-		map[string]interface{}{"time_ms": dbRegistryCleanUpTimeout.Milliseconds()}); err != nil {
+		map[string]interface{}{"time_ms": dbRegistryCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
+		return err
+	}
+
+	// host images
+	if _, err = session.Run(`
+		MATCH (n:ContainerImage) 
+		WHERE exists((n)<-[:HOSTS]-(:Node)) 
+		AND NOT exists((n)<-[:HOSTS]-(:RegistryAccount))
+		AND n.updated_at < TIMESTAMP()-$time_ms
+		WITH n LIMIT 100000
+		SET n.active=false`,
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeoutBase.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -98,9 +119,9 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:Container)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		SET n.active=false`,
-		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -108,9 +129,9 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:KubernetesCluster)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		SET n.active=false`,
-		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -121,12 +142,12 @@ func CleanUpDB(msg *message.Message) error {
 		WHERE n.active = false
 		AND NOT exists((n) <-[:SCANNED]-())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		DETACH DELETE n`,
 		map[string]interface{}{
 			"time_ms":     dbReportCleanUpTimeout.Milliseconds(),
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
-		}); err != nil {
+		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -136,11 +157,11 @@ func CleanUpDB(msg *message.Message) error {
 		WHERE n.active = false
 		AND NOT exists((n) <-[:SCANNED]-())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		DETACH DELETE n`,
 		map[string]interface{}{
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
-		}); err != nil {
+		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -150,11 +171,11 @@ func CleanUpDB(msg *message.Message) error {
 		WHERE n.active = false
 		AND NOT exists((n) <-[:SCANNED]-())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		DETACH DELETE n`,
 		map[string]interface{}{
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
-		}); err != nil {
+		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -163,11 +184,11 @@ func CleanUpDB(msg *message.Message) error {
 		MATCH (n:KubernetesCluster)
 		WHERE n.active = false
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		DETACH DELETE n`,
 		map[string]interface{}{
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
-		}); err != nil {
+		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -175,9 +196,9 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:Pod)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		DETACH DELETE n`,
-		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -185,9 +206,9 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:Process)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		DETACH DELETE n`,
-		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}); err != nil {
+		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -195,12 +216,12 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n) -[:SCANNED]-> ()
 		WHERE n.retries >= 3
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		SET n.status = $new_status`,
 		map[string]interface{}{
 			"time_ms":    dbScanTimeout.Milliseconds(),
 			"new_status": utils.SCAN_STATUS_FAILED,
-		}); err != nil {
+		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -208,12 +229,12 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (:AgentVersion) -[n:SCHEDULED]-> (:Node)
 		WHERE n.retries >= 3
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		SET n.status = $new_status`,
 		map[string]interface{}{
 			"time_ms":    dbUpgradeTimeout.Milliseconds(),
 			"new_status": utils.SCAN_STATUS_FAILED,
-		}); err != nil {
+		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -222,12 +243,12 @@ func CleanUpDB(msg *message.Message) error {
 		MATCH (n:AgentDiagnosticLogs)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		DETACH DELETE n`,
 		map[string]interface{}{
 			"time_ms":     diagnosticLogsCleanUpTimeout.Milliseconds(),
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
-		}); err != nil {
+		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -235,11 +256,11 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:CloudNode)
 		WHERE n.updated_at < TIMESTAMP()-$old_time_ms
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		SET n.active = false`,
 		map[string]interface{}{
 			"old_time_ms": dbReportCleanUpTimeout.Milliseconds(),
-		}); err != nil {
+		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -248,11 +269,11 @@ func CleanUpDB(msg *message.Message) error {
 		MATCH (n:CloudResource)
 		WHERE n.updated_at < TIMESTAMP()-$old_time_ms
 		AND NOT exists((n) <-[:SCANNED]-())
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		DETACH DELETE n`,
 		map[string]interface{}{
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
-		}); err != nil {
+		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -264,7 +285,7 @@ func CleanUpDB(msg *message.Message) error {
 			MATCH (m:CloudProvider) -[:HOSTS]-> (n) -[:HOSTS]-> (p:CloudResource) where p.cloud_provider = m.node_id and p.node_type in $cloud_types return (count(p) > 0) as active_region
 		}
 		SET n.active = active_region`,
-		map[string]interface{}{"cloud_types": model.TopologyCloudResourceTypes}); err != nil {
+		map[string]interface{}{"cloud_types": model.TopologyCloudResourceTypes}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -272,9 +293,9 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:CloudRegion) -[:HOSTS]-> (m:Node)
 		WHERE m.active = true
-		WITH count(m) as c, n LIMIT 100000
+		WITH count(m) as c, n LIMIT 10000
 		SET n.active = c <> 0`,
-		map[string]interface{}{}); err != nil {
+		map[string]interface{}{}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -282,9 +303,9 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:CloudProvider) -[:HOSTS]-> (m)
 		WHERE m.active = true
-		WITH count(m) as c, n LIMIT 100000
+		WITH count(m) as c, n LIMIT 10000
 		SET n.active = c <> 0`,
-		map[string]interface{}{}); err != nil {
+		map[string]interface{}{}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -292,9 +313,9 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:CloudRegion)
 		WHERE not (n) -[:HOSTS]-> ()
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		DELETE n`,
-		map[string]interface{}{}); err != nil {
+		map[string]interface{}{}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -302,9 +323,9 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:CloudProvider)
 		WHERE not (n) -[:HOSTS]-> ()
-		WITH n LIMIT 100000
+		WITH n LIMIT 10000
 		DELETE n`,
-		map[string]interface{}{}); err != nil {
+		map[string]interface{}{}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -313,6 +334,8 @@ func CleanUpDB(msg *message.Message) error {
 }
 
 func RetryScansDB(msg *message.Message) error {
+	log.Info().Msgf("Retry scan DB Starting")
+	defer log.Info().Msgf("Retry scan DB Done")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	nc, err := directory.Neo4jClient(ctx)
@@ -322,7 +345,7 @@ func RetryScansDB(msg *message.Message) error {
 	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -336,6 +359,7 @@ func RetryScansDB(msg *message.Message) error {
 		WHERE n.status = $old_status
 		AND n.updated_at < TIMESTAMP()-$time_ms
 		AND n.retries < 3
+		WITH n LIMIT 10000
 		SET n.retries = n.retries + 1, n.status=$new_status`,
 		map[string]interface{}{
 			"time_ms":    dbScanTimeout.Milliseconds(),
@@ -350,6 +374,7 @@ func RetryScansDB(msg *message.Message) error {
 		WHERE a.status = $old_status
 		AND a.updated_at < TIMESTAMP()-$time_ms
 		AND a.retries < 3
+		WITH a LIMIT 10000
 		SET a.retries = a.retries + 1, a.status=$new_status`,
 		map[string]interface{}{
 			"time_ms":    dbScanTimeout.Milliseconds(),
@@ -363,6 +388,8 @@ func RetryScansDB(msg *message.Message) error {
 }
 
 func RetryUpgradeAgent(msg *message.Message) error {
+	log.Info().Msgf("Retry upgrade DB Starting")
+	defer log.Info().Msgf("Retry upgrade DB Done")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 	nc, err := directory.Neo4jClient(ctx)
@@ -372,7 +399,7 @@ func RetryUpgradeAgent(msg *message.Message) error {
 	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -386,6 +413,7 @@ func RetryUpgradeAgent(msg *message.Message) error {
 		WHERE n.status = $old_status
 		AND n.updated_at < TIMESTAMP()-$time_ms
 		AND n.retries < 3
+		WITH n LIMIT 10000
 		SET n.retries = n.retries + 1, n.status=$new_status`,
 		map[string]interface{}{
 			"time_ms":    dbScanTimeout.Milliseconds(),

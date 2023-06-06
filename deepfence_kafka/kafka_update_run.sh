@@ -34,15 +34,16 @@ else
     fi
 fi
 
+export CLUSTER_ID=$STORAGE_UUID
 
+# # Docker workaround: Remove check for KAFKA_ZOOKEEPER_CONNECT parameter
+# sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure
 
-# Docker workaround: Remove check for KAFKA_ZOOKEEPER_CONNECT parameter
-sed -i '/KAFKA_ZOOKEEPER_CONNECT/d' /etc/confluent/docker/configure
+# # Docker workaround: Ignore cub zk-ready
+# sed -i 's/cub zk-ready/echo ignore zk-ready/' /etc/confluent/docker/ensure
 
-# Docker workaround: Ignore cub zk-ready
-sed -i 's/cub zk-ready/echo ignore zk-ready/' /etc/confluent/docker/ensure
-
-# format storage
-echo "kafka-storage format --ignore-formatted -t ${STORAGE_UUID} -c /etc/kafka/kafka.properties" >> /etc/confluent/docker/ensure
+# # format storage
+# # echo "kafka-storage format --ignore-formatted -t ${STORAGE_UUID} -c /etc/kafka/kafka.properties" >> /etc/confluent/docker/ensure
+# echo "kafka-storage format --ignore-formatted --cluster-id=${CLUSTER_ID} -c /etc/kafka/kafka.properties" >> /etc/confluent/docker/ensure
 
 bash -c "/etc/confluent/docker/run"

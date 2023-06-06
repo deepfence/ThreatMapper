@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -27,7 +28,7 @@ func UpdateScanResultNodeFields(ctx context.Context, scanType utils.Neo4jScanTyp
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -55,7 +56,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -89,7 +90,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -116,14 +117,14 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 	if err != nil {
 		return err
 	}
-	tx2, err := session.BeginTransaction()
+	tx2, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
 	defer tx2.Close()
 	// Delete results which are not part of any scans now
 	_, err = tx2.Run(`
-		MATCH (n:`+utils.ScanTypeDetectedNode[scanType]+`) 
+		MATCH (n:`+utils.ScanTypeDetectedNode[scanType]+`)
 		WHERE not (n)<-[:DETECTED]-(:`+string(scanType)+`)
 		DETACH DELETE (n)`, map[string]interface{}{})
 	if err != nil {
@@ -134,13 +135,13 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 		return err
 	}
 	if scanType == utils.NEO4J_VULNERABILITY_SCAN {
-		tx3, err := session.BeginTransaction()
+		tx3, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 		if err != nil {
 			return err
 		}
 		defer tx3.Close()
 		_, err = tx3.Run(`
-			MATCH (n:`+reporters.ScanResultMaskNode[scanType]+`) 
+			MATCH (n:`+reporters.ScanResultMaskNode[scanType]+`)
 			WHERE not (n)<-[:IS]-(:`+string(scanType)+`)
 			DETACH DELETE (n)`, map[string]interface{}{})
 		if err != nil {
@@ -176,23 +177,28 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 	switch scanType {
 	case utils.NEO4J_VULNERABILITY_SCAN:
 		query = `MATCH (n)
-		WHERE n.vulnerability_latest_scan_id="%s"
+		WHERE (n:Node OR n:Container or n:ContainerImage)
+		AND n.vulnerability_latest_scan_id="%s"
 		SET n.vulnerability_latest_scan_id="", n.vulnerabilities_count=0, n.vulnerability_scan_status=""`
 	case utils.NEO4J_SECRET_SCAN:
 		query = `MATCH (n)
-		WHERE n.secret_latest_scan_id="%s"
+		WHERE (n:Node OR n:Container or n:ContainerImage)
+		AND n.secret_latest_scan_id="%s"
 		SET n.secret_latest_scan_id="", n.secrets_count=0, n.secret_scan_status=""`
 	case utils.NEO4J_MALWARE_SCAN:
 		query = `MATCH (n)
-		WHERE n.malware_latest_scan_id="%s"
+		WHERE (n:Node OR n:Container or n:ContainerImage)
+		AND n.malware_latest_scan_id="%s"
 		SET n.malware_latest_scan_id="", n.malwares_count=0, n.malware_scan_status=""`
 	case utils.NEO4J_COMPLIANCE_SCAN:
 		query = `MATCH (n)
-		WHERE n.compliance_latest_scan_id="%s"
+		WHERE (n:Node OR n:KubernetesCluster)
+		AND n.compliance_latest_scan_id="%s"
 		SET n.compliance_latest_scan_id="", n.compliances_count=0, n.compliance_scan_status=""`
 	case utils.NEO4J_CLOUD_COMPLIANCE_SCAN:
 		query = `MATCH (n)
-		WHERE n.cloud_compliance_latest_scan_id="%s"
+		WHERE (n:CloudResource)
+		AND n.cloud_compliance_latest_scan_id="%s"
 		SET n.cloud_compliance_latest_scan_id="", n.cloud_compliances_count=0, n.cloud_compliance_scan_status=""`
 	}
 
@@ -200,7 +206,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 		return nil
 	}
 
-	tx4, err := session.BeginTransaction()
+	tx4, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}

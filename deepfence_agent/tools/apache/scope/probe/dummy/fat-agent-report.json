@@ -33432,9 +33432,9 @@
     }
   },
   "Container": {
-    "69bbc06b4c8a9593c121300f7b8e17c75322cd36b509ad4ebbbf9ee93da163f2": {
+    "agent-sed-string-69bbc06b4c8a9593c121300f7b8e17c75322cd36b509ad4ebbbf9ee93da163f2": {
       "metadata": {
-        "node_id": "69bbc06b4c8a9593c121300f7b8e17c75322cd36b509ad4ebbbf9ee93da163f2",
+        "node_id": "agent-sed-string-69bbc06b4c8a9593c121300f7b8e17c75322cd36b509ad4ebbbf9ee93da163f2",
         "node_type": "container",
         "node_name": "curl / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426538289Z",
@@ -33459,9 +33459,9 @@
         "pod": "2e00758c-a1d4-47b4-a861-bacbbf38aaca"
       }
     },
-    "627d51202a30a77af06b08b680b0524d7d2da0b62f8086b299edf412f4c22149": {
+    "agent-sed-string-627d51202a30a77af06b08b680b0524d7d2da0b62f8086b299edf412f4c22149": {
       "metadata": {
-        "node_id": "627d51202a30a77af06b08b680b0524d7d2da0b62f8086b299edf412f4c22149",
+        "node_id": "agent-sed-string-627d51202a30a77af06b08b680b0524d7d2da0b62f8086b299edf412f4c22149",
         "node_type": "container",
         "node_name": "clean-cilium-state / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426471642Z",
@@ -33486,9 +33486,9 @@
         "pod": "117a1410-871a-470a-a34e-05877d5abbff"
       }
     },
-    "2f21b634866f04da06e18ce4e77a50d69cb7d006928faef677fbb0be06d3a3b5": {
+    "agent-sed-string-2f21b634866f04da06e18ce4e77a50d69cb7d006928faef677fbb0be06d3a3b5": {
       "metadata": {
-        "node_id": "2f21b634866f04da06e18ce4e77a50d69cb7d006928faef677fbb0be06d3a3b5",
+        "node_id": "agent-sed-string-2f21b634866f04da06e18ce4e77a50d69cb7d006928faef677fbb0be06d3a3b5",
         "node_type": "container",
         "node_name": "curl / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426608812Z",
@@ -33513,9 +33513,9 @@
         "pod": "86a73861-367a-48b6-936f-96bf20da87e1"
       }
     },
-    "c830400710b6e139777cb76f05c8411449e0a498d4f400917a30f99522950cba": {
+    "agent-sed-string-c830400710b6e139777cb76f05c8411449e0a498d4f400917a30f99522950cba": {
       "metadata": {
-        "node_id": "c830400710b6e139777cb76f05c8411449e0a498d4f400917a30f99522950cba",
+        "node_id": "agent-sed-string-c830400710b6e139777cb76f05c8411449e0a498d4f400917a30f99522950cba",
         "node_type": "container",
         "node_name": "install-cni-binaries / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426623214Z",
@@ -33540,9 +33540,9 @@
         "pod": "117a1410-871a-470a-a34e-05877d5abbff"
       }
     },
-    "67f0de72f629d2ab3264c3d36fb29f81d0e355c58c5e68320aa78ced54ea1d39": {
+    "agent-sed-string-67f0de72f629d2ab3264c3d36fb29f81d0e355c58c5e68320aa78ced54ea1d39": {
       "metadata": {
-        "node_id": "67f0de72f629d2ab3264c3d36fb29f81d0e355c58c5e68320aa78ced54ea1d39",
+        "node_id": "agent-sed-string-67f0de72f629d2ab3264c3d36fb29f81d0e355c58c5e68320aa78ced54ea1d39",
         "node_type": "container",
         "node_name": "delay-cilium-for-ccm / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426510373Z",
@@ -33567,9 +33567,9 @@
         "pod": "117a1410-871a-470a-a34e-05877d5abbff"
       }
     },
-    "a2825e6e93d1c29f60a737334272e1ce0c7f4299776f68219389260ae3f3911e": {
+    "agent-sed-string-a2825e6e93d1c29f60a737334272e1ce0c7f4299776f68219389260ae3f3911e": {
       "metadata": {
-        "node_id": "a2825e6e93d1c29f60a737334272e1ce0c7f4299776f68219389260ae3f3911e",
+        "node_id": "agent-sed-string-a2825e6e93d1c29f60a737334272e1ce0c7f4299776f68219389260ae3f3911e",
         "node_type": "container",
         "node_name": "apply-sysctl-overwrites / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426571017Z",
@@ -33594,9 +33594,9 @@
         "pod": "117a1410-871a-470a-a34e-05877d5abbff"
       }
     },
-    "052f4f3b95c1fdf26707b1895df146ee7ce00928470d1b287a58f0ccb2e6463e": {
+    "agent-sed-string-052f4f3b95c1fdf26707b1895df146ee7ce00928470d1b287a58f0ccb2e6463e": {
       "metadata": {
-        "node_id": "052f4f3b95c1fdf26707b1895df146ee7ce00928470d1b287a58f0ccb2e6463e",
+        "node_id": "agent-sed-string-052f4f3b95c1fdf26707b1895df146ee7ce00928470d1b287a58f0ccb2e6463e",
         "node_type": "container",
         "node_name": "echoserver / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426548276Z",
@@ -33621,9 +33621,9 @@
         "pod": "da26c997-f712-4eab-8405-fe3f403033ad"
       }
     },
-    "11d9cdca432c93b8c6d5bbf522b770ce8410ed19cdd9d8503a5d3ace55dbb464": {
+    "agent-sed-string-11d9cdca432c93b8c6d5bbf522b770ce8410ed19cdd9d8503a5d3ace55dbb464": {
       "metadata": {
-        "node_id": "11d9cdca432c93b8c6d5bbf522b770ce8410ed19cdd9d8503a5d3ace55dbb464",
+        "node_id": "agent-sed-string-11d9cdca432c93b8c6d5bbf522b770ce8410ed19cdd9d8503a5d3ace55dbb464",
         "node_type": "container",
         "node_name": "deepfence-agent / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426504733Z",
@@ -33648,9 +33648,9 @@
         "pod": "e28b65e6-1d66-4df3-900e-1abf8fb3481d"
       }
     },
-    "9994e5479d0b8be0b88d720ad4916b3f39c9f4369dcea592025739a75bf81c59": {
+    "agent-sed-string-9994e5479d0b8be0b88d720ad4916b3f39c9f4369dcea592025739a75bf81c59": {
       "metadata": {
-        "node_id": "9994e5479d0b8be0b88d720ad4916b3f39c9f4369dcea592025739a75bf81c59",
+        "node_id": "agent-sed-string-9994e5479d0b8be0b88d720ad4916b3f39c9f4369dcea592025739a75bf81c59",
         "node_type": "container",
         "node_name": "mount-cgroup / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426452524Z",
@@ -33675,9 +33675,9 @@
         "pod": "117a1410-871a-470a-a34e-05877d5abbff"
       }
     },
-    "69e3f5615bdd8197897ef28211a691d25a4ace93d7584fae66bee5eebb8b83c3": {
+    "agent-sed-string-69e3f5615bdd8197897ef28211a691d25a4ace93d7584fae66bee5eebb8b83c3": {
       "metadata": {
-        "node_id": "69e3f5615bdd8197897ef28211a691d25a4ace93d7584fae66bee5eebb8b83c3",
+        "node_id": "agent-sed-string-69e3f5615bdd8197897ef28211a691d25a4ace93d7584fae66bee5eebb8b83c3",
         "node_type": "container",
         "node_name": "nginx / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.42659574Z",
@@ -33702,9 +33702,9 @@
         "pod": "c08ab3aa-8f3d-4baf-b7da-bd1ef4495148"
       }
     },
-    "7b41be5506e7da22865528953147f34a1ab093bd725a7c4bdcfde99f1cee15be": {
+    "agent-sed-string-7b41be5506e7da22865528953147f34a1ab093bd725a7c4bdcfde99f1cee15be": {
       "metadata": {
-        "node_id": "7b41be5506e7da22865528953147f34a1ab093bd725a7c4bdcfde99f1cee15be",
+        "node_id": "agent-sed-string-7b41be5506e7da22865528953147f34a1ab093bd725a7c4bdcfde99f1cee15be",
         "node_type": "container",
         "node_name": "csi-node-driver-registrar / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426564348Z",
@@ -33729,9 +33729,9 @@
         "pod": "d736830d-de8d-40af-b44c-2cca7d9e3b0e"
       }
     },
-    "c2bebcfc334e2649044e20d5d28005ebcc84463927c0d4f33c72b0a3ca272241": {
+    "agent-sed-string-c2bebcfc334e2649044e20d5d28005ebcc84463927c0d4f33c72b0a3ca272241": {
       "metadata": {
-        "node_id": "c2bebcfc334e2649044e20d5d28005ebcc84463927c0d4f33c72b0a3ca272241",
+        "node_id": "agent-sed-string-c2bebcfc334e2649044e20d5d28005ebcc84463927c0d4f33c72b0a3ca272241",
         "node_type": "container",
         "node_name": "do-node-agent / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426587056Z",
@@ -33756,9 +33756,9 @@
         "pod": "a2359688-a64c-4314-ac8b-f4e6e1dc8fd4"
       }
     },
-    "e39734c238e0431010e5ac86f4b16f95d52f9f5a0333bb60524975ee3621465d": {
+    "agent-sed-string-e39734c238e0431010e5ac86f4b16f95d52f9f5a0333bb60524975ee3621465d": {
       "metadata": {
-        "node_id": "e39734c238e0431010e5ac86f4b16f95d52f9f5a0333bb60524975ee3621465d",
+        "node_id": "agent-sed-string-e39734c238e0431010e5ac86f4b16f95d52f9f5a0333bb60524975ee3621465d",
         "node_type": "container",
         "node_name": "init-iptables / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426480053Z",
@@ -33783,9 +33783,9 @@
         "pod": "82ac21eb-e2cf-403a-8b16-ca81e4fa9030"
       }
     },
-    "1be026f7df7b80db5be50b5de4c41b30cd317caada3471c26d755f57c9ec26ea": {
+    "agent-sed-string-1be026f7df7b80db5be50b5de4c41b30cd317caada3471c26d755f57c9ec26ea": {
       "metadata": {
-        "node_id": "1be026f7df7b80db5be50b5de4c41b30cd317caada3471c26d755f57c9ec26ea",
+        "node_id": "agent-sed-string-1be026f7df7b80db5be50b5de4c41b30cd317caada3471c26d755f57c9ec26ea",
         "node_type": "container",
         "node_name": "coredns / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426628889Z",
@@ -33810,9 +33810,9 @@
         "pod": "06349797-6c31-4d79-9143-88b74ddb40cb"
       }
     },
-    "c81287ea2643d4201f522408d386c8413361c267d951459dc12e2b69dcc78430": {
+    "agent-sed-string-c81287ea2643d4201f522408d386c8413361c267d951459dc12e2b69dcc78430": {
       "metadata": {
-        "node_id": "c81287ea2643d4201f522408d386c8413361c267d951459dc12e2b69dcc78430",
+        "node_id": "agent-sed-string-c81287ea2643d4201f522408d386c8413361c267d951459dc12e2b69dcc78430",
         "node_type": "container",
         "node_name": "cpc-bridge-proxy / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426486852Z",
@@ -33837,9 +33837,9 @@
         "pod": "82ac21eb-e2cf-403a-8b16-ca81e4fa9030"
       }
     },
-    "c54c8720a382d51f630c03e0172ae35593c2cd0e3a39acc0c8de87e1025db17e": {
+    "agent-sed-string-c54c8720a382d51f630c03e0172ae35593c2cd0e3a39acc0c8de87e1025db17e": {
       "metadata": {
-        "node_id": "c54c8720a382d51f630c03e0172ae35593c2cd0e3a39acc0c8de87e1025db17e",
+        "node_id": "agent-sed-string-c54c8720a382d51f630c03e0172ae35593c2cd0e3a39acc0c8de87e1025db17e",
         "node_type": "container",
         "node_name": "whoami / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426616892Z",
@@ -33864,9 +33864,9 @@
         "pod": "14398dea-9bc2-45e1-b471-89fc8e562b5a"
       }
     },
-    "6e0bffd6b9472da665ab7d1692102cf1833608e5a0648e55fba3cc4d1c6cce8e": {
+    "agent-sed-string-6e0bffd6b9472da665ab7d1692102cf1833608e5a0648e55fba3cc4d1c6cce8e": {
       "metadata": {
-        "node_id": "6e0bffd6b9472da665ab7d1692102cf1833608e5a0648e55fba3cc4d1c6cce8e",
+        "node_id": "agent-sed-string-6e0bffd6b9472da665ab7d1692102cf1833608e5a0648e55fba3cc4d1c6cce8e",
         "node_type": "container",
         "node_name": "csi-do-plugin / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426528887Z",
@@ -33891,9 +33891,9 @@
         "pod": "d736830d-de8d-40af-b44c-2cca7d9e3b0e"
       }
     },
-    "ea6645aa13f703a8174e60b3a1b23512b2ed185241917c3918de7ac84aac0ead": {
+    "agent-sed-string-ea6645aa13f703a8174e60b3a1b23512b2ed185241917c3918de7ac84aac0ead": {
       "metadata": {
-        "node_id": "ea6645aa13f703a8174e60b3a1b23512b2ed185241917c3918de7ac84aac0ead",
+        "node_id": "agent-sed-string-ea6645aa13f703a8174e60b3a1b23512b2ed185241917c3918de7ac84aac0ead",
         "node_type": "container",
         "node_name": "konnectivity-agent / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426518428Z",
@@ -33918,9 +33918,9 @@
         "pod": "7d035bde-8a33-4533-983f-bc108cec947b"
       }
     },
-    "cf7dd1b7ed75adafa5c8ff59e9afc61baca7c4aff733921760dea30306900630": {
+    "agent-sed-string-cf7dd1b7ed75adafa5c8ff59e9afc61baca7c4aff733921760dea30306900630": {
       "metadata": {
-        "node_id": "cf7dd1b7ed75adafa5c8ff59e9afc61baca7c4aff733921760dea30306900630",
+        "node_id": "agent-sed-string-cf7dd1b7ed75adafa5c8ff59e9afc61baca7c4aff733921760dea30306900630",
         "node_type": "container",
         "node_name": "deepfence-cluster-agent / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426494408Z",
@@ -33945,9 +33945,9 @@
         "pod": "cbaaaa3c-c183-4278-a3c2-137b7b74c88f"
       }
     },
-    "f34c9b3cbf7a31d5b99bda46e23f5660c8e083c7a9cf584d7bd77dc63d40f6d2": {
+    "agent-sed-string-f34c9b3cbf7a31d5b99bda46e23f5660c8e083c7a9cf584d7bd77dc63d40f6d2": {
       "metadata": {
-        "node_id": "f34c9b3cbf7a31d5b99bda46e23f5660c8e083c7a9cf584d7bd77dc63d40f6d2",
+        "node_id": "agent-sed-string-f34c9b3cbf7a31d5b99bda46e23f5660c8e083c7a9cf584d7bd77dc63d40f6d2",
         "node_type": "container",
         "node_name": "cilium-agent / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426555452Z",
@@ -33972,9 +33972,9 @@
         "pod": "117a1410-871a-470a-a34e-05877d5abbff"
       }
     },
-    "db9e7042bc498d001ef77880c7958eb51647e2cac0e57902ed417de79ae45aab": {
+    "agent-sed-string-db9e7042bc498d001ef77880c7958eb51647e2cac0e57902ed417de79ae45aab": {
       "metadata": {
-        "node_id": "db9e7042bc498d001ef77880c7958eb51647e2cac0e57902ed417de79ae45aab",
+        "node_id": "agent-sed-string-db9e7042bc498d001ef77880c7958eb51647e2cac0e57902ed417de79ae45aab",
         "node_type": "container",
         "node_name": "metrics-server / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.42660221Z",
@@ -33999,9 +33999,9 @@
         "pod": "1c20ad50-81e3-4c61-ba1e-97697b2b8486"
       }
     },
-    "5d7a5630e74406b7ab12efd98f6be0407ee4905eae56253eca2573e2952cbb3e": {
+    "agent-sed-string-5d7a5630e74406b7ab12efd98f6be0407ee4905eae56253eca2573e2952cbb3e": {
       "metadata": {
-        "node_id": "5d7a5630e74406b7ab12efd98f6be0407ee4905eae56253eca2573e2952cbb3e",
+        "node_id": "agent-sed-string-5d7a5630e74406b7ab12efd98f6be0407ee4905eae56253eca2573e2952cbb3e",
         "node_type": "container",
         "node_name": "kube-proxy / agent-sed-string",
         "timestamp": "2023-05-05T14:18:50.426579764Z",

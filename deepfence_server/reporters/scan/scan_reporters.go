@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -36,7 +37,7 @@ func GetScanStatus(ctx context.Context, scan_type utils.Neo4jScanType, scan_ids 
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return model.ScanStatusResp{}, err
 	}
@@ -115,7 +116,7 @@ func GetComplianceScanStatus(ctx context.Context, scanType utils.Neo4jScanType, 
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return scanResponse, err
 	}
@@ -186,7 +187,7 @@ func GetRegistriesImageIDs(ctx context.Context, registryIds []model.NodeIdentifi
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -230,7 +231,7 @@ func GetKubernetesImageIDs(ctx context.Context, k8sIds []model.NodeIdentifier) (
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -275,7 +276,7 @@ func GetKubernetesHostsIDs(ctx context.Context, k8sIds []model.NodeIdentifier) (
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -319,7 +320,7 @@ func GetKubernetesContainerIDs(ctx context.Context, k8sIds []model.NodeIdentifie
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -364,7 +365,7 @@ func GetCloudAccountIDs(ctx context.Context, cloudProviderIds []model.NodeIdenti
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -422,7 +423,7 @@ func GetScansList(ctx context.Context, scan_type utils.Neo4jScanType, node_ids [
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return model.ScanListResp{}, err
 	}
@@ -499,7 +500,7 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return model.CloudComplianceScanListResp{}, err
 	}
@@ -538,7 +539,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, common, err
 	}
@@ -548,7 +549,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 		OPTIONAL MATCH (n:%s{node_id:$node_id})
 		RETURN n IS NOT NULL AS Exists`,
 		scan_type)
-	log.Info().Msgf("query: %v", query)
+	log.Debug().Msgf("query: %v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{
 			"node_id": scan_id,
@@ -576,7 +577,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 		reporters.OrderFilter2CypherCondition("d", ff.OrderFilter) +
 		` RETURN d ` +
 		fw.FetchWindow2CypherQuery()
-	log.Info().Msgf("query: %v", query)
+	log.Debug().Msgf("query: %v", query)
 	nres, err := tx.Run(query,
 		map[string]interface{}{"scan_id": scan_id})
 	if err != nil {
@@ -635,7 +636,7 @@ func GetFilters(ctx context.Context, having map[string]interface{}, detectedType
 		return res, err
 	}
 	defer session.Close()
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -692,7 +693,7 @@ func GetSevCounts(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -738,7 +739,7 @@ func GetNodesInScanResults(ctx context.Context, scanType utils.Neo4jScanType, re
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -798,7 +799,7 @@ func GetCloudComplianceStats(ctx context.Context, scanId string, neo4jCompliance
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return additionalInfo, err
 	}
@@ -875,7 +876,7 @@ func GetBulkScans(ctx context.Context, scan_type utils.Neo4jScanType, scan_id st
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return scan_ids, err
 	}
@@ -958,7 +959,7 @@ func GetComplianceBulkScans(ctx context.Context, scanType utils.Neo4jScanType, s
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		log.Error().Msgf("Failed to begin new neo4j transaction: %+v", err)
 		return scanIds, err

@@ -3,6 +3,7 @@ package processors
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
@@ -105,6 +106,11 @@ func StartKafkaProcessors(ctx context.Context) {
 		telemetryWrapper(utils.CLOUD_COMPLIANCE_SCAN_STATUS,
 			desWrapper(ingesters.CommitFuncStatus[ingesters.CloudComplianceScanStatus](utils.NEO4J_CLOUD_COMPLIANCE_SCAN))),
 	)
+	processors[utils.CLOUD_RESOURCE] = NewBulkProcessor(
+		utils.CLOUD_RESOURCE,
+		telemetryWrapper(utils.CLOUD_RESOURCE,
+			desWrapper(ingesters.CommitFuncCloudResource)),
+	)
 
 	for i := range processors {
 		processors[i].Start(ctx)
@@ -187,13 +193,14 @@ func StartKafkaConsumers(
 }
 
 func pollRecords(ctx context.Context, kc *kgo.Client) {
+	ticker := time.NewTicker(5 * time.Second)
 	for {
 		select {
 		case <-ctx.Done():
 			log.Info().Msg("stop consuming from kafka")
 			return
-		default:
-			records := kc.PollRecords(ctx, 1000)
+		case <-ticker.C:
+			records := kc.PollRecords(ctx, 10_000)
 			records.EachRecord(processRecord)
 			records.EachError(
 				func(s string, i int32, err error) {

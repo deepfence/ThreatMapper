@@ -162,10 +162,11 @@ func getImageWithTags(imageName string, tag ImageTag) []model.IngestedContainerI
 	for _, tr := range tag.Results {
 		for _, i := range tr.Images {
 			tt := model.IngestedContainerImage{
-				ID:   model.DigestToID(i.Digest),
-				Name: imageName,
-				Tag:  tr.Name,
-				Size: fmt.Sprint(i.Size),
+				ID:            model.DigestToID(i.Digest),
+				DockerImageID: model.DigestToID(i.Digest),
+				Name:          imageName,
+				Tag:           tr.Name,
+				Size:          fmt.Sprint(i.Size),
 				Metadata: model.Metadata{
 					"status":       i.Status,
 					"last_pushed":  i.LastPushed.Unix(),

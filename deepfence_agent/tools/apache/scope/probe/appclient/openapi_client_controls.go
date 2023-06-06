@@ -5,6 +5,7 @@ package appclient
 
 import (
 	"context"
+	"math/rand"
 	"sync/atomic"
 	"time"
 
@@ -28,11 +29,11 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 		)
 		ctl, _, err := ct.API().ControlsAPI.GetAgentInitControlsExecute(req)
 
-		ct.publishInterval.Store(ctl.Beatrate)
-
 		if err != nil {
 			return err
 		}
+
+		ct.publishInterval.Store(ctl.Beatrate)
 
 		for _, action := range ctl.Commands {
 			logrus.Infof("Init execute :%v", action.Id)
@@ -93,6 +94,9 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 				ctl, _, err := ct.API().ControlsAPI.GetAgentControlsExecute(req)
 				if err != nil {
 					logrus.Errorf("Getting controls failed: %v\n", err)
+					rand.Seed(time.Now().UnixNano())
+					randomDelay := rand.Intn(int(ct.PublishInterval() / 2))
+					time.Sleep(time.Duration(randomDelay) * time.Second)
 					continue
 				}
 

@@ -3,6 +3,7 @@ package appclient
 import (
 	"bytes"
 	"compress/gzip"
+	"errors"
 	"net/http"
 	"net/url"
 	"os"
@@ -22,6 +23,8 @@ type OpenapiClient struct {
 	publishReportUrl     string
 	rawClient            *http.Client
 }
+
+var PushBackError = errors.New("Server push back")
 
 func NewOpenapiClient() (*OpenapiClient, error) {
 	openapiClient, err := common.NewClient()
@@ -71,6 +74,10 @@ func (ct *OpenapiClient) Publish(r report.Report) error {
 		return err
 	}
 	resp.Body.Close()
+	if resp.StatusCode == http.StatusServiceUnavailable {
+		return PushBackError
+	}
+
 	return err
 }
 

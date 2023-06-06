@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -23,9 +24,10 @@ import (
 const (
 	REDIS_NETWORK_MAP_KEY   = "network_map"
 	REDIS_IPPORTPID_MAP_KEY = "ipportpid_map"
-	uncompress_workers_num  = 50
-	preparer_workers_num    = 5
-	default_db_input_size   = 20
+	uncompress_workers_num  = 10
+	preparer_workers_num    = 10
+	db_pusher_workers_num   = 10
+	default_db_input_size   = 10
 	db_batch_size           = 1_000
 	resolver_batch_size     = 1_000
 	default_ingester_size   = default_db_input_size * db_batch_size
@@ -35,7 +37,9 @@ const (
 	enqueer_timeout         = time.Second * 30
 	agent_base_timeout      = time.Second * 30
 	localhost_ip            = "127.0.0.1"
-	default_push_back       = 1
+	default_push_back       = 1  // 30 seconds
+	max_push_back           = 60 // 30 minutes
+	map_ttl                 = 60 * time.Second
 )
 
 var (
@@ -84,24 +88,35 @@ func (er *EndpointResolvers) clean() {
 }
 
 type EndpointResolversCache struct {
-	rdb *redis2.Client
+	rdb       *redis2.Client
+	net_cache sync.Map
+	pid_cache sync.Map
 }
 
 func newEndpointResolversCache(ctx context.Context) (EndpointResolversCache, error) {
 	rdb, err := directory.RedisClient(ctx)
 	return EndpointResolversCache{
-		rdb: rdb,
+		rdb:       rdb,
+		net_cache: sync.Map{},
+		pid_cache: sync.Map{},
 	}, err
+}
+
+type CacheEntry struct {
+	value        string
+	last_updated time.Time
 }
 
 func (erc *EndpointResolversCache) clean_maps() {
 	if v, _ := erc.rdb.MemoryUsage(context.Background(), REDIS_NETWORK_MAP_KEY).Result(); v > max_network_maps_size {
 		log.Debug().Msgf("Memory usage for %v reached limit", REDIS_NETWORK_MAP_KEY)
 		erc.rdb.HDel(context.Background(), REDIS_NETWORK_MAP_KEY)
+		erc.net_cache = sync.Map{}
 	}
 	if v, _ := erc.rdb.MemoryUsage(context.Background(), REDIS_IPPORTPID_MAP_KEY).Result(); v > max_network_maps_size {
 		log.Debug().Msgf("Memory usage for %v reached limit", REDIS_IPPORTPID_MAP_KEY)
 		erc.rdb.HDel(context.Background(), REDIS_IPPORTPID_MAP_KEY)
+		erc.pid_cache = sync.Map{}
 	}
 }
 
@@ -110,13 +125,35 @@ func (erc *EndpointResolversCache) push_maps(er *EndpointResolvers) {
 	erc.rdb.HSet(context.Background(), REDIS_IPPORTPID_MAP_KEY, er.ipport_ippid)
 }
 
-func (erc *EndpointResolversCache) get_host(ip string) (string, bool) {
+func (erc *EndpointResolversCache) get_host(ip string, ttl time.Time) (string, bool) {
+	if v, ok := erc.net_cache.Load(ip); ok {
+		value := v.(CacheEntry).value
+		entry_ttl := v.(CacheEntry).last_updated
+		if ttl.Before(entry_ttl) {
+			return value, value != ""
+		}
+	}
 	res, err := erc.rdb.HGet(context.Background(), REDIS_NETWORK_MAP_KEY, ip).Result()
+	if err != nil {
+		res = ""
+	}
+	erc.net_cache.Store(ip, CacheEntry{value: res, last_updated: ttl.Add(map_ttl)})
 	return res, err == nil
 }
 
-func (erc *EndpointResolversCache) get_ip_pid(ip_port string) (string, bool) {
+func (erc *EndpointResolversCache) get_ip_pid(ip_port string, ttl time.Time) (string, bool) {
+	if v, ok := erc.pid_cache.Load(ip_port); ok {
+		value := v.(CacheEntry).value
+		entry_ttl := v.(CacheEntry).last_updated
+		if ttl.Before(entry_ttl) {
+			return value, value != ""
+		}
+	}
 	res, err := erc.rdb.HGet(context.Background(), REDIS_IPPORTPID_MAP_KEY, ip_port).Result()
+	if err != nil {
+		res = ""
+	}
+	erc.pid_cache.Store(ip_port, CacheEntry{value: res, last_updated: ttl.Add(map_ttl)})
 	return res, err == nil
 }
 
@@ -134,6 +171,7 @@ type neo4jIngester struct {
 	db_pusher        chan ReportIngestionData
 	num_ingested     atomic.Int32
 	num_received     atomic.Int32
+	num_processed    atomic.Int32
 }
 
 type ReportIngestionData struct {
@@ -158,6 +196,7 @@ type ReportIngestionData struct {
 
 	Hosts     []map[string]interface{} `json:"hosts" required:"true"`
 	NumMerged int                      `json:"num_merged" required:"true"`
+	Retries   int
 }
 
 func mergeResolvers(others []EndpointResolvers) EndpointResolvers {
@@ -355,11 +394,15 @@ type Connection struct {
 	right_pid   int
 }
 
-func connections2maps(connections []Connection) []map[string]interface{} {
+func connections2maps(connections []Connection, buf *bytes.Buffer) []map[string]interface{} {
 	delim := ";;;"
 	unique_maps := map[string]map[string][]int{}
 	for _, connection := range connections {
-		connection_id := connection.source + delim + connection.destination
+		buf.Reset()
+		buf.WriteString(connection.source)
+		buf.WriteString(delim)
+		buf.WriteString(connection.destination)
+		connection_id := buf.String()
 		v, has := unique_maps[connection_id]
 		if !has {
 			unique_maps[connection_id] = map[string][]int{
@@ -374,12 +417,12 @@ func connections2maps(connections []Connection) []map[string]interface{} {
 	res := make([]map[string]interface{}, 0, len(unique_maps))
 	for k, v := range unique_maps {
 		source_dest := strings.Split(k, delim)
-		internal := map[string]interface{}{}
+		internal := make(map[string]interface{}, 3)
 		internal["source"] = source_dest[0]
 		internal["destination"] = source_dest[1]
-		pids := []map[string]int{}
 		left_pids := v["left_pids"]
 		right_pids := v["right_pids"]
+		pids := make([]map[string]int, 0, len(left_pids))
 		for i := range left_pids {
 			pids = append(pids, map[string]int{
 				"left":  left_pids[i],
@@ -465,6 +508,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 	//endpoint_batch := []map[string]string{}
 	//endpoint_edges := []map[string]string{}
 
+	ttl := time.Now().Add(-map_ttl)
 	connections := []Connection{}
 	local_memoization := map[string]struct{}{}
 	for _, n := range rpt.Endpoint {
@@ -473,7 +517,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			continue
 		}
 		if n.Metadata.HostName == "" {
-			if val, ok := resolvers.get_host(node_ip); ok {
+			if val, ok := resolvers.get_host(node_ip, ttl); ok {
 				n.Metadata.HostName = val
 			} else {
 				continue
@@ -496,12 +540,12 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 						if _, has := local_memoization[ip]; has {
 							continue
 						}
-						if host, ok := resolvers.get_host(ip); ok {
+						if host, ok := resolvers.get_host(ip, ttl); ok {
 							if n.Metadata.HostName == host {
 								local_memoization[ip] = struct{}{}
 								continue
 							}
-							right_ippid, ok := resolvers.get_ip_pid(ip + port)
+							right_ippid, ok := resolvers.get_ip_pid(ip+port, ttl)
 							if ok {
 								rightpid := extractPidFromNodeID(right_ippid)
 								connections = append(connections, Connection{
@@ -524,7 +568,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			}
 		}
 	}
-	res.Endpoint_edges_batch = connections2maps(connections)
+	res.Endpoint_edges_batch = connections2maps(connections, buf)
 
 	process_edges_batch := map[string][]string{}
 	container_process_edges_batch := map[string][]string{}
@@ -566,7 +610,7 @@ func prepareNeo4jIngestion(rpt *report.Report, resolvers *EndpointResolversCache
 			continue
 		}
 		if n.Metadata.HostName == "" {
-			if val, ok := resolvers.get_host(n.Metadata.KubernetesIP); ok {
+			if val, ok := resolvers.get_host(n.Metadata.KubernetesIP, ttl); ok {
 				n.Metadata.HostName = val
 			}
 		}
@@ -598,7 +642,7 @@ func (nc *neo4jIngester) Close() {
 func (nc *neo4jIngester) Ingest(ctx context.Context, crpt report.CompressedReport) error {
 	select {
 	case nc.ingester <- crpt:
-		nc.num_received.Add(1)
+		nc.num_processed.Add(1)
 	default:
 		breaker.Store(true)
 		crpt.Cleanup()
@@ -608,11 +652,13 @@ func (nc *neo4jIngester) Ingest(ctx context.Context, crpt report.CompressedRepor
 }
 
 func (nc *neo4jIngester) IsReady() bool {
+	nc.num_received.Add(1)
 	return !breaker.Load()
 }
 
-func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Session) error {
-	tx, err := session.BeginTransaction()
+func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.Session) error {
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -620,21 +666,13 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 
 	if _, err := tx.Run(`
 		UNWIND $batch as row
+		MERGE (n:Node{node_id:row.node_id})
 		MERGE (cp:CloudProvider{node_id:row.cloud_provider})
 		MERGE (cr:CloudRegion{node_id:row.cloud_region})
 		MERGE (cp) -[:HOSTS]-> (cr)
-		MERGE (n:Node{node_id:row.node_id})
 		MERGE (cr) -[:HOSTS]-> (n)
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true, cp.active = true, cp.pseudo = false, cr.active = true`,
+		SET cp.active = true, cp.pseudo = false, cr.active = true`,
 		map[string]interface{}{"batch": batches.Host_batch}); err != nil {
-		return err
-	}
-
-	if _, err := tx.Run(`
-		UNWIND $batch as row
-		MERGE (n:Container{node_id:row.node_id})
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = row.docker_container_state <> "deleted"`,
-		map[string]interface{}{"batch": batches.Container_batch}); err != nil {
 		return err
 	}
 
@@ -666,52 +704,18 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	if _, err = tx.Run(`
-		UNWIND $batch as row
-		MERGE (n:Process{node_id:row.node_id})
-		SET n+= row, n.updated_at = TIMESTAMP()`,
-		map[string]interface{}{"batch": batches.Process_batch}); err != nil {
-		return err
-	}
-
-	//if _, err = tx.Run("UNWIND $batch as row MERGE (n:TEndpoint{node_id:row.node_id}) SET n+= row", map[string]interface{}{"batch": batches.Endpoint_batch}); err != nil {
-	//return err
-	//}
-
-	if _, err = tx.Run(`
-		UNWIND $batch as row
-		MATCH (n:Container{node_id: row.source})
-		WITH n, row
-		UNWIND row.destinations as dest
-		MATCH (m:Process{node_id: dest})
-		MERGE (n)-[:HOSTS]->(m)`,
-		map[string]interface{}{"batch": batches.Container_process_edges_batch}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run(`
+	if _, err := tx.Run(`
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
 		WITH n, row
 		UNWIND row.destinations as dest
-		MATCH (m:Container{node_id: dest})
-		MERGE (n)-[:HOSTS]->(m)`,
-		map[string]interface{}{"batch": batches.Container_edges_batch}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run(`
-		UNWIND $batch as row
-		MATCH (n:Node{node_id: row.source})
-		WITH n, row
-		UNWIND row.destinations as dest
-		MATCH (m:ContainerImage{node_id: dest})
+		MERGE (m:ContainerImage{node_id: dest})
 		MERGE (n)-[:HOSTS]->(m)`,
 		map[string]interface{}{"batch": batches.Container_image_edge_batch}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err := tx.Run(`
 		UNWIND $batch as row
 		MATCH (n:KubernetesCluster{node_id: row.source})
 		WITH n, row
@@ -722,7 +726,7 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err := tx.Run(`
 		UNWIND $batch as row
 		MATCH (n:KubernetesCluster{node_id: row.source})
 		WITH n, row
@@ -733,18 +737,79 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err := tx.Run(`
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
 		WITH n, row
 		UNWIND row.destinations as dest
-		MATCH (m:Pod{node_id: dest})
+		MERGE (m:Pod{node_id: dest})
 		MERGE (n)-[:HOSTS]->(m)`,
 		map[string]interface{}{"batch": batches.Pod_host_edges_batch}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run(`
+	return tx.Commit()
+}
+
+func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Session) error {
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	if _, err := tx.Run(`
+		UNWIND $batch as row
+		MERGE (n:Node{node_id:row.node_id})
+		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true`,
+		map[string]interface{}{"batch": batches.Host_batch}); err != nil {
+		return err
+	}
+
+	if _, err := tx.Run(`
+		UNWIND $batch as row
+		MERGE (n:Container{node_id:row.node_id})
+		SET n+= row, n.updated_at = TIMESTAMP(), n.active = row.docker_container_state <> "deleted"`,
+		map[string]interface{}{"batch": batches.Container_batch}); err != nil {
+		return err
+	}
+
+	if _, err := tx.Run(`
+		UNWIND $batch as row
+		MERGE (n:Process{node_id:row.node_id})
+		SET n+= row, n.updated_at = TIMESTAMP()`,
+		map[string]interface{}{"batch": batches.Process_batch}); err != nil {
+		return err
+	}
+
+	if _, err := tx.Run(`
+		UNWIND $batch as row
+		MATCH (n:Container{node_id: row.source})
+		WITH n, row
+		UNWIND row.destinations as dest
+		MATCH (m:Process{node_id: dest})
+		MERGE (n)-[:HOSTS]->(m)`,
+		map[string]interface{}{"batch": batches.Container_process_edges_batch}); err != nil {
+		return err
+	}
+
+	if _, err := tx.Run(`
+		UNWIND $batch as row
+		MATCH (n:Node{node_id: row.source})
+		WITH n, row
+		UNWIND row.destinations as dest
+		MATCH (m:Container{node_id: dest})
+		MERGE (n)-[:HOSTS]->(m)`,
+		map[string]interface{}{"batch": batches.Container_edges_batch}); err != nil {
+		return err
+	}
+
+	//if _, err = tx.Run("UNWIND $batch as row MERGE (n:TEndpoint{node_id:row.node_id}) SET n+= row", map[string]interface{}{"batch": batches.Endpoint_batch}); err != nil {
+	//return err
+	//}
+
+	if _, err := tx.Run(`
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
 		WITH n, row
@@ -755,22 +820,17 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 		return err
 	}
 
-	if _, err = tx.Run(`
+	if _, err := tx.Run(`
 		UNWIND $batch as row
-		MATCH (n:Node{node_id: row.node_id}) -[r:CONNECTS]-> (:Node)
-		DELETE r`,
+		MATCH (n:Node{node_id: row.node_id})
+		OPTIONAL MATCH (n:Node{node_id: 'in-the-internet'}) -[ri:CONNECTS]-> (n)
+		OPTIONAL MATCH (n) -[r:CONNECTS]-> (:Node)
+		DELETE r, ri`,
 		map[string]interface{}{"batch": batches.Hosts}); err != nil {
 		return err
 	}
 
-	if _, err = tx.Run(`
-		UNWIND $batch as row
-		MATCH (n:Node{node_id: 'in-the-internet'}) -[r:CONNECTS]-> (n:Node{node_id: row.node_id})
-		DELETE r`, map[string]interface{}{"batch": batches.Hosts}); err != nil {
-		return err
-	}
-
-	if _, err = tx.Run(`
+	if _, err := tx.Run(`
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
 		MATCH (m:Node{node_id: row.destination})
@@ -815,6 +875,7 @@ loop:
 			batch[size] = report
 			size += 1
 			send = size == db_batch_size
+			ticker.Reset(db_batch_timeout)
 		case <-ticker.C:
 			send = size > 0
 		}
@@ -822,21 +883,13 @@ loop:
 			if size > 0 {
 				send = false
 				final_batch := mergeIngestionData(batch[:size])
-				select {
-				case db_pusher <- final_batch:
-				default:
-					log.Warn().Msgf("DB channel full")
-					breaker.Store(true)
-					// Send report & wait
-					db_pusher <- final_batch
-				}
+				db_pusher <- final_batch
 				size = 0
 				batch = [db_batch_size]ReportIngestionData{}
-				ticker.Reset(db_batch_timeout)
 			}
 		}
 	}
-	log.Info().Msgf("runDBPusher ended")
+	log.Info().Msgf("runDBBatcher ended")
 }
 
 func isTransientError(err error) bool {
@@ -847,7 +900,8 @@ func isTransientError(err error) bool {
 	return false
 }
 
-func (nc *neo4jIngester) runDBPusher(db_pusher, db_pusher_retry chan ReportIngestionData) {
+func (nc *neo4jIngester) runDBPusher(db_pusher, db_pusher_seq, db_pusher_retry chan ReportIngestionData,
+	pusher func(ReportIngestionData, neo4j.Session) error) {
 	session, err := nc.driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
 		log.Error().Msgf("Failed to open session: %v", err)
@@ -857,16 +911,33 @@ func (nc *neo4jIngester) runDBPusher(db_pusher, db_pusher_retry chan ReportInges
 
 	for batches := range db_pusher {
 		span := telemetry.NewSpan(context.Background(), "ingester", "PushAgentReportsToDB")
-		err := nc.PushToDB(batches, session)
-		if err != nil {
-			log.Error().Msgf("push to neo4j err: %v", err)
-			span.EndWithErr(err)
-			if isTransientError(err) {
-				db_pusher_retry <- batches
+		for {
+			err := pusher(batches, session)
+			if err != nil {
+				batches.Retries += 1
+				if batches.Retries == 2 || !isTransientError(err) {
+					log.Error().Msgf("Neo4j err: %v", err)
+					span.EndWithErr(err)
+					break
+				}
+				if db_pusher_retry != nil {
+					select {
+					case db_pusher_retry <- batches:
+					default:
+						log.Error().Msgf("Skip because: %v", err)
+						span.EndWithErr(err)
+						break
+					}
+				}
+				continue
 			}
-		} else {
-			nc.num_ingested.Add(int32(batches.NumMerged))
 			span.End()
+			if db_pusher_seq == nil {
+				nc.num_ingested.Add(int32(batches.NumMerged))
+			} else {
+				db_pusher_seq <- batches
+			}
+			break
 		}
 	}
 	log.Info().Msgf("runDBPusher ended")
@@ -901,31 +972,48 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 
 	done := make(chan struct{})
 	db_pusher := make(chan ReportIngestionData, db_input_size)
-	db_pusher_retry := make(chan ReportIngestionData, db_input_size)
+	db_pusher_seq := make(chan ReportIngestionData, db_input_size)
+	db_pusher_retry := make(chan ReportIngestionData, db_input_size/2)
+	db_pusher_seq_retry := make(chan ReportIngestionData, db_input_size/2)
 	nc := &neo4jIngester{
 		driver:           driver,
 		resolvers:        rdb,
 		ingester:         make(chan report.CompressedReport, ingester_size),
-		batcher:          make(chan ReportIngestionData, ingester_size),
+		batcher:          make(chan ReportIngestionData, db_batch_size),
 		resolvers_update: make(chan EndpointResolvers, db_batch_size),
 		preparers_input:  make(chan report.Report, db_batch_size),
 		done:             done,
 		db_pusher:        db_pusher,
 		num_ingested:     atomic.Int32{},
 		num_received:     atomic.Int32{},
+		num_processed:    atomic.Int32{},
 	}
 
 	for i := 0; i < uncompress_workers_num; i++ {
 		go nc.runIngester()
 	}
 
-	for i := 0; i < db_input_size; i++ {
-		go nc.runDBPusher(db_pusher, db_pusher_retry)
-		go nc.runDBPusher(db_pusher_retry, db_pusher)
+	for i := 0; i < db_pusher_workers_num; i++ {
+		go nc.runDBPusher(db_pusher, db_pusher_seq, db_pusher_retry, nc.PushToDB)
 	}
 
-	go nc.runDBBatcher(db_pusher)
+	go nc.runDBPusher(db_pusher_seq, nil, db_pusher_seq_retry, nc.PushToDBSeq)
+
 	go nc.resolversUpdater()
+
+	go nc.runDBBatcher(db_pusher)
+
+	go func() {
+		for e := range db_pusher_retry {
+			db_pusher <- e
+		}
+	}()
+
+	go func() {
+		for e := range db_pusher_seq_retry {
+			db_pusher_seq <- e
+		}
+	}()
 
 	for i := 0; i < preparer_workers_num; i++ {
 		go nc.runPreparer()
@@ -949,7 +1037,11 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 				len(nc.resolvers_update),
 				len(nc.batcher),
 				len(nc.db_pusher),
-				len(db_pusher_retry))
+				len(db_pusher_seq))
+
+			if len(nc.ingester) == 0 {
+				breaker.Store(false)
+			}
 		}
 	}()
 
@@ -963,6 +1055,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 		} else {
 			Push_back.Store(newValue)
 		}
+		prev_push_back := Push_back.Load()
 		session, err := driver.Session(neo4j.AccessModeWrite)
 		if err != nil {
 			log.Error().Msgf("Fail to get session for push back", err)
@@ -971,7 +1064,6 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 		defer session.Close()
 		ticker := time.NewTicker(agent_base_timeout * time.Duration(Push_back.Load()))
 		defer ticker.Stop()
-		update_ticker := false
 	loop:
 		for {
 			select {
@@ -981,36 +1073,51 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 			}
 
 			current_num_received := nc.num_received.Swap(0)
+			current_num_accepted := nc.num_processed.Swap(0)
 			current_num_ingested := nc.num_ingested.Swap(0)
 
-			toAdd := int32(0)
-			if breaker.Swap(false) || current_num_ingested < (current_num_received/4)*3 {
-				toAdd = max(current_num_received, 1) / max(current_num_ingested, 1)
-				prev_received_num = current_num_received
-				update_ticker = true
-			} else if current_num_received < (prev_received_num/4)*3 {
-				toAdd = -1 * max(prev_received_num, 1) / max(current_num_received, 1)
-				if Push_back.Load()+toAdd <= 0 {
-					toAdd = -1*Push_back.Load() + 1
+			new_value := Push_back.Load()
+			if current_num_ingested < (current_num_received/8)*7 {
+				if current_num_received >= 100 {
+					ratio := max(current_num_accepted, 1) / max(current_num_ingested, 1)
+					// Limit ratio to x2
+					if ratio >= 2 {
+						new_value = Push_back.Load() * 2
+					} else {
+						new_value = Push_back.Load() + 1
+					}
+				}
+			} else if current_num_received < (prev_received_num/8)*7 {
+				ratio := max(prev_received_num, 1) / max(current_num_received, 1)
+				// Limit ratio to /2
+				if ratio >= 2 {
+					new_value = Push_back.Load() / ratio
+				} else {
+					new_value = Push_back.Load() - 1
 				}
 				prev_received_num = current_num_received
-				update_ticker = true
+			}
+
+			if new_value <= 0 {
+				Push_back.Store(1)
+			} else if new_value > max_push_back {
+				Push_back.Store(max_push_back)
+			} else {
+				Push_back.Store(new_value)
 			}
 
 			// Keep the highest number of reports
 			prev_received_num = max(prev_received_num, current_num_received)
 
-			err := UpdatePushBack(session, &Push_back, toAdd)
+			err := UpdatePushBack(session, &Push_back, prev_push_back)
 			if err != nil {
 				log.Error().Msgf("push back err: %v", err)
 			}
+			prev_push_back = Push_back.Load()
 
-			if update_ticker {
-				update_ticker = false
-				ticker.Reset(agent_base_timeout * time.Duration(Push_back.Load()))
-			}
+			ticker.Reset(agent_base_timeout * time.Duration(Push_back.Load()))
 
-			log.Info().Msgf("Received: %v, pushed: %v, Push back: %v", current_num_received, current_num_ingested, Push_back.Load())
+			log.Info().Msgf("Received: %v, processed: %v, pushed: %v, Push back: %v", current_num_received, current_num_accepted, current_num_ingested, Push_back.Load())
 		}
 	}()
 
@@ -1054,24 +1161,21 @@ func metadataToMap(n report.Metadata) map[string]interface{} {
 	return utils.StructToMap(n)
 }
 
-// TODO: improve syncro
-func UpdatePushBack(session neo4j.Session, newValue *atomic.Int32, add int32) error {
-	tx, err := session.BeginTransaction()
+// TODO: improve syncro across multiple servers
+func UpdatePushBack(session neo4j.Session, newValue *atomic.Int32, prev int32) error {
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(5 * time.Second))
 	if err != nil {
 		return err
 	}
 	defer tx.Close()
 
 	var rec *db.Record
-	if add != 0 {
-		str := strconv.Itoa(int(newValue.Load() + add))
-
+	if newValue.Load() != prev {
 		res, err := tx.Run(`
 			MATCH (n:Node{node_id:"deepfence-console-cron"})
-			CALL apoc.atomic.update(n, 'push_back','`+str+`')
+			CALL apoc.atomic.update(n, 'push_back','`+strconv.Itoa(int(newValue.Load()))+`')
 			YIELD oldValue, newValue
-			return newValue`,
-			map[string]interface{}{})
+			return newValue`, map[string]interface{}{})
 		if err != nil {
 			return err
 		}
@@ -1082,8 +1186,7 @@ func UpdatePushBack(session neo4j.Session, newValue *atomic.Int32, add int32) er
 	} else {
 		res, err := tx.Run(`
 			MATCH (n:Node{node_id:"deepfence-console-cron"})
-			RETURN n.push_back`,
-			map[string]interface{}{})
+			RETURN n.push_back`, map[string]interface{}{})
 		if err != nil {
 			return err
 		}
@@ -1091,9 +1194,8 @@ func UpdatePushBack(session neo4j.Session, newValue *atomic.Int32, add int32) er
 		if err != nil {
 			return err
 		}
+		newValue.Store(int32(rec.Values[0].(int64)))
 	}
-
-	newValue.Store(int32(rec.Values[0].(int64)))
 
 	return tx.Commit()
 }
@@ -1104,7 +1206,7 @@ func GetPushBack(driver neo4j.Driver) (int32, error) {
 		return 0, err
 	}
 	defer session.Close()
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(5 * time.Second))
 	if err != nil {
 		return 0, err
 	}

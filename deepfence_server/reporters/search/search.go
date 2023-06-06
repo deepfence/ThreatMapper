@@ -2,6 +2,7 @@ package reporters_search
 
 import (
 	"context"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -72,39 +73,39 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
 	defer tx.Close()
 
 	query := `
-		CALL {	
+		CALL {
 			MATCH (n:Node)
 			WHERE n.pseudo = false AND n.active = true
 			return count(n) as n1
 		}
-		CALL {	
+		CALL {
 			MATCH (n:Container)
 			WHERE n.pseudo = false AND n.active = true
 			return count(n) as n2
 		}
-		CALL {	
+		CALL {
 			MATCH (n:ContainerImage)
 			WHERE n.pseudo = false AND n.active = true
 			return count(n) as n3
 		}
-		CALL {	
+		CALL {
 			MATCH (n:KubernetesCluster)
 			WHERE n.pseudo = false AND n.active = true
 			return count(n) as n4
 		}
-		CALL {	
+		CALL {
 			MATCH (n:Pod)
 			WHERE n.pseudo = false AND n.active = true
 			return count(n) as n5, count(distinct n.kubernetes_namespace) as nn5
 		}
-		CALL {	
+		CALL {
 			MATCH (n:CloudProvider)
 			WHERE n.pseudo = false AND n.active = true
 			return count(n) as n6
@@ -146,7 +147,7 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -157,11 +158,11 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
 		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) +
 		` OPTIONAL MATCH (n) -[:IS]-> (e) CALL {
-        WITH n OPTIONAL MATCH (l) -[:DETECTED]-> (n) OPTIONAL MATCH (l) -[:SCANNED]-> (k) 
+        WITH n OPTIONAL MATCH (l) -[:DETECTED]-> (n) OPTIONAL MATCH (l) -[:SCANNED]-> (k)
         WITH distinct k RETURN collect((coalesce(k.node_name, '') + '/' + coalesce(k.node_type, ''))) as resources }
 		RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources ` +
 		fw.FetchWindow2CypherQuery()
-	log.Info().Msgf("search query: %v", query)
+	log.Debug().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{})
 
@@ -223,7 +224,7 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 }
 
 func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]model.CloudNodeAccountInfo, error) {
-	var res []model.CloudNodeAccountInfo
+	res := []model.CloudNodeAccountInfo{}
 	cloudProvider := filter.Filters.ContainsFilter.FieldsValues["cloud_provider"][0].(string)
 	dummy := model.CloudNodeAccountInfo{
 		CloudProvider: cloudProvider,
@@ -240,16 +241,25 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
 	defer tx.Close()
+	nonKubeFilter := ""
+	if cloudProvider == model.PostureProviderLinux {
+		nonKubeFilter = "{kubernetes_cluster_id:'', node_type:'host'}"
+	}
+	if cloudProvider == model.PostureProviderLinux || cloudProvider == model.PostureProviderKubernetes {
+		delete(filter.Filters.ContainsFilter.FieldsValues, "cloud_provider")
+	}
+	orderFilters := filter.Filters.OrderFilter
+	filter.Filters.OrderFilter = reporters.OrderFilter{}
 
 	query := `
-		MATCH (n:` + dummy.NodeType() + `)` +
+		MATCH (n:` + dummy.NodeType() + nonKubeFilter + `)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-		`WITH n.node_id AS node_id UNWIND node_id AS x
+		` WITH n.node_id AS node_id UNWIND node_id AS x
 		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `)-[:DETECTED]->(c:` + dummy.ScanResultType() + `)
 		WITH x ` + reporters.FieldFilterCypher("", filter.InFieldFilter) + `, COUNT(c) AS total_compliance_count
 		OPTIONAL MATCH (n:` + dummy.NodeType() + `{node_id: x})<-[:SCANNED]-(s:` + string(dummy.ScanType()) + `)-[:DETECTED]->(c1:` + dummy.ScanResultType() + `)
@@ -261,11 +271,11 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 			RETURN s1.node_id AS last_scan_id, s1.status AS last_scan_status
 			ORDER BY s1.updated_at DESC LIMIT 1
 		}
-		CALL {WITH x MATCH (n:CloudNode{node_id: x}) RETURN n.node_name as node_name}
-		RETURN x as node_id, node_name, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
-		reporters.OrderFilter2CypherCondition("", filter.Filters.OrderFilter) + fw.FetchWindow2CypherQuery()
+		CALL {WITH x MATCH (n:` + dummy.NodeType() + `{node_id: x}) RETURN n.node_name as node_name, n.active as active}
+		RETURN x as node_id, node_name, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
+		reporters.OrderFilter2CypherCondition("", orderFilters) + fw.FetchWindow2CypherQuery()
 
-	log.Info().Msgf("search cloud node query: %v", query)
+	log.Debug().Msgf("search cloud node query: %v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{
 			"pass_status": dummy.GetPassStatus(),
@@ -298,7 +308,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		} else {
 			node_map = map[string]interface{}{}
 			baseValuesCount := 0
-			for _, nodeMapKey := range []string{"node_id", "node_name", "compliance_percentage", "last_scan_id", "last_scan_status"} {
+			for _, nodeMapKey := range []string{"node_id", "node_name", "compliance_percentage", "last_scan_id", "last_scan_status", "active"} {
 				node_map[nodeMapKey] = rec.Values[baseValuesCount]
 				baseValuesCount = baseValuesCount + 1
 			}
@@ -328,7 +338,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -351,7 +361,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 		` RETURN n.node_id as scan_id, n.status as status, n.status_message as status_message, n.updated_at as updated_at, m.node_id as node_id, COALESCE(m.node_type, m.cloud_provider) as node_type, m.node_name as node_name` +
 		reporters.OrderFilter2CypherCondition("", scan_filter.Filters.OrderFilter) +
 		fw.FetchWindow2CypherQuery()
-	log.Info().Msgf("search query: %v", query)
+	log.Debug().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{})
 

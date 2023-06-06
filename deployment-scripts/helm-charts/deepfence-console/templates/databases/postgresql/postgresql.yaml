@@ -79,7 +79,7 @@ spec:
         resources:
           requests:
             storage: "{{ .Values.postgresql.volumeSize }}"
-        storageClassName: {{ .Values.postgresql.storageClass }}
+        storageClassName: {{ default .Values.global.storageClass .Values.postgresql.storageClass }}
 ---
 apiVersion: v1
 kind: Service

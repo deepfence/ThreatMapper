@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
+	wrkingest "github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -116,6 +118,24 @@ func AddNewScan(tx WriteDBTransaction,
 			"status":  utils.SCAN_STATUS_STARTING,
 			"node_id": node_id,
 			"action":  string(b)}); err != nil {
+		return err
+	}
+
+	latestScanIDFieldName := wrkingest.LatestScanIdField[scan_type]
+	scanStatusFieldName := wrkingest.ScanStatusField[scan_type]
+
+	if _, err = tx.Run(fmt.Sprintf(`
+		MERGE (n:%s{node_id: $scan_id})
+		SET n.status = $status, n.updated_at = TIMESTAMP()
+		WITH n
+		OPTIONAL MATCH (n) -[:DETECTED]- (m)
+		WITH n
+		MATCH (n) -[:SCANNED]- (r)
+		SET r.%s=n.status, r.%s=n.node_id`,
+		scan_type, scanStatusFieldName, latestScanIDFieldName),
+		map[string]interface{}{
+			"scan_id": scan_id,
+			"status":  utils.SCAN_STATUS_STARTING}); err != nil {
 		return err
 	}
 
@@ -287,7 +307,7 @@ func UpdateScanStatus(ctx context.Context, scan_type string, scan_id string, sta
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}

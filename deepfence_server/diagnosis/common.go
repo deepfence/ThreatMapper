@@ -4,9 +4,13 @@ import (
 	"context"
 	"net/url"
 	"path/filepath"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
 const (
@@ -46,6 +50,7 @@ type DiagnosticLogsStatus struct {
 type DiagnosticLogsLink struct {
 	UrlLink   string `json:"url_link"`
 	Label     string `json:"label"`
+	FileName  string `json:"-"`
 	Message   string `json:"message"`
 	CreatedAt string `json:"created_at"`
 }
@@ -62,12 +67,13 @@ func GetDiagnosticLogs(ctx context.Context) (*GetDiagnosticLogsResponse, error) 
 	}
 	diagnosticLogs := GetDiagnosticLogsResponse{
 		ConsoleLogs: getDiagnosticLogsHelper(ctx, mc, ConsoleDiagnosisFileServerPrefix),
-		AgentLogs:   getDiagnosticLogsHelper(ctx, mc, AgentDiagnosisFileServerPrefix),
+		AgentLogs:   getAgentDiagnosticLogs(ctx, mc, AgentDiagnosisFileServerPrefix),
 	}
 	return &diagnosticLogs, err
 }
 
 func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, pathPrefix string) []DiagnosticLogsLink {
+	// Get completed files from minio
 	objects := mc.ListFiles(ctx, pathPrefix, false, 0, true)
 	diagnosticLogsResponse := make([]DiagnosticLogsLink, len(objects))
 	for i, obj := range objects {
@@ -76,12 +82,92 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 		if err != nil {
 			message = err.Error()
 		}
+		fileName := filepath.Base(obj.Key)
 		diagnosticLogsResponse[i] = DiagnosticLogsLink{
 			UrlLink:   urlLink,
-			Label:     filepath.Base(obj.Key),
+			FileName:  fileName,
+			Label:     strings.TrimSuffix(strings.TrimPrefix(fileName, "deepfence-agent-logs-"), ".zip"),
 			Message:   message,
 			CreatedAt: obj.LastModified.Format("2006-01-02 15:04:05"),
 		}
 	}
+	sort.Slice(diagnosticLogsResponse, func(i, j int) bool {
+		return diagnosticLogsResponse[i].CreatedAt > diagnosticLogsResponse[j].CreatedAt
+	})
 	return diagnosticLogsResponse
+}
+
+func getAgentDiagnosticLogs(ctx context.Context, mc directory.FileManager, pathPrefix string) []DiagnosticLogsLink {
+	diagnosticLogs := getDiagnosticLogsHelper(ctx, mc, AgentDiagnosisFileServerPrefix)
+	minioAgentLogsKeys := make(map[string]int)
+	for i, log := range diagnosticLogs {
+		minioAgentLogsKeys[log.FileName] = i
+	}
+
+	// Get in progress ones from neo4j
+	driver, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return diagnosticLogs
+	}
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	if err != nil {
+		return diagnosticLogs
+	}
+	defer session.Close()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	defer tx.Close()
+
+	r, err := tx.Run(`
+		MATCH (n:AgentDiagnosticLogs)-[:SCHEDULEDLOGS]->(m)
+		RETURN n.node_id, n.minio_file_name, n.message, n.status, n.updated_at, m.node_name`, map[string]interface{}{})
+	if err != nil {
+		return diagnosticLogs
+	}
+
+	nodeIdToName := make(map[string]string)
+	records, err := r.Collect()
+	for _, rec := range records {
+		var nodeId, fileName, message, status, updatedAt, nodeName interface{}
+		var ok bool
+		if nodeId, ok = rec.Get("n.node_id"); !ok || nodeId == nil {
+			nodeId = ""
+		}
+		if fileName, ok = rec.Get("n.minio_file_name"); !ok || fileName == nil {
+			fileName = ""
+		}
+		if message, ok = rec.Get("n.message"); !ok || message == nil {
+			message = ""
+		}
+		if status, ok = rec.Get("n.status"); !ok || status == nil {
+			status = ""
+		}
+		if updatedAt, ok = rec.Get("n.updated_at"); !ok || updatedAt == nil {
+			updatedAt = 0
+		}
+		if nodeName, ok = rec.Get("m.node_name"); !ok || nodeName == nil {
+			nodeName = ""
+		}
+		updatedAtTime := time.UnixMilli(updatedAt.(int64))
+		nodeIdToName[nodeId.(string)] = nodeName.(string)
+		if message.(string) == "" && status.(string) != utils.SCAN_STATUS_SUCCESS {
+			message = status.(string)
+		}
+
+		if pos, ok := minioAgentLogsKeys[fileName.(string)]; ok {
+			diagnosticLogs[pos].Label = nodeName.(string)
+			diagnosticLogs[pos].Message = message.(string)
+		} else {
+			diagnosticLogs = append(diagnosticLogs, DiagnosticLogsLink{
+				UrlLink:   "",
+				FileName:  fileName.(string),
+				Label:     nodeName.(string),
+				Message:   message.(string),
+				CreatedAt: updatedAtTime.Format("2006-01-02 15:04:05"),
+			})
+		}
+	}
+	sort.Slice(diagnosticLogs, func(i, j int) bool {
+		return diagnosticLogs[i].CreatedAt > diagnosticLogs[j].CreatedAt
+	})
+	return diagnosticLogs
 }

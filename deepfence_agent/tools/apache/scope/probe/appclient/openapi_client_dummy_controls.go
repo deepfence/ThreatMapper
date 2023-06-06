@@ -30,13 +30,16 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 
 	for i := 0; i < dummyNum; i++ {
 
+		// Add jitter
+		<-time.After(time.Second * time.Duration(i/70))
+
 		dummyNodeId := nodeId + strconv.Itoa(i)
 
 		if isClusterAgent {
 
 		} else {
 
-			req := ct.client.ControlsAPI.GetAgentInitControls(context.Background())
+			req := ct.API().ControlsAPI.GetAgentInitControls(context.Background())
 			req = req.ModelInitAgentReq(
 				*openapi.NewModelInitAgentReq(
 					getMaxAllocatable(),
@@ -44,15 +47,13 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 					host.AgentVersionNo,
 				),
 			)
-			ctl, _, err := ct.client.ControlsAPI.GetAgentInitControlsExecute(req)
-
-			ct.publishInterval.Store(ctl.Beatrate)
+			ctl, _, err := ct.API().ControlsAPI.GetAgentInitControlsExecute(req)
 
 			if err != nil {
-				return err
+				ct.publishInterval.Store(30)
+			} else {
+				ct.publishInterval.Store(ctl.Beatrate)
 			}
-
-			ct.publishInterval.Store(30)
 
 			for _, action := range ctl.Commands {
 				logrus.Infof("Init execute :%v", action.Id)
@@ -95,16 +96,6 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 			}()
 		} else {
 			go func() {
-				// Add jitter
-				rand.Seed(time.Now().UnixNano())
-
-				min := 0
-				max := 600
-
-				jitter := int32(rand.Intn(max-min+1) + min)
-
-				<-time.After(time.Second * time.Duration(jitter))
-
 				req := ct.API().ControlsAPI.GetAgentControls(context.Background())
 				agentId := openapi.NewModelAgentId(getMaxAllocatable(), dummyNodeId)
 				req = req.ModelAgentId(*agentId)
@@ -119,9 +110,11 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 					ctl, _, err := ct.API().ControlsAPI.GetAgentControlsExecute(req)
 					if err != nil {
 						logrus.Errorf("Getting controls failed: %v\n", err)
+						rand.Seed(time.Now().UnixNano())
+						randomDelay := rand.Intn(int(ct.PublishInterval()))
+						time.Sleep(time.Duration(randomDelay) * time.Second)
 						continue
 					}
-
 					ct.publishInterval.Store(ctl.Beatrate)
 
 					for _, action := range ctl.Commands {

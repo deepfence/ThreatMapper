@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -30,7 +31,7 @@ func GetContainerImagesFromRegistryAndNamespace(ctx context.Context, rType, ns s
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return nil, err
 	}

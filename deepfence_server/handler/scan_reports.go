@@ -69,7 +69,7 @@ func GetImageFromId(ctx context.Context, node_id string) (string, string, error)
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return name, tag, err
 	}
@@ -113,7 +113,7 @@ func GetContainerKubeClusterNameFromId(ctx context.Context, node_id string) (str
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return clusterID, clusterName, err
 	}
@@ -219,11 +219,6 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 
 	h.AuditUserActivity(r, EVENT_VULNERABILITY_SCAN, ACTION_START, reqs, true)
 
-	for _, i := range scan_ids {
-		h.SendScanStatus(r.Context(), utils.VULNERABILITY_SCAN_STATUS,
-			NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
-	}
-
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -288,11 +283,6 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	h.AuditUserActivity(r, EVENT_SECRET_SCAN, ACTION_START, reqs, true)
-
-	for _, i := range scan_ids {
-		h.SendScanStatus(r.Context(), utils.SECRET_SCAN_STATUS,
-			NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
-	}
 
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
@@ -441,13 +431,6 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 
 	h.AuditUserActivity(r, EVENT_MALWARE_SCAN, ACTION_START, reqs, true)
 
-	if err != nil {
-		for _, i := range scan_ids {
-			h.SendScanStatus(r.Context(), utils.MALWARE_SCAN_STATUS,
-				NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
-		}
-	}
-
 	err = httpext.JSON(w, http.StatusOK, model.ScanTriggerResp{ScanIds: scan_ids, BulkScanId: bulkId})
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -506,10 +489,12 @@ func (h *Handler) StopMalwareScanHandler(w http.ResponseWriter, r *http.Request)
 
 func (h *Handler) IngestCloudResourcesReportHandler(w http.ResponseWriter, r *http.Request) {
 	ingester := ingesters.NewCloudResourceIngester()
-	ingest_cloud_scan_report(w, r, ingester)
+	ingest_cloud_scan_report(w, r, ingester, h.IngestChan)
 }
 
-func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Request, ingester ingesters.Ingester[T]) {
+func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Request,
+	ingester ingesters.KafkaIngester[T],
+	ingestChan chan *kgo.Record) {
 
 	defer req.Body.Close()
 	if req.Method != "POST" {
@@ -533,7 +518,7 @@ func ingest_cloud_scan_report[T any](respWrite http.ResponseWriter, req *http.Re
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
 		return
 	}
-	err = ingester.Ingest(ctx, data)
+	err = ingester.Ingest(ctx, data, ingestChan)
 	if err != nil {
 		log.Error().Msgf("error: %+v", err)
 		http.Error(respWrite, "Error processing request body", http.StatusInternalServerError)
@@ -1043,7 +1028,7 @@ func groupSecrets(ctx context.Context) ([]reporters_search.ResultGroup, error) {
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return results, err
 	}
@@ -1103,7 +1088,7 @@ func groupMalwares(ctx context.Context, byClass bool) ([]reporters_search.Result
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return results, err
 	}
@@ -1291,6 +1276,13 @@ func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request
 	switch action {
 	case "delete":
 		err = reporters_scan.DeleteScan(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
+		if req.ScanType == string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) {
+			err := h.CachePostureProviders(r.Context())
+			if err != nil {
+				respondError(err, w)
+				return
+			}
+		}
 	case "notify":
 		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
 	}
@@ -1413,6 +1405,13 @@ func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, ac
 		if err != nil {
 			respondError(err, w)
 			return
+		}
+		if req.ScanType == string(utils.NEO4J_CLOUD_COMPLIANCE_SCAN) {
+			err := h.CachePostureProviders(r.Context())
+			if err != nil {
+				respondError(err, w)
+				return
+			}
 		}
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -1568,7 +1567,7 @@ func FindNodesMatching(ctx context.Context,
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -1627,7 +1626,7 @@ func GetImagesFromAdvanceFilter(ctx context.Context, ids []model.NodeIdentifier,
 
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -1709,7 +1708,7 @@ func FindImageRegistryIds(ctx context.Context, image_id string) ([]int32, error)
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -1774,7 +1773,7 @@ func StartMultiScan(ctx context.Context,
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return nil, "", err
 	}
@@ -1888,7 +1887,7 @@ func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return nil, "", err
 	}

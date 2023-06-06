@@ -1,0 +1,86 @@
+{{- if .Values.console_agents.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deepfence-cluster-agent
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: cluster-agent
+    name: deepfence-cluster-agent
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      {{- include "deepfence-console.labels" . | nindent 6 }}
+      component: cluster-agent
+      name: deepfence-cluster-agent
+  template:
+    metadata:
+      labels:
+        {{- include "deepfence-console.labels" . | nindent 8 }}
+        component: cluster-agent
+        name: deepfence-cluster-agent
+    spec:
+      serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
+      automountServiceAccountToken: true
+      containers:
+        - name: deepfence-cluster-agent
+          image: "{{ .Values.global.imageRepoPrefix }}/{{ .Values.console_agents.cluster_agent.image.repository }}:{{ default .Values.global.imageTag .Values.console_agents.cluster_agent.image.tag }}"
+          imagePullPolicy: {{ .Values.console_agents.cluster_agent.image.pullPolicy }}
+          env:
+            - name: MGMT_CONSOLE_URL_INTERNAL
+              value: "deepfence-server"
+            - name: MGMT_CONSOLE_PORT_INTERNAL
+              value: "8081"
+            - name: MGMT_CONSOLE_URL
+              value: "deepfence-router"
+            - name: MGMT_CONSOLE_PORT
+              value: "443"
+            - name: "DEEPFENCE_KEY"
+              value: ""
+            - name: DF_CLUSTER_NAME
+              value: "{{ .Values.console_agents.cluster_name }}"
+            - name: AGENT_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            {{- if .Values.clusterName }}
+            - name: SCOPE_HOSTNAME
+              value: "{{ .Values.console_agents.cluster_name }}-$(AGENT_HOSTNAME)"
+            {{- else }}
+            - name: SCOPE_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            {{- end }}
+            - name: AGENT_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: AGENT_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests:
+              cpu: {{ .Values.console_agents.cluster_agent.resources.requests.cpu }}
+              memory: {{ .Values.console_agents.cluster_agent.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.console_agents.cluster_agent.resources.limits.cpu }}
+              memory: {{ .Values.console_agents.cluster_agent.resources.limits.memory }}
+      {{- with .Values.console_agents.agent.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.console_agents.agent.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.console_agents.agent.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

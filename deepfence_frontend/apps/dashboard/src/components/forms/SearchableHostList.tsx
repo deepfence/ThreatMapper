@@ -11,6 +11,7 @@ export type SearchableHostListProps = {
   onChange?: (value: string[]) => void;
   defaultSelectedHosts?: string[];
   valueKey?: 'nodeId' | 'hostName' | 'nodeName';
+  active?: boolean;
 };
 
 const PAGE_SIZE = 15;
@@ -19,6 +20,7 @@ export const SearchableHostList = ({
   onChange,
   defaultSelectedHosts,
   valueKey = 'nodeId',
+  active,
 }: SearchableHostListProps) => {
   const [searchText, setSearchText] = useState('');
 
@@ -35,6 +37,7 @@ export const SearchableHostList = ({
       scanType,
       size: PAGE_SIZE,
       searchText,
+      active,
     }),
     getNextPageParam: (lastPage, allPages) => {
       return allPages.length * PAGE_SIZE;

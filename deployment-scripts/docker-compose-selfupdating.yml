@@ -40,7 +40,7 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "1g"
+        max-size: "50m"
 
   deepfence-redis:
     container_name: deepfence-redis
@@ -57,11 +57,11 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "1g"
+        max-size: "50m"
 
   deepfence-neo4j:
     container_name: deepfence-neo4j
-    image: neo4j:4.4.12
+    image: neo4j:4.4.21
     ulimits:
       core: 0
     restart: on-failure
@@ -72,8 +72,6 @@ services:
     environment:
       <<: *common-creds
       NEO4J_dbms_memory_pagecache_size: 2600m
-      NEO4J_dbms_memory_heap_initial__size: 4000m
-      NEO4J_dbms_memory_heap_max__size: 4000m
       NEO4JLABS_PLUGINS: '["apoc"]'
     ports:
       - "0.0.0.0:7474:7474"
@@ -87,7 +85,7 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "1g"
+        max-size: "50m"
 
   deepfence-console-agent:
     container_name: deepfence-console-agent
@@ -116,7 +114,7 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "1g"
+        max-size: "50m"
 
   deepfence-router:
     container_name: deepfence-router
@@ -137,7 +135,7 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "1g"
+        max-size: "50m"
 
   deepfence-file-server:
     container_name: deepfence-file-server
@@ -155,7 +153,7 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "1g"
+        max-size: "50m"
 
   deepfence-server:
     container_name: deepfence-server
@@ -184,7 +182,7 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "1g"
+        max-size: "50m"
 
   deepfence-worker:
     container_name: deepfence-worker
@@ -200,7 +198,7 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "1g"
+        max-size: "50m"
     environment:
       <<: *common-creds
     volumes:
@@ -226,7 +224,7 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "1g"
+        max-size: "50m"
 
   deepfence-ui:
     container_name: deepfence-ui
@@ -241,7 +239,7 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "1g"
+        max-size: "50m"
 
   deepfence-kafka-broker:
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_kafka_broker_ce:${DF_IMG_TAG:-2.0.0}
@@ -259,7 +257,7 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "1g"
+        max-size: "50m"
 
   deepfence-ingester:
     image: ${IMAGE_REPOSITORY:-deepfenceio}/deepfence_worker_ce:${DF_IMG_TAG:-2.0.0}
@@ -277,7 +275,7 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "1g"
+        max-size: "50m"
 
   deepfence-telemetry:
     image: jaegertracing/all-in-one:1.42
