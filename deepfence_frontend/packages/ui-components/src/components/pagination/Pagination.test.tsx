@@ -120,14 +120,10 @@ describe(`Component Pagination`, () => {
         />
       );
     };
-    const { getByRole } = renderUI(<UI />);
+    const { getByRole, getByTestId } = renderUI(<UI />);
 
-    const previousButton = getByRole('button', {
-      name: 'Previous',
-    });
-    const nextButton = getByRole('button', {
-      name: 'Next',
-    });
+    const previousButton = getByTestId('pagination-prev');
+    const nextButton = getByTestId('pagination-next');
 
     // default page 2 is highlighted
     expect(
@@ -228,14 +224,10 @@ describe(`Component Pagination`, () => {
         />
       );
     };
-    const { getByRole } = renderUI(<UI />);
+    const { getByRole, getByTestId } = renderUI(<UI />);
 
-    const previousButton = getByRole('button', {
-      name: 'Previous',
-    });
-    const nextButton = getByRole('button', {
-      name: 'Next',
-    });
+    const previousButton = getByTestId('pagination-prev');
+    const nextButton = getByTestId('pagination-next');
 
     // default page 1 is highlighted
     expect(
