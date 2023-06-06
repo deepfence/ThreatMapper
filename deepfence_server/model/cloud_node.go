@@ -98,11 +98,11 @@ func (v CloudNodeAccountInfo) ScanType() utils.Neo4jScanType {
 func (v CloudNodeAccountInfo) ScanResultType() string {
 	switch v.CloudProvider {
 	case PostureProviderAWS, PostureProviderGCP, PostureProviderAzure, PostureProviderAWSOrg:
-		return "CloudComplianceResult"
+		return "CloudCompliance"
 	case PostureProviderKubernetes, PostureProviderLinux:
 		return "Compliance"
 	default:
-		return "CloudComplianceResult"
+		return "CloudCompliance"
 	}
 }
 
