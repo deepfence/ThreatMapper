@@ -101,7 +101,7 @@ export const buttonCva = cva(
           // text styles
           'text-gray-700 dark:text-black',
           // focus styles
-          'focus:ring-[3px] focus:ring-gray-200  dark:focus:ring-offset-1 dark:focus:ring-offset-transparent dark:focus:ring-[#0140E3]',
+          'focus:outline-[2px] focus:outline-gray-200 dark:focus:outline-offset-1 dark:focus:outline-offset-transparent dark:focus:outline-[#0140E3]',
           // disabled styles
           'disabled:opacity-50 dark:disabled:bg-gray-800 disabled:hover:bg-gray-100 dark:disabled:hover:bg-gray-800 disabled:dark:text-gray-400',
         ],
@@ -111,7 +111,7 @@ export const buttonCva = cva(
           // text styles
           'text-white dark:text-black',
           // focus styles
-          'focus:ring-[3px] focus:ring-red-300 dark:focus:ring-offset-1 dark:focus:ring-offset-transparent dark:focus:ring-[#ffffffb3]',
+          'focus:outline-[2px] focus:outline-red-300 dark:focus:outline-offset-1 dark:focus:outline-offset-transparent dark:focus:outline-[#ffffffb3]',
           // disabled styles
           'disabled:bg-red-400 dark:disabled:bg-red-500 disabled:hover:bg-red-400 dark:disabled:hover:bg-red-500',
         ],
@@ -121,7 +121,7 @@ export const buttonCva = cva(
           // text styles
           'text-white dark:text-black',
           // focus styles
-          'focus:ring-[3px] focus:ring-green-300 dark:focus:ring-offset-1 dark:focus:ring-offset-transparent dark:focus:ring-[#ffffffb3]',
+          'focus:outline-[2px] focus:outline-green-300 dark:focus:outline-offset-1 dark:focus:outline-offset-transparent dark:focus:outline-[#ffffffb3]',
           // disabled styles
           'disabled:bg-green-400 dark:disabled:bg-green-500 disabled:hover:bg-green-400 dark:disabled:hover:bg-green-500',
         ],
@@ -151,8 +151,8 @@ export const buttonCva = cva(
           'text-gray-900 hover:text-blue-700 dark:text-accent-accent',
           // border styles
           'border border-gray-200 dark:border-accent-accent',
-          // ring styles
-          'focus:ring-[3px] focus:ring-gray-200 dark:focus:ring-offset-1 dark:focus:ring-offset-transparent dark:focus:ring-[#0140E3]',
+          // outline styles
+          'focus:outline-[2px] focus:outline-gray-200 dark:focus:outline-offset-1 dark:focus:outline-offset-transparent dark:focus:outline-[#0140E3]',
           // disabled styles
           'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-gray-900',
           'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-gray-400',
@@ -168,8 +168,8 @@ export const buttonCva = cva(
           'text-red-700 hover:text-white dark:text-status-error',
           // border styles
           'border border-red-700 dark:border-status-error',
-          // ring styles
-          'focus:ring-[3px] focus:ring-red-300 dark:focus:ring-offset-1 dark:focus:ring-offset-transparent dark:focus:ring-[#ffffffb3]',
+          // outline styles
+          'focus:outline-[2px] focus:outline-red-300 dark:focus:outline-offset-1 dark:focus:outline-offset-transparent dark:focus:outline-[#ffffffb3]',
           // disabled styles
           'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-red-700',
           'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-red-500',
@@ -185,8 +185,8 @@ export const buttonCva = cva(
           'text-green-700 hover:text-white dark:text-status-success',
           // border styles
           'border border-green-700 dark:border-status-success',
-          // ring styles
-          'focus:ring-[3px] focus:ring-green-300 dark:focus:ring-offset-1 dark:focus:ring-offset-transparent dark:focus:ring-[#ffffffb3]',
+          // outline styles
+          'focus:outline-[2px] focus:outline-green-300 dark:focus:outline-offset-1 dark:focus:outline-offset-transparent dark:focus:outline-[#ffffffb3]',
           // disabled styles
           'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-green-700',
           'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-green-500',
@@ -202,8 +202,8 @@ export const buttonCva = cva(
           'text-gray-900 hover:text-blue-700 dark:text-accent-accent dark:hover:text-[#3777C2]',
           // border styles
           'border border-gray-200 dark:border-none',
-          // ring styles
-          'focus:ring-[3px] focus:ring-gray-200 dark:focus:ring-offset-1 dark:focus:ring-offset-transparent dark:focus:ring-[#0140E3]',
+          // outline styles
+          'focus:outline-[2px] focus:outline-gray-200 dark:focus:outline-offset-1 dark:focus:outline-offset-transparent dark:focus:outline-[#0140E3]',
           // disabled styles
           'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-gray-900',
           'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-gray-400',
@@ -219,8 +219,8 @@ export const buttonCva = cva(
           'text-red-700 hover:text-white dark:text-status-error dark:hover:text-[#C45268]',
           // border styles
           'border border-red-700 dark:border-none',
-          // ring styles
-          'focus:ring-[3px] focus:ring-red-300 dark:focus:ring-offset-1 dark:focus:ring-offset-transparent dark:focus:ring-[#ffffffb3]',
+          // outline styles
+          'focus:outline-[2px] focus:outline-red-300 dark:focus:outline-offset-1 dark:focus:outline-offset-transparent dark:focus:outline-[#ffffffb3]',
           // disabled styles
           'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-red-700',
           'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-red-500',
@@ -236,8 +236,8 @@ export const buttonCva = cva(
           'text-green-700 hover:text-white dark:text-status-success dark:hover:text-[#119366]',
           // border styles
           'border border-green-700 dark:border-none',
-          // ring styles
-          'focus:ring-[3px] focus:ring-green-300 dark:focus:ring-offset-1 dark:focus:ring-offset-transparent dark:focus:ring-[#ffffffb3]',
+          // outline styles
+          'focus:outline-[2px] focus:outline-green-300 dark:focus:outline-offset-1 dark:focus:outline-offset-transparent dark:focus:outline-[#ffffffb3]',
           // disabled styles
           'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-green-700',
           'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-green-500',

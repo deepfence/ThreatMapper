@@ -13,7 +13,7 @@ export default {
 
 export const Large = {
   args: {
-    children: 'Large',
+    children: 'button',
     size: 'lg',
   },
 };
