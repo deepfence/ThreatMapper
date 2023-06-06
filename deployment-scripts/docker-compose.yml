@@ -309,7 +309,7 @@ services:
     hostname: deepfence-ingester
     container_name: deepfence-ingester
     ports:
-      - "127.0.0.1:8090:8090"
+      - "127.0.0.1:8181:8181"
     environment:
       <<: *common-creds
       DEEPFENCE_MODE: ingester
