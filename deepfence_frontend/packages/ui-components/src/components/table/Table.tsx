@@ -48,6 +48,7 @@ import {
   TableExpanderChecked,
   TableExpanderUnchecked,
 } from '@/components/table/icons';
+import { Dropdown, DropdownItem } from '@/main';
 import { dfTwMerge } from '@/utils/twmerge';
 
 type SizeOf = 'compact' | 'medium' | 'default' | 'relaxed';
@@ -96,6 +97,8 @@ const createTableContext = once(<TData extends RowData>() =>
 function useTableContext<TData extends RowData>() {
   return useContext(createTableContext<TData>());
 }
+
+const PAGE_RESIZE_OPTIONS = [10, 25, 50];
 
 const CustomTable = <TData extends RowData>(
   props: TableProps<TData>,
@@ -282,13 +285,32 @@ const CustomTable = <TData extends RowData>(
               {enablePagination && enablePageResize && (
                 <div className="dark:text-p4 dark:text-text-text-and-icon flex items-center gap-2">
                   Show{' '}
-                  <button className="dark:text-text-input-value flex items-center gap-1">
-                    {/* TODO: add dropdown here */}
-                    {table.getState().pagination.pageSize}{' '}
-                    <div className="h-3 w-3">
-                      <TableChevronDown />
-                    </div>
-                  </button>
+                  <Dropdown
+                    align="end"
+                    content={PAGE_RESIZE_OPTIONS.map((size) => {
+                      return (
+                        <DropdownItem
+                          key={size}
+                          onSelect={() => {
+                            if (onPageResize) {
+                              onPageResize(size);
+                            }
+                          }}
+                          selected={size === table.getState().pagination.pageSize}
+                        >
+                          {size}
+                        </DropdownItem>
+                      );
+                    })}
+                  >
+                    <button className="dark:text-text-input-value flex items-center gap-1">
+                      {/* TODO: add dropdown here */}
+                      {table.getState().pagination.pageSize}{' '}
+                      <div className="h-3 w-3">
+                        <TableChevronDown />
+                      </div>
+                    </button>
+                  </Dropdown>
                 </div>
               )}
               {enablePagination && enablePageResize && (

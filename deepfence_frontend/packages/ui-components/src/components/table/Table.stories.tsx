@@ -195,6 +195,7 @@ export const DefaultWithSubcomponent = {
 const TemplateWithAutoPagination: StoryFn<typeof Table<Fruit>> = (args) => {
   const columnHelper = createColumnHelper<Fruit>();
   const tableInstanceRef = useRef<TableInstance<Fruit> | null>(null);
+  const [pageSize, setPageSize] = useState(10);
 
   const columns = useMemo(
     () => [
@@ -233,9 +234,10 @@ const TemplateWithAutoPagination: StoryFn<typeof Table<Fruit>> = (args) => {
       data={data}
       columns={columns}
       enablePagination
+      pageSize={pageSize}
       enablePageResize
-      onPageResize={() => {
-        // noop
+      onPageResize={(size) => {
+        setPageSize(size);
       }}
       ref={tableInstanceRef}
     />
@@ -427,6 +429,7 @@ export const DefaultWithManualSorting = {
 const TemplateWithRowSelection: StoryFn<typeof Table<Fruit>> = (args) => {
   const columnHelper = createColumnHelper<Fruit>();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+  const [pageSize, setPageSize] = useState(10);
 
   const columns = useMemo(
     () => [
@@ -480,8 +483,9 @@ const TemplateWithRowSelection: StoryFn<typeof Table<Fruit>> = (args) => {
         columns={columns}
         enablePagination
         enablePageResize
-        onPageResize={() => {
-          //noop
+        pageSize={pageSize}
+        onPageResize={(size) => {
+          setPageSize(size);
         }}
         enableSorting
         enableRowSelection
