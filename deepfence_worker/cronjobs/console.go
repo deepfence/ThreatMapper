@@ -24,6 +24,8 @@ Hence Allocator can be shared across tasks
 */
 func TriggerConsoleControls(msg *message.Message) error {
 
+	log.Debug().Msgf("Trigger console actions #capacity: %v", ScanWorkloadAllocator.MaxAllocable())
+
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 
@@ -35,6 +37,8 @@ func TriggerConsoleControls(msg *message.Message) error {
 	}
 
 	ScanWorkloadAllocator.Reserve(int32(len(actions)))
+
+	log.Debug().Msgf("Trigger console actions #actions: %d", len(actions))
 
 	for _, action := range actions {
 		log.Info().Msgf("Init execute: %v", action.ID)
