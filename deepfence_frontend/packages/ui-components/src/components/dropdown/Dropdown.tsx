@@ -19,11 +19,29 @@ export const DropdownSubMenu: React.FC<
     children: React.ReactNode;
     content: React.ReactNode;
     triggerAsChild?: boolean;
+    disabled?: boolean;
   }
-> = ({ children, content, triggerAsChild }) => {
+> = ({ children, triggerAsChild, disabled, content }) => {
+  const triggerClass = dfTwMerge(
+    cx(
+      'flex items-center gap-3',
+      // paddings
+      'px-6 pt-2 pb-1',
+      // text
+      'text-gray-500 dark:text-text-text-and-icon',
+      // hover // focus
+      'focus:outline-none focus:bg-gray-100',
+      'dark:focus:bg-bg-active-selection dark:focus:text-text-input-value',
+      {
+        'cursor-pointer': !disabled,
+        'cursor-auto dark:text-gray-600': disabled,
+      },
+    ),
+  );
+
   return (
     <DropdownPrimitive.Sub>
-      <DropdownPrimitive.SubTrigger asChild={triggerAsChild}>
+      <DropdownPrimitive.SubTrigger asChild={triggerAsChild} className={triggerClass}>
         {children}
       </DropdownPrimitive.SubTrigger>
       <DropdownPrimitive.Portal>

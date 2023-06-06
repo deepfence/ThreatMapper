@@ -132,6 +132,7 @@ const ControlledTemplate: StoryFn<typeof Dropdown> = (args) => {
           <DropdownItem>Fourth Action</DropdownItem>
           <DropdownSubMenu
             triggerAsChild
+            disabled
             content={
               <>
                 <DropdownItem disabled>Mask this</DropdownItem>
@@ -139,12 +140,12 @@ const ControlledTemplate: StoryFn<typeof Dropdown> = (args) => {
               </>
             }
           >
-            <DropdownItem className="text-blue-500 dark:blue-red-500">
-              <span>More</span>
+            <div className="flex">
+              More
               <IconContext.Provider value={{ size: '18px' }}>
                 <HiArrowRight />
               </IconContext.Provider>
-            </DropdownItem>
+            </div>
           </DropdownSubMenu>
           <DropdownSeparator />
           <DropdownItem className="text-red-500 dark:text-red-500">Sign Out</DropdownItem>
