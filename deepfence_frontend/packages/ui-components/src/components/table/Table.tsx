@@ -51,6 +51,8 @@ import {
 import { Dropdown, DropdownItem } from '@/main';
 import { dfTwMerge } from '@/utils/twmerge';
 
+import EmptyBoxImg from './empty-box.png';
+
 type SizeOf = 'compact' | 'medium' | 'default' | 'relaxed';
 export interface TableProps<TData extends RowData> {
   data: TData[];
@@ -133,7 +135,7 @@ const CustomTable = <TData extends RowData>(
     getTrProps,
     expanded,
     onExpandedChange,
-    noDataText = 'No data',
+    noDataText = `Sorry, we couldn't find any data!`,
     approximatePagination,
   } = props;
   const TableContext = createTableContext<TData>();
@@ -244,11 +246,17 @@ const CustomTable = <TData extends RowData>(
           ) : (
             <tbody>
               <tr>
-                <td
-                  colSpan={table.getVisibleLeafColumns().length}
-                  className="p-4 text-center text-gray-500 dark:text-gray-400" // TODO
-                >
-                  {noDataText}
+                <td colSpan={table.getVisibleLeafColumns().length}>
+                  <div className="flex items-center justify-center min-h-[384px] w-full gap-3">
+                    <span>
+                      <span className="h-[120px] w-[120px]">
+                        <img src={EmptyBoxImg} alt="No data" height="100%" width="100%" />
+                      </span>
+                    </span>
+                    <span className="text-h3 dark:text-text-text-and-icon">
+                      {noDataText}
+                    </span>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -367,7 +375,7 @@ function Th<TData>({
       key={header.id}
       colSpan={header.colSpan}
       className={cx(
-        'relative border-0 text-gray-500 dark:text-df-gray-500',
+        'relative border-0 text-gray-500 dark:text-text-text-and-icon',
         'border-b-[1.5px] border-gray-200 dark:border-bg-grid-border',
         'text-t5 uppercase',
         { 'cursor-pointer select-none': header.column.getCanSort() },

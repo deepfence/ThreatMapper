@@ -586,6 +586,73 @@ export const DefaultWithSubRows = {
   args: {},
 };
 
+const TemplateWithNoData: StoryFn<typeof Table<Fruit>> = (args) => {
+  const columnHelper = createColumnHelper<Fruit>();
+  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+  const [pageSize, setPageSize] = useState(10);
+
+  const columns = useMemo(
+    () => [
+      getRowSelectionColumn(columnHelper, {
+        size: 50,
+        minSize: 50,
+        maxSize: 50,
+      }),
+      columnHelper.accessor('id', {
+        cell: (info) => info.getValue(),
+        header: () => 'ID',
+        size: 100,
+        minSize: 50,
+        maxSize: 1000,
+      }),
+      columnHelper.accessor((row) => row.name, {
+        id: 'name',
+        cell: (info) => info.getValue(),
+        header: () => <span>Name</span>,
+        size: 100,
+        minSize: 50,
+        maxSize: 1000,
+      }),
+      columnHelper.accessor('taste', {
+        header: () => 'Taste',
+        cell: (info) => info.renderValue(),
+        size: 100,
+        minSize: 50,
+        maxSize: 1000,
+      }),
+    ],
+    [],
+  );
+
+  return (
+    <>
+      <Table
+        {...args}
+        data={[]}
+        columns={columns}
+        enablePagination
+        enablePageResize
+        pageSize={pageSize}
+        onPageResize={(size) => {
+          setPageSize(size);
+        }}
+        enableSorting
+        enableRowSelection
+        rowSelectionState={rowSelectionState}
+        onRowSelectionChange={setRowSelectionState}
+        getRowId={({ id }) => {
+          return `id-${id}`;
+        }}
+      />
+    </>
+  );
+};
+
+export const DefaultWithNoData = {
+  render: TemplateWithNoData,
+  args: {},
+};
+
 const SkeletonTemplate: StoryFn<typeof TableSkeleton> = (args) => {
   return <TableSkeleton {...args} />;
 };

@@ -123,10 +123,6 @@ export const Pagination = ({
     onPageChange(currentPage + 1);
   };
 
-  if (totalNumberOfPages === 0) {
-    return null;
-  }
-
   return (
     <div className="flex justify-end items-center gap-4">
       <div className={`text-gray-500 dark:text-text-text-and-icon text-p4`}>
@@ -151,7 +147,7 @@ export const Pagination = ({
           }
           key={'Previous'}
           onPageChange={onPrevious}
-          disabled={false}
+          disabled={totalNumberOfPages === 0}
           className={cx('rounded-l border-l px-1.5')}
         />
 
@@ -192,7 +188,7 @@ export const Pagination = ({
           key={'Next'}
           data-testid="pagination-next"
           onPageChange={onNext}
-          disabled={false}
+          disabled={totalNumberOfPages === 0}
           className={cx('rounded-r px-1.5')}
         />
       </div>
