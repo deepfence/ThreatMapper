@@ -549,7 +549,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 		OPTIONAL MATCH (n:%s{node_id:$node_id})
 		RETURN n IS NOT NULL AS Exists`,
 		scan_type)
-	log.Info().Msgf("query: %v", query)
+	log.Debug().Msgf("query: %v", query)
 	r, err := tx.Run(query,
 		map[string]interface{}{
 			"node_id": scan_id,
@@ -577,7 +577,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 		reporters.OrderFilter2CypherCondition("d", ff.OrderFilter) +
 		` RETURN d ` +
 		fw.FetchWindow2CypherQuery()
-	log.Info().Msgf("query: %v", query)
+	log.Debug().Msgf("query: %v", query)
 	nres, err := tx.Run(query,
 		map[string]interface{}{"scan_id": scan_id})
 	if err != nil {

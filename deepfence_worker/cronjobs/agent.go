@@ -143,7 +143,7 @@ func prepareAgentReleases(ctx context.Context, tags_to_ingest []string) (map[str
 			log.Error().Err(err)
 			continue
 		}
-		log.Info().Msgf("Exposed URL: %v", url)
+		log.Debug().Msgf("Exposed URL: %v", url)
 		processed_tags[tag] = url
 	}
 	return processed_tags, nil
