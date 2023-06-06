@@ -94,7 +94,7 @@ export const WithCloseAction = () => {
         ))}
       </div>
       <div className="mt-5">
-        <Button size="xs" outline onClick={() => setBadges(dummy)}>
+        <Button size="sm" outline onClick={() => setBadges(dummy)}>
           Reset remove
         </Button>
       </div>

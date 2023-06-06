@@ -13,7 +13,7 @@ describe(`Component Button`, () => {
     const { getByTestId, getByRole, getByText } = renderUI(
       <Button
         id="id"
-        color="primary"
+        color="default"
         startIcon={<FaPlus />}
         endIcon={<FaPlus />}
         onClick={onClick}

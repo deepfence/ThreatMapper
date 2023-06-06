@@ -11,7 +11,7 @@ describe(`Component IconButton`, () => {
   it(`render with color, icon, onClick`, () => {
     const onClick = vi.fn();
     const { getByTestId } = renderUI(
-      <IconButton id="id" color="primary" icon={<FaPlus />} onClick={onClick} />,
+      <IconButton id="id" color="default" icon={<FaPlus />} onClick={onClick} />,
     );
     const buttonId = getByTestId('icon-button-id');
     expect(buttonId).toHaveClass('bg-blue-700');
