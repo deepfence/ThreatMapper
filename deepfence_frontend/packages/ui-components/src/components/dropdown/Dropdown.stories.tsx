@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   HiArrowRight,
+  HiChevronDown,
   HiInboxIn,
   HiInformationCircle,
   HiLogout,
@@ -45,7 +46,9 @@ const DefaultTemplate: StoryFn<typeof Dropdown> = (args) => {
         </>
       }
     >
-      <Button color="primary">Click me</Button>
+      <Button color="default" endIcon={<HiChevronDown />} size="sm">
+        Click me
+      </Button>
     </Dropdown>
   );
 };
@@ -64,7 +67,7 @@ const TemplateForIcons: StoryFn<typeof Dropdown> = (args) => {
       {...args}
       content={
         <>
-          <DropdownItem>
+          <DropdownItem disabled>
             <IconContext.Provider value={{ size: '18px' }}>
               <HiUserAdd />
             </IconContext.Provider>
@@ -123,25 +126,26 @@ const ControlledTemplate: StoryFn<typeof Dropdown> = (args) => {
       }}
       content={
         <>
-          <DropdownItem>First Action</DropdownItem>
+          <DropdownItem selected>First Action</DropdownItem>
           <DropdownItem>Second Action</DropdownItem>
           <DropdownItem>Third Action</DropdownItem>
           <DropdownItem>Fourth Action</DropdownItem>
           <DropdownSubMenu
             triggerAsChild
+            disabled
             content={
               <>
-                <DropdownItem>Mask this</DropdownItem>
+                <DropdownItem disabled>Mask this</DropdownItem>
                 <DropdownItem>Mask across</DropdownItem>
               </>
             }
           >
-            <DropdownItem className="text-blue-500 dark:blue-red-500">
-              <span>More</span>
+            <div className="flex">
+              More
               <IconContext.Provider value={{ size: '18px' }}>
                 <HiArrowRight />
               </IconContext.Provider>
-            </DropdownItem>
+            </div>
           </DropdownSubMenu>
           <DropdownSeparator />
           <DropdownItem className="text-red-500 dark:text-red-500">Sign Out</DropdownItem>

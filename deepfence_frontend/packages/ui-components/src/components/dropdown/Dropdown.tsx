@@ -1,9 +1,8 @@
 import * as DropdownPrimitive from '@radix-ui/react-dropdown-menu';
 import cx from 'classnames';
 import React from 'react';
-import { twMerge } from 'tailwind-merge';
 
-import { Typography } from '@/components/typography/Typography';
+import { dfTwMerge } from '@/utils/twmerge';
 
 export interface DropdownProps extends DropdownPrimitive.DropdownMenuProps {
   // Trigger passed as children
@@ -20,18 +19,42 @@ export const DropdownSubMenu: React.FC<
     children: React.ReactNode;
     content: React.ReactNode;
     triggerAsChild?: boolean;
+    disabled?: boolean;
   }
-> = ({ children, content, triggerAsChild }) => {
+> = ({ children, triggerAsChild, disabled, content }) => {
+  const triggerClass = dfTwMerge(
+    cx(
+      'flex items-center gap-3',
+      // paddings
+      'px-6 pt-2 pb-1',
+      // text
+      'text-gray-500 dark:text-text-text-and-icon',
+      // hover // focus
+      'focus:outline-none focus:bg-gray-100',
+      'dark:focus:bg-bg-active-selection dark:focus:text-text-input-value',
+      {
+        'cursor-pointer': !disabled,
+        'cursor-auto dark:text-gray-600': disabled,
+      },
+    ),
+  );
+
   return (
     <DropdownPrimitive.Sub>
-      <DropdownPrimitive.SubTrigger asChild={triggerAsChild}>
+      <DropdownPrimitive.SubTrigger asChild={triggerAsChild} className={triggerClass}>
         {children}
       </DropdownPrimitive.SubTrigger>
       <DropdownPrimitive.Portal>
         <DropdownPrimitive.SubContent
           className={cx(
-            'shadow-md bg-white dark:bg-gray-700 min-w-[195px]',
-            'rounded-md overflow-hidden',
+            'shadow-md min-w-[195px]',
+            'overflow-hidden',
+            // font size
+            'text-p7',
+            // bg
+            'bg-white dark:bg-bg-card',
+            // border
+            'border dark:border dark:border-bg-left-nav',
           )}
         >
           {content}
@@ -55,8 +78,14 @@ export const Dropdown: React.FC<DropdownProps & { loop?: boolean }> = (props) =>
           loop={loop}
           className={cx(
             'radix-side-top:animate-slide-up radix-side-bottom:animate-slide-down',
-            'shadow-md bg-white dark:bg-gray-700 min-w-[195px]',
-            'rounded-md overflow-hidden',
+            'shadow-md min-w-[195px]',
+            'overflow-hidden',
+            // bg
+            'bg-white dark:bg-bg-card',
+            // font size
+            'text-p7',
+            // border
+            'border dark:border dark:border-bg-left-nav',
           )}
         >
           {content}
@@ -68,20 +97,37 @@ export const Dropdown: React.FC<DropdownProps & { loop?: boolean }> = (props) =>
 Dropdown.displayName = 'Dropdown';
 
 export const DropdownItem: React.ForwardRefExoticComponent<
-  DropdownPrimitive.DropdownMenuItemProps & React.RefAttributes<HTMLDivElement>
+  DropdownPrimitive.DropdownMenuItemProps &
+    React.RefAttributes<HTMLDivElement> & {
+      selected?: boolean;
+    }
 > = React.forwardRef((props, forwardedRef) => {
-  const { children, className, ...rest } = props;
-  const classes = twMerge(
+  const { children, className, disabled, selected, ...rest } = props;
+  const classes = dfTwMerge(
     cx(
-      'flex px-4 py-2.5 items-center gap-3 text-gray-500 dark:text-gray-300 cursor-pointer',
-      'focus:outline-none dark:focus:bg-gray-600 focus:bg-gray-100',
-      Typography.size.sm,
-      Typography.weight.medium,
+      'flex items-center gap-3',
+      // paddings
+      'px-6 pt-2 pb-1',
+      // text
+      'text-gray-500 dark:text-text-text-and-icon',
+      // hover // focus
+      'focus:outline-none focus:bg-gray-100',
+      'dark:focus:bg-bg-active-selection dark:focus:text-text-input-value',
+      {
+        'cursor-pointer': !disabled,
+        'cursor-auto dark:text-gray-600': disabled,
+        'dark:bg-bg-active-selection dark:text-text-input-value': selected,
+      },
     ),
     className,
   );
   return (
-    <DropdownPrimitive.Item className={classes} {...rest} ref={forwardedRef}>
+    <DropdownPrimitive.Item
+      className={classes}
+      disabled={disabled}
+      {...rest}
+      ref={forwardedRef}
+    >
       {children}
     </DropdownPrimitive.Item>
   );
@@ -91,6 +137,6 @@ export const DropdownSeparator: React.ForwardRefExoticComponent<
   DropdownPrimitive.DropdownMenuSeparatorProps & React.RefAttributes<HTMLDivElement>
 > = React.forwardRef((props, forwardedRef) => {
   const { className, ...rest } = props;
-  const classes = twMerge(cx('h-px bg-gray-200 dark:bg-gray-600'), className);
+  const classes = dfTwMerge(cx('h-px bg-gray-200 dark:bg-bg-left-nav'), className);
   return <DropdownPrimitive.Separator className={classes} {...rest} ref={forwardedRef} />;
 });
