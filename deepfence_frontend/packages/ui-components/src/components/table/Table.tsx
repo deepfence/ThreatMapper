@@ -295,6 +295,7 @@ const CustomTable = <TData extends RowData>(
                   Show{' '}
                   <Dropdown
                     align="end"
+                    triggerAsChild
                     content={PAGE_RESIZE_OPTIONS.map((size) => {
                       return (
                         <DropdownItem

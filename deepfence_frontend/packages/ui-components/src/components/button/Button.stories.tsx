@@ -1,6 +1,5 @@
 import { Meta } from '@storybook/react';
-import { useState } from 'react';
-import { FaAmazon } from 'react-icons/fa';
+import { HiMenu } from 'react-icons/hi';
 
 import Button from '@/components/button/Button';
 
@@ -12,232 +11,152 @@ export default {
   },
 } as Meta<typeof Button>;
 
-export const Default = {
+export const Large = {
   args: {
-    children: 'Button text md',
+    children: 'button',
+    size: 'lg',
   },
 };
-
-export const XXsSize = {
+export const Medium = {
   args: {
-    children: 'Button text xxs',
-    endIcon: <FaAmazon />,
-    size: 'xxs',
+    children: 'Medium',
+    size: 'md',
   },
 };
-
-export const XsSize = {
+export const Small = {
   args: {
-    children: 'Button text md',
-    endIcon: <FaAmazon />,
-    size: 'xs',
-  },
-};
-
-export const SMSize = {
-  args: {
-    children: 'Button text md',
-    endIcon: <FaAmazon />,
+    children: 'Small',
     size: 'sm',
   },
 };
 
-export const MDSize = {
+export const MediumSuccess = {
   args: {
-    children: 'Button text md',
-    endIcon: <FaAmazon />,
+    children: 'Medium',
+    size: 'md',
+    color: 'success',
   },
 };
 
-export const LGSize = {
+export const MediumError = {
   args: {
-    children: 'Button text md',
-    endIcon: <FaAmazon />,
-    size: 'lg',
+    children: 'Medium',
+    size: 'md',
+    color: 'error',
   },
 };
 
-export const XLSize = {
+export const MediumOutline = {
   args: {
-    children: 'Button text md',
-    endIcon: <FaAmazon />,
-    size: 'xl',
+    children: 'Medium',
+    size: 'md',
+    variant: 'outline',
   },
 };
 
-export const NormalButton = {
+export const MediumOutlineSuccess = {
   args: {
-    children: 'Normal text md',
-    color: 'normal',
+    children: 'Medium',
+    size: 'md',
+    variant: 'outline',
+    color: 'success',
+  },
+};
+export const MediumOutlineError = {
+  args: {
+    children: 'Medium',
+    size: 'md',
+    variant: 'outline',
+    color: 'error',
   },
 };
 
-export const DefaultDisabled = {
+export const MediumFlatVariant = {
   args: {
-    children: 'Default Disabled md size button',
-    disabled: true,
+    children: 'Medium',
+    size: 'md',
+    variant: 'flat',
   },
 };
 
-export const DefaultTextXs = {
+export const MediumWithStartIcon = {
   args: {
-    children: 'Button text',
-    size: 'xs',
+    children: 'Refresh',
+    startIcon: <HiMenu />,
+    size: 'md',
   },
 };
 
-export const DefaultTextLg = {
+export const MediumWithStartAndEndIcon = {
   args: {
-    children: 'Button text',
-    size: 'lg',
+    children: 'Both icon',
+    startIcon: <HiMenu />,
+    endIcon: <HiMenu />,
+    size: 'md',
   },
 };
 
-export const NormalOutline = {
+export const MediumOutlineWithStartIcon = {
   args: {
-    children: 'Button text',
-    color: 'normal',
-    size: 'xs',
-    outline: true,
+    children: 'Refresh',
+    startIcon: <HiMenu />,
+    size: 'md',
+    variant: 'outline',
   },
 };
 
-export const Primary = {
+export const MediumWithLoading = {
   args: {
-    children: 'Button text',
-    color: 'primary',
-    size: 'xs',
+    children: 'Loading',
+    size: 'md',
+    loading: true,
+    color: 'error',
   },
 };
-
-export const PrimaryWithLoader = {
+export const SmallWithLoading = {
   args: {
-    children: 'Button text',
-    color: 'primary',
-    size: 'xs',
+    children: 'Loading',
+    size: 'sm',
     loading: true,
   },
 };
-
-export const PrimaryWithOutline = {
+export const LargeWithLoading = {
   args: {
-    children: 'Button text',
-    color: 'primary',
-    size: 'xs',
-    outline: true,
+    children: 'Loading',
+    size: 'lg',
+    loading: true,
   },
 };
-
-export const Danger = {
+export const LargeErrorWithLoading = {
   args: {
-    children: 'Button text',
-    color: 'danger',
-    size: 'xs',
+    children: 'Loading',
+    size: 'lg',
+    loading: true,
+    color: 'error',
   },
 };
-
-export const DangerWithOutline = {
+export const LargeSuccessWithLoading = {
   args: {
-    children: 'Button text',
-    color: 'danger',
-    size: 'xs',
-    outline: true,
-  },
-};
-
-export const Success = {
-  args: {
-    children: 'Button text',
+    children: 'Loading',
+    size: 'lg',
+    loading: true,
     color: 'success',
-    size: 'xs',
   },
 };
 
-export const SuccessWithOutline = {
+export const LargeOutlineWithLoading = {
   args: {
-    children: 'Button text',
-    color: 'success',
-    size: 'xs',
-    outline: true,
+    children: 'Loading',
+    size: 'lg',
+    loading: true,
+    variant: 'outline',
   },
 };
-
-export const PrimaryWithIcon = {
+export const LargeFlatButtonWithLoading = {
   args: {
-    children: 'Button text',
-    color: 'primary',
-    size: 'xs',
-    startIcon: <FaAmazon />,
+    children: 'Loading',
+    size: 'lg',
+    loading: true,
+    variant: 'flat',
   },
-};
-
-export const PrimaryWithBothIcon = {
-  args: {
-    children: 'Button text',
-    color: 'primary',
-    size: 'xs',
-    startIcon: <FaAmazon />,
-    endIcon: <FaAmazon />,
-  },
-};
-
-export const XSWithIcon = {
-  args: {
-    children: 'Button text',
-    size: 'xs',
-    startIcon: <FaAmazon />,
-  },
-};
-
-export const DefaultOutlineWithIcon = {
-  args: {
-    children: 'Button text',
-    outline: true,
-    size: 'xs',
-    startIcon: <FaAmazon />,
-  },
-};
-
-export const DangerWithIcon = {
-  args: {
-    children: 'Button text',
-    color: 'danger',
-    size: 'xs',
-    startIcon: <FaAmazon />,
-  },
-};
-
-export const DangerWithOutlineIcon = {
-  args: {
-    children: 'Button text',
-    color: 'danger',
-    outline: true,
-    size: 'xs',
-    startIcon: <FaAmazon />,
-  },
-};
-
-export const NormalOutlineButton = {
-  args: {
-    children: 'Outline Normal text md',
-    color: 'normal',
-    outline: true,
-  },
-};
-
-export const ButtonWithLoaderAndStartIcon = () => {
-  const [state, setState] = useState(false);
-  return (
-    <div>
-      <Button
-        onClick={() => setState(true)}
-        loading={state}
-        color="primary"
-        size="lg"
-        startIcon={<FaAmazon />}
-      >
-        Click to refresh
-      </Button>
-    </div>
-  );
 };
