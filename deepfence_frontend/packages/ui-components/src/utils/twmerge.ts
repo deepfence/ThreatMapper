@@ -1,8 +1,8 @@
-import { extendTailwindMerge } from 'tailwind-merge';
+import { extendTailwindMerge, twMerge } from 'tailwind-merge';
 
 // https://github.com/dcastil/tailwind-merge/issues/217
 // TODO: make importing tailwind-preset work here and add keys from there
-export const dfTwMerge = extendTailwindMerge({
+export const dfTwMerge: typeof twMerge = extendTailwindMerge({
   classGroups: {
     'font-size': [
       'text-h1',
