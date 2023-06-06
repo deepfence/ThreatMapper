@@ -11,4 +11,10 @@ export function invalidateQueries(queryKey: QueryKey) {
   });
 }
 
+export function invalidateAllQueries() {
+  queryClient.refetchQueries({
+    type: 'active',
+  });
+}
+
 export const queries = mergeQueryKeys(vulnerabilityQueries, searchQueries);
