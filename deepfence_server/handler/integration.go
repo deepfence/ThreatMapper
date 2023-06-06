@@ -85,6 +85,9 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 		respondError(&InternalServerError{err}, w)
 		return
 	}
+
+	h.AuditUserActivity(r, EVENT_INTEGRATION, ACTION_CREATE, req, true)
+
 	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessIntegrationCreated})
 
 }
@@ -154,6 +157,13 @@ func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = model.DeleteIntegration(ctx, pgClient, int32(idInt))
+	if err != nil {
+		log.Error().Msg(err.Error())
+		respondError(err, w)
+	}
+
+	h.AuditUserActivity(r, EVENT_INTEGRATION, ACTION_DELETE,
+		map[string]interface{}{"integration_id": id}, true)
 
 	w.WriteHeader(http.StatusNoContent)
 
