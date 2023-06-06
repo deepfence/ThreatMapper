@@ -26,31 +26,31 @@ export const iconButtonCVA = cva(
       color: {
         default: [
           // bg styles
-          'bg-gray-100 dark:bg-accent-accent hover:bg-gray-200 dark:hover:bg-gray-700',
+          'bg-gray-100 dark:bg-accent-accent hover:bg-gray-200 dark:hover:bg-[#3777C2]',
           // text styles
-          'text-gray-700 dark:text-black dark:hover:text-white',
+          'text-gray-700 dark:text-black',
           // focus styles
-          'focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700',
+          'focus:ring-[3px] focus:ring-gray-200  dark:focus:ring-offset-1 dark:focus:ring-offset-black dark:focus:ring-[#0140E3]',
           // disabled styles
           'disabled:opacity-50 dark:disabled:bg-gray-800 disabled:hover:bg-gray-100 dark:disabled:hover:bg-gray-800 disabled:dark:text-gray-400',
         ],
         error: [
           // bg styles
-          'bg-red-700 hover:bg-red-800 dark:bg-status-error dark:hover:bg-red-700',
+          'bg-red-700 hover:bg-red-800 dark:bg-status-error dark:hover:bg-[#C45268]',
           // text styles
           'text-white dark:text-black',
           // focus styles
-          'focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900',
+          'focus:ring-[3px] focus:ring-red-300 dark:focus:ring-offset-1 dark:focus:ring-offset-black dark:focus:ring-[#ffffffb3]',
           // disabled styles
           'disabled:bg-red-400 dark:disabled:bg-red-500 disabled:hover:bg-red-400 dark:disabled:hover:bg-red-500',
         ],
         success: [
           // bg styles
-          'bg-green-700 hover:bg-green-800 dark:bg-status-success dark:hover:bg-green-700',
+          'bg-green-700 hover:bg-green-800 dark:bg-status-success dark:hover:bg-[#119365]',
           // text styles
           'text-white dark:text-black',
           // focus styles
-          'focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800',
+          'focus:ring-[3px] focus:ring-green-300 dark:focus:ring-offset-1 dark:focus:ring-offset-black dark:focus:ring-[#ffffffb3]',
           // disabled styles
           'disabled:bg-green-400 dark:disabled:bg-green-500 disabled:hover:bg-green-400 dark:disabled:hover:bg-green-500',
         ],
@@ -70,13 +70,13 @@ export const iconButtonCVA = cva(
         variant: 'outline',
         className: [
           // bg styles
-          'bg-transparent hover:bg-gray-100 dark:bg-transparent dark:hover:bg-gray-700',
+          'bg-transparent hover:bg-gray-100 dark:bg-transparent dark:hover:bg-[#0E1F33]',
           // text styles
-          'text-gray-900 hover:text-blue-700 dark:text-accent-accent dark:hover:text-white',
+          'text-gray-900 hover:text-blue-700 dark:text-accent-accent',
           // border styles
           'border border-gray-200 dark:border-accent-accent',
           // ring styles
-          'focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700',
+          'focus:ring-[3px] focus:ring-gray-200 dark:focus:ring-offset-1 dark:focus:ring-offset-black dark:focus:ring-[#0140E3]',
           // disabled styles
           'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-gray-900',
           'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-gray-400',
@@ -87,13 +87,13 @@ export const iconButtonCVA = cva(
         variant: 'outline',
         className: [
           // bg styles
-          'dark:bg-transparent hover:bg-red-800 dark:hover:bg-red-600',
+          'dark:bg-transparent hover:bg-red-800 dark:hover:bg-[#33151B]',
           // text styles
-          'text-red-700 hover:text-white dark:text-status-error dark:hover:text-white',
+          'text-red-700 hover:text-white dark:text-status-error',
           // border styles
           'border border-red-700 dark:border-status-error',
           // ring styles
-          'focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900',
+          'focus:ring-[3px] focus:ring-red-300 dark:focus:ring-offset-1 dark:focus:ring-offset-black dark:focus:ring-[#ffffffb3]',
           // disabled styles
           'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-red-700',
           'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-red-500',
@@ -104,13 +104,13 @@ export const iconButtonCVA = cva(
         variant: 'outline',
         className: [
           // bg styles
-          'dark:bg-transparent hover:bg-green-800 dark:hover:bg-green-600',
+          'dark:bg-transparent hover:bg-green-800 dark:hover:bg-[#052E20]',
           // text styles
-          'text-green-700 hover:text-white dark:text-status-success dark:hover:text-white',
+          'text-green-700 hover:text-white dark:text-status-success',
           // border styles
           'border border-green-700 dark:border-status-success',
           // ring styles
-          'focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800',
+          'focus:ring-[3px] focus:ring-green-300 dark:focus:ring-offset-1 dark:focus:ring-offset-black dark:focus:ring-[#ffffffb3]',
           // disabled styles
           'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-green-700',
           'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-green-500',
@@ -121,13 +121,13 @@ export const iconButtonCVA = cva(
         variant: 'flat',
         className: [
           // bg styles
-          'bg-transparent hover:bg-gray-100 dark:bg-transparent dark:hover:bg-gray-700',
+          'bg-transparent hover:bg-gray-100 dark:bg-transparent dark:hover:bg-transparent',
           // text styles
-          'text-gray-900 hover:text-blue-700 dark:text-accent-accent dark:hover:text-white',
+          'text-gray-900 hover:text-blue-700 dark:text-accent-accent dark:hover:text-[#3777C2]',
           // border styles
           'border border-gray-200 dark:border-none',
           // ring styles
-          'focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700',
+          'focus:ring-[3px] focus:ring-gray-200 dark:focus:ring-offset-1 dark:focus:ring-offset-black dark:focus:ring-[#0140E3]',
           // disabled styles
           'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-gray-900',
           'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-gray-400',
@@ -138,13 +138,13 @@ export const iconButtonCVA = cva(
         variant: 'flat',
         className: [
           // bg styles
-          'dark:bg-transparent hover:bg-red-800 dark:hover:bg-red-600',
+          'dark:bg-transparent hover:bg-red-800 dark:hover:bg-transparent',
           // text styles
-          'text-red-700 hover:text-white dark:text-status-error dark:hover:text-white',
+          'text-red-700 hover:text-white dark:text-status-error dark:hover:text-[#C45268]',
           // border styles
           'border border-red-700 dark:border-none',
           // ring styles
-          'focus:ring-4 focus:ring-red-300 dark:focus:ring-red-900',
+          'focus:ring-[3px] focus:ring-red-300 dark:focus:ring-offset-1 dark:focus:ring-offset-black dark:focus:ring-[#ffffffb3]',
           // disabled styles
           'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-red-700',
           'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-red-500',
@@ -155,13 +155,13 @@ export const iconButtonCVA = cva(
         variant: 'flat',
         className: [
           // bg styles
-          'dark:bg-transparent hover:bg-green-800 dark:hover:bg-green-600',
+          'dark:bg-transparent hover:bg-green-800 dark:hover:bg-transparent',
           // text styles
-          'text-green-700 hover:text-white dark:text-status-success dark:hover:text-white',
+          'text-green-700 hover:text-white dark:text-status-success dark:hover:text-[#119366]',
           // border styles
           'border border-green-700 dark:border-none',
           // ring styles
-          'focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800',
+          'focus:ring-[3px] focus:ring-green-300 dark:focus:ring-offset-1 dark:focus:ring-offset-black dark:focus:ring-[#ffffffb3]',
           // disabled styles
           'disabled:bg-transparent disabled:hover:bg-transparent disabled:opacity-50 disabled:hover:text-green-700',
           'dark:disabled:bg-transparent dark:disabled:hover:bg-transparent dark:disabled:hover:text-green-500',

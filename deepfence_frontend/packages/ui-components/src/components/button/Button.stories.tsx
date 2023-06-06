@@ -127,6 +127,22 @@ export const LargeWithLoading = {
     loading: true,
   },
 };
+export const LargeErrorWithLoading = {
+  args: {
+    children: 'Loading',
+    size: 'lg',
+    loading: true,
+    color: 'error',
+  },
+};
+export const LargeSuccessWithLoading = {
+  args: {
+    children: 'Loading',
+    size: 'lg',
+    loading: true,
+    color: 'success',
+  },
+};
 
 export const LargeOutlineWithLoading = {
   args: {
