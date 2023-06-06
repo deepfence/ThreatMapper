@@ -212,7 +212,6 @@ function Filters({
                     scanType="none"
                     valueKey="hostName"
                     defaultSelectedHosts={filters.hosts ?? []}
-                    reset={!isFilterApplied}
                     onChange={(value) => {
                       onFiltersChange({
                         ...filters,
