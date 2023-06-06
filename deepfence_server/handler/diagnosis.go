@@ -32,6 +32,9 @@ func (h *Handler) GenerateConsoleDiagnosticLogs(w http.ResponseWriter, r *http.R
 		respondError(err, w)
 		return
 	}
+
+	h.AuditUserActivity(r, EVENT_SETTINGS, ACTION_LOGS, nil, true)
+
 	w.WriteHeader(http.StatusAccepted)
 }
 
@@ -75,6 +78,9 @@ func (h *Handler) GenerateAgentDiagnosticLogs(w http.ResponseWriter, r *http.Req
 		respondError(&BadDecoding{err}, w)
 		return
 	}
+
+	h.AuditUserActivity(r, EVENT_SETTINGS, ACTION_LOGS, nil, true)
+
 	w.WriteHeader(http.StatusAccepted)
 }
 

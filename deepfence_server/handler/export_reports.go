@@ -111,6 +111,9 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
+
+	h.AuditUserActivity(r, EVENT_REPORTS, ACTION_DELETE, req, true)
+
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -323,6 +326,8 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
+
+	h.AuditUserActivity(r, EVENT_REPORTS, ACTION_CREATE, req, true)
 
 	httpext.JSON(w, http.StatusOK, model.GenerateReportResp{ReportID: report_id})
 }
