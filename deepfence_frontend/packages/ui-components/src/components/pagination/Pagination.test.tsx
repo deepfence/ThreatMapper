@@ -281,7 +281,7 @@ describe(`Component Pagination`, () => {
 
   it('no pagination component when totalRows is zero', () => {
     const onPageChange = vi.fn();
-    const { container } = renderUI(
+    const { container, getAllByRole } = renderUI(
       <Pagination
         currentPage={1}
         totalRows={0}
@@ -289,6 +289,7 @@ describe(`Component Pagination`, () => {
         siblingCount={2}
       />,
     );
-    expect(container.firstChild).toBeNull();
+    expect(container).toHaveTextContent('Showing 1-0 of 0');
+    expect(getAllByRole('button').length).toBe(3);
   });
 });
