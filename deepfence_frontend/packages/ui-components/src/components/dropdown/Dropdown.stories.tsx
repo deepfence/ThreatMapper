@@ -126,7 +126,7 @@ const ControlledTemplate: StoryFn<typeof Dropdown> = (args) => {
       }}
       content={
         <>
-          <DropdownItem>First Action</DropdownItem>
+          <DropdownItem selected>First Action</DropdownItem>
           <DropdownItem>Second Action</DropdownItem>
           <DropdownItem>Third Action</DropdownItem>
           <DropdownItem>Fourth Action</DropdownItem>

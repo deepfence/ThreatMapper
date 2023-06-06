@@ -79,9 +79,12 @@ export const Dropdown: React.FC<DropdownProps & { loop?: boolean }> = (props) =>
 Dropdown.displayName = 'Dropdown';
 
 export const DropdownItem: React.ForwardRefExoticComponent<
-  DropdownPrimitive.DropdownMenuItemProps & React.RefAttributes<HTMLDivElement>
+  DropdownPrimitive.DropdownMenuItemProps &
+    React.RefAttributes<HTMLDivElement> & {
+      selected?: boolean;
+    }
 > = React.forwardRef((props, forwardedRef) => {
-  const { children, className, disabled, ...rest } = props;
+  const { children, className, disabled, selected, ...rest } = props;
   const classes = dfTwMerge(
     cx(
       'flex items-center gap-3',
@@ -94,7 +97,8 @@ export const DropdownItem: React.ForwardRefExoticComponent<
       'dark:focus:bg-bg-active-selection dark:focus:text-text-input-value',
       {
         'cursor-pointer': !disabled,
-        'cursor-auto dark:text-gray-700': disabled,
+        'cursor-auto dark:text-gray-600': disabled,
+        'dark:bg-bg-active-selection dark:text-text-input-value': selected,
       },
     ),
     className,
