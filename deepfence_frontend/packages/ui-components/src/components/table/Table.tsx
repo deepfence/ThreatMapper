@@ -312,7 +312,6 @@ const CustomTable = <TData extends RowData>(
                     })}
                   >
                     <button className="dark:text-text-input-value flex items-center gap-1">
-                      {/* TODO: add dropdown here */}
                       {table.getState().pagination.pageSize}{' '}
                       <div className="h-3 w-3">
                         <TableChevronDown />
