@@ -46,6 +46,26 @@ const Template: StoryFn<typeof Table<Fruit>> = (args) => {
         header: () => 'Taste',
         cell: (info) => info.renderValue(),
       }),
+      columnHelper.display({
+        id: 'custom1',
+        header: () => 'Color',
+        cell: () => 'Red',
+      }),
+      columnHelper.display({
+        id: 'custom2',
+        header: () => 'Nutritious',
+        cell: () => 'Very',
+      }),
+      columnHelper.display({
+        id: 'custom3',
+        header: () => 'Shape',
+        cell: () => 'Round',
+      }),
+      columnHelper.display({
+        id: 'custom4',
+        header: () => 'Availability',
+        cell: () => 'Easily available',
+      }),
     ],
     [],
   );
@@ -77,29 +97,32 @@ const Template: StoryFn<typeof Table<Fruit>> = (args) => {
   );
 };
 
-export const Default = {
+export const DefaultTable = {
   render: Template,
   args: {},
 };
 
-export const SmallTable = {
+export const CompactTable = {
   render: Template,
 
   args: {
-    size: 'sm',
-    enableRowSelection: true,
-    rowSelectionState: {},
-    onRowSelectionChange: () => {
-      return false;
-    },
+    size: 'compact',
   },
 };
 
-export const StripedTable = {
+export const MediumTable = {
   render: Template,
 
   args: {
-    striped: true,
+    size: 'medium',
+  },
+};
+
+export const RelaxedTable = {
+  render: Template,
+
+  args: {
+    size: 'relaxed',
   },
 };
 
@@ -110,8 +133,8 @@ const TemplateWithSubcomponent: StoryFn<typeof Table<Fruit>> = (args) => {
     () => [
       getRowExpanderColumn(columnHelper, {
         minSize: 10,
-        size: 10,
-        maxSize: 10,
+        size: 30,
+        maxSize: 50,
       }),
       columnHelper.accessor('id', {
         cell: (info) => info.getValue(),
@@ -169,17 +192,10 @@ export const DefaultWithSubcomponent = {
   args: {},
 };
 
-export const StripedWithSubcomponent = {
-  render: TemplateWithSubcomponent,
-
-  args: {
-    striped: true,
-  },
-};
-
 const TemplateWithAutoPagination: StoryFn<typeof Table<Fruit>> = (args) => {
   const columnHelper = createColumnHelper<Fruit>();
   const tableInstanceRef = useRef<TableInstance<Fruit> | null>(null);
+  const [pageSize, setPageSize] = useState(10);
 
   const columns = useMemo(
     () => [
@@ -218,6 +234,11 @@ const TemplateWithAutoPagination: StoryFn<typeof Table<Fruit>> = (args) => {
       data={data}
       columns={columns}
       enablePagination
+      pageSize={pageSize}
+      enablePageResize
+      onPageResize={(size) => {
+        setPageSize(size);
+      }}
       ref={tableInstanceRef}
     />
   );
@@ -288,7 +309,7 @@ export const DefaultWithManualPagination = {
 
 export const WithColumnResizing = {
   render: TemplateWithManualPagination,
-  args: { enableColumnResizing: true },
+  args: { enableColumnResizing: true, enableSorting: true },
 };
 
 const TemplateWithAutoSorting: StoryFn<typeof Table<Fruit>> = (args) => {
@@ -408,35 +429,36 @@ export const DefaultWithManualSorting = {
 const TemplateWithRowSelection: StoryFn<typeof Table<Fruit>> = (args) => {
   const columnHelper = createColumnHelper<Fruit>();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+  const [pageSize, setPageSize] = useState(10);
 
   const columns = useMemo(
     () => [
       getRowSelectionColumn(columnHelper, {
-        size: 100,
-        minSize: 100,
-        maxSize: 100,
+        size: 50,
+        minSize: 50,
+        maxSize: 50,
       }),
       columnHelper.accessor('id', {
         cell: (info) => info.getValue(),
         header: () => 'ID',
-        size: 1500,
-        minSize: 1000,
-        maxSize: 2000,
+        size: 100,
+        minSize: 50,
+        maxSize: 1000,
       }),
       columnHelper.accessor((row) => row.name, {
         id: 'name',
         cell: (info) => info.getValue(),
         header: () => <span>Name</span>,
-        size: 1500,
-        minSize: 1000,
-        maxSize: 2000,
+        size: 100,
+        minSize: 50,
+        maxSize: 1000,
       }),
       columnHelper.accessor('taste', {
         header: () => 'Taste',
         cell: (info) => info.renderValue(),
-        size: 1500,
-        minSize: 1000,
-        maxSize: 2000,
+        size: 100,
+        minSize: 50,
+        maxSize: 1000,
       }),
     ],
     [],
@@ -455,16 +477,16 @@ const TemplateWithRowSelection: StoryFn<typeof Table<Fruit>> = (args) => {
   }, []);
   return (
     <>
-      <div data-testid="selected-rows">
-        {Object.keys(rowSelectionState)
-          .map((id) => `"${id}"`)
-          .join(', ')}
-      </div>
       <Table
         {...args}
         data={data}
         columns={columns}
         enablePagination
+        enablePageResize
+        pageSize={pageSize}
+        onPageResize={(size) => {
+          setPageSize(size);
+        }}
         enableSorting
         enableRowSelection
         rowSelectionState={rowSelectionState}
@@ -494,31 +516,31 @@ const TemplateWithSubRows: StoryFn<typeof Table<NestedFruit>> = (args) => {
     () => [
       getRowExpanderColumn(columnHelper),
       getRowSelectionColumn(columnHelper, {
-        size: 100,
-        minSize: 100,
-        maxSize: 100,
+        size: 50,
+        minSize: 50,
+        maxSize: 50,
       }),
       columnHelper.accessor('id', {
         cell: (info) => info.getValue(),
         header: () => 'ID',
-        size: 1500,
-        minSize: 1000,
-        maxSize: 2000,
+        size: 100,
+        minSize: 50,
+        maxSize: 1000,
       }),
       columnHelper.accessor((row) => row.name, {
         id: 'name',
         cell: (info) => info.getValue(),
         header: () => <span>Name</span>,
-        size: 1500,
-        minSize: 1000,
-        maxSize: 2000,
+        size: 100,
+        minSize: 50,
+        maxSize: 1000,
       }),
       columnHelper.accessor('taste', {
         header: () => 'Taste',
         cell: (info) => info.renderValue(),
-        size: 1500,
-        minSize: 1000,
-        maxSize: 2000,
+        size: 100,
+        minSize: 50,
+        maxSize: 1000,
       }),
     ],
     [],
@@ -541,11 +563,6 @@ const TemplateWithSubRows: StoryFn<typeof Table<NestedFruit>> = (args) => {
   }, []);
   return (
     <>
-      <div data-testid="selected-rows">
-        {Object.keys(rowSelectionState)
-          .map((id) => `"${id}"`)
-          .join(', ')}
-      </div>
       <Table
         {...args}
         data={data}
@@ -569,6 +586,73 @@ export const DefaultWithSubRows = {
   args: {},
 };
 
+const TemplateWithNoData: StoryFn<typeof Table<Fruit>> = (args) => {
+  const columnHelper = createColumnHelper<Fruit>();
+  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+  const [pageSize, setPageSize] = useState(10);
+
+  const columns = useMemo(
+    () => [
+      getRowSelectionColumn(columnHelper, {
+        size: 50,
+        minSize: 50,
+        maxSize: 50,
+      }),
+      columnHelper.accessor('id', {
+        cell: (info) => info.getValue(),
+        header: () => 'ID',
+        size: 100,
+        minSize: 50,
+        maxSize: 1000,
+      }),
+      columnHelper.accessor((row) => row.name, {
+        id: 'name',
+        cell: (info) => info.getValue(),
+        header: () => <span>Name</span>,
+        size: 100,
+        minSize: 50,
+        maxSize: 1000,
+      }),
+      columnHelper.accessor('taste', {
+        header: () => 'Taste',
+        cell: (info) => info.renderValue(),
+        size: 100,
+        minSize: 50,
+        maxSize: 1000,
+      }),
+    ],
+    [],
+  );
+
+  return (
+    <>
+      <Table
+        {...args}
+        data={[]}
+        columns={columns}
+        enablePagination
+        enablePageResize
+        pageSize={pageSize}
+        onPageResize={(size) => {
+          setPageSize(size);
+        }}
+        enableSorting
+        enableRowSelection
+        rowSelectionState={rowSelectionState}
+        onRowSelectionChange={setRowSelectionState}
+        getRowId={({ id }) => {
+          return `id-${id}`;
+        }}
+      />
+    </>
+  );
+};
+
+export const DefaultWithNoData = {
+  render: TemplateWithNoData,
+  args: {},
+};
+
 const SkeletonTemplate: StoryFn<typeof TableSkeleton> = (args) => {
   return <TableSkeleton {...args} />;
 };
@@ -579,6 +663,6 @@ export const DefaultTableSkeleton = {
   args: {
     columns: 5,
     rows: 3,
-    size: 'sm',
+    size: 'default',
   },
 };
