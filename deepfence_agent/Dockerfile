@@ -62,6 +62,7 @@ COPY run_discovery.sh /home/deepfence/
 COPY create_cgroups.sh /home/deepfence/create-cgroups.sh
 COPY plugins/bin /home/deepfence/bin
 COPY plugins/yara-rules /home/deepfence/bin/yara-hunter/yara-rules
+COPY deepfenced /bin/deepfenced
 
 COPY --from=build /usr/local/bin/syft /usr/local/bin/syft
 COPY --from=malware_build /usr/local/yara/lib /usr/lib

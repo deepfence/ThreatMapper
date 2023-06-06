@@ -112,9 +112,9 @@ main() {
 }
 
 if [ "$DF_USE_DUMMY_SCOPE" == "" ]; then
-    pidVal=$(/bin/pidof /usr/local/discovery/deepfence-discovery)
+    pidVal=$(/bin/pidof /bin/deepfenced)
     if [ -n "$pidVal" ]; then
-        echo "Agent already running. Not going to start"
+        echo "Bootstrap already running. Not going to start"
         exit 0
     fi
     create_cgroups
