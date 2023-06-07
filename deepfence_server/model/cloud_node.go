@@ -265,38 +265,38 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 }
 
 func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
-	var postureProviders []PostureProvider
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
-		return postureProviders, err
+		return nil, err
 	}
 
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	if err != nil {
-		return postureProviders, err
+		return nil, err
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
-		return postureProviders, err
+		return nil, err
 	}
 	defer tx.Close()
 
 	rdb, err := directory.RedisClient(ctx)
 	if err != nil {
-		return postureProviders, err
+		return nil, err
 	}
 
+	postureProviders := []PostureProvider{}
 	postureProvidersStr, err := rdb.Get(ctx, constants.RedisKeyPostureProviders).Result()
 	if errors.Is(err, redis.Nil) {
 		return postureProviders, nil
 	} else if err != nil {
-		return postureProviders, err
+		return nil, err
 	}
 	err = json.Unmarshal([]byte(postureProvidersStr), &postureProviders)
 	if err != nil {
-		return postureProviders, err
+		return nil, err
 	}
 
 	query := fmt.Sprintf(`
@@ -338,29 +338,31 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 		return n1, n2, n3, n4, n5, n6, n7`, PostureProviderAWSOrg, PostureProviderGCPOrg, PostureProviderAWS, PostureProviderGCP, PostureProviderAzure)
 
 	nodeRes, err := tx.Run(query, map[string]interface{}{})
-	if err == nil {
-		nodeRec, err := nodeRes.Single()
-		if err != nil {
-			log.Warn().Msgf("GetCloudProvidersList: %v", err)
-			return postureProviders, err
-		}
-		for i, postureProvider := range postureProviders {
-			switch postureProvider.Name {
-			case PostureProviderLinux:
-				postureProviders[i].NodeCount = int(nodeRec.Values[0].(int64))
-			case PostureProviderKubernetes:
-				postureProviders[i].NodeCount = int(nodeRec.Values[1].(int64))
-			case PostureProviderAWSOrg:
-				postureProviders[i].NodeCount = int(nodeRec.Values[2].(int64))
-			case PostureProviderGCPOrg:
-				postureProviders[i].NodeCount = int(nodeRec.Values[3].(int64))
-			case PostureProviderAWS:
-				postureProviders[i].NodeCount = int(nodeRec.Values[4].(int64))
-			case PostureProviderGCP:
-				postureProviders[i].NodeCount = int(nodeRec.Values[5].(int64))
-			case PostureProviderAzure:
-				postureProviders[i].NodeCount = int(nodeRec.Values[6].(int64))
-			}
+	if err != nil {
+		log.Warn().Msgf("GetCloudProvidersList: %v", err)
+		return nil, err
+	}
+	nodeRec, err := nodeRes.Single()
+	if err != nil {
+		log.Warn().Msgf("GetCloudProvidersList: %v", err)
+		return nil, err
+	}
+	for i, postureProvider := range postureProviders {
+		switch postureProvider.Name {
+		case PostureProviderLinux:
+			postureProviders[i].NodeCount = int(nodeRec.Values[0].(int64))
+		case PostureProviderKubernetes:
+			postureProviders[i].NodeCount = int(nodeRec.Values[1].(int64))
+		case PostureProviderAWSOrg:
+			postureProviders[i].NodeCount = int(nodeRec.Values[2].(int64))
+		case PostureProviderGCPOrg:
+			postureProviders[i].NodeCount = int(nodeRec.Values[3].(int64))
+		case PostureProviderAWS:
+			postureProviders[i].NodeCount = int(nodeRec.Values[4].(int64))
+		case PostureProviderGCP:
+			postureProviders[i].NodeCount = int(nodeRec.Values[5].(int64))
+		case PostureProviderAzure:
+			postureProviders[i].NodeCount = int(nodeRec.Values[6].(int64))
 		}
 	}
 	return postureProviders, nil

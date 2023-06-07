@@ -1283,8 +1283,10 @@ func (h *Handler) scanResultActionHandler(w http.ResponseWriter, r *http.Request
 				return
 			}
 		}
+		h.AuditUserActivity(r, req.ScanType, ACTION_DELETE, req, true)
 	case "notify":
 		err = reporters_scan.NotifyScanResult(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, req.ResultIDs)
+		h.AuditUserActivity(r, req.ScanType, ACTION_NOTIFY, req, true)
 	}
 	if err != nil {
 		respondError(err, w)
@@ -1399,6 +1401,7 @@ func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, ac
 		w.Header().Set("Content-Type", "application/octet-stream")
 		w.WriteHeader(http.StatusOK)
 		w.Write(data)
+		h.AuditUserActivity(r, req.ScanType, ACTION_DOWNLOAD, req, true)
 
 	case "delete":
 		err = reporters_scan.DeleteScan(r.Context(), utils.Neo4jScanType(req.ScanType), req.ScanID, []string{})
@@ -1414,6 +1417,7 @@ func (h *Handler) scanIdActionHandler(w http.ResponseWriter, r *http.Request, ac
 			}
 		}
 		w.WriteHeader(http.StatusNoContent)
+		h.AuditUserActivity(r, req.ScanType, ACTION_DELETE, req, true)
 	}
 }
 
@@ -1457,6 +1461,8 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 	}
+
+	h.AuditUserActivity(r, ACTION_BULK, ACTION_DELETE, req, true)
 
 	httpext.JSON(w, http.StatusOK, nil)
 }
@@ -1535,6 +1541,7 @@ func (h *Handler) sbomHandler(w http.ResponseWriter, r *http.Request, action str
 		}
 		resp.UrlLink = url
 		httpext.JSON(w, http.StatusOK, resp)
+		h.AuditUserActivity(r, EVENT_VULNERABILITY_SCAN, ACTION_DOWNLOAD, req, true)
 	}
 }
 

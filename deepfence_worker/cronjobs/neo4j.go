@@ -21,6 +21,7 @@ const (
 	dbRegistryCleanUpTimeout               = time.Hour * 24
 	dbUpgradeTimeout                       = time.Minute * 30
 	defaultDBScannedResourceCleanUpTimeout = time.Hour * 24 * 30
+	dbCloudResourceCleanupTimeout          = time.Hour * 13
 )
 
 func getResourceCleanUpTimeout(ctx context.Context) time.Duration {
@@ -93,7 +94,7 @@ func CleanUpDB(msg *message.Message) error {
 
 	// registry images
 	if _, err = session.Run(`
-		MATCH (n:ContainerImage) 
+		MATCH (n:ContainerImage)
 		WHERE exists((n)<-[:HOSTS]-(:RegistryAccount))
 		AND n.updated_at < TIMESTAMP()-$time_ms
 		WITH n LIMIT 100000
@@ -105,8 +106,8 @@ func CleanUpDB(msg *message.Message) error {
 
 	// host images
 	if _, err = session.Run(`
-		MATCH (n:ContainerImage) 
-		WHERE exists((n)<-[:HOSTS]-(:Node)) 
+		MATCH (n:ContainerImage)
+		WHERE exists((n)<-[:HOSTS]-(:Node))
 		AND NOT exists((n)<-[:HOSTS]-(:RegistryAccount))
 		AND n.updated_at < TIMESTAMP()-$time_ms
 		WITH n LIMIT 100000
@@ -255,11 +256,11 @@ func CleanUpDB(msg *message.Message) error {
 
 	if _, err = session.Run(`
 		MATCH (n:CloudNode)
-		WHERE n.updated_at < TIMESTAMP()-$old_time_ms
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		WITH n LIMIT 10000
 		SET n.active = false`,
 		map[string]interface{}{
-			"old_time_ms": dbReportCleanUpTimeout.Milliseconds(),
+			"time_ms": dbCloudResourceCleanupTimeout.Milliseconds(),
 		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
@@ -267,11 +268,13 @@ func CleanUpDB(msg *message.Message) error {
 
 	if _, err = session.Run(`
 		MATCH (n:CloudResource)
-		WHERE n.updated_at < TIMESTAMP()-$old_time_ms
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND NOT exists((n) <-[:SCANNED]-())
+		OR n.updated_at < TIMESTAMP()-$old_time_ms
 		WITH n LIMIT 10000
 		DETACH DELETE n`,
 		map[string]interface{}{
+			"time_ms":     dbCloudResourceCleanupTimeout.Milliseconds(),
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
 		}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
