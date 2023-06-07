@@ -582,7 +582,10 @@ export const ContainersTable = () => {
       }),
       columnHelper.accessor('docker_container_created', {
         cell: (info) => {
-          return formatMilliseconds(info.getValue());
+          if (info.getValue()?.length) {
+            return formatMilliseconds(info.getValue());
+          }
+          return '-';
         },
         header: () => <span>Created On</span>,
         minSize: 100,
