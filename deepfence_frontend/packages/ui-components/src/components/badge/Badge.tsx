@@ -9,6 +9,7 @@ export type ColorType =
   | 'blue'
   | 'orange'
   | 'blueLight'
+  | 'pink'
   | 'success'
   | 'info'
   | 'warning'
@@ -26,29 +27,41 @@ export interface BadgeProps extends Omit<ComponentProps<'span'>, 'ref' | 'color'
 const classes = {
   label: {
     color: {
-      grey: 'border-gray-600 border-2 text-text-inverse  dark:text-text-input-value ',
-      purple: 'border-purple-600 border-2 text-text-inverse  dark:text-text-input-value ',
-      blue: 'border-blue-600 border-2 text-text-inverse  dark:text-text-input-value ',
-      orange: 'border-orange-600 border-2 text-text-inverse  dark:text-text-input-value ',
+      grey: 'border-df-gray-600 dark:border-gray-600 border text-text-inverse  dark:text-text-input-value ',
+      purple:
+        'border-chart-purple1 dark:border-chart-purple1 border text-text-inverse  dark:text-text-input-value ',
+      blue: 'border-accent-accent dark:border-accent-accent border text-text-inverse  dark:text-text-input-value ',
+      orange:
+        'border-status-warning dark:border-status-warning border text-text-inverse  dark:text-text-input-value ',
       blueLight:
-        'border-clarity-action border-2 text-text-inverse  dark:text-text-input-value ',
-      success: 'bg-status-success text-text-input-value dark:text-text-inverse',
-      info: 'bg-status-info text-text-input-value dark:text-text-inverse',
-      warning: 'bg-status-warning text-text-input-value dark:text-text-inverse',
-      error: 'bg-status-error text-text-input-value dark:text-text-inverse',
+        'border-clarity-action dark:border-clarity-action border text-text-inverse  dark:text-text-input-value ',
+      pink: 'border-chart-pink3 dark:border-chart-pink3 border text-text-inverse  dark:text-text-input-value ',
+      success:
+        'bg-status-success dark:bg-status-success text-text-input-value dark:text-text-inverse',
+      info: 'bg-status-info dark:bg-status-info text-text-input-value dark:text-text-inverse',
+      warning:
+        'bg-status-warning dark:bg-status-warning text-text-input-value dark:text-text-inverse',
+      error:
+        'bg-chart-red dark:bg-chart-red text-text-input-value dark:text-text-inverse',
     },
   },
   badge: {
     color: {
-      grey: 'bg-gray-600  text-text-inverse dark:text-text-inverse ',
-      purple: 'bg-purple-600  text-text-inverse dark:text-text-inverse',
-      blue: 'bg-blue-600  text-text-inverse dark:text-text-inverse',
-      orange: 'bg-orange-600  text-text-inverse dark:text-text-inverse',
-      blueLight: 'bg-clarity-action text-text-inverse dark:text-text-inverse',
-      success: 'bg-status-success text-text-inverse dark:text-text-inverse',
-      info: 'bg-status-info text-text-inverse dark:text-text-inverse',
-      warning: 'bg-status-warning text-text-inverse dark:text-text-inverse',
-      error: 'bg-status-error text-text-inverse dark:text-text-inverse',
+      grey: 'bg-df-gray-600 dark:bg-df-gray-600 text-text-inverse dark:text-text-inverse ',
+      purple:
+        'bg-chart-purple1 dark:border-chart-purple1 text-text-inverse dark:text-text-inverse',
+      blue: 'bg-accent-accent dark:border-accent-accent  text-text-inverse dark:text-text-inverse',
+      orange:
+        'bg-status-warning dark:border-status-warning  text-text-inverse dark:text-text-inverse',
+      blueLight:
+        'bg-clarity-action dark:border-clarity-action text-text-inverse dark:text-text-inverse',
+      pink: 'bg-chart-pink3 dark:bg-chart-pink3  text-text-inverse  dark:text-text-text-inverse ',
+      success:
+        'bg-status-success dark:bg-status-success text-text-inverse dark:text-text-inverse',
+      info: 'bg-status-info dark:bg-status-info dark:text-text-inverse',
+      warning:
+        'bg-status-warning dark:bg-status-warning text-text-inverse dark:text-text-inverse',
+      error: 'bg-chart-red dark:bg-chart-red text-text-inverse dark:text-text-inverse',
     },
   },
 };
@@ -63,8 +76,10 @@ export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
         <LabelPrimitive.Label
           className={twMerge(
             cx(
-              ` inline-flex gap-1.5 justify-center items-center px-3 rounded-full text-text-p6 ${classes.badge.color[color]}`,
+              ` inline-flex gap-1.5 justify-center items-center px-3 rounded-xl ${classes.badge.color[color]}`,
             ),
+            'text-p8',
+            'py-0.5',
             className,
           )}
           ref={ref}
@@ -79,11 +94,12 @@ export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
         <LabelPrimitive.Label
           className={twMerge(
             cx(
-              ` inline-flex gap-1.5 justify-center items-center pl-3 pr-1 rounded-full text-text-p6 ${classes.label.color[color]}`,
+              ` inline-flex gap-1.5 justify-center items-center pl-3 pr-1 rounded-xl ${classes.label.color[color]}`,
               {
                 'pr-3': !value,
-                'py-1': value,
               },
+              'text-p8',
+              'py-0.5',
             ),
             className,
           )}
@@ -97,8 +113,9 @@ export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
             <LabelPrimitive.Label
               className={twMerge(
                 cx(
-                  ` inline-flex gap-1.5 justify-center items-center ml-4 px-3 rounded-full text-text-p6 ${classes.badge.color[color]}`,
+                  ` inline-flex gap-1.5 justify-center items-center ml-4 px-3  rounded-xl text-p8 ${classes.badge.color[color]}`,
                 ),
+                'text-p8',
               )}
             >
               {value}

@@ -47,6 +47,12 @@ export const BlueLight = {
     color: 'blueLight',
   },
 };
+export const Pink = {
+  args: {
+    label: 'Label',
+    color: 'pink',
+  },
+};
 export const Success = {
   args: {
     label: 'Label',
@@ -100,6 +106,12 @@ export const BlueLightBadge = {
   args: {
     value: '90+',
     color: 'blueLight',
+  },
+};
+export const PinkBadge = {
+  args: {
+    value: '90+',
+    color: 'pink',
   },
 };
 export const SuccessBadge = {
@@ -161,5 +173,12 @@ export const BlueLightLabelBadge = {
     value: '90+',
     label: 'Label',
     color: 'blueLight',
+  },
+};
+export const PinkLabelBadge = {
+  args: {
+    value: '90+',
+    label: 'Label',
+    color: 'pink',
   },
 };
