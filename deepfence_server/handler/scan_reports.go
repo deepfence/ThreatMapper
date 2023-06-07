@@ -1921,6 +1921,10 @@ func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 			reqs[0].NodeType)
 
 		if err != nil {
+			if e, is := err.(*ingesters.AlreadyRunningScanError); is {
+				scanIds = append(scanIds, e.ScanId)
+				continue
+			}
 			log.Error().Msgf("%v", err)
 			return nil, "", err
 		}
