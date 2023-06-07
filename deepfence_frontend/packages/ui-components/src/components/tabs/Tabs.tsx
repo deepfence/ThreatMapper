@@ -48,8 +48,8 @@ const tabItemCva = cva(['outline-none text-t4 cursor-pointer'], {
       true: [
         cx(
           'pt-[15px] px-3 flex items-center',
-          'radix-state-active:pb-[6px] radix-state-inactive:pb-[9px] ',
-          'radix-state-active:border-b-[3px] radix-state-active:text-text-input-value radix-state-active:border-accent-accent',
+          'data-[state=active]:pb-[6px] data-[state=inactive]:pb-[9px] ',
+          'data-[state=active]:border-b-[3px] data-[state=active]:text-text-input-value data-[state=active]:border-accent-accent',
         ),
       ],
     },
