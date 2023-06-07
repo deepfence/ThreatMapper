@@ -14,6 +14,23 @@ export interface DropdownProps extends DropdownPrimitive.DropdownMenuProps {
   align?: DropdownPrimitive.MenuContentProps['align'];
 }
 
+const CaretIcon = () => {
+  return (
+    <svg
+      width="100%"
+      height="100%"
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M5.90047 13.6175L11.4392 8.26468L5.90047 2.9118C5.58611 2.60898 5.08578 2.61835 4.78297 2.93271C4.48015 3.24708 4.48951 3.7474 4.80387 4.05022L9.16703 8.26468L4.80387 12.4838C4.48951 12.7866 4.48015 13.2869 4.78297 13.6013C5.08578 13.9157 5.58611 13.925 5.90047 13.6222V13.6175Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+
 export const DropdownSubMenu: React.FC<
   DropdownPrimitive.DropdownMenuSubProps & {
     children: React.ReactNode;
@@ -24,14 +41,14 @@ export const DropdownSubMenu: React.FC<
 > = ({ children, triggerAsChild, disabled, content }) => {
   const triggerClass = dfTwMerge(
     cx(
-      'flex items-center gap-3',
+      'overflow-hidden flex box-border',
       // paddings
       'px-6 pt-2 pb-1',
       // text
       'text-gray-500 dark:text-text-text-and-icon',
       // hover // focus
       'focus:outline-none focus:bg-gray-100',
-      'dark:focus:bg-bg-active-selection dark:focus:text-text-input-value',
+      'dark:focus:bg-bg-grid-header dark:focus:text-text-text-and-icon',
       {
         'cursor-pointer': !disabled,
         'cursor-auto dark:text-gray-600': disabled,
@@ -42,7 +59,12 @@ export const DropdownSubMenu: React.FC<
   return (
     <DropdownPrimitive.Sub>
       <DropdownPrimitive.SubTrigger asChild={triggerAsChild} className={triggerClass}>
-        {children}
+        <div className="items-center">
+          {children}
+          <span className="ml-auto -mr-2 w-3 h-3">
+            <CaretIcon />
+          </span>
+        </div>
       </DropdownPrimitive.SubTrigger>
       <DropdownPrimitive.Portal>
         <DropdownPrimitive.SubContent
@@ -100,19 +122,20 @@ export const DropdownItem: React.ForwardRefExoticComponent<
   DropdownPrimitive.DropdownMenuItemProps &
     React.RefAttributes<HTMLDivElement> & {
       selected?: boolean;
+      icon?: React.ReactNode;
     }
 > = React.forwardRef((props, forwardedRef) => {
-  const { children, className, disabled, selected, ...rest } = props;
+  const { children, className, disabled, selected, icon, ...rest } = props;
   const classes = dfTwMerge(
     cx(
-      'flex items-center gap-3',
+      'flex gap-x-2',
       // paddings
       'px-6 pt-2 pb-1',
       // text
       'text-gray-500 dark:text-text-text-and-icon',
       // hover // focus
       'focus:outline-none focus:bg-gray-100',
-      'dark:focus:bg-bg-active-selection dark:focus:text-text-input-value',
+      'dark:focus:bg-bg-grid-header dark:focus:text-text-text-and-icon',
       {
         'cursor-pointer': !disabled,
         'cursor-auto dark:text-gray-600': disabled,
@@ -128,6 +151,8 @@ export const DropdownItem: React.ForwardRefExoticComponent<
       {...rest}
       ref={forwardedRef}
     >
+      {icon && <div className="w-3 h-3 mr-2">{icon}</div>}
+
       {children}
     </DropdownPrimitive.Item>
   );
