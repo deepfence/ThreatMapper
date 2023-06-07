@@ -612,6 +612,7 @@ type TopologyFilters struct {
 	PodFilter        []string                `json:"pod_filter" required:"true"`
 	ContainerFilter  []string                `json:"container_filter" required:"true"`
 	FieldFilter      reporters.FieldsFilters `json:"field_filters" required:"true"`
+	SkipConnections  bool                    `json:"skip_connections" required:"true"`
 }
 
 type CloudProviderFilter struct {
@@ -674,16 +675,24 @@ func (nc *neo4jTopologyReporter) getPodGraph(ctx context.Context, filters Topolo
 	}
 	defer session.Close()
 
+	if !filters.SkipConnections {
+		connTx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
+		res.Connections, err = nc.GetConnections(connTx)
+		if err != nil {
+			log.Error().Msgf("Topology get connections: %v", err)
+			res.SkippedConnections = true
+		}
+		connTx.Close()
+	} else {
+		res.SkippedConnections = true
+	}
+
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
 	defer tx.Close()
 
-	res.Connections, err = nc.GetConnections(tx)
-	if err != nil {
-		return res, err
-	}
 	tmp, err := nc.getPods(tx, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
@@ -714,16 +723,24 @@ func (nc *neo4jTopologyReporter) getKubernetesGraph(ctx context.Context, filters
 	}
 	defer session.Close()
 
+	if !filters.SkipConnections {
+		connTx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
+		res.Connections, err = nc.GetConnections(connTx)
+		if err != nil {
+			log.Error().Msgf("Topology get connections: %v", err)
+			res.SkippedConnections = true
+		}
+		connTx.Close()
+	} else {
+		res.SkippedConnections = true
+	}
+
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
 	defer tx.Close()
 
-	res.Connections, err = nc.GetConnections(tx)
-	if err != nil {
-		return res, err
-	}
 	tmp, err := nc.getCloudKubernetes(tx, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
@@ -761,16 +778,24 @@ func (nc *neo4jTopologyReporter) getHostGraph(ctx context.Context, filters Topol
 	}
 	defer session.Close()
 
+	if !filters.SkipConnections {
+		connTx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
+		res.Connections, err = nc.GetConnections(connTx)
+		if err != nil {
+			log.Error().Msgf("Topology get connections: %v", err)
+			res.SkippedConnections = true
+		}
+		connTx.Close()
+	} else {
+		res.SkippedConnections = true
+	}
+
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
 	defer tx.Close()
 
-	res.Connections, err = nc.GetConnections(tx)
-	if err != nil {
-		return res, err
-	}
 	tmp, err := nc.getHosts(tx, nil, nil, nil, mo.Some(filters.FieldFilter))
 	if err != nil {
 		return res, err
@@ -812,13 +837,17 @@ func (nc *neo4jTopologyReporter) getGraph(ctx context.Context, filters TopologyF
 	}
 	defer session.Close()
 
-	connTx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
-	res.Connections, err = nc.GetConnections(connTx)
-	if err != nil {
-		log.Error().Msgf("Topology get connections: %v", err)
+	if !filters.SkipConnections {
+		connTx, err := session.BeginTransaction(neo4j.WithTxTimeout(10 * time.Second))
+		res.Connections, err = nc.GetConnections(connTx)
+		if err != nil {
+			log.Error().Msgf("Topology get connections: %v", err)
+			res.SkippedConnections = true
+		}
+		connTx.Close()
+	} else {
 		res.SkippedConnections = true
 	}
-	connTx.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
