@@ -20,6 +20,9 @@ header_fields = {
     COMPLIANCE_ES_TYPE: ['@timestamp', 'compliance_check_type', 'count', 'doc_id', 'host', 'host_name', 'masked',
                          'node_id', 'node_name', 'node_type', 'scan_id', 'status', 'test_category', 'test_desc',
                          'test_info', 'test_number'],
+    CLOUD_COMPLIANCE_ES_TYPE: ['@timestamp', 'compliance_check_type', 'control_id', 'resource', 'status', 'title',
+                               'description', 'reason', 'group', 'node_id', 'node_name', 'service', 'scan_id', 'masked',
+                               'cloud_provider', 'account_id', 'region', 'count', 'doc_id'],
     "secret-scan-source": ['Match.full_filename', 'Match.matched_content', 'Rule.name', 'Rule.part', 'Severity.level',
                            'node_name', 'container_name', 'kubernetes_cluster_name', 'node_type'],
     "secret-scan-header": ['Filename', 'Content', 'Name', 'Rule', 'Severity', 'Node Name', 'Container Name',
@@ -182,6 +185,8 @@ def prepare_report_download(node_type, filters, resources, duration, include_dea
             headers = header_fields["secret-scan-header"]
         elif resource_type == MALWARE_SCAN_ES_TYPE:
             headers = header_fields["malware-scan-header"]
+        elif resource_type == COMPLIANCE_ES_TYPE and node_type in [CLOUD_AWS, CLOUD_GCP, CLOUD_AZURE]:
+            headers = header_fields[CLOUD_COMPLIANCE_ES_TYPE]
         else:
             headers = header_fields[resource_type]
         ws = wb.add_worksheet(sheet_name[resource_type])
