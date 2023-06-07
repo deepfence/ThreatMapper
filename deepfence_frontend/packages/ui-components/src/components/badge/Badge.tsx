@@ -1,14 +1,18 @@
 import * as LabelPrimitive from '@radix-ui/react-label';
 import cx from 'classnames';
 import React, { ComponentProps, forwardRef, useId } from 'react';
-import { IconContext } from 'react-icons';
-import { HiX } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
-import { Typography } from '@/components/typography/Typography';
-
-export type SizeType = 'sm' | 'lg';
-export type ColorType = 'default' | 'primary' | 'success' | 'danger';
+export type ColorType =
+  | 'grey'
+  | 'purple'
+  | 'blue'
+  | 'orange'
+  | 'blueLight'
+  | 'success'
+  | 'info'
+  | 'warning'
+  | 'error';
 export type SelectedBadgeProps = {
   id: string | number | undefined;
   value: string | number | undefined;
@@ -16,86 +20,94 @@ export type SelectedBadgeProps = {
 export interface BadgeProps extends Omit<ComponentProps<'span'>, 'ref' | 'color'> {
   label?: React.ReactNode;
   value?: string;
-  size?: SizeType;
   color?: ColorType;
-  icon?: React.ReactNode;
-  isRemove?: boolean;
-  onRemove?: (badge: SelectedBadgeProps) => void;
 }
 
 const classes = {
-  color: {
-    default: 'bg-gray-100 text-gray-900 dark:text-gray-900',
-    primary: 'bg-blue-100 text-blue-800 dark:text-blue-800',
-    success: 'bg-green-100 text-green-800 dark:text-green-800',
-    danger: 'bg-red-100 text-red-800 dark:text-red-800',
+  label: {
+    color: {
+      grey: 'border-gray-600 dark:border-gray-600 border-2 text-text-input-value',
+      purple: 'border-purple-600 dark:border-purple-600 border-2 text-text-input-value',
+      blue: 'border-blue-600 dark:border-blue-600 border-2 text-text-input-value',
+      orange: 'border-orange-600 dark:border-orange-600 border-2 text-text-input-value',
+      blueLight:
+        'border-clarity-action dark:border-clarity-action border-2 text-text-input-value',
+      success: 'bg-status-success text-text-inverse dark:text-text-inverse',
+      info: 'bg-status-info text-text-inverse dark:text-text-inverse',
+      warning: 'bg-status-warning text-text-inverse dark:text-text-inverse',
+      error: 'bg-status-error text-text-inverse dark:text-text-inverse',
+    },
   },
-  size: {
-    sm: `${Typography.size.sm} py-0.5 px-2.5`,
-    lg: `${Typography.size.base} py-0.5 px-3`,
-  },
-  icon: {
-    sm: 'w-3.5 h-3.5',
-    lg: 'w-4 h-4',
+  badge: {
+    color: {
+      grey: 'bg-gray-600 dark:bg-gray-600  text-text-inverse dark:text-text-inverse ',
+      purple:
+        'bg-purple-600 dark:bg-purple-600  text-text-inverse dark:text-text-inverse',
+      blue: 'bg-blue-600 dark:bg-blue-600  text-text-inverse dark:text-text-inverse',
+      orange:
+        'bg-orange-600 dark:bg-orange-600  text-text-inverse dark:text-text-inverse',
+      blueLight:
+        'bg-clarity-action dark:bg-clarity-action  text-text-inverse dark:text-text-inverse',
+      success: 'bg-status-success text-text-inverse dark:text-text-inverse',
+      info: 'bg-status-info text-text-inverse dark:text-text-inverse',
+      warning: 'bg-status-warning text-text-inverse dark:text-text-inverse',
+      error: 'bg-status-error text-text-inverse dark:text-text-inverse',
+    },
   },
 };
 
 export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
-  (
-    {
-      label,
-      value,
-      id,
-      icon,
-      size = 'sm',
-      color = 'default',
-      className,
-      onRemove,
-      isRemove = false,
-      ...rest
-    },
-    ref,
-  ) => {
+  ({ label, id, color = 'grey', value, className, ...rest }, ref) => {
     const internalId = useId();
     const _id = id ? id : internalId;
 
-    return (
-      <>
-        <LabelPrimitive.Root
+    if (value && !label) {
+      return (
+        <LabelPrimitive.Label
           className={twMerge(
             cx(
-              `${Typography.weight.normal} inline-flex gap-1.5 justify-center items-center rounded-md text-gray-900 dark:text-white`,
-              `${classes.size[size]}`,
-              `${classes.color[color]}`,
+              ` inline-flex gap-1.5 justify-center items-center px-3 rounded-full text-text-p6 ${classes.badge.color[color]}`,
+            ),
+            className,
+          )}
+          ref={ref}
+          {...rest}
+        >
+          {value}
+        </LabelPrimitive.Label>
+      );
+    }
+    return (
+      <>
+        <LabelPrimitive.Label
+          className={twMerge(
+            cx(
+              ` inline-flex gap-1.5 justify-center items-center pl-3 pr-1 rounded-full text-text-p6 ${classes.label.color[color]}`,
+              {
+                'pr-3': !value,
+                'py-1': value,
+              },
             ),
             className,
           )}
           id={_id}
           data-testid={`badge-${_id}`}
+          ref={ref}
+          {...rest}
         >
-          {icon && (
-            <IconContext.Provider
-              value={{
-                className: cx(`${classes.icon[size]}`),
-              }}
+          {label}
+          {value && (
+            <LabelPrimitive.Label
+              className={twMerge(
+                cx(
+                  ` inline-flex gap-1.5 justify-center items-center ml-4 px-3 rounded-full text-text-p6 ${classes.badge.color[color]}`,
+                ),
+              )}
             >
-              {icon}
-            </IconContext.Provider>
+              {value}
+            </LabelPrimitive.Label>
           )}
-          <LabelPrimitive.Label ref={ref} {...rest}>
-            {label}
-          </LabelPrimitive.Label>
-          {isRemove && (
-            <button
-              className="rounded ml-0.5 p-px hover:text-black hover:scale-105 focus:ring-1 focus:ring-blue-600 focus:outline-none "
-              onClick={() => onRemove?.({ id: _id, value: value })}
-              aria-label={'remove badge'}
-              data-testid={`badge-remove-${_id}`}
-            >
-              <HiX />
-            </button>
-          )}
-        </LabelPrimitive.Root>
+        </LabelPrimitive.Label>
       </>
     );
   },
