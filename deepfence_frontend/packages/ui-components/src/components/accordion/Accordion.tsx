@@ -61,10 +61,10 @@ export const AccordionTrigger = React.forwardRef<
         'flex outline-none p-5 place-items-center',
         'w-full group',
         `leading-4 ${Typography.size.base} ${Typography.weight.medium} `,
-        'radix-state-open:text-gray-900',
-        'radix-state-closed:text-gray-500',
-        'dark:radix-state-open:text-white',
-        'dark:radix-state-closed:text-gray-400',
+        'data-[state=open]:text-gray-900',
+        'data-[state=closed]:text-gray-500',
+        'dark:data-[state=open]:text-white',
+        'dark:data-[state=closed]:text-gray-400',
         className,
       )}
       {...props}
@@ -74,7 +74,7 @@ export const AccordionTrigger = React.forwardRef<
       <span>
         <HiOutlineChevronDown
           aria-hidden
-          className="group-radix-state-open:first:rotate-180 transition duration-550 ease-out"
+          className="group-data-[state=open]:first:rotate-180 transition duration-550 ease-out"
         />
       </span>
     </AccordionPrimitive.Trigger>
@@ -88,9 +88,9 @@ export const AccordionContent = React.forwardRef<
   <AccordionPrimitive.Content
     className={cx(
       'bg-white dark:bg-gray-900 w-full text-gray-500 dark:text-gray-400 leading-6',
-      'radix-state-open:border-t dark:radix-state-open:border-gray-700 dark:radix-state-open:border-opacity-50', // border top of its content
-      'radix-state-open:animate-accordion-open',
-      'radix-state-closed:animate-accordion-closed',
+      'data-[state=open:border-t dark:data-[state=open]:border-gray-700 dark:data-[state=open]:border-opacity-50', // border top of its content
+      'data-[state=open]:animate-accordion-open',
+      'data-[state=closed]:animate-accordion-closed',
       className,
     )}
     {...props}
