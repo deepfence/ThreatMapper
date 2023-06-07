@@ -3,6 +3,7 @@ package email
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/sendemail"
 )
@@ -21,11 +22,33 @@ func New(b []byte) (*Email, error) {
 
 func (e Email) FormatMessage(message []map[string]interface{}) string {
 	entiremsg := "*" + e.Resource + "*\n\n"
+
+	//Prepare the sorted keys so that the output has the records in same order
+	var keys []string
+	if len(message) > 0 {
+		keys = make([]string, 0, len(message[0]))
+		for key, _ := range message[0] {
+			keys = append(keys, key)
+		}
+
+		sort.Strings(keys)
+	}
+
 	for k, v := range message {
 		entiremsg = entiremsg + fmt.Sprintf("#%d\n", k+1)
-		for key, val := range v {
-			entiremsg += fmt.Sprintf("%s:%s\n", key, val)
+		for _, key := range keys {
+			if val, ok := v[key]; ok {
+				entiremsg += fmt.Sprintf("%s:%s\n", key, fmt.Sprintf("%v", val))
+				delete(v, key)
+			}
 		}
+
+		//This is to handle if we have unprocessed data in the map
+		//Possilbe if all the records are not uniform
+		for key, val := range v {
+			entiremsg += fmt.Sprintf("%s:%s\n", key, fmt.Sprintf("%v", val))
+		}
+
 		entiremsg = entiremsg + "\n"
 	}
 	return entiremsg

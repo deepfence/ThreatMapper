@@ -2,6 +2,7 @@ package sendemail
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -18,6 +19,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -189,11 +191,86 @@ func (e *emailSenderSMTP) Send(recipients []string, subject string, text string,
 		return err
 	}
 
-	return smtp.SendMail(
+	err = smtp.SendMail(
 		e.emailConfig.Smtp+":"+e.emailConfig.Port,
 		smtp.PlainAuth("", e.emailConfig.EmailID, e.emailConfig.Password, e.emailConfig.Smtp),
 		e.emailConfig.EmailID,
 		recipients,
 		e.getEmailBody(e.emailConfig.EmailID, recipients, subject, text, html, attachments),
 	)
+
+	if err != nil {
+		log.Error().Msg("Error in emailSenderSMTP Send(): " + err.Error())
+		err = e.SendCustom(recipients, subject, text, html, attachments)
+	}
+	return err
+}
+
+func (e *emailSenderSMTP) SendCustom(recipients []string, subject string, text string,
+	html string, attachments map[string][]byte) error {
+
+	err := e.validateSendParams(recipients, subject, text, html, attachments)
+	if err != nil {
+		return err
+	}
+
+	emailBody := e.getEmailBody(e.emailConfig.EmailID, recipients,
+		subject, text, html, attachments)
+
+	// Connect to the SMTP Server
+	servername := e.emailConfig.Smtp + ":" + e.emailConfig.Port
+	host := e.emailConfig.Smtp
+
+	auth := smtp.PlainAuth("", e.emailConfig.EmailID, e.emailConfig.Password, e.emailConfig.Smtp)
+
+	// TLS config
+	tlsconfig := &tls.Config{
+		InsecureSkipVerify: true,
+		ServerName:         host,
+	}
+
+	conn, err := tls.Dial("tcp", servername, tlsconfig)
+	if err != nil {
+		return err
+	}
+
+	c, err := smtp.NewClient(conn, host)
+	if err != nil {
+		return err
+	}
+
+	// Auth
+	if err = c.Auth(auth); err != nil {
+		return err
+	}
+
+	// To && From
+	if err = c.Mail(e.emailConfig.EmailID); err != nil {
+		return err
+	}
+
+	for _, addr := range recipients {
+		if err = c.Rcpt(addr); err != nil {
+			return err
+		}
+	}
+
+	// Data
+	w, err := c.Data()
+	if err != nil {
+		return err
+	}
+
+	_, err = w.Write(emailBody)
+	if err != nil {
+		return err
+	}
+
+	err = w.Close()
+	if err != nil {
+		return err
+	}
+
+	err = c.Quit()
+	return err
 }
