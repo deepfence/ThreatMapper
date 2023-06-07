@@ -29,8 +29,8 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
         id={_id}
         className={cx(
           'flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px]',
-          'radix-state-unchecked:bg-gray-50 radix-state-unchecked:dark:bg-transparent radix-state-unchecked:border border-gray-300 dark:border-df-gray-600',
-          'radix-state-checked:dark:bg-accent-accent',
+          'data-[state=unchecked]:bg-gray-50 data-[state=unchecked]:dark:bg-transparent data-[state=unchecked]:border border-gray-300 dark:border-df-gray-600',
+          'data-[state=checked]:dark:bg-accent-accent',
           {
             'dark:bg-accent-accent': internalChecked === 'indeterminate',
           },
