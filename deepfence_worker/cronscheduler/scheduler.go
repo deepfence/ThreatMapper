@@ -50,7 +50,7 @@ func NewScheduler(tasksPublisher *kafka.Publisher) (*Scheduler, error) {
 func (s *Scheduler) updateScheduledJobs() {
 	err := s.addScheduledJobs()
 	if err != nil {
-		log.Warn().Msg(err.Error())
+		log.Warn().Msg("Add scheduled jobs: " + err.Error())
 	}
 
 	ticker := time.NewTicker(15 * time.Minute)
@@ -61,7 +61,7 @@ func (s *Scheduler) updateScheduledJobs() {
 		case <-ticker.C:
 			err = s.addScheduledJobs()
 			if err != nil {
-				log.Warn().Msg(err.Error())
+				log.Warn().Msg("Add scheduled jobs: " + err.Error())
 			}
 		}
 	}
@@ -91,7 +91,13 @@ func (s *Scheduler) addScheduledJobs() error {
 			newJobHashToId[jobHash] = s.scheduledJobs.jobHashToId[jobHash]
 			continue
 		}
-		jobId, err := s.cron.AddFunc(schedule.CronExpr, s.enqueueScheduledTask(schedule))
+		var payload map[string]string
+		err = json.Unmarshal(schedule.Payload, &payload)
+		if err != nil {
+			log.Error().Msg("addScheduledJobs payload: " + err.Error())
+			continue
+		}
+		jobId, err := s.cron.AddFunc(schedule.CronExpr, s.enqueueScheduledTask(schedule, payload))
 		if err != nil {
 			return err
 		}
@@ -182,15 +188,12 @@ func (s *Scheduler) Run() {
 	s.cron.Run()
 }
 
-func (s *Scheduler) enqueueScheduledTask(schedule postgresqlDb.Scheduler) func() {
-	var payload map[string]string
-	json.Unmarshal(schedule.Payload, &payload)
-	log.Info().Msgf("Registering task: %s - (%v)", schedule.Action, payload)
+func (s *Scheduler) enqueueScheduledTask(schedule postgresqlDb.Scheduler, payload map[string]string) func() {
+	log.Info().Msgf("Registering task: %s, %s", schedule.Description, schedule.CronExpr)
 	return func() {
-		log.Info().Msgf("Enqueuing task: %s - (%v)", schedule.Action, payload)
+		log.Info().Msgf("Enqueuing task: %s, %s", schedule.Description, schedule.CronExpr)
 		metadata := map[string]string{directory.NamespaceKey: string(directory.NonSaaSDirKey)}
-
-		message := map[string]interface{}{"action": schedule.Action, "id": schedule.ID, "payload": payload}
+		message := map[string]interface{}{"action": schedule.Action, "id": schedule.ID, "payload": payload, "description": schedule.Description}
 		messageJson, _ := json.Marshal(message)
 		err := utils.PublishNewJob(s.tasksPublisher, metadata, sdkUtils.ScheduledTasks, messageJson)
 		if err != nil {
