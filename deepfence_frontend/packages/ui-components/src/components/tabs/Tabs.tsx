@@ -6,6 +6,7 @@ import React from 'react';
 import { IconContext } from 'react-icons';
 
 import { ObjectWithNonNullableValues } from '@/types/utils';
+import { dfTwMerge } from '@/utils/twmerge';
 
 export type SizeType = 'md';
 export type TabVariantProps = ObjectWithNonNullableValues<
@@ -18,13 +19,20 @@ export type TabProps = TabsPrimitive.TabsProps & {
     value: string;
     id?: string | number;
     icon?: React.ReactNode;
+    disabled?: boolean;
   }[];
   value: string;
   children: React.ReactNode;
   variant?: keyof TabVariantProps;
 };
 
-const labelCva = cva('cursor-pointer uppercase');
+const labelCva = cva(['cursor-pointer uppercase'], {
+  variants: {
+    disabled: {
+      true: 'dark:text-gray-600',
+    },
+  },
+});
 const tabListCva = cva(
   ['inline-flex cursor-pointer', 'text-center text-gray-500 dark:text-[#ADBBC4]'],
   {
@@ -46,10 +54,16 @@ const tabItemCva = cva(['text-t4 cursor-pointer'], {
     },
     underline: {
       true: [
-        cx(
-          'pt-[15px] px-3 flex items-center',
-          'data-[state=active]:pb-[6px] data-[state=inactive]:pb-[9px] ',
-          'data-[state=active]:border-b-[3px] data-[state=active]:text-text-input-value data-[state=active]:border-accent-accent',
+        dfTwMerge(
+          cx(
+            'pb-[9px] pt-[15px] px-3 flex items-center justify-center box-border',
+            'data-[state=active]:text-text-input-value data-[state=active]:border-accent-accent',
+            // selected
+            'dark:data-[state=active]:shadow-[0_-0.15rem_0_#3185FF_inset] transition-shadow duration-[0.2s] ease-[ease-in]',
+            // hover
+            'dark:hover:shadow-[0_-0.15rem_0_#3185FF_inset] transition-shadow duration-[0.2s] ease-[ease-in]',
+            'dark:disabled:hover:shadow-none',
+          ),
         ),
       ],
     },
@@ -69,27 +83,39 @@ const Tabs = (props: TabProps) => {
           underline: variant === 'underline',
         })}
       >
-        {tabs.map(({ label, value, id, icon }) => {
+        {tabs.map(({ label, value, id, icon, disabled }) => {
           const _id = id ? id.toString() : value;
           return (
-            <TabsPrimitive.Trigger
-              key={`tab-trigger-${value}`}
-              value={value}
-              data-testid={`tab-item-${_id}`}
-              className={tabItemCva({
-                underline: variant === 'underline',
-                size,
-              })}
-            >
-              {icon && (
-                <IconContext.Provider value={{ className: cx('w-3 h-3 mr-1 inline') }}>
-                  {icon}
-                </IconContext.Provider>
-              )}
-              <LabelPrimitive.Label htmlFor={_id} className={labelCva()}>
-                {label}
-              </LabelPrimitive.Label>
-            </TabsPrimitive.Trigger>
+            <div key={`tab-trigger-${value}`}>
+              <TabsPrimitive.Trigger
+                key={`tab-trigger-${value}`}
+                value={value}
+                data-testid={`tab-item-${_id}`}
+                className={tabItemCva({
+                  underline: variant === 'underline',
+                  size,
+                })}
+                disabled={disabled}
+              >
+                <>
+                  {icon && (
+                    <IconContext.Provider
+                      value={{ className: cx('w-3 h-3 mr-1 inline') }}
+                    >
+                      {icon}
+                    </IconContext.Provider>
+                  )}
+                  <LabelPrimitive.Label
+                    htmlFor={_id}
+                    className={labelCva({
+                      disabled,
+                    })}
+                  >
+                    {label}
+                  </LabelPrimitive.Label>
+                </>
+              </TabsPrimitive.Trigger>
+            </div>
           );
         })}
       </TabsPrimitive.List>

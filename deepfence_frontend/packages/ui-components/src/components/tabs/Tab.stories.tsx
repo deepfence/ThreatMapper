@@ -25,6 +25,11 @@ const tabs = [
     label: 'Tab Three',
     value: 'Tab3',
   },
+  {
+    label: 'Some tab name',
+    value: 'Tab4',
+    disabled: true,
+  },
 ];
 
 export const Default = {

@@ -17,14 +17,14 @@ export interface DropdownProps extends DropdownPrimitive.DropdownMenuProps {
 const CaretIcon = () => {
   return (
     <svg
-      width="100%"
-      height="100%"
-      viewBox="0 0 16 16"
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <path
-        d="M5.90047 13.6175L11.4392 8.26468L5.90047 2.9118C5.58611 2.60898 5.08578 2.61835 4.78297 2.93271C4.48015 3.24708 4.48951 3.7474 4.80387 4.05022L9.16703 8.26468L4.80387 12.4838C4.48951 12.7866 4.48015 13.2869 4.78297 13.6013C5.08578 13.9157 5.58611 13.925 5.90047 13.6222V13.6175Z"
+        d="M4.42541 10.2132L8.57947 6.19851L4.42541 2.18385C4.18964 1.95674 3.8144 1.96376 3.58728 2.19953C3.36017 2.43531 3.36719 2.81055 3.60297 3.03766L6.87533 6.19851L3.60297 9.36284C3.36719 9.58995 3.36017 9.96519 3.58728 10.201C3.8144 10.4367 4.18964 10.4438 4.42541 10.2166V10.2132Z"
         fill="currentColor"
       />
     </svg>
@@ -61,7 +61,7 @@ export const DropdownSubMenu: React.FC<
       <DropdownPrimitive.SubTrigger asChild={triggerAsChild} className={triggerClass}>
         <div className="items-center">
           {children}
-          <span className="ml-auto -mr-2 w-3 h-3">
+          <span className="ml-auto -mr-2 dark:text-text-text-and-icon">
             <CaretIcon />
           </span>
         </div>
