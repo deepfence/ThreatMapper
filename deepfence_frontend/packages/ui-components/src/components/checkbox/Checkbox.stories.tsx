@@ -15,13 +15,6 @@ export const Default = {
   },
 };
 
-export const Rounded = {
-  args: {
-    label: 'Rounded checkbox',
-    rounded: true,
-  },
-};
-
 const ControlledCheckboxTemplate: StoryFn<typeof Checkbox> = (args) => {
   const [checked, setChecked] = useState<CheckedState>(false);
   return (

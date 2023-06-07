@@ -1,12 +1,9 @@
 import cx from 'classnames';
-import { memo, useMemo } from 'react';
+import { useMemo } from 'react';
 import { HiDotsHorizontal } from 'react-icons/hi';
-import { twMerge } from 'tailwind-merge';
 
 import { usePagination, UsePaginationOptions } from '@/components/hooks/usePagination';
-import { Typography } from '@/components/typography/Typography';
-
-export type SizeType = 'sm' | 'md';
+import { dfTwMerge } from '@/utils/twmerge';
 
 type PageButtonProps = {
   label: string | number | JSX.Element;
@@ -20,7 +17,6 @@ type OwnProps = {
   approximatePagination?: boolean;
   totalRows: number;
   pageSize?: number;
-  sizing?: SizeType;
 };
 type Props = Partial<Pick<UsePaginationOptions, 'currentPage' | 'siblingCount'>> &
   OwnProps;
@@ -34,14 +30,13 @@ const PageButton = ({
 }: PageButtonProps) => {
   return (
     <button
-      className={twMerge(
+      className={dfTwMerge(
         // we donot want border to be overlap so we use border right here
         cx(
-          'flex justify-center items-center outline-none',
-          'px-3 py-1.5 border-r border-y border-gray-300 dark:border-gray-700',
-          'hover:bg-gray-100 hover:text-gray-700',
-          'dark:border-gray-700 dark:hover:bg-gray-700 dark:hover:text-white',
-          'focus:outline-none focus:ring-1 focus:ring-inset focus:ring-blue-600 dark:focus:ring-blue-800',
+          'flex justify-center items-center text-p7 dark:bg-bg-card',
+          'px-3 py-[5px] border-r border-y border-gray-300 dark:border-bg-grid-border',
+          'dark:text-text-text-and-icon overflow-hidden',
+          'hover:dark:text-text-input-value',
         ),
         className,
       )}
@@ -63,7 +58,6 @@ export const Pagination = ({
   onPageChange,
   totalRows,
   siblingCount = 2,
-  sizing = 'sm',
   approximatePagination = false,
 }: Props) => {
   let totalNumberOfPages = Math.ceil(totalRows / pageSize);
@@ -129,43 +123,32 @@ export const Pagination = ({
     onPageChange(currentPage + 1);
   };
 
-  if (totalNumberOfPages === 0) {
-    return null;
-  }
-
   return (
-    <div className="flex justify-between items-center">
-      <div
-        className={`${Typography.weight.normal} ${
-          Typography.size[sizing as keyof typeof Typography.size]
-        } text-gray-500 dark:text-gray-400`}
-      >
+    <div className="flex justify-end items-center gap-4">
+      <div className={`text-gray-500 dark:text-text-text-and-icon text-p4`}>
         Showing{' '}
-        <span className="text-black dark:text-white">
+        <span className="text-black dark:text-text-input-value">
           {currentShowing[0]}-{currentShowing[1]}
         </span>
         {!approximatePagination ? (
           <>
             <span> of</span>
-            <span className="text-black dark:text-white"> {totalRows}</span>
+            <span className="text-black dark:text-text-input-value"> {totalRows}</span>
           </>
         ) : null}
       </div>
-      <div
-        className={cx(
-          `flex flex-row flex-nowrap ${Typography.weight.medium} ${
-            Typography.size[sizing as keyof typeof Typography.size]
-          }`,
-          'bg-white text-gray-500',
-          'dark:bg-gray-800 dark:text-gray-400',
-        )}
-      >
+      <div className={cx(`flex flex-row flex-nowrap`)}>
         <PageButton
-          label={'Previous'}
+          data-testid="pagination-prev"
+          label={
+            <div className="h-4 w-4 rotate-180">
+              <CaretIcon />
+            </div>
+          }
           key={'Previous'}
           onPageChange={onPrevious}
-          disabled={false}
-          className={cx('rounded-l border-l')}
+          disabled={totalNumberOfPages === 0}
+          className={cx('rounded-l border-l px-1.5')}
         />
 
         {pagination?.map((page, index) => {
@@ -189,9 +172,7 @@ export const Pagination = ({
               }}
               disabled={false}
               className={cx({
-                'bg-blue-100 text-blue-600 dark:bg-gray-700 dark:text-white':
-                  page === currentPage,
-                'hover:bg-blue-100 hover:text-blue-600 hover:dark:bg-gray-700 dark:text-white':
+                'bg-blue-100 text-blue-600 dark:bg-bg-active-selection dark:text-text-input-value':
                   page === currentPage,
               })}
             />
@@ -199,14 +180,36 @@ export const Pagination = ({
         })}
 
         <PageButton
-          label={'Next'}
+          label={
+            <div className="h-4 w-4">
+              <CaretIcon />
+            </div>
+          }
           key={'Next'}
+          data-testid="pagination-next"
           onPageChange={onNext}
-          disabled={false}
-          className={cx('rounded-r')}
+          disabled={totalNumberOfPages === 0}
+          className={cx('rounded-r px-1.5')}
         />
       </div>
     </div>
+  );
+};
+
+const CaretIcon = () => {
+  return (
+    <svg
+      width="100%"
+      height="100%"
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M5.90047 13.6175L11.4392 8.26468L5.90047 2.9118C5.58611 2.60898 5.08578 2.61835 4.78297 2.93271C4.48015 3.24708 4.48951 3.7474 4.80387 4.05022L9.16703 8.26468L4.80387 12.4838C4.48951 12.7866 4.48015 13.2869 4.78297 13.6013C5.08578 13.9157 5.58611 13.925 5.90047 13.6222V13.6175Z"
+        fill="currentColor"
+      />
+    </svg>
   );
 };
 

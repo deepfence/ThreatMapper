@@ -17,7 +17,7 @@ export default {
 
 const Template: StoryFn<typeof Tooltip> = (args) => (
   <Tooltip {...args}>
-    <Button color="primary" style={{ margin: '5rem 18rem' }}>
+    <Button color="default" style={{ margin: '5rem 18rem' }}>
       Hover me
     </Button>
   </Tooltip>
@@ -33,7 +33,7 @@ const ControlledTemplate: StoryFn<typeof Tooltip> = (args) => {
         setOpen(open);
       }}
     >
-      <Button color="primary" style={{ margin: '5rem 18rem' }}>
+      <Button color="default" style={{ margin: '5rem 18rem' }}>
         Hover me
       </Button>
     </Tooltip>

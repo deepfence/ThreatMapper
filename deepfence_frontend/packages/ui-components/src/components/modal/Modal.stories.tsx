@@ -27,7 +27,7 @@ export const ModalWithTrigger = () => {
 
   return (
     <>
-      <Button color="primary" onClick={() => setOpen(true)} ref={ref}>
+      <Button color="default" onClick={() => setOpen(true)} ref={ref}>
         Click to open
       </Button>
       <Modal
@@ -49,7 +49,7 @@ export const WithoutTitle = () => {
 
   return (
     <>
-      <Button color="primary" onClick={() => setOpen(true)} ref={ref}>
+      <Button color="default" onClick={() => setOpen(true)} ref={ref}>
         Click to open
       </Button>
       <Modal
@@ -68,7 +68,7 @@ export const WithoutFooter = () => {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button color="primary" onClick={() => setOpen(true)}>
+      <Button color="default" onClick={() => setOpen(true)}>
         Click to open
       </Button>
       <Modal title="Modal Title" open={open} onOpenChange={() => setOpen(false)}>
@@ -82,7 +82,7 @@ export const JustContentWithTrigger = () => {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button color="primary" onClick={() => setOpen(true)}>
+      <Button color="default" onClick={() => setOpen(true)}>
         Click to open
       </Button>
       <Modal open={open} onOpenChange={() => setOpen(false)}>
@@ -95,7 +95,7 @@ export const LongContent = () => {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button color="primary" onClick={() => setOpen(true)}>
+      <Button color="default" onClick={() => setOpen(true)}>
         Click to open
       </Button>
       <Modal
@@ -118,7 +118,7 @@ export const FullWidth = () => {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button color="primary" onClick={() => setOpen(true)}>
+      <Button color="default" onClick={() => setOpen(true)}>
         Click to open
       </Button>
       <Modal

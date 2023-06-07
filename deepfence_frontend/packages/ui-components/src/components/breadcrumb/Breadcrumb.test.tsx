@@ -25,7 +25,7 @@ export const Link = forwardRef<
 describe(`Component Breadcrumb`, () => {
   it(`render correct number of breadcrumbs with icons`, () => {
     const { getByText, getAllByText, getByTestId } = renderUI(
-      <Breadcrumb separator={'||'}>
+      <Breadcrumb>
         <BreadcrumbLink asChild icon={<HiHome />}>
           <Link testid="linkOneTestId">Link One</Link>
         </BreadcrumbLink>
@@ -37,10 +37,10 @@ describe(`Component Breadcrumb`, () => {
         </BreadcrumbLink>
       </Breadcrumb>,
     );
-    const sep = getAllByText('||', {
+    const sep = getAllByText('Link', {
       exact: false,
     });
-    expect(sep.length).toBe(2);
+    expect(sep.length).toBe(3);
 
     expect(
       getByText('Link One', {

@@ -38,24 +38,31 @@ import {
 } from 'react';
 import { useImperativeHandle } from 'react';
 import { IconContext } from 'react-icons';
-import { FaMinus, FaPlus } from 'react-icons/fa';
-import { HiChevronDown, HiChevronUp, HiOutlineSelector } from 'react-icons/hi';
-import { twMerge } from 'tailwind-merge';
 
-import IconButton from '@/components/button/IconButton';
 import { Checkbox } from '@/components/checkbox/Checkbox';
 import Pagination from '@/components/pagination/Pagination';
-import { Typography } from '@/components/typography/Typography';
+import {
+  TableChevronDefault,
+  TableChevronDown,
+  TableChevronUp,
+  TableExpanderChecked,
+  TableExpanderUnchecked,
+} from '@/components/table/icons';
+import { Dropdown, DropdownItem } from '@/main';
+import { dfTwMerge } from '@/utils/twmerge';
 
-type SizeOf = 'sm' | 'md';
+import EmptyBoxImg from './empty-box.png';
+
+type SizeOf = 'compact' | 'medium' | 'default' | 'relaxed';
 export interface TableProps<TData extends RowData> {
   data: TData[];
   columns: ColumnDef<TData, any>[]; // eslint-disable-line @typescript-eslint/no-explicit-any
   renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement;
   getRowCanExpand?: (row: Row<TData>) => boolean;
-  striped?: boolean;
   enableColumnResizing?: boolean;
   enablePagination?: boolean;
+  enablePageResize?: boolean;
+  onPageResize?: (pageSize: number) => void;
   manualPagination?: boolean;
   pageIndex?: number;
   pageSize?: number;
@@ -81,7 +88,6 @@ export interface TableProps<TData extends RowData> {
 }
 
 interface TableContextValues<TData extends RowData> {
-  striped?: boolean;
   renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement;
   getTdProps?: (cell: Cell<TData, unknown>) => React.ComponentProps<'td'>;
   getTrProps?: (row: Row<TData>, rowIdx: number) => React.ComponentProps<'tr'>;
@@ -94,6 +100,8 @@ function useTableContext<TData extends RowData>() {
   return useContext(createTableContext<TData>());
 }
 
+const PAGE_RESIZE_OPTIONS = [10, 25, 50];
+
 const CustomTable = <TData extends RowData>(
   props: TableProps<TData>,
   ref: Ref<Table<TData>>,
@@ -101,11 +109,12 @@ const CustomTable = <TData extends RowData>(
   const {
     data,
     columns,
-    striped,
     renderSubComponent,
     getRowCanExpand,
     enableColumnResizing = false,
     enablePagination = false,
+    enablePageResize = false,
+    onPageResize,
     manualPagination,
     pageIndex = 0,
     pageSize = 10,
@@ -120,13 +129,13 @@ const CustomTable = <TData extends RowData>(
     onRowSelectionChange,
     rowSelectionState,
     getRowId,
-    size = 'md',
+    size = 'default',
     getSubRows,
     getTdProps,
     getTrProps,
     expanded,
     onExpandedChange,
-    noDataText = 'No data',
+    noDataText = `Sorry, we couldn't find any data!`,
     approximatePagination,
   } = props;
   const TableContext = createTableContext<TData>();
@@ -217,19 +226,16 @@ const CustomTable = <TData extends RowData>(
   useImperativeHandle(ref, () => table, [table]);
 
   return (
-    <TableContext.Provider
-      value={{ striped, renderSubComponent, getTdProps, getTrProps }}
-    >
+    <TableContext.Provider value={{ renderSubComponent, getTdProps, getTrProps }}>
       <div
         className={cx(
           `overflow-x-auto overflow-y-hidden`,
-          `shadow-[0px_1px_3px_rgba(0,_0,_0,_0.1),_0px_1px_2px_-1px_rgba(0,_0,_0,_0.1)] dark:shadow-sm`,
-          `rounded-lg dark:border dark:border-gray-700`,
+          `rounded-[5px] dark:border dark:border-bg-grid-border`,
         )}
       >
         <table
           className={cx(
-            `w-full bg-white dark:bg-gray-800 border-spacing-0 border-collapse table-fixed`,
+            `w-full bg-white dark:bg-bg-grid-default border-spacing-0 border-collapse table-fixed`,
           )}
           cellPadding="0"
           cellSpacing="0"
@@ -240,30 +246,99 @@ const CustomTable = <TData extends RowData>(
           ) : (
             <tbody>
               <tr>
-                <td
-                  colSpan={table.getVisibleLeafColumns().length}
-                  className="p-4 text-center text-gray-500 dark:text-gray-400"
-                >
-                  {noDataText}
+                <td colSpan={table.getVisibleLeafColumns().length}>
+                  <div className="flex items-center justify-center min-h-[384px] w-full gap-3">
+                    <span>
+                      <span className="h-[120px] w-[120px]">
+                        <img src={EmptyBoxImg} alt="No data" height="100%" width="100%" />
+                      </span>
+                    </span>
+                    <span className="text-h3 dark:text-text-text-and-icon">
+                      {noDataText}
+                    </span>
+                  </div>
                 </td>
               </tr>
             </tbody>
           )}
         </table>
+        {enablePagination ? (
+          <div
+            className="w-full dark:bg-bg-grid-header h-12 flex items-center dark:border-t dark:border-bg-grid-border px-4"
+            data-testid="pagination-container"
+          >
+            {enableRowSelection && !!table.getSelectedRowModel().flatRows.length && (
+              <div className="flex items-center gap-[6px]">
+                <Checkbox
+                  checked={
+                    table.getIsSomeRowsSelected()
+                      ? 'indeterminate'
+                      : table.getIsAllRowsSelected()
+                  }
+                  onCheckedChange={(state) => {
+                    table.getToggleAllRowsSelectedHandler()({
+                      target: {
+                        checked: state === true,
+                      },
+                    });
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <div className="text-p4 dark:text-text-input-value">
+                  {table.getSelectedRowModel().flatRows.length}
+                </div>
+              </div>
+            )}
+            <div className="ml-auto flex gap-4 items-center">
+              {enablePagination && enablePageResize && (
+                <div className="dark:text-p4 dark:text-text-text-and-icon flex items-center gap-2">
+                  Show{' '}
+                  <Dropdown
+                    align="end"
+                    triggerAsChild
+                    content={PAGE_RESIZE_OPTIONS.map((size) => {
+                      return (
+                        <DropdownItem
+                          key={size}
+                          onSelect={() => {
+                            if (onPageResize) {
+                              onPageResize(size);
+                            }
+                          }}
+                          selected={size === table.getState().pagination.pageSize}
+                        >
+                          {size}
+                        </DropdownItem>
+                      );
+                    })}
+                  >
+                    <button className="dark:text-text-input-value flex items-center gap-1">
+                      {table.getState().pagination.pageSize}{' '}
+                      <div className="h-3 w-3">
+                        <TableChevronDown />
+                      </div>
+                    </button>
+                  </Dropdown>
+                </div>
+              )}
+              {enablePagination && enablePageResize && (
+                <div className="w-[1px] dark:bg-bg-grid-border h-4"></div>
+              )}
+              <div>
+                <Pagination
+                  currentPage={table.getState().pagination.pageIndex + 1}
+                  onPageChange={(page) => {
+                    table.setPageIndex(page - 1);
+                  }}
+                  pageSize={table.getState().pagination.pageSize}
+                  totalRows={manualPagination ? totalRows : data.length}
+                  approximatePagination={approximatePagination}
+                />
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
-      {enablePagination ? (
-        <div className="mt-4 w-full" data-testid="pagination-container">
-          <Pagination
-            currentPage={table.getState().pagination.pageIndex + 1}
-            onPageChange={(page) => {
-              table.setPageIndex(page - 1);
-            }}
-            pageSize={table.getState().pagination.pageSize}
-            totalRows={manualPagination ? totalRows : data.length}
-            approximatePagination={approximatePagination}
-          />
-        </div>
-      ) : null}
     </TableContext.Provider>
   );
 };
@@ -276,7 +351,7 @@ function TableHead<TData>({
   size: SizeOf;
 }) {
   return (
-    <thead className="bg-gray-50 dark:bg-gray-700">
+    <thead className="bg-gray-50 dark:bg-bg-grid-header">
       {headerGroups.map((headerGroup) => (
         <tr key={headerGroup.id} data-testid="table-header-row">
           {headerGroup.headers.map((header) => (
@@ -290,7 +365,7 @@ function TableHead<TData>({
 
 function Th<TData>({
   header,
-  size = 'md',
+  size = 'default',
 }: {
   header: Header<TData, unknown>;
   size: SizeOf;
@@ -300,20 +375,20 @@ function Th<TData>({
       key={header.id}
       colSpan={header.colSpan}
       className={cx(
-        'relative border-0 text-gray-500 dark:text-white',
-        'border-b border-gray-200 dark:border-gray-700',
-        Typography.size.xs,
-        Typography.weight.semibold,
-        Typography.decoration.uppercase,
+        'relative border-0 text-gray-500 dark:text-text-text-and-icon',
+        'border-b-[1.5px] border-gray-200 dark:border-bg-grid-border',
+        'text-t5 uppercase',
         { 'cursor-pointer select-none': header.column.getCanSort() },
       )}
       style={{ width: header.getSize() }}
       onClick={header.column.getToggleSortingHandler()}
     >
       <div
-        className={cx(`w-full h-full flex px-4 truncate`, {
-          ['py-3']: size === 'sm',
-          ['p-4']: size === 'md',
+        className={cx(`w-full h-full flex truncate pl-4 pr-2.5`, {
+          ['py-4']: size === 'default',
+          ['py-2.5']: size === 'compact',
+          ['py-[13px]']: size === 'medium',
+          ['py-[19px]']: size === 'relaxed',
         })}
       >
         <span className="flex-1 truncate text-start">
@@ -329,16 +404,25 @@ function Th<TData>({
               }}
             >
               {header.column.getIsSorted() === 'asc' ? (
-                <HiChevronUp data-testid={`column-ascending-indicator-${header.id}`} />
+                <span className="h-4 w-4 dark:text-accent-accent">
+                  <TableChevronUp
+                    data-testid={`column-ascending-indicator-${header.id}`}
+                  />
+                </span>
               ) : null}
               {header.column.getIsSorted() === 'desc' ? (
-                <HiChevronDown data-testid={`column-descending-indicator-${header.id}`} />
+                <span className="h-4 w-4 dark:text-accent-accent">
+                  <TableChevronDown
+                    data-testid={`column-descending-indicator-${header.id}`}
+                  />
+                </span>
               ) : null}
               {!header.column.getIsSorted() ? (
-                <HiOutlineSelector
-                  className="stroke-gray-400"
-                  data-testid={`column-unsorted-indicator-${header.id}`}
-                />
+                <span className="h-4 w-4">
+                  <TableChevronDefault
+                    data-testid={`column-unsorted-indicator-${header.id}`}
+                  />
+                </span>
               ) : null}
             </IconContext.Provider>
           </span>
@@ -351,10 +435,12 @@ function Th<TData>({
           onClick={(e) => {
             e.stopPropagation();
           }}
-          className={`absolute right-0 top-3 bottom-3 w-1 rounded-full bg-gray-200 dark:bg-gray-600 cursor-col-resize select-none`}
+          className={`absolute right-0 my-auto top-0 bottom-0 w-[4px] h-4 rounded-none cursor-col-resize select-none`}
           aria-hidden="true"
           data-testid={`column-resizer-${header.id}`}
-        />
+        >
+          <div className="ml-[3px] w-[1px] mr-[1px] h-full bg-gray-200 dark:bg-bg-grid-border" />
+        </div>
       )}
     </th>
   );
@@ -367,8 +453,7 @@ function TableBody<TData>({
   rowModel: RowModel<TData>;
   size: SizeOf;
 }) {
-  const { striped, renderSubComponent, getTdProps, getTrProps } =
-    useTableContext<TData>();
+  const { renderSubComponent, getTdProps, getTrProps } = useTableContext<TData>();
   return (
     <tbody>
       {rowModel.rows.map((row, rowIdx) => {
@@ -377,13 +462,12 @@ function TableBody<TData>({
           <Fragment key={row.id}>
             <tr
               {...rowProps}
-              className={twMerge(
+              className={dfTwMerge(
                 cx(
                   {
-                    'bg-gray-50 dark:bg-gray-700': striped && row.index % 2 !== 0,
-                    '!bg-gray-100 dark:!bg-gray-600': row.getIsSelected(),
+                    '!bg-gray-100 dark:!bg-bg-active-selection': row.getIsSelected(),
                   },
-                  `hover:!bg-gray-100 dark:hover:!bg-gray-700`,
+                  `hover:!bg-gray-100 dark:hover:!bg-bg-breadcrumb-bar`,
                   'transition-colors',
                 ),
                 rowProps?.className ?? '',
@@ -406,7 +490,7 @@ function TableBody<TData>({
               <tr>
                 <td
                   colSpan={row.getVisibleCells().length}
-                  className="border-b border-t border-gray-200 dark:border-gray-700"
+                  className="border-b border-t border-gray-200 dark:border-bg-grid-border"
                 >
                   {renderSubComponent?.({ row })}
                 </td>
@@ -423,7 +507,7 @@ function Td<TData>({
   cell,
   totalRows,
   rowIdx,
-  size,
+  size = 'default',
   ...rest
 }: React.ComponentProps<'td'> & {
   cell: Cell<TData, unknown>;
@@ -431,24 +515,20 @@ function Td<TData>({
   rowIdx: number;
   size?: SizeOf;
 }) {
-  const { striped } = useTableContext<TData>();
   if (!isNil(rest.colSpan) && rest.colSpan === 0) return null;
   return (
     <td
       {...rest}
       key={cell.id}
       style={{ width: cell.column.getSize() }}
-      className={twMerge(
-        cx(
-          `text-sm text-gray-900 dark:text-white px-4 truncate min-w-0`,
-          Typography.weight.normal,
-          {
-            'border-b border-gray-200 dark:border-gray-700':
-              !striped && rowIdx !== totalRows - 1,
-            ['py-2']: size === 'sm',
-            ['py-4']: !size || size === 'md',
-          },
-        ),
+      className={dfTwMerge(
+        cx(`text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0`, {
+          'border-b border-gray-200 dark:border-bg-grid-border': rowIdx !== totalRows - 1,
+          ['py-[15px]']: size === 'default',
+          ['py-[9px]']: size === 'compact',
+          ['py-[12px]']: size === 'medium',
+          ['py-[18px]']: size === 'relaxed',
+        }),
         rest.className ?? '',
       )}
     >
@@ -467,13 +547,12 @@ export function getRowExpanderColumn<TData extends RowData>(
     header: () => null,
     cell: ({ row }) => {
       return row.getCanExpand() ? (
-        <IconButton
-          color="primary"
-          icon={row.getIsExpanded() ? <FaMinus /> : <FaPlus />}
+        <button
+          className="h-4 w-4 dark:text-df-gray-600 overflow-hidden block"
           onClick={row.getToggleExpandedHandler()}
-          outline
-          size="xs"
-        />
+        >
+          {row.getIsExpanded() ? <TableExpanderChecked /> : <TableExpanderUnchecked />}
+        </button>
       ) : null;
     },
     enableResizing: false,
