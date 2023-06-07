@@ -59,9 +59,9 @@ const tabItemCva = cva(['text-t4 cursor-pointer'], {
             'pb-[9px] pt-[15px] px-3 flex items-center justify-center box-border',
             'data-[state=active]:text-text-input-value data-[state=active]:border-accent-accent',
             // selected
-            'dark:data-[state=active]:shadow-[0_-0.15rem_0_#3185FF_inset] transition-shadow duration-[0.2s] ease-[ease-in]',
+            'dark:data-[state=active]:shadow-[0_-3px_0_#3185FF_inset] transition-shadow duration-[0.2s] ease-[ease-in]',
             // hover
-            'dark:hover:shadow-[0_-0.15rem_0_#3185FF_inset] transition-shadow duration-[0.2s] ease-[ease-in]',
+            'dark:hover:shadow-[0_-3px_0_#3185FF_inset] transition-shadow duration-[0.2s] ease-[ease-in]',
             'dark:disabled:hover:shadow-none',
           ),
         ),
