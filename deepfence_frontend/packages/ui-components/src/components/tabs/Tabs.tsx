@@ -39,7 +39,7 @@ const tabListCva = cva(
   },
 );
 
-const tabItemCva = cva(['outline-none text-t4 cursor-pointer'], {
+const tabItemCva = cva(['text-t4 cursor-pointer'], {
   variants: {
     size: {
       md: '',
