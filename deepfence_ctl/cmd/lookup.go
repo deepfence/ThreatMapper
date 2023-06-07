@@ -37,57 +37,57 @@ var lookupCmd = &cobra.Command{
 
 		switch lookup_type {
 		case "host":
-			req := http.Client().LookupApi.GetHosts(context.Background())
+			req := http.Client().LookupAPI.GetHosts(context.Background())
 			req = req.LookupLookupFilter(filters)
-			res, rh, err := http.Client().LookupApi.GetHostsExecute(req)
+			res, rh, err := http.Client().LookupAPI.GetHostsExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "container":
-			req := http.Client().LookupApi.GetContainers(context.Background())
+			req := http.Client().LookupAPI.GetContainers(context.Background())
 			req = req.LookupLookupFilter(filters)
-			res, rh, err := http.Client().LookupApi.GetContainersExecute(req)
+			res, rh, err := http.Client().LookupAPI.GetContainersExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "process":
-			req := http.Client().LookupApi.GetProcesses(context.Background())
+			req := http.Client().LookupAPI.GetProcesses(context.Background())
 			req = req.LookupLookupFilter(filters)
-			res, rh, err := http.Client().LookupApi.GetProcessesExecute(req)
+			res, rh, err := http.Client().LookupAPI.GetProcessesExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "pod":
-			req := http.Client().LookupApi.GetPods(context.Background())
+			req := http.Client().LookupAPI.GetPods(context.Background())
 			req = req.LookupLookupFilter(filters)
-			res, rh, err := http.Client().LookupApi.GetPodsExecute(req)
+			res, rh, err := http.Client().LookupAPI.GetPodsExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "cluster":
-			req := http.Client().LookupApi.GetKubernetesClusters(context.Background())
+			req := http.Client().LookupAPI.GetKubernetesClusters(context.Background())
 			req = req.LookupLookupFilter(filters)
-			res, rh, err := http.Client().LookupApi.GetKubernetesClustersExecute(req)
+			res, rh, err := http.Client().LookupAPI.GetKubernetesClustersExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "image":
-			req := http.Client().LookupApi.GetContainerImages(context.Background())
+			req := http.Client().LookupAPI.GetContainerImages(context.Background())
 			req = req.LookupLookupFilter(filters)
-			res, rh, err := http.Client().LookupApi.GetContainerImagesExecute(req)
+			res, rh, err := http.Client().LookupAPI.GetContainerImagesExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "cloud-resource":
-			req := http.Client().LookupApi.GetCloudResources(context.Background())
+			req := http.Client().LookupAPI.GetCloudResources(context.Background())
 			req = req.LookupLookupFilter(filters)
-			res, rh, err := http.Client().LookupApi.GetCloudResourcesExecute(req)
+			res, rh, err := http.Client().LookupAPI.GetCloudResourcesExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
