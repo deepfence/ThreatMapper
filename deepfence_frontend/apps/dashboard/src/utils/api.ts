@@ -1,5 +1,6 @@
 import { getAuthenticationApiClient } from '@/api/api';
 import { ModelResponseAccessToken, ResponseError } from '@/api/generated';
+import { queryClient } from '@/queries/client';
 import { router } from '@/routes';
 import storage from '@/utils/storage';
 import { sleep } from '@/utils/timers';
@@ -59,7 +60,12 @@ async function refreshAccessTokenIfPossible(): Promise<boolean> {
 export function redirectToLogin() {
   const searchParams = new URLSearchParams();
   const url = new URL(window.location.href);
-  searchParams.append('redirectTo', `${url.pathname}${url.search}`);
+  const existingRedirectTo = url.searchParams.get('redirectTo');
+  searchParams.append(
+    'redirectTo',
+    existingRedirectTo ? existingRedirectTo : `${url.pathname}${url.search}`,
+  );
+  queryClient.clear();
   return router.navigate(`/auth/login?${searchParams.toString()}`);
 }
 
