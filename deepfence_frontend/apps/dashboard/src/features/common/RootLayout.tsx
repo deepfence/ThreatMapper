@@ -10,15 +10,15 @@ export const RootLayout = () => {
     getSideNavigationState() === 'open' ? true : false,
   );
   return (
-    <div className="bg-white min-h-screen dark:bg-gray-900 isolate">
-      <AppHeader
-        sideNavExpanded={sideNavExpanded}
-        onSideNavExpandedChange={(state) => setSideNavExpanded(state)}
+    <div className="bg-white min-h-screen dark:bg-bg-page isolate">
+      <AppHeader />
+      <SideNavigation
+        expanded={sideNavExpanded}
+        onExpandedChange={(state) => setSideNavExpanded(state)}
       />
-      <SideNavigation expanded={sideNavExpanded} />
       <main
         className={classNames(
-          'pt-[64px] h-screen overflow-auto transition-[margin-left]',
+          'pt-[56px] h-screen overflow-auto transition-[margin-left]',
           {
             'ml-[60px]': !sideNavExpanded,
             'ml-[240px]': sideNavExpanded,
