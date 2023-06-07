@@ -34,11 +34,16 @@ func (e Email) FormatMessage(message []map[string]interface{}) string {
 		sort.Strings(keys)
 	}
 
+	entryFmt := "%s: %s\n"
 	for k, v := range message {
 		entiremsg = entiremsg + fmt.Sprintf("#%d\n", k+1)
 		for _, key := range keys {
 			if val, ok := v[key]; ok {
-				entiremsg += fmt.Sprintf("%s:%s\n", key, fmt.Sprintf("%v", val))
+				fmtVal := ""
+				if val != nil {
+					fmtVal = fmt.Sprintf("%v", val)
+				}
+				entiremsg += fmt.Sprintf(entryFmt, key, fmtVal)
 				delete(v, key)
 			}
 		}
@@ -46,7 +51,12 @@ func (e Email) FormatMessage(message []map[string]interface{}) string {
 		//This is to handle if we have unprocessed data in the map
 		//Possilbe if all the records are not uniform
 		for key, val := range v {
-			entiremsg += fmt.Sprintf("%s:%s\n", key, fmt.Sprintf("%v", val))
+			fmtVal := ""
+			if val != nil {
+				fmtVal = fmt.Sprintf("%v", val)
+			}
+
+			entiremsg += fmt.Sprintf(entryFmt, key, fmtVal)
 		}
 
 		entiremsg = entiremsg + "\n"
