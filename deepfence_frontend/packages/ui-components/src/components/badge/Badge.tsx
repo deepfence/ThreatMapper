@@ -26,14 +26,12 @@ export interface BadgeProps extends Omit<ComponentProps<'span'>, 'ref' | 'color'
 const classes = {
   label: {
     color: {
-      grey: 'border-gray-600 dark:border-gray-600 border-2 text-text-inverse  dark:text-text-input-value ',
-      purple:
-        'border-purple-600 dark:border-purple-600 border-2 text-text-inverse  dark:text-text-input-value ',
-      blue: 'border-blue-600 dark:border-blue-600 border-2 text-text-inverse  dark:text-text-input-value ',
-      orange:
-        'border-orange-600 dark:border-orange-600 border-2 text-text-inverse  dark:text-text-input-value ',
+      grey: 'border-gray-600 border-2 text-text-inverse  dark:text-text-input-value ',
+      purple: 'border-purple-600 border-2 text-text-inverse  dark:text-text-input-value ',
+      blue: 'border-blue-600 border-2 text-text-inverse  dark:text-text-input-value ',
+      orange: 'border-orange-600 border-2 text-text-inverse  dark:text-text-input-value ',
       blueLight:
-        'border-clarity-action dark:border-clarity-action border-2 text-text-inverse  dark:text-text-input-value ',
+        'border-clarity-action border-2 text-text-inverse  dark:text-text-input-value ',
       success: 'bg-status-success text-text-input-value dark:text-text-inverse',
       info: 'bg-status-info text-text-input-value dark:text-text-inverse',
       warning: 'bg-status-warning text-text-input-value dark:text-text-inverse',
@@ -42,14 +40,11 @@ const classes = {
   },
   badge: {
     color: {
-      grey: 'bg-gray-600 dark:bg-gray-600  text-text-inverse dark:text-text-inverse ',
-      purple:
-        'bg-purple-600 dark:bg-purple-600  text-text-inverse dark:text-text-inverse',
-      blue: 'bg-blue-600 dark:bg-blue-600  text-text-inverse dark:text-text-inverse',
-      orange:
-        'bg-orange-600 dark:bg-orange-600  text-text-inverse dark:text-text-inverse',
-      blueLight:
-        'bg-clarity-action dark:bg-clarity-action  text-text-inverse dark:text-text-inverse',
+      grey: 'bg-gray-600  text-text-inverse dark:text-text-inverse ',
+      purple: 'bg-purple-600  text-text-inverse dark:text-text-inverse',
+      blue: 'bg-blue-600  text-text-inverse dark:text-text-inverse',
+      orange: 'bg-orange-600  text-text-inverse dark:text-text-inverse',
+      blueLight: 'bg-clarity-action text-text-inverse dark:text-text-inverse',
       success: 'bg-status-success text-text-inverse dark:text-text-inverse',
       info: 'bg-status-info text-text-inverse dark:text-text-inverse',
       warning: 'bg-status-warning text-text-inverse dark:text-text-inverse',
