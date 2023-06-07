@@ -23,8 +23,8 @@ const Switch = (props: SwitchProps) => {
         disabled={disabled}
         className={cx(
           'group items-center',
-          'radix-state-checked:bg-blue-600',
-          'radix-state-unchecked:bg-gray-200 dark:radix-state-unchecked:bg-gray-600',
+          'data-[state=checked]:bg-blue-600',
+          'data-[state=unchecked]:bg-gray-200 dark:data-[state=unchecked]:bg-gray-600',
           'relative inline-flex flex-shrink-0 cursor-pointer rounded-[40px] transition-colors duration-200 ease-in-out',
           'focus:outline-none',
           'focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800',
@@ -39,10 +39,10 @@ const Switch = (props: SwitchProps) => {
       >
         <SwitchPrimitive.Thumb
           className={cx(
-            'group-radix-state-checked:translate-x-[1.325rem]',
-            'group-radix-state-unchecked:ring-1 ring-blue-200 translate-x-[0.125rem] dark:group-radix-state-unchecked:ring-0',
+            'group-data-[state=checked]:translate-x-[1.325rem]',
+            'group-data-[state=unchecked]:ring-1 ring-blue-200 translate-x-[0.125rem] dark:group-data-[state=unchecked]:ring-0',
             'pointer-events-none inline-block transform rounded-full bg-white shadow-lg transition duration-200 ease-in-out',
-            'dark:group-radix-state-unchecked:bg-gray-400 dark:group-radix-state-checked: bg-white',
+            'dark:group-data-[state=unchecked]:bg-gray-400 dark:group-data-[state=checked]: bg-white',
             {
               'h-4 w-4': size === 'sm',
               'h-5 w-5': size === 'md',

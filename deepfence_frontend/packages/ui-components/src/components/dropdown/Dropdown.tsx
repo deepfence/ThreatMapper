@@ -77,7 +77,7 @@ export const Dropdown: React.FC<DropdownProps & { loop?: boolean }> = (props) =>
           align={align}
           loop={loop}
           className={cx(
-            'radix-side-top:animate-slide-up radix-side-bottom:animate-slide-down',
+            'data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down',
             'shadow-md min-w-[195px]',
             'overflow-hidden',
             // bg

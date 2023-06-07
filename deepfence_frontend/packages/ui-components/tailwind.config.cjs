@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /** @type {import('tailwindcss').Config} */
 
-const tailwindRadix = require('tailwindcss-radix');
-const plugin = require('tailwindcss/plugin');
 const preset = require('tailwind-preset');
 
 module.exports = {
@@ -110,11 +108,4 @@ module.exports = {
       },
     },
   },
-  plugins: [
-    tailwindRadix(),
-    plugin(({ addVariant }) => {
-      addVariant('data-active-item', '&[data-active-item]');
-      addVariant('data-focus-visible', '&[data-focus-visible]');
-    }),
-  ],
 };
