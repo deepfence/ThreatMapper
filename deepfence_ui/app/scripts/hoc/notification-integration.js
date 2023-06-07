@@ -155,15 +155,16 @@ const withIntegrationForm = (WrappedComponent, ingoreResources) => {
       // for intergration_type: jira
       // with password state has 2 extra variables empty/false(isAuthToken and authToken)
       // with auth-token state has 1 extra variable empty/false(password)
+      // there is one optional field(assignee)
       if (childPayload.integration_type === 'jira') {
         if (childPayload.isAuthToken) {
           childFormComplete =
             childValues.length !== 0 &&
-            childValues.length - 1 === filledValues.length;
+            [childValues.length - 1, childValues.length - 2].includes(filledValues.length);
         } else {
           childFormComplete =
             childValues.length !== 0 &&
-            childValues.length - 2 === filledValues.length;
+            [childValues.length - 3, childValues.length - 2].includes(filledValues.length);
         }
       }
       if (

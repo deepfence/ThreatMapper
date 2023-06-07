@@ -9,9 +9,8 @@ const config = {
   title: 'Deepfence ThreatMapper',
   tagline: 'Open source cloud native security observability platform. Linux, K8s, AWS Fargate and more',
   url: 'http://threatmapper.local',
-  baseUrl: '/',
-
-  onBrokenLinks: 'throw',
+  baseUrl: '/threatmapper/',
+  onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'throw',
   favicon: '/img/deepfence.png',
 
@@ -20,7 +19,7 @@ const config = {
   // to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
-    locales: ['en'],
+    locales: ['en', 'zh-CN', 'zh-TW'],
   },
 
   presets: [
@@ -35,9 +34,22 @@ const config = {
           editUrl:
             'https://github.com/deepfence/ThreatMapper/docs/',
           breadcrumbs: true,
-          routeBasePath: '/',
+          routeBasePath: 'docs',
           // options for remark-admonitions
-          admonitions: {}, 
+          admonitions: {},
+          // version
+          lastVersion: 'current',
+          versions: {
+            "current": {
+              label: 'v1.5',
+              banner: 'none',
+            },
+            "v1.4": {
+              label: 'v1.4',
+              path: 'v1.4',
+              banner: 'none',
+            },
+          },
         },
         blog: false,
         theme: {
@@ -48,13 +60,8 @@ const config = {
   ],
 
   themeConfig:
-    /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
+  /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-	  docs: {
-	  	sidebar: {
-		  hideable: true,
-		},
-	  },
       navbar: {
         hideOnScroll: false,
         title: '',
@@ -62,27 +69,194 @@ const config = {
           alt: 'Deepfence',
           src: '/img/deepfence-logo-black.svg',
           srcDark: '/img/deepfence-logo-white.svg',
+          href: '../',
+          target: '_blank',
         },
         items: [
           {
             type: 'doc',
-            docId: 'threatmapper/index',
+            docId: 'index',
             label: 'ThreatMapper Documentation',
           },
-          { 
-            to: 'https://deepfence.io/',
-            label: 'deepfence.io',
+          {
+            type: 'docsVersionDropdown',
+            position: 'left',
+          },
+          {
+            type: 'localeDropdown',
+            position: 'left',
+          },
+          {
+            type: 'dropdown',
+            label: 'Docs',
+            position: 'left',
+            items: [
+              {
+                type: 'html',
+                value: '<div class="nav-dropdown-title">Open Source</div>',
+              },
+              {
+                type: 'html',
+                value: '<a class="dropdown__link" href="/threatmapper/docs">ThreatMapper</a>',
+              },
+              {
+                type: 'html',
+                value: '<a class="dropdown__link" href="/docs/secretscanner">SecretScanner</a>',
+              },
+              {
+                type: 'html',
+                value: '<a class="dropdown__link" href="/docs/yarahunter">YaraHunter</a>',
+              },
+              {
+                type: 'html',
+                value: '<a class="dropdown__link" href="/docs/packetstreamer">PacketStreamer</a>',
+              },
+              {
+                type: 'html',
+                value: '<a class="dropdown__link" href="/docs/ebpfguard">eBPFGuard</a>',
+              },
+              {
+                type: 'html',
+                value: '<a class="dropdown__link" href="/docs/flowmeter">FlowMeter</a>',
+              },
+              {
+                type: 'html',
+                value: '<div class="nav-dropdown-title">Enterprise</div>',
+              },
+              {
+                type: 'html',
+                value: '<a class="dropdown__link" href="/threatstryker/docs">ThreatStryker</a>',
+              },
+              {
+                type: 'html',
+                value: '<a class="dropdown__link" href="/threatstryker/docs/cloud">Deepfence Cloud</a>',
+              },
+            ],
+          },
+          {
+            href: 'https://deepfence.io',
             position: 'right',
+            className: 'header-deepfence-link',
+            'aria-label': 'deepfence.io',
           },
           {
             href: 'https://github.com/deepfence',
-            label: 'GitHub',
             position: 'right',
-          },
+            className: 'header-github-link',
+            'aria-label': 'GitHub repository',
+          }
         ],
       },
       footer: {
         style: 'dark',
+        links: [
+          {
+            title: 'GitHub',
+            items: [
+              {
+                label: 'ThreatMapper',
+                href: 'https://github.com/deepfence/ThreatMapper',
+              },
+              {
+                label: 'SecretScanner',
+                href: 'https://github.com/deepfence/SecretScanner',
+              },
+              {
+                label: 'YaraHunter',
+                href: 'https://github.com/deepfence/YaraHunter',
+              },
+              {
+                label: 'PacketStreamer',
+                href: 'https://github.com/deepfence/PacketStreamer',
+              },
+              {
+                label: 'eBPFGuard',
+                href: 'https://github.com/deepfence/ebpfguard',
+              },
+              {
+                label: 'FlowMeter',
+                href: 'https://github.com/deepfence/FlowMeter',
+              },
+            ],
+          },
+          {
+            title: 'Docs',
+            items: [
+              {
+                html: '<a class="footer__link-item" href="/threatmapper/docs">ThreatMapper</a>',
+              },
+              {
+                html: '<a class="footer__link-item" href="/docs/secretscanner">SecretScanner</a>',
+              },
+              {
+                html: '<a class="footer__link-item" href="/docs/yarahunter">YaraHunter</a>',
+              },
+              {
+                html: '<a class="footer__link-item" href="/docs/packetstreamer">PacketStreamer</a>',
+              },
+              {
+                html: '<a class="footer__link-item" href="/docs/ebpfguard">eBPFGuard</a>',
+              },
+              {
+                html: '<a class="footer__link-item" href="/docs/flowmeter">FlowMeter</a>',
+              },
+            ],
+          },
+          {
+            title: 'Community',
+            items: [
+              {
+                label: 'Slack',
+                href: 'https://bitly.com/threatmapper-slack',
+              },
+              {
+                label: 'Twitter',
+                href: 'https://twitter.com/deepfence',
+              },
+              {
+                label: 'YouTube',
+                href: 'https://www.youtube.com/channel/UCklvbuOjnzpmtXy-g97tfWQ',
+              },
+              {
+                label: 'LinkedIn',
+                href: 'https://www.linkedin.com/company/deepfence-inc',
+              },
+            ],
+          },
+          {
+            title: 'Enterprise',
+            items: [
+              {
+                label: 'ThreatStryker',
+                href: 'https://deepfence.io/threatstryker',
+              },
+              {
+                html: '<a class="footer__link-item" href="/threatstryker/docs">ThreatStryker</a>',
+              },
+              {
+                label: 'Deepfence Cloud',
+                href: 'https://deepfence.cloud',
+              },
+              {
+                html: '<a class="footer__link-item" href="/threatstryker/docs/cloud">Deepfence Cloud Docs</a>',
+              },
+            ],
+          },
+
+          {
+            title: 'More',
+            items: [
+              {
+                label: 'Blog',
+                href: 'https://deepfence.io/blog',
+              },
+              {
+                label: 'GitHub',
+                href: 'https://github.com/deepfence',
+              },
+            ],
+          },
+        ],
         logo: {
           alt: 'Deepfence, Inc',
           src: '/img/deepfence-logo-white.svg',

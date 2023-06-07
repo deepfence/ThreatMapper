@@ -8,7 +8,7 @@ import ComplianceTable from '../compliance-table';
 
 export const K8sTerraFormScript = withRouter(() => {
   const [collapsed, setCollapsed] = useState(true);
-  const docsLink = 'https://community.deepfence.io/docs/threatmapper/kubernetes-scanner/';
+  const docsLink = 'https://community.deepfence.io/threatmapper/docs/kubernetes-scanner/';
 
   return (
     <div

@@ -528,12 +528,10 @@ def send_jira_notification(self, config, payloads, notification_id, resource_typ
                 issue_number = jclient.create_issue(project=config.get('jira_project_key'),
                                      summary=summary,
                                      description=payload,
-                                     issuetype=config.get('issue_type')
-                                     )
-                
+                                     issuetype={'name': config.get('issue_type')})
                 if config.get('assignee'):
                     issue_created = jclient.issue(issue_number)
-                    jclient.assign_issue(issue_created, config.get('assignee'))
+                    jclient.assign_issue(issue_created.id, config.get('assignee'))
                 
         except JIRAError as e:
             save_integrations_status(notification_id, resource_type, e)

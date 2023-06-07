@@ -2047,7 +2047,7 @@ export function reportDownloadStatus(params = {}) {
     },
   }).then(errorHandler);
 }
-export function downloadMostExploitableReport(params) {
+export function downloadMostExploitableReport() {
   const url = `${backendElasticApiEndPoint()}/vulnerability/top_exploits_download`;
   return fetch(url, {
     credentials: 'same-origin',
@@ -2057,42 +2057,48 @@ export function downloadMostExploitableReport(params) {
       Authorization: getAuthHeader(),
     },
   })
-    .then(response => {
-      return new Promise((resolve, reject) => {
+  .then(response => {
+    return new Promise((resolve, reject) => {
       if (response.ok) {
         resolve(response.blob());
       } else {
+        // eslint-disable-next-line
         if (response.status === 400) {
           response.json().then(
             jObj => {
+              // eslint-disable-next-line
               reject({
                 ...jObj.error,
               });
             },
+            // eslint-disable-next-line
             error => {
+              // eslint-disable-next-line
               reject({
                 message: 'Failed to decode',
               });
             }
           );
         } else {
+          // eslint-disable-next-line
           reject({
             message: 'Failed to fetch file',
           });
         }
       }
     });
-    })
-    .then(blob => {
-      const fileURL = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = fileURL;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }).catch(e => {
-      alert(e.message)
-    });
+  })
+  .then(blob => {
+    const fileURL = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = fileURL;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  })
+  .catch(e => {
+    alert(e.message)
+  });
 }
 
 export function downloadReport(params = {}) {
