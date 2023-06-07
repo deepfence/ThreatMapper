@@ -26,7 +26,7 @@ const DefaultTemplate: StoryFn<typeof Popover> = (args) => {
         </div>
       }
     >
-      <Button color="primary">Click me</Button>
+      <Button color="default">Click me</Button>
     </Popover>
   );
 };

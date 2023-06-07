@@ -101,7 +101,7 @@ const TemplateForIcons: StoryFn<typeof Dropdown> = (args) => {
         </>
       }
     >
-      <Button color="primary">Click me</Button>
+      <Button color="default">Click me</Button>
     </Dropdown>
   );
 };
@@ -152,7 +152,7 @@ const ControlledTemplate: StoryFn<typeof Dropdown> = (args) => {
         </>
       }
     >
-      <Button color="primary">Click me</Button>
+      <Button color="default">Click me</Button>
     </Dropdown>
   );
 };
