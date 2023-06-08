@@ -112,7 +112,7 @@ export function redirectToLogin() {
 
 export async function requireLogin() {
   const auth = storage.getAuth();
-  if (auth) return;
+  if (auth) return auth;
   storage.clearAuth();
   throw redirectToLogin();
 }
