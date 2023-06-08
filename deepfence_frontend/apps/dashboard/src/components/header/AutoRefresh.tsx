@@ -4,7 +4,7 @@ import { useRevalidator } from 'react-router-dom';
 import { useInterval } from 'react-use';
 import { Dropdown, DropdownItem } from 'ui-components';
 
-import { CaretDown } from '@/components/icons/common/caret-down';
+import { CaretDown } from '@/components/icons/common/CaretDown';
 
 // function that converts seconds to human friendly time
 // e.g. 300 seconds => 5m

@@ -4,8 +4,8 @@ import { Dropdown, DropdownItem } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { AutoRefresh } from '@/components/header/AutoRefresh';
-import { CaretDown } from '@/components/icons/common/caret-down';
-import { UserLine } from '@/components/icons/common/user-line';
+import { CaretDown } from '@/components/icons/common/CaretDown';
+import { UserLine } from '@/components/icons/common/UserLine';
 
 export function AppHeader() {
   const fetcher = useFetcher();
