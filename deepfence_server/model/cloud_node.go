@@ -295,13 +295,13 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 	}
 
 	postureProviders := []PostureProvider{
+		{Name: PostureProviderAWS, NodeLabel: "Accounts"},
+		{Name: PostureProviderAWSOrg, NodeLabel: "Organizations"},
+		{Name: PostureProviderGCP, NodeLabel: "Accounts"},
+		{Name: PostureProviderGCPOrg, NodeLabel: "Organizations"},
+		{Name: PostureProviderAzure, NodeLabel: "Accounts"},
 		{Name: PostureProviderLinux, NodeLabel: "Hosts"},
 		{Name: PostureProviderKubernetes, NodeLabel: "Clusters"},
-		{Name: PostureProviderAWSOrg, NodeLabel: "Organizations"},
-		{Name: PostureProviderGCPOrg, NodeLabel: "Organizations"},
-		{Name: PostureProviderAWS, NodeLabel: "Accounts"},
-		{Name: PostureProviderGCP, NodeLabel: "Accounts"},
-		{Name: PostureProviderAzure, NodeLabel: "Accounts"},
 	}
 	providersIndex := make(map[string]int)
 	for i, provider := range postureProviders {
@@ -368,7 +368,7 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 			}
 		}
 	} else {
-		log.Warn().Msgf("GetCloudProvidersList Kubernetes : %v", err)
+		log.Warn().Msgf("GetCloudProvidersList CloudNode : %v", err)
 	}
 	return postureProviders, nil
 }
