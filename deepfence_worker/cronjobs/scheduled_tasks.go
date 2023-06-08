@@ -169,7 +169,7 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 
 			return ctl.Action{ID: ctl.StartSecretScan, RequestPayload: string(b)}, nil
 		}
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_VULNERABILITY_SCAN, scanTrigger, actionBuilder)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_SECRET_SCAN, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
@@ -201,7 +201,7 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 
 			return ctl.Action{ID: ctl.StartMalwareScan, RequestPayload: string(b)}, nil
 		}
-		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_VULNERABILITY_SCAN, scanTrigger, actionBuilder)
+		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_MALWARE_SCAN, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}

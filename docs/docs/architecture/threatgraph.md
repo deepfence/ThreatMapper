@@ -7,8 +7,8 @@ title: The Threat Graph
 The Threat Graph visualization provides an interactive view of your entire threat landscape. It presents the threats exposed on each node - vulnerabilities, secrets and compliance issues - and displays the connections between each based on live and recent network flows.
 
 | ![Threat Graph](../img/threat-graph-1.png) |
-| :--: |
-| Threat Graph |
+|:------------------------------------------:|
+|                Threat Graph                |
 
 Nodes depict critical workloads and services that either have exploitable vulnerabilities or misconfigurations. Edges denote potential paths that attackers could take to access and exploit those issues, informed by real network data.
 
