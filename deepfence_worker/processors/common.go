@@ -106,11 +106,11 @@ func StartKafkaProcessors(ctx context.Context) {
 		telemetryWrapper(utils.CLOUD_COMPLIANCE_SCAN_STATUS,
 			desWrapper(ingesters.CommitFuncStatus[ingesters.CloudComplianceScanStatus](utils.NEO4J_CLOUD_COMPLIANCE_SCAN))),
 	)
-	processors[utils.CLOUD_RESOURCE] = NewBulkProcessor(
+	processors[utils.CLOUD_RESOURCE] = NewBulkProcessorWith(
 		utils.CLOUD_RESOURCE,
 		telemetryWrapper(utils.CLOUD_RESOURCE,
 			desWrapper(ingesters.CommitFuncCloudResource)),
-	)
+		5_000)
 
 	for i := range processors {
 		processors[i].Start(ctx)
@@ -200,7 +200,7 @@ func pollRecords(ctx context.Context, kc *kgo.Client) {
 			log.Info().Msg("stop consuming from kafka")
 			return
 		case <-ticker.C:
-			records := kc.PollRecords(ctx, 10_000)
+			records := kc.PollRecords(ctx, 20_000)
 			records.EachRecord(processRecord)
 			records.EachError(
 				func(s string, i int32, err error) {

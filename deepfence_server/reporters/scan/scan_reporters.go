@@ -143,7 +143,7 @@ func GetComplianceScanStatus(ctx context.Context, scanType utils.Neo4jScanType, 
 }
 
 func extractStatusesWithBenchmarks(recs []*db.Record) []model.ComplianceScanInfo {
-	statuses := []model.ComplianceScanInfo{}
+	statuses := make([]model.ComplianceScanInfo, 0, len(recs))
 	for _, rec := range recs {
 		var benchmarkTypes []string
 		for _, rVal := range rec.Values[1].([]interface{}) {
@@ -508,9 +508,9 @@ func GetCloudCompliancePendingScansList(ctx context.Context, scanType utils.Neo4
 
 	res, err := tx.Run(`
 		MATCH (m:`+string(scanType)+`) -[:SCANNED]-> (n:CloudNode{node_id: $node_id})
-		WHERE NOT m.status = $complete AND NOT m.status = $failed AND NOT m.status = $in_progress
+		WHERE m.status = $starting
 		RETURN m.node_id, m.benchmark_types, m.status, m.status_message, n.node_id, m.updated_at, n.node_name ORDER BY m.updated_at`,
-		map[string]interface{}{"node_id": nodeId, "complete": utils.SCAN_STATUS_SUCCESS, "failed": utils.SCAN_STATUS_FAILED, "in_progress": utils.SCAN_STATUS_INPROGRESS})
+		map[string]interface{}{"node_id": nodeId, "starting": utils.SCAN_STATUS_STARTING})
 	if err != nil {
 		return model.CloudComplianceScanListResp{}, err
 	}

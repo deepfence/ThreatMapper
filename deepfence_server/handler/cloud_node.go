@@ -34,8 +34,8 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 
 	monitoredAccountIds := req.MonitoredAccountIds
 	orgAccountId := req.OrgAccountId
-	scanList := make(map[string]model.CloudComplianceScanDetails)
-	cloudtrailTrails := make([]model.CloudNodeCloudtrailTrail, 10)
+	scanList := map[string]model.CloudComplianceScanDetails{}
+	cloudtrailTrails := []model.CloudNodeCloudtrailTrail{}
 	nodeId := req.NodeId
 
 	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
@@ -66,8 +66,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 			return
 		}
 		for monitoredAccountId, monitoredNodeId := range monitoredAccountIds {
-			var monitoredNode map[string]interface{}
-			monitoredNode = map[string]interface{}{
+			monitoredNode := map[string]interface{}{
 				"node_id":         monitoredNodeId,
 				"cloud_provider":  req.CloudProvider,
 				"node_name":       monitoredAccountId,

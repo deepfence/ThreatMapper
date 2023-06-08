@@ -134,7 +134,7 @@ func CommitFuncCloudResource(ns string, cs []CloudResource) error {
 		UNWIND $batch as row
 		WITH row, COALESCE(row.region, 'global') as cloud_region
 		MATCH (cr:CloudRegion{node_id:cloud_region})
-		MATCH (m:CloudNode{node_id: n.account_id})
+		MATCH (m:CloudNode{node_id: row.account_id})
 		MERGE (n:CloudResource{node_id:row.node_id})
 		MERGE (m)-[:OWNS]->(n)
 		MERGE (cr) -[:HOSTS]-> (n)
@@ -217,8 +217,10 @@ func splitGroup(input []map[string]interface{}, types []string) []map[string]int
 	}
 
 	for i := range input {
-		if _, has := matcher[input[i]["node_type"].(string)]; has {
-			res = append(res, input[i])
+		if input[i]["node_type"] != nil {
+			if _, has := matcher[input[i]["node_type"].(string)]; has {
+				res = append(res, input[i])
+			}
 		}
 	}
 	return res

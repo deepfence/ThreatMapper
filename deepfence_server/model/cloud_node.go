@@ -197,64 +197,26 @@ func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]inter
 	}
 	defer tx.Close()
 
-	var matchNodeRes neo4j.Result
 	if parentNodeId == "" {
-		matchNodeRes, err = tx.Run(`
-		WITH $param as row
-		MATCH (n:CloudNode{node_id:row.node_id})
-		RETURN n.node_id`,
-			map[string]interface{}{
-				"param": nodeDetails,
-			})
-		if err != nil {
-			return err
-		}
-	} else {
-		matchNodeRes, err = tx.Run(`
-		MATCH (m:CloudNode{node_id: $parent_node_id})
-		WITH $param as row, m
-		MATCH (n:CloudNode{node_id:row.node_id}) <-[:IS_CHILD]- (m)
-		RETURN n.node_id`,
-			map[string]interface{}{
-				"param":          nodeDetails,
-				"parent_node_id": parentNodeId,
-			})
-		if err != nil {
-			return err
-		}
-	}
-	_, err = matchNodeRes.Single()
-	if err != nil {
-		if parentNodeId == "" {
-			if _, err := tx.Run(`
+		if _, err := tx.Run(`
 			WITH $param as row
 			MERGE (n:CloudNode{node_id:row.node_id})
 			SET n+= row, n.active = true, n.updated_at = TIMESTAMP()`,
-				map[string]interface{}{
-					"param": nodeDetails,
-				}); err != nil {
-				return err
-			}
-		} else {
-			if _, err := tx.Run(`
-			MATCH (m:CloudNode{node_id: $parent_node_id})
-			WITH $param as row, m
-			MERGE (n:CloudNode{node_id:row.node_id}) <-[:IS_CHILD]- (m)
-			SET n+= row, n.active = true, n.updated_at = TIMESTAMP()`,
-				map[string]interface{}{
-					"param":          nodeDetails,
-					"parent_node_id": parentNodeId,
-				}); err != nil {
-				return err
-			}
+			map[string]interface{}{
+				"param": nodeDetails,
+			}); err != nil {
+			return err
 		}
 	} else {
 		if _, err := tx.Run(`
-			WITH $param as row
-			MATCH (n:CloudNode{node_id:row.node_id})
+			MERGE (m:CloudNode{node_id: $parent_node_id})
+			WITH $param as row, m
+			MERGE (n:CloudNode{node_id:row.node_id})
+			MERGE (m) -[:IS_CHILD]-> (n)
 			SET n+= row, n.active = true, n.updated_at = TIMESTAMP()`,
 			map[string]interface{}{
-				"param": nodeDetails,
+				"param":          nodeDetails,
+				"parent_node_id": parentNodeId,
 			}); err != nil {
 			return err
 		}
@@ -554,7 +516,8 @@ func GetActiveCloudControls(ctx context.Context, complianceTypes []string, cloud
 	var res neo4j.Result
 	res, err = tx.Run(`
 		MATCH (n:CloudComplianceBenchmark) -[:INCLUDES]-> (m:CloudComplianceControl)
-		WHERE m.active = true AND m.compliance_type IN $compliance_types
+		WHERE m.active = true 
+		AND m.compliance_type IN $compliance_types
 		AND n.cloud_provider = $cloud_provider
 		RETURN  n.benchmark_id, n.compliance_type, collect(m.control_id)
 		ORDER BY n.compliance_type`,

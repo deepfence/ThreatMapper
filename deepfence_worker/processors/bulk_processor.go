@@ -65,6 +65,17 @@ func NewBulkProcessor(name string, fn commitFn) *BulkProcessor {
 	}
 }
 
+func NewBulkProcessorWith(name string, fn commitFn, size int) *BulkProcessor {
+	return &BulkProcessor{
+		name:          name,
+		commitFn:      fn,
+		numWorkers:    1,
+		bulkActions:   size,
+		flushInterval: 10 * time.Second,
+		requestsC:     make(chan BulkRequest, 2*size),
+	}
+}
+
 func (p *BulkProcessor) Start(ctx context.Context) error {
 
 	log.Info().Msgf("start bulk processor %s", p.name)
