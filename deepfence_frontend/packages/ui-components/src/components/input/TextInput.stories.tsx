@@ -12,7 +12,9 @@ export default {
 } as Meta<typeof TextInput>;
 
 export const Default = {
-  args: {},
+  args: {
+    disabled: true,
+  },
 };
 
 export const WithPlaceholder = {

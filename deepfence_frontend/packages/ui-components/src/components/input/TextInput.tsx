@@ -9,33 +9,46 @@ import { twMerge } from 'tailwind-merge';
 import HelperText from '@/components/input/HelperText';
 import { Tooltip } from '@/main';
 import { ObjectWithNonNullableValues } from '@/types/utils';
+import { dfTwMerge } from '@/utils/twmerge';
 
-export type SizeType = 'sm' | 'md' | 'lg';
+export type SizeType = 'md';
 export type ColorType = 'default' | 'error' | 'success';
 
 const inputCva = cva(
   [
-    'block w-full ring-1 rounded-lg',
-    'font-normal',
+    'block w-full',
     'focus:outline-none',
-    'disabled:cursor-not-allowed',
+    'pl-1.5 pt-1.5 pb-[5px]',
+    'border-b',
+    'dark:bg-transparent',
+    'transition-[background-size] duration-[0.2s] ease-[ease]',
   ],
   {
     variants: {
       color: {
         default: [
-          // ring styles
-          'ring-gray-300 focus:ring-blue-600',
-          'dark:ring-gray-600 dark:focus:ring-blue-600',
-          // bg styles
-          'bg-gray-50',
-          'dark:bg-gray-700',
-          // placeholder styles
-          'placeholder-gray-500 disabled:placeholder-gray-400',
-          'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
-          // text styles
-          'text-gray-900 disabled:text-gray-700',
-          'dark:text-white dark:disabled:text-gray-200',
+          dfTwMerge(
+            cx(
+              // border
+              ' dark:border-text-text-and-icon',
+              // bg styles
+              'bg-gray-50',
+              // placeholder styles
+              'placeholder-gray-500 disabled:placeholder-gray-400',
+              'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
+              // text font
+              'dark:text-p4',
+              // text styles
+              'text-gray-900 dark:text-text-input-value',
+              // disabled text color
+              'disabled:text-gray-700 dark:disabled:text-gray-600',
+              // focus style
+              'bg-[length:0%_100%] focus:bg-[length:100%_100%]',
+              'dark:focus:border-b-accent-accent',
+              // dark and bg styles
+              'dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)] dark:focus:bg-no-repeat',
+            ),
+          ),
         ],
         error: [
           // ring styles
@@ -67,9 +80,7 @@ const inputCva = cva(
         ],
       },
       sizing: {
-        sm: `text-sm px-4 py-2`,
-        md: `text-sm leading-tight px-4 py-3`,
-        lg: `text-base px-4 py-3.5`,
+        md: `text-sm`,
       },
       withStartIcon: {
         true: 'pl-[42px]',
@@ -78,13 +89,6 @@ const inputCva = cva(
         true: 'pr-[38px]',
       },
     },
-    compoundVariants: [
-      {
-        sizing: 'lg',
-        withStartIcon: true,
-        className: 'pl-[48px]',
-      },
-    ],
     defaultVariants: {
       color: 'default',
       sizing: 'md',
