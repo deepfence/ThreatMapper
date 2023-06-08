@@ -186,6 +186,7 @@ export const privateRoutes: CustomRouteObject[] = [
   },
   {
     path: '/',
+    id: 'root',
     loader: authenticatedRootLoader,
     element: <RootLayout />,
     errorElement: <FiveZeroZero />,
