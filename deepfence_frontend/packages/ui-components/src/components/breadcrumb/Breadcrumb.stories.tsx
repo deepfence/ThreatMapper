@@ -23,16 +23,16 @@ const Link = forwardRef<
   );
 });
 
-const Template: StoryFn<typeof Breadcrumb> = ({ separator }) => (
-  <Breadcrumb separator={separator} outline={false}>
-    <BreadcrumbLink asChild icon={<HiHome />}>
+const Template: StoryFn<typeof Breadcrumb> = () => (
+  <Breadcrumb>
+    <BreadcrumbLink asChild icon={<HiHome />} isLink>
       <Link>Link One</Link>
     </BreadcrumbLink>
     <BreadcrumbLink asChild>
-      <Link>Link Two</Link>
+      <span>Link Two</span>
     </BreadcrumbLink>
     <BreadcrumbLink asChild>
-      <Link>Link Three</Link>
+      <span>Link Three</span>
     </BreadcrumbLink>
   </Breadcrumb>
 );
@@ -40,7 +40,5 @@ const Template: StoryFn<typeof Breadcrumb> = ({ separator }) => (
 export const BreadCrumbComponent = {
   render: Template,
 
-  args: {
-    separator: <HiChevronDoubleRight />,
-  },
+  args: {},
 };

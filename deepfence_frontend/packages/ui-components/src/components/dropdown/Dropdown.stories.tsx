@@ -2,7 +2,6 @@ import { Meta, StoryFn } from '@storybook/react';
 import { useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
-  HiArrowRight,
   HiChevronDown,
   HiInboxIn,
   HiInformationCircle,
@@ -85,10 +84,13 @@ const TemplateForIcons: StoryFn<typeof Dropdown> = (args) => {
             </IconContext.Provider>
             <span>Third Action</span>
           </DropdownItem>
-          <DropdownItem>
-            <IconContext.Provider value={{ size: '18px' }}>
-              <HiPencilAlt />
-            </IconContext.Provider>
+          <DropdownItem
+            icon={
+              <IconContext.Provider value={{ size: '18px' }}>
+                <HiPencilAlt />
+              </IconContext.Provider>
+            }
+          >
             <span>Fourth Action</span>
           </DropdownItem>
           <DropdownSeparator />
@@ -132,7 +134,6 @@ const ControlledTemplate: StoryFn<typeof Dropdown> = (args) => {
           <DropdownItem>Fourth Action</DropdownItem>
           <DropdownSubMenu
             triggerAsChild
-            disabled
             content={
               <>
                 <DropdownItem disabled>Mask this</DropdownItem>
@@ -140,12 +141,7 @@ const ControlledTemplate: StoryFn<typeof Dropdown> = (args) => {
               </>
             }
           >
-            <div className="flex">
-              More
-              <IconContext.Provider value={{ size: '18px' }}>
-                <HiArrowRight />
-              </IconContext.Provider>
-            </div>
+            More
           </DropdownSubMenu>
           <DropdownSeparator />
           <DropdownItem className="text-red-500 dark:text-red-500">Sign Out</DropdownItem>
