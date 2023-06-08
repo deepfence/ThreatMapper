@@ -110,7 +110,7 @@ func StartKafkaProcessors(ctx context.Context) {
 		utils.CLOUD_RESOURCE,
 		telemetryWrapper(utils.CLOUD_RESOURCE,
 			desWrapper(ingesters.CommitFuncCloudResource)),
-		5_000)
+		1_000)
 
 	for i := range processors {
 		processors[i].Start(ctx)

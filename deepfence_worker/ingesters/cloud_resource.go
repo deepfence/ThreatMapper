@@ -83,10 +83,18 @@ type CloudResource struct {
 }
 
 var (
-	resource_types = [...]string{"aws_ec2_instance", "aws_ec2_application_load_balancer", "aws_ec2_classic_load_balancer", "aws_ec2_network_load_balancer"}
-
-	resource_lambda = [...]string{"aws_lambda_function"}
-	resource_ecs    = [...]string{"aws_ecs_service"}
+	TopologyCloudResourceTypes = []string{
+		// AWS specific types
+		"aws_ec2_instance", "aws_eks_cluster", "aws_s3_bucket", "aws_lambda_function",
+		"aws_ecs_task", "aws_ecs_cluster", "aws_ecr_repository", "aws_ecrpublic_repository",
+		"aws_ecs_task", "aws_rds_db_instance", "aws_rds_db_cluster", "aws_ec2_application_load_balancer",
+		"aws_ec2_classic_load_balancer", "aws_ec2_network_load_balancer",
+		// GCP specific types
+		"gcp_compute_instance", "gcp_sql_database_instance", "gcp_storage_bucket", "gcp_compute_disk",
+		// Azure specific types
+		"azure_compute_virtual_machine", "azure_app_service_function_app", "azure_storage_queue",
+		"azure_storage_table", "azure_storage_container",
+	}
 )
 
 func CommitFuncCloudResource(ns string, cs []CloudResource) error {
@@ -104,24 +112,7 @@ func CommitFuncCloudResource(ns string, cs []CloudResource) error {
 
 	batch := ResourceToMaps(cs)
 
-	skippableTx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
-	if err != nil {
-		return err
-	}
-
-	_, err = skippableTx.Run(`
-		UNWIND $batch as row
-		WITH row, COALESCE(row.region, 'global') as cloud_region
-		MERGE (cp:CloudProvider{node_id:row.cloud_provider})
-		MERGE (cr:CloudRegion{node_id:cloud_region})
-		MERGE (cp) -[:HOSTS]-> (cr)
-		SET cp.active = true, cr.active = true`,
-		map[string]interface{}{
-			"batch": batch,
-		},
-	)
-	skippableTx.Commit()
-	skippableTx.Close()
+	start := time.Now()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
@@ -132,98 +123,21 @@ func CommitFuncCloudResource(ns string, cs []CloudResource) error {
 	// Add everything
 	_, err = tx.Run(`
 		UNWIND $batch as row
-		WITH row, COALESCE(row.region, 'global') as cloud_region
-		MATCH (cr:CloudRegion{node_id:cloud_region})
-		MATCH (m:CloudNode{node_id: row.account_id})
+		WITH row, row.node_type IN $shown_types as show
 		MERGE (n:CloudResource{node_id:row.node_id})
-		MERGE (m)-[:OWNS]->(n)
-		MERGE (cr) -[:HOSTS]-> (n)
-		SET n+=row, n.node_name = n.name, n.node_type = row.resource_id, n.cloud_region = cloud_region, n.updated_at = TIMESTAMP(), n.active = true`,
+		SET n+=row, n.updated_at = TIMESTAMP(), n.active = true, n.linked = false, n.is_shown = show`,
 		map[string]interface{}{
-			"batch": batch,
+			"batch":       batch,
+			"shown_types": TopologyCloudResourceTypes,
 		},
 	)
+	log.Debug().Msgf("cloud resource ingest took: %v", time.Until(start))
 
 	if err != nil {
-		log.Error().Msgf("error: %+v", err)
 		return err
 	}
 
-	// Handle AWS EC2 & LBs
-	subgroup := splitGroup(batch, resource_types[:])
-	if len(subgroup) != 0 {
-		if _, err = tx.Run(`
-		UNWIND $batch as row
-		MATCH (n:CloudResource{node_id:row.node_id})
-		AND n.security_groups IS NOT NULL
-		WITH n, apoc.convert.fromJsonList(n.security_groups) as groups
-		UNWIND groups as subgroup
-		WITH subgroup, CASE WHEN apoc.meta.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupName END as name,
-		CASE WHEN apoc.meta.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupId END as node_id
-		MERGE (m:SecurityGroup{node_id:node_id})
-		MERGE (m)-[:SECURED]->(n)`,
-			map[string]interface{}{
-				"batch": subgroup,
-			}); err != nil {
-			log.Error().Msgf("error: %+v", err)
-			return err
-		}
-	}
-
-	// Handle AWS Lambda
-	subgroup = splitGroup(batch, resource_lambda[:])
-	if len(subgroup) != 0 {
-		if _, err = tx.Run(`
-		UNWIND $batch as row
-		MATCH (n:CloudResource{node_id:row.node_id})
-		WITH apoc.convert.fromJsonList(n.vpc_security_group_ids) as sec_group_ids,n
-		UNWIND sec_group_ids as subgroup
-		MERGE (m:SecurityGroup{node_id:subgroup})
-		MERGE (m)-[:SECURED]->(n)`,
-			map[string]interface{}{
-				"batch": subgroup,
-			}); err != nil {
-			log.Error().Msgf("error: %+v", err)
-			return err
-		}
-	}
-
-	// Handle AWS ECS
-	subgroup = splitGroup(batch, resource_ecs[:])
-	if len(subgroup) != 0 {
-		if _, err = tx.Run(`
-		UNWIND $batch as row
-		MATCH (n:CloudResource{node_id:row.node_id})
-		WITH apoc.convert.fromJsonMap(n.network_configuration) as map,n
-		UNWIND map.AwsvpcConfiguration.SecurityGroups as secgroup
-		MERGE (m:SecurityGroup{node_id:secgroup})
-		MERGE (m)-[:SECURED]->(n)`,
-			map[string]interface{}{
-				"batch": subgroup,
-			}); err != nil {
-			log.Error().Msgf("error: %+v", err)
-			return err
-		}
-	}
-
 	return tx.Commit()
-}
-
-func splitGroup(input []map[string]interface{}, types []string) []map[string]interface{} {
-	res := []map[string]interface{}{}
-	matcher := map[string]struct{}{}
-	for i := range types {
-		matcher[types[i]] = struct{}{}
-	}
-
-	for i := range input {
-		if input[i]["node_type"] != nil {
-			if _, has := matcher[input[i]["node_type"].(string)]; has {
-				res = append(res, input[i])
-			}
-		}
-	}
-	return res
 }
 
 func ResourceToMaps(ms []CloudResource) []map[string]interface{} {
@@ -236,7 +150,6 @@ func ResourceToMaps(ms []CloudResource) []map[string]interface{} {
 			res = append(res, newmap)
 		}
 	}
-	fmt.Println("check ms size", len(res))
 	return res
 }
 
@@ -307,6 +220,14 @@ func (c *CloudResource) ToMap() (map[string]interface{}, error) {
 			bb["cloud_provider"] = splits[2]
 		}
 	}
+
+	bb["node_type"] = bb["resource_id"]
+	cloud_region := "global"
+	if v, has := bb["region"]; has && v != nil {
+		cloud_region = v.(string)
+	}
+	bb["cloud_region"] = cloud_region
+	bb["node_name"] = bb["name"]
 
 	return bb, nil
 }

@@ -213,6 +213,8 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 
 	worker.AddNoPublisherHandler(utils.ReportCleanUpTask, cronjobs.CleanUpReports)
 
+	worker.AddNoPublisherHandler(utils.LinkCloudResourceTask, cronjobs.LinkCloudResources)
+
 	log.Info().Msg("Starting the consumer")
 	if err = worker.Run(context.Background()); err != nil {
 		cancel()

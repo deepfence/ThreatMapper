@@ -3,6 +3,7 @@ package cronjobs
 import (
 	"context"
 	"fmt"
+	"sync/atomic"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -22,6 +23,12 @@ const (
 	dbUpgradeTimeout                       = time.Minute * 30
 	defaultDBScannedResourceCleanUpTimeout = time.Hour * 24 * 30
 	dbCloudResourceCleanupTimeout          = time.Hour * 13
+)
+
+var (
+	resource_types  = [...]string{"aws_ec2_instance", "aws_ec2_application_load_balancer", "aws_ec2_classic_load_balancer", "aws_ec2_network_load_balancer"}
+	resource_lambda = [...]string{"aws_lambda_function"}
+	resource_ecs    = [...]string{"aws_ecs_service"}
 )
 
 func getResourceCleanUpTimeout(ctx context.Context) time.Duration {
@@ -55,7 +62,14 @@ func getPushBackValue(session neo4j.Session) int32 {
 	return int32(rec.Values[0].(int64))
 }
 
+var cleanUpRunning = atomic.Bool{}
+
 func CleanUpDB(msg *message.Message) error {
+	if cleanUpRunning.Swap(true) {
+		return nil
+	}
+	defer cleanUpRunning.Store(false)
+
 	log.Info().Msgf("Clean up DB Starting")
 	defer log.Info().Msgf("Clean up DB Done")
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
@@ -78,7 +92,9 @@ func CleanUpDB(msg *message.Message) error {
 	dbReportCleanUpTimeout := dbReportCleanUpTimeoutBase * time.Duration(pushBack)
 	dbScanTimeout := dbScanTimeoutBase * time.Duration(pushBack)
 
-	txConfig := neo4j.WithTxTimeout(15 * time.Second)
+	txConfig := neo4j.WithTxTimeout(30 * time.Second)
+
+	start := time.Now()
 
 	// Set inactives
 	if _, err = session.Run(`
@@ -267,38 +283,19 @@ func CleanUpDB(msg *message.Message) error {
 	}
 
 	if _, err = session.Run(`
-		MATCH (n:CloudResource)
+		MATCH (n:CloudResource) <-[:HOSTS]- (cr:CloudRegion)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND NOT exists((n) <-[:SCANNED]-())
 		OR n.updated_at < TIMESTAMP()-$old_time_ms
-		WITH n LIMIT 10000
+		WITH n, cr LIMIT 10000
+		SET cr.cr_shown = CASE WHEN n.is_shown THEN cr.cr_shown - 1 ELSE cr.cr_shown END,
+			cr.active = cr.cr_shown <> 0
+		WITH n
 		DETACH DELETE n`,
 		map[string]interface{}{
 			"time_ms":     dbCloudResourceCleanupTimeout.Milliseconds(),
 			"old_time_ms": dbScannedResourceCleanUpTimeout.Milliseconds(),
 		}, txConfig); err != nil {
-		log.Error().Msgf("Error in Clean up DB task: %v", err)
-		return err
-	}
-
-	if _, err = session.Run(`
-		MATCH (n:CloudRegion)
-		CALL {
-			WITH n
-			MATCH (m:CloudProvider) -[:HOSTS]-> (n) -[:HOSTS]-> (p:CloudResource) where p.cloud_provider = m.node_id and p.node_type in $cloud_types return (count(p) > 0) as active_region
-		}
-		SET n.active = active_region`,
-		map[string]interface{}{"cloud_types": model.TopologyCloudResourceTypes}, txConfig); err != nil {
-		log.Error().Msgf("Error in Clean up DB task: %v", err)
-		return err
-	}
-
-	if _, err = session.Run(`
-		MATCH (n:CloudRegion) -[:HOSTS]-> (m:Node)
-		WHERE m.active = true
-		WITH count(m) as c, n LIMIT 10000
-		SET n.active = c <> 0`,
-		map[string]interface{}{}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
@@ -332,6 +329,107 @@ func CleanUpDB(msg *message.Message) error {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}
+	log.Debug().Msgf("clean up took: %v", time.Since(start))
+
+	return nil
+}
+
+var linkCloudResourcesRunning = atomic.Bool{}
+
+func LinkCloudResources(msg *message.Message) error {
+
+	if linkCloudResourcesRunning.Swap(true) {
+		return nil
+	}
+	defer linkCloudResourcesRunning.Store(false)
+
+	log.Info().Msgf("Link CR Starting")
+	defer log.Info().Msgf("Link CR Done")
+	namespace := msg.Metadata.Get(directory.NamespaceKey)
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
+
+	nc, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	txConfig := neo4j.WithTxTimeout(30 * time.Second)
+
+	start := time.Now()
+
+	// MERGE (t:CloudResourceType{node_id:row.cloud_provider+row.cloud_region+row.node_type})
+	// MERGE (t) -[:HOSTS]-> (n)
+	if _, err = session.Run(`
+		MATCH (n:CloudResource)
+		WHERE not (n) <-[:HOSTS]- (:CloudRegion)
+		WITH n LIMIT 10000
+		MERGE (cp:CloudProvider{node_id: n.cloud_provider})
+		MERGE (cr:CloudRegion{node_id: n.cloud_region})
+		MERGE (m:CloudNode{node_id: n.account_id})
+		MERGE (m) -[:OWNS]-> (n)
+		MERGE (cp) -[:HOSTS]-> (cr)
+		MERGE (cr) -[:HOSTS]-> (n)
+		SET cr.active = (COALESCE(cr.active, false) or n.is_shown), cr.cr_shown = COALESCE(cr.cr_shown, 0) + CASE WHEN n.is_shown THEN 1 ELSE 0 END`,
+		map[string]interface{}{}, txConfig); err != nil {
+		return err
+	}
+
+	// Handle AWS EC2 & LBs
+	if _, err = session.Run(`
+		MATCH (n:CloudResource)
+		WHERE n.linked = false
+		AND n.node_type in $types
+		AND n.security_groups IS NOT NULL
+		WITH n, apoc.convert.fromJsonList(n.security_groups) as groups LIMIT 10000
+		UNWIND groups as subgroup
+		WITH subgroup, CASE WHEN apoc.meta.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupName END as name,
+		CASE WHEN apoc.meta.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupId END as node_id
+		MERGE (m:SecurityGroup{node_id:node_id})
+		MERGE (m)-[:SECURED]->(n)
+		SET n.linked = true`,
+		map[string]interface{}{
+			"types": resource_types[:],
+		}, txConfig); err != nil {
+		return err
+	}
+
+	// Handle AWS Lambda
+	if _, err = session.Run(`
+		MATCH (n:CloudResource)
+		WHERE n.linked = false
+		AND n.node_type in $types
+		MATCH (n:CloudResource{node_id:n.node_id})
+		WITH apoc.convert.fromJsonList(n.vpc_security_group_ids) as sec_group_ids,n LIMIT 10000
+		UNWIND sec_group_ids as subgroup
+		MERGE (m:SecurityGroup{node_id:subgroup})
+		MERGE (m)-[:SECURED]->(n)
+		SET n.linked = true`,
+		map[string]interface{}{
+			"types": resource_lambda[:],
+		}, txConfig); err != nil {
+		return err
+	}
+
+	// Handle AWS ECS
+	if _, err = session.Run(`
+		MATCH (n:CloudResource)
+		WHERE n.linked = false
+		AND n.node_type in $types
+		WITH apoc.convert.fromJsonMap(n.network_configuration) as map,n LIMIT 10000
+		UNWIND map.AwsvpcConfiguration.SecurityGroups as secgroup
+		MERGE (m:SecurityGroup{node_id:secgroup})
+		MERGE (m)-[:SECURED]->(n)
+		SET n.linked = true`,
+		map[string]interface{}{
+			"types": resource_ecs[:],
+		}, txConfig); err != nil {
+		return err
+	}
+
+	log.Debug().Msgf("Link task took: %v", time.Since(start))
 
 	return nil
 }

@@ -171,6 +171,10 @@ func (s *Scheduler) addJobs() error {
 	if err != nil {
 		return err
 	}
+	_, err = s.cron.AddFunc("@every 30s", s.enqueueTask(sdkUtils.LinkCloudResourceTask))
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
