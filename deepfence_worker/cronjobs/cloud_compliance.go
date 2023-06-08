@@ -179,7 +179,7 @@ func CachePostureProviders(msg *message.Message) error {
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(120 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -195,6 +195,7 @@ func CachePostureProviders(msg *message.Message) error {
 		postureProvider := model.PostureProvider{
 			Name:                 postureProviderName,
 			NodeCount:            0,
+			NodeCountInactive:    0,
 			ScanCount:            0,
 			CompliancePercentage: 0,
 			ResourceCount:        0,
@@ -233,8 +234,8 @@ func CachePostureProviders(msg *message.Message) error {
 				if err != nil {
 					log.Warn().Msgf("Provider query error for %s: %v", postureProviderName, err)
 				} else {
-					postureProvider.NodeCount = int(nodeRec.Values[0].(int64))
-					postureProvider.ScanCount = int(nodeRec.Values[1].(int64))
+					postureProvider.NodeCount = nodeRec.Values[0].(int64)
+					postureProvider.ScanCount = nodeRec.Values[1].(int64)
 					postureProvider.CompliancePercentage = nodeRec.Values[2].(float64)
 				}
 			} else {
@@ -272,9 +273,9 @@ func CachePostureProviders(msg *message.Message) error {
 				if err != nil {
 					log.Warn().Msgf("Provider query error for %s: %v", postureProviderName, err)
 				} else {
-					postureProvider.NodeCount = int(nodeRec.Values[0].(int64))
-					postureProvider.ResourceCount = int(nodeRec.Values[1].(int64))
-					postureProvider.ScanCount = int(nodeRec.Values[2].(int64))
+					postureProvider.NodeCount = nodeRec.Values[0].(int64)
+					postureProvider.ResourceCount = nodeRec.Values[1].(int64)
+					postureProvider.ScanCount = nodeRec.Values[2].(int64)
 					postureProvider.CompliancePercentage = nodeRec.Values[3].(float64)
 				}
 			} else {
@@ -305,9 +306,9 @@ func CachePostureProviders(msg *message.Message) error {
 				if err != nil {
 					log.Warn().Msgf("Provider query error for %s: %v", postureProviderName, err)
 				} else {
-					postureProvider.NodeCount = int(nodeRec.Values[0].(int64))
-					postureProvider.ResourceCount = int(nodeRec.Values[1].(int64))
-					postureProvider.ScanCount = int(nodeRec.Values[2].(int64))
+					postureProvider.NodeCount = nodeRec.Values[0].(int64)
+					postureProvider.ResourceCount = nodeRec.Values[1].(int64)
+					postureProvider.ScanCount = nodeRec.Values[2].(int64)
 					postureProvider.CompliancePercentage = nodeRec.Values[3].(float64)
 				}
 			} else {

@@ -3,7 +3,6 @@ package model
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
@@ -12,7 +11,6 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
-	"github.com/redis/go-redis/v9"
 )
 
 const PostureProviderAWS = "aws"
@@ -176,11 +174,12 @@ type CloudNodeComplianceControl struct {
 
 type PostureProvider struct {
 	Name                 string  `json:"name"`
-	NodeCount            int     `json:"node_count"`
+	NodeCount            int64   `json:"node_count"`
+	NodeCountInactive    int64   `json:"node_count_inactive"`
 	NodeLabel            string  `json:"node_label"`
-	ScanCount            int     `json:"scan_count"`
+	ScanCount            int64   `json:"scan_count"`
 	CompliancePercentage float64 `json:"compliance_percentage"`
-	ResourceCount        int     `json:"resource_count"`
+	ResourceCount        int64   `json:"resource_count"`
 }
 
 func UpsertCloudComplianceNode(ctx context.Context, nodeDetails map[string]interface{}, parentNodeId string) error {
@@ -282,88 +281,94 @@ func GetCloudProvidersList(ctx context.Context) ([]PostureProvider, error) {
 	}
 	defer tx.Close()
 
+	var postureProvidersCache []PostureProvider
 	rdb, err := directory.RedisClient(ctx)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		postureProvidersStr, err := rdb.Get(ctx, constants.RedisKeyPostureProviders).Result()
+		if err == nil {
+			json.Unmarshal([]byte(postureProvidersStr), &postureProvidersCache)
+		} else {
+			log.Warn().Msgf("GetCloudProvidersList redis : %v", err)
+		}
+	} else {
+		log.Warn().Msgf("GetCloudProvidersList redis : %v", err)
 	}
 
-	postureProviders := []PostureProvider{}
-	postureProvidersStr, err := rdb.Get(ctx, constants.RedisKeyPostureProviders).Result()
-	if errors.Is(err, redis.Nil) {
-		return postureProviders, nil
-	} else if err != nil {
-		return nil, err
+	postureProviders := []PostureProvider{
+		{Name: PostureProviderLinux, NodeLabel: "Hosts"},
+		{Name: PostureProviderKubernetes, NodeLabel: "Clusters"},
+		{Name: PostureProviderAWSOrg, NodeLabel: "Organizations"},
+		{Name: PostureProviderGCPOrg, NodeLabel: "Organizations"},
+		{Name: PostureProviderAWS, NodeLabel: "Accounts"},
+		{Name: PostureProviderGCP, NodeLabel: "Accounts"},
+		{Name: PostureProviderAzure, NodeLabel: "Accounts"},
 	}
-	err = json.Unmarshal([]byte(postureProvidersStr), &postureProviders)
-	if err != nil {
-		return nil, err
+	providersIndex := make(map[string]int)
+	for i, provider := range postureProviders {
+		providersIndex[provider.Name] = i
+	}
+	for _, postureProvider := range postureProvidersCache {
+		postureProviders[providersIndex[postureProvider.Name]] = postureProvider
 	}
 
-	query := fmt.Sprintf(`
-		CALL {
-			MATCH (m:Node)
-			WHERE m.pseudo=false and m.active=true and m.kubernetes_cluster_id=""
-			RETURN COUNT(m) as n1
+	// Hosts
+	query := `MATCH (m:Node)
+			WHERE m.pseudo=false and m.kubernetes_cluster_id=""
+			RETURN m.active, count(m)`
+	r, err := tx.Run(query, map[string]interface{}{})
+	if err == nil {
+		records, err := r.Collect()
+		if err == nil {
+			for _, record := range records {
+				if record.Values[0].(bool) == true {
+					postureProviders[providersIndex[PostureProviderLinux]].NodeCount = record.Values[1].(int64)
+				} else {
+					postureProviders[providersIndex[PostureProviderLinux]].NodeCountInactive = record.Values[1].(int64)
+				}
+			}
 		}
-		CALL {
-			MATCH (m:KubernetesCluster)
-			WHERE m.pseudo=false and m.active=true
-			RETURN COUNT(m) as n2
-		}
-		CALL {
-			MATCH (m:CloudNode{cloud_provider:'%s'})
-			WHERE m.active=true
-			RETURN COUNT(m) as n3
-		}
-		CALL {
-			MATCH (m:CloudNode{cloud_provider:'%s'})
-			WHERE m.active=true
-			RETURN COUNT(m) as n4
-		}
-		CALL {
-			MATCH (m:CloudNode{cloud_provider:'%s'})
-			WHERE m.active=true
-			RETURN COUNT(m) as n5
-		}
-		CALL {
-			MATCH (m:CloudNode{cloud_provider:'%s'})
-			WHERE m.active=true
-			RETURN COUNT(m) as n6
-		}
-		CALL {
-			MATCH (m:CloudNode{cloud_provider:'%s'})
-			WHERE m.active=true
-			RETURN COUNT(m) as n7
-		}
-		return n1, n2, n3, n4, n5, n6, n7`, PostureProviderAWSOrg, PostureProviderGCPOrg, PostureProviderAWS, PostureProviderGCP, PostureProviderAzure)
+	} else {
+		log.Warn().Msgf("GetCloudProvidersList Linux : %v", err)
+	}
 
-	nodeRes, err := tx.Run(query, map[string]interface{}{})
-	if err != nil {
-		log.Warn().Msgf("GetCloudProvidersList: %v", err)
-		return nil, err
-	}
-	nodeRec, err := nodeRes.Single()
-	if err != nil {
-		log.Warn().Msgf("GetCloudProvidersList: %v", err)
-		return nil, err
-	}
-	for i, postureProvider := range postureProviders {
-		switch postureProvider.Name {
-		case PostureProviderLinux:
-			postureProviders[i].NodeCount = int(nodeRec.Values[0].(int64))
-		case PostureProviderKubernetes:
-			postureProviders[i].NodeCount = int(nodeRec.Values[1].(int64))
-		case PostureProviderAWSOrg:
-			postureProviders[i].NodeCount = int(nodeRec.Values[2].(int64))
-		case PostureProviderGCPOrg:
-			postureProviders[i].NodeCount = int(nodeRec.Values[3].(int64))
-		case PostureProviderAWS:
-			postureProviders[i].NodeCount = int(nodeRec.Values[4].(int64))
-		case PostureProviderGCP:
-			postureProviders[i].NodeCount = int(nodeRec.Values[5].(int64))
-		case PostureProviderAzure:
-			postureProviders[i].NodeCount = int(nodeRec.Values[6].(int64))
+	// Kubernetes
+	query = `MATCH (m:KubernetesCluster)
+			WHERE m.pseudo=false
+			RETURN m.active, count(m)`
+	r, err = tx.Run(query, map[string]interface{}{})
+	if err == nil {
+		records, err := r.Collect()
+		if err == nil {
+			for _, record := range records {
+				if record.Values[0].(bool) == true {
+					postureProviders[providersIndex[PostureProviderKubernetes]].NodeCount = record.Values[1].(int64)
+				} else {
+					postureProviders[providersIndex[PostureProviderKubernetes]].NodeCountInactive = record.Values[1].(int64)
+				}
+			}
 		}
+	} else {
+		log.Warn().Msgf("GetCloudProvidersList Kubernetes : %v", err)
+	}
+
+	// CloudNodes
+	query = `MATCH (m:CloudNode)
+			RETURN m.cloud_provider, m.active, count(m)`
+	r, err = tx.Run(query, map[string]interface{}{})
+	if err == nil {
+		records, err := r.Collect()
+		if err == nil {
+			for _, record := range records {
+				provider := record.Values[0].(string)
+				if record.Values[1].(bool) == true {
+					postureProviders[providersIndex[provider]].NodeCount = record.Values[2].(int64)
+				} else {
+					postureProviders[providersIndex[provider]].NodeCountInactive = record.Values[2].(int64)
+				}
+			}
+		}
+	} else {
+		log.Warn().Msgf("GetCloudProvidersList Kubernetes : %v", err)
 	}
 	return postureProviders, nil
 }
