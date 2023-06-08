@@ -14,6 +14,11 @@ Log in to the AWS management console account and open the following url link to 
 
 (Template URL: https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template)
 
+Then, fill in the below parameters as needed:
+
+![AWS Single Account Cloud Scanner Params Deepfence Config](../img/compliance-install-aws-2.png)
+![AWS Single Account Cloud Scanner Params Cluster Config](../img/compliance-install-aws-3.png)
+
 ### Single Account Deployment
 
 Log in to the AWS management console account and open the following url link to deploy Cloud Scanner using CloudFormation in `us-east-1` region.
@@ -21,6 +26,16 @@ Log in to the AWS management console account and open the following url link to 
 [Deploy on a single AWS account](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:1.4.3)
 
 (Template URL: https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template)
+
+Then, fill in the below parameters as needed:
+
+![AWS Single Account Cloud Scanner Params Deepfence Config](../img/compliance-install-aws-2.png)
+![AWS Single Account Cloud Scanner Params Cluster Config](../img/compliance-install-aws-3.png)
+
+#### For Deployment in Existing VPC(Optional)
+
+If you want to deploy Cloud Scanner in an existing VPC, you need to fill in the following params:
+![AWS Single Account Cloud Scanner Params Existing VPC Config](../img/compliance-install-aws-4.png)
 
 ## Terraform
 
