@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/ingesters"
@@ -21,7 +20,8 @@ const (
 )
 
 func (h *Handler) Ping(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "pong")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("pong"))
 }
 
 func (h *Handler) EULAHandler(w http.ResponseWriter, r *http.Request) {
