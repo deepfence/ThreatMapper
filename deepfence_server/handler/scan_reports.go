@@ -1454,14 +1454,12 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 
 	log.Info().Msgf("bulk delete %s scans filters %+v", req.ScanType, req.Filters)
 
-	scansList, err := reporters_scan.GetScansList(r.Context(),
-		utils.DetectedNodeScanType[req.ScanType], nil, req.Filters, model.FetchWindow{})
+	scanType := utils.DetectedNodeScanType[req.ScanType]
+	scansList, err := reporters_scan.GetScansList(r.Context(), scanType, nil, req.Filters, model.FetchWindow{})
 	if err != nil {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-
-	scanType := utils.DetectedNodeScanType[req.ScanType]
 
 	for _, s := range scansList.ScansInfo {
 		log.Info().Msgf("delete scan %s %s", req.ScanType, s.ScanId)
@@ -1472,7 +1470,7 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if scanType == utils.NEO4J_COMPLIANCE_SCAN || scanType == utils.NEO4J_CLOUD_COMPLIANCE_SCAN {
+	if len(scansList.ScansInfo) > 0 && (scanType == utils.NEO4J_COMPLIANCE_SCAN || scanType == utils.NEO4J_CLOUD_COMPLIANCE_SCAN) {
 		err = h.CachePostureProviders(r.Context())
 		if err != nil {
 			respondError(err, w)
