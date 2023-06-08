@@ -24,7 +24,6 @@ export interface ModalProps
 }
 
 const ModalHeader: FC<{ title?: React.ReactNode }> = ({ title }) => {
-  console.log('', title);
   return (
     <>
       <div
