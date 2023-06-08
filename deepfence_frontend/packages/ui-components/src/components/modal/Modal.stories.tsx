@@ -74,7 +74,7 @@ export const ModalWithTrigger = () => {
         onOpenChange={() => setOpen(false)}
         elementToFocusOnCloseRef={ref}
       >
-        <div className="dark:text-white">
+        <div>
           Message: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
           tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
           quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
@@ -85,7 +85,7 @@ export const ModalWithTrigger = () => {
   );
 };
 
-export const WithoutTitle = () => {
+export const WithoutTitleWithFooter = () => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -98,13 +98,23 @@ export const WithoutTitle = () => {
         Some text here to check overlay
       </div>
       <Modal
-        title=" "
-        footer={<div className={''}>This is Footer</div>}
+        footer={
+          <div className={'flex gap-x-4 justify-end'}>
+            <Button>ok</Button>
+          </div>
+        }
         open={open}
         onOpenChange={() => setOpen(false)}
         elementToFocusOnCloseRef={ref}
       >
-        <div className="dark:text-white">This is a content</div>
+        <div>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do do do eiusmod
+          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+          quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+          consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+          dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+          proident...
+        </div>
       </Modal>
     </>
   );
@@ -118,13 +128,20 @@ export const WithoutFooter = () => {
         Click to open
       </Button>
       <Modal title="Modal Title" open={open} onOpenChange={() => setOpen(false)}>
-        <div className="dark:text-white">This is a content</div>
+        <div>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do do do eiusmod
+          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+          quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+          consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+          dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+          sunt in...
+        </div>
       </Modal>
     </>
   );
 };
 
-export const JustContentWithTrigger = () => {
+export const WithoutHeaderFooter = () => {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -132,11 +149,19 @@ export const JustContentWithTrigger = () => {
         Click to open
       </Button>
       <Modal open={open} onOpenChange={() => setOpen(false)}>
-        <div className="dark:text-white">This is a content</div>
+        <div>
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do do do eiusmod
+          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+          quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+          consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+          dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,
+          sunt in...
+        </div>
       </Modal>
     </>
   );
 };
+
 export const LongContent = () => {
   const [open, setOpen] = useState(false);
   return (

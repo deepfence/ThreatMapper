@@ -18,15 +18,21 @@ export interface ModalProps
   extends DialogPrimitive.DialogProps,
     ObjectWithNonNullableValues<VariantProps<typeof contentCva>> {
   size?: SizeType;
-  title?: string;
+  title?: React.ReactNode;
   footer?: React.ReactNode;
   elementToFocusOnCloseRef?: React.RefObject<FocusableElement>;
 }
 
-const ModalHeader: FC<{ title?: string }> = ({ title = ' ' }) => {
+const ModalHeader: FC<{ title?: React.ReactNode }> = ({ title }) => {
+  console.log('', title);
   return (
     <>
-      <div className={cx('pt-5 pb-[22px]')}>
+      <div
+        className={cx('pt-5', {
+          'pb-[32px]': !title,
+          'pb-[22px]': title,
+        })}
+      >
         <DialogPrimitive.Title
           className={cx('text-h2 dark:text-text-input-value')}
           data-testid="modal-title"
@@ -89,14 +95,13 @@ const contentCva = cva(
     cx(
       'max-h-[90vh] relative flex flex-col overflow-x-hidden focus:outline-none',
       // border
-      'border rounded border-bg-grid-border',
+      'border rounded dark:border-bg-grid-border',
       // bg
-      'dark:bg-bg-breadcrumb-bar dark:border-gray-600',
+      'dark:bg-bg-breadcrumb-bar',
       // text
       'text-p1 dark:text-[#ADBBC4]',
       // padding
       'px-6',
-      'max-w-[90%]',
       {
         'animate-modal-slide-in': open,
         // 'animate-pop-out': !open,
