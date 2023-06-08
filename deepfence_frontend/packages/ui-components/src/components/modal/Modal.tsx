@@ -41,10 +41,6 @@ const ModalHeader: FC<{ title?: string }> = ({ title = ' ' }) => {
           'absolute top-[30px] right-6 cursor-pointer',
           // text
           'text-gray-400 dark:text-[#ADBBC4]',
-          {
-            'top-[22px]': title,
-            'top-[10px]': !title,
-          },
         )}
         id={'modal-close-button'}
         data-testid={'modal-close-button'}
