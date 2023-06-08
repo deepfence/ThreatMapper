@@ -171,7 +171,7 @@ neo4j:
   image:
     repository: neo4j
     pullPolicy: Always
-    tag: 4.4.12
+    tag: 4.4.21
   storageClass: ""
   volumeSize: 30G
   resources:

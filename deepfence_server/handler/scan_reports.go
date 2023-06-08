@@ -1463,17 +1463,24 @@ func (h *Handler) BulkDeleteScans(w http.ResponseWriter, r *http.Request) {
 
 	for _, s := range scansList.ScansInfo {
 		log.Info().Msgf("delete scan %s %s", req.ScanType, s.ScanId)
-		err := reporters_scan.DeleteScan(r.Context(),
-			utils.DetectedNodeScanType[req.ScanType], s.ScanId, []string{})
+		scanType := utils.DetectedNodeScanType[req.ScanType]
+		err = reporters_scan.DeleteScan(r.Context(), scanType, s.ScanId, []string{})
 		if err != nil {
 			log.Error().Err(err).Msgf("failed to delete scan id %s", s.ScanId)
 			continue
+		}
+		if scanType == utils.NEO4J_COMPLIANCE_SCAN || scanType == utils.NEO4J_CLOUD_COMPLIANCE_SCAN {
+			err = h.CachePostureProviders(r.Context())
+			if err != nil {
+				respondError(err, w)
+				return
+			}
 		}
 	}
 
 	h.AuditUserActivity(r, ACTION_BULK, ACTION_DELETE, req, true)
 
-	httpext.JSON(w, http.StatusOK, nil)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) GetAllNodesInScanResultBulkHandler(w http.ResponseWriter, r *http.Request) {
