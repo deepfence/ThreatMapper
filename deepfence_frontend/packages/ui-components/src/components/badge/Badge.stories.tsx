@@ -20,6 +20,7 @@ export const Grey = {
   args: {
     label: 'Label',
     color: 'grey',
+    variant: 'outline',
   },
 };
 
@@ -57,128 +58,112 @@ export const Success = {
   args: {
     label: 'Label',
     color: 'success',
+    variant: 'flat',
   },
 };
 export const Info = {
   args: {
     label: 'Label',
     color: 'info',
+    variant: 'flat',
   },
 };
 export const Warning = {
   args: {
     label: 'Label',
     color: 'warning',
+    variant: 'flat',
   },
 };
 export const Error = {
   args: {
     label: 'Label',
     color: 'error',
+    variant: 'flat',
   },
 };
 export const GreyBadge = {
   args: {
-    value: '90+',
+    label: '90+',
+    size: 'small',
     color: 'grey',
+    variant: 'flat',
   },
 };
 
 export const PurpleBadge = {
   args: {
-    value: '90+',
+    label: '90+',
+    size: 'small',
     color: 'purple',
+    variant: 'flat',
   },
 };
 export const BlueBadge = {
   args: {
-    value: '90+',
+    label: '90+',
+    size: 'small',
     color: 'blue',
+
+    variant: 'flat',
   },
 };
 export const OrangeBadge = {
   args: {
-    value: '90+',
+    label: '90+',
+    size: 'small',
     color: 'orange',
+
+    variant: 'flat',
   },
 };
 export const BlueLightBadge = {
   args: {
-    value: '90+',
+    label: '90+',
+    size: 'small',
     color: 'blueLight',
+    variant: 'flat',
   },
 };
 export const PinkBadge = {
   args: {
-    value: '90+',
+    label: '90+',
+    size: 'small',
     color: 'pink',
+    variant: 'flat',
   },
 };
 export const SuccessBadge = {
   args: {
-    value: '90+',
+    label: '90+',
+    size: 'small',
     color: 'success',
+    variant: 'flat',
   },
 };
 export const InfoBadge = {
   args: {
-    value: '90+',
+    label: '90+',
+    size: 'small',
     color: 'info',
+
+    variant: 'flat',
   },
 };
 export const WarningBadge = {
   args: {
-    value: '90+',
+    label: '90+',
+    size: 'small',
     color: 'warning',
+    variant: 'flat',
   },
 };
 export const ErrorBadge = {
   args: {
-    value: '90+',
+    label: '90+',
+    size: 'small',
     color: 'error',
-  },
-};
 
-export const GreyLabelBadge = {
-  args: {
-    value: '90+',
-    label: 'Label',
-    color: 'grey',
-  },
-};
-
-export const PurpleLabelBadge = {
-  args: {
-    value: '90+',
-    label: 'Label',
-    color: 'purple',
-  },
-};
-export const BlueLabelBadge = {
-  args: {
-    value: '90+',
-    label: 'Label',
-    color: 'blue',
-  },
-};
-export const OrangeLabelBadge = {
-  args: {
-    value: '90+',
-    label: 'Label',
-    color: 'orange',
-  },
-};
-export const BlueLightLabelBadge = {
-  args: {
-    value: '90+',
-    label: 'Label',
-    color: 'blueLight',
-  },
-};
-export const PinkLabelBadge = {
-  args: {
-    value: '90+',
-    label: 'Label',
-    color: 'pink',
+    variant: 'flat',
   },
 };

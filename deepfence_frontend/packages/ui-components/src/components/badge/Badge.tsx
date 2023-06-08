@@ -1,7 +1,12 @@
 import * as LabelPrimitive from '@radix-ui/react-label';
-import cx from 'classnames';
+import { cva, VariantProps } from 'cva';
 import React, { ComponentProps, forwardRef, useId } from 'react';
 import { twMerge } from 'tailwind-merge';
+
+import { ObjectWithNonNullableValues } from '@/types/utils';
+
+export type SizeType = 'default' | 'small';
+export type VariantType = 'outline' | 'flat';
 
 export type ColorType =
   | 'grey'
@@ -14,113 +19,157 @@ export type ColorType =
   | 'info'
   | 'warning'
   | 'error';
-export type SelectedBadgeProps = {
-  id: string | number | undefined;
-  value: string | number | undefined;
-};
-export interface BadgeProps extends Omit<ComponentProps<'span'>, 'ref' | 'color'> {
+
+const badgeCVA = cva(['py-px'], {
+  variants: {
+    color: {
+      grey: '',
+      purple: '',
+      blue: '',
+      orange: '',
+      blueLight: '',
+      pink: '',
+      success: '',
+      info: '',
+      warning: '',
+      error: '',
+    },
+    variant: {
+      outline: 'text-text-inverse  dark:text-text-input-value border',
+      flat: 'text-text-input-value dark:text-text-inverse',
+    },
+    size: {
+      default: 'text-p8 px-2.5 rounded-xl',
+      small: 'text-p9 px-1 rounded-lg align-middle',
+    },
+  },
+  defaultVariants: {
+    color: 'grey',
+    size: 'default',
+    variant: 'outline',
+  },
+  compoundVariants: [
+    {
+      variant: 'outline',
+      color: 'grey',
+      className: 'border-df-gray-600 dark:border-gray-600',
+    },
+    {
+      variant: 'outline',
+      color: 'purple',
+      className: 'border-chart-purple1 dark:border-chart-purple1',
+    },
+    {
+      variant: 'outline',
+      color: 'blue',
+      className: 'border-accent-accent dark:border-accent-accent',
+    },
+    {
+      variant: 'outline',
+      color: 'orange',
+      className: 'border-status-warning dark:border-status-warning',
+    },
+    {
+      variant: 'outline',
+      color: 'blueLight',
+      className: 'border-clarity-action dark:border-clarity-action',
+    },
+    {
+      variant: 'outline',
+      color: 'pink',
+      className: 'border-chart-pink3 dark:border-chart-pink3',
+    },
+    {
+      variant: 'flat',
+      color: 'grey',
+      className: 'bg-df-gray-600 dark:bg-gray-600',
+    },
+    {
+      variant: 'flat',
+      color: 'purple',
+      className: 'bg-chart-purple1 dark:bg-chart-purple1',
+    },
+    {
+      variant: 'flat',
+      color: 'blue',
+      className: 'bg-accent-accent dark:bg-accent-accent',
+    },
+    {
+      variant: 'flat',
+      color: 'orange',
+      className: 'bg-status-warning dark:bg-status-warning',
+    },
+    {
+      variant: 'flat',
+      color: 'blueLight',
+      className: 'bg-clarity-action dark:bg-clarity-action',
+    },
+    {
+      variant: 'flat',
+      color: 'pink',
+      className: 'bg-chart-pink3 dark:bg-chart-pink3',
+    },
+    {
+      variant: 'flat',
+      color: 'success',
+      className: 'bg-status-success dark:bg-status-success',
+    },
+    {
+      variant: 'flat',
+      color: 'info',
+      className: 'bg-status-info dark:bg-status-info',
+    },
+    {
+      variant: 'flat',
+      color: 'warning',
+      className: 'bg-status-warning dark:bg-status-warning',
+    },
+    {
+      variant: 'flat',
+      color: 'error',
+      className: 'bg-chart-red dark:bg-chart-red',
+    },
+    {
+      variant: 'flat',
+      size: 'default',
+      className: 'py-0.5',
+    },
+  ],
+});
+export interface BadgeProps
+  extends Omit<ComponentProps<'span'>, 'ref' | 'color'>,
+    ObjectWithNonNullableValues<VariantProps<typeof badgeCVA>> {
   label?: React.ReactNode;
-  value?: string;
   color?: ColorType;
+  size?: SizeType;
+  variant?: VariantType;
 }
 
-const classes = {
-  label: {
-    color: {
-      grey: 'border-df-gray-600 dark:border-gray-600 border text-text-inverse  dark:text-text-input-value ',
-      purple:
-        'border-chart-purple1 dark:border-chart-purple1 border text-text-inverse  dark:text-text-input-value ',
-      blue: 'border-accent-accent dark:border-accent-accent border text-text-inverse  dark:text-text-input-value ',
-      orange:
-        'border-status-warning dark:border-status-warning border text-text-inverse  dark:text-text-input-value ',
-      blueLight:
-        'border-clarity-action dark:border-clarity-action border text-text-inverse  dark:text-text-input-value ',
-      pink: 'border-chart-pink3 dark:border-chart-pink3 border text-text-inverse  dark:text-text-input-value ',
-      success:
-        'bg-status-success dark:bg-status-success text-text-input-value dark:text-text-inverse',
-      info: 'bg-status-info dark:bg-status-info text-text-input-value dark:text-text-inverse',
-      warning:
-        'bg-status-warning dark:bg-status-warning text-text-input-value dark:text-text-inverse',
-      error:
-        'bg-chart-red dark:bg-chart-red text-text-input-value dark:text-text-inverse',
-    },
-  },
-  badge: {
-    color: {
-      grey: 'bg-df-gray-600 dark:bg-df-gray-600 text-text-inverse dark:text-text-inverse ',
-      purple:
-        'bg-chart-purple1 dark:border-chart-purple1 text-text-inverse dark:text-text-inverse',
-      blue: 'bg-accent-accent dark:border-accent-accent  text-text-inverse dark:text-text-inverse',
-      orange:
-        'bg-status-warning dark:border-status-warning  text-text-inverse dark:text-text-inverse',
-      blueLight:
-        'bg-clarity-action dark:border-clarity-action text-text-inverse dark:text-text-inverse',
-      pink: 'bg-chart-pink3 dark:bg-chart-pink3  text-text-inverse  dark:text-text-text-inverse ',
-      success:
-        'bg-status-success dark:bg-status-success text-text-inverse dark:text-text-inverse',
-      info: 'bg-status-info dark:bg-status-info dark:text-text-inverse',
-      warning:
-        'bg-status-warning dark:bg-status-warning text-text-inverse dark:text-text-inverse',
-      error: 'bg-chart-red dark:bg-chart-red text-text-inverse dark:text-text-inverse',
-    },
-  },
-};
-
 export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
-  ({ label, id, color = 'grey', value, className, ...rest }, ref) => {
+  (
+    {
+      label,
+      id,
+      color = 'grey',
+      size = 'default',
+      variant = 'outline',
+      className,
+      ...rest
+    },
+    ref,
+  ) => {
     const internalId = useId();
     const _id = id ? id : internalId;
-
-    if (value && !label) {
-      return (
-        <LabelPrimitive.Label
-          className={twMerge(
-            cx(
-              ` inline-flex gap-1.5 justify-center items-center px-3 rounded-xl ${classes.badge.color[color]}`,
-            ),
-            'text-p8',
-            'py-0.5',
-            className,
-          )}
-          ref={ref}
-          {...rest}
-        >
-          {value}
-        </LabelPrimitive.Label>
-      );
-    }
     return (
       <>
         <LabelPrimitive.Label
-          className={twMerge(
-            cx(
-              ` inline-flex gap-1.5 justify-center items-center pl-3 pr-1 rounded-xl ${classes.label.color[color]}`,
-              {
-                'pr-3': !value,
-              },
-              'text-p8',
-              'py-0.5',
-            ),
-            className,
-          )}
+          className={twMerge(badgeCVA({ color, variant, size }), className)}
           id={_id}
           data-testid={`badge-${_id}`}
           ref={ref}
           {...rest}
         >
           {label}
-          {value && (
-            <LabelPrimitive.Label
-              className={twMerge(
-                cx(
-                  ` inline-flex gap-1.5 justify-center items-center ml-4 px-3  rounded-xl text-p8 ${classes.badge.color[color]}`,
-                ),
-                'text-p8',
-              )}
-            >
-              {value}
-            </LabelPrimitive.Label>
-          )}
         </LabelPrimitive.Label>
       </>
     );
