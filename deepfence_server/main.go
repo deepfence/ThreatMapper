@@ -64,7 +64,11 @@ type Config struct {
 }
 
 func init() {
+	debug := "debug"
 	enable_debug = os.Getenv("DF_ENABLE_DEBUG") != ""
+	if enable_debug {
+		verbosity = &debug
+	}
 }
 
 func main() {
