@@ -15,7 +15,7 @@ export const AwsTerraFormScript = withRouter(props => {
   const [collapsedCloudFormation, setCollapsedCloudFormation] = useState(true);
   const [regionValue, setRegionValue] = useState();
   const terraformLink =
-    'https://registry.terraform.io/modules/deepfence/cloud-scanner/aws/latest/examples/single-account-ecs#usage';
+    'https://community.deepfence.io/threatmapper/docs/v1.5/cloudscanner/aws#terraform';
 
   return (
     <div
@@ -144,62 +144,6 @@ export const AwsTerraFormScript = withRouter(props => {
               <a target="_blank" rel="noreferrer" href={terraformLink}>
                 {terraformLink}
               </a>
-              <h6 style={{ color: 'white', marginTop: '20px' }}>
-                {' '}
-                Single account{' '}
-              </h6>
-
-              <div style={{ marginTop: '15px' }}>
-                <span style={{ fontSize: '11px' }}>
-                  Copy the code below and paste it into a .tf file on your local
-                  machine.
-                </span>
-                <div
-                  style={{
-                    backgroundColor: 'black',
-                    padding: '10px',
-                    color: 'white',
-                  }}
-                >
-                  <pre style={{ color: 'white' }}>{`provider "aws" {
-  region = "<AWS-REGION>; eg. us-east-1"
-}
-
-module "deepfence-cloud-scanner_example_single-account" {
-  source                        = "deepfence/cloud-scanner/aws//examples/single-account-ecs"
-  version                       = "0.3.0"
-  mgmt-console-url              = "<Console URL> eg. XXX.XXX.XX.XXX"
-  mgmt-console-port             = "443"
-  deepfence-key                 = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  name                          = "deepfence-cloud-scanner"
-}
-
-variable "image" {
-  type        = string
-  default     = "quay.io/deepfenceio/cloud-scanner:1.5.0"
-}
-`}</pre>
-                </div>
-              </div>
-
-              <div style={{ marginTop: '15px' }}>
-                <span style={{ fontSize: '11px' }}>then run:</span>
-                <div
-                  style={{
-                    backgroundColor: 'black',
-                    color: 'white',
-                  }}
-                >
-                  <pre style={{ color: 'white' }}>
-                    $ terraform init
-                    <br />
-                    $ terraform plan
-                    <br />
-                    $ terraform apply
-                    <br />
-                  </pre>
-                </div>
-              </div>
             </div>
           ) : null}
         </div>

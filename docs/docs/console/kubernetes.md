@@ -36,7 +36,7 @@ The following instructions explain how to install the ThreatMapper console on a 
     ```bash
     helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 
-    helm install deepfence-console deepfence/deepfence-console
+    helm install deepfence-console deepfence/deepfence-console --version 1.5.2
     ```
 
     ... and wait for the pods to start up:
@@ -44,15 +44,6 @@ The following instructions explain how to install the ThreatMapper console on a 
     ```bash
     kubectl get pods -o wide -w
     ```
-
-    :::tip
-
-    Alternatively, to install a named [tagged release](https://github.com/deepfence/ThreatMapper/releases) (recommended), specify the release tag as follows:
-
-    ```bash
-    helm install deepfence-console deepfence/deepfence-console --set image.tag=1.5.0
-    ```
-    :::
 
     :::tip
     For advanced installation, you can edit the helm chart values as described in the [Helm Chart - detailed setup](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-console#install-deepfence-console-helm-chart).
@@ -63,7 +54,7 @@ The following instructions explain how to install the ThreatMapper console on a 
     Deploy deepfence-router:
 
     ```bash
-    helm install deepfence-router deepfence/deepfence-router
+    helm install deepfence-router deepfence/deepfence-router --version 1.5.0
     ```
 
     ... and wait for the cloud platform to deploy an external load-balancer:
@@ -77,16 +68,6 @@ The following instructions explain how to install the ThreatMapper console on a 
     :::
 
 Now proceed to the [Initial Configuration](initial-configuration).
-
-### Upgrade the ThreatMapper Management Console
-
-You can perform a rolling upgrade of the Management Console to a new, tagged release:
-
-   ```bash
-   helm repo update deepfence
-   helm upgrade deepfence-console deepfence/deepfence-console --set image.tag=1.5.0
-   helm upgrade deepfence-router deepfence/deepfence-router
-   ```
 
 ### Remove the ThreatMapper Management Console
 

@@ -89,7 +89,8 @@ helm install deepfence-agent deepfence/deepfence-agent \\
   ${containerRuntime} \\
   --set mountContainerRuntimeSocket.${socketPathValue} \\
   --namespace ${namespace || 'deepfence'} \\
-  --create-namespace`;
+  --create-namespace \\
+  --version 1.5.0`;
   };
 
   const getDockerInstructions = () => {
@@ -120,7 +121,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
       <p>
         For more details reference our{' '}
         <a
-          href="https://community.deepfence.io/threatmapper/docs/sensors/docker"
+          href="https://community.deepfence.io/threatmapper/docs/v1.5/sensors/docker"
           target="_blank"
           rel="noreferrer"
         >
@@ -248,7 +249,7 @@ helm install deepfence-agent deepfence/deepfence-agent \\
       <p>
         For more details reference our{' '}
         <a
-          href="https://community.deepfence.io/threatmapper/docs/sensors/kubernetes"
+          href="https://community.deepfence.io/threatmapper/docs/v1.5/sensors/kubernetes"
           target="_blank"
           rel="noreferrer"
         >

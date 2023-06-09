@@ -8,7 +8,7 @@ import ComplianceTable from '../compliance-table';
 
 export const AzureTerraFormScript = withRouter(props => {
   const [collapsed, setCollapsed] = useState(true);
-  const terraformLink = "https://registry.terraform.io/modules/deepfence/cloud-scanner/azure/latest/examples/single-subscription#usage";
+  const terraformLink = "https://community.deepfence.io/threatmapper/docs/v1.5/cloudscanner/azure";
 
   return (
     <div
@@ -48,62 +48,6 @@ export const AzureTerraFormScript = withRouter(props => {
               <br/>
               <a target="_blank" rel="noreferrer" href={terraformLink}>{terraformLink}</a>
             </p>
-          </div>
-          <h6 style={{ color: 'white', marginTop: '20px' }}>
-            {' '}
-            Single subscription{' '}
-          </h6>
-          <div style={{ marginTop: '15px' }}>
-            <span style={{ fontSize: '11px' }}>
-              Copy the code below and paste it into a .tf file on your local
-              machine.
-            </span>
-            <div
-              style={{
-                backgroundColor: 'black',
-                padding: '10px',
-                color: 'white',
-              }}
-            >
-              <pre style={{ color: 'white' }}>{`provider "azurerm" {
-  features {}
-  subscription_id = "<SUBSCRIPTION_ID eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX>"
-}
-
-module "cloud-scanner_example_single-subscription" {
-  source              = "deepfence/cloud-scanner/azure//examples/single-subscription"
-  version             = "0.2.0"
-  mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
-  mgmt-console-port   = "443"
-  deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  name                = "deepfence-cloud-scanner"
-}
-
-variable "image" {
-  type        = string
-  default     = "quay.io/deepfenceio/cloud-scanner:1.5.0"
-}
-`}</pre>
-            </div>
-          </div>
-          <div style={{ marginTop: '15px' }}>
-            <span style={{ fontSize: '11px' }}>then run:</span>
-            <div
-              style={{
-                backgroundColor: 'black',
-                color: 'white',
-                marginBottom: '100px',
-              }}
-            >
-              <pre style={{ color: 'white' }}>
-                $ terraform init
-                <br />
-                $ terraform plan
-                <br />
-                $ terraform apply
-                <br />
-              </pre>
-            </div>
           </div>
         </div>
       ) : null}
