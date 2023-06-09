@@ -28,9 +28,13 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
       <CheckboxPrimitive.Root
         id={_id}
         className={cx(
-          'flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px]',
-          'data-[state=unchecked]:bg-gray-50 data-[state=unchecked]:dark:bg-transparent data-[state=unchecked]:border border-gray-300 dark:border-df-gray-600',
+          'flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] peer group',
+          'data-[state=unchecked]:bg-gray-50 data-[state=unchecked]:dark:bg-transparent data-[state=unchecked]:border border-gray-300 dark:border-text-text-and-icon',
           'data-[state=checked]:dark:bg-accent-accent',
+          // uncheck disabled
+          'dark:data-[state=unchecked]:disabled:bg-gray-600 dark:data-[state=unchecked]:disabled:border-none',
+          // check disabled
+          'dark:data-[state=checked]:disabled:bg-gray-600 dark:data-[state=checked]:disabled:border-none',
           {
             'dark:bg-accent-accent': internalChecked === 'indeterminate',
           },
@@ -50,12 +54,12 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
       >
         <CheckboxPrimitive.Indicator>
           {internalChecked === 'indeterminate' && (
-            <span className="self-center text-white dark:text-black">
+            <span className="self-center text-white dark:text-black dark:group-disabled:group-data-[state=checked]:bg-gray-900">
               <InterminateIcon />
             </span>
           )}
           {internalChecked === true && (
-            <span className="self-center text-white dark:text-black">
+            <span className="self-center text-white dark:text-black dark:group-disabled:group-data-[state=checked]:bg-gray-900">
               <CheckedIcon />
             </span>
           )}
@@ -64,7 +68,9 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
       {!isNil(label) ? (
         <LabelPrimitive.Label
           htmlFor={_id}
-          className={cx('ml-2 text-sm font-medium text-gray-900 dark:text-gray-300')} // TODO label according to new design
+          className={cx(
+            'ml-1.5 text-p4 dark:text-text-input-value dark:peer-disabled:text-gray-600',
+          )}
         >
           {label}
         </LabelPrimitive.Label>
