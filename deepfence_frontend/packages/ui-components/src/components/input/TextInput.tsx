@@ -176,7 +176,7 @@ const inputCva = cva(
         ],
       },
       sizing: {
-        md: `text-sm`,
+        md: '',
       },
       withStartIcon: {
         true: 'pl-[20px]',
@@ -343,12 +343,9 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
 
           {color === 'error' && (
             <div
-              className={cx(
-                'dark:focus:bg-gradient-to-b dark:focus:from-transparent from-95% dark:focus:to-[#489CFF] dark:focus:to-95% text-chart-red disabled:cursor-not-allowed',
-                {
-                  'cursor-not-allowed': disabled,
-                },
-              )}
+              className={cx('text-chart-red', {
+                'cursor-not-allowed': disabled,
+              })}
               data-testid={`textinput-error-icon-${id}`}
             >
               <ErrorIcon />
@@ -356,7 +353,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           )}
         </div>
         {helperText && (
-          <div className="pt-1.5 dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)]">
+          <div className="pt-1.5">
             <HelperText color={color} text={helperText} />
           </div>
         )}
