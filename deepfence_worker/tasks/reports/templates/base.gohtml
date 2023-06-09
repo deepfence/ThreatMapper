@@ -261,28 +261,40 @@
 <body>
   {{ template "header" . }}
   {{ template "applied-filters" . }}
+
   {{ $scan_types := list "vulnerability" "secret" "malware" }}
   {{ if mustHas .ScanType $scan_types }}
     {{ template "summary-table" . }}
   {{ end }}
+
   {{ if eq .ScanType "compliance" }}
-    {{ template "compliance-summary-table" . }}
+    {{ if eq .AppliedFilters.NodeType "cluster" }}
+      {{ template "cloud-compliance-summary-table" . }}
+    {{ else }}
+      {{ template "compliance-summary-table" . }}
+    {{ end }}
   {{ end }}
+
   {{ if eq .ScanType "cloud_compliance" }}
     {{ template "cloud-compliance-summary-table" . }}
   {{ end }}
+
   {{ if eq .ScanType "vulnerability" }}
     {{ template "vulnerabilities-nodes-table" . }}
   {{ end }}
+
   {{ if eq .ScanType "secret" }}
     {{ template "secrets-nodes-table" . }}
   {{ end }}
+
   {{ if eq .ScanType "malware" }}
     {{ template "malwares-nodes-table" . }}
   {{ end }}
+
   {{ if eq .ScanType "compliance" }}
     {{ template "compliance-nodes-table" . }}
   {{ end }}
+
   {{ if eq .ScanType "cloud_compliance" }}
     {{ template "cloud-compliance-nodes-table" . }}
   {{ end }}
