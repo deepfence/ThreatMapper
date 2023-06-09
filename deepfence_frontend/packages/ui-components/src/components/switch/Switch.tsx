@@ -20,7 +20,7 @@ const Switch = (props: SwitchProps) => {
         id={_id}
         disabled={disabled}
         className={cx(
-          'group peer items-center',
+          'group peer items-center disabled:cursor-not-allowed',
           'dark:data-[state=checked]:bg-[#60B515]',
           'dark:disabled:data-[state=checked]:bg-gray-600',
           'data-[state=unchecked]:bg-gray-200 dark:data-[state=unchecked]:bg-text-input-value',
@@ -56,7 +56,7 @@ const Switch = (props: SwitchProps) => {
           htmlFor={_id}
           className={cx(
             'pl-2 text-p4 dark:text-text-text-and-icon cursor-default',
-            'dark:peer-disabled:text-gray-600',
+            'dark:peer-disabled:text-gray-600 dark:peer-disabled:cursor-not-allowed',
           )}
         >
           {label}

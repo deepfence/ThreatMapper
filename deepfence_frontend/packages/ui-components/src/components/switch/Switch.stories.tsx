@@ -27,5 +27,6 @@ export const DefaultOn = {
   args: {
     label: 'Toggle',
     defaultChecked: true,
+    disabled: true,
   },
 };
