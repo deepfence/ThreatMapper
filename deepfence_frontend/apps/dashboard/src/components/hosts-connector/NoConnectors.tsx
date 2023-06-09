@@ -7,7 +7,9 @@ import { DFLink } from '@/components/DFLink';
 export const ACCOUNT_CONNECTOR = {
   DOCKER: 'docker',
   AWS: 'aws',
+  AWS_ORG: 'aws_org',
   GCP: 'gcp',
+  GCP_ORG: 'gcp_org',
   AZURE: 'azure',
   LINUX: 'linux',
   HOST: 'host',

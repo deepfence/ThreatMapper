@@ -1146,8 +1146,12 @@ const FilterComponent = () => {
   let benchmarks: string[] = [];
   if (nodeType === ACCOUNT_CONNECTOR.AWS) {
     benchmarks = complianceType.aws;
+  } else if (nodeType === ACCOUNT_CONNECTOR.AWS_ORG) {
+    benchmarks = complianceType.aws_org;
   } else if (nodeType === ACCOUNT_CONNECTOR.GCP) {
     benchmarks = complianceType.gcp;
+  } else if (nodeType === ACCOUNT_CONNECTOR.GCP_ORG) {
+    benchmarks = complianceType.gcp_org;
   } else if (nodeType === ACCOUNT_CONNECTOR.AZURE) {
     benchmarks = complianceType.azure;
   }

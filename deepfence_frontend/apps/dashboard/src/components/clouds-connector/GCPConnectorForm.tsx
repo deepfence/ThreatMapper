@@ -8,7 +8,7 @@ export const GCPConnectorForm = () => {
         <div className={`${Typography.size.sm} dark:text-gray-200`}>
           Connect to your Google Cloud Account via Terraform. Find out more information by{' '}
           <a
-            href={`https://docs.deepfence.io/threatmapper/docs/v2.0/cloudscanner/gcp`}
+            href={`https://community.deepfence.io/threatmapper/doc/v2.0/cloudscanner/gcp`}
             target="_blank"
             rel="noreferrer"
             className="text-blue-600 dark:text-blue-500 mt-2"

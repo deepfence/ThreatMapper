@@ -207,8 +207,8 @@ helm repo update
 helm install deepfence-agent deepfence/deepfence-agent \\
 --set managementConsoleUrl=${window.location.host ?? '---CONSOLE-IP---'} \\
 --set deepfenceKey=${dfApiKey} \\
---set image.tag=${''} \\
---set image.clusterAgentImageTag=${''} \\
+--set image.tag=2.0.0 \\
+--set image.clusterAgentImageTag=2.0.0 \\
 --set clusterName=${defaultCluster} \\
 ${containerRuntimeDropdown[0].value} \\
 ${socketMap.containerd.command}="${defaultSocketPath}" \\
@@ -222,7 +222,7 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
           <div className={`${Typography.size.sm} dark:text-gray-200`}>
             Connect via Kubernetes Scanner. Find out more information by{' '}
             <a
-              href={`https://docs.deepfence.io/threatstryker/docs/sensors/kubernetes`}
+              href={`https://community.deepfence.io/threatmapper/doc/v2.0/sensors/kubernetes`}
               target="_blank"
               rel="noreferrer"
               className="text-blue-600 dark:text-blue-500 mt-2"

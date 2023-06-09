@@ -19,7 +19,8 @@ docker run -dit \\
 --cpus=".2" \\
 --name=deepfence-agent \\
 --restart on-failure \\
---pid=host --net=host \\
+--pid=host \\
+--net=host \\
 --privileged=true \\
 -v /sys/kernel/debug:/sys/kernel/debug:rw \\
 -v /var/log/fenced \\
@@ -29,7 +30,7 @@ docker run -dit \\
 -e MGMT_CONSOLE_URL="${window.location.host ?? '---CONSOLE-IP---'}" \\
 -e MGMT_CONSOLE_PORT="443" \\
 -e DEEPFENCE_KEY="${dfApiKey}" \\
-deepfenceio/deepfence_agent_ce:latest`;
+deepfenceio/deepfence_agent_ce:2.0.0`;
 
   return (
     <Stepper>
@@ -37,7 +38,7 @@ deepfenceio/deepfence_agent_ce:latest`;
         <div className={`${Typography.size.sm} dark:text-gray-200`}>
           Connect to Linux VM. Find out more information by{' '}
           <a
-            href={`https://docs.deepfence.io/docs/threatmapper/sensors/linux-host/`}
+            href={`https://community.deepfence.io/threatmapper/doc/v2.0/sensors/docker`}
             target="_blank"
             rel="noreferrer"
             className="text-blue-600 dark:text-blue-500 mt-2"

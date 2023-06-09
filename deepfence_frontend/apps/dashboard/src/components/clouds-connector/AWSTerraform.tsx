@@ -10,7 +10,7 @@ export const AWSTerraform = memo(() => {
           <div className={`${Typography.size.sm} dark:text-gray-200`}>
             Connect to your AWS Cloud Account via Terraform. Find out more information by{' '}
             <a
-              href={`https://docs.deepfence.io/threatmapper/docs/v2.0/cloudscanner/aws#terraform`}
+              href={`https://community.deepfence.io/threatmapper/doc/v2.0/cloudscanner/aws#terraform`}
               target="_blank"
               rel="noreferrer"
               className="text-blue-700 dark:text-blue-500 mt-2"
