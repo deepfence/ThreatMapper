@@ -35,6 +35,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
           'dark:data-[state=unchecked]:disabled:bg-gray-600 dark:data-[state=unchecked]:disabled:border-none',
           // check disabled
           'dark:data-[state=checked]:disabled:bg-gray-600 dark:data-[state=checked]:disabled:border-none',
+          'disabled:cursor-not-allowed',
           {
             'dark:bg-accent-accent': internalChecked === 'indeterminate',
           },
@@ -69,7 +70,7 @@ export const Checkbox: React.FC<CheckboxProps> = (props) => {
         <LabelPrimitive.Label
           htmlFor={_id}
           className={cx(
-            'ml-1.5 text-p4 dark:text-text-input-value dark:peer-disabled:text-gray-600',
+            'pl-1.5 text-p4 dark:text-text-input-value dark:peer-disabled:text-gray-600 peer-disabled:cursor-not-allowed',
           )}
         >
           {label}
