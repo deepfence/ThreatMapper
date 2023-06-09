@@ -55,20 +55,6 @@ const inputElementClassnames = cva(
           'text-red-700 disabled:text-red-500',
           'dark:text-red-500 dark:disabled:text-red-700',
         ],
-        success: [
-          // ring styles
-          'ring-green-300 focus:ring-green-500',
-          'dark:ring-green-800 dark:focus:ring-green-500',
-          // bg styles
-          'bg-green-50',
-          'dark:bg-gray-700',
-          // placeholder styles
-          'placeholder-green-400 disabled:placeholder-green-300',
-          'dark:placeholder-green-700 dark:disabled:placeholder-green-800',
-          // text styles
-          'text-green-700 disabled:text-green-500',
-          'dark:text-green-500 dark:disabled:text-green-700',
-        ],
       },
       sizing: {
         sm: `text-sm px-4 py-2`,
