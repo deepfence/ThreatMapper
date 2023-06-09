@@ -110,7 +110,7 @@ const InfoIcon = () => {
 };
 const inputCva = cva(
   [
-    'df-input block w-full',
+    'df-input block w-full disabled:cursor-not-allowed',
     'focus:outline-none',
     'pl-1.5 pt-1.5 pb-[5px]',
     'border-b',
@@ -281,7 +281,9 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           <div className="flex gap-2 pb-[10px] items-center">
             <LabelPrimitive.Root
               htmlFor={_id}
-              className="text-p3 text-gray-900 dark:text-text-text-and-icon"
+              className={cx('text-p3 text-gray-900 dark:text-text-text-and-icon', {
+                'dark:text-gray-600': disabled,
+              })}
             >
               {required && <span>*</span>}
               {label}
@@ -329,7 +331,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
                 data-testid={`password-icon-${id}`}
                 type="button"
                 disabled={disabled}
-                className="absolute right-0"
+                className="absolute right-0 disabled:cursor-not-allowed"
                 onClick={() => {
                   setShowPassword(!showPassword);
                 }}
@@ -341,7 +343,12 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
 
           {color === 'error' && (
             <div
-              className="dark:focus:bg-gradient-to-b dark:focus:from-transparent from-95% dark:focus:to-[#489CFF] dark:focus:to-95% text-chart-red"
+              className={cx(
+                'dark:focus:bg-gradient-to-b dark:focus:from-transparent from-95% dark:focus:to-[#489CFF] dark:focus:to-95% text-chart-red disabled:cursor-not-allowed',
+                {
+                  'cursor-not-allowed': disabled,
+                },
+              )}
               data-testid={`textinput-error-icon-${id}`}
             >
               <ErrorIcon />
