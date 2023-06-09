@@ -4,6 +4,8 @@ import { useRevalidator } from 'react-router-dom';
 import { useInterval } from 'react-use';
 import { Dropdown, DropdownItem } from 'ui-components';
 
+import { queryClient } from '@/queries/client';
+
 // function that converts seconds to human friendly time
 // e.g. 300 seconds => 5m
 // e.g. 3600 seconds => 1h
@@ -27,6 +29,9 @@ export const AutoRefresh = () => {
     () => {
       if (state === 'idle') {
         revalidate();
+        queryClient.refetchQueries({
+          type: 'active',
+        });
       }
     },
     refreshInSeconds === 0 ? null : refreshInSeconds * 1000,
@@ -49,6 +54,9 @@ export const AutoRefresh = () => {
         onClick={() => {
           if (state === 'idle') {
             revalidate();
+            queryClient.refetchQueries({
+              type: 'active',
+            });
             setSpinning(true);
           }
         }}
