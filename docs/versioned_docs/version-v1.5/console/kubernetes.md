@@ -36,7 +36,7 @@ The following instructions explain how to install the ThreatMapper console on a 
     ```bash
     helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 
-    helm install deepfence-console deepfence/deepfence-console --version 1.5.1
+    helm install deepfence-console deepfence/deepfence-console --version 1.5.2
     ```
 
     ... and wait for the pods to start up:

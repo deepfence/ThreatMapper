@@ -38,7 +38,7 @@ You can use these instructions for helm-based installations in standalone and ho
 ```bash
 helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 
-helm show values deepfence/deepfence-agent > deepfence_agent_values.yaml
+helm show values deepfence/deepfence-agent --version 1.5.0 > deepfence_agent_values.yaml
 
 # You will need to update the following values:
 #   image:name and image:clusterAgentImageName - change the account to point to your images
@@ -47,7 +47,8 @@ vim deepfence_agent_values.yaml
 
 helm install -f deepfence_agent_values.yaml deepfence-agent deepfence/deepfence-agent \
     --namespace deepfence \
-    --create-namespace
+    --create-namespace \
+    --version 1.5.0
 ```
 
 Allow a few seconds for the containers to pull and deploy in your Kubernetes environment.
