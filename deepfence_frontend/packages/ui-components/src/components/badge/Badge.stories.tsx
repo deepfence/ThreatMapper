@@ -20,7 +20,7 @@ export const Grey = {
   args: {
     label: 'Label',
     color: 'grey',
-    variant: 'outline',
+    variant: 'outlined',
   },
 };
 
@@ -58,28 +58,28 @@ export const Success = {
   args: {
     label: 'Label',
     color: 'success',
-    variant: 'flat',
+    variant: 'filled',
   },
 };
 export const Info = {
   args: {
     label: 'Label',
     color: 'info',
-    variant: 'flat',
+    variant: 'filled',
   },
 };
 export const Warning = {
   args: {
     label: 'Label',
     color: 'warning',
-    variant: 'flat',
+    variant: 'filled',
   },
 };
 export const Error = {
   args: {
     label: 'Label',
     color: 'error',
-    variant: 'flat',
+    variant: 'filled',
   },
 };
 export const GreyBadge = {
@@ -87,7 +87,7 @@ export const GreyBadge = {
     label: '90+',
     size: 'small',
     color: 'grey',
-    variant: 'flat',
+    variant: 'filled',
   },
 };
 
@@ -96,7 +96,7 @@ export const PurpleBadge = {
     label: '90+',
     size: 'small',
     color: 'purple',
-    variant: 'flat',
+    variant: 'filled',
   },
 };
 export const BlueBadge = {
@@ -105,7 +105,7 @@ export const BlueBadge = {
     size: 'small',
     color: 'blue',
 
-    variant: 'flat',
+    variant: 'filled',
   },
 };
 export const OrangeBadge = {
@@ -114,7 +114,7 @@ export const OrangeBadge = {
     size: 'small',
     color: 'orange',
 
-    variant: 'flat',
+    variant: 'filled',
   },
 };
 export const BlueLightBadge = {
@@ -122,7 +122,7 @@ export const BlueLightBadge = {
     label: '90+',
     size: 'small',
     color: 'blueLight',
-    variant: 'flat',
+    variant: 'filled',
   },
 };
 export const PinkBadge = {
@@ -130,7 +130,7 @@ export const PinkBadge = {
     label: '90+',
     size: 'small',
     color: 'pink',
-    variant: 'flat',
+    variant: 'filled',
   },
 };
 export const SuccessBadge = {
@@ -138,7 +138,7 @@ export const SuccessBadge = {
     label: '90+',
     size: 'small',
     color: 'success',
-    variant: 'flat',
+    variant: 'filled',
   },
 };
 export const InfoBadge = {
@@ -147,7 +147,7 @@ export const InfoBadge = {
     size: 'small',
     color: 'info',
 
-    variant: 'flat',
+    variant: 'filled',
   },
 };
 export const WarningBadge = {
@@ -155,7 +155,7 @@ export const WarningBadge = {
     label: '90+',
     size: 'small',
     color: 'warning',
-    variant: 'flat',
+    variant: 'filled',
   },
 };
 export const ErrorBadge = {
@@ -164,6 +164,6 @@ export const ErrorBadge = {
     size: 'small',
     color: 'error',
 
-    variant: 'flat',
+    variant: 'filled',
   },
 };

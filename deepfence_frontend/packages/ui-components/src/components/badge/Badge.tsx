@@ -6,7 +6,7 @@ import { twMerge } from 'tailwind-merge';
 import { ObjectWithNonNullableValues } from '@/types/utils';
 
 export type SizeType = 'default' | 'small';
-export type VariantType = 'outline' | 'flat';
+export type VariantType = 'outlined' | 'filled';
 
 export type ColorType =
   | 'grey'
@@ -20,7 +20,7 @@ export type ColorType =
   | 'warning'
   | 'error';
 
-const badgeCVA = cva(['py-px'], {
+const badgeCVA = cva(['inline-block pt-0.5'], {
   variants: {
     color: {
       grey: '',
@@ -35,104 +35,104 @@ const badgeCVA = cva(['py-px'], {
       error: '',
     },
     variant: {
-      outline: 'text-text-inverse  dark:text-text-input-value border',
-      flat: 'text-text-input-value dark:text-text-inverse',
+      outlined: 'text-text-inverse  dark:text-text-input-value border',
+      filled: 'text-text-input-value dark:text-text-inverse',
     },
     size: {
-      default: 'text-p8 px-2.5 rounded-xl',
-      small: 'text-p9 px-1 rounded-lg align-middle',
+      default: 'text-p8 px-2.5 rounded-xl ',
+      small: 'text-p9 px-1 rounded-lg h-[15px]',
     },
   },
   defaultVariants: {
     color: 'grey',
     size: 'default',
-    variant: 'outline',
+    variant: 'outlined',
   },
   compoundVariants: [
     {
-      variant: 'outline',
+      variant: 'outlined',
       color: 'grey',
       className: 'border-df-gray-600 dark:border-gray-600',
     },
     {
-      variant: 'outline',
+      variant: 'outlined',
       color: 'purple',
       className: 'border-chart-purple1 dark:border-chart-purple1',
     },
     {
-      variant: 'outline',
+      variant: 'outlined',
       color: 'blue',
       className: 'border-accent-accent dark:border-accent-accent',
     },
     {
-      variant: 'outline',
+      variant: 'outlined',
       color: 'orange',
       className: 'border-status-warning dark:border-status-warning',
     },
     {
-      variant: 'outline',
+      variant: 'outlined',
       color: 'blueLight',
       className: 'border-clarity-action dark:border-clarity-action',
     },
     {
-      variant: 'outline',
+      variant: 'outlined',
       color: 'pink',
       className: 'border-chart-pink3 dark:border-chart-pink3',
     },
     {
-      variant: 'flat',
+      variant: 'filled',
       color: 'grey',
       className: 'bg-df-gray-600 dark:bg-gray-600',
     },
     {
-      variant: 'flat',
+      variant: 'filled',
       color: 'purple',
       className: 'bg-chart-purple1 dark:bg-chart-purple1',
     },
     {
-      variant: 'flat',
+      variant: 'filled',
       color: 'blue',
       className: 'bg-accent-accent dark:bg-accent-accent',
     },
     {
-      variant: 'flat',
+      variant: 'filled',
       color: 'orange',
       className: 'bg-status-warning dark:bg-status-warning',
     },
     {
-      variant: 'flat',
+      variant: 'filled',
       color: 'blueLight',
       className: 'bg-clarity-action dark:bg-clarity-action',
     },
     {
-      variant: 'flat',
+      variant: 'filled',
       color: 'pink',
       className: 'bg-chart-pink3 dark:bg-chart-pink3',
     },
     {
-      variant: 'flat',
+      variant: 'filled',
       color: 'success',
       className: 'bg-status-success dark:bg-status-success',
     },
     {
-      variant: 'flat',
+      variant: 'filled',
       color: 'info',
       className: 'bg-status-info dark:bg-status-info',
     },
     {
-      variant: 'flat',
+      variant: 'filled',
       color: 'warning',
       className: 'bg-status-warning dark:bg-status-warning',
     },
     {
-      variant: 'flat',
+      variant: 'filled',
       color: 'error',
       className: 'bg-chart-red dark:bg-chart-red',
     },
     {
-      variant: 'flat',
+      variant: 'filled',
       size: 'default',
-      className: 'py-0.5',
+      className: 'pt-[3px] pb-px',
     },
   ],
 });
@@ -152,7 +152,7 @@ export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
       id,
       color = 'grey',
       size = 'default',
-      variant = 'outline',
+      variant = 'outlined',
       className,
       ...rest
     },
