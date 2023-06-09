@@ -10,16 +10,9 @@ export default {
   },
 } as Meta<typeof Switch>;
 
-export const DefaultSM = {
+export const Default = {
   args: {
     label: 'Toggle',
-  },
-};
-
-export const DefaultMd = {
-  args: {
-    label: 'Toggle',
-    size: 'md',
   },
 };
 
