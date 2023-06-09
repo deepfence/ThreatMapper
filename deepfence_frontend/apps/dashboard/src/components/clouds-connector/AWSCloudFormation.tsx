@@ -71,7 +71,7 @@ export const AWSCloudFormation = () => {
             </p>
             <p className={`${Typography.size.sm} text-blue-600 dark:text-blue-500 mt-2`}>
               <a
-                href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner`}
+                href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:2.0.0`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center"
@@ -82,12 +82,13 @@ export const AWSCloudFormation = () => {
             </p>
             <p className={`mt-2 ${Typography.size.sm} text-blue-600 dark:text-blue-500`}>
               <a
-                href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacksets/create`}
+                href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template&stackName=Deepfence-Cloud-Scanner&param_CloudScannerImage=quay.io/deepfenceio/cloud-scanner:2.0.0`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center"
               >
-                Deploy on multiple AWS accounts <HiArrowNarrowRight className="pl-1" />
+                Deploy on multiple AWS accounts (Organization Deployment)
+                <HiArrowNarrowRight className="pl-1" />
               </a>
             </p>
             <p className="mt-4 underline">
@@ -98,7 +99,18 @@ export const AWSCloudFormation = () => {
                 target="_blank"
                 rel="noreferrer"
               >
-                You can refer the template from here.
+                You can refer the single account template from here.
+              </a>
+            </p>
+            <p className="mt-4 underline">
+              <a
+                href={
+                  'https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner-org-common.template'
+                }
+                target="_blank"
+                rel="noreferrer"
+              >
+                You can refer the organization account template from here.
               </a>
             </p>
           </div>
