@@ -47,7 +47,7 @@ var imagesSubCmd = &cobra.Command{
 			},
 		}
 
-		req := http.Client().RegistryApi.ListImageStubs(context.Background())
+		req := http.Client().RegistryAPI.ListImageStubs(context.Background())
 		req = req.ModelRegistryImageStubsReq(
 			deepfence_server_client.ModelRegistryImageStubsReq{
 				ImageFilter: filters,
@@ -55,7 +55,7 @@ var imagesSubCmd = &cobra.Command{
 				Window:      deepfence_server_client.ModelFetchWindow{},
 			},
 		)
-		res, rh, err := http.Client().RegistryApi.ListImageStubsExecute(req)
+		res, rh, err := http.Client().RegistryAPI.ListImageStubsExecute(req)
 
 		if err != nil {
 			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)

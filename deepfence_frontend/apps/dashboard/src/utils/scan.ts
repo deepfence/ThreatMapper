@@ -72,7 +72,7 @@ export const VULNERABILITY_SCAN_STATUS_GROUPS: Record<
 > = {
   neverScanned: ['NEVER_SCANNED'],
   starting: ['STARTING'],
-  inProgress: ['IN_PROGRESS', 'GENERATING_SBOM', 'SCAN_IN_PROGRESS'],
+  inProgress: ['IN_PROGRESS', 'GENERATING_SBOM', 'GENERATED_SBOM', 'SCAN_IN_PROGRESS'],
   error: ['ERROR'],
   complete: ['COMPLETE'],
 };

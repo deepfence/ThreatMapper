@@ -1,0 +1,174 @@
+{{- if .Values.console_agents.enabled }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: deepfence-agent
+  labels:
+    {{- include "deepfence-console.labels" . | nindent 4 }}
+    component: agent
+    name: deepfence-agent
+spec:
+  selector:
+    matchLabels:
+      {{- include "deepfence-console.labels" . | nindent 6 }}
+      component: agent
+      name: deepfence-agent
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        {{- include "deepfence-console.labels" . | nindent 8 }}
+        component: agent
+        name: deepfence-agent
+    spec:
+      hostPID: true
+      hostNetwork: true
+      serviceAccountName: {{ include "deepfence-console.serviceAccountName" . }}
+      automountServiceAccountToken: true
+      dnsPolicy: ClusterFirstWithHostNet
+      volumes:
+        {{- if .Values.console_agents.mountContainerRuntimeSocket.dockerSock }}
+        - name: docker-sock
+          hostPath:
+            path: {{ .Values.console_agents.mountContainerRuntimeSocket.dockerSockPath }}
+            type: Socket
+        {{- end }}
+        {{- if .Values.console_agents.mountContainerRuntimeSocket.containerdSock }}
+        - name: containerd-sock
+          hostPath:
+            path: {{ .Values.console_agents.mountContainerRuntimeSocket.containerdSockPath }}
+            type: Socket
+        {{- end }}
+        {{- if .Values.console_agents.mountContainerRuntimeSocket.crioSock }}
+        - name: crio-sock
+          hostPath:
+            path: {{ .Values.console_agents.mountContainerRuntimeSocket.crioSockPath }}
+            type: Socket
+        - hostPath:
+            path: /var/lib/containers
+            type: Directory
+          name: containers
+        {{- end }}
+        - name: kernel-sys
+          hostPath:
+            path: /sys/kernel/debug
+            type: Directory
+        - name: host-fs
+          hostPath:
+            path: /
+            type: Directory
+        - name: fenced-path
+          emptyDir: {}
+        - name: fenced-path-compliance
+          emptyDir: {}
+        - name: fenced-path-compliance-scan-logs
+          emptyDir: {}
+      containers:
+        - name: deepfence-agent
+          image: "{{ .Values.global.imageRepoPrefix }}/{{ .Values.console_agents.agent.image.repository }}:{{ default .Values.global.imageTag .Values.console_agents.agent.image.tag }}"
+          imagePullPolicy: {{ .Values.console_agents.agent.image.pullPolicy }}
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: {{ .Values.console_agents.agent.resources.requests.cpu }}
+              memory: {{ .Values.console_agents.agent.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.console_agents.agent.resources.limits.cpu }}
+              memory: {{ .Values.console_agents.agent.resources.limits.memory }}
+          env:
+            - name: MGMT_CONSOLE_URL_INTERNAL
+              value: "deepfence-server"
+            - name: MGMT_CONSOLE_PORT_INTERNAL
+              value: "8081"
+            - name: MGMT_CONSOLE_URL
+              value: "deepfence-router"
+            - name: MGMT_CONSOLE_PORT
+              value: "443"
+            - name: "DEEPFENCE_KEY"
+              value: ""
+            - name: USER_DEFINED_TAGS
+              value: {{ .Values.console_agents.userDefinedTags }}
+            - name: DF_ENABLE_PROCESS_REPORT
+              value: "{{ .Values.console_agents.enableGraphReport }}"
+            - name: DF_ENABLE_CONNECTIONS_REPORT
+              value: "{{ .Values.console_agents.enableGraphReport }}"
+            - name: DF_KUBERNETES_ON
+              value: "Y"
+            - name: INSTANCE_ID_SUFFIX
+              value: "{{ .Values.console_agents.instanceIdSuffix }}"
+            - name: DF_CLUSTER_NAME
+              value: "{{ .Values.console_agents.cluster_name }}"
+            - name: AGENT_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            {{- if .Values.clusterName }}
+            - name: SCOPE_HOSTNAME
+              value: "{{ .Values.console_agents.cluster_name }}-$(AGENT_HOSTNAME)"
+            {{- else }}
+            - name: SCOPE_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            {{- end }}
+            - name: AGENT_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: AGENT_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            {{- if .Values.console_agents.mountContainerRuntimeSocket.dockerSock }}
+            - name: DOCKER_SOCKET_PATH
+              value: "{{ .Values.console_agents.mountContainerRuntimeSocket.dockerSockPath }}"
+            {{ end }}
+            {{- if .Values.console_agents.mountContainerRuntimeSocket.containerdSock }}
+            - name: CONTAINERD_SOCKET_PATH
+              value: "{{ .Values.console_agents.mountContainerRuntimeSocket.containerdSockPath }}"
+            {{ end }}
+            {{- if .Values.console_agents.mountContainerRuntimeSocket.crioSock }}
+            - name: CRIO_SOCKET_PATH
+              value: "{{ .Values.console_agents.mountContainerRuntimeSocket.crioSockPath }}"
+            {{ end }}
+          volumeMounts:
+            {{- if .Values.console_agents.mountContainerRuntimeSocket.dockerSock }}
+            - mountPath: {{ .Values.console_agents.mountContainerRuntimeSocket.dockerSockPath }}
+              name: docker-sock
+            {{ end }}
+            {{- if .Values.console_agents.mountContainerRuntimeSocket.containerdSock }}
+            - mountPath: {{ .Values.console_agents.mountContainerRuntimeSocket.containerdSockPath }}
+              name: containerd-sock
+            {{ end }}
+            {{- if .Values.console_agents.mountContainerRuntimeSocket.crioSock }}
+            - mountPath: {{ .Values.console_agents.mountContainerRuntimeSocket.crioSockPath }}
+              name: crio-sock
+            - mountPath: /var/lib/containers
+              name: containers
+            {{ end }}
+            - mountPath: /sys/kernel/debug
+              name: kernel-sys
+            - mountPath: /fenced/mnt/host
+              name: host-fs
+              readOnly: true
+            - mountPath: /var/log/fenced
+              name: fenced-path
+            - mountPath: /var/log/fenced/compliance
+              name: fenced-path-compliance
+            - mountPath: /var/log/fenced/compliance-scan-logs
+              name: fenced-path-compliance-scan-logs
+      {{- with .Values.console_agents.agent.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.console_agents.agent.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.console_agents.agent.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

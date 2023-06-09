@@ -46,15 +46,6 @@ The following instructions explain how to install the ThreatMapper console on a 
     ```
 
     :::tip
-
-    Alternatively, to install a named [tagged release](https://github.com/deepfence/ThreatMapper/releases) (recommended), specify the release tag as follows:
-
-    ```bash
-    helm install deepfence-console deepfence/deepfence-console --set image.tag=1.5.0 --version 1.5.1
-    ```
-    :::
-
-    :::tip
     For advanced installation, you can edit the helm chart values as described in the [Helm Chart - detailed setup](https://github.com/deepfence/ThreatMapper/tree/master/deployment-scripts/helm-charts/deepfence-console#install-deepfence-console-helm-chart).
     :::
 

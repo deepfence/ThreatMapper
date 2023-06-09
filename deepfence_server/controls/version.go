@@ -3,6 +3,7 @@ package controls
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -29,7 +30,7 @@ func ScheduleAgentUpgrade(ctx context.Context, version string, nodeIds []string,
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -73,7 +74,7 @@ func GetAgentVersionTarball(ctx context.Context, version string) (string, error)
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return "", err
 	}
@@ -112,7 +113,7 @@ func hasPendingUpgradeOrNew(ctx context.Context, version string, nodeId string) 
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return false, err
 	}
@@ -163,7 +164,7 @@ func CompleteAgentUpgrade(ctx context.Context, version string, nodeId string) er
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}

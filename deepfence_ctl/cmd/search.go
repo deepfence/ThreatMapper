@@ -66,25 +66,25 @@ var topCmd = &cobra.Command{
 
 		switch target_type {
 		case "host":
-			req := http.Client().SearchApi.SearchHosts(context.Background())
+			req := http.Client().SearchAPI.SearchHosts(context.Background())
 			req = req.SearchSearchNodeReq(filtreq)
-			res, rh, err := http.Client().SearchApi.SearchHostsExecute(req)
+			res, rh, err := http.Client().SearchAPI.SearchHostsExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "container":
-			req := http.Client().SearchApi.SearchContainers(context.Background())
+			req := http.Client().SearchAPI.SearchContainers(context.Background())
 			req = req.SearchSearchNodeReq(filtreq)
-			res, rh, err := http.Client().SearchApi.SearchContainersExecute(req)
+			res, rh, err := http.Client().SearchAPI.SearchContainersExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "image":
-			req := http.Client().SearchApi.SearchContainerImages(context.Background())
+			req := http.Client().SearchAPI.SearchContainerImages(context.Background())
 			req = req.SearchSearchNodeReq(filtreq)
-			res, rh, err := http.Client().SearchApi.SearchContainerImagesExecute(req)
+			res, rh, err := http.Client().SearchAPI.SearchContainerImagesExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
@@ -125,41 +125,41 @@ var issuesCmd = &cobra.Command{
 
 		switch issue_type {
 		case "vulnerability":
-			req := http.Client().SearchApi.SearchVulnerabilities(context.Background())
+			req := http.Client().SearchAPI.SearchVulnerabilities(context.Background())
 			req = req.SearchSearchNodeReq(filtreq)
-			res, rh, err := http.Client().SearchApi.SearchVulnerabilitiesExecute(req)
+			res, rh, err := http.Client().SearchAPI.SearchVulnerabilitiesExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "secret":
-			req := http.Client().SearchApi.SearchSecrets(context.Background())
+			req := http.Client().SearchAPI.SearchSecrets(context.Background())
 			req = req.SearchSearchNodeReq(filtreq)
-			res, rh, err := http.Client().SearchApi.SearchSecretsExecute(req)
+			res, rh, err := http.Client().SearchAPI.SearchSecretsExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "malware":
-			req := http.Client().SearchApi.SearchMalwares(context.Background())
+			req := http.Client().SearchAPI.SearchMalwares(context.Background())
 			req = req.SearchSearchNodeReq(filtreq)
-			res, rh, err := http.Client().SearchApi.SearchMalwaresExecute(req)
+			res, rh, err := http.Client().SearchAPI.SearchMalwaresExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "compliance":
-			req := http.Client().SearchApi.SearchCompliances(context.Background())
+			req := http.Client().SearchAPI.SearchCompliances(context.Background())
 			req = req.SearchSearchNodeReq(filtreq)
-			res, rh, err := http.Client().SearchApi.SearchCompliancesExecute(req)
+			res, rh, err := http.Client().SearchAPI.SearchCompliancesExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "cloud-compliance":
-			req := http.Client().SearchApi.SearchCloudCompliances(context.Background())
+			req := http.Client().SearchAPI.SearchCloudCompliances(context.Background())
 			req = req.SearchSearchNodeReq(filtreq)
-			res, rh, err := http.Client().SearchApi.SearchCloudCompliancesExecute(req)
+			res, rh, err := http.Client().SearchAPI.SearchCloudCompliancesExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
@@ -198,41 +198,41 @@ var countCmd = &cobra.Command{
 
 		switch issue_type {
 		case "vulnerability":
-			req := http.Client().SearchApi.CountVulnerabilities(context.Background())
+			req := http.Client().SearchAPI.CountVulnerabilities(context.Background())
 			req = req.SearchSearchNodeReq(filtreq)
-			res, rh, err := http.Client().SearchApi.CountVulnerabilitiesExecute(req)
+			res, rh, err := http.Client().SearchAPI.CountVulnerabilitiesExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "secret":
-			req := http.Client().SearchApi.CountSecrets(context.Background())
+			req := http.Client().SearchAPI.CountSecrets(context.Background())
 			req = req.SearchSearchNodeReq(filtreq)
-			res, rh, err := http.Client().SearchApi.CountSecretsExecute(req)
+			res, rh, err := http.Client().SearchAPI.CountSecretsExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "malware":
-			req := http.Client().SearchApi.CountMalwares(context.Background())
+			req := http.Client().SearchAPI.CountMalwares(context.Background())
 			req = req.SearchSearchNodeReq(filtreq)
-			res, rh, err := http.Client().SearchApi.CountMalwaresExecute(req)
+			res, rh, err := http.Client().SearchAPI.CountMalwaresExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "compliance":
-			req := http.Client().SearchApi.CountCompliances(context.Background())
+			req := http.Client().SearchAPI.CountCompliances(context.Background())
 			req = req.SearchSearchNodeReq(filtreq)
-			res, rh, err := http.Client().SearchApi.CountCompliancesExecute(req)
+			res, rh, err := http.Client().SearchAPI.CountCompliancesExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}
 			output.Out(res)
 		case "cloud-compliance":
-			req := http.Client().SearchApi.CountCloudCompliances(context.Background())
+			req := http.Client().SearchAPI.CountCloudCompliances(context.Background())
 			req = req.SearchSearchNodeReq(filtreq)
-			res, rh, err := http.Client().SearchApi.CountCloudCompliancesExecute(req)
+			res, rh, err := http.Client().SearchAPI.CountCloudCompliancesExecute(req)
 			if err != nil {
 				log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
 			}

@@ -389,9 +389,9 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 		"Ingest Cloud Compliances", "Ingest Cloud compliances found while scanning cloud provider",
 		http.StatusOK, []string{tagCloudScanner}, bearerToken, new([]ingester.CloudCompliance), nil)
 
-	d.AddOperation("ingestCloudComplianceScanStatus", http.MethodPost, "/deepfence/ingest/cloud-compliance-scan-status",
-		"Ingest Cloud Compliances", "Ingest Cloud compliances found while scanning cloud provider",
-		http.StatusOK, []string{tagCloudScanner}, bearerToken, new([]ingester.CloudCompliance), nil)
+	d.AddOperation("ingestCloudComplianceScanStatus", http.MethodPost, "/deepfence/ingest/cloud-compliance-status",
+		"Ingest Cloud Compliances scan status", "Ingest Cloud compliances found while scanning cloud provider",
+		http.StatusOK, []string{tagCloudScanner}, bearerToken, new([]ingester.CloudComplianceScanStatus), nil)
 
 	d.AddOperation("ingestMalwareScanStatus", http.MethodPost, "/deepfence/ingest/malware-scan-logs",
 		"Ingest Malware Scan Status", "Ingest malware scan status from the agent",
@@ -403,7 +403,7 @@ func (d *OpenApiDocs) AddIngestersOperations() {
 
 	d.AddOperation("ingestCloudResources", http.MethodPost, "/deepfence/ingest/cloud-resources",
 		"Ingest Cloud resources", "Ingest Clouds Resources found while scanning cloud provider",
-		http.StatusOK, []string{tagCloudResources}, bearerToken, new([]ingesters.CloudResource), nil)
+		http.StatusOK, []string{tagCloudResources}, bearerToken, new([]ingester.CloudResource), nil)
 }
 
 func (d *OpenApiDocs) AddScansOperations() {
@@ -544,7 +544,7 @@ func (d *OpenApiDocs) AddScansOperations() {
 	// Bulk Delete Scans
 	d.AddOperation("bulkDeleteScans", http.MethodPost, "/deepfence/scans/bulk/delete",
 		"Bulk Delete Scans", "Bulk delete scans along with their results for a particular scan type",
-		http.StatusOK, []string{tagScanResults}, bearerToken, new(BulkDeleteScansRequest), nil)
+		http.StatusNoContent, []string{tagScanResults}, bearerToken, new(BulkDeleteScansRequest), nil)
 
 	// Scan ID Actions
 	d.AddOperation("downloadScanResults", http.MethodGet, "/deepfence/scan/{scan_type}/{scan_id}/download",

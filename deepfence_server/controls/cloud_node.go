@@ -2,6 +2,7 @@ package controls
 
 import (
 	"context"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
@@ -22,7 +23,7 @@ func GetCloudNodeComplianceControls(ctx context.Context, nodeId, cloudProvider, 
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return controls, err
 	}
@@ -78,7 +79,7 @@ func EnableCloudNodeComplianceControls(ctx context.Context, nodeId string, contr
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -107,7 +108,7 @@ func DisableCloudNodeComplianceControls(ctx context.Context, nodeId string, cont
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}

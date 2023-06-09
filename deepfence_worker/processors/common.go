@@ -106,6 +106,11 @@ func StartKafkaProcessors(ctx context.Context) {
 		telemetryWrapper(utils.CLOUD_COMPLIANCE_SCAN_STATUS,
 			desWrapper(ingesters.CommitFuncStatus[ingesters.CloudComplianceScanStatus](utils.NEO4J_CLOUD_COMPLIANCE_SCAN))),
 	)
+	processors[utils.CLOUD_RESOURCE] = NewBulkProcessor(
+		utils.CLOUD_RESOURCE,
+		telemetryWrapper(utils.CLOUD_RESOURCE,
+			desWrapper(ingesters.CommitFuncCloudResource)),
+	)
 
 	for i := range processors {
 		processors[i].Start(ctx)

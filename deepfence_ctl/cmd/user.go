@@ -54,7 +54,7 @@ var userRegisterSubCmd = &cobra.Command{
 		empty := false
 		consoleUrl := "https://" + console_ip
 		https_client := oahttp.NewHttpsConsoleClient(console_ip, "443")
-		req := https_client.Client().UserApi.RegisterUser(context.Background())
+		req := https_client.Client().UserAPI.RegisterUser(context.Background())
 		req = req.ModelUserRegisterRequest(deepfence_server_client.ModelUserRegisterRequest{
 			Company:             company,
 			ConsoleUrl:          consoleUrl,
@@ -65,7 +65,7 @@ var userRegisterSubCmd = &cobra.Command{
 			Password:            password,
 		})
 
-		res, hr, err := https_client.Client().UserApi.RegisterUserExecute(req)
+		res, hr, err := https_client.Client().UserAPI.RegisterUserExecute(req)
 		if err != nil {
 			log.Fatal().Msgf("Failed to register %v: %v\n", err, hr)
 		}
@@ -94,8 +94,8 @@ var userApiKeySubCmd = &cobra.Command{
 	Short: "User apikey",
 	Long:  `This subcommand retrieve a new user apikey`,
 	Run: func(cmd *cobra.Command, args []string) {
-		req := http.Client().UserApi.GetApiTokens(context.Background())
-		res, rh, err := http.Client().UserApi.GetApiTokensExecute(req)
+		req := http.Client().UserAPI.GetApiTokens(context.Background())
+		res, rh, err := http.Client().UserAPI.GetApiTokensExecute(req)
 		if err != nil {
 			log.Fatal().Msgf("Failed to retrieve apikey %v: %v\n", err, rh)
 		}

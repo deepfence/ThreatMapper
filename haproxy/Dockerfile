@@ -1,4 +1,4 @@
-FROM golang:1.19-alpine3.16 AS minica-builder
+FROM golang:1.20-alpine3.18 AS minica-builder
 COPY minica.go /go
 COPY genCert.sh /go
 WORKDIR /go
@@ -6,7 +6,7 @@ RUN apk add --no-cache bash
 RUN /bin/bash /go/genCert.sh
 
 
-FROM haproxy:2.6.6-alpine3.16
+FROM haproxy:2.8-alpine3.18
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 

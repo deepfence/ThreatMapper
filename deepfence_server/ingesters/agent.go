@@ -38,7 +38,7 @@ const (
 	agent_base_timeout      = time.Second * 30
 	localhost_ip            = "127.0.0.1"
 	default_push_back       = 1  // 30 seconds
-	max_push_back           = 20 // 10 minutes
+	max_push_back           = 60 // 30 minutes
 	map_ttl                 = 60 * time.Second
 )
 
@@ -1076,15 +1076,28 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 			current_num_accepted := nc.num_processed.Swap(0)
 			current_num_ingested := nc.num_ingested.Swap(0)
 
-			new_value := int32(0)
-			if current_num_accepted > (current_num_ingested/4)*3 {
-				ratio := max(current_num_accepted, 1) / max(current_num_ingested, 1)
-				new_value = Push_back.Load() * ratio
-			} else if current_num_received < (prev_received_num/4)*3 {
+			new_value := Push_back.Load()
+			if current_num_ingested < (current_num_received/8)*7 {
+				if current_num_received >= 100 {
+					ratio := max(current_num_accepted, 1) / max(current_num_ingested, 1)
+					// Limit ratio to x2
+					if ratio >= 2 {
+						new_value = Push_back.Load() * 2
+					} else {
+						new_value = Push_back.Load() + 1
+					}
+				}
+			} else if current_num_received < (prev_received_num/8)*7 {
 				ratio := max(prev_received_num, 1) / max(current_num_received, 1)
-				new_value = Push_back.Load() / ratio
+				// Limit ratio to /2
+				if ratio >= 2 {
+					new_value = Push_back.Load() / ratio
+				} else {
+					new_value = Push_back.Load() - 1
+				}
 				prev_received_num = current_num_received
 			}
+
 			if new_value <= 0 {
 				Push_back.Store(1)
 			} else if new_value > max_push_back {
@@ -1150,7 +1163,7 @@ func metadataToMap(n report.Metadata) map[string]interface{} {
 
 // TODO: improve syncro across multiple servers
 func UpdatePushBack(session neo4j.Session, newValue *atomic.Int32, prev int32) error {
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(5 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -1193,7 +1206,7 @@ func GetPushBack(driver neo4j.Driver) (int32, error) {
 		return 0, err
 	}
 	defer session.Close()
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(5 * time.Second))
 	if err != nil {
 		return 0, err
 	}

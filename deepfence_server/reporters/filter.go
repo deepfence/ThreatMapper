@@ -2,6 +2,7 @@ package reporters
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/samber/mo"
@@ -45,6 +46,8 @@ type FieldsFilters struct {
 	CompareFilters    []CompareFilter `json:"compare_filter" required:"true"`
 }
 
+var severity_fields = map[string]struct{}{"cve_severity": {}, "file_severity": {}, "level": {}}
+
 func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilter, in bool) []string {
 	conditions := []string{}
 
@@ -73,9 +76,9 @@ func containsFilter2CypherConditions(cypherNodeName string, filter ContainsFilte
 				}
 			}
 			if in {
-				conditions = append(conditions, strings.Join(labels, " OR "))
+				conditions = append(conditions, fmt.Sprintf("(%s)", strings.Join(labels, " OR ")))
 			} else {
-				conditions = append(conditions, strings.Join(labels, " AND "))
+				conditions = append(conditions, fmt.Sprintf("(%s)", strings.Join(labels, " AND ")))
 			}
 		} else {
 			var values []string
@@ -116,21 +119,39 @@ func extractOrderDescFormattedField(field string, descending bool) string {
 	return field
 }
 
-func formatOrderField(format string, input []OrderSpec, ignoreOrder bool) []string {
+func formatOrderField(format string, input []OrderSpec, ignoreOrder bool, ignoreSort bool) []string {
 	res := []string{}
 	if len(input) == 0 {
 		return res
 	}
 
+	sevSortFieldsNum := 0
 	for i := range input {
 		if len(input[i].FieldName) == 0 {
 			continue
 		}
-		orderByEntry := fmt.Sprintf(format, extractOrderDescFormattedField(input[i].FieldName, input[i].Descending && !ignoreOrder))
+		orderByEntry := ""
+		if _, has := severity_fields[input[i].FieldName]; has && !ignoreSort {
+			fieldName := "severity" + strconv.Itoa(sevSortFieldsNum)
+			sevSortFieldsNum += 1
+			orderByEntry = fmt.Sprintf("%s", extractOrderDescFormattedField(fieldName, input[i].Descending && !ignoreOrder))
+		} else {
+			fieldName := input[i].FieldName
+			orderByEntry = fmt.Sprintf(format, extractOrderDescFormattedField(fieldName, input[i].Descending && !ignoreOrder))
+		}
 		res = append(res, orderByEntry)
 	}
 
 	return res
+}
+
+func severityCypherValues(cypherNodeName, field string, num *int) string {
+	if _, has := severity_fields[field]; has {
+		res := `,CASE ` + cypherNodeName + `.` + field + ` WHEN 'low' THEN 0 WHEN 'medium' THEN 1 WHEN 'high' THEN 2 WHEN 'critical' THEN 3 ELSE -1 END AS severity` + strconv.Itoa(*num)
+		*num += 1
+		return res
+	}
+	return ""
 }
 
 func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) string {
@@ -140,7 +161,7 @@ func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) stri
 
 	var list []string
 	if cypherNodeName == "" {
-		list = formatOrderField("%s", filter.OrderFields, false)
+		list = formatOrderField("%s", filter.OrderFields, false, true)
 		if len(list) == 0 {
 			return ""
 		}
@@ -148,18 +169,19 @@ func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) stri
 		return fmt.Sprintf(" ORDER BY %s ", strings.Join(list, ","))
 	}
 
-	list = formatOrderField(cypherNodeName+".%s", filter.OrderFields, false)
+	list = formatOrderField(cypherNodeName+".%s", filter.OrderFields, false, false)
 	if len(list) == 0 {
 		return ""
 	}
 
 	var list2 []string
+	sevNum := 0
 	for i, orderby := range list {
 		size := filter.OrderFields[i].Size
 		if size != 0 {
-			list2 = append(list2, fmt.Sprintf(" WITH %s ORDER BY %s LIMIT %d ", cypherNodeName, orderby, size))
+			list2 = append(list2, fmt.Sprintf(" WITH %s%s ORDER BY %s LIMIT %d ", cypherNodeName, severityCypherValues(cypherNodeName, filter.OrderFields[i].FieldName, &sevNum), orderby, size))
 		} else {
-			list2 = append(list2, fmt.Sprintf(" WITH %s ORDER BY %s ", cypherNodeName, orderby))
+			list2 = append(list2, fmt.Sprintf(" WITH %s%s ORDER BY %s ", cypherNodeName, severityCypherValues(cypherNodeName, filter.OrderFields[i].FieldName, &sevNum), orderby))
 		}
 	}
 
@@ -171,7 +193,7 @@ func orderFilter2CypherWhere(cypherNodeName string, filter OrderFilter) []string
 		return []string{}
 	}
 
-	return formatOrderField(cypherNodeName+".%s IS NOT NULL", filter.OrderFields, true)
+	return formatOrderField(cypherNodeName+".%s IS NOT NULL", filter.OrderFields, true, true)
 }
 
 func ParseFieldFilters2CypherWhereConditions(cypherNodeName string, filters mo.Option[FieldsFilters], starts_where_clause bool) string {

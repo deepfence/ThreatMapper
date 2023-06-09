@@ -75,6 +75,7 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
   });
   const hostsResultsPromise = getHostsTopologyGraphApi({
     graphTopologyFilters: {
+      skip_connections: true,
       cloud_filter: [],
       field_filters: {
         contains_filter: { filter_in: null },
@@ -97,6 +98,7 @@ async function getConnectorsData(): Promise<Array<OnboardConnectionNode>> {
   });
   const kubernetesResultsPromise = getKubernetesTopologyGraphApi({
     graphTopologyFilters: {
+      skip_connections: true,
       cloud_filter: [],
       field_filters: {
         contains_filter: { filter_in: null },
