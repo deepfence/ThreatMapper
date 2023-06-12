@@ -360,19 +360,28 @@ func LinkCloudResources(msg *message.Message) error {
 
 	start := time.Now()
 
-	// MERGE (t:CloudResourceType{node_id:row.cloud_provider+row.cloud_region+row.node_type})
-	// MERGE (t) -[:HOSTS]-> (n)
 	if _, err = session.Run(`
 		MATCH (n:CloudResource)
 		WHERE not (n) <-[:HOSTS]- (:CloudRegion)
-		WITH n LIMIT 10000
+		WITH n LIMIT 50000
 		MERGE (cp:CloudProvider{node_id: n.cloud_provider})
 		MERGE (cr:CloudRegion{node_id: n.cloud_region})
 		MERGE (m:CloudNode{node_id: n.account_id})
 		MERGE (m) -[:OWNS]-> (n)
 		MERGE (cp) -[:HOSTS]-> (cr)
 		MERGE (cr) -[:HOSTS]-> (n)
-		SET cr.active = (COALESCE(cr.active, false) or n.is_shown), cr.cr_shown = COALESCE(cr.cr_shown, 0) + CASE WHEN n.is_shown THEN 1 ELSE 0 END`,
+		WITH cr, n
+		WHERE n.is_shown = true
+		WITH cr, count(n) as cnt
+		SET cr.cr_shown = COALESCE(cr.cr_shown, 0) + cnt`,
+		map[string]interface{}{}, txConfig); err != nil {
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (cr:CloudRegion)
+		WHERE NOT cr.cr_shown IS NULL
+		SET cr.active = cr.cr_shown <> 0`,
 		map[string]interface{}{}, txConfig); err != nil {
 		return err
 	}
@@ -383,13 +392,14 @@ func LinkCloudResources(msg *message.Message) error {
 		WHERE n.linked = false
 		AND n.node_type in $types
 		AND n.security_groups IS NOT NULL
-		WITH n, apoc.convert.fromJsonList(n.security_groups) as groups LIMIT 10000
+		WITH n LIMIT 10000
+		SET n.linked = true
+		WITH n, apoc.convert.fromJsonList(n.security_groups) as groups
 		UNWIND groups as subgroup
 		WITH subgroup, CASE WHEN apoc.meta.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupName END as name,
 		CASE WHEN apoc.meta.type(subgroup) = "STRING" THEN subgroup ELSE subgroup.GroupId END as node_id
 		MERGE (m:SecurityGroup{node_id:node_id})
-		MERGE (m)-[:SECURED]->(n)
-		SET n.linked = true`,
+		MERGE (m)-[:SECURED]->(n)`,
 		map[string]interface{}{
 			"types": resource_types[:],
 		}, txConfig); err != nil {
@@ -401,12 +411,12 @@ func LinkCloudResources(msg *message.Message) error {
 		MATCH (n:CloudResource)
 		WHERE n.linked = false
 		AND n.node_type in $types
-		MATCH (n:CloudResource{node_id:n.node_id})
-		WITH apoc.convert.fromJsonList(n.vpc_security_group_ids) as sec_group_ids,n LIMIT 10000
+		WITH n LIMIT 10000
+		SET n.linked = true
+		WITH n, apoc.convert.fromJsonList(n.vpc_security_group_ids) as sec_group_ids
 		UNWIND sec_group_ids as subgroup
 		MERGE (m:SecurityGroup{node_id:subgroup})
-		MERGE (m)-[:SECURED]->(n)
-		SET n.linked = true`,
+		MERGE (m)-[:SECURED]->(n)`,
 		map[string]interface{}{
 			"types": resource_lambda[:],
 		}, txConfig); err != nil {
@@ -418,11 +428,12 @@ func LinkCloudResources(msg *message.Message) error {
 		MATCH (n:CloudResource)
 		WHERE n.linked = false
 		AND n.node_type in $types
-		WITH apoc.convert.fromJsonMap(n.network_configuration) as map,n LIMIT 10000
+		WITH n LIMIT 10000
+		SET n.linked = true
+		WITH n, apoc.convert.fromJsonMap(n.network_configuration) as map
 		UNWIND map.AwsvpcConfiguration.SecurityGroups as secgroup
 		MERGE (m:SecurityGroup{node_id:secgroup})
-		MERGE (m)-[:SECURED]->(n)
-		SET n.linked = true`,
+		MERGE (m)-[:SECURED]->(n)`,
 		map[string]interface{}{
 			"types": resource_ecs[:],
 		}, txConfig); err != nil {
