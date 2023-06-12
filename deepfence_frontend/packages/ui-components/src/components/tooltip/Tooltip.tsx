@@ -45,25 +45,27 @@ export const Tooltip = (props: TooltipProps) => {
               'radix-side-right:animate-slide-left-fade',
               'radix-side-bottom:animate-slide-up-fade',
               'radix-side-left:animate-slide-right-fade',
-              'inline-flex items-center rounded-lg px-3 py-2 shadow-sm',
-              'bg-bg-tooltip dark:bg-bg-tooltip max-w-xs',
+              'rounded-md pl-3 py-2 shadow-sm w-[200px]',
+              'bg-bg-tooltip dark:bg-bg-tooltip',
               Typography.leading.normal,
             )}
           >
             <TooltipPrimitive.Arrow
-              height={12}
-              width={11}
+              height={9}
+              width={16}
               className="fill-bg-tooltip dark:fill-bg-tooltip"
             />
-            <div>
+            <>
               {label && (
-                <span className={cx('text-text-p6', 'text-text-input-value', 'block')}>
+                <span
+                  className={cx('text-p6', 'text-text-input-value', 'block', 'pb-[3px]')}
+                >
                   {label}
                 </span>
               )}
               {typeof content === 'string' ? (
                 <span
-                  className={cx('text-text-p7', 'text-text-input-value')}
+                  className={cx('text-p5', 'text-text-input-value block')}
                   style={{
                     wordBreak: 'break-word',
                   }}
@@ -73,7 +75,7 @@ export const Tooltip = (props: TooltipProps) => {
               ) : (
                 content
               )}
-            </div>
+            </>
           </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
       </TooltipPrimitive.Root>

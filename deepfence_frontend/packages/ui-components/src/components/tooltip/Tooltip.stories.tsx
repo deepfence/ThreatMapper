@@ -17,7 +17,7 @@ export default {
 
 const Template: StoryFn<typeof Tooltip> = (args) => (
   <Tooltip {...args}>
-    <Button color="default" style={{ margin: '5rem 18rem' }}>
+    <Button color="default" style={{ margin: '20rem 18rem' }}>
       Hover me
     </Button>
   </Tooltip>
@@ -50,12 +50,32 @@ export const Default = {
   },
 };
 
+export const Top = {
+  render: Template,
+
+  args: {
+    triggerAsChild: true,
+    placement: 'top',
+    content: 'Your message here.',
+  },
+};
+export const TopMultiLine = {
+  render: Template,
+
+  args: {
+    triggerAsChild: true,
+    placement: 'top',
+    label: 'Label',
+    content: 'Your message here.  Max width 360, height 4 lines.',
+  },
+};
+
 export const WithLable = {
   render: Template,
 
   args: {
     triggerAsChild: true,
-    placement: 'right',
+    placement: 'top',
     label: 'Label',
     content: 'Your message here. With long text, multiple lines.',
   },
