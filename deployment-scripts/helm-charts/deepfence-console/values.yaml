@@ -169,9 +169,9 @@ neo4j:
     NEO4J_dbms_memory_heap_max__size: 4000m
     NEO4JLABS_PLUGINS: '["apoc"]'
   image:
-    repository: neo4j
+    repository: deepfenceio/deepfence_neo4j_ce
     pullPolicy: Always
-    tag: 4.4.21
+    # tag: 2.0.0
   storageClass: ""
   volumeSize: 30G
   resources:

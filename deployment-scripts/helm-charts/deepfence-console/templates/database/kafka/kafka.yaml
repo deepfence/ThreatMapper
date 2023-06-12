@@ -77,15 +77,15 @@ spec:
           envFrom:
             - secretRef:
                 name: "deepfence-kafka-broker"
-          # livenessProbe:
-          #   tcpSocket:
-          #     port: 9092
-          #   initialDelaySeconds: 180
-          #   periodSeconds: 30
+          livenessProbe:
+            tcpSocket:
+              port: 9092
+            initialDelaySeconds: 120
+            periodSeconds: 30
           # readinessProbe:
           #   tcpSocket:
           #     port: 9092
-          #   initialDelaySeconds: 30
+          #   initialDelaySeconds: 120
           #   periodSeconds: 30
           resources:
             {{- toYaml .Values.kafka.resources | nindent 12 }}

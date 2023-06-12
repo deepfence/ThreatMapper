@@ -34,7 +34,7 @@ spec:
         - name: neo4j
           securityContext:
             {{- toYaml .Values.neo4j.securityContext | nindent 12 }}
-          image: "{{ .Values.neo4j.image.repository }}:{{ .Values.neo4j.image.tag }}"
+          image: "{{ .Values.global.imageRepoPrefix }}/{{ .Values.neo4j.image.repository }}:{{ default .Values.global.imageTag .Values.neo4j.image.tag }}"
           imagePullPolicy: {{ .Values.neo4j.image.pullPolicy }}
           envFrom:
             - secretRef:

@@ -41,11 +41,27 @@ spec:
               containerPort: 6379
               protocol: TCP
           livenessProbe:
-            tcpSocket:
-              port: tcp
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - exec redis-cli ping
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+            successThreshold: 1
           readinessProbe:
-            tcpSocket:
-              port: tcp
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - exec redis-cli ping
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+            successThreshold: 1
           resources:
             {{- toYaml .Values.redis.resources | nindent 12 }}
           volumeMounts:

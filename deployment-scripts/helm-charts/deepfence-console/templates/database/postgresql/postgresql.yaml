@@ -44,15 +44,27 @@ spec:
               containerPort: 5432
               protocol: TCP
           livenessProbe:
-            tcpSocket:
-              port: tcp
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - exec pg_isready -U "postgres" -h 127.0.0.1 -p 5432
             initialDelaySeconds: 60
             periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+            successThreshold: 1
           readinessProbe:
-            tcpSocket:
-              port: tcp
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - exec pg_isready -U "postgres" -h 127.0.0.1 -p 5432
             initialDelaySeconds: 60
             periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+            successThreshold: 1
           resources:
             {{- toYaml .Values.postgresql.resources | nindent 12 }}
           volumeMounts:

@@ -74,16 +74,16 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: /health
               port: http
-            initialDelaySeconds: 60
-            periodSeconds: 30
+            initialDelaySeconds: 120
+            periodSeconds: 10
           readinessProbe:
             httpGet:
-              path: /
+              path: /health
               port: http
             initialDelaySeconds: 60
-            periodSeconds: 30
+            periodSeconds: 20
           resources:
             {{- toYaml .Values.ui.resources | nindent 12 }}
       {{- with .Values.ui.nodeSelector }}

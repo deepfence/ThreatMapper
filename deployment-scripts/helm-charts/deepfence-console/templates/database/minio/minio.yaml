@@ -47,15 +47,23 @@ spec:
               containerPort: 9090
               protocol: TCP
           livenessProbe:
-            tcpSocket:
+            httpGet:
+              path: /minio/health/live
               port: http
-            initialDelaySeconds: 60
-            periodSeconds: 30
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+            successThreshold: 1
           readinessProbe:
-            tcpSocket:
+            httpGet:
+              path: /minio/health/live
               port: http
             initialDelaySeconds: 60
-            periodSeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 5
+            successThreshold: 1
           resources:
             {{- toYaml .Values.minio.resources | nindent 12 }}
           volumeMounts:
