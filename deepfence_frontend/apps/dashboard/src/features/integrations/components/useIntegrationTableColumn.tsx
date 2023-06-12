@@ -457,10 +457,10 @@ export const useIntegrationTableColumn = () => {
             },
           ),
           columnHelper.accessor(
-            (cell) => (!isEmpty(cell.config) ? cell.config.auth_key : '-'),
+            (cell) => (!isEmpty(cell.config) ? cell.config.auth_header : '-'),
             {
-              id: 'auth_key',
-              header: () => 'Auth Key',
+              id: 'auth_header',
+              header: () => 'Auth Header',
               minSize: 45,
               size: 50,
               maxSize: 55,

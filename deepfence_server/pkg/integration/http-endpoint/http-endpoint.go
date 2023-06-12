@@ -31,8 +31,8 @@ func (h HTTPEndpoint) SendNotification(message string) error {
 		return err
 	}
 
-	if h.Config.AuthKey != "" {
-		req.Header.Set("Authorization", h.Config.AuthKey)
+	if h.Config.AuthHeader != "" {
+		req.Header.Set("Authorization", h.Config.AuthHeader)
 	}
 
 	if err != nil {

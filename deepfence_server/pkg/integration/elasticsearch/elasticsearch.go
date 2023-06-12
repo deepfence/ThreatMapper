@@ -23,7 +23,7 @@ func (e ElasticSearch) SendNotification(message string) error {
 
 	// send message to this elasticsearch using http
 	// Set up the HTTP request.
-	req, err = http.NewRequest("POST", e.Config.URL+"/_bulk", bytes.NewBuffer(payloadBytes))
+	req, err = http.NewRequest("POST", e.Config.EndpointURL+"/_bulk", bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		return err
 	}

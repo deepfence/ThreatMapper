@@ -14,9 +14,9 @@ type ElasticSearch struct {
 }
 
 type Config struct {
-	URL        string `json:"url" validate:"required,url" required:"true"`
-	AuthHeader string `json:"auth_header"`
-	Index      string `json:"index" validate:"required" required:"true"`
+	EndpointURL string `json:"endpoint_url" validate:"required,url" required:"true"`
+	AuthHeader  string `json:"auth_header"`
+	Index       string `json:"index" validate:"required,min=1" required:"true"`
 }
 
 func (e ElasticSearch) ValidateConfig(validate *validator.Validate) error {

@@ -93,6 +93,33 @@ var (
 
 		"api_token": "api_token must be UUID",
 		"email":     "invalid email address",
+
+		"Config.AWSAccountId":   "invalid account id",
+		"Config.AWSAccessKey":   "invalid access key",
+		"Config.AWSSecretKey":   "invalid secret key",
+		"Config.AWSRegion":      "invalid region",
+		"Config.EndpointURL":    "invalid url",
+		"Config.AuthHeader":     "invalid auth header value",
+		"Config.Index":          "invalid",
+		"Config.EmailId":        "invalid email id",
+		"Config.URL":            "invalid url",
+		"Config.AuthKey":        "invalid auth header value",
+		"Config.JiraSiteUrl":    "invalid jira url",
+		"Config.Username":       "invalid",
+		"Config.Password":       "invalid",
+		"Config.JiraProjectKey": "invalid",
+		"Config.JiraAssignee":   "invalid",
+		"Config.IssueType":      "invalid",
+		"Config.IsAuthToken":    "invalid",
+		"Config.APIToken":       "invalid",
+		"Config.ServiceKey":     "invalid",
+		"Config.APIKey":         "invalid",
+		"Config.S3BucketName":   "invalid bucket name",
+		"Config.S3FolderName":   "invalid folder name",
+		"Config.WebhookURL":     "invalid webhook url",
+		"Config.Channel":        "invalid",
+		"Config.Token":          "invalid",
+		"Config.HTTPEndpoint":   "invalid url",
 	}
 )
 

@@ -245,7 +245,7 @@ export const IntegrationForm = ({ integrationType }: IntegrationTypeProps) => {
         {integrationType === IntegrationType.httpEndpoint && (
           <>
             <TextInputType name="apiUrl" label="API url" />
-            <TextInputType name="authorizationKey" label="Authorization key" />
+            <TextInputType name="authorizationHeader" label="Authorization header" />
           </>
         )}
         {integrationType === IntegrationType.microsoftTeams && (

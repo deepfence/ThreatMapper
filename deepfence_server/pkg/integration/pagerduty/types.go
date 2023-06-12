@@ -14,8 +14,8 @@ type PagerDuty struct {
 }
 
 type Config struct {
-	ServiceKey string `json:"service_key" validate:"required" required:"true"`
-	APIKey     string `json:"api_key" validate:"required" required:"true"`
+	ServiceKey string `json:"service_key" validate:"required,min=1" required:"true"`
+	APIKey     string `json:"api_key" validate:"required,min=1" required:"true"`
 }
 
 func (p PagerDuty) ValidateConfig(validate *validator.Validate) error {
