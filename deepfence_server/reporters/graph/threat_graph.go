@@ -163,9 +163,9 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(filters ThreatFilters) (map[str
 			CASE WHEN $type = 'cloud_compliance' or $type = 'all' THEN n.cloud_compliances_count > 0 ELSE false END
 		)
 		WITH n, n.cloud_provider as provider
-		WHERE CASE WHEN size($aws_ids) = 0 OR provider <> 'aws' then true ELSE n.account_id IN $aws_ids END
-		AND CASE WHEN size($gcp_ids) = 0 OR provider <> 'gcp' then true ELSE n.account_id IN $gcp_ids END
-		AND CASE WHEN size($azure_ids) = 0 OR provider <> 'azure' then true ELSE n.account_id IN $azure_ids END
+		WHERE CASE WHEN size($aws_ids) = 0 OR provider <> 'aws' THEN true ELSE n.account_id IN $aws_ids END
+		AND CASE WHEN size($gcp_ids) = 0 OR provider <> 'gcp' THEN true ELSE n.account_id IN $gcp_ids END
+		AND CASE WHEN size($azure_ids) = 0 OR provider <> 'azure' THEN true ELSE n.account_id IN $azure_ids END
 		SET n:ThreatCloudResource`,
 		map[string]interface{}{
 			"aws_ids":   filters.AwsFilter.AccountIds,

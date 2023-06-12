@@ -594,23 +594,27 @@ func ApplyGraphDBStartup(msg *message.Message) error {
 	addIndexOnIssuesCount(session, "ContainerImage")
 	addIndexOnIssuesCount(session, "Container")
 
+	session.Run("CREATE INDEX NodeDepth IF NOT EXISTS FOR (n:Node) ON (n.depth)", map[string]interface{}{})
+	session.Run("CREATE INDEX CloudResourceDepth IF NOT EXISTS FOR (n:CloudResource) ON (n.depth)", map[string]interface{}{})
+	session.Run("CREATE INDEX CloudResourceLinked IF NOT EXISTS FOR (n:CloudResource) ON (n.linked)", map[string]interface{}{})
+
 	return nil
 }
 
 func addIndexOnIssuesCount(session neo4j.Session, node_type string) {
-	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByVulnerabilitiesCount FOR (n:%s) ON (n.vulnerabilities_count)",
+	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByVulnerabilitiesCount IF NOT EXISTS FOR (n:%s) ON (n.vulnerabilities_count)",
 		node_type, node_type),
 		map[string]interface{}{})
-	session.Run(fmt.Sprintf("CREATE INDEX %sOrderBySecretsCount FOR (n:%s) ON (n.vulnerabilities_count)",
+	session.Run(fmt.Sprintf("CREATE INDEX %sOrderBySecretsCount IF NOT EXISTS FOR (n:%s) ON (n.vulnerabilities_count)",
 		node_type, node_type),
 		map[string]interface{}{})
-	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByMalwaresCount FOR (n:%s) ON (n.secrets_count)",
+	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByMalwaresCount IF NOT EXISTS FOR (n:%s) ON (n.secrets_count)",
 		node_type, node_type),
 		map[string]interface{}{})
-	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByCompliancesCount FOR (n:%s) ON (n.compliances_count)",
+	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByCompliancesCount IF NOT EXISTS FOR (n:%s) ON (n.compliances_count)",
 		node_type, node_type),
 		map[string]interface{}{})
-	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByCloudCompliancesCount FOR (n:%s) ON (n.cloud_compliances_count)",
+	session.Run(fmt.Sprintf("CREATE INDEX %sOrderByCloudCompliancesCount IF NOT EXISTS FOR (n:%s) ON (n.cloud_compliances_count)",
 		node_type, node_type),
 		map[string]interface{}{})
 }

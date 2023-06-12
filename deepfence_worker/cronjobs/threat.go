@@ -137,25 +137,12 @@ func computeThreatGraph(session neo4j.Session) error {
 		return err
 	}
 
+	// Define depths
 	if _, err = session.Run(`
 		MATCH (n)
 		WHERE n:Node OR n:CloudResource
-		SET n.vulnerabilities_count = COALESCE(n.vulnerabilities_count, 0),
-		n.secrets_count = COALESCE(n.secrets_count, 0),
-		n.malwares_count = COALESCE(n.malwares_count, 0),
-		n.compliances_count = COALESCE(n.compliances_count, 0),
-		n.cloud_compliances_count = COALESCE(n.cloud_compliances_count, 0)`, map[string]interface{}{}, txConfig); err != nil {
-		return err
-	}
-
-	if _, err = session.Run(`
-		MATCH (n)
-		WHERE n:Node OR n:CloudResource
-		SET n.sum_cve = COALESCE(n.vulnerabilities_count, 0),
-		n.sum_secrets = COALESCE(n.secrets_count, 0),
-		n.sum_malware = COALESCE(n.malwares_count, 0),
-		n.sum_compliance = COALESCE(n.compliances_count, 0),
-		n.sum_cloud_compliance = COALESCE(n.cloud_compliances_count, 0)`, map[string]interface{}{}, txConfig); err != nil {
+		AND NOT n.depth IS NULL
+		SET n.depth = null`, map[string]interface{}{}, txConfig); err != nil {
 		return err
 	}
 
@@ -167,10 +154,23 @@ func computeThreatGraph(session neo4j.Session) error {
 	}
 
 	if _, err = session.Run(`
-		MATCH (n:Node {node_id:'in-the-internet'})-[d:PUBLIC|IS|HOSTS|SECURED*]->(m:CloudResource)
+		MATCH (n:Node {node_id:'in-the-internet'})-[d:PUBLIC|IS|HOSTS|SECURED*1..3]->(m:CloudResource)
 		WITH SIZE(d) as depth, m
 		WITH min(depth) as min_depth, m
 		SET m.depth = min_depth `, map[string]interface{}{}, txConfig); err != nil {
+		return err
+	}
+
+	// Compute counts & sums
+	if _, err = session.Run(`
+		MATCH (n)
+		WHERE n:Node OR n:CloudResource
+		AND NOT n.depth IS NULL
+		SET n.sum_cve = COALESCE(n.vulnerabilities_count, 0),
+		n.sum_secrets = COALESCE(n.secrets_count, 0),
+		n.sum_malware = COALESCE(n.malwares_count, 0),
+		n.sum_compliance = COALESCE(n.compliances_count, 0),
+		n.sum_cloud_compliance = COALESCE(n.cloud_compliances_count, 0)`, map[string]interface{}{}, txConfig); err != nil {
 		return err
 	}
 
