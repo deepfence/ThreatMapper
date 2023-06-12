@@ -20,7 +20,7 @@ import (
 const (
 	EVENT_COMPLIANCE_SCAN    = string(utils.NEO4J_COMPLIANCE_SCAN)
 	EVENT_VULNERABILITY_SCAN = string(utils.NEO4J_VULNERABILITY_SCAN)
-	EVENT_SECRET_SCAN        = string(utils.SECRET_SCAN)
+	EVENT_SECRET_SCAN        = string(utils.NEO4J_SECRET_SCAN)
 	EVENT_MALWARE_SCAN       = string(utils.NEO4J_MALWARE_SCAN)
 	EVENT_INTEGRATION        = "integration"
 	EVENT_AUTH               = "auth"
