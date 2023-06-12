@@ -2,6 +2,7 @@ package reporters_graph
 
 import (
 	"context"
+	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -35,7 +36,7 @@ func GetVulnerabilityThreatGraph(ctx context.Context, graphType string) ([]Vulne
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(60 * time.Second))
 	if err != nil {
 		return vulnerabilityThreatGraph, err
 	}
@@ -66,7 +67,7 @@ func GetVulnerabilityThreatGraph(ctx context.Context, graphType string) ([]Vulne
 
 	res, err = tx.Run(`
 		MATCH (n)
-		WHERE n.node_id IN $node_ids
+		WHERE (n:Node OR n:Container) AND n.node_id IN $node_ids
 		WITH n
 		CALL {
 		    WITH n
@@ -96,7 +97,7 @@ func GetVulnerabilityThreatGraph(ctx context.Context, graphType string) ([]Vulne
 	}
 
 	res, err = tx.Run(`
-		MATCH p=shortestPath((n:Node{node_id:'in-the-internet'}) -[:CONNECTS*1..20]-> (m:Node))
+		MATCH p=shortestPath((n:Node{node_id:'in-the-internet'}) -[:CONNECTS*1..3]-> (m:Node))
 		WHERE m.node_id IN $node_ids
 		RETURN m.node_id, p
 	`, map[string]interface{}{"node_ids": node_ids})

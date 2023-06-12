@@ -1,11 +1,10 @@
 package report
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"time"
-
-	jsoniter "github.com/json-iterator/go"
 )
 
 // Names of the various topologies.
@@ -426,7 +425,7 @@ type Parent struct {
 }
 
 type CompressedReport struct {
-	Decoder *jsoniter.Decoder
+	Decoder *json.Decoder
 	Cleanup func()
 }
 

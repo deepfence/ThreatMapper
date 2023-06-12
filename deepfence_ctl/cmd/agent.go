@@ -32,12 +32,12 @@ var agentUpgradeSubCmd = &cobra.Command{
 		}
 
 		var err error
-		req := http.Client().ControlsApi.UpgradeAgentVersion(context.Background())
+		req := http.Client().ControlsAPI.UpgradeAgentVersion(context.Background())
 		req = req.ModelAgentUpgrade(deepfence_server_client.ModelAgentUpgrade{
 			NodeId:  node_ids,
 			Version: version,
 		})
-		_, err = http.Client().ControlsApi.UpgradeAgentVersionExecute(req)
+		_, err = http.Client().ControlsAPI.UpgradeAgentVersionExecute(req)
 
 		if err != nil {
 			log.Fatal().Msgf("Fail to execute: %v", err)

@@ -18,10 +18,10 @@ The following instructions explain how to get started with a docker-based instal
     sudo sysctl -w vm.max_map_count=262144
     ```
   
-2. Download the file [docker-compose.yml](https://github.com/deepfence/ThreatMapper/blob/master/deployment-scripts/docker-compose.yml) to the system that will host the Console
+2. Download the file [docker-compose.yml](https://github.com/deepfence/ThreatMapper/blob/release-1.5/deployment-scripts/docker-compose.yml) to the system that will host the Console
 
     ```bash
-    wget https://github.com/deepfence/ThreatMapper/raw/master/deployment-scripts/docker-compose.yml
+    wget https://github.com/deepfence/ThreatMapper/raw/release-1.5/deployment-scripts/docker-compose.yml
     ```
 
 3. Execute the following command to install and start the latest build of the Console
@@ -29,15 +29,6 @@ The following instructions explain how to get started with a docker-based instal
     ```bash
     docker compose up -d
     ```
-
-    :::tip
-    Alternatively, to install a named [tagged release](https://github.com/deepfence/ThreatMapper/releases), specify the release tag as follows:
-
-    ```bash
-    wget https://github.com/deepfence/ThreatMapper/raw/release-1.5/deployment-scripts/docker-compose.yml
-    env DF_IMG_TAG=1.5.0 docker compose up -d
-    ```
-    :::
 
 Now proceed to the [Initial Configuration](initial-configuration).
 

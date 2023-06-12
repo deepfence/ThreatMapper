@@ -3,11 +3,13 @@
 # Define color codes
 GREEN='\033[0;32m'
 RED='\033[0;31m'
+BLUE='\033[0;34m'
 NC='\033[0m'  # No color
 
 # Checkmark and Cross symbols
 CHECKMARK="${GREEN}✔${NC}"
 CROSS="${RED}✘${NC}"
+INFO="${BLUE}ℹ${NC}"
 
 # Default values
 DEFAULT_IMAGE_TAG="2.0.0"
@@ -33,7 +35,8 @@ while [[ $# -gt 0 ]]; do
         echo "Usage: $0 [OPTIONS]"
         echo "Options:"
         echo "  -d, --deployment     Specify the deployment type: 'docker' or 'kubernetes'"
-        echo "  -t, --image-tag      Specify the image tag for the Deepfence components (default: $DEFAULT_IMAGE_TAG)"
+        echo "  -t, --image-tag      Specify the image tag for the Deepfence components (default: $DEFAULT_IMAGE_TAG) (optional)"
+        echo "  -n, --no-prompt      Do not prompt for input (optional)"
         echo "  -h, --help           Display usage instructions"
         exit 0
         ;;
@@ -133,13 +136,37 @@ check_kubernetes_node_requirements() {
     echo -e "${CHECKMARK} Kubernetes nodes check passed."
 
     # Check CPU and RAM for each node
+    MIN_CPU=4 # core
+    MIN_RAM=7000000 #kibibyte
+
     NODES=$(kubectl get nodes --no-headers | awk '{print $1}')
     while IFS= read -r node; do
-        CPU=$(kubectl describe node "$node" | grep "cpu: " | awk '{print $2}')
-        RAM=$(kubectl describe node "$node" | grep "memory: " | awk '{print $2}')
+        CPU_CAPACITY=$(kubectl describe node "$node" | awk '/cpu:/{print $2; exit}')
+        RAM_CAPACITY=$(kubectl describe node "$node" | awk '/memory:/{print $2; exit}')
 
-        if [[ $CPU -lt $MIN_CPU || $RAM -lt $MIN_RAM ]]; then
-            echo -e "${CROSS} Insufficient CPU or RAM for Kubernetes node: $node. Minimum requirement: $MIN_CPU cores, $MIN_RAM GB RAM.${NC}"
+        # Convert RAM_CAPACITY to kibibyte
+        if [[ $RAM_CAPACITY =~ "Ki" ]]; then
+            RAM_CAPACITY=$(echo $RAM_CAPACITY | sed 's/Ki//g')
+        elif [[ $RAM_CAPACITY =~ "Mi" ]]; then
+            RAM_CAPACITY=$(echo $RAM_CAPACITY | sed 's/Mi//g')
+            RAM_CAPACITY=$(($RAM_CAPACITY * 1024))
+        elif [[ $RAM_CAPACITY =~ "Gi" ]]; then
+            RAM_CAPACITY=$(echo $RAM_CAPACITY | sed 's/Gi//g')
+            RAM_CAPACITY=$(($RAM_CAPACITY * 1024 * 1024))
+        elif [[ $RAM_CAPACITY =~ "Ti" ]]; then
+            RAM_CAPACITY=$(echo $RAM_CAPACITY | sed 's/Ti//g')
+            RAM_CAPACITY=$(($RAM_CAPACITY * 1024 * 1024 * 1024))
+        fi
+
+        # convert CPU_CAPACITY to core
+        if [[ $CPU_CAPACITY =~ "m" ]]; then
+            CPU_CAPACITY=$(echo $CPU_CAPACITY | sed 's/m//g')
+            CPU_CAPACITY=$(($CPU_CAPACITY / 1000))
+        fi
+
+        if [[ $CPU_CAPACITY -lt $MIN_CPU || $RAM_CAPACITY -lt $MIN_RAM ]]; then
+            echo -e "${INFO} CPU: $CPU_CAPACITY, RAM: $RAM_CAPACITY for Kubernetes node: $node."
+            echo -e "${CROSS} Insufficient CPU or RAM for Kubernetes node: $node. Minimum requirement: $MIN_CPU cores, 8GB RAM.${NC}"
             exit 1
         fi
 
@@ -216,9 +243,6 @@ kubernetes_deployment() {
 
     # Install deepfence-console
     helm upgrade --install deepfence-console deployment-scripts/helm-charts/deepfence-console --set global.imageTag="$IMAGE_TAG" --set global.storageClass="$STORAGE_CLASS" --set neo4j.secrets.NEO4J_AUTH=neo4j/$NEO4J_PASSWORD -f $CONSOLE_VALUES_FILE
-
-    # Wait for the deployment to complete
-    kubectl rollout status deployment/deepfence-console
 
 }
 

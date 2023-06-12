@@ -87,7 +87,7 @@ func TestParseFieldFilters2CypherWhereConditions(t *testing.T) {
 		},
 	}
 	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
-	assert.Equal(t, cypher, " WHERE  n:Node OR n:ContainerImage", "should be equal")
+	assert.Equal(t, cypher, " WHERE  (n:Node OR n:ContainerImage)", "should be equal")
 
 }
 
@@ -118,7 +118,7 @@ func TestNotContainersFieldFilters2CypherWhereConditions(t *testing.T) {
 		},
 	}
 	cypher = ParseFieldFilters2CypherWhereConditions(node_name, mo.Some(ff), true)
-	assert.Equal(t, cypher, " WHERE   NOT n:Node AND  NOT n:ContainerImage", "should be equal")
+	assert.Equal(t, cypher, " WHERE  ( NOT n:Node AND  NOT n:ContainerImage)", "should be equal")
 }
 
 func TestOrderFilter2CypherCondition(t *testing.T) {
@@ -179,6 +179,32 @@ func TestOrderFilter2CypherCondition(t *testing.T) {
 
 	cypher = OrderFilter2CypherCondition(node_name, ff)
 	assert.Equal(t, cypher, " WITH n ORDER BY n.toto LIMIT 10 \n WITH n ORDER BY n.titi DESC LIMIT 5 ", "should be equal")
+
+}
+
+func TestOrderFilter2CypherConditionWithSeverity(t *testing.T) {
+	node_name := "n"
+
+	ff := OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "cve_severity"}},
+	}
+
+	cypher := OrderFilter2CypherCondition(node_name, ff)
+	assert.Equal(t, cypher, " WITH n,CASE n.cve_severity WHEN 'low' THEN 0 WHEN 'medium' THEN 1 WHEN 'high' THEN 2 WHEN 'critical' THEN 3 ELSE -1 END AS severity0 ORDER BY severity0 ", "should be equal")
+
+	ff = OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "cve_severity"}, {FieldName: "level"}},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff)
+	assert.Equal(t, cypher, " WITH n,CASE n.cve_severity WHEN 'low' THEN 0 WHEN 'medium' THEN 1 WHEN 'high' THEN 2 WHEN 'critical' THEN 3 ELSE -1 END AS severity0 ORDER BY severity0 \n WITH n,CASE n.level WHEN 'low' THEN 0 WHEN 'medium' THEN 1 WHEN 'high' THEN 2 WHEN 'critical' THEN 3 ELSE -1 END AS severity1 ORDER BY severity1 ", "should be equal")
+
+	ff = OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "cve_severity"}, {FieldName: "random"}},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff)
+	assert.Equal(t, cypher, " WITH n,CASE n.cve_severity WHEN 'low' THEN 0 WHEN 'medium' THEN 1 WHEN 'high' THEN 2 WHEN 'critical' THEN 3 ELSE -1 END AS severity0 ORDER BY severity0 \n WITH n ORDER BY n.random ", "should be equal")
 
 }
 

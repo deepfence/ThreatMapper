@@ -5,6 +5,7 @@ import { useInterval } from 'react-use';
 import { Dropdown, DropdownItem } from 'ui-components';
 
 import { CaretDown } from '@/components/icons/common/CaretDown';
+import { queryClient } from '@/queries/client';
 
 // function that converts seconds to human friendly time
 // e.g. 300 seconds => 5m
@@ -29,6 +30,9 @@ export const AutoRefresh = () => {
     () => {
       if (state === 'idle') {
         revalidate();
+        queryClient.refetchQueries({
+          type: 'active',
+        });
       }
     },
     refreshInSeconds === 0 ? null : refreshInSeconds * 1000,
@@ -51,6 +55,9 @@ export const AutoRefresh = () => {
         onClick={() => {
           if (state === 'idle') {
             revalidate();
+            queryClient.refetchQueries({
+              type: 'active',
+            });
             setSpinning(true);
           }
         }}

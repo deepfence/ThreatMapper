@@ -224,6 +224,7 @@ function useTableDataManager() {
       });
     const searchParams = new URLSearchParams();
     searchParams.set('action', JSON.stringify(action));
+    searchParams.set('skipConnections', 'true');
     searchParams.set('filters', JSON.stringify(storageManager.getFilters()));
     fetcher.load(`/data-component/topology?${searchParams.toString()}`);
     setAction(action);

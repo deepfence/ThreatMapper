@@ -205,6 +205,8 @@ func startWorker(wml watermill.LoggerAdapter, cfg config) error {
 
 	worker.AddNoPublisherHandler(utils.CloudComplianceTask, cronjobs.AddCloudControls)
 
+	worker.AddNoPublisherHandler(utils.CachePostureProviders, cronjobs.CachePostureProviders)
+
 	worker.AddNoPublisherHandler(utils.SendNotificationTask, cronjobs.SendNotifications)
 
 	worker.AddNoPublisherHandler(utils.ReportGeneratorTask, reports.GenerateReport)

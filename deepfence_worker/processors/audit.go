@@ -46,7 +46,7 @@ func processAuditLog(ctx context.Context, auditC chan *kgo.Record) {
 			}
 
 			if err := pgClient.CreateAuditLog(spanCtx, params); err != nil {
-				log.Error().Err(err).Msg("failed to insert audit log")
+				log.Error().Err(err).Msgf("failed to insert audit log params: %+v", params)
 				span.RecordError(err)
 				span.SetStatus(codes.Error, err.Error())
 				span.End()

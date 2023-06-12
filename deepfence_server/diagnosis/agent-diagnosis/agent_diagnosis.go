@@ -41,7 +41,7 @@ func verifyNodeIds(ctx context.Context, nodeIdentifiers []diagnosis.NodeIdentifi
 		return inProgressNodeIds, err
 	}
 	defer session.Close()
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return inProgressNodeIds, err
 	}
@@ -96,7 +96,7 @@ func UpdateAgentDiagnosticLogsStatus(ctx context.Context, status diagnosis.Diagn
 		return err
 	}
 	defer session.Close()
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	defer tx.Close()
 
 	_, err = tx.Run(`
@@ -146,7 +146,7 @@ func GenerateAgentDiagnosticLogs(ctx context.Context, nodeIdentifiers []diagnosi
 		return err
 	}
 	defer session.Close()
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	defer tx.Close()
 
 	fileNameSuffix := "-" + time.Now().Format("2006-01-02-15-04-05") + ".zip"

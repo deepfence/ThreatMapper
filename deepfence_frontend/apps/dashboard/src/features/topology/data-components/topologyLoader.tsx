@@ -62,6 +62,7 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<TopologyLoaderDa
     GraphStorageManager['getFilters']
   >;
   let type = url.searchParams.get('type') ?? NodeType.cloud_provider;
+  const skipConnections = (url.searchParams.get('skipConnections') ?? 'false') === 'true';
   if (!TopologyViewTypes.includes(type as (typeof TopologyViewTypes)[number])) {
     type = NodeType.cloud_provider;
   }
@@ -90,6 +91,7 @@ const loader = async ({ request }: LoaderFunctionArgs): Promise<TopologyLoaderDa
         order_filter: { order_fields: [] },
         compare_filter: null,
       },
+      skip_connections: skipConnections,
     },
   });
 

@@ -1,0 +1,1123 @@
+{
+  "TS": "2023-05-05T14:18:23.418554171Z",
+  "Endpoint": {},
+  "Process": {},
+  "Container": {},
+  "CloudProvider": {},
+  "CloudRegion": {},
+  "KubernetesCluster": {
+    "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348": {
+      "metadata": {
+        "node_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "node_type": "kubernetes_cluster",
+        "node_name": "k8s-sed-string",
+        "timestamp": "2023-05-05T13:37:28.409735477Z",
+        "cloud_provider": "digital_ocean",
+        "pseudo": false,
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean"
+      }
+    }
+  },
+  "Pod": {
+    "b27b23a8-7212-464c-9e9c-a9da2ba4fb9c": {
+      "metadata": {
+        "node_id": "b27b23a8-7212-464c-9e9c-a9da2ba4fb9c",
+        "node_type": "pod",
+        "node_name": "deepfence-agent-9g442 / deepfence / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418718729Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "deepfence-agent-9g442",
+        "kubernetes_labels": "{\"app.kubernetes.io/instance\":\"deepfence-agent\",\"app.kubernetes.io/name\":\"deepfence-agent\",\"controller-revision-hash\":\"84d565f44c\",\"pod-template-generation\":\"1\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.108.0.5",
+        "kubernetes_namespace": "deepfence",
+        "kubernetes_created": "2023-05-05T13:36:57Z",
+        "kubernetes_is_in_host_network": true,
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-deepfence"
+      }
+    },
+    "1c20ad50-81e3-4c61-ba1e-97697b2b8486": {
+      "metadata": {
+        "node_id": "1c20ad50-81e3-4c61-ba1e-97697b2b8486",
+        "node_type": "pod",
+        "node_name": "metrics-server-8ff8f88c6-9zc6d / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418622622Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "metrics-server-8ff8f88c6-9zc6d",
+        "kubernetes_labels": "{\"k8s-app\":\"metrics-server\",\"pod-template-hash\":\"8ff8f88c6\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.1.115",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-03-11T04:22:16Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "4b5b9a7b-1c44-4a07-aecd-b9d46f6bc32b": {
+      "metadata": {
+        "node_id": "4b5b9a7b-1c44-4a07-aecd-b9d46f6bc32b",
+        "node_type": "pod",
+        "node_name": "cilium-operator-54f978d8b6-t9pfl / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418776572Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "cilium-operator-54f978d8b6-t9pfl",
+        "kubernetes_labels": "{\"doks.digitalocean.com/managed\":\"true\",\"io.cilium/app\":\"operator\",\"name\":\"cilium-operator\",\"pod-template-hash\":\"54f978d8b6\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.108.0.5",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-03-23T13:00:32Z",
+        "kubernetes_is_in_host_network": true,
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "86a73861-367a-48b6-936f-96bf20da87e1": {
+      "metadata": {
+        "node_id": "86a73861-367a-48b6-936f-96bf20da87e1",
+        "node_type": "pod",
+        "node_name": "nginx-load-594b4847f6-4dlbt / ns1 / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.41861389Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "nginx-load-594b4847f6-4dlbt",
+        "kubernetes_labels": "{\"app\":\"nginx-load\",\"pod-template-hash\":\"594b4847f6\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.1.82",
+        "kubernetes_namespace": "ns1",
+        "kubernetes_created": "2023-02-16T11:36:10Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-ns1"
+      }
+    },
+    "a2359688-a64c-4314-ac8b-f4e6e1dc8fd4": {
+      "metadata": {
+        "node_id": "a2359688-a64c-4314-ac8b-f4e6e1dc8fd4",
+        "node_type": "pod",
+        "node_name": "do-node-agent-nmh7m / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418824434Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "do-node-agent-nmh7m",
+        "kubernetes_labels": "{\"app\":\"do-node-agent\",\"controller-revision-hash\":\"6649cb68\",\"doks.digitalocean.com/managed\":\"true\",\"pod-template-generation\":\"2\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.108.0.4",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-03-23T13:02:34Z",
+        "kubernetes_is_in_host_network": true,
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "e308e689-f293-40a9-989d-583f2d2beedb": {
+      "metadata": {
+        "node_id": "e308e689-f293-40a9-989d-583f2d2beedb",
+        "node_type": "pod",
+        "node_name": "nginx-69b746bcfb-l5qfk / ns1 / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418631487Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "nginx-69b746bcfb-l5qfk",
+        "kubernetes_labels": "{\"app\":\"nginx\",\"pod-template-hash\":\"69b746bcfb\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.0.94",
+        "kubernetes_namespace": "ns1",
+        "kubernetes_created": "2023-02-16T11:36:09Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-ns1"
+      }
+    },
+    "7d035bde-8a33-4533-983f-bc108cec947b": {
+      "metadata": {
+        "node_id": "7d035bde-8a33-4533-983f-bc108cec947b",
+        "node_type": "pod",
+        "node_name": "konnectivity-agent-bq4p4 / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418585769Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "konnectivity-agent-bq4p4",
+        "kubernetes_labels": "{\"controller-revision-hash\":\"f88b4cccb\",\"doks.digitalocean.com/managed\":\"true\",\"k8s-app\":\"konnectivity-agent\",\"pod-template-generation\":\"2\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.1.28",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-03-23T13:01:03Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "d789f361-9f28-4b04-a136-85db2df96a53": {
+      "metadata": {
+        "node_id": "d789f361-9f28-4b04-a136-85db2df96a53",
+        "node_type": "pod",
+        "node_name": "echoserver-deployment-755d555657-wtsvv / default / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418649974Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "echoserver-deployment-755d555657-wtsvv",
+        "kubernetes_labels": "{\"app\":\"echoserver\",\"pod-template-hash\":\"755d555657\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.0.13",
+        "kubernetes_namespace": "default",
+        "kubernetes_created": "2023-01-21T06:38:56Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-default"
+      }
+    },
+    "e28b65e6-1d66-4df3-900e-1abf8fb3481d": {
+      "metadata": {
+        "node_id": "e28b65e6-1d66-4df3-900e-1abf8fb3481d",
+        "node_type": "pod",
+        "node_name": "deepfence-agent-hcjwg / deepfence / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418783023Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "deepfence-agent-hcjwg",
+        "kubernetes_labels": "{\"app.kubernetes.io/instance\":\"deepfence-agent\",\"app.kubernetes.io/name\":\"deepfence-agent\",\"controller-revision-hash\":\"84d565f44c\",\"pod-template-generation\":\"1\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.108.0.4",
+        "kubernetes_namespace": "deepfence",
+        "kubernetes_created": "2023-05-05T13:36:57Z",
+        "kubernetes_is_in_host_network": true,
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-deepfence"
+      }
+    },
+    "a5eb03e6-c1ba-473b-9e8e-51441a16b9c2": {
+      "metadata": {
+        "node_id": "a5eb03e6-c1ba-473b-9e8e-51441a16b9c2",
+        "node_type": "pod",
+        "node_name": "coredns-d767c746-l4l5k / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418799533Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "coredns-d767c746-l4l5k",
+        "kubernetes_labels": "{\"doks.digitalocean.com/managed\":\"true\",\"k8s-app\":\"kube-dns\",\"pod-template-hash\":\"d767c746\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.0.34",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-03-23T13:02:19Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "442afaca-d23c-4afe-bac4-b6e4473da945": {
+      "metadata": {
+        "node_id": "442afaca-d23c-4afe-bac4-b6e4473da945",
+        "node_type": "pod",
+        "node_name": "cpc-bridge-proxy-4klqk / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418791003Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "cpc-bridge-proxy-4klqk",
+        "kubernetes_labels": "{\"app\":\"cpc-bridge-proxy\",\"controller-revision-hash\":\"774f6c6bc\",\"doks.digitalocean.com/managed\":\"true\",\"pod-template-generation\":\"2\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.108.0.5",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-03-23T13:02:14Z",
+        "kubernetes_is_in_host_network": true,
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "45f4531f-71e2-4e56-8bc8-55314cc7dd9a": {
+      "metadata": {
+        "node_id": "45f4531f-71e2-4e56-8bc8-55314cc7dd9a",
+        "node_type": "pod",
+        "node_name": "echoserver-deployment-755d555657-sjs7m / default / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418572313Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "echoserver-deployment-755d555657-sjs7m",
+        "kubernetes_labels": "{\"app\":\"echoserver\",\"pod-template-hash\":\"755d555657\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.0.122",
+        "kubernetes_namespace": "default",
+        "kubernetes_created": "2023-01-21T05:26:43Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-default"
+      }
+    },
+    "c08ab3aa-8f3d-4baf-b7da-bd1ef4495148": {
+      "metadata": {
+        "node_id": "c08ab3aa-8f3d-4baf-b7da-bd1ef4495148",
+        "node_type": "pod",
+        "node_name": "nginx-5hw5w / default / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418659194Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "nginx-5hw5w",
+        "kubernetes_labels": "{\"app\":\"nginx\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.1.112",
+        "kubernetes_namespace": "default",
+        "kubernetes_created": "2023-01-30T13:37:13Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-default"
+      }
+    },
+    "67f93e1d-b6d6-4081-b728-87bec65c338f": {
+      "metadata": {
+        "node_id": "67f93e1d-b6d6-4081-b728-87bec65c338f",
+        "node_type": "pod",
+        "node_name": "kube-proxy-rh86k / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418835991Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "kube-proxy-rh86k",
+        "kubernetes_labels": "{\"controller-revision-hash\":\"5f7dbc4cf6\",\"doks.digitalocean.com/managed\":\"true\",\"k8s-app\":\"kube-proxy\",\"pod-template-generation\":\"2\",\"tier\":\"node\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.108.0.5",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-03-23T13:00:30Z",
+        "kubernetes_is_in_host_network": true,
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "d33ab0d7-b88e-410f-b67c-9d99c87cbd17": {
+      "metadata": {
+        "node_id": "d33ab0d7-b88e-410f-b67c-9d99c87cbd17",
+        "node_type": "pod",
+        "node_name": "web-0 / default / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418725709Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "web-0",
+        "kubernetes_labels": "{\"app\":\"nginx\",\"controller-revision-hash\":\"web-b99dd8d65\",\"statefulset.kubernetes.io/pod-name\":\"web-0\"}",
+        "kubernetes_state": "Pending",
+        "kubernetes_namespace": "default",
+        "kubernetes_created": "2023-03-11T04:17:58Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-default"
+      }
+    },
+    "2e00758c-a1d4-47b4-a861-bacbbf38aaca": {
+      "metadata": {
+        "node_id": "2e00758c-a1d4-47b4-a861-bacbbf38aaca",
+        "node_type": "pod",
+        "node_name": "echo-server-load-56c6dd6bcd-9t8sg / ns1 / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418748788Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "echo-server-load-56c6dd6bcd-9t8sg",
+        "kubernetes_labels": "{\"app\":\"echo-server-load\",\"pod-template-hash\":\"56c6dd6bcd\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.1.19",
+        "kubernetes_namespace": "ns1",
+        "kubernetes_created": "2023-02-16T11:36:06Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-ns1"
+      }
+    },
+    "6c350b16-71d9-4620-b6d4-f7076af1e6b1": {
+      "metadata": {
+        "node_id": "6c350b16-71d9-4620-b6d4-f7076af1e6b1",
+        "node_type": "pod",
+        "node_name": "csi-do-node-rdcjt / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418597017Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "csi-do-node-rdcjt",
+        "kubernetes_labels": "{\"app\":\"csi-do-node\",\"controller-revision-hash\":\"5cb858cb7f\",\"doks.digitalocean.com/managed\":\"true\",\"pod-template-generation\":\"3\",\"role\":\"csi-do\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.108.0.5",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-04-27T13:00:50Z",
+        "kubernetes_is_in_host_network": true,
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "06349797-6c31-4d79-9143-88b74ddb40cb": {
+      "metadata": {
+        "node_id": "06349797-6c31-4d79-9143-88b74ddb40cb",
+        "node_type": "pod",
+        "node_name": "coredns-d767c746-wdcgw / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418846063Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "coredns-d767c746-wdcgw",
+        "kubernetes_labels": "{\"doks.digitalocean.com/managed\":\"true\",\"k8s-app\":\"kube-dns\",\"pod-template-hash\":\"d767c746\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.1.90",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-03-23T13:02:19Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "cbaaaa3c-c183-4278-a3c2-137b7b74c88f": {
+      "metadata": {
+        "node_id": "cbaaaa3c-c183-4278-a3c2-137b7b74c88f",
+        "node_type": "pod",
+        "node_name": "deepfence-cluster-agent-787cc89cf-jklrc / deepfence / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418814997Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "deepfence-cluster-agent-787cc89cf-jklrc",
+        "kubernetes_labels": "{\"app.kubernetes.io/instance\":\"deepfence-agent\",\"app.kubernetes.io/name\":\"deepfence-cluster-agent\",\"pod-template-hash\":\"787cc89cf\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.108.0.4",
+        "kubernetes_namespace": "deepfence",
+        "kubernetes_created": "2023-05-05T13:36:57Z",
+        "kubernetes_is_in_host_network": true,
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-deepfence"
+      }
+    },
+    "b6ab2540-0245-4dfc-b2a2-d60956f987bb": {
+      "metadata": {
+        "node_id": "b6ab2540-0245-4dfc-b2a2-d60956f987bb",
+        "node_type": "pod",
+        "node_name": "whoami-load-5cf455ddd6-phnvf / ns1 / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418754734Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "whoami-load-5cf455ddd6-phnvf",
+        "kubernetes_labels": "{\"app\":\"whoami-load\",\"pod-template-hash\":\"5cf455ddd6\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.0.91",
+        "kubernetes_namespace": "ns1",
+        "kubernetes_created": "2023-02-16T11:36:14Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-ns1"
+      }
+    },
+    "97c743e0-7c01-4792-ac67-30c7f7fcd986": {
+      "metadata": {
+        "node_id": "97c743e0-7c01-4792-ac67-30c7f7fcd986",
+        "node_type": "pod",
+        "node_name": "nginx-jmdrk / default / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418804795Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "nginx-jmdrk",
+        "kubernetes_labels": "{\"app\":\"nginx\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.0.90",
+        "kubernetes_namespace": "default",
+        "kubernetes_created": "2023-01-30T13:37:13Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-default"
+      }
+    },
+    "d736830d-de8d-40af-b44c-2cca7d9e3b0e": {
+      "metadata": {
+        "node_id": "d736830d-de8d-40af-b44c-2cca7d9e3b0e",
+        "node_type": "pod",
+        "node_name": "csi-do-node-p7srx / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418763705Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "csi-do-node-p7srx",
+        "kubernetes_labels": "{\"app\":\"csi-do-node\",\"controller-revision-hash\":\"5cb858cb7f\",\"doks.digitalocean.com/managed\":\"true\",\"pod-template-generation\":\"3\",\"role\":\"csi-do\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.108.0.4",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-04-27T13:00:43Z",
+        "kubernetes_is_in_host_network": true,
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "82ac21eb-e2cf-403a-8b16-ca81e4fa9030": {
+      "metadata": {
+        "node_id": "82ac21eb-e2cf-403a-8b16-ca81e4fa9030",
+        "node_type": "pod",
+        "node_name": "cpc-bridge-proxy-kdrz8 / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418668493Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "cpc-bridge-proxy-kdrz8",
+        "kubernetes_labels": "{\"app\":\"cpc-bridge-proxy\",\"controller-revision-hash\":\"774f6c6bc\",\"doks.digitalocean.com/managed\":\"true\",\"pod-template-generation\":\"2\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.108.0.4",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-03-23T13:01:41Z",
+        "kubernetes_is_in_host_network": true,
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "1683e200-1bda-42bf-aa23-e83522af6d5e": {
+      "metadata": {
+        "node_id": "1683e200-1bda-42bf-aa23-e83522af6d5e",
+        "node_type": "pod",
+        "node_name": "echo-server-75dd74cf6d-4d7pc / ns1 / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418743855Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "echo-server-75dd74cf6d-4d7pc",
+        "kubernetes_labels": "{\"app\":\"echo-server\",\"pod-template-hash\":\"75dd74cf6d\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.0.101",
+        "kubernetes_namespace": "ns1",
+        "kubernetes_created": "2023-02-16T11:36:05Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-ns1"
+      }
+    },
+    "117a1410-871a-470a-a34e-05877d5abbff": {
+      "metadata": {
+        "node_id": "117a1410-871a-470a-a34e-05877d5abbff",
+        "node_type": "pod",
+        "node_name": "cilium-62tdk / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418707686Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "cilium-62tdk",
+        "kubernetes_labels": "{\"controller-revision-hash\":\"84674fff8b\",\"doks.digitalocean.com/managed\":\"true\",\"k8s-app\":\"cilium\",\"kubernetes.io/cluster-service\":\"true\",\"pod-template-generation\":\"3\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.108.0.4",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-03-23T13:00:33Z",
+        "kubernetes_is_in_host_network": true,
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "a3e370dd-a3bd-4ea7-ad02-020112d798b3": {
+      "metadata": {
+        "node_id": "a3e370dd-a3bd-4ea7-ad02-020112d798b3",
+        "node_type": "pod",
+        "node_name": "do-node-agent-qqkk9 / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418640713Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "do-node-agent-qqkk9",
+        "kubernetes_labels": "{\"app\":\"do-node-agent\",\"controller-revision-hash\":\"6649cb68\",\"doks.digitalocean.com/managed\":\"true\",\"pod-template-generation\":\"2\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.108.0.5",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-03-23T13:02:31Z",
+        "kubernetes_is_in_host_network": true,
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "8df99219-d236-4122-b81c-13a599c77b5f": {
+      "metadata": {
+        "node_id": "8df99219-d236-4122-b81c-13a599c77b5f",
+        "node_type": "pod",
+        "node_name": "kube-proxy-5x6fx / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418735627Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "kube-proxy-5x6fx",
+        "kubernetes_labels": "{\"controller-revision-hash\":\"5f7dbc4cf6\",\"doks.digitalocean.com/managed\":\"true\",\"k8s-app\":\"kube-proxy\",\"pod-template-generation\":\"2\",\"tier\":\"node\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.108.0.4",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-03-23T13:00:29Z",
+        "kubernetes_is_in_host_network": true,
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "8f7db6f8-f6b3-41eb-bdce-646ee063de8b": {
+      "metadata": {
+        "node_id": "8f7db6f8-f6b3-41eb-bdce-646ee063de8b",
+        "node_type": "pod",
+        "node_name": "cilium-cnkcm / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418700055Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "cilium-cnkcm",
+        "kubernetes_labels": "{\"controller-revision-hash\":\"84674fff8b\",\"doks.digitalocean.com/managed\":\"true\",\"k8s-app\":\"cilium\",\"kubernetes.io/cluster-service\":\"true\",\"pod-template-generation\":\"3\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.108.0.5",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-03-23T13:00:56Z",
+        "kubernetes_is_in_host_network": true,
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "b11abaf0-0990-42a1-bf61-273f28f64eac": {
+      "metadata": {
+        "node_id": "b11abaf0-0990-42a1-bf61-273f28f64eac",
+        "node_type": "pod",
+        "node_name": "konnectivity-agent-xxkjm / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418606272Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "konnectivity-agent-xxkjm",
+        "kubernetes_labels": "{\"controller-revision-hash\":\"f88b4cccb\",\"doks.digitalocean.com/managed\":\"true\",\"k8s-app\":\"konnectivity-agent\",\"pod-template-generation\":\"2\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.0.8",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_created": "2023-03-23T13:00:35Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "14398dea-9bc2-45e1-b471-89fc8e562b5a": {
+      "metadata": {
+        "node_id": "14398dea-9bc2-45e1-b471-89fc8e562b5a",
+        "node_type": "pod",
+        "node_name": "whoami-6697f4cd75-hclt4 / ns1 / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.41855894Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "whoami-6697f4cd75-hclt4",
+        "kubernetes_labels": "{\"app\":\"whoami\",\"pod-template-hash\":\"6697f4cd75\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.1.88",
+        "kubernetes_namespace": "ns1",
+        "kubernetes_created": "2023-02-16T11:36:13Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-ns1"
+      }
+    },
+    "da26c997-f712-4eab-8405-fe3f403033ad": {
+      "metadata": {
+        "node_id": "da26c997-f712-4eab-8405-fe3f403033ad",
+        "node_type": "pod",
+        "node_name": "echoserver-deployment-755d555657-62bp5 / default / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418769745Z",
+        "pseudo": false,
+        "host_name": "k8s-sed-string-k8s-sed-string-m00j7",
+        "pod_name": "echoserver-deployment-755d555657-62bp5",
+        "kubernetes_labels": "{\"app\":\"echoserver\",\"pod-template-hash\":\"755d555657\"}",
+        "kubernetes_state": "Running",
+        "kubernetes_ip": "10.244.1.79",
+        "kubernetes_namespace": "default",
+        "kubernetes_created": "2023-01-21T05:26:43Z",
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "host": "k8s-sed-string-k8s-sed-string-m00j7",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-default"
+      }
+    }
+  },
+  "Service": {
+    "588cb1ce-9c91-4161-b891-ab9d71eda92f": {
+      "metadata": {
+        "node_id": "588cb1ce-9c91-4161-b891-ab9d71eda92f",
+        "node_type": "service",
+        "node_name": "nginx / default / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418486739Z",
+        "pseudo": false,
+        "kubernetes_ip": "None",
+        "kubernetes_namespace": "default",
+        "kubernetes_type": "ClusterIP",
+        "kubernetes_ports": [
+          "80/TCP"
+        ],
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-default"
+      }
+    },
+    "247863c1-2bc4-4853-ac6a-10bb7eb39bce": {
+      "metadata": {
+        "node_id": "247863c1-2bc4-4853-ac6a-10bb7eb39bce",
+        "node_type": "service",
+        "node_name": "echoserver-service / default / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.41849058Z",
+        "pseudo": false,
+        "kubernetes_ip": "10.245.164.105",
+        "kubernetes_ingress_ip": [
+          "138.197.49.141"
+        ],
+        "kubernetes_namespace": "default",
+        "kubernetes_type": "LoadBalancer",
+        "kubernetes_ports": [
+          "80:31618/TCP"
+        ],
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-default"
+      }
+    },
+    "14a200a5-8df1-4004-80ac-48441c0eb336": {
+      "metadata": {
+        "node_id": "14a200a5-8df1-4004-80ac-48441c0eb336",
+        "node_type": "service",
+        "node_name": "nginxservice / default / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418478479Z",
+        "pseudo": false,
+        "kubernetes_ip": "10.245.73.153",
+        "kubernetes_ingress_ip": [
+          "159.89.244.124"
+        ],
+        "kubernetes_namespace": "default",
+        "kubernetes_type": "LoadBalancer",
+        "kubernetes_ports": [
+          "80:32329/TCP"
+        ],
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-default"
+      }
+    },
+    "956bbf5e-0397-4abc-b650-a78f7e1b2164": {
+      "metadata": {
+        "node_id": "956bbf5e-0397-4abc-b650-a78f7e1b2164",
+        "node_type": "service",
+        "node_name": "metrics-server / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418447891Z",
+        "pseudo": false,
+        "kubernetes_ip": "10.245.80.250",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_type": "ClusterIP",
+        "kubernetes_ports": [
+          "443/TCP"
+        ],
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "f343bbd6-a4ea-440b-b6e6-964a72fb9504": {
+      "metadata": {
+        "node_id": "f343bbd6-a4ea-440b-b6e6-964a72fb9504",
+        "node_type": "service",
+        "node_name": "nginx / ns1 / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418457572Z",
+        "pseudo": false,
+        "kubernetes_ip": "10.245.150.214",
+        "kubernetes_namespace": "ns1",
+        "kubernetes_type": "ClusterIP",
+        "kubernetes_ports": [
+          "8000/TCP"
+        ],
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-ns1"
+      }
+    },
+    "b80d4315-d7fd-42c6-b738-05c73901041c": {
+      "metadata": {
+        "node_id": "b80d4315-d7fd-42c6-b738-05c73901041c",
+        "node_type": "service",
+        "node_name": "kube-dns / kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418422865Z",
+        "pseudo": false,
+        "kubernetes_ip": "10.245.0.10",
+        "kubernetes_namespace": "kube-system",
+        "kubernetes_type": "ClusterIP",
+        "kubernetes_ports": [
+          "53/UDP",
+          "53/TCP",
+          "9153/TCP"
+        ],
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system"
+      }
+    },
+    "d2c77571-583d-4f35-973d-711476f98287": {
+      "metadata": {
+        "node_id": "d2c77571-583d-4f35-973d-711476f98287",
+        "node_type": "service",
+        "node_name": "whoami / ns1 / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418470578Z",
+        "pseudo": false,
+        "kubernetes_ip": "10.245.22.180",
+        "kubernetes_namespace": "ns1",
+        "kubernetes_type": "ClusterIP",
+        "kubernetes_ports": [
+          "8000/TCP"
+        ],
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-ns1"
+      }
+    },
+    "55d4cc8a-6a56-42b7-b89f-7950e0438a8f": {
+      "metadata": {
+        "node_id": "55d4cc8a-6a56-42b7-b89f-7950e0438a8f",
+        "node_type": "service",
+        "node_name": "echo-server / ns1 / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418482712Z",
+        "pseudo": false,
+        "kubernetes_ip": "10.245.125.162",
+        "kubernetes_ingress_ip": [
+          "138.197.54.64"
+        ],
+        "kubernetes_namespace": "ns1",
+        "kubernetes_type": "LoadBalancer",
+        "kubernetes_ports": [
+          "8080:30303/TCP"
+        ],
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-ns1"
+      }
+    },
+    "312728f9-7850-46fc-b560-f09813113260": {
+      "metadata": {
+        "node_id": "312728f9-7850-46fc-b560-f09813113260",
+        "node_type": "service",
+        "node_name": "kubernetes / default / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418453297Z",
+        "pseudo": false,
+        "kubernetes_ip": "10.245.0.1",
+        "kubernetes_namespace": "default",
+        "kubernetes_type": "ClusterIP",
+        "kubernetes_ports": [
+          "443/TCP"
+        ],
+        "kubernetes_cluster_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "kubernetes_cluster_name": "k8s-sed-string"
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348",
+        "namespace": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-default"
+      }
+    }
+  },
+  "Namespace": {
+    "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-ns1": {
+      "metadata": {
+        "node_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-ns1",
+        "node_type": "namespace",
+        "node_name": "ns1 / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418878191Z",
+        "pseudo": false,
+        "kubernetes_labels": "{\"kubernetes.io/metadata.name\":\"ns1\"}",
+        "kubernetes_created": "2023-02-16T11:36:02Z",
+        "kubernetes_cluster_id": "",
+        "kubernetes_cluster_name": ""
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348"
+      }
+    },
+    "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-deepfence": {
+      "metadata": {
+        "node_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-deepfence",
+        "node_type": "namespace",
+        "node_name": "deepfence / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418885187Z",
+        "pseudo": false,
+        "kubernetes_labels": "{\"kubernetes.io/metadata.name\":\"deepfence\",\"name\":\"deepfence\"}",
+        "kubernetes_created": "2023-01-21T05:25:56Z",
+        "kubernetes_cluster_id": "",
+        "kubernetes_cluster_name": ""
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348"
+      }
+    },
+    "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-default": {
+      "metadata": {
+        "node_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-default",
+        "node_type": "namespace",
+        "node_name": "default / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418890405Z",
+        "pseudo": false,
+        "kubernetes_labels": "{\"kubernetes.io/metadata.name\":\"default\"}",
+        "kubernetes_created": "2023-01-21T04:38:13Z",
+        "kubernetes_cluster_id": "",
+        "kubernetes_cluster_name": ""
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348"
+      }
+    },
+    "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-node-lease": {
+      "metadata": {
+        "node_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-node-lease",
+        "node_type": "namespace",
+        "node_name": "kube-node-lease / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418895492Z",
+        "pseudo": false,
+        "kubernetes_labels": "{\"kubernetes.io/metadata.name\":\"kube-node-lease\"}",
+        "kubernetes_created": "2023-01-21T04:38:12Z",
+        "kubernetes_cluster_id": "",
+        "kubernetes_cluster_name": ""
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348"
+      }
+    },
+    "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-public": {
+      "metadata": {
+        "node_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-public",
+        "node_type": "namespace",
+        "node_name": "kube-public / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418900955Z",
+        "pseudo": false,
+        "kubernetes_labels": "{\"kubernetes.io/metadata.name\":\"kube-public\"}",
+        "kubernetes_created": "2023-01-21T04:38:12Z",
+        "kubernetes_cluster_id": "",
+        "kubernetes_cluster_name": ""
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348"
+      }
+    },
+    "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system": {
+      "metadata": {
+        "node_id": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348-kube-system",
+        "node_type": "namespace",
+        "node_name": "kube-system / k8s-sed-string",
+        "timestamp": "2023-05-05T14:18:48.418905676Z",
+        "pseudo": false,
+        "kubernetes_labels": "{\"kubernetes.io/metadata.name\":\"kube-system\"}",
+        "kubernetes_created": "2023-01-21T04:38:12Z",
+        "kubernetes_cluster_id": "",
+        "kubernetes_cluster_name": ""
+      },
+      "parents": {
+        "cloud_provider": "digital_ocean",
+        "kubernetes_cluster": "9bb1c7ad-2d5a-4b66-bba0-bcf6309b6348"
+      }
+    }
+  },
+  "ContainerImage": {},
+  "Host": {},
+  "Overlay": {},
+  "DNS": {
+    "127.0.0.1": {
+      "reverse": [
+        "localhost"
+      ]
+    },
+    "68.183.155.185": {
+      "reverse": [
+        "ramanan-oss-agent",
+        "ramanan-oss-agent.local"
+      ]
+    },
+    "172.67.157.38": {
+      "forward": [
+        "oss.deepfence.tech"
+      ]
+    }
+  },
+  "Window": 30036062030,
+  "Shortcut": false,
+  "ID": "3633317327833614736"
+}

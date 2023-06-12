@@ -61,7 +61,6 @@ func (p *Probe) dummyPublishLoop(i int) {
 	res := strings.ReplaceAll(dummy_agent, "agent-sed-string", hostname+strconv.Itoa(i))
 	res = strings.ReplaceAll(res, "region-sed-string", hostname)
 	dummy_agent_sed = []byte(res)
-	fmt.Printf("%v", res)
 	rpt := report.MakeReport()
 	err = json.Unmarshal(dummy_agent_sed, &rpt)
 
@@ -81,7 +80,7 @@ func (p *Probe) dummyPublishLoop(i int) {
 				publishCount++
 			} else if err == appclient.PushBackError {
 				rand.Seed(time.Now().UnixNano())
-				randomDelay := rand.Intn(30)
+				randomDelay := rand.Intn(int(p.publisher.PublishInterval()))
 				time.Sleep(time.Duration(randomDelay) * time.Second)
 			} else {
 				// If we failed to send then drop back to full report next time

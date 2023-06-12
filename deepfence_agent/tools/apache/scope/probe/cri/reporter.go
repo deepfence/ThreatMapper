@@ -172,10 +172,11 @@ func (r *Reporter) containerImageTopology() (report.Topology, map[string]ImageMe
 func (r *Reporter) getImage(image *client.Image) (report.TopologyNode, ImageMetadata) {
 	// logrus.Infof("images: %v", image)
 	// image format: sha256:ab21abc2d2c34c2b2d2c23bbcf23gg23f23
+	imageID := trimImageID(image.Id)
 	metadata := report.Metadata{
 		Timestamp:            time.Now().UTC().Format(time.RFC3339Nano),
 		NodeType:             report.ContainerImage,
-		NodeID:               image.Id,
+		NodeID:               imageID,
 		DockerImageSize:      humanize.Bytes(uint64(image.Size())),
 		DockerImageCreatedAt: time.Unix(0, 0).Format("2006-01-02T15:04:05") + "Z",
 		HostName:             r.hostID,
@@ -197,7 +198,7 @@ func (r *Reporter) getImage(image *client.Image) (report.TopologyNode, ImageMeta
 	} else {
 		metadata.ImageName = ""
 		metadata.ImageTag = ""
-		metadata.NodeName = image.Id
+		metadata.NodeName = imageID
 	}
 	return report.TopologyNode{
 			Metadata: metadata,
@@ -206,7 +207,7 @@ func (r *Reporter) getImage(image *client.Image) (report.TopologyNode, ImageMeta
 		ImageMetadata{
 			ImageName: metadata.ImageName,
 			ImageTag:  metadata.ImageTag,
-			ImageID:   image.Id,
+			ImageID:   imageID,
 			ImageRef:  imageRef,
 		}
 }

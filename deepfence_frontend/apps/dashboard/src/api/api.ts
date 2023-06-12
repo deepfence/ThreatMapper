@@ -202,6 +202,9 @@ export function getSearchApiClient() {
     getCloudComplianceFilters: searchApi.getCloudComplianceFilters.bind(searchApi),
 
     getNodeCounts: searchApi.countNodes.bind(searchApi),
+
+    searchCloudAccounts: searchApi.searchCloudAccounts.bind(searchApi),
+    searchCloudAccountsCount: searchApi.countCloudAccounts.bind(searchApi),
   };
 }
 

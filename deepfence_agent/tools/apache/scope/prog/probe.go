@@ -147,7 +147,9 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 				containers, err := client.ListContainers(docker_client.ListContainersOptions{Filters: containerFilters})
 				if err == nil {
 					for _, container := range containers {
-						containerDetails, err := client.InspectContainer(container.ID)
+						containerDetails, err := client.InspectContainerWithOptions(docker_client.InspectContainerOptions{
+							ID: container.ID,
+						})
 						if err == nil {
 							for _, env := range containerDetails.Config.Env {
 								if strings.HasPrefix(env, "KUBERNETES_SERVICE_HOST=") {
@@ -166,6 +168,13 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 
 	// https://groups.google.com/d/msg/kubernetes-sig-architecture/mVGobfD4TpY/Pa7n5t2qAAAJ
 	k8sClusterId, k8sClusterName, k8sVersion, nodeRole, _ := dfUtils.GetKubernetesDetails()
+	if flags.kubernetesEnabled && flags.kubernetesRole != kubernetesRoleHost {
+		if k8sClusterId == "" {
+			log.Error("could not get kubernetes_cluster_id, retrying...")
+			time.Sleep(30 * time.Second)
+			os.Exit(1)
+		}
+	}
 	err = os.Setenv(report.KubernetesClusterId, k8sClusterId)
 	if err != nil {
 		log.Error(err.Error())
