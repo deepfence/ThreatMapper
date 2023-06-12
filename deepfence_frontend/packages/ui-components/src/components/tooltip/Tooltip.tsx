@@ -65,7 +65,7 @@ export const Tooltip = (props: TooltipProps) => {
               )}
               {typeof content === 'string' ? (
                 <span
-                  className={cx('text-p5', 'text-text-input-value block')}
+                  className={cx('text-p4', 'text-text-input-value block')}
                   style={{
                     wordBreak: 'break-word',
                   }}
