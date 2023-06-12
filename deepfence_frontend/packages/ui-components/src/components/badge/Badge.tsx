@@ -1,101 +1,176 @@
 import * as LabelPrimitive from '@radix-ui/react-label';
-import cx from 'classnames';
+import { cva, VariantProps } from 'cva';
 import React, { ComponentProps, forwardRef, useId } from 'react';
-import { IconContext } from 'react-icons';
-import { HiX } from 'react-icons/hi';
 import { twMerge } from 'tailwind-merge';
 
-import { Typography } from '@/components/typography/Typography';
+import { ObjectWithNonNullableValues } from '@/types/utils';
 
-export type SizeType = 'sm' | 'lg';
-export type ColorType = 'default' | 'primary' | 'success' | 'danger';
-export type SelectedBadgeProps = {
-  id: string | number | undefined;
-  value: string | number | undefined;
-};
-export interface BadgeProps extends Omit<ComponentProps<'span'>, 'ref' | 'color'> {
+export type SizeType = 'default' | 'small';
+export type VariantType = 'outlined' | 'filled';
+
+export type ColorType =
+  | 'grey'
+  | 'purple'
+  | 'blue'
+  | 'orange'
+  | 'blueLight'
+  | 'pink'
+  | 'success'
+  | 'info'
+  | 'warning'
+  | 'error';
+
+const badgeCVA = cva(['inline-block pt-0.5'], {
+  variants: {
+    color: {
+      grey: '',
+      purple: '',
+      blue: '',
+      orange: '',
+      blueLight: '',
+      pink: '',
+      success: '',
+      info: '',
+      warning: '',
+      error: '',
+    },
+    variant: {
+      outlined: 'text-text-inverse  dark:text-text-input-value border',
+      filled: 'text-text-input-value dark:text-text-inverse',
+    },
+    size: {
+      default: 'text-p8 px-2.5 rounded-xl ',
+      small: 'text-p9 px-1 rounded-lg h-[15px]',
+    },
+  },
+  defaultVariants: {
+    color: 'grey',
+    size: 'default',
+    variant: 'outlined',
+  },
+  compoundVariants: [
+    {
+      variant: 'outlined',
+      color: 'grey',
+      className: 'border-df-gray-600 dark:border-gray-600',
+    },
+    {
+      variant: 'outlined',
+      color: 'purple',
+      className: 'border-chart-purple1 dark:border-chart-purple1',
+    },
+    {
+      variant: 'outlined',
+      color: 'blue',
+      className: 'border-accent-accent dark:border-accent-accent',
+    },
+    {
+      variant: 'outlined',
+      color: 'orange',
+      className: 'border-status-warning dark:border-status-warning',
+    },
+    {
+      variant: 'outlined',
+      color: 'blueLight',
+      className: 'border-clarity-action dark:border-clarity-action',
+    },
+    {
+      variant: 'outlined',
+      color: 'pink',
+      className: 'border-chart-pink3 dark:border-chart-pink3',
+    },
+    {
+      variant: 'filled',
+      color: 'grey',
+      className: 'bg-df-gray-600 dark:bg-gray-600',
+    },
+    {
+      variant: 'filled',
+      color: 'purple',
+      className: 'bg-chart-purple1 dark:bg-chart-purple1',
+    },
+    {
+      variant: 'filled',
+      color: 'blue',
+      className: 'bg-accent-accent dark:bg-accent-accent',
+    },
+    {
+      variant: 'filled',
+      color: 'orange',
+      className: 'bg-status-warning dark:bg-status-warning',
+    },
+    {
+      variant: 'filled',
+      color: 'blueLight',
+      className: 'bg-clarity-action dark:bg-clarity-action',
+    },
+    {
+      variant: 'filled',
+      color: 'pink',
+      className: 'bg-chart-pink3 dark:bg-chart-pink3',
+    },
+    {
+      variant: 'filled',
+      color: 'success',
+      className: 'bg-status-success dark:bg-status-success',
+    },
+    {
+      variant: 'filled',
+      color: 'info',
+      className: 'bg-status-info dark:bg-status-info',
+    },
+    {
+      variant: 'filled',
+      color: 'warning',
+      className: 'bg-status-warning dark:bg-status-warning',
+    },
+    {
+      variant: 'filled',
+      color: 'error',
+      className: 'bg-chart-red dark:bg-chart-red',
+    },
+    {
+      variant: 'filled',
+      size: 'default',
+      className: 'pt-[3px] pb-px',
+    },
+  ],
+});
+export interface BadgeProps
+  extends Omit<ComponentProps<'span'>, 'ref' | 'color'>,
+    ObjectWithNonNullableValues<VariantProps<typeof badgeCVA>> {
   label?: React.ReactNode;
-  value?: string;
-  size?: SizeType;
   color?: ColorType;
-  icon?: React.ReactNode;
-  isRemove?: boolean;
-  onRemove?: (badge: SelectedBadgeProps) => void;
+  size?: SizeType;
+  variant?: VariantType;
 }
-
-const classes = {
-  color: {
-    default: 'bg-gray-100 text-gray-900 dark:text-gray-900',
-    primary: 'bg-blue-100 text-blue-800 dark:text-blue-800',
-    success: 'bg-green-100 text-green-800 dark:text-green-800',
-    danger: 'bg-red-100 text-red-800 dark:text-red-800',
-  },
-  size: {
-    sm: `${Typography.size.sm} py-0.5 px-2.5`,
-    lg: `${Typography.size.base} py-0.5 px-3`,
-  },
-  icon: {
-    sm: 'w-3.5 h-3.5',
-    lg: 'w-4 h-4',
-  },
-};
 
 export const Badge = forwardRef<HTMLLabelElement, BadgeProps>(
   (
     {
       label,
-      value,
       id,
-      icon,
-      size = 'sm',
-      color = 'default',
+      color = 'grey',
+      size = 'default',
+      variant = 'outlined',
       className,
-      onRemove,
-      isRemove = false,
       ...rest
     },
     ref,
   ) => {
     const internalId = useId();
     const _id = id ? id : internalId;
-
     return (
       <>
-        <LabelPrimitive.Root
-          className={twMerge(
-            cx(
-              `${Typography.weight.normal} inline-flex gap-1.5 justify-center items-center rounded-md text-gray-900 dark:text-white`,
-              `${classes.size[size]}`,
-              `${classes.color[color]}`,
-            ),
-            className,
-          )}
+        <LabelPrimitive.Label
+          className={twMerge(badgeCVA({ color, variant, size }), className)}
           id={_id}
           data-testid={`badge-${_id}`}
+          ref={ref}
+          {...rest}
         >
-          {icon && (
-            <IconContext.Provider
-              value={{
-                className: cx(`${classes.icon[size]}`),
-              }}
-            >
-              {icon}
-            </IconContext.Provider>
-          )}
-          <LabelPrimitive.Label ref={ref} {...rest}>
-            {label}
-          </LabelPrimitive.Label>
-          {isRemove && (
-            <button
-              className="rounded ml-0.5 p-px hover:text-black hover:scale-105 focus:ring-1 focus:ring-blue-600 focus:outline-none "
-              onClick={() => onRemove?.({ id: _id, value: value })}
-              aria-label={'remove badge'}
-              data-testid={`badge-remove-${_id}`}
-            >
-              <HiX />
-            </button>
-          )}
-        </LabelPrimitive.Root>
+          {label}
+        </LabelPrimitive.Label>
       </>
     );
   },
