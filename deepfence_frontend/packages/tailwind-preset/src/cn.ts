@@ -1,4 +1,5 @@
-import { extendTailwindMerge, twMerge } from 'tailwind-merge';
+import classNames from 'classnames';
+import { twMerge, extendTailwindMerge } from 'tailwind-merge';
 
 // https://github.com/dcastil/tailwind-merge/issues/217
 // TODO: make importing tailwind-preset work here and add keys from there
@@ -28,3 +29,7 @@ export const dfTwMerge: typeof twMerge = extendTailwindMerge({
     ],
   },
 });
+
+export function cn(...args: classNames.ArgumentArray) {
+  return dfTwMerge(classNames(args));
+}

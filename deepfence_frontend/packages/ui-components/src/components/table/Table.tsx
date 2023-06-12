@@ -24,7 +24,6 @@ import {
   TableOptions,
   useReactTable,
 } from '@tanstack/react-table';
-import cx from 'classnames';
 import { isNil, once } from 'lodash-es';
 import {
   createContext,
@@ -38,6 +37,7 @@ import {
 } from 'react';
 import { useImperativeHandle } from 'react';
 import { IconContext } from 'react-icons';
+import { cn } from 'tailwind-preset';
 
 import { Checkbox } from '@/components/checkbox/Checkbox';
 import Pagination from '@/components/pagination/Pagination';
@@ -49,7 +49,6 @@ import {
   TableExpanderUnchecked,
 } from '@/components/table/icons';
 import { Dropdown, DropdownItem } from '@/main';
-import { dfTwMerge } from '@/utils/twmerge';
 
 import EmptyBoxImg from './empty-box.png';
 
@@ -228,13 +227,13 @@ const CustomTable = <TData extends RowData>(
   return (
     <TableContext.Provider value={{ renderSubComponent, getTdProps, getTrProps }}>
       <div
-        className={cx(
+        className={cn(
           `overflow-x-auto overflow-y-hidden`,
           `rounded-[5px] dark:border dark:border-bg-grid-border`,
         )}
       >
         <table
-          className={cx(
+          className={cn(
             `w-full bg-white dark:bg-bg-grid-default border-spacing-0 border-collapse table-fixed`,
           )}
           cellPadding="0"
@@ -374,7 +373,7 @@ function Th<TData>({
     <th
       key={header.id}
       colSpan={header.colSpan}
-      className={cx(
+      className={cn(
         'relative border-0 text-gray-500 dark:text-text-text-and-icon',
         'border-b-[1.5px] border-gray-200 dark:border-bg-grid-border',
         'text-t5 uppercase',
@@ -384,7 +383,7 @@ function Th<TData>({
       onClick={header.column.getToggleSortingHandler()}
     >
       <div
-        className={cx(`w-full h-full flex truncate pl-4 pr-2.5`, {
+        className={cn(`w-full h-full flex truncate pl-4 pr-2.5`, {
           ['py-4']: size === 'default',
           ['py-2.5']: size === 'compact',
           ['py-[13px]']: size === 'medium',
@@ -462,14 +461,12 @@ function TableBody<TData>({
           <Fragment key={row.id}>
             <tr
               {...rowProps}
-              className={dfTwMerge(
-                cx(
-                  {
-                    '!bg-gray-100 dark:!bg-bg-active-selection': row.getIsSelected(),
-                  },
-                  `hover:!bg-gray-100 dark:hover:!bg-bg-breadcrumb-bar`,
-                  'transition-colors',
-                ),
+              className={cn(
+                {
+                  '!bg-gray-100 dark:!bg-bg-active-selection': row.getIsSelected(),
+                },
+                `hover:!bg-gray-100 dark:hover:!bg-bg-breadcrumb-bar`,
+                'transition-colors',
                 rowProps?.className ?? '',
               )}
             >
@@ -521,14 +518,15 @@ function Td<TData>({
       {...rest}
       key={cell.id}
       style={{ width: cell.column.getSize() }}
-      className={dfTwMerge(
-        cx(`text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0`, {
+      className={cn(
+        `text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0`,
+        {
           'border-b border-gray-200 dark:border-bg-grid-border': rowIdx !== totalRows - 1,
           ['py-[15px]']: size === 'default',
           ['py-[9px]']: size === 'compact',
           ['py-[12px]']: size === 'medium',
           ['py-[18px]']: size === 'relaxed',
-        }),
+        },
         rest.className ?? '',
       )}
     >
