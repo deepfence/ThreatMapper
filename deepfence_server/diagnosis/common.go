@@ -2,6 +2,7 @@ package diagnosis
 
 import (
 	"context"
+	"encoding/xml"
 	"net/url"
 	"path/filepath"
 	"sort"
@@ -80,7 +81,13 @@ func getDiagnosticLogsHelper(ctx context.Context, mc directory.FileManager, path
 		message := ""
 		urlLink, err := mc.ExposeFile(ctx, obj.Key, false, DiagnosisLinkExpiry, url.Values{})
 		if err != nil {
-			message = err.Error()
+			var minioError utils.MinioError
+			xmlErr := xml.Unmarshal([]byte(err.Error()), &minioError)
+			if xmlErr != nil {
+				message = err.Error()
+			} else {
+				message = minioError.Message
+			}
 		}
 		fileName := filepath.Base(obj.Key)
 		diagnosticLogsResponse[i] = DiagnosticLogsLink{
