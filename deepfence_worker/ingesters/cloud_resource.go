@@ -190,13 +190,7 @@ func (c *CloudResource) ToMap() (map[string]interface{}, error) {
 	bb = convertStructFieldToJSONString(bb, "vpc_security_group_ids")
 	bb = convertStructFieldToJSONString(bb, "resources_vpc_config")
 
-	if bb["resource_id"] == "aws_ecs_service" {
-		bb["node_id"] = bb["service_name"]
-	} else if bb["resource_id"] == "aws_lambda_function" {
-		bb["node_id"] = bb["name"]
-	} else if bb["resource_id"] == "aws_iam_access_key" {
-		bb["node_id"] = bb["access_key_id"]
-	} else if strings.Contains("azure", bb["resource_id"].(string)) {
+	if strings.Contains("azure", bb["resource_id"].(string)) {
 		if bb["resource_id"].(string) == "azure_compute_virtual_machine" {
 			bb["node_id"] = bb["vm_id"]
 		} else {
