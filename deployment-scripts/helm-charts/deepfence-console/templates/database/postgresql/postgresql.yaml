@@ -48,9 +48,9 @@ spec:
               command:
               - /bin/sh
               - -c
-              - exec pg_isready -U "postgres" -h 127.0.0.1 -p 5432
+              - exec pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
             initialDelaySeconds: 60
-            periodSeconds: 30
+            periodSeconds: 20
             timeoutSeconds: 5
             failureThreshold: 5
             successThreshold: 1
@@ -59,7 +59,7 @@ spec:
               command:
               - /bin/sh
               - -c
-              - exec pg_isready -U "postgres" -h 127.0.0.1 -p 5432
+              - exec pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
             initialDelaySeconds: 60
             periodSeconds: 30
             timeoutSeconds: 5
