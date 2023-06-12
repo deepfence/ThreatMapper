@@ -16,7 +16,7 @@ VERSION?="2.0.0"
 default: bootstrap console_plugins agent console
 
 .PHONY: console_plugins agent console
-console: redis postgres kafka-broker router server worker ui console_plugins file-server
+console: redis postgres kafka-broker router server worker ui console_plugins file-server graphdb
 
 console_plugins: secretscanner malwarescanner packagescanner
 
@@ -69,6 +69,10 @@ server:
 worker:
 	(cd ./deepfence_worker && make vendor)
 	docker build -f ./deepfence_worker/Dockerfile --build-arg IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) --build-arg DF_IMG_TAG=$(DF_IMG_TAG) -t $(IMAGE_REPOSITORY)/deepfence_worker_ce:$(DF_IMG_TAG) .
+
+.PHONY: graphdb
+graphdb:
+	docker build -f ./deepfence_neo4j/Dockerfile --build-arg IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) --build-arg DF_IMG_TAG=$(DF_IMG_TAG) -t $(IMAGE_REPOSITORY)/deepfence_neo4j_ce:$(DF_IMG_TAG) .
 
 .PHONY: ui
 ui:
