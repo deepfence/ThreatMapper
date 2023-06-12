@@ -25,7 +25,6 @@ const ListboxContext = createContext<{
 const buttonCva = cva(
   [
     'relative',
-    'focus:outline-none',
     'disabled:cursor-not-allowed',
     'py-[7px] px-3',
     // border radius
@@ -237,7 +236,7 @@ export function Listbox<TType, TActualType>({
                     // border
                     'border dark:border-bg-grid-border',
                     'rounded-[5px]',
-                    'focus:outline-none select-none',
+                    'relative select-none',
                     'max-h-60 overflow-y-auto',
                     // text
                     'dark:text-text-text-and-icon',
@@ -262,7 +261,7 @@ export function ListboxOption<TType>({
 
   return (
     <HUIListbox.Option
-      className={({ selected }) => {
+      className={({ active, selected }) => {
         return dfTwMerge(
           cx(
             'relative select-none',
@@ -271,7 +270,8 @@ export function ListboxOption<TType>({
             'cursor-pointer',
             'dark:hover:bg-bg-grid-header',
             {
-              'dark:bg-bg-active-selection dark:text-text-input-value': selected,
+              'dark:text-text-input-value': selected,
+              'dark:bg-bg-grid-header': active,
             },
           ),
         );
