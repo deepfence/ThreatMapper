@@ -20,7 +20,7 @@ export type ColorType =
   | 'warning'
   | 'error';
 
-const badgeCVA = cva(['inline-block pt-0.5'], {
+const badgeCVA = cva(['inline-block pt-0.5 min-w-[20px]'], {
   variants: {
     color: {
       grey: '',
@@ -102,7 +102,7 @@ const badgeCVA = cva(['inline-block pt-0.5'], {
     {
       variant: 'filled',
       color: 'blueLight',
-      className: 'bg-clarity-action dark:bg-clarity-action',
+      className: 'bg-clarity-action dark:bg-clarity-action dark:text-black',
     },
     {
       variant: 'filled',
