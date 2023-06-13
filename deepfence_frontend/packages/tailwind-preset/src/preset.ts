@@ -1,4 +1,6 @@
-module.exports = {
+import { Config } from 'tailwindcss/types/config';
+
+export const preset = {
   darkMode: 'class',
   theme: {
     extend: {
@@ -160,7 +162,6 @@ module.exports = {
             lineHeight: '16px',
             fontWeight: '800',
             letterSpacing: '0.1em',
-            textTransform: 'uppercase',
           },
         ],
         t2: [
@@ -169,7 +170,6 @@ module.exports = {
             lineHeight: '16px',
             fontWeight: '700',
             letterSpacing: '0.1em',
-            textTransform: 'uppercase',
           },
         ],
         t3: [
@@ -178,7 +178,6 @@ module.exports = {
             lineHeight: '16px',
             fontWeight: '800',
             letterSpacing: '0.1em',
-            textTransform: 'uppercase',
           },
         ],
         t4: [
@@ -187,7 +186,6 @@ module.exports = {
             lineHeight: '16px',
             fontWeight: '600',
             letterSpacing: '0.05em',
-            textTransform: 'uppercase',
           },
         ],
         t5: [
@@ -196,7 +194,6 @@ module.exports = {
             lineHeight: '16px',
             fontWeight: '600',
             letterSpacing: '0.05em',
-            textTransform: 'uppercase',
           },
         ],
       },
@@ -405,4 +402,4 @@ module.exports = {
       },
     },
   },
-};
+} satisfies Partial<Config>;

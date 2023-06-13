@@ -1,12 +1,11 @@
 import * as LabelPrimitive from '@radix-ui/react-label';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
-import cx from 'classnames';
 import { cva, VariantProps } from 'cva';
 import React from 'react';
 import { IconContext } from 'react-icons';
+import { cn } from 'tailwind-preset';
 
 import { ObjectWithNonNullableValues } from '@/types/utils';
-import { dfTwMerge } from '@/utils/twmerge';
 
 export type SizeType = 'md';
 export type TabVariantProps = ObjectWithNonNullableValues<
@@ -54,16 +53,14 @@ const tabItemCva = cva(['text-t4 cursor-pointer'], {
     },
     underline: {
       true: [
-        dfTwMerge(
-          cx(
-            'pb-[9px] pt-[15px] px-3 flex items-center justify-center box-border',
-            'data-[state=active]:text-text-input-value data-[state=active]:border-accent-accent',
-            // selected
-            'dark:data-[state=active]:shadow-[0_-3px_0_#489CFF_inset] transition-shadow duration-[0.2s] ease-[ease-in]',
-            // hover
-            'dark:hover:shadow-[0_-3px_0_#489CFF_inset] transition-shadow duration-[0.2s] ease-[ease-in]',
-            'dark:disabled:hover:shadow-none',
-          ),
+        cn(
+          'pb-[9px] pt-[15px] px-3 flex items-center justify-center box-border',
+          'data-[state=active]:text-text-input-value data-[state=active]:border-accent-accent',
+          // selected
+          'dark:data-[state=active]:shadow-[0_-3px_0_#489CFF_inset] transition-shadow duration-[0.2s] ease-[ease-in]',
+          // hover
+          'dark:hover:shadow-[0_-3px_0_#489CFF_inset] transition-shadow duration-[0.2s] ease-[ease-in]',
+          'dark:disabled:hover:shadow-none',
         ),
       ],
     },
@@ -100,7 +97,7 @@ const Tabs = (props: TabProps) => {
                 <>
                   {icon && (
                     <IconContext.Provider
-                      value={{ className: cx('w-3 h-3 mr-1 inline') }}
+                      value={{ className: cn('w-3 h-3 mr-1 inline') }}
                     >
                       {icon}
                     </IconContext.Provider>
