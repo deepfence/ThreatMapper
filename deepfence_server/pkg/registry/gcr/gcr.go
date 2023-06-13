@@ -57,14 +57,12 @@ func (d *RegistryGCR) IsValidCredential() bool {
 
 func (d *RegistryGCR) EncryptSecret(aes encryption.AES) error {
 	var err error
-	d.Secret.ProjectId, err = aes.Encrypt(d.Secret.ProjectId)
 	d.Secret.PrivateKeyId, err = aes.Encrypt(d.Secret.PrivateKeyId)
 	return err
 }
 
 func (d *RegistryGCR) DecryptSecret(aes encryption.AES) error {
 	var err error
-	d.Secret.ProjectId, err = aes.Decrypt(d.Secret.ProjectId)
 	d.Secret.PrivateKeyId, err = aes.Decrypt(d.Secret.PrivateKeyId)
 	return err
 }

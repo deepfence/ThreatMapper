@@ -124,7 +124,6 @@ func GetRegistryWithRegistryRow(row postgresql_db.GetContainerRegistriesRow) (Re
 				ProjectId:   nonSecret["project_id"],
 			},
 			Secret: gcr.Secret{
-				ProjectId:    secret["project_id"],
 				PrivateKeyId: secret["private_key_id"],
 			},
 			Extras: gcr.Extras{

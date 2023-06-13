@@ -341,7 +341,7 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	req := model.RegistryAddReq{
 		Name:         registryName,
 		NonSecret:    map[string]interface{}{"registry_url": registryURL, "project_id": sa.ProjectID},
-		Secret:       map[string]interface{}{"project_id_secret": sa.ProjectID, "private_key_id": sa.PrivateKeyID},
+		Secret:       map[string]interface{}{"private_key_id": sa.PrivateKeyID},
 		Extras:       map[string]interface{}{"service_account_json": string(fileBytes)},
 		RegistryType: constants.GCR,
 	}
