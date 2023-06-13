@@ -5,6 +5,7 @@ import {
   ComboboxProps as HUIComboboxProps,
   Transition,
 } from '@headlessui/react';
+import { Slot } from '@radix-ui/react-slot';
 import {
   createContext,
   ElementType,
@@ -63,24 +64,6 @@ const StartIcon = () => {
     </svg>
   );
 };
-const ClearAllIcon = () => {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M12 23C5.92487 23 1 18.0751 1 12C1 5.92487 5.92487 1 12 1C18.0751 1 23 5.92487 23 12C23 14.9174 21.8411 17.7153 19.7782 19.7782C17.7153 21.8411 14.9174 23 12 23ZM12 2.375C6.68426 2.375 2.375 6.68426 2.375 12C2.375 17.3157 6.68426 21.625 12 21.625C17.3157 21.625 21.625 17.3157 21.625 12C21.625 6.68426 17.3157 2.375 12 2.375ZM13.1069 12L16.4481 8.65875C16.6817 8.38598 16.666 7.97937 16.4121 7.72543C16.1581 7.47148 15.7515 7.45578 15.4788 7.68937L12.1375 10.9963L8.77563 7.63438C8.50285 7.40078 8.09624 7.41648 7.8423 7.67043C7.58836 7.92437 7.57265 8.33098 7.80625 8.60375L11.1613 12L7.875 15.245C7.6788 15.413 7.59334 15.6768 7.65376 15.928C7.71417 16.1791 7.91026 16.3752 8.1614 16.4356C8.41254 16.496 8.67636 16.4106 8.84438 16.2144L12.1238 12.935L15.3825 16.1938C15.6553 16.4273 16.0619 16.4116 16.3158 16.1577C16.5698 15.9038 16.5855 15.4971 16.3519 15.2244L13.1069 12Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-};
 type ComboboxProps<
   TValue,
   TNullable extends boolean | undefined,
@@ -91,7 +74,7 @@ type ComboboxProps<
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
   label?: string;
-  clearAll?: React.ReactNode;
+  clearAllElement?: React.ReactNode;
   onClearAll?: () => void;
   placeholder?: string;
   onEndReached?: () => void;
@@ -120,7 +103,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
   children,
   disabled,
   label,
-  clearAll,
+  clearAllElement,
   onClearAll,
   value,
   onEndReached,
@@ -140,13 +123,12 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
     middleware: [
       flip(),
       offset({
-        mainAxis: 4,
+        mainAxis: 2,
       }),
       size({
         apply({ availableHeight, elements }) {
           Object.assign(elements.floating.style, {
-            width: `${elements.reference.getBoundingClientRect().width}px`,
-            minWidth: '148px',
+            width: `max(${elements.reference.getBoundingClientRect().width}px, 154px)`,
             maxHeight: `min(${availableHeight}px, 350px)`,
           });
         },
@@ -190,6 +172,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
             {label}
           </HUICombobox.Label>
           <HUICombobox.Button
+            as={Slot}
             ref={(ele) => refs.setReference(ele)}
             className={twMerge(
               cn(
@@ -208,19 +191,21 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
               ),
             )}
           >
-            {startIcon}
-            {getDisplayValue?.(value as unknown as any)}
-            {endIcon}
-            {multiple && Array.isArray(value) && value.length > 0 ? (
-              <div className="relative flex items-center">
-                <Badge
-                  color="blueLight"
-                  variant="filled"
-                  size="small"
-                  label={value?.length}
-                />
-              </div>
-            ) : null}
+            <button tabIndex={0}>
+              {startIcon}
+              {getDisplayValue?.(value as unknown as any)}
+              {endIcon}
+              {multiple && Array.isArray(value) && value.length > 0 ? (
+                <div className="relative flex items-center">
+                  <Badge
+                    color="blueLight"
+                    variant="filled"
+                    size="small"
+                    label={value?.length}
+                  />
+                </div>
+              ) : null}
+            </button>
           </HUICombobox.Button>
           <Portal>
             <Transition
@@ -239,83 +224,76 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
               }}
             >
               <div
-                className={cn(
-                  'flex items-center dark:bg-bg-card',
-                  'border-x border-t dark:border-bg-grid-border',
-                  'rounded-x-[5px] rounded-t-[5px]',
-                )}
+                className={`dark:bg-bg-card dark:border dark:border-bg-grid-border rounded-[5px] overflow-hidden`}
               >
-                <span
-                  className={cn('pointer-events-none dark:text-text-text-and-icon')}
-                  data-testid={`search-icon`}
-                >
-                  <SearchIcon />
-                </span>
-                <HUICombobox.Input
-                  placeholder="Search"
-                  className={cn(
-                    'pt-2 pb-1 dark:bg-bg-card shrink',
-                    'text-p7 dark:text-text-text-and-icon',
-                    'dark:focus-visible:outline-none',
-                    'dark:placeholder:text-gray-600',
-                  )}
-                  onChange={(event) => onQueryChange(event.target.value)}
-                />
-              </div>
-
-              <Separator />
-              <HUICombobox.Options
-                className={twMerge(
-                  cn(
-                    'max-h-60 w-full select-none',
-                    'text-p7',
-                    // border
-                    'border-x dark:border-bg-grid-border',
-                    // bg
-                    'bg-white dark:bg-bg-card',
-                    'overflow-auto',
-                    'focus:visible:outline-none',
-                    // text
-                    'dark:text-text-text-and-icon',
-                  ),
-                )}
-              >
-                {children}
-                {loading ? (
-                  <div className="pt-2 pb-1 px-3 flex items-center">
-                    <CircleSpinner size="sm" />
-                  </div>
-                ) : (
-                  <span ref={intersectionRef as RefObject<HTMLElement>}></span>
-                )}
-              </HUICombobox.Options>
-              {multiple ? (
-                <>
-                  <Separator />
-                  <div
+                <div className={cn('flex items-center px-3 py-2')}>
+                  <span
                     className={cn(
-                      // border
-                      'dark:bg-bg-card border-x border-b rounded-b-[5px] dark:border-bg-grid-border',
-                      // focus visible
-                      'dark:focus-visible:outline-none',
+                      'pointer-events-none dark:text-df-gray-600 h-[16px] w-[16px] shrink-0',
                     )}
+                    data-testid={`search-icon`}
                   >
-                    <div className="flex items-center justify-center py-[6px]">
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          onClearAll?.();
-                        }}
-                        className="flex gap-1.5 dark:text-accent-accent items-center text-p6"
-                      >
-                        <ClearAllIcon />
-                        {clearAll}
-                      </button>
+                    <SearchIcon />
+                  </span>
+                  <HUICombobox.Input
+                    placeholder="Search"
+                    className={cn(
+                      'pl-[6px] text-p6 dark:text-text-input-value',
+                      'dark:focus-visible:outline-none dark:bg-bg-card',
+                      'dark:placeholder:text-df-gray-600',
+                      'min-w-0',
+                    )}
+                    onChange={(event) => onQueryChange(event.target.value)}
+                  />
+                </div>
+
+                <Separator />
+                <HUICombobox.Options
+                  static
+                  className={twMerge(
+                    cn(
+                      'max-h-60 w-full select-none',
+                      'text-p7',
+                      'overflow-auto',
+                      'focus:visible:outline-none',
+                      'dark:text-text-text-and-icon',
+                    ),
+                  )}
+                >
+                  {children}
+                  {loading ? (
+                    <div className="pt-2 pb-1 px-3 flex items-center">
+                      <CircleSpinner size="sm" />
                     </div>
-                  </div>
-                </>
-              ) : null}
+                  ) : (
+                    <span ref={intersectionRef as RefObject<HTMLElement>}></span>
+                  )}
+                </HUICombobox.Options>
+                {multiple ? (
+                  <>
+                    <Separator />
+                    <div
+                      className={cn(
+                        // focus visible
+                        'dark:focus-visible:outline-none',
+                      )}
+                    >
+                      <div className="flex items-center justify-center py-[6px]">
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onClearAll?.();
+                          }}
+                          className="dark:text-accent-accent items-center text-p6"
+                        >
+                          {clearAllElement}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                ) : null}
+              </div>
             </Transition>
           </Portal>
         </div>
@@ -334,7 +312,7 @@ export function ComboboxOption<TType>({
       className={({ active, selected }) => {
         return cn(
           'relative select-none',
-          'pt-2 pb-1 px-3',
+          'pt-1.5 pb-1.5 px-3',
           'flex gap-1.5',
           'cursor-pointer',
           'dark:hover:bg-bg-grid-header',
@@ -349,7 +327,7 @@ export function ComboboxOption<TType>({
       {({ selected }) => {
         return (
           <>
-            {multiple ? <Checkbox checked={selected} /> : null}
+            {multiple ? <Checkbox tabIndex={-1} checked={selected} /> : null}
             {children}
           </>
         );

@@ -173,7 +173,7 @@ const MultiSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
       onChange={(value) => {
         setSelected(value);
       }}
-      clearAll="Clear filters"
+      clearAllElement="Clear filters"
       multiple
       nullable
       getDisplayValue={() => {
@@ -223,7 +223,7 @@ const MultiSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
         setQuery(query);
       }}
       label="Select your value"
-      clearAll="Clear filters"
+      clearAllElement="Clear filters"
       onChange={(value) => {
         setSelected(value);
       }}

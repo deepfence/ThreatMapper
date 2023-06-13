@@ -162,7 +162,7 @@ export function Listbox<TType, TActualType>({
     middleware: [
       flip(),
       offset({
-        mainAxis: 4,
+        mainAxis: 2,
       }),
       size({
         apply({ availableHeight, elements }) {
@@ -313,8 +313,8 @@ export function ListboxOption<TType>({
           'cursor-pointer',
           'dark:hover:bg-bg-grid-header',
           {
-            'dark:bg-bg-active-selection dark:text-text-input-value': selected,
             'dark:bg-bg-grid-header': active,
+            'dark:bg-bg-active-selection dark:text-text-input-value': selected,
           },
         );
       }}
