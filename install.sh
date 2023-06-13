@@ -31,6 +31,10 @@ while [[ $# -gt 0 ]]; do
         shift
         shift
         ;;
+        -n|--no-prompt)
+        NO_PROMPT=true
+        shift
+        ;;
         -h|--help)
         echo "Usage: $0 [OPTIONS]"
         echo "Options:"
