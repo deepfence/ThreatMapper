@@ -199,8 +199,9 @@ func getImageWithTags(url, userName, password, repoName string, repoTags RepoTag
 			Tag:           tag,
 			Size:          "",
 			Metadata: model.Metadata{
-				"created": comp.Created,
-				"digest":  digest,
+				"created":      comp.Created,
+				"digest":       digest,
+				"last_updated": comp.Created.Unix(),
 			},
 		}
 		imageAndTag = append(imageAndTag, tt)
