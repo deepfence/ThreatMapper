@@ -5,15 +5,14 @@ import {
   ListboxProps as HUIListboxProps,
   Transition,
 } from '@headlessui/react';
-import cx from 'classnames';
 import { cva } from 'cva';
 import { isNil } from 'lodash-es';
 import { createContext, ReactNode, useContext, useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { cn } from 'tailwind-preset';
 
 import HelperText from '@/components/input/HelperText';
-import { Badge, Checkbox } from '@/main';
-import { dfTwMerge } from '@/utils/twmerge';
+import { Badge, Checkbox, Separator } from '@/main';
 export type ColorType = 'default';
 
 const ListboxContext = createContext<{
@@ -34,20 +33,18 @@ const buttonCva = cva(
     variants: {
       color: {
         default: [
-          dfTwMerge(
-            cx(
-              // border
-              'dark:border-bg-grid-border',
-              // bg styles
-              'dark:bg-bg-card',
-              // placeholder styles
-              'placeholder-gray-500 disabled:placeholder-gray-400',
-              'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
-              // text styles
-              'text-gray-900 dark:text-text-input-value',
-              // disabled text color
-              'disabled:text-gray-700 dark:disabled:text-gray-600',
-            ),
+          cn(
+            // border
+            'border-bg-grid-border dark:border-bg-grid-border',
+            // bg styles
+            'bg-bg-card dark:bg-bg-card',
+            // placeholder styles
+            'placeholder-gray-400 disabled:placeholder-gray-500',
+            'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
+            // text styles
+            'text-text-input-value dark:text-text-input-value',
+            // disabled text color
+            'disabled:text-gray-600 dark:disabled:text-gray-600',
           ),
         ],
       },
@@ -96,9 +93,27 @@ const CaretIcon = () => {
     </svg>
   );
 };
+const ClearAllIcon = () => {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M12 23C5.92487 23 1 18.0751 1 12C1 5.92487 5.92487 1 12 1C18.0751 1 23 5.92487 23 12C23 14.9174 21.8411 17.7153 19.7782 19.7782C17.7153 21.8411 14.9174 23 12 23ZM12 2.375C6.68426 2.375 2.375 6.68426 2.375 12C2.375 17.3157 6.68426 21.625 12 21.625C17.3157 21.625 21.625 17.3157 21.625 12C21.625 6.68426 17.3157 2.375 12 2.375ZM13.1069 12L16.4481 8.65875C16.6817 8.38598 16.666 7.97937 16.4121 7.72543C16.1581 7.47148 15.7515 7.45578 15.4788 7.68937L12.1375 10.9963L8.77563 7.63438C8.50285 7.40078 8.09624 7.41648 7.8423 7.67043C7.58836 7.92437 7.57265 8.33098 7.80625 8.60375L11.1613 12L7.875 15.245C7.6788 15.413 7.59334 15.6768 7.65376 15.928C7.71417 16.1791 7.91026 16.3752 8.1614 16.4356C8.41254 16.496 8.67636 16.4106 8.84438 16.2144L12.1238 12.935L15.3825 16.1938C15.6553 16.4273 16.0619 16.4116 16.3158 16.1577C16.5698 15.9038 16.5855 15.4971 16.3519 15.2244L13.1069 12Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
 const SelectArrow = () => {
   return (
-    <span className={cx('pointer-events-none flex items-center')}>
+    <span className={cn('pointer-events-none flex items-center')}>
       <CaretIcon />
     </span>
   );
@@ -114,6 +129,8 @@ interface ListboxProps<TType, TActualType>
   color?: ColorType;
   children?: React.ReactNode;
   label?: string;
+  clearAll?: React.ReactNode;
+  onClearAll?: () => void;
   placeholder?: string;
   getDisplayValue?: (value?: TType) => string;
   required?: boolean;
@@ -125,6 +142,8 @@ export function Listbox<TType, TActualType>({
   children,
   value,
   label,
+  clearAll,
+  onClearAll,
   placeholder,
   getDisplayValue,
   required,
@@ -166,10 +185,10 @@ export function Listbox<TType, TActualType>({
           {label && (
             <HUIListbox.Label
               htmlFor={_id}
-              className={cx(
-                'text-p3 text-gray-900 dark:text-text-text-and-icon pb-[10px]',
+              className={cn(
+                'text-p3 text-text-text-and-icon dark:text-text-text-and-icon pb-[10px]',
                 {
-                  'dark:text-gray-600': disabled,
+                  'text-gray-600 dark:text-gray-600': disabled,
                 },
               )}
             >
@@ -189,12 +208,12 @@ export function Listbox<TType, TActualType>({
               {getPlaceholderValue(value, getDisplayValue, placeholder)}
             </span>
             <div
-              className={cx('absolute inset-y-0 right-0 flex pr-3', {
+              className={cn('absolute inset-y-0 right-0 flex pr-3', {
                 'gap-[18px]': multiple,
               })}
             >
               <SelectArrow />
-              {multiple && Array.isArray(value) ? (
+              {multiple && Array.isArray(value) && value.length > 0 ? (
                 <div className="relative flex items-center">
                   <Badge
                     color="blueLight"
@@ -228,23 +247,48 @@ export function Listbox<TType, TActualType>({
               }}
             >
               <HUIListbox.Options
-                className={dfTwMerge(
-                  cx(
-                    // bg
-                    'bg-white dark:bg-bg-card',
-                    'text-p7',
-                    // border
-                    'border dark:border-bg-grid-border',
-                    'rounded-[5px]',
-                    'relative select-none',
-                    'max-h-60 overflow-y-auto',
-                    // text
-                    'dark:text-text-text-and-icon',
-                  ),
+                className={cn(
+                  // bg
+                  'bg-bg-card dark:bg-bg-card',
+                  'text-p7',
+                  // border
+                  'border-x border-t border-bg-grid-border dark:border-bg-grid-border',
+                  'rounded-t-[5px]',
+                  'relative select-none',
+                  'max-h-60 overflow-y-auto',
+                  // text
+                  'text-text-text-and-icon dark:text-text-text-and-icon',
                 )}
               >
                 {children}
               </HUIListbox.Options>
+              {multiple ? (
+                <>
+                  <Separator />
+                  <div
+                    className={cn(
+                      // border
+                      'dark:bg-bg-card border-x border-b rounded-b-[5px] dark:border-bg-grid-border',
+                      // focus visible
+                      'dark:focus-visible:outline-none',
+                    )}
+                  >
+                    <div className="flex items-center justify-center py-[6px]">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onClearAll?.();
+                        }}
+                        className="flex gap-1.5 dark:text-accent-accent items-center text-p6"
+                      >
+                        <ClearAllIcon />
+                        {clearAll}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : null}
             </Transition>
           </Portal>
         </div>
@@ -262,18 +306,16 @@ export function ListboxOption<TType>({
   return (
     <HUIListbox.Option
       className={({ active, selected }) => {
-        return dfTwMerge(
-          cx(
-            'relative select-none',
-            'py-[7px] px-3',
-            'flex gap-1.5',
-            'cursor-pointer',
-            'dark:hover:bg-bg-grid-header',
-            {
-              'dark:text-text-input-value': selected,
-              'dark:bg-bg-grid-header': active,
-            },
-          ),
+        return cn(
+          'relative select-none',
+          'pt-2 pb-1 px-3',
+          'flex gap-1.5',
+          'cursor-pointer',
+          'dark:hover:bg-bg-grid-header',
+          {
+            'dark:bg-bg-active-selection dark:text-text-input-value': selected,
+            'dark:bg-bg-grid-header': active,
+          },
         );
       }}
       {...props}
