@@ -249,7 +249,6 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
 
                 <Separator />
                 <HUICombobox.Options
-                  static
                   className={twMerge(
                     cn(
                       'max-h-60 w-full select-none',
