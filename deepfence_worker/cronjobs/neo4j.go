@@ -101,6 +101,7 @@ func CleanUpDB(msg *message.Message) error {
 		MATCH (n:Node)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND NOT n.node_id IN ["in-the-internet", "out-the-internet"]
+		AND n.active = true
 		WITH n LIMIT 10000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
@@ -113,7 +114,8 @@ func CleanUpDB(msg *message.Message) error {
 		MATCH (n:ContainerImage)
 		WHERE exists((n)<-[:HOSTS]-(:RegistryAccount))
 		AND n.updated_at < TIMESTAMP()-$time_ms
-		WITH n LIMIT 100000
+		AND n.active = true
+		WITH n LIMIT 10000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbRegistryCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
@@ -126,7 +128,8 @@ func CleanUpDB(msg *message.Message) error {
 		WHERE exists((n)<-[:HOSTS]-(:Node))
 		AND NOT exists((n)<-[:HOSTS]-(:RegistryAccount))
 		AND n.updated_at < TIMESTAMP()-$time_ms
-		WITH n LIMIT 100000
+		AND n.active = true
+		WITH n LIMIT 10000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeoutBase.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
@@ -136,6 +139,7 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:Container)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND n.active = true
 		WITH n LIMIT 10000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
@@ -146,6 +150,7 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:KubernetesCluster)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND n.active = true
 		WITH n LIMIT 10000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
@@ -172,8 +177,8 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:ContainerImage)
 		WHERE n.active = false
-		AND NOT exists((n) <-[:SCANNED]-())
-		OR n.updated_at < TIMESTAMP()-$old_time_ms
+		AND (NOT exists((n) <-[:SCANNED]-())
+		OR n.updated_at < TIMESTAMP()-$old_time_ms)
 		WITH n LIMIT 10000
 		DETACH DELETE n`,
 		map[string]interface{}{
@@ -186,8 +191,8 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:Container)
 		WHERE n.active = false
-		AND NOT exists((n) <-[:SCANNED]-())
-		OR n.updated_at < TIMESTAMP()-$old_time_ms
+		AND (NOT exists((n) <-[:SCANNED]-())
+		OR n.updated_at < TIMESTAMP()-$old_time_ms)
 		WITH n LIMIT 10000
 		DETACH DELETE n`,
 		map[string]interface{}{
@@ -273,6 +278,7 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:CloudNode)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND n.active = true
 		WITH n LIMIT 10000
 		SET n.active = false`,
 		map[string]interface{}{
