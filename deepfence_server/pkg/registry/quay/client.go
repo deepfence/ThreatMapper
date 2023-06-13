@@ -143,6 +143,12 @@ func getImageWithTags(repo Repositories, tags Tags) []model.IngestedContainerIma
 	var imageAndTag []model.IngestedContainerImage
 
 	for tag, data := range tags {
+		// data.LastModified is like Mon, 30 May 2022 16:23:08 -0000
+		lastUpdatedUnix, err := time.Parse(time.RFC1123Z, data.LastModified)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+
 		tt := model.IngestedContainerImage{
 			ID:            model.DigestToID(data.ManifestDigest),
 			DockerImageID: model.DigestToID(data.ManifestDigest),
@@ -153,7 +159,7 @@ func getImageWithTags(repo Repositories, tags Tags) []model.IngestedContainerIma
 				"status":       repo.State,
 				"last_pushed":  repo.LastModified,
 				"digest":       data.ManifestDigest,
-				"last_updated": data.LastModified,
+				"last_updated": lastUpdatedUnix.Unix(),
 			},
 		}
 		imageAndTag = append(imageAndTag, tt)
