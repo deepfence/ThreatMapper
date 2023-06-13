@@ -315,6 +315,7 @@ const StartIcon = ({
             withStartIcon: !!startIcon,
             withEndIcon: !!endIcon,
           }),
+          'ml-0',
         )}
       >
         <Loader color={color} size={size} variant={variant} />
@@ -324,11 +325,14 @@ const StartIcon = ({
   return (
     <span
       data-testid={`button-icon-start-${id}`}
-      className={iconCva({
-        size,
-        withStartIcon: !!startIcon,
-        withEndIcon: !!endIcon,
-      })}
+      className={cn(
+        iconCva({
+          size,
+          withStartIcon: !!startIcon,
+          withEndIcon: !!endIcon,
+        }),
+        'ml-0',
+      )}
     >
       {startIcon}
     </span>
@@ -339,11 +343,14 @@ const EndIcon = ({ id, size, startIcon, endIcon }: IconProps) => {
   return (
     <span
       data-testid={`button-icon-end-${id}`}
-      className={iconCva({
-        size,
-        withStartIcon: !!startIcon,
-        withEndIcon: !!endIcon,
-      })}
+      className={cn(
+        iconCva({
+          size,
+          withStartIcon: !!startIcon,
+          withEndIcon: !!endIcon,
+        }),
+        'mr-0',
+      )}
     >
       {endIcon}
     </span>
@@ -408,6 +415,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 withEndIcon: !!endIcon,
                 withLoader: true,
               }),
+              'ml-0',
             )}
           >
             <Loader color={color} size={size} variant={variant} />
