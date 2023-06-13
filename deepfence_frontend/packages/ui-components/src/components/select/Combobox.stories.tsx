@@ -64,7 +64,6 @@ const SingleSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
 
   return (
     <Combobox
-      sizing="sm"
       value={selected}
       nullable
       onQueryChange={(query) => {
@@ -116,7 +115,6 @@ const SingleSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
 
   return (
     <Combobox
-      sizing="sm"
       value={selected}
       onQueryChange={(query) => {
         setQuery(query);
@@ -167,7 +165,6 @@ const MultiSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
 
   return (
     <Combobox
-      sizing="sm"
       value={selected}
       onQueryChange={(query) => {
         setQuery(query);

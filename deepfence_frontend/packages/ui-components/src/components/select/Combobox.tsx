@@ -96,7 +96,7 @@ type ComboboxProps<
   placeholder?: string;
   onEndReached?: () => void;
   loading?: boolean;
-  getDisplayValue?: (item: TValue | undefined) => string;
+  getDisplayValue?: (item: TValue) => string;
   onQueryChange: (query: string) => void;
 };
 
@@ -209,7 +209,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
             )}
           >
             {startIcon}
-            {getDisplayValue?.(undefined)}
+            {getDisplayValue?.(value as unknown as any)}
             {endIcon}
             {multiple && Array.isArray(value) && value.length > 0 ? (
               <div className="relative flex items-center">
@@ -339,8 +339,8 @@ export function ComboboxOption<TType>({
           'cursor-pointer',
           'dark:hover:bg-bg-grid-header',
           {
-            'dark:bg-bg-active-selection dark:text-text-input-value': selected,
             'dark:bg-bg-grid-header': active,
+            'dark:bg-bg-active-selection dark:text-text-input-value': selected,
           },
         );
       }}
