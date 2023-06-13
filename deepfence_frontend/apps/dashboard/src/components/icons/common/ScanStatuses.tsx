@@ -1,5 +1,7 @@
-import { isEmpty } from 'lodash-es';
 import { CircleSpinner } from 'ui-components';
+
+import { isNeverScanned } from '@/utils/scan';
+import { isScanComplete, isScanFailed, isScanInProgress } from '@/utils/scan';
 
 export const SuccessIcon = () => {
   return (
@@ -57,32 +59,30 @@ export const NotStartedIcon = () => {
 };
 
 export const ScanStatusesIcon = (status: string) => {
-  if (!status || isEmpty(status)) {
+  if (isScanComplete(status)) {
     return (
       <div className="flex items-center gap-1.5">
-        <NotStartedIcon /> Not Started
+        <SuccessIcon />
+        {status}
       </div>
     );
-  }
-  switch (status) {
-    case 'COMPLETE':
-      return (
-        <div className="flex items-center gap-1.5">
-          <SuccessIcon />
-          Success
-        </div>
-      );
-    case 'ERROR':
-      return (
-        <div className="flex items-center gap-1.5">
-          <ErrorIcon /> Error
-        </div>
-      );
-    default:
-      return (
-        <div className="flex items-center gap-1.5">
-          <CircleSpinner size="sm" /> In Progress
-        </div>
-      );
+  } else if (isScanFailed(status)) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <ErrorIcon /> {status}
+      </div>
+    );
+  } else if (isScanInProgress(status)) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <CircleSpinner size="sm" /> {status}
+      </div>
+    );
+  } else if (isNeverScanned(status)) {
+    return (
+      <div className="flex items-center gap-1.5">
+        <NotStartedIcon /> Never Scanned
+      </div>
+    );
   }
 };
