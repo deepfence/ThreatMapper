@@ -1,7 +1,6 @@
 import { Slot, Slottable } from '@radix-ui/react-slot';
 import cx from 'classnames';
 import React from 'react';
-import { IconContext } from 'react-icons';
 import { twMerge } from 'tailwind-merge';
 
 type BreadcrumbLinkType = {
@@ -45,8 +44,8 @@ export const BreadcrumbLink = React.forwardRef<
         {...props}
         className={twMerge(
           cx(
-            `inline-flex items-center py-[9px]`,
-            'text-gray-700 dark:text-text-text-and-icon text-sm',
+            `inline-flex items-center`,
+            'text-gray-700 dark:text-text-text-and-icon text-[14px] font-normal leading-[30px]',
             {
               'dark:text-text-link': isLink,
             },
@@ -55,19 +54,11 @@ export const BreadcrumbLink = React.forwardRef<
         )}
         ref={forwardedRef}
       >
-        {icon && (
-          <IconContext.Provider
-            value={{
-              className: 'mr-1.5 w-[16px] h-[16px]',
-            }}
-          >
-            {icon}
-          </IconContext.Provider>
-        )}
+        {icon && <div className="mr-1.5 w-[16px] h-[16px]">{icon}</div>}
         <Slottable>{children}</Slottable>
       </Comp>
       {!isLast && (
-        <span className="dark:text-text-text-and-icon ml-1.5">
+        <span className="ml-1.5 w-[30px] h-[30px] dark:text-df-gray-500">
           <CaretIcon />
         </span>
       )}

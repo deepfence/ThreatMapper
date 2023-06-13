@@ -61,7 +61,7 @@ export function AppHeader() {
               </>
             }
           >
-            <button className="dark:text-text-text-and-icon flex gap-[6px] items-center">
+            <button className="dark:text-text-text-and-icon flex gap-[6px] items-center text-p1">
               <div className="h-[18px] w-[18px]">
                 <UserLine />
               </div>

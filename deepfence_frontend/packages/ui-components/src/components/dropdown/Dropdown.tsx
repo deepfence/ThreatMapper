@@ -104,6 +104,7 @@ export const Dropdown: React.FC<DropdownProps & { loop?: boolean }> = (props) =>
             'text-p7',
             // border
             'border dark:border dark:border-bg-left-nav',
+            'py-2',
           )}
         >
           {content}
@@ -156,6 +157,14 @@ export const DropdownSeparator: React.ForwardRefExoticComponent<
   DropdownPrimitive.DropdownMenuSeparatorProps & React.RefAttributes<HTMLDivElement>
 > = React.forwardRef((props, forwardedRef) => {
   const { className, ...rest } = props;
-  const classes = cn('h-px bg-gray-200 dark:bg-bg-left-nav', className);
-  return <DropdownPrimitive.Separator className={classes} {...rest} ref={forwardedRef} />;
+  const classes = cn('h-px bg-gray-200 dark:bg-bg-left-nav flex-1', className);
+  return (
+    <DropdownPrimitive.Separator
+      {...rest}
+      ref={forwardedRef}
+      className="h-[30px] flex items-center"
+    >
+      <div className={classes} />
+    </DropdownPrimitive.Separator>
+  );
 });

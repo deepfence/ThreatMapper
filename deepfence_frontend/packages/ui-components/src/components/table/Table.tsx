@@ -522,10 +522,10 @@ function Td<TData>({
         `text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0`,
         {
           'border-b border-gray-200 dark:border-bg-grid-border': rowIdx !== totalRows - 1,
-          ['py-[15px]']: size === 'default',
-          ['py-[9px]']: size === 'compact',
-          ['py-[12px]']: size === 'medium',
-          ['py-[18px]']: size === 'relaxed',
+          ['h-[48px]']: size === 'default',
+          ['h-[36px]']: size === 'compact',
+          ['h-[42px]']: size === 'medium',
+          ['h-[54px]']: size === 'relaxed',
         },
         rest.className ?? '',
       )}
