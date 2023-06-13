@@ -67,6 +67,8 @@ spec:
               mountPath: /logs
             - name: "neo4j-{{ .Release.Name }}"
               mountPath: /plugins
+            - name: "neo4j-{{ .Release.Name }}"
+              mountPath: /backups
       {{- with .Values.neo4j.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
