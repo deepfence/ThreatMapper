@@ -9,7 +9,7 @@ MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
 ENV CHECKPOINT_DISABLE=true \
-    DOCKERVERSION=20.10.8 \
+    DOCKERVERSION=23.0.3 \
     DF_TLS_ON="1" \
     MGMT_CONSOLE_PORT=443 \
     DF_KUBERNETES_ON="N" \
@@ -75,14 +75,15 @@ RUN apt-get update --allow-insecure-repositories \
     && cd /tmp \
     && chmod +x /usr/local/bin/start_services \
     && apt-get clean && apt-get -y autoremove && rm -rf /var/lib/apt/lists/* \
-    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.9.0/vessel_v0.9.0_linux_amd64.tar.gz \
-    && tar -xzf vessel_v0.9.0_linux_amd64.tar.gz \
+    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.11.0/vessel_v0.11.0_linux_amd64.tar.gz \
+    && tar -xzf vessel_v0.11.0_linux_amd64.tar.gz \
     && mv vessel /usr/local/bin/ \
-    && rm -rf vessel_v0.9.0_linux_amd64.tar.gz \
-    && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v1.1.0/nerdctl-1.1.0-linux-amd64.tar.gz \
-    && tar Cxzvvf /usr/local/bin nerdctl-1.1.0-linux-amd64.tar.gz \
-    && rm nerdctl-1.1.0-linux-amd64.tar.gz \
-    && VERSION="v1.26.0" \
+    && rm -rf vessel_v0.11.0_linux_amd64.tar.gz \
+    && nerdctl_version=1.4.0 \
+    && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v${nerdctl_version}/nerdctl-${nerdctl_version}-linux-amd64.tar.gz \
+    && tar Cxzvvf /usr/local/bin nerdctl-${nerdctl_version}-linux-amd64.tar.gz \
+    && rm nerdctl-${nerdctl_version}-linux-amd64.tar.gz \
+    && VERSION="v1.27.0" \
     && curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-${VERSION}-linux-amd64.tar.gz --output crictl-${VERSION}-linux-amd64.tar.gz \
     && tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin \
     && rm -f crictl-$VERSION-linux-amd64.tar.gz

@@ -14,7 +14,6 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/armon/go-metrics"
 	log "github.com/sirupsen/logrus"
 	"github.com/weaveworks/common/fs"
 	"github.com/weaveworks/scope/probe/endpoint/procspy"

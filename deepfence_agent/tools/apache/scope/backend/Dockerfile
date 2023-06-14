@@ -1,4 +1,4 @@
-FROM golang:1.19.2-buster
+FROM golang:1.20-bullseye
 ENV SCOPE_SKIP_UI_ASSETS true
 RUN set -eux; \
    export arch_val="$(dpkg --print-architecture)"; \
@@ -30,7 +30,7 @@ RUN export arch_val="$(dpkg --print-architecture)"; \
    fi;
 
 # Install Docker (client only)
-ENV DOCKERVERSION=20.10.8
+ENV DOCKERVERSION=23.0.3
 RUN export arch_val="$(dpkg --print-architecture)"; \
     if [ "$arch_val" = "arm64" ]; then \
         curl -fsSLO https://download.docker.com/linux/static/stable/aarch64/docker-${DOCKERVERSION}.tgz; \

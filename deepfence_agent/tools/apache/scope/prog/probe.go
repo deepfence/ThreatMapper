@@ -10,12 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/armon/go-metrics"
 	"github.com/weaveworks/scope/probe/common"
 
-	metrics_prom "github.com/armon/go-metrics/prometheus"
 	dfUtils "github.com/deepfence/df-utils"
 	docker_client "github.com/fsouza/go-dockerclient"
+	metrics_prom "github.com/hashicorp/go-metrics/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/weaveworks/common/logging"
