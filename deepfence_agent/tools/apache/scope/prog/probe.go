@@ -14,6 +14,7 @@ import (
 
 	dfUtils "github.com/deepfence/df-utils"
 	docker_client "github.com/fsouza/go-dockerclient"
+	"github.com/hashicorp/go-metrics"
 	metrics_prom "github.com/hashicorp/go-metrics/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"

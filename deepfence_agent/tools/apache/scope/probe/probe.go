@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hashicorp/go-metrics"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/time/rate"
 

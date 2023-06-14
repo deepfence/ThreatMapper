@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/hashicorp/go-metrics"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/weaveworks/common/fs"
