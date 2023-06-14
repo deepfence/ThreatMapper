@@ -1,8 +1,6 @@
 import * as DropdownPrimitive from '@radix-ui/react-dropdown-menu';
-import cx from 'classnames';
 import React from 'react';
-
-import { dfTwMerge } from '@/utils/twmerge';
+import { cn } from 'tailwind-preset';
 
 export interface DropdownProps extends DropdownPrimitive.DropdownMenuProps {
   // Trigger passed as children
@@ -39,21 +37,19 @@ export const DropdownSubMenu: React.FC<
     disabled?: boolean;
   }
 > = ({ children, triggerAsChild, disabled, content }) => {
-  const triggerClass = dfTwMerge(
-    cx(
-      'overflow-hidden flex box-border',
-      // paddings
-      'px-6 pt-2 pb-1',
-      // text
-      'text-gray-500 dark:text-text-text-and-icon',
-      // hover // focus
-      'focus:outline-none focus:bg-gray-100',
-      'dark:focus:bg-bg-grid-header dark:focus:text-text-text-and-icon',
-      {
-        'cursor-pointer': !disabled,
-        'cursor-auto dark:text-gray-600': disabled,
-      },
-    ),
+  const triggerClass = cn(
+    'overflow-hidden flex box-border',
+    // paddings
+    'px-6 pt-2 pb-1',
+    // text
+    'text-gray-500 dark:text-text-text-and-icon',
+    // hover // focus
+    'focus:outline-none focus:bg-gray-100',
+    'dark:focus:bg-bg-grid-header dark:focus:text-text-text-and-icon',
+    {
+      'cursor-pointer': !disabled,
+      'cursor-auto dark:text-gray-600': disabled,
+    },
   );
 
   return (
@@ -68,7 +64,7 @@ export const DropdownSubMenu: React.FC<
       </DropdownPrimitive.SubTrigger>
       <DropdownPrimitive.Portal>
         <DropdownPrimitive.SubContent
-          className={cx(
+          className={cn(
             'shadow-md min-w-[195px]',
             'overflow-hidden',
             // font size
@@ -98,7 +94,7 @@ export const Dropdown: React.FC<DropdownProps & { loop?: boolean }> = (props) =>
           sideOffset={4}
           align={align}
           loop={loop}
-          className={cx(
+          className={cn(
             'data-[side=top]:animate-slide-up data-[side=bottom]:animate-slide-down',
             'shadow-md min-w-[195px]',
             'overflow-hidden',
@@ -126,22 +122,20 @@ export const DropdownItem: React.ForwardRefExoticComponent<
     }
 > = React.forwardRef((props, forwardedRef) => {
   const { children, className, disabled, selected, icon, ...rest } = props;
-  const classes = dfTwMerge(
-    cx(
-      'flex gap-x-2',
-      // paddings
-      'px-6 pt-2 pb-1',
-      // text
-      'text-gray-500 dark:text-text-text-and-icon',
-      // hover // focus
-      'focus:outline-none focus:bg-gray-100',
-      'dark:focus:bg-bg-grid-header dark:focus:text-text-text-and-icon',
-      {
-        'cursor-pointer': !disabled,
-        'cursor-auto dark:text-gray-600': disabled,
-        'dark:bg-bg-active-selection dark:text-text-input-value': selected,
-      },
-    ),
+  const classes = cn(
+    'flex gap-x-2',
+    // paddings
+    'px-6 pt-2 pb-1',
+    // text
+    'text-gray-500 dark:text-text-text-and-icon',
+    // hover // focus
+    'focus:outline-none focus:bg-gray-100',
+    'dark:focus:bg-bg-grid-header dark:focus:text-text-text-and-icon',
+    {
+      'cursor-pointer': !disabled,
+      'cursor-auto dark:text-gray-600': disabled,
+      'dark:bg-bg-active-selection dark:text-text-input-value': selected,
+    },
     className,
   );
   return (
@@ -162,6 +156,6 @@ export const DropdownSeparator: React.ForwardRefExoticComponent<
   DropdownPrimitive.DropdownMenuSeparatorProps & React.RefAttributes<HTMLDivElement>
 > = React.forwardRef((props, forwardedRef) => {
   const { className, ...rest } = props;
-  const classes = dfTwMerge(cx('h-px bg-gray-200 dark:bg-bg-left-nav'), className);
+  const classes = cn('h-px bg-gray-200 dark:bg-bg-left-nav', className);
   return <DropdownPrimitive.Separator className={classes} {...rest} ref={forwardedRef} />;
 });

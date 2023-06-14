@@ -10,6 +10,28 @@ export default {
 } as Meta<typeof Listbox>;
 
 const people = [
+  {
+    label:
+      'Wade Cooper Wade Cooper    Wade Cooper  Wade CooperWade CooperWade CooperWade Cooper',
+    value: 'wc',
+  },
+  { label: 'Arlene Mccoy', value: 'am' },
+  { label: 'Devon Webb', value: 'dw' },
+  { label: 'Tom Cook', value: 'tc' },
+  { label: 'Tanya Fox', value: 'tf' },
+  { label: 'Hellen Schmidt', value: 'hs' },
+  { label: 'Wade Cooper', value: 'wc' },
+  { label: 'Arlene Mccoy', value: 'am' },
+  { label: 'Devon Webb', value: 'dw' },
+  { label: 'Tom Cook', value: 'tc' },
+  { label: 'Tanya Fox', value: 'tf' },
+  { label: 'Hellen Schmidt', value: 'hs' },
+  { label: 'Wade Cooper', value: 'wc' },
+  { label: 'Arlene Mccoy', value: 'am' },
+  { label: 'Devon Webb', value: 'dw' },
+  { label: 'Tom Cook', value: 'tc' },
+  { label: 'Tanya Fox', value: 'tf' },
+  { label: 'Hellen Schmidt', value: 'hs' },
   { label: 'Wade Cooper', value: 'wc' },
   { label: 'Arlene Mccoy', value: 'am' },
   { label: 'Devon Webb', value: 'dw' },
@@ -22,14 +44,18 @@ const MultiSelectTemplate: StoryFn<typeof Listbox> = () => {
 
   return (
     <Listbox
-      sizing="sm"
       value={selected}
       label="Select your value"
       name="multiple-select"
       multiple
+      getDisplayValue={() => {
+        return 'PropertyName';
+      }}
       onChange={(item) => {
         setSelected(item);
       }}
+      clearAll={'Clear filters'}
+      onClearAll={() => setSelected([])}
     >
       {people.map((person) => {
         return (
@@ -59,9 +85,7 @@ const SingleSelectTemplate: StoryFn<typeof Listbox> = () => {
       }}
     >
       <Listbox
-        sizing="md"
         value={selected}
-        label="Person"
         name="single-select"
         onChange={(item) => {
           setSelected(item);

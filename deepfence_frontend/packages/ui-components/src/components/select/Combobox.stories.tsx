@@ -10,7 +10,7 @@ export default {
 
 const OPTIONS = [
   {
-    name: 'John',
+    name: 'Jon',
     id: '1',
     age: 20,
   },
@@ -20,43 +20,28 @@ const OPTIONS = [
     age: 21,
   },
   {
-    name: 'John',
-    id: '1',
+    name: 'Jack',
+    id: '3',
     age: 20,
   },
   {
-    name: 'Jane',
-    id: '2',
+    name: 'July',
+    id: '4',
     age: 21,
   },
   {
-    name: 'John',
-    id: '1',
-    age: 20,
-  },
-  {
-    name: 'Jane',
-    id: '2',
+    name: 'Juju',
+    id: '5',
     age: 21,
   },
   {
-    name: 'John',
-    id: '1',
-    age: 20,
-  },
-  {
-    name: 'Jane',
-    id: '2',
+    name: 'Jessie',
+    id: '6',
     age: 21,
   },
   {
-    name: 'John',
-    id: '1',
-    age: 20,
-  },
-  {
-    name: 'Jane',
-    id: '2',
+    name: 'Jessy',
+    id: '7',
     age: 21,
   },
 ];
@@ -79,7 +64,6 @@ const SingleSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
 
   return (
     <Combobox
-      sizing="sm"
       value={selected}
       nullable
       onQueryChange={(query) => {
@@ -89,7 +73,9 @@ const SingleSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
       onChange={(value) => {
         setSelected(value);
       }}
-      getDisplayValue={(item) => item?.name ?? ''}
+      getDisplayValue={() => {
+        return 'PropertyName';
+      }}
       onEndReached={() => {
         fetchMoreData();
       }}
@@ -129,7 +115,6 @@ const SingleSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
 
   return (
     <Combobox
-      sizing="sm"
       value={selected}
       onQueryChange={(query) => {
         setQuery(query);
@@ -138,7 +123,9 @@ const SingleSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
       onChange={(value) => {
         setSelected(value);
       }}
-      getDisplayValue={(item) => item.name}
+      getDisplayValue={() => {
+        return 'PropertyName';
+      }}
       onEndReached={() => {
         fetchMoreData();
       }}
@@ -178,7 +165,6 @@ const MultiSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
 
   return (
     <Combobox
-      sizing="sm"
       value={selected}
       onQueryChange={(query) => {
         setQuery(query);
@@ -187,9 +173,12 @@ const MultiSelectNullableTemplate: StoryFn<typeof Combobox> = () => {
       onChange={(value) => {
         setSelected(value);
       }}
+      clearAllElement="Clear filters"
       multiple
       nullable
-      getDisplayValue={(item) => item?.map((i) => i.name).join(',') ?? ''}
+      getDisplayValue={() => {
+        return 'PropertyName';
+      }}
       onEndReached={() => {
         fetchMoreData();
       }}
@@ -229,17 +218,19 @@ const MultiSelectNonNullableTemplate: StoryFn<typeof Combobox> = () => {
 
   return (
     <Combobox
-      sizing="sm"
       value={selected}
       onQueryChange={(query) => {
         setQuery(query);
       }}
       label="Select your value"
+      clearAllElement="Clear filters"
       onChange={(value) => {
         setSelected(value);
       }}
       multiple
-      getDisplayValue={(item) => ''}
+      getDisplayValue={() => {
+        return 'PropertyName';
+      }}
       onEndReached={() => {
         fetchMoreData();
       }}

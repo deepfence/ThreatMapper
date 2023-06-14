@@ -1,6 +1,6 @@
-import classNames from 'classnames';
 import { ReactNode, Suspense } from 'react';
 import { generatePath, Link, useLocation, useMatches, useParams } from 'react-router-dom';
+import { cn } from 'tailwind-preset';
 import { Tooltip } from 'ui-components';
 
 import { SearchNodeCountResp } from '@/api/generated';
@@ -11,7 +11,6 @@ import { TableIcon } from '@/components/icons/table';
 import { TopologyViewTypes } from '@/features/topology/data-components/topologyLoader';
 import { NodeType } from '@/features/topology/utils/topology-data';
 import { DFAwait } from '@/utils/suspense';
-import { dfTwMerge } from '@/utils/twmerge';
 
 const SummaryTab = ({
   icon,
@@ -43,15 +42,13 @@ const SummaryTab = ({
       }}
     >
       <button
-        className={dfTwMerge(
-          classNames(
-            `flex items-center gap-[6px] p-3 dark:hover:text-text-input-value dark:hover:bg-bg-grid-header`,
-            'dark:hover:shadow-[0_-4px_0_var(--tw-shadow-color)_inset] dark:shadow-accent-accent transition-shadow duration-[0.2s] ease-[ease-in]',
-            {
-              'dark:text-text-input-value dark:bg-bg-active-selection dark:shadow-[0_-4px_0_var(--tw-shadow-color)_inset] dark:hover:bg-bg-active-selection':
-                isActive,
-            },
-          ),
+        className={cn(
+          `flex items-center gap-[6px] p-3 dark:hover:text-text-input-value dark:hover:bg-bg-grid-header`,
+          'dark:hover:shadow-[0_-4px_0_var(--tw-shadow-color)_inset] dark:shadow-accent-accent transition-shadow duration-[0.2s] ease-[ease-in]',
+          {
+            'dark:text-text-input-value dark:bg-bg-active-selection dark:shadow-[0_-4px_0_var(--tw-shadow-color)_inset] dark:hover:bg-bg-active-selection':
+              isActive,
+          },
         )}
       >
         <div className="h-[16px] w-[16px]">{icon}</div>
@@ -158,7 +155,7 @@ const ViewSwitcher = () => {
         <Link
           to={`/topology/graph/${type}`}
           type="button"
-          className={classNames(
+          className={cn(
             'flex items-center text-lg font-semibold rounded-l-lg h-full px-2 border border-blue-200 dark:border-blue-800',
             {
               ['text-blue-600 dark:text-blue-500']: !isGraphView,
@@ -181,7 +178,7 @@ const ViewSwitcher = () => {
         <Link
           to={`/topology/table/${type}`}
           type="button"
-          className={classNames(
+          className={cn(
             'flex items-center text-lg font-semibold rounded-r-lg h-full px-2 border border-blue-200 dark:border-blue-800',
             {
               ['text-blue-600 dark:text-blue-500']: isGraphView,

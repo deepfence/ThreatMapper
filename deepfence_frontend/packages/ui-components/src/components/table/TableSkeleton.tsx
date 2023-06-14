@@ -1,6 +1,4 @@
-import classNames from 'classnames';
-
-import { dfTwMerge } from '@/utils/twmerge';
+import { cn } from 'tailwind-preset';
 
 type SizeOf = 'compact' | 'medium' | 'default' | 'relaxed';
 
@@ -22,7 +20,7 @@ const Skeleton = ({ className, size = 'default', location }: SkeletonProps) => {
   return (
     <div
       role="status"
-      className={classNames('w-full h-full opacity-50 px-4', {
+      className={cn('w-full h-full opacity-50 px-4', {
         ['py-4']: size === 'default' && location === 'header',
         ['py-2.5']: size === 'compact' && location === 'header',
         ['py-[13px]']: size === 'medium' && location === 'header',
@@ -34,9 +32,7 @@ const Skeleton = ({ className, size = 'default', location }: SkeletonProps) => {
       })}
     >
       <div
-        className={dfTwMerge(
-          classNames('bg-gray-200 dark:bg-bg-grid-border rounded-[6px] h-4', className),
-        )}
+        className={cn('bg-gray-200 dark:bg-bg-grid-border rounded-[6px] h-4', className)}
       />
     </div>
   );
@@ -49,12 +45,10 @@ export const TableSkeleton: React.FC<TableSkeletonProps> = ({
   size = 'default',
 }) => (
   <div
-    className={dfTwMerge(
-      classNames(
-        `overflow-x-auto overflow-y-hidden`,
-        `rounded-[5px] dark:border dark:border-bg-grid-border`,
-        className,
-      ),
+    className={cn(
+      `overflow-x-auto overflow-y-hidden`,
+      `rounded-[5px] dark:border dark:border-bg-grid-border`,
+      className,
     )}
   >
     <table
@@ -80,7 +74,7 @@ export const TableSkeleton: React.FC<TableSkeletonProps> = ({
             {Array.from({ length: columns }).map((_, index) => (
               <td
                 key={index}
-                className={classNames('border-gray-200 dark:border-bg-grid-border', {
+                className={cn('border-gray-200 dark:border-bg-grid-border', {
                   ['border-b']: rowIdx !== rows - 1,
                 })}
               >

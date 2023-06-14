@@ -1,9 +1,8 @@
-import cx from 'classnames';
 import { useMemo } from 'react';
 import { HiDotsHorizontal } from 'react-icons/hi';
+import { cn } from 'tailwind-preset';
 
 import { usePagination, UsePaginationOptions } from '@/components/hooks/usePagination';
-import { dfTwMerge } from '@/utils/twmerge';
 
 type PageButtonProps = {
   label: string | number | JSX.Element;
@@ -30,14 +29,12 @@ const PageButton = ({
 }: PageButtonProps) => {
   return (
     <button
-      className={dfTwMerge(
+      className={cn(
         // we donot want border to be overlap so we use border right here
-        cx(
-          'flex justify-center items-center text-p7 dark:bg-bg-card',
-          'px-3 py-[5px] border-r border-y border-gray-300 dark:border-bg-grid-border',
-          'dark:text-text-text-and-icon overflow-hidden',
-          'hover:dark:text-text-input-value',
-        ),
+        'flex justify-center items-center text-p7 dark:bg-bg-card',
+        'px-3 py-[5px] border-r border-y border-gray-300 dark:border-bg-grid-border',
+        'dark:text-text-text-and-icon overflow-hidden',
+        'hover:dark:text-text-input-value',
         className,
       )}
       onClick={() => {
@@ -137,7 +134,7 @@ export const Pagination = ({
           </>
         ) : null}
       </div>
-      <div className={cx(`flex flex-row flex-nowrap`)}>
+      <div className={cn(`flex flex-row flex-nowrap`)}>
         <PageButton
           data-testid="pagination-prev"
           label={
@@ -148,7 +145,7 @@ export const Pagination = ({
           key={'Previous'}
           onPageChange={onPrevious}
           disabled={totalNumberOfPages === 0}
-          className={cx('rounded-l border-l px-1.5')}
+          className={cn('rounded-l border-l px-1.5')}
         />
 
         {pagination?.map((page, index) => {
@@ -171,7 +168,7 @@ export const Pagination = ({
                 onPageChange(page);
               }}
               disabled={false}
-              className={cx({
+              className={cn({
                 'bg-blue-100 text-blue-600 dark:bg-bg-active-selection dark:text-text-input-value':
                   page === currentPage,
               })}
@@ -189,7 +186,7 @@ export const Pagination = ({
           data-testid="pagination-next"
           onPageChange={onNext}
           disabled={totalNumberOfPages === 0}
-          className={cx('rounded-r px-1.5')}
+          className={cn('rounded-r px-1.5')}
         />
       </div>
     </div>
