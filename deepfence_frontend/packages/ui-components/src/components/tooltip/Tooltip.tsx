@@ -1,5 +1,5 @@
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import cx from 'classnames';
+import { cn } from 'tailwind-preset';
 
 import { Typography } from '@/components/typography/Typography';
 
@@ -40,12 +40,8 @@ export const Tooltip = (props: TooltipProps) => {
             arrowPadding={8}
             sideOffset={4}
             side={placement}
-            className={cx(
-              'radix-side-top:animate-slide-down-fade',
-              'radix-side-right:animate-slide-left-fade',
-              'radix-side-bottom:animate-slide-up-fade',
-              'radix-side-left:animate-slide-right-fade',
-              'rounded-md pl-3 py-2 shadow-sm w-[200px]',
+            className={cn(
+              'rounded-md px-3 py-2 shadow-sm max-w-[200px]',
               'bg-bg-tooltip dark:bg-bg-tooltip',
               Typography.leading.normal,
             )}
@@ -58,14 +54,14 @@ export const Tooltip = (props: TooltipProps) => {
             <>
               {label && (
                 <span
-                  className={cx('text-p6', 'text-text-input-value', 'block', 'pb-[3px]')}
+                  className={cn('text-p6', 'text-text-input-value', 'block', 'pb-[3px]')}
                 >
                   {label}
                 </span>
               )}
               {typeof content === 'string' ? (
                 <span
-                  className={cx('text-p4', 'text-text-input-value block')}
+                  className={cn('text-p4', 'text-text-input-value block')}
                   style={{
                     wordBreak: 'break-word',
                   }}
