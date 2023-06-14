@@ -83,7 +83,10 @@ func main() {
 	}
 
 	for _, name := range autostart {
-		supervisor.StartProcess(name)
+		err := supervisor.StartProcess(name)
+		if err != nil {
+			log.Error().Msgf("Autostart for %v had issue: %v", name, err)
+		}
 	}
 
 	if enable_cluster_discovery {

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/router"
+	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/supervisor"
 	linuxScanner "github.com/deepfence/compliance/scanner"
 	linuxScannerUtil "github.com/deepfence/compliance/util"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
@@ -101,6 +102,33 @@ func SetAgentControls() {
 			log.Info().Msg("Start Agent Upgrade")
 			router.SetUpgrade()
 			return router.StartAgentUpgrade(req)
+		})
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+	err = router.RegisterControl(ctl.StartAgentPlugin,
+		func(req ctl.StartAgentPluginRequest) error {
+			log.Info().Msg("Start Agent Plugin")
+			router.SetUpgrade()
+			return supervisor.StartProcess(req.PluginName)
+		})
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+	err = router.RegisterControl(ctl.StopAgentPlugin,
+		func(req ctl.StopAgentPluginRequest) error {
+			log.Info().Msg("Stop Agent Plugin")
+			router.SetUpgrade()
+			return supervisor.StopProcess(req.PluginName)
+		})
+	if err != nil {
+		log.Error().Msgf("set controls: %v", err)
+	}
+	err = router.RegisterControl(ctl.UpgradeAgentPlugin,
+		func(req ctl.UpgradeAgentPluginRequest) error {
+			log.Info().Msg("Start Agent Plugin Upgrade")
+			router.SetUpgrade()
+			return supervisor.UpgradeProcess(req.PluginName, req.BinUrl)
 		})
 	if err != nil {
 		log.Error().Msgf("set controls: %v", err)
