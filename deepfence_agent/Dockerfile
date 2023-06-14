@@ -9,7 +9,7 @@ MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
 ENV CHECKPOINT_DISABLE=true \
-    DOCKERVERSION=23.0.3 \
+    DOCKERVERSION=24.0.2 \
     DF_TLS_ON="1" \
     MGMT_CONSOLE_PORT=443 \
     DF_KUBERNETES_ON="N" \

@@ -4,9 +4,9 @@ RUN set -eux; \
    export arch_val="$(dpkg --print-architecture)"; \
    apt-get update && \
    if [ "$arch_val" = "amd64" ]; then \
-     apt-get install -y libpcap-dev time file shellcheck git gcc-arm-linux-gnueabihf curl build-essential; \
+     apt-get install -y ca-certificates libpcap-dev time file shellcheck git gcc-arm-linux-gnueabihf curl build-essential; \
    else \
-     apt-get install -y libpcap-dev time file shellcheck git curl build-essential; \
+     apt-get install -y ca-certificates libpcap-dev time file shellcheck git curl build-essential; \
    fi; \
    \
    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -30,7 +30,7 @@ RUN export arch_val="$(dpkg --print-architecture)"; \
    fi;
 
 # Install Docker (client only)
-ENV DOCKERVERSION=23.0.3
+ENV DOCKERVERSION=24.0.2
 RUN export arch_val="$(dpkg --print-architecture)"; \
     if [ "$arch_val" = "arm64" ]; then \
         curl -fsSLO https://download.docker.com/linux/static/stable/aarch64/docker-${DOCKERVERSION}.tgz; \
