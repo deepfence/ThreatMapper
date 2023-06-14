@@ -41,6 +41,10 @@ export const Tooltip = (props: TooltipProps) => {
             sideOffset={4}
             side={placement}
             className={cn(
+              'data-[side=top]:animate-slide-down-fade',
+              'data-[side=right]:animate-slide-left-fade',
+              'data-[side=bottom]:animate-slide-up-fade',
+              'data-[side=left]:animate-slide-right-fade',
               'rounded-md px-3 py-2 shadow-sm max-w-[200px]',
               'bg-bg-tooltip dark:bg-bg-tooltip',
               Typography.leading.normal,
