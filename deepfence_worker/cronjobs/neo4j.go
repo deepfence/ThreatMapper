@@ -137,6 +137,17 @@ func CleanUpDB(msg *message.Message) error {
 	}
 
 	if _, err = session.Run(`
+		MATCH (n:ImageStub)
+		AND n.updated_at < TIMESTAMP()-$time_ms
+		OR NOT exists((n)<-[:IS]-(:ContainerImage))
+		WITH n LIMIT 10000
+		DETACH DELETE n`,
+		map[string]interface{}{"time_ms": dbRegistryCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
+		return err
+	}
+
+	if _, err = session.Run(`
 		MATCH (n:Container)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		AND n.active = true

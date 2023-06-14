@@ -110,7 +110,8 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r
 		m.registry_type=$registry_type,
 		n.pseudo=false,
 		n.active=true,
-		n.node_name=n.docker_image_name+":"+n.docker_image_tag`,
+		n.node_name=n.docker_image_name+":"+n.docker_image_tag,
+		s.updated_at = TIMESTAMP()`,
 		map[string]interface{}{
 			"batch": imageMap, "node_id": registryId,
 			"pgId": pgId, "registry_type": r.GetRegistryType(),
