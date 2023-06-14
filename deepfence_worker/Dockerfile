@@ -20,7 +20,9 @@ RUN apk add --no-cache -t .build-deps py-setuptools \
     libtool \
     flex \
     git \
-    && cd /root  \
+    libmagic \
+    linux-headers \
+    && cd /root \
     && wget https://github.com/VirusTotal/yara/archive/refs/tags/v4.3.2.tar.gz \
     && tar -zxf v4.3.2.tar.gz \
     && cd yara-4.3.2 \
@@ -45,8 +47,8 @@ RUN tar -xzf /usr/local/yara.tar.gz -C /usr/local/ \
     && rm /usr/local/yara.tar.gz
 
 RUN apk update && apk add --no-cache --upgrade \
-    curl tar libstdc++ libgcc docker skopeo python3 \
-    py3-pip bash podman gcc musl-dev pkgconfig \
+    curl tar libstdc++ libgcc python3 \
+    py3-pip bash gcc musl-dev pkgconfig \
     g++ git protoc jansson-dev libc-dev openssl-dev \
     && apk add hyperscan-dev --repository=https://dl-cdn.alpinelinux.org/alpine/v3.13/community \
     && git clone https://github.com/deepfence/yara-rules
@@ -64,7 +66,7 @@ LABEL MAINTAINER="Deepfence Inc"
 LABEL deepfence.role=system
 
 ADD deepfence_server/cloud_controls /cloud_controls
-RUN apk add --no-cache kafkacat docker openrc bash skopeo jansson-dev \
+RUN apk add --no-cache kafkacat docker-cli openrc bash skopeo jansson-dev \
         libmagic libstdc++ libx11 libxrender libxext libssl1.1 ca-certificates \
         fontconfig freetype ttf-droid ttf-freefont ttf-liberation postgresql15-client
 RUN apk add hyperscan --repository=https://dl-cdn.alpinelinux.org/alpine/v3.13/community
