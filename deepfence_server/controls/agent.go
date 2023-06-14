@@ -273,7 +273,7 @@ func ExtractStartingAgentScans(ctx context.Context, nodeId string, max_work int)
 		WHERE s.status = '`+utils.SCAN_STATUS_STARTING+`'
 		AND s.retries < 3
 		WITH s LIMIT $max_work
-		SET s.status = '`+utils.SCAN_STATUS_INPROGRESS+`'
+		SET s.status = '`+utils.SCAN_STATUS_INPROGRESS+`', s.updated_at = TIMESTAMP()
 		WITH s
 		RETURN s.trigger_action`,
 		map[string]interface{}{"id": nodeId, "max_work": max_work})

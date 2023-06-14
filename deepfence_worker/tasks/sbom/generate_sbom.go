@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -133,18 +134,49 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
+		SendScanStatus(s.ingestC,
+			NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
 		return nil, nil
 	}
 
 	sbomFile := path.Join("/sbom/", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
 	info, err := mc.UploadFile(ctx, sbomFile, gzpb64Sbom.Bytes(),
 		minio.PutObjectOptions{ContentType: "application/gzip"})
+
 	if err != nil {
-		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
-		return nil, nil
+		logError := true
+		if strings.Contains(err.Error(), "Already exists here") {
+			/*If the file already exists, we will delete the old file and upload the new one
+			File can exists in 2 conditions:
+			- When the earlier scan was stuck during the scan phase
+			- When the service was restarted
+			- Bug/Race conditon in the worker service
+			*/
+			log.Warn().Msg(err.Error() + ", Will try to overwrite the file: " + sbomFile)
+			err = mc.DeleteFile(ctx, sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
+			if err == nil {
+				info, err = mc.UploadFile(ctx, sbomFile, gzpb64Sbom.Bytes(),
+					minio.PutObjectOptions{ContentType: "application/gzip"})
+
+				if err == nil {
+					log.Info().Msgf("Successfully overwritten the file: %s", sbomFile)
+					logError = false
+				} else {
+					log.Error().Msgf("Failed to upload the file, error is: %v", err)
+				}
+			} else {
+				log.Error().Msgf("Failed to delete the old file, error is: %v", err)
+			}
+		}
+
+		if logError == true {
+			log.Error().Msg(err.Error())
+			SendScanStatus(s.ingestC,
+				NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
+			return nil, nil
+		}
 	}
+
 	log.Info().Msgf("sbom file uploaded %+v", info)
 
 	// write sbom to minio and return details another task will scan sbom
