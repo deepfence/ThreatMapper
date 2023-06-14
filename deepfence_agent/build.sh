@@ -51,7 +51,7 @@ building_image(){
     fi
 
     echo "Building Agent Executable"
-    docker run --rm -it -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/agent-build
+    docker run --rm -it -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/agent-build.sh
     build_result=$?
     if [ $build_result -ne 0 ]
     then
@@ -60,15 +60,13 @@ building_image(){
     fi
 
     echo "Building Cluster Agent Image"
-    cd tools/apache
-    docker build --network host --rm=true --tag=$IMAGE_REPOSITORY/deepfence_discovery_ce:${DF_IMG_TAG:-latest} -f scope/docker/Dockerfile.cluster-agent .
+    docker build --network host --rm=true --tag=$IMAGE_REPOSITORY/deepfence_discovery_ce:${DF_IMG_TAG:-latest} -f tools/apache/scope/docker/Dockerfile.cluster-agent tools/apache
     build_result=$?
     if [ $build_result -ne 0 ]
     then
         echo "Deepfence cluster agent building failed, bailing out"
         exit 1
     fi
-    cd -
 
     echo "Building Agent Image"
     docker build --network host --rm=true --build-arg DF_IMG_TAG="${DF_IMG_TAG:-latest}" --build-arg IMAGE_REPOSITORY="${IMAGE_REPOSITORY}" --tag=$IMAGE_REPOSITORY/deepfence_agent_ce:"${DF_IMG_TAG:-latest}" -f Dockerfile .

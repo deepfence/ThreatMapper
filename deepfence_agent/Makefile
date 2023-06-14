@@ -42,12 +42,13 @@ install:
 
 agent:
 	$(CD) tools/apache/scope && \
+		go mod tidy -v && \
+		go mod vendor && \
 		env GOGC=off \
 		go build \
-		-mod vendor \
 		-ldflags "-X main.version=$(shell git rev-parse --short HEAD)  -X github.com/weaveworks/scope/probe/host.agentCommitID=$(shell git rev-parse --short HEAD) -X github.com/weaveworks/scope/probe/host.agentBuildTime=$(shell date +"%s%d%m%y") -s -w" \
 		-tags 'netgo osusergo unsafe' \
-		-o prog/deepfence_exe \
+		-o docker/deepfence_exe \
 		./prog
 
 clean:
