@@ -1,14 +1,14 @@
-package host
+package router
 
 import (
 	"context"
 	"errors"
 	"os"
 
+	pb "github.com/deepfence/agent-plugins-grpc/proto"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	log "github.com/sirupsen/logrus"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	scopeHostname "github.com/weaveworks/scope/common/hostname"
-	pb "github.com/weaveworks/scope/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -141,14 +141,14 @@ func StartVulnerabilityScan(req ctl.StartVulnerabilityScanRequest) error {
 	if scanIdArg, ok := req.BinArgs["scan_id"]; ok {
 		scanId = scanIdArg
 	}
-	log.Infof("vulnerability scan request: %v", req)
-	log.Infof("uploading %s sbom to console...", imageName)
+	log.Info().Msgf("vulnerability scan request: %v", req)
+	log.Info().Msgf("uploading %s sbom to console...", imageName)
 	// call package scanner plugin
 	go func() {
 		err := GenerateSbomForVulnerabilityScan(node_type, imageName, imageId, scanId,
 			containerId, kubernetesClusterName, containerName, scanType)
 		if err != nil {
-			log.Error(err.Error())
+			log.Error().Msgf("%v", err)
 		}
 	}()
 	return nil
@@ -161,7 +161,7 @@ func GetPackageScannerJobCount() int32 {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		log.Errorf("error in creating package scanner client: %s", err.Error())
+		log.Error().Msgf("error in creating package scanner client: %s", err.Error())
 		return 0
 	}
 	defer conn.Close()

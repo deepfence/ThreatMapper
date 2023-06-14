@@ -1,7 +1,7 @@
 //go:build !dummy
 // +build !dummy
 
-package appclient
+package router
 
 import (
 	"context"
@@ -10,12 +10,10 @@ import (
 	"time"
 
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
-	"github.com/sirupsen/logrus"
-	"github.com/weaveworks/scope/probe/controls"
-	"github.com/weaveworks/scope/probe/host"
+	"github.com/rs/zerolog/log"
 )
 
-func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent bool) error {
+func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent bool, version string) error {
 	if isClusterAgent {
 
 	} else {
@@ -24,7 +22,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 			*openapi.NewModelInitAgentReq(
 				getMaxAllocatable(),
 				nodeId,
-				host.AgentVersionNo,
+				version,
 			),
 		)
 		ctl, _, err := ct.API().ControlsAPI.GetAgentInitControlsExecute(req)
@@ -36,10 +34,10 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 		ct.publishInterval.Store(ctl.Beatrate)
 
 		for _, action := range ctl.Commands {
-			logrus.Infof("Init execute :%v", action.Id)
-			err := controls.ApplyControl(action)
+			log.Info().Msgf("Init execute :%v", action.Id)
+			err := ApplyControl(action)
 			if err != nil {
-				logrus.Errorf("Control %v failed: %v\n", action, err)
+				log.Error().Msgf("Control %v failed: %v\n", action, err)
 			}
 		}
 	}
@@ -61,17 +59,17 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 				req = req.ModelAgentId(*agentId)
 				ctl, _, err := ct.API().ControlsAPI.GetKubernetesClusterControlsExecute(req)
 				if err != nil {
-					logrus.Errorf("Getting controls failed: %v\n", err)
+					log.Error().Msgf("Getting controls failed: %v\n", err)
 					continue
 				}
 
 				ct.publishInterval.Store(ctl.Beatrate)
 
 				for _, action := range ctl.Commands {
-					logrus.Infof("Execute :%v", action.Id)
-					err := controls.ApplyControl(action)
+					log.Info().Msgf("Execute :%v", action.Id)
+					err := ApplyControl(action)
 					if err != nil {
-						logrus.Errorf("Control %v failed: %v\n", action, err)
+						log.Error().Msgf("Control %v failed: %v\n", action, err)
 					}
 				}
 			}
@@ -93,7 +91,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 				req = req.ModelAgentId(*agentId)
 				ctl, _, err := ct.API().ControlsAPI.GetAgentControlsExecute(req)
 				if err != nil {
-					logrus.Errorf("Getting controls failed: %v\n", err)
+					log.Error().Msgf("Getting controls failed: %v\n", err)
 					rand.Seed(time.Now().UnixNano())
 					randomDelay := rand.Intn(int(ct.PublishInterval() / 2))
 					time.Sleep(time.Duration(randomDelay) * time.Second)
@@ -103,10 +101,10 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 				ct.publishInterval.Store(ctl.Beatrate)
 
 				for _, action := range ctl.Commands {
-					logrus.Infof("Execute :%v", action.Id)
-					err := controls.ApplyControl(action)
+					log.Info().Msgf("Execute :%v", action.Id)
+					err := ApplyControl(action)
 					if err != nil {
-						logrus.Errorf("Control %v failed: %v\n", action, err)
+						log.Error().Msgf("Control %v failed: %v\n", action, err)
 					}
 				}
 			}
@@ -122,11 +120,11 @@ const (
 
 func GetScannersWorkloads() int32 {
 	res := int32(0)
-	secret := host.GetSecretScannerJobCount()
-	malware := host.GetMalwareScannerJobCount()
-	vuln := host.GetPackageScannerJobCount()
+	secret := GetSecretScannerJobCount()
+	malware := GetMalwareScannerJobCount()
+	vuln := GetPackageScannerJobCount()
 	//TODO: Add more scanners workload
-	logrus.Infof("GetScannersWorkloads secret: %d malware: %d package: %d", secret, malware, vuln)
+	log.Info().Msgf("workloads = vuln: %d, secret: %d, malware: %d", secret, malware, vuln)
 	res = secret + malware + vuln
 	return res
 }
@@ -149,6 +147,6 @@ func getMaxAllocatable() int32 {
 	if workload <= 0 {
 		workload = 0
 	}
-	logrus.Infof("Workload: %v\n", workload)
+	log.Info().Msgf("Workload: %v\n", workload)
 	return workload
 }

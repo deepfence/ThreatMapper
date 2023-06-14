@@ -1,7 +1,7 @@
 //go:build dummy
 // +build dummy
 
-package main
+package controls
 
 import (
 	"bytes"
@@ -13,10 +13,7 @@ import (
 	"os/exec"
 
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	log "github.com/sirupsen/logrus"
 	scopeHostname "github.com/weaveworks/scope/common/hostname"
-	"github.com/weaveworks/scope/probe/common"
-	"github.com/weaveworks/scope/probe/controls"
 
 	dsc "github.com/deepfence/golang_deepfence_sdk/client"
 )
@@ -30,11 +27,11 @@ func setClusterAgentControls(k8sClusterName string) {
 			return errors.New("Not implemented")
 		})
 	if err != nil {
-		log.Errorf("set controls: %v", err)
+		log.Error().Msgf("set controls: %v", err)
 	}
 	_, err = exec.Command("/bin/sh", "/home/deepfence/token.sh").CombinedOutput()
 	if err != nil {
-		log.Errorf("generate token: %v", err)
+		log.Error().Msgf("generate token: %v", err)
 	} else {
 		log.Debug("Token generated successfully")
 	}
@@ -44,7 +41,7 @@ func setClusterAgentControls(k8sClusterName string) {
 			return errors.New("Not implemented")
 		})
 	if err != nil {
-		log.Errorf("set controls: %v", err)
+		log.Error().Msgf("set controls: %v", err)
 	}
 	err = controls.RegisterControl(ctl.SendAgentDiagnosticLogs,
 		func(req ctl.SendAgentDiagnosticLogsRequest) error {
@@ -52,7 +49,7 @@ func setClusterAgentControls(k8sClusterName string) {
 			return errors.New("Not implemented")
 		})
 	if err != nil {
-		log.Errorf("set controls: %v", err)
+		log.Error().Msgf("set controls: %v", err)
 	}
 }
 
@@ -62,28 +59,28 @@ func setAgentControls() {
 			return sendDummySbomToConsole(req)
 		})
 	if err != nil {
-		log.Errorf("set controls: %v", err)
+		log.Error().Msgf("set controls: %v", err)
 	}
 	err = controls.RegisterControl(ctl.StartSecretScan,
 		func(req ctl.StartSecretScanRequest) error {
 			return errors.New("Not implemented")
 		})
 	if err != nil {
-		log.Errorf("set controls: %v", err)
+		log.Error().Msgf("set controls: %v", err)
 	}
 	err = controls.RegisterControl(ctl.StartComplianceScan,
 		func(req ctl.StartComplianceScanRequest) error {
 			return errors.New("Not implemented")
 		})
 	if err != nil {
-		log.Errorf("set controls: %v", err)
+		log.Error().Msgf("set controls: %v", err)
 	}
 	err = controls.RegisterControl(ctl.StartMalwareScan,
 		func(req ctl.StartMalwareScanRequest) error {
 			return errors.New("Not implemented")
 		})
 	if err != nil {
-		log.Errorf("set controls: %v", err)
+		log.Error().Msgf("set controls: %v", err)
 	}
 	err = controls.RegisterControl(ctl.StartAgentUpgrade,
 		func(req ctl.StartAgentUpgradeRequest) error {
@@ -91,7 +88,7 @@ func setAgentControls() {
 			return errors.New("Not implemented")
 		})
 	if err != nil {
-		log.Errorf("set controls: %v", err)
+		log.Error().Msgf("set controls: %v", err)
 	}
 	err = controls.RegisterControl(ctl.SendAgentDiagnosticLogs,
 		func(req ctl.SendAgentDiagnosticLogsRequest) error {
@@ -99,7 +96,7 @@ func setAgentControls() {
 			return errors.New("Not implemented")
 		})
 	if err != nil {
-		log.Errorf("set controls: %v", err)
+		log.Error().Msgf("set controls: %v", err)
 	}
 }
 
@@ -128,7 +125,7 @@ func sendDummySbomToConsole(init_req ctl.StartVulnerabilityScanRequest) error {
 	var out bytes.Buffer
 	gzw := gzip.NewWriter(&out)
 	if _, err := gzw.Write(sbom); err != nil {
-		log.Errorf("compress error: %s", err)
+		log.Error().Msgf("compress error: %s", err)
 		return err
 	}
 	gzw.Close()
