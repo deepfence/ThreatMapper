@@ -180,12 +180,6 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		log.Error(err.Error())
 	}
 
-	if flags.kubernetesRole == kubernetesRoleCluster {
-		setClusterAgentControls(k8sClusterName)
-	} else {
-		setAgentControls()
-	}
-
 	err = os.Setenv(report.KubernetesClusterName, k8sClusterName)
 	if err != nil {
 		log.Error(err.Error())
@@ -221,36 +215,6 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 				log.Fatalf("Fatal: %v", err)
 			}
 		}
-		for {
-			if flags.kubernetesRole == kubernetesRoleCluster {
-				err = multiClients.StartControlsWatching(k8sClusterId, true)
-			} else {
-				err = multiClients.StartControlsWatching(hostName, false)
-			}
-			if err == nil {
-				break
-			}
-			log.Errorf("Failed to get init controls %v. Retrying...\n", err)
-			time.Sleep(authCheckPeriod)
-		}
-		defer multiClients.Stop()
-
-		//dnsLookupFn := net.LookupIP
-		//if flags.resolver != "" {
-		//	dnsLookupFn = appclient.LookupUsing(flags.resolver)
-		//}
-		//resolver, err := appclient.NewResolver(appclient.ResolverConfig{
-		//	Targets:       targets,
-		//	ResolveDomain: flags.resolveDomain,
-		//	Lookup:        dnsLookupFn,
-		//	Set:           multiClients.Set,
-		//})
-		//if err != nil {
-		//	log.Fatalf("Failed to create resolver: %v", err)
-		//	return
-		//}
-		//defer resolver.Stop()
-
 		clients = multiClients
 	}
 

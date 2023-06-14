@@ -1,7 +1,7 @@
 //go:build dummy
 // +build dummy
 
-package appclient
+package router
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"time"
 
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
-	"github.com/sirupsen/logrus"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/weaveworks/scope/probe/controls"
 	"github.com/weaveworks/scope/probe/host"
 )
@@ -56,10 +56,10 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 			}
 
 			for _, action := range ctl.Commands {
-				logrus.Infof("Init execute :%v", action.Id)
+				log.Info().Msgf("Init execute :%v", action.Id)
 				err := controls.ApplyControl(action)
 				if err != nil {
-					logrus.Errorf("Control %v failed: %v\n", action, err)
+					log.Error().Msgf("Control %v failed: %v\n", action, err)
 				}
 			}
 		}
@@ -79,17 +79,17 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 					req = req.ModelAgentId(*agentId)
 					ctl, _, err := ct.API().ControlsAPI.GetKubernetesClusterControlsExecute(req)
 					if err != nil {
-						logrus.Errorf("Getting controls failed: %v\n", err)
+						log.Error().Msgf("Getting controls failed: %v\n", err)
 						continue
 					}
 
 					ct.publishInterval.Store(ctl.Beatrate)
 
 					for _, action := range ctl.Commands {
-						logrus.Infof("Execute :%v", action.Id)
+						log.Info().Msgf("Execute :%v", action.Id)
 						err := controls.ApplyControl(action)
 						if err != nil {
-							logrus.Errorf("Control %v failed: %v\n", action, err)
+							log.Error().Msgf("Control %v failed: %v\n", action, err)
 						}
 					}
 				}
@@ -109,7 +109,7 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 					req = req.ModelAgentId(*agentId)
 					ctl, _, err := ct.API().ControlsAPI.GetAgentControlsExecute(req)
 					if err != nil {
-						logrus.Errorf("Getting controls failed: %v\n", err)
+						log.Error().Msgf("Getting controls failed: %v\n", err)
 						rand.Seed(time.Now().UnixNano())
 						randomDelay := rand.Intn(int(ct.PublishInterval()))
 						time.Sleep(time.Duration(randomDelay) * time.Second)
@@ -118,10 +118,10 @@ func (ct *OpenapiClient) StartControlsWatching(nodeId string, isClusterAgent boo
 					ct.publishInterval.Store(ctl.Beatrate)
 
 					for _, action := range ctl.Commands {
-						logrus.Infof("Execute :%v", action.Id)
+						log.Info().Msgf("Execute :%v", action.Id)
 						err := controls.ApplyControl(action)
 						if err != nil {
-							logrus.Errorf("Control %v failed: %v\n", action, err)
+							log.Error().Msgf("Control %v failed: %v\n", action, err)
 						}
 					}
 				}

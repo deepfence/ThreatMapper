@@ -407,7 +407,7 @@ func (d *OpenApiDocs) AddCloudNodeOperations() {
 func (d *OpenApiDocs) AddIngestersOperations() {
 	d.AddOperation("ingestAgentReport", http.MethodPost, "/deepfence/ingest/report",
 		"Ingest Topology Data", "Ingest data reported by one Agent",
-		http.StatusOK, []string{tagTopology}, bearerToken, new(report.RawReport), nil)
+		http.StatusOK, []string{tagTopology}, bearerToken, new(report.RawReport), new(controls.AgentBeat))
 
 	d.AddOperation("ingestSyncAgentReport", http.MethodPost, "/deepfence/ingest/sync-report",
 		"Ingest Topology Data", "Ingest data reported by one Agent",

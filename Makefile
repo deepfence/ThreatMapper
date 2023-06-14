@@ -39,7 +39,7 @@ agent: deepfenced
 .PHONY: deepfenced
 deepfenced:
 	(cd ./deepfence_bootstrapper && make)
-	cp ./deepfence_bootstrapper/deepfence_bootstrapper ./deepfence_agent
+	cp ./deepfence_bootstrapper/deepfence_bootstrapper ./deepfence_agent/deepfenced
 
 .PHONY: redis
 redis:

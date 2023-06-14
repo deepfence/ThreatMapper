@@ -1,4 +1,4 @@
-package host
+package router
 
 import (
 	"context"
@@ -6,11 +6,11 @@ import (
 	"os"
 
 	"github.com/Jeffail/tunny"
-	log "github.com/sirupsen/logrus"
-	pb "github.com/weaveworks/scope/proto"
+	pb "github.com/deepfence/agent-plugins-grpc/proto"
 	"google.golang.org/grpc"
 
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
+	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
 const (
@@ -52,7 +52,7 @@ func init() {
 }
 
 func StartSecretsScan(req ctl.StartSecretScanRequest) error {
-	log.Infof("Start secret scan: %v\n", req)
+	log.Info().Msgf("Start secret scan: %v\n", req)
 	var greq pb.FindRequest
 	switch req.NodeType {
 	case ctl.Container:
