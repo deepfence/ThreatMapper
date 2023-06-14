@@ -1,7 +1,8 @@
 FROM golang:1.20-bullseye
 
 RUN apt-get update
-RUN apt-get install -y bash make git gcc libc-dev lsb-release software-properties-common libz-dev apt-utils protobuf-compiler libhyperscan-dev
+RUN apt-get install -y bash make git gcc libc-dev lsb-release software-properties-common libz-dev apt-utils protobuf-compiler libhyperscan-dev  \
+    ca-certificates libpcap-dev time file shellcheck curl
 RUN apt-get update  \
     && apt-get -qq -y --no-install-recommends install build-essential automake libtool make gcc pkg-config libssl-dev git protoc-gen-go \
     libjansson-dev libmagic-dev \

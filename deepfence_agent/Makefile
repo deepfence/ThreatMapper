@@ -16,6 +16,8 @@
 # from deepfence.io.
 #
 
+.PHONY: agent
+
 GOFLAGS += --ldflags
 GOFLAGS += '-extldflags "-static"'
 
@@ -37,6 +39,16 @@ gocode:
 	$(CD) tools/apache/compliance_check/ && go build -o deepfence_compliance_check $(GOFLAGS) *.go
 
 install:
+
+agent:
+	$(CD) tools/apache/scope && \
+		env GOGC=off \
+		go build \
+		-mod vendor \
+		-ldflags "-X main.version=$(shell git rev-parse --short HEAD)  -X github.com/weaveworks/scope/probe/host.agentCommitID=$(shell git rev-parse --short HEAD) -X github.com/weaveworks/scope/probe/host.agentBuildTime=$(shell date +"%s%d%m%y") -s -w" \
+		-tags 'netgo osusergo unsafe' \
+		-o prog/deepfence_exe \
+		./prog
 
 clean:
 	$(RM) tools/apache/deepfence/df-utils/getCloudInstanceId

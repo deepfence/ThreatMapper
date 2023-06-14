@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo "Building Deepfence Go binaries"
-make all
+echo "Building Deepfence Agent"
+make agent
 build_result=$?
 if [ $build_result -ne 0 ]
 then
