@@ -138,7 +138,7 @@ func CleanUpDB(msg *message.Message) error {
 
 	if _, err = session.Run(`
 		MATCH (n:ImageStub)
-		AND n.updated_at < TIMESTAMP()-$time_ms
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
 		OR NOT exists((n)<-[:IS]-(:ContainerImage))
 		WITH n LIMIT 10000
 		DETACH DELETE n`,
