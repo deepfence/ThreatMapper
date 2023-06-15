@@ -53,5 +53,6 @@ agent:
 
 clean:
 	$(RM) tools/apache/deepfence/df-utils/getCloudInstanceId
-	cd tools/apache/scope && make realclean
+	$(RM) tools/apache/compliance_check/deepfence_compliance_check
+	$(RM) tools/apache/scope/docker/deepfence_exe
 	(cd plugins && make clean)
