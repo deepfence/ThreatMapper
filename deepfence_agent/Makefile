@@ -41,7 +41,7 @@ gocode:
 install:
 
 agent:
-	$(CD) tools/apache/scope && \
+	($(CD) tools/apache/scope && \
 		go mod tidy -v && \
 		go mod vendor && \
 		env GOGC=off \
@@ -49,7 +49,7 @@ agent:
 		-ldflags "-X main.version=$(shell git rev-parse --short HEAD)  -X github.com/weaveworks/scope/probe/host.agentCommitID=$(shell git rev-parse --short HEAD) -X github.com/weaveworks/scope/probe/host.agentBuildTime=$(shell date +"%s%d%m%y") -s -w" \
 		-tags 'netgo osusergo unsafe' \
 		-o docker/deepfence_exe \
-		./prog
+		./prog)
 
 clean:
 	$(RM) tools/apache/deepfence/df-utils/getCloudInstanceId
