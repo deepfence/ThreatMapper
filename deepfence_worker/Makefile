@@ -5,7 +5,7 @@ vendor:
 	go mod vendor
 
 deepfence_worker: ./*.go ./**/*.go
-	go build
+	go build -buildvcs=false
 
 clean:
 	rm deepfence_worker

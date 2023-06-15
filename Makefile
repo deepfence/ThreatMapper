@@ -116,17 +116,11 @@ openapi: server
 	--git-user-id deepfence
 
 	rm openapi.yaml
-	cd $(PWD)/golang_deepfence_sdk/client && rm -rf ./test && sed -i 's/go 1.13/go 1.19/g' go.mod && go mod tidy -v && cd -
+	cd $(PWD)/golang_deepfence_sdk/client && rm -rf ./test && sed -i 's/go 1.18/go 1.20/g' go.mod && go mod tidy -v && cd -
 
 .PHONY: cli
 cli:
 	(cd $(DEEPFENCE_CTL) && make clean && make all)
-
-.PHONY: discovery
-discovery:
-	cd $(DEEPFENCE_AGENT_DIR)/tools/apache/scope &&\
-	make realclean && go mod vendor && make scope.tar
-	docker tag weaveworks/scope $(IMAGE_REPOSITORY)/deepfence_discovery_ce:$(DF_IMG_TAG)
 
 .PHONY: publish
 publish:
@@ -139,7 +133,7 @@ publish:
 	docker push $(IMAGE_REPOSITORY)/deepfence_worker_ce:$(DF_IMG_TAG)
 	docker push $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG)
 	docker push $(IMAGE_REPOSITORY)/deepfence_agent_ce:$(DF_IMG_TAG)
-	docker push $(IMAGE_REPOSITORY)/deepfence_discovery_ce:$(DF_IMG_TAG)
+	docker push $(IMAGE_REPOSITORY)/deepfence_cluster_agent_ce:$(DF_IMG_TAG)
 	docker push $(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG)
 	docker push $(IMAGE_REPOSITORY)/deepfence_malware_scanner_ce:$(DF_IMG_TAG)
 	docker push $(IMAGE_REPOSITORY)/deepfence_secret_scanner_ce:$(DF_IMG_TAG)

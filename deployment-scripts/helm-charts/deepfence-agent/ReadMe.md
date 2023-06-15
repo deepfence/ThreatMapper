@@ -45,7 +45,7 @@ image:
   name: deepfenceio/deepfence_agent_ce
   tag: 2.0.0
   # cluster agent runs as a single pod
-  clusterAgentImageName: deepfenceio/deepfence_discovery_ce
+  clusterAgentImageName: deepfenceio/deepfence_cluster_agent_ce
   clusterAgentImageTag: 2.0.0
   pullPolicy: Always
   pullSecretName: deepfence-docker-secret

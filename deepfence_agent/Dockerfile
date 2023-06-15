@@ -9,7 +9,7 @@ MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
 ENV CHECKPOINT_DISABLE=true \
-    DOCKERVERSION=20.10.8 \
+    DOCKERVERSION=24.0.2 \
     DF_TLS_ON="1" \
     MGMT_CONSOLE_PORT=443 \
     DF_KUBERNETES_ON="N" \
@@ -22,7 +22,7 @@ ENV CHECKPOINT_DISABLE=true \
 RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && mkdir -p /usr/share/man/man1 /usr/share/man/man2 /usr/share/man/man3 /usr/share/man/man4 /usr/share/man/man5 /usr/share/man/man6 /usr/share/man/man7 /usr/share/man/man8 \
     && echo "Installing some basic stuff" \
-    && apt-get update && apt-get install -y --no-install-recommends gettext ca-certificates supervisor logrotate util-linux dnsutils net-tools cgroup-tools libcgroup1 libcap2 libaudit1 conntrack runit auditd apparmor gzip lsof file curl zip at gnupg  unzip procps cron sudo bzip2 libssl1.1 libevent-2.1-7 libevent-openssl-2.1-7 libevent-pthreads-2.1-7 libnet1 gnupg2 libfile-mimeinfo-perl libjansson4 libmagic1 wget bash python3-pip\
+    && apt-get update && apt-get install -y --no-install-recommends libpcap0.8 gettext ca-certificates supervisor logrotate util-linux dnsutils net-tools cgroup-tools libcgroup1 libcap2 libaudit1 conntrack runit auditd apparmor gzip lsof file curl zip at gnupg  unzip procps cron sudo bzip2 libssl1.1 libevent-2.1-7 libevent-openssl-2.1-7 libevent-pthreads-2.1-7 libnet1 gnupg2 libfile-mimeinfo-perl libjansson4 libmagic1 wget bash python3-pip\
     # && echo 'deb https://mirrorcache-us.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list \
     # && curl -L https://mirrorcache-us.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/Release.key | sudo apt-key add - \
     # && apt-get update --allow-insecure-repositories \
@@ -34,7 +34,8 @@ RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && mkdir -p /etc/license/ /usr/local/bin /usr/local/lib \
         /deepfenced /var/tmp/layers /usr/local/lua-waf /var/log/nginx/ \
     && chown root:root /deepfenced && chmod 0744 /deepfenced \
-    && mkdir /usr/local/bin/compliance_check && mkdir /usr/local/discovery
+    && mkdir /usr/local/bin/compliance_check && mkdir /usr/local/discovery \
+    && apt update --allow-insecure-repositories && DEBIAN_FRONTEND=noninteractive apt install libhyperscan5
 
 # Installing FluentBit
 RUN wget -qO - https://packages.fluentbit.io/fluentbit.key | apt-key add - \
@@ -49,7 +50,7 @@ COPY tools/apache/fluentbit/out_deepfence/out_deepfence.so /opt/td-agent-bit/bin
 COPY tools/apache/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /usr/local/bin/getCloudInstanceId
 COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
 COPY etc/certs/* /etc/filebeat/
-COPY start_serverless_services.sh /usr/local/bin/start_services
+COPY start_agent.sh /usr/local/bin/start_agent
 COPY tools/apache/scope/docker/deepfence_exe /usr/local/discovery/deepfence-discovery
 COPY tools/apache/compliance_check /usr/local/bin/compliance_check
 COPY plugins/compliance/scripts /usr/local/bin/compliance_check/scripts
@@ -73,20 +74,19 @@ RUN apt-get update --allow-insecure-repositories \
     && chmod +x /home/deepfence/*.sh \
     && chmod 600 /etc/td-agent-bit/* \
     && cd /tmp \
-    && chmod +x /usr/local/bin/start_services \
+    && chmod +x /usr/local/bin/start_agent \
     && apt-get clean && apt-get -y autoremove && rm -rf /var/lib/apt/lists/* \
-    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.9.0/vessel_v0.9.0_linux_amd64.tar.gz \
-    && tar -xzf vessel_v0.9.0_linux_amd64.tar.gz \
+    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.11.1/vessel_v0.11.1_linux_amd64.tar.gz \
+    && tar -xzf vessel_v0.11.1_linux_amd64.tar.gz \
     && mv vessel /usr/local/bin/ \
-    && rm -rf vessel_v0.9.0_linux_amd64.tar.gz \
-    && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v1.1.0/nerdctl-1.1.0-linux-amd64.tar.gz \
-    && tar Cxzvvf /usr/local/bin nerdctl-1.1.0-linux-amd64.tar.gz \
-    && rm nerdctl-1.1.0-linux-amd64.tar.gz \
-    && VERSION="v1.26.0" \
+    && rm -rf vessel_v0.11.1_linux_amd64.tar.gz \
+    && nerdctl_version=1.4.0 \
+    && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v${nerdctl_version}/nerdctl-${nerdctl_version}-linux-amd64.tar.gz \
+    && tar Cxzvvf /usr/local/bin nerdctl-${nerdctl_version}-linux-amd64.tar.gz \
+    && rm nerdctl-${nerdctl_version}-linux-amd64.tar.gz \
+    && VERSION="v1.27.0" \
     && curl -L https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-${VERSION}-linux-amd64.tar.gz --output crictl-${VERSION}-linux-amd64.tar.gz \
     && tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin \
     && rm -f crictl-$VERSION-linux-amd64.tar.gz
 
-RUN apt update --allow-insecure-repositories && DEBIAN_FRONTEND=noninteractive apt install libhyperscan5
-
-ENTRYPOINT ["/usr/local/bin/start_services"]
+ENTRYPOINT ["/usr/local/bin/start_agent"]

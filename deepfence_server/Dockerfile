@@ -1,4 +1,4 @@
-FROM golang:1.19-alpine3.16 AS build
+FROM golang:1.20-alpine3.18 AS build
 
 
 RUN apk add --no-cache git build-base libpcap-dev libcap-dev
@@ -12,7 +12,7 @@ WORKDIR /go/deepfence_server/
 # "make vendor" is run before separately to avoid docker cache invalidation
 RUN make deepfence_server
 
-FROM alpine:3.16
+FROM alpine:3.18
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
 
@@ -24,8 +24,7 @@ ADD deepfence_server/cloud_controls /cloud_controls
 ADD golang_deepfence_sdk/utils/postgresql /usr/local/postgresql-migrate
 COPY deepfence_server/entrypoint.sh /entrypoint.sh
 
-RUN apk add --no-cache --update bash curl libpcap tar kafkacat && \
-    apk add --no-cache postgresql-client --repository=https://dl-cdn.alpinelinux.org/alpine/v3.14/main
+RUN apk add --no-cache --update bash curl libpcap tar kafkacat postgresql15-client
 
 RUN chmod +x /entrypoint.sh
 

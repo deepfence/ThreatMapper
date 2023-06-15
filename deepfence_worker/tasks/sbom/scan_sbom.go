@@ -270,13 +270,17 @@ func generateRuntimeSBOM(path string, vulnerabilities []ps.VulnerabilityScanRepo
 		return nil, err
 	}
 
-	for item := range sbomIn.Artifacts.PackageCatalog.Enumerate() {
+	for item := range sbomIn.Artifacts.Packages.Enumerate() {
 		cveInfo := vMap[item.Name+":"+item.Version]
+		licenses := []string{}
+		for _, l := range item.Licenses.ToSlice() {
+			licenses = append(licenses, l.Value)
+		}
 		runSBOM = append(runSBOM, model.SbomResponse{
 			PackageName: item.Name,
 			Version:     item.Version,
 			Locations:   item.Locations.CoordinateSet().Paths(),
-			Licenses:    item.Licenses,
+			Licenses:    licenses,
 			CveID:       cveInfo.CveID,
 			Severity:    cveInfo.Severity,
 		})
