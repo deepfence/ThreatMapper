@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
 import { useEffect, useState } from 'react';
-import { Combobox, ComboboxOption } from 'ui-components';
+import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
 import { ScanTypeEnum } from '@/types/common';
@@ -69,6 +69,9 @@ export const SearchableImageList = ({
         value={selectedImages.length}
       />
       <Combobox
+        startIcon={
+          isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
+        }
         name="imageFilter"
         getDisplayValue={() => 'Images'}
         multiple

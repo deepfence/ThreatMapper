@@ -1,7 +1,6 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
 
 import { getSearchApiClient } from '@/api/api';
-import { ScanTypeEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 
 export const searchQueries = createQueryKeys('search', {
@@ -22,25 +21,12 @@ export const searchQueries = createQueryKeys('search', {
           nodeName: string;
         }[];
       }> => {
-        const { scanType, searchText, size, active } = filters;
+        const { searchText, size, active } = filters;
         const matchFilter = { filter_in: {} };
         if (searchText?.length) {
           matchFilter.filter_in = {
             node_name: [searchText],
           };
-        }
-        let filterValue = '';
-        if (scanType === ScanTypeEnum.SecretScan) {
-          filterValue = 'secrets_count';
-        } else if (scanType === ScanTypeEnum.VulnerabilityScan) {
-          filterValue = 'vulnerabilities_count';
-        } else if (scanType === ScanTypeEnum.MalwareScan) {
-          filterValue = 'malwares_count';
-        } else if (
-          scanType === ScanTypeEnum.ComplianceScan ||
-          scanType === ScanTypeEnum.CloudComplianceScan
-        ) {
-          filterValue = 'compliances_count';
         }
         const searchHostsApi = apiWrapper({
           fn: getSearchApiClient().searchHosts,
@@ -58,7 +44,7 @@ export const searchQueries = createQueryKeys('search', {
                 order_filter: {
                   order_fields: [
                     {
-                      field_name: filterValue,
+                      field_name: 'updated_at',
                       descending: true,
                     },
                   ],
@@ -114,26 +100,14 @@ export const searchQueries = createQueryKeys('search', {
           hostName: string;
         }[];
       }> => {
-        const { scanType, searchText, size, active } = filters;
+        const { searchText, size, active } = filters;
         const matchFilter = { filter_in: {} };
         if (searchText?.length) {
           matchFilter.filter_in = {
             node_name: [searchText],
           };
         }
-        let filterValue = '';
-        if (scanType === ScanTypeEnum.SecretScan) {
-          filterValue = 'secrets_count';
-        } else if (scanType === ScanTypeEnum.VulnerabilityScan) {
-          filterValue = 'vulnerabilities_count';
-        } else if (scanType === ScanTypeEnum.MalwareScan) {
-          filterValue = 'malwares_count';
-        } else if (
-          scanType === ScanTypeEnum.ComplianceScan ||
-          scanType === ScanTypeEnum.CloudComplianceScan
-        ) {
-          filterValue = 'compliances_count';
-        }
+
         const searchContainersApi = apiWrapper({
           fn: getSearchApiClient().searchContainers,
         });
@@ -150,7 +124,7 @@ export const searchQueries = createQueryKeys('search', {
                 order_filter: {
                   order_fields: [
                     {
-                      field_name: filterValue,
+                      field_name: 'updated_at',
                       descending: true,
                     },
                   ],
@@ -206,26 +180,14 @@ export const searchQueries = createQueryKeys('search', {
           imageName: string;
         }[];
       }> => {
-        const { scanType, searchText, size, active } = filters;
+        const { searchText, size, active } = filters;
         const matchFilter = { filter_in: {} };
         if (searchText?.length) {
           matchFilter.filter_in = {
             node_name: [searchText],
           };
         }
-        let filterValue = '';
-        if (scanType === ScanTypeEnum.SecretScan) {
-          filterValue = 'secrets_count';
-        } else if (scanType === ScanTypeEnum.VulnerabilityScan) {
-          filterValue = 'vulnerabilities_count';
-        } else if (scanType === ScanTypeEnum.MalwareScan) {
-          filterValue = 'malwares_count';
-        } else if (
-          scanType === ScanTypeEnum.ComplianceScan ||
-          scanType === ScanTypeEnum.CloudComplianceScan
-        ) {
-          filterValue = 'compliances_count';
-        }
+
         const searchContainerImagesApi = apiWrapper({
           fn: getSearchApiClient().searchContainerImages,
         });
@@ -242,7 +204,7 @@ export const searchQueries = createQueryKeys('search', {
                 order_filter: {
                   order_fields: [
                     {
-                      field_name: filterValue,
+                      field_name: 'updated_at',
                       descending: true,
                     },
                   ],
