@@ -19,6 +19,7 @@ module "cloud-scanner_example_single-project" {
   image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:1.4.3"
   project_id          = "<PROJECT_ID>; ex. dev1-123456"
   region              = "<REGION_ID>; ex. asia-east1"
+  name                = "deepfence-cloud-scanner"
 }
 ```
 

@@ -57,11 +57,9 @@ module "deepfence-cloud-scanner_example_single-account" {
   mgmt-console-port             = "443"
   deepfence-key                 = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
   name                          = "deepfence-cloud-scanner"
-}
-
-variable "image" {
-  type        = string
-  default     = "quay.io/deepfenceio/cloud-scanner:1.5.0"
+  image                         = "quay.io/deepfenceio/cloud-scanner:1.5.0"
+  region                        = "<AWS-REGION>; eg. us-east-1"
+  ecs_vpc_region_azs            = ["us-east-1a"]
 }
 ```
 
