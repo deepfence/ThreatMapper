@@ -9,6 +9,7 @@ import { ScanTypeEnum } from '@/types/common';
 export type SearchableHostListProps = {
   scanType: ScanTypeEnum | 'none';
   onChange?: (value: string[]) => void;
+  onClearAll?: () => void;
   defaultSelectedHosts?: string[];
   valueKey?: 'nodeId' | 'hostName' | 'nodeName';
   active?: boolean;
@@ -18,6 +19,7 @@ const PAGE_SIZE = 15;
 export const SearchableHostList = ({
   scanType,
   onChange,
+  onClearAll,
   defaultSelectedHosts,
   valueKey = 'nodeId',
   active,
@@ -66,21 +68,17 @@ export const SearchableHostList = ({
         value={selectedHosts.length}
       />
       <Combobox
-        multiple
-        sizing="sm"
-        label="Select host"
-        placeholder="Select host"
         name="hostFilter"
+        getDisplayValue={() => 'Hosts'}
+        multiple
         value={selectedHosts}
-        onChange={(value) => {
-          setSelectedHosts(value);
-          onChange?.(value);
+        onChange={(values) => {
+          setSelectedHosts(values);
+          onChange?.(values);
         }}
-        getDisplayValue={() => {
-          return searchText;
-        }}
-        loading={isFetching}
         onQueryChange={searchHost}
+        clearAllElement="Clear"
+        onClearAll={onClearAll}
         onEndReached={onEndReached}
       >
         {data?.pages
