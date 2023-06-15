@@ -64,7 +64,7 @@ COPY plugins/bin /home/deepfence/bin
 COPY plugins/yara-rules /home/deepfence/bin/yara-hunter/yara-rules
 
 COPY --from=build /usr/local/bin/syft /usr/local/bin/syft
-COPY --from=malware_build /usr/local/yara/lib /usr/local/lib
+COPY --from=malware_build /usr/local/yara/lib /usr/lib
 
 RUN apt-get update --allow-insecure-repositories \
     && apt-get -qq -y --no-install-recommends install libjansson4 libssl1.1 libmagic1 bash curl python3-pip \
