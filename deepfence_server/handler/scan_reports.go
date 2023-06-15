@@ -560,22 +560,44 @@ func (h *Handler) IngestSbomHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file := path.Join("sbom", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
-	info, err := mc.UploadFile(r.Context(), file, b64,
+	sbomFile := path.Join("sbom", utils.ScanIdReplacer.Replace(params.ScanId)+".json.gz")
+	info, err := mc.UploadFile(r.Context(), sbomFile, b64,
 		minio.PutObjectOptions{ContentType: "application/gzip"})
-	// TODO: remove this error check, it should not happen
-	// happens only when scan is retried and sbom is re-uploaded
-	if err != nil && strings.Contains(err.Error(), "Already exists here") {
-		log.Warn().Msg(err.Error())
-		httpext.JSON(w, http.StatusOK, info)
-		return
-	} else if err != nil {
-		log.Error().Msg(err.Error())
-		respondError(err, w)
-		return
+
+	if err != nil {
+		logError := true
+		if strings.Contains(err.Error(), "Already exists here") {
+			/*If the file already exists, we will delete the old file and upload the new one
+			  File can exists in 2 conditions:
+			  - When the earlier scan was stuck during the scan phase
+			  - When the service was restarted
+			  - Bug/Race conditon in the worker service
+			*/
+			log.Warn().Msg(err.Error() + ", Will try to overwrite the file: " + sbomFile)
+			err = mc.DeleteFile(r.Context(), sbomFile, true, minio.RemoveObjectOptions{ForceDelete: true})
+			if err == nil {
+				info, err = mc.UploadFile(r.Context(), sbomFile, b64,
+					minio.PutObjectOptions{ContentType: "application/gzip"})
+
+				if err == nil {
+					log.Info().Msgf("Successfully overwritten the file: %s", sbomFile)
+					logError = false
+				} else {
+					log.Error().Msgf("Failed to upload the file, error is: %v", err)
+				}
+			} else {
+				log.Error().Msgf("Failed to delete the old file, error is: %v", err)
+			}
+		}
+
+		if logError == true {
+			log.Error().Msg(err.Error())
+			respondError(err, w)
+			return
+		}
 	}
 
-	params.SBOMFilePath = file
+	params.SBOMFilePath = sbomFile
 
 	payload, err := json.Marshal(params.SbomParameters)
 	if err != nil {
