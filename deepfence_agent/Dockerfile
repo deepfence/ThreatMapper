@@ -76,10 +76,10 @@ RUN apt-get update --allow-insecure-repositories \
     && cd /tmp \
     && chmod +x /usr/local/bin/start_agent \
     && apt-get clean && apt-get -y autoremove && rm -rf /var/lib/apt/lists/* \
-    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.11.0/vessel_v0.11.0_linux_amd64.tar.gz \
-    && tar -xzf vessel_v0.11.0_linux_amd64.tar.gz \
+    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.11.1/vessel_v0.11.1_linux_amd64.tar.gz \
+    && tar -xzf vessel_v0.11.1_linux_amd64.tar.gz \
     && mv vessel /usr/local/bin/ \
-    && rm -rf vessel_v0.11.0_linux_amd64.tar.gz \
+    && rm -rf vessel_v0.11.1_linux_amd64.tar.gz \
     && nerdctl_version=1.4.0 \
     && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v${nerdctl_version}/nerdctl-${nerdctl_version}-linux-amd64.tar.gz \
     && tar Cxzvvf /usr/local/bin nerdctl-${nerdctl_version}-linux-amd64.tar.gz \
