@@ -16,6 +16,7 @@ Copy and paste the following into a new file cloud-scanner.tf. Edit the fields: 
 module "cloud-scanner_example_single-project" {
   source              = "deepfence/cloud-scanner/gcp//examples/single-project"
   version             = "0.3.0"
+  name                = "deepfence-cloud-scanner"
   mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
   mgmt-console-port   = "443"
   deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
