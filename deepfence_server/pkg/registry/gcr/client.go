@@ -177,9 +177,9 @@ func getImageWithTags(url, namespace, userName, password, repoName string, repoT
 			Tag:           tag,
 			Size:          fmt.Sprint(details.ImageSizeBytes),
 			Metadata: model.Metadata{
-				"timeCreatedMs":  details.TimeCreatedMs,
-				"digest":         *digest,
-				"timeUploadedMs": details.TimeUploadedMs,
+				"timeCreatedMs": details.TimeCreatedMs,
+				"digest":        *digest,
+				"last_updated":  details.TimeUploadedMs,
 			},
 		}
 		imageAndTag = append(imageAndTag, tt)
