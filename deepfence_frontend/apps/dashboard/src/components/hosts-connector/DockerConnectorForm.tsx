@@ -38,7 +38,7 @@ deepfenceio/deepfence_agent_ce:2.0.0`;
         <div className={`${Typography.size.sm} dark:text-gray-200`}>
           Connect to Docker Container. Find out more information by{' '}
           <a
-            href={`https://community.deepfence.io/threatmapper/doc/v2.0/sensors/docker`}
+            href={`https://community.deepfence.io/threatmapper/docs/v2.0/sensors/docker`}
             target="_blank"
             rel="noreferrer"
             className="text-blue-600 dark:text-blue-500 mt-2"

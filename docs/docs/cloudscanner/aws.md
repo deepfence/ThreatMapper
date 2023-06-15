@@ -70,6 +70,8 @@ module "deepfence-cloud-scanner_example_single-account" {
   deepfence-key                 = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
   name                          = "deepfence-cloud-scanner"
   image                         = "quay.io/deepfenceio/cloud-scanner:2.0.0"
+  region                        = "<AWS-REGION>; eg. us-east-1"
+  ecs_vpc_region_azs            = ["us-east-1a"]
 }
 
 ```

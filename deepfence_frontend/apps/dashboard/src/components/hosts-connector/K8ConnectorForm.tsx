@@ -222,7 +222,7 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
           <div className={`${Typography.size.sm} dark:text-gray-200`}>
             Connect via Kubernetes Scanner. Find out more information by{' '}
             <a
-              href={`https://community.deepfence.io/threatmapper/doc/v2.0/sensors/kubernetes`}
+              href={`https://community.deepfence.io/threatmapper/docs/v2.0/sensors/kubernetes`}
               target="_blank"
               rel="noreferrer"
               className="text-blue-600 dark:text-blue-500 mt-2"
