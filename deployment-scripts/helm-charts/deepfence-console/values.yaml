@@ -463,7 +463,7 @@ console_agents:
     affinity: {}
   cluster_agent:
     image:
-      repository: deepfenceio/deepfence_discovery_ce
+      repository: deepfenceio/deepfence_cluster_agent_ce
       pullPolicy: Always
       # Overrides the image tag whose default is .global.imageTag
       # tag: 2.0.0

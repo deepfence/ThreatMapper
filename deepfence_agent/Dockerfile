@@ -34,7 +34,8 @@ RUN export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
     && mkdir -p /etc/license/ /usr/local/bin /usr/local/lib \
         /deepfenced /var/tmp/layers /usr/local/lua-waf /var/log/nginx/ \
     && chown root:root /deepfenced && chmod 0744 /deepfenced \
-    && mkdir /usr/local/bin/compliance_check && mkdir /usr/local/discovery
+    && mkdir /usr/local/bin/compliance_check && mkdir /usr/local/discovery \
+    && apt update --allow-insecure-repositories && DEBIAN_FRONTEND=noninteractive apt install libhyperscan5
 
 # Installing FluentBit
 RUN wget -qO - https://packages.fluentbit.io/fluentbit.key | apt-key add - \
@@ -49,7 +50,7 @@ COPY tools/apache/fluentbit/out_deepfence/out_deepfence.so /opt/td-agent-bit/bin
 COPY tools/apache/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /usr/local/bin/getCloudInstanceId
 COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
 COPY etc/certs/* /etc/filebeat/
-COPY start_serverless_services.sh /usr/local/bin/start_services
+COPY start_agent.sh /usr/local/bin/start_agent
 COPY tools/apache/scope/docker/deepfence_exe /usr/local/discovery/deepfence-discovery
 COPY tools/apache/compliance_check /usr/local/bin/compliance_check
 COPY plugins/compliance/scripts /usr/local/bin/compliance_check/scripts
@@ -73,7 +74,7 @@ RUN apt-get update --allow-insecure-repositories \
     && chmod +x /home/deepfence/*.sh \
     && chmod 600 /etc/td-agent-bit/* \
     && cd /tmp \
-    && chmod +x /usr/local/bin/start_services \
+    && chmod +x /usr/local/bin/start_agent \
     && apt-get clean && apt-get -y autoremove && rm -rf /var/lib/apt/lists/* \
     && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.11.0/vessel_v0.11.0_linux_amd64.tar.gz \
     && tar -xzf vessel_v0.11.0_linux_amd64.tar.gz \
@@ -88,6 +89,4 @@ RUN apt-get update --allow-insecure-repositories \
     && tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin \
     && rm -f crictl-$VERSION-linux-amd64.tar.gz
 
-RUN apt update --allow-insecure-repositories && DEBIAN_FRONTEND=noninteractive apt install libhyperscan5
-
-ENTRYPOINT ["/usr/local/bin/start_services"]
+ENTRYPOINT ["/usr/local/bin/start_agent"]
