@@ -41,6 +41,7 @@ export const SearchableImageList = ({
       searchText,
       active,
     }),
+    keepPreviousData: true,
     getNextPageParam: (lastPage, allPages) => {
       return allPages.length * PAGE_SIZE;
     },
