@@ -1,10 +1,10 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useIsFetching } from '@tanstack/react-query';
 import { capitalize } from 'lodash-es';
-import { Suspense, useMemo, useRef, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiExternalLink } from 'react-icons/hi';
-import { LoaderFunctionArgs, Outlet, useSearchParams } from 'react-router-dom';
+import { Outlet, useSearchParams } from 'react-router-dom';
 import {
   Breadcrumb,
   BreadcrumbLink,
@@ -18,8 +18,7 @@ import {
   TableSkeleton,
 } from 'ui-components';
 
-import { getSearchApiClient } from '@/api/api';
-import { ModelVulnerability, SearchSearchNodeReq } from '@/api/generated';
+import { ModelVulnerability } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { FilterIcon } from '@/components/icons/common/Filter';
@@ -28,127 +27,9 @@ import { CveCVSSScore, SeverityBadge } from '@/components/SeverityBadge';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
-import { apiWrapper } from '@/utils/api';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
-import {
-  getOrderFromSearchParams,
-  getPageFromSearchParams,
-  useSortingState,
-} from '@/utils/table';
+import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
-type LoaderDataType = {
-  error?: string;
-  message?: string;
-  data: Awaited<ReturnType<typeof getVulnerability>>;
-};
 const PAGE_SIZE = 15;
-
-const getSeveritySearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('severity');
-};
-const getLiveConnectionSearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('liveConnection');
-};
-async function getVulnerability(searchParams: URLSearchParams): Promise<{
-  vulnerabilities: Array<ModelVulnerability>;
-  currentPage: number;
-  totalRows: number;
-  message?: string;
-}> {
-  const results: {
-    vulnerabilities: Array<ModelVulnerability>;
-    currentPage: number;
-    totalRows: number;
-    message?: string;
-  } = {
-    currentPage: 1,
-    totalRows: 0,
-    vulnerabilities: [],
-  };
-
-  const page = getPageFromSearchParams(searchParams);
-  const order = getOrderFromSearchParams(searchParams);
-  const severity = getSeveritySearch(searchParams);
-  const liveConnection = getLiveConnectionSearch(searchParams);
-  const searchVulnerabilitiesRequestParams: SearchSearchNodeReq = {
-    node_filter: {
-      filters: {
-        contains_filter: { filter_in: {} },
-        order_filter: { order_fields: [] },
-        match_filter: { filter_in: {} },
-        compare_filter: null,
-      },
-      in_field_filter: null,
-      window: {
-        offset: 0,
-        size: 0,
-      },
-    },
-    window: { offset: page * PAGE_SIZE, size: PAGE_SIZE },
-  };
-
-  if (order) {
-    searchVulnerabilitiesRequestParams.node_filter.filters.order_filter.order_fields?.push(
-      {
-        field_name: order.sortBy,
-        descending: order.descending,
-      },
-    );
-  }
-
-  if (severity.length) {
-    searchVulnerabilitiesRequestParams.node_filter.filters.contains_filter.filter_in![
-      'cve_severity'
-    ] = severity;
-  }
-  if (liveConnection.length) {
-    if (liveConnection.length === 1) {
-      searchVulnerabilitiesRequestParams.node_filter.filters.contains_filter.filter_in![
-        'has_live_connection'
-      ] = [liveConnection[0] === 'active'];
-    }
-  }
-  const searchVulnerabilitiesApi = apiWrapper({
-    fn: getSearchApiClient().searchVulnerabilities,
-  });
-  const searchVulnerabilitiesResponse = await searchVulnerabilitiesApi({
-    searchSearchNodeReq: searchVulnerabilitiesRequestParams,
-  });
-  if (!searchVulnerabilitiesResponse.ok) {
-    throw searchVulnerabilitiesResponse.error;
-  }
-
-  const searchVulnerabilitiesCountApi = apiWrapper({
-    fn: getSearchApiClient().searchVulnerabilitiesCount,
-  });
-  const searchVulnerabilitiesCountResponse = await searchVulnerabilitiesCountApi({
-    searchSearchNodeReq: {
-      ...searchVulnerabilitiesRequestParams,
-      window: {
-        ...searchVulnerabilitiesRequestParams.window,
-        size: 10 * PAGE_SIZE,
-      },
-    },
-  });
-  if (!searchVulnerabilitiesCountResponse.ok) {
-    throw searchVulnerabilitiesCountResponse.error;
-  }
-
-  results.vulnerabilities = searchVulnerabilitiesResponse.value;
-  results.currentPage = page;
-  results.totalRows = page * PAGE_SIZE + searchVulnerabilitiesCountResponse.value.count;
-
-  return results;
-}
-const loader = async ({
-  request,
-}: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
-  const searchParams = new URL(request.url).searchParams;
-
-  return typedDefer({
-    data: getVulnerability(searchParams),
-  });
-};
 
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   liveConnection: 'Live Connection',
@@ -295,29 +176,10 @@ const Filters = () => {
     </div>
   );
 };
-
-const UniqueVulnerabilities = () => {
-  const isFetching = useIsFetching({
-    queryKey: queries.vulnerability.uniqueVulnerabilities._def,
-  });
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+const UniqueTable = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { data } = useSuspenseQuery({
-    ...queries.vulnerability.uniqueVulnerabilities({
-      pageSize: PAGE_SIZE,
-      liveConnection: searchParams.getAll('liveConnection'),
-      page: parseInt(searchParams.get('page') ?? '0', 10),
-      order: getOrderFromSearchParams(searchParams),
-      severity: searchParams.getAll('severity'),
-    }),
-    keepPreviousData: true,
-  });
-
+  const columnHelper = createColumnHelper<ModelVulnerability>();
   const [sort, setSort] = useSortingState();
-
-  const columnHelper =
-    createColumnHelper<LoaderDataType['data']['vulnerabilities'][number]>();
-
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('cve_id', {
@@ -326,7 +188,6 @@ const UniqueVulnerabilities = () => {
           <DFLink
             to={{
               pathname: `./${info.getValue()}`,
-              search: searchParams.toString(),
             }}
             className="flex items-center gap-x-2"
           >
@@ -431,16 +292,75 @@ const UniqueVulnerabilities = () => {
     return columns;
   }, [searchParams]);
 
-  const elementToFocusOnClose = useRef(null);
+  const { data } = useSuspenseQuery({
+    ...queries.vulnerability.uniqueVulnerabilities({
+      pageSize: PAGE_SIZE,
+      liveConnection: searchParams.getAll('liveConnection'),
+      page: parseInt(searchParams.get('page') ?? '0', 10),
+      order: getOrderFromSearchParams(searchParams),
+      severity: searchParams.getAll('severity'),
+    }),
+    keepPreviousData: true,
+  });
 
-  const isFilterApplied =
-    searchParams.has('severity') || searchParams.has('liveConnection');
+  return (
+    <Table
+      data={data.vulnerabilities ?? []}
+      columns={columns}
+      enablePagination
+      manualPagination
+      enableRowSelection
+      enableColumnResizing
+      approximatePagination
+      totalRows={data.totalRows}
+      pageSize={PAGE_SIZE}
+      pageIndex={data.currentPage}
+      onPaginationChange={(updaterOrValue) => {
+        let newPageIndex = 0;
+        if (typeof updaterOrValue === 'function') {
+          newPageIndex = updaterOrValue({
+            pageIndex: data.currentPage,
+            pageSize: PAGE_SIZE,
+          }).pageIndex;
+        } else {
+          newPageIndex = updaterOrValue.pageIndex;
+        }
+        setSearchParams((prev) => {
+          prev.set('page', String(newPageIndex));
+          return prev;
+        });
+      }}
+      enableSorting
+      manualSorting
+      sortingState={sort}
+      onSortingChange={(updaterOrValue) => {
+        let newSortState: SortingState = [];
+        if (typeof updaterOrValue === 'function') {
+          newSortState = updaterOrValue(sort);
+        } else {
+          newSortState = updaterOrValue;
+        }
+        setSearchParams((prev) => {
+          if (!newSortState.length) {
+            prev.delete('sortby');
+            prev.delete('desc');
+          } else {
+            prev.set('sortby', String(newSortState[0].id));
+            prev.set('desc', String(newSortState[0].desc));
+          }
+          return prev;
+        });
+        setSort(newSortState);
+      }}
+    />
+  );
+};
 
-  const onResetFilters = () => {
-    setSearchParams(() => {
-      return {};
-    });
-  };
+const UniqueVulnerabilities = () => {
+  const isFetching = useIsFetching({
+    queryKey: queries.vulnerability.uniqueVulnerabilities._def,
+  });
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
 
   return (
     <div>
@@ -460,7 +380,7 @@ const UniqueVulnerabilities = () => {
           {isFetching ? <CircleSpinner size="sm" /> : null}
         </div>
       </div>
-      <div className="mx-4">
+      <div className="mx-4 pb-4">
         <Button
           variant="flat"
           className="ml-auto py-2"
@@ -474,63 +394,13 @@ const UniqueVulnerabilities = () => {
         </Button>
         {filtersExpanded ? <Filters /> : null}
         <Suspense fallback={<TableSkeleton columns={9} rows={10} />}>
-          <Table
-            data={data.vulnerabilities ?? []}
-            columns={columns}
-            enablePagination
-            manualPagination
-            enableRowSelection
-            enableColumnResizing
-            approximatePagination
-            totalRows={data.totalRows}
-            pageSize={PAGE_SIZE}
-            pageIndex={data.currentPage}
-            onPaginationChange={(updaterOrValue) => {
-              let newPageIndex = 0;
-              if (typeof updaterOrValue === 'function') {
-                newPageIndex = updaterOrValue({
-                  pageIndex: data.currentPage,
-                  pageSize: PAGE_SIZE,
-                }).pageIndex;
-              } else {
-                newPageIndex = updaterOrValue.pageIndex;
-              }
-              setSearchParams((prev) => {
-                prev.set('page', String(newPageIndex));
-                return prev;
-              });
-            }}
-            enableSorting
-            manualSorting
-            sortingState={sort}
-            onSortingChange={(updaterOrValue) => {
-              let newSortState: SortingState = [];
-              if (typeof updaterOrValue === 'function') {
-                newSortState = updaterOrValue(sort);
-              } else {
-                newSortState = updaterOrValue;
-              }
-              setSearchParams((prev) => {
-                if (!newSortState.length) {
-                  prev.delete('sortby');
-                  prev.delete('desc');
-                } else {
-                  prev.set('sortby', String(newSortState[0].id));
-                  prev.set('desc', String(newSortState[0].desc));
-                }
-                return prev;
-              });
-              setSort(newSortState);
-            }}
-          />
+          <UniqueTable />
         </Suspense>
       </div>
-      <Outlet />
     </div>
   );
 };
 
 export const module = {
-  loader,
   element: <UniqueVulnerabilities />,
 };
