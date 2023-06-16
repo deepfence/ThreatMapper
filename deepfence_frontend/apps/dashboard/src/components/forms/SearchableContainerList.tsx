@@ -1,96 +1,61 @@
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
 import { useEffect, useState } from 'react';
-import { Combobox, ComboboxOption } from 'ui-components';
+import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
-import {
-  SearchContainersLoaderDataType,
-  useGetContainersList,
-} from '@/features/common/data-component/searchContainersApiLoader';
+import { queries } from '@/queries';
 import { ScanTypeEnum } from '@/types/common';
 
 export type Props = {
   scanType: ScanTypeEnum | 'none';
   onChange?: (value: string[]) => void;
+  onClearAll?: () => void;
   defaultSelectedContainers?: string[];
-  reset?: boolean;
+  valueKey?: 'nodeId' | 'hostName';
   active?: boolean;
 };
 const PAGE_SIZE = 15;
 export const SearchableContainerList = ({
   scanType,
   onChange,
+  onClearAll,
   defaultSelectedContainers,
-  reset,
+  valueKey = 'nodeId',
   active,
 }: Props) => {
-  const [searchState, setSearchState] = useState<{
-    searchText: string;
-    size: number;
-    containersList: SearchContainersLoaderDataType['containers'];
-    hasNext: boolean;
-  }>({
-    searchText: '',
-    size: PAGE_SIZE,
-    containersList: [],
-    hasNext: false,
-  });
+  const [searchText, setSearchText] = useState('');
+
   const [selectedContainers, setSelectedContainers] = useState<string[]>(
     defaultSelectedContainers ?? [],
   );
-
-  const { containers, hasNext } = useGetContainersList({
-    scanType,
-    searchText: searchState.searchText,
-    size: searchState.size,
-    active,
-  });
 
   useEffect(() => {
     setSelectedContainers(defaultSelectedContainers ?? []);
   }, [defaultSelectedContainers]);
 
-  useEffect(() => {
-    if (reset) {
-      setSearchState({
-        searchText: '',
-        size: PAGE_SIZE,
-        containersList: [],
-        hasNext: false,
-      });
-      setSelectedContainers([]);
-    }
-  }, [reset]);
-
-  useEffect(() => {
-    if (containers.length > 0) {
-      setSearchState((prev) => {
-        return {
-          ...prev,
-          containersList: containers,
-          hasNext,
-        };
-      });
-    }
-  }, [containers]);
+  const { data, isFetching, hasNextPage, fetchNextPage } = useInfiniteQuery({
+    ...queries.search.containers({
+      scanType,
+      size: PAGE_SIZE,
+      searchText,
+      active,
+    }),
+    keepPreviousData: true,
+    getNextPageParam: (lastPage, allPages) => {
+      return allPages.length * PAGE_SIZE;
+    },
+    getPreviousPageParam: (firstPage, allPages) => {
+      if (!allPages.length) return 0;
+      return (allPages.length - 1) * PAGE_SIZE;
+    },
+  });
 
   const searchContainer = debounce((query) => {
-    setSearchState({
-      searchText: query,
-      size: PAGE_SIZE,
-      containersList: [],
-      hasNext: false,
-    });
+    setSearchText(query);
   }, 1000);
 
   const onEndReached = () => {
-    if (containers.length > 0) {
-      setSearchState((prev) => {
-        return {
-          ...prev,
-          size: prev.size + PAGE_SIZE,
-        };
-      });
-    }
+    if (hasNextPage) fetchNextPage();
   };
 
   return (
@@ -103,29 +68,36 @@ export const SearchableContainerList = ({
         value={selectedContainers.length}
       />
       <Combobox
-        multiple
-        sizing="sm"
-        label="Select container"
-        placeholder="Select container"
+        startIcon={
+          isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
+        }
         name="containerFilter"
+        getDisplayValue={() => 'Containers'}
+        multiple
         value={selectedContainers}
-        onChange={(value) => {
-          setSelectedContainers(value);
-          onChange?.(value);
-        }}
-        getDisplayValue={() => {
-          return searchState.searchText;
+        onChange={(values) => {
+          setSelectedContainers(values);
+          onChange?.(values);
         }}
         onQueryChange={searchContainer}
+        clearAllElement="Clear"
+        onClearAll={onClearAll}
         onEndReached={onEndReached}
       >
-        {searchState.containersList.map((container, index) => {
-          return (
-            <ComboboxOption key={`${container.nodeId}-${index}`} value={container.nodeId}>
-              {container.nodeName}
-            </ComboboxOption>
-          );
-        })}
+        {data?.pages
+          .flatMap((page) => {
+            return page.containers;
+          })
+          .map((container, index) => {
+            return (
+              <ComboboxOption
+                key={`${container.nodeId}-${index}`}
+                value={container[valueKey]}
+              >
+                {container.hostName}
+              </ComboboxOption>
+            );
+          })}
       </Combobox>
     </>
   );

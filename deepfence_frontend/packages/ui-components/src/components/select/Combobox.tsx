@@ -6,6 +6,7 @@ import {
   Transition,
 } from '@headlessui/react';
 import { Slot } from '@radix-ui/react-slot';
+import { isEmpty } from 'lodash-es';
 import {
   createContext,
   ElementType,
@@ -63,6 +64,16 @@ const StartIcon = () => {
       />
     </svg>
   );
+};
+const Options = ({ children }: { children: React.ReactNode }) => {
+  if (children === null || isEmpty(children)) {
+    return (
+      <div className="py-3 px-2 w-full flex items-center justify-center text-p6 dark:text-text-text-and-icon">
+        No results found
+      </div>
+    );
+  }
+  return <>{children}</>;
 };
 type ComboboxProps<
   TValue,
@@ -129,7 +140,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
       size({
         apply({ availableHeight, elements }) {
           Object.assign(elements.floating.style, {
-            width: `max(${elements.reference.getBoundingClientRect().width}px, 154px)`,
+            maxWidth: `max(${elements.reference.getBoundingClientRect().width}px, 260px)`,
             maxHeight: `min(${availableHeight}px, 350px)`,
           });
         },
@@ -150,7 +161,9 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
   }, [intersection]);
 
   useEffect(() => {
-    if (!inputElement) onQueryChange('');
+    if (!inputElement) {
+      onQueryChange('');
+    }
   }, [inputElement]);
 
   return (
@@ -251,7 +264,9 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                       'dark:placeholder:text-df-gray-600',
                       'min-w-0',
                     )}
-                    onChange={(event) => onQueryChange(event.target.value)}
+                    onChange={(event) => {
+                      onQueryChange(event.target.value);
+                    }}
                   />
                 </div>
 
@@ -267,7 +282,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                     ),
                   )}
                 >
-                  {children}
+                  <Options>{children}</Options>
                   {loading ? (
                     <div className="pt-2 pb-1 px-3 flex items-center">
                       <CircleSpinner size="sm" />
