@@ -3,7 +3,13 @@ import { cn } from 'tailwind-preset';
 import { SeverityScoreIcon } from '@/components/icons/common/SeverityScore';
 import { getColorForCVSSScore } from '@/constants/charts';
 
-export const SeverityBadge = ({ severity }: { severity: string }) => {
+export const SeverityBadge = ({
+  severity,
+  className,
+}: {
+  severity: string;
+  className?: string;
+}) => {
   return (
     <div
       className={cn(
@@ -15,6 +21,7 @@ export const SeverityBadge = ({ severity }: { severity: string }) => {
           'dark:bg-status-warning': severity === 'medium',
           'dark:bg-chart-yellow1': severity === 'low',
         },
+        className,
       )}
     >
       {severity}
@@ -22,18 +29,26 @@ export const SeverityBadge = ({ severity }: { severity: string }) => {
   );
 };
 
-export const CveCVSSScore = ({ score }: { score?: number }) => {
+export const CveCVSSScore = ({
+  score,
+  className,
+  iconClassName,
+}: {
+  score?: number;
+  className?: string;
+  iconClassName?: string;
+}) => {
   return (
     <div
-      className="flex gap-1 items-center"
+      className={cn('flex gap-1 items-center text-p3', className)}
       style={{
         color: getColorForCVSSScore(score),
       }}
     >
-      <div className="h-[16px] w-[16px] shrink-0">
+      <div className={cn('h-[16px] w-[16px] shrink-0', iconClassName)}>
         <SeverityScoreIcon />
       </div>
-      <div className="text-p3">{score?.toFixed(1) ?? '—'}</div>
+      <div>{score?.toFixed(1) ?? '—'}</div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { ComponentPropsWithRef, forwardRef } from 'react';
 import { Link, LinkProps } from 'react-router-dom';
-import { twMerge } from 'tailwind-merge';
+import { cn } from 'tailwind-preset';
 
 const baseClassName =
   'text-blue-600 dark:text-text-link hover:underline focus:underline visited:text-purple-600 dark:visited:text-purple-500';
@@ -10,7 +10,7 @@ type AnchorProps = React.ComponentPropsWithRef<'a'> & {
 };
 const AAnchor = forwardRef<HTMLAnchorElement, AnchorProps>(
   ({ children, className, unstyled, ...props }, ref) => (
-    <a {...props} className={twMerge(unstyled ? '' : baseClassName, className)} ref={ref}>
+    <a {...props} className={cn(unstyled ? '' : baseClassName, className)} ref={ref}>
       {children}
     </a>
   ),
@@ -23,11 +23,7 @@ const ALink = forwardRef<
     unstyled?: boolean;
   }
 >(({ children, className, unstyled, ...props }, ref) => (
-  <Link
-    {...props}
-    className={twMerge(unstyled ? '' : baseClassName, className)}
-    ref={ref}
-  >
+  <Link {...props} className={cn(unstyled ? '' : baseClassName, className)} ref={ref}>
     {children}
   </Link>
 ));
