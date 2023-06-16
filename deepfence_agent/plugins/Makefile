@@ -2,7 +2,6 @@ all: localinit proto bin/SecretScanner bin/package-scanner bin/YaraHunter
 # bin/open-tracer
 
 localinit:
-	$(PWD)/bootstrap.sh
 
 bin/SecretScanner: ./SecretScanner/**/*.go
 	(cd SecretScanner && make)

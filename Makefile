@@ -8,6 +8,7 @@ SECRET_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/SecretScanner
 MALWARE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/YaraHunter/
 PACKAGE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/package-scanner
 DEEPFENCE_CTL=$(PWD)/deepfence_ctl
+DEEPFENCED=$(PWD)/deepfence_bootstrapper
 IMAGE_REPOSITORY?=deepfenceio
 DF_IMG_TAG?=latest
 IS_DEV_BUILD?=false
@@ -27,7 +28,7 @@ bootstrap:
 
 .PHONY: bootstrap-agent-plugins
 bootstrap-agent-plugins:
-	(cd $(DEEPFENCE_AGENT_DIR)/plugins && bash bootstrap.sh)
+	(cd $(DEEPFENCE_AGENT_DIR)/plugins && make localinit)
 	(cd $(SECRET_SCANNER_DIR) && bash bootstrap.sh)
 	(cd $(MALWARE_SCANNER_DIR) && bash bootstrap.sh)
 
@@ -37,9 +38,9 @@ agent: deepfenced
 	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" bash build.sh)
 
 .PHONY: deepfenced
-deepfenced:
-	(cd ./deepfence_bootstrapper && make)
-	cp ./deepfence_bootstrapper/deepfence_bootstrapper ./deepfence_agent/deepfenced
+deepfenced: bootstrap bootstrap-agent-plugins
+	(cd $(DEEPFENCED) && make)
+	cp $(DEEPFENCED)/deepfence_bootstrapper $(DEEPFENCE_AGENT_DIR)/deepfenced
 
 .PHONY: redis
 redis:

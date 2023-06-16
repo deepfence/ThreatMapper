@@ -45,7 +45,7 @@ var agentUpgradeSubCmd = &cobra.Command{
 	},
 }
 
-var agentUpgradeSubCmd = &cobra.Command{
+var agentEnableSubCmd = &cobra.Command{
 	Use:   "enable",
 	Short: "Enable agent plugin",
 	Long:  `This subcommand triggers an enable/upgrade on agent`,
@@ -66,12 +66,42 @@ var agentUpgradeSubCmd = &cobra.Command{
 		}
 
 		var err error
-		req := http.Client().ControlsAPI.UpgradeAgentVersion(context.Background())
-		req = req.ModelAgentUpgrade(deepfence_server_client.ModelAgentPluginEnable{
-			NodeId:  node_ids,
-			Version: version,
+		req := http.Client().ControlsAPI.EnableAgentPlugin(context.Background())
+		req = req.ModelAgentPluginEnable(deepfence_server_client.ModelAgentPluginEnable{
+			NodeId:     node_ids,
+			Version:    version,
+			PluginName: plugin_name,
 		})
-		_, err = http.Client().ControlsAPI.UpgradeAgentVersionExecute(req)
+		_, err = http.Client().ControlsAPI.EnableAgentPluginExecute(req)
+
+		if err != nil {
+			log.Fatal().Msgf("Fail to execute: %v", err)
+		}
+	},
+}
+
+var agentDisableSubCmd = &cobra.Command{
+	Use:   "disable",
+	Short: "Disable agent plugin",
+	Long:  `This subcommand disable a plugin on agent`,
+	Run: func(cmd *cobra.Command, args []string) {
+		node_ids, _ := cmd.Flags().GetString("node-ids")
+		if node_ids == "" {
+			log.Fatal().Msg("Please provide some ids")
+		}
+
+		plugin_name, _ := cmd.Flags().GetString("plugin")
+		if node_ids == "" {
+			log.Fatal().Msg("Please provide a plugin")
+		}
+
+		var err error
+		req := http.Client().ControlsAPI.DisableAgentPlugin(context.Background())
+		req = req.ModelAgentPluginDisable(deepfence_server_client.ModelAgentPluginDisable{
+			NodeId:     node_ids,
+			PluginName: plugin_name,
+		})
+		_, err = http.Client().ControlsAPI.DisableAgentPluginExecute(req)
 
 		if err != nil {
 			log.Fatal().Msgf("Fail to execute: %v", err)
@@ -82,7 +112,17 @@ var agentUpgradeSubCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(agentCmd)
 	agentCmd.AddCommand(agentUpgradeSubCmd)
+	agentCmd.AddCommand(agentEnableSubCmd)
+	agentCmd.AddCommand(agentDisableSubCmd)
 
 	agentUpgradeSubCmd.PersistentFlags().String("node-ids", "", "Agent IDs")
 	agentUpgradeSubCmd.PersistentFlags().String("version", "", "Agent version to upgrade to")
+
+	agentEnableSubCmd.PersistentFlags().String("node-ids", "", "Agent IDs")
+	agentEnableSubCmd.PersistentFlags().String("version", "", "Agent version to upgrade to")
+	agentEnableSubCmd.PersistentFlags().String("plugin", "", "Agent plugin to enable")
+
+	agentDisableSubCmd.PersistentFlags().String("node-ids", "", "Agent IDs")
+	agentDisableSubCmd.PersistentFlags().String("plugin", "", "Agent plugin to disable")
+
 }
