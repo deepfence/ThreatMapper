@@ -30,6 +30,7 @@ export const ModalWithTrigger = () => {
         open={open}
         onOpenChange={() => setOpen(false)}
         elementToFocusOnCloseRef={ref}
+        size="xl"
       >
         <SlidingModalCloseButton />
         <SlidingModalHeader>

@@ -6,6 +6,9 @@ import { MdCopyAll } from 'react-icons/md';
 import { useCopyToClipboard } from 'react-use';
 import { twMerge } from 'tailwind-merge';
 
+/**
+ * @deprecated
+ */
 export const CopyToClipboard = ({
   data,
   className,
@@ -72,3 +75,29 @@ export const CopyToClipboard = ({
     </button>
   );
 };
+
+export function useCopyToClipboardState() {
+  const [_, copyToClipboard] = useCopyToClipboard();
+  const [isCopied, setIsCopied] = useState(false);
+  const timeoutIdRef = useRef<string | null>();
+
+  useEffect(() => {
+    return () => {
+      if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+    };
+  }, []);
+
+  return {
+    copy: (data: string) => {
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current);
+      }
+      copyToClipboard(data);
+      setIsCopied(true);
+      timeoutIdRef.current = setTimeout(() => {
+        setIsCopied(false);
+      }, 5000) as unknown as string;
+    },
+    isCopied: isCopied,
+  };
+}

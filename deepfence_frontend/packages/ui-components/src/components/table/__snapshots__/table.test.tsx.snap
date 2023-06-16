@@ -1,35 +1,35 @@
 // Vitest Snapshot v1
 
-exports[`Component Table > should render a basic table > cells with border 0 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border py-[15px]\\">0</td>"`;
+exports[`Component Table > should render a basic table > cells with border 0 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border h-[48px]\\">0</td>"`;
 
-exports[`Component Table > should render a basic table > cells with border 1 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border py-[15px]\\">Fruit 0</td>"`;
+exports[`Component Table > should render a basic table > cells with border 1 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border h-[48px]\\">Fruit 0</td>"`;
 
-exports[`Component Table > should render a basic table > cells with border 2 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border py-[15px]\\">Description for 0</td>"`;
+exports[`Component Table > should render a basic table > cells with border 2 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border h-[48px]\\">Description for 0</td>"`;
 
-exports[`Component Table > should render a basic table > cells without border 3 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 py-[15px]\\">1</td>"`;
+exports[`Component Table > should render a basic table > cells without border 3 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 h-[48px]\\">1</td>"`;
 
-exports[`Component Table > should render a basic table > cells without border 4 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 py-[15px]\\">Fruit 1</td>"`;
+exports[`Component Table > should render a basic table > cells without border 4 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 h-[48px]\\">Fruit 1</td>"`;
 
-exports[`Component Table > should render a basic table > cells without border 5 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 py-[15px]\\">Description for 1</td>"`;
+exports[`Component Table > should render a basic table > cells without border 5 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 h-[48px]\\">Description for 1</td>"`;
 
 exports[`Component Table > should render a basic table > row with hover state on normal table 1`] = `
 <tr
   class="hover:!bg-gray-100 dark:hover:!bg-bg-breadcrumb-bar transition-colors"
 >
   <td
-    class="text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 py-[15px]"
+    class="text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 h-[48px]"
     style="width: 150px;"
   >
     1
   </td>
   <td
-    class="text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 py-[15px]"
+    class="text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 h-[48px]"
     style="width: 150px;"
   >
     Fruit 1
   </td>
   <td
-    class="text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 py-[15px]"
+    class="text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 h-[48px]"
     style="width: 150px;"
   >
     Description for 1
@@ -37,20 +37,20 @@ exports[`Component Table > should render a basic table > row with hover state on
 </tr>
 `;
 
-exports[`Component Table > should use getTrProps and getTdProps correctly > cells with custom props 0 1`] = `"<td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border py-[15px] text-red-500\\" style=\\"width: 150px;\\">0</td>"`;
+exports[`Component Table > should use getTrProps and getTdProps correctly > cells with custom props 0 1`] = `"<td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border h-[48px] text-red-500\\" style=\\"width: 150px;\\">0</td>"`;
 
-exports[`Component Table > should use getTrProps and getTdProps correctly > cells with custom props 1 1`] = `"<td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border py-[15px] text-red-500\\" style=\\"width: 150px;\\">Fruit 0</td>"`;
+exports[`Component Table > should use getTrProps and getTdProps correctly > cells with custom props 1 1`] = `"<td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border h-[48px] text-red-500\\" style=\\"width: 150px;\\">Fruit 0</td>"`;
 
-exports[`Component Table > should use getTrProps and getTdProps correctly > cells with custom props 2 1`] = `"<td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border py-[15px] text-red-500\\" style=\\"width: 150px;\\">Description for 0</td>"`;
+exports[`Component Table > should use getTrProps and getTdProps correctly > cells with custom props 2 1`] = `"<td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border h-[48px] text-red-500\\" style=\\"width: 150px;\\">Description for 0</td>"`;
 
-exports[`Component Table > should use getTrProps and getTdProps correctly > cells with custom props 3 1`] = `"<td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 py-[15px] text-red-500\\" style=\\"width: 150px;\\">1</td>"`;
+exports[`Component Table > should use getTrProps and getTdProps correctly > cells with custom props 3 1`] = `"<td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 h-[48px] text-red-500\\" style=\\"width: 150px;\\">1</td>"`;
 
-exports[`Component Table > should use getTrProps and getTdProps correctly > cells with custom props 4 1`] = `"<td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 py-[15px] text-red-500\\" style=\\"width: 150px;\\">Fruit 1</td>"`;
+exports[`Component Table > should use getTrProps and getTdProps correctly > cells with custom props 4 1`] = `"<td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 h-[48px] text-red-500\\" style=\\"width: 150px;\\">Fruit 1</td>"`;
 
-exports[`Component Table > should use getTrProps and getTdProps correctly > cells with custom props 5 1`] = `"<td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 py-[15px] text-red-500\\" style=\\"width: 150px;\\">Description for 1</td>"`;
+exports[`Component Table > should use getTrProps and getTdProps correctly > cells with custom props 5 1`] = `"<td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 h-[48px] text-red-500\\" style=\\"width: 150px;\\">Description for 1</td>"`;
 
 exports[`Component Table > should use getTrProps and getTdProps correctly > row with custom props0 1`] = `"<tr data-testid=\\"table-header-row\\"><th colspan=\\"1\\" class=\\"relative border-0 text-gray-500 dark:text-text-text-and-icon border-b-[1.5px] border-gray-200 dark:border-bg-grid-border text-t5 uppercase\\" style=\\"width: 150px;\\"><div class=\\"w-full h-full flex truncate pl-4 pr-2.5 py-4\\"><span class=\\"flex-1 truncate text-start\\">id</span></div></th><th colspan=\\"1\\" class=\\"relative border-0 text-gray-500 dark:text-text-text-and-icon border-b-[1.5px] border-gray-200 dark:border-bg-grid-border text-t5 uppercase\\" style=\\"width: 150px;\\"><div class=\\"w-full h-full flex truncate pl-4 pr-2.5 py-4\\"><span class=\\"flex-1 truncate text-start\\">name</span></div></th><th colspan=\\"1\\" class=\\"relative border-0 text-gray-500 dark:text-text-text-and-icon border-b-[1.5px] border-gray-200 dark:border-bg-grid-border text-t5 uppercase\\" style=\\"width: 150px;\\"><div class=\\"w-full h-full flex truncate pl-4 pr-2.5 py-4\\"><span class=\\"flex-1 truncate text-start\\">description</span></div></th></tr>"`;
 
-exports[`Component Table > should use getTrProps and getTdProps correctly > row with custom props1 1`] = `"<tr class=\\"hover:!bg-gray-100 dark:hover:!bg-bg-breadcrumb-bar transition-colors bg-red-500\\"><td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border py-[15px] text-red-500\\" style=\\"width: 150px;\\">0</td><td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border py-[15px] text-red-500\\" style=\\"width: 150px;\\">Fruit 0</td><td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border py-[15px] text-red-500\\" style=\\"width: 150px;\\">Description for 0</td></tr>"`;
+exports[`Component Table > should use getTrProps and getTdProps correctly > row with custom props1 1`] = `"<tr class=\\"hover:!bg-gray-100 dark:hover:!bg-bg-breadcrumb-bar transition-colors bg-red-500\\"><td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border h-[48px] text-red-500\\" style=\\"width: 150px;\\">0</td><td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border h-[48px] text-red-500\\" style=\\"width: 150px;\\">Fruit 0</td><td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border h-[48px] text-red-500\\" style=\\"width: 150px;\\">Description for 0</td></tr>"`;
 
-exports[`Component Table > should use getTrProps and getTdProps correctly > row with custom props2 1`] = `"<tr class=\\"hover:!bg-gray-100 dark:hover:!bg-bg-breadcrumb-bar transition-colors bg-red-500\\"><td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 py-[15px] text-red-500\\" style=\\"width: 150px;\\">1</td><td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 py-[15px] text-red-500\\" style=\\"width: 150px;\\">Fruit 1</td><td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 py-[15px] text-red-500\\" style=\\"width: 150px;\\">Description for 1</td></tr>"`;
+exports[`Component Table > should use getTrProps and getTdProps correctly > row with custom props2 1`] = `"<tr class=\\"hover:!bg-gray-100 dark:hover:!bg-bg-breadcrumb-bar transition-colors bg-red-500\\"><td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 h-[48px] text-red-500\\" style=\\"width: 150px;\\">1</td><td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 h-[48px] text-red-500\\" style=\\"width: 150px;\\">Fruit 1</td><td class=\\"text-p4 dark:text-text-text-and-icon px-4 truncate min-w-0 h-[48px] text-red-500\\" style=\\"width: 150px;\\">Description for 1</td></tr>"`;
