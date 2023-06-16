@@ -56,10 +56,20 @@ func CheckAgentUpgrade(msg *message.Message) error {
 
 	tags_with_urls, err := prepareAgentReleases(ctx, tags_to_ingest)
 	if err != nil {
+		log.Error().Msgf("Prepare agent releases: %v", err)
+	} else {
+		err = ingestAgentVersion(ctx, tags_with_urls)
+		if err != nil {
+			log.Error().Msgf("ingest agent version: %v", err)
+		}
+	}
+
+	plugin_tags_with_urls, err := prepareAgentPluginReleases(ctx, tags_to_ingest)
+	if err != nil {
 		return err
 	}
 
-	return ingestAgentVersion(ctx, tags_with_urls)
+	return ingestAgentPluginsVersion(ctx, plugin_tags_with_urls)
 }
 
 func prepareAgentReleases(ctx context.Context, tags_to_ingest []string) (map[string]string, error) {
@@ -174,6 +184,137 @@ func ingestAgentVersion(ctx context.Context, tags_to_url map[string]string) erro
 		SET n.url = row.url`,
 		map[string]interface{}{"batch": tags_to_ingest}); err != nil {
 		return err
+	}
+
+	return tx.Commit()
+}
+
+var agent_plugins = map[string]string{
+	"fluentbit":       "/opt/td-agent-bit/bin/td-agent-bit",
+	"discovery":       "/usr/local/discovery/deepfence-discovery",
+	"package_scanner": "/home/deepfence/bin/package-scanner",
+	"secret_scanner":  "/home/deepfence/bin/secret-scanner/SecretScanner",
+	"malware_scanner": "/home/deepfence/bin/secret-scanner/malware_scanner",
+	"self":            "/bin/deepfenced",
+}
+
+func prepareAgentPluginReleases(ctx context.Context, tags_to_ingest []string) (map[string]map[string]string, error) {
+	processed_tags := map[string]map[string]string{}
+	minio, err := directory.MinioClient(ctx)
+	if err != nil {
+		return processed_tags, err
+	}
+
+	for _, tag := range tags_to_ingest {
+		processed_tags[tag] = map[string]string{}
+		local_root := "/tmp/" + tag
+		cmd := exec.Command("rm", []string{"-rf", local_root}...)
+		if err := cmd.Run(); err != nil {
+			log.Warn().Err(err).Msg("rm")
+		}
+		cmd = exec.Command("mkdir", []string{"-p", local_root + "/home"}...)
+		if err := cmd.Run(); err != nil {
+			log.Error().Err(err).Msg("mkdir1")
+			continue
+		}
+		cmd = exec.Command("mkdir", []string{"-p", local_root + "/usr/local"}...)
+		if err := cmd.Run(); err != nil {
+			log.Error().Err(err).Msg("mkdir2")
+			continue
+		}
+
+		agent_image := "deepfenceio/deepfence_agent_ce:" + tag[1:]
+		cmd = exec.Command("docker", []string{"pull", agent_image}...)
+		if err := cmd.Run(); err != nil {
+			log.Error().Err(err).Msg("Docker pull")
+			continue
+		}
+		cmd = exec.Command("docker", []string{"create", "--name=dummy", agent_image}...)
+		if err := cmd.Run(); err != nil {
+			log.Error().Err(err).Msg("Docker create")
+			continue
+		}
+		for plugin_name, plugin_path := range agent_plugins {
+			cmd = exec.Command("docker", []string{"cp", "dummy:" + plugin_path, local_root + "/" + plugin_name}...)
+			if err := cmd.Run(); err != nil {
+				log.Error().Err(err).Msg("Docker cp")
+				continue
+			}
+			out_file := fmt.Sprintf("%s.gz", tag)
+			cmd = exec.Command("gzip", []string{local_root + "/" + plugin_name}...)
+			if err := cmd.Run(); err != nil {
+				log.Error().Err(err).Msg("Gzip")
+				continue
+			}
+			b, err := os.ReadFile(out_file)
+			if err != nil {
+				log.Error().Err(err).Msg("ReadFile")
+				continue
+			}
+			res, err := minio.UploadFile(ctx, out_file, b, m.PutObjectOptions{ContentType: "application/gzip"})
+			key := ""
+			if err != nil {
+				ape, ok := err.(directory.AlreadyPresentError)
+				if ok {
+					log.Warn().Err(err).Msg("Skip upload")
+					key = ape.Path
+				} else {
+					log.Error().Err(err).Msg("Upload")
+					continue
+				}
+			} else {
+				key = res.Key
+			}
+
+			url, err := minio.ExposeFile(ctx, key, false, 10*time.Hour, url2.Values{})
+			if err != nil {
+				log.Error().Err(err)
+				continue
+			}
+			log.Debug().Msgf("Exposed URL: %v", url)
+
+			processed_tags[tag][plugin_name] = url
+		}
+
+		cmd = exec.Command("docker", []string{"rm", "dummy"}...)
+		if err := cmd.Run(); err != nil {
+			log.Error().Err(err).Msg("Docker rm")
+			continue
+		}
+
+		cmd = exec.Command("docker", []string{"rmi", agent_image}...)
+		if err := cmd.Run(); err != nil {
+			log.Error().Err(err).Msg("Docker rmi")
+			continue
+		}
+	}
+	return processed_tags, nil
+}
+
+func ingestAgentPluginsVersion(ctx context.Context, tags_to_url map[string]map[string]string) error {
+	nc, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(15 * time.Second))
+	if err != nil {
+		return err
+	}
+	defer tx.Close()
+
+	for k, v := range tags_to_url {
+		for plugin_name, plugin_url := range v {
+			query := fmt.Sprintf(`
+				MERGE (n:%sVersion{node_id: tag})
+				SET n.url = url`, plugin_name)
+			if _, err = tx.Run(query,
+				map[string]interface{}{"tag": k, "url": plugin_url}); err != nil {
+				return err
+			}
+		}
 	}
 
 	return tx.Commit()

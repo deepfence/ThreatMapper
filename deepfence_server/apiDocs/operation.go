@@ -377,6 +377,14 @@ func (d *OpenApiDocs) AddControlsOperations() {
 		"Schedule new agent version upgrade", "Schedule new agent version upgrade",
 		http.StatusOK, []string{tagControls}, bearerToken, new(AgentUpgrade), nil)
 
+	d.AddOperation("enableAgentPlugin", http.MethodPost, "/deepfence/controls/agent-plugins/enable",
+		"Schedule new agent plugin version enabling", "Schedule agent plugin enable",
+		http.StatusOK, []string{tagControls}, bearerToken, new(AgentPluginEnable), nil)
+
+	d.AddOperation("disableAgentPlugin", http.MethodPost, "/deepfence/controls/agent-plugins/disable",
+		"Schedule new agent plugin version disabling", "Schedule agent plugin disable",
+		http.StatusOK, []string{tagControls}, bearerToken, new(AgentPluginDisable), nil)
+
 	d.AddOperation("getCloudNodeControls", http.MethodPost, "/deepfence/controls/cloud-node",
 		"Fetch Cloud Node Controls", "Fetch controls for a cloud node",
 		http.StatusOK, []string{tagControls}, bearerToken, new(CloudNodeControlReq), new(CloudNodeControlResp))

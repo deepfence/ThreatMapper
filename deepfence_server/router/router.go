@@ -277,6 +277,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/kubernetes-cluster", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetKubernetesClusterControls))
 				r.Post("/agent-init", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetAgentInitControls))
 				r.Post("/agent-upgrade", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.ScheduleAgentUpgrade))
+
+				r.Route("/agent-plugins", func(r chi.Router) {
+					r.Post("/enable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.ScheduleAgentPluginsEnable))
+					r.Post("/disable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.ScheduleAgentPluginsDisable))
+				})
 				r.Post("/cloud-node", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.GetCloudNodeControls))
 				r.Post("/cloud-node/enable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.EnableCloudNodeControls))
 				r.Post("/cloud-node/disable", dfHandler.AuthHandler(ResourceScan, PermissionStart, dfHandler.DisableCloudNodeControls))
