@@ -6,6 +6,7 @@ import { IconContext } from 'react-icons';
 import { HiExternalLink } from 'react-icons/hi';
 import { Outlet, useSearchParams } from 'react-router-dom';
 import {
+  Badge,
   Breadcrumb,
   BreadcrumbLink,
   Button,
@@ -361,6 +362,7 @@ const UniqueVulnerabilities = () => {
     queryKey: queries.vulnerability.uniqueVulnerabilities._def,
   });
   const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [searchParams] = useSearchParams();
 
   return (
     <div>
@@ -385,6 +387,16 @@ const UniqueVulnerabilities = () => {
           variant="flat"
           className="ml-auto py-2"
           startIcon={<FilterIcon />}
+          endIcon={
+            getAppliedFiltersCount(searchParams) > 0 ? (
+              <Badge
+                label={String(getAppliedFiltersCount(searchParams))}
+                variant="filled"
+                size="small"
+                color="blue"
+              />
+            ) : null
+          }
           size="sm"
           onClick={() => {
             setFiltersExpanded((prev) => !prev);
