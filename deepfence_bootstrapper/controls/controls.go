@@ -107,28 +107,19 @@ func SetAgentControls() {
 		log.Error().Msgf("set controls: %v", err)
 	}
 	err = router.RegisterControl(ctl.StartAgentPlugin,
-		func(req ctl.StartAgentPluginRequest) error {
-			log.Info().Msg("Start Agent Plugin")
+		func(req ctl.EnableAgentPluginRequest) error {
+			log.Info().Msg("Start & download Agent Plugin")
 			router.SetUpgrade()
+			supervisor.UpgradeProcess(req.PluginName, req.BinUrl)
 			return supervisor.StartProcess(req.PluginName)
 		})
 	if err != nil {
 		log.Error().Msgf("set controls: %v", err)
 	}
 	err = router.RegisterControl(ctl.StopAgentPlugin,
-		func(req ctl.StopAgentPluginRequest) error {
+		func(req ctl.DisableAgentPluginRequest) error {
 			log.Info().Msg("Stop Agent Plugin")
-			router.SetUpgrade()
 			return supervisor.StopProcess(req.PluginName)
-		})
-	if err != nil {
-		log.Error().Msgf("set controls: %v", err)
-	}
-	err = router.RegisterControl(ctl.UpgradeAgentPlugin,
-		func(req ctl.UpgradeAgentPluginRequest) error {
-			log.Info().Msg("Start Agent Plugin Upgrade")
-			router.SetUpgrade()
-			return supervisor.UpgradeProcess(req.PluginName, req.BinUrl)
 		})
 	if err != nil {
 		log.Error().Msgf("set controls: %v", err)
