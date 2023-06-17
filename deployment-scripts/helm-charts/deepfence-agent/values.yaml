@@ -43,9 +43,6 @@ userDefinedTags: ""
 
 priorityClassName: ""
 
-# Deploy Deepfence Kubernetes Scanner helm chart along with agent
-deployKubernetesScanner: false
-
 enableGraphReport: true
 
 # Mount container runtime socket path to agent pod. Agent will detect which runtime it is using these files.

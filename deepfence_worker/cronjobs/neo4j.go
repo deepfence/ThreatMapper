@@ -100,11 +100,24 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:Node)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		AND NOT n.node_id IN ["in-the-internet", "out-the-internet"]
+		AND NOT n.node_id IN ["in-the-internet", "out-the-internet"] 
+		AND n.agent_running=true
 		AND n.active = true
 		WITH n LIMIT 10000
 		SET n.active=false`,
 		map[string]interface{}{"time_ms": dbReportCleanUpTimeout.Milliseconds()}, txConfig); err != nil {
+		log.Error().Msgf("Error in Clean up DB task: %v", err)
+		return err
+	}
+
+	if _, err = session.Run(`
+		MATCH (n:Node)
+		WHERE n.updated_at < TIMESTAMP()-$time_ms
+		AND n.agent_running=false
+		AND n.active = true
+		WITH n LIMIT 10000
+		SET n.active=false`,
+		map[string]interface{}{"time_ms": dbCloudResourceCleanupTimeout.Milliseconds()}, txConfig); err != nil {
 		log.Error().Msgf("Error in Clean up DB task: %v", err)
 		return err
 	}

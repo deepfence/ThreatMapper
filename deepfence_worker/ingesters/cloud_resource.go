@@ -12,6 +12,15 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
+const (
+	NodeTypeHost           = "host"
+	Ec2DnsSuffix           = ".compute.amazonaws.com"
+	AwsEc2ResourceId       = "aws_ec2_instance"
+	GcpComputeResourceId   = "gcp_compute_instance"
+	AzureComputeResourceId = "azure_compute_virtual_machine"
+	DeepfenceVersion       = "v2.0.0"
+)
+
 type CloudResource struct {
 	AccountID                      string           `json:"account_id"`
 	Arn                            string           `json:"arn"`
@@ -43,6 +52,10 @@ type CloudResource struct {
 	IamInstanceProfileArn          string           `json:"iam_instance_profile_arn,omitempty"`
 	IamInstanceProfileId           string           `json:"iam_instance_profile_id,omitempty"`
 	PublicIpAddress                string           `json:"public_ip_address"`
+	PrivateIpAddress               string           `json:"private_ip_address,omitempty"`
+	InstanceType                   string           `json:"instance_type,omitempty"`
+	PrivateDnsName                 string           `json:"private_dns_name,omitempty"`
+	Tags                           *json.RawMessage `json:"tags,omitempty"`
 	PolicyStd                      *json.RawMessage `json:"policy_std,omitempty"`
 	Containers                     *json.RawMessage `json:"containers,omitempty"`
 	TaskDefinition                 *json.RawMessage `json:"task_definition,omitempty"`
@@ -110,7 +123,7 @@ func CommitFuncCloudResource(ns string, cs []CloudResource) error {
 	}
 	defer session.Close()
 
-	batch := ResourceToMaps(cs)
+	batch, hosts := ResourceToMaps(cs)
 
 	start := time.Now()
 
@@ -131,6 +144,19 @@ func CommitFuncCloudResource(ns string, cs []CloudResource) error {
 			"shown_types": TopologyCloudResourceTypes,
 		},
 	)
+
+	if len(hosts) > 0 {
+		_, err = tx.Run(`
+		UNWIND $batch as row
+		WITH row
+		OPTIONAL MATCH (n:Node{node_id:row.node_id})
+		WITH n WHERE n IS NULL or n.active=false
+		MERGE (m:Node{node_id:row.node_id})
+		SET m+=row, m.updated_at = TIMESTAMP()`,
+			map[string]interface{}{"batch": hosts},
+		)
+	}
+
 	log.Debug().Msgf("cloud resource ingest took: %v", time.Until(start))
 
 	if err != nil {
@@ -140,17 +166,69 @@ func CommitFuncCloudResource(ns string, cs []CloudResource) error {
 	return tx.Commit()
 }
 
-func ResourceToMaps(ms []CloudResource) []map[string]interface{} {
+func ResourceToMaps(ms []CloudResource) ([]map[string]interface{}, []map[string]interface{}) {
 	res := make([]map[string]interface{}, 0, len(ms))
+	hosts := make([]map[string]interface{}, 0)
+	timestampNow := time.Now().UTC().Format(time.RFC3339Nano)
 	for _, v := range ms {
 		newmap, err := v.ToMap()
 		if err != nil {
 			log.Error().Msgf("ToMap err:%v", err)
-		} else {
-			res = append(res, newmap)
+			continue
+		}
+		res = append(res, newmap)
+
+		if v.ResourceID == AwsEc2ResourceId || v.ResourceID == GcpComputeResourceId || v.ResourceID == AzureComputeResourceId {
+			var nodeID string
+			switch v.ResourceID {
+			case AwsEc2ResourceId:
+				nodeID = strings.TrimSuffix(strings.TrimSuffix(v.PrivateDnsName, Ec2DnsSuffix), "."+v.Region)
+			case GcpComputeResourceId:
+				nodeID = v.Name
+			case AzureComputeResourceId:
+				nodeID = v.Name
+			}
+			var publicIP, privateIP []string
+			if v.PublicIpAddress != "" {
+				publicIP = []string{v.PublicIpAddress}
+			}
+			if v.PrivateIpAddress != "" {
+				privateIP = []string{v.PrivateIpAddress}
+			}
+			var k8sClusterName string
+			var tags map[string]interface{}
+			if v.Tags != nil {
+				err = json.Unmarshal(*v.Tags, &tags)
+				if err == nil {
+					if clusterName, ok := tags["eks:cluster-name"]; ok {
+						k8sClusterName = fmt.Sprintf("%v", clusterName)
+					} else if clusterName, ok = tags["goog-k8s-cluster-name"]; ok {
+						k8sClusterName = fmt.Sprintf("%v", clusterName)
+					}
+				}
+			}
+			// Add hosts as regular `Node`
+			hosts = append(hosts, map[string]interface{}{
+				"public_ip":               publicIP,
+				"cloud_region":            newmap["cloud_region"],
+				"kubernetes_cluster_name": k8sClusterName,
+				"private_ip":              privateIP,
+				"node_type":               NodeTypeHost,
+				"pseudo":                  false,
+				"timestamp":               timestampNow,
+				"kubernetes_cluster_id":   k8sClusterName,
+				"node_name":               nodeID,
+				"active":                  true,
+				"cloud_provider":          v.CloudProvider,
+				"agent_running":           false,
+				"version":                 DeepfenceVersion,
+				"instance_id":             newmap["node_id"],
+				"host_name":               nodeID,
+				"node_id":                 nodeID,
+			})
 		}
 	}
-	return res
+	return res, hosts
 }
 
 func (c *CloudResource) ToMap() (map[string]interface{}, error) {
