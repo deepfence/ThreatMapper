@@ -3,6 +3,7 @@ import { QueryKey } from '@tanstack/react-query';
 
 import { queryClient } from '@/queries/client';
 import { malwareQueries } from '@/queries/malware';
+import { registryQueries } from '@/queries/registry';
 import { searchQueries } from '@/queries/search';
 import { secretQueries } from '@/queries/secret';
 import { vulnerabilityQueries } from '@/queries/vulnerability';
@@ -24,4 +25,5 @@ export const queries = mergeQueryKeys(
   searchQueries,
   secretQueries,
   malwareQueries,
+  registryQueries,
 );

@@ -1,11 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@suspensive/react-query';
 import { Card } from 'ui-components';
 
 import { ModelSummary } from '@/api/generated/models/ModelSummary';
 import { DFLink } from '@/components/DFLink';
 import { RegistryLogos } from '@/components/icons/registries';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
-import { registrySummaryQuery } from '@/queries/registries';
+import { queries } from '@/queries';
 import { RegistryType, registryTypeToNameMapping } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
 
@@ -97,7 +97,10 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
 };
 
 const Registries = () => {
-  const { data, isLoading } = useQuery(registrySummaryQuery());
+  const { data, isLoading } = useSuspenseQuery({
+    ...queries.registry.registrySummary(),
+    keepPreviousData: true,
+  });
 
   return (
     <>
