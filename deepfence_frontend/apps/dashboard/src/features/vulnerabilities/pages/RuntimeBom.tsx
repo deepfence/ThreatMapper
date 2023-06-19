@@ -1,13 +1,13 @@
 import { toNumber } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { HiChevronRight } from 'react-icons/hi';
 import {
   LoaderFunctionArgs,
   useLoaderData,
   useNavigation,
   useSearchParams,
 } from 'react-router-dom';
+import { cn } from 'tailwind-preset';
 import {
   Breadcrumb,
   BreadcrumbLink,
@@ -21,6 +21,7 @@ import {
 import { getSearchApiClient } from '@/api/api';
 import { ModelScanInfo, SearchSearchScanReq } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { VulnerabilityIcon } from '@/components/icons/vulnerability';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { SbomModal } from '@/features/vulnerabilities/api/sbomApiLoader';
 import { apiWrapper } from '@/utils/api';
@@ -28,7 +29,7 @@ import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 10;
 
 async function getScans(searchParams: URLSearchParams): Promise<{
   scans: ModelScanInfo[];
@@ -159,15 +160,11 @@ const RuntimeBom = () => {
         sortDescFirst: false,
         cell: (info) => {
           return (
-            <div className="flex items-center gap-x-2">
-              <div className="bg-blue-100 dark:bg-blue-500/10 p-1.5 rounded-lg">
-                <IconContext.Provider
-                  value={{ className: 'w-4 h-4 text-blue-500 dark:text-blue-400' }}
-                >
-                  {IconMapForNodeType[info.getValue()]}
-                </IconContext.Provider>
-              </div>
-              <span className="flex-1 truncate capitalize">
+            <div className="flex items-center gap-x-2.5">
+              <IconContext.Provider value={{ className: 'w-4 h-4 ' }}>
+                {IconMapForNodeType[info.getValue()]}
+              </IconContext.Provider>
+              <span className={cn('flex-1 truncate capitalize')}>
                 {info.getValue()?.replaceAll('_', ' ')}
               </span>
             </div>
@@ -210,27 +207,36 @@ const RuntimeBom = () => {
 
   return (
     <div>
-      <div className="flex px-2 items-center w-full shadow bg-white dark:bg-gray-800 h-10">
-        <Breadcrumb separator={<HiChevronRight />} transparent>
-          <BreadcrumbLink>
-            <DFLink to={'/vulnerability'}>Vulnerabilities</DFLink>
+      {/* do we need shadow here? */}
+      <div className="flex pl-6 px-2 py-2.5 items-center w-full shadow bg-white dark:bg-bg-breadcrumb-bar">
+        <Breadcrumb>
+          <BreadcrumbLink
+            icon={
+              <div className="mr-2">
+                <VulnerabilityIcon />
+              </div>
+            }
+          >
+            <DFLink to={'/vulnerability'} unstyled>
+              Vulnerabilities
+            </DFLink>
           </BreadcrumbLink>
           <BreadcrumbLink>
             <span className="inherit cursor-auto">Runtime BOM</span>
           </BreadcrumbLink>
         </Breadcrumb>
 
-        <span className="ml-2">
-          {navigation.state === 'loading' ? <CircleSpinner size="xs" /> : null}
+        <span className="ml-2 flex items-center">
+          {navigation.state === 'loading' ? <CircleSpinner size="sm" /> : null}
         </span>
       </div>
       <div className="m-2">
-        <Suspense fallback={<TableSkeleton columns={2} rows={15} size={'md'} />}>
+        <Suspense fallback={<TableSkeleton columns={2} rows={10} size={'compact'} />}>
           <DFAwait resolve={loaderData.scans}>
             {(resolvedData: LoaderData['scans']) => {
               return (
                 <Table
-                  size="sm"
+                  size="default"
                   data={resolvedData.scans}
                   columns={columns}
                   enablePagination
