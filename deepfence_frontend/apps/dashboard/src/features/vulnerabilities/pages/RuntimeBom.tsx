@@ -21,7 +21,7 @@ import {
 import { getSearchApiClient } from '@/api/api';
 import { ModelScanInfo, SearchSearchScanReq } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { VulnerabilityIcon } from '@/components/icons/vulnerability';
+import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { SbomModal } from '@/features/vulnerabilities/api/sbomApiLoader';
 import { apiWrapper } from '@/utils/api';
@@ -207,16 +207,9 @@ const RuntimeBom = () => {
 
   return (
     <div>
-      {/* do we need shadow here? */}
-      <div className="flex pl-6 px-2 py-2.5 items-center w-full shadow bg-white dark:bg-bg-breadcrumb-bar">
+      <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
         <Breadcrumb>
-          <BreadcrumbLink
-            icon={
-              <div className="mr-2">
-                <VulnerabilityIcon />
-              </div>
-            }
-          >
+          <BreadcrumbLink asChild icon={<VulnerabilityIcon />} isLink>
             <DFLink to={'/vulnerability'} unstyled>
               Vulnerabilities
             </DFLink>
@@ -230,13 +223,12 @@ const RuntimeBom = () => {
           {navigation.state === 'loading' ? <CircleSpinner size="sm" /> : null}
         </span>
       </div>
-      <div className="m-2">
-        <Suspense fallback={<TableSkeleton columns={2} rows={10} size={'compact'} />}>
+      <div className="m-4">
+        <Suspense fallback={<TableSkeleton columns={2} rows={10} />}>
           <DFAwait resolve={loaderData.scans}>
             {(resolvedData: LoaderData['scans']) => {
               return (
                 <Table
-                  size="default"
                   data={resolvedData.scans}
                   columns={columns}
                   enablePagination
