@@ -24,7 +24,12 @@ export const TopAttackPaths = () => {
         title={'Top Attack Paths'}
         path={'/threatgraph'}
       />
-      <div className="flex flex-col items-center justify-center h-[96%]">
+      <div
+        className="flex flex-col items-center justify-center h-[96%]"
+        style={{
+          background: `linear-gradient(0deg, rgba(22, 37, 59, 0.6), rgba(22, 37, 59, 0.6)), radial-gradient(48.55% 48.55% at 50.04% 51.45%, rgba(27, 47, 77, 0.35) 0%, #020617 100%)`,
+        }}
+      >
         {/* <Radio
           value={attackPathType}
           className="mt-4 self-start"
