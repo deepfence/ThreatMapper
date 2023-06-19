@@ -15,6 +15,7 @@ import {
 import { getVulnerabilityApiClient } from '@/api/api';
 import { ModelSbomResponse } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { SeverityBadge } from '@/components/SeverityBadge';
 import { apiWrapper } from '@/utils/api';
 
 type LoaderData = {
@@ -110,24 +111,25 @@ export const SbomModal = ({
       columnHelper.accessor('severity', {
         cell: (info) => {
           if (!info.getValue()) return '';
-          return (
-            <Badge
-              label={info.getValue()?.toUpperCase()}
-              className={classNames({
-                'bg-[#de425b]/20 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
-                  info.getValue()?.toLowerCase() === 'critical',
-                'bg-[#f58055]/20 dark:bg-[#f58055/20 text-[#f58055] dark:text-[#f58055]':
-                  info.getValue()?.toLowerCase() === 'high',
-                'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
-                  info.getValue()?.toLowerCase() === 'medium',
-                'bg-[#d6e184]/20 dark:bg-[#d6e184]/10 text-yellow-300 dark:text-[#d6e184]':
-                  info.getValue()?.toLowerCase() === 'low',
-                'bg-[#9CA3AF]/10 dark:bg-[#9CA3AF]/10 text-gray-400 dark:text-[#9CA3AF]':
-                  info.getValue()?.toLowerCase() === 'unknown',
-              })}
-              size="small"
-            />
-          );
+          return <SeverityBadge severity={info.getValue() || ''} />;
+          // return (
+          //   <Badge
+          //     label={info.getValue()?.toUpperCase()}
+          //     className={classNames({
+          //       'bg-[#de425b]/20 dark:bg-[#de425b]/20 text-[#de425b] dark:text-[#de425b]':
+          //         info.getValue()?.toLowerCase() === 'critical',
+          //       'bg-[#f58055]/20 dark:bg-[#f58055/20 text-[#f58055] dark:text-[#f58055]':
+          //         info.getValue()?.toLowerCase() === 'high',
+          //       'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
+          //         info.getValue()?.toLowerCase() === 'medium',
+          //       'bg-[#d6e184]/20 dark:bg-[#d6e184]/10 text-yellow-300 dark:text-[#d6e184]':
+          //         info.getValue()?.toLowerCase() === 'low',
+          //       'bg-[#9CA3AF]/10 dark:bg-[#9CA3AF]/10 text-gray-400 dark:text-[#9CA3AF]':
+          //         info.getValue()?.toLowerCase() === 'unknown',
+          //     })}
+          //     size="small"
+          //   />
+          // );
         },
         sortingFn: (rowA, rowB) => {
           const severityA = rowA.original.severity?.toLowerCase() || 'default';
