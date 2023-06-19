@@ -93,9 +93,9 @@ type EndpointResolversCache struct {
 	pid_cache sync.Map
 }
 
-func newEndpointResolversCache(ctx context.Context) (EndpointResolversCache, error) {
+func newEndpointResolversCache(ctx context.Context) (*EndpointResolversCache, error) {
 	rdb, err := directory.RedisClient(ctx)
-	return EndpointResolversCache{
+	return &EndpointResolversCache{
 		rdb:       rdb,
 		net_cache: sync.Map{},
 		pid_cache: sync.Map{},
@@ -163,7 +163,7 @@ func (erc *EndpointResolversCache) Close() {
 type neo4jIngester struct {
 	driver           neo4j.Driver
 	ingester         chan report.CompressedReport
-	resolvers        EndpointResolversCache
+	resolvers        *EndpointResolversCache
 	batcher          chan ReportIngestionData
 	resolvers_update chan EndpointResolvers
 	preparers_input  chan report.Report
@@ -875,7 +875,6 @@ loop:
 			batch[size] = report
 			size += 1
 			send = size == db_batch_size
-			ticker.Reset(db_batch_timeout)
 		case <-ticker.C:
 			send = size > 0
 		}
@@ -886,6 +885,7 @@ loop:
 				db_pusher <- final_batch
 				size = 0
 				batch = [db_batch_size]ReportIngestionData{}
+				ticker.Reset(db_batch_timeout)
 			}
 		}
 	}
@@ -920,14 +920,12 @@ func (nc *neo4jIngester) runDBPusher(db_pusher, db_pusher_seq, db_pusher_retry c
 					span.EndWithErr(err)
 					break
 				}
-				if db_pusher_retry != nil {
-					select {
-					case db_pusher_retry <- batches:
-					default:
-						log.Error().Msgf("Skip because: %v", err)
-						span.EndWithErr(err)
-						break
-					}
+				select {
+				case db_pusher_retry <- batches:
+				default:
+					log.Error().Msgf("Skip because: %v", err)
+					span.EndWithErr(err)
+					break
 				}
 				continue
 			}
@@ -947,7 +945,7 @@ func (nc *neo4jIngester) runPreparer() {
 	var buf bytes.Buffer
 	for rpt := range nc.preparers_input {
 		r := computeResolvers(&rpt, &buf)
-		data := prepareNeo4jIngestion(&rpt, &nc.resolvers, &buf)
+		data := prepareNeo4jIngestion(&rpt, nc.resolvers, &buf)
 		select {
 		case nc.batcher <- data:
 			nc.resolvers_update <- r
@@ -1007,12 +1005,14 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 		for e := range db_pusher_retry {
 			db_pusher <- e
 		}
+		log.Info().Msgf("nonseq retry ended")
 	}()
 
 	go func() {
 		for e := range db_pusher_seq_retry {
 			db_pusher_seq <- e
 		}
+		log.Info().Msgf("seq retry ended")
 	}()
 
 	for i := 0; i < preparer_workers_num; i++ {
@@ -1058,7 +1058,7 @@ func NewNeo4jCollector(ctx context.Context) (Ingester[report.CompressedReport], 
 		prev_push_back := Push_back.Load()
 		session, err := driver.Session(neo4j.AccessModeWrite)
 		if err != nil {
-			log.Error().Msgf("Fail to get session for push back", err)
+			log.Error().Msgf("Fail to get session for push back: %v", err)
 			return
 		}
 		defer session.Close()
