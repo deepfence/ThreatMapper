@@ -1,12 +1,8 @@
-import { toNumber } from 'lodash-es';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { useIsFetching } from '@tanstack/react-query';
 import { Suspense, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
-import {
-  LoaderFunctionArgs,
-  useLoaderData,
-  useNavigation,
-  useSearchParams,
-} from 'react-router-dom';
+import { useNavigation, useSearchParams } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 import {
   Breadcrumb,
@@ -18,133 +14,34 @@ import {
   TableSkeleton,
 } from 'ui-components';
 
-import { getSearchApiClient } from '@/api/api';
-import { ModelScanInfo, SearchSearchScanReq } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { SbomModal } from '@/features/vulnerabilities/api/sbomApiLoader';
-import { apiWrapper } from '@/utils/api';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
-import { DFAwait } from '@/utils/suspense';
+import { queries } from '@/queries';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
 const PAGE_SIZE = 10;
 
-async function getScans(searchParams: URLSearchParams): Promise<{
-  scans: ModelScanInfo[];
-  currentPage: number;
-  totalRows: number;
-}> {
-  let page = toNumber(searchParams.get('page') ?? '0');
-  page = isFinite(page) && !isNaN(page) && page > 0 ? page : 0;
-  const requestFilters: SearchSearchScanReq = {
-    node_filters: {
-      filters: {
-        contains_filter: {
-          filter_in: {},
-        },
-        match_filter: { filter_in: {} },
-        order_filter: {
-          order_fields: [],
-        },
-        compare_filter: null,
-      },
-      in_field_filter: null,
-      window: {
-        offset: 0,
-        size: 0,
-      },
-    },
-    scan_filters: {
-      filters: {
-        contains_filter: {
-          filter_in: {
-            status: ['COMPLETE'],
-          },
-        },
-        match_filter: {
-          filter_in: {},
-        },
-        order_filter: {
-          order_fields: [
-            {
-              field_name: 'updated_at',
-              descending: true,
-            },
-          ],
-        },
-        compare_filter: null,
-      },
-      in_field_filter: null,
-      window: {
-        offset: 0,
-        size: 0,
-      },
-    },
-    window: {
-      offset: page * PAGE_SIZE,
-      size: PAGE_SIZE,
-    },
-  };
-  const order = getOrderFromSearchParams(searchParams);
-  if (order) {
-    requestFilters.node_filters.filters.order_filter.order_fields = [
-      {
-        field_name: order.sortBy,
-        descending: order.descending,
-      },
-    ];
-  }
-  const searchVulnerabilityScanApi = apiWrapper({
-    fn: getSearchApiClient().searchVulnerabilityScan,
-  });
-  const searchVulnerabilityScanResponse = await searchVulnerabilityScanApi({
-    searchSearchScanReq: requestFilters,
-  });
-  if (!searchVulnerabilityScanResponse.ok) {
-    throw new Error('unknown response');
-  }
-
-  const searchVulnerabilityScanCountApi = apiWrapper({
-    fn: getSearchApiClient().searchVulnerabilityScanCount,
-  });
-  const searchVulnerabilityScanCountResponse = await searchVulnerabilityScanCountApi({
-    searchSearchScanReq: {
-      ...requestFilters,
-      window: {
-        ...requestFilters.window,
-        size: 10 * requestFilters.window.size,
-      },
-    },
-  });
-  if (!searchVulnerabilityScanCountResponse.ok) {
-    throw searchVulnerabilityScanCountResponse.error;
-  }
-
-  return {
-    scans: searchVulnerabilityScanResponse.value,
-    currentPage: page,
-    totalRows: page * PAGE_SIZE + searchVulnerabilityScanCountResponse.value.count,
-  };
-}
-
-type LoaderData = {
-  scans: Awaited<ReturnType<typeof getScans>>;
-};
-
-const loader = async ({
-  request,
-}: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderData>> => {
-  const searchParams = new URL(request.url).searchParams;
-  return typedDefer({
-    scans: getScans(searchParams),
-  });
-};
-
 const RuntimeBom = () => {
-  const loaderData = useLoaderData() as LoaderData;
-  const [_, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { data } = useSuspenseQuery({
+    ...queries.vulnerability.scanList({
+      pageSize: PAGE_SIZE,
+      clusters: searchParams.getAll('clusters'),
+      containers: searchParams.getAll('containers'),
+      hosts: searchParams.getAll('hosts'),
+      images: searchParams.getAll('containerImages'),
+      languages: searchParams.getAll('languages'),
+      page: parseInt(searchParams.get('page') ?? '0', 10),
+      order: getOrderFromSearchParams(searchParams),
+      status: ['COMPLETE'],
+    }),
+    keepPreviousData: true,
+  });
+  const isFetching = useIsFetching({
+    queryKey: queries.vulnerability.scanList._def,
+  });
   const navigation = useNavigation();
   const [selectedNode, setSelectedNode] = useState<{
     nodeName: string;
@@ -153,7 +50,7 @@ const RuntimeBom = () => {
   const [sort, setSort] = useSortingState();
 
   const columns = useMemo(() => {
-    const columnHelper = createColumnHelper<LoaderData['scans']['scans'][number]>();
+    const columnHelper = createColumnHelper<NonNullable<typeof data>['scans'][number]>();
     const columns = [
       columnHelper.accessor('node_type', {
         enableSorting: true,
@@ -220,64 +117,58 @@ const RuntimeBom = () => {
         </Breadcrumb>
 
         <span className="ml-2 flex items-center">
-          {navigation.state === 'loading' ? <CircleSpinner size="sm" /> : null}
+          {isFetching ? <CircleSpinner size="sm" /> : null}
         </span>
       </div>
       <div className="m-4">
         <Suspense fallback={<TableSkeleton columns={2} rows={10} />}>
-          <DFAwait resolve={loaderData.scans}>
-            {(resolvedData: LoaderData['scans']) => {
-              return (
-                <Table
-                  data={resolvedData.scans}
-                  columns={columns}
-                  enablePagination
-                  manualPagination
-                  enableColumnResizing
-                  totalRows={resolvedData.totalRows}
-                  pageSize={PAGE_SIZE}
-                  pageIndex={resolvedData.currentPage}
-                  onPaginationChange={(updaterOrValue) => {
-                    let newPageIndex = 0;
-                    if (typeof updaterOrValue === 'function') {
-                      newPageIndex = updaterOrValue({
-                        pageIndex: resolvedData.currentPage,
-                        pageSize: PAGE_SIZE,
-                      }).pageIndex;
-                    } else {
-                      newPageIndex = updaterOrValue.pageIndex;
-                    }
-                    setSearchParams((prev) => {
-                      prev.set('page', String(newPageIndex));
-                      return prev;
-                    });
-                  }}
-                  enableSorting
-                  manualSorting
-                  sortingState={sort}
-                  onSortingChange={(updaterOrValue) => {
-                    let newSortState: SortingState = [];
-                    if (typeof updaterOrValue === 'function') {
-                      newSortState = updaterOrValue(sort);
-                    } else {
-                      newSortState = updaterOrValue;
-                    }
-                    setSearchParams((prev) => {
-                      if (!newSortState.length) {
-                        prev.delete('sortby');
-                        prev.delete('desc');
-                      } else {
-                        prev.set('sortby', String(newSortState[0].id));
-                        prev.set('desc', String(newSortState[0].desc));
-                      }
-                      return prev;
-                    });
-                    setSort(newSortState);
-                  }}
-                />
-              );
+          <Table
+            data={data.scans}
+            columns={columns}
+            enablePagination
+            manualPagination
+            enableColumnResizing
+            totalRows={data.totalRows}
+            pageSize={PAGE_SIZE}
+            pageIndex={data.currentPage}
+            onPaginationChange={(updaterOrValue) => {
+              let newPageIndex = 0;
+              if (typeof updaterOrValue === 'function') {
+                newPageIndex = updaterOrValue({
+                  pageIndex: data.currentPage,
+                  pageSize: PAGE_SIZE,
+                }).pageIndex;
+              } else {
+                newPageIndex = updaterOrValue.pageIndex;
+              }
+              setSearchParams((prev) => {
+                prev.set('page', String(newPageIndex));
+                return prev;
+              });
             }}
-          </DFAwait>
+            enableSorting
+            manualSorting
+            sortingState={sort}
+            onSortingChange={(updaterOrValue) => {
+              let newSortState: SortingState = [];
+              if (typeof updaterOrValue === 'function') {
+                newSortState = updaterOrValue(sort);
+              } else {
+                newSortState = updaterOrValue;
+              }
+              setSearchParams((prev) => {
+                if (!newSortState.length) {
+                  prev.delete('sortby');
+                  prev.delete('desc');
+                } else {
+                  prev.set('sortby', String(newSortState[0].id));
+                  prev.set('desc', String(newSortState[0].desc));
+                }
+                return prev;
+              });
+              setSort(newSortState);
+            }}
+          />
         </Suspense>
       </div>
       {selectedNode ? (
@@ -294,6 +185,5 @@ const RuntimeBom = () => {
 };
 
 export const module = {
-  loader,
   element: <RuntimeBom />,
 };
