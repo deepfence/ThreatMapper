@@ -161,7 +161,7 @@ export const SbomModal = ({
         enableSorting
         enablePagination
         enableColumnResizing
-        pageSize={20}
+        pageSize={10}
       />
     );
 
