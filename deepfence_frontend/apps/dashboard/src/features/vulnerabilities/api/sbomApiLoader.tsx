@@ -125,7 +125,7 @@ export const SbomModal = ({
                 'bg-[#9CA3AF]/10 dark:bg-[#9CA3AF]/10 text-gray-400 dark:text-[#9CA3AF]':
                   info.getValue()?.toLowerCase() === 'unknown',
               })}
-              size="sm"
+              size="small"
             />
           );
         },
