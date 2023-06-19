@@ -104,7 +104,7 @@ export const Pagination = ({
       endCount = pageSize > totalRows ? totalRows : pageSize;
     }
     return [startCount, endCount];
-  }, [currentPage, totalRows]);
+  }, [currentPage, totalRows, pageSize]);
 
   const onPrevious = () => {
     if (currentPage === 1) {

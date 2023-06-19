@@ -409,6 +409,7 @@ const UniqueVulnerabilities = () => {
           <UniqueTable />
         </Suspense>
       </div>
+      <Outlet />
     </div>
   );
 };
