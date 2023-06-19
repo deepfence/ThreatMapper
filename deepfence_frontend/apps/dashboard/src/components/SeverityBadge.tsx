@@ -52,3 +52,36 @@ export const CveCVSSScore = ({
     </div>
   );
 };
+
+export const SeverityLegend = ({
+  severity,
+  className,
+  iconClassName,
+}: {
+  severity: string;
+  className?: string;
+  iconClassName?: string;
+}) => {
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-2 flex-nowrap text-p7 dark:text-text-text-and-icon capitalize',
+        className,
+      )}
+    >
+      <div
+        className={cn(
+          'rounded-full h-3 w-3 shrink-0 dark:bg-df-gray-500',
+          {
+            'dark:bg-status-error': severity === 'critical',
+            'dark:bg-chart-orange': severity === 'high',
+            'dark:bg-status-warning': severity === 'medium',
+            'dark:bg-chart-yellow1': severity === 'low',
+          },
+          iconClassName,
+        )}
+      ></div>
+      <div>{severity}</div>
+    </div>
+  );
+};
