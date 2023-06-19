@@ -1,13 +1,8 @@
-import { CircleSpinner } from 'ui-components';
-
-import { isNeverScanned } from '@/utils/scan';
-import { isScanComplete, isScanFailed, isScanInProgress } from '@/utils/scan';
-
 export const SuccessIcon = () => {
   return (
     <svg
-      width="18"
-      height="18"
+      width="100%"
+      height="100%"
       viewBox="0 0 18 18"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -56,33 +51,4 @@ export const NotStartedIcon = () => {
       />
     </svg>
   );
-};
-
-export const ScanStatusesIcon = (status: string) => {
-  if (isScanComplete(status)) {
-    return (
-      <div className="flex items-center gap-1.5">
-        <SuccessIcon />
-        {status}
-      </div>
-    );
-  } else if (isScanFailed(status)) {
-    return (
-      <div className="flex items-center gap-1.5">
-        <ErrorIcon /> {status}
-      </div>
-    );
-  } else if (isScanInProgress(status)) {
-    return (
-      <div className="flex items-center gap-1.5">
-        <CircleSpinner size="sm" /> {status}
-      </div>
-    );
-  } else if (isNeverScanned(status)) {
-    return (
-      <div className="flex items-center gap-1.5">
-        <NotStartedIcon /> Never Scanned
-      </div>
-    );
-  }
 };

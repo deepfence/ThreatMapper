@@ -17,40 +17,56 @@ import {
 export const ScanStatusBadge = ({
   status,
   className,
+  justIcon = false,
 }: {
   status: string;
   className?: string;
+  justIcon?: boolean;
 }) => {
   const wrapperClassName = cn(
     'flex items-center gap-1.5 dark:text-text-text-and-icon text-p4',
     className,
   );
 
+  const iconWrapper = cn('w-[18px] h-[18px]');
+
   const scanStatus = capitalize(status.replaceAll('_', ' '));
 
   if (isScanComplete(status)) {
     return (
       <div className={wrapperClassName}>
-        <SuccessIcon />
-        {scanStatus}
+        <span className={iconWrapper}>
+          <SuccessIcon />
+        </span>
+
+        {!justIcon ? scanStatus : null}
       </div>
     );
   } else if (isScanFailed(status)) {
     return (
       <div className={wrapperClassName}>
-        <ErrorIcon /> {scanStatus}
+        <span className={iconWrapper}>
+          <ErrorIcon />
+        </span>
+        {!justIcon ? scanStatus : null}
       </div>
     );
   } else if (isNeverScanned(status)) {
     return (
       <div className={wrapperClassName}>
-        <NotStartedIcon /> Never Scanned
+        <span className={iconWrapper}>
+          <NotStartedIcon />
+        </span>
+        Never Scanned
       </div>
     );
   } else if (isScanInProgress(status)) {
     return (
       <div className={wrapperClassName}>
-        <CircleSpinner size="sm" /> {scanStatus}
+        <span className={iconWrapper}>
+          <CircleSpinner size="sm" />
+        </span>
+        {!justIcon ? scanStatus : null}
       </div>
     );
   }

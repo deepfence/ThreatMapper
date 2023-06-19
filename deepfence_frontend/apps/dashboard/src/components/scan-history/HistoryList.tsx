@@ -1,79 +1,95 @@
 import { cn } from 'tailwind-preset';
+import { Dropdown, DropdownItem, IconButton } from 'ui-components';
 
+import { CaretDown } from '@/components/icons/common/CaretDown';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
 import { HistoryIcon } from '@/components/icons/common/History';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { isScanComplete, isScanFailed } from '@/utils/scan';
 
-export const ScanHistoryList = ({
+export const ScanHistoryDropdown = ({
   scans,
-  className,
+  currentTimeStamp,
 }: {
   scans: Array<{
     id: string;
     timestamp: string;
     status: string;
+    isCurrent: boolean;
     onDeleteClick: (id: string) => void;
     onDownloadClick: (id: string) => void;
     onScanClick: (id: string) => void;
-    isCurrent: boolean;
   }>;
-  className?: string;
+  currentTimeStamp: string;
 }) => {
   return (
-    <div className={cn('flex flex-col gap-1 overflow-y-auto', className)}>
-      {scans.map((scan) => {
-        return (
-          <div className="flex items-center gap-8" key={scan.id}>
-            <button
-              className="flex items-center gap-2"
-              onClick={() => {
-                scan.onScanClick(scan.id);
-              }}
-            >
-              <span className="h-3 w-3 shrink-0 dark:text-df-gray-500">
-                <HistoryIcon />
-              </span>
-              <span
-                className={cn('text-p7 dark:text-text-text-and-icon', {
-                  'dark:text-text-input-value text-t2': scan.isCurrent,
-                })}
+    <Dropdown
+      content={
+        <>
+          {scans.map((scan) => {
+            return (
+              <DropdownItem
+                key={scan.timestamp}
+                onClick={() => scan.onScanClick(scan.id)}
               >
-                {scan.timestamp}
-              </span>
-            </button>
-            <ScanStatusBadge
-              status={scan.status}
-              className={cn('gap-1 text-p7', {
-                'dark:text-text-input-value text-t2': scan.isCurrent,
-              })}
-            />
-            <div className="flex items-center gap-1.5 dark:text-text-link">
-              {isScanComplete(scan.status) ? (
-                <button
-                  className="h-3 w-3 shrink-0"
-                  onClick={() => {
-                    scan.onDownloadClick(scan.id);
-                  }}
-                >
-                  <DownloadLineIcon />
-                </button>
-              ) : null}
-              {isScanComplete(scan.status) || isScanFailed(scan.status) ? (
-                <button
-                  className="h-3 w-3 shrink-0"
-                  onClick={() => {
-                    scan.onDeleteClick(scan.id);
-                  }}
-                >
-                  <TrashLineIcon />
-                </button>
-              ) : null}
-            </div>
-          </div>
-        );
-      })}
-    </div>
+                <div className="flex items-center gap-1.5" key={scan.id}>
+                  <ScanStatusBadge
+                    status={scan.status}
+                    justIcon
+                    className={cn('gap-1 text-p7', {
+                      'dark:text-text-input-value': scan.isCurrent,
+                    })}
+                  />
+                  <span
+                    className={cn('text-p7 dark:text-text-text-and-icon', {
+                      'dark:text-text-input-value': scan.isCurrent,
+                    })}
+                  >
+                    {scan.timestamp}
+                  </span>
+
+                  <div className="flex items-center dark:text-text-link">
+                    {isScanComplete(scan.status) ? (
+                      <IconButton
+                        variant="flat"
+                        icon={
+                          <span className="h-3 w-3">
+                            <DownloadLineIcon />
+                          </span>
+                        }
+                        onClick={() => {
+                          scan.onDownloadClick(scan.id);
+                        }}
+                      />
+                    ) : null}
+                    {isScanComplete(scan.status) || isScanFailed(scan.status) ? (
+                      <IconButton
+                        variant="flat"
+                        icon={
+                          <span className="h-3 w-3">
+                            <TrashLineIcon />
+                          </span>
+                        }
+                        onClick={() => {
+                          scan.onDeleteClick(scan.id);
+                        }}
+                      />
+                    ) : null}
+                  </div>
+                </div>
+              </DropdownItem>
+            );
+          })}
+        </>
+      }
+    >
+      <span className="text-h5 flex items-center dark:text-text-input-value gap-x-2">
+        {currentTimeStamp}
+        <div className="h-4 w-4 dark:text-accent-accent">
+          <CaretDown />
+        </div>
+      </span>
+    </Dropdown>
   );
 };

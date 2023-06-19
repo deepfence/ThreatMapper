@@ -4,7 +4,7 @@ import cx from 'classnames';
 import { capitalize } from 'lodash-es';
 import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { HiArchive, HiDownload, HiOutlineExclamationCircle } from 'react-icons/hi';
+import { HiArchive, HiDownload } from 'react-icons/hi';
 import {
   ActionFunctionArgs,
   generatePath,
@@ -42,8 +42,9 @@ import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { FilterIcon } from '@/components/icons/common/Filter';
-import { ScanStatusesIcon } from '@/components/icons/common/ScanStatuses';
 import { TimesIcon } from '@/components/icons/common/Times';
+import { WarnIcon } from '@/components/icons/common/Warn';
+import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
@@ -121,24 +122,6 @@ const action = async ({
   }
   return null;
 };
-const DeleteIcon = () => {
-  return (
-    <svg
-      width="25"
-      height="25"
-      viewBox="0 0 25 25"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M1.76001 12.5249C1.76001 18.416 6.53564 23.1916 12.4267 23.1916C15.2557 23.1916 17.9688 22.0678 19.9691 20.0674C21.9695 18.067 23.0933 15.3539 23.0933 12.5249C23.0933 6.6339 18.3177 1.85828 12.4267 1.85828C6.53564 1.85828 1.76001 6.6339 1.76001 12.5249ZM3.09334 12.5249C3.09334 7.37029 7.27202 3.19161 12.4267 3.19161C17.5813 3.19161 21.76 7.37029 21.76 12.5249C21.76 17.6796 17.5813 21.8583 12.4267 21.8583C7.27202 21.8583 3.09334 17.6796 3.09334 12.5249ZM12.4267 15.5983C12.0585 15.5983 11.76 15.2998 11.76 14.9316V6.93161C11.76 6.56342 12.0585 6.26494 12.4267 6.26494C12.7949 6.26494 13.0933 6.56342 13.0933 6.93161V14.9316C13.0933 15.2998 12.7949 15.5983 12.4267 15.5983ZM13.3133 17.8983C13.3133 18.388 12.9164 18.7849 12.4267 18.7849C11.937 18.7849 11.54 18.388 11.54 17.8983C11.54 17.4086 11.937 17.0116 12.4267 17.0116C12.9164 17.0116 13.3133 17.4086 13.3133 17.8983Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-};
 
 const DeleteConfirmationModal = ({
   showDialog,
@@ -173,7 +156,9 @@ const DeleteConfirmationModal = ({
       size="s"
       title={
         <div className="flex gap-3 items-center dark:text-status-error">
-          <DeleteIcon />
+          <span className="w-6 h-6">
+            <WarnIcon />
+          </span>
           Delete Scan
         </div>
       }
@@ -684,7 +669,7 @@ const ScansTable = () => {
       }),
       columnHelper.accessor('status', {
         enableSorting: true,
-        cell: (info) => ScanStatusesIcon(info.getValue()),
+        cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         header: () => 'Scan Status',
         minSize: 100,
         size: 110,
