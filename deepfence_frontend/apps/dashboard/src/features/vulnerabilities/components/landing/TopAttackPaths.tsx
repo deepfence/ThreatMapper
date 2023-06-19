@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react';
-import { Card, Separator } from 'ui-components';
+import { Card } from 'ui-components';
 
 import { GraphVulnerabilityThreatGraphRequestGraphTypeEnum } from '@/api/generated';
+import { ThreatGraphIcon } from '@/components/sideNavigation/icons/ThreatGraph';
 import { VulnerabilityThreatGraphComponent } from '@/features/threat-graph/components/VulnerabilityThreatGraph';
+import { CardHeader } from '@/features/vulnerabilities/components/landing/CardHeader';
 
 export const TopAttackPaths = () => {
   const [attackPathType] = useState<GraphVulnerabilityThreatGraphRequestGraphTypeEnum>(
@@ -16,13 +18,12 @@ export const TopAttackPaths = () => {
   }, [attackPathType]);
 
   return (
-    <Card className="h-full p-2 min-h-[500px]">
-      <div className="flex items-center pb-2">
-        <h4 className="text-gray-900 font-medium text-base dark:text-white">
-          Top Attack Paths
-        </h4>
-      </div>
-      <Separator />
+    <Card className="rounded min-h-[450px] h-full flex flex-col">
+      <CardHeader
+        icon={<ThreatGraphIcon />}
+        title={'Top Attack Paths'}
+        path={'/threatgraph'}
+      />
       <div className="flex flex-col items-center justify-center h-[96%]">
         {/* <Radio
           value={attackPathType}
