@@ -102,7 +102,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	statusChan := make(chan SbomScanStatus)
 	var wg sync.WaitGroup
 	wg.Add(1)
-	StartStatusReporter(statusChan, s.ingestC, rh, params, &wg)
+	StartStatusReporter("SCAN_SBOM", statusChan, s.ingestC, rh, params, &wg)
 	defer wg.Wait()
 
 	// send inprogress status
