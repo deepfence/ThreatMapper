@@ -74,6 +74,9 @@ services:
       <<: *common-creds
       NEO4J_dbms_memory_pagecache_size: 2600m
       NEO4JLABS_PLUGINS: '["apoc"]'
+      DF_REMOTE_BACKUP_ROOT: ""
+      AWS_ACCESS_KEY: ""
+      AWS_SECRET_KEY: ""
     ports:
       - "0.0.0.0:7474:7474"
       - "0.0.0.0:7687:7687"
