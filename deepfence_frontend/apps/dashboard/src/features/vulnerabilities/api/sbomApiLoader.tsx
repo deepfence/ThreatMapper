@@ -153,10 +153,9 @@ export const SbomModal = ({
 
   const table =
     fetcher.state === 'loading' ? (
-      <TableSkeleton columns={4} rows={20} size={'md'} />
+      <TableSkeleton columns={4} rows={20} />
     ) : (
       <Table
-        size="sm"
         data={fetcher.data?.sbom ?? []}
         columns={columns}
         enableSorting
