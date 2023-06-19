@@ -1,51 +1,60 @@
+import { useSuspenseQuery } from '@suspensive/react-query';
 import { EChartsOption } from 'echarts';
-import { capitalize } from 'lodash-es';
-import { HiOutlineChevronRight } from 'react-icons/hi';
-import { Card, CircleSpinner, Separator } from 'ui-components';
+import { Suspense } from 'react';
+import { preset } from 'tailwind-preset';
+import { Card, CircleSpinner } from 'ui-components';
 
-import { LinkButton } from '@/components/LinkButton';
 import { ReactECharts } from '@/components/ReactEcharts';
+import { SeverityLegend } from '@/components/SeverityBadge';
+import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
 import { SEVERITY_COLORS } from '@/constants/charts';
-import { Mode, useTheme } from '@/theme/ThemeContext';
+import { CardHeader } from '@/features/vulnerabilities/components/landing/CardHeader';
+import { queries } from '@/queries';
 import { VulnerabilitySeverityType } from '@/types/common';
-import { getObjectKeys } from '@/utils/array';
 import { abbreviateNumber } from '@/utils/number';
 
-type ChartData = Array<{
-  label: string;
-  value: number;
-}>;
-
-const MostExploitableChartVertial = ({
-  theme,
+function getChartOptions({
   data,
+  total,
 }: {
-  theme: Mode;
-  data: ChartData;
-}) => {
+  data: { [key: string]: number };
+  total: number;
+}) {
   const option: EChartsOption = {
     backgroundColor: 'transparent',
     tooltip: {
-      trigger: 'item',
+      show: false,
     },
     legend: {
       show: false,
     },
     dataset: {
-      source: data,
+      source: Object.keys(data).map((key) => ({
+        Secrets: key,
+        value: data[key],
+      })),
     },
     series: [
       {
-        name: 'Vulnerabilities',
         type: 'pie',
-        radius: ['80%', '100%'],
-        top: '10%',
-        bottom: '5%',
-        avoidLabelOverlap: true,
-        cursor: 'default',
+        radius: ['70%', '100%'],
+        itemStyle: {
+          borderWidth: 2,
+          borderColor: preset.theme.extend.colors.bg.card,
+        },
         label: {
-          show: false,
           position: 'center',
+          formatter: function () {
+            return abbreviateNumber(total).toString();
+          },
+          fontSize: '30px',
+          color: preset.theme.extend.colors.text['input-value'],
+          fontWeight: 600,
+          fontFamily: preset.theme.extend.fontFamily.sans.join(','),
+        },
+        cursor: 'default',
+        emphasis: {
+          scale: false,
         },
         color: [
           SEVERITY_COLORS['critical'],
@@ -57,8 +66,8 @@ const MostExploitableChartVertial = ({
       },
     ],
   };
-  return <ReactECharts theme={theme === 'dark' ? 'dark' : 'light'} option={option} />;
-};
+  return option;
+}
 
 export interface VulnerabilitiesCountsCardData {
   total: number;
@@ -67,93 +76,96 @@ export interface VulnerabilitiesCountsCardData {
   };
 }
 
-const LoadingComponent = () => {
+export const UniqueVulnerabilitiesCountsCard = () => {
   return (
-    <div className="flex items-center justify-center h-full w-full">
-      <CircleSpinner size="xl" />
-    </div>
+    <Card className="rounded min-h-full flex flex-col">
+      <CardHeader
+        icon={<VulnerabilityIcon />}
+        title={'Unique Vulnerabilities'}
+        path={'/vulnerability/unique-vulnerabilities'}
+      />
+      <div className="flex-1 flex flex-col">
+        <Suspense
+          fallback={
+            <div className="flex-1 flex items-center justify-center">
+              <CircleSpinner size="md" />
+            </div>
+          }
+        >
+          <UniqueVulnerabilitiesCardContent />
+        </Suspense>
+      </div>
+    </Card>
   );
 };
 
-export const VulnerabilitiesCountsCard = ({
-  title,
-  data,
-  loading,
-  detailsLink,
-}: {
-  title: string;
-  data?: VulnerabilitiesCountsCardData;
-  loading: boolean;
-  detailsLink: string;
-}) => {
-  const { mode } = useTheme();
+export const MostExploitableVulnerabilitiesCountsCard = () => {
+  return (
+    <Card className="rounded min-h-full flex flex-col">
+      <CardHeader
+        icon={<VulnerabilityIcon />}
+        title={'Most Exploitable Vulnerabilities'}
+        path={'/vulnerability/most-exploitable'}
+      />
+      <div className="flex-1 flex flex-col">
+        <Suspense
+          fallback={
+            <div className="flex-1 flex items-center justify-center">
+              <CircleSpinner size="md" />
+            </div>
+          }
+        >
+          <MostExploitableVulnerabilitiesCardContent />
+        </Suspense>
+      </div>
+    </Card>
+  );
+};
+
+const UniqueVulnerabilitiesCardContent = () => {
+  const { data } = useSuspenseQuery({
+    ...queries.vulnerability.uniqueVulnerabilitiesCount(),
+  });
+
+  return <CardContent data={data} />;
+};
+
+const MostExploitableVulnerabilitiesCardContent = () => {
+  const { data } = useSuspenseQuery({
+    ...queries.vulnerability.mostExploitableVulnerabilitiesCount(),
+  });
+
+  return <CardContent data={data} />;
+};
+
+const CardContent = ({ data }: { data: VulnerabilitiesCountsCardData }) => {
+  const chartOptions = getChartOptions({
+    data: data.severityBreakdown,
+    total: data.total,
+  });
 
   return (
-    <Card className="flex h-full p-2 flex-col">
-      <div className="flex items-center pb-2">
-        <h4 className="text-gray-900 font-medium text-base dark:text-white truncate">
-          {title}
-        </h4>
-        <div className="flex ml-auto">
-          <LinkButton to={detailsLink} sizing="xs">
-            <>
-              Details&nbsp;
-              <HiOutlineChevronRight />
-            </>
-          </LinkButton>
-        </div>
+    <div className="flex-1 flex flex-col items-center">
+      <div className="max-w-[200px] max-h-[200px] h-[200px] w-[200px] mt-6">
+        <ReactECharts theme="dark" option={chartOptions} />
       </div>
-      <Separator />
-      {loading && <LoadingComponent />}
-      {data && !loading && (
-        <div className="flex flex-col gap-2 items-center justify-center relative">
-          <div className="flex-1 basis-[250px] p-4 self-stretch max-w-full">
-            <MostExploitableChartVertial
-              theme={mode}
-              data={getObjectKeys(data.severityBreakdown).map((severity) => {
-                return {
-                  label: capitalize(severity),
-                  value: data.severityBreakdown[severity],
-                };
-              })}
-            />
-          </div>
-          <div className="flex-1 pt-2">
-            <div className="flex flex-col align-center justify-center">
-              <div className="text-[2.5rem] text-gray-900 dark:text-gray-200 font-light text-center">
-                {abbreviateNumber(data.total)}
-              </div>
-              <div className="text-base text-gray-400 dark:text-gray-500 text-center">
-                {title}
+      <div className="mt-8 flex flex-col min-w-[160px] self-center">
+        {Object.keys(data.severityBreakdown).map((severity) => {
+          return (
+            <div
+              key={severity}
+              className="flex items-center w-full justify-between py-[3px] pr-2"
+            >
+              <SeverityLegend severity={severity} />
+              <div className="dark:text-text-input-value text-p7">
+                {abbreviateNumber(
+                  data.severityBreakdown[severity as keyof typeof data.severityBreakdown],
+                )}
               </div>
             </div>
-          </div>
-          <div>
-            <div className="flex flex-wrap max-w-[250px] justify-center">
-              {getObjectKeys(data.severityBreakdown).map((severity) => {
-                return (
-                  <div className="flex flex-col p-4" key={severity}>
-                    <div className="pr-4 flex items-center gap-x-2">
-                      <div
-                        className="rounded-full w-3 h-3"
-                        style={{
-                          backgroundColor: SEVERITY_COLORS[severity],
-                        }}
-                      ></div>
-                      <span className="text-[1.5rem] text-gray-900 dark:text-gray-200 font-light">
-                        {abbreviateNumber(data.severityBreakdown[severity])}
-                      </span>
-                    </div>
-                    <span className="text-xs capitalize text-gray-400 dark:text-gray-500">
-                      {severity}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-    </Card>
+          );
+        })}
+      </div>
+    </div>
   );
 };
