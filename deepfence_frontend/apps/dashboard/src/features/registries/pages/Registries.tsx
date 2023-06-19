@@ -26,21 +26,21 @@ const RegistrySkeleton = () => {
               <div className="w-[72px] h-[72px]"></div>
             </div>
             <div className="ml-[102px]">
-              <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded col-span-1"></div>
+              <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
             </div>
           </div>
           <div className="flex mt-8 gap-x-[48px] justify-center items-center w-[322px]">
             <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon gap-y-4">
-              <div className="h-2 w-14 bg-gray-200 dark:bg-gray-700 rounded col-span-1"></div>
-              <div className="h-6 w-4 bg-gray-200 dark:bg-gray-700 rounded col-span-1"></div>
+              <div className="h-2 w-14 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-6 w-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
             </div>
             <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon gap-y-4">
-              <div className="h-2 w-14 bg-gray-200 dark:bg-gray-700 rounded col-span-1"></div>
-              <div className="h-6 w-4 bg-gray-200 dark:bg-gray-700 rounded col-span-1"></div>
+              <div className="h-2 w-14 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-6 w-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
             </div>
             <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon gap-y-4">
-              <div className="h-2 w-14 bg-gray-200 dark:bg-gray-700 rounded col-span-1"></div>
-              <div className="h-6 w-4 bg-gray-200 dark:bg-gray-700 rounded col-span-1"></div>
+              <div className="h-2 w-14 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-6 w-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
             </div>
           </div>
         </Card>
