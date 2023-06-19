@@ -1,30 +1,14 @@
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { useIsFetching } from '@tanstack/react-query';
 import cx from 'classnames';
-import React, {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { capitalize } from 'lodash-es';
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { FiFilter } from 'react-icons/fi';
-import {
-  HiArchive,
-  HiChevronRight,
-  HiClock,
-  HiDotsVertical,
-  HiDownload,
-  HiOutlineExclamationCircle,
-} from 'react-icons/hi';
+import { HiArchive, HiDownload, HiOutlineExclamationCircle } from 'react-icons/hi';
 import {
   ActionFunctionArgs,
-  Form,
   generatePath,
-  LoaderFunctionArgs,
   useFetcher,
-  useLoaderData,
-  useNavigation,
   useSearchParams,
 } from 'react-router-dom';
 import {
@@ -33,47 +17,45 @@ import {
   BreadcrumbLink,
   Button,
   CircleSpinner,
+  Combobox,
+  ComboboxOption,
   createColumnHelper,
   Dropdown,
   DropdownItem,
-  IconButton,
   Modal,
-  Popover,
   SortingState,
   Table,
   TableSkeleton,
 } from 'ui-components';
-import { Checkbox } from 'ui-components';
 
-import { getScanResultsApiClient, getSearchApiClient } from '@/api/api';
+import { getScanResultsApiClient } from '@/api/api';
 import {
   ModelScanInfo,
-  SearchSearchScanReq,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { FilterHeader } from '@/components/forms/FilterHeader';
+import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
+import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
+import { FilterIcon } from '@/components/icons/common/Filter';
+import { ScanStatusesIcon } from '@/components/icons/common/ScanStatuses';
+import { TimesIcon } from '@/components/icons/common/Times';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { SEVERITY_COLORS } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { queries } from '@/queries';
 import { ScanTypeEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { isScanComplete } from '@/utils/scan';
-import { DFAwait } from '@/utils/suspense';
-import {
-  getOrderFromSearchParams,
-  getPageFromSearchParams,
-  useSortingState,
-} from '@/utils/table';
+import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export interface FocusableElement {
   focus(options?: FocusOptions): void;
@@ -85,12 +67,6 @@ enum ActionEnumType {
 
 const PAGE_SIZE = 15;
 
-enum NodeTypeEnum {
-  Host = 'host',
-  Container = 'container',
-  Image = 'image',
-}
-
 type ScanResult = ModelScanInfo & {
   total: number;
   critical: number;
@@ -98,220 +74,6 @@ type ScanResult = ModelScanInfo & {
   medium: number;
   low: number;
   unknown: number;
-};
-
-export type LoaderDataType = {
-  error?: string;
-  message?: string;
-  data: Awaited<ReturnType<typeof getScans>>;
-};
-
-const getStatusSearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('status').map((status) => status.toUpperCase());
-};
-const getHostsSearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('hosts');
-};
-const getContainersSearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('containers');
-};
-const getContainerImagesSearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('containerImages');
-};
-const getLanguagesSearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('languages');
-};
-const getClustersSearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('clusters');
-};
-
-async function getScans(
-  nodeTypes: NodeTypeEnum[],
-  searchParams: URLSearchParams,
-): Promise<{
-  scans: ScanResult[];
-  currentPage: number;
-  totalRows: number;
-  message?: string;
-}> {
-  const results: {
-    scans: ScanResult[];
-    currentPage: number;
-    totalRows: number;
-    message?: string;
-  } = {
-    scans: [],
-    currentPage: 1,
-    totalRows: 0,
-  };
-  const status = getStatusSearch(searchParams);
-  const scanFilters = {} as {
-    status?: string[];
-  };
-  if (status.length > 0) {
-    scanFilters.status = status;
-  }
-
-  const nodeFilters = {
-    node_type: nodeTypes,
-  } as {
-    status?: string[];
-    node_type?: string[];
-    node_id?: string[];
-    kubernetes_cluster_id?: string[];
-  };
-  const hosts = getHostsSearch(searchParams);
-  const containers = getContainersSearch(searchParams);
-  const images = getContainerImagesSearch(searchParams);
-  const languages = getLanguagesSearch(searchParams);
-  const clusters = getClustersSearch(searchParams);
-
-  const page = getPageFromSearchParams(searchParams);
-  const order = getOrderFromSearchParams(searchParams);
-
-  if (hosts && hosts?.length > 0) {
-    nodeFilters.node_id = nodeFilters.node_id ? nodeFilters.node_id.concat(hosts) : hosts;
-  }
-  if (containers && containers?.length > 0) {
-    nodeFilters.node_id = nodeFilters.node_id
-      ? nodeFilters.node_id.concat(containers)
-      : containers;
-  }
-  if (images && images?.length > 0) {
-    nodeFilters.node_id = nodeFilters.node_id
-      ? nodeFilters.node_id.concat(images)
-      : images;
-  }
-
-  if (clusters && clusters?.length > 0) {
-    nodeFilters.kubernetes_cluster_id = clusters;
-  }
-
-  const languageFilters = {} as {
-    trigger_action: string[];
-  };
-  if (languages && languages.length > 0) {
-    languageFilters.trigger_action = languages;
-  }
-
-  const scanRequestParams: SearchSearchScanReq = {
-    node_filters: {
-      filters: {
-        contains_filter: { filter_in: { ...nodeFilters } },
-        order_filter: { order_fields: [] },
-        match_filter: { filter_in: {} },
-        compare_filter: null,
-      },
-      in_field_filter: null,
-      window: {
-        offset: 0,
-        size: 0,
-      },
-    },
-    scan_filters: {
-      filters: {
-        contains_filter: { filter_in: { ...languageFilters, ...scanFilters } },
-        order_filter: { order_fields: [] },
-        match_filter: { filter_in: {} },
-        compare_filter: null,
-      },
-      in_field_filter: null,
-      window: {
-        offset: 0,
-        size: 1,
-      },
-    },
-    window: { offset: page * PAGE_SIZE, size: PAGE_SIZE },
-  };
-
-  if (order) {
-    scanRequestParams.scan_filters.filters.order_filter.order_fields = [
-      {
-        field_name: order.sortBy,
-        descending: order.descending,
-      },
-    ];
-  } else {
-    scanRequestParams.scan_filters.filters.order_filter.order_fields = [
-      {
-        field_name: 'updated_at',
-        descending: true,
-      },
-    ];
-  }
-  const searchSecretsScanApi = apiWrapper({
-    fn: getSearchApiClient().searchSecretsScan,
-  });
-  const result = await searchSecretsScanApi({
-    searchSearchScanReq: scanRequestParams,
-  });
-  if (!result.ok) {
-    throw result.error;
-  }
-
-  const countsResultApi = apiWrapper({
-    fn: getSearchApiClient().searchSecretScanCount,
-  });
-  const countsResult = await countsResultApi({
-    searchSearchScanReq: {
-      ...scanRequestParams,
-      window: {
-        ...scanRequestParams.window,
-        size: 10 * scanRequestParams.window.size,
-      },
-    },
-  });
-  if (!countsResult.ok) {
-    throw countsResult.error;
-  }
-
-  if (result.value === null) {
-    return results;
-  }
-
-  results.scans = result.value.map((scan) => {
-    const severities = scan.severity_counts as {
-      critical: number;
-      high: number;
-      medium: number;
-      low: number;
-      unknown: number;
-    };
-    severities.critical = severities.critical ?? 0;
-    severities.high = severities.high ?? 0;
-    severities.medium = severities.medium ?? 0;
-    severities.low = severities.low ?? 0;
-    severities.unknown = severities.unknown ?? 0;
-
-    return {
-      ...scan,
-      total: severities.critical + severities.high + severities.medium + severities.low,
-      critical: severities.critical,
-      high: severities.high,
-      medium: severities.medium,
-      low: severities.low,
-      unknown: severities.unknown,
-    };
-  });
-
-  results.currentPage = page;
-  results.totalRows = page * PAGE_SIZE + countsResult.value.count;
-
-  return results;
-}
-
-const loader = async ({
-  request,
-}: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
-  const searchParams = new URL(request.url).searchParams;
-
-  const nodeType = searchParams.getAll('nodeType').length
-    ? searchParams.getAll('nodeType')
-    : ['container_image', 'container', 'host'];
-
-  return typedDefer({
-    data: getScans(nodeType as NodeTypeEnum[], searchParams),
-  });
 };
 
 const action = async ({
@@ -359,6 +121,24 @@ const action = async ({
   }
   return null;
 };
+const DeleteIcon = () => {
+  return (
+    <svg
+      width="25"
+      height="25"
+      viewBox="0 0 25 25"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M1.76001 12.5249C1.76001 18.416 6.53564 23.1916 12.4267 23.1916C15.2557 23.1916 17.9688 22.0678 19.9691 20.0674C21.9695 18.067 23.0933 15.3539 23.0933 12.5249C23.0933 6.6339 18.3177 1.85828 12.4267 1.85828C6.53564 1.85828 1.76001 6.6339 1.76001 12.5249ZM3.09334 12.5249C3.09334 7.37029 7.27202 3.19161 12.4267 3.19161C17.5813 3.19161 21.76 7.37029 21.76 12.5249C21.76 17.6796 17.5813 21.8583 12.4267 21.8583C7.27202 21.8583 3.09334 17.6796 3.09334 12.5249ZM12.4267 15.5983C12.0585 15.5983 11.76 15.2998 11.76 14.9316V6.93161C11.76 6.56342 12.0585 6.26494 12.4267 6.26494C12.7949 6.26494 13.0933 6.56342 13.0933 6.93161V14.9316C13.0933 15.2998 12.7949 15.5983 12.4267 15.5983ZM13.3133 17.8983C13.3133 18.388 12.9164 18.7849 12.4267 18.7849C11.937 18.7849 11.54 18.388 11.54 17.8983C11.54 17.4086 11.937 17.0116 12.4267 17.0116C12.9164 17.0116 13.3133 17.4086 13.3133 17.8983Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
 
 const DeleteConfirmationModal = ({
   showDialog,
@@ -387,39 +167,46 @@ const DeleteConfirmationModal = ({
   );
 
   return (
-    <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      {!fetcher.data?.success ? (
-        <div className="grid place-items-center p-6">
-          <IconContext.Provider
-            value={{
-              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
+    <Modal
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      size="s"
+      title={
+        <div className="flex gap-3 items-center dark:text-status-error">
+          <DeleteIcon />
+          Delete Scan
+        </div>
+      }
+      footer={
+        <div className={'flex gap-x-3 justify-end'}>
+          <Button
+            size="sm"
+            onClick={() => setShowDialog(false)}
+            type="button"
+            variant="outline"
+          >
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            color="error"
+            onClick={(e) => {
+              e.preventDefault();
+              onDeleteAction(ActionEnumType.DELETE);
             }}
           >
-            <HiOutlineExclamationCircle />
-          </IconContext.Provider>
-          <h3 className="mb-4 font-normal text-center text-sm">
-            Selected scan will be deleted.
-            <br />
-            <span>Are you sure you want to delete?</span>
-          </h3>
-          {fetcher.data?.message && (
-            <p className="text-sm text-red-500 pb-3">{fetcher.data?.message}</p>
-          )}
-          <div className="flex items-center justify-right gap-4">
-            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-              No, Cancel
-            </Button>
-            <Button
-              size="xs"
-              color="danger"
-              onClick={(e) => {
-                e.preventDefault();
-                onDeleteAction(ActionEnumType.DELETE);
-              }}
-            >
-              Yes, I&apos;m sure
-            </Button>
-          </div>
+            DELETE
+          </Button>
+        </div>
+      }
+    >
+      {!fetcher.data?.success ? (
+        <div className="grid">
+          Selected scan will be deleted.
+          <br />
+          <span>Are you sure you want to delete?</span>
+          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
+          <div className="flex items-center justify-right gap-4"></div>
         </div>
       ) : (
         <SuccessModalContent text="Scan deleted successfully!" />
@@ -429,7 +216,7 @@ const DeleteConfirmationModal = ({
 };
 
 const ActionDropdown = ({
-  icon,
+  trigger,
   scanId,
   nodeId,
   scanStatus,
@@ -438,7 +225,7 @@ const ActionDropdown = ({
   setScanIdToDelete,
   setNodeIdToDelete,
 }: {
-  icon: React.ReactNode;
+  trigger: React.ReactNode;
   scanId: string;
   nodeId: string;
   scanStatus: string;
@@ -490,6 +277,24 @@ const ActionDropdown = ({
           </DropdownItem>
           <DropdownItem
             className="text-sm"
+            onClick={(e) => {
+              if (!isScanComplete(scanStatus)) return;
+              e.preventDefault();
+              onDownloadAction();
+            }}
+            disabled
+          >
+            <span
+              className={cx('flex items-center gap-x-2', {
+                'opacity-60 dark:opacity-30 cursor-default': !isScanComplete(scanStatus),
+              })}
+            >
+              <HiDownload />
+              Start scan
+            </span>
+          </DropdownItem>
+          <DropdownItem
+            className="text-sm"
             onClick={() => {
               setScanIdToDelete(scanId);
               setNodeIdToDelete(nodeId);
@@ -508,20 +313,276 @@ const ActionDropdown = ({
         </>
       }
     >
-      <Button className="ml-auto" size="xs" color="normal">
-        <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-          {icon}
-        </IconContext.Provider>
-      </Button>
+      {trigger}
     </Dropdown>
   );
 };
 
-const SecretScans = () => {
+const FILTER_SEARCHPARAMS: Record<string, string> = {
+  nodeType: 'Node Types',
+  statuses: 'Statuses',
+  containerImages: 'Container images',
+  containers: 'containers',
+  hosts: 'hosts',
+  clusters: 'clusters',
+};
+
+const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
+  return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
+    return prev + searchParams.getAll(curr).length;
+  }, 0);
+};
+const Filters = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const elementToFocusOnClose = useRef(null);
-  const loaderData = useLoaderData() as LoaderDataType;
-  const navigation = useNavigation();
+
+  const [nodeType, setNodeType] = useState('');
+  const [containerImages, setContainerImages] = useState<string[]>([]);
+  const [containers, setContainers] = useState<string[]>([]);
+  const [hosts, setHosts] = useState<string[]>([]);
+  const [clusters, setClusters] = useState<string[]>([]);
+  const [statuses, setStatuses] = useState('');
+
+  const appliedFilterCount = getAppliedFiltersCount(searchParams);
+  return (
+    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+      <div className="flex gap-2">
+        <Combobox
+          getDisplayValue={() => FILTER_SEARCHPARAMS['nodeType']}
+          multiple
+          value={searchParams.getAll('nodeType')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('nodeType');
+              values.forEach((value) => {
+                prev.append('nodeType', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onQueryChange={(query) => {
+            setNodeType(query);
+          }}
+          clearAllElement="Clear"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('nodeType');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        >
+          {['host', 'container', 'container_image']
+            .filter((item) => {
+              if (!nodeType.length) return true;
+              return item.includes(nodeType.toLowerCase());
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item} value={item}>
+                  {capitalize(item)}
+                </ComboboxOption>
+              );
+            })}
+        </Combobox>
+        <Combobox
+          getDisplayValue={() => FILTER_SEARCHPARAMS['statuses']}
+          multiple
+          value={searchParams.getAll('statuses')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('statuses');
+              values.forEach((value) => {
+                prev.append('statuses', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onQueryChange={(query) => {
+            setStatuses(query);
+          }}
+          clearAllElement="Clear"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('statuses');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        >
+          {['complete', 'in progress', 'error']
+            .filter((item) => {
+              if (!statuses.length) return true;
+              return item.includes(statuses.toLowerCase());
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item} value={item}>
+                  {capitalize(item)}
+                </ComboboxOption>
+              );
+            })}
+        </Combobox>
+
+        <SearchableImageList
+          scanType={ScanTypeEnum.SecretScan}
+          defaultSelectedImages={searchParams.getAll('containerImages')}
+          onClearAll={() => {
+            setContainerImages([]);
+            setSearchParams((prev) => {
+              prev.delete('containerImages');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setContainerImages(value);
+            setSearchParams((prev) => {
+              prev.delete('containerImages');
+              value.forEach((containerImage) => {
+                prev.append('containerImages', containerImage);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
+        <SearchableContainerList
+          scanType={ScanTypeEnum.SecretScan}
+          defaultSelectedContainers={searchParams.getAll('containers')}
+          onClearAll={() => {
+            setContainers([]);
+            setSearchParams((prev) => {
+              prev.delete('containers');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setContainers(value);
+            setSearchParams((prev) => {
+              prev.delete('containers');
+              value.forEach((container) => {
+                prev.append('containers', container);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
+        <SearchableHostList
+          scanType={ScanTypeEnum.SecretScan}
+          defaultSelectedHosts={searchParams.getAll('hosts')}
+          onClearAll={() => {
+            setHosts([]);
+            setSearchParams((prev) => {
+              prev.delete('hosts');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setHosts(value);
+            setSearchParams((prev) => {
+              prev.delete('hosts');
+              value.forEach((host) => {
+                prev.append('hosts', host);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
+        <SearchableClusterList
+          defaultSelectedClusters={searchParams.getAll('clusters')}
+          onClearAll={() => {
+            setClusters([]);
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setClusters(value);
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              value.forEach((cluster) => {
+                prev.append('clusters', cluster);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
+      </div>
+      {appliedFilterCount > 0 ? (
+        <div className="flex gap-2.5 mt-4 flex-wrap items-center">
+          {Array.from(searchParams)
+            .filter(([key]) => {
+              return Object.keys(FILTER_SEARCHPARAMS).includes(key);
+            })
+            .map(([key, value]) => {
+              return (
+                <FilterBadge
+                  key={`${key}-${value}`}
+                  onRemove={() => {
+                    setSearchParams((prev) => {
+                      const existingValues = prev.getAll(key);
+                      prev.delete(key);
+                      existingValues.forEach((existingValue) => {
+                        if (existingValue !== value) prev.append(key, existingValue);
+                      });
+                      prev.delete('page');
+                      return prev;
+                    });
+                  }}
+                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                />
+              );
+            })}
+          <Button
+            variant="flat"
+            color="default"
+            startIcon={<TimesIcon />}
+            onClick={() => {
+              setSearchParams((prev) => {
+                Object.keys(FILTER_SEARCHPARAMS).forEach((key) => {
+                  prev.delete(key);
+                });
+                prev.delete('page');
+                return prev;
+              });
+            }}
+            size="sm"
+          >
+            Clear all
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
+const ScansTable = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { data } = useSuspenseQuery({
+    ...queries.secret.scanList({
+      pageSize: PAGE_SIZE,
+      clusters: searchParams.getAll('clusters'),
+      containers: searchParams.getAll('containers'),
+      hosts: searchParams.getAll('hosts'),
+      images: searchParams.getAll('containerImages'),
+      nodeTypes: searchParams.getAll('nodeType').length
+        ? searchParams.getAll('nodeType')
+        : ['container_image', 'container', 'host'],
+      page: parseInt(searchParams.get('page') ?? '0', 10),
+      order: getOrderFromSearchParams(searchParams),
+      status: searchParams.getAll('statuses').map((status) => status.toUpperCase()),
+    }),
+    keepPreviousData: true,
+  });
   const [sort, setSort] = useSortingState();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [scanIdToDelete, setScanIdToDelete] = useState('');
@@ -529,17 +590,44 @@ const SecretScans = () => {
 
   const columnHelper = createColumnHelper<ScanResult>();
 
+  const { navigate } = usePageNavigation();
+
   const columns = useMemo(() => {
     const columns = [
+      columnHelper.display({
+        id: 'actions',
+        enableSorting: false,
+        cell: (cell) => (
+          <ActionDropdown
+            scanId={cell.row.original.scan_id}
+            nodeId={cell.row.original.node_id}
+            nodeType={cell.row.original.node_type}
+            scanStatus={cell.row.original.status}
+            setScanIdToDelete={setScanIdToDelete}
+            setNodeIdToDelete={setNodeIdToDelete}
+            setShowDeleteDialog={setShowDeleteDialog}
+            trigger={
+              <button className="p-1">
+                <span className="block h-4 w-4 dark:text-text-text-and-icon rotate-90">
+                  <EllipsisIcon />
+                </span>
+              </button>
+            }
+          />
+        ),
+        header: () => '',
+        size: 30,
+        minSize: 30,
+        maxSize: 50,
+        enableResizing: false,
+      }),
       columnHelper.accessor('node_type', {
         enableSorting: false,
         cell: (info) => {
           return (
             <div className="flex items-center gap-x-2">
-              <div className="bg-blue-100 dark:bg-blue-500/10 p-1.5 rounded-lg">
-                <IconContext.Provider
-                  value={{ className: 'w-4 h-4 text-blue-500 dark:text-blue-400' }}
-                >
+              <div className="p-1.5 rounded-lg">
+                <IconContext.Provider value={{ className: 'w-4 h-4' }}>
                   {IconMapForNodeType[info.getValue()]}
                 </IconContext.Provider>
               </div>
@@ -555,7 +643,6 @@ const SecretScans = () => {
         maxSize: 130,
       }),
       columnHelper.accessor('node_name', {
-        enableSorting: false,
         cell: (info) => {
           const isNeverScan = info.row.original.status?.toLowerCase() === '';
           const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
@@ -580,54 +667,34 @@ const SecretScans = () => {
           );
         },
         header: () => 'Name',
-        minSize: 300,
-        size: 300,
-        maxSize: 500,
+        minSize: 230,
+        size: 240,
+        maxSize: 250,
       }),
       columnHelper.accessor('updated_at', {
         cell: (info) => (
-          <div className="flex items-center gap-x-2">
-            <IconContext.Provider value={{ className: 'text-gray-400' }}>
-              <HiClock />
-            </IconContext.Provider>
+          <div className="flex items-center">
             <span className="truncate">{formatMilliseconds(info.getValue())}</span>
           </div>
         ),
         header: () => 'Timestamp',
         minSize: 140,
-        size: 170,
-        maxSize: 200,
+        size: 140,
+        maxSize: 150,
       }),
       columnHelper.accessor('status', {
         enableSorting: true,
-        cell: (info) => (
-          <Badge
-            label={info.getValue().toUpperCase().replaceAll('_', ' ')}
-            className={cx({
-              'bg-green-100 dark:bg-green-600/10 text-green-600 dark:text-green-400':
-                info.getValue().toLowerCase() === 'complete',
-              'bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400':
-                info.getValue().toLowerCase() === 'error',
-              'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-                info.getValue().toLowerCase() === 'in_progress',
-            })}
-            size="sm"
-          />
-        ),
-        header: () => 'Status',
+        cell: (info) => ScanStatusesIcon(info.getValue()),
+        header: () => 'Scan Status',
         minSize: 100,
         size: 110,
         maxSize: 110,
         enableResizing: false,
       }),
       columnHelper.accessor('total', {
-        enableSorting: false,
         cell: (info) => (
-          <div className="flex items-center justify-end gap-x-2 tabular-nums">
+          <div className="flex items-center justify-end tabular-nums">
             <span className="truncate">{info.getValue()}</span>
-            <div className="w-5 h-5 text-gray-400 shrink-0">
-              <SecretsIcon />
-            </div>
           </div>
         ),
         header: () => <div className="text-right truncate">Total</div>,
@@ -636,119 +703,168 @@ const SecretScans = () => {
         maxSize: 80,
       }),
       columnHelper.accessor('critical', {
-        enableSorting: false,
         cell: (info) => (
           <div className="flex items-center justify-end gap-x-2 tabular-nums">
-            <span className="truncate">{info.getValue()}</span>
             <div
-              className="w-2 h-2 rounded-full shrink-0"
+              className="w-3 h-3 rounded-full shrink-0"
               style={{
                 backgroundColor: SEVERITY_COLORS['critical'],
               }}
             ></div>
+            <DFLink
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                searchParams.set('severity', 'critical');
+                const path = generatePath(
+                  `/secret/scan-results/:scanId/?${searchParams.toString()}`,
+                  {
+                    scanId: info.row.original.scan_id,
+                  },
+                );
+                navigate(path);
+              }}
+            >
+              {info.getValue()}
+            </DFLink>
           </div>
         ),
-        header: () => '',
-        minSize: 65,
-        size: 65,
-        maxSize: 65,
+        header: () => 'Critical',
+        minSize: 80,
+        size: 80,
+        maxSize: 80,
         enableResizing: false,
       }),
       columnHelper.accessor('high', {
-        enableSorting: false,
         cell: (info) => (
           <div className="flex items-center justify-end gap-x-2 tabular-nums">
-            <span className="truncate">{info.getValue()}</span>
             <div
-              className="w-2 h-2 rounded-full shrink-0"
+              className="w-3 h-3 rounded-full shrink-0"
               style={{
                 backgroundColor: SEVERITY_COLORS['high'],
               }}
             ></div>
+            <DFLink
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                searchParams.set('severity', 'high');
+                const path = generatePath(
+                  `/secret/scan-results/:scanId/?${searchParams.toString()}`,
+                  {
+                    scanId: info.row.original.scan_id,
+                  },
+                );
+                navigate(path);
+              }}
+            >
+              {info.getValue()}
+            </DFLink>
           </div>
         ),
-        header: () => '',
-        minSize: 65,
-        size: 65,
-        maxSize: 65,
+        header: () => 'High',
+        minSize: 80,
+        size: 80,
+        maxSize: 80,
         enableResizing: false,
       }),
       columnHelper.accessor('medium', {
-        enableSorting: false,
         cell: (info) => (
           <div className="flex items-center justify-end gap-x-2 tabular-nums">
-            <span className="truncate">{info.getValue()}</span>
             <div
-              className="w-2 h-2 rounded-full shrink-0"
+              className="w-3 h-3 rounded-full shrink-0"
               style={{
                 backgroundColor: SEVERITY_COLORS['medium'],
               }}
             ></div>
+            <DFLink
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                searchParams.set('severity', 'medium');
+                const path = generatePath(
+                  `/secret/scan-results/:scanId/?${searchParams.toString()}`,
+                  {
+                    scanId: info.row.original.scan_id,
+                  },
+                );
+                navigate(path);
+              }}
+            >
+              {info.getValue()}
+            </DFLink>
           </div>
         ),
-        header: () => '',
-        minSize: 65,
-        size: 65,
-        maxSize: 65,
+        header: () => 'Medium',
+        minSize: 80,
+        size: 80,
+        maxSize: 80,
         enableResizing: false,
       }),
       columnHelper.accessor('low', {
-        enableSorting: false,
         cell: (info) => (
           <div className="flex items-center justify-end gap-x-2 tabular-nums">
-            <span className="truncate">{info.getValue()}</span>
             <div
               className="w-2 h-2 rounded-full shrink-0"
               style={{
                 backgroundColor: SEVERITY_COLORS['low'],
               }}
             ></div>
+            <DFLink
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                searchParams.set('severity', 'low');
+                const path = generatePath(
+                  `/secret/scan-results/:scanId/?${searchParams.toString()}`,
+                  {
+                    scanId: info.row.original.scan_id,
+                  },
+                );
+                navigate(path);
+              }}
+            >
+              {info.getValue()}
+            </DFLink>
           </div>
         ),
-        header: () => '',
-        minSize: 65,
-        size: 65,
-        maxSize: 65,
+        header: () => 'Low',
+        minSize: 80,
+        size: 80,
+        maxSize: 80,
         enableResizing: false,
       }),
       columnHelper.accessor('unknown', {
-        enableSorting: false,
         cell: (info) => (
           <div className="flex items-center justify-end gap-x-2 tabular-nums">
-            <span className="truncate">{info.getValue()}</span>
             <div
-              className="w-2 h-2 rounded-full shrink-0"
+              className="w-3 h-3 rounded-full shrink-0"
               style={{
                 backgroundColor: SEVERITY_COLORS['unknown'],
               }}
             ></div>
+            <DFLink
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                searchParams.set('severity', 'unknown');
+                const path = generatePath(
+                  `/secret/scan-results/:scanId/?${searchParams.toString()}`,
+                  {
+                    scanId: info.row.original.scan_id,
+                  },
+                );
+                navigate(path);
+              }}
+            >
+              {info.getValue()}
+            </DFLink>
           </div>
         ),
-        header: () => '',
-        minSize: 65,
-        size: 65,
-        maxSize: 65,
-        enableResizing: false,
-      }),
-      columnHelper.display({
-        id: 'actions',
-        enableSorting: false,
-        cell: (cell) => (
-          <ActionDropdown
-            icon={<HiDotsVertical />}
-            scanId={cell.row.original.scan_id}
-            nodeId={cell.row.original.node_id}
-            nodeType={cell.row.original.node_type}
-            scanStatus={cell.row.original.status}
-            setScanIdToDelete={setScanIdToDelete}
-            setNodeIdToDelete={setNodeIdToDelete}
-            setShowDeleteDialog={setShowDeleteDialog}
-          />
-        ),
-        header: () => '',
-        minSize: 50,
-        size: 50,
-        maxSize: 50,
+        header: () => 'Unknown',
+        minSize: 80,
+        size: 80,
+        maxSize: 80,
         enableResizing: false,
       }),
     ];
@@ -756,292 +872,8 @@ const SecretScans = () => {
     return columns;
   }, []);
 
-  const isFilterApplied =
-    searchParams.has('languages') ||
-    searchParams.has('containerImages') ||
-    searchParams.has('containers') ||
-    searchParams.has('nodeType') ||
-    searchParams.has('hosts') ||
-    searchParams.has('clusters');
-
-  const onResetFilters = () => {
-    setSearchParams(() => {
-      return {};
-    });
-  };
-
   return (
-    <div>
-      <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-        <Breadcrumb separator={<HiChevronRight />} transparent>
-          <BreadcrumbLink>
-            <DFLink to={'/secret'}>Secrets</DFLink>
-          </BreadcrumbLink>
-          <BreadcrumbLink>
-            <span className="inherit cursor-auto">Secret Scans</span>
-          </BreadcrumbLink>
-        </Breadcrumb>
-
-        <span className="ml-2">
-          {navigation.state === 'loading' ? <CircleSpinner size="xs" /> : null}
-        </span>
-        <div className="ml-auto flex gap-x-4">
-          <div className="relative gap-x-4">
-            {isFilterApplied && (
-              <span className="absolute -left-[2px] -top-[2px] inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
-            )}
-
-            <Popover
-              triggerAsChild
-              elementToFocusOnCloseRef={elementToFocusOnClose}
-              content={
-                <div className="dark:text-white">
-                  <FilterHeader onReset={onResetFilters} />
-                  <Form className="flex flex-col gap-y-4 p-4">
-                    <fieldset>
-                      <legend className="text-sm font-medium">Type</legend>
-                      <div className="flex gap-x-4 mt-1">
-                        <Checkbox
-                          label="Host"
-                          checked={searchParams.getAll('nodeType').includes('host')}
-                          onCheckedChange={(state) => {
-                            if (state) {
-                              setSearchParams((prev) => {
-                                prev.append('nodeType', 'host');
-                                prev.delete('page');
-                                return prev;
-                              });
-                            } else {
-                              setSearchParams((prev) => {
-                                const prevStatuses = prev.getAll('nodeType');
-                                prev.delete('nodeType');
-                                prevStatuses
-                                  .filter((status) => status !== 'host')
-                                  .forEach((status) => {
-                                    prev.append('nodeType', status);
-                                  });
-                                prev.delete('page');
-                                return prev;
-                              });
-                            }
-                          }}
-                        />
-                        <Checkbox
-                          label="Container"
-                          checked={searchParams.getAll('nodeType').includes('container')}
-                          onCheckedChange={(state) => {
-                            if (state) {
-                              setSearchParams((prev) => {
-                                prev.append('nodeType', 'container');
-                                prev.delete('page');
-                                return prev;
-                              });
-                            } else {
-                              setSearchParams((prev) => {
-                                const prevStatuses = prev.getAll('nodeType');
-                                prev.delete('nodeType');
-                                prevStatuses
-                                  .filter((status) => status !== 'container')
-                                  .forEach((status) => {
-                                    prev.append('nodeType', status);
-                                  });
-                                prev.delete('page');
-                                return prev;
-                              });
-                            }
-                          }}
-                        />
-                        <Checkbox
-                          label="Container Images"
-                          checked={searchParams
-                            .getAll('nodeType')
-                            .includes('container_image')}
-                          onCheckedChange={(state) => {
-                            if (state) {
-                              setSearchParams((prev) => {
-                                prev.append('nodeType', 'container_image');
-                                prev.delete('page');
-                                return prev;
-                              });
-                            } else {
-                              setSearchParams((prev) => {
-                                const prevStatuses = prev.getAll('nodeType');
-                                prev.delete('page');
-                                prev.delete('nodeType');
-                                prevStatuses
-                                  .filter((status) => status !== 'container_image')
-                                  .forEach((status) => {
-                                    prev.append('nodeType', status);
-                                  });
-                                return prev;
-                              });
-                            }
-                          }}
-                        />
-                      </div>
-                    </fieldset>
-                    <fieldset>
-                      <legend className="text-sm font-medium">Status</legend>
-                      <div className="flex gap-x-4 mt-1">
-                        <Checkbox
-                          label="Completed"
-                          checked={searchParams.getAll('status').includes('complete')}
-                          onCheckedChange={(state) => {
-                            if (state) {
-                              setSearchParams((prev) => {
-                                prev.append('status', 'complete');
-                                prev.delete('page');
-                                return prev;
-                              });
-                            } else {
-                              setSearchParams((prev) => {
-                                const prevStatuses = prev.getAll('status');
-                                prev.delete('status');
-                                prev.delete('page');
-                                prevStatuses
-                                  .filter((status) => status !== 'complete')
-                                  .forEach((status) => {
-                                    prev.append('status', status);
-                                  });
-                                return prev;
-                              });
-                            }
-                          }}
-                        />
-                        <Checkbox
-                          label="In Progress"
-                          checked={searchParams.getAll('status').includes('in_progress')}
-                          onCheckedChange={(state) => {
-                            if (state) {
-                              setSearchParams((prev) => {
-                                prev.append('status', 'in_progress');
-                                prev.delete('page');
-                                return prev;
-                              });
-                            } else {
-                              setSearchParams((prev) => {
-                                const prevStatuses = prev.getAll('status');
-                                prev.delete('status');
-                                prevStatuses
-                                  .filter((status) => status !== 'in_progress')
-                                  .forEach((status) => {
-                                    prev.append('status', status);
-                                  });
-                                prev.delete('page');
-                                return prev;
-                              });
-                            }
-                          }}
-                        />
-                        <Checkbox
-                          label="Error"
-                          checked={searchParams.getAll('status').includes('error')}
-                          onCheckedChange={(state) => {
-                            if (state) {
-                              setSearchParams((prev) => {
-                                prev.append('status', 'error');
-                                prev.delete('page');
-                                return prev;
-                              });
-                            } else {
-                              setSearchParams((prev) => {
-                                const prevStatuses = prev.getAll('status');
-                                prev.delete('status');
-                                prev.delete('page');
-                                prevStatuses
-                                  .filter((status) => status !== 'error')
-                                  .forEach((status) => {
-                                    prev.append('status', status);
-                                  });
-                                return prev;
-                              });
-                            }
-                          }}
-                        />
-                      </div>
-                    </fieldset>
-                    <fieldset>
-                      <SearchableHostList
-                        scanType={ScanTypeEnum.VulnerabilityScan}
-                        defaultSelectedHosts={searchParams.getAll('hosts')}
-                        onChange={(value) => {
-                          setSearchParams((prev) => {
-                            prev.delete('hosts');
-                            value.forEach((host) => {
-                              prev.append('hosts', host);
-                            });
-                            prev.delete('page');
-                            return prev;
-                          });
-                        }}
-                      />
-                    </fieldset>
-                    <fieldset>
-                      <SearchableContainerList
-                        scanType={ScanTypeEnum.VulnerabilityScan}
-                        defaultSelectedContainers={searchParams.getAll('containers')}
-                        reset={!isFilterApplied}
-                        onChange={(value) => {
-                          setSearchParams((prev) => {
-                            prev.delete('containers');
-                            value.forEach((container) => {
-                              prev.append('containers', container);
-                            });
-                            prev.delete('page');
-                            return prev;
-                          });
-                        }}
-                      />
-                    </fieldset>
-                    <fieldset>
-                      <SearchableImageList
-                        scanType={ScanTypeEnum.VulnerabilityScan}
-                        defaultSelectedImages={searchParams.getAll('containerImages')}
-                        reset={!isFilterApplied}
-                        onChange={(value) => {
-                          setSearchParams((prev) => {
-                            prev.delete('containerImages');
-                            value.forEach((containerImage) => {
-                              prev.append('containerImages', containerImage);
-                            });
-                            prev.delete('page');
-                            return prev;
-                          });
-                        }}
-                      />
-                    </fieldset>
-                    <fieldset>
-                      <SearchableClusterList
-                        defaultSelectedClusters={searchParams.getAll('clusters')}
-                        reset={!isFilterApplied}
-                        onChange={(value) => {
-                          setSearchParams((prev) => {
-                            prev.delete('clusters');
-                            value.forEach((cluster) => {
-                              prev.append('clusters', cluster);
-                            });
-                            prev.delete('page');
-                            return prev;
-                          });
-                        }}
-                      />
-                    </fieldset>
-                  </Form>
-                </div>
-              }
-            >
-              <IconButton
-                className="ml-auto rounded-lg"
-                size="xs"
-                outline
-                color="primary"
-                ref={elementToFocusOnClose}
-                icon={<FiFilter />}
-              />
-            </Popover>
-          </div>
-        </div>
-      </div>
+    <>
       {showDeleteDialog && (
         <DeleteConfirmationModal
           showDialog={showDeleteDialog}
@@ -1050,63 +882,109 @@ const SecretScans = () => {
           setShowDialog={setShowDeleteDialog}
         />
       )}
-      <div className="m-2">
-        <Suspense fallback={<TableSkeleton columns={7} rows={15} size={'md'} />}>
-          <DFAwait resolve={loaderData.data}>
-            {(resolvedData: LoaderDataType['data']) => {
-              return (
-                <Table
-                  size="sm"
-                  data={resolvedData.scans}
-                  columns={columns}
-                  enablePagination
-                  manualPagination
-                  enableColumnResizing
-                  approximatePagination
-                  totalRows={resolvedData.totalRows}
-                  pageSize={PAGE_SIZE}
-                  pageIndex={resolvedData.currentPage}
-                  onPaginationChange={(updaterOrValue) => {
-                    let newPageIndex = 0;
-                    if (typeof updaterOrValue === 'function') {
-                      newPageIndex = updaterOrValue({
-                        pageIndex: resolvedData.currentPage,
-                        pageSize: PAGE_SIZE,
-                      }).pageIndex;
-                    } else {
-                      newPageIndex = updaterOrValue.pageIndex;
-                    }
-                    setSearchParams((prev) => {
-                      prev.set('page', String(newPageIndex));
-                      return prev;
-                    });
-                  }}
-                  enableSorting
-                  manualSorting
-                  sortingState={sort}
-                  onSortingChange={(updaterOrValue) => {
-                    let newSortState: SortingState = [];
-                    if (typeof updaterOrValue === 'function') {
-                      newSortState = updaterOrValue(sort);
-                    } else {
-                      newSortState = updaterOrValue;
-                    }
-                    setSearchParams((prev) => {
-                      if (!newSortState.length) {
-                        prev.delete('sortby');
-                        prev.delete('desc');
-                      } else {
-                        prev.set('sortby', String(newSortState[0].id));
-                        prev.set('desc', String(newSortState[0].desc));
-                      }
-                      return prev;
-                    });
-                    setSort(newSortState);
-                  }}
-                />
-              );
-            }}
-          </DFAwait>
+      <Table
+        data={data.scans}
+        columns={columns}
+        enablePagination
+        manualPagination
+        enableColumnResizing
+        approximatePagination
+        totalRows={data.totalRows}
+        pageSize={PAGE_SIZE}
+        pageIndex={data.currentPage}
+        onPaginationChange={(updaterOrValue) => {
+          let newPageIndex = 0;
+          if (typeof updaterOrValue === 'function') {
+            newPageIndex = updaterOrValue({
+              pageIndex: data.currentPage,
+              pageSize: PAGE_SIZE,
+            }).pageIndex;
+          } else {
+            newPageIndex = updaterOrValue.pageIndex;
+          }
+          setSearchParams((prev) => {
+            prev.set('page', String(newPageIndex));
+            return prev;
+          });
+        }}
+        enableSorting
+        manualSorting
+        sortingState={sort}
+        onSortingChange={(updaterOrValue) => {
+          let newSortState: SortingState = [];
+          if (typeof updaterOrValue === 'function') {
+            newSortState = updaterOrValue(sort);
+          } else {
+            newSortState = updaterOrValue;
+          }
+          setSearchParams((prev) => {
+            if (!newSortState.length) {
+              prev.delete('sortby');
+              prev.delete('desc');
+            } else {
+              prev.set('sortby', String(newSortState[0].id));
+              prev.set('desc', String(newSortState[0].desc));
+            }
+            return prev;
+          });
+          setSort(newSortState);
+        }}
+      />
+    </>
+  );
+};
+const SecretScans = () => {
+  const [searchParams] = useSearchParams();
+
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const isFetching = useIsFetching({
+    queryKey: queries.secret.scanList._def,
+  });
+
+  return (
+    <div>
+      <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+        <Breadcrumb>
+          <BreadcrumbLink asChild icon={<SecretsIcon />} isLink>
+            <DFLink to={'/secret'} unstyled>
+              Secrets
+            </DFLink>
+          </BreadcrumbLink>
+          <BreadcrumbLink>
+            <span className="inherit cursor-auto">Secret Scans</span>
+          </BreadcrumbLink>
+        </Breadcrumb>
+
+        <div className="ml-2 flex items-center">
+          {isFetching ? <CircleSpinner size="sm" /> : null}
+        </div>
+      </div>
+
+      <div className="mx-4">
+        <Button
+          variant="flat"
+          className="ml-auto py-2"
+          startIcon={<FilterIcon />}
+          endIcon={
+            getAppliedFiltersCount(searchParams) > 0 ? (
+              <Badge
+                label={String(getAppliedFiltersCount(searchParams))}
+                variant="filled"
+                size="small"
+                color="blue"
+              />
+            ) : null
+          }
+          size="sm"
+          onClick={() => {
+            setFiltersExpanded((prev) => !prev);
+          }}
+        >
+          Filter
+        </Button>
+        {filtersExpanded ? <Filters /> : null}
+        <Suspense fallback={<TableSkeleton columns={7} rows={15} />}>
+          <ScansTable />
         </Suspense>
       </div>
     </div>
@@ -1114,7 +992,6 @@ const SecretScans = () => {
 };
 
 export const module = {
-  loader,
   action,
   element: <SecretScans />,
 };
