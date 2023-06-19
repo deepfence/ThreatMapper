@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense } from 'react';
 import { Card } from 'ui-components';
 
 import { ModelSummary } from '@/api/generated/models/ModelSummary';
@@ -96,12 +97,21 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
   );
 };
 
-const Registries = () => {
-  const { data, isLoading } = useSuspenseQuery({
+const RegistryList = () => {
+  const { data } = useSuspenseQuery({
     ...queries.registry.registrySummary(),
     keepPreviousData: true,
   });
+  return (
+    <>
+      {data?.map((registry) => {
+        return <Registry key={registry.type} registry={registry} />;
+      })}
+    </>
+  );
+};
 
+const Registries = () => {
   return (
     <>
       <div className="flex py-2 w-full bg-white dark:bg-bg-breadcrumb-bar">
@@ -113,10 +123,9 @@ const Registries = () => {
         </span>
       </div>
       <div className="mx-4 mt-[66px] flex gap-x-[20px] gap-y-[42px] flex-wrap">
-        {isLoading ? <RegistrySkeleton /> : null}
-        {data?.map((registry) => {
-          return <Registry key={registry.type} registry={registry} />;
-        })}
+        <Suspense fallback={<RegistrySkeleton />}>
+          <RegistryList />
+        </Suspense>
       </div>
     </>
   );
