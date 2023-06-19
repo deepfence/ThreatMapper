@@ -150,9 +150,14 @@ func CommitFuncCloudResource(ns string, cs []CloudResource) error {
 		UNWIND $batch as row
 		WITH row
 		OPTIONAL MATCH (n:Node{node_id:row.node_id})
-		WITH n WHERE n IS NULL or n.active=false
+		WITH n, row as row
+		WHERE n IS NULL or n.active=false
 		MERGE (m:Node{node_id:row.node_id})
-		SET m+=row, m.updated_at = TIMESTAMP()`,
+		MERGE (cp:CloudProvider{node_id:row.cloud_provider})
+		MERGE (cr:CloudRegion{node_id:row.cloud_region})
+		MERGE (cp) -[:HOSTS]-> (cr)
+		MERGE (cr) -[:HOSTS]-> (m)
+		SET m+=row, m.updated_at = TIMESTAMP(), cp.active = true, cp.pseudo = false, cr.active = true`,
 			map[string]interface{}{"batch": hosts},
 		)
 	}
@@ -179,15 +184,6 @@ func ResourceToMaps(ms []CloudResource) ([]map[string]interface{}, []map[string]
 		res = append(res, newmap)
 
 		if v.ResourceID == AwsEc2ResourceId || v.ResourceID == GcpComputeResourceId || v.ResourceID == AzureComputeResourceId {
-			var nodeID string
-			switch v.ResourceID {
-			case AwsEc2ResourceId:
-				nodeID = strings.TrimSuffix(strings.TrimSuffix(v.PrivateDnsName, Ec2DnsSuffix), "."+v.Region)
-			case GcpComputeResourceId:
-				nodeID = v.Name
-			case AzureComputeResourceId:
-				nodeID = v.Name
-			}
 			var publicIP, privateIP []string
 			if v.PublicIpAddress != "" {
 				publicIP = []string{v.PublicIpAddress}
@@ -217,14 +213,14 @@ func ResourceToMaps(ms []CloudResource) ([]map[string]interface{}, []map[string]
 				"pseudo":                  false,
 				"timestamp":               timestampNow,
 				"kubernetes_cluster_id":   k8sClusterName,
-				"node_name":               nodeID,
+				"node_name":               v.Name,
 				"active":                  true,
 				"cloud_provider":          v.CloudProvider,
 				"agent_running":           false,
 				"version":                 DeepfenceVersion,
 				"instance_id":             newmap["node_id"],
-				"host_name":               nodeID,
-				"node_id":                 nodeID,
+				"host_name":               v.Name,
+				"node_id":                 v.Name,
 			})
 		}
 	}
