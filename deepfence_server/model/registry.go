@@ -314,10 +314,10 @@ func ListImageStubs(ctx context.Context, registryId string, filter reporters.Con
 	}
 
 	query := `
-	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub) <-[:IS]- (m:ContainerImage)
-	` + reporters.ContainsFilter2CypherWhereConditions("m", filter, true) + `
-	WITH distinct l.node_id as name, l.tags as tags
-	RETURN name, tags
+	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub)
+	` + reporters.ContainsFilter2CypherWhereConditions("l", filter, true) + `
+	WITH distinct l.docker_image_name as name, l.tags as tags, l.node_id as id
+	RETURN name, tags, id
 	ORDER BY name
 	` + fw.FetchWindow2CypherQuery()
 	r, err := tx.Run(query, map[string]interface{}{"id": registryId})
@@ -340,7 +340,7 @@ func ListImageStubs(ctx context.Context, registryId string, filter reporters.Con
 		}
 		images = append(images,
 			ImageStub{
-				ID:   records[i].Values[0].(string),
+				ID:   records[i].Values[2].(string),
 				Name: records[i].Values[0].(string),
 				Tags: tags,
 			},
