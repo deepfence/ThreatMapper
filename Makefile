@@ -15,9 +15,10 @@ VERSION?="2.0.0"
 
 default: bootstrap console_plugins agent console
 
-.PHONY: console_plugins agent
+.PHONY: console
 console: redis postgres kafka-broker router server worker ui file-server graphdb
 
+.PHONY: console_plugins
 console_plugins: secretscanner malwarescanner packagescanner
 
 .PHONY: bootstrap
@@ -123,18 +124,60 @@ cli:
 	(cd $(DEEPFENCE_CTL) && make clean && make all)
 
 .PHONY: publish
-publish:
+publish: publish-redis publish-postgres publish-kafka publish-router publish-minio publish-server publish-worker publish-ui publish-agent publish-cluster-agent publish-packagescanner publish-secretscanner publish-malwarescanner publish-graphdb
+
+.PHONY: publish-redis
+publish-redis:
 	docker push $(IMAGE_REPOSITORY)/deepfence_redis_ce:$(DF_IMG_TAG)
+
+.PHONY: publish-postgres
+publish-postgres:
 	docker push $(IMAGE_REPOSITORY)/deepfence_postgres_ce:$(DF_IMG_TAG)
+
+.PHONY: publish-kafka
+publish-kafka:
 	docker push $(IMAGE_REPOSITORY)/deepfence_kafka_broker_ce:$(DF_IMG_TAG)
+
+.PHONY: publish-router
+publish-router:
 	docker push $(IMAGE_REPOSITORY)/deepfence_router_ce:$(DF_IMG_TAG)
+
+.PHONY: publish-minio
+publish-minio:
 	docker push $(IMAGE_REPOSITORY)/deepfence_file_server_ce:$(DF_IMG_TAG)
+
+.PHONY: publish-server
+publish-server:
 	docker push $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG)
+
+.PHONY: publish-worker
+publish-worker:
 	docker push $(IMAGE_REPOSITORY)/deepfence_worker_ce:$(DF_IMG_TAG)
+
+.PHONY: publish-ui
+publish-ui:
 	docker push $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG)
+
+.PHONY: publish-agent
+publish-agent:
 	docker push $(IMAGE_REPOSITORY)/deepfence_agent_ce:$(DF_IMG_TAG)
+
+.PHONY: publish-cluster-agent
+publish-cluster-agent:
 	docker push $(IMAGE_REPOSITORY)/deepfence_cluster_agent_ce:$(DF_IMG_TAG)
+
+.PHONY: publish-packagescanner
+publish-packagescanner:
 	docker push $(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG)
-	docker push $(IMAGE_REPOSITORY)/deepfence_malware_scanner_ce:$(DF_IMG_TAG)
+
+.PHONY: publish-secretscanner
+publish-secretscanner:
 	docker push $(IMAGE_REPOSITORY)/deepfence_secret_scanner_ce:$(DF_IMG_TAG)
+
+.PHONY: publish-malwarescanner
+publish-malwarescanner:
+	docker push $(IMAGE_REPOSITORY)/deepfence_malware_scanner_ce:$(DF_IMG_TAG)
+
+.PHONY: publish-graphdb
+publish-graphdb:
 	docker push $(IMAGE_REPOSITORY)/deepfence_neo4j_ce:$(DF_IMG_TAG)

@@ -32,3 +32,6 @@ jobs:
       - name: Push images
         run: |
           make publish
+
+      - name: output image tag
+        run: echo 'new image tag **$DF_IMG_TAG**' >> $GITHUB_STEP_SUMMARY
