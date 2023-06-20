@@ -314,9 +314,9 @@ func ListImageStubs(ctx context.Context, registryId string, filter reporters.Con
 	}
 
 	query := `
-	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (m:ContainerImage) -[:IS]-> (l:ImageStub)
+	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub) <-[:IS]- (m:ContainerImage)
 	` + reporters.ContainsFilter2CypherWhereConditions("m", filter, true) + `
-	WITH distinct l.node_id as name, collect(m.docker_image_tag) as tags
+	WITH distinct l.node_id as name, l.tags as tags
 	RETURN name, tags
 	ORDER BY name
 	` + fw.FetchWindow2CypherQuery()
@@ -374,10 +374,9 @@ func ListImages(ctx context.Context, registryId string, filter reporters.Contain
 	}
 
 	query := `
-	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (m:ContainerImage)
-	` + reporters.ContainsFilter2CypherWhereConditions("m", filter, true) + `
-	RETURN m
-	ORDER BY m.node_id
+	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub) <-[:IS]- (m:ContainerImage)
+	` + reporters.ContainsFilter2CypherWhereConditions("l", filter, true) + `
+	RETURN l, m
 	` + fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("query: %v", query)
 	r, err := tx.Run(query, map[string]interface{}{"id": registryId})
@@ -391,19 +390,47 @@ func ListImages(ctx context.Context, registryId string, filter reporters.Contain
 	}
 
 	for _, rec := range records {
-		data, has := rec.Get("m")
-		if !has {
+		lValue, hasL := rec.Get("l")
+		mValue, hasM := rec.Get("m")
+		if !hasL || !hasM {
 			log.Warn().Msgf("Missing neo4j entry")
 			continue
 		}
-		da, ok := data.(dbtype.Node)
+
+		l, ok := lValue.(dbtype.Node)
 		if !ok {
 			log.Warn().Msgf("Missing neo4j entry")
 			continue
 		}
+
+		m, ok := mValue.(dbtype.Node)
+		if !ok {
+			log.Warn().Msgf("Missing neo4j entry")
+			continue
+		}
+
 		var node ContainerImage
-		utils.FromMap(da.Props, &node)
-		res = append(res, node)
+		utils.FromMap(m.Props, &node)
+
+		// Extract tags from the "l" node
+		tagsValue, hasTags := l.Props["tags"]
+		if hasTags {
+			tags, ok := tagsValue.([]interface{})
+			if ok {
+				for _, tag := range tags {
+					if tagStr, ok := tag.(string); ok {
+						// create individual tag nodes
+						tagNode := node
+						tagNode.Tag = tagStr
+						res = append(res, tagNode)
+					}
+				}
+			}
+		}
+
+		// kludge: breaking here since we don't want to repeat images and duplicate the entries
+		// in the first iteration itself we get all the tags in an array and we use the first image and duplicate
+		break
 	}
 
 	return res, nil

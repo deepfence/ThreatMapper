@@ -176,10 +176,11 @@ func getImageWithTags(url, namespace, userName, password, repoName string, repoT
 		details := getImageDetails(tag, manifests)
 		if details != nil {
 			tt := model.IngestedContainerImage{
-				ID:   model.DigestToID(details.Digest),
-				Name: repoName,
-				Tag:  tag,
-				Size: fmt.Sprint(details.ImageSize),
+				ID:            model.DigestToID(details.Digest),
+				DockerImageID: model.DigestToID(details.Digest),
+				Name:          repoName,
+				Tag:           tag,
+				Size:          fmt.Sprint(details.ImageSize),
 				Metadata: model.Metadata{
 					"created_time": details.CreatedTime.Unix(),
 					"digest":       details.Digest,

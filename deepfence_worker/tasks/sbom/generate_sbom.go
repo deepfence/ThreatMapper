@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -67,13 +68,23 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 		return nil, nil
 	}
 
+	statusChan := make(chan SbomScanStatus)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	StartStatusReporter("SBOM_GENERATION", statusChan, s.ingestC, rh, params, &wg)
+	defer wg.Wait()
+
+	// send inprogress status
+	statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil)
+
 	// get registry credentials
 	authFile, creds, err := workerUtils.GetConfigFileFromRegistry(ctx, params.RegistryId)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
+		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
 		return nil, nil
 	}
+
 	defer func() {
 		log.Info().Msgf("remove auth directory %s", authFile)
 		if err := os.RemoveAll(authFile); err != nil {
@@ -111,12 +122,12 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 
 	log.Debug().Msgf("config: %+v", cfg)
 
-	SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil), rh)
+	statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil)
 
 	rawSbom, err := syft.GenerateSBOM(cfg)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
+		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
 		return nil, nil
 	}
 
@@ -125,7 +136,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 	_, err = gzipwriter.Write(rawSbom)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
+		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
 		return nil, nil
 	}
 	gzipwriter.Close()
@@ -134,8 +145,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 	mc, err := directory.MinioClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
-		SendScanStatus(s.ingestC,
-			NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
+		statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
 		return nil, nil
 	}
 
@@ -171,8 +181,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 
 		if logError == true {
 			log.Error().Msg(err.Error())
-			SendScanStatus(s.ingestC,
-				NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil), rh)
+			statusChan <- NewSbomScanStatus(params, utils.SCAN_STATUS_FAILED, err.Error(), nil)
 			return nil, nil
 		}
 	}
@@ -181,7 +190,7 @@ func (s SbomGenerator) GenerateSbom(msg *message.Message) ([]*message.Message, e
 
 	// write sbom to minio and return details another task will scan sbom
 
-	SendScanStatus(s.ingestC, NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil), rh)
+	statusChan <- NewSbomScanStatus(params, SBOM_GENERATED, "", nil)
 
 	params.SBOMFilePath = sbomFile
 

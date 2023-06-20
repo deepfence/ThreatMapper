@@ -48,7 +48,7 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_TOKEN_AUTH, apiAuthRequest, true)
+	h.AuditUserActivity(r, EVENT_AUTH, ACTION_TOKEN_AUTH, user, true)
 
 	httpext.JSON(w, http.StatusOK, accessTokenResponse)
 }

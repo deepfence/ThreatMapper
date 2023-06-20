@@ -94,7 +94,7 @@ func (h *Handler) AuditUserActivity(
 		role_id = claims["role_id"].(float64)
 	}
 
-	if event == EVENT_AUTH && action == ACTION_LOGIN {
+	if event == EVENT_AUTH && (action == ACTION_LOGIN || action == ACTION_TOKEN_AUTH) {
 		user := resources.(*model.User)
 		user_id = float64(user.ID)
 		userIdValid = true

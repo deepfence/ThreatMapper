@@ -163,6 +163,9 @@ neo4j:
   secrets:
     # format should be username/password
     NEO4J_AUTH: neo4j/e16908ffa5b9f8e9d4ed
+    AWS_ACCESS_KEY: ""
+    AWS_SECRET_KEY: ""
+    DF_S3_BUCKET_NAME: ""
   config:
     NEO4J_dbms_memory_pagecache_size: 2600m
     NEO4J_dbms_memory_heap_initial__size: 4000m
@@ -455,7 +458,7 @@ console_agents:
     podSecurityContext: {}
     securityContext: {}
     nodeSelector: {"kubernetes.io/os": "linux"}
-    tolerations:   
+    tolerations:
       - operator: "Exists"
         effect: "NoSchedule"
       - operator: "Exists"
