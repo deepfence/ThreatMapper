@@ -13,9 +13,9 @@ DF_IMG_TAG?=latest
 IS_DEV_BUILD?=false
 VERSION?="2.0.0"
 
-default: bootstrap console_plugins agent console
+default: console
 
-.PHONY: console_plugins agent console
+.PHONY: bootstrap console_plugins agent
 console: redis postgres kafka-broker router server worker ui console_plugins file-server graphdb
 
 console_plugins: secretscanner malwarescanner packagescanner
@@ -78,7 +78,7 @@ graphdb:
 ui:
 	git log --format="%h" -n 1 > $(DEEPFENCE_FRONTEND_DIR)/console_version.txt && \
 	echo $(VERSION) > $(DEEPFENCE_FRONTEND_DIR)/product_version.txt && \
-	docker run -it --rm --entrypoint=bash -v $(DEEPFENCE_FRONTEND_DIR):/app node:18-bullseye-slim -c "cd /app && corepack enable && corepack prepare pnpm@7.17.1 --activate && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=true pnpm install --frozen-lockfile --prefer-offline && pnpm run build" && \
+	docker run -i --rm --entrypoint=bash -v $(DEEPFENCE_FRONTEND_DIR):/app node:18-bullseye-slim -c "cd /app && corepack enable && corepack prepare pnpm@7.17.1 --activate && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=true pnpm install --frozen-lockfile --prefer-offline && pnpm run build" && \
 	docker build -f $(DEEPFENCE_FRONTEND_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG) $(DEEPFENCE_FRONTEND_DIR) && \
 	rm -rf $(DEEPFENCE_FRONTEND_DIR)/console_version.txt $(DEEPFENCE_FRONTEND_DIR)/product_version.txt
 
@@ -97,7 +97,7 @@ packagescanner:
 
 .PHONY: openapi
 openapi: server
-	docker run --rm -it \
+	docker run --rm -i \
 	--entrypoint=/usr/local/bin/deepfence_server \
 	-v $(PWD):/app $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG) \
 	--export-api-docs-path /app/openapi.yaml
