@@ -10,15 +10,13 @@ import (
 )
 
 type ComplianceScanStatus struct {
-	Timestamp   time.Time `json:"@timestamp"`
-	ScanID      string    `json:"scan_id"`
-	ScanStatus  string    `json:"scan_status"`
-	ScanMessage string    `json:"scan_message"`
+	ScanID      string `json:"scan_id"`
+	ScanStatus  string `json:"scan_status"`
+	ScanMessage string `json:"scan_message"`
 }
 
 type Compliance struct {
 	Type                string `json:"type"`
-	Timestamp           string `json:"@timestamp"`
 	Masked              bool   `json:"masked"`
 	TestCategory        string `json:"test_category"`
 	TestNumber          string `json:"test_number"`
@@ -35,6 +33,16 @@ type Compliance struct {
 	ScanId              string `json:"scan_id"`
 	NodeId              string `json:"node_id"`
 	NodeType            string `json:"node_type"`
+}
+
+type ComplianceRule struct {
+	Masked        bool   `json:"masked"`
+	TestCategory  string `json:"test_category"`
+	TestNumber    string `json:"test_number"`
+	TestInfo      string `json:"description"`
+	TestRationale string `json:"test_rationale"`
+	TestSeverity  string `json:"test_severity"`
+	TestDesc      string `json:"test_desc"`
 }
 
 func CommitFuncCompliance(ns string, data []Compliance) error {
@@ -59,7 +67,9 @@ func CommitFuncCompliance(ns string, data []Compliance) error {
 	if _, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:Compliance{node_id:row.node_id, test_number:row.test_number})
-		SET n+= row
+		MERGE (r:ComplianceRule{node_id:row.test_number})
+		MERGE (n) -[:IS]-> (r)
+		SET n+= row, r += row
 		WITH n, row.scan_id as scan_id
 		MERGE (m:ComplianceScan{node_id: scan_id})
 		MERGE (m) -[r:DETECTED]-> (n)

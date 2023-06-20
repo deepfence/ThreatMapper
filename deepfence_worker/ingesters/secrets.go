@@ -97,6 +97,7 @@ func secretsToMaps(data []Secret) []map[string]map[string]interface{} {
 		rule := utils.ToMap(i.Rule)
 		delete(rule, "id")
 		rule["rule_id"] = i.Rule.ID
+		rule["level"] = i.Severity.Level
 		secrets = append(secrets, map[string]map[string]interface{}{
 			"Rule":   rule,
 			"Secret": secret,

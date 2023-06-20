@@ -176,6 +176,18 @@ func (h *Handler) SearchCompliances(w http.ResponseWriter, r *http.Request) {
 	SearchHandler[model.Compliance](w, r)
 }
 
+func (h *Handler) SearchSecretRules(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.SecretRule](w, r)
+}
+
+func (h *Handler) SearchMalwareRules(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.MalwareRule](w, r)
+}
+
+func (h *Handler) SearchComplianceRules(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.ComplianceRule](w, r)
+}
+
 func (h *Handler) SearchVulnerabilityScans(w http.ResponseWriter, r *http.Request) {
 	SearchScans(w, r, utils.NEO4J_VULNERABILITY_SCAN)
 }
@@ -250,6 +262,18 @@ func (h *Handler) SearchCloudAccountCount(w http.ResponseWriter, r *http.Request
 
 func (h *Handler) SearchCompliancesCount(w http.ResponseWriter, r *http.Request) {
 	SearchCountHandler[model.Compliance](w, r)
+}
+
+func (h *Handler) SearchSecretRulesCount(w http.ResponseWriter, r *http.Request) {
+	SearchCountHandler[model.SecretRule](w, r)
+}
+
+func (h *Handler) SearchMalwareRulesCount(w http.ResponseWriter, r *http.Request) {
+	SearchCountHandler[model.MalwareRule](w, r)
+}
+
+func (h *Handler) SearchComplianceRulesCount(w http.ResponseWriter, r *http.Request) {
+	SearchCountHandler[model.ComplianceRule](w, r)
 }
 
 func (h *Handler) SearchVulnerabilityScansCount(w http.ResponseWriter, r *http.Request) {
