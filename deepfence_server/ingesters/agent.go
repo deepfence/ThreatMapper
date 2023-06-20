@@ -666,42 +666,12 @@ func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.
 
 	if _, err := tx.Run(`
 		UNWIND $batch as row
-		MERGE (n:Node{node_id:row.node_id})
-		MERGE (cp:CloudProvider{node_id:row.cloud_provider})
-		MERGE (cr:CloudRegion{node_id:row.cloud_region})
-		MERGE (cp) -[:HOSTS]-> (cr)
-		MERGE (cr) -[:HOSTS]-> (n)
-		SET cp.active = true, cp.pseudo = false, cr.active = true`,
-		map[string]interface{}{"batch": batches.Host_batch}); err != nil {
-		return err
-	}
-
-	if _, err := tx.Run(`
-		UNWIND $batch as row
 		MERGE (n:ContainerImage{node_id:row.node_id})
 		MERGE (s:ImageStub{node_id: row.docker_image_name, docker_image_name: row.docker_image_name})
 		MERGE (n) -[:IS]-> (s)
 		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true, s.updated_at = TIMESTAMP(), n.docker_image_id=row.node_id,
 		s.tags = REDUCE(distinctElements = [], element IN COALESCE(s.tags, []) + row.docker_image_tag | CASE WHEN NOT element in distinctElements THEN distinctElements + element ELSE distinctElements END)`,
 		map[string]interface{}{"batch": batches.Container_image_batch}); err != nil {
-		return err
-	}
-
-	if _, err := tx.Run(`
-		UNWIND $batch as row
-		MERGE (n:Pod{node_id:row.node_id})
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true`,
-		map[string]interface{}{"batch": batches.Pod_batch}); err != nil {
-		return err
-	}
-
-	if _, err := tx.Run(`
-		UNWIND $batch as row
-		MERGE (n:KubernetesCluster{node_id:row.node_id})
-		MERGE (cp:CloudProvider{node_id:row.cloud_provider})
-		MERGE (cp) -[:HOSTS]-> (n)
-		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true, n.node_type = 'cluster', cp.active = true, cp.pseudo = false`,
-		map[string]interface{}{"batch": batches.Kubernetes_cluster_batch}); err != nil {
 		return err
 	}
 
@@ -718,34 +688,13 @@ func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.
 
 	if _, err := tx.Run(`
 		UNWIND $batch as row
-		MATCH (n:KubernetesCluster{node_id: row.source})
-		WITH n, row
-		UNWIND row.destinations as dest
-		MATCH (m:Node{node_id: dest})
-		MERGE (n)-[:INSTANCIATE]->(m)`,
-		map[string]interface{}{"batch": batches.Kubernetes_cluster_edge_batch}); err != nil {
-		return err
-	}
-
-	if _, err := tx.Run(`
-		UNWIND $batch as row
-		MATCH (n:KubernetesCluster{node_id: row.source})
-		WITH n, row
-		UNWIND row.destinations as dest
-		MATCH (m:Pod{node_id: dest})
-		MERGE (n)-[:HOSTS]->(m)`,
-		map[string]interface{}{"batch": batches.Pod_edges_batch}); err != nil {
-		return err
-	}
-
-	if _, err := tx.Run(`
-		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
-		WITH n, row
-		UNWIND row.destinations as dest
-		MERGE (m:Pod{node_id: dest})
-		MERGE (n)-[:HOSTS]->(m)`,
-		map[string]interface{}{"batch": batches.Pod_host_edges_batch}); err != nil {
+		MATCH (m:Node{node_id: row.destination})
+		MERGE (n)-[r:CONNECTS]->(m)
+		WITH n, r, m, row.pids as rpids
+		UNWIND rpids as pids
+		SET r.left_pids = coalesce(r.left_pids, []) + pids.left,
+		    r.right_pids = coalesce(r.right_pids, []) + pids.right`, map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
 		return err
 	}
 
@@ -833,13 +782,50 @@ func (nc *neo4jIngester) PushToDB(batches ReportIngestionData, session neo4j.Ses
 
 	if _, err := tx.Run(`
 		UNWIND $batch as row
+		MERGE (n:KubernetesCluster{node_id:row.node_id})
+		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true, n.node_type = 'cluster'`,
+		map[string]interface{}{"batch": batches.Kubernetes_cluster_batch}); err != nil {
+		return err
+	}
+
+	if _, err := tx.Run(`
+		UNWIND $batch as row
+		MERGE (n:Pod{node_id:row.node_id})
+		SET n+= row, n.updated_at = TIMESTAMP(), n.active = true`,
+		map[string]interface{}{"batch": batches.Pod_batch}); err != nil {
+		return err
+	}
+
+	if _, err := tx.Run(`
+		UNWIND $batch as row
+		MATCH (n:KubernetesCluster{node_id: row.source})
+		WITH n, row
+		UNWIND row.destinations as dest
+		MATCH (m:Pod{node_id: dest})
+		MERGE (n)-[:HOSTS]->(m)`,
+		map[string]interface{}{"batch": batches.Pod_edges_batch}); err != nil {
+		return err
+	}
+
+	if _, err := tx.Run(`
+		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
-		MATCH (m:Node{node_id: row.destination})
-		MERGE (n)-[r:CONNECTS]->(m)
-		WITH n, r, m, row.pids as rpids
-		UNWIND rpids as pids
-		SET r.left_pids = coalesce(r.left_pids, []) + pids.left,
-		    r.right_pids = coalesce(r.right_pids, []) + pids.right`, map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
+		WITH n, row
+		UNWIND row.destinations as dest
+		MERGE (m:Pod{node_id: dest})
+		MERGE (n)-[:HOSTS]->(m)`,
+		map[string]interface{}{"batch": batches.Pod_host_edges_batch}); err != nil {
+		return err
+	}
+
+	if _, err := tx.Run(`
+		UNWIND $batch as row
+		MATCH (n:KubernetesCluster{node_id: row.source})
+		WITH n, row
+		UNWIND row.destinations as dest
+		MATCH (m:Node{node_id: dest})
+		MERGE (n)-[:INSTANCIATE]->(m)`,
+		map[string]interface{}{"batch": batches.Kubernetes_cluster_edge_batch}); err != nil {
 		return err
 	}
 
