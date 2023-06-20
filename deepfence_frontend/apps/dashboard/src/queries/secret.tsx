@@ -1,7 +1,12 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
 
 import { getSearchApiClient } from '@/api/api';
-import { ModelScanInfo, SearchSearchScanReq } from '@/api/generated';
+import {
+  ModelNodeIdentifierNodeTypeEnum,
+  ModelScanInfo,
+  SearchSearchScanReq,
+} from '@/api/generated';
+import { SecretsCountsCardData } from '@/features/secrets/components/landing/SecretsCountsCard';
 import { apiWrapper } from '@/utils/api';
 
 export const secretQueries = createQueryKeys('secret', {
@@ -253,6 +258,270 @@ export const secretQueries = createQueryKeys('secret', {
         }
         return {
           data: searchSecretsResponse.value[0],
+        };
+      },
+    };
+  },
+  top5SecretAssets: (filters: { nodeType: 'image' | 'host' | 'container' }) => {
+    const { nodeType } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const top5NodesApi = apiWrapper({
+          fn: {
+            [ModelNodeIdentifierNodeTypeEnum.Image]:
+              getSearchApiClient().searchContainerImages,
+            [ModelNodeIdentifierNodeTypeEnum.Host]: getSearchApiClient().searchHosts,
+            [ModelNodeIdentifierNodeTypeEnum.Container]:
+              getSearchApiClient().searchContainers,
+          }[nodeType],
+        });
+        const top5Nodes = await top5NodesApi({
+          searchSearchNodeReq: {
+            node_filter: {
+              filters: {
+                contains_filter: {
+                  filter_in: {
+                    pseudo: [false],
+                    active: [true],
+                    secret_scan_status: ['COMPLETE'],
+                  },
+                },
+                match_filter: {
+                  filter_in: {},
+                },
+                order_filter: {
+                  order_fields: [
+                    {
+                      field_name: 'secrets_count',
+                      descending: true,
+                    },
+                  ],
+                },
+                compare_filter: [
+                  {
+                    field_name: 'secrets_count',
+                    field_value: 0,
+                    greater_than: true,
+                  },
+                ],
+              },
+              in_field_filter: [],
+              window: {
+                offset: 0,
+                size: 0,
+              },
+            },
+            window: {
+              offset: 0,
+              size: 5,
+            },
+          },
+        });
+        if (!top5Nodes.ok) {
+          throw new Error('error getting top 5 container images');
+        }
+
+        const top5NodeScansApi = apiWrapper({
+          fn: getSearchApiClient().searchSecretsScan,
+        });
+        const top5NodeScans = await top5NodeScansApi({
+          searchSearchScanReq: {
+            node_filters: {
+              filters: {
+                compare_filter: [],
+                contains_filter: { filter_in: {} },
+                match_filter: { filter_in: {} },
+                order_filter: { order_fields: [] },
+                not_contains_filter: { filter_in: {} },
+              },
+              in_field_filter: [],
+              window: { offset: 0, size: 0 },
+            },
+            scan_filters: {
+              filters: {
+                compare_filter: [],
+                contains_filter: {
+                  filter_in: {
+                    node_id: top5Nodes.value
+                      .map((node) => node.secret_latest_scan_id)
+                      .filter((scanId) => {
+                        return !!scanId?.length;
+                      }),
+                  },
+                },
+                match_filter: { filter_in: {} },
+                order_filter: { order_fields: [] },
+                not_contains_filter: { filter_in: {} },
+              },
+              in_field_filter: [],
+              window: { offset: 0, size: 0 },
+            },
+            window: {
+              offset: 0,
+              size: 5,
+            },
+          },
+        });
+
+        if (!top5NodeScans.ok) {
+          throw new Error('error getting top 5 scans');
+        }
+
+        return top5Nodes.value
+          .map((node) => {
+            const latestScan = top5NodeScans.value.find(
+              (scan) => scan.node_id === node.node_id,
+            );
+            if (!latestScan) {
+              return null;
+            }
+            return {
+              name: latestScan.node_name,
+              critical: latestScan.severity_counts?.critical ?? 0,
+              high: latestScan.severity_counts?.high ?? 0,
+              medium: latestScan.severity_counts?.medium ?? 0,
+              low: latestScan.severity_counts?.low ?? 0,
+              unknown: latestScan.severity_counts?.unknown ?? 0,
+            };
+          })
+          .reduce<
+            Array<{
+              name: string;
+              critical: number;
+              high: number;
+              medium: number;
+              low: number;
+              unknown: number;
+            }>
+          >((acc, curr) => {
+            if (curr) {
+              acc.push(curr);
+            }
+            return acc;
+          }, []);
+      },
+    };
+  },
+  uniqueSecretsCount: () => {
+    return {
+      queryKey: ['uniqueSecretsCount'],
+      queryFn: async () => {
+        const defaultResults: SecretsCountsCardData = {
+          total: 0,
+          severityBreakdown: {
+            critical: 0,
+            high: 0,
+            medium: 0,
+            low: 0,
+            unknown: 0,
+          },
+        };
+        const searchSecretsCountApi = apiWrapper({
+          fn: getSearchApiClient().searchVulnerabilitiesCount,
+        });
+        const uniqueSecretsCounts = await searchSecretsCountApi({
+          searchSearchNodeReq: {
+            node_filter: {
+              filters: {
+                contains_filter: { filter_in: {} },
+                match_filter: { filter_in: {} },
+                order_filter: { order_fields: [] },
+                compare_filter: null,
+              },
+              in_field_filter: [],
+              window: {
+                offset: 0,
+                size: 0,
+              },
+            },
+            window: {
+              offset: 0,
+              size: 999999999,
+            },
+          },
+        });
+
+        if (!uniqueSecretsCounts.ok) {
+          // TODO handle error
+          return defaultResults;
+        }
+
+        return {
+          total: uniqueSecretsCounts.value.count,
+          severityBreakdown: {
+            critical: uniqueSecretsCounts.value.categories?.['critical'] ?? 0,
+            high: uniqueSecretsCounts.value.categories?.['high'] ?? 0,
+            medium: uniqueSecretsCounts.value.categories?.['medium'] ?? 0,
+            low: uniqueSecretsCounts.value.categories?.['low'] ?? 0,
+            unknown: uniqueSecretsCounts.value.categories?.['unknown'] ?? 0,
+          },
+        };
+      },
+    };
+  },
+  mostExploitableSecretsCount: () => {
+    return {
+      queryKey: ['mostExploitableSecretsCount'],
+      queryFn: async () => {
+        const defaultResults: SecretsCountsCardData = {
+          total: 0,
+          severityBreakdown: {
+            critical: 0,
+            high: 0,
+            medium: 0,
+            low: 0,
+            unknown: 0,
+          },
+        };
+
+        const searchSecretsCountApi = apiWrapper({
+          fn: getSearchApiClient().searchVulnerabilitiesCount,
+        });
+        const mostExploitableSecretCounts = await searchSecretsCountApi({
+          searchSearchNodeReq: {
+            node_filter: {
+              filters: {
+                contains_filter: { filter_in: { exploitability_score: [1, 2, 3] } },
+                match_filter: { filter_in: {} },
+                order_filter: {
+                  order_fields: [
+                    {
+                      size: 1000,
+                      field_name: 'exploitability_score',
+                      descending: true,
+                    },
+                    { descending: true, field_name: 'cve_cvss_score' },
+                  ],
+                },
+                compare_filter: null,
+              },
+              in_field_filter: [],
+              window: {
+                offset: 0,
+                size: 0,
+              },
+            },
+            window: {
+              offset: 0,
+              size: 1000,
+            },
+          },
+        });
+        if (!mostExploitableSecretCounts.ok) {
+          // TODO handle error
+          return defaultResults;
+        }
+
+        return {
+          total: mostExploitableSecretCounts.value.count,
+          severityBreakdown: {
+            critical: mostExploitableSecretCounts.value.categories?.['critical'] ?? 0,
+            high: mostExploitableSecretCounts.value.categories?.['high'] ?? 0,
+            medium: mostExploitableSecretCounts.value.categories?.['medium'] ?? 0,
+            low: mostExploitableSecretCounts.value.categories?.['low'] ?? 0,
+            unknown: mostExploitableSecretCounts.value.categories?.['unknown'] ?? 0,
+          },
         };
       },
     };
