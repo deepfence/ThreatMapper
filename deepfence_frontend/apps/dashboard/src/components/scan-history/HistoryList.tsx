@@ -3,7 +3,6 @@ import { Dropdown, DropdownItem, IconButton } from 'ui-components';
 
 import { CaretDown } from '@/components/icons/common/CaretDown';
 import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
-import { HistoryIcon } from '@/components/icons/common/History';
 import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { isScanComplete, isScanFailed } from '@/utils/scan';
