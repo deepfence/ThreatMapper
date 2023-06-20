@@ -1,0 +1,41 @@
+name: Deploy to k8s
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "image tag"
+        required: true
+        type: string
+
+jobs:
+
+  build:
+    name: deploy
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Helm installer
+        uses: Azure/setup-helm@v3
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+    
+      - name: Log in to DigitalOcean Container Registry with short-lived credentials
+        run: doctl registry login --expiry-seconds 600
+
+      - name: Save DigitalOcean kubeconfig with short-lived credentials
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 actions-example-k8s-1-18
+
+      - name: instal router
+        run: |
+          helm upgrade --install router $GITHUB_WORKSPACE/deployment-scripts/helm-charts/deepfence-router
+
+      - name: instal console
+        run: |
+          helm upgrade --install console $GITHUB_WORKSPACE/deployment-scripts/helm-charts/deepfence-console --set global.imageTag=${{ inputs.tag }}
