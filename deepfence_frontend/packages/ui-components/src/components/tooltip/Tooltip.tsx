@@ -45,7 +45,7 @@ export const Tooltip = (props: TooltipProps) => {
               'data-[side=right]:animate-slide-left-fade',
               'data-[side=bottom]:animate-slide-up-fade',
               'data-[side=left]:animate-slide-right-fade',
-              'rounded-md px-3 py-2 shadow-sm max-w-[200px]',
+              'rounded-md px-3 py-2 shadow-sm max-w-[400px]',
               'bg-bg-tooltip dark:bg-bg-tooltip',
               Typography.leading.normal,
             )}
@@ -70,7 +70,7 @@ export const Tooltip = (props: TooltipProps) => {
                     wordBreak: 'break-word',
                   }}
                 >
-                  Tooltip:<span className="pl-1">{content}</span>
+                  <span>{content}</span>
                 </span>
               ) : (
                 content

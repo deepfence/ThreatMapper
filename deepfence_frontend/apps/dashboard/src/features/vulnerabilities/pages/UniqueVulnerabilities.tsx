@@ -30,7 +30,7 @@ import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
-const PAGE_SIZE = 15;
+const DEFAULT_PAGE_SIZE = 10;
 
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   liveConnection: 'Live Connection',
@@ -189,17 +189,16 @@ const UniqueTable = () => {
           <DFLink
             to={{
               pathname: `./${info.getValue()}`,
+              search: `?${searchParams.toString()}`,
             }}
             className="flex items-center gap-x-2"
           >
-            <>
-              <div className="p-2 bg-gray-100 dark:bg-gray-500/10 rounded-lg">
-                <div className="w-3 h-3 dark:text-status-error">
-                  <VulnerabilityIcon />
-                </div>
+            <div className="p-2 bg-gray-100 dark:bg-gray-500/10 rounded-lg shrink-0">
+              <div className="w-3 h-3 dark:text-status-error">
+                <VulnerabilityIcon />
               </div>
-              {info.getValue()}
-            </>
+            </div>
+            <TruncatedText text={info.getValue() ?? ''} />
           </DFLink>
         ),
         header: () => 'CVE ID',
@@ -208,7 +207,7 @@ const UniqueTable = () => {
         maxSize: 250,
       }),
       columnHelper.accessor('cve_caused_by_package', {
-        cell: (info) => info.getValue(),
+        cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
         header: () => 'Package',
         minSize: 100,
         size: 120,
@@ -231,8 +230,7 @@ const UniqueTable = () => {
         maxSize: 85,
       }),
       columnHelper.accessor('cve_attack_vector', {
-        enableResizing: false,
-        cell: (info) => info.getValue(),
+        cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
         header: () => 'Attack Vector',
         minSize: 100,
         size: 120,
@@ -295,7 +293,7 @@ const UniqueTable = () => {
 
   const { data } = useSuspenseQuery({
     ...queries.vulnerability.uniqueVulnerabilities({
-      pageSize: PAGE_SIZE,
+      pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
       liveConnection: searchParams.getAll('liveConnection'),
       page: parseInt(searchParams.get('page') ?? '0', 10),
       order: getOrderFromSearchParams(searchParams),
@@ -314,14 +312,14 @@ const UniqueTable = () => {
       enableColumnResizing
       approximatePagination
       totalRows={data.totalRows}
-      pageSize={PAGE_SIZE}
+      pageSize={parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE))}
       pageIndex={data.currentPage}
       onPaginationChange={(updaterOrValue) => {
         let newPageIndex = 0;
         if (typeof updaterOrValue === 'function') {
           newPageIndex = updaterOrValue({
             pageIndex: data.currentPage,
-            pageSize: PAGE_SIZE,
+            pageSize: DEFAULT_PAGE_SIZE,
           }).pageIndex;
         } else {
           newPageIndex = updaterOrValue.pageIndex;
@@ -352,6 +350,14 @@ const UniqueTable = () => {
           return prev;
         });
         setSort(newSortState);
+      }}
+      enablePageResize
+      onPageResize={(newSize) => {
+        setSearchParams((prev) => {
+          prev.set('size', String(newSize));
+          prev.delete('page');
+          return prev;
+        });
       }}
     />
   );

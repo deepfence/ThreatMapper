@@ -1,12 +1,12 @@
-import { HiOutlineCube, HiOutlineServer } from 'react-icons/hi';
-import { IoImageOutline } from 'react-icons/io5';
-import { SiKubernetes } from 'react-icons/si';
+import { ContainerIcon } from '@/components/icons/container';
+import { HostIcon } from '@/components/icons/host';
+import { ImageIcon } from '@/components/icons/image';
 
 export const IconMapForNodeType: {
   [key: string]: JSX.Element;
 } = {
-  host: <HiOutlineServer />,
-  container: <HiOutlineCube />,
-  container_image: <IoImageOutline />,
-  cluster: <SiKubernetes />,
+  host: <HostIcon />,
+  container: <ContainerIcon />,
+  container_image: <ImageIcon />,
+  cluster: <ImageIcon />,
 };
