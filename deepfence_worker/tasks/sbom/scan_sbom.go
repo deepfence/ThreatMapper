@@ -8,6 +8,8 @@ import (
 	"io"
 	"os"
 	"path"
+	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -30,6 +32,12 @@ var (
 	grypeConfig = "/usr/local/bin/grype.yaml"
 	grypeBin    = "grype"
 )
+
+var attackVectorRegex *regexp.Regexp
+
+func init() {
+	attackVectorRegex = regexp.MustCompile(`.*av:n.*`)
+}
 
 type SbomParser struct {
 	ingestC chan *kgo.Record
@@ -169,7 +177,29 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 
 	// write reports and status to kafka ingester will process from there
 
-	for _, c := range report {
+	for idx, _ := range report {
+		c := &report[idx]
+		c.ParsedAttackVector = ""
+		CveAttackVector := c.CveAttackVector
+		CveAttackVector = strings.ToLower(CveAttackVector)
+
+		if attackVectorRegex.MatchString(CveAttackVector) ||
+			CveAttackVector == "network" || CveAttackVector == "n" {
+			c.ParsedAttackVector = "network"
+		} else {
+			c.ParsedAttackVector = "local"
+		}
+
+		score := 0
+		if c.ParsedAttackVector == "network" {
+			score = 2
+		} else if c.CveSeverity == "critical" {
+			score = 1
+		}
+
+		c.ExploitabilityScore = score
+		c.HasLiveConnection = false
+
 		cb, err := json.Marshal(c)
 		if err != nil {
 			log.Error().Msg(err.Error())
