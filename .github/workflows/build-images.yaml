@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  DF_IMG_TAG: $GITHUB_SHA
+  DF_IMG_TAG: ${GITHUB_SHA}
 
 jobs:
   docker:
