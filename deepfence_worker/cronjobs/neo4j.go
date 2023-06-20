@@ -100,7 +100,7 @@ func CleanUpDB(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:Node)
 		WHERE n.updated_at < TIMESTAMP()-$time_ms
-		AND NOT n.node_id IN ["in-the-internet", "out-the-internet"] 
+		AND NOT n.node_id IN ["in-the-internet", "out-the-internet"]
 		AND n.agent_running=true
 		AND n.active = true
 		WITH n LIMIT 10000
@@ -471,6 +471,60 @@ func LinkCloudResources(msg *message.Message) error {
 	}
 
 	log.Debug().Msgf("Link task took: %v", time.Since(start))
+
+	return nil
+}
+
+var linkNodesRunning = atomic.Bool{}
+
+func LinkNodes(msg *message.Message) error {
+
+	if linkNodesRunning.Swap(true) {
+		return nil
+	}
+	defer linkNodesRunning.Store(false)
+
+	log.Info().Msgf("Link Nodes Starting")
+	defer log.Info().Msgf("Link Nodes Done")
+	namespace := msg.Metadata.Get(directory.NamespaceKey)
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
+
+	nc, err := directory.Neo4jClient(ctx)
+	if err != nil {
+		return err
+	}
+
+	session := nc.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer session.Close()
+
+	txConfig := neo4j.WithTxTimeout(30 * time.Second)
+
+	start := time.Now()
+
+	if _, err = session.Run(`
+		MATCH (n:Node)
+		WHERE not (n) <-[:HOSTS]- (:CloudRegion)
+		WITH n LIMIT 50000
+		MERGE (cp:CloudProvider{node_id: n.cloud_provider})
+		MERGE (cr:CloudRegion{node_id: n.cloud_region})
+		MERGE (cp) -[:HOSTS]-> (cr)
+		MERGE (cr) -[:HOSTS]-> (n)
+		SET cp.active = true, cr.active = true, cp.pseudo = false`,
+		map[string]interface{}{}, txConfig); err != nil {
+		return err
+	}
+
+	if _, err := session.Run(`
+		MATCH (n:KubernetesCluster)
+		WHERE not (n) <-[:HOSTS]- (:CloudProvider)
+		MERGE (cp:CloudProvider{node_id:n.cloud_provider})
+		MERGE (cp) -[:HOSTS]-> (n)
+		SET cp.active = true, cp.pseudo = false`,
+		map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	log.Debug().Msgf("Link Nodes task took: %v", time.Since(start))
 
 	return nil
 }

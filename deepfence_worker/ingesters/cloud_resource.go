@@ -148,16 +148,8 @@ func CommitFuncCloudResource(ns string, cs []CloudResource) error {
 	if len(hosts) > 0 {
 		_, err = tx.Run(`
 		UNWIND $batch as row
-		WITH row
-		OPTIONAL MATCH (n:Node{node_id:row.node_id})
-		WITH n, row as row
-		WHERE n IS NULL or n.active=false
 		MERGE (m:Node{node_id:row.node_id})
-		MERGE (cp:CloudProvider{node_id:row.cloud_provider})
-		MERGE (cr:CloudRegion{node_id:row.cloud_region})
-		MERGE (cp) -[:HOSTS]-> (cr)
-		MERGE (cr) -[:HOSTS]-> (m)
-		SET m+=row, m.updated_at = TIMESTAMP(), cp.active = true, cp.pseudo = false, cr.active = true`,
+		SET m+=row, m.updated_at = TIMESTAMP()`,
 			map[string]interface{}{"batch": hosts},
 		)
 	}
