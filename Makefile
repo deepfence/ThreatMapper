@@ -13,10 +13,10 @@ DF_IMG_TAG?=latest
 IS_DEV_BUILD?=false
 VERSION?="2.0.0"
 
-default: console
+default: bootstrap console_plugins agent console
 
-.PHONY: bootstrap console_plugins agent
-console: redis postgres kafka-broker router server worker ui console_plugins file-server graphdb
+.PHONY: console_plugins agent
+console: redis postgres kafka-broker router server worker ui file-server graphdb
 
 console_plugins: secretscanner malwarescanner packagescanner
 
