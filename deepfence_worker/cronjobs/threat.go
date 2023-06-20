@@ -49,15 +49,39 @@ func computeThreatExploitability(session neo4j.Session) error {
 	}
 	defer tx.Close()
 
-	//Reset the exploitability_score to its original value
 	if _, err = tx.Run(`
-		MATCH (v:Vulnerability)
-		WHERE v.exploitability_score <> v.init_exploitability_score
-		SET v.exploitability_score = v.init_exploitability_score,
-		v.has_live_connection = false`,
+		MATCH (n:Secret)
+		WHERE n.exploitability_score IS NULL
+		SET n.exploitability_score = 0`,
 		map[string]interface{}{}); err != nil {
 		return err
 	}
+
+	if _, err = tx.Run(`
+		MATCH (n:Malware)
+		WHERE n.exploitability_score IS NULL
+		SET n.exploitability_score = 0`,
+		map[string]interface{}{}); err != nil {
+		return err
+	}
+
+	if _, err = tx.Run(`
+		MATCH (n:Compliance)
+		WHERE n.exploitability_score IS NULL
+		SET n.exploitability_score = 0`,
+		map[string]interface{}{}); err != nil {
+		return err
+	}
+
+  //Reset the exploitability_score to its original value
+  if _, err = tx.Run(`
+    MATCH (v:Vulnerability)
+    WHERE v.exploitability_score <> v.init_exploitability_score
+    SET v.exploitability_score = v.init_exploitability_score,
+    v.has_live_connection = false`,
+    map[string]interface{}{}); err != nil {
+    return err
+  }
 
 	// Following cypher request applies to Images & Containers
 	if _, err = tx.Run(`

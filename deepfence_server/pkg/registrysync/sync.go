@@ -100,7 +100,7 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r
 	_, err = tx.Run(`
 		UNWIND $batch as row
 		MERGE (n:ContainerImage{node_id:row.node_id})
-		MERGE (s:ImageStub{node_id: row.docker_image_name, docker_image_name: row.docker_image_name})
+		MERGE (s:ImageStub{node_id: row.docker_image_name + "_" + $node_id, docker_image_name: row.docker_image_name})
 		MERGE (n) -[:IS]-> (s)
 		MERGE (m:RegistryAccount{node_id:$node_id})
 		MERGE (m) -[:HOSTS]-> (n)

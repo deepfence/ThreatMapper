@@ -46,11 +46,11 @@ kafka:
     # tag: 2.0.0
   storageUUID: hNQ55qppT5GGybF52ZGlOQ
   storageClass: ""
-  volumeSize: 30G
+  volumeSize: 50G
   resources:
     limits:
       cpu: 4000m
-      memory: 4096Mi
+      memory: 8192Mi
     requests:
       cpu: 500m
       memory: 1024Mi
@@ -79,7 +79,7 @@ postgresql:
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.0.0
   storageClass: ""
-  volumeSize: 10G
+  volumeSize: 50G
   resources:
     limits:
       cpu: 2000m
@@ -107,11 +107,11 @@ redis:
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.0.0
   storageClass: ""
-  volumeSize: 5G
+  volumeSize: 10G
   resources:
     limits:
       cpu: 1000m
-      memory: 1024Mi
+      memory: 2048Mi
     requests:
       cpu: 100m
       memory: 128Mi
@@ -138,11 +138,11 @@ minio:
     # Overrides the image tag whose default is .global.imageTag
     # tag: 2.0.0
   storageClass: ""
-  volumeSize: 30G
+  volumeSize: 50G
   resources:
     limits:
-      cpu: 1000m
-      memory: 1024Mi
+      cpu: 2000m
+      memory: 4096Mi
     requests:
       scpu: 100m
       memory: 128Mi
@@ -168,15 +168,13 @@ neo4j:
     DF_S3_BUCKET_NAME: ""
   config:
     NEO4J_dbms_memory_pagecache_size: 2600m
-    NEO4J_dbms_memory_heap_initial__size: 4000m
-    NEO4J_dbms_memory_heap_max__size: 4000m
     NEO4JLABS_PLUGINS: '["apoc"]'
   image:
     repository: deepfenceio/deepfence_neo4j_ce
     pullPolicy: Always
     # tag: 2.0.0
   storageClass: ""
-  volumeSize: 30G
+  volumeSize: 50G
   resources:
     limits:
       cpu: 4000m
@@ -241,8 +239,8 @@ router:
     httpPort: 80
   resources:
     limits:
-      cpu: 2000m
-      memory: 1024Mi
+      cpu: 3000m
+      memory: 4096Mi
     requests:
       cpu: 100m
       memory: 128Mi
@@ -297,8 +295,8 @@ server:
     internalPort: 8081
   resources:
     limits:
-      cpu: 2000m
-      memory: 2048Mi
+      cpu: 3000m
+      memory: 4096Mi
     requests:
       cpu: 250m
       memory: 256Mi
@@ -358,7 +356,7 @@ ingester:
   resources:
     limits:
       cpu: 2000m
-      memory: 2048Mi
+      memory: 4096Mi
     requests:
       cpu: 100m
       memory: 128Mi
@@ -453,7 +451,7 @@ console_agents:
         memory: 512Mi
       limits:
         cpu: 1500m
-        memory: 1536Mi
+        memory: 2048Mi
     podAnnotations: {}
     podSecurityContext: {}
     securityContext: {}

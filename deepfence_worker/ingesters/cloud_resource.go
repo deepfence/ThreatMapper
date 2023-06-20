@@ -148,6 +148,9 @@ func CommitFuncCloudResource(ns string, cs []CloudResource) error {
 	if len(hosts) > 0 {
 		_, err = tx.Run(`
 		UNWIND $batch as row
+		OPTIONAL MATCH (n:Node{node_id:row.node_id})
+		WITH n, row as row
+		WHERE n IS NULL or n.active=false
 		MERGE (m:Node{node_id:row.node_id})
 		SET m+=row, m.updated_at = TIMESTAMP()`,
 			map[string]interface{}{"batch": hosts},
@@ -255,6 +258,7 @@ func (c *CloudResource) ToMap() (map[string]interface{}, error) {
 	bb = convertStructFieldToJSONString(bb, "user-groups")
 	bb = convertStructFieldToJSONString(bb, "vpc_security_group_ids")
 	bb = convertStructFieldToJSONString(bb, "resources_vpc_config")
+	bb = convertStructFieldToJSONString(bb, "tags")
 
 	if strings.Contains("azure", bb["resource_id"].(string)) {
 		if bb["resource_id"].(string) == "azure_compute_virtual_machine" {

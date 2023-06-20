@@ -3,6 +3,7 @@ package handler
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"time"
 
@@ -86,7 +87,9 @@ func (h *Handler) AuditUserActivity(
 
 	token, err := GetTokenFromRequest(h.TokenAuth, req)
 	if err != nil {
-		log.Error().Msg(err.Error())
+		if !errors.Is(err, jwtauth.ErrNoTokenFound) {
+			log.Error().Msg(err.Error())
+		}
 	} else {
 		claims := token.PrivateClaims()
 		user_id = claims["user_id"].(float64)

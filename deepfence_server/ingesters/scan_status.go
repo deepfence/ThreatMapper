@@ -25,6 +25,14 @@ func (ve *AlreadyRunningScanError) Error() string {
 	return fmt.Sprintf("Scan of type %s already running for %s, id: %s", ve.ScanType, ve.NodeId, ve.ScanId)
 }
 
+type AgentNotInstalledError struct {
+	NodeId string
+}
+
+func (ve *AgentNotInstalledError) Error() string {
+	return fmt.Sprintf("Agent sensor not installed in %s", ve.NodeId)
+}
+
 type NodeNotFoundError struct {
 	NodeId string
 }
@@ -79,10 +87,11 @@ func AddNewScan(tx WriteDBTransaction,
 	}
 
 	res, err = tx.Run(fmt.Sprintf(`
-		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:%s{node_id:$node_id})
+		MATCH (m:%s{node_id:$node_id})
+		OPTIONAL MATCH (n:%s)-[:SCANNED]->(m)
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
-		RETURN n.node_id`, scan_type, controls.ResourceTypeToNeo4j(node_type)),
+		RETURN n.node_id, m.agent_running`, scan_type, controls.ResourceTypeToNeo4j(node_type)),
 		map[string]interface{}{
 			"node_id":  node_id,
 			"complete": utils.SCAN_STATUS_SUCCESS,
@@ -101,6 +110,13 @@ func AddNewScan(tx WriteDBTransaction,
 			ScanId:   rec.Values[0].(string),
 			NodeId:   node_id,
 			ScanType: string(scan_type),
+		}
+	}
+	if rec.Values[1] != nil {
+		if rec.Values[1].(bool) == false {
+			return &AgentNotInstalledError{
+				NodeId: node_id,
+			}
 		}
 	}
 
@@ -225,11 +241,12 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 	}
 
 	res, err = tx.Run(fmt.Sprintf(`
-		OPTIONAL MATCH (n:%s)-[:SCANNED]->(:%s{node_id:$node_id})
+		MATCH (m:%s{node_id:$node_id})
+		OPTIONAL MATCH (n:%s)-[:SCANNED]->(m)
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
 		AND n.benchmark_types = $benchmark_types
-		RETURN n.node_id`, scanType, neo4jNodeType),
+		RETURN n.node_id, m.agent_running`, scanType, neo4jNodeType),
 		map[string]interface{}{
 			"node_id":         nodeId,
 			"complete":        utils.SCAN_STATUS_SUCCESS,
@@ -250,6 +267,13 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 			ScanId:   rec.Values[0].(string),
 			NodeId:   nodeId,
 			ScanType: string(scanType),
+		}
+	}
+	if rec.Values[1] != nil {
+		if rec.Values[1].(bool) == false {
+			return &AgentNotInstalledError{
+				NodeId: nodeId,
+			}
 		}
 	}
 	nt := ctl.KubernetesCluster
