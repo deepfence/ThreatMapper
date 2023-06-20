@@ -340,7 +340,7 @@ func ListImageStubs(ctx context.Context, registryId string, filter reporters.Con
 		}
 		images = append(images,
 			ImageStub{
-				ID:   records[i].Values[2].(string),
+				ID:   records[i].Values[0].(string),
 				Name: records[i].Values[0].(string),
 				Tags: tags,
 			},
