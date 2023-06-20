@@ -1,5 +1,4 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { isNumber } from 'lodash-es';
 import { Suspense } from 'react';
 import { Card, Separator } from 'ui-components';
 
@@ -101,7 +100,7 @@ const CardHeader = ({ name }: { name: string }) => {
     </div>
   );
 };
-const CardSectionIcon = ({ percent }: { percent: number | null | undefined }) => {
+const CardSectionIcon = ({ provider }: { provider: ModelPostureProvider }) => {
   return (
     <div className="flex flex-col items-center justify-center">
       <span className="font-normal text-xs leading-6 dark:text-text-text-and-icon">
@@ -109,23 +108,27 @@ const CardSectionIcon = ({ percent }: { percent: number | null | undefined }) =>
       </span>
       <div
         style={{
-          color: getColorForCompliancePercent(percent),
+          color: getColorForCompliancePercent(provider.compliance_percentage),
         }}
         className="my-1.5"
       >
-        <ComplianceIconByPercent percent={percent} />
+        <ComplianceIconByPercent percent={provider.compliance_percentage} />
       </div>
       <span
         className="text-h2"
         style={{
-          color: getColorForCompliancePercent(percent),
+          color: getColorForCompliancePercent(provider.compliance_percentage),
         }}
       >
-        {isNumber(percent)
-          ? `${formatPercentage(percent, {
-              maximumFractionDigits: 1,
-            })}`
-          : 'Not scanned'}
+        {provider.scan_count && provider.scan_count > 0 ? (
+          `${formatPercentage(provider.compliance_percentage ?? 0, {
+            maximumFractionDigits: 1,
+          })}`
+        ) : (
+          <span className="font-normal text-xs leading-6 dark:text-text-input-value">
+            Not scanned
+          </span>
+        )}
       </span>
     </div>
   );
@@ -159,7 +162,7 @@ const PostureCard = ({ provider }: { provider: ModelPostureProvider }) => {
     <Card className="p-2 pb-3 flex flex-col dark:bg-bg-card">
       <CardHeader name={provider.name || ''} />
       <div className="mt-5 mb-2 grid grid-cols-3 place-items-center min-w-[322px]">
-        <CardSectionIcon percent={provider.compliance_percentage} />
+        <CardSectionIcon provider={provider} />
         <CardSectionText name={provider.name ?? ''} />
         <CardSectionCount provider={provider} />
       </div>
@@ -219,7 +222,6 @@ const Posture = () => {
         </span>
       </div>
       <div className="mx-4 mt-10 mb-10 flex gap-x-[20px] gap-y-[42px] flex-wrap">
-        {/* <CardSkeleton /> */}
         <Suspense fallback={<CardSkeleton />}>
           <PostureCloudList />
           <Separator className="dark:bg-bg-grid-border" />
