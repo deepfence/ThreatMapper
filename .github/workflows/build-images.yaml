@@ -17,10 +17,13 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
-        name: "Build"
+        name: Checkout repo
+        uses: actions/checkout@v2
+      -
+        name: Build images
         run: |
           make
       -
-        name: "Push"
+        name: Push images
         run: |
           make publish
