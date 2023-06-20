@@ -91,7 +91,7 @@ func AddNewScan(tx WriteDBTransaction,
 		OPTIONAL MATCH (n:%s)-[:SCANNED]->(m)
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
-		RETURN n.node_id, m.agent_running`, scan_type, controls.ResourceTypeToNeo4j(node_type)),
+		RETURN n.node_id, m.agent_running`, controls.ResourceTypeToNeo4j(node_type), scan_type),
 		map[string]interface{}{
 			"node_id":  node_id,
 			"complete": utils.SCAN_STATUS_SUCCESS,
@@ -246,7 +246,7 @@ func AddNewCloudComplianceScan(tx WriteDBTransaction,
 		WHERE NOT n.status = $complete
 		AND NOT n.status = $failed
 		AND n.benchmark_types = $benchmark_types
-		RETURN n.node_id, m.agent_running`, scanType, neo4jNodeType),
+		RETURN n.node_id, m.agent_running`, neo4jNodeType, scanType),
 		map[string]interface{}{
 			"node_id":         nodeId,
 			"complete":        utils.SCAN_STATUS_SUCCESS,
