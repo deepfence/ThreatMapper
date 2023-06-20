@@ -1896,6 +1896,8 @@ func StartMultiScan(ctx context.Context,
 			if e, is := err.(*ingesters.AlreadyRunningScanError); is {
 				scanIds = append(scanIds, e.ScanId)
 				continue
+			} else if _, is = err.(*ingesters.AgentNotInstalledError); is {
+				continue
 			}
 			log.Error().Err(err)
 			return nil, "", err
@@ -1952,6 +1954,8 @@ func StartMultiCloudComplianceScan(ctx context.Context, reqs []model.NodeIdentif
 		if err != nil {
 			if e, is := err.(*ingesters.AlreadyRunningScanError); is {
 				scanIds = append(scanIds, e.ScanId)
+				continue
+			} else if _, is = err.(*ingesters.AgentNotInstalledError); is {
 				continue
 			}
 			log.Error().Msgf("%v", err)
