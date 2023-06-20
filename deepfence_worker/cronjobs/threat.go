@@ -49,17 +49,6 @@ func computeThreatExploitability(session neo4j.Session) error {
 	}
 	defer tx.Close()
 
-	// Following cypher queries applies to Vulnerabilities
-	if _, err = tx.Run(`
-		MATCH (v:Vulnerability)
-		WITH v, CASE WHEN v.cve_attack_vector =~ ".*AV:N.*" THEN 2 ELSE CASE WHEN v.cve_severity = 'critical' THEN 1 ELSE 0 END END as score
-		SET v.exploitability_score = score,
-		v.parsed_attack_vector = CASE WHEN score = 2 THEN 'network' ELSE 'local' END,
-		v.has_live_connection = false`,
-		map[string]interface{}{}); err != nil {
-		return err
-	}
-
 	// Following cypher request applies to Images & Containers
 	if _, err = tx.Run(`
 		MATCH (n:Node{node_id:"in-the-internet"}) -[:CONNECTS*1..3]-> (m:Node)
