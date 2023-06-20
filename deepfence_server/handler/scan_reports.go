@@ -1679,9 +1679,9 @@ func GetImagesFromAdvanceFilter(ctx context.Context, ids []model.NodeIdentifier,
 
 	for i := range filter.FieldsValues["docker_image_name"] {
 		rr, err := tx.Run(`
-		MATCH (n:ContainerImage)
+		MATCH (n:ContainerImage)-[:IS]->(m:ImageStub)
 		WHERE n.node_id IN $ids
-		AND n.docker_image_name = $image_name
+		AND m.docker_image_name = $image_name
 		RETURN n.node_id, n.updated_at, n.docker_image_tag
 		`, map[string]interface{}{
 			"ids":        reporters_scan.NodeIdentifierToIdList(ids),
