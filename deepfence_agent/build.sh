@@ -15,7 +15,7 @@ building_image(){
     echo "Prepare plugins"
     (cd plugins && ./bootstrap.sh)
 
-    docker run --rm -it -v $(pwd)/../deepfence_server_client:/go/src/github.com/deepfence/deepfence_server_client -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/gocode-build.sh
+    docker run --rm -i -v $(pwd)/../deepfence_server_client:/go/src/github.com/deepfence/deepfence_server_client -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/gocode-build.sh
     build_result=$?
     if [ $build_result -ne 0 ]
     then
@@ -24,7 +24,7 @@ building_image(){
     fi
 
     echo "Building Agent Plugins protobuf"
-    docker run --rm -it -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/grpccode-build.sh
+    docker run --rm -i -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/grpccode-build.sh
     build_result=$?
     if [ $build_result -ne 0 ]
     then
@@ -33,7 +33,7 @@ building_image(){
     fi
 
     echo "Building Agent Plugins binaries"
-    docker run --rm -it -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/plugincode-build.sh
+    docker run --rm -i -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/plugincode-build.sh
     build_result=$?
     if [ $build_result -ne 0 ]
     then
@@ -42,7 +42,7 @@ building_image(){
     fi
 
     echo "Building Fluentbit deepfence output plugin"
-    docker run --rm -it -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/deepfence-out-plugin-build.sh
+    docker run --rm -i -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/deepfence-out-plugin-build.sh
     build_result=$?
     if [ $build_result -ne 0 ]
     then
@@ -51,7 +51,7 @@ building_image(){
     fi
 
     echo "Building Agent Executable"
-    docker run --rm -it -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/agent-build.sh
+    docker run --rm -i -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/agent-build.sh
     build_result=$?
     if [ $build_result -ne 0 ]
     then
