@@ -73,7 +73,7 @@ export const SearchableHostList = ({
           isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="hostFilter"
-        getDisplayValue={() => 'Hosts'}
+        getDisplayValue={() => 'Host'}
         multiple
         value={selectedHosts}
         onChange={(values) => {

@@ -67,7 +67,7 @@ export const SearchableClusterList = ({
           isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="clusterFilter"
-        getDisplayValue={() => 'Clusters'}
+        getDisplayValue={() => 'Cluster'}
         multiple
         value={selectedClusters}
         onChange={(values) => {

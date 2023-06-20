@@ -73,7 +73,7 @@ export const SearchableImageList = ({
           isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="imageFilter"
-        getDisplayValue={() => 'Images'}
+        getDisplayValue={() => 'Container Image'}
         multiple
         value={selectedImages}
         onChange={(values) => {
