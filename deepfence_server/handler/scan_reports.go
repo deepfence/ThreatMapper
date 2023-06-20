@@ -41,6 +41,13 @@ const (
 	DownloadReportUrlExpiry = 5 * time.Minute
 )
 
+var (
+	noNodesMatchedInNeo4jError = ValidatorError{
+		err:                       errors.New("Key: 'node_ids' Error:Nodes not found with the provided filters"),
+		skipOverwriteErrorMessage: true,
+	}
+)
+
 func scanId(req model.NodeIdentifier) string {
 	return fmt.Sprintf("%s-%d", req.NodeId, time.Now().Unix())
 }
@@ -212,6 +219,10 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 
 	scan_ids, bulkId, err := StartMultiScan(r.Context(), true, utils.NEO4J_VULNERABILITY_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
+		if err.Error() == "Result contains no more records" {
+			respondError(&noNodesMatchedInNeo4jError, w)
+			return
+		}
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
 		return
@@ -277,6 +288,10 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 
 	scan_ids, bulkId, err := StartMultiScan(r.Context(), true, utils.NEO4J_SECRET_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
+		if err.Error() == "Result contains no more records" {
+			respondError(&noNodesMatchedInNeo4jError, w)
+			return
+		}
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
 		return
@@ -333,30 +348,28 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	var scanIds []string
 	var bulkId string
+	var scanStatusType string
 	if scanTrigger.NodeType == controls.ResourceTypeToString(controls.CloudAccount) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.KubernetesCluster) ||
 		scanTrigger.NodeType == controls.ResourceTypeToString(controls.Host) {
 		scanIds, bulkId, err = StartMultiCloudComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
-		if err != nil {
-			for _, i := range scanIds {
-				h.SendScanStatus(r.Context(), utils.CLOUD_COMPLIANCE_SCAN_STATUS,
-					NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
-			}
-		}
+		scanStatusType = utils.CLOUD_COMPLIANCE_SCAN_STATUS
 	} else {
 		scanIds, bulkId, err = startMultiComplianceScan(ctx, nodes, reqs.BenchmarkTypes)
-		if err != nil {
-			for _, i := range scanIds {
-				h.SendScanStatus(r.Context(), utils.COMPLIANCE_SCAN_STATUS,
-					NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
-			}
-		}
+		scanStatusType = utils.COMPLIANCE_SCAN_STATUS
 	}
-
 	if err != nil {
+		if err.Error() == "Result contains no more records" {
+			respondError(&noNodesMatchedInNeo4jError, w)
+			return
+		}
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
 		return
+	}
+
+	for _, i := range scanIds {
+		h.SendScanStatus(r.Context(), scanStatusType, NewScanStatus(i, utils.SCAN_STATUS_STARTING, ""))
 	}
 
 	if len(scanIds) == 0 {
@@ -424,6 +437,10 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 
 	scan_ids, bulkId, err := StartMultiScan(r.Context(), true, utils.NEO4J_MALWARE_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
+		if err.Error() == "Result contains no more records" {
+			respondError(&noNodesMatchedInNeo4jError, w)
+			return
+		}
 		log.Error().Msgf("%v", err)
 		respondError(err, w)
 		return

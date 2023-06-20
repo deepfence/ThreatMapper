@@ -327,7 +327,7 @@ export const IntegrationForm = ({ integrationType }: IntegrationTypeProps) => {
             <TextInputType name="email" label="Email" />
             <TextInputType name="accessKey" label="Project Key" />
             <TextInputType name="task" label="Task Name" />
-            <TextInputType name="assigne" label="Assigne" />
+            <TextInputType name="assigne" label="Assignee" />
           </>
         )}
 

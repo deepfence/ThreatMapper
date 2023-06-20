@@ -246,7 +246,7 @@ export const useIntegrationTableColumn = () => {
             (cell) => (!isEmpty(cell.config) ? cell.config.jiraAssignee : '-'),
             {
               id: 'jiraAssignee',
-              header: () => 'Assigne',
+              header: () => 'Assignee',
               minSize: 50,
               size: 55,
               maxSize: 60,
