@@ -44,4 +44,4 @@ jobs:
           make publish
 
       - name: output image tag
-        run: echo "new image tag ${DF_IMG_TAG}" >> $GITHUB_STEP_SUMMARY
+        run: echo "new image tag ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
