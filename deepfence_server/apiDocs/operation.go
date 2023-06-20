@@ -198,6 +198,18 @@ func (d *OpenApiDocs) AddSearchOperations() {
 		"Search Compliances", "Search across all the data associated with compliances",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Compliance))
 
+	d.AddOperation("searchSecretRules", http.MethodPost, "/deepfence/search/secret-rules",
+		"Search Secret Rules", "Search across all the data associated with secret ruless",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]SecretRule))
+
+	d.AddOperation("searchMalwareRules", http.MethodPost, "/deepfence/search/malware-rules",
+		"Search Malware Rules", "Search across all the data associated with malware rules",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]MalwareRule))
+
+	d.AddOperation("searchComplianceRules", http.MethodPost, "/deepfence/search/compliance-rules",
+		"Search Compliance Rules", "Search across all the data associated with compliance rules",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]ComplianceRule))
+
 	d.AddOperation("searchPods", http.MethodPost, "/deepfence/search/pods",
 		"Search Pods", "Search across all the data associated with pods",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Pod))
@@ -281,6 +293,18 @@ func (d *OpenApiDocs) AddSearchOperations() {
 
 	d.AddOperation("countCompliances", http.MethodPost, "/deepfence/search/count/compliances",
 		"Count Compliances", "Count across all the data associated with compliances",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countSecretRules", http.MethodPost, "/deepfence/search/count/secret-rules",
+		"Count Secret Rules", "Count across all the data associated with secret rules",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countMalwareRules", http.MethodPost, "/deepfence/search/count/malware-rules",
+		"Count Malware Rules", "Count across all the data associated with malware rules",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countComplianceRules", http.MethodPost, "/deepfence/search/count/compliance-rules",
+		"Count Compliance Rules", "Count across all the data associated with compliance rules",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 
 	d.AddOperation("countVulnerabilityScans", http.MethodPost, "/deepfence/search/count/vulnerability/scans",

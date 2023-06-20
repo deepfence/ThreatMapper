@@ -281,6 +281,32 @@ func (Secret) GetJsonCategory() string {
 	return "level"
 }
 
+type SecretRule struct {
+	ID               int    `json:"id"`
+	Name             string `json:"name"`
+	Part             string `json:"part"`
+	SignatureToMatch string `json:"signature_to_match"`
+	Level            string `json:"level" required:"true"`
+	Masked           bool   `json:"masked" required:"true"`
+	UpdatedAt        int64  `json:"updated_at" required:"true"`
+}
+
+func (SecretRule) NodeType() string {
+	return "SecretRule"
+}
+
+func (SecretRule) ExtendedField() string {
+	return ""
+}
+
+func (v SecretRule) GetCategory() string {
+	return v.Level
+}
+
+func (SecretRule) GetJsonCategory() string {
+	return "level"
+}
+
 type Vulnerability struct {
 	NodeId                     string        `json:"node_id" required:"true"`
 	Cve_id                     string        `json:"cve_id" required:"true"`
@@ -359,6 +385,37 @@ func (Malware) GetJsonCategory() string {
 	return "file_severity"
 }
 
+type MalwareRule struct {
+	RuleID       string `json:"rule_id"`
+	RuleName     string `json:"rule_name"`
+	Author       string `json:"author"`
+	Date         string `json:"date"`
+	Description  string `json:"description"`
+	Filetype     string `json:"filetype"`
+	Info         string `json:"info"`
+	Version      string `json:"version"`
+	Reference    string `json:"reference"`
+	FileSeverity string `json:"file_severity"`
+	Masked       bool   `json:"masked" required:"true"`
+	UpdatedAt    int64  `json:"updated_at" required:"true"`
+}
+
+func (MalwareRule) NodeType() string {
+	return "MalwareRule"
+}
+
+func (MalwareRule) ExtendedField() string {
+	return ""
+}
+
+func (v MalwareRule) GetCategory() string {
+	return v.FileSeverity
+}
+
+func (MalwareRule) GetJsonCategory() string {
+	return "file_severity"
+}
+
 type Compliance struct {
 	TestCategory        string `json:"test_category" required:"true"`
 	TestNumber          string `json:"test_number" required:"true"`
@@ -391,6 +448,33 @@ func (v Compliance) GetCategory() string {
 }
 
 func (Compliance) GetJsonCategory() string {
+	return "test_severity"
+}
+
+type ComplianceRule struct {
+	TestCategory  string `json:"test_category" required:"true"`
+	TestNumber    string `json:"test_number" required:"true"`
+	TestInfo      string `json:"description" required:"true"`
+	TestRationale string `json:"test_rationale" required:"true"`
+	TestSeverity  string `json:"test_severity" required:"true"`
+	TestDesc      string `json:"test_desc" required:"true"`
+	Masked        bool   `json:"masked" required:"true"`
+	UpdatedAt     int64  `json:"updated_at" required:"true"`
+}
+
+func (ComplianceRule) NodeType() string {
+	return "Compliance"
+}
+
+func (ComplianceRule) ExtendedField() string {
+	return ""
+}
+
+func (v ComplianceRule) GetCategory() string {
+	return v.TestSeverity
+}
+
+func (ComplianceRule) GetJsonCategory() string {
 	return "test_severity"
 }
 
