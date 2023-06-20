@@ -1,24 +1,15 @@
-import cx from 'classnames';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { isNumber } from 'lodash-es';
 import { Suspense } from 'react';
-import { HiOutlineChevronRight } from 'react-icons/hi';
-import { useLoaderData } from 'react-router-dom';
-import { Card } from 'ui-components';
+import { Card, Separator } from 'ui-components';
 
-import { getCloudNodesApiClient } from '@/api/api';
-import { ModelCloudNodeProvidersListResp } from '@/api/generated';
-import { LinkButton } from '@/components/LinkButton';
-import { getPostureLogo } from '@/constants/logos';
-import { useTheme } from '@/theme/ThemeContext';
-import { apiWrapper } from '@/utils/api';
+import { ModelPostureProvider } from '@/api/generated';
+import { DFLink } from '@/components/DFLink';
+import { ComplianceIconByPercent, PostureLogos } from '@/components/icons/posture';
+import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
+import { getColorForCompliancePercent } from '@/constants/charts';
+import { queries } from '@/queries';
 import { abbreviateNumber, formatPercentage } from '@/utils/number';
-import { typedDefer } from '@/utils/router';
-import { DFAwait } from '@/utils/suspense';
-
-export type LoaderDataType = {
-  error?: string;
-  message?: string;
-  data: Awaited<ReturnType<typeof getCloudNodeProviders>>;
-};
 
 export const providersToNameMapping: { [key: string]: string } = {
   aws: 'AWS',
@@ -30,28 +21,7 @@ export const providersToNameMapping: { [key: string]: string } = {
   kubernetes: 'Kubernetes',
 };
 
-async function getCloudNodeProviders(): Promise<ModelCloudNodeProvidersListResp> {
-  const listCloudProvidersApi = apiWrapper({
-    fn: getCloudNodesApiClient().listCloudProviders,
-  });
-  const result = await listCloudProvidersApi();
-
-  if (!result.ok) {
-    throw result.error;
-  }
-
-  if (!result.value.providers) {
-    result.value.providers = [];
-  }
-  return result.value;
-}
-const loader = async () => {
-  return typedDefer({
-    data: getCloudNodeProviders(),
-  });
-};
-
-const isProviderLinuxOrKubernetes = (provider: string) => {
+const isNonCloudProvider = (provider: string) => {
   return provider === 'linux' || provider === 'kubernetes';
 };
 const CardSkeleton = () => {
@@ -86,101 +56,122 @@ const CardSkeleton = () => {
   );
 };
 
-const AccountSummary = () => {
-  const { mode } = useTheme();
-  const loaderData = useLoaderData() as LoaderDataType;
+const CardHeader = ({ name }: { name: string }) => {
+  return (
+    <div className="flex items-center w-full relative">
+      <div className="dark:bg-bg-grid-default absolute -top-[34px] left-[12px] rounded-full p-4">
+        <PostureLogos name={name} />
+      </div>
+      <DFLink className="ml-[102px]" to={`/posture/accounts/${name}`} unstyled>
+        <span className="flex items-center gap-2 text-t4 uppercase dark:text-text-input-value dark:hover:text-text-link pt-1">
+          {providersToNameMapping[name]}
+        </span>
+      </DFLink>
+    </div>
+  );
+};
+const CardSectionIcon = ({ percent }: { percent: number | null | undefined }) => {
+  return (
+    <div className="flex flex-col items-center justify-center">
+      <span className="font-normal text-xs leading-6 dark:text-text-text-and-icon">
+        Compliance
+      </span>
+      <div
+        style={{
+          color: getColorForCompliancePercent(percent),
+        }}
+        className="my-1.5"
+      >
+        <ComplianceIconByPercent percent={percent} />
+      </div>
+      <span
+        className="text-h2"
+        style={{
+          color: getColorForCompliancePercent(percent),
+        }}
+      >
+        {isNumber(percent)
+          ? `${formatPercentage(percent, {
+              maximumFractionDigits: 1,
+            })}`
+          : 'Not scanned'}
+      </span>
+    </div>
+  );
+};
+const CardSectionText = ({ name }: { name: string }) => {
+  const textStyle = 'font-normal text-xs leading-6';
+  return (
+    <div className="flex flex-col dark:text-text-text-and-icon">
+      <span className={textStyle}>Active accounts</span>
+      <span className={textStyle}>Inactive accounts</span>
+      <span className={textStyle}>Scans</span>
+      {!isNonCloudProvider(name) ? <span className={textStyle}>Resources</span> : null}
+    </div>
+  );
+};
+const CardSectionCount = ({ provider }: { provider: ModelPostureProvider }) => {
+  const textStyle = 'text-h3 dark:text-text-input-value';
+  return (
+    <div className="flex flex-col">
+      <span className={textStyle}>{abbreviateNumber(provider.node_count ?? 0)}</span>
+      <span className={textStyle}>{abbreviateNumber(provider.node_count ?? 0)}</span>
+      <span className={textStyle}>{abbreviateNumber(provider.resource_count ?? 0)}</span>
+      {!isNonCloudProvider(provider.name ?? '') ? (
+        <span className={textStyle}>{abbreviateNumber(provider.scan_count ?? 0)}</span>
+      ) : null}
+    </div>
+  );
+};
+const PostureCard = ({ provider }: { provider: ModelPostureProvider }) => {
+  return (
+    <Card className="p-2 pb-3 flex flex-col dark:bg-bg-card">
+      <CardHeader name={provider.name || ''} />
+      <div className="mt-5 mb-2 grid grid-cols-3 place-items-center w-[322px]">
+        <CardSectionIcon percent={provider.compliance_percentage} />
+        <CardSectionText name={provider.name ?? ''} />
+        <CardSectionCount provider={provider} />
+      </div>
+    </Card>
+  );
+};
 
+const PostureCloudList = () => {
+  const { data } = useSuspenseQuery({
+    ...queries.posture.postureSummary(),
+    keepPreviousData: true,
+  });
+  const providers = data.providers;
+  if (!providers) {
+    return null;
+  }
   return (
     <>
-      <Suspense fallback={<CardSkeleton />}>
-        <DFAwait resolve={loaderData.data}>
-          {(resolvedData: LoaderDataType['data']) => {
-            return resolvedData.providers?.map((provider) => {
-              const {
-                name = '',
-                node_count,
-                scan_count,
-                compliance_percentage = 0,
-                resource_count,
-                node_label,
-              } = provider;
-              const account = getPostureLogo(name, mode);
+      {providers
+        ?.filter((provider) => !isNonCloudProvider(provider.name ?? ''))
+        .map((provider) => {
+          return <PostureCard key={provider.name} provider={provider} />;
+        })}
+    </>
+  );
+};
 
-              return (
-                <Card key={name} className="p-2 pb-3 flex flex-col">
-                  <div className="flex items-center w-full">
-                    <h4 className="text-gray-900 text-sm font-medium dark:text-white mr-4">
-                      {providersToNameMapping[name]}
-                    </h4>
-                    <div className="flex ml-auto">
-                      <LinkButton to={`/posture/accounts/${name}`} sizing="xs">
-                        <>
-                          Go to details&nbsp;
-                          <HiOutlineChevronRight />
-                        </>
-                      </LinkButton>
-                    </div>
-                  </div>
-                  <div className="mt-2 flex gap-x-6 items-center">
-                    <div className="pr-2 flex flex-col gap-y-2 border-r border-gray-200 dark:border-gray-700">
-                      <div className="px-4 flex justify-center items-center h-8 w-20 max-h-9">
-                        <img src={account.icon} alt="logo" />
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <span
-                          className={cx('text-base rounded-lg px-1 font-medium w-fit', {
-                            'bg-[#FF8A4C]/30 dark:bg-[#FF8A4C]/20 text-[#FF5A1F] dark:text-[#FF5A1F]':
-                              compliance_percentage > 60 && compliance_percentage < 100,
-                            'bg-[#ffd577]/30 dark:bg-[##ffd577]/10 text-yellow-400 dark:text-[#ffd577]':
-                              compliance_percentage > 30 && compliance_percentage < 90,
-                            'bg-[#0E9F6E]/20 dark:bg-[#0E9F6E]/20 text-[#0E9F6E] dark:text-[#0E9F6E]':
-                              compliance_percentage !== 0 && compliance_percentage < 30,
-                            'text-gray-700 dark:text-gray-400': !compliance_percentage,
-                          })}
-                        >
-                          {formatPercentage(compliance_percentage, {
-                            maximumFractionDigits: 1,
-                          })}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          Compliance
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col min-w-[70px]">
-                      <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
-                        {abbreviateNumber(node_count ?? 0)}
-                      </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {node_label}
-                      </span>
-                    </div>
-                    {!isProviderLinuxOrKubernetes(name) ? (
-                      <div className="flex flex-col min-w-[70px]">
-                        <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
-                          {abbreviateNumber(resource_count ?? 0)}
-                        </span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          Resources
-                        </span>
-                      </div>
-                    ) : null}
-
-                    <div className="flex flex-col min-w-[70px]">
-                      <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
-                        {abbreviateNumber(scan_count ?? 0)}
-                      </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        Scans
-                      </span>
-                    </div>
-                  </div>
-                </Card>
-              );
-            });
-          }}
-        </DFAwait>
-      </Suspense>
+const PosturenNonCloudList = () => {
+  const { data } = useSuspenseQuery({
+    ...queries.posture.postureSummary(),
+    keepPreviousData: true,
+  });
+  const providers = data.providers;
+  if (!providers) {
+    return null;
+  }
+  return (
+    <>
+      {providers
+        ?.filter((provider) => isNonCloudProvider(provider.name ?? ''))
+        .map((provider) => {
+          return <PostureCard key={provider.name} provider={provider} />;
+        })}
     </>
   );
 };
@@ -188,19 +179,25 @@ const AccountSummary = () => {
 const Posture = () => {
   return (
     <>
-      <div className="flex p-2 w-full items-center shadow bg-white dark:bg-gray-800">
-        <span className="text-md font-medium text-gray-700 dark:text-gray-200">
+      <div className="flex py-2 w-full bg-white dark:bg-bg-breadcrumb-bar">
+        <span className="dark:text-text-input-value pl-6 flex items-center text-sm leading-[30px]">
+          <span className="w-4 h-4 mr-1.5">
+            <PostureIcon />
+          </span>
           Posture
         </span>
       </div>
-      <div className="p-2 flex flex-row flex-wrap gap-2">
-        <AccountSummary />
+      <div className="mx-4 mt-10 mb-10 flex gap-x-[20px] gap-y-[42px] flex-wrap">
+        <Suspense fallback={<CardSkeleton />}>
+          <PostureCloudList />
+          <Separator className="dark:bg-bg-grid-border" />
+          <PosturenNonCloudList />
+        </Suspense>
       </div>
     </>
   );
 };
 
 export const module = {
-  loader,
   element: <Posture />,
 };

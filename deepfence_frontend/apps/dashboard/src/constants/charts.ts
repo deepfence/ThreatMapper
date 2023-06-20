@@ -33,3 +33,17 @@ export const POSTURE_STATUS_COLORS: {
   warn: '#f1a958',
   note: '#edd777',
 };
+
+export function getColorForCompliancePercent(percent: number | undefined | null): string {
+  if (percent === undefined || percent === null) {
+    return preset.theme.extend.colors['df-gray'][600];
+  }
+  if (percent > 60 && percent < 100) {
+    return preset.theme.extend.colors.status.success;
+  } else if (percent > 30 && percent < 90) {
+    return preset.theme.extend.colors.status.warning;
+  } else if (percent !== 0 && percent < 30) {
+    return preset.theme.extend.colors.status.error;
+  }
+  return preset.theme.extend.colors['df-gray'][600];
+}
