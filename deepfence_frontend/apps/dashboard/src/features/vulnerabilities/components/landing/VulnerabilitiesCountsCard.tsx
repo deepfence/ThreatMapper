@@ -37,7 +37,7 @@ function getChartOptions({
     series: [
       {
         type: 'pie',
-        radius: ['70%', '100%'],
+        radius: ['72%', '100%'],
         itemStyle: {
           borderWidth: 2,
           borderColor: preset.theme.extend.colors.bg.card,

@@ -30,7 +30,7 @@ import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
-const PAGE_SIZE = 15;
+const DEFAULT_PAGE_SIZE = 10;
 
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   liveConnection: 'Live Connection',
@@ -189,27 +189,26 @@ const UniqueTable = () => {
           <DFLink
             to={{
               pathname: `./${info.getValue()}`,
+              search: `?${searchParams.toString()}`,
             }}
             className="flex items-center gap-x-2"
           >
-            <>
-              <div className="p-2 bg-gray-100 dark:bg-gray-500/10 rounded-lg">
-                <div className="w-3 h-3 dark:text-status-error">
-                  <VulnerabilityIcon />
-                </div>
+            <div className="p-2 bg-gray-100 dark:bg-gray-500/10 rounded-lg shrink-0">
+              <div className="w-3 h-3 dark:text-status-error">
+                <VulnerabilityIcon />
               </div>
-              {info.getValue()}
-            </>
+            </div>
+            <TruncatedText text={info.getValue() ?? ''} />
           </DFLink>
         ),
-        header: () => 'CVE ID',
+        header: () => <TruncatedText text="CVE ID" />,
         minSize: 100,
         size: 150,
         maxSize: 250,
       }),
       columnHelper.accessor('cve_caused_by_package', {
-        cell: (info) => info.getValue(),
-        header: () => 'Package',
+        cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
+        header: () => <TruncatedText text="Package" />,
         minSize: 100,
         size: 120,
         maxSize: 125,
@@ -217,7 +216,7 @@ const UniqueTable = () => {
       columnHelper.accessor('cve_severity', {
         enableResizing: true,
         cell: (info) => <SeverityBadge severity={info.getValue()} />,
-        header: () => 'Severity',
+        header: () => <TruncatedText text="Severity" />,
         minSize: 80,
         size: 80,
         maxSize: 100,
@@ -225,15 +224,14 @@ const UniqueTable = () => {
       columnHelper.accessor('cve_cvss_score', {
         enableResizing: true,
         cell: (info) => <CveCVSSScore score={info.getValue()} />,
-        header: () => 'Score',
+        header: () => <TruncatedText text="Score" />,
         minSize: 70,
         size: 60,
         maxSize: 85,
       }),
       columnHelper.accessor('cve_attack_vector', {
-        enableResizing: false,
-        cell: (info) => info.getValue(),
-        header: () => 'Attack Vector',
+        cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
+        header: () => <TruncatedText text="Attack Vector" />,
         minSize: 100,
         size: 120,
         maxSize: 250,
@@ -241,7 +239,7 @@ const UniqueTable = () => {
       columnHelper.accessor('has_live_connection', {
         enableResizing: true,
         cell: (info) => <div>{info.getValue() === true ? 'Active' : 'In Active'}</div>,
-        header: () => 'Live',
+        header: () => <TruncatedText text="Live" />,
         minSize: 60,
         size: 70,
         maxSize: 70,
@@ -263,7 +261,7 @@ const UniqueTable = () => {
             </DFLink>
           );
         },
-        header: () => 'Exploit',
+        header: () => <TruncatedText text="Exploit" />,
         minSize: 60,
         size: 60,
         maxSize: 70,
@@ -274,7 +272,7 @@ const UniqueTable = () => {
         cell: (info) => {
           return <TruncatedText text={info.getValue()?.join(', ') ?? ''} />;
         },
-        header: () => 'Affected Resources',
+        header: () => <TruncatedText text="Affected Resources" />,
         minSize: 180,
         size: 180,
         maxSize: 190,
@@ -283,7 +281,7 @@ const UniqueTable = () => {
         enableSorting: false,
         enableResizing: true,
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
-        header: () => 'Description',
+        header: () => <TruncatedText text="Description" />,
         minSize: 200,
         size: 200,
         maxSize: 210,
@@ -295,7 +293,7 @@ const UniqueTable = () => {
 
   const { data } = useSuspenseQuery({
     ...queries.vulnerability.uniqueVulnerabilities({
-      pageSize: PAGE_SIZE,
+      pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
       liveConnection: searchParams.getAll('liveConnection'),
       page: parseInt(searchParams.get('page') ?? '0', 10),
       order: getOrderFromSearchParams(searchParams),
@@ -314,14 +312,14 @@ const UniqueTable = () => {
       enableColumnResizing
       approximatePagination
       totalRows={data.totalRows}
-      pageSize={PAGE_SIZE}
+      pageSize={parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE))}
       pageIndex={data.currentPage}
       onPaginationChange={(updaterOrValue) => {
         let newPageIndex = 0;
         if (typeof updaterOrValue === 'function') {
           newPageIndex = updaterOrValue({
             pageIndex: data.currentPage,
-            pageSize: PAGE_SIZE,
+            pageSize: DEFAULT_PAGE_SIZE,
           }).pageIndex;
         } else {
           newPageIndex = updaterOrValue.pageIndex;
@@ -353,6 +351,14 @@ const UniqueTable = () => {
         });
         setSort(newSortState);
       }}
+      enablePageResize
+      onPageResize={(newSize) => {
+        setSearchParams((prev) => {
+          prev.set('size', String(newSize));
+          prev.delete('page');
+          return prev;
+        });
+      }}
     />
   );
 };
@@ -366,7 +372,7 @@ const UniqueVulnerabilities = () => {
 
   return (
     <div>
-      <div className="flex p-2 pl-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<VulnerabilityIcon />} isLink>
             <DFLink to={'/vulnerability'} unstyled>

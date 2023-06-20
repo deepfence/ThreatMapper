@@ -205,7 +205,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                 'text-p7 dark:text-text-text-and-icon',
                 'py-[7px] px-3',
                 {
-                  'dark:border-bg-hover-3 dark:bg-bg-card dark:text-text-input-value':
+                  'dark:border-bg-hover-3 dark:bg-bg-active-selection dark:text-text-input-value':
                     Array.isArray(value) && value.length,
                 },
               ),
