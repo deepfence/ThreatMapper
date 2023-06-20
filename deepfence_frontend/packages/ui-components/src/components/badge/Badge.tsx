@@ -20,7 +20,7 @@ export type ColorType =
   | 'warning'
   | 'error';
 
-const badgeCVA = cva(['inline-block pt-0.5 min-w-[20px]'], {
+const badgeCVA = cva(['inline-block pt-0.5 min-w-[20px] text-center'], {
   variants: {
     color: {
       grey: '',
@@ -36,7 +36,7 @@ const badgeCVA = cva(['inline-block pt-0.5 min-w-[20px]'], {
     },
     variant: {
       outlined: 'text-text-inverse  dark:text-text-input-value border',
-      filled: 'text-text-input-value dark:text-text-inverse',
+      filled: 'text-text-input-value dark:text-text-text-inverse',
     },
     size: {
       default: 'text-p8 px-2.5 rounded-xl ',

@@ -1,19 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
-import {
-  HiDocumentText,
-  HiOutlineChevronRight,
-  HiPhotograph,
-  HiTag,
-} from 'react-icons/hi';
-import { IconContext } from 'react-icons/lib';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense } from 'react';
 import { Card } from 'ui-components';
 
 import { ModelSummary } from '@/api/generated/models/ModelSummary';
-import { LinkButton } from '@/components/LinkButton';
-import { getRegistryLogo } from '@/constants/logos';
-import { registrySummaryQuery } from '@/queries/registries';
-import { useTheme } from '@/theme/ThemeContext';
-import { RegistryType } from '@/types/common';
+import { DFLink } from '@/components/DFLink';
+import { RegistryLogos } from '@/components/icons/registries';
+import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
+import { queries } from '@/queries';
+import { RegistryType, registryTypeToNameMapping } from '@/types/common';
 import { abbreviateNumber } from '@/utils/number';
 
 interface RegistryResponseType extends ModelSummary {
@@ -24,21 +18,30 @@ const RegistrySkeleton = () => {
   return (
     <>
       {Array.from(Array(9).keys()).map((k) => (
-        <Card className="p-2 animate-pulse items-center gap-2 min-w-[400px]" key={k}>
-          <div className="flex items-center justify-between w-full">
-            <div className="h-2 w-24 bg-gray-200 dark:bg-gray-700"></div>
-            <div className="h-2 w-20 bg-gray-200 dark:bg-gray-700 rounded-md ml-auto mt-2"></div>
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="px-4 flex items-center border-r border-gray-200 dark:border-gray-700 w-20 h-20">
-              <div className="rounded-full bg-gray-200 dark:bg-gray-700 h-10 w-10"></div>
+        <Card
+          className="p-2 animate-pulse pb-3 flex flex-col dark:bg-bg-card min-w-[322px]"
+          key={k}
+        >
+          <div className="flex items-center w-full relative">
+            <div className="dark:bg-bg-grid-default absolute -top-[34px] left-[12px] rounded-full">
+              <div className="w-[72px] h-[72px]"></div>
             </div>
-            <div className="flex gap-x-4 justify-center items-center">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="h-2 w-20 bg-gray-200 dark:bg-gray-700 rounded col-span-1"></div>
-                <div className="h-2 w-20 bg-gray-200 dark:bg-gray-700 rounded col-span-1"></div>
-                <div className="h-2 w-20 bg-gray-200 dark:bg-gray-700 rounded col-span-1"></div>
-              </div>
+            <div className="ml-[102px]">
+              <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+          </div>
+          <div className="flex mt-8 gap-x-[48px] justify-center items-center w-[322px]">
+            <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon gap-y-4">
+              <div className="h-2 w-14 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-6 w-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+            <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon gap-y-4">
+              <div className="h-2 w-14 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-6 w-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+            <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon gap-y-4">
+              <div className="h-2 w-14 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-6 w-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
             </div>
           </div>
         </Card>
@@ -47,117 +50,82 @@ const RegistrySkeleton = () => {
   );
 };
 
-const Registry = ({ registry }: { registry: RegistryResponseType }) => {
-  const { mode } = useTheme();
-  const { icon, name } = getRegistryLogo(
-    registry.type as unknown as keyof typeof RegistryType,
-    mode,
-  );
+const CardHeader = ({ registry }: { registry: RegistryResponseType }) => {
+  const name = registryTypeToNameMapping[registry.type];
 
   return (
-    <Card className="p-2 pb-3 flex flex-col" key={registry.type}>
-      <div className="flex items-center w-full">
-        <h4 className="text-gray-900 font-medium text-sm dark:text-white mr-4">{name}</h4>
-        <div className="flex ml-auto">
-          <LinkButton to={`/registries/${registry.type}`} sizing="xs">
-            <>
-              Go to details&nbsp;
-              <HiOutlineChevronRight />
-            </>
-          </LinkButton>
-        </div>
+    <div className="flex items-center w-full relative">
+      <div className="dark:bg-bg-grid-default absolute -top-[34px] left-[12px] rounded-full p-4">
+        <RegistryLogos
+          registryType={registry.type as unknown as keyof typeof RegistryType}
+        />
       </div>
-      <div className="flex items-center gap-x-6 mt-2">
-        <div className="gap-y-2 border-r border-gray-200 dark:border-gray-700">
-          <div className="px-4 flex justify-center items-center h-8 w-20 m-w-[32px] m-h-[32px]">
-            <img height="100%" width="100%" src={icon} alt="logo" />
-          </div>
-        </div>
+      <DFLink className="ml-[102px]" to={`/registries/${registry.type}`} unstyled>
+        <span className="flex items-center gap-2 text-t1 uppercase dark:text-text-input-value dark:hover:text-text-link pt-1">
+          {name}
+        </span>
+      </DFLink>
+    </div>
+  );
+};
 
-        <div className="flex gap-x-4 justify-center items-center">
-          <div className="flex flex-col justify-center">
-            <span className="text-[1.875rem] text-gray-900 dark:text-gray-200 font-light">
-              {abbreviateNumber(registry.registries ?? 0)}
-            </span>
-            <div className="flex items-center gap-x-1 min-w-[90px]">
-              <IconContext.Provider
-                value={{
-                  className: 'h-5 w-5 text-blue-500 dark:text-blue-400',
-                }}
-              >
-                <HiDocumentText />
-              </IconContext.Provider>
-              <span className="text-xs text-gray-500 dark:text-gray-400">{`Registr${
-                registry.registries && registry.registries > 1 ? 'ies' : 'y'
-              }`}</span>
-            </div>
-          </div>
-          <div className="gap-x-2 flex flex-col justify-center">
-            <span className="text-[2rem] text-gray-900 dark:text-gray-200 font-light">
-              {abbreviateNumber(registry.images ?? 0)}
-            </span>
-            <div className="flex items-center gap-x-1 min-w-[70px]">
-              <IconContext.Provider
-                value={{
-                  className: 'h-5 w-5 text-blue-500 dark:text-blue-400',
-                }}
-              >
-                <HiPhotograph />
-              </IconContext.Provider>
-              <span className="text-xs text-gray-500 dark:text-gray-400">{`Image${
-                registry.images && registry.images > 1 ? 's' : ''
-              }`}</span>
-            </div>
-          </div>
-          <div className="gap-x-2 flex flex-col justify-center">
-            <span className="text-[2rem] text-gray-900 dark:text-gray-200 font-light">
-              {abbreviateNumber(registry.tags ?? 0)}
-            </span>
-            <div className="flex items-center gap-x-1 min-w-[90px]">
-              <IconContext.Provider
-                value={{
-                  className: 'h-5 w-5 text-blue-500 dark:text-blue-400',
-                }}
-              >
-                <HiTag />
-              </IconContext.Provider>
-              <span className="text-xs text-gray-500 dark:text-gray-400">{`Tag${
-                registry.tags && registry.tags > 1 ? 's' : ''
-              }`}</span>
-            </div>
-          </div>
+const Registry = ({ registry }: { registry: RegistryResponseType }) => {
+  return (
+    <Card className="p-2 pb-3 flex flex-col dark:bg-bg-card" key={registry.type}>
+      <CardHeader registry={registry} />
+      <div className="flex mt-6 gap-x-[48px] justify-center items-center w-[322px]">
+        <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
+          Registries
+          <span className="text-h1 text-gray-900 dark:text-text-input-value">
+            {abbreviateNumber(registry.registries ?? 0)}
+          </span>
+        </div>
+        <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
+          Images
+          <span className="text-h1 text-gray-900 dark:text-text-input-value">
+            {abbreviateNumber(registry.images ?? 0)}
+          </span>
+        </div>
+        <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
+          Tags
+          <span className="text-h1 text-gray-900 dark:text-text-input-value">
+            {abbreviateNumber(registry.tags ?? 0)}
+          </span>
         </div>
       </div>
     </Card>
   );
 };
 
-const Registries = () => {
-  const { data, isLoading } = useQuery(registrySummaryQuery());
-  const { mode } = useTheme();
-
+const RegistryList = () => {
+  const { data } = useSuspenseQuery({
+    ...queries.registry.registrySummary(),
+    keepPreviousData: true,
+  });
   return (
     <>
-      <div className="flex p-2 pl-2 w-full shadow bg-white dark:bg-gray-800">
-        <span className="text-md font-medium text-gray-700 dark:text-gray-200">
+      {data?.map((registry) => {
+        return <Registry key={registry.type} registry={registry} />;
+      })}
+    </>
+  );
+};
+
+const Registries = () => {
+  return (
+    <>
+      <div className="flex py-2 w-full bg-white dark:bg-bg-breadcrumb-bar">
+        <span className="dark:text-text-input-value pl-6 flex items-center text-sm leading-[30px]">
+          <span className="w-4 h-4 mr-1.5">
+            <RegistryIcon />
+          </span>
           Registries
         </span>
       </div>
-      <div className="flex gap-2 flex-wrap my-2 pl-2">
-        {isLoading ? <RegistrySkeleton /> : null}
-        {data?.map((registry) => {
-          return (
-            <Registry
-              key={
-                getRegistryLogo(
-                  registry.type as unknown as keyof typeof RegistryType,
-                  mode,
-                ).name
-              }
-              registry={registry}
-            />
-          );
-        })}
+      <div className="mx-4 mt-[66px] flex gap-x-[20px] gap-y-[42px] flex-wrap">
+        <Suspense fallback={<RegistrySkeleton />}>
+          <RegistryList />
+        </Suspense>
       </div>
     </>
   );

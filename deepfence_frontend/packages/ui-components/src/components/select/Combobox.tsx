@@ -6,6 +6,7 @@ import {
   Transition,
 } from '@headlessui/react';
 import { Slot } from '@radix-ui/react-slot';
+import { isEmpty } from 'lodash-es';
 import {
   createContext,
   ElementType,
@@ -64,6 +65,16 @@ const StartIcon = () => {
     </svg>
   );
 };
+const Options = ({ children }: { children: React.ReactNode }) => {
+  if (children === null || isEmpty(children)) {
+    return (
+      <div className="py-3 px-2 w-full flex items-center justify-center text-p6 dark:text-text-text-and-icon">
+        No results found
+      </div>
+    );
+  }
+  return <>{children}</>;
+};
 type ComboboxProps<
   TValue,
   TNullable extends boolean | undefined,
@@ -116,6 +127,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
   ...props
 }: ComboboxProps<TValue, boolean | undefined, boolean | undefined, TTag>) {
   const intersectionRef = useRef<RefObject<HTMLElement> | null>(null);
+  const [inputElement, setInputElement] = useState<HTMLInputElement | null>(null);
   const { x, y, strategy, refs } = useFloating({
     strategy: 'fixed',
     placement: 'bottom-start',
@@ -128,14 +140,14 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
       size({
         apply({ availableHeight, elements }) {
           Object.assign(elements.floating.style, {
-            width: `max(${elements.reference.getBoundingClientRect().width}px, 154px)`,
+            maxWidth: `max(${elements.reference.getBoundingClientRect().width}px, 260px)`,
             maxHeight: `min(${availableHeight}px, 350px)`,
           });
         },
       }),
     ],
   });
-  // eslint-disable-next-line
+
   const intersection = useIntersection(intersectionRef as RefObject<HTMLElement>, {
     root: null,
     rootMargin: '0px',
@@ -147,6 +159,12 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
       onEndReached?.();
     }
   }, [intersection]);
+
+  useEffect(() => {
+    if (!inputElement) {
+      onQueryChange('');
+    }
+  }, [inputElement]);
 
   return (
     <ListboxContext.Provider
@@ -161,16 +179,18 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
         multiple={multiple}
       >
         <div className="relative flex flex-col">
-          <HUICombobox.Label
-            className={cn(
-              'text-p3 text-gray-900 dark:text-text-text-and-icon pb-[10px]',
-              {
-                'text-gray-600 dark:text-gray-600': disabled,
-              },
-            )}
-          >
-            {label}
-          </HUICombobox.Label>
+          {label?.length && (
+            <HUICombobox.Label
+              className={cn(
+                'text-p3 text-gray-900 dark:text-text-text-and-icon pb-[10px]',
+                {
+                  'text-gray-600 dark:text-gray-600': disabled,
+                },
+              )}
+            >
+              {label}
+            </HUICombobox.Label>
+          )}
           <HUICombobox.Button
             as={Slot}
             ref={(ele) => refs.setReference(ele)}
@@ -198,7 +218,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
               {multiple && Array.isArray(value) && value.length > 0 ? (
                 <div className="relative flex items-center">
                   <Badge
-                    color="blueLight"
+                    color="blue"
                     variant="filled"
                     size="small"
                     label={value?.length}
@@ -236,6 +256,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                     <SearchIcon />
                   </span>
                   <HUICombobox.Input
+                    ref={setInputElement}
                     placeholder="Search"
                     className={cn(
                       'pl-[6px] text-p6 dark:text-text-input-value',
@@ -243,7 +264,9 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                       'dark:placeholder:text-df-gray-600',
                       'min-w-0',
                     )}
-                    onChange={(event) => onQueryChange(event.target.value)}
+                    onChange={(event) => {
+                      onQueryChange(event.target.value);
+                    }}
                   />
                 </div>
 
@@ -259,7 +282,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                     ),
                   )}
                 >
-                  {children}
+                  <Options>{children}</Options>
                   {loading ? (
                     <div className="pt-2 pb-1 px-3 flex items-center">
                       <CircleSpinner size="sm" />

@@ -1,4 +1,4 @@
-export const PopOut = () => {
+export const PopOutIcon = () => {
   return (
     <svg
       width="100%"

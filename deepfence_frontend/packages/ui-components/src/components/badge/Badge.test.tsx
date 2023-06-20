@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom';
 
-import { fireEvent } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import Badge from '@/components/badge/Badge';
 import { renderUI } from '@/tests/utils';

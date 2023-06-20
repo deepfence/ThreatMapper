@@ -10,6 +10,7 @@ export interface DropdownProps extends DropdownPrimitive.DropdownMenuProps {
   // pass true if you want to merge passed children with default trigger button
   triggerAsChild?: boolean;
   align?: DropdownPrimitive.MenuContentProps['align'];
+  disabled?: boolean;
 }
 
 const CaretIcon = () => {
@@ -83,10 +84,18 @@ export const DropdownSubMenu: React.FC<
 };
 
 export const Dropdown: React.FC<DropdownProps & { loop?: boolean }> = (props) => {
-  const { children, content, align = 'start', triggerAsChild, loop, ...rest } = props;
+  const {
+    children,
+    content,
+    align = 'start',
+    triggerAsChild,
+    disabled,
+    loop,
+    ...rest
+  } = props;
   return (
     <DropdownPrimitive.Root {...rest}>
-      <DropdownPrimitive.Trigger asChild={triggerAsChild}>
+      <DropdownPrimitive.Trigger asChild={triggerAsChild} disabled={disabled}>
         {children}
       </DropdownPrimitive.Trigger>
       <DropdownPrimitive.Portal>
@@ -104,6 +113,7 @@ export const Dropdown: React.FC<DropdownProps & { loop?: boolean }> = (props) =>
             'text-p7',
             // border
             'border dark:border dark:border-bg-left-nav',
+            'py-2',
           )}
         >
           {content}
@@ -156,6 +166,14 @@ export const DropdownSeparator: React.ForwardRefExoticComponent<
   DropdownPrimitive.DropdownMenuSeparatorProps & React.RefAttributes<HTMLDivElement>
 > = React.forwardRef((props, forwardedRef) => {
   const { className, ...rest } = props;
-  const classes = cn('h-px bg-gray-200 dark:bg-bg-left-nav', className);
-  return <DropdownPrimitive.Separator className={classes} {...rest} ref={forwardedRef} />;
+  const classes = cn('h-px bg-gray-200 dark:bg-bg-left-nav flex-1', className);
+  return (
+    <DropdownPrimitive.Separator
+      {...rest}
+      ref={forwardedRef}
+      className="h-[30px] flex items-center"
+    >
+      <div className={classes} />
+    </DropdownPrimitive.Separator>
+  );
 });

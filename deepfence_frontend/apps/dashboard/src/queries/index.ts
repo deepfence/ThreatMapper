@@ -2,7 +2,10 @@ import { mergeQueryKeys } from '@lukemorales/query-key-factory';
 import { QueryKey } from '@tanstack/react-query';
 
 import { queryClient } from '@/queries/client';
+import { malwareQueries } from '@/queries/malware';
+import { registryQueries } from '@/queries/registry';
 import { searchQueries } from '@/queries/search';
+import { secretQueries } from '@/queries/secret';
 import { vulnerabilityQueries } from '@/queries/vulnerability';
 
 export function invalidateQueries(queryKey: QueryKey) {
@@ -17,4 +20,10 @@ export function invalidateAllQueries() {
   });
 }
 
-export const queries = mergeQueryKeys(vulnerabilityQueries, searchQueries);
+export const queries = mergeQueryKeys(
+  vulnerabilityQueries,
+  searchQueries,
+  secretQueries,
+  malwareQueries,
+  registryQueries,
+);
