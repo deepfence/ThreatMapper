@@ -38,11 +38,11 @@ export function getColorForCompliancePercent(percent: number | undefined | null)
   if (percent === undefined || percent === null) {
     return preset.theme.extend.colors['df-gray'][600];
   }
-  if (percent > 60 && percent < 100) {
+  if (percent >= 80 && percent <= 100) {
     return preset.theme.extend.colors.status.success;
-  } else if (percent > 30 && percent < 90) {
+  } else if (percent >= 30 && percent < 80) {
     return preset.theme.extend.colors.status.warning;
-  } else if (percent !== 0 && percent < 30) {
+  } else if (percent < 30) {
     return preset.theme.extend.colors.status.error;
   }
   return preset.theme.extend.colors['df-gray'][600];

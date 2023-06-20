@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense } from 'react';
+import { cn } from 'tailwind-preset';
 import { Card, Separator } from 'ui-components';
 
 import { ModelPostureProvider } from '@/api/generated';
@@ -89,10 +90,10 @@ const CardSkeleton = () => {
 const CardHeader = ({ name }: { name: string }) => {
   return (
     <div className="flex items-center w-full relative">
-      <div className="dark:bg-bg-grid-default absolute -top-[34px] left-[12px] rounded-full p-4">
+      <div className="dark:bg-bg-grid-default absolute -top-[34px] left-[16px] rounded-full p-4">
         <PostureLogos name={name} />
       </div>
-      <DFLink className="ml-[102px]" to={`/posture/accounts/${name}`} unstyled>
+      <DFLink className="ml-[114px]" to={`/posture/accounts/${name}`} unstyled>
         <span className="flex items-center gap-2 text-t4 uppercase dark:text-text-input-value dark:hover:text-text-link pt-1">
           {providersToNameMapping[name]}
         </span>
@@ -101,18 +102,26 @@ const CardHeader = ({ name }: { name: string }) => {
   );
 };
 const CardSectionIcon = ({ provider }: { provider: ModelPostureProvider }) => {
+  const isScanned = provider.scan_count && provider.scan_count >= 0;
+
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div
+      className={cn('flex flex-col self-start', {
+        'items-center': isScanned,
+      })}
+    >
       <span className="font-normal text-xs leading-6 dark:text-text-text-and-icon">
         Compliance
       </span>
       <div
         style={{
-          color: getColorForCompliancePercent(provider.compliance_percentage),
+          color: getColorForCompliancePercent(12),
         }}
         className="my-1.5"
       >
-        <ComplianceIconByPercent percent={provider.compliance_percentage} />
+        {isScanned ? (
+          <ComplianceIconByPercent percent={provider.compliance_percentage ?? 0} />
+        ) : null}
       </div>
       <span
         className="text-h2"
@@ -120,7 +129,7 @@ const CardSectionIcon = ({ provider }: { provider: ModelPostureProvider }) => {
           color: getColorForCompliancePercent(provider.compliance_percentage),
         }}
       >
-        {provider.scan_count && provider.scan_count > 0 ? (
+        {isScanned ? (
           `${formatPercentage(provider.compliance_percentage ?? 0, {
             maximumFractionDigits: 1,
           })}`
@@ -161,7 +170,7 @@ const PostureCard = ({ provider }: { provider: ModelPostureProvider }) => {
   return (
     <Card className="p-2 pb-3 flex flex-col dark:bg-bg-card">
       <CardHeader name={provider.name || ''} />
-      <div className="mt-5 mb-2 grid grid-cols-3 place-items-center min-w-[322px]">
+      <div className="mt-6 mb-2 grid grid-cols-3 place-items-center min-w-[322px]">
         <CardSectionIcon provider={provider} />
         <CardSectionText name={provider.name ?? ''} />
         <CardSectionCount provider={provider} />

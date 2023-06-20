@@ -27,20 +27,12 @@ export const PostureLogos = ({ name }: { name: string }) => {
   return null;
 };
 
-export const ComplianceIconByPercent = ({
-  percent,
-}: {
-  percent: number | undefined | null;
-}) => {
-  if (percent === undefined || percent === null) {
-    return <div></div>;
-  }
-
-  if (percent > 60 && percent < 100) {
+export const ComplianceIconByPercent = ({ percent }: { percent: number }) => {
+  if (percent >= 80 && percent <= 100) {
     return <ShieldCheckSolidIcon />;
-  } else if (percent > 30 && percent < 90) {
+  } else if (percent >= 30 && percent < 80) {
     return <ShieldWarningSolidIcon />;
-  } else if (percent !== 0 && percent < 30) {
+  } else if (percent < 30) {
     return <ShieldXSolidIcon />;
   }
   return <div></div>;
