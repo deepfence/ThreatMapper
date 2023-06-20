@@ -24,31 +24,62 @@ export const providersToNameMapping: { [key: string]: string } = {
 const isNonCloudProvider = (provider: string) => {
   return provider === 'linux' || provider === 'kubernetes';
 };
+const HeaderSkeleton = () => {
+  return (
+    <div className="flex items-center w-full relative">
+      <div className="dark:bg-bg-grid-default absolute -top-[34px] left-[12px] rounded-full">
+        <div className="w-[72px] h-[72px]"></div>
+      </div>
+      <div className="ml-[102px]">
+        <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      </div>
+    </div>
+  );
+};
+const IconSkeleton = () => {
+  return (
+    <div className="min-w-[84px] flex flex-col items-center justify-center">
+      <div className="h-2 w-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      <div className="my-1.5">
+        <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      </div>
+      <div className="h-4 w-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+    </div>
+  );
+};
+const TextSkeleton = () => {
+  return (
+    <div className="min-w-[112px] gap-y-4 flex flex-col">
+      <div className="h-2 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      <div className="h-2 w-28 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      <div className="h-2 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      <div className="h-2 w-28 bg-gray-200 dark:bg-gray-700 rounded"></div>
+    </div>
+  );
+};
+const CountSkeleton = () => {
+  return (
+    <div className="min-w-[34px] flex flex-col gap-y-2">
+      <div className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      <div className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      <div className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      <div className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded"></div>
+    </div>
+  );
+};
 const CardSkeleton = () => {
   return (
     <>
       {Array.from(Array(5).keys()).map((k) => (
         <Card
-          className="p-2 animate-pulse items-center gap-2 min-w-[330px] min-h-[150px]"
+          className="p-2 animate-pulse items-center gap-2 dark:bg-bg-card min-w-[322px]"
           key={k}
         >
-          <div className="flex items-center justify-between w-full">
-            <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700"></div>
-            <div className="h-2 w-20 bg-gray-200 dark:bg-gray-700 rounded-md ml-auto mt-2"></div>
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="flex self-start flex-col border-r border-gray-200 dark:border-gray-700 w-20 h-20">
-              <div className="rounded-full bg-gray-200 dark:bg-gray-700 h-10 w-10"></div>
-              <div className="h-4 w-10 bg-gray-200 dark:bg-gray-700 mt-2"></div>
-              <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700 mt-2"></div>
-            </div>
-            <div className="flex gap-x-4 justify-center items-center">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-              </div>
-            </div>
+          <HeaderSkeleton />
+          <div className="flex mt-5 gap-x-6">
+            <IconSkeleton />
+            <TextSkeleton />
+            <CountSkeleton />
           </div>
         </Card>
       ))}
@@ -127,7 +158,7 @@ const PostureCard = ({ provider }: { provider: ModelPostureProvider }) => {
   return (
     <Card className="p-2 pb-3 flex flex-col dark:bg-bg-card">
       <CardHeader name={provider.name || ''} />
-      <div className="mt-5 mb-2 grid grid-cols-3 place-items-center w-[322px]">
+      <div className="mt-5 mb-2 grid grid-cols-3 place-items-center min-w-[322px]">
         <CardSectionIcon percent={provider.compliance_percentage} />
         <CardSectionText name={provider.name ?? ''} />
         <CardSectionCount provider={provider} />
@@ -188,6 +219,7 @@ const Posture = () => {
         </span>
       </div>
       <div className="mx-4 mt-10 mb-10 flex gap-x-[20px] gap-y-[42px] flex-wrap">
+        {/* <CardSkeleton /> */}
         <Suspense fallback={<CardSkeleton />}>
           <PostureCloudList />
           <Separator className="dark:bg-bg-grid-border" />
