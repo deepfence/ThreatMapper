@@ -201,14 +201,14 @@ const UniqueTable = () => {
             <TruncatedText text={info.getValue() ?? ''} />
           </DFLink>
         ),
-        header: () => 'CVE ID',
+        header: () => <TruncatedText text="CVE ID" />,
         minSize: 100,
         size: 150,
         maxSize: 250,
       }),
       columnHelper.accessor('cve_caused_by_package', {
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
-        header: () => 'Package',
+        header: () => <TruncatedText text="Package" />,
         minSize: 100,
         size: 120,
         maxSize: 125,
@@ -216,7 +216,7 @@ const UniqueTable = () => {
       columnHelper.accessor('cve_severity', {
         enableResizing: true,
         cell: (info) => <SeverityBadge severity={info.getValue()} />,
-        header: () => 'Severity',
+        header: () => <TruncatedText text="Severity" />,
         minSize: 80,
         size: 80,
         maxSize: 100,
@@ -224,14 +224,14 @@ const UniqueTable = () => {
       columnHelper.accessor('cve_cvss_score', {
         enableResizing: true,
         cell: (info) => <CveCVSSScore score={info.getValue()} />,
-        header: () => 'Score',
+        header: () => <TruncatedText text="Score" />,
         minSize: 70,
         size: 60,
         maxSize: 85,
       }),
       columnHelper.accessor('cve_attack_vector', {
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
-        header: () => 'Attack Vector',
+        header: () => <TruncatedText text="Attack Vector" />,
         minSize: 100,
         size: 120,
         maxSize: 250,
@@ -239,7 +239,7 @@ const UniqueTable = () => {
       columnHelper.accessor('has_live_connection', {
         enableResizing: true,
         cell: (info) => <div>{info.getValue() === true ? 'Active' : 'In Active'}</div>,
-        header: () => 'Live',
+        header: () => <TruncatedText text="Live" />,
         minSize: 60,
         size: 70,
         maxSize: 70,
@@ -261,7 +261,7 @@ const UniqueTable = () => {
             </DFLink>
           );
         },
-        header: () => 'Exploit',
+        header: () => <TruncatedText text="Exploit" />,
         minSize: 60,
         size: 60,
         maxSize: 70,
@@ -272,7 +272,7 @@ const UniqueTable = () => {
         cell: (info) => {
           return <TruncatedText text={info.getValue()?.join(', ') ?? ''} />;
         },
-        header: () => 'Affected Resources',
+        header: () => <TruncatedText text="Affected Resources" />,
         minSize: 180,
         size: 180,
         maxSize: 190,
@@ -281,7 +281,7 @@ const UniqueTable = () => {
         enableSorting: false,
         enableResizing: true,
         cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
-        header: () => 'Description',
+        header: () => <TruncatedText text="Description" />,
         minSize: 200,
         size: 200,
         maxSize: 210,
@@ -372,7 +372,7 @@ const UniqueVulnerabilities = () => {
 
   return (
     <div>
-      <div className="flex p-2 pl-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
         <Breadcrumb>
           <BreadcrumbLink asChild icon={<VulnerabilityIcon />} isLink>
             <DFLink to={'/vulnerability'} unstyled>
