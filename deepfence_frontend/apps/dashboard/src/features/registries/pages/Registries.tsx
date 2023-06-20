@@ -61,7 +61,7 @@ const CardHeader = ({ registry }: { registry: RegistryResponseType }) => {
         />
       </div>
       <DFLink className="ml-[102px]" to={`/registries/${registry.type}`} unstyled>
-        <span className="flex items-center gap-2 text-t1 uppercase dark:text-text-input-value dark:hover:text-text-link pt-1">
+        <span className="flex items-center gap-2 text-t4 uppercase dark:text-text-input-value dark:hover:text-text-link pt-1">
           {name}
         </span>
       </DFLink>
