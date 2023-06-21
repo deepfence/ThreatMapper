@@ -4,14 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "image tag"
-        required: true
+        description: "Image Tag"
+        required: false
         type: string
+  workflow_run:
+    workflows: ["Build & Publish images"]
+    type:
+      - complete
+
+env:
+  DF_IMG_TAG: ${{ inputs.tag || github.sha }}
 
 jobs:
-
   build:
-    name: deploy
     runs-on: ubuntu-latest
     steps:
 
@@ -25,17 +30,19 @@ jobs:
         uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-    
-      - name: Log in to DigitalOcean Container Registry with short-lived credentials
-        run: doctl registry login --expiry-seconds 600
 
       - name: Save DigitalOcean kubeconfig with short-lived credentials
-        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 actions-example-k8s-1-18
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 k8s-cicd-pipeline-tm
 
-      - name: instal router
+      - name: Install router
         run: |
           helm upgrade --install router $GITHUB_WORKSPACE/deployment-scripts/helm-charts/deepfence-router
 
-      - name: instal console
+      - name: Clean up console
+        continue-on-error: true
         run: |
-          helm upgrade --install console $GITHUB_WORKSPACE/deployment-scripts/helm-charts/deepfence-console --set global.imageTag=${{ inputs.tag }}
+          helm delete console
+
+      - name: Install console
+        run: |
+          helm upgrade --wait --install console $GITHUB_WORKSPACE/deployment-scripts/helm-charts/deepfence-console --set global.imageTag=${DF_IMG_TAG}

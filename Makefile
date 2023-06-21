@@ -120,7 +120,7 @@ openapi: server
 	cd $(PWD)/golang_deepfence_sdk/client && rm -rf ./test && sed -i 's/go 1.18/go 1.20/g' go.mod && go mod tidy -v && cd -
 
 .PHONY: cli
-cli:
+cli: bootstrap
 	(cd $(DEEPFENCE_CTL) && make clean && make all)
 
 .PHONY: publish

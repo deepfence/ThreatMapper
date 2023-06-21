@@ -144,7 +144,7 @@ minio:
       cpu: 2000m
       memory: 4096Mi
     requests:
-      scpu: 100m
+      cpu: 100m
       memory: 128Mi
   podAnnotations: {}
   podSecurityContext: {}
