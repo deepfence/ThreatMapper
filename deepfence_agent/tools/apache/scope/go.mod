@@ -25,7 +25,6 @@ require (
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
 	github.com/bradfitz/gomemcache v0.0.0-20221031212613-62deef7fc822
 	github.com/c9s/goprocinfo v0.0.0-20210130143923-c95fcf8c64a8
-	github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d
 	github.com/coocood/freecache v1.2.3
 	github.com/davecgh/go-spew v1.1.1
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000
