@@ -48,9 +48,9 @@ func (e *RegistryECR) DecryptExtras(aes encryption.AES) error {
 func (e *RegistryECR) FetchImagesFromRegistry() ([]model.IngestedContainerImage, error) {
 	// based on iamrole we need to fetch images
 	if e.NonSecret.UseIAMRole == "true" {
-		return listImagesCrossAccount(e.NonSecret.AWSRegionName, e.NonSecret.AWSAccountID, e.NonSecret.TargetAccountRoleARN)
+		return listIAMImages(e.NonSecret.AWSRegionName, e.NonSecret.AWSAccountID, e.NonSecret.TargetAccountRoleARN, e.NonSecret.IsPublic == "true")
 	}
-	return listImages(e.NonSecret.AWSAccessKeyID, e.Secret.AWSSecretAccessKey, e.NonSecret.AWSRegionName, e.NonSecret.IsPublic == "true")
+	return listNonIAMImages(e.NonSecret.AWSAccessKeyID, e.Secret.AWSSecretAccessKey, e.NonSecret.AWSRegionName, e.NonSecret.IsPublic == "true")
 }
 
 // getters
