@@ -64,3 +64,7 @@ type Results struct {
 	ContentType         string    `json:"content_type,omitempty"`
 	Digest              string    `json:"digest,omitempty"`
 }
+
+type AWSSelfQuery struct {
+	AccountID string `json:"accountId"`
+}
