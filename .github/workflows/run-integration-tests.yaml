@@ -8,9 +8,10 @@ on:
         required: false
         type: string
   workflow_run:
-    workflows: ["Deploy to k8s"]
-    type:
-      - complete
+    workflows:
+      - Deploy to k8s
+    types:
+      - completed
 
 env:
   DEEPFENCE_APIKEY: ${{ inputs.key || secrets.K8S_CONSOLE_APIKEY }}
