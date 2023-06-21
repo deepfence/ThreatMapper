@@ -187,14 +187,6 @@ const UniqueTable = () => {
         size: 90,
         maxSize: 100,
       }),
-      columnHelper.accessor('score', {
-        enableResizing: true,
-        cell: (info) => <CveCVSSScore score={info.getValue()} />,
-        header: () => <TruncatedText text="Score" />,
-        minSize: 70,
-        size: 80,
-        maxSize: 85,
-      }),
       columnHelper.accessor('signature_to_match', {
         enableResizing: true,
         enableSorting: false,
@@ -230,7 +222,6 @@ const UniqueTable = () => {
   const { data } = useSuspenseQuery({
     ...queries.secret.uniqueSecrets({
       pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
-      liveConnection: searchParams.getAll('liveConnection'),
       page: parseInt(searchParams.get('page') ?? '0', 10),
       order: getOrderFromSearchParams(searchParams),
       severity: searchParams.getAll('severity'),
