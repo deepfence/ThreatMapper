@@ -570,7 +570,7 @@ export const secretQueries = createQueryKeys('secret', {
 
         if (severity.length) {
           searchSecretsRequestParams.node_filter.filters.contains_filter.filter_in![
-            'severity'
+            'level'
           ] = severity;
         }
 
@@ -579,6 +579,13 @@ export const secretQueries = createQueryKeys('secret', {
             {
               field_name: order.sortBy,
               descending: order.descending,
+            },
+          ];
+        } else {
+          searchSecretsRequestParams.node_filter.filters.order_filter.order_fields = [
+            {
+              field_name: 'level',
+              descending: true,
             },
           ];
         }
