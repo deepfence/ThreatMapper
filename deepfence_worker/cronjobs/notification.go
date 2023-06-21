@@ -78,22 +78,22 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 		}
 		iByte, err := json.Marshal(integrationRow)
 		if err != nil {
-			log.Error().Msgf("Error Processing for integration json marshall integrationRow: +%v", integrationRow, err)
+			log.Error().Msgf("Error Processing for integration json marshall integrationRow: %+v", integrationRow, err)
 			return err
 		}
 		integrationModel, err := integration.GetIntegration(integrationRow.IntegrationType, iByte)
 		if err != nil {
-			log.Error().Msgf("Error Processing for integration GetIntegration: +%v", integrationRow, err)
+			log.Error().Msgf("Error Processing for integration GetIntegration: %+v", integrationRow, err)
 			return err
 		}
 		messageByte, err := json.Marshal(results)
 		if err != nil {
-			log.Error().Msgf("Error Processing for integration json marshall results: +%v", integrationRow, err)
+			log.Error().Msgf("Error Processing for integration json marshall results: %+v", integrationRow, err)
 			return err
 		}
 		err = integrationModel.SendNotification(string(messageByte))
 		if err != nil {
-			log.Error().Msgf("Error Sending Notification: +%v", integrationRow, err)
+			log.Error().Msgf("Error Sending Notification: %+v", integrationRow, err)
 			return err
 		}
 		log.Info().Msgf("Sent %d messages in notification", len(results))
