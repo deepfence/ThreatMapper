@@ -198,6 +198,10 @@ func (d *OpenApiDocs) AddSearchOperations() {
 		"Search Compliances", "Search across all the data associated with compliances",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]Compliance))
 
+	d.AddOperation("searchVulerabilityRules", http.MethodPost, "/deepfence/search/vulnerability-rules",
+		"Search Vulnerability Rules", "Search across all the data associated with vulnerability rules",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]VulnerabilityRule))
+
 	d.AddOperation("searchSecretRules", http.MethodPost, "/deepfence/search/secret-rules",
 		"Search Secret Rules", "Search across all the data associated with secret ruless",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new([]SecretRule))
@@ -293,6 +297,10 @@ func (d *OpenApiDocs) AddSearchOperations() {
 
 	d.AddOperation("countCompliances", http.MethodPost, "/deepfence/search/count/compliances",
 		"Count Compliances", "Count across all the data associated with compliances",
+		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
+
+	d.AddOperation("countVulnerabilityRules", http.MethodPost, "/deepfence/search/count/vulnerability-rules",
+		"Count Vulnerability Rules", "Count across all the data associated with vulnerability rules",
 		http.StatusOK, []string{tagSearch}, bearerToken, new(SearchNodeReq), new(SearchCountResp))
 
 	d.AddOperation("countSecretRules", http.MethodPost, "/deepfence/search/count/secret-rules",

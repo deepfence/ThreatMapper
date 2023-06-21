@@ -25,8 +25,9 @@ type SearchFilter struct {
 }
 
 type SearchNodeReq struct {
-	NodeFilter SearchFilter      `json:"node_filter" required:"true"`
-	Window     model.FetchWindow `json:"window" required:"true"`
+	NodeFilter         SearchFilter      `json:"node_filter" required:"true"`
+	ExtendedNodeFilter SearchFilter      `json:"extended_node_filter"`
+	Window             model.FetchWindow `json:"window" required:"true"`
 }
 
 type SearchScanReq struct {
@@ -132,7 +133,7 @@ func CountNodes(ctx context.Context) (NodeCountResp, error) {
 	return res, nil
 }
 
-func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
+func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, extended_filter SearchFilter, fw model.FetchWindow) ([]T, error) {
 	res := []T{}
 	var dummy T
 
@@ -157,9 +158,12 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 		MATCH (n:` + dummy.NodeType() + `)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
 		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) +
-		` OPTIONAL MATCH (n) -[:IS]-> (e) CALL {
-        WITH n OPTIONAL MATCH (l) -[:DETECTED]-> (n) OPTIONAL MATCH (l) -[:SCANNED]-> (k)
-        WITH distinct k RETURN collect((coalesce(k.node_name, '') + '/' + coalesce(k.node_type, ''))) as resources }
+		` OPTIONAL MATCH (n) -[:IS]-> (e) ` +
+		reporters.ParseFieldFilters2CypherWhereConditions("e", mo.Some(extended_filter.Filters), true) +
+		` CALL {
+			WITH n OPTIONAL MATCH (l) -[:DETECTED]-> (n) OPTIONAL MATCH (l) -[:SCANNED]-> (k)
+			WITH distinct k RETURN collect((coalesce(k.node_name, '') + '/' + coalesce(k.node_type, ''))) as resources 
+		}
 		RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources ` +
 		fw.FetchWindow2CypherQuery()
 	log.Debug().Msgf("search query: %v", query)
@@ -404,8 +408,8 @@ func SearchCloudNodeReport[T reporters.Cypherable](ctx context.Context, filter S
 	return hosts, nil
 }
 
-func SearchReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, fw model.FetchWindow) ([]T, error) {
-	hosts, err := searchGenericDirectNodeReport[T](ctx, filter, fw)
+func SearchReport[T reporters.Cypherable](ctx context.Context, filter SearchFilter, extended_filter SearchFilter, fw model.FetchWindow) ([]T, error) {
+	hosts, err := searchGenericDirectNodeReport[T](ctx, filter, extended_filter, fw)
 	if err != nil {
 		return nil, err
 	}
