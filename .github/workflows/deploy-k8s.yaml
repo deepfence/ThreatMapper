@@ -2,12 +2,48 @@ name: Deploy to k8s
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image Tag"
+        required: false
+        type: string
+  workflow_run:
+    workflows:
+      - Build & Publish images
+    types:
+      - completed
+
+env:
+  DF_IMG_TAG: ${{ inputs.tag || github.sha }}
 
 jobs:
-  test:
-    runs-on: ubuntu-18.04
+  build:
+    runs-on: ubuntu-latest
     steps:
-      - name: Show environment v2
-        run: env | grep ^GITHUB
-      - name: Show ref v2
-        run: echo "===============> Version from $GITHUB_REF"
+
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Helm installer
+        uses: Azure/setup-helm@v3
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Save DigitalOcean kubeconfig with short-lived credentials
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 k8s-cicd-pipeline-tm
+
+      - name: Install router
+        run: |
+          helm upgrade --install router $GITHUB_WORKSPACE/deployment-scripts/helm-charts/deepfence-router
+
+      - name: Clean up console
+        continue-on-error: true
+        run: |
+          helm delete console
+
+      - name: Install console
+        run: |
+          helm upgrade --wait --install console $GITHUB_WORKSPACE/deployment-scripts/helm-charts/deepfence-console --set global.imageTag=${DF_IMG_TAG}
