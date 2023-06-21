@@ -149,16 +149,8 @@ func GetContainerKubeClusterNameFromId(ctx context.Context, node_id string) (str
 	return clusterID, clusterName, nil
 }
 
-func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
-	var reqs model.VulnerabilityScanTriggerReq
-	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqs)
-	if err != nil {
-		log.Error().Msgf("%v", err)
-		respondError(&BadDecoding{err}, w)
-		return
-	}
-
-	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
+func StartScanActionBuilder(ctx context.Context, scanType ctl.ActionID, additionalBinArgs map[string]string) func(string, model.NodeIdentifier, int32) (ctl.Action, error) {
+	return func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
 		registryIdStr := ""
 		if registryId != -1 {
 			registryIdStr = strconv.Itoa(int(registryId))
@@ -169,19 +161,14 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 			"node_id":     req.NodeId,
 			"registry_id": registryIdStr,
 		}
-
-		if len(reqs.ScanConfigLanguages) != 0 {
-			languages := []string{}
-			for i := range reqs.ScanConfigLanguages {
-				languages = append(languages, reqs.ScanConfigLanguages[i].Language)
-			}
-			binArgs["scan_type"] = strings.Join(languages, ",")
+		for k, v := range additionalBinArgs {
+			binArgs[k] = v
 		}
 
 		nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
 
 		if nodeTypeInternal == ctl.Image {
-			name, tag, err := GetImageFromId(r.Context(), req.NodeId)
+			name, tag, err := GetImageFromId(ctx, req.NodeId)
 			if err != nil {
 				log.Error().Msgf("image not found %s", err.Error())
 			} else {
@@ -191,7 +178,7 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 		}
 
 		if nodeTypeInternal == ctl.Container {
-			clusterID, clusterName, err := GetContainerKubeClusterNameFromId(r.Context(), req.NodeId)
+			clusterID, clusterName, err := GetContainerKubeClusterNameFromId(ctx, req.NodeId)
 			if err != nil {
 				log.Error().Msgf("container kube cluster name not found %s", err.Error())
 			} else if len(clusterName) > 0 {
@@ -200,10 +187,15 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 			}
 		}
 
-		internal_req := ctl.StartVulnerabilityScanRequest{
-			NodeId:   req.NodeId,
-			NodeType: nodeTypeInternal,
-			BinArgs:  binArgs,
+		var internal_req interface{}
+
+		switch scanType {
+		case ctl.StartVulnerabilityScan:
+			internal_req = ctl.StartVulnerabilityScanRequest{NodeId: req.NodeId, NodeType: nodeTypeInternal, BinArgs: binArgs}
+		case ctl.StartSecretScan:
+			internal_req = ctl.StartSecretScanRequest{NodeId: req.NodeId, NodeType: nodeTypeInternal, BinArgs: binArgs}
+		case ctl.StartMalwareScan:
+			internal_req = ctl.StartMalwareScanRequest{NodeId: req.NodeId, NodeType: nodeTypeInternal, BinArgs: binArgs}
 		}
 
 		b, err := json.Marshal(internal_req)
@@ -211,11 +203,29 @@ func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.R
 			return ctl.Action{}, err
 		}
 
-		return ctl.Action{
-			ID:             ctl.StartVulnerabilityScan,
-			RequestPayload: string(b),
-		}, nil
+		return ctl.Action{ID: scanType, RequestPayload: string(b)}, nil
 	}
+}
+
+func (h *Handler) StartVulnerabilityScanHandler(w http.ResponseWriter, r *http.Request) {
+	var reqs model.VulnerabilityScanTriggerReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &reqs)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	binArgs := make(map[string]string, 0)
+	if len(reqs.ScanConfigLanguages) != 0 {
+		languages := []string{}
+		for i := range reqs.ScanConfigLanguages {
+			languages = append(languages, reqs.ScanConfigLanguages[i].Language)
+		}
+		binArgs["scan_type"] = strings.Join(languages, ",")
+	}
+
+	actionBuilder := StartScanActionBuilder(r.Context(), ctl.StartVulnerabilityScan, binArgs)
 
 	scan_ids, bulkId, err := StartMultiScan(r.Context(), true, utils.NEO4J_VULNERABILITY_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
@@ -245,46 +255,7 @@ func (h *Handler) StartSecretScanHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
-		registryIdStr := ""
-		if registryId != -1 {
-			registryIdStr = strconv.Itoa(int(registryId))
-		}
-		binArgs := map[string]string{
-			"scan_id":     scanId,
-			"node_type":   req.NodeType,
-			"node_id":     req.NodeId,
-			"registry_id": registryIdStr,
-		}
-
-		nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
-
-		if nodeTypeInternal == ctl.Image {
-			name, tag, err := GetImageFromId(r.Context(), req.NodeId)
-			if err != nil {
-				return ctl.Action{}, err
-			}
-			binArgs["image_name"] = name + ":" + tag
-			log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
-		}
-
-		internal_req := ctl.StartSecretScanRequest{
-			NodeId:   req.NodeId,
-			NodeType: ctl.StringToResourceType(req.NodeType),
-			BinArgs:  binArgs,
-		}
-
-		b, err := json.Marshal(internal_req)
-		bstr := string(b)
-		if err != nil {
-			return ctl.Action{}, err
-		}
-
-		return ctl.Action{
-			ID:             ctl.StartSecretScan,
-			RequestPayload: bstr,
-		}, nil
-	}
+	actionBuilder := StartScanActionBuilder(r.Context(), ctl.StartSecretScan, nil)
 
 	scan_ids, bulkId, err := StartMultiScan(r.Context(), true, utils.NEO4J_SECRET_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {
@@ -394,46 +365,7 @@ func (h *Handler) StartMalwareScanHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
-		registryIdStr := ""
-		if registryId != -1 {
-			registryIdStr = strconv.Itoa(int(registryId))
-		}
-		binArgs := map[string]string{
-			"scan_id":     scanId,
-			"node_type":   req.NodeType,
-			"node_id":     req.NodeId,
-			"registry_id": registryIdStr,
-		}
-
-		nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
-
-		if nodeTypeInternal == ctl.Image {
-			name, tag, err := GetImageFromId(r.Context(), req.NodeId)
-			if err != nil {
-				return ctl.Action{}, err
-			}
-			binArgs["image_name"] = name + ":" + tag
-			log.Info().Msgf("node_id=%s image_name=%s", req.NodeId, binArgs["image_name"])
-		}
-
-		internal_req := ctl.StartMalwareScanRequest{
-			NodeId:   req.NodeId,
-			NodeType: ctl.StringToResourceType(req.NodeType),
-			BinArgs:  binArgs,
-		}
-
-		b, err := json.Marshal(internal_req)
-		bstr := string(b)
-		if err != nil {
-			return ctl.Action{}, err
-		}
-
-		return ctl.Action{
-			ID:             ctl.StartMalwareScan,
-			RequestPayload: bstr,
-		}, nil
-	}
+	actionBuilder := StartScanActionBuilder(r.Context(), ctl.StartMalwareScan, nil)
 
 	scan_ids, bulkId, err := StartMultiScan(r.Context(), true, utils.NEO4J_MALWARE_SCAN, reqs.ScanTriggerCommon, actionBuilder)
 	if err != nil {

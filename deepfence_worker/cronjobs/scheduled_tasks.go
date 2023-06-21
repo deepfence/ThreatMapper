@@ -3,7 +3,6 @@ package cronjobs
 import (
 	"context"
 	"encoding/json"
-	"strconv"
 
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
@@ -68,6 +67,7 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 	nodeIds := []model.NodeIdentifier{}
 	switch nodeType {
 	case utils.NodeTypeHost:
+		searchFilter.Filters.ContainsFilter.FieldsValues["agent_running"] = []interface{}{true}
 		nodes, err := reporters_search.SearchReport[model.Host](ctx, searchFilter, extSearchFilter, fetchWindow)
 		if err != nil {
 			return err
@@ -111,97 +111,19 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 
 	switch messagePayload["action"].(string) {
 	case utils.VULNERABILITY_SCAN:
-		actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
-			registryIdStr := ""
-			if registryId != -1 {
-				registryIdStr = strconv.Itoa(int(registryId))
-			}
-			binArgs := map[string]string{"scan_id": scanId, "node_type": req.NodeType, "node_id": req.NodeId, "registry_id": registryIdStr, "scan_type": "all"}
-
-			nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
-
-			if nodeTypeInternal == ctl.Image {
-				name, tag, err := handler.GetImageFromId(ctx, req.NodeId)
-				if err != nil {
-					log.Warn().Msgf("image not found %s", err.Error())
-				} else {
-					binArgs["image_name"] = name + ":" + tag
-				}
-			}
-
-			internal_req := ctl.StartVulnerabilityScanRequest{NodeId: req.NodeId, NodeType: nodeTypeInternal, BinArgs: binArgs}
-
-			b, err := json.Marshal(internal_req)
-			if err != nil {
-				return ctl.Action{}, err
-			}
-
-			return ctl.Action{ID: ctl.StartVulnerabilityScan, RequestPayload: string(b)}, nil
-		}
+		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartVulnerabilityScan, map[string]string{"scan_type": "all"})
 		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_VULNERABILITY_SCAN, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
 	case utils.SECRET_SCAN:
-		actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
-			registryIdStr := ""
-			if registryId != -1 {
-				registryIdStr = strconv.Itoa(int(registryId))
-			}
-			binArgs := map[string]string{"scan_id": scanId, "node_type": req.NodeType, "node_id": req.NodeId, "registry_id": registryIdStr}
-
-			nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
-
-			if nodeTypeInternal == ctl.Image {
-				name, tag, err := handler.GetImageFromId(ctx, req.NodeId)
-				if err != nil {
-					log.Warn().Msgf("image not found %s", err.Error())
-				} else {
-					binArgs["image_name"] = name + ":" + tag
-				}
-			}
-
-			internal_req := ctl.StartSecretScanRequest{NodeId: req.NodeId, NodeType: nodeTypeInternal, BinArgs: binArgs}
-
-			b, err := json.Marshal(internal_req)
-			if err != nil {
-				return ctl.Action{}, err
-			}
-
-			return ctl.Action{ID: ctl.StartSecretScan, RequestPayload: string(b)}, nil
-		}
+		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartSecretScan, nil)
 		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_SECRET_SCAN, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
 		}
 	case utils.MALWARE_SCAN:
-		actionBuilder := func(scanId string, req model.NodeIdentifier, registryId int32) (ctl.Action, error) {
-			registryIdStr := ""
-			if registryId != -1 {
-				registryIdStr = strconv.Itoa(int(registryId))
-			}
-			binArgs := map[string]string{"scan_id": scanId, "node_type": req.NodeType, "node_id": req.NodeId, "registry_id": registryIdStr}
-
-			nodeTypeInternal := ctl.StringToResourceType(req.NodeType)
-
-			if nodeTypeInternal == ctl.Image {
-				name, tag, err := handler.GetImageFromId(ctx, req.NodeId)
-				if err != nil {
-					log.Warn().Msgf("image not found %s", err.Error())
-				} else {
-					binArgs["image_name"] = name + ":" + tag
-				}
-			}
-
-			internal_req := ctl.StartMalwareScanRequest{NodeId: req.NodeId, NodeType: nodeTypeInternal, BinArgs: binArgs}
-
-			b, err := json.Marshal(internal_req)
-			if err != nil {
-				return ctl.Action{}, err
-			}
-
-			return ctl.Action{ID: ctl.StartMalwareScan, RequestPayload: string(b)}, nil
-		}
+		actionBuilder := handler.StartScanActionBuilder(ctx, ctl.StartMalwareScan, nil)
 		_, _, err := handler.StartMultiScan(ctx, false, utils.NEO4J_MALWARE_SCAN, scanTrigger, actionBuilder)
 		if err != nil {
 			return err
