@@ -14,7 +14,7 @@ export const CardHeader = ({
   return (
     <div className="border-b dark:border-df-gray-900">
       <DFLink to={path} unstyled>
-        <div className="flex items-center gap-2 dark:text-text-text-and-icon dark:hover:text-text-link p-3">
+        <div className="flex items-center gap-2 dark:text-accent-accent dark:hover:text-bg-hover-1 p-3">
           <span className="h-4 w-4 shrink-0">{icon}</span>
           <span className="text-t2 uppercase truncate" title={title}>
             {title}
