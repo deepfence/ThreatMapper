@@ -39,6 +39,7 @@ type Vulnerability struct {
 	ExploitPOC                 string   `json:"exploit_poc"`
 	ParsedAttackVector         string   `json:"parsed_attack_vector"`
 	ExploitabilityScore        int      `json:"exploitability_score"`
+	InitExploitabilityScore    int      `json:"init_exploitability_score"`
 	HasLiveConnection          bool     `json:"has_live_connection"`
 }
 

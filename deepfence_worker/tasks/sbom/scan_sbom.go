@@ -198,6 +198,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 		}
 
 		c.ExploitabilityScore = score
+		c.InitExploitabilityScore = score
 		c.HasLiveConnection = false
 
 		cb, err := json.Marshal(c)
