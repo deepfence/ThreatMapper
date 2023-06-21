@@ -118,50 +118,35 @@ function getChartOptions({ data }: { data: TopNVulnerableChartData[] }) {
         stack: 'total',
         color: SEVERITY_COLORS['critical'],
         cursor: 'default',
-        itemStyle: {
-          borderWidth: 0.3,
-          borderColor: preset.theme.extend.colors.bg.card,
-        },
+        barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
         color: SEVERITY_COLORS['high'],
         cursor: 'default',
-        itemStyle: {
-          borderWidth: 0.3,
-          borderColor: preset.theme.extend.colors.bg.card,
-        },
+        barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
         color: SEVERITY_COLORS['medium'],
         cursor: 'default',
-        itemStyle: {
-          borderWidth: 0.3,
-          borderColor: preset.theme.extend.colors.bg.card,
-        },
+        barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
         color: SEVERITY_COLORS['low'],
         cursor: 'default',
-        itemStyle: {
-          borderWidth: 0.3,
-          borderColor: preset.theme.extend.colors.bg.card,
-        },
+        barMaxWidth: 20,
       },
       {
         type: 'bar',
         stack: 'total',
         color: SEVERITY_COLORS['unknown'],
         cursor: 'default',
-        itemStyle: {
-          borderWidth: 0.3,
-          borderColor: preset.theme.extend.colors.bg.card,
-        },
+        barMaxWidth: 20,
       },
     ],
   } satisfies ReactEChartsProps['option'];
