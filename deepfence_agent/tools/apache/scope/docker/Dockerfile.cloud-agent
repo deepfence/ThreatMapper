@@ -9,10 +9,10 @@ RUN apk add --no-cache --update bash conntrack-tools iproute2 util-linux curl bi
     && curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
     && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
     && rm docker-${DOCKERVERSION}.tgz \
-    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.9.0/vessel_v0.9.0_linux_amd64.tar.gz \
-    && tar -xzf vessel_v0.9.0_linux_amd64.tar.gz \
+    && curl -fsSLOk https://github.com/deepfence/vessel/releases/download/v0.10.0/vessel_v0.10.0_linux_amd64.tar.gz \
+    && tar -xzf vessel_v0.10.0_linux_amd64.tar.gz \
     && mv vessel /usr/local/bin/ \
-    && rm -rf vessel_v0.9.0_linux_amd64.tar.gz \
+    && rm -rf vessel_v0.10.0_linux_amd64.tar.gz \
     && curl -fsSLOk https://github.com/containerd/nerdctl/releases/download/v1.1.0/nerdctl-1.1.0-linux-amd64.tar.gz \
     && tar Cxzvvf /usr/local/bin nerdctl-1.1.0-linux-amd64.tar.gz \
     && rm nerdctl-1.1.0-linux-amd64.tar.gz \

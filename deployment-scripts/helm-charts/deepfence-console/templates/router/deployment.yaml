@@ -57,6 +57,8 @@ spec:
           image: "{{ .Values.registry.imagePrefix }}{{ .Values.router.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.router.image.pullPolicy }}
           env:
+            - name: FORCE_HTTPS_REDIRECT
+              value: "{{ .Values.router.forceHttpsRedirect }}"
             - name: POSTGRES_USER_DB_HOST
               valueFrom:
                 secretKeyRef:

@@ -1,0 +1,45 @@
+name: Run integration tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      key:
+        description: "Console deepfence key"
+        required: false
+        type: string
+
+env:
+  DEEPFENCE_APIKEY: ${{ inputs.key || secrets.K8S_CONSOLE_APIKEY }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Save DigitalOcean kubeconfig with short-lived credentials
+        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 k8s-cicd-pipeline-tm
+
+      - name: Setup go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+
+      - name: Make deepfencectl CLI
+        run: |
+          make cli
+
+      - name: Run integration tests
+        run: |
+          export DEEPFENCE_URL=`kubectl get services deepfence-router --output jsonpath='{.status.loadBalancer.ingress[0].ip}'`
+          cd $GITHUB_WORKSPACE/tests/integrations && ./run.sh

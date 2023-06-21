@@ -8,7 +8,7 @@ import ComplianceTable from '../compliance-table';
 
 export const GcpTerraFormScript = withRouter(props => {
   const [collapsed, setCollapsed] = useState(true);
-  const terraformLink = "https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage";
+  const terraformLink = "https://community.deepfence.io/threatmapper/docs/v1.5/cloudscanner/gcp";
 
   return (
     <div
@@ -48,68 +48,6 @@ export const GcpTerraFormScript = withRouter(props => {
               <br/>
               <a target="_blank" rel="noreferrer" href={terraformLink}>{terraformLink}</a>
             </p>
-          </div>
-          <h6 style={{ color: 'white', marginTop: '20px' }}>
-            {' '}
-            Single project{' '}
-          </h6>
-          <div style={{ marginTop: '15px' }}>
-            <span style={{ fontSize: '11px' }}>
-              Copy the code below and paste it into a .tf file on your local
-              machine.
-            </span>
-            <div
-              style={{
-                backgroundColor: 'black',
-                padding: '10px',
-                color: 'white',
-              }}
-            >
-              <pre style={{ color: 'white' }}>{`
-provider "google" {
-   project = "<PROJECT_ID>; ex. dev1-123456"
-   region  = "<REGION_ID>; ex. asia-east1"
-}
-
-provider "google-beta" {
-   project = "<PROJECT_ID> ex. dev1-123456"
-   region  = "<REGION_ID>; ex. asia-east1"
-}
-
-module "cloud-scanner_example_single-project" {
-  source              = "deepfence/cloud-scanner/gcp//examples/single-project"
-  version             = "0.2.0"
-  mgmt-console-url    = "<Console URL> eg. XXX.XXX.XX.XXX"
-  mgmt-console-port   = "443"
-  deepfence-key       = "<Deepfence-key> eg. XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-  name                = "deepfence-cloud-scanner"
-  image_name          = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:latest"
-}
-
-variable "image" {
-  type        = string
-  default     = "us-east1-docker.pkg.dev/deepfenceio/deepfence/cloud-scanner:1.5.0"
-}
-`}</pre>
-            </div>
-          </div>
-          <div style={{ marginTop: '15px' }}>
-            <span style={{ fontSize: '11px' }}>then run:</span>
-            <div
-              style={{
-                backgroundColor: 'black',
-                color: 'white',
-              }}
-            >
-              <pre style={{ color: 'white' }}>
-                $ terraform init
-                <br />
-                $ terraform plan
-                <br />
-                $ terraform apply
-                <br />
-              </pre>
-            </div>
           </div>
         </div>
       ) : null}
