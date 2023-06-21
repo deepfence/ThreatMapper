@@ -9,10 +9,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ecr"
+	"github.com/aws/aws-sdk-go/service/ecrpublic"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 )
 
-func listImages(awsAccessKey, awsSecretKey, awsRegion string) ([]model.IngestedContainerImage, error) {
+func listImages(awsAccessKey, awsSecretKey, awsRegion string, isPublic bool) ([]model.IngestedContainerImage, error) {
 	// Set up AWS session with access key ID and secret access key
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(awsRegion),
@@ -22,6 +23,13 @@ func listImages(awsAccessKey, awsSecretKey, awsRegion string) ([]model.IngestedC
 		return nil, fmt.Errorf("error creating session: %v", err)
 	}
 
+	if isPublic {
+		return listPublicImages(sess)
+	}
+	return listPrivateImages(sess)
+}
+
+func listPrivateImages(sess *session.Session) ([]model.IngestedContainerImage, error) {
 	// Create ECR client
 	svc := ecr.New(sess)
 
@@ -67,6 +75,49 @@ func listImages(awsAccessKey, awsSecretKey, awsRegion string) ([]model.IngestedC
 
 	return containerImages, nil
 }
+
+func listPublicImages(sess *session.Session) ([]model.IngestedContainerImage, error) {
+	// Create ECR Public client
+	svc := ecrpublic.New(sess)
+
+	// Call DescribeRepositories API with repositoryNamePrefix set to "public/"
+	result, err := svc.DescribeRepositories(&ecrpublic.DescribeRepositoriesInput{})
+	if err != nil {
+		return nil, fmt.Errorf("error describing repositories: %v", err)
+	}
+
+	// Create slice of IngestedContainerImage structs
+	var containerImages []model.IngestedContainerImage
+
+	for _, repo := range result.Repositories {
+		tags, err := svc.DescribeImageTags(&ecrpublic.DescribeImageTagsInput{
+			RepositoryName: repo.RepositoryName,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error describing image tags for repository %s: %v", *repo.RepositoryName, err)
+		}
+		// Add containers to IngestedContainerImage struct
+		for _, tag := range tags.ImageTagDetails {
+			var containerImage model.IngestedContainerImage
+			containerImage.Name = *repo.RepositoryUri
+			containerImage.ID = model.DigestToID(*tag.ImageDetail.ImageDigest)
+			containerImage.Tag = *tag.ImageTag
+			containerImage.DockerImageID = *tag.ImageDetail.ImageDigest
+			containerImage.Size = fmt.Sprint(*tag.ImageDetail.ImageSizeInBytes)
+			containerImage.Metadata = model.Metadata{
+				"created_time": *repo.CreatedAt,
+				"digest":       *tag.ImageDetail.ImageDigest,
+				"last_updated": tag.ImageDetail.ImagePushedAt.Unix(),
+				"last_pushed":  tag.ImageDetail.ImagePushedAt.Unix(),
+			}
+			containerImages = append(containerImages, containerImage)
+		}
+		// fmt.Println(tags)/
+	}
+	return containerImages, nil
+
+}
+
 func listImagesCrossAccount(awsRegion, awsAccountID, targetAccountRoleARN string) ([]model.IngestedContainerImage, error) {
 	// Create session with default credentials provider chain
 	sess, err := session.NewSession(&aws.Config{

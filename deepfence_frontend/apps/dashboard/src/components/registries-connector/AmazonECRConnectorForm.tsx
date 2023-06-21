@@ -131,18 +131,16 @@ export const AmazonECRConnectorForm = ({
                 />
               </>
             )}
-            {!isPublic ? (
-              <TextInput
-                className="w-3/4 min-[200px] max-w-xs"
-                label="AWS Region"
-                type={'text'}
-                sizing="sm"
-                name="non_secret.aws_region_name"
-                placeholder="AWS Region"
-                color={fieldErrors?.['non_secret.aws_region_name'] ? 'error' : 'default'}
-                helperText={fieldErrors?.['non_secret.aws_region_name']}
-              />
-            ) : null}
+            <TextInput
+              className="w-3/4 min-[200px] max-w-xs"
+              label="AWS Region"
+              type={'text'}
+              sizing="sm"
+              name="non_secret.aws_region_name"
+              placeholder="AWS Region"
+              color={fieldErrors?.['non_secret.aws_region_name'] ? 'error' : 'default'}
+              helperText={fieldErrors?.['non_secret.aws_region_name']}
+            />
           </div>
           {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
         </Card>

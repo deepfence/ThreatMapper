@@ -50,7 +50,7 @@ func (e *RegistryECR) FetchImagesFromRegistry() ([]model.IngestedContainerImage,
 	if e.NonSecret.UseIAMRole == "true" {
 		return listImagesCrossAccount(e.NonSecret.AWSRegionName, e.NonSecret.AWSAccountID, e.NonSecret.TargetAccountRoleARN)
 	}
-	return listImages(e.NonSecret.AWSAccessKeyID, e.Secret.AWSSecretAccessKey, e.NonSecret.AWSRegionName)
+	return listImages(e.NonSecret.AWSAccessKeyID, e.Secret.AWSSecretAccessKey, e.NonSecret.AWSRegionName, e.NonSecret.IsPublic == "true")
 }
 
 // getters
