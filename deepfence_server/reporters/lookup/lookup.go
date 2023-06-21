@@ -316,7 +316,7 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 			OPTIONAL MATCH (n) -[:IS]-> (e)
 			RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e`
 	}
-	log.Info().Msgf("query: %s", query)
+	log.Debug().Msgf("query: %s", query)
 	r, err = tx.Run(query,
 		map[string]interface{}{"ids": filter.NodeIds})
 

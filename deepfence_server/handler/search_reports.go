@@ -37,7 +37,9 @@ func SearchCountHandler[T reporters.CypherableAndCategorizable](w http.ResponseW
 		Filters:       req.NodeFilter.Filters,
 	}
 
-	entries, err := reporters_search.SearchReport[T](r.Context(), dummy_ff, req.Window)
+	dummy_ext_ff := reporters_search.SearchFilter{}
+
+	entries, err := reporters_search.SearchReport[T](r.Context(), dummy_ff, dummy_ext_ff, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)
@@ -119,7 +121,7 @@ func SearchHandler[T reporters.Cypherable](w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	entries, err := reporters_search.SearchReport[T](r.Context(), req.NodeFilter, req.Window)
+	entries, err := reporters_search.SearchReport[T](r.Context(), req.NodeFilter, req.ExtendedNodeFilter, req.Window)
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(err, w)
@@ -186,6 +188,10 @@ func (h *Handler) SearchMalwareRules(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) SearchComplianceRules(w http.ResponseWriter, r *http.Request) {
 	SearchHandler[model.ComplianceRule](w, r)
+}
+
+func (h *Handler) SearchVulnerabilityRules(w http.ResponseWriter, r *http.Request) {
+	SearchHandler[model.VulnerabilityRule](w, r)
 }
 
 func (h *Handler) SearchVulnerabilityScans(w http.ResponseWriter, r *http.Request) {
@@ -274,6 +280,10 @@ func (h *Handler) SearchMalwareRulesCount(w http.ResponseWriter, r *http.Request
 
 func (h *Handler) SearchComplianceRulesCount(w http.ResponseWriter, r *http.Request) {
 	SearchCountHandler[model.ComplianceRule](w, r)
+}
+
+func (h *Handler) SearchVulnerabilityRulesCount(w http.ResponseWriter, r *http.Request) {
+	SearchCountHandler[model.VulnerabilityRule](w, r)
 }
 
 func (h *Handler) SearchVulnerabilityScansCount(w http.ResponseWriter, r *http.Request) {

@@ -10,15 +10,13 @@ import (
 )
 
 type SecretScanStatus struct {
-	Timestamp   time.Time `json:"@timestamp"`
-	ScanID      string    `json:"scan_id"`
-	ScanStatus  string    `json:"scan_status"`
-	ScanMessage string    `json:"scan_message"`
+	ScanID      string `json:"scan_id"`
+	ScanStatus  string `json:"scan_status"`
+	ScanMessage string `json:"scan_message"`
 }
 
 type Secret struct {
-	Timestamp    time.Time `json:"@timestamp"`
-	ImageLayerID string    `json:"ImageLayerId"`
+	ImageLayerID string `json:"ImageLayerId"`
 	Match        struct {
 		StartingIndex         int    `json:"starting_index"`
 		RelativeStartingIndex int    `json:"relative_starting_index"`
@@ -62,15 +60,15 @@ func CommitFuncSecrets(ns string, data []Secret) error {
 	if _, err = tx.Run(`
 		UNWIND $batch as row WITH row.Rule as rule, row.Secret as secret
 		MERGE (r:SecretRule{rule_id:rule.rule_id})
-		SET r+=rule WITH secret as row, r
+		SET r+=rule, r.masked = COALESCE(r.masked, false)
+		WITH secret as row, r
 		MERGE (n:Secret{node_id:row.node_id})
 		SET n+= row
 		WITH n, r, row
 		MERGE (n)-[:IS]->(r)
 		MERGE (m:SecretScan{node_id: row.scan_id})
 		WITH n, m
-		MERGE (m) -[r:DETECTED]-> (n)
-		SET r.masked = false`,
+		MERGE (m) -[r:DETECTED]-> (n)`,
 		map[string]interface{}{"batch": secretsToMaps(data)}); err != nil {
 		return err
 	}

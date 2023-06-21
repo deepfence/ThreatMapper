@@ -63,11 +63,12 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 			},
 		},
 	}
+	extSearchFilter := reporters_search.SearchFilter{}
 	fetchWindow := model.FetchWindow{Offset: 0, Size: 10000}
 	nodeIds := []model.NodeIdentifier{}
 	switch nodeType {
 	case utils.NodeTypeHost:
-		nodes, err := reporters_search.SearchReport[model.Host](ctx, searchFilter, fetchWindow)
+		nodes, err := reporters_search.SearchReport[model.Host](ctx, searchFilter, extSearchFilter, fetchWindow)
 		if err != nil {
 			return err
 		}
@@ -75,7 +76,7 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 			nodeIds = append(nodeIds, model.NodeIdentifier{NodeId: node.ID, NodeType: controls.ResourceTypeToString(controls.Host)})
 		}
 	case utils.NodeTypeContainer:
-		nodes, err := reporters_search.SearchReport[model.Container](ctx, searchFilter, fetchWindow)
+		nodes, err := reporters_search.SearchReport[model.Container](ctx, searchFilter, extSearchFilter, fetchWindow)
 		if err != nil {
 			return err
 		}
@@ -83,7 +84,7 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 			nodeIds = append(nodeIds, model.NodeIdentifier{NodeId: node.ID, NodeType: controls.ResourceTypeToString(controls.Container)})
 		}
 	case utils.NodeTypeContainerImage:
-		nodes, err := reporters_search.SearchReport[model.ContainerImage](ctx, searchFilter, fetchWindow)
+		nodes, err := reporters_search.SearchReport[model.ContainerImage](ctx, searchFilter, extSearchFilter, fetchWindow)
 		if err != nil {
 			return err
 		}
@@ -91,7 +92,7 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 			nodeIds = append(nodeIds, model.NodeIdentifier{NodeId: node.ID, NodeType: controls.ResourceTypeToString(controls.Image)})
 		}
 	case utils.NodeTypeKubernetesCluster:
-		nodes, err := reporters_search.SearchReport[model.KubernetesCluster](ctx, searchFilter, fetchWindow)
+		nodes, err := reporters_search.SearchReport[model.KubernetesCluster](ctx, searchFilter, extSearchFilter, fetchWindow)
 		if err != nil {
 			return err
 		}
