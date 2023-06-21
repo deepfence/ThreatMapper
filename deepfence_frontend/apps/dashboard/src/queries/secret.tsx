@@ -4,6 +4,7 @@ import { getSearchApiClient } from '@/api/api';
 import {
   ModelNodeIdentifierNodeTypeEnum,
   ModelScanInfo,
+  ModelSecret,
   ModelVulnerability,
   SearchSearchNodeReq,
   SearchSearchScanReq,
@@ -420,7 +421,7 @@ export const secretQueries = createQueryKeys('secret', {
           },
         };
         const searchSecretsCountApi = apiWrapper({
-          fn: getSearchApiClient().searchVulnerabilitiesCount,
+          fn: getSearchApiClient().searchSecretsCount,
         });
         const uniqueSecretsCounts = await searchSecretsCountApi({
           searchSearchNodeReq: {
@@ -478,7 +479,7 @@ export const secretQueries = createQueryKeys('secret', {
         };
 
         const searchSecretsCountApi = apiWrapper({
-          fn: getSearchApiClient().searchVulnerabilitiesCount,
+          fn: getSearchApiClient().searchSecretsCount,
         });
         const mostExploitableSecretCounts = await searchSecretsCountApi({
           searchSearchNodeReq: {
@@ -493,7 +494,7 @@ export const secretQueries = createQueryKeys('secret', {
                       field_name: 'exploitability_score',
                       descending: true,
                     },
-                    { descending: true, field_name: 'cve_cvss_score' },
+                    { descending: true, field_name: 'score' },
                   ],
                 },
                 compare_filter: null,
@@ -543,17 +544,17 @@ export const secretQueries = createQueryKeys('secret', {
       queryKey: [{ filters }],
       queryFn: async () => {
         const results: {
-          vulnerabilities: Array<ModelVulnerability>;
+          secrets: Array<ModelSecret>;
           currentPage: number;
           totalRows: number;
           message?: string;
         } = {
           currentPage: 1,
           totalRows: 0,
-          vulnerabilities: [],
+          secrets: [],
         };
 
-        const searchVulnerabilitiesRequestParams: SearchSearchNodeReq = {
+        const searchSecretsRequestParams: SearchSearchNodeReq = {
           node_filter: {
             filters: {
               contains_filter: { filter_in: {} },
@@ -571,58 +572,56 @@ export const secretQueries = createQueryKeys('secret', {
         };
 
         if (severity.length) {
-          searchVulnerabilitiesRequestParams.node_filter.filters.contains_filter.filter_in![
-            'cve_severity'
+          searchSecretsRequestParams.node_filter.filters.contains_filter.filter_in![
+            'severity'
           ] = severity;
         }
         if (liveConnection.length) {
           if (liveConnection.length === 1) {
-            searchVulnerabilitiesRequestParams.node_filter.filters.contains_filter.filter_in![
+            searchSecretsRequestParams.node_filter.filters.contains_filter.filter_in![
               'has_live_connection'
             ] = [liveConnection[0] === 'active'];
           }
         }
 
         if (order) {
-          searchVulnerabilitiesRequestParams.node_filter.filters.order_filter.order_fields =
-            [
-              {
-                field_name: order.sortBy,
-                descending: order.descending,
-              },
-            ];
+          searchSecretsRequestParams.node_filter.filters.order_filter.order_fields = [
+            {
+              field_name: order.sortBy,
+              descending: order.descending,
+            },
+          ];
         }
 
-        const searchVulnerabilitiesApi = apiWrapper({
-          fn: getSearchApiClient().searchVulnerabilities,
+        const searchSecretsApi = apiWrapper({
+          fn: getSearchApiClient().searchSecrets,
         });
-        const searchVulnerabilitiesResponse = await searchVulnerabilitiesApi({
-          searchSearchNodeReq: searchVulnerabilitiesRequestParams,
+        const searchSecretsResponse = await searchSecretsApi({
+          searchSearchNodeReq: searchSecretsRequestParams,
         });
-        if (!searchVulnerabilitiesResponse.ok) {
-          throw searchVulnerabilitiesResponse.error;
+        if (!searchSecretsResponse.ok) {
+          throw searchSecretsResponse.error;
         }
 
-        const searchVulnerabilitiesCountApi = apiWrapper({
-          fn: getSearchApiClient().searchVulnerabilitiesCount,
+        const searchSecretsCountApi = apiWrapper({
+          fn: getSearchApiClient().searchSecretsCount,
         });
-        const searchVulnerabilitiesCountResponse = await searchVulnerabilitiesCountApi({
+        const searchSecretsCountResponse = await searchSecretsCountApi({
           searchSearchNodeReq: {
-            ...searchVulnerabilitiesRequestParams,
+            ...searchSecretsRequestParams,
             window: {
-              ...searchVulnerabilitiesRequestParams.window,
+              ...searchSecretsRequestParams.window,
               size: 10 * pageSize,
             },
           },
         });
-        if (!searchVulnerabilitiesCountResponse.ok) {
-          throw searchVulnerabilitiesCountResponse.error;
+        if (!searchSecretsCountResponse.ok) {
+          throw searchSecretsCountResponse.error;
         }
 
-        results.vulnerabilities = searchVulnerabilitiesResponse.value;
+        results.secrets = searchSecretsResponse.value;
         results.currentPage = page;
-        results.totalRows =
-          page * pageSize + searchVulnerabilitiesCountResponse.value.count;
+        results.totalRows = page * pageSize + searchSecretsCountResponse.value.count;
 
         return results;
       },
