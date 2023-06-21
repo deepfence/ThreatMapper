@@ -4,7 +4,7 @@ import { getSearchApiClient } from '@/api/api';
 import {
   ModelNodeIdentifierNodeTypeEnum,
   ModelScanInfo,
-  ModelVulnerability,
+  ModelSecret,
   SearchSearchNodeReq,
   SearchSearchScanReq,
 } from '@/api/generated';
@@ -420,7 +420,7 @@ export const secretQueries = createQueryKeys('secret', {
           },
         };
         const searchSecretsCountApi = apiWrapper({
-          fn: getSearchApiClient().searchVulnerabilitiesCount,
+          fn: getSearchApiClient().searchSecretsCount,
         });
         const uniqueSecretsCounts = await searchSecretsCountApi({
           searchSearchNodeReq: {
@@ -478,13 +478,13 @@ export const secretQueries = createQueryKeys('secret', {
         };
 
         const searchSecretsCountApi = apiWrapper({
-          fn: getSearchApiClient().searchVulnerabilitiesCount,
+          fn: getSearchApiClient().searchSecretsCount,
         });
         const mostExploitableSecretCounts = await searchSecretsCountApi({
           searchSearchNodeReq: {
             node_filter: {
               filters: {
-                contains_filter: { filter_in: { exploitability_score: [1, 2, 3] } },
+                contains_filter: { filter_in: { exploitability_score: [0, 1, 2, 3] } },
                 match_filter: { filter_in: {} },
                 order_filter: {
                   order_fields: [
@@ -493,7 +493,6 @@ export const secretQueries = createQueryKeys('secret', {
                       field_name: 'exploitability_score',
                       descending: true,
                     },
-                    { descending: true, field_name: 'cve_cvss_score' },
                   ],
                 },
                 compare_filter: null,
@@ -536,24 +535,23 @@ export const secretQueries = createQueryKeys('secret', {
     };
     pageSize: number;
     severity: string[];
-    liveConnection: string[];
   }) => {
-    const { page = 1, order, severity, liveConnection, pageSize } = filters;
+    const { page = 1, order, severity, pageSize } = filters;
     return {
       queryKey: [{ filters }],
       queryFn: async () => {
         const results: {
-          vulnerabilities: Array<ModelVulnerability>;
+          secrets: Array<ModelSecret>;
           currentPage: number;
           totalRows: number;
           message?: string;
         } = {
           currentPage: 1,
           totalRows: 0,
-          vulnerabilities: [],
+          secrets: [],
         };
 
-        const searchVulnerabilitiesRequestParams: SearchSearchNodeReq = {
+        const searchSecretsRequestParams: SearchSearchNodeReq = {
           node_filter: {
             filters: {
               contains_filter: { filter_in: {} },
@@ -571,93 +569,87 @@ export const secretQueries = createQueryKeys('secret', {
         };
 
         if (severity.length) {
-          searchVulnerabilitiesRequestParams.node_filter.filters.contains_filter.filter_in![
-            'cve_severity'
+          searchSecretsRequestParams.node_filter.filters.contains_filter.filter_in![
+            'level'
           ] = severity;
-        }
-        if (liveConnection.length) {
-          if (liveConnection.length === 1) {
-            searchVulnerabilitiesRequestParams.node_filter.filters.contains_filter.filter_in![
-              'has_live_connection'
-            ] = [liveConnection[0] === 'active'];
-          }
         }
 
         if (order) {
-          searchVulnerabilitiesRequestParams.node_filter.filters.order_filter.order_fields =
-            [
-              {
-                field_name: order.sortBy,
-                descending: order.descending,
-              },
-            ];
+          searchSecretsRequestParams.node_filter.filters.order_filter.order_fields = [
+            {
+              field_name: order.sortBy,
+              descending: order.descending,
+            },
+          ];
+        } else {
+          searchSecretsRequestParams.node_filter.filters.order_filter.order_fields = [
+            {
+              field_name: 'level',
+              descending: true,
+            },
+          ];
         }
 
-        const searchVulnerabilitiesApi = apiWrapper({
-          fn: getSearchApiClient().searchVulnerabilities,
+        const searchSecretsApi = apiWrapper({
+          fn: getSearchApiClient().searchSecrets,
         });
-        const searchVulnerabilitiesResponse = await searchVulnerabilitiesApi({
-          searchSearchNodeReq: searchVulnerabilitiesRequestParams,
+        const searchSecretsResponse = await searchSecretsApi({
+          searchSearchNodeReq: searchSecretsRequestParams,
         });
-        if (!searchVulnerabilitiesResponse.ok) {
-          throw searchVulnerabilitiesResponse.error;
+        if (!searchSecretsResponse.ok) {
+          throw searchSecretsResponse.error;
         }
 
-        const searchVulnerabilitiesCountApi = apiWrapper({
-          fn: getSearchApiClient().searchVulnerabilitiesCount,
+        const searchSecretsCountApi = apiWrapper({
+          fn: getSearchApiClient().searchSecretsCount,
         });
-        const searchVulnerabilitiesCountResponse = await searchVulnerabilitiesCountApi({
+        const searchSecretsCountResponse = await searchSecretsCountApi({
           searchSearchNodeReq: {
-            ...searchVulnerabilitiesRequestParams,
+            ...searchSecretsRequestParams,
             window: {
-              ...searchVulnerabilitiesRequestParams.window,
+              ...searchSecretsRequestParams.window,
               size: 10 * pageSize,
             },
           },
         });
-        if (!searchVulnerabilitiesCountResponse.ok) {
-          throw searchVulnerabilitiesCountResponse.error;
+        if (!searchSecretsCountResponse.ok) {
+          throw searchSecretsCountResponse.error;
         }
 
-        results.vulnerabilities = searchVulnerabilitiesResponse.value;
+        results.secrets = searchSecretsResponse.value;
         results.currentPage = page;
-        results.totalRows =
-          page * pageSize + searchVulnerabilitiesCountResponse.value.count;
+        results.totalRows = page * pageSize + searchSecretsCountResponse.value.count;
 
         return results;
       },
     };
   },
-  mostExploitableSecrets: (filters: { severity: string[]; liveConnection: string[] }) => {
-    const { severity, liveConnection } = filters;
+  mostExploitableSecrets: (filters: { severity: string[] }) => {
+    const { severity } = filters;
     return {
       queryKey: [{ filters }],
       queryFn: async () => {
         const results: {
-          vulnerabilities: Array<ModelVulnerability>;
+          secrets: Array<ModelSecret>;
           currentPage: number;
           totalRows: number;
           message?: string;
         } = {
           currentPage: 1,
           totalRows: 0,
-          vulnerabilities: [],
+          secrets: [],
         };
 
-        const searchVulnerabilitiesRequestParams: SearchSearchNodeReq = {
+        const searchSecretsRequestParams: SearchSearchNodeReq = {
           node_filter: {
             filters: {
-              contains_filter: { filter_in: { exploitability_score: [1, 2, 3] } },
+              contains_filter: { filter_in: { exploitability_score: [0, 1, 2, 3] } },
               order_filter: {
                 order_fields: [
                   {
                     size: 1000,
                     field_name: 'exploitability_score',
                     descending: true,
-                  },
-                  {
-                    descending: true,
-                    field_name: 'cve_cvss_score',
                   },
                 ],
               },
@@ -674,28 +666,22 @@ export const secretQueries = createQueryKeys('secret', {
         };
 
         const searchVulnerabilitiesApi = apiWrapper({
-          fn: getSearchApiClient().searchVulnerabilities,
+          fn: getSearchApiClient().searchSecrets,
         });
-        const searchVulnerabilitiesResponse = await searchVulnerabilitiesApi({
-          searchSearchNodeReq: searchVulnerabilitiesRequestParams,
+        const searchSecretsResponse = await searchVulnerabilitiesApi({
+          searchSearchNodeReq: searchSecretsRequestParams,
         });
 
-        if (!searchVulnerabilitiesResponse.ok) {
-          throw searchVulnerabilitiesResponse.error;
+        if (!searchSecretsResponse.ok) {
+          throw searchSecretsResponse.error;
         }
 
-        results.vulnerabilities = searchVulnerabilitiesResponse.value;
+        results.secrets = searchSecretsResponse.value;
 
-        if (severity?.length || liveConnection?.length) {
-          results.vulnerabilities = results.vulnerabilities.filter((v) => {
+        if (severity?.length) {
+          results.secrets = results.secrets.filter((v) => {
             let match = true;
-            if (severity.length && !severity.includes(v.cve_severity)) {
-              match = false;
-            }
-            if (
-              liveConnection.length &&
-              !liveConnection.includes(v.has_live_connection ? 'active' : 'inActive')
-            ) {
+            if (severity.length && !severity.includes(v.level)) {
               match = false;
             }
             return match;
