@@ -7,11 +7,6 @@ on:
         description: "Image Tag"
         required: false
         type: string
-  workflow_run:
-    workflows:
-      - Build & Publish images
-    types:
-      - completed
 
 env:
   DF_IMG_TAG: ${{ inputs.tag || github.sha }}
