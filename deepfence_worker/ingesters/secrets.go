@@ -60,15 +60,20 @@ func CommitFuncSecrets(ns string, data []Secret) error {
 	if _, err = tx.Run(`
 		UNWIND $batch as row WITH row.Rule as rule, row.Secret as secret
 		MERGE (r:SecretRule{rule_id:rule.rule_id})
-		SET r+=rule, r.masked = COALESCE(r.masked, false)
+		SET r+=rule,
+		    r.masked = COALESCE(r.masked, false),
+		    r.updated_at = TIMESTAMP()
 		WITH secret as row, r
 		MERGE (n:Secret{node_id:row.node_id})
-		SET n+= row
+		SET n+= row,
+		    n.masked = COALESCE(n.masked, false),
+		    n.updated_at = TIMESTAMP()
 		WITH n, r, row
 		MERGE (n)-[:IS]->(r)
 		MERGE (m:SecretScan{node_id: row.scan_id})
 		WITH n, m
-		MERGE (m) -[r:DETECTED]-> (n)`,
+		MERGE (m) -[l:DETECTED]-> (n)
+		SET l.masked = false`,
 		map[string]interface{}{"batch": secretsToMaps(data)}); err != nil {
 		return err
 	}

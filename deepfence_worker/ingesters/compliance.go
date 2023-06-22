@@ -80,11 +80,15 @@ func CommitFuncCompliance(ns string, data []Compliance) error {
 		MERGE (r:ComplianceRule{node_id:rule.test_number})
 		MERGE (n) -[:IS]-> (r)
 		SET n += data,
+		    n.masked = COALESCE(n.masked, false),
+		    n.updated_at = TIMESTAMP(),
 	        r += rule,
-		    r.masked = COALESCE(r.masked, false)
+		    r.masked = COALESCE(r.masked, false),
+		    r.updated_at = TIMESTAMP()
 		WITH n, scan_id
 		MERGE (m:ComplianceScan{node_id: scan_id})
-		MERGE (m) -[r:DETECTED]-> (n)`,
+		MERGE (m) -[l:DETECTED]-> (n)
+		SET l.masked = false`,
 		map[string]interface{}{"batch": CompliancesToMaps(data)}); err != nil {
 		return err
 	}

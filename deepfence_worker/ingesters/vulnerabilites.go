@@ -82,10 +82,14 @@ func CommitFuncVulnerabilities(ns string, data []Vulnerability) error {
 		MERGE (n) -[:IS]-> (v)
 		SET v += rule,
 		    v.masked = COALESCE(v.masked, false),
-		    n += data
+		    v.updated_at = TIMESTAMP(),
+		    n += data,
+		    n.masked = COALESCE(n.masked, false),
+		    n.updated_at = TIMESTAMP()
 		WITH n, scan_id
 		MATCH (m:VulnerabilityScan{node_id: scan_id})
-		MERGE (m) -[r:DETECTED]-> (n)`,
+		MERGE (m) -[r:DETECTED]-> (n)
+		SET r.masked = false`,
 		map[string]interface{}{"batch": CVEsToMaps(data)}); err != nil {
 		log.Error().Msgf(err.Error())
 		return err
