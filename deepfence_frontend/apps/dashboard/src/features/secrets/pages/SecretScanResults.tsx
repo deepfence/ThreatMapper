@@ -1236,34 +1236,37 @@ const Top5Widget = () => {
   const [searchParams] = useSearchParams();
 
   return (
-    <div className="flex flex-col gap-2">
-      {data.data?.map((secret) => {
-        return (
-          <div className="flex items-center" key={secret.node_id}>
-            <DFLink
-              to={{
-                pathname: `./${secret.node_id}`,
-                search: searchParams.toString(),
-              }}
-              className="flex flex-1 items-center gap-3"
-            >
-              <div className="w-[14px] h-[14px]">
-                <SecretsIcon />
-              </div>
-              <div className="text-p7 truncate">
-                <TruncatedText text={secret.node_id} />
-              </div>
-            </DFLink>
-            <div className="basis-[30%]">
-              <CveCVSSScore score={secret.score} />
-            </div>
-            <div>
-              <SeverityBadge severity={secret.level} />
-            </div>
-          </div>
-        );
-      })}
-    </div>
+    <table className="table-fixed w-full">
+      <tbody>
+        {data.data?.map((secret) => {
+          return (
+            <tr key={secret.node_id}>
+              <td className="w-[70%] px-0 pt-0 pb-2">
+                <DFLink
+                  to={{
+                    pathname: `./${secret.node_id}`,
+                    search: searchParams.toString(),
+                  }}
+                  className="flex items-center gap-3"
+                >
+                  <div className="w-[14px] h-[14px] shrink-0">
+                    <SecretsIcon />
+                  </div>
+                  <div className="text-p7 truncate">
+                    <TruncatedText text={secret.node_id} />
+                  </div>
+                </DFLink>
+              </td>
+              <td className="w-[30%] px-0 pt-0 pb-2">
+                <div className="flex items-center justify-end">
+                  <SeverityBadge severity={secret.level} />
+                </div>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
   );
 };
 
