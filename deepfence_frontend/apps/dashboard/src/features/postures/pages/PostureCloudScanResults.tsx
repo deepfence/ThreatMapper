@@ -1053,7 +1053,7 @@ const CloudPostureTable = ({
         enableResizing: false,
       }),
       columnHelper.accessor('control_id', {
-        enableSorting: false,
+        enableSorting: true,
         enableResizing: false,
         cell: (info) => {
           return (
@@ -1079,18 +1079,18 @@ const CloudPostureTable = ({
         maxSize: 90,
       }),
       columnHelper.accessor('compliance_check_type', {
-        enableSorting: false,
+        enableSorting: true,
         enableResizing: false,
-        cell: (info) => info.getValue().toUpperCase(),
+        cell: (info) => <TruncatedText text={info.getValue().toUpperCase()} />,
         header: () => 'Benchmark Type',
         minSize: 50,
         size: 60,
         maxSize: 65,
       }),
       columnHelper.accessor('service', {
-        enableSorting: false,
+        enableSorting: true,
         enableResizing: false,
-        cell: (info) => info.getValue(),
+        cell: (info) => <TruncatedText text={info.getValue()} />,
         header: () => 'Service',
         minSize: 50,
         size: 60,
@@ -1310,7 +1310,7 @@ const SeverityCountWidget = () => {
                     }}
                   ></div>
                   <span className="text-h1 dark:text-text-input-value">
-                    {statusCounts?.[key]}
+                    {abbreviateNumber(statusCounts?.[key])}
                   </span>
                 </div>
               </div>

@@ -1286,7 +1286,7 @@ const SeverityCountWidget = () => {
                     }}
                   ></div>
                   <span className="text-h1 dark:text-text-input-value">
-                    {statusCounts?.[key]}
+                    {abbreviateNumber(statusCounts?.[key])}
                   </span>
                 </div>
               </div>
