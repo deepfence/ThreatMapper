@@ -16,7 +16,7 @@ func New(b []byte) (*Jira, error) {
 	return &h, nil
 }
 
-func (j Jira) SendNotification(message string) error {
+func (j Jira) SendNotification(message string, extras map[string]interface{}) error {
 	payload := map[string]interface{}{
 		"fields": map[string]interface{}{
 			"project": map[string]interface{}{

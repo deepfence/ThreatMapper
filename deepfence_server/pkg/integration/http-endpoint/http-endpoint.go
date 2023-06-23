@@ -18,7 +18,7 @@ func New(b []byte) (*HTTPEndpoint, error) {
 	return &h, nil
 }
 
-func (h HTTPEndpoint) SendNotification(message string) error {
+func (h HTTPEndpoint) SendNotification(message string, extras map[string]interface{}) error {
 	var req *http.Request
 	var err error
 

@@ -31,7 +31,7 @@ func (t Teams) FormatMessage(message []map[string]interface{}) string {
 	return entiremsg
 }
 
-func (t Teams) SendNotification(message string) error {
+func (t Teams) SendNotification(message string, extras map[string]interface{}) error {
 	var msg []map[string]interface{}
 	err := json.Unmarshal([]byte(message), &msg)
 	if err != nil {
