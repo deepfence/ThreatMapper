@@ -23,7 +23,6 @@ import { ModelCloudCompliance } from '@/api/generated';
 import { CopyToClipboard } from '@/components/CopyToClipboard';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { LoaderDataType as ScanResultsLoaderDataType } from '@/features/postures/pages/PostureCloudScanResults';
-import { STATUSES } from '@/features/postures/pages/PostureScanResults';
 import { apiWrapper } from '@/utils/api';
 import { getObjectKeys } from '@/utils/array';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -198,19 +197,19 @@ const DetailsComponent = () => {
                           'p-2 mr-4 w-fit rounded-lg items-center',
                           {
                             'bg-[#F05252]/20 dark:bg-[#F05252]/20 text-red-500 dark:text-[#F05252]':
-                              fixed?.status?.toLowerCase() === STATUSES.ALARM,
+                              fixed?.status?.toLowerCase() === 'alarm',
                             'bg-[#3F83F8]/20 dark:bg-[#3F83F8/20 text-[blue-500 dark:text-[#3F83F8]':
-                              fixed?.status?.toLowerCase() === STATUSES.INFO,
+                              fixed?.status?.toLowerCase() === 'info',
                             'bg-[#0E9F6E]/30 dark:bg-[##0E9F6E]/10 text-green-500 dark:text-[#0E9F6E]':
-                              fixed?.status?.toLowerCase() === STATUSES.OK,
+                              fixed?.status?.toLowerCase() === 'ok',
                             'bg-[#FF5A1F]/20 dark:bg-[#FF5A1F]/10 text-orange-500 dark:text-[#FF5A1F]':
-                              fixed?.status?.toLowerCase() === STATUSES.WARN,
+                              fixed?.status?.toLowerCase() === 'warn',
                             'bg-[#6B7280]/20 dark:bg-[#6B7280]/10 text-gray-700 dark:text-gray-300':
-                              fixed?.status?.toLowerCase() === STATUSES.SKIP,
+                              fixed?.status?.toLowerCase() === 'skip',
                             'bg-[#0E9F6E]/10 dark:bg-[#0E9F6E]/10 text-green-500 dark:text-[#0E9F6E]':
-                              fixed?.status?.toLowerCase() === STATUSES.PASS,
+                              fixed?.status?.toLowerCase() === 'pass',
                             'bg-[#d6e184]/10 dark:bg-[#d6e184]/10 text-yellow-500 dark:text-[#d6e184]':
-                              fixed?.status?.toLowerCase() === STATUSES.NOTE,
+                              fixed?.status?.toLowerCase() === 'note',
                           },
                         )}
                       >

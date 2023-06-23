@@ -797,7 +797,7 @@ const Accounts = () => {
                   showAdvancedOptions: true,
                   scanType: selectedScanType,
                   data: {
-                    nodeIds: nodeIdsToScan ?? [],
+                    nodeIds: nodeIdsToScan,
                     nodeType: nodeType,
                   },
                 }

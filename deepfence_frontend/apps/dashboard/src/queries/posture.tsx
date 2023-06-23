@@ -1,7 +1,17 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
 
-import { getCloudNodesApiClient, getSearchApiClient } from '@/api/api';
-import { SearchSearchNodeReq } from '@/api/generated';
+import {
+  getCloudComplianceApiClient,
+  getCloudNodesApiClient,
+  getComplianceApiClient,
+  getSearchApiClient,
+} from '@/api/api';
+import {
+  ModelNodeIdentifierNodeTypeEnum,
+  ModelScanResultsReq,
+  SearchSearchNodeReq,
+} from '@/api/generated';
+import { ScanStatusEnum, ScanTypeEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 
 export const postureQueries = createQueryKeys('posture', {
@@ -107,6 +117,315 @@ export const postureQueries = createQueryKeys('posture', {
           accounts: result.value ?? [],
           currentPage: page,
           totalRows: page * pageSize + countsResult.value.count,
+        };
+      },
+    };
+  },
+  postureScanResults: (filters: {
+    scanId: string;
+    page?: number;
+    pageSize: number;
+    status: string[];
+    visibility: string[];
+    benchmarkTypes: string[];
+    nodeType: string;
+    order?: {
+      sortBy: string;
+      descending: boolean;
+    };
+  }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async () => {
+        const {
+          scanId,
+          visibility,
+          status,
+          benchmarkTypes,
+          order,
+          page = 1,
+          pageSize,
+        } = filters;
+        const statusComplianceScanApi = apiWrapper({
+          fn: getComplianceApiClient().statusComplianceScan,
+        });
+        const statusResult = await statusComplianceScanApi({
+          modelScanStatusReq: {
+            scan_ids: [scanId],
+            bulk_scan_id: '',
+          },
+        });
+        if (!statusResult.ok) {
+          if (statusResult.error.response.status === 400) {
+            return {
+              message: statusResult.error.message,
+            };
+          }
+          throw statusResult.error;
+        }
+        if (!statusResult.value || !statusResult.value?.statuses?.[scanId]) {
+          throw new Error('Scan status not found');
+        }
+        const scanStatus = statusResult?.value.statuses?.[scanId].status;
+        const isScanRunning =
+          scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;
+        const isScanError = scanStatus === ScanStatusEnum.error;
+
+        if (isScanRunning || isScanError) {
+          return {
+            scanStatusResult: statusResult.value.statuses[scanId],
+          };
+        }
+        const scanResultsReq: ModelScanResultsReq = {
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: { filter_in: {} },
+            order_filter: { order_fields: [] },
+            compare_filter: null,
+          },
+          scan_id: scanId,
+          window: {
+            offset: page * pageSize,
+            size: pageSize,
+          },
+        };
+        if (status.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['status'] = status;
+        }
+        if (visibility.length === 1) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['masked'] = [
+            visibility.includes('masked') ? true : false,
+          ];
+        }
+        if (benchmarkTypes.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in![
+            'compliance_check_type'
+          ] = benchmarkTypes.map((type) => type.toLowerCase());
+        }
+        if (order) {
+          scanResultsReq.fields_filter.order_filter.order_fields?.push({
+            field_name: order.sortBy,
+            descending: order.descending,
+          });
+        }
+
+        //
+        let result = null;
+        let resultCounts = null;
+
+        const resultCloudComplianceScanApi = apiWrapper({
+          fn: getComplianceApiClient().resultComplianceScan,
+        });
+        result = await resultCloudComplianceScanApi({
+          modelScanResultsReq: scanResultsReq,
+        });
+        if (!result.ok) {
+          if (
+            result.error.response.status === 400 ||
+            result.error.response.status === 404
+          ) {
+            return {
+              message: result.error.message ?? '',
+            };
+          }
+          throw result.error;
+        }
+
+        const resultCountComplianceScanApi = apiWrapper({
+          fn: getComplianceApiClient().resultCountComplianceScan,
+        });
+        resultCounts = await resultCountComplianceScanApi({
+          modelScanResultsReq: {
+            ...scanResultsReq,
+            window: {
+              ...scanResultsReq.window,
+              size: 10 * scanResultsReq.window.size,
+            },
+          },
+        });
+
+        if (!resultCounts.ok) {
+          if (
+            resultCounts.error.response.status === 400 ||
+            resultCounts.error.response.status === 404
+          ) {
+            return {
+              message: resultCounts.error.message ?? '',
+            };
+          }
+          throw resultCounts.error;
+        }
+
+        const totalStatus = Object.values(result.value.status_counts ?? {}).reduce(
+          (acc, value) => {
+            acc = acc + value;
+            return acc;
+          },
+          0,
+        );
+
+        const linuxComplianceStatus = {
+          info: result.value.status_counts?.['info'] ?? 0,
+          pass: result.value.status_counts?.['pass'] ?? 0,
+          warn: result.value.status_counts?.['warn'] ?? 0,
+          note: result.value.status_counts?.['note'] ?? 0,
+        };
+
+        const clusterComplianceStatus = {
+          alarm: result.value.status_counts?.['alarm'] ?? 0,
+          info: result.value.status_counts?.['info'] ?? 0,
+          ok: result.value.status_counts?.['ok'] ?? 0,
+          skip: result.value.status_counts?.['skip'] ?? 0,
+        };
+
+        return {
+          scanStatusResult: statusResult.value.statuses[scanId],
+          data: {
+            totalStatus,
+            statusCounts:
+              result.value.node_type === 'host'
+                ? linuxComplianceStatus
+                : clusterComplianceStatus,
+            timestamp: result.value.updated_at,
+            compliances: result.value.compliances ?? [],
+            pagination: {
+              currentPage: page,
+              totalRows: page * pageSize + resultCounts.value.count,
+            },
+          },
+        };
+      },
+    };
+  },
+  scanHistories: (filters: {
+    nodeId: string;
+    nodeType: string;
+    scanType: 'ComplianceScan' | 'CloudComplianceScan';
+  }) => {
+    const { nodeId, nodeType, scanType } = filters;
+    return {
+      queryKey: [{ filters }],
+      queryFn: async () => {
+        if (!nodeId || !nodeType || !scanType) {
+          throw new Error('Scan Type, Node Type and Node Id are required');
+        }
+
+        const getScanHistory = apiWrapper({
+          fn: {
+            [ScanTypeEnum.CloudComplianceScan]:
+              getCloudComplianceApiClient().listCloudComplianceScan,
+            [ScanTypeEnum.ComplianceScan]: getComplianceApiClient().listComplianceScan,
+          }[scanType],
+        });
+
+        const result = await getScanHistory({
+          modelScanListReq: {
+            fields_filter: {
+              contains_filter: {
+                filter_in: {},
+              },
+              match_filter: { filter_in: {} },
+              order_filter: { order_fields: [] },
+              compare_filter: null,
+            },
+            node_ids: [
+              {
+                node_id: nodeId.toString(),
+                node_type: nodeType.toString() as ModelNodeIdentifierNodeTypeEnum,
+              },
+            ],
+            window: {
+              offset: 0,
+              size: Number.MAX_SAFE_INTEGER,
+            },
+          },
+        });
+
+        if (!result.ok) {
+          console.error(result.error);
+          return {
+            error: 'Error getting scan history',
+            message: result.error.message,
+            data: [],
+          };
+        }
+
+        if (!result.value.scans_info) {
+          return {
+            data: [],
+          };
+        }
+
+        return {
+          data: result.value.scans_info?.map((res) => {
+            return {
+              updatedAt: res.updated_at,
+              scanId: res.scan_id,
+              status: res.status,
+            };
+          }),
+        };
+      },
+    };
+  },
+  posture: (filters: { id: string }) => {
+    const { id } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const searchCompliancesApi = apiWrapper({
+          fn: getSearchApiClient().searchCompliances,
+        });
+        const searchCompliancesResponse = await searchCompliancesApi({
+          searchSearchNodeReq: {
+            node_filter: {
+              filters: {
+                contains_filter: {
+                  filter_in: {
+                    node_id: [id],
+                  },
+                },
+                order_filter: {
+                  order_fields: [],
+                },
+                match_filter: {
+                  filter_in: {},
+                },
+                compare_filter: null,
+              },
+              in_field_filter: null,
+              window: {
+                offset: 0,
+                size: 0,
+              },
+            },
+            window: {
+              offset: 0,
+              size: 1,
+            },
+          },
+        });
+        if (!searchCompliancesResponse.ok) {
+          console.error(searchCompliancesResponse.error);
+          return {
+            data: undefined,
+            message: 'Error getting the compliance details',
+          };
+        }
+
+        if (
+          searchCompliancesResponse.value === null ||
+          searchCompliancesResponse.value.length === 0
+        ) {
+          return {
+            data: undefined,
+            message: 'Error finding the compliance details',
+          };
+        }
+        return {
+          data: searchCompliancesResponse.value[0],
         };
       },
     };

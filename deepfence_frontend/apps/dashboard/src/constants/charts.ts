@@ -24,14 +24,14 @@ export function getColorForCVSSScore(score: number | undefined): string {
 export const POSTURE_STATUS_COLORS: {
   [x in PostureSeverityType]: string;
 } = {
-  alarm: '#de425b',
-  info: '#3F83F8',
-  ok: '#488f31',
-  skip: '#9CA3AF',
+  alarm: preset.theme.extend.colors.status.error,
+  info: preset.theme.extend.colors.status.warning,
+  ok: preset.theme.extend.colors.status.success,
+  skip: preset.theme.extend.colors['df-gray'][600],
 
-  pass: '#488f31',
-  warn: '#f1a958',
-  note: '#edd777',
+  pass: preset.theme.extend.colors.status.success,
+  warn: preset.theme.extend.colors.status.warning,
+  note: preset.theme.extend.colors['df-gray'][600],
 };
 
 export function getColorForCompliancePercent(percent: number | undefined | null): string {

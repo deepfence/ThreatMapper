@@ -1,93 +1,73 @@
-import cx from 'classnames';
+import { useSuspenseQuery } from '@suspensive/react-query';
 import { capitalize } from 'lodash-es';
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { FaHistory } from 'react-icons/fa';
-import { FiFilter } from 'react-icons/fi';
-import {
-  HiArchive,
-  HiBell,
-  HiChevronRight,
-  HiDotsVertical,
-  HiEye,
-  HiEyeOff,
-  HiOutlineDownload,
-  HiOutlineExclamationCircle,
-  HiOutlineTrash,
-} from 'react-icons/hi';
-import { IconContext } from 'react-icons/lib';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionFunctionArgs,
   generatePath,
-  LoaderFunctionArgs,
   Outlet,
   useFetcher,
-  useLoaderData,
   useParams,
   useSearchParams,
 } from 'react-router-dom';
 import { toast } from 'sonner';
-import { twMerge } from 'tailwind-merge';
 import {
   Badge,
   Breadcrumb,
   BreadcrumbLink,
   Button,
   Card,
-  Checkbox,
   CircleSpinner,
+  Combobox,
+  ComboboxOption,
   createColumnHelper,
   Dropdown,
   DropdownItem,
+  DropdownSeparator,
   getRowSelectionColumn,
   IconButton,
   Modal,
-  Popover,
   RowSelectionState,
-  Select,
-  SelectItem,
   SortingState,
   Table,
   TableSkeleton,
 } from 'ui-components';
 
-import { getComplianceApiClient, getScanResultsApiClient } from '@/api/api';
+import { getScanResultsApiClient } from '@/api/api';
 import {
   ModelCompliance,
   ModelScanInfo,
-  ModelScanResultsReq,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { FilterHeader } from '@/components/forms/FilterHeader';
-import {
-  HeaderSkeleton,
-  RectSkeleton,
-  SquareSkeleton,
-  TimestampSkeleton,
-} from '@/components/header/HeaderSkeleton';
-import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
+import { FilterBadge } from '@/components/filters/FilterBadge';
+import { BellLineIcon } from '@/components/icons/common/BellLine';
+import { CaretDown } from '@/components/icons/common/CaretDown';
+import { ClockLineIcon } from '@/components/icons/common/ClockLine';
+import { DownloadLineIcon } from '@/components/icons/common/DownloadLine';
+import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
+import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
+import { EyeHideSolid } from '@/components/icons/common/EyeHideSolid';
+import { EyeSolidIcon } from '@/components/icons/common/EyeSolid';
+import { FilterIcon } from '@/components/icons/common/Filter';
+import { TaskIcon } from '@/components/icons/common/Task';
+import { TimesIcon } from '@/components/icons/common/Times';
+import { TrashLineIcon } from '@/components/icons/common/TrashLine';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
+import { ScanHistoryDropdown } from '@/components/scan-history/HistoryList';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
-import {
-  NoIssueFound,
-  ScanStatusInError,
-  ScanStatusInProgress,
-} from '@/components/ScanStatusMessage';
+import { ScanStatusInError, ScanStatusInProgress } from '@/components/ScanStatusMessage';
+import { PostureStatusBadge } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
+import { TruncatedText } from '@/components/TruncatedText';
 import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
-import { ScanHistoryApiLoaderDataType } from '@/features/common/data-component/scanHistoryApiLoader';
-import { PostureResultChart } from '@/features/postures/components/PostureResultChart';
-import { providersToNameMapping } from '@/features/postures/pages/Posture';
+import { PostureScanResultsPieChart } from '@/features/postures/components/scan-result/PostureScanResultsPieChart';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { Mode, useTheme } from '@/theme/ThemeContext';
+import { invalidateAllQueries, queries } from '@/queries';
 import { PostureSeverityType, ScanStatusEnum, ScanTypeEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
-import { isScanComplete, isScanFailed } from '@/utils/scan';
-import { DFAwait } from '@/utils/suspense';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
@@ -95,19 +75,8 @@ import {
 } from '@/utils/table';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
-export interface FocusableElement {
-  focus(options?: FocusOptions): void;
-}
-export const STATUSES: { [k: string]: string } = {
-  INFO: 'info',
-  PASS: 'pass',
-  WARN: 'warn',
-  NOTE: 'note',
-  ALARM: 'alarm',
-  OK: 'ok',
-  SKIP: 'skip',
-  DELETE: 'delete',
-};
+const DEFAULT_PAGE_SIZE = 10;
+
 enum ActionEnumType {
   MASK = 'mask',
   UNMASK = 'unmask',
@@ -135,208 +104,6 @@ export type LoaderDataType = {
   data?: ScanResult;
 };
 
-const PAGE_SIZE = 15;
-
-const getStatusSearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('status');
-};
-const getMaskSearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('mask');
-};
-const getUnmaskSearch = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('unmask');
-};
-
-const getBenchmarkType = (searchParams: URLSearchParams) => {
-  return searchParams.getAll('benchmarkType');
-};
-
-async function getScans(
-  scanId: string,
-  searchParams: URLSearchParams,
-): Promise<LoaderDataType> {
-  // status api
-  const statusComplianceScanApi = apiWrapper({
-    fn: getComplianceApiClient().statusComplianceScan,
-  });
-  const statusResult = await statusComplianceScanApi({
-    modelScanStatusReq: {
-      scan_ids: [scanId],
-      bulk_scan_id: '',
-    },
-  });
-  if (!statusResult.ok) {
-    if (statusResult.error.response.status === 400) {
-      return {
-        message: statusResult.error.message,
-      };
-    }
-    throw statusResult.error;
-  }
-
-  if (!statusResult.value || !statusResult.value?.statuses?.[scanId]) {
-    throw new Error('Scan status not found');
-  }
-
-  const scanStatus = statusResult?.value.statuses?.[scanId].status;
-
-  const isScanRunning =
-    scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;
-  const isScanError = scanStatus === ScanStatusEnum.error;
-
-  if (isScanRunning || isScanError) {
-    return {
-      scanStatusResult: statusResult.value.statuses[scanId],
-    };
-  }
-
-  const status = getStatusSearch(searchParams);
-  const page = getPageFromSearchParams(searchParams);
-  const order = getOrderFromSearchParams(searchParams) || {
-    sortBy: 'status',
-    descending: true,
-  };
-  const mask = getMaskSearch(searchParams);
-  const unmask = getUnmaskSearch(searchParams);
-  const benchmarkTypes = getBenchmarkType(searchParams);
-
-  const scanResultsReq: ModelScanResultsReq = {
-    fields_filter: {
-      contains_filter: {
-        filter_in: {},
-      },
-      match_filter: { filter_in: {} },
-      order_filter: { order_fields: [] },
-      compare_filter: null,
-    },
-    scan_id: scanId,
-    window: {
-      offset: page * PAGE_SIZE,
-      size: PAGE_SIZE,
-    },
-  };
-
-  if (status.length) {
-    scanResultsReq.fields_filter.contains_filter.filter_in!['status'] = status;
-  }
-
-  if ((mask.length || unmask.length) && !(mask.length && unmask.length)) {
-    scanResultsReq.fields_filter.contains_filter.filter_in!['masked'] = [
-      mask.length ? true : false,
-    ];
-  }
-
-  if (benchmarkTypes.length) {
-    scanResultsReq.fields_filter.contains_filter.filter_in!['compliance_check_type'] =
-      benchmarkTypes;
-  }
-
-  if (order) {
-    scanResultsReq.fields_filter.order_filter.order_fields?.push({
-      field_name: order.sortBy,
-      descending: order.descending,
-    });
-  }
-
-  let result = null;
-  let resultCounts = null;
-
-  const resultCloudComplianceScanApi = apiWrapper({
-    fn: getComplianceApiClient().resultComplianceScan,
-  });
-  result = await resultCloudComplianceScanApi({
-    modelScanResultsReq: scanResultsReq,
-  });
-  if (!result.ok) {
-    if (result.error.response.status === 400 || result.error.response.status === 404) {
-      return {
-        message: result.error.message ?? '',
-      };
-    }
-    throw result.error;
-  }
-
-  const resultCountComplianceScanApi = apiWrapper({
-    fn: getComplianceApiClient().resultCountComplianceScan,
-  });
-  resultCounts = await resultCountComplianceScanApi({
-    modelScanResultsReq: {
-      ...scanResultsReq,
-      window: {
-        ...scanResultsReq.window,
-        size: 10 * scanResultsReq.window.size,
-      },
-    },
-  });
-
-  if (!resultCounts.ok) {
-    if (
-      resultCounts.error.response.status === 400 ||
-      resultCounts.error.response.status === 404
-    ) {
-      return {
-        message: resultCounts.error.message ?? '',
-      };
-    }
-    throw resultCounts.error;
-  }
-
-  const totalStatus = Object.values(result.value.status_counts ?? {}).reduce(
-    (acc, value) => {
-      acc = acc + value;
-      return acc;
-    },
-    0,
-  );
-
-  const linuxComplianceStatus = {
-    info: result.value.status_counts?.[STATUSES.INFO] ?? 0,
-    pass: result.value.status_counts?.[STATUSES.PASS] ?? 0,
-    warn: result.value.status_counts?.[STATUSES.WARN] ?? 0,
-    note: result.value.status_counts?.[STATUSES.NOTE] ?? 0,
-  };
-
-  const clusterComplianceStatus = {
-    alarm: result.value.status_counts?.[STATUSES.ALARM] ?? 0,
-    info: result.value.status_counts?.[STATUSES.INFO] ?? 0,
-    ok: result.value.status_counts?.[STATUSES.OK] ?? 0,
-    skip: result.value.status_counts?.[STATUSES.SKIP] ?? 0,
-  };
-
-  return {
-    scanStatusResult: statusResult.value.statuses[scanId],
-    data: {
-      totalStatus,
-      statusCounts:
-        result.value.node_type === 'host'
-          ? linuxComplianceStatus
-          : clusterComplianceStatus,
-      timestamp: result.value.updated_at,
-      compliances: result.value.compliances ?? [],
-      pagination: {
-        currentPage: page,
-        totalRows: page * PAGE_SIZE + resultCounts.value.count,
-      },
-    },
-  };
-}
-
-const loader = async ({
-  params,
-  request,
-}: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
-  const scanId = params?.scanId ?? '';
-
-  if (!scanId) {
-    throw new Error('Scan Id is required');
-  }
-  const searchParams = new URL(request.url).searchParams;
-
-  return typedDefer({
-    data: getScans(scanId, searchParams),
-  });
-};
-
 type ActionFunctionType =
   | ReturnType<typeof getScanResultsApiClient>['deleteScanResult']
   | ReturnType<typeof getScanResultsApiClient>['maskScanResult']
@@ -344,6 +111,7 @@ type ActionFunctionType =
   | ReturnType<typeof getScanResultsApiClient>['unmaskScanResult'];
 
 type ActionData = {
+  action: ActionEnumType;
   success: boolean;
   message?: string;
 } | null;
@@ -353,7 +121,7 @@ const action = async ({
   request,
 }: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
-  const ids = (formData.getAll('ids[]') ?? []) as string[];
+  const ids = (formData.getAll('nodeIds[]') ?? []) as string[];
   const actionType = formData.get('actionType');
   const _scanId = scanId;
   if (!_scanId) {
@@ -383,17 +151,20 @@ const action = async ({
     if (!result.ok) {
       if (result.error.response.status === 400 || result.error.response.status === 409) {
         return {
+          action: actionType,
           success: false,
           message: result.error.message,
         };
       } else if (result.error.response.status === 403) {
         if (actionType === ActionEnumType.DELETE) {
           return {
+            action: actionType,
             success: false,
             message: 'You do not have enough permissions to delete compliance',
           };
         } else if (actionType === ActionEnumType.NOTIFY) {
           return {
+            action: actionType,
             success: false,
             message: 'You do not have enough permissions to notify',
           };
@@ -419,12 +190,14 @@ const action = async ({
       if (actionType === ActionEnumType.MASK) {
         toast.error('You do not have enough permissions to mask');
         return {
+          action: actionType,
           success: false,
           message: 'You do not have enough permissions to mask',
         };
       } else if (actionType === ActionEnumType.UNMASK) {
         toast.error('You do not have enough permissions to unmask');
         return {
+          action: actionType,
           success: false,
           message: 'You do not have enough permissions to unmask',
         };
@@ -443,6 +216,7 @@ const action = async ({
     if (!result.ok) {
       if (result.error.response.status === 403) {
         return {
+          action: actionType,
           message: 'You do not have enough permissions to delete scan',
           success: false,
         };
@@ -451,8 +225,11 @@ const action = async ({
     }
   }
 
+  invalidateAllQueries();
+
   if (actionType === ActionEnumType.DELETE || actionType === ActionEnumType.DELETE_SCAN) {
     return {
+      action: actionType,
       success: true,
     };
   } else if (actionType === ActionEnumType.NOTIFY) {
@@ -465,14 +242,42 @@ const action = async ({
   return null;
 };
 
+const useScanResults = () => {
+  const [searchParams] = useSearchParams();
+  const params = useParams() as {
+    scanId: string;
+    nodeType: string;
+  };
+  const scanId = params?.scanId;
+  const nodeType = params?.nodeType;
+  return useSuspenseQuery({
+    ...queries.posture.postureScanResults({
+      scanId,
+      nodeType,
+      page: getPageFromSearchParams(searchParams),
+      pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
+      order: getOrderFromSearchParams(searchParams) || {
+        sortBy: 'status',
+        descending: true,
+      },
+      benchmarkTypes: searchParams.getAll('benchmarkType'),
+      visibility: searchParams.getAll('visibility'),
+      status: searchParams.getAll('status'),
+    }),
+    keepPreviousData: true,
+  });
+};
+
 const DeleteConfirmationModal = ({
   showDialog,
   ids,
   setShowDialog,
+  onDeleteSuccess,
 }: {
   showDialog: boolean;
   ids: string[];
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onDeleteSuccess: () => void;
 }) => {
   const fetcher = useFetcher<ActionData>();
 
@@ -480,7 +285,7 @@ const DeleteConfirmationModal = ({
     (actionType: string) => {
       const formData = new FormData();
       formData.append('actionType', actionType);
-      ids.forEach((item) => formData.append('ids[]', item));
+      ids.forEach((item) => formData.append('nodeIds[]', item));
       fetcher.submit(formData, {
         method: 'post',
       });
@@ -488,32 +293,45 @@ const DeleteConfirmationModal = ({
     [ids, fetcher],
   );
 
+  useEffect(() => {
+    if (
+      fetcher.state === 'idle' &&
+      fetcher.data?.success &&
+      fetcher.data.action === ActionEnumType.DELETE
+    ) {
+      onDeleteSuccess();
+    }
+  }, [fetcher]);
+
   return (
-    <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      {!fetcher.data?.success ? (
-        <div className="grid place-items-center p-6">
-          <IconContext.Provider
-            value={{
-              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-            }}
-          >
-            <HiOutlineExclamationCircle />
-          </IconContext.Provider>
-          <h3 className="mb-4 font-normal text-center text-sm">
-            The selected compliances will be deleted.
-            <br />
-            <span>Are you sure you want to delete?</span>
-          </h3>
-          {fetcher.data?.message && (
-            <p className="text-sm text-red-500 pb-3">{fetcher.data?.message}</p>
-          )}
-          <div className="flex items-center justify-right gap-4">
-            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-              No, Cancel
+    <Modal
+      size="s"
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title={
+        !fetcher.data?.success ? (
+          <div className="flex gap-3 items-center dark:text-status-error">
+            <span className="h-6 w-6 shrink-0">
+              <ErrorStandardLineIcon />
+            </span>
+            Delete posture
+          </div>
+        ) : undefined
+      }
+      footer={
+        !fetcher.data?.success ? (
+          <div className={'flex gap-x-4 justify-end'}>
+            <Button
+              size="sm"
+              onClick={() => setShowDialog(false)}
+              type="button"
+              variant="outline"
+            >
+              Cancel
             </Button>
             <Button
-              size="xs"
-              color="danger"
+              size="sm"
+              color="error"
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteAction(ActionEnumType.DELETE);
@@ -522,6 +340,16 @@ const DeleteConfirmationModal = ({
               Yes, I&apos;m sure
             </Button>
           </div>
+        ) : undefined
+      }
+    >
+      {!fetcher.data?.success ? (
+        <div className="grid">
+          <span>The selected posture will be deleted.</span>
+          <br />
+          <span>Are you sure you want to delete?</span>
+          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
+          <div className="flex items-center justify-right gap-4"></div>
         </div>
       ) : (
         <SuccessModalContent text="Deleted successfully!" />
@@ -549,31 +377,34 @@ const DeleteScanConfirmationModal = ({
     });
   };
   return (
-    <Modal open={open} onOpenChange={onOpenChange}>
-      {!fetcher.data?.success ? (
-        <div className="grid place-items-center p-6">
-          <IconContext.Provider
-            value={{
-              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-            }}
-          >
-            <HiOutlineExclamationCircle />
-          </IconContext.Provider>
-          <h3 className="mb-4 font-normal text-center text-sm">
-            <span>Are you sure you want to delete the scan?</span>
-          </h3>
-          {fetcher.data?.message && (
-            <p className="text-sm text-red-500 pb-3">{fetcher.data?.message}</p>
-          )}
-          <div className="flex items-center justify-right gap-4">
-            <Button size="xs" onClick={() => onOpenChange(false)} type="button" outline>
-              No, Cancel
+    <Modal
+      open={open}
+      onOpenChange={onOpenChange}
+      size="s"
+      title={
+        !fetcher.data?.success ? (
+          <div className="flex gap-3 items-center dark:text-status-error">
+            <span className="h-6 w-6 shrink-0">
+              <ErrorStandardLineIcon />
+            </span>
+            Delete scan
+          </div>
+        ) : undefined
+      }
+      footer={
+        !fetcher.data?.success ? (
+          <div className={'flex gap-x-4 justify-end'}>
+            <Button
+              size="sm"
+              onClick={() => onOpenChange(false)}
+              type="button"
+              variant="outline"
+            >
+              Cancel
             </Button>
             <Button
-              loading={fetcher.state === 'loading'}
-              disabled={fetcher.state === 'loading'}
-              size="xs"
-              color="danger"
+              size="sm"
+              color="error"
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteScan();
@@ -582,6 +413,16 @@ const DeleteScanConfirmationModal = ({
               Yes, I&apos;m sure
             </Button>
           </div>
+        ) : undefined
+      }
+    >
+      {!fetcher.data?.success ? (
+        <div className="grid">
+          <span>
+            Are you sure you want to delete this scan? This action cannot be undone.
+          </span>
+          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
+          <div className="flex items-center justify-right gap-4"></div>
         </div>
       ) : (
         <SuccessModalContent text="Scan deleted successfully!" />
@@ -590,158 +431,86 @@ const DeleteScanConfirmationModal = ({
   );
 };
 
-const HistoryDropdown = ({ nodeType }: { nodeType: string }) => {
-  const { navigate } = usePageNavigation();
-  const fetcher = useFetcher<ScanHistoryApiLoaderDataType>();
-  const loaderData = useLoaderData() as LoaderDataType;
-  const params = useParams() as {
-    scanId: string;
-    nodeType: string;
-  };
-  const [popoverOpen, setPopoverOpen] = useState(false);
-  const [scanIdToDelete, setScanIdToDelete] = useState<string | null>(null);
-  const { downloadScan } = useDownloadScan();
-
-  const isScanHistoryLoading = fetcher.state === 'loading';
-
-  const onHistoryClick = (nodeType: string, nodeId: string) => {
-    fetcher.load(
-      generatePath('/data-component/scan-history/:scanType/:nodeType/:nodeId', {
-        nodeId: nodeId,
-        nodeType: nodeType,
-        scanType: ScanTypeEnum.ComplianceScan,
-      }),
-    );
-  };
-
+const ScanHistory = () => {
   return (
-    <>
+    <div className="mx-4 mt-1.5 min-h-[36px] flex items-center">
+      <span className="h-3.5 w-3.5 dark:text-text-input-value">
+        <ClockLineIcon />
+      </span>
+      <span className="pl-2 pr-3 text-t3 dark:text-text-text-and-icon uppercase">
+        scan time
+      </span>
       <Suspense
         fallback={
-          <Button
-            size="xs"
-            color="primary"
-            outline
-            className="rounded-lg bg-transparent"
-            startIcon={<FaHistory />}
-            type="button"
-            loading
-          >
-            Scan History
-          </Button>
+          <div className="dark:text-text-text-and-icon text-p9">
+            Fetching scan history...
+          </div>
         }
       >
-        <DFAwait resolve={loaderData.data ?? []}>
-          {(resolvedData: LoaderDataType) => {
-            const { scanStatusResult } = resolvedData;
-            const { scan_id, node_id, node_type } = scanStatusResult ?? {};
-            if (!scan_id || !node_id || !node_type) {
-              throw new Error('Scan id, node id or node type is missing');
-            }
-
-            return (
-              <Popover
-                open={popoverOpen}
-                triggerAsChild
-                onOpenChange={(open) => {
-                  if (open) onHistoryClick(node_type, node_id);
-                  setPopoverOpen(open);
-                }}
-                content={
-                  <div className="p-4 max-h-80 overflow-y-auto flex flex-col gap-2">
-                    {fetcher.state === 'loading' && !fetcher.data?.data?.length && (
-                      <div className="flex items-center justify-center p-4">
-                        <CircleSpinner size="lg" />
-                      </div>
-                    )}
-                    {[...(fetcher?.data?.data ?? [])].reverse().map((item) => {
-                      const isCurrentScan = item.scanId === scan_id;
-                      return (
-                        <div key={item.scanId} className="flex gap-2 justify-between">
-                          <button
-                            className="flex gap-2 justify-between flex-grow"
-                            onClick={() => {
-                              navigate(
-                                generatePath('/posture/scan-results/:nodeType/:scanId', {
-                                  scanId: item.scanId,
-                                  nodeType: params.nodeType,
-                                }),
-                                {
-                                  replace: true,
-                                },
-                              );
-                              setPopoverOpen(false);
-                            }}
-                          >
-                            <span
-                              className={twMerge(
-                                cx(
-                                  'flex items-center text-gray-700 dark:text-gray-400 gap-x-4',
-                                  {
-                                    'text-blue-600 dark:text-blue-500': isCurrentScan,
-                                  },
-                                ),
-                              )}
-                            >
-                              {formatMilliseconds(item.updatedAt)}
-                            </span>
-                            <ScanStatusBadge status={item.status} />
-                          </button>
-                          <div className="flex gap-1">
-                            <IconButton
-                              color="primary"
-                              outline
-                              size="xxs"
-                              disabled={!isScanComplete(item.status)}
-                              className="rounded-lg bg-transparent"
-                              icon={<HiOutlineDownload />}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                downloadScan({
-                                  scanId: item.scanId,
-                                  scanType: UtilsReportFiltersScanTypeEnum.Compliance,
-                                  nodeType: nodeType as UtilsReportFiltersNodeTypeEnum,
-                                });
-                              }}
-                            />
-                            <IconButton
-                              color="danger"
-                              outline
-                              size="xxs"
-                              disabled={
-                                isCurrentScan ||
-                                (!isScanComplete(item.status) &&
-                                  !isScanFailed(item.status))
-                              }
-                              className="rounded-lg bg-transparent"
-                              icon={<HiOutlineTrash />}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                setScanIdToDelete(item.scanId);
-                              }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                }
-              >
-                <Button
-                  size="xs"
-                  color="primary"
-                  outline
-                  startIcon={<FaHistory />}
-                  type="button"
-                  loading={isScanHistoryLoading}
-                >
-                  Scan History
-                </Button>
-              </Popover>
-            );
-          }}
-        </DFAwait>
+        <HistoryControls />
       </Suspense>
+      <Button className="ml-auto" size="md">
+        Start scan
+      </Button>
+    </div>
+  );
+};
+
+const HistoryControls = () => {
+  const { data } = useScanResults();
+  const { scanStatusResult } = data;
+  const { scan_id, node_id, node_type, updated_at, status } = scanStatusResult ?? {};
+  const { navigate } = usePageNavigation();
+  const { downloadScan } = useDownloadScan();
+
+  const [scanIdToDelete, setScanIdToDelete] = useState<string | null>(null);
+
+  const { data: historyData } = useSuspenseQuery({
+    ...queries.posture.scanHistories({
+      scanType: ScanTypeEnum.ComplianceScan,
+      nodeId: node_id ?? '',
+      nodeType: node_type ?? '',
+    }),
+  });
+
+  if (!scan_id || !node_id || !node_type) {
+    throw new Error('Scan Type, Node Type and Node Id are required');
+  }
+  if (!updated_at) {
+    return null;
+  }
+  return (
+    <div className="flex items-center gap-x-3">
+      <ScanHistoryDropdown
+        scans={[...(historyData?.data ?? [])].reverse().map((item) => ({
+          id: item.scanId,
+          isCurrent: item.scanId === scan_id,
+          status: item.status,
+          timestamp: formatMilliseconds(item.updatedAt),
+          onDeleteClick: (id) => {
+            setScanIdToDelete(id);
+          },
+          onDownloadClick: () => {
+            downloadScan({
+              scanId: item.scanId,
+              scanType: UtilsReportFiltersScanTypeEnum.Compliance,
+              nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
+            });
+          },
+          onScanClick: () => {
+            navigate(
+              generatePath('/posture/scan-results/:scanId', {
+                scanId: item.scanId,
+              }),
+              {
+                replace: true,
+              },
+            );
+          },
+        }))}
+        currentTimeStamp={formatMilliseconds(updated_at)}
+      />
+
       {scanIdToDelete && (
         <DeleteScanConfirmationModal
           scanId={scanIdToDelete}
@@ -751,197 +520,481 @@ const HistoryDropdown = ({ nodeType }: { nodeType: string }) => {
           }}
         />
       )}
-    </>
+      <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
+      <ScanStatusBadge status={status ?? ''} />
+      <div className="h-3 w-[1px] dark:bg-bg-grid-border"></div>
+      <div className="pl-1.5 flex">
+        <IconButton
+          variant="flat"
+          icon={
+            <span className="h-3 w-3">
+              <DownloadLineIcon />
+            </span>
+          }
+          size="md"
+          onClick={() => {
+            downloadScan({
+              scanId: scan_id,
+              scanType: UtilsReportFiltersScanTypeEnum.Vulnerability,
+              nodeType: node_type as UtilsReportFiltersNodeTypeEnum,
+            });
+          }}
+        />
+        <IconButton
+          variant="flat"
+          icon={
+            <span className="h-3 w-3">
+              <TrashLineIcon />
+            </span>
+          }
+          onClick={() => setScanIdToDelete(scan_id)}
+        />
+      </div>
+    </div>
   );
 };
 
 const ActionDropdown = ({
   ids,
-  align,
-  triggerButton,
+  trigger,
   setIdsToDelete,
   setShowDeleteDialog,
+  onTableAction,
 }: {
   ids: string[];
-  align: 'center' | 'end' | 'start';
-  triggerButton: React.ReactNode;
+  trigger: React.ReactNode;
   setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onTableAction: (ids: string[], actionType: string) => void;
 }) => {
-  const fetcher = useFetcher();
-
-  const onTableAction = useCallback(
-    (actionType: string) => {
-      const formData = new FormData();
-      formData.append('actionType', actionType);
-      ids.forEach((item) => formData.append('ids[]', item));
-      fetcher.submit(formData, {
-        method: 'post',
-      });
-    },
-    [ids],
-  );
-
   return (
     <Dropdown
       triggerAsChild={true}
-      align={align}
+      align={'start'}
       content={
         <>
-          <DropdownItem onClick={() => onTableAction(ActionEnumType.MASK)}>
-            <IconContext.Provider
-              value={{ className: 'text-gray-700 dark:text-gray-400' }}
-            >
-              <HiEyeOff />
-            </IconContext.Provider>
-            <span className="text-gray-700 dark:text-gray-400">Mask</span>
+          <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.MASK)}>
+            Mask
           </DropdownItem>
-          <DropdownItem onClick={() => onTableAction(ActionEnumType.UNMASK)}>
-            <IconContext.Provider
-              value={{ className: 'text-gray-700 dark:text-gray-400' }}
-            >
-              <HiEye />
-            </IconContext.Provider>
-            <span className="text-gray-700 dark:text-gray-400">Un mask</span>
+          <DropdownSeparator />
+          <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.UNMASK)}>
+            Un-mask
           </DropdownItem>
+          <DropdownSeparator />
+          <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.NOTIFY)}>
+            Notify
+          </DropdownItem>
+          <DropdownSeparator />
           <DropdownItem
-            className="text-sm"
-            onClick={() => onTableAction(ActionEnumType.NOTIFY)}
-          >
-            <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-              <IconContext.Provider
-                value={{ className: 'text-gray-700 dark:text-gray-400' }}
-              >
-                <HiBell />
-              </IconContext.Provider>
-              Notify
-            </span>
-          </DropdownItem>
-          <DropdownItem
-            className="text-sm"
             onClick={() => {
               setIdsToDelete(ids);
               setShowDeleteDialog(true);
             }}
           >
-            <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
-              <IconContext.Provider
-                value={{ className: 'text-red-700 dark:text-red-400' }}
-              >
-                <HiArchive />
-              </IconContext.Provider>
-              Delete
-            </span>
+            Delete
           </DropdownItem>
         </>
       }
     >
-      {triggerButton}
+      {trigger}
     </Dropdown>
   );
 };
-const ScanResusltTable = () => {
-  const loaderData = useLoaderData() as LoaderDataType;
-  const columnHelper = createColumnHelper<ModelCompliance>();
+
+const BulkActions = ({
+  ids,
+  setIdsToDelete,
+  setShowDeleteDialog,
+  onTableAction,
+}: {
+  ids: string[];
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onTableAction: (ids: string[], actionType: string, maskHostAndImages?: string) => void;
+}) => {
+  return (
+    <>
+      <Dropdown
+        triggerAsChild
+        align={'start'}
+        disabled={!ids.length}
+        content={
+          <>
+            <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.MASK, '')}>
+              Mask
+            </DropdownItem>
+          </>
+        }
+      >
+        <Button
+          color="default"
+          variant="flat"
+          size="sm"
+          startIcon={<EyeSolidIcon />}
+          endIcon={<CaretDown />}
+          disabled={!ids.length}
+        >
+          Mask
+        </Button>
+      </Dropdown>
+      <Dropdown
+        triggerAsChild
+        align={'start'}
+        disabled={!ids.length}
+        content={
+          <>
+            <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.UNMASK, '')}>
+              Un-mask
+            </DropdownItem>
+          </>
+        }
+      >
+        <Button
+          color="default"
+          variant="flat"
+          size="sm"
+          startIcon={<EyeHideSolid />}
+          endIcon={<CaretDown />}
+          disabled={!ids.length}
+        >
+          Unmask
+        </Button>
+      </Dropdown>
+      <Button
+        color="default"
+        variant="flat"
+        size="sm"
+        startIcon={<BellLineIcon />}
+        disabled={!ids.length}
+        onClick={() => {
+          onTableAction(ids, ActionEnumType.NOTIFY);
+        }}
+      >
+        Notify
+      </Button>
+      <Button
+        color="error"
+        variant="flat"
+        size="sm"
+        startIcon={<TrashLineIcon />}
+        disabled={!ids.length}
+        onClick={() => {
+          setIdsToDelete(ids);
+          setShowDeleteDialog(true);
+        }}
+      >
+        Delete
+      </Button>
+    </>
+  );
+};
+const FILTER_SEARCHPARAMS: Record<string, string> = {
+  visibility: 'Masked/Unmasked',
+  status: 'Status',
+  benchmarkType: 'Benchmark',
+};
+const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
+  return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
+    return prev + searchParams.getAll(curr).length;
+  }, 0);
+};
+
+const Filters = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [maskedQuery, setMaskedQuery] = useState('');
+  const [statusQuery, setStatusQuery] = useState('');
+  const appliedFilterCount = getAppliedFiltersCount(searchParams);
+
+  const params = useParams() as {
+    nodeType: string;
+    scanId: string;
+  };
+
+  if (!params.scanId) {
+    console.warn('No scan id found');
+  }
+  let benchmarks: string[] = [];
+  if (params.nodeType === 'linux') {
+    benchmarks = complianceType.host;
+  } else {
+    benchmarks = complianceType.kubernetes_cluster;
+  }
+
+  return (
+    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+      <div className="flex gap-2">
+        <Combobox
+          getDisplayValue={() => FILTER_SEARCHPARAMS['visibility']}
+          multiple
+          value={searchParams.getAll('visibility')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('visibility');
+              values.forEach((value) => {
+                prev.append('visibility', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onQueryChange={(query) => {
+            setMaskedQuery(query);
+          }}
+          clearAllElement="Clear"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('visibility');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        >
+          {['masked', 'unmasked']
+            .filter((item) => {
+              if (!maskedQuery.length) return true;
+              return item.includes(maskedQuery.toLowerCase());
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item} value={item}>
+                  {capitalize(item)}
+                </ComboboxOption>
+              );
+            })}
+        </Combobox>
+        <Combobox
+          getDisplayValue={() => FILTER_SEARCHPARAMS['status']}
+          multiple
+          value={searchParams.getAll('status')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('status');
+              values.forEach((value) => {
+                prev.append('status', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onQueryChange={(query) => {
+            setStatusQuery(query);
+          }}
+          clearAllElement="Clear"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('status');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        >
+          {['alarm', 'info', 'ok', 'skip', 'delete']
+            .filter((item) => {
+              if (!statusQuery.length) return true;
+              return item.includes(statusQuery.toLowerCase());
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item} value={item}>
+                  {capitalize(item)}
+                </ComboboxOption>
+              );
+            })}
+        </Combobox>
+        <Combobox
+          getDisplayValue={() => FILTER_SEARCHPARAMS['benchmarkType']}
+          multiple
+          value={searchParams.getAll('benchmarkType')}
+          onChange={(values) => {
+            setSearchParams((prev) => {
+              prev.delete('benchmarkType');
+              values.forEach((value) => {
+                prev.append('benchmarkType', value);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onQueryChange={(query) => {
+            setStatusQuery(query);
+          }}
+          clearAllElement="Clear"
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('benchmarkType');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        >
+          {benchmarks
+            .filter((item) => {
+              if (!statusQuery.length) return true;
+              return item.includes(statusQuery.toLowerCase());
+            })
+            .map((item) => {
+              return (
+                <ComboboxOption key={item} value={item}>
+                  {capitalize(item)}
+                </ComboboxOption>
+              );
+            })}
+        </Combobox>
+      </div>
+
+      {appliedFilterCount > 0 ? (
+        <div className="flex gap-2.5 mt-4 flex-wrap items-center">
+          {Array.from(searchParams)
+            .filter(([key]) => {
+              return Object.keys(FILTER_SEARCHPARAMS).includes(key);
+            })
+            .map(([key, value]) => {
+              return (
+                <FilterBadge
+                  key={`${key}-${value}`}
+                  onRemove={() => {
+                    setSearchParams((prev) => {
+                      const existingValues = prev.getAll(key);
+                      prev.delete(key);
+                      existingValues.forEach((existingValue) => {
+                        if (existingValue !== value) prev.append(key, existingValue);
+                      });
+                      prev.delete('page');
+                      return prev;
+                    });
+                  }}
+                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                />
+              );
+            })}
+          <Button
+            variant="flat"
+            color="default"
+            startIcon={<TimesIcon />}
+            onClick={() => {
+              setSearchParams((prev) => {
+                Object.keys(FILTER_SEARCHPARAMS).forEach((key) => {
+                  prev.delete(key);
+                });
+                prev.delete('page');
+                return prev;
+              });
+            }}
+            size="sm"
+          >
+            Clear all
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
+const PostureResults = () => {
+  const [searchParams] = useSearchParams();
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
-  const [sort, setSort] = useSortingState();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [idsToDelete, setIdsToDelete] = useState<string[]>([]);
-  useEffect(() => {
-    if (idsToDelete.length) {
-      setRowSelectionState({});
-    }
-  }, [loaderData.data]);
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const fetcher = useFetcher<ActionData>();
+
+  const onTableAction = useCallback(
+    (ids: string[], actionType: string) => {
+      const formData = new FormData();
+      formData.append('actionType', actionType);
+
+      ids.forEach((item) => formData.append('nodeIds[]', item));
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    },
+    [fetcher],
+  );
+
+  const selectedIds = useMemo(() => {
+    return Object.keys(rowSelectionState);
+  }, [rowSelectionState]);
+
+  return (
+    <div className="self-start">
+      <div className="py-2 flex items-center">
+        <BulkActions
+          ids={selectedIds}
+          onTableAction={onTableAction}
+          setIdsToDelete={setIdsToDelete}
+          setShowDeleteDialog={setShowDeleteDialog}
+        />
+        <div className="pr-2 ml-auto flex items-center gap-1">
+          <Button
+            className="pr-0"
+            color="default"
+            variant="flat"
+            size="sm"
+            startIcon={<FilterIcon />}
+            onClick={() => {
+              setFiltersExpanded((prev) => !prev);
+            }}
+          >
+            Filter
+          </Button>
+          {getAppliedFiltersCount(searchParams) > 0 ? (
+            <Badge
+              label={String(getAppliedFiltersCount(searchParams))}
+              variant="filled"
+              size="small"
+              color="blue"
+            />
+          ) : null}
+        </div>
+      </div>
+      {filtersExpanded ? <Filters /> : null}
+      <Suspense fallback={<TableSkeleton columns={7} rows={10} />}>
+        <PostureTable
+          onTableAction={onTableAction}
+          setShowDeleteDialog={setShowDeleteDialog}
+          setIdsToDelete={setIdsToDelete}
+          rowSelectionState={rowSelectionState}
+          setRowSelectionState={setRowSelectionState}
+        />
+      </Suspense>
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          ids={idsToDelete}
+          setShowDialog={setShowDeleteDialog}
+          onDeleteSuccess={() => {
+            setRowSelectionState({});
+          }}
+        />
+      )}
+    </div>
+  );
+};
+
+const PostureTable = ({
+  onTableAction,
+  setIdsToDelete,
+  setShowDeleteDialog,
+  rowSelectionState,
+  setRowSelectionState,
+}: {
+  onTableAction: (ids: string[], actionType: string, maskHostAndImages?: string) => void;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  rowSelectionState: RowSelectionState;
+  setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
+}) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { data } = useScanResults();
+  const columnHelper = createColumnHelper<ModelCompliance>();
+  const [sort, setSort] = useSortingState();
+
   const columns = useMemo(() => {
     const columns = [
       getRowSelectionColumn(columnHelper, {
-        size: 30,
-        minSize: 30,
-        maxSize: 40,
-      }),
-      columnHelper.accessor('node_id', {
-        enableSorting: false,
-        enableResizing: false,
-        cell: (info) => (
-          <DFLink
-            to={{
-              pathname: `./${info.getValue()}`,
-              search: searchParams.toString(),
-            }}
-            className="flex items-center gap-x-2"
-          >
-            <div className="p-1.5 bg-gray-100 shrink-0 dark:bg-gray-500/10 rounded-lg">
-              <div className="w-4 h-4">
-                <PostureIcon />
-              </div>
-            </div>
-            <div className="truncate">{info.row.original.test_number}</div>
-          </DFLink>
-        ),
-        header: () => 'ID',
-        minSize: 50,
-        size: 60,
-        maxSize: 65,
-      }),
-      columnHelper.accessor('test_category', {
-        enableSorting: false,
-        enableResizing: false,
-        cell: (info) => info.getValue(),
-        header: () => 'Category',
-        minSize: 80,
-        size: 90,
-        maxSize: 95,
-      }),
-      columnHelper.accessor('compliance_check_type', {
-        enableSorting: false,
-        enableResizing: false,
-        cell: (info) => info.getValue().toUpperCase(),
-        header: () => 'Check Type',
-        minSize: 60,
-        size: 60,
-        maxSize: 70,
-      }),
-
-      columnHelper.accessor('description', {
-        enableResizing: false,
-        enableSorting: false,
-        minSize: 140,
-        size: 150,
-        maxSize: 160,
-        header: () => 'Description',
-        cell: (cell) => cell.getValue(),
-      }),
-      columnHelper.accessor('status', {
-        enableResizing: false,
-        minSize: 60,
-        size: 60,
-        maxSize: 65,
-        header: () => <div>Status</div>,
-        cell: (info) => {
-          return (
-            <Badge
-              label={info.getValue().toUpperCase()}
-              className={cx({
-                'bg-[#F05252]/20 dark:bg-[#F05252]/20 text-red-500 dark:text-[#F05252]':
-                  info.getValue().toLowerCase() === STATUSES.ALARM,
-                'bg-[#3F83F8]/20 dark:bg-[#3F83F8/20 text-[blue-500 dark:text-[#3F83F8]':
-                  info.getValue().toLowerCase() === STATUSES.INFO,
-                'bg-[#0E9F6E]/30 dark:bg-[##0E9F6E]/10 text-green-500 dark:text-[#0E9F6E]':
-                  info.getValue().toLowerCase() === STATUSES.OK,
-                'bg-[#FF5A1F]/20 dark:bg-[#FF5A1F]/10 text-orange-500 dark:text-[#FF5A1F]':
-                  info.getValue().toLowerCase() === STATUSES.WARN,
-                'bg-[#6B7280]/20 dark:bg-[#6B7280]/10 text-gray-700 dark:text-gray-300':
-                  info.getValue().toLowerCase() === STATUSES.SKIP,
-                'bg-[#0E9F6E]/10 dark:bg-[#0E9F6E]/10 text-green-500 dark:text-[#0E9F6E]':
-                  info.getValue().toLowerCase() === STATUSES.PASS,
-                'bg-[#d6e184]/10 dark:bg-[#d6e184]/10 text-yellow-500 dark:text-[#d6e184]':
-                  info.getValue().toLowerCase() === STATUSES.NOTE,
-              })}
-              size="sm"
-            />
-          );
-        },
+        minSize: 20,
+        size: 20,
+        maxSize: 20,
       }),
       columnHelper.display({
         id: 'actions',
@@ -949,540 +1002,300 @@ const ScanResusltTable = () => {
         cell: (cell) => (
           <ActionDropdown
             ids={[cell.row.original.node_id]}
-            align="end"
             setIdsToDelete={setIdsToDelete}
             setShowDeleteDialog={setShowDeleteDialog}
-            triggerButton={
-              <Button size="xs" color="normal">
-                <IconContext.Provider
-                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
-                >
-                  <HiDotsVertical />
-                </IconContext.Provider>
-              </Button>
+            onTableAction={onTableAction}
+            trigger={
+              <button className="p-1">
+                <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                  <EllipsisIcon />
+                </div>
+              </button>
             }
           />
         ),
         header: () => '',
-        minSize: 40,
-        size: 40,
-        maxSize: 40,
+        size: 25,
+        minSize: 25,
+        maxSize: 25,
         enableResizing: false,
+      }),
+      columnHelper.accessor('node_id', {
+        enableSorting: true,
+        enableResizing: false,
+        cell: (info) => (
+          <DFLink
+            to={{
+              pathname: `./${info.getValue()}`,
+              search: searchParams.toString(),
+            }}
+            className="flex items-center gap-x-[6px]"
+          >
+            <div className="h-6 w-6 flex items-center justify-center bg-gray-100 shrink-0 dark:bg-[rgba(224,_81,_109,_0.2)] rounded-[5px]">
+              <div className="w-3 h-3 dark:text-status-error">
+                <PostureIcon />
+              </div>
+            </div>
+            <TruncatedText text={info.row.original.test_number} />
+          </DFLink>
+        ),
+        header: () => 'ID',
+        minSize: 80,
+        size: 80,
+        maxSize: 90,
+      }),
+      columnHelper.accessor('test_category', {
+        enableSorting: false,
+        enableResizing: false,
+        cell: (info) => <TruncatedText text={info.getValue()} />,
+        header: () => 'Category',
+        minSize: 80,
+        size: 90,
+        maxSize: 95,
+      }),
+      columnHelper.accessor('compliance_check_type', {
+        enableSorting: true,
+        enableResizing: false,
+        cell: (info) => info.getValue().toUpperCase(),
+        header: () => 'Check Type',
+        minSize: 60,
+        size: 60,
+        maxSize: 70,
+      }),
+      columnHelper.accessor('status', {
+        enableResizing: false,
+        enableSorting: true,
+        minSize: 60,
+        size: 60,
+        maxSize: 65,
+        header: () => <div>Status</div>,
+        cell: (info) => {
+          return <PostureStatusBadge status={info.getValue() as PostureSeverityType} />;
+        },
+      }),
+      columnHelper.accessor('description', {
+        enableResizing: false,
+        enableSorting: false,
+        minSize: 140,
+        size: 150,
+        maxSize: 160,
+        header: () => 'Description',
+        cell: (info) => <TruncatedText text={info.getValue()} />,
       }),
     ];
 
     return columns;
   }, []);
 
+  const { data: scanResultData, scanStatusResult } = data;
+
+  if (scanStatusResult?.status === ScanStatusEnum.error) {
+    return <ScanStatusInError errorMessage={scanStatusResult.status_message} />;
+  } else if (
+    scanStatusResult?.status !== ScanStatusEnum.error &&
+    scanStatusResult?.status !== ScanStatusEnum.complete
+  ) {
+    return <ScanStatusInProgress LogoIcon={PostureIcon} />;
+  }
+  if (!scanResultData) {
+    return null;
+  }
+
   return (
-    <div className="self-start">
-      <Suspense fallback={<TableSkeleton columns={6} rows={10} size={'md'} />}>
-        <DFAwait resolve={loaderData.data}>
-          {(resolvedData: LoaderDataType) => {
-            const { data, scanStatusResult } = resolvedData;
+    <Table
+      size="default"
+      data={scanResultData.compliances}
+      columns={columns}
+      enableRowSelection
+      rowSelectionState={rowSelectionState}
+      onRowSelectionChange={setRowSelectionState}
+      enablePagination
+      manualPagination
+      enableColumnResizing
+      approximatePagination
+      totalRows={scanResultData.pagination.totalRows}
+      pageSize={parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE))}
+      pageIndex={scanResultData.pagination.currentPage}
+      enableSorting
+      manualSorting
+      sortingState={sort}
+      getRowId={(row) => {
+        return row.node_id;
+      }}
+      onPaginationChange={(updaterOrValue) => {
+        let newPageIndex = 0;
+        if (typeof updaterOrValue === 'function') {
+          newPageIndex = updaterOrValue({
+            pageIndex: scanResultData.pagination.currentPage,
+            pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
+          }).pageIndex;
+        } else {
+          newPageIndex = updaterOrValue.pageIndex;
+        }
+        setSearchParams((prev) => {
+          prev.set('page', String(newPageIndex));
+          return prev;
+        });
+      }}
+      onSortingChange={(updaterOrValue) => {
+        let newSortState: SortingState = [];
+        if (typeof updaterOrValue === 'function') {
+          newSortState = updaterOrValue(sort);
+        } else {
+          newSortState = updaterOrValue;
+        }
+        setSearchParams((prev) => {
+          if (!newSortState.length) {
+            prev.delete('sortby');
+            prev.delete('desc');
+          } else {
+            prev.set('sortby', String(newSortState[0].id));
+            prev.set('desc', String(newSortState[0].desc));
+          }
+          return prev;
+        });
+        setSort(newSortState);
+      }}
+      getTrProps={(row) => {
+        if (row.original.masked) {
+          return {
+            className: 'opacity-40',
+          };
+        }
+        return {};
+      }}
+      enablePageResize
+      onPageResize={(newSize) => {
+        setSearchParams((prev) => {
+          prev.set('size', String(newSize));
+          prev.delete('page');
+          return prev;
+        });
+      }}
+    />
+  );
+};
 
-            if (scanStatusResult?.status === ScanStatusEnum.error) {
-              return <ScanStatusInError errorMessage={scanStatusResult.status_message} />;
-            } else if (
-              scanStatusResult?.status !== ScanStatusEnum.error &&
-              scanStatusResult?.status !== ScanStatusEnum.complete
-            ) {
-              return <ScanStatusInProgress LogoIcon={PostureIcon} />;
-            } else if (
-              scanStatusResult?.status === ScanStatusEnum.complete &&
-              data &&
-              data.pagination.currentPage === 0 &&
-              data.compliances.length === 0
-            ) {
-              return (
-                <NoIssueFound
-                  LogoIcon={PostureIcon}
-                  scanType={ScanTypeEnum.ComplianceScan}
-                />
-              );
+const Header = () => {
+  return (
+    <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <>
+        <Breadcrumb>
+          <BreadcrumbLink asChild icon={<PostureIcon />} isLink>
+            <DFLink to={'/posture'} unstyled>
+              Posture
+            </DFLink>
+          </BreadcrumbLink>
+          <Suspense
+            fallback={
+              <BreadcrumbLink isLast>
+                <CircleSpinner size="sm" />
+              </BreadcrumbLink>
             }
-
-            if (!data) {
-              return null;
-            }
-            return (
-              <>
-                {Object.keys(rowSelectionState).length === 0 ? (
-                  <div className="text-sm text-gray-400 font-medium mb-3">
-                    No rows selected
-                  </div>
-                ) : (
-                  <div className="mb-1.5">
-                    <ActionDropdown
-                      ids={Object.keys(rowSelectionState)}
-                      align="start"
-                      setIdsToDelete={setIdsToDelete}
-                      setShowDeleteDialog={setShowDeleteDialog}
-                      triggerButton={
-                        <Button size="xxs" color="primary" outline>
-                          Actions
-                        </Button>
-                      }
-                    />
-                  </div>
-                )}
-                {showDeleteDialog && (
-                  <DeleteConfirmationModal
-                    showDialog={showDeleteDialog}
-                    ids={idsToDelete}
-                    setShowDialog={setShowDeleteDialog}
-                  />
-                )}
-                <Table
-                  size="sm"
-                  data={data.compliances}
-                  columns={columns}
-                  enableRowSelection
-                  rowSelectionState={rowSelectionState}
-                  onRowSelectionChange={setRowSelectionState}
-                  enablePagination
-                  manualPagination
-                  enableColumnResizing
-                  approximatePagination
-                  totalRows={data.pagination.totalRows}
-                  pageSize={PAGE_SIZE}
-                  pageIndex={data.pagination.currentPage}
-                  enableSorting
-                  manualSorting
-                  sortingState={sort}
-                  getRowId={(row) => {
-                    return row.node_id;
-                  }}
-                  onPaginationChange={(updaterOrValue) => {
-                    let newPageIndex = 0;
-                    if (typeof updaterOrValue === 'function') {
-                      newPageIndex = updaterOrValue({
-                        pageIndex: data.pagination.currentPage,
-                        pageSize: PAGE_SIZE,
-                      }).pageIndex;
-                    } else {
-                      newPageIndex = updaterOrValue.pageIndex;
-                    }
-                    setSearchParams((prev) => {
-                      prev.set('page', String(newPageIndex));
-                      return prev;
-                    });
-                  }}
-                  onSortingChange={(updaterOrValue) => {
-                    let newSortState: SortingState = [];
-                    if (typeof updaterOrValue === 'function') {
-                      newSortState = updaterOrValue(sort);
-                    } else {
-                      newSortState = updaterOrValue;
-                    }
-                    setSearchParams((prev) => {
-                      if (!newSortState.length) {
-                        prev.delete('sortby');
-                        prev.delete('desc');
-                      } else {
-                        prev.set('sortby', String(newSortState[0].id));
-                        prev.set('desc', String(newSortState[0].desc));
-                      }
-                      return prev;
-                    });
-                    setSort(newSortState);
-                  }}
-                  getTrProps={(row) => {
-                    if (row.original.masked) {
-                      return {
-                        className: 'opacity-40',
-                      };
-                    }
-                    return {};
-                  }}
-                />
-              </>
-            );
-          }}
-        </DFAwait>
-      </Suspense>
+          >
+            <DynamicBreadcrumbs />
+          </Suspense>
+        </Breadcrumb>
+      </>
     </div>
   );
 };
 
-const FilterComponent = () => {
-  const elementToFocusOnClose = useRef(null);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const params = useParams() as {
-    nodeType: string;
-  };
+const DynamicBreadcrumbs = () => {
+  const { data } = useScanResults();
+  const { scanStatusResult } = data;
 
-  let statuses: string[] = [];
-  if (params.nodeType === ACCOUNT_CONNECTOR.LINUX) {
-    statuses = [STATUSES.INFO, STATUSES.PASS, STATUSES.WARN, STATUSES.NOTE];
-  } else {
-    statuses = [
-      STATUSES.ALARM,
-      STATUSES.INFO,
-      STATUSES.OK,
-      STATUSES.SKIP,
-      STATUSES.DELETE,
-    ];
-  }
-
-  let benchmarks: string[] = [];
-  if (params.nodeType === ACCOUNT_CONNECTOR.LINUX) {
-    benchmarks = complianceType.host;
-  } else {
-    benchmarks = complianceType.kubernetes_cluster;
-  }
-
-  const onResetFilters = () => {
-    setSearchParams(() => {
-      return {};
-    });
-  };
-
-  return (
-    <Popover
-      triggerAsChild
-      elementToFocusOnCloseRef={elementToFocusOnClose}
-      content={
-        <div className="dark:text-white w-[300px]">
-          <FilterHeader onReset={onResetFilters} />
-          <div className="flex flex-col gap-y-6 p-4">
-            <fieldset>
-              <legend className="text-sm font-medium">Mask And Unmask</legend>
-              <div className="flex gap-x-4 mt-1">
-                <Checkbox
-                  label="Mask"
-                  checked={searchParams.getAll('mask').includes('true')}
-                  onCheckedChange={(state) => {
-                    if (state) {
-                      setSearchParams((prev) => {
-                        prev.append('mask', 'true');
-                        prev.delete('page');
-                        return prev;
-                      });
-                    } else {
-                      setSearchParams((prev) => {
-                        const prevStatuses = prev.getAll('mask');
-                        prev.delete('mask');
-                        prevStatuses
-                          .filter((mask) => mask !== 'true')
-                          .forEach((mask) => {
-                            prev.append('mask', mask);
-                          });
-                        prev.delete('mask');
-                        prev.delete('page');
-                        return prev;
-                      });
-                    }
-                  }}
-                />
-                <Checkbox
-                  label="Unmask"
-                  checked={searchParams.getAll('unmask').includes('true')}
-                  onCheckedChange={(state) => {
-                    if (state) {
-                      setSearchParams((prev) => {
-                        prev.append('unmask', 'true');
-                        prev.delete('page');
-                        return prev;
-                      });
-                    } else {
-                      setSearchParams((prev) => {
-                        const prevStatuses = prev.getAll('unmask');
-                        prev.delete('unmask');
-                        prevStatuses
-                          .filter((status) => status !== 'true')
-                          .forEach((status) => {
-                            prev.append('unmask', status);
-                          });
-                        prev.delete('unmask');
-                        prev.delete('page');
-                        return prev;
-                      });
-                    }
-                  }}
-                />
-              </div>
-            </fieldset>
-            <fieldset>
-              <Select
-                noPortal
-                name="benchmarkType"
-                label={'Benchmark Type'}
-                placeholder="Select Benchmark Type"
-                value={searchParams.getAll('benchmarkType')}
-                sizing="xs"
-                onChange={(value) => {
-                  setSearchParams((prev) => {
-                    prev.delete('benchmarkType');
-                    value.forEach((benchmarkType) => {
-                      prev.append('benchmarkType', benchmarkType);
-                    });
-                    prev.delete('page');
-                    return prev;
-                  });
-                }}
-              >
-                {benchmarks.map((status: string) => {
-                  return (
-                    <SelectItem value={status.toLowerCase()} key={status.toLowerCase()}>
-                      {status.toUpperCase()}
-                    </SelectItem>
-                  );
-                })}
-              </Select>
-            </fieldset>
-            <fieldset>
-              <Select
-                noPortal
-                name="status"
-                label={'Status'}
-                placeholder="Select Status"
-                value={searchParams.getAll('status')}
-                sizing="xs"
-                onChange={(value) => {
-                  setSearchParams((prev) => {
-                    prev.delete('status');
-                    value.forEach((language) => {
-                      prev.append('status', language);
-                    });
-                    prev.delete('page');
-                    return prev;
-                  });
-                }}
-              >
-                {statuses.map((status: string) => {
-                  return (
-                    <SelectItem value={status.toLowerCase()} key={status.toLowerCase()}>
-                      {status.toUpperCase()}
-                    </SelectItem>
-                  );
-                })}
-              </Select>
-            </fieldset>
-          </div>
-        </div>
-      }
-    >
-      <IconButton
-        size="xs"
-        outline
-        color="primary"
-        className="rounded-lg bg-transparent"
-        icon={<FiFilter />}
-      />
-    </Popover>
-  );
-};
-const HeaderComponent = () => {
-  const [searchParams] = useSearchParams();
-  const params = useParams() as {
-    nodeType: string;
-  };
-  const loaderData = useLoaderData() as LoaderDataType;
-  const isFilterApplied =
-    searchParams.has('status') ||
-    searchParams.has('mask') ||
-    searchParams.has('unmask') ||
-    searchParams.has('benchmarkType');
-
-  return (
-    <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-      <Suspense
-        fallback={
-          <HeaderSkeleton
-            RightSkeleton={
-              <>
-                <TimestampSkeleton />
-                <SquareSkeleton />
-                <SquareSkeleton />
-              </>
-            }
-            LeftSkeleton={
-              <>
-                <RectSkeleton width="w-40" height="h-4" />
-                <RectSkeleton width="w-40" height="h-4" />
-                <RectSkeleton width="w-40" height="h-4" />
-              </>
-            }
-          />
-        }
-      >
-        <DFAwait resolve={loaderData.data ?? []}>
-          {(resolvedData: LoaderDataType) => {
-            const { scanStatusResult } = resolvedData;
-
-            const { scan_id, node_type, updated_at, node_name } = scanStatusResult ?? {};
-
-            if (!scan_id || !node_type || !updated_at) {
-              throw new Error('Scan id, node type or updated_at is missing');
-            }
-
-            const _nodeType =
-              params.nodeType === ACCOUNT_CONNECTOR.LINUX
-                ? ACCOUNT_CONNECTOR.LINUX
-                : ACCOUNT_CONNECTOR.KUBERNETES;
-            return (
-              <>
-                <Breadcrumb separator={<HiChevronRight />} transparent>
-                  <BreadcrumbLink>
-                    <DFLink to={'/posture'}>Posture</DFLink>
-                  </BreadcrumbLink>
-                  <BreadcrumbLink>
-                    <DFLink
-                      to={generatePath('/posture/accounts/:nodeType', {
-                        nodeType: _nodeType,
-                      })}
-                    >
-                      {providersToNameMapping[_nodeType]}
-                    </DFLink>
-                  </BreadcrumbLink>
-                  <BreadcrumbLink>
-                    <span className="inherit cursor-auto">{node_name}</span>
-                  </BreadcrumbLink>
-                </Breadcrumb>
-                <div className="ml-auto flex items-center gap-x-4">
-                  <div className="flex flex-col">
-                    <span className="text-xs text-gray-500 dark:text-gray-200">
-                      {formatMilliseconds(updated_at)}
-                    </span>
-                    <span className="text-gray-400 text-[10px]">Last scan</span>
-                  </div>
-
-                  <HistoryDropdown nodeType={node_type} />
-
-                  <div className="relative">
-                    {isFilterApplied && (
-                      <span className="absolute left-0 top-0 inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
-                    )}
-                    <FilterComponent />
-                  </div>
-                </div>
-              </>
-            );
-          }}
-        </DFAwait>
-      </Suspense>
-    </div>
-  );
-};
-
-const StatusCountComponent = ({ theme }: { theme: Mode }) => {
-  const loaderData = useLoaderData() as LoaderDataType;
-  const params = useParams() as {
-    nodeType: string;
-  };
-  const statuses =
-    params.nodeType === ACCOUNT_CONNECTOR.LINUX
-      ? [
-          POSTURE_STATUS_COLORS['info'],
-          POSTURE_STATUS_COLORS['pass'],
-          POSTURE_STATUS_COLORS['warn'],
-          POSTURE_STATUS_COLORS['note'],
-        ]
-      : [
-          POSTURE_STATUS_COLORS['alarm'],
-          POSTURE_STATUS_COLORS['info'],
-          POSTURE_STATUS_COLORS['ok'],
-          POSTURE_STATUS_COLORS['skip'],
-        ];
-
-  return (
-    <Card className="p-4 grid grid-flow-row-dense gap-y-8">
-      <Suspense
-        fallback={
-          <div className="min-h-[300px] flex items-center justify-center">
-            <CircleSpinner size="md" />
-          </div>
-        }
-      >
-        <DFAwait resolve={loaderData.data}>
-          {(resolvedData: LoaderDataType) => {
-            const { data } = resolvedData;
-            const statusCounts = data?.statusCounts ?? {};
-
-            return (
-              <>
-                <div className="grid grid-flow-col-dense gap-x-4">
-                  <div className="bg-red-100 dark:bg-red-500/10 rounded-lg flex items-center justify-center">
-                    <div className="w-14 h-14 text-red-500 dark:text-red-400">
-                      <PostureIcon />
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="text-md font-semibold text-gray-900 dark:text-gray-200 tracking-wider">
-                      Total Compliances
-                    </h4>
-                    <div className="mt-2">
-                      <span className="text-2xl text-gray-900 dark:text-gray-200">
-                        {data?.totalStatus}
-                      </span>
-                      <h5 className="text-xs text-gray-500 dark:text-gray-200 mb-2">
-                        Total count
-                      </h5>
-                    </div>
-                  </div>
-                </div>
-                <div className="h-[200px]">
-                  <PostureResultChart
-                    theme={theme}
-                    data={statusCounts}
-                    eoption={{
-                      series: [
-                        {
-                          cursor: 'default',
-                          color: statuses,
-                        },
-                      ],
-                    }}
-                  />
-                </div>
-                <div>
-                  {Object.keys(statusCounts)?.map((key: string) => {
-                    return (
-                      <div key={key} className="flex items-center gap-2 p-1">
-                        <div
-                          className={cx('h-3 w-3 rounded-full')}
-                          style={{
-                            backgroundColor:
-                              POSTURE_STATUS_COLORS[
-                                key.toLowerCase() as PostureSeverityType
-                              ],
-                          }}
-                        />
-                        <span className="text-sm text-gray-500 dark:text-gray-200">
-                          {capitalize(key)}
-                        </span>
-                        <span
-                          className={cx(
-                            'text-sm text-gray-900 dark:text-gray-200 ml-auto tabular-nums',
-                          )}
-                        >
-                          {statusCounts[key]}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            );
-          }}
-        </DFAwait>
-      </Suspense>
-    </Card>
-  );
-};
-
-const PostureScanResults = () => {
-  const { mode } = useTheme();
+  const { node_type, node_name } = scanStatusResult ?? {};
 
   return (
     <>
-      <HeaderComponent />
-      <div className="grid grid-cols-[400px_1fr] p-2 gap-x-2">
-        <div className="self-start grid gap-y-2">
-          <StatusCountComponent theme={mode} />
+      <BreadcrumbLink isLink icon={<PostureIcon />} asChild>
+        <DFLink to={`/posture/scans?nodeType=${node_type}`} unstyled>
+          {capitalize(node_type ?? '')}
+        </DFLink>
+      </BreadcrumbLink>
+      <BreadcrumbLink icon={<PostureIcon />} isLast>
+        <span className="inherit cursor-auto">{node_name}</span>
+      </BreadcrumbLink>
+    </>
+  );
+};
+
+const SeverityCountWidget = () => {
+  const {
+    data: { data },
+  } = useScanResults();
+  const statusCounts: {
+    [k: string]: number;
+  } = data?.statusCounts ?? {};
+  return (
+    <div className="grid grid-cols-12 px-6 items-center">
+      <div className="col-span-2 h-[140px] w-[140px]">
+        <PostureScanResultsPieChart data={statusCounts} />
+      </div>
+      <div className="col-span-2 dark:text-text-text-and-icon">
+        <span className="text-p1">Total compliances</span>
+        <div className="flex flex-1 max-w-[160px] gap-1 items-center">
+          <TaskIcon />
+          <span className="text-h1 dark:text-text-input">10</span>
         </div>
-        <ScanResusltTable />
+      </div>
+      <div className="w-px min-h-[120px] dark:bg-bg-grid-border" />
+      <div className="col-span-6">
+        <div className="gap-24 flex justify-center">
+          {Object.keys(statusCounts)?.map((key: string) => {
+            return (
+              <div key={key} className="col-span-2 dark:text-text-text-and-icon">
+                <span className="text-p1">{capitalize(key)}</span>
+                <div className="flex flex-1 max-w-[160px] gap-1 items-center">
+                  <div
+                    className="h-4 w-4 rounded-full"
+                    style={{
+                      backgroundColor:
+                        POSTURE_STATUS_COLORS[key.toLowerCase() as PostureSeverityType],
+                    }}
+                  ></div>
+                  <span className="text-h1 dark:text-text-input-value">
+                    {statusCounts?.[key]}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Widgets = () => {
+  return (
+    <Card className="min-h-[140px] px-4 py-1.5">
+      <div className="flex-1 pl-4">
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center min-h-[100px]">
+              <CircleSpinner size="md" />
+            </div>
+          }
+        >
+          <SeverityCountWidget />
+        </Suspense>
+      </div>
+    </Card>
+  );
+};
+const PostureScanResults = () => {
+  return (
+    <>
+      <Header />
+      <ScanHistory />
+      <div className="px-4 pb-4 pt-1.5">
+        <Widgets />
+      </div>
+
+      <div className="px-4 pb-4">
+        <PostureResults />
       </div>
       <Outlet />
     </>
@@ -1491,6 +1304,5 @@ const PostureScanResults = () => {
 
 export const module = {
   action,
-  loader,
   element: <PostureScanResults />,
 };
