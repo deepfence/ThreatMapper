@@ -26,17 +26,11 @@ MKDIR = mkdir
 CD = cd
 CP = cp
 
-#all:: prep libs deepfenced install gocode
 all:: gocode
 
 gocode:
-	# go build -o tools/apache/licensegen/licensegen tools/apache/licensegen/licensegen.go
-
 	echo "Building go binary for cloud metadata instance id..."
 	$(CD) tools/apache/deepfence/df-utils/get_cloud_instance_id && env CGO_ENABLED=0 go build -o getCloudInstanceId $(GOFLAGS) .
-
-	echo "Building compliance checker"
-	$(CD) tools/apache/compliance_check/ && go build -o deepfence_compliance_check $(GOFLAGS) *.go
 
 install:
 

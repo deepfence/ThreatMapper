@@ -14,7 +14,7 @@ require (
 	github.com/Jeffail/tunny v0.1.4
 	github.com/abrander/go-supervisord v0.0.0-20210517172913-a5469a4c50e2
 	github.com/containerd/cgroups/v3 v3.0.1
-	github.com/deepfence/agent-plugins-grpc v2.0.0+incompatible
+	github.com/deepfence/agent-plugins-grpc v1.1.0
 	github.com/deepfence/compliance v0.1.3-0.20230523055258-4cae3116258c
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-00010101000000-000000000000

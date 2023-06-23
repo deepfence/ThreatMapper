@@ -1,17 +1,3 @@
-FROM golang:1.20-alpine3.18 AS build
-
-
-RUN apk add --no-cache git build-base libpcap-dev libcap-dev
-
-ADD deepfence_server /go/deepfence_server/
-ADD deepfence_worker /go/deepfence_worker/
-ADD golang_deepfence_sdk /go/golang_deepfence_sdk
-RUN mkdir -p /go/deepfence_agent/tools/apache
-ADD deepfence_agent/tools/apache /go/deepfence_agent/tools/apache
-WORKDIR /go/deepfence_server/
-# "make vendor" is run before separately to avoid docker cache invalidation
-RUN make deepfence_server
-
 FROM alpine:3.18
 MAINTAINER Deepfence Inc
 LABEL deepfence.role=system
@@ -38,7 +24,7 @@ RUN cd /usr/local/share/ && \
     mv /usr/local/share/swagger-ui-4.15.5/dist /usr/local/share/swagger-ui && \
     rm -rf /usr/local/share/swagger-ui.tar.gz /usr/local/share/swagger-ui-4.15.5
 
-COPY --from=build /go/deepfence_server/deepfence_server /usr/local/bin/deepfence_server
+COPY ./deepfence_server/deepfence_server /usr/local/bin/deepfence_server
 
 EXPOSE 8080
 ENTRYPOINT ["/entrypoint.sh"]

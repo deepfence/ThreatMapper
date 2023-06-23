@@ -12,32 +12,12 @@ building_image(){
         exit 1
     fi
 
-    echo "Prepare plugins"
-    (cd plugins && ./bootstrap.sh)
-
+    echo "Building GetCloudInstanceId"
     docker run --rm -i -v $(pwd)/../deepfence_server_client:/go/src/github.com/deepfence/deepfence_server_client -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/gocode-build.sh
     build_result=$?
     if [ $build_result -ne 0 ]
     then
         echo "Deepfence code compilation failed, bailing out"
-        exit 1
-    fi
-
-    echo "Building Agent Plugins protobuf"
-    docker run --rm -i -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/grpccode-build.sh
-    build_result=$?
-    if [ $build_result -ne 0 ]
-    then
-        echo "Agent plugins gRPC code compilation failed, bailing out"
-        exit 1
-    fi
-
-    echo "Building Agent Plugins binaries"
-    docker run --rm -i -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_build_ce:${DF_IMG_TAG:-latest} bash -x /home/deepfence/plugincode-build.sh
-    build_result=$?
-    if [ $build_result -ne 0 ]
-    then
-        echo "Agent plugins build failed, bailing out"
         exit 1
     fi
 
