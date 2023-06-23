@@ -1,18 +1,20 @@
 PWD=$(shell pwd)
 
-DEEPFENCE_AGENT_DIR=$(PWD)/deepfence_agent
-DEEPFENCE_ROUTER_DIR=$(PWD)/haproxy
-DEEPFENCE_FILE_SERVER_DIR=$(PWD)/deepfence_file_server
-DEEPFENCE_FRONTEND_DIR=$(PWD)/deepfence_frontend
-SECRET_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/SecretScanner
-MALWARE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/YaraHunter/
-PACKAGE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/package-scanner
-DEEPFENCE_CTL=$(PWD)/deepfence_ctl
-DEEPFENCED=$(PWD)/deepfence_bootstrapper
-IMAGE_REPOSITORY?=deepfenceio
-DF_IMG_TAG?=latest
-IS_DEV_BUILD?=false
-VERSION?="2.0.0"
+export ROOT_MAKEFILE_DIR=$(shell pwd)
+export DEEPFENCE_AGENT_DIR=$(PWD)/deepfence_agent
+export DEEPFENCE_ROUTER_DIR=$(PWD)/haproxy
+export DEEPFENCE_FILE_SERVER_DIR=$(PWD)/deepfence_file_server
+export DEEPFENCE_FRONTEND_DIR=$(PWD)/deepfence_frontend
+export SECRET_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/SecretScanner
+export MALWARE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/YaraHunter/
+export PACKAGE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/package-scanner
+export COMPLIANCE_SCANNER_DIR=$(DEEPFENCE_AGENT_DIR)/plugins/compliance
+export DEEPFENCE_CTL=$(PWD)/deepfence_ctl
+export DEEPFENCED=$(PWD)/deepfence_bootstrapper
+export IMAGE_REPOSITORY?=deepfenceio
+export DF_IMG_TAG?=latest
+export IS_DEV_BUILD?=false
+export VERSION?="2.0.0"
 
 default: bootstrap console_plugins agent console
 
@@ -20,11 +22,15 @@ default: bootstrap console_plugins agent console
 console: redis postgres kafka-broker router server worker ui file-server graphdb
 
 .PHONY: console_plugins
-console_plugins: secretscanner malwarescanner packagescanner
+console_plugins: secretscanner malwarescanner packagescanner compliancescanner
 
 .PHONY: bootstrap
 bootstrap:
 	./bootstrap.sh
+
+.PHONY: alpine_builder
+alpine_builder:
+	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-alpine .
 
 .PHONY: bootstrap-agent-plugins
 bootstrap-agent-plugins:
@@ -33,13 +39,13 @@ bootstrap-agent-plugins:
 	(cd $(MALWARE_SCANNER_DIR) && bash bootstrap.sh)
 
 .PHONY: agent
-agent: deepfenced
+agent: deepfenced console_plugins
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
 	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" bash build.sh)
 
 .PHONY: deepfenced
-deepfenced: bootstrap bootstrap-agent-plugins
-	(cd $(DEEPFENCED) && make)
+deepfenced: alpine_builder bootstrap bootstrap-agent-plugins
+	(cd $(DEEPFENCED) && make vendor && make prepare)
 	cp $(DEEPFENCED)/deepfence_bootstrapper $(DEEPFENCE_AGENT_DIR)/deepfenced
 
 .PHONY: redis
@@ -63,14 +69,12 @@ file-server:
 	docker build -t $(IMAGE_REPOSITORY)/deepfence_file_server_ce:$(DF_IMG_TAG) $(DEEPFENCE_FILE_SERVER_DIR)
 
 .PHONY: server
-server:
-	(cd ./deepfence_server && make vendor)
-	docker build -f ./deepfence_server/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG) .
+server: alpine_builder
+	(cd ./deepfence_server && make vendor && make image)
 
 .PHONY: worker
-worker:
-	(cd ./deepfence_worker && make vendor)
-	docker build -f ./deepfence_worker/Dockerfile --build-arg IMAGE_REPOSITORY=$(IMAGE_REPOSITORY) --build-arg DF_IMG_TAG=$(DF_IMG_TAG) -t $(IMAGE_REPOSITORY)/deepfence_worker_ce:$(DF_IMG_TAG) .
+worker: alpine_builder
+	(cd ./deepfence_worker && make vendor && make image)
 
 .PHONY: graphdb
 graphdb:
@@ -96,6 +100,10 @@ malwarescanner: bootstrap-agent-plugins
 packagescanner:
 	(cd $(PACKAGE_SCANNER_DIR) && make tools)
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG) -f $(PACKAGE_SCANNER_DIR)/Dockerfile $(PACKAGE_SCANNER_DIR)
+
+.PHONY: compliancescanner
+compliancescanner:
+	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_compliance_scanner_ce:$(DF_IMG_TAG) -f $(COMPLIANCE_SCANNER_DIR)/Dockerfile $(COMPLIANCE_SCANNER_DIR)
 
 .PHONY: openapi
 openapi: server

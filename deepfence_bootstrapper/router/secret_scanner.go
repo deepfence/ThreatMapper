@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/Jeffail/tunny"
-	pb "github.com/deepfence/agent-plugins-grpc/proto"
+	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
 	"google.golang.org/grpc"
 
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
