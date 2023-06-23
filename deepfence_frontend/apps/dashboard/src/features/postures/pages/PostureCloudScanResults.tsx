@@ -1055,22 +1055,24 @@ const CloudPostureTable = ({
       columnHelper.accessor('control_id', {
         enableSorting: false,
         enableResizing: false,
-        cell: (info) => (
-          <DFLink
-            to={{
-              pathname: `./${encodeURIComponent(info.row.original.node_id)}`,
-              search: searchParams.toString(),
-            }}
-            className="flex items-center gap-x-[6px]"
-          >
-            <div className="h-6 w-6 flex items-center justify-center bg-gray-100 shrink-0 dark:bg-[rgba(224,_81,_109,_0.2)] rounded-[5px]">
-              <div className="w-3 h-3 dark:text-status-error">
-                <PostureIcon />
+        cell: (info) => {
+          return (
+            <DFLink
+              to={{
+                pathname: `./${encodeURIComponent(info.row.original.node_id)}`,
+                search: searchParams.toString(),
+              }}
+              className="flex items-center gap-x-[6px]"
+            >
+              <div className="h-6 w-6 flex items-center justify-center bg-gray-100 shrink-0 dark:bg-[rgba(224,_81,_109,_0.2)] rounded-[5px]">
+                <div className="w-3 h-3 dark:text-status-error">
+                  <PostureIcon />
+                </div>
               </div>
-            </div>
-            <div className="truncate">{info.row.original.control_id}</div>
-          </DFLink>
-        ),
+              <div className="truncate">{info.row.original.control_id}</div>
+            </DFLink>
+          );
+        },
         header: () => 'Control ID',
         minSize: 80,
         size: 80,

@@ -612,4 +612,64 @@ export const postureQueries = createQueryKeys('posture', {
       },
     };
   },
+  postureClouds: (filters: { complianceId: string }) => {
+    const { complianceId } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const searchCloudCompliancesApi = apiWrapper({
+          fn: getSearchApiClient().searchCloudCompliances,
+        });
+        const searchCompliancesResponse = await searchCloudCompliancesApi({
+          searchSearchNodeReq: {
+            node_filter: {
+              filters: {
+                contains_filter: {
+                  filter_in: {
+                    node_id: [complianceId],
+                  },
+                },
+                order_filter: {
+                  order_fields: [],
+                },
+                match_filter: {
+                  filter_in: {},
+                },
+                compare_filter: null,
+              },
+              in_field_filter: null,
+              window: {
+                offset: 0,
+                size: 0,
+              },
+            },
+            window: {
+              offset: 0,
+              size: 1,
+            },
+          },
+        });
+        if (!searchCompliancesResponse.ok) {
+          console.error(searchCompliancesResponse.error);
+          return {
+            data: undefined,
+            message: 'Error getting the compliance details',
+          };
+        }
+
+        if (
+          searchCompliancesResponse.value === null ||
+          searchCompliancesResponse.value.length === 0
+        ) {
+          return {
+            data: undefined,
+            message: 'Error finding the compliance details',
+          };
+        }
+        return {
+          data: searchCompliancesResponse.value[0],
+        };
+      },
+    };
+  },
 });
