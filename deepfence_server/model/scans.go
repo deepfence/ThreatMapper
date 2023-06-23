@@ -308,26 +308,26 @@ func (SecretRule) GetJsonCategory() string {
 }
 
 type Vulnerability struct {
-	NodeId                     string `json:"node_id" required:"true"`
-	Cve_id                     string `json:"cve_id" required:"true"`
-	Cve_severity               string `json:"cve_severity" required:"true"`
-	Cve_caused_by_package      string `json:"cve_caused_by_package" required:"true"`
-	Cve_caused_by_package_path string `json:"cve_caused_by_package_path" required:"true"`
-	Cve_container_layer        string `json:"cve_container_layer" required:"true"`
-	Cve_link                   string `json:"cve_link" required:"true"`
-	Masked                     bool   `json:"masked" required:"true"`
-	UpdatedAt                  int64  `json:"updated_at" required:"true"`
-	HasLiveConnection          bool   `json:"has_live_connection" required:"true"`
-	Cve_type           string        `json:"cve_type" required:"true"`
-	Cve_fixed_in       string        `json:"cve_fixed_in" required:"true"`
-	Cve_description    string        `json:"cve_description" required:"true"`
-	Cve_cvss_score     float64       `json:"cve_cvss_score" required:"true"`
-	Cve_overall_score  float64       `json:"cve_overall_score" required:"true"`
-	Cve_attack_vector  string        `json:"cve_attack_vector" required:"true"`
-	URLs               []interface{} `json:"urls" required:"true"`
-	ExploitPOC         string        `json:"exploit_poc" required:"true"`
-	ParsedAttackVector string        `json:"parsed_attack_vector" required:"true"`
-	Resources          []string      `json:"resources" required:"false"`
+	NodeId                     string        `json:"node_id" required:"true"`
+	Cve_id                     string        `json:"cve_id" required:"true"`
+	Cve_severity               string        `json:"cve_severity" required:"true"`
+	Cve_caused_by_package      string        `json:"cve_caused_by_package" required:"true"`
+	Cve_caused_by_package_path string        `json:"cve_caused_by_package_path" required:"true"`
+	Cve_container_layer        string        `json:"cve_container_layer" required:"true"`
+	Cve_link                   string        `json:"cve_link" required:"true"`
+	Masked                     bool          `json:"masked" required:"true"`
+	UpdatedAt                  int64         `json:"updated_at" required:"true"`
+	HasLiveConnection          bool          `json:"has_live_connection" required:"true"`
+	Cve_type                   string        `json:"cve_type" required:"true"`
+	Cve_fixed_in               string        `json:"cve_fixed_in" required:"true"`
+	Cve_description            string        `json:"cve_description" required:"true"`
+	Cve_cvss_score             float64       `json:"cve_cvss_score" required:"true"`
+	Cve_overall_score          float64       `json:"cve_overall_score" required:"true"`
+	Cve_attack_vector          string        `json:"cve_attack_vector" required:"true"`
+	URLs                       []interface{} `json:"urls" required:"true"`
+	ExploitPOC                 string        `json:"exploit_poc" required:"true"`
+	ParsedAttackVector         string        `json:"parsed_attack_vector" required:"true"`
+	Resources                  []string      `json:"resources" required:"false"`
 }
 
 func (Vulnerability) NodeType() string {
@@ -452,22 +452,23 @@ func (MalwareRule) GetJsonCategory() string {
 }
 
 type Compliance struct {
-	TestCategory        string `json:"test_category" required:"true"`
-	TestNumber          string `json:"test_number" required:"true"`
-	TestInfo            string `json:"description" required:"true"`
-	RemediationScript   string `json:"remediation_script,omitempty" required:"true"`
-	RemediationAnsible  string `json:"remediation_ansible,omitempty" required:"true"`
-	RemediationPuppet   string `json:"remediation_puppet,omitempty" required:"true"`
-	Resource            string `json:"resource" required:"true"`
-	TestRationale       string `json:"test_rationale" required:"true"`
-	TestSeverity        string `json:"test_severity" required:"true"`
-	TestDesc            string `json:"test_desc" required:"true"`
-	Status              string `json:"status" required:"true"`
-	ComplianceCheckType string `json:"compliance_check_type" required:"true"`
-	ComplianceNodeId    string `json:"node_id" required:"true"`
-	ComplianceNodeType  string `json:"node_type" required:"true"`
-	Masked              bool   `json:"masked" required:"true"`
-	UpdatedAt           int64  `json:"updated_at" required:"true"`
+	TestCategory        string   `json:"test_category" required:"true"`
+	TestNumber          string   `json:"test_number" required:"true"`
+	TestInfo            string   `json:"description" required:"true"`
+	RemediationScript   string   `json:"remediation_script,omitempty" required:"true"`
+	RemediationAnsible  string   `json:"remediation_ansible,omitempty" required:"true"`
+	RemediationPuppet   string   `json:"remediation_puppet,omitempty" required:"true"`
+	Resource            string   `json:"resource" required:"true"`
+	TestRationale       string   `json:"test_rationale" required:"true"`
+	TestSeverity        string   `json:"test_severity" required:"true"`
+	TestDesc            string   `json:"test_desc" required:"true"`
+	Status              string   `json:"status" required:"true"`
+	ComplianceCheckType string   `json:"compliance_check_type" required:"true"`
+	ComplianceNodeId    string   `json:"node_id" required:"true"`
+	ComplianceNodeType  string   `json:"node_type" required:"true"`
+	Masked              bool     `json:"masked" required:"true"`
+	UpdatedAt           int64    `json:"updated_at" required:"true"`
+	Resources           []string `json:"resources" required:"false"`
 }
 
 func (Compliance) NodeType() string {
@@ -514,25 +515,26 @@ func (ComplianceRule) GetJsonCategory() string {
 }
 
 type CloudCompliance struct {
-	Count               int32  `json:"count,omitempty" required:"true"`
-	Reason              string `json:"reason" required:"true"`
-	Resource            string `json:"resource" required:"true"`
-	Status              string `json:"status" required:"true"`
-	Region              string `json:"region" required:"true"`
-	AccountID           string `json:"account_id" required:"true"`
-	Group               string `json:"group" required:"true"`
-	Service             string `json:"service" required:"true"`
-	Title               string `json:"title" required:"true"`
-	ComplianceCheckType string `json:"compliance_check_type" required:"true"`
-	CloudProvider       string `json:"cloud_provider" required:"true"`
-	NodeName            string `json:"node_name" required:"true"`
-	NodeID              string `json:"node_id" required:"true"`
-	Masked              bool   `json:"masked" required:"true"`
-	UpdatedAt           int64  `json:"updated_at" required:"true"`
-	Type                string `json:"type" required:"true"`
-	ControlID           string `json:"control_id" required:"true"`
-	Description         string `json:"description" required:"true"`
-	Severity            string `json:"severity" required:"true"`
+	Count               int32    `json:"count,omitempty" required:"true"`
+	Reason              string   `json:"reason" required:"true"`
+	Resource            string   `json:"resource" required:"true"`
+	Status              string   `json:"status" required:"true"`
+	Region              string   `json:"region" required:"true"`
+	AccountID           string   `json:"account_id" required:"true"`
+	Group               string   `json:"group" required:"true"`
+	Service             string   `json:"service" required:"true"`
+	Title               string   `json:"title" required:"true"`
+	ComplianceCheckType string   `json:"compliance_check_type" required:"true"`
+	CloudProvider       string   `json:"cloud_provider" required:"true"`
+	NodeName            string   `json:"node_name" required:"true"`
+	NodeID              string   `json:"node_id" required:"true"`
+	Masked              bool     `json:"masked" required:"true"`
+	UpdatedAt           int64    `json:"updated_at" required:"true"`
+	Type                string   `json:"type" required:"true"`
+	ControlID           string   `json:"control_id" required:"true"`
+	Description         string   `json:"description" required:"true"`
+	Severity            string   `json:"severity" required:"true"`
+	Resources           []string `json:"resources" required:"false"`
 }
 
 func (CloudCompliance) NodeType() string {

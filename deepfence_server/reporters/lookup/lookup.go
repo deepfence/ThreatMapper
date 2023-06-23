@@ -308,13 +308,27 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 		query = `
 			MATCH (n:` + dummy.NodeType() + `)
 			OPTIONAL MATCH (n) -[:IS]-> (e)
-			RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e`
+			CALL {
+				WITH n
+		        OPTIONAL MATCH (l) -[:DETECTED]-> (n)
+		        OPTIONAL MATCH (l) -[:SCANNED]-> (k)
+				WITH distinct k
+		        RETURN collect((coalesce(k.node_name, '') + '/' + coalesce(k.node_type, ''))) as resources 
+			}
+			RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources`
 	} else {
 		query = `
 			MATCH (n:` + dummy.NodeType() + `)
 			WHERE n.node_id IN $ids
 			OPTIONAL MATCH (n) -[:IS]-> (e)
-			RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e`
+			CALL {
+				WITH n
+		        OPTIONAL MATCH (l) -[:DETECTED]-> (n)
+		        OPTIONAL MATCH (l) -[:SCANNED]-> (k)
+				WITH distinct k
+		        RETURN collect((coalesce(k.node_name, '') + '/' + coalesce(k.node_type, ''))) as resources 
+			}
+			RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e, resources`
 	}
 	log.Debug().Msgf("query: %s", query)
 	r, err = tx.Run(query,
@@ -355,8 +369,19 @@ func getGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, fil
 			for k, v := range is_node.(dbtype.Node).Props {
 				if k != "node_id" {
 					node_map[k] = v
+				} else {
+					node_map[dummy.ExtendedField()] = v
 				}
 			}
+		}
+		resources, isValue := rec.Get("resources")
+		if isValue {
+			resourceList := resources.([]interface{})
+			resourceListString := make([]string, len(resourceList))
+			for i, v := range resourceList {
+				resourceListString[i] = v.(string)
+			}
+			node_map["resources"] = resourceListString
 		}
 		var node T
 		utils.FromMap(node_map, &node)
@@ -556,4 +581,24 @@ func getClusterHosts(ctx context.Context, ids []string) ([]model.Host, map[strin
 		WHERE n.node_id IN $ids
 		RETURN m, n.node_id`,
 		ids)
+}
+
+func GetVulnerabilitiesReport(ctx context.Context, filter LookupFilter) ([]model.Vulnerability, error) {
+	return getGenericDirectNodeReport[model.Vulnerability](ctx, filter)
+}
+
+func GetSecretsReport(ctx context.Context, filter LookupFilter) ([]model.Secret, error) {
+	return getGenericDirectNodeReport[model.Secret](ctx, filter)
+}
+
+func GetMalwaresReport(ctx context.Context, filter LookupFilter) ([]model.Malware, error) {
+	return getGenericDirectNodeReport[model.Malware](ctx, filter)
+}
+
+func GetComplianceReport(ctx context.Context, filter LookupFilter) ([]model.Compliance, error) {
+	return getGenericDirectNodeReport[model.Compliance](ctx, filter)
+}
+
+func GetCloudComplianceReport(ctx context.Context, filter LookupFilter) ([]model.CloudCompliance, error) {
+	return getGenericDirectNodeReport[model.CloudCompliance](ctx, filter)
 }

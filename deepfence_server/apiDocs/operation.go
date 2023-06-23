@@ -154,6 +154,26 @@ func (d *OpenApiDocs) AddLookupOperations() {
 	d.AddOperation("getCloudResources", http.MethodPost, "/deepfence/lookup/cloud-resources",
 		"Get Cloud Resources", "Retrieve the cloud resources",
 		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]CloudResource))
+
+	d.AddOperation("getVulnerabilities", http.MethodPost, "/deepfence/lookup/vulnerabilities",
+		"Retrieve Vulnerabilities data", "Retrieve all the data associated with vulnerabilities",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]Vulnerability))
+
+	d.AddOperation("getSecrets", http.MethodPost, "/deepfence/lookup/secrets",
+		"Retrieve Secrets data", "Retrieve all the data associated with secrets",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]Secret))
+
+	d.AddOperation("getMalwares", http.MethodPost, "/deepfence/lookup/malwares",
+		"Retrieve Malwares data", "Retrieve all the data associated with malwares",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]Malware))
+
+	d.AddOperation("getCompliances", http.MethodPost, "/deepfence/lookup/compliances",
+		"Retrieve Compliances data", "Retrieve all the data associated with compliances",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]Compliance))
+
+	d.AddOperation("getCloudCompliances", http.MethodPost, "/deepfence/lookup/cloud-compliances",
+		"Retrieve Cloud Compliances data", "Retrieve all the data associated with cloud-compliances",
+		http.StatusOK, []string{tagLookup}, bearerToken, new(LookupFilter), new([]CloudCompliance))
 }
 
 func (d *OpenApiDocs) AddSearchOperations() {

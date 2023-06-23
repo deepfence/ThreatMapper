@@ -213,6 +213,11 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				r.Post("/pods", dfHandler.GetPods)
 				r.Post("/registryaccount", dfHandler.GetRegistryAccount)
 				r.Post("/cloud-resources", dfHandler.GetCloudResources)
+				r.Post("/vulnerabilities", dfHandler.GetVulnerabilities)
+				r.Post("/secrets", dfHandler.GetSecrets)
+				r.Post("/malwares", dfHandler.GetMalwares)
+				r.Post("/compliances", dfHandler.GetCompliances)
+				r.Post("/cloud-compliances", dfHandler.GetCloudCompliances)
 			})
 
 			r.Route("/search", func(r chi.Router) {
