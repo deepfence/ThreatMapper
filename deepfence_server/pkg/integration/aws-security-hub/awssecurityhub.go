@@ -49,6 +49,7 @@ func New(b []byte) (*AwsSecurityHub, error) {
 }
 
 func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
+
 	nodeID, ok := extras["node_id"]
 	if !ok {
 		log.Error().Msgf("AwsSecurityHub: SendNotification: node_id not found in extras")
