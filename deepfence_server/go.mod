@@ -24,7 +24,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.285
 	github.com/casbin/casbin/v2 v2.70.0
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230620070833-89f34b57eece
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230623172029-60c652233ab8
 	github.com/docker/docker v24.0.2+incompatible
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/jwtauth/v5 v5.1.0

@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"crypto/aes"
+	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,7 +17,6 @@ import (
 	"runtime"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
@@ -172,8 +171,6 @@ func main() {
 	go utils.StartKafkaProducer(ctx, strings.Split(kafkaBrokers, ","), ingestC)
 
 	wml := watermill.NewStdLogger(false, false)
-
-	rand.Seed(time.Now().Unix())
 
 	// task publisher
 	publisher, err := kafka.NewPublisher(

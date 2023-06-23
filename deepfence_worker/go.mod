@@ -28,8 +28,8 @@ require (
 	github.com/deepfence/SecretScanner v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
 	github.com/deepfence/YaraHunter v0.0.0-00010101000000-000000000000
-	github.com/deepfence/agent-plugins-grpc v0.0.0-00010101000000-000000000000
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230620070833-89f34b57eece
+	github.com/deepfence/agent-plugins-grpc v1.1.0
+	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230623172029-60c652233ab8
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/minio/minio-go/v7 v7.0.56
@@ -237,7 +237,7 @@ require (
 	golang.org/x/tools v0.8.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230410155749-daa745c078e1 // indirect
-	google.golang.org/grpc v1.55.0 // indirect
+	google.golang.org/grpc v1.56.1 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -79,10 +78,9 @@ func (h *Handler) AuditUserActivity(
 ) {
 
 	var (
-		user_id     = 0.0
-		role_id     = 0.0
-		userIdValid = false
-		claims      = map[string]interface{}{}
+		userEmail string
+		userRole  string
+		claims    = map[string]interface{}{}
 	)
 
 	token, err := GetTokenFromRequest(h.TokenAuth, req)
@@ -91,17 +89,15 @@ func (h *Handler) AuditUserActivity(
 			log.Error().Msg(err.Error())
 		}
 	} else {
-		claims := token.PrivateClaims()
-		user_id = claims["user_id"].(float64)
-		userIdValid = true
-		role_id = claims["role_id"].(float64)
+		claims = token.PrivateClaims()
+		userEmail = claims["email"].(string)
+		userRole = claims["role"].(string)
 	}
 
 	if event == EVENT_AUTH && (action == ACTION_LOGIN || action == ACTION_TOKEN_AUTH) {
 		user := resources.(*model.User)
-		user_id = float64(user.ID)
-		userIdValid = true
-		role_id = float64(user.RoleID)
+		userEmail = user.Email
+		userRole = user.Role
 	}
 
 	var resourceStr string = ""
@@ -126,12 +122,9 @@ func (h *Handler) AuditUserActivity(
 		Action:    action,
 		Resources: resourceStr,
 		Success:   success,
-		UserID: sql.NullInt32{
-			Int32: int32(user_id),
-			Valid: userIdValid,
-		},
-		UserRoleID: int32(role_id),
-		CreatedAt:  time.Now(),
+		UserEmail: userEmail,
+		UserRole:  userRole,
+		CreatedAt: time.Now(),
 	}
 
 	go h.AddAuditLog(params)

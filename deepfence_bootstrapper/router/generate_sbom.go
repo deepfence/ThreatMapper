@@ -5,7 +5,7 @@ import (
 	"errors"
 	"os"
 
-	pb "github.com/deepfence/agent-plugins-grpc/proto"
+	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
 	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	scopeHostname "github.com/weaveworks/scope/common/hostname"

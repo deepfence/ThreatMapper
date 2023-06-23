@@ -13,7 +13,7 @@ import (
 	"github.com/deepfence/SecretScanner/signature"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/cronjobs"
 	workerUtils "github.com/deepfence/ThreatMapper/deepfence_worker/utils"
-	pb "github.com/deepfence/agent-plugins-grpc/proto"
+	pb "github.com/deepfence/agent-plugins-grpc/srcgo"
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
