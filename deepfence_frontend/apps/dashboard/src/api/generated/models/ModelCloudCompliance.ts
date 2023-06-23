@@ -99,6 +99,12 @@ export interface ModelCloudCompliance {
     resource: string;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof ModelCloudCompliance
+     */
+    resources?: Array<string> | null;
+    /**
+     * 
      * @type {string}
      * @memberof ModelCloudCompliance
      */
@@ -186,6 +192,7 @@ export function ModelCloudComplianceFromJSONTyped(json: any, ignoreDiscriminator
         'reason': json['reason'],
         'region': json['region'],
         'resource': json['resource'],
+        'resources': !exists(json, 'resources') ? undefined : json['resources'],
         'service': json['service'],
         'severity': json['severity'],
         'status': json['status'],
@@ -217,6 +224,7 @@ export function ModelCloudComplianceToJSON(value?: ModelCloudCompliance | null):
         'reason': value.reason,
         'region': value.region,
         'resource': value.resource,
+        'resources': value.resources,
         'service': value.service,
         'severity': value.severity,
         'status': value.status,

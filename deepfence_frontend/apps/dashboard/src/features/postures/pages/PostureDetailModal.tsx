@@ -82,7 +82,7 @@ const Header = () => {
                 wordBreak: 'break-word',
               }}
             >
-              {data?.compliance_check_type ?? '-'}
+              {data?.description ?? '-'}
             </div>
           </div>
         </div>
@@ -104,11 +104,7 @@ const DetailsComponent = () => {
     );
   }
 
-  const omitFields: (keyof ModelCompliance)[] = [
-    'test_number',
-    'status',
-    'compliance_check_type',
-  ];
+  const omitFields: (keyof ModelCompliance)[] = ['test_number', 'status', 'description'];
 
   return (
     <div className="flex flex-wrap gap-y-[30px] gap-x-[14px]">

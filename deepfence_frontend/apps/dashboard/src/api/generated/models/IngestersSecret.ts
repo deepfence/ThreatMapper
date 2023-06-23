@@ -40,12 +40,6 @@ import {
 export interface IngestersSecret {
     /**
      * 
-     * @type {Date}
-     * @memberof IngestersSecret
-     */
-    timestamp?: Date;
-    /**
-     * 
      * @type {string}
      * @memberof IngestersSecret
      */
@@ -101,7 +95,6 @@ export function IngestersSecretFromJSONTyped(json: any, ignoreDiscriminator: boo
     }
     return {
         
-        'timestamp': !exists(json, '@timestamp') ? undefined : (new Date(json['@timestamp'])),
         'ImageLayerId': !exists(json, 'ImageLayerId') ? undefined : json['ImageLayerId'],
         'Match': !exists(json, 'Match') ? undefined : IngestersSecretMatchFromJSON(json['Match']),
         'Rule': !exists(json, 'Rule') ? undefined : IngestersSecretRuleFromJSON(json['Rule']),
@@ -120,7 +113,6 @@ export function IngestersSecretToJSON(value?: IngestersSecret | null): any {
     }
     return {
         
-        '@timestamp': value.timestamp === undefined ? undefined : (value.timestamp.toISOString()),
         'ImageLayerId': value.ImageLayerId,
         'Match': IngestersSecretMatchToJSON(value.Match),
         'Rule': IngestersSecretRuleToJSON(value.Rule),

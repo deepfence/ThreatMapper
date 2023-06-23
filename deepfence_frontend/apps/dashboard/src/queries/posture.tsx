@@ -4,6 +4,7 @@ import {
   getCloudComplianceApiClient,
   getCloudNodesApiClient,
   getComplianceApiClient,
+  getLookupApiClient,
   getSearchApiClient,
 } from '@/api/api';
 import {
@@ -377,31 +378,12 @@ export const postureQueries = createQueryKeys('posture', {
       queryKey: [filters],
       queryFn: async () => {
         const searchCompliancesApi = apiWrapper({
-          fn: getSearchApiClient().searchCompliances,
+          fn: getLookupApiClient().lookupPostures,
         });
         const searchCompliancesResponse = await searchCompliancesApi({
-          searchSearchNodeReq: {
-            node_filter: {
-              filters: {
-                contains_filter: {
-                  filter_in: {
-                    node_id: [id],
-                  },
-                },
-                order_filter: {
-                  order_fields: [],
-                },
-                match_filter: {
-                  filter_in: {},
-                },
-                compare_filter: null,
-              },
-              in_field_filter: null,
-              window: {
-                offset: 0,
-                size: 0,
-              },
-            },
+          lookupLookupFilter: {
+            in_field_filter: [],
+            node_ids: [id],
             window: {
               offset: 0,
               size: 1,
@@ -618,31 +600,12 @@ export const postureQueries = createQueryKeys('posture', {
       queryKey: [filters],
       queryFn: async () => {
         const searchCloudCompliancesApi = apiWrapper({
-          fn: getSearchApiClient().searchCloudCompliances,
+          fn: getLookupApiClient().lookupCloudPostures,
         });
         const searchCompliancesResponse = await searchCloudCompliancesApi({
-          searchSearchNodeReq: {
-            node_filter: {
-              filters: {
-                contains_filter: {
-                  filter_in: {
-                    node_id: [complianceId],
-                  },
-                },
-                order_filter: {
-                  order_fields: [],
-                },
-                match_filter: {
-                  filter_in: {},
-                },
-                compare_filter: null,
-              },
-              in_field_filter: null,
-              window: {
-                offset: 0,
-                size: 0,
-              },
-            },
+          lookupLookupFilter: {
+            in_field_filter: [],
+            node_ids: [complianceId],
             window: {
               offset: 0,
               size: 1,
