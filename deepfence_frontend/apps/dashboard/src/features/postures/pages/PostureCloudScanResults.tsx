@@ -829,7 +829,7 @@ const Filters = () => {
             .map((item) => {
               return (
                 <ComboboxOption key={item} value={item}>
-                  {capitalize(item)}
+                  {item}
                 </ComboboxOption>
               );
             })}
@@ -869,7 +869,7 @@ const Filters = () => {
             .map((item) => {
               return (
                 <ComboboxOption key={item} value={item}>
-                  {capitalize(item)}
+                  {item}
                 </ComboboxOption>
               );
             })}
