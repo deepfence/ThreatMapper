@@ -2,10 +2,15 @@ import { EChartsOption } from 'echarts';
 import { preset } from 'tailwind-preset';
 
 import { ReactECharts } from '@/components/ReactEcharts';
-import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { abbreviateNumber } from '@/utils/number';
 
-function getChartOptions({ data }: { data: { [key: string]: number } }) {
+function getChartOptions({
+  data,
+  color,
+}: {
+  data: { [key: string]: number };
+  color: string[];
+}) {
   const option: EChartsOption = {
     backgroundColor: 'transparent',
     tooltip: {
@@ -46,12 +51,7 @@ function getChartOptions({ data }: { data: { [key: string]: number } }) {
         emphasis: {
           scale: false,
         },
-        color: [
-          POSTURE_STATUS_COLORS['pass'],
-          POSTURE_STATUS_COLORS['info'],
-          POSTURE_STATUS_COLORS['warn'],
-          POSTURE_STATUS_COLORS['note'],
-        ],
+        color,
       },
     ],
   };
@@ -60,12 +60,14 @@ function getChartOptions({ data }: { data: { [key: string]: number } }) {
 
 export const PostureScanResultsPieChart = ({
   data,
+  color,
 }: {
   data: { [key: string]: number };
+  color: string[];
 }) => {
   if (!data) {
     return null;
   }
-  const options = getChartOptions({ data });
+  const options = getChartOptions({ data, color });
   return <ReactECharts theme="dark" option={options} />;
 };

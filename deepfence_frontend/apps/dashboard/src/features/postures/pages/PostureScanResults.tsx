@@ -35,7 +35,6 @@ import {
 import { getScanResultsApiClient } from '@/api/api';
 import {
   ModelCompliance,
-  ModelScanInfo,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
@@ -63,11 +62,18 @@ import { TruncatedText } from '@/components/TruncatedText';
 import { POSTURE_STATUS_COLORS } from '@/constants/charts';
 import { useDownloadScan } from '@/features/common/data-component/downloadScanAction';
 import { PostureScanResultsPieChart } from '@/features/postures/components/scan-result/PostureScanResultsPieChart';
+import { providersToNameMapping } from '@/features/postures/pages/Posture';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateAllQueries, queries } from '@/queries';
-import { PostureSeverityType, ScanStatusEnum, ScanTypeEnum } from '@/types/common';
+import {
+  ComplianceScanNodeTypeEnum,
+  PostureSeverityType,
+  ScanStatusEnum,
+  ScanTypeEnum,
+} from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
+import { abbreviateNumber } from '@/utils/number';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
@@ -85,24 +91,6 @@ enum ActionEnumType {
   NOTIFY = 'notify',
   DELETE_SCAN = 'delete_scan',
 }
-
-type ScanResult = {
-  totalStatus: number;
-  statusCounts: { [key: string]: number };
-  timestamp: number;
-  compliances: ModelCompliance[];
-  pagination: {
-    currentPage: number;
-    totalRows: number;
-  };
-};
-
-export type LoaderDataType = {
-  error?: string;
-  scanStatusResult?: ModelScanInfo;
-  message?: string;
-  data?: ScanResult;
-};
 
 type ActionFunctionType =
   | ReturnType<typeof getScanResultsApiClient>['deleteScanResult']
@@ -610,7 +598,7 @@ const BulkActions = ({
   ids: string[];
   setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  onTableAction: (ids: string[], actionType: string, maskHostAndImages?: string) => void;
+  onTableAction: (ids: string[], actionType: string) => void;
 }) => {
   return (
     <>
@@ -620,7 +608,7 @@ const BulkActions = ({
         disabled={!ids.length}
         content={
           <>
-            <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.MASK, '')}>
+            <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.MASK)}>
               Mask
             </DropdownItem>
           </>
@@ -643,7 +631,7 @@ const BulkActions = ({
         disabled={!ids.length}
         content={
           <>
-            <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.UNMASK, '')}>
+            <DropdownItem onClick={() => onTableAction(ids, ActionEnumType.UNMASK)}>
               Un-mask
             </DropdownItem>
           </>
@@ -703,21 +691,31 @@ const Filters = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [maskedQuery, setMaskedQuery] = useState('');
   const [statusQuery, setStatusQuery] = useState('');
+  const [benchmarkQuery, setBenchmarkQuery] = useState('');
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
   const params = useParams() as {
-    nodeType: string;
+    nodeType: ComplianceScanNodeTypeEnum;
     scanId: string;
   };
 
   if (!params.scanId) {
     console.warn('No scan id found');
   }
-  let benchmarks: string[] = [];
-  if (params.nodeType === 'linux') {
-    benchmarks = complianceType.host;
+  let _nodeType = params.nodeType;
+
+  if (params.nodeType.toString() === 'kubernetes') {
+    _nodeType = ComplianceScanNodeTypeEnum.kubernetes_cluster;
+  }
+
+  const benchmarks = complianceType[_nodeType];
+
+  let statuses: string[] = [];
+
+  if (params.nodeType.toString() === 'linux') {
+    statuses = ['info', 'pass', 'warn', 'note'];
   } else {
-    benchmarks = complianceType.kubernetes_cluster;
+    statuses = ['alarm', 'info', 'ok', 'skip', 'delete'];
   }
 
   return (
@@ -752,7 +750,7 @@ const Filters = () => {
           {['masked', 'unmasked']
             .filter((item) => {
               if (!maskedQuery.length) return true;
-              return item.includes(maskedQuery.toLowerCase());
+              return item.toLowerCase().includes(maskedQuery.toLowerCase());
             })
             .map((item) => {
               return (
@@ -788,10 +786,10 @@ const Filters = () => {
             });
           }}
         >
-          {['alarm', 'info', 'ok', 'skip', 'delete']
+          {statuses
             .filter((item) => {
               if (!statusQuery.length) return true;
-              return item.includes(statusQuery.toLowerCase());
+              return item.toLowerCase().includes(statusQuery.toLowerCase());
             })
             .map((item) => {
               return (
@@ -816,7 +814,7 @@ const Filters = () => {
             });
           }}
           onQueryChange={(query) => {
-            setStatusQuery(query);
+            setBenchmarkQuery(query);
           }}
           clearAllElement="Clear"
           onClearAll={() => {
@@ -829,8 +827,8 @@ const Filters = () => {
         >
           {benchmarks
             .filter((item) => {
-              if (!statusQuery.length) return true;
-              return item.includes(statusQuery.toLowerCase());
+              if (!benchmarkQuery.length) return true;
+              return item.toLowerCase().includes(benchmarkQuery.toLowerCase());
             })
             .map((item) => {
               return (
@@ -978,7 +976,7 @@ const PostureTable = ({
   rowSelectionState,
   setRowSelectionState,
 }: {
-  onTableAction: (ids: string[], actionType: string, maskHostAndImages?: string) => void;
+  onTableAction: (ids: string[], actionType: string) => void;
   setIdsToDelete: React.Dispatch<React.SetStateAction<string[]>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
   rowSelectionState: RowSelectionState;
@@ -1205,13 +1203,19 @@ const DynamicBreadcrumbs = () => {
   const { data } = useScanResults();
   const { scanStatusResult } = data;
 
-  const { node_type, node_name } = scanStatusResult ?? {};
-
+  const { node_name } = scanStatusResult ?? {};
+  const params = useParams() as {
+    nodeType: string;
+  };
   return (
     <>
       <BreadcrumbLink isLink icon={<PostureIcon />} asChild>
-        <DFLink to={`/posture/scans?nodeType=${node_type}`} unstyled>
-          {capitalize(node_type ?? '')}
+        <DFLink
+          to={generatePath('/posture/accounts/:nodeType', {
+            nodeType: params.nodeType,
+          })}
+        >
+          {providersToNameMapping[params.nodeType]}
         </DFLink>
       </BreadcrumbLink>
       <BreadcrumbLink icon={<PostureIcon />} isLast>
@@ -1222,22 +1226,48 @@ const DynamicBreadcrumbs = () => {
 };
 
 const SeverityCountWidget = () => {
+  const params = useParams() as {
+    nodeType: string;
+    scanId: string;
+  };
+  let color: string[] = [];
+  if (params.nodeType === 'linux') {
+    color = [
+      POSTURE_STATUS_COLORS['info'],
+      POSTURE_STATUS_COLORS['pass'],
+      POSTURE_STATUS_COLORS['warn'],
+      POSTURE_STATUS_COLORS['note'],
+    ];
+  } else {
+    color = [
+      POSTURE_STATUS_COLORS['alarm'],
+      POSTURE_STATUS_COLORS['info'],
+      POSTURE_STATUS_COLORS['ok'],
+      POSTURE_STATUS_COLORS['skip'],
+      POSTURE_STATUS_COLORS['delete'],
+    ];
+  }
   const {
     data: { data },
   } = useScanResults();
   const statusCounts: {
     [k: string]: number;
   } = data?.statusCounts ?? {};
+  const total = Object.values(statusCounts).reduce((acc, v) => {
+    acc = acc + v;
+    return acc;
+  }, 0);
+
   return (
     <div className="grid grid-cols-12 px-6 items-center">
       <div className="col-span-2 h-[140px] w-[140px]">
-        <PostureScanResultsPieChart data={statusCounts} />
+        <PostureScanResultsPieChart data={statusCounts} color={color} />
       </div>
       <div className="col-span-2 dark:text-text-text-and-icon">
         <span className="text-p1">Total compliances</span>
         <div className="flex flex-1 max-w-[160px] gap-1 items-center">
           <TaskIcon />
-          <span className="text-h1 dark:text-text-input">10</span>
+          <span className="text-h1 dark:text-text-input">{abbreviateNumber(total)}</span>
         </div>
       </div>
       <div className="w-px min-h-[120px] dark:bg-bg-grid-border" />

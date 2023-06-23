@@ -32,6 +32,7 @@ export const POSTURE_STATUS_COLORS: {
   pass: preset.theme.extend.colors.status.success,
   warn: preset.theme.extend.colors.status.warning,
   note: preset.theme.extend.colors['df-gray'][600],
+  delete: preset.theme.extend.colors.status.error,
 };
 
 export function getColorForCompliancePercent(percent: number | undefined | null): string {

@@ -278,6 +278,7 @@ export const postureQueries = createQueryKeys('posture', {
           info: result.value.status_counts?.['info'] ?? 0,
           ok: result.value.status_counts?.['ok'] ?? 0,
           skip: result.value.status_counts?.['skip'] ?? 0,
+          delete: result.value.status_counts?.['delete'] ?? 0,
         };
 
         return {
@@ -426,6 +427,187 @@ export const postureQueries = createQueryKeys('posture', {
         }
         return {
           data: searchCompliancesResponse.value[0],
+        };
+      },
+    };
+  },
+  postureCloudScanResults: (filters: {
+    scanId: string;
+    page?: number;
+    pageSize: number;
+    status: string[];
+    visibility: string[];
+    benchmarkTypes: string[];
+    services: string[];
+    nodeType: string;
+    order?: {
+      sortBy: string;
+      descending: boolean;
+    };
+  }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async () => {
+        const {
+          scanId,
+          visibility,
+          status,
+          services,
+          benchmarkTypes,
+          order,
+          page = 1,
+          pageSize,
+        } = filters;
+        const statusCloudComplianceScanApi = apiWrapper({
+          fn: getCloudComplianceApiClient().statusCloudComplianceScan,
+        });
+        const statusResult = await statusCloudComplianceScanApi({
+          modelScanStatusReq: {
+            scan_ids: [scanId],
+            bulk_scan_id: '',
+          },
+        });
+
+        if (!statusResult.ok) {
+          if (statusResult.error.response.status === 400) {
+            return {
+              message: statusResult.error.message,
+            };
+          }
+          throw statusResult.error;
+        }
+        const statuses = statusResult.value?.statuses?.[0];
+
+        if (!statusResult || !statuses || !statuses.scan_id) {
+          throw new Error('Scan status not found');
+        }
+
+        const scanStatus = statuses.status;
+
+        const isScanRunning =
+          scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;
+        const isScanError = scanStatus === ScanStatusEnum.error;
+
+        if (isScanRunning || isScanError) {
+          return {
+            scanStatusResult: statuses,
+          };
+        }
+        const scanResultsReq: ModelScanResultsReq = {
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: { filter_in: {} },
+            order_filter: { order_fields: [] },
+            compare_filter: null,
+          },
+          scan_id: scanId,
+          window: {
+            offset: page * pageSize,
+            size: pageSize,
+          },
+        };
+        if (status.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['status'] = status;
+        }
+        if (visibility.length === 1) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['masked'] = [
+            visibility.includes('masked') ? true : false,
+          ];
+        }
+        if (benchmarkTypes.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in![
+            'compliance_check_type'
+          ] = benchmarkTypes.map((type) => type.toLowerCase());
+        }
+
+        if (services.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['service'] = services;
+        }
+        if (order) {
+          scanResultsReq.fields_filter.order_filter.order_fields?.push({
+            field_name: order.sortBy,
+            descending: order.descending,
+          });
+        }
+
+        //
+        let result = null;
+        let resultCounts = null;
+
+        const resultCloudComplianceScanApi = apiWrapper({
+          fn: getCloudComplianceApiClient().resultCloudComplianceScan,
+        });
+        result = await resultCloudComplianceScanApi({
+          modelScanResultsReq: scanResultsReq,
+        });
+        if (!result.ok) {
+          if (
+            result.error.response.status === 400 ||
+            result.error.response.status === 404
+          ) {
+            return {
+              message: result.error.message ?? '',
+            };
+          }
+          throw result.error;
+        }
+
+        const resultCountCloudComplianceScanApi = apiWrapper({
+          fn: getCloudComplianceApiClient().resultCountCloudComplianceScan,
+        });
+        resultCounts = await resultCountCloudComplianceScanApi({
+          modelScanResultsReq: {
+            ...scanResultsReq,
+            window: {
+              ...scanResultsReq.window,
+              size: 10 * scanResultsReq.window.size,
+            },
+          },
+        });
+
+        if (!resultCounts.ok) {
+          if (
+            resultCounts.error.response.status === 400 ||
+            resultCounts.error.response.status === 404
+          ) {
+            return {
+              message: resultCounts.error.message ?? '',
+            };
+          }
+          throw resultCounts.error;
+        }
+
+        const totalStatus = Object.values(result.value.status_counts ?? {}).reduce(
+          (acc, value) => {
+            acc = acc + value;
+            return acc;
+          },
+          0,
+        );
+
+        const cloudComplianceStatus = {
+          alarm: result.value.status_counts?.['alarm'] ?? 0,
+          info: result.value.status_counts?.['info'] ?? 0,
+          ok: result.value.status_counts?.['ok'] ?? 0,
+          skip: result.value.status_counts?.['skip'] ?? 0,
+          delete: result.value.status_counts?.['delete'] ?? 0,
+        };
+
+        return {
+          scanStatusResult: statuses,
+          data: {
+            totalStatus,
+            nodeName: result.value.node_id,
+            statusCounts: cloudComplianceStatus,
+            timestamp: result.value.updated_at,
+            compliances: result.value.compliances ?? [],
+            pagination: {
+              currentPage: page,
+              totalRows: page * pageSize + resultCounts.value.count,
+            },
+          },
         };
       },
     };
