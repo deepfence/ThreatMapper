@@ -48,7 +48,6 @@ func New(b []byte) (*AwsSecurityHub, error) {
 }
 
 func (a AwsSecurityHub) SendNotification(message string, extras map[string]interface{}) error {
-	log.Info().Msgf("AwsSecurityHub: new SendNotification called with extras: %v", extras)
 	nodeID, ok := extras["node_id"]
 	if !ok {
 		log.Error().Msgf("AwsSecurityHub: SendNotification: node_id not found in extras")
@@ -112,8 +111,6 @@ func (a AwsSecurityHub) SendNotification(message string, extras map[string]inter
 			return nil
 		}
 
-		as := importFindings.GoString()
-		log.Info().Msgf("AwsSecurityHub: SendNotification: as %s", as)
 		fmt.Println("JSON data uploaded successfully to aws security hub with", importFindings.SuccessCount, "success count")
 	}
 
