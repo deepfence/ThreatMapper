@@ -42,8 +42,7 @@ COPY --from=yarahunter /home/deepfence/usr/config.yaml /malware-config/config.ya
 COPY ./deepfence_worker/deepfence_worker /usr/local/bin/deepfence_worker
 COPY ./deepfence_worker/entrypoint.sh /entrypoint.sh
 
-WORKDIR /usr/local
-COPY --from=builder-yara /root/yara-rules .
+COPY --from=builder-yara /root/yara-rules /usr/local/yara-rules
 
 COPY --from=builder-yara /usr/local/yara.tar.gz /usr/local/yara.tar.gz
 # extract yara
