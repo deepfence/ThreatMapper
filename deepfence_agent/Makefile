@@ -26,11 +26,9 @@ MKDIR = mkdir
 CD = cd
 CP = cp
 
-all:: gocode
-
 gocode:
 	echo "Building go binary for cloud metadata instance id..."
-	$(CD) tools/apache/deepfence/df-utils/get_cloud_instance_id && env CGO_ENABLED=0 go build -o getCloudInstanceId $(GOFLAGS) .
+	($(CD) tools/apache/deepfence/df-utils/get_cloud_instance_id && CGO_ENABLED=0 go build -o getCloudInstanceId $(GOFLAGS) .)
 
 install:
 
@@ -39,7 +37,7 @@ agent:
 		go mod tidy -v && \
 		go mod vendor && \
 		env GOGC=off \
-		go build \
+		go build -buildvcs=false \
 		-ldflags "-X main.version=$(shell git rev-parse --short HEAD)  -X github.com/weaveworks/scope/probe/host.agentCommitID=$(shell git rev-parse --short HEAD) -X github.com/weaveworks/scope/probe/host.agentBuildTime=$(shell date +"%s%d%m%y") -s -w" \
 		-tags 'netgo osusergo unsafe' \
 		-o docker/deepfence_exe \

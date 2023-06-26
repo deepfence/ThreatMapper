@@ -32,14 +32,19 @@ bootstrap:
 alpine_builder:
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-alpine .
 
+.PHONY: debian_builder
+debian_builder:
+	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_agent_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-debian .
+
 .PHONY: bootstrap-agent-plugins
 bootstrap-agent-plugins:
 	(cd $(DEEPFENCE_AGENT_DIR)/plugins && make localinit)
+	(cd $(PACKAGE_SCANNER_DIR) && bash bootstrap.sh)
 	(cd $(SECRET_SCANNER_DIR) && bash bootstrap.sh)
 	(cd $(MALWARE_SCANNER_DIR) && bash bootstrap.sh)
 
 .PHONY: agent
-agent: deepfenced console_plugins
+agent: debian_builder deepfenced console_plugins
 	(cd $(DEEPFENCE_AGENT_DIR) &&\
 	IMAGE_REPOSITORY="$(IMAGE_REPOSITORY)" DF_IMG_TAG="$(DF_IMG_TAG)" bash build.sh)
 
@@ -97,8 +102,7 @@ malwarescanner: bootstrap-agent-plugins
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_malware_scanner_ce:$(DF_IMG_TAG) -f $(MALWARE_SCANNER_DIR)/Dockerfile $(MALWARE_SCANNER_DIR)
 
 .PHONY: packagescanner
-packagescanner:
-	(cd $(PACKAGE_SCANNER_DIR) && make tools)
+packagescanner: bootstrap-agent-plugins
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_package_scanner_ce:$(DF_IMG_TAG) -f $(PACKAGE_SCANNER_DIR)/Dockerfile $(PACKAGE_SCANNER_DIR)
 
 .PHONY: compliancescanner
