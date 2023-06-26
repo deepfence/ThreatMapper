@@ -41,6 +41,9 @@ deepfence_worker/vendor
 deepfence_server/deepfence_server
 deepfence_worker/deepfence_worker
 
+deepfence_bootstrapper/vendor
+deepfence_bootstrapper/deepfence_bootstrapper
+
 openapi.json
 openapi.yaml
 
