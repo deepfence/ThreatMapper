@@ -57,7 +57,7 @@ type procHandler struct {
 
 func NewProcHandler(name, path, command, env string, autorestart bool, cgroup string) *procHandler {
 	envs := strings.Split(env, ",")
-	expanded_envs := []string{}
+	expanded_envs := os.Environ()
 	for i := range envs {
 		expanded_envs = append(expanded_envs, os.ExpandEnv(envs[i]))
 	}
