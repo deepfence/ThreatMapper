@@ -6,7 +6,7 @@ ENV DOCKERVERSION=24.0.2 MGMT_CONSOLE_PORT=443
 
 WORKDIR /home/deepfence
 RUN apt-get update
-RUN apt-get install -y --no-install-recommends libpcap0.8 bash conntrack iproute2 util-linux curl grep tar git wget supervisor gettext htop vim ca-certificates
+RUN apt-get install -y --no-install-recommends bash conntrack iproute2 util-linux curl grep tar git wget supervisor gettext htop vim ca-certificates
 RUN apt-get -y --allow-unauthenticated install podman
 RUN curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
     && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \

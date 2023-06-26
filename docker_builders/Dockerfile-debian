@@ -1,3 +1,7 @@
+ARG DF_IMG_TAG=latest
+ARG IMAGE_REPOSITORY=deepfenceio
+FROM $IMAGE_REPOSITORY/deepfence_builder_ce:$DF_IMG_TAG AS alpine_builder
+
 FROM golang:1.20-bullseye
 
 RUN apt-get update
@@ -27,5 +31,7 @@ COPY deepfence_agent/build_scripts/*.sh /home/deepfence/
 
 ARG DF_AGENT_SRC=/go/src/github.com/deepfence/deepfence_agent
 WORKDIR $DF_AGENT_SRC
+
+COPY --from=alpine_builder /lib/libpcap.a /lib
 
 ENV GOWORK=off
