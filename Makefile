@@ -203,3 +203,4 @@ clean:
 	(cd $(ROOT_MAKEFILE_DIR)/deepfence_server && make clean)
 	(cd $(ROOT_MAKEFILE_DIR)/deepfence_worker && make clean)
 	(cd $(DEEPFENCED) && make clean && rm $(DEEPFENCE_AGENT_DIR)/deepfenced)
+	(cd $(DEEPFENCE_AGENT_DIR)/tools/apache/fluentbit/out_deepfence && make clean)
