@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from '@suspensive/react-query';
 import { ReactNode, Suspense } from 'react';
 import { generatePath, Link, useLocation, useMatches, useParams } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
@@ -14,7 +15,7 @@ import { PodIcon } from '@/components/icons/pod';
 import { TableIcon } from '@/components/icons/table';
 import { TopologyViewTypes } from '@/features/topology/data-components/topologyLoader';
 import { NodeType } from '@/features/topology/utils/topology-data';
-import { DFAwait } from '@/utils/suspense';
+import { queries } from '@/queries';
 
 const SummaryTab = ({
   icon,
@@ -65,7 +66,16 @@ const SummaryTab = ({
   );
 };
 
-export const TopologyHeader = ({ nodeCounts }: { nodeCounts: SearchNodeCountResp }) => {
+function useNodeCounts() {
+  return useSuspenseQuery({ ...queries.topology.nodeCounts() });
+}
+
+const NodeCount = ({ type }: { type: keyof SearchNodeCountResp }) => {
+  const { data } = useNodeCounts();
+  return <>{data[type]}</>;
+};
+
+export const TopologyHeader = () => {
   return (
     <div className="flex items-center dark:text-text-text-and-icon text-p1 px-3 dark:bg-bg-breadcrumb-bar">
       <SummaryTab
@@ -74,11 +84,7 @@ export const TopologyHeader = ({ nodeCounts }: { nodeCounts: SearchNodeCountResp
         type={NodeType.cloud_provider}
         count={
           <Suspense fallback={0}>
-            <DFAwait resolve={nodeCounts}>
-              {(data: SearchNodeCountResp) => {
-                return data.cloud_provider;
-              }}
-            </DFAwait>
+            <NodeCount type="cloud_provider" />
           </Suspense>
         }
       />
@@ -88,11 +94,7 @@ export const TopologyHeader = ({ nodeCounts }: { nodeCounts: SearchNodeCountResp
         type={NodeType.host}
         count={
           <Suspense fallback={0}>
-            <DFAwait resolve={nodeCounts}>
-              {(data: SearchNodeCountResp) => {
-                return data.host;
-              }}
-            </DFAwait>
+            <NodeCount type="host" />
           </Suspense>
         }
       />
@@ -102,11 +104,7 @@ export const TopologyHeader = ({ nodeCounts }: { nodeCounts: SearchNodeCountResp
         type={NodeType.kubernetes_cluster}
         count={
           <Suspense fallback={0}>
-            <DFAwait resolve={nodeCounts}>
-              {(data: SearchNodeCountResp) => {
-                return data.kubernetes_cluster;
-              }}
-            </DFAwait>
+            <NodeCount type="kubernetes_cluster" />
           </Suspense>
         }
       />
@@ -116,11 +114,7 @@ export const TopologyHeader = ({ nodeCounts }: { nodeCounts: SearchNodeCountResp
         type={NodeType.container}
         count={
           <Suspense fallback={0}>
-            <DFAwait resolve={nodeCounts}>
-              {(data: SearchNodeCountResp) => {
-                return data.container;
-              }}
-            </DFAwait>
+            <NodeCount type="container" />
           </Suspense>
         }
       />
@@ -130,11 +124,7 @@ export const TopologyHeader = ({ nodeCounts }: { nodeCounts: SearchNodeCountResp
         type={NodeType.pod}
         count={
           <Suspense fallback={0}>
-            <DFAwait resolve={nodeCounts}>
-              {(data: SearchNodeCountResp) => {
-                return data.pod;
-              }}
-            </DFAwait>
+            <NodeCount type="pod" />
           </Suspense>
         }
       />
