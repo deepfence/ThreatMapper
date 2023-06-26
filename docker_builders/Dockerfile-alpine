@@ -52,4 +52,6 @@ RUN apk add hyperscan-dev --repository=https://dl-cdn.alpinelinux.org/alpine/v3.
 ENV PKG_CONFIG_PATH=/usr/local/include/hs/:$(PKG_CONFIG_PATH) \
     CGO_CFLAGS="-I/usr/local/include/hyperscan/src" \
     LD_LIBRARY_PATH=/usr/local/lib:/usr/local/include/hs/lib:$LD_LIBRARY_PATH \
-    PKG_CONFIG_PATH=/usr/local/yara/lib/pkgconfig:$(PKG_CONFIG_PATH)
+    PKG_CONFIG_PATH=/usr/local/yara/lib/pkgconfig:$(PKG_CONFIG_PATH) \
+    GOWORK=off
+

@@ -27,3 +27,5 @@ COPY deepfence_agent/build_scripts/*.sh /home/deepfence/
 
 ARG DF_AGENT_SRC=/go/src/github.com/deepfence/deepfence_agent
 WORKDIR $DF_AGENT_SRC
+
+ENV GOWORK=off
