@@ -16,6 +16,7 @@ export type PostureSeverityType =
   | 'ok'
   | 'pass'
   | 'warn'
+  | 'delete'
   | 'note';
 
 export type AllSeverityType =

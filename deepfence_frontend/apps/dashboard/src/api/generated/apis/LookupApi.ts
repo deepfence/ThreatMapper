@@ -18,14 +18,19 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   LookupLookupFilter,
+  ModelCloudCompliance,
   ModelCloudResource,
+  ModelCompliance,
   ModelContainer,
   ModelContainerImage,
   ModelHost,
   ModelKubernetesCluster,
+  ModelMalware,
   ModelPod,
   ModelProcess,
   ModelRegistryAccount,
+  ModelSecret,
+  ModelVulnerability,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
@@ -34,8 +39,12 @@ import {
     ApiDocsFailureResponseToJSON,
     LookupLookupFilterFromJSON,
     LookupLookupFilterToJSON,
+    ModelCloudComplianceFromJSON,
+    ModelCloudComplianceToJSON,
     ModelCloudResourceFromJSON,
     ModelCloudResourceToJSON,
+    ModelComplianceFromJSON,
+    ModelComplianceToJSON,
     ModelContainerFromJSON,
     ModelContainerToJSON,
     ModelContainerImageFromJSON,
@@ -44,15 +53,29 @@ import {
     ModelHostToJSON,
     ModelKubernetesClusterFromJSON,
     ModelKubernetesClusterToJSON,
+    ModelMalwareFromJSON,
+    ModelMalwareToJSON,
     ModelPodFromJSON,
     ModelPodToJSON,
     ModelProcessFromJSON,
     ModelProcessToJSON,
     ModelRegistryAccountFromJSON,
     ModelRegistryAccountToJSON,
+    ModelSecretFromJSON,
+    ModelSecretToJSON,
+    ModelVulnerabilityFromJSON,
+    ModelVulnerabilityToJSON,
 } from '../models';
 
+export interface GetCloudCompliancesRequest {
+    lookupLookupFilter?: LookupLookupFilter;
+}
+
 export interface GetCloudResourcesRequest {
+    lookupLookupFilter?: LookupLookupFilter;
+}
+
+export interface GetCompliancesRequest {
     lookupLookupFilter?: LookupLookupFilter;
 }
 
@@ -72,6 +95,10 @@ export interface GetKubernetesClustersRequest {
     lookupLookupFilter?: LookupLookupFilter;
 }
 
+export interface GetMalwaresRequest {
+    lookupLookupFilter?: LookupLookupFilter;
+}
+
 export interface GetPodsRequest {
     lookupLookupFilter?: LookupLookupFilter;
 }
@@ -84,6 +111,14 @@ export interface GetRegistryAccountRequest {
     lookupLookupFilter?: LookupLookupFilter;
 }
 
+export interface GetSecretsRequest {
+    lookupLookupFilter?: LookupLookupFilter;
+}
+
+export interface GetVulnerabilitiesRequest {
+    lookupLookupFilter?: LookupLookupFilter;
+}
+
 /**
  * LookupApi - interface
  * 
@@ -91,6 +126,22 @@ export interface GetRegistryAccountRequest {
  * @interface LookupApiInterface
  */
 export interface LookupApiInterface {
+    /**
+     * Retrieve all the data associated with cloud-compliances
+     * @summary Retrieve Cloud Compliances data
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LookupApiInterface
+     */
+    getCloudCompliancesRaw(requestParameters: GetCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCloudCompliance>>>;
+
+    /**
+     * Retrieve all the data associated with cloud-compliances
+     * Retrieve Cloud Compliances data
+     */
+    getCloudCompliances(requestParameters: GetCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudCompliance>>;
+
     /**
      * Retrieve the cloud resources
      * @summary Get Cloud Resources
@@ -106,6 +157,22 @@ export interface LookupApiInterface {
      * Get Cloud Resources
      */
     getCloudResources(requestParameters: GetCloudResourcesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudResource>>;
+
+    /**
+     * Retrieve all the data associated with compliances
+     * @summary Retrieve Compliances data
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LookupApiInterface
+     */
+    getCompliancesRaw(requestParameters: GetCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCompliance>>>;
+
+    /**
+     * Retrieve all the data associated with compliances
+     * Retrieve Compliances data
+     */
+    getCompliances(requestParameters: GetCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCompliance>>;
 
     /**
      * Retrieve all the data associated with images
@@ -172,6 +239,22 @@ export interface LookupApiInterface {
     getKubernetesClusters(requestParameters: GetKubernetesClustersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelKubernetesCluster>>;
 
     /**
+     * Retrieve all the data associated with malwares
+     * @summary Retrieve Malwares data
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LookupApiInterface
+     */
+    getMalwaresRaw(requestParameters: GetMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelMalware>>>;
+
+    /**
+     * Retrieve all the data associated with malwares
+     * Retrieve Malwares data
+     */
+    getMalwares(requestParameters: GetMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelMalware>>;
+
+    /**
      * Retrieve all the data associated with pods
      * @summary Retrieve Pods data
      * @param {LookupLookupFilter} [lookupLookupFilter] 
@@ -219,12 +302,83 @@ export interface LookupApiInterface {
      */
     getRegistryAccount(requestParameters: GetRegistryAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryAccount>>;
 
+    /**
+     * Retrieve all the data associated with secrets
+     * @summary Retrieve Secrets data
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LookupApiInterface
+     */
+    getSecretsRaw(requestParameters: GetSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecret>>>;
+
+    /**
+     * Retrieve all the data associated with secrets
+     * Retrieve Secrets data
+     */
+    getSecrets(requestParameters: GetSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecret>>;
+
+    /**
+     * Retrieve all the data associated with vulnerabilities
+     * @summary Retrieve Vulnerabilities data
+     * @param {LookupLookupFilter} [lookupLookupFilter] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof LookupApiInterface
+     */
+    getVulnerabilitiesRaw(requestParameters: GetVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelVulnerability>>>;
+
+    /**
+     * Retrieve all the data associated with vulnerabilities
+     * Retrieve Vulnerabilities data
+     */
+    getVulnerabilities(requestParameters: GetVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerability>>;
+
 }
 
 /**
  * 
  */
 export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
+
+    /**
+     * Retrieve all the data associated with cloud-compliances
+     * Retrieve Cloud Compliances data
+     */
+    async getCloudCompliancesRaw(requestParameters: GetCloudCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCloudCompliance>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/cloud-compliances`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelCloudComplianceFromJSON));
+    }
+
+    /**
+     * Retrieve all the data associated with cloud-compliances
+     * Retrieve Cloud Compliances data
+     */
+    async getCloudCompliances(requestParameters: GetCloudCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudCompliance>> {
+        const response = await this.getCloudCompliancesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Retrieve the cloud resources
@@ -262,6 +416,45 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
      */
     async getCloudResources(requestParameters: GetCloudResourcesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCloudResource>> {
         const response = await this.getCloudResourcesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve all the data associated with compliances
+     * Retrieve Compliances data
+     */
+    async getCompliancesRaw(requestParameters: GetCompliancesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelCompliance>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/compliances`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelComplianceFromJSON));
+    }
+
+    /**
+     * Retrieve all the data associated with compliances
+     * Retrieve Compliances data
+     */
+    async getCompliances(requestParameters: GetCompliancesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelCompliance>> {
+        const response = await this.getCompliancesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -422,6 +615,45 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
     }
 
     /**
+     * Retrieve all the data associated with malwares
+     * Retrieve Malwares data
+     */
+    async getMalwaresRaw(requestParameters: GetMalwaresRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelMalware>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/malwares`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelMalwareFromJSON));
+    }
+
+    /**
+     * Retrieve all the data associated with malwares
+     * Retrieve Malwares data
+     */
+    async getMalwares(requestParameters: GetMalwaresRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelMalware>> {
+        const response = await this.getMalwaresRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Retrieve all the data associated with pods
      * Retrieve Pods data
      */
@@ -535,6 +767,84 @@ export class LookupApi extends runtime.BaseAPI implements LookupApiInterface {
      */
     async getRegistryAccount(requestParameters: GetRegistryAccountRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryAccount>> {
         const response = await this.getRegistryAccountRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve all the data associated with secrets
+     * Retrieve Secrets data
+     */
+    async getSecretsRaw(requestParameters: GetSecretsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelSecret>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/secrets`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelSecretFromJSON));
+    }
+
+    /**
+     * Retrieve all the data associated with secrets
+     * Retrieve Secrets data
+     */
+    async getSecrets(requestParameters: GetSecretsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelSecret>> {
+        const response = await this.getSecretsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Retrieve all the data associated with vulnerabilities
+     * Retrieve Vulnerabilities data
+     */
+    async getVulnerabilitiesRaw(requestParameters: GetVulnerabilitiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ModelVulnerability>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/lookup/vulnerabilities`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: LookupLookupFilterToJSON(requestParameters.lookupLookupFilter),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ModelVulnerabilityFromJSON));
+    }
+
+    /**
+     * Retrieve all the data associated with vulnerabilities
+     * Retrieve Vulnerabilities data
+     */
+    async getVulnerabilities(requestParameters: GetVulnerabilitiesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelVulnerability>> {
+        const response = await this.getVulnerabilitiesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -195,6 +195,12 @@ export interface IngestersCloudResource {
     instance_profile_arns?: any | null;
     /**
      * 
+     * @type {string}
+     * @memberof IngestersCloudResource
+     */
+    instance_type?: string;
+    /**
+     * 
      * @type {any}
      * @memberof IngestersCloudResource
      */
@@ -271,6 +277,18 @@ export interface IngestersCloudResource {
      * @memberof IngestersCloudResource
      */
     policy_std?: any | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof IngestersCloudResource
+     */
+    private_dns_name?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof IngestersCloudResource
+     */
+    private_ip_address?: string;
     /**
      * 
      * @type {string}
@@ -355,6 +373,12 @@ export interface IngestersCloudResource {
      * @memberof IngestersCloudResource
      */
     storage_account_name?: string;
+    /**
+     * 
+     * @type {any}
+     * @memberof IngestersCloudResource
+     */
+    tags?: any | null;
     /**
      * 
      * @type {string}
@@ -471,6 +495,7 @@ export function IngestersCloudResourceFromJSONTyped(json: any, ignoreDiscriminat
         'inline_policies': !exists(json, 'inline_policies') ? undefined : json['inline_policies'],
         'instance_id': !exists(json, 'instance_id') ? undefined : json['instance_id'],
         'instance_profile_arns': !exists(json, 'instance_profile_arns') ? undefined : json['instance_profile_arns'],
+        'instance_type': !exists(json, 'instance_type') ? undefined : json['instance_type'],
         'instances': !exists(json, 'instances') ? undefined : json['instances'],
         'ip_configuration': !exists(json, 'ip_configuration') ? undefined : json['ip_configuration'],
         'is_egress': !exists(json, 'is_egress') ? undefined : json['is_egress'],
@@ -484,6 +509,8 @@ export function IngestersCloudResourceFromJSONTyped(json: any, ignoreDiscriminat
         'path': !exists(json, 'path') ? undefined : json['path'],
         'policy': !exists(json, 'policy') ? undefined : json['policy'],
         'policy_std': !exists(json, 'policy_std') ? undefined : json['policy_std'],
+        'private_dns_name': !exists(json, 'private_dns_name') ? undefined : json['private_dns_name'],
+        'private_ip_address': !exists(json, 'private_ip_address') ? undefined : json['private_ip_address'],
         'privilege': !exists(json, 'privilege') ? undefined : json['privilege'],
         'public_access': !exists(json, 'public_access') ? undefined : json['public_access'],
         'public_ip_address': !exists(json, 'public_ip_address') ? undefined : json['public_ip_address'],
@@ -498,6 +525,7 @@ export function IngestersCloudResourceFromJSONTyped(json: any, ignoreDiscriminat
         'security_groups': !exists(json, 'security_groups') ? undefined : json['security_groups'],
         'service_name': !exists(json, 'service_name') ? undefined : json['service_name'],
         'storage_account_name': !exists(json, 'storage_account_name') ? undefined : json['storage_account_name'],
+        'tags': !exists(json, 'tags') ? undefined : json['tags'],
         'target_group_arn': !exists(json, 'target_group_arn') ? undefined : json['target_group_arn'],
         'target_health_descriptions': !exists(json, 'target_health_descriptions') ? undefined : json['target_health_descriptions'],
         'task_definition': !exists(json, 'task_definition') ? undefined : json['task_definition'],
@@ -550,6 +578,7 @@ export function IngestersCloudResourceToJSON(value?: IngestersCloudResource | nu
         'inline_policies': value.inline_policies,
         'instance_id': value.instance_id,
         'instance_profile_arns': value.instance_profile_arns,
+        'instance_type': value.instance_type,
         'instances': value.instances,
         'ip_configuration': value.ip_configuration,
         'is_egress': value.is_egress,
@@ -563,6 +592,8 @@ export function IngestersCloudResourceToJSON(value?: IngestersCloudResource | nu
         'path': value.path,
         'policy': value.policy,
         'policy_std': value.policy_std,
+        'private_dns_name': value.private_dns_name,
+        'private_ip_address': value.private_ip_address,
         'privilege': value.privilege,
         'public_access': value.public_access,
         'public_ip_address': value.public_ip_address,
@@ -577,6 +608,7 @@ export function IngestersCloudResourceToJSON(value?: IngestersCloudResource | nu
         'security_groups': value.security_groups,
         'service_name': value.service_name,
         'storage_account_name': value.storage_account_name,
+        'tags': value.tags,
         'target_group_arn': value.target_group_arn,
         'target_health_descriptions': value.target_health_descriptions,
         'task_definition': value.task_definition,

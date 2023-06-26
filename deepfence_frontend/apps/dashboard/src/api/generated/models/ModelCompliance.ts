@@ -75,6 +75,12 @@ export interface ModelCompliance {
     resource: string;
     /**
      * 
+     * @type {Array<string>}
+     * @memberof ModelCompliance
+     */
+    resources?: Array<string> | null;
+    /**
+     * 
      * @type {string}
      * @memberof ModelCompliance
      */
@@ -161,6 +167,7 @@ export function ModelComplianceFromJSONTyped(json: any, ignoreDiscriminator: boo
         'remediation_puppet': json['remediation_puppet'],
         'remediation_script': json['remediation_script'],
         'resource': json['resource'],
+        'resources': !exists(json, 'resources') ? undefined : json['resources'],
         'status': json['status'],
         'test_category': json['test_category'],
         'test_desc': json['test_desc'],
@@ -189,6 +196,7 @@ export function ModelComplianceToJSON(value?: ModelCompliance | null): any {
         'remediation_puppet': value.remediation_puppet,
         'remediation_script': value.remediation_script,
         'resource': value.resource,
+        'resources': value.resources,
         'status': value.status,
         'test_category': value.test_category,
         'test_desc': value.test_desc,
