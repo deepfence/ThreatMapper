@@ -12,7 +12,7 @@ vendor:
 	go mod vendor
 
 deepfence_bootstrapper: ./*.go ./**/*.go
-	GOOS=linux go build -ldflags="-s -w -X main.Version=${VERSION} -extldflags 'static'" -buildvcs=false
+	GOOS=linux go build -ldflags="-s -w -X main.Version=${VERSION} -extldflags=-static" -buildvcs=false
 	-upx ./deepfence_bootstrapper
 
 clean:
