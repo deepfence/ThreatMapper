@@ -25,7 +25,7 @@ export const POSTURE_STATUS_COLORS: {
   [x in PostureSeverityType]: string;
 } = {
   alarm: preset.theme.extend.colors.status.error,
-  info: preset.theme.extend.colors.status.warning,
+  info: preset.theme.extend.colors.status.info,
   ok: preset.theme.extend.colors.status.success,
   skip: preset.theme.extend.colors['df-gray'][600],
 

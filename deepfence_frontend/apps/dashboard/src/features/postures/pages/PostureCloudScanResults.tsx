@@ -583,6 +583,7 @@ const ActionDropdown = ({
               setIdsToDelete(ids);
               setShowDeleteDialog(true);
             }}
+            className="dark:text-status-error dark:hover:text-[#C45268]"
           >
             Delete
           </DropdownItem>
@@ -1052,7 +1053,7 @@ const CloudPostureTable = ({
         maxSize: 25,
         enableResizing: false,
       }),
-      columnHelper.accessor('control_id', {
+      columnHelper.accessor('node_id', {
         enableSorting: true,
         enableResizing: false,
         cell: (info) => {
@@ -1069,11 +1070,11 @@ const CloudPostureTable = ({
                   <PostureIcon />
                 </div>
               </div>
-              <div className="truncate">{info.row.original.control_id}</div>
+              <TruncatedText text={info.row.original.node_id} />
             </DFLink>
           );
         },
-        header: () => 'Control ID',
+        header: () => 'ID',
         minSize: 80,
         size: 80,
         maxSize: 90,
