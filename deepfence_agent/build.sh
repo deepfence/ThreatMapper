@@ -6,7 +6,7 @@ DF_IMG_TAG=${DF_IMG_TAG:-latest}
 building_image(){
 
     echo "Building GetCloudInstanceId"
-    docker run --rm -i -v $(pwd)/../deepfence_server_client:/go/src/github.com/deepfence/deepfence_server_client -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_builder_ce:$DF_IMG_TAG bash -x /home/deepfence/gocode-build.sh
+    docker run --rm -i -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_builder_ce:$DF_IMG_TAG bash -x /home/deepfence/gocode-build.sh
     build_result=$?
     if [ $build_result -ne 0 ]
     then
@@ -15,7 +15,7 @@ building_image(){
     fi
 
     echo "Building Fluentbit deepfence output plugin"
-    docker run --rm -i -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_builder_ce:$DF_IMG_TAG bash -x /home/deepfence/deepfence-out-plugin-build.sh
+    docker run --rm -i -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd)/../deepfence_utils:/go/src/github.com/deepfence/deepfence_utils -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_builder_ce:$DF_IMG_TAG bash -x /home/deepfence/deepfence-out-plugin-build.sh
     build_result=$?
     if [ $build_result -ne 0 ]
     then
@@ -24,7 +24,7 @@ building_image(){
     fi
 
     echo "Building Agent Executable"
-    docker run --rm -i -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_builder_ce:$DF_IMG_TAG bash -x /home/deepfence/agent-build.sh
+    docker run --rm -i -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd)/../deepfence_utils:/go/src/github.com/deepfence/deepfence_utils -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_builder_ce:$DF_IMG_TAG bash -x /home/deepfence/agent-build.sh
     build_result=$?
     if [ $build_result -ne 0 ]
     then

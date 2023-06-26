@@ -4,7 +4,7 @@ go 1.20
 
 replace github.com/deepfence/golang_deepfence_sdk/client => ../../../../../golang_deepfence_sdk/client
 
-replace github.com/deepfence/golang_deepfence_sdk/utils => ../../../../../golang_deepfence_sdk/utils/
+replace github.com/deepfence/golang_deepfence_sdk/utils => ../../../../../golang_deepfence_sdk/utils
 
 replace github.com/deepfence/ThreatMapper/deepfence_utils => ../../../../../deepfence_utils
 
