@@ -1,7 +1,10 @@
 FLUENT_BIT?=/opt/fluent-bit/bin/fluent-bit
 
-all:
-	go mod tidy -v && go build -buildmode=c-shared -o out_deepfence.so
+all: out_deepfence.so
+
+out_deepfence.so: ./*.go
+	go mod tidy -v
+	go build -buildmode=c-shared -o out_deepfence.so
 
 clean:
 	rm -rf ./*.so ./*.h
