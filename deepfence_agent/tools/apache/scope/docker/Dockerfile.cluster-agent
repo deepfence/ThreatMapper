@@ -6,7 +6,7 @@ ENV DOCKERVERSION=24.0.2 MGMT_CONSOLE_PORT=443
 
 WORKDIR /home/deepfence
 RUN apt-get update
-RUN apt-get install -y --no-install-recommends bash conntrack iproute2 util-linux curl grep tar git wget supervisor gettext htop vim ca-certificates
+RUN apt-get install -y --no-install-recommends libpcap0.8 bash conntrack iproute2 util-linux curl grep tar git wget supervisor gettext htop vim ca-certificates
 RUN apt-get -y --allow-unauthenticated install podman
 RUN curl -fsSLO https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKERVERSION}.tgz \
     && tar xzvf docker-${DOCKERVERSION}.tgz --strip 1 -C /usr/local/bin docker/docker \
@@ -40,8 +40,7 @@ COPY fluentbit/out_deepfence/out_deepfence.so /opt/td-agent-bit/bin/
 WORKDIR /opt/steampipe
 COPY scope/probe/kubernetes/kubeconfig /home/deepfence/.kube/config
 COPY scope/probe/kubernetes/token.sh /home/deepfence/token.sh
-RUN chown -R deepfence /opt/ /home/deepfence /var/log /var/run/ /etc/td-agent-bit/ \
-    && chmod +x /home/deepfence/*.sh
+RUN chown -R deepfence /opt/ /home/deepfence /var/log /var/run/ /etc/td-agent-bit/
 
 USER deepfence
 COPY deepfence/supervisord_cluster_agent.conf /home/deepfence/supervisord-temp.conf
@@ -52,5 +51,11 @@ RUN steampipe plugin install steampipe \
     && git clone https://github.com/turbot/steampipe-mod-kubernetes-compliance.git
 
 COPY scope/docker/deepfence_exe /home/deepfence/
+
+USER root
+
+RUN chmod +x /home/deepfence/*.sh /home/deepfence/deepfence_exe
+
+USER deepfence
 
 ENTRYPOINT ["/home/deepfence/entrypoint.sh"]
