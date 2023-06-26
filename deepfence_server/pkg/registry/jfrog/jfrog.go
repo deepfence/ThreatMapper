@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
-	"github.com/deepfence/ThreatMapper/deepfence_utils/utils""
 	"github.com/go-playground/validator/v10"
 )
 
