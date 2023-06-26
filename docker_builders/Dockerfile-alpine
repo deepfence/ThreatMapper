@@ -55,3 +55,5 @@ ENV PKG_CONFIG_PATH=/usr/local/include/hs/:$(PKG_CONFIG_PATH) \
     PKG_CONFIG_PATH=/usr/local/yara/lib/pkgconfig:$(PKG_CONFIG_PATH) \
     GOWORK=off
 
+RUN git clone https://github.com/the-tcpdump-group/libpcap
+RUN cd libpcap && ./autogen.sh && ./configure && make && mv ./libpcap.a /lib

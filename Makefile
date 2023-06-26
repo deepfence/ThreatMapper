@@ -33,8 +33,8 @@ alpine_builder:
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-alpine .
 
 .PHONY: debian_builder
-debian_builder:
-	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_agent_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-debian .
+debian_builder: alpine_builder
+	docker build --build-arg DF_IMG_TAG=${DF_IMG_TAG} --build-arg IMAGE_REPOSITORY=${IMAGE_REPOSITORY} --tag=$(IMAGE_REPOSITORY)/deepfence_agent_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-debian .
 
 .PHONY: bootstrap-agent-plugins
 bootstrap-agent-plugins:
