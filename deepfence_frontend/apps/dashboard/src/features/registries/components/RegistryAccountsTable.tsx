@@ -13,8 +13,13 @@ import {
 import { ModelRegistryListResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
-import { ActionEnumType } from '@/features/registries/pages/RegistryAccounts';
+import { TruncatedText } from '@/components/TruncatedText';
+import {
+  ActionEnumType,
+  RegistryScanType,
+} from '@/features/registries/pages/RegistryAccounts';
 import { queries } from '@/queries';
+import { ScanTypeEnum } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
 
 const useListRegistries = () => {
@@ -35,7 +40,7 @@ const ActionDropdown = ({
   trigger: React.ReactNode;
   setIdsToDelete: React.Dispatch<React.SetStateAction<string>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  onTableAction: (id: string, actionType: string) => void;
+  onTableAction: (id: string, scanType: RegistryScanType, actionType: string) => void;
 }) => {
   return (
     <Dropdown
@@ -43,15 +48,27 @@ const ActionDropdown = ({
       align={'start'}
       content={
         <>
-          <DropdownItem onClick={() => onTableAction(id, ActionEnumType.START_SCAN)}>
+          <DropdownItem
+            onClick={() =>
+              onTableAction(id, ScanTypeEnum.VulnerabilityScan, ActionEnumType.START_SCAN)
+            }
+          >
             Start Vulnerability Scan
           </DropdownItem>
           <DropdownSeparator />
-          <DropdownItem onClick={() => onTableAction(id, ActionEnumType.START_SCAN)}>
+          <DropdownItem
+            onClick={() =>
+              onTableAction(id, ScanTypeEnum.SecretScan, ActionEnumType.START_SCAN)
+            }
+          >
             Start Secret Scan
           </DropdownItem>
           <DropdownSeparator />
-          <DropdownItem onClick={() => onTableAction(id, ActionEnumType.START_SCAN)}>
+          <DropdownItem
+            onClick={() =>
+              onTableAction(id, ScanTypeEnum.MalwareScan, ActionEnumType.START_SCAN)
+            }
+          >
             Start Malware Scan
           </DropdownItem>
           <DropdownSeparator />
@@ -76,7 +93,7 @@ export const RegistryAccountsTable = ({
   setIdsToDelete,
   setShowDeleteDialog,
 }: {
-  onTableAction: (id: string, actionType: string) => void;
+  onTableAction: (id: string, scanType: RegistryScanType, actionType: string) => void;
   setIdsToDelete: React.Dispatch<React.SetStateAction<string>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
@@ -152,7 +169,7 @@ export const RegistryAccountsTable = ({
       columnHelper.accessor('non_secret', {
         enableSorting: false,
         header: () => 'Credentials',
-        cell: (info) => <div className="truncate">{JSON.stringify(info.getValue())}</div>,
+        cell: (info) => <TruncatedText text={JSON.stringify(info.getValue())} />,
         minSize: 120,
         size: 130,
         maxSize: 140,

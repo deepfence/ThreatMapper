@@ -26,7 +26,10 @@ import {
 } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
-import { TaskIcon } from '@/components/icons/common/Task';
+import { SuccessIcon } from '@/components/icons/common/ScanStatuses';
+import { ImageIcon } from '@/components/icons/image';
+import { InProgressIcon } from '@/components/icons/registries/InProgress';
+import { TagsIcon } from '@/components/icons/registries/Tags';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { RegistryAccountsTable } from '@/features/registries/components/RegistryAccountsTable';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
@@ -55,6 +58,11 @@ type ActionReturnType = {
   message?: string;
   success: boolean;
 };
+
+export type RegistryScanType =
+  | typeof ScanTypeEnum.VulnerabilityScan
+  | typeof ScanTypeEnum.SecretScan
+  | typeof ScanTypeEnum.MalwareScan;
 
 function getScanOptions(
   scanType: ScanTypeEnum,
@@ -98,9 +106,8 @@ function getScanOptions(
 
 const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType> => {
   const formData = await request.formData();
-  const id = formData.get('_nodeId')?.toString() ?? '';
+  const id = formData.get('nodeIds')?.toString() ?? '';
   const deleteRegistry = apiWrapper({ fn: getRegistriesApiClient().deleteRegistry });
-
   const r = await deleteRegistry({
     registryId: id,
   });
@@ -137,13 +144,16 @@ const useCounts = () => {
   });
 };
 const DeleteConfirmationModal = ({
+  id,
   showDialog,
   setShowDialog,
   fetcher,
+  onTableAction,
 }: {
   showDialog: boolean;
   id: string;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onTableAction: (id: string, scanType: RegistryScanType, actionType: string) => void;
   fetcher: FetcherWithComponents<ActionData>;
 }) => {
   return (
@@ -177,6 +187,7 @@ const DeleteConfirmationModal = ({
               color="error"
               onClick={(e) => {
                 e.preventDefault();
+                onTableAction(id, '' as RegistryScanType, ActionEnumType.DELETE);
               }}
             >
               Yes, I&apos;m sure
@@ -187,7 +198,7 @@ const DeleteConfirmationModal = ({
     >
       {!fetcher.data?.success ? (
         <div className="grid">
-          <span>The selected posture will be deleted.</span>
+          <span>The selected registry will be deleted.</span>
           <br />
           <span>Are you sure you want to delete?</span>
           {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
@@ -242,57 +253,72 @@ const CountWidget = () => {
     tags = 0,
     scans_in_progress = 0,
     registries = 0,
+    scans_complete = 0,
   } = data.summary as ModelSummary;
 
   return (
     <div className="grid grid-cols-12 px-6 items-center">
-      <div className="col-span-2 h-[140px] w-[140px]">
-        {/* <PostureScanResultsPieChart data={statusCounts} color={color} /> */}
-      </div>
-      <div className="col-span-2 dark:text-text-text-and-icon">
-        <span className="text-p1">Total compliances</span>
-        <div className="flex flex-1 max-w-[160px] gap-1 items-center">
-          <TaskIcon />
-          {/* <span className="text-h1 dark:text-text-input">{abbreviateNumber(total)}</span> */}
+      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8">
+          <RegistryIcon />
+        </div>
+
+        <div className="flex flex-col items-start">
+          <span className="text-h1 dark:text-text-input">
+            {abbreviateNumber(registries)}
+          </span>
+          <span className="text-p1">Total registries</span>
         </div>
       </div>
       <div className="w-px min-h-[120px] dark:bg-bg-grid-border" />
-      <div className="col-span-6">
-        <div className="gap-24 flex justify-center">
-          <div className="col-span-2 dark:text-text-text-and-icon">
-            <span className="text-p1">Total registries</span>
-            <div className="flex flex-1 max-w-[160px] gap-1 items-center">
-              <div className="h-4 w-4 rounded-full"></div>
-              <span className="text-h1 dark:text-text-input-value">
-                {abbreviateNumber(registries)}
-              </span>
+      <div className="col-span-7">
+        <div className="gap-16 flex justify-center">
+          <div className="col-span-4 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+            <div className="w-8 h-8">
+              <ImageIcon />
             </div>
-          </div>
-          <div className="col-span-2 dark:text-text-text-and-icon">
-            <span className="text-p1">Total images</span>
-            <div className="flex flex-1 max-w-[160px] gap-1 items-center">
-              <div className="h-4 w-4 rounded-full"></div>
-              <span className="text-h1 dark:text-text-input-value">
+
+            <div className="flex flex-col items-start">
+              <span className="text-h1 dark:text-text-input">
                 {abbreviateNumber(images)}
               </span>
+              <span className="text-p1">Total images</span>
             </div>
           </div>
-          <div className="col-span-2 dark:text-text-text-and-icon">
-            <span className="text-p1">Total tags</span>
-            <div className="flex flex-1 max-w-[160px] gap-1 items-center">
-              <div className="h-4 w-4 rounded-full"></div>
-              <span className="text-h1 dark:text-text-input-value">
+          <div className="col-span-4 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+            <div className="w-8 h-8">
+              <TagsIcon />
+            </div>
+
+            <div className="flex flex-col items-start">
+              <span className="text-h1 dark:text-text-input">
                 {abbreviateNumber(tags)}
               </span>
+              <span className="text-p1">Total tags</span>
             </div>
           </div>
-          <div className="col-span-2 dark:text-text-text-and-icon">
-            <span className="text-p1">In progress</span>
-            <div className="flex flex-1 max-w-[160px] gap-1 items-center">
-              <div className="h-4 w-4 rounded-full"></div>
-              <span className="text-h1 dark:text-text-input-value">
+          <div className="col-span-4 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+            <div className="w-8 h-8">
+              <SuccessIcon />
+            </div>
+
+            <div className="flex flex-col items-start">
+              <span className="text-h1 dark:text-text-input">
+                {abbreviateNumber(scans_complete)}
+              </span>
+              <span className="text-p1">Completed</span>
+            </div>
+          </div>
+          <div className="col-span-4 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+            <div className="w-8 h-8">
+              <InProgressIcon />
+            </div>
+
+            <div className="flex flex-col items-start">
+              <span className="text-h1 dark:text-text-input">
                 {abbreviateNumber(scans_in_progress)}
               </span>
+              <span className="text-p1">In Progress</span>
             </div>
           </div>
         </div>
@@ -303,7 +329,7 @@ const CountWidget = () => {
 const Widgets = () => {
   return (
     <Card className="min-h-[140px] px-4 py-1.5">
-      <div className="flex-1 pl-4">
+      <div className="flex-1">
         <Suspense
           fallback={
             <div className="flex items-center justify-center min-h-[100px]">
@@ -329,7 +355,11 @@ const RegistryAccountsResults = () => {
   const fetcher = useFetcher<ActionData>();
 
   const onTableAction = useCallback(
-    (id: string, actionType: string) => {
+    (id: string, scanType: RegistryScanType, actionType: string) => {
+      if (actionType === ActionEnumType.START_SCAN) {
+        setSelectedScanType(scanType);
+        return;
+      }
       const formData = new FormData();
       formData.append('actionType', actionType);
       formData.append('nodeIds', id);
@@ -363,6 +393,7 @@ const RegistryAccountsResults = () => {
           id={idsToDelete}
           setShowDialog={setShowDeleteDialog}
           fetcher={fetcher}
+          onTableAction={onTableAction}
         />
       )}
     </>
@@ -373,7 +404,7 @@ const RegistryAccounts = () => {
   return (
     <>
       <Header />
-      <div className="px-4 pb-4 pt-1.5">
+      <div className="p-4">
         <Widgets />
       </div>
 

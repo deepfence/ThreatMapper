@@ -65,7 +65,7 @@ export const ConfigureScanModal = ({
   ) {
     title = `Configure posture scan`;
   }
-
+  debugger;
   return (
     <Modal open={open} title={title} onOpenChange={onOpenChange}>
       <div className="p-6">
