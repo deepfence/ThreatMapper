@@ -94,7 +94,8 @@ launch_deepfenced() {
         envsubst '${SCOPE_HOSTNAME}:${MGMT_CONSOLE_URL}:${MGMT_CONSOLE_PORT}' </home/deepfence/supervisord-temp.conf >/home/deepfence/supervisord.conf
         unlink /var/run/supervisor.sock 2>/dev/null
         /usr/bin/supervisord -c /home/deepfence/supervisord.conf
-        sleep 10
+        echo "Starting agent"
+        sleep 60
         tail -f /var/log/fenced/discovery.logfile
     fi
 }
