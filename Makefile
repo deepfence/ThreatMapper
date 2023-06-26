@@ -194,3 +194,12 @@ publish-malwarescanner:
 .PHONY: publish-graphdb
 publish-graphdb:
 	docker push $(IMAGE_REPOSITORY)/deepfence_neo4j_ce:$(DF_IMG_TAG)
+
+
+.PHONY: clean
+clean:
+	(cd $(DEEPFENCE_AGENT_DIR)/plugins && make clean)
+	(cd $(DEEPFENCE_AGENT_DIR) && make clean)
+	(cd $(ROOT_MAKEFILE_DIR)/deepfence_server && make clean)
+	(cd $(ROOT_MAKEFILE_DIR)/deepfence_worker && make clean)
+	(cd $(DEEPFENCED) && make clean && rm $(DEEPFENCE_AGENT_DIR)/deepfenced)
