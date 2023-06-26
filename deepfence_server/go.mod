@@ -23,7 +23,7 @@ require (
 	github.com/ThreeDotsLabs/watermill-kafka/v2 v2.3.0
 	github.com/aws/aws-sdk-go v1.44.285
 	github.com/casbin/casbin/v2 v2.70.0
-	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
+	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-20230623172029-60c652233ab8
 	github.com/deepfence/ThreatMapper/deepfence_worker v0.0.0-00010101000000-000000000000
 	github.com/docker/docker v24.0.2+incompatible
 	github.com/go-chi/chi/v5 v5.0.8
@@ -67,7 +67,6 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
-	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-20230623172029-60c652233ab8 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect

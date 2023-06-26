@@ -176,31 +176,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	log.Info().Msgf("scan-id=%s vulnerabilities=%d severities=%v", params.ScanId, len(report), details.Severity)
 
 	// write reports and status to kafka ingester will process from there
-
-	for idx, _ := range report {
-		c := &report[idx]
-		c.ParsedAttackVector = ""
-		CveAttackVector := c.CveAttackVector
-		CveAttackVector = strings.ToLower(CveAttackVector)
-
-		if attackVectorRegex.MatchString(CveAttackVector) ||
-			CveAttackVector == "network" || CveAttackVector == "n" {
-			c.ParsedAttackVector = "network"
-		} else {
-			c.ParsedAttackVector = "local"
-		}
-
-		score := 0
-		if c.ParsedAttackVector == "network" {
-			score = 2
-		} else if c.CveSeverity == "critical" {
-			score = 1
-		}
-
-		c.ExploitabilityScore = score
-		c.InitExploitabilityScore = score
-		c.HasLiveConnection = false
-
+	for _, c := range report {
 		cb, err := json.Marshal(c)
 		if err != nil {
 			log.Error().Msg(err.Error())

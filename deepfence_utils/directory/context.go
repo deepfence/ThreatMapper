@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 )
 
