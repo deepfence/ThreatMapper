@@ -9,7 +9,6 @@ import (
 	"os"
 	"path"
 	"regexp"
-	"strings"
 	"sync"
 	"time"
 

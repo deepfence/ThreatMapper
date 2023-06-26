@@ -7,7 +7,7 @@ ENV DEEPFENCE_HTTP_LISTEN_ENDPOINT=8080 \
 
 ADD deepfence_server/auth /auth
 ADD deepfence_server/cloud_controls /cloud_controls
-ADD golang_deepfence_sdk/utils/postgresql /usr/local/postgresql-migrate
+ADD deepfence_utils/postgresql /usr/local/postgresql-migrate
 COPY deepfence_server/entrypoint.sh /entrypoint.sh
 
 RUN apk add --no-cache --update bash curl libpcap tar kafkacat postgresql15-client
