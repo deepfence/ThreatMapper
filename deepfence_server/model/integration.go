@@ -4,11 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"reflect"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
+
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/constants"
-	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 )
 
 type IntegrationIDPathReq struct {

@@ -15,6 +15,8 @@ replace github.com/deepfence/golang_deepfence_sdk/client => ../../../../golang_d
 
 replace github.com/deepfence/golang_deepfence_sdk/utils => ../../../../golang_deepfence_sdk/utils
 
+replace github.com/deepfence/ThreatMapper/deepfence_utils => ../../../../deepfence_utils
+
 replace github.com/deepfence/agent-plugins-grpc => ../../../plugins/agent-plugins-grpc/
 
 require (
@@ -25,6 +27,7 @@ require (
 	github.com/bytedance/sonic v1.9.1
 	github.com/c9s/goprocinfo v0.0.0-20210130143923-c95fcf8c64a8
 	github.com/coocood/freecache v1.2.3
+	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/agent-plugins-grpc v1.1.0
 	github.com/deepfence/df-utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/df-utils/cloud_metadata v0.0.0-00010101000000-000000000000

@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"errors"
 	"os"
 	"os/signal"
@@ -13,11 +14,9 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/router"
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/server"
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/supervisor"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 
 	dfUtils "github.com/deepfence/df-utils"
-
-	_ "embed"
 )
 
 var authCheckPeriod = time.Second * 10

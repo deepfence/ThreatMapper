@@ -3,8 +3,8 @@ package controls
 import (
 	"fmt"
 
-	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	k8sscanner "github.com/deepfence/kubernetes-scanner/scanner/compliance"
 	k8sscannerutil "github.com/deepfence/kubernetes-scanner/util"
 )

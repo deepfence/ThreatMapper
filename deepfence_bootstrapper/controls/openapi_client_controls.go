@@ -12,10 +12,10 @@ import (
 	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/router"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/golang_deepfence_sdk/client"
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
 	"github.com/deepfence/golang_deepfence_sdk/utils/http"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
 const version = "v0.0.1"

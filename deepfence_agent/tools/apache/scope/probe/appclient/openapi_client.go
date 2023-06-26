@@ -11,8 +11,8 @@ import (
 	"sync/atomic"
 
 	"github.com/bytedance/sonic"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	"github.com/deepfence/golang_deepfence_sdk/client"
-	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
 	openapi "github.com/deepfence/golang_deepfence_sdk/utils/http"
 	"github.com/weaveworks/scope/probe/common"
 	"github.com/weaveworks/scope/report"

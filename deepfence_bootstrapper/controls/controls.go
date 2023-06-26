@@ -10,10 +10,10 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/router"
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/supervisor"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	linuxScanner "github.com/deepfence/compliance/scanner"
 	linuxScannerUtil "github.com/deepfence/compliance/util"
-	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
 func SetClusterAgentControls(k8sClusterName string) {

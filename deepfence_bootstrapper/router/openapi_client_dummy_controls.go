@@ -11,8 +11,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 	"github.com/weaveworks/scope/probe/controls"
 	"github.com/weaveworks/scope/probe/host"
 )

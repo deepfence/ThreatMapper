@@ -4,7 +4,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-playground/validator/v10"
 )
 

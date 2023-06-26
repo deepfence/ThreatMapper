@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
-	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
 	"github.com/go-playground/validator/v10"
 )
 

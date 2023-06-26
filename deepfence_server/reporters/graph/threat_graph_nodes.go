@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
 )

@@ -6,11 +6,11 @@ import (
 	"sync"
 
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
-	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	sdkUtils "github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
 var controls map[ctl.ActionID]func(req []byte) error

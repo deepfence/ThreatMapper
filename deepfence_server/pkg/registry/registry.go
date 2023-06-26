@@ -14,8 +14,8 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/harbor"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/jfrog"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/registry/quay"
-	"github.com/deepfence/golang_deepfence_sdk/utils/encryption"
-	postgresql_db "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/encryption"
+	postgresql_db "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/go-playground/validator/v10"
 	"github.com/pkg/errors"
 )

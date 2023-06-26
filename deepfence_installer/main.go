@@ -10,10 +10,10 @@ import (
 	"syscall"
 	"time"
 
+	log "github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/deepfence/deepfence_installer/agent"
 	"github.com/deepfence/deepfence_installer/installer"
 	oahttp "github.com/deepfence/golang_deepfence_sdk/utils/http"
-	log "github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
 type SemVer struct {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	reporters_lookup "github.com/deepfence/ThreatMapper/deepfence_server/reporters/lookup"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 

@@ -10,11 +10,11 @@ import (
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/graph"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/lookup"
 	. "github.com/deepfence/ThreatMapper/deepfence_server/reporters/search"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	postgresqldb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/report"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	ingester "github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
-	"github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	postgresqldb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
-	"github.com/deepfence/golang_deepfence_sdk/utils/report"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
 func (d *OpenApiDocs) AddUserAuthOperations() {

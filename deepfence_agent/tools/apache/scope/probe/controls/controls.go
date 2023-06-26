@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sync"
 
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	openapi "github.com/deepfence/golang_deepfence_sdk/client"
-	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
 )
 
 var controls map[ctl.ActionID]func(req []byte) error

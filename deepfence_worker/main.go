@@ -6,10 +6,10 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill-kafka/v2/pkg/kafka"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/controls"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/cronscheduler"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/rs/zerolog"
 	"go.opentelemetry.io/otel"

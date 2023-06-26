@@ -6,7 +6,10 @@ replace github.com/deepfence/golang_deepfence_sdk/client => ../../../../../golan
 
 replace github.com/deepfence/golang_deepfence_sdk/utils => ../../../../../golang_deepfence_sdk/utils/
 
+replace github.com/deepfence/ThreatMapper/deepfence_utils => ../../../../../deepfence_utils
+
 require (
+	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/client v0.0.0-00010101000000-000000000000
 	github.com/deepfence/golang_deepfence_sdk/utils v0.0.0-00010101000000-000000000000
 	github.com/fluent/fluent-bit-go v0.0.0-20230515084116-b93d969da46d

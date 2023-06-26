@@ -6,8 +6,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/http"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	deepfence_server_client "github.com/deepfence/golang_deepfence_sdk/client"
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
 )
 
 var agentCmd = &cobra.Command{

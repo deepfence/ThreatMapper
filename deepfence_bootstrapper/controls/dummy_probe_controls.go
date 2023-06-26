@@ -12,7 +12,7 @@ import (
 	"errors"
 	"os/exec"
 
-	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
 	scopeHostname "github.com/weaveworks/scope/common/hostname"
 
 	dsc "github.com/deepfence/golang_deepfence_sdk/client"

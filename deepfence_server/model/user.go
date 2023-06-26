@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
-	postgresqlDb "github.com/deepfence/golang_deepfence_sdk/utils/postgresql/postgresql-db"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"

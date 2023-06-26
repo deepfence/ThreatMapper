@@ -14,19 +14,18 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 	"unsafe"
 
 	"C"
-
 	"github.com/fluent/fluent-bit-go/output"
 
+	deepfenceUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	dsc "github.com/deepfence/golang_deepfence_sdk/client"
 	dschttp "github.com/deepfence/golang_deepfence_sdk/utils/http"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	rhttp "github.com/hashicorp/go-retryablehttp"
 )
-import "strings"
 
 var (
 	cfg      map[string]Config
@@ -168,7 +167,7 @@ func RefreshToken(url string, apiToken string) (string, string, error) {
 }
 
 func validateTokens(cfg Config) (Config, bool, error) {
-	if !utils.IsJWTExpired(cfg.AccessToken) {
+	if !deepfenceUtils.IsJWTExpired(cfg.AccessToken) {
 		return cfg, false, nil
 	} else {
 		var (

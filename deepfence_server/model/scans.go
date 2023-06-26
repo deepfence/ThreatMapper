@@ -2,7 +2,7 @@ package model
 
 import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 )
 
 type VulnerabilityScanConfigLanguage struct {

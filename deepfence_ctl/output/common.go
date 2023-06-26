@@ -3,7 +3,7 @@ package output
 import (
 	"os"
 
-	"github.com/deepfence/golang_deepfence_sdk/utils/log"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
 
 var format string

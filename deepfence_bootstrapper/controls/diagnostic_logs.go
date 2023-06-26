@@ -8,9 +8,9 @@ import (
 	"os"
 
 	"github.com/deepfence/ThreatMapper/deepfence_bootstrapper/router"
+	ctl "github.com/deepfence/ThreatMapper/deepfence_utils/controls"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
 	"github.com/deepfence/golang_deepfence_sdk/client"
-	ctl "github.com/deepfence/golang_deepfence_sdk/utils/controls"
-	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 )
 
 func SendAgentDiagnosticLogs(req ctl.SendAgentDiagnosticLogsRequest, pathsToZip []string, excludePathPrefixes []string) error {
