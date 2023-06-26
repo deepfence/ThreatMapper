@@ -22,7 +22,7 @@ import { DFLink } from '@/components/DFLink';
 import { FilterBadge } from '@/components/filters/FilterBadge';
 import { FilterIcon } from '@/components/icons/common/Filter';
 import { TimesIcon } from '@/components/icons/common/Times';
-import { CveCVSSScore, SeverityBadge } from '@/components/SeverityBadge';
+import { SeverityBadge } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
