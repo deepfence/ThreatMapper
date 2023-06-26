@@ -5,6 +5,7 @@ import { Suspense, useCallback, useState } from 'react';
 import {
   ActionFunctionArgs,
   FetcherWithComponents,
+  generatePath,
   useFetcher,
   useParams,
 } from 'react-router-dom';
@@ -14,7 +15,10 @@ import {
   Button,
   Card,
   CircleSpinner,
+  Dropdown,
+  DropdownItem,
   Modal,
+  RowSelectionState,
   TableSkeleton,
 } from 'ui-components';
 
@@ -25,10 +29,12 @@ import {
   ConfigureScanModalProps,
 } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
+import { CaretDown } from '@/components/icons/common/CaretDown';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
-import { SuccessIcon } from '@/components/icons/common/ScanStatuses';
+import { PlusIcon } from '@/components/icons/common/Plus';
 import { ImageIcon } from '@/components/icons/image';
 import { InProgressIcon } from '@/components/icons/registries/InProgress';
+import { StartScanIcon } from '@/components/icons/registries/StartScan';
 import { TagsIcon } from '@/components/icons/registries/Tags';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { RegistryAccountsTable } from '@/features/registries/components/RegistryAccountsTable';
@@ -43,6 +49,7 @@ import {
 } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 import { abbreviateNumber } from '@/utils/number';
+import { usePageNavigation } from '@/utils/usePageNavigation';
 
 export enum ActionEnumType {
   DELETE = 'delete',
@@ -66,14 +73,14 @@ export type RegistryScanType =
 
 function getScanOptions(
   scanType: ScanTypeEnum,
-  id: string,
+  ids: string[],
 ): ConfigureScanModalProps['scanOptions'] {
   if (scanType === ScanTypeEnum.VulnerabilityScan) {
     return {
       showAdvancedOptions: true,
       scanType,
       data: {
-        nodeIds: [id],
+        nodeIds: ids,
         nodeType: VulnerabilityScanNodeTypeEnum.registry,
       },
     };
@@ -84,7 +91,7 @@ function getScanOptions(
       showAdvancedOptions: true,
       scanType,
       data: {
-        nodeIds: [id],
+        nodeIds: ids,
         nodeType: SecretScanNodeTypeEnum.registry,
       },
     };
@@ -95,7 +102,7 @@ function getScanOptions(
       showAdvancedOptions: true,
       scanType,
       data: {
-        nodeIds: [id],
+        nodeIds: ids,
         nodeType: MalwareScanNodeTypeEnum.registry,
       },
     };
@@ -153,7 +160,7 @@ const DeleteConfirmationModal = ({
   showDialog: boolean;
   id: string;
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  onTableAction: (id: string, scanType: RegistryScanType, actionType: string) => void;
+  onTableAction: (id: string[], scanType: RegistryScanType, actionType: string) => void;
   fetcher: FetcherWithComponents<ActionData>;
 }) => {
   return (
@@ -187,7 +194,7 @@ const DeleteConfirmationModal = ({
               color="error"
               onClick={(e) => {
                 e.preventDefault();
-                onTableAction(id, '' as RegistryScanType, ActionEnumType.DELETE);
+                onTableAction([id], '' as RegistryScanType, ActionEnumType.DELETE);
               }}
             >
               Yes, I&apos;m sure
@@ -212,6 +219,7 @@ const DeleteConfirmationModal = ({
 };
 
 const Header = () => {
+  const { navigate } = usePageNavigation();
   const params = useParams() as {
     account: string;
   };
@@ -235,6 +243,23 @@ const Header = () => {
       <div className="ml-2 flex items-center">
         {isFetching ? <CircleSpinner size="sm" /> : null}
       </div>
+
+      <Button
+        className="ml-auto"
+        color="default"
+        variant="flat"
+        size="sm"
+        startIcon={<PlusIcon />}
+        onClick={() => {
+          navigate(
+            generatePath('/registries/add/:account', {
+              account: encodeURIComponent(params.account),
+            }),
+          );
+        }}
+      >
+        ADD NEW REGISTRY
+      </Button>
     </div>
   );
 };
@@ -253,11 +278,10 @@ const CountWidget = () => {
     tags = 0,
     scans_in_progress = 0,
     registries = 0,
-    scans_complete = 0,
   } = data.summary as ModelSummary;
 
   return (
-    <div className="grid grid-cols-12 px-6 items-center">
+    <div className="grid grid-cols-12 px-6 items-center w-full">
       <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
         <div className="w-8 h-8">
           <RegistryIcon />
@@ -270,57 +294,36 @@ const CountWidget = () => {
           <span className="text-p1">Total registries</span>
         </div>
       </div>
-      <div className="w-px min-h-[120px] dark:bg-bg-grid-border" />
-      <div className="col-span-7">
-        <div className="gap-16 flex justify-center">
-          <div className="col-span-4 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
-            <div className="w-8 h-8">
-              <ImageIcon />
-            </div>
+      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8">
+          <ImageIcon />
+        </div>
 
-            <div className="flex flex-col items-start">
-              <span className="text-h1 dark:text-text-input">
-                {abbreviateNumber(images)}
-              </span>
-              <span className="text-p1">Total images</span>
-            </div>
-          </div>
-          <div className="col-span-4 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
-            <div className="w-8 h-8">
-              <TagsIcon />
-            </div>
+        <div className="flex flex-col items-start">
+          <span className="text-h1 dark:text-text-input">{abbreviateNumber(images)}</span>
+          <span className="text-p1">Total images</span>
+        </div>
+      </div>
+      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8">
+          <TagsIcon />
+        </div>
 
-            <div className="flex flex-col items-start">
-              <span className="text-h1 dark:text-text-input">
-                {abbreviateNumber(tags)}
-              </span>
-              <span className="text-p1">Total tags</span>
-            </div>
-          </div>
-          <div className="col-span-4 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
-            <div className="w-8 h-8">
-              <SuccessIcon />
-            </div>
+        <div className="flex flex-col items-start">
+          <span className="text-h1 dark:text-text-input">{abbreviateNumber(tags)}</span>
+          <span className="text-p1">Total tags</span>
+        </div>
+      </div>
+      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8">
+          <InProgressIcon />
+        </div>
 
-            <div className="flex flex-col items-start">
-              <span className="text-h1 dark:text-text-input">
-                {abbreviateNumber(scans_complete)}
-              </span>
-              <span className="text-p1">Completed</span>
-            </div>
-          </div>
-          <div className="col-span-4 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
-            <div className="w-8 h-8">
-              <InProgressIcon />
-            </div>
-
-            <div className="flex flex-col items-start">
-              <span className="text-h1 dark:text-text-input">
-                {abbreviateNumber(scans_in_progress)}
-              </span>
-              <span className="text-p1">In Progress</span>
-            </div>
-          </div>
+        <div className="flex flex-col items-start">
+          <span className="text-h1 dark:text-text-input">
+            {abbreviateNumber(scans_in_progress)}
+          </span>
+          <span className="text-p1">In Progress</span>
         </div>
       </div>
     </div>
@@ -328,23 +331,78 @@ const CountWidget = () => {
 };
 const Widgets = () => {
   return (
-    <Card className="min-h-[140px] px-4 py-1.5">
-      <div className="flex-1">
-        <Suspense
-          fallback={
-            <div className="flex items-center justify-center min-h-[100px]">
-              <CircleSpinner size="md" />
-            </div>
-          }
-        >
-          <CountWidget />
-        </Suspense>
-      </div>
+    <Card className="min-h-[140px] px-4 py-1.5 flex">
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center min-h-[100px]">
+            <CircleSpinner size="md" />
+          </div>
+        }
+      >
+        <CountWidget />
+      </Suspense>
     </Card>
   );
 };
-
+const BulkActions = ({
+  ids,
+  onTableAction,
+}: {
+  ids: string[];
+  onTableAction: (ids: string[], scanType: RegistryScanType, actionType: string) => void;
+}) => {
+  return (
+    <>
+      <Dropdown
+        triggerAsChild
+        align={'start'}
+        disabled={!ids.length}
+        content={
+          <>
+            <DropdownItem
+              onClick={() =>
+                onTableAction(
+                  ids,
+                  ScanTypeEnum.VulnerabilityScan,
+                  ActionEnumType.START_SCAN,
+                )
+              }
+            >
+              Start Vulnerability Scan
+            </DropdownItem>
+            <DropdownItem
+              onClick={() =>
+                onTableAction(ids, ScanTypeEnum.SecretScan, ActionEnumType.START_SCAN)
+              }
+            >
+              Start Secret Scan
+            </DropdownItem>
+            <DropdownItem
+              onClick={() =>
+                onTableAction(ids, ScanTypeEnum.MalwareScan, ActionEnumType.START_SCAN)
+              }
+            >
+              Start Malware Scan
+            </DropdownItem>
+          </>
+        }
+      >
+        <Button
+          color="default"
+          variant="flat"
+          size="sm"
+          startIcon={<StartScanIcon />}
+          endIcon={<CaretDown />}
+          disabled={!ids.length}
+        >
+          Start scan
+        </Button>
+      </Dropdown>
+    </>
+  );
+};
 const RegistryAccountsResults = () => {
+  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [selectedScanType, setSelectedScanType] = useState<
     | typeof ScanTypeEnum.VulnerabilityScan
     | typeof ScanTypeEnum.SecretScan
@@ -352,17 +410,19 @@ const RegistryAccountsResults = () => {
   >();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [idsToDelete, setIdsToDelete] = useState<string>('');
+  const [nodeIdsToScan, setNodeIdsToScan] = useState<string[]>([]);
   const fetcher = useFetcher<ActionData>();
 
   const onTableAction = useCallback(
-    (id: string, scanType: RegistryScanType, actionType: string) => {
+    (id: string[], scanType: RegistryScanType, actionType: string) => {
       if (actionType === ActionEnumType.START_SCAN) {
+        setNodeIdsToScan(id);
         setSelectedScanType(scanType);
         return;
       }
       const formData = new FormData();
       formData.append('actionType', actionType);
-      formData.append('nodeIds', id);
+      formData.append('nodeIds', id[0]);
 
       fetcher.submit(formData, {
         method: 'post',
@@ -372,19 +432,24 @@ const RegistryAccountsResults = () => {
   );
 
   return (
-    <>
-      <ConfigureScanModal
-        open={!!selectedScanType}
-        onOpenChange={() => setSelectedScanType(undefined)}
-        scanOptions={
-          selectedScanType ? getScanOptions(selectedScanType, idsToDelete) : undefined
-        }
-      />
+    <div className="self-start">
+      <div className="py-2 flex items-center">
+        <BulkActions ids={Object.keys(rowSelectionState)} onTableAction={onTableAction} />
+        <ConfigureScanModal
+          open={!!selectedScanType}
+          onOpenChange={() => setSelectedScanType(undefined)}
+          scanOptions={
+            selectedScanType ? getScanOptions(selectedScanType, nodeIdsToScan) : undefined
+          }
+        />
+      </div>
       <Suspense fallback={<TableSkeleton columns={7} rows={10} />}>
         <RegistryAccountsTable
           onTableAction={onTableAction}
           setShowDeleteDialog={setShowDeleteDialog}
           setIdsToDelete={setIdsToDelete}
+          rowSelectionState={rowSelectionState}
+          setRowSelectionState={setRowSelectionState}
         />
       </Suspense>
       {showDeleteDialog && (
@@ -396,7 +461,7 @@ const RegistryAccountsResults = () => {
           onTableAction={onTableAction}
         />
       )}
-    </>
+    </div>
   );
 };
 

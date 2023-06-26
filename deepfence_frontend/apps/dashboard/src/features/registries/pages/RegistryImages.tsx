@@ -21,7 +21,10 @@ import {
 } from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
 import { CaretDown } from '@/components/icons/common/CaretDown';
-import { TaskIcon } from '@/components/icons/common/Task';
+import { ImageIcon } from '@/components/icons/image';
+import { InProgressIcon } from '@/components/icons/registries/InProgress';
+import { StartScanIcon } from '@/components/icons/registries/StartScan';
+import { TagsIcon } from '@/components/icons/registries/Tags';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { RegistryImagesTable } from '@/features/registries/components/RegistryImagesTable';
 import { queries } from '@/queries';
@@ -148,8 +151,6 @@ const Header = () => {
   );
 };
 const DynamicBreadcrumbs = () => {
-  const { data } = useListImages();
-
   const { account, nodeId } = useParams() as {
     account: string;
     nodeId: string;
@@ -219,6 +220,7 @@ const BulkActions = ({
           color="default"
           variant="flat"
           size="sm"
+          startIcon={<StartScanIcon />}
           endIcon={<CaretDown />}
           disabled={!ids.length}
         >
@@ -259,14 +261,14 @@ const RegistryImagesResults = () => {
               : undefined
           }
         />
-        <Suspense fallback={<TableSkeleton columns={7} rows={10} />}>
-          <RegistryImagesTable
-            onTableAction={onTableAction}
-            rowSelectionState={rowSelectionState}
-            setRowSelectionState={setRowSelectionState}
-          />
-        </Suspense>
       </div>
+      <Suspense fallback={<TableSkeleton columns={7} rows={10} />}>
+        <RegistryImagesTable
+          onTableAction={onTableAction}
+          rowSelectionState={rowSelectionState}
+          setRowSelectionState={setRowSelectionState}
+        />
+      </Suspense>
     </div>
   );
 };
@@ -283,47 +285,38 @@ const CountWidget = () => {
   const { images = 0, tags = 0, scans_in_progress = 0 } = data.summary as ModelSummary;
 
   return (
-    <div className="grid grid-cols-12 px-6 items-center">
-      <div className="col-span-2 h-[140px] w-[140px]">
-        {/* <PostureScanResultsPieChart data={statusCounts} color={color} /> */}
-      </div>
-      <div className="col-span-2 dark:text-text-text-and-icon">
-        <span className="text-p1">Total compliances</span>
-        <div className="flex flex-1 max-w-[160px] gap-1 items-center">
-          <TaskIcon />
-          {/* <span className="text-h1 dark:text-text-input">{abbreviateNumber(total)}</span> */}
+    <div className="grid grid-cols-12 px-6 items-center w-full">
+      <div className="col-span-4 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8">
+          <ImageIcon />
+        </div>
+
+        <div className="flex flex-col items-start">
+          <span className="text-h1 dark:text-text-input">{abbreviateNumber(images)}</span>
+          <span className="text-p1">Total images</span>
         </div>
       </div>
-      <div className="w-px min-h-[120px] dark:bg-bg-grid-border" />
-      <div className="col-span-6">
-        <div className="gap-24 flex justify-center">
-          <div className="col-span-2 dark:text-text-text-and-icon">
-            <span className="text-p1">Total images</span>
-            <div className="flex flex-1 max-w-[160px] gap-1 items-center">
-              <div className="h-4 w-4 rounded-full"></div>
-              <span className="text-h1 dark:text-text-input-value">
-                {abbreviateNumber(images)}
-              </span>
-            </div>
-          </div>
-          <div className="col-span-2 dark:text-text-text-and-icon">
-            <span className="text-p1">Total tags</span>
-            <div className="flex flex-1 max-w-[160px] gap-1 items-center">
-              <div className="h-4 w-4 rounded-full"></div>
-              <span className="text-h1 dark:text-text-input-value">
-                {abbreviateNumber(tags)}
-              </span>
-            </div>
-          </div>
-          <div className="col-span-2 dark:text-text-text-and-icon">
-            <span className="text-p1">In progress</span>
-            <div className="flex flex-1 max-w-[160px] gap-1 items-center">
-              <div className="h-4 w-4 rounded-full"></div>
-              <span className="text-h1 dark:text-text-input-value">
-                {abbreviateNumber(scans_in_progress)}
-              </span>
-            </div>
-          </div>
+
+      <div className="col-span-4 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8">
+          <TagsIcon />
+        </div>
+
+        <div className="flex flex-col items-start">
+          <span className="text-h1 dark:text-text-input">{abbreviateNumber(tags)}</span>
+          <span className="text-p1">Total tags</span>
+        </div>
+      </div>
+      <div className="col-span-4 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8">
+          <InProgressIcon />
+        </div>
+
+        <div className="flex flex-col items-start">
+          <span className="text-h1 dark:text-text-input">
+            {abbreviateNumber(scans_in_progress)}
+          </span>
+          <span className="text-p1">In Progress</span>
         </div>
       </div>
     </div>
@@ -331,18 +324,16 @@ const CountWidget = () => {
 };
 const Widgets = () => {
   return (
-    <Card className="min-h-[140px] px-4 py-1.5">
-      <div className="flex-1 pl-4">
-        <Suspense
-          fallback={
-            <div className="flex items-center justify-center min-h-[100px]">
-              <CircleSpinner size="md" />
-            </div>
-          }
-        >
-          <CountWidget />
-        </Suspense>
-      </div>
+    <Card className="min-h-[140px] px-4 py-1.5 flex">
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center min-h-[100px]">
+            <CircleSpinner size="md" />
+          </div>
+        }
+      >
+        <CountWidget />
+      </Suspense>
     </Card>
   );
 };
@@ -350,7 +341,7 @@ const RegistryImages = () => {
   return (
     <>
       <Header />
-      <div className="px-4 pb-4 pt-1.5">
+      <div className="p-4">
         <Widgets />
       </div>
 

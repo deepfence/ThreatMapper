@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import { generatePath, useParams, useSearchParams } from 'react-router-dom';
 import {
   createColumnHelper,
+  Dropdown,
+  DropdownItem,
   getRowSelectionColumn,
   RowSelectionState,
   Table,
@@ -9,20 +11,75 @@ import {
 
 import { ModelImageStub } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import {
   ActionEnumType,
   RegistryScanType,
   useListImages,
 } from '@/features/registries/pages/RegistryImages';
+import { ScanTypeEnum } from '@/types/common';
 
 const DEFAULT_PAGE_SIZE = 10;
+
+const ActionDropdown = ({
+  id,
+  trigger,
+  onTableAction,
+}: {
+  id: string;
+  trigger: React.ReactNode;
+  onTableAction: (
+    ids: string[],
+    scanType: RegistryScanType,
+    actionType: ActionEnumType,
+  ) => void;
+}) => {
+  return (
+    <Dropdown
+      triggerAsChild={true}
+      align={'start'}
+      content={
+        <>
+          <DropdownItem
+            onClick={() =>
+              onTableAction(
+                [id],
+                ScanTypeEnum.VulnerabilityScan,
+                ActionEnumType.START_SCAN,
+              )
+            }
+          >
+            Start Vulnerability Scan
+          </DropdownItem>
+          <DropdownItem
+            onClick={() =>
+              onTableAction([id], ScanTypeEnum.SecretScan, ActionEnumType.START_SCAN)
+            }
+          >
+            Start Secret Scan
+          </DropdownItem>
+          <DropdownItem
+            onClick={() =>
+              onTableAction([id], ScanTypeEnum.MalwareScan, ActionEnumType.START_SCAN)
+            }
+          >
+            Start Malware Scan
+          </DropdownItem>
+        </>
+      }
+    >
+      {trigger}
+    </Dropdown>
+  );
+};
 
 export const RegistryImagesTable = ({
   rowSelectionState,
   setRowSelectionState,
+  onTableAction,
 }: {
   onTableAction: (
-    nodeIds: string[],
+    ids: string[],
     scanType: RegistryScanType,
     actionType: ActionEnumType,
   ) => void;
@@ -44,6 +101,33 @@ export const RegistryImagesTable = ({
         size: 25,
         minSize: 10,
         maxSize: 25,
+      }),
+      columnHelper.display({
+        id: 'actions',
+        enableSorting: false,
+        cell: (cell) => {
+          if (!cell.row.original.id) {
+            throw new Error('Registry Account node id not found');
+          }
+          return (
+            <ActionDropdown
+              id={cell.row.original.id}
+              onTableAction={onTableAction}
+              trigger={
+                <button className="p-1">
+                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                    <EllipsisIcon />
+                  </div>
+                </button>
+              }
+            />
+          );
+        },
+        header: () => '',
+        minSize: 20,
+        size: 20,
+        maxSize: 20,
+        enableResizing: false,
       }),
       columnHelper.accessor('name', {
         header: () => 'Image',

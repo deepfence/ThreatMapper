@@ -6,7 +6,8 @@ import {
   createColumnHelper,
   Dropdown,
   DropdownItem,
-  DropdownSeparator,
+  getRowSelectionColumn,
+  RowSelectionState,
   Table,
 } from 'ui-components';
 
@@ -40,7 +41,7 @@ const ActionDropdown = ({
   trigger: React.ReactNode;
   setIdsToDelete: React.Dispatch<React.SetStateAction<string>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
-  onTableAction: (id: string, scanType: RegistryScanType, actionType: string) => void;
+  onTableAction: (id: string[], scanType: RegistryScanType, actionType: string) => void;
 }) => {
   return (
     <Dropdown
@@ -50,33 +51,35 @@ const ActionDropdown = ({
         <>
           <DropdownItem
             onClick={() =>
-              onTableAction(id, ScanTypeEnum.VulnerabilityScan, ActionEnumType.START_SCAN)
+              onTableAction(
+                [id],
+                ScanTypeEnum.VulnerabilityScan,
+                ActionEnumType.START_SCAN,
+              )
             }
           >
             Start Vulnerability Scan
           </DropdownItem>
-          <DropdownSeparator />
           <DropdownItem
             onClick={() =>
-              onTableAction(id, ScanTypeEnum.SecretScan, ActionEnumType.START_SCAN)
+              onTableAction([id], ScanTypeEnum.SecretScan, ActionEnumType.START_SCAN)
             }
           >
             Start Secret Scan
           </DropdownItem>
-          <DropdownSeparator />
           <DropdownItem
             onClick={() =>
-              onTableAction(id, ScanTypeEnum.MalwareScan, ActionEnumType.START_SCAN)
+              onTableAction([id], ScanTypeEnum.MalwareScan, ActionEnumType.START_SCAN)
             }
           >
             Start Malware Scan
           </DropdownItem>
-          <DropdownSeparator />
           <DropdownItem
             onClick={() => {
               setIdsToDelete(id);
               setShowDeleteDialog(true);
             }}
+            className="dark:text-status-error dark:hover:text-[#C45268]"
           >
             Delete
           </DropdownItem>
@@ -89,13 +92,17 @@ const ActionDropdown = ({
 };
 
 export const RegistryAccountsTable = ({
+  rowSelectionState,
   onTableAction,
   setIdsToDelete,
   setShowDeleteDialog,
+  setRowSelectionState,
 }: {
-  onTableAction: (id: string, scanType: RegistryScanType, actionType: string) => void;
+  rowSelectionState: RowSelectionState;
+  onTableAction: (id: string[], scanType: RegistryScanType, actionType: string) => void;
   setIdsToDelete: React.Dispatch<React.SetStateAction<string>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
 }) => {
   const { data } = useListRegistries();
   const { account } = useParams() as {
@@ -105,6 +112,11 @@ export const RegistryAccountsTable = ({
   const columnHelper = createColumnHelper<ModelRegistryListResp>();
   const columns = useMemo(
     () => [
+      getRowSelectionColumn(columnHelper, {
+        size: 25,
+        minSize: 10,
+        maxSize: 25,
+      }),
       columnHelper.display({
         id: 'actions',
         enableSorting: false,
@@ -179,7 +191,16 @@ export const RegistryAccountsTable = ({
   );
   return (
     <div className="self-start">
-      <Table columns={columns} data={data.accounts} enableSorting size="default" />
+      <Table
+        getRowId={(row) => row.node_id || ''}
+        enableRowSelection
+        columns={columns}
+        data={data.accounts}
+        enableSorting
+        size="default"
+        rowSelectionState={rowSelectionState}
+        onRowSelectionChange={setRowSelectionState}
+      />
     </div>
   );
 };

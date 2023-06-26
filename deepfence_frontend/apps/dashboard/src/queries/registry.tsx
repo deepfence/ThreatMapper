@@ -1,7 +1,11 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
 
 import { getRegistriesApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelSummary } from '@/api/generated';
+import {
+  ApiDocsBadRequestResponse,
+  ModelRegistryImagesReq,
+  ModelSummary,
+} from '@/api/generated';
 import { apiWrapper } from '@/utils/api';
 
 export const registryQueries = createQueryKeys('registry', {
@@ -175,6 +179,96 @@ export const registryQueries = createQueryKeys('registry', {
 
         return {
           summary: registrySummary.value,
+        };
+      },
+    };
+  },
+  registryScanResults: (filters: {
+    registryId: string;
+    imageId: string;
+    vulnerabilityScanStatus: string[];
+    secretScanStatus: string[];
+    malwareScanStatus: string[];
+    page?: number;
+    pageSize: number;
+    order?: {
+      sortBy: string;
+      descending: boolean;
+    };
+  }) => {
+    const {
+      imageId,
+      registryId,
+      page = 1,
+      pageSize,
+      vulnerabilityScanStatus,
+      secretScanStatus,
+      malwareScanStatus,
+    } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const imageTagsRequest: ModelRegistryImagesReq = {
+          image_filter: {
+            filter_in: {
+              docker_image_name: [imageId],
+            },
+          },
+          registry_id: registryId,
+          window: {
+            offset: page * pageSize,
+            size: pageSize,
+          },
+        };
+        if (vulnerabilityScanStatus.length) {
+          imageTagsRequest.image_filter.filter_in!['vulnerability_scan_status'] =
+            vulnerabilityScanStatus;
+        }
+
+        if (secretScanStatus.length) {
+          imageTagsRequest.image_filter.filter_in!['secret_scan_status'] =
+            secretScanStatus;
+        }
+
+        if (malwareScanStatus.length) {
+          imageTagsRequest.image_filter.filter_in!['malware_scan_status'] =
+            malwareScanStatus;
+        }
+        const listImages = apiWrapper({ fn: getRegistriesApiClient().listImages });
+
+        const result = await listImages({
+          modelRegistryImagesReq: imageTagsRequest,
+        });
+
+        if (!result.ok) {
+          throw result.error;
+        }
+
+        if (!result.value) {
+          return {
+            tags: [],
+            currentPage: 0,
+            totalRows: 0,
+          };
+        }
+        const countImages = apiWrapper({ fn: getRegistriesApiClient().countImages });
+        const resultCounts = await countImages({
+          modelRegistryImagesReq: {
+            ...imageTagsRequest,
+            window: {
+              ...imageTagsRequest.window,
+              size: 10 * imageTagsRequest.window.size,
+            },
+          },
+        });
+
+        if (!resultCounts.ok) {
+          throw resultCounts.error;
+        }
+        return {
+          tags: result.value,
+          currentPage: page,
+          totalRows: page * pageSize + (resultCounts.value.count || 0),
         };
       },
     };
