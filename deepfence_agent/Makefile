@@ -40,7 +40,7 @@ agent:
 		CGO_ENABLED=1 \
 		CGO_LDFLAGS=/lib/libpcap.a \
 		go build -buildvcs=false \
-		-ldflags "-X main.version=$(shell git rev-parse --short HEAD)  -X github.com/weaveworks/scope/probe/host.agentCommitID=$(shell git rev-parse --short HEAD) -X github.com/weaveworks/scope/probe/host.agentBuildTime=$(shell date +"%s%d%m%y") -s -w -linkmode=external -extldflags=-static" \
+		-ldflags "-X main.version=$(shell git rev-parse --short HEAD)  -X github.com/weaveworks/scope/probe/host.agentCommitID=$(shell git rev-parse --short HEAD) -X github.com/weaveworks/scope/probe/host.agentBuildTime=$(shell date +"%s%d%m%y") -s -w"\
 		-tags 'netgo osusergo unsafe' \
 		-o docker/deepfence_exe \
 		./prog)
