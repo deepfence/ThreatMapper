@@ -37,9 +37,10 @@ agent:
 		go mod tidy -v && \
 		go mod vendor && \
 		env GOGC=off \
-		CGO_ENABLED=0 \
+		CGO_ENABLED=1 \
+		CGO_LDFLAGS=/lib/libpcap.a \
 		go build -buildvcs=false \
-		-ldflags "-X main.version=$(shell git rev-parse --short HEAD)  -X github.com/weaveworks/scope/probe/host.agentCommitID=$(shell git rev-parse --short HEAD) -X github.com/weaveworks/scope/probe/host.agentBuildTime=$(shell date +"%s%d%m%y") -s -w -extldflags=-static -extldflags=/lib/libpcap.a" \
+		-ldflags "-X main.version=$(shell git rev-parse --short HEAD)  -X github.com/weaveworks/scope/probe/host.agentCommitID=$(shell git rev-parse --short HEAD) -X github.com/weaveworks/scope/probe/host.agentBuildTime=$(shell date +"%s%d%m%y") -s -w -linkmode=external -extldflags=-static" \
 		-tags 'netgo osusergo unsafe' \
 		-o docker/deepfence_exe \
 		./prog)
