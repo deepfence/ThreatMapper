@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/aes"
 	"crypto/rand"
-	"database/sql"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -335,24 +334,6 @@ func initializeDatabase() ([]byte, error) {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return nil, err
-	}
-	roles, err := pgClient.GetRoles(ctx)
-	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, err
-	}
-	rolesConfigured := map[string]bool{model.AdminRole: false, model.StandardUserRole: false, model.ReadOnlyRole: false}
-	for _, role := range roles {
-		if _, ok := rolesConfigured[role.Name]; ok {
-			rolesConfigured[role.Name] = true
-		}
-	}
-	for roleName, configured := range rolesConfigured {
-		if !configured {
-			_, err = pgClient.CreateRole(ctx, roleName)
-			if err != nil {
-				return nil, err
-			}
-		}
 	}
 	jwtSecret, err := model.GetJwtSecretSetting(ctx, pgClient)
 	if err != nil {
