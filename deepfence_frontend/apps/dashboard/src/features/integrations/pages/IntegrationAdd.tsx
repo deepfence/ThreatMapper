@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from '@suspensive/react-query';
 import { ActionFunctionArgs, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -8,6 +9,7 @@ import {
   ModelNodeIdentifierNodeTypeEnum,
   ReportersFieldsFilters,
 } from '@/api/generated';
+import { queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 
@@ -63,7 +65,12 @@ export const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
     data: getIntegrations(),
   });
 };
-
+export const useListIntegrations = () => {
+  return useSuspenseQuery({
+    ...queries.integration.listIntegrations(),
+    keepPreviousData: true,
+  });
+};
 const getConfigBodyNotificationType = (formData: FormData, integrationType: string) => {
   const formBody = Object.fromEntries(formData);
 

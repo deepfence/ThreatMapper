@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from '@suspensive/react-query';
 import cx from 'classnames';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
@@ -53,6 +54,7 @@ import { complianceType } from '@/components/scan-configure-forms/ComplianceScan
 import { TruncatedText } from '@/components/TruncatedText';
 import { useGetCloudAccountsList } from '@/features/common/data-component/searchCloudAccountsApiLoader';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { queries } from '@/queries';
 import { CloudNodeType, isCloudNode, ScanTypeEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
@@ -119,6 +121,13 @@ const getReportList = async (): Promise<{
 const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
   return typedDefer({
     data: getReportList(),
+  });
+};
+
+export const useGetReports = () => {
+  return useSuspenseQuery({
+    ...queries.integration.getReports(),
+    keepPreviousData: true,
   });
 };
 
