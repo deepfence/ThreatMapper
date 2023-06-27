@@ -128,57 +128,118 @@ func TestOrderFilter2CypherCondition(t *testing.T) {
 		OrderFields: []OrderSpec{},
 	}
 
-	cypher := OrderFilter2CypherCondition(node_name, ff)
+	cypher := OrderFilter2CypherCondition(node_name, ff, nil)
 	assert.Equal(t, cypher, "", "should be equal")
 
 	ff = OrderFilter{
 		OrderFields: []OrderSpec{{FieldName: ""}},
 	}
 
-	cypher = OrderFilter2CypherCondition(node_name, ff)
+	cypher = OrderFilter2CypherCondition(node_name, ff, nil)
 	assert.Equal(t, cypher, "", "should be equal")
 
 	ff = OrderFilter{
 		OrderFields: []OrderSpec{{FieldName: "toto"}},
 	}
 
-	cypher = OrderFilter2CypherCondition(node_name, ff)
+	cypher = OrderFilter2CypherCondition(node_name, ff, nil)
 	assert.Equal(t, cypher, " WITH n ORDER BY n.toto ", "should be equal")
 
 	ff = OrderFilter{
 		OrderFields: []OrderSpec{{FieldName: "toto", Descending: true}},
 	}
 
-	cypher = OrderFilter2CypherCondition(node_name, ff)
+	cypher = OrderFilter2CypherCondition(node_name, ff, nil)
 	assert.Equal(t, cypher, " WITH n ORDER BY n.toto DESC ", "should be equal")
 
 	ff = OrderFilter{
 		OrderFields: []OrderSpec{{FieldName: "toto"}, {FieldName: "titi"}},
 	}
 
-	cypher = OrderFilter2CypherCondition(node_name, ff)
+	cypher = OrderFilter2CypherCondition(node_name, ff, nil)
 	assert.Equal(t, cypher, " WITH n ORDER BY n.toto \n WITH n ORDER BY n.titi ", "should be equal")
 
 	ff = OrderFilter{
 		OrderFields: []OrderSpec{{FieldName: "toto", Descending: true}, {FieldName: "titi", Descending: true}},
 	}
 
-	cypher = OrderFilter2CypherCondition(node_name, ff)
+	cypher = OrderFilter2CypherCondition(node_name, ff, nil)
 	assert.Equal(t, cypher, " WITH n ORDER BY n.toto DESC \n WITH n ORDER BY n.titi DESC ", "should be equal")
 
 	ff = OrderFilter{
 		OrderFields: []OrderSpec{{FieldName: "toto"}, {FieldName: "titi", Descending: true}},
 	}
 
-	cypher = OrderFilter2CypherCondition(node_name, ff)
+	cypher = OrderFilter2CypherCondition(node_name, ff, nil)
 	assert.Equal(t, cypher, " WITH n ORDER BY n.toto \n WITH n ORDER BY n.titi DESC ", "should be equal")
 
 	ff = OrderFilter{
 		OrderFields: []OrderSpec{{FieldName: "toto", Size: 10}, {FieldName: "titi", Descending: true, Size: 5}},
 	}
 
-	cypher = OrderFilter2CypherCondition(node_name, ff)
+	cypher = OrderFilter2CypherCondition(node_name, ff, nil)
 	assert.Equal(t, cypher, " WITH n ORDER BY n.toto LIMIT 10 \n WITH n ORDER BY n.titi DESC LIMIT 5 ", "should be equal")
+
+}
+
+func TestOrderFilter2CypherConditionWithNodes(t *testing.T) {
+	node_name := "n"
+
+	ff := OrderFilter{
+		OrderFields: []OrderSpec{},
+	}
+
+	cypher := OrderFilter2CypherCondition(node_name, ff, []string{"a"})
+	assert.Equal(t, cypher, "", "should be equal")
+
+	ff = OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: ""}},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff, []string{"a"})
+	assert.Equal(t, cypher, "", "should be equal")
+
+	ff = OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "toto"}},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff, []string{"a"})
+	assert.Equal(t, cypher, " WITH a,n ORDER BY n.toto ", "should be equal")
+
+	ff = OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "toto", Descending: true}},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff, []string{"a"})
+	assert.Equal(t, cypher, " WITH a,n ORDER BY n.toto DESC ", "should be equal")
+
+	ff = OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "toto"}, {FieldName: "titi"}},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff, []string{"a"})
+	assert.Equal(t, cypher, " WITH a,n ORDER BY n.toto \n WITH a,n ORDER BY n.titi ", "should be equal")
+
+	ff = OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "toto", Descending: true}, {FieldName: "titi", Descending: true}},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff, []string{"a"})
+	assert.Equal(t, cypher, " WITH a,n ORDER BY n.toto DESC \n WITH a,n ORDER BY n.titi DESC ", "should be equal")
+
+	ff = OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "toto"}, {FieldName: "titi", Descending: true}},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff, []string{"a"})
+	assert.Equal(t, cypher, " WITH a,n ORDER BY n.toto \n WITH a,n ORDER BY n.titi DESC ", "should be equal")
+
+	ff = OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "toto", Size: 10}, {FieldName: "titi", Descending: true, Size: 5}},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff, []string{"a"})
+	assert.Equal(t, cypher, " WITH a,n ORDER BY n.toto LIMIT 10 \n WITH a,n ORDER BY n.titi DESC LIMIT 5 ", "should be equal")
 
 }
 
@@ -189,22 +250,48 @@ func TestOrderFilter2CypherConditionWithSeverity(t *testing.T) {
 		OrderFields: []OrderSpec{{FieldName: "cve_severity"}},
 	}
 
-	cypher := OrderFilter2CypherCondition(node_name, ff)
+	cypher := OrderFilter2CypherCondition(node_name, ff, nil)
 	assert.Equal(t, cypher, " WITH n,CASE n.cve_severity WHEN 'low' THEN 0 WHEN 'medium' THEN 1 WHEN 'high' THEN 2 WHEN 'critical' THEN 3 ELSE -1 END AS severity0 ORDER BY severity0 ", "should be equal")
 
 	ff = OrderFilter{
 		OrderFields: []OrderSpec{{FieldName: "cve_severity"}, {FieldName: "level"}},
 	}
 
-	cypher = OrderFilter2CypherCondition(node_name, ff)
+	cypher = OrderFilter2CypherCondition(node_name, ff, nil)
 	assert.Equal(t, cypher, " WITH n,CASE n.cve_severity WHEN 'low' THEN 0 WHEN 'medium' THEN 1 WHEN 'high' THEN 2 WHEN 'critical' THEN 3 ELSE -1 END AS severity0 ORDER BY severity0 \n WITH n,CASE n.level WHEN 'low' THEN 0 WHEN 'medium' THEN 1 WHEN 'high' THEN 2 WHEN 'critical' THEN 3 ELSE -1 END AS severity1 ORDER BY severity1 ", "should be equal")
 
 	ff = OrderFilter{
 		OrderFields: []OrderSpec{{FieldName: "cve_severity"}, {FieldName: "random"}},
 	}
 
-	cypher = OrderFilter2CypherCondition(node_name, ff)
+	cypher = OrderFilter2CypherCondition(node_name, ff, nil)
 	assert.Equal(t, cypher, " WITH n,CASE n.cve_severity WHEN 'low' THEN 0 WHEN 'medium' THEN 1 WHEN 'high' THEN 2 WHEN 'critical' THEN 3 ELSE -1 END AS severity0 ORDER BY severity0 \n WITH n ORDER BY n.random ", "should be equal")
+
+}
+
+func TestOrderFilter2CypherConditionWithSeverityWithCarry(t *testing.T) {
+	node_name := "n"
+
+	ff := OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "cve_severity"}},
+	}
+
+	cypher := OrderFilter2CypherCondition(node_name, ff, []string{"a"})
+	assert.Equal(t, cypher, " WITH a,n,CASE n.cve_severity WHEN 'low' THEN 0 WHEN 'medium' THEN 1 WHEN 'high' THEN 2 WHEN 'critical' THEN 3 ELSE -1 END AS severity0 ORDER BY severity0 ", "should be equal")
+
+	ff = OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "cve_severity"}, {FieldName: "level"}},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff, []string{"a"})
+	assert.Equal(t, cypher, " WITH a,n,CASE n.cve_severity WHEN 'low' THEN 0 WHEN 'medium' THEN 1 WHEN 'high' THEN 2 WHEN 'critical' THEN 3 ELSE -1 END AS severity0 ORDER BY severity0 \n WITH a,n,CASE n.level WHEN 'low' THEN 0 WHEN 'medium' THEN 1 WHEN 'high' THEN 2 WHEN 'critical' THEN 3 ELSE -1 END AS severity1 ORDER BY severity1 ", "should be equal")
+
+	ff = OrderFilter{
+		OrderFields: []OrderSpec{{FieldName: "cve_severity"}, {FieldName: "random"}},
+	}
+
+	cypher = OrderFilter2CypherCondition(node_name, ff, []string{"a"})
+	assert.Equal(t, cypher, " WITH a,n,CASE n.cve_severity WHEN 'low' THEN 0 WHEN 'medium' THEN 1 WHEN 'high' THEN 2 WHEN 'critical' THEN 3 ELSE -1 END AS severity0 ORDER BY severity0 \n WITH a,n ORDER BY n.random ", "should be equal")
 
 }
 

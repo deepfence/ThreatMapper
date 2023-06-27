@@ -574,7 +574,7 @@ func GetScanResults[T any](ctx context.Context, scan_type utils.Neo4jScanType, s
 		OPTIONAL MATCH (d) -[:IS]-> (e)
 	WITH apoc.map.merge( e{.*}, d{.*, masked: coalesce(d.masked or r.masked, false), name: coalesce(e.name, d.name, '')}) as d` +
 		reporters.ParseFieldFilters2CypherWhereConditions("d", mo.Some(ff), true) +
-		reporters.OrderFilter2CypherCondition("d", ff.OrderFilter) +
+		reporters.OrderFilter2CypherCondition("d", ff.OrderFilter, nil) +
 		` RETURN d ` +
 		fw.FetchWindow2CypherQuery()
 	log.Debug().Msgf("query: %v", query)

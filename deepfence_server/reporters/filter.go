@@ -154,7 +154,7 @@ func severityCypherValues(cypherNodeName, field string, num *int) string {
 	return ""
 }
 
-func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) string {
+func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter, otherNodes []string) string {
 	if len(filter.OrderFields) == 0 {
 		return ""
 	}
@@ -174,14 +174,16 @@ func OrderFilter2CypherCondition(cypherNodeName string, filter OrderFilter) stri
 		return ""
 	}
 
+	all_nodes := append(otherNodes, cypherNodeName)
+
 	var list2 []string
 	sevNum := 0
 	for i, orderby := range list {
 		size := filter.OrderFields[i].Size
 		if size != 0 {
-			list2 = append(list2, fmt.Sprintf(" WITH %s%s ORDER BY %s LIMIT %d ", cypherNodeName, severityCypherValues(cypherNodeName, filter.OrderFields[i].FieldName, &sevNum), orderby, size))
+			list2 = append(list2, fmt.Sprintf(" WITH %s%s ORDER BY %s LIMIT %d ", strings.Join(all_nodes, ","), severityCypherValues(cypherNodeName, filter.OrderFields[i].FieldName, &sevNum), orderby, size))
 		} else {
-			list2 = append(list2, fmt.Sprintf(" WITH %s%s ORDER BY %s ", cypherNodeName, severityCypherValues(cypherNodeName, filter.OrderFields[i].FieldName, &sevNum), orderby))
+			list2 = append(list2, fmt.Sprintf(" WITH %s%s ORDER BY %s ", strings.Join(all_nodes, ","), severityCypherValues(cypherNodeName, filter.OrderFields[i].FieldName, &sevNum), orderby))
 		}
 	}
 
