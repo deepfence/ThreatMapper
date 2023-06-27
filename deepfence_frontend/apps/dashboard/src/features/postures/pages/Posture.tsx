@@ -233,7 +233,7 @@ const Posture = () => {
       <div className="mx-4 mt-10 mb-10 flex gap-x-[20px] gap-y-[42px] flex-wrap">
         <Suspense fallback={<CardSkeleton />}>
           <PostureCloudList />
-          <Separator className="dark:bg-bg-grid-border" />
+          <Separator className="dark:bg-bg-grid-border h-px w-full" />
           <PosturenNonCloudList />
         </Suspense>
       </div>

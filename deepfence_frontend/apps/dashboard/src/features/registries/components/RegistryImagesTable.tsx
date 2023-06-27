@@ -98,9 +98,9 @@ export const RegistryImagesTable = ({
   const columns = useMemo(
     () => [
       getRowSelectionColumn(columnHelper, {
-        size: 25,
+        size: 10,
         minSize: 10,
-        maxSize: 25,
+        maxSize: 10,
       }),
       columnHelper.display({
         id: 'actions',

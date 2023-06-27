@@ -334,7 +334,7 @@ const Widgets = () => {
     <Card className="min-h-[140px] px-4 py-1.5 flex">
       <Suspense
         fallback={
-          <div className="flex items-center justify-center min-h-[100px]">
+          <div className="flex m-auto items-center min-h-[100px]">
             <CircleSpinner size="md" />
           </div>
         }

@@ -108,14 +108,16 @@ export const RegistryAccountsTable = ({
   const { account } = useParams() as {
     account: string;
   };
+  const registriesOfAccountType =
+    data?.accounts.filter((registry) => registry.registry_type === account) ?? [];
 
   const columnHelper = createColumnHelper<ModelRegistryListResp>();
   const columns = useMemo(
     () => [
       getRowSelectionColumn(columnHelper, {
-        size: 25,
-        minSize: 10,
-        maxSize: 25,
+        size: 15,
+        minSize: 15,
+        maxSize: 15,
       }),
       columnHelper.display({
         id: 'actions',
@@ -195,7 +197,7 @@ export const RegistryAccountsTable = ({
         getRowId={(row) => row.node_id || ''}
         enableRowSelection
         columns={columns}
-        data={data.accounts}
+        data={registriesOfAccountType}
         enableSorting
         size="default"
         rowSelectionState={rowSelectionState}
