@@ -62,10 +62,10 @@ type namespaceDirectory struct {
 var directory namespaceDirectory
 
 func init() {
-
-	redisCfg := initRedis()
+	directory = namespaceDirectory{
+		Directory: map[NamespaceID]DBConfigs{},
+	}
 	minioCfg := initMinio()
-	postgresqlCfg := init_posgres()
 
 	saasMode := false
 	saasModeOn, has := os.LookupEnv("DEEPFENCE_SAAS_MODE")
@@ -75,12 +75,11 @@ func init() {
 		saasMode = true
 	}
 
-	directory = namespaceDirectory{
-		Directory: map[NamespaceID]DBConfigs{},
-	}
 	directory.Lock()
 	if !saasMode {
-		neo4jCfg := init_neo4j()
+		redisCfg := initRedis()
+		neo4jCfg := initNeo4j()
+		postgresqlCfg := initPosgresql()
 		directory.Directory[NonSaaSDirKey] = DBConfigs{
 			Redis:    &redisCfg,
 			Neo4j:    &neo4jCfg,
@@ -103,7 +102,9 @@ func GetAllNamespaces() []NamespaceID {
 	defer directory.RUnlock()
 	var namespaces []NamespaceID
 	for k, _ := range directory.Directory {
-		namespaces = append(namespaces, k)
+		if k != GlobalDirKey {
+			namespaces = append(namespaces, k)
+		}
 	}
 	return namespaces
 }
@@ -190,7 +191,7 @@ func initMinio() MinioConfig {
 	}
 }
 
-func init_posgres() PostgresqlConfig {
+func initPosgresql() PostgresqlConfig {
 	var err error
 	postgresHost, has := os.LookupEnv("DEEPFENCE_POSTGRES_USER_DB_HOST")
 	if !has {
@@ -222,7 +223,7 @@ func init_posgres() PostgresqlConfig {
 	}
 }
 
-func init_neo4j() Neo4jConfig {
+func initNeo4j() Neo4jConfig {
 	neo4jHost, has := os.LookupEnv("DEEPFENCE_NEO4J_HOST")
 	if !has {
 		neo4jHost = "localhost"
