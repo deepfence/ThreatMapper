@@ -13,7 +13,7 @@ import {
 import { ModelCloudCompliance } from '@/api/generated';
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
-import { CveCVSSScore, PostureStatusBadge } from '@/components/SeverityBadge';
+import { PostureStatusBadge } from '@/components/SeverityBadge';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { queries } from '@/queries';
 import { PostureSeverityType } from '@/types/common';
@@ -43,46 +43,24 @@ const Header = () => {
           </div>
           <h3 className="text-h3">{data?.control_id ?? '-'}</h3>
         </div>
-        <div className="mt-[18px] flex">
-          <div className="px-4 flex flex-col gap-2">
-            <div className="dark:bg-bg-left-nav p-2 rounded flex flex-col gap-1">
-              <div className="text-p9 dark:text-text-text-and-icon whitespace-nowrap">
-                Severity score
-              </div>
-              <div>
-                <CveCVSSScore score={0} className="text-h1" iconClassName="h-9 w-9" />
-              </div>
-            </div>
-            <div>
-              <PostureStatusBadge
-                className="w-full max-w-none"
-                status={data?.status as PostureSeverityType}
-              />
-            </div>
+        <div className="py-[18px] flex">
+          <div className="ml-[10px]">
+            <PostureStatusBadge
+              className="w-full max-w-none"
+              status={data?.status as PostureSeverityType}
+            />
           </div>
-          <div className="flex-1">
-            <div className="flex">
-              <Button
-                variant="flat"
-                size="sm"
-                className="ml-auto"
-                onClick={() => {
-                  copy(JSON.stringify(data ?? {}));
-                }}
-                startIcon={<CopyLineIcon />}
-              >
-                {isCopied ? 'Copied JSON' : 'Copy JSON'}
-              </Button>
-            </div>
-            <div
-              className="mt-7 text-sm leading-5 dark:text-text-text-and-icon max-h-64 overflow-y-auto"
-              style={{
-                wordBreak: 'break-word',
-              }}
-            >
-              {data?.description ?? '-'}
-            </div>
-          </div>
+          <Button
+            variant="flat"
+            size="sm"
+            className="ml-auto"
+            onClick={() => {
+              copy(JSON.stringify(data ?? {}));
+            }}
+            startIcon={<CopyLineIcon />}
+          >
+            {isCopied ? 'Copied JSON' : 'Copy JSON'}
+          </Button>
         </div>
       </div>
     </SlidingModalHeader>
@@ -111,6 +89,14 @@ const DetailsComponent = () => {
 
   return (
     <div className="flex flex-wrap gap-y-[30px] gap-x-[14px]">
+      <div
+        className="text-sm leading-5 dark:text-text-text-and-icon max-h-64 overflow-y-auto"
+        style={{
+          wordBreak: 'break-word',
+        }}
+      >
+        {posture?.description ?? '-'}
+      </div>
       {Object.keys(posture ?? {})
         .filter((key) => {
           if (omitFields.includes(key as keyof ModelCloudCompliance)) return false;

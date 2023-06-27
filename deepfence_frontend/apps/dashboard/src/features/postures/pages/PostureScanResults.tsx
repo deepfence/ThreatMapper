@@ -578,6 +578,7 @@ const ActionDropdown = ({
               setIdsToDelete(ids);
               setShowDeleteDialog(true);
             }}
+            className="dark:text-status-error dark:hover:text-[#C45268]"
           >
             Delete
           </DropdownItem>
@@ -704,8 +705,10 @@ const Filters = () => {
   }
   let _nodeType = params.nodeType;
 
-  if (params.nodeType.toString() === 'kubernetes') {
+  if (_nodeType.toString() === 'kubernetes') {
     _nodeType = ComplianceScanNodeTypeEnum.kubernetes_cluster;
+  } else if (_nodeType.toString() === 'linux') {
+    _nodeType = ComplianceScanNodeTypeEnum.host;
   }
 
   const benchmarks = complianceType[_nodeType];
@@ -1034,7 +1037,7 @@ const PostureTable = ({
                 <PostureIcon />
               </div>
             </div>
-            <TruncatedText text={info.row.original.test_number} />
+            <TruncatedText text={info.row.original.node_id} />
           </DFLink>
         ),
         header: () => 'ID',

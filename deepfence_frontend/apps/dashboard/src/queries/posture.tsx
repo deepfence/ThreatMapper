@@ -599,10 +599,10 @@ export const postureQueries = createQueryKeys('posture', {
     return {
       queryKey: [filters],
       queryFn: async () => {
-        const searchCloudCompliancesApi = apiWrapper({
+        const lookupCloudCompliancesApi = apiWrapper({
           fn: getLookupApiClient().lookupCloudPostures,
         });
-        const searchCompliancesResponse = await searchCloudCompliancesApi({
+        const lookupCompliancesResponse = await lookupCloudCompliancesApi({
           lookupLookupFilter: {
             in_field_filter: [],
             node_ids: [complianceId],
@@ -612,8 +612,8 @@ export const postureQueries = createQueryKeys('posture', {
             },
           },
         });
-        if (!searchCompliancesResponse.ok) {
-          console.error(searchCompliancesResponse.error);
+        if (!lookupCompliancesResponse.ok) {
+          console.error(lookupCompliancesResponse.error);
           return {
             data: undefined,
             message: 'Error getting the compliance details',
@@ -621,8 +621,8 @@ export const postureQueries = createQueryKeys('posture', {
         }
 
         if (
-          searchCompliancesResponse.value === null ||
-          searchCompliancesResponse.value.length === 0
+          lookupCompliancesResponse.value === null ||
+          lookupCompliancesResponse.value.length === 0
         ) {
           return {
             data: undefined,
@@ -630,7 +630,7 @@ export const postureQueries = createQueryKeys('posture', {
           };
         }
         return {
-          data: searchCompliancesResponse.value[0],
+          data: lookupCompliancesResponse.value[0],
         };
       },
     };
