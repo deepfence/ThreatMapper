@@ -20,7 +20,7 @@ func New(b []byte) (*S3, error) {
 	return &s, nil
 }
 
-func (s S3) SendNotification(message string) error {
+func (s S3) SendNotification(message string, extras map[string]interface{}) error {
 	// Create an AWS session with your credentials and region
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(s.Config.AWSRegion),

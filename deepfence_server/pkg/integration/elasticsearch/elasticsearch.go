@@ -15,7 +15,7 @@ func New(b []byte) (*ElasticSearch, error) {
 	return &p, nil
 }
 
-func (e ElasticSearch) SendNotification(message string) error {
+func (e ElasticSearch) SendNotification(message string, extras map[string]interface{}) error {
 	var req *http.Request
 	var err error
 	var msg []map[string]interface{}

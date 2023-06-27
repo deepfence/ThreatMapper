@@ -71,7 +71,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 	}
 	filters.NodeIds = []model.NodeIdentifier{}
 	for _, scan := range list.ScansInfo {
-		results, _, err := reporters_scan.GetScanResults[T](ctx, utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId, filters.FieldsFilters, model.FetchWindow{})
+		results, common, err := reporters_scan.GetScanResults[T](ctx, utils.DetectedNodeScanType[integrationRow.Resource], scan.ScanId, filters.FieldsFilters, model.FetchWindow{})
 		if len(results) == 0 {
 			log.Info().Msgf("No Results filtered for scan id:%s with filters %+v", scan.ScanId, filters)
 			continue
@@ -91,12 +91,12 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 			log.Error().Msgf("Error Processing for integration json marshall results: %+v", integrationRow, err)
 			return err
 		}
-		err = integrationModel.SendNotification(string(messageByte))
+		err = integrationModel.SendNotification(string(messageByte), map[string]interface{}{"node_id": common.ScanID})
 		if err != nil {
 			log.Error().Msgf("Error Sending Notification: %+v", integrationRow, err)
 			return err
 		}
-		log.Info().Msgf("Sent %d messages in notification", len(results))
+		log.Info().Msgf("Sent %d messages in %s notification", len(results), integrationRow.IntegrationType)
 	}
 	return err
 }

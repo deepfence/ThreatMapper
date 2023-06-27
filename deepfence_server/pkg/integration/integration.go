@@ -2,6 +2,7 @@ package integration
 
 import (
 	"errors"
+
 	"github.com/go-playground/validator/v10"
 
 	awssecurityhub "github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/aws-security-hub"
@@ -52,6 +53,7 @@ func GetIntegration(integrationType string, b []byte) (Integration, error) {
 
 // Integration is the interface for all integrations
 type Integration interface {
-	SendNotification(message string) error
+	// extras are additional fields that are not part of the message
+	SendNotification(message string, extras map[string]interface{}) error
 	ValidateConfig(*validator.Validate) error
 }

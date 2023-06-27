@@ -20,7 +20,7 @@ func New(b []byte) (*PagerDuty, error) {
 	return &p, nil
 }
 
-func (p PagerDuty) SendNotification(message string) error {
+func (p PagerDuty) SendNotification(message string, extras map[string]interface{}) error {
 	var req *http.Request
 	var err error
 

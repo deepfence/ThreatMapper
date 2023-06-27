@@ -15,7 +15,7 @@ func New(b []byte) (*GoogleChronicle, error) {
 	return &p, nil
 }
 
-func (g GoogleChronicle) SendNotification(message string) error {
+func (g GoogleChronicle) SendNotification(message string, extras map[string]interface{}) error {
 	var req *http.Request
 	var err error
 

@@ -64,7 +64,7 @@ func (e Email) FormatMessage(message []map[string]interface{}) string {
 	return entiremsg
 }
 
-func (e Email) SendNotification(message string) error {
+func (e Email) SendNotification(message string, extras map[string]interface{}) error {
 	// formatting : unmarshal into payload
 	var msg []map[string]interface{}
 	err := json.Unmarshal([]byte(message), &msg)
