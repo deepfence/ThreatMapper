@@ -1,8 +1,8 @@
 import { cva, VariantProps } from 'cva';
 import { FC } from 'react';
+import { cn } from 'tailwind-preset';
 
 import { ObjectWithNonNullableValues } from '@/types/utils';
-import { dfTwMerge } from '@/utils/twmerge';
 
 const helperTextClasses = cva('text-p8', {
   variants: {
@@ -23,7 +23,7 @@ interface Props
 }
 
 export const HelperText: FC<Props> = ({ text, color, className }) => {
-  return <p className={dfTwMerge(helperTextClasses({ color }), className)}>{text}</p>;
+  return <p className={cn(helperTextClasses({ color }), className)}>{text}</p>;
 };
 
 export default HelperText;

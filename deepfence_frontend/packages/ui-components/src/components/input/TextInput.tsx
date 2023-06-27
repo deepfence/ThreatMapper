@@ -6,11 +6,11 @@ import { cva, VariantProps } from 'cva';
 import React, { ComponentProps, forwardRef, useId, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { twMerge } from 'tailwind-merge';
+import { cn } from 'tailwind-preset';
 
 import HelperText from '@/components/input/HelperText';
 import { Tooltip } from '@/main';
 import { ObjectWithNonNullableValues } from '@/types/utils';
-import { dfTwMerge } from '@/utils/twmerge';
 
 export type SizeType = 'md';
 export type ColorType = 'default' | 'error';
@@ -121,57 +121,53 @@ const inputCva = cva(
     variants: {
       color: {
         default: [
-          dfTwMerge(
-            cx(
-              // border
-              'dark:border-text-text-and-icon',
-              // bg styles
-              'bg-gray-50',
-              // placeholder styles
-              'placeholder-gray-500 disabled:placeholder-gray-400',
-              'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
-              // text font
-              'dark:text-p4',
-              // text styles
-              'text-gray-900 dark:text-text-input-value',
-              // disabled text color
-              'disabled:text-gray-700 dark:disabled:text-gray-600',
-              // focus style
-              'dark:bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
-              'dark:focus:border-b-accent-accent',
-              // dark and bg styles
-              'dark:bg-no-repeat',
-              'dark:focus:bg-no-repeat',
-              // 'dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)]',
-              // 'dark:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)]',
-            ),
+          cn(
+            // border
+            'dark:border-text-text-and-icon',
+            // bg styles
+            'bg-gray-50',
+            // placeholder styles
+            'placeholder-gray-500 disabled:placeholder-gray-400',
+            'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
+            // text font
+            'dark:text-p4',
+            // text styles
+            'text-gray-900 dark:text-text-input-value',
+            // disabled text color
+            'disabled:text-gray-700 dark:disabled:text-gray-600',
+            // focus style
+            'dark:bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
+            'dark:focus:border-b-accent-accent',
+            // dark and bg styles
+            'dark:bg-no-repeat',
+            'dark:focus:bg-no-repeat',
+            // 'dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)]',
+            // 'dark:bg-[linear-gradient(to_bottom,_transparent_95%,_#489CFF_95%)]',
           ),
         ],
         error: [
-          dfTwMerge(
-            cx(
-              // border
-              'dark:border-chart-red df-error',
-              // bg styles
-              'bg-gray-50',
-              // placeholder styles
-              'placeholder-gray-500 disabled:placeholder-gray-400',
-              'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
-              // text font
-              'dark:text-p4',
-              // text styles
-              'text-gray-900 dark:text-text-input-value',
-              // disabled text color
-              'disabled:text-gray-700 dark:disabled:text-gray-600',
-              // focus style
-              'dark:bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
-              'dark:focus:border-b-chart-red',
-              // dark and bg styles
-              'dark:bg-no-repeat',
-              'dark:focus:bg-no-repeat',
-              // 'dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#F55B47_95%)]',
-              // 'dark:bg-[linear-gradient(to_bottom,_transparent_95%,_#F55B47_95%)]',
-            ),
+          cn(
+            // border
+            'dark:border-chart-red df-error',
+            // bg styles
+            'bg-gray-50',
+            // placeholder styles
+            'placeholder-gray-500 disabled:placeholder-gray-400',
+            'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
+            // text font
+            'dark:text-p4',
+            // text styles
+            'text-gray-900 dark:text-text-input-value',
+            // disabled text color
+            'disabled:text-gray-700 dark:disabled:text-gray-600',
+            // focus style
+            'dark:bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
+            'dark:focus:border-b-chart-red',
+            // dark and bg styles
+            'dark:bg-no-repeat',
+            'dark:focus:bg-no-repeat',
+            // 'dark:focus:bg-[linear-gradient(to_bottom,_transparent_95%,_#F55B47_95%)]',
+            // 'dark:bg-[linear-gradient(to_bottom,_transparent_95%,_#F55B47_95%)]',
           ),
         ],
       },
