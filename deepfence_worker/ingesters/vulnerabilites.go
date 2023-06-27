@@ -31,6 +31,9 @@ type Vulnerability struct {
 	URLs                       []string `json:"urls"`
 	ExploitPOC                 string   `json:"exploit_poc"`
 	ParsedAttackVector         string   `json:"parsed_attack_vector"`
+	ExploitabilityScore        int      `json:"exploitability_score"`
+	InitExploitabilityScore    int      `json:"init_exploitability_score"`
+	HasLiveConnection          bool     `json:"has_live_connection"`
 }
 
 type vulnerabilityRule struct {
@@ -54,6 +57,9 @@ type vulnerabilityData struct {
 	Cve_caused_by_package_path string `json:"cve_caused_by_package_path"`
 	Cve_container_layer        string `json:"cve_container_layer"`
 	Cve_link                   string `json:"cve_link"`
+	ExploitabilityScore        int    `json:"exploitability_score"`
+	InitExploitabilityScore    int    `json:"init_exploitability_score"`
+	HasLiveConnection          bool   `json:"has_live_connection"`
 }
 
 func CommitFuncVulnerabilities(ns string, data []Vulnerability) error {
@@ -119,6 +125,9 @@ func (c Vulnerability) split() (vulnerabilityData, vulnerabilityRule) {
 			Cve_caused_by_package_path: c.Cve_caused_by_package_path,
 			Cve_container_layer:        c.Cve_container_layer,
 			Cve_link:                   c.Cve_link,
+			ExploitabilityScore:        c.ExploitabilityScore,
+			InitExploitabilityScore:    c.InitExploitabilityScore,
+			HasLiveConnection:          c.HasLiveConnection,
 		}, vulnerabilityRule{
 			Cve_id:             c.Cve_id,
 			Cve_severity:       c.Cve_severity,

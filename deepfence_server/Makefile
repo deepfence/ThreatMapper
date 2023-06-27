@@ -1,19 +1,19 @@
-all: vendor deepfence_server
+all: vendor build
 
-local: deepfence_server
+local: build
 
 image:
-	docker run -v $(ROOT_MAKEFILE_DIR):/go:rw deepfenceio/deepfence_builder_ce:$(DF_IMG_TAG) bash -c 'cd /go/deepfence_server && make deepfence_server'
+	docker run -i --rm -v $(ROOT_MAKEFILE_DIR):/go:rw deepfenceio/deepfence_builder_ce:$(DF_IMG_TAG) bash -c 'cd /go/deepfence_server && make build'
 	docker build -f ./Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG) ..
 
 vendor:
 	go mod tidy -v
 	go mod vendor
 
-deepfence_server: ./*.go ./**/*.go
+build: ./*.go ./**/*.go
 	go build -buildvcs=false
 
 clean:
 	rm deepfence_server
 
-.PHONY: vendor clean image
+.PHONY: build vendor clean image
