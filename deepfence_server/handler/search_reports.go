@@ -60,6 +60,10 @@ func SearchCloudNodeHandler[T reporters.Cypherable](w http.ResponseWriter, r *ht
 	defer r.Body.Close()
 	var req reporters_search.SearchNodeReq
 	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		respondError(&BadDecoding{err}, w)
+		return
+	}
 
 	entries, err := reporters_search.SearchCloudNodeReport[T](r.Context(), req.NodeFilter, req.Window)
 	if err != nil {
@@ -68,6 +72,39 @@ func SearchCloudNodeHandler[T reporters.Cypherable](w http.ResponseWriter, r *ht
 	}
 
 	err = httpext.JSON(w, http.StatusOK, entries)
+	if err != nil {
+		log.Error().Msg(err.Error())
+	}
+}
+
+// SearchCloudNodeCountHandler TODO: Handle Generic more gracefully
+func SearchCloudNodeCountHandler[T reporters.CypherableAndCategorizable](w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	var req reporters_search.SearchNodeReq
+	err := httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
+	if err != nil {
+		respondError(&BadDecoding{err}, w)
+		return
+	}
+
+	dummy_ff := reporters_search.SearchFilter{
+		Filters: req.NodeFilter.Filters,
+	}
+
+	entries, err := reporters_search.SearchCloudNodeReport[T](r.Context(), dummy_ff, req.Window)
+	if err != nil {
+		log.Error().Msg(err.Error())
+		respondError(err, w)
+		return
+	}
+
+	counts := reporters.GetCategoryCounts(entries)
+
+	err = httpext.JSON(w, http.StatusOK, reporters_search.SearchCountResp{
+		Count:      len(entries),
+		Categories: counts,
+	})
+
 	if err != nil {
 		log.Error().Msg(err.Error())
 	}
@@ -208,7 +245,7 @@ func (h *Handler) SearchPodsCount(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) SearchCloudAccountCount(w http.ResponseWriter, r *http.Request) {
-	SearchCountHandler[model.CloudNodeAccountInfo](w, r)
+	SearchCloudNodeCountHandler[model.CloudNodeAccountInfo](w, r)
 }
 
 func (h *Handler) SearchCompliancesCount(w http.ResponseWriter, r *http.Request) {

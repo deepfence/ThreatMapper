@@ -3,11 +3,10 @@ package cmd
 import (
 	"context"
 	"fmt"
+	stdhttp "net/http"
 	"strings"
 
 	"github.com/spf13/cobra"
-
-	stdhttp "net/http"
 
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/http"
 	"github.com/deepfence/ThreatMapper/deepfence_ctl/output"
@@ -94,25 +93,25 @@ var graphTopologySubCmd = &cobra.Command{
 		var rh *stdhttp.Response
 		switch root {
 		case "":
-			req := http.Client().TopologyApi.GetTopologyGraph(context.Background())
+			req := http.Client().TopologyAPI.GetTopologyGraph(context.Background())
 			req = req.GraphTopologyFilters(filters)
-			res, rh, err = http.Client().TopologyApi.GetTopologyGraphExecute(req)
+			res, rh, err = http.Client().TopologyAPI.GetTopologyGraphExecute(req)
 		case "hosts":
-			req := http.Client().TopologyApi.GetHostsTopologyGraph(context.Background())
+			req := http.Client().TopologyAPI.GetHostsTopologyGraph(context.Background())
 			req = req.GraphTopologyFilters(filters)
-			res, rh, err = http.Client().TopologyApi.GetHostsTopologyGraphExecute(req)
+			res, rh, err = http.Client().TopologyAPI.GetHostsTopologyGraphExecute(req)
 		case "containers":
-			req := http.Client().TopologyApi.GetContainersTopologyGraph(context.Background())
+			req := http.Client().TopologyAPI.GetContainersTopologyGraph(context.Background())
 			req = req.GraphTopologyFilters(filters)
-			res, rh, err = http.Client().TopologyApi.GetContainersTopologyGraphExecute(req)
+			res, rh, err = http.Client().TopologyAPI.GetContainersTopologyGraphExecute(req)
 		case "pods":
-			req := http.Client().TopologyApi.GetPodsTopologyGraph(context.Background())
+			req := http.Client().TopologyAPI.GetPodsTopologyGraph(context.Background())
 			req = req.GraphTopologyFilters(filters)
-			res, rh, err = http.Client().TopologyApi.GetPodsTopologyGraphExecute(req)
+			res, rh, err = http.Client().TopologyAPI.GetPodsTopologyGraphExecute(req)
 		case "kubernetes":
-			req := http.Client().TopologyApi.GetKubernetesTopologyGraph(context.Background())
+			req := http.Client().TopologyAPI.GetKubernetesTopologyGraph(context.Background())
 			req = req.GraphTopologyFilters(filters)
-			res, rh, err = http.Client().TopologyApi.GetKubernetesTopologyGraphExecute(req)
+			res, rh, err = http.Client().TopologyAPI.GetKubernetesTopologyGraphExecute(req)
 		default:
 			log.Fatal().Msgf("Unsupported root:%s", root)
 		}
@@ -137,12 +136,12 @@ var graphThreatSubCmd = &cobra.Command{
 
 		cloud_filter, _ := cmd.Flags().GetBool("cloud-only")
 
-		req := http.Client().ThreatApi.GetThreatGraph(context.Background())
+		req := http.Client().ThreatAPI.GetThreatGraph(context.Background())
 		req = req.GraphThreatFilters(deepfence_server_client.GraphThreatFilters{
 			Type:              issue_filter,
 			CloudResourceOnly: cloud_filter,
 		})
-		res, rh, err := http.Client().ThreatApi.GetThreatGraphExecute(req)
+		res, rh, err := http.Client().ThreatAPI.GetThreatGraphExecute(req)
 
 		if err != nil {
 			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)
@@ -157,12 +156,12 @@ var attackPathsSubCmd = &cobra.Command{
 	Long:  `This subcommand retrieve the attack paths graph`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		req := http.Client().ThreatApi.GetVulnerabilityThreatGraph(context.Background())
+		req := http.Client().ThreatAPI.GetVulnerabilityThreatGraph(context.Background())
 		req = req.GraphVulnerabilityThreatGraphRequest(
 			deepfence_server_client.GraphVulnerabilityThreatGraphRequest{
 				GraphType: "most_vulnerable_attack_paths",
 			})
-		res, rh, err := http.Client().ThreatApi.GetVulnerabilityThreatGraphExecute(req)
+		res, rh, err := http.Client().ThreatAPI.GetVulnerabilityThreatGraphExecute(req)
 
 		if err != nil {
 			log.Fatal().Msgf("Fail to execute: %v: %v", err, rh)

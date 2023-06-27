@@ -1,36 +1,45 @@
 import { ComponentPropsWithRef, forwardRef } from 'react';
 import { Link, LinkProps } from 'react-router-dom';
-import { twMerge } from 'tailwind-merge';
+import { cn } from 'tailwind-preset';
 
 const baseClassName =
-  'text-blue-600 dark:text-blue-500 hover:underline focus:underline visited:text-purple-600 dark:visited:text-purple-500';
+  'text-blue-600 dark:text-text-link hover:underline focus:underline visited:text-purple-600 dark:visited:text-purple-500';
 
-type AnchorProps = React.ComponentPropsWithRef<'a'>;
+type AnchorProps = React.ComponentPropsWithRef<'a'> & {
+  unstyled?: boolean;
+};
 const AAnchor = forwardRef<HTMLAnchorElement, AnchorProps>(
-  ({ children, className, ...props }, ref) => (
-    <a {...props} className={twMerge(baseClassName, className)} ref={ref}>
+  ({ children, className, unstyled, ...props }, ref) => (
+    <a {...props} className={cn(unstyled ? '' : baseClassName, className)} ref={ref}>
       {children}
     </a>
   ),
 );
 AAnchor.displayName = 'DFLink.AAnchor';
 
-const ALink = forwardRef<HTMLAnchorElement, LinkProps>(
-  ({ children, className, ...props }, ref) => (
-    <Link {...props} className={twMerge(baseClassName, className)} ref={ref}>
-      {children}
-    </Link>
-  ),
-);
+const ALink = forwardRef<
+  HTMLAnchorElement,
+  LinkProps & {
+    unstyled?: boolean;
+  }
+>(({ children, className, unstyled, ...props }, ref) => (
+  <Link {...props} className={cn(unstyled ? '' : baseClassName, className)} ref={ref}>
+    {children}
+  </Link>
+));
 ALink.displayName = 'DFLink.AAnchor';
 
-type DFLinkProps = ComponentPropsWithRef<typeof AAnchor | typeof ALink>;
+type DFLinkProps = ComponentPropsWithRef<
+  (typeof AAnchor | typeof ALink) & {
+    unstyled?: boolean;
+  }
+>;
 export const DFLink = forwardRef<HTMLAnchorElement, DFLinkProps>(
   (props: DFLinkProps, ref) => {
     return 'href' in props ? (
-      <AAnchor {...(props as AnchorProps)} ref={ref} />
+      <AAnchor {...(props as AnchorProps)} unstyled={props.unstyled} ref={ref} />
     ) : (
-      <ALink {...(props as LinkProps)} ref={ref} />
+      <ALink {...(props as LinkProps)} unstyled={props.unstyled} ref={ref} />
     );
   },
 );

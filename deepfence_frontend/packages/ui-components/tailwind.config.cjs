@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-/** @type {import('tailwindcss').Config} */
 
-const preset = require('tailwind-preset');
+const { preset } = require('tailwind-preset');
 
 module.exports = {
   presets: [preset],
@@ -59,6 +58,10 @@ module.exports = {
           '0%': { opacity: 1 },
           '100%': { opacity: 0 },
         },
+        'modal-slide-in': {
+          '0%': { opacity: 1, transform: 'translateY(-24px)' },
+          '100%': { opacity: 1, transform: 'translateY(0)' },
+        },
         'pop-in': {
           '0%': { opacity: 0, transform: 'scale(.96)' },
           '100%': { opacity: 1, transform: 'scale(1)' },
@@ -103,6 +106,7 @@ module.exports = {
         'slide-left-out': 'slide-left-out 250ms forwards cubic-bezier(0.16, 1, 0.3, 1)',
         'opacity-out': 'opacity-out 250ms cubic-bezier(0.16, 1, 0.3, 1)',
         'opacity-in': 'opacity-in 250ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'modal-slide-in': 'modal-slide-in 300ms cubic-bezier(0.5, 1, 0.5, 1)',
         'accordion-open': 'accordion-slide-down 100ms cubic-bezier(0.16, 1, 0.3, 1)',
         'accordion-closed': 'accordion-slide-up 100ms cubic-bezier(0.16, 1, 0.3, 1)',
       },

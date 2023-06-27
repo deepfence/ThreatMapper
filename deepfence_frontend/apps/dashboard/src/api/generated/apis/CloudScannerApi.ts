@@ -18,6 +18,7 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   IngestersCloudCompliance,
+  IngestersCloudComplianceScanStatus,
   ModelCloudComplianceScanResult,
   ModelComplianceScanStatusResp,
   ModelScanListReq,
@@ -33,6 +34,8 @@ import {
     ApiDocsFailureResponseToJSON,
     IngestersCloudComplianceFromJSON,
     IngestersCloudComplianceToJSON,
+    IngestersCloudComplianceScanStatusFromJSON,
+    IngestersCloudComplianceScanStatusToJSON,
     ModelCloudComplianceScanResultFromJSON,
     ModelCloudComplianceScanResultToJSON,
     ModelComplianceScanStatusRespFromJSON,
@@ -54,7 +57,7 @@ export interface CountResultsCloudComplianceScanRequest {
 }
 
 export interface IngestCloudComplianceScanStatusRequest {
-    ingestersCloudCompliance?: Array<IngestersCloudCompliance> | null;
+    ingestersCloudComplianceScanStatus?: Array<IngestersCloudComplianceScanStatus> | null;
 }
 
 export interface IngestCloudCompliancesRequest {
@@ -98,8 +101,8 @@ export interface CloudScannerApiInterface {
 
     /**
      * Ingest Cloud compliances found while scanning cloud provider
-     * @summary Ingest Cloud Compliances
-     * @param {Array<IngestersCloudCompliance>} [ingestersCloudCompliance] 
+     * @summary Ingest Cloud Compliances scan status
+     * @param {Array<IngestersCloudComplianceScanStatus>} [ingestersCloudComplianceScanStatus] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof CloudScannerApiInterface
@@ -108,7 +111,7 @@ export interface CloudScannerApiInterface {
 
     /**
      * Ingest Cloud compliances found while scanning cloud provider
-     * Ingest Cloud Compliances
+     * Ingest Cloud Compliances scan status
      */
     ingestCloudComplianceScanStatus(requestParameters: IngestCloudComplianceScanStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
@@ -224,7 +227,7 @@ export class CloudScannerApi extends runtime.BaseAPI implements CloudScannerApiI
 
     /**
      * Ingest Cloud compliances found while scanning cloud provider
-     * Ingest Cloud Compliances
+     * Ingest Cloud Compliances scan status
      */
     async ingestCloudComplianceScanStatusRaw(requestParameters: IngestCloudComplianceScanStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
         const queryParameters: any = {};
@@ -242,11 +245,11 @@ export class CloudScannerApi extends runtime.BaseAPI implements CloudScannerApiI
             }
         }
         const response = await this.request({
-            path: `/deepfence/ingest/cloud-compliance-scan-status`,
+            path: `/deepfence/ingest/cloud-compliance-status`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: requestParameters.ingestersCloudCompliance?.map(IngestersCloudComplianceToJSON),
+            body: requestParameters.ingestersCloudComplianceScanStatus?.map(IngestersCloudComplianceScanStatusToJSON),
         }, initOverrides);
 
         return new runtime.VoidApiResponse(response);
@@ -254,7 +257,7 @@ export class CloudScannerApi extends runtime.BaseAPI implements CloudScannerApiI
 
     /**
      * Ingest Cloud compliances found while scanning cloud provider
-     * Ingest Cloud Compliances
+     * Ingest Cloud Compliances scan status
      */
     async ingestCloudComplianceScanStatus(requestParameters: IngestCloudComplianceScanStatusRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.ingestCloudComplianceScanStatusRaw(requestParameters, initOverrides);

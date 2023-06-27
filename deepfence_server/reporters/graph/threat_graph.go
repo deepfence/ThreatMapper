@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"sort"
+	"time"
 
 	"github.com/deepfence/golang_deepfence_sdk/utils/directory"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -125,7 +126,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(filters ThreatFilters) (map[str
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(120 * time.Second))
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +159,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(filters ThreatFilters) (map[str
 			CASE WHEN $type = 'malware' or $type = 'all' THEN n.malwares_count > 0 ELSE false END
 			OR
 			CASE WHEN $type = 'compliance' or $type = 'all' THEN n.compliances_count > 0 ELSE false END
-			OR 
+			OR
 			CASE WHEN $type = 'cloud_compliance' or $type = 'all' THEN n.cloud_compliances_count > 0 ELSE false END
 		)
 		WITH n, n.cloud_provider as provider
@@ -188,7 +189,7 @@ func (tc *ThreatGraphReporter) GetRawThreatGraph(filters ThreatFilters) (map[str
 			CASE WHEN $type = 'malware' or $type = 'all' THEN n.malwares_count > 0 ELSE false END
 			OR
 			CASE WHEN $type = 'compliance' or $type = 'all' THEN n.compliances_count > 0 ELSE false END
-			OR 
+			OR
 			CASE WHEN $type = 'cloud_compliance' or $type = 'all' THEN n.cloud_compliances_count > 0 ELSE false END
 		)
 		SET n:ThreatNode

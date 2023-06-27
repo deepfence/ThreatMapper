@@ -45,6 +45,11 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 		respondError(&InternalServerError{err}, w)
 		return
 	}
+	// don't log secrets in audit log
+	req.Password = ""
+	req.AmazonAccessKey = ""
+	req.AmazonSecretKey = ""
+	h.AuditUserActivity(r, EVENT_SETTINGS, ACTION_CREATE, req, true)
 	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessEmailConfigCreated})
 }
 
@@ -94,6 +99,8 @@ func (h *Handler) DeleteEmailConfiguration(w http.ResponseWriter, r *http.Reques
 		respondError(&InternalServerError{err}, w)
 		return
 	}
+	h.AuditUserActivity(r, EVENT_SETTINGS, ACTION_DELETE,
+		map[string]interface{}{"config_id": configId}, true)
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -180,5 +187,6 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
+	h.AuditUserActivity(r, EVENT_SETTINGS, ACTION_UPDATE, setting, true)
 	w.WriteHeader(http.StatusNoContent)
 }

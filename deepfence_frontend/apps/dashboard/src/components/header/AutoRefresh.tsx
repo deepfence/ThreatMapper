@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { HiChevronDown, HiRefresh } from 'react-icons/hi';
+import { HiRefresh } from 'react-icons/hi';
 import { useRevalidator } from 'react-router-dom';
 import { useInterval } from 'react-use';
 import { Dropdown, DropdownItem } from 'ui-components';
+
+import { CaretDown } from '@/components/icons/common/CaretDown';
+import { queryClient } from '@/queries/client';
 
 // function that converts seconds to human friendly time
 // e.g. 300 seconds => 5m
@@ -12,9 +15,9 @@ function secondsToHuman(seconds: number) {
   if (seconds < 60) {
     return `${seconds}s`;
   } else if (seconds < 3600) {
-    return `${Math.floor(seconds / 60)}m`;
+    return `${Math.floor(seconds / 60)} min`;
   } else {
-    return `${Math.floor(seconds / 3600)}h`;
+    return `${Math.floor(seconds / 3600)} hour`;
   }
 }
 
@@ -27,6 +30,9 @@ export const AutoRefresh = () => {
     () => {
       if (state === 'idle') {
         revalidate();
+        queryClient.refetchQueries({
+          type: 'active',
+        });
       }
     },
     refreshInSeconds === 0 ? null : refreshInSeconds * 1000,
@@ -42,20 +48,23 @@ export const AutoRefresh = () => {
   }, [spinning]);
 
   return (
-    <div className="flex items-stretch h-8 border-gray-300 dark:border-gray-600 rounded-lg border text-gray-500 dark:text-gray-300">
+    <div className="flex items-stretch text-gray-500 dark:text-text-text-and-icon">
       <button
-        className="w-8 h-full flex items-center justify-center border-gray-200 dark:border-gray-600 border-r-2"
+        className="w-4 h-full flex items-center justify-center"
         title="Refresh now"
         onClick={() => {
           if (state === 'idle') {
             revalidate();
+            queryClient.refetchQueries({
+              type: 'active',
+            });
             setSpinning(true);
           }
         }}
       >
         <HiRefresh
           size="1.25rem"
-          className={spinning ? 'animate-spin' : ''}
+          className={`dark:text-text-input-value ${spinning ? 'animate-spin' : ''}`}
           style={{
             animationDirection: 'reverse',
           }}
@@ -122,17 +131,19 @@ export const AutoRefresh = () => {
           </>
         }
       >
-        <div className="flex items-center gap-1 cursor-pointer px-2">
-          {refreshInSeconds !== 0 ? secondsToHuman(refreshInSeconds) : 'Never'}
-          <HiChevronDown />
+        <div className="flex items-center gap-1 cursor-pointer px-2 text-p2 select-none">
+          <span>Refresh data</span>
+          <span className="dark:text-text-input-value text-h6">
+            {refreshInSeconds !== 0 ? secondsToHuman(refreshInSeconds) : 'Never'}
+          </span>
+          <span className="w-3 h-3">
+            <CaretDown />
+          </span>
         </div>
       </Dropdown>
     </div>
   );
 };
-
-const themeSelectedDropdownClassname = 'text-blue-500 dark:text-blue-300';
-const themeDropdownClassname = 'text-gray-700 dark:text-gray-400';
 
 const RefreshDropdownItem = ({
   seconds,
@@ -150,11 +161,7 @@ const RefreshDropdownItem = ({
       onClick={() => {
         onClick(seconds);
       }}
-      className={
-        seconds === selectedSeconds
-          ? themeSelectedDropdownClassname
-          : themeDropdownClassname
-      }
+      selected={seconds === selectedSeconds}
     >
       {children}
     </DropdownItem>

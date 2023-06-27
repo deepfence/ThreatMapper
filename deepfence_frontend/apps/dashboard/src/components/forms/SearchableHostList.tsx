@@ -1,43 +1,30 @@
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
 import { useEffect, useState } from 'react';
-import { Combobox, ComboboxOption } from 'ui-components';
+import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
-import {
-  SearchHostsLoaderDataType,
-  useGetHostsList,
-} from '@/features/common/data-component/searchHostsApiLoader';
+import { queries } from '@/queries';
 import { ScanTypeEnum } from '@/types/common';
 
 export type SearchableHostListProps = {
   scanType: ScanTypeEnum | 'none';
   onChange?: (value: string[]) => void;
+  onClearAll?: () => void;
   defaultSelectedHosts?: string[];
-  reset?: boolean;
   valueKey?: 'nodeId' | 'hostName' | 'nodeName';
   active?: boolean;
 };
 
 const PAGE_SIZE = 15;
-
 export const SearchableHostList = ({
   scanType,
   onChange,
+  onClearAll,
   defaultSelectedHosts,
-  reset,
   valueKey = 'nodeId',
   active,
 }: SearchableHostListProps) => {
-  const [searchState, setSearchState] = useState<{
-    searchText: string;
-    size: number;
-    hostsList: SearchHostsLoaderDataType['hosts'];
-    hasNext: boolean;
-  }>({
-    searchText: '',
-    size: PAGE_SIZE,
-    hostsList: [],
-    hasNext: false,
-  });
+  const [searchText, setSearchText] = useState('');
 
   const [selectedHosts, setSelectedHosts] = useState<string[]>(
     defaultSelectedHosts ?? [],
@@ -47,60 +34,29 @@ export const SearchableHostList = ({
     setSelectedHosts(defaultSelectedHosts ?? []);
   }, [defaultSelectedHosts]);
 
-  useEffect(() => {
-    if (reset) {
-      setSearchState({
-        searchText: '',
-        size: PAGE_SIZE,
-        hostsList: [],
-        hasNext: false,
-      });
-      setSelectedHosts([]);
-    }
-  }, [reset]);
-
-  const {
-    hosts,
-    status: listHostStatus,
-    hasNext,
-  } = useGetHostsList({
-    scanType,
-    searchText: searchState.searchText,
-    size: searchState.size,
-    active,
+  const { data, isFetching, hasNextPage, fetchNextPage } = useInfiniteQuery({
+    ...queries.search.hosts({
+      scanType,
+      size: PAGE_SIZE,
+      searchText,
+      active,
+    }),
+    keepPreviousData: true,
+    getNextPageParam: (lastPage, allPages) => {
+      return allPages.length * PAGE_SIZE;
+    },
+    getPreviousPageParam: (firstPage, allPages) => {
+      if (!allPages.length) return 0;
+      return (allPages.length - 1) * PAGE_SIZE;
+    },
   });
 
-  useEffect(() => {
-    if (hosts.length > 0) {
-      setSearchState((prev) => {
-        return {
-          ...prev,
-          hostsList: hosts,
-          hasNext,
-        };
-      });
-    }
-  }, [hosts, hasNext]);
-
-  const searchHost = debounce((query) => {
-    setSearchState({
-      searchText: query,
-      size: PAGE_SIZE,
-      hostsList: [],
-      hasNext: false,
-    });
+  const searchHost = debounce((query: string) => {
+    setSearchText(query);
   }, 1000);
 
   const onEndReached = () => {
-    setSearchState((prev) => {
-      if (prev.hasNext) {
-        return {
-          ...prev,
-          size: prev.size + PAGE_SIZE,
-        };
-      }
-      return prev;
-    });
+    if (hasNextPage) fetchNextPage();
   };
 
   return (
@@ -113,30 +69,33 @@ export const SearchableHostList = ({
         value={selectedHosts.length}
       />
       <Combobox
-        multiple
-        sizing="sm"
-        label="Select host"
-        placeholder="Select host"
+        startIcon={
+          isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
+        }
         name="hostFilter"
+        getDisplayValue={() => 'Host'}
+        multiple
         value={selectedHosts}
-        onChange={(value) => {
-          setSelectedHosts(value);
-          onChange?.(value);
+        onChange={(values) => {
+          setSelectedHosts(values);
+          onChange?.(values);
         }}
-        getDisplayValue={() => {
-          return searchState.searchText;
-        }}
-        loading={listHostStatus !== 'idle'}
         onQueryChange={searchHost}
+        clearAllElement="Clear"
+        onClearAll={onClearAll}
         onEndReached={onEndReached}
       >
-        {searchState.hostsList.map((host, index) => {
-          return (
-            <ComboboxOption key={`${host.nodeId}-${index}`} value={host[valueKey]}>
-              {host.nodeName}
-            </ComboboxOption>
-          );
-        })}
+        {data?.pages
+          .flatMap((page) => {
+            return page.hosts;
+          })
+          .map((host, index) => {
+            return (
+              <ComboboxOption key={`${host.nodeId}-${index}`} value={host[valueKey]}>
+                {host.nodeName}
+              </ComboboxOption>
+            );
+          })}
       </Combobox>
     </>
   );

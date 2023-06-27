@@ -1,6 +1,12 @@
-import cx from 'classnames';
-import { Badge } from 'ui-components';
+import { capitalize } from 'lodash-es';
+import { cn } from 'tailwind-preset';
+import { CircleSpinner } from 'ui-components';
 
+import {
+  ErrorIcon,
+  NotStartedIcon,
+  SuccessIcon,
+} from '@/components/icons/common/ScanStatuses';
 import {
   isNeverScanned,
   isScanComplete,
@@ -8,21 +14,61 @@ import {
   isScanInProgress,
 } from '@/utils/scan';
 
-export const ScanStatusBadge = ({ status }: { status: string }) => {
-  return (
-    <Badge
-      label={(isNeverScanned(status) ? 'NEVER_SCANNED' : status).replaceAll('_', ' ')}
-      className={cx('max-w-full w-fit truncate', {
-        'bg-green-100 dark:bg-green-600/10 text-green-600 dark:text-green-400':
-          isScanComplete(status),
-        'bg-red-100 dark:bg-red-600/10 text-red-600 dark:text-red-400':
-          isScanFailed(status),
-        'bg-blue-100 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400':
-          isScanInProgress(status),
-        'bg-gray-100 dark:bg-gray-600/10 text-gray-600 dark:text-gray-400':
-          isNeverScanned(status),
-      })}
-      size="sm"
-    />
+export const ScanStatusBadge = ({
+  status,
+  className,
+  justIcon = false,
+}: {
+  status: string;
+  className?: string;
+  justIcon?: boolean;
+}) => {
+  const wrapperClassName = cn(
+    'flex items-center gap-1.5 dark:text-text-text-and-icon text-p4',
+    className,
   );
+
+  const iconWrapper = cn('w-[18px] h-[18px]');
+
+  const scanStatus = capitalize(status.replaceAll('_', ' '));
+
+  if (isScanComplete(status)) {
+    return (
+      <div className={wrapperClassName}>
+        <span className={iconWrapper}>
+          <SuccessIcon />
+        </span>
+
+        {!justIcon ? scanStatus : null}
+      </div>
+    );
+  } else if (isScanFailed(status)) {
+    return (
+      <div className={wrapperClassName}>
+        <span className={iconWrapper}>
+          <ErrorIcon />
+        </span>
+        {!justIcon ? scanStatus : null}
+      </div>
+    );
+  } else if (isNeverScanned(status)) {
+    return (
+      <div className={wrapperClassName}>
+        <span className={iconWrapper}>
+          <NotStartedIcon />
+        </span>
+        Never Scanned
+      </div>
+    );
+  } else if (isScanInProgress(status)) {
+    return (
+      <div className={wrapperClassName}>
+        <span className={iconWrapper}>
+          <CircleSpinner size="sm" />
+        </span>
+        {!justIcon ? scanStatus : null}
+      </div>
+    );
+  }
+  return null;
 };

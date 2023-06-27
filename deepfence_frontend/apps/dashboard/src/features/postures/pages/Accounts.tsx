@@ -33,13 +33,15 @@ import {
   Modal,
   Popover,
   RowSelectionState,
+  SortingState,
   Table,
   TableSkeleton,
 } from 'ui-components';
 
-import { getCloudNodesApiClient, getScanResultsApiClient } from '@/api/api';
+import { getScanResultsApiClient, getSearchApiClient } from '@/api/api';
 import {
   ModelCloudNodeAccountInfo,
+  SearchSearchNodeReq,
   UtilsReportFiltersNodeTypeEnum,
   UtilsReportFiltersScanTypeEnum,
 } from '@/api/generated';
@@ -57,7 +59,11 @@ import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { isScanComplete } from '@/utils/scan';
 import { DFAwait } from '@/utils/suspense';
-import { getPageFromSearchParams } from '@/utils/table';
+import {
+  getOrderFromSearchParams,
+  getPageFromSearchParams,
+  useSortingState,
+} from '@/utils/table';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 enum ActionEnumType {
@@ -153,38 +159,70 @@ export async function getAccounts(
   message?: string;
 }> {
   const page = getPageFromSearchParams(searchParams);
-  // const scanResultsReq: ListCloudNodeAccountRequest = {
-  //   cloud_provider: '',
-  //   window: {
-  //     offset: page * PAGE_SIZE,
-  //     size: PAGE_SIZE,
-  //   },
-  // };
-  // if (active.length && !active.length) {
-  //   scanResultsReq.fields_filter.contains_filter.filter_in!['active'] = [
-  //     active.length ? true : false,
-  //   ];
-  // }
-  const deleteScanResultsForScanIDApi = apiWrapper({
-    fn: getCloudNodesApiClient().listCloudNodeAccount,
-  });
-  const result = await deleteScanResultsForScanIDApi({
-    modelCloudNodeAccountsListReq: {
-      cloud_provider: nodeType,
+  const order = getOrderFromSearchParams(searchParams);
+  const isActive = searchParams.get('active') === 'true';
+
+  const searchReq: SearchSearchNodeReq = {
+    node_filter: {
+      in_field_filter: [],
+      filters: {
+        compare_filter: [],
+        contains_filter: { filter_in: { cloud_provider: [nodeType] } },
+        match_filter: { filter_in: {} },
+        order_filter: { order_fields: [] },
+        not_contains_filter: { filter_in: {} },
+      },
       window: {
-        offset: 0 * PAGE_SIZE,
-        size: PAGE_SIZE,
+        offset: 0,
+        size: 0,
       },
     },
+    window: { offset: page * PAGE_SIZE, size: PAGE_SIZE },
+  };
+
+  if (isActive) {
+    searchReq.node_filter.filters.contains_filter.filter_in!['active'] = [true];
+  }
+
+  if (order) {
+    searchReq.node_filter.filters.order_filter.order_fields = [
+      {
+        field_name: order.sortBy,
+        descending: order.descending,
+      },
+    ];
+  }
+
+  const searchCloudAccounts = apiWrapper({
+    fn: getSearchApiClient().searchCloudAccounts,
+  });
+  const result = await searchCloudAccounts({
+    searchSearchNodeReq: searchReq,
   });
   if (!result.ok) {
     throw result.error;
   }
 
+  const countsResultApi = apiWrapper({
+    fn: getSearchApiClient().searchCloudAccountsCount,
+  });
+  const countsResult = await countsResultApi({
+    searchSearchNodeReq: {
+      ...searchReq,
+      window: {
+        ...searchReq.window,
+        size: 10 * searchReq.window.size,
+      },
+    },
+  });
+  if (!countsResult.ok) {
+    throw countsResult.error;
+  }
+
   return {
-    accounts: result.value.cloud_node_accounts_info ?? [],
-    currentPage: 0,
-    totalRows: 15,
+    accounts: result.value ?? [],
+    currentPage: page,
+    totalRows: page * PAGE_SIZE + countsResult.value.count,
   };
 }
 
@@ -410,25 +448,18 @@ const ActionDropdown = ({
 
 const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const columnHelper = createColumnHelper<ModelCloudNodeAccountInfo>();
   const [selectedScanType, setSelectedScanType] = useState<
     typeof ScanTypeEnum.ComplianceScan | typeof ScanTypeEnum.CloudComplianceScan
   >();
   const [scanNodeIds, setScanNodeIds] = useState<string[]>();
-  let accounts = data?.accounts ?? [];
-  const totalRows = data?.totalRows ?? 0;
-  const currentPage = data?.currentPage ?? 0;
+  const accounts = data?.accounts ?? [];
   const cloudProvider = accounts[0]?.cloud_provider ?? '';
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [scanIdToDelete, setScanIdToDelete] = useState('');
   const [scanTypeToDelete, setScanTypeToDelete] = useState<ScanTypeEnum>();
-
-  if (searchParams.get('active')) {
-    accounts = accounts.filter((account) => {
-      return account.active;
-    });
-  }
+  const [sort, setSort] = useSortingState();
 
   const nodeType = getNodeTypeByProviderName(cloudProvider);
   const columns = useMemo(
@@ -619,12 +650,54 @@ const PostureTable = ({ data }: { data: LoaderDataType['data'] }) => {
           size="sm"
           data={accounts ?? []}
           columns={columns}
+          enablePagination
+          manualPagination
+          totalRows={data?.totalRows ?? 0}
+          pageSize={PAGE_SIZE}
+          pageIndex={data?.currentPage ?? 0}
+          onPaginationChange={(updaterOrValue) => {
+            let newPageIndex = 0;
+            if (typeof updaterOrValue === 'function') {
+              newPageIndex = updaterOrValue({
+                pageIndex: data?.currentPage ?? 0,
+                pageSize: PAGE_SIZE,
+              }).pageIndex;
+            } else {
+              newPageIndex = updaterOrValue.pageIndex;
+            }
+            setSearchParams((prev) => {
+              prev.set('page', String(newPageIndex));
+              return prev;
+            });
+          }}
+          approximatePagination
           enableRowSelection
           rowSelectionState={rowSelectionState}
           onRowSelectionChange={setRowSelectionState}
           getRowId={(row) => row.node_id ?? ''}
           enableColumnResizing
           enableSorting
+          manualSorting
+          sortingState={sort}
+          onSortingChange={(updaterOrValue) => {
+            let newSortState: SortingState = [];
+            if (typeof updaterOrValue === 'function') {
+              newSortState = updaterOrValue(sort);
+            } else {
+              newSortState = updaterOrValue;
+            }
+            setSearchParams((prev) => {
+              if (!newSortState.length) {
+                prev.delete('sortby');
+                prev.delete('desc');
+              } else {
+                prev.set('sortby', String(newSortState[0].id));
+                prev.set('desc', String(newSortState[0].desc));
+              }
+              return prev;
+            });
+            setSort(newSortState);
+          }}
         />
       </div>
     </>

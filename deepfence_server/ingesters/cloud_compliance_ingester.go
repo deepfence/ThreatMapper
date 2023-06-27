@@ -50,13 +50,13 @@ func (tc *CloudComplianceIngester) Ingest(
 
 type CloudComplianceScanStatusIngester struct{}
 
-func NewCloudComplianceScanStatusIngester() KafkaIngester[ingesters.CloudComplianceScanStatus] {
+func NewCloudComplianceScanStatusIngester() KafkaIngester[[]ingesters.CloudComplianceScanStatus] {
 	return &CloudComplianceScanStatusIngester{}
 }
 
 func (tc *CloudComplianceScanStatusIngester) Ingest(
 	ctx context.Context,
-	cs ingesters.CloudComplianceScanStatus,
+	cs []ingesters.CloudComplianceScanStatus,
 	ingestC chan *kgo.Record,
 ) error {
 
@@ -69,14 +69,16 @@ func (tc *CloudComplianceScanStatusIngester) Ingest(
 		{Key: "tenant_id", Value: []byte(tenantID)},
 	}
 
-	cb, err := json.Marshal(cs)
-	if err != nil {
-		log.Error().Msg(err.Error())
-	} else {
-		ingestC <- &kgo.Record{
-			Topic:   utils.CLOUD_COMPLIANCE_SCAN_STATUS,
-			Value:   cb,
-			Headers: rh,
+	for _, c := range cs {
+		cb, err := json.Marshal(c)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		} else {
+			ingestC <- &kgo.Record{
+				Topic:   utils.CLOUD_COMPLIANCE_SCAN_STATUS,
+				Value:   cb,
+				Headers: rh,
+			}
 		}
 	}
 

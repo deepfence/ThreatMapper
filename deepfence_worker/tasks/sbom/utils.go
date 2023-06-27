@@ -2,6 +2,8 @@ package sbom
 
 import (
 	"encoding/json"
+	"sync"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/golang_deepfence_sdk/utils/log"
@@ -33,4 +35,39 @@ func SendScanStatus(ingestC chan *kgo.Record, status SbomScanStatus, rh []kgo.Re
 		}
 	}
 	return nil
+}
+
+func StartStatusReporter(statusChan chan SbomScanStatus, ingestC chan *kgo.Record,
+	rh []kgo.RecordHeader, params utils.SbomParameters, wg *sync.WaitGroup) {
+
+	go func() {
+		log.Info().Msgf("StatusReporter started, scanid: %s", params.ScanId)
+		defer wg.Done()
+
+		ticker := time.NewTicker(30 * time.Second)
+		InProgressStatus := NewSbomScanStatus(params, utils.SCAN_STATUS_INPROGRESS, "", nil)
+	loop:
+		for {
+			select {
+			case statusIn := <-statusChan:
+				status := statusIn.ScanStatus
+				err := SendScanStatus(ingestC, statusIn, rh)
+				if err != nil {
+					log.Error().Msgf("error sending scan status: %s, scanid: %s",
+						err.Error(), params.ScanId)
+				}
+				if status == utils.SCAN_STATUS_SUCCESS || status == utils.SCAN_STATUS_FAILED {
+					break loop
+				}
+			case <-ticker.C:
+				err := SendScanStatus(ingestC, InProgressStatus, rh)
+				if err != nil {
+					log.Error().Msgf("error sending periodic In_PROGRESS scan status: %s, scanid: %s",
+						err.Error(), params.ScanId)
+				}
+			}
+		}
+
+		log.Info().Msgf("StatusReporter exited, scanid: %s", params.ScanId)
+	}()
 }

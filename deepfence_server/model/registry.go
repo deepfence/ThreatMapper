@@ -182,7 +182,7 @@ func (ra *RegistryAddReq) CreateRegistry(ctx context.Context, rContext context.C
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return 0, err
 	}
@@ -302,7 +302,7 @@ func ListImageStubs(ctx context.Context, registryId string, filter reporters.Con
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return images, err
 	}
@@ -362,7 +362,7 @@ func ListImages(ctx context.Context, registryId string, filter reporters.Contain
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
@@ -411,7 +411,7 @@ func ListImages(ctx context.Context, registryId string, filter reporters.Contain
 
 func checkRegistryExists(tx neo4j.Transaction, node_id string) error {
 	query := `
-	MATCH (n:RegistryAccount{node_id: $id}) 
+	MATCH (n:RegistryAccount{node_id: $id})
 	RETURN n.node_id`
 
 	r, err := tx.Run(query, map[string]interface{}{"id": node_id})
@@ -437,13 +437,13 @@ func GetRegistryPgIds(ctx context.Context, node_id string) ([]int64, error) {
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return res, err
 	}
 	defer tx.Close()
 	query := `
-	MATCH (n:RegistryAccount{node_id: $id}) 
+	MATCH (n:RegistryAccount{node_id: $id})
 	RETURN n.container_registry_ids`
 
 	r, err := tx.Run(query, map[string]interface{}{"id": node_id})
@@ -473,7 +473,7 @@ func DeleteRegistryAccount(ctx context.Context, node_id string) error {
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -518,7 +518,7 @@ func RegistrySummary(ctx context.Context, registryId mo.Option[string], registry
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return count, err
 	}
@@ -620,7 +620,7 @@ func RegistrySummaryAll(ctx context.Context) (RegistrySummaryAllResp, error) {
 	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return count, err
 	}

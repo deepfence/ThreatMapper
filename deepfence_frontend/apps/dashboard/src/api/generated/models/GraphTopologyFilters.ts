@@ -68,6 +68,12 @@ export interface GraphTopologyFilters {
      * @memberof GraphTopologyFilters
      */
     region_filter: Array<string> | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof GraphTopologyFilters
+     */
+    skip_connections: boolean;
 }
 
 /**
@@ -82,6 +88,7 @@ export function instanceOfGraphTopologyFilters(value: object): boolean {
     isInstance = isInstance && "kubernetes_filter" in value;
     isInstance = isInstance && "pod_filter" in value;
     isInstance = isInstance && "region_filter" in value;
+    isInstance = isInstance && "skip_connections" in value;
 
     return isInstance;
 }
@@ -103,6 +110,7 @@ export function GraphTopologyFiltersFromJSONTyped(json: any, ignoreDiscriminator
         'kubernetes_filter': json['kubernetes_filter'],
         'pod_filter': json['pod_filter'],
         'region_filter': json['region_filter'],
+        'skip_connections': json['skip_connections'],
     };
 }
 
@@ -122,6 +130,7 @@ export function GraphTopologyFiltersToJSON(value?: GraphTopologyFilters | null):
         'kubernetes_filter': value.kubernetes_filter,
         'pod_filter': value.pod_filter,
         'region_filter': value.region_filter,
+        'skip_connections': value.skip_connections,
     };
 }
 

@@ -121,6 +121,8 @@ func StartVulnerabilityScan(req ctl.StartVulnerabilityScanRequest) error {
 	switch node_type {
 	case "container":
 		containerId = node_id
+	case "container_image":
+		imageId = node_id
 	case "image":
 		imageId = node_id
 		node_type = "container_image"

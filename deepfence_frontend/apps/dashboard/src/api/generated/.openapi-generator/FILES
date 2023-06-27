@@ -46,8 +46,10 @@ models/GraphTopologyFilters.ts
 models/GraphVulnerabilityThreatGraph.ts
 models/GraphVulnerabilityThreatGraphRequest.ts
 models/IngestersCloudCompliance.ts
+models/IngestersCloudComplianceScanStatus.ts
 models/IngestersCloudResource.ts
 models/IngestersCompliance.ts
+models/IngestersComplianceStats.ts
 models/IngestersMalware.ts
 models/IngestersMalwareScanStatus.ts
 models/IngestersMetaRules.ts

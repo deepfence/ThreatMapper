@@ -1,91 +1,18 @@
-import classNames from 'classnames';
 import { ReactNode, Suspense } from 'react';
 import { generatePath, Link, useLocation, useMatches, useParams } from 'react-router-dom';
+import { cn } from 'tailwind-preset';
 import { Tooltip } from 'ui-components';
 
 import { SearchNodeCountResp } from '@/api/generated';
-import { CloudIcon } from '@/components/icons/cloud';
-import { ContainerIcon } from '@/components/icons/container';
+import { DFLink } from '@/components/DFLink';
+import { CloudLine } from '@/components/icons/common/CloudLine';
 import { GraphIcon } from '@/components/icons/graph';
-import { HostIcon } from '@/components/icons/host';
-import { K8sIcon } from '@/components/icons/k8s';
-import { PodIcon } from '@/components/icons/pod';
 import { TableIcon } from '@/components/icons/table';
 import { TopologyViewTypes } from '@/features/topology/data-components/topologyLoader';
 import { NodeType } from '@/features/topology/utils/topology-data';
 import { DFAwait } from '@/utils/suspense';
 
-const CountsSkeleton = () => {
-  return (
-    <div className="flex items-center gap-1 flex-1 shrink justify-end min-w-0">
-      {[1, 2, 3, 4].map((idx) => {
-        return (
-          <div
-            key={idx}
-            className="bg-gray-200 dark:bg-gray-600 animate-pulse max-w-[150px] flex-1 h-6"
-          />
-        );
-      })}
-    </div>
-  );
-};
-
-export const TopologyHeader = ({ nodeCounts }: { nodeCounts: SearchNodeCountResp }) => {
-  return (
-    <div className="flex p-1 px-2 w-full shadow bg-white dark:bg-gray-800 items-center">
-      <span className="text-md font-medium text-gray-700 dark:text-gray-200">
-        Topology
-      </span>
-      <div className="flex gap-x-4 ml-auto flex-1 shrink min-w-0">
-        <Suspense fallback={<CountsSkeleton />}>
-          <DFAwait resolve={nodeCounts}>
-            {(data: SearchNodeCountResp) => {
-              return (
-                <div className="flex items-center gap-1 flex-1 shrink justify-end min-w-0">
-                  <ResourceSelectorButton
-                    icon={<CloudIcon />}
-                    name="Clouds"
-                    count={data.cloud_provider}
-                    type={NodeType.cloud_provider}
-                  />
-                  <ResourceSelectorButton
-                    icon={<HostIcon />}
-                    name="Hosts"
-                    type={NodeType.host}
-                    count={data.host}
-                  />
-                  <ResourceSelectorButton
-                    icon={<K8sIcon />}
-                    name="Kubernetes Clusters"
-                    count={data.kubernetes_cluster}
-                    type={NodeType.kubernetes_cluster}
-                  />
-                  <ResourceSelectorButton
-                    icon={<ContainerIcon />}
-                    name="Containers"
-                    count={data.container}
-                    type={NodeType.container}
-                  />
-                  <ResourceSelectorButton
-                    icon={<PodIcon />}
-                    name="Pods"
-                    type={NodeType.pod}
-                    count={data.pod}
-                  />
-                </div>
-              );
-            }}
-          </DFAwait>
-        </Suspense>
-        <div>
-          <ViewSwitcher />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const ResourceSelectorButton = ({
+const SummaryTab = ({
   icon,
   name,
   count,
@@ -93,7 +20,7 @@ const ResourceSelectorButton = ({
 }: {
   icon: ReactNode;
   name: string;
-  count: number;
+  count: ReactNode;
   type?: (typeof TopologyViewTypes)[number];
 }) => {
   const matches = useMatches();
@@ -105,49 +32,112 @@ const ResourceSelectorButton = ({
       ? true
       : currentPathName.endsWith(type || '');
   return (
-    <Link
+    <DFLink
       to={generatePath('/topology/:layoutType/:viewType', {
         layoutType: layoutType,
         viewType: type || '',
       })}
-      className={classNames(
-        'flex gap-1 items-center text-base font-normal rounded-lg h-full px-2 shrink justify-end min-w-0 relative',
-        {
-          ['text-gray-700 dark:text-gray-400']: !type,
-          ['text-blue-600 dark:text-blue-500']: !!type,
-          'bg-blue-100 dark:bg-blue-900 rounded-md transition ease-in-out delay-150':
-            isActive,
-        },
-      )}
-      onClick={(e) => {
-        if (!type) e.preventDefault();
+      style={{
+        all: 'unset',
       }}
     >
-      <div
-        className={classNames('h-6 w-6 shrink-0', {
-          'text-blue-700 dark:text-blue-200 transition ease-in-out delay-150': isActive,
-        })}
+      <button
+        className={cn(
+          `flex items-center gap-[6px] p-3 dark:hover:text-text-input-value dark:hover:bg-bg-grid-header`,
+          'dark:hover:shadow-[0_-4px_0_var(--tw-shadow-color)_inset] dark:shadow-accent-accent transition-shadow duration-[0.2s] ease-[ease-in]',
+          {
+            'dark:text-text-input-value dark:bg-bg-active-selection dark:shadow-[0_-4px_0_var(--tw-shadow-color)_inset] dark:hover:bg-bg-active-selection':
+              isActive,
+          },
+        )}
       >
-        {icon}
-      </div>
-      <div
-        className={classNames('shrink', {
-          'text-blue-700 dark:text-blue-200 transition ease-in-out delay-150': isActive,
-        })}
-      >
-        {count}
-      </div>
-      <div
-        className={classNames('font-normal truncate', {
-          'text-blue-700 dark:text-blue-200 transition ease-in-out delay-150': isActive,
-        })}
-      >
-        {name}
-      </div>
-    </Link>
+        <div className="h-[16px] w-[16px]">{icon}</div>
+        <div>
+          <span className={`${isActive ? 'text-h5' : 'text-h6'}`}>{count}</span> {name}
+        </div>
+      </button>
+    </DFLink>
   );
 };
 
+export const TopologyHeader = ({ nodeCounts }: { nodeCounts: SearchNodeCountResp }) => {
+  return (
+    <div className="flex items-center dark:text-text-text-and-icon text-p1 px-3 dark:bg-bg-breadcrumb-bar">
+      <SummaryTab
+        icon={<CloudLine />}
+        name="Clouds"
+        type={NodeType.cloud_provider}
+        count={
+          <Suspense fallback={0}>
+            <DFAwait resolve={nodeCounts}>
+              {(data: SearchNodeCountResp) => {
+                return data.cloud_provider;
+              }}
+            </DFAwait>
+          </Suspense>
+        }
+      />
+      <SummaryTab
+        icon={<CloudLine />}
+        name="Hosts"
+        type={NodeType.host}
+        count={
+          <Suspense fallback={0}>
+            <DFAwait resolve={nodeCounts}>
+              {(data: SearchNodeCountResp) => {
+                return data.host;
+              }}
+            </DFAwait>
+          </Suspense>
+        }
+      />
+      <SummaryTab
+        icon={<CloudLine />}
+        name="Kubernetes Clusters"
+        type={NodeType.kubernetes_cluster}
+        count={
+          <Suspense fallback={0}>
+            <DFAwait resolve={nodeCounts}>
+              {(data: SearchNodeCountResp) => {
+                return data.kubernetes_cluster;
+              }}
+            </DFAwait>
+          </Suspense>
+        }
+      />
+      <SummaryTab
+        icon={<CloudLine />}
+        name="Containers"
+        type={NodeType.container}
+        count={
+          <Suspense fallback={0}>
+            <DFAwait resolve={nodeCounts}>
+              {(data: SearchNodeCountResp) => {
+                return data.container;
+              }}
+            </DFAwait>
+          </Suspense>
+        }
+      />
+      <SummaryTab
+        icon={<CloudLine />}
+        name="Pods"
+        type={NodeType.pod}
+        count={
+          <Suspense fallback={0}>
+            <DFAwait resolve={nodeCounts}>
+              {(data: SearchNodeCountResp) => {
+                return data.pod;
+              }}
+            </DFAwait>
+          </Suspense>
+        }
+      />
+    </div>
+  );
+};
+
+// TODO: change this view switcher
 const ViewSwitcher = () => {
   const params = useParams();
   const location = useLocation();
@@ -165,7 +155,7 @@ const ViewSwitcher = () => {
         <Link
           to={`/topology/graph/${type}`}
           type="button"
-          className={classNames(
+          className={cn(
             'flex items-center text-lg font-semibold rounded-l-lg h-full px-2 border border-blue-200 dark:border-blue-800',
             {
               ['text-blue-600 dark:text-blue-500']: !isGraphView,
@@ -188,7 +178,7 @@ const ViewSwitcher = () => {
         <Link
           to={`/topology/table/${type}`}
           type="button"
-          className={classNames(
+          className={cn(
             'flex items-center text-lg font-semibold rounded-r-lg h-full px-2 border border-blue-200 dark:border-blue-800',
             {
               ['text-blue-600 dark:text-blue-500']: isGraphView,

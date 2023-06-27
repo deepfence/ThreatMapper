@@ -1,4 +1,6 @@
-module.exports = {
+import { Config } from 'tailwindcss/types/config';
+
+export const preset = {
   darkMode: 'class',
   theme: {
     extend: {
@@ -57,9 +59,9 @@ module.exports = {
           },
         ],
         h2: [
-          '24px',
+          '22px',
           {
-            lineHeight: '36px',
+            lineHeight: '30px',
             fontWeight: '600',
           },
         ],
@@ -160,7 +162,6 @@ module.exports = {
             lineHeight: '16px',
             fontWeight: '800',
             letterSpacing: '0.1em',
-            textTransform: 'uppercase',
           },
         ],
         t2: [
@@ -169,7 +170,6 @@ module.exports = {
             lineHeight: '16px',
             fontWeight: '700',
             letterSpacing: '0.1em',
-            textTransform: 'uppercase',
           },
         ],
         t3: [
@@ -178,7 +178,6 @@ module.exports = {
             lineHeight: '16px',
             fontWeight: '800',
             letterSpacing: '0.1em',
-            textTransform: 'uppercase',
           },
         ],
         t4: [
@@ -187,7 +186,6 @@ module.exports = {
             lineHeight: '16px',
             fontWeight: '600',
             letterSpacing: '0.05em',
-            textTransform: 'uppercase',
           },
         ],
         t5: [
@@ -196,7 +194,6 @@ module.exports = {
             lineHeight: '16px',
             fontWeight: '600',
             letterSpacing: '0.05em',
-            textTransform: 'uppercase',
           },
         ],
       },
@@ -234,7 +231,7 @@ module.exports = {
           pink2: '#C7527E',
           pink3: '#E3749E',
           red: '#F55B47',
-          orange: '##F57600',
+          orange: '#F57600',
           yellow1: '#E5C354',
           yellow2: '#F6C24F',
           lime: '#62C655',
@@ -273,6 +270,7 @@ module.exports = {
           'hover-1': '#3777C2',
           'hover-2': '#0E1F33',
           'hover-3': '#0140E3',
+          'side-panel': '#192C49',
         },
         clarity: {
           border: '#0F171C',
@@ -404,4 +402,4 @@ module.exports = {
       },
     },
   },
-};
+} satisfies Partial<Config>;

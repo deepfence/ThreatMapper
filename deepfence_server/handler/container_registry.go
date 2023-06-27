@@ -164,6 +164,10 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// don't log secrets in audit logs
+	req.Secret = map[string]interface{}{}
+	h.AuditUserActivity(r, EVENT_REGISTRY, ACTION_CREATE, req, true)
+
 	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryCreated})
 }
 
@@ -282,6 +286,11 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 		respondError(&InternalServerError{err}, w)
 		return
 	}
+
+	// don't log secrets in audit logs
+	req.Secret = map[string]interface{}{}
+	h.AuditUserActivity(r, EVENT_REGISTRY, ACTION_UPDATE, req, true)
+
 	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryUpdated})
 }
 
@@ -434,6 +443,8 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	h.AuditUserActivity(r, EVENT_REGISTRY, ACTION_CREATE, req, true)
+
 	httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: api_messages.SuccessRegistryCreated})
 }
 
@@ -471,6 +482,9 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	h.AuditUserActivity(r, EVENT_REGISTRY, ACTION_DELETE,
+		map[string]interface{}{"registry_id": id}, true)
 
 	w.WriteHeader(http.StatusNoContent)
 

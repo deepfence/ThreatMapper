@@ -1,10 +1,10 @@
 import { cva, VariantProps } from 'cva';
 import { ComponentProps, forwardRef, useId } from 'react';
 import { IconContext } from 'react-icons';
+import { cn } from 'tailwind-preset';
 
 import { Loader } from '@/components/button/Button';
 import { ObjectWithNonNullableValues } from '@/types/utils';
-import { dfTwMerge } from '@/utils/twmerge';
 
 export type ColorType = 'default' | 'error' | 'success';
 export type SizeType = 'lg' | 'md' | 'sm';
@@ -203,7 +203,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         id={_id}
         data-testid={`icon-button-${_id}`}
         disabled={disabled}
-        className={dfTwMerge(
+        className={cn(
           iconButtonCVA({
             size,
             color,

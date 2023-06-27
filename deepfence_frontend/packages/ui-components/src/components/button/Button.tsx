@@ -1,11 +1,9 @@
-import cx from 'classnames';
 import { cva, VariantProps } from 'cva';
 import React, { ComponentProps, useId } from 'react';
-import { IconContext } from 'react-icons';
+import { cn } from 'tailwind-preset';
 
 import { CircleSpinner } from '@/main';
 import { ObjectWithNonNullableValues } from '@/types/utils';
-import { dfTwMerge } from '@/utils/twmerge';
 
 export type ColorType = 'default' | 'error' | 'success';
 export type SizeType = 'lg' | 'md' | 'sm';
@@ -28,7 +26,7 @@ export const Loader = ({
   return (
     <CircleSpinner
       size={size}
-      className={dfTwMerge(
+      className={cn(
         cva([sizeMap.get(size)], {
           variants: {
             color: {
@@ -268,36 +266,21 @@ const iconCva = cva('', {
       lg: 'w-4 h-4',
     },
     withStartIcon: {
-      true: '',
+      true: 'mr-2',
     },
     withEndIcon: {
-      true: '',
+      true: 'ml-2',
     },
     withLoader: {
-      true: '',
+      true: 'mr-2',
     },
   },
   compoundVariants: [
     {
       size: ['sm', 'md', 'lg'],
       withStartIcon: true,
-      className: 'mr-2',
-    },
-    {
-      size: ['sm', 'md', 'lg'],
-      withLoader: true,
-      className: 'mr-2',
-    },
-    {
-      size: ['sm', 'md', 'lg'],
       withEndIcon: true,
-      className: 'ml-2',
-    },
-    {
-      size: ['sm', 'md', 'lg'],
-      withStartIcon: true,
-      withEndIcon: true,
-      className: 'mr-2 ml-2',
+      className: 'mr-2 ml-2', // fix me not have margin left for start icon
     },
   ],
 });
@@ -322,52 +305,54 @@ const StartIcon = ({
   variant,
   size,
 }: IconProps) => {
+  if (loading) {
+    return (
+      <span
+        className={cn(
+          iconLoaderCva({}),
+          iconCva({
+            size,
+            withStartIcon: !!startIcon,
+            withEndIcon: !!endIcon,
+          }),
+          'ml-0',
+        )}
+      >
+        <Loader color={color} size={size} variant={variant} />
+      </span>
+    );
+  }
   return (
-    <div data-testid={`button-icon-start-${id}`}>
-      {loading ? (
-        <div
-          className={cx(
-            iconLoaderCva({}),
-            iconCva({
-              size,
-              withStartIcon: !!startIcon,
-              withEndIcon: !!endIcon,
-            }),
-          )}
-        >
-          <Loader color={color} size={size} variant={variant} />
-        </div>
-      ) : (
-        <IconContext.Provider
-          value={{
-            className: iconCva({
-              size,
-              withStartIcon: !!startIcon,
-              withEndIcon: !!endIcon,
-            }),
-          }}
-        >
-          {startIcon}
-        </IconContext.Provider>
+    <span
+      data-testid={`button-icon-start-${id}`}
+      className={cn(
+        iconCva({
+          size,
+          withStartIcon: !!startIcon,
+          withEndIcon: !!endIcon,
+        }),
+        'ml-0',
       )}
-    </div>
+    >
+      {startIcon}
+    </span>
   );
 };
 
 const EndIcon = ({ id, size, startIcon, endIcon }: IconProps) => {
   return (
-    <span data-testid={`button-icon-end-${id}`}>
-      <IconContext.Provider
-        value={{
-          className: iconCva({
-            size,
-            withStartIcon: !!startIcon,
-            withEndIcon: !!endIcon,
-          }),
-        }}
-      >
-        {endIcon}
-      </IconContext.Provider>
+    <span
+      data-testid={`button-icon-end-${id}`}
+      className={cn(
+        iconCva({
+          size,
+          withStartIcon: !!startIcon,
+          withEndIcon: !!endIcon,
+        }),
+        'mr-0',
+      )}
+    >
+      {endIcon}
     </span>
   );
 };
@@ -399,7 +384,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         id={_id}
         data-testid={`button-${_id}`}
         disabled={disabled}
-        className={dfTwMerge(
+        className={cn(
           buttonCva({
             size,
             color,
@@ -421,8 +406,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           />
         )}
         {loading && !startIcon ? (
-          <div
-            className={cx(
+          <span
+            className={cn(
               iconLoaderCva({}),
               iconCva({
                 size,
@@ -430,10 +415,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 withEndIcon: !!endIcon,
                 withLoader: true,
               }),
+              'ml-0',
             )}
           >
             <Loader color={color} size={size} variant={variant} />
-          </div>
+          </span>
         ) : null}
         {children}
         {endIcon && (

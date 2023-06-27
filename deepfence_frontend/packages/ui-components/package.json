@@ -45,7 +45,8 @@
     "cva": "npm:class-variance-authority@^0.4.0",
     "lodash-es": "^4.17.21",
     "react-use": "^17.4.0",
-    "tailwind-merge": "^1.9.0"
+    "tailwind-merge": "^1.9.0",
+    "tailwind-preset": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.2.0",
@@ -91,7 +92,6 @@
     "resize-observer-polyfill": "^1.5.1",
     "rollup-plugin-visualizer": "^5.9.0",
     "storybook": "^7.0.6",
-    "tailwind-preset": "workspace:*",
     "tailwindcss": "^3.1.8",
     "typescript": "^4.9.5",
     "vite": "^4.0.4",

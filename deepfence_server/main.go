@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"os"
@@ -32,6 +33,7 @@ import (
 	"github.com/deepfence/golang_deepfence_sdk/utils/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"go.opentelemetry.io/otel"
@@ -41,10 +43,12 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 var (
 	verbosity             = flag.String("verbose", "info", "log level")
+	resetPassword         = flag.Bool("reset-password", false, "reset password for a user")
 	exportOpenapiDocsPath = flag.String("export-api-docs-path", "", "export openapi documentation to file path")
 	serveOpenapiDocs      = flag.Bool("api-docs", true, "serve openapi documentation")
 	enableHttpLogs        = flag.Bool("http-logs", false, "enable request logs")
@@ -60,7 +64,11 @@ type Config struct {
 }
 
 func init() {
+	debug := "debug"
 	enable_debug = os.Getenv("DF_ENABLE_DEBUG") != ""
+	if enable_debug {
+		verbosity = &debug
+	}
 }
 
 func main() {
@@ -99,6 +107,14 @@ func main() {
 	config.JwtSecret, err = initializeDatabase()
 	if err != nil {
 		log.Fatal().Msg(err.Error())
+	}
+
+	if *resetPassword == true {
+		err = resetUserPassword()
+		if err != nil {
+			log.Fatal().Msg(err.Error())
+		}
+		os.Exit(0)
 	}
 
 	err = initializeKafka()
@@ -354,6 +370,54 @@ func initializeDatabase() ([]byte, error) {
 		return nil, err
 	}
 	return jwtSecret, nil
+}
+
+func resetUserPassword() error {
+	fmt.Println("\nEnter your email id:")
+	var emailId string
+	fmt.Scanln(&emailId)
+	fmt.Println("\nEnter new password: (should contain at least one upper case, lower case, digit and special character)")
+	password, err := terminal.ReadPassword(0)
+	if err != nil {
+		return err
+	}
+	fmt.Println("\nReenter the new password:")
+	password2, err := terminal.ReadPassword(0)
+	if err != nil {
+		return err
+	}
+	if string(password) != string(password2) {
+		return errors.New("passwords do not match")
+	}
+
+	req := model.LoginRequest{Email: emailId, Password: string(password)}
+	inputValidator := validator.New()
+	err = inputValidator.RegisterValidation("password", model.ValidatePassword)
+	if err != nil {
+		return err
+	}
+	err = inputValidator.Struct(req)
+	if err != nil {
+		return err
+	}
+
+	user, statusCode, ctx, pgClient, err := model.GetUserByEmail(emailId)
+	if err != nil {
+		if statusCode == http.StatusNotFound {
+			return errors.New("user not found with provided email id")
+		}
+		return err
+	}
+	err = user.SetPassword(string(password))
+	if err != nil {
+		return err
+	}
+	err = user.UpdatePassword(ctx, pgClient)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Password changed successfully")
+	return nil
 }
 
 func initializeOpenApiDocs(openApiDocs *apiDocs.OpenApiDocs) {

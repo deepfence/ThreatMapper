@@ -122,12 +122,11 @@ func getVulnerabilityData(ctx context.Context, session neo4j.Session, params sdk
 	searchFilter := searchScansFilter(params)
 
 	var (
-		end   time.Time
-		start time.Time
+		end   time.Time = time.Now()
+		start time.Time = time.Now()
 	)
 
 	if params.Duration > 0 && len(params.Filters.ScanId) == 0 {
-		end := time.Now()
 		start := end.AddDate(0, 0, int(math.Copysign(float64(params.Duration), -1)))
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
@@ -185,12 +184,11 @@ func getSecretData(ctx context.Context, session neo4j.Session, params sdkUtils.R
 	searchFilter := searchScansFilter(params)
 
 	var (
-		end   time.Time
-		start time.Time
+		end   time.Time = time.Now()
+		start time.Time = time.Now()
 	)
 
 	if params.Duration > 0 && len(params.Filters.ScanId) == 0 {
-		end = time.Now()
 		start = end.AddDate(0, 0, int(math.Copysign(float64(params.Duration), -1)))
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
@@ -198,6 +196,7 @@ func getSecretData(ctx context.Context, session neo4j.Session, params sdkUtils.R
 			},
 		}
 	}
+
 	scans, err := rptSearch.SearchScansReport(ctx, searchFilter, sdkUtils.NEO4J_SECRET_SCAN)
 	if err != nil {
 		return nil, err
@@ -247,12 +246,11 @@ func getMalwareData(ctx context.Context, session neo4j.Session, params sdkUtils.
 	searchFilter := searchScansFilter(params)
 
 	var (
-		end   time.Time
-		start time.Time
+		end   time.Time = time.Now()
+		start time.Time = time.Now()
 	)
 
 	if params.Duration > 0 && len(params.Filters.ScanId) == 0 {
-		end = time.Now()
 		start = end.AddDate(0, 0, int(math.Copysign(float64(params.Duration), -1)))
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{
@@ -309,8 +307,8 @@ func getComplianceData(ctx context.Context, session neo4j.Session, params sdkUti
 	searchFilter := searchScansFilter(params)
 
 	var (
-		end   time.Time
-		start time.Time
+		end   time.Time = time.Now()
+		start time.Time = time.Now()
 	)
 
 	if params.Duration > 0 && len(params.Filters.ScanId) == 0 {
@@ -371,12 +369,11 @@ func getCloudComplianceData(ctx context.Context, session neo4j.Session, params s
 	searchFilter := searchScansFilter(params)
 
 	var (
-		end   time.Time
-		start time.Time
+		end   time.Time = time.Now()
+		start time.Time = time.Now()
 	)
 
 	if params.Duration > 0 && len(params.Filters.ScanId) == 0 {
-		end = time.Now()
 		start = end.AddDate(0, 0, int(math.Copysign(float64(params.Duration), -1)))
 		searchFilter.ScanFilter = rptSearch.SearchFilter{
 			Filters: reporters.FieldsFilters{

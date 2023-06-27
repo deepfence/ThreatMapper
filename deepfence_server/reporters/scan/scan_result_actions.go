@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"time"
 
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
@@ -27,7 +28,7 @@ func UpdateScanResultNodeFields(ctx context.Context, scanType utils.Neo4jScanTyp
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -55,7 +56,7 @@ func UpdateScanResultMasked(ctx context.Context, req *model.ScanResultsMaskReque
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -89,7 +90,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction()
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
@@ -116,14 +117,14 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 	if err != nil {
 		return err
 	}
-	tx2, err := session.BeginTransaction()
+	tx2, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
 	defer tx2.Close()
 	// Delete results which are not part of any scans now
 	_, err = tx2.Run(`
-		MATCH (n:`+utils.ScanTypeDetectedNode[scanType]+`) 
+		MATCH (n:`+utils.ScanTypeDetectedNode[scanType]+`)
 		WHERE not (n)<-[:DETECTED]-(:`+string(scanType)+`)
 		DETACH DELETE (n)`, map[string]interface{}{})
 	if err != nil {
@@ -134,13 +135,13 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 		return err
 	}
 	if scanType == utils.NEO4J_VULNERABILITY_SCAN {
-		tx3, err := session.BeginTransaction()
+		tx3, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 		if err != nil {
 			return err
 		}
 		defer tx3.Close()
 		_, err = tx3.Run(`
-			MATCH (n:`+reporters.ScanResultMaskNode[scanType]+`) 
+			MATCH (n:`+reporters.ScanResultMaskNode[scanType]+`)
 			WHERE not (n)<-[:IS]-(:`+string(scanType)+`)
 			DETACH DELETE (n)`, map[string]interface{}{})
 		if err != nil {
@@ -205,7 +206,7 @@ func DeleteScan(ctx context.Context, scanType utils.Neo4jScanType, scanId string
 		return nil
 	}
 
-	tx4, err := session.BeginTransaction()
+	tx4, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
 	if err != nil {
 		return err
 	}
