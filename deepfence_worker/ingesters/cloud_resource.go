@@ -152,6 +152,9 @@ func CommitFuncCloudResource(ns string, cs []CloudResource) error {
 		WITH n, row as row
 		WHERE n IS NULL or n.active=false
 		MERGE (m:Node{node_id:row.node_id})
+		FOREACH(dummy IN CASE WHEN EXISTS(row.kubernetes_cluster_id) THEN [1] ELSE [] END | MERGE (k:KubernetesCluster{node_id:row.kubernetes_cluster_id}))
+		FOREACH(dummy IN CASE WHEN EXISTS(row.kubernetes_cluster_id) THEN [1] ELSE [] END | SET k+=row, k.updated_at = TIMESTAMP(), k.node_type='cluster', k.node_name = row.kubernetes_cluster_id)
+		FOREACH(dummy IN CASE WHEN EXISTS(row.kubernetes_cluster_id) THEN [1] ELSE [] END | MERGE (k)-[:INSTANCIATE]->(m))
 		SET m+=row, m.updated_at = TIMESTAMP()`,
 			map[string]interface{}{"batch": hosts},
 		)
