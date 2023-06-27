@@ -155,7 +155,7 @@ export const DropdownItem: React.ForwardRefExoticComponent<
       {...rest}
       ref={forwardedRef}
     >
-      {icon && <div className="w-3 h-3 mr-2">{icon}</div>}
+      {icon && <div className="w-4 h-4 mr-2 shrink-0 self-center">{icon}</div>}
 
       {children}
     </DropdownPrimitive.Item>

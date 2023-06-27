@@ -6,7 +6,7 @@ function Topology() {
   return (
     <div className="h-full flex flex-col">
       <TopologyHeader />
-      <div className="p-2 flex-1">
+      <div className="flex-1">
         <Outlet />
       </div>
     </div>

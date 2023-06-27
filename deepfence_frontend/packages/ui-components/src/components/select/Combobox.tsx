@@ -255,6 +255,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
                   >
                     <SearchIcon />
                   </span>
+                  {/* TODO: doesn't work correctly when single select and string value type */}
                   <HUICombobox.Input
                     ref={setInputElement}
                     placeholder="Search"

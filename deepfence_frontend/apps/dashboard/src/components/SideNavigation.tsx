@@ -111,6 +111,7 @@ export function SideNavigation({ expanded, onExpandedChange }: SideNavigationRoo
         'bg-white dark:bg-bg-left-nav',
         'transition-[width]',
         'fixed left-0 top-0 z-10 scrolling-touch',
+        'border-r dark:border-bg-top-header',
       )}
       style={{
         marginTop: '56px',
