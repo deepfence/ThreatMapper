@@ -50,7 +50,7 @@ agent: debian_builder deepfenced console_plugins
 
 .PHONY: deepfenced
 deepfenced: alpine_builder bootstrap bootstrap-agent-plugins
-	(cd $(DEEPFENCED) && make vendor && make prepare)
+	(cd $(DEEPFENCED) && make prepare)
 	cp $(DEEPFENCED)/deepfence_bootstrapper $(DEEPFENCE_AGENT_DIR)/deepfenced
 
 .PHONY: redis
@@ -75,11 +75,11 @@ file-server:
 
 .PHONY: server
 server: alpine_builder
-	(cd ./deepfence_server && make vendor && make image)
+	(cd ./deepfence_server && make image)
 
 .PHONY: worker
 worker: alpine_builder
-	(cd ./deepfence_worker && make vendor && make image)
+	(cd ./deepfence_worker && make image)
 
 .PHONY: graphdb
 graphdb:

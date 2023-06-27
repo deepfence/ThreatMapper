@@ -1,6 +1,6 @@
 VERSION=`git describe --tags`
 
-all: vendor deepfence_bootstrapper
+all: deepfence_bootstrapper
 
 local: deepfence_bootstrapper
 
@@ -11,11 +11,11 @@ vendor:
 	go mod tidy -v
 	go mod vendor
 
-deepfence_bootstrapper: ./*.go ./**/*.go
+deepfence_bootstrapper: vendor $(shell find . -name '*.go')
 	CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X main.Version=${VERSION} -extldflags=-static" -buildvcs=false
 	-upx ./deepfence_bootstrapper
 
 clean:
 	rm deepfence_bootstrapper
 
-.PHONY: vendor clean image
+.PHONY: clean image local all

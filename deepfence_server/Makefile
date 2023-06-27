@@ -1,4 +1,4 @@
-all: vendor deepfence_server
+all: deepfence_server
 
 local: deepfence_server
 
@@ -10,10 +10,10 @@ vendor:
 	go mod tidy -v
 	go mod vendor
 
-deepfence_server: ./*.go ./**/*.go
+deepfence_server: vendor $(shell find . -name '*.go')
 	go build -buildvcs=false
 
 clean:
 	rm deepfence_server
 
-.PHONY: vendor clean image
+.PHONY: all clean image local
