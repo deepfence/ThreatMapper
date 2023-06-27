@@ -157,9 +157,10 @@ func searchGenericDirectNodeReport[T reporters.Cypherable](ctx context.Context, 
 	query := `
 		MATCH (n:` + dummy.NodeType() + `)` +
 		reporters.ParseFieldFilters2CypherWhereConditions("n", mo.Some(filter.Filters), true) +
-		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter) +
+		reporters.OrderFilter2CypherCondition("n", filter.Filters.OrderFilter, nil) +
 		` OPTIONAL MATCH (n) -[:IS]-> (e) ` +
 		reporters.ParseFieldFilters2CypherWhereConditions("e", mo.Some(extended_filter.Filters), true) +
+		reporters.OrderFilter2CypherCondition("e", filter.Filters.OrderFilter, []string{"n"}) +
 		`RETURN ` + reporters.FieldFilterCypher("n", filter.InFieldFilter) + `, e` +
 		fw.FetchWindow2CypherQuery()
 	log.Debug().Msgf("search query: %v", query)
@@ -264,7 +265,7 @@ func searchCloudNode(ctx context.Context, filter SearchFilter, fw model.FetchWin
 		}
 		CALL {WITH x MATCH (n:` + dummy.NodeType() + `{node_id: x}) RETURN n.node_name as node_name, n.active as active}
 		RETURN x as node_id, node_name, compliance_percentage, COALESCE(last_scan_id, '') as last_scan_id, COALESCE(last_scan_status, '') as last_scan_status, active ` + reporters.FieldFilterCypher("", filter.InFieldFilter) +
-		reporters.OrderFilter2CypherCondition("", orderFilters) + fw.FetchWindow2CypherQuery()
+		reporters.OrderFilter2CypherCondition("", orderFilters, nil) + fw.FetchWindow2CypherQuery()
 
 	log.Debug().Msgf("search cloud node query: %v", query)
 	r, err := tx.Run(query,
@@ -350,7 +351,7 @@ func searchGenericScanInfoReport(ctx context.Context, scan_type utils.Neo4jScanT
 		scan_filter.Window.FetchWindow2CypherQuery() +
 		`}` +
 		` RETURN n.node_id as scan_id, n.status as status, n.status_message as status_message, n.updated_at as updated_at, m.node_id as node_id, COALESCE(m.node_type, m.cloud_provider) as node_type, m.node_name as node_name` +
-		reporters.OrderFilter2CypherCondition("", scan_filter.Filters.OrderFilter) +
+		reporters.OrderFilter2CypherCondition("", scan_filter.Filters.OrderFilter, nil) +
 		fw.FetchWindow2CypherQuery()
 	log.Debug().Msgf("search query: %v", query)
 	r, err := tx.Run(query,
