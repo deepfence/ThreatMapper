@@ -36,7 +36,7 @@ func RunScheduledTasks(msg *message.Message) error {
 		jobStatus = err.Error()
 		log.Error().Msg("runScheduledTasks: " + err.Error())
 	}
-	err = saveJobStatus(scheduleId, jobStatus)
+	err = saveJobStatus(ctx, scheduleId, jobStatus)
 	if err != nil {
 		log.Error().Msg("runScheduledTasks saveJobStatus: " + err.Error())
 	}
@@ -142,8 +142,7 @@ func runScheduledTasks(ctx context.Context, messagePayload map[string]interface{
 	return nil
 }
 
-func saveJobStatus(scheduleId int64, jobStatus string) error {
-	ctx := directory.NewGlobalContext()
+func saveJobStatus(ctx context.Context, scheduleId int64, jobStatus string) error {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return err

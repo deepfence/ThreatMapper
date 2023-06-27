@@ -20,7 +20,10 @@ func getClient[T *redis.Client | *CypherDriver | *postgresqlDb.Queries | *minio.
 		return val.(T), nil
 	}
 
-	client, err := newClient(directory[key])
+	directory.RLock()
+	namespace := directory.Directory[key]
+	directory.RUnlock()
+	client, err := newClient(namespace)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"context"
 	"errors"
 
 	"github.com/go-playground/validator/v10"
@@ -54,6 +55,6 @@ func GetIntegration(integrationType string, b []byte) (Integration, error) {
 // Integration is the interface for all integrations
 type Integration interface {
 	// extras are additional fields that are not part of the message
-	SendNotification(message string, extras map[string]interface{}) error
+	SendNotification(ctx context.Context, message string, extras map[string]interface{}) error
 	ValidateConfig(*validator.Validate) error
 }

@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/XSAM/otelsql v0.23.0
+	github.com/go-chi/jwtauth/v5 v5.1.0
 	github.com/google/uuid v1.3.0
 	github.com/lestrrat-go/jwx/v2 v2.0.11
 	github.com/lib/pq v1.10.9

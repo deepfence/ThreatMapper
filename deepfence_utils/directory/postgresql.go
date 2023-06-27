@@ -57,23 +57,6 @@ func PostgresClient(ctx context.Context) (*postgresqlDb.Queries, error) {
 	return driver, err
 }
 
-func ListSettings(ctx context.Context, visible bool) ([]postgresqlDb.Setting, error) {
-	pgClient, err := PostgresClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-	var settings []postgresqlDb.Setting
-	if visible == true {
-		settings, err = pgClient.GetVisibleSettings(ctx)
-	} else {
-		settings, err = pgClient.GetSettings(ctx)
-	}
-	if err != nil {
-		return nil, err
-	}
-	return settings, nil
-}
-
 func GetManagementConsoleURL(ctx context.Context) (string, error) {
 	pgClient, err := PostgresClient(ctx)
 	if err != nil {
@@ -103,16 +86,4 @@ func GetManagementHost(ctx context.Context) (string, error) {
 		return url[8:], nil
 	}
 	return url, nil
-}
-
-func GetSetting(ctx context.Context, key string) (*postgresqlDb.Setting, error) {
-	pgClient, err := PostgresClient(ctx)
-	if err != nil {
-		return nil, err
-	}
-	setting, err := pgClient.GetSetting(ctx, key)
-	if err != nil {
-		return nil, err
-	}
-	return &setting, nil
 }

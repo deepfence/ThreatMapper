@@ -103,13 +103,22 @@ func main() {
 	if err != nil {
 		log.Fatal().Msg(err.Error())
 	}
-	config.JwtSecret, err = initializeDatabase()
-	if err != nil {
-		log.Fatal().Msg(err.Error())
-	}
+
+	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
+		config.JwtSecret, err = initializeDatabase(ctx)
+		if err != nil {
+			log.Fatal().Msg(err.Error())
+		}
+		return "initializeDatabase", err
+	})
 
 	if *resetPassword == true {
-		err = resetUserPassword()
+		if directory.IsNonSaaSDeployment() {
+			ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
+			err = resetUserPassword(ctx)
+		} else {
+			err = errors.New("option available only in self-hosted deployment")
+		}
 		if err != nil {
 			log.Fatal().Msg(err.Error())
 		}
@@ -122,10 +131,13 @@ func main() {
 	}
 
 	log.Info().Msg("generating aes setting")
-	err = initializeAES()
-	if err != nil {
-		log.Fatal().Msg(err.Error())
-	}
+	directory.ForEachNamespace(func(ctx context.Context) (string, error) {
+		err = initializeAES(ctx)
+		if err != nil {
+			log.Fatal().Msg(err.Error())
+		}
+		return "initializeAES", err
+	})
 
 	err = initializeTelemetry()
 	if err != nil {
@@ -279,11 +291,10 @@ func initialize() (*Config, error) {
 	}, nil
 }
 
-func initializeAES() error {
+func initializeAES(ctx context.Context) error {
 	// set aes_secret in setting table, if !exists
 	// TODO
 	// generate aes and aes-iv
-	ctx := directory.NewGlobalContext()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return err
@@ -330,8 +341,7 @@ func initializeAES() error {
 	return nil
 }
 
-func initializeDatabase() ([]byte, error) {
-	ctx := directory.NewGlobalContext()
+func initializeDatabase(ctx context.Context) ([]byte, error) {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return nil, err
@@ -369,7 +379,7 @@ func initializeDatabase() ([]byte, error) {
 	return jwtSecret, nil
 }
 
-func resetUserPassword() error {
+func resetUserPassword(ctx context.Context) error {
 	fmt.Println("\nEnter your email id:")
 	var emailId string
 	fmt.Scanln(&emailId)
@@ -398,7 +408,7 @@ func resetUserPassword() error {
 		return err
 	}
 
-	user, statusCode, ctx, pgClient, err := model.GetUserByEmail(emailId)
+	user, statusCode, pgClient, err := model.GetUserByEmail(ctx, emailId)
 	if err != nil {
 		if statusCode == http.StatusNotFound {
 			return errors.New("user not found with provided email id")

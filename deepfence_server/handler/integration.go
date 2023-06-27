@@ -47,7 +47,7 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 
 	// add integration to database
 	// before that check if integration already exists
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
@@ -72,7 +72,7 @@ func (h *Handler) AddIntegration(w http.ResponseWriter, r *http.Request) {
 		return
 	}*/
 
-	user, statusCode, _, _, err := h.GetUserFromJWT(r.Context())
+	user, statusCode, _, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -97,7 +97,7 @@ func (h *Handler) GetIntegrations(w http.ResponseWriter, r *http.Request) {
 	var req model.IntegrationListReq
 	httpext.DecodeJSON(r, httpext.NoQueryParams, MaxPostRequestSize, &req)
 
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
@@ -148,7 +148,7 @@ func (h *Handler) DeleteIntegration(w http.ResponseWriter, r *http.Request) {
 	// id to int32
 	idInt, err := strconv.ParseInt(id, 10, 32)
 
-	ctx := directory.NewGlobalContext()
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("%v", err)

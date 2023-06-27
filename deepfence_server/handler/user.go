@@ -60,7 +60,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
@@ -172,7 +172,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
@@ -260,7 +260,8 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	user, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -314,7 +315,7 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	inviteURL := fmt.Sprintf("%s/auth/invite-accept?invite_code=%s", consoleUrl, code)
 	if inviteUserRequest.Action == UserInviteSendEmail {
-		emailSender, err := sendemail.NewEmailSender()
+		emailSender, err := sendemail.NewEmailSender(ctx)
 		if errors.Is(err, sql.ErrNoRows) {
 			respondError(&emailNotConfiguredError, w)
 			return
@@ -355,7 +356,8 @@ func (h *Handler) userModel(pgUser postgresql_db.GetUsersRow) model.User {
 }
 
 func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
-	currentUser, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	currentUser, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -377,7 +379,7 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
-	user, statusCode, _, _, err := h.GetUserFromJWT(r.Context())
+	user, statusCode, _, err := h.GetUserFromJWT(r.Context())
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -391,7 +393,7 @@ func (h *Handler) GetUserByUserID(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 		return
 	}
-	user, statusCode, _, _, err := model.GetUserByID(userId)
+	user, statusCode, _, err := model.GetUserByID(r.Context(), userId)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -451,7 +453,8 @@ func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 }
 
 func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	user, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -465,12 +468,13 @@ func (h *Handler) UpdateUserByUserID(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 		return
 	}
-	user, statusCode, ctx, pgClient, err := model.GetUserByID(userId)
+	ctx := r.Context()
+	user, statusCode, pgClient, err := model.GetUserByID(ctx, userId)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
 	}
-	currentUser, statusCode, _, _, err := h.GetUserFromJWT(r.Context())
+	currentUser, statusCode, _, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -491,7 +495,8 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	user, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -546,7 +551,8 @@ func (h *Handler) deleteUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 }
 
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	user, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -560,12 +566,13 @@ func (h *Handler) DeleteUserByUserID(w http.ResponseWriter, r *http.Request) {
 		respondError(&BadDecoding{err}, w)
 		return
 	}
-	user, statusCode, ctx, pgClient, err := model.GetUserByID(userId)
+	ctx := r.Context()
+	user, statusCode, pgClient, err := model.GetUserByID(ctx, userId)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
 	}
-	currentUser, statusCode, _, _, err := h.GetUserFromJWT(r.Context())
+	currentUser, statusCode, _, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -590,7 +597,8 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 		return
 	}
-	user, statusCode, ctx, pgClient, err := model.GetUserByEmail(strings.ToLower(resetPasswordRequest.Email))
+	ctx := r.Context()
+	user, statusCode, pgClient, err := model.GetUserByEmail(ctx, strings.ToLower(resetPasswordRequest.Email))
 	if errors.Is(err, model.UserNotFoundErr) {
 		httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 		return
@@ -617,7 +625,7 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	emailSender, err := sendemail.NewEmailSender()
+	emailSender, err := sendemail.NewEmailSender(r.Context())
 	if err != nil {
 		pgClient.DeletePasswordResetByUserEmail(ctx, user.Email)
 		respondError(err, w)
@@ -655,7 +663,7 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
@@ -691,7 +699,8 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 }
 
 func (h *Handler) GetApiTokens(w http.ResponseWriter, r *http.Request) {
-	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	user, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -737,7 +746,8 @@ func (h *Handler) createApiToken(ctx context.Context, pgClient *postgresql_db.Qu
 }
 
 func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
-	user, statusCode, ctx, pgClient, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	user, statusCode, pgClient, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
@@ -772,31 +782,36 @@ func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
 	httpext.JSON(w, http.StatusOK, apiTokenResponse)
 }
 
-func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, int, context.Context, *postgresql_db.Queries, error) {
+func (h *Handler) GetUserFromJWT(requestContext context.Context) (*model.User, int, *postgresql_db.Queries, error) {
 	_, claims, err := jwtauth.FromContext(requestContext)
 	if err != nil {
-		return nil, http.StatusBadRequest, requestContext, nil, err
+		return nil, http.StatusBadRequest, nil, err
 	}
 	userId, err := utils.GetInt64ValueFromInterfaceMap(claims, "user_id")
 	if err != nil {
-		return nil, http.StatusInternalServerError, requestContext, nil, err
+		return nil, http.StatusInternalServerError, nil, err
 	}
-	user, statusCode, ctx, pgClient, err := model.GetUserByID(userId)
+	user, statusCode, pgClient, err := model.GetUserByID(requestContext, userId)
 	if err != nil {
-		return nil, statusCode, ctx, pgClient, err
+		return nil, statusCode, pgClient, err
 	}
-	return user, http.StatusOK, ctx, pgClient, nil
+	return user, http.StatusOK, pgClient, nil
 }
 
 func (h *Handler) GetApiTokenForConsoleAgent(w http.ResponseWriter, r *http.Request) {
-	// TODO make this local context for saas
-	ctx := directory.NewGlobalContext()
+	var ctx context.Context
+	if directory.IsNonSaaSDeployment() {
+		ctx = directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
+	} else {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
 		return
 	}
-	token, err := pgClient.GetApiTokenByActiveUser(r.Context())
+	token, err := pgClient.GetApiTokenByActiveUser(ctx)
 	if err != nil {
 		respondError(err, w)
 		return

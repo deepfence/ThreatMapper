@@ -61,8 +61,7 @@ func GetConfigFileFromRegistry(ctx context.Context, registryId string) (string, 
 }
 
 func GetCredentialsFromRegistry(ctx context.Context, registryId string) (regCreds, error) {
-	// pgCtx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
-	pgClient, err := directory.PostgresClient(directory.NewGlobalContext())
+	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		return regCreds{}, err

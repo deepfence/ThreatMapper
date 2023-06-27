@@ -2,6 +2,7 @@ package sendemail
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
@@ -32,8 +33,7 @@ type EmailSender interface {
 	Send(recipients []string, subject string, text string, html string, attachments map[string][]byte) error
 }
 
-func NewEmailSender() (EmailSender, error) {
-	ctx := directory.NewGlobalContext()
+func NewEmailSender(ctx context.Context) (EmailSender, error) {
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return nil, err

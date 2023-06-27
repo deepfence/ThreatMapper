@@ -1,8 +1,10 @@
 package directory
 
 import (
+	"context"
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
@@ -46,13 +48,18 @@ type MinioConfig struct {
 }
 
 type DBConfigs struct {
-	Redis    RedisConfig
+	Redis    *RedisConfig
 	Neo4j    *Neo4jConfig
 	Postgres *PostgresqlConfig
 	Minio    *MinioConfig
 }
 
-var directory map[NamespaceID]DBConfigs
+type namespaceDirectory struct {
+	Directory map[NamespaceID]DBConfigs
+	sync.RWMutex
+}
+
+var directory namespaceDirectory
 
 func init() {
 
@@ -68,24 +75,57 @@ func init() {
 		saasMode = true
 	}
 
-	directory = map[NamespaceID]DBConfigs{}
-
+	directory = namespaceDirectory{
+		Directory: map[NamespaceID]DBConfigs{},
+	}
+	directory.Lock()
 	if !saasMode {
 		neo4jCfg := init_neo4j()
-		directory[NonSaaSDirKey] = DBConfigs{
-			Redis:    redisCfg,
+		directory.Directory[NonSaaSDirKey] = DBConfigs{
+			Redis:    &redisCfg,
 			Neo4j:    &neo4jCfg,
-			Postgres: nil,
+			Postgres: &postgresqlCfg,
 			Minio:    nil,
 		}
 	}
 
-	directory[GlobalDirKey] = DBConfigs{
-		Redis:    redisCfg,
+	directory.Directory[GlobalDirKey] = DBConfigs{
+		Redis:    nil,
 		Neo4j:    nil,
-		Postgres: &postgresqlCfg,
+		Postgres: nil,
 		Minio:    &minioCfg,
 	}
+	directory.Unlock()
+}
+
+func GetAllNamespaces() []NamespaceID {
+	directory.RLock()
+	defer directory.RUnlock()
+	var namespaces []NamespaceID
+	for k, _ := range directory.Directory {
+		namespaces = append(namespaces, k)
+	}
+	return namespaces
+}
+
+func ForEachNamespace(applyFn func(ctx context.Context) (string, error)) {
+	namespaces := GetAllNamespaces()
+	var err error
+	var msg string
+	for _, ns := range namespaces {
+		msg, err = applyFn(NewContextWithNameSpace(ns))
+		if err != nil {
+			log.Error().Msg(msg + ": " + err.Error())
+		}
+	}
+}
+
+func IsNonSaaSDeployment() bool {
+	namespaces := GetAllNamespaces()
+	if len(namespaces) == 1 && namespaces[0] == NonSaaSDirKey {
+		return true
+	}
+	return false
 }
 
 func initRedis() RedisConfig {

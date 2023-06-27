@@ -283,17 +283,16 @@ func (u *User) CompareHashAndPassword(ctx context.Context, pgClient *postgresqlD
 	return true, nil
 }
 
-func GetUserByID(userID int64) (*User, int, context.Context, *postgresqlDb.Queries, error) {
+func GetUserByID(ctx context.Context, userID int64) (*User, int, *postgresqlDb.Queries, error) {
 	user := User{ID: userID}
-	ctx := directory.NewGlobalContext()
 	pgClient, err := directory.PostgresClient(ctx)
 	err = user.LoadFromDbByID(ctx, pgClient)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, http.StatusNotFound, ctx, pgClient, errors.New(utils.ErrorUserNotFound)
+		return nil, http.StatusNotFound, pgClient, errors.New(utils.ErrorUserNotFound)
 	} else if err != nil {
-		return nil, http.StatusInternalServerError, ctx, pgClient, err
+		return nil, http.StatusInternalServerError, pgClient, err
 	}
-	return &user, http.StatusOK, ctx, pgClient, nil
+	return &user, http.StatusOK, pgClient, nil
 }
 
 func (u *User) LoadFromDbByID(ctx context.Context, pgClient *postgresqlDb.Queries) error {
@@ -319,17 +318,16 @@ func (u *User) LoadFromDbByID(ctx context.Context, pgClient *postgresqlDb.Querie
 	return nil
 }
 
-func GetUserByEmail(email string) (*User, int, context.Context, *postgresqlDb.Queries, error) {
+func GetUserByEmail(ctx context.Context, email string) (*User, int, *postgresqlDb.Queries, error) {
 	user := User{Email: email}
-	ctx := directory.NewGlobalContext()
 	pgClient, err := directory.PostgresClient(ctx)
 	err = user.LoadFromDbByEmail(ctx, pgClient)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, http.StatusNotFound, ctx, pgClient, UserNotFoundErr
+		return nil, http.StatusNotFound, pgClient, UserNotFoundErr
 	} else if err != nil {
-		return nil, http.StatusInternalServerError, ctx, pgClient, err
+		return nil, http.StatusInternalServerError, pgClient, err
 	}
-	return &user, http.StatusOK, ctx, pgClient, nil
+	return &user, http.StatusOK, pgClient, nil
 }
 
 func (u *User) LoadFromDbByEmail(ctx context.Context, pgClient *postgresqlDb.Queries) error {
