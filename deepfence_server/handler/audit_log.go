@@ -80,6 +80,7 @@ func (h *Handler) AuditUserActivity(
 	var (
 		userEmail string
 		userRole  string
+		namespace string
 		claims    = map[string]interface{}{}
 	)
 
@@ -92,12 +93,14 @@ func (h *Handler) AuditUserActivity(
 		claims = token.PrivateClaims()
 		userEmail = claims["email"].(string)
 		userRole = claims["role"].(string)
+		namespace = claims[directory.NamespaceKey].(string)
 	}
 
 	if event == EVENT_AUTH && (action == ACTION_LOGIN || action == ACTION_TOKEN_AUTH) {
 		user := resources.(*model.User)
 		userEmail = user.Email
 		userRole = user.Role
+		namespace = user.CompanyNamespace
 	}
 
 	var resourceStr string = ""
@@ -127,10 +130,10 @@ func (h *Handler) AuditUserActivity(
 		CreatedAt: time.Now(),
 	}
 
-	go h.AddAuditLog(params)
+	go h.AddAuditLog(namespace, params)
 }
 
-func (h *Handler) AddAuditLog(params postgresql_db.CreateAuditLogParams) error {
+func (h *Handler) AddAuditLog(namespace string, params postgresql_db.CreateAuditLogParams) error {
 	data, err := json.Marshal(params)
 	if err != nil {
 		return err
@@ -139,13 +142,16 @@ func (h *Handler) AddAuditLog(params postgresql_db.CreateAuditLogParams) error {
 	h.IngestChan <- &kgo.Record{
 		Topic: utils.AUDIT_LOGS,
 		Value: data,
+		Headers: []kgo.RecordHeader{
+			{Key: "namespace", Value: []byte(namespace)},
+		},
 	}
 
 	return nil
 }
 
 func (h *Handler) GetAuditLogs(w http.ResponseWriter, r *http.Request) {
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get db connection")

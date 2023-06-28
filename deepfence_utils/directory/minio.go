@@ -220,7 +220,7 @@ func (mfm *MinioFileManager) DownloadFileContexts(ctx context.Context, remoteFil
 
 func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, addFilePathPrefix bool, expires time.Duration, reqParams url.Values) (string, error) {
 	// Force browser to download file - url.Values{"response-content-disposition": []string{"attachment; filename=\"b.txt\""}},
-	consoleIp, err := GetManagementHost(NewGlobalContext())
+	consoleIp, err := GetManagementHost(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -246,7 +246,7 @@ func (mfm *MinioFileManager) ExposeFile(ctx context.Context, filePath string, ad
 }
 
 func (mfm *MinioFileManager) CreatePublicUploadURL(ctx context.Context, filePath string, addFilePathPrefix bool, expires time.Duration, reqParams url.Values) (string, error) {
-	consoleIp, err := GetManagementHost(NewGlobalContext())
+	consoleIp, err := GetManagementHost(ctx)
 	if err != nil {
 		return "", err
 	}

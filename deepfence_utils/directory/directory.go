@@ -1,8 +1,10 @@
 package directory
 
 import (
+	"context"
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 )
@@ -46,19 +48,24 @@ type MinioConfig struct {
 }
 
 type DBConfigs struct {
-	Redis    RedisConfig
+	Redis    *RedisConfig
 	Neo4j    *Neo4jConfig
 	Postgres *PostgresqlConfig
 	Minio    *MinioConfig
 }
 
-var directory map[NamespaceID]DBConfigs
+type namespaceDirectory struct {
+	Directory map[NamespaceID]DBConfigs
+	sync.RWMutex
+}
+
+var directory namespaceDirectory
 
 func init() {
-
-	redisCfg := initRedis()
+	directory = namespaceDirectory{
+		Directory: map[NamespaceID]DBConfigs{},
+	}
 	minioCfg := initMinio()
-	postgresqlCfg := init_posgres()
 
 	saasMode := false
 	saasModeOn, has := os.LookupEnv("DEEPFENCE_SAAS_MODE")
@@ -68,24 +75,78 @@ func init() {
 		saasMode = true
 	}
 
-	directory = map[NamespaceID]DBConfigs{}
-
+	directory.Lock()
 	if !saasMode {
-		neo4jCfg := init_neo4j()
-		directory[NonSaaSDirKey] = DBConfigs{
-			Redis:    redisCfg,
+		redisCfg := initRedis()
+		neo4jCfg := initNeo4j()
+		postgresqlCfg := initPosgresql()
+		directory.Directory[NonSaaSDirKey] = DBConfigs{
+			Redis:    &redisCfg,
 			Neo4j:    &neo4jCfg,
-			Postgres: nil,
+			Postgres: &postgresqlCfg,
 			Minio:    nil,
 		}
 	}
 
-	directory[GlobalDirKey] = DBConfigs{
-		Redis:    redisCfg,
+	directory.Directory[GlobalDirKey] = DBConfigs{
+		Redis:    nil,
 		Neo4j:    nil,
-		Postgres: &postgresqlCfg,
+		Postgres: nil,
 		Minio:    &minioCfg,
 	}
+	directory.Unlock()
+}
+
+func GetAllNamespaces() []NamespaceID {
+	directory.RLock()
+	defer directory.RUnlock()
+	var namespaces []NamespaceID
+	for k, _ := range directory.Directory {
+		if k != GlobalDirKey {
+			namespaces = append(namespaces, k)
+		}
+	}
+	return namespaces
+}
+
+func ForEachNamespace(applyFn func(ctx context.Context) (string, error)) {
+	namespaces := GetAllNamespaces()
+	var err error
+	var msg string
+	for _, ns := range namespaces {
+		msg, err = applyFn(NewContextWithNameSpace(ns))
+		if err != nil {
+			log.Error().Msg(msg + ": " + err.Error())
+		}
+	}
+}
+
+func FetchNamespace(email string) NamespaceID {
+	namespaces := GetAllNamespaces()
+	if len(namespaces) == 1 && namespaces[0] == NonSaaSDirKey {
+		return NonSaaSDirKey
+	} else {
+		// TODO: Fetch namespace for SaaS tenant
+	}
+	return ""
+}
+
+func FetchNamespaceFromID(namespaceID string) NamespaceID {
+	namespaces := GetAllNamespaces()
+	if len(namespaces) == 1 && namespaces[0] == NonSaaSDirKey {
+		return NonSaaSDirKey
+	} else {
+		// TODO: Fetch namespace for SaaS tenant
+	}
+	return ""
+}
+
+func IsNonSaaSDeployment() bool {
+	namespaces := GetAllNamespaces()
+	if len(namespaces) == 1 && namespaces[0] == NonSaaSDirKey {
+		return true
+	}
+	return false
 }
 
 func initRedis() RedisConfig {
@@ -150,7 +211,7 @@ func initMinio() MinioConfig {
 	}
 }
 
-func init_posgres() PostgresqlConfig {
+func initPosgresql() PostgresqlConfig {
 	var err error
 	postgresHost, has := os.LookupEnv("DEEPFENCE_POSTGRES_USER_DB_HOST")
 	if !has {
@@ -182,7 +243,7 @@ func init_posgres() PostgresqlConfig {
 	}
 }
 
-func init_neo4j() Neo4jConfig {
+func initNeo4j() Neo4jConfig {
 	neo4jHost, has := os.LookupEnv("DEEPFENCE_NEO4J_HOST")
 	if !has {
 		neo4jHost = "localhost"

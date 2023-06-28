@@ -2,6 +2,7 @@ package elasticsearch
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 )
@@ -15,7 +16,7 @@ func New(b []byte) (*ElasticSearch, error) {
 	return &p, nil
 }
 
-func (e ElasticSearch) SendNotification(message string, extras map[string]interface{}) error {
+func (e ElasticSearch) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
 	var req *http.Request
 	var err error
 	var msg []map[string]interface{}

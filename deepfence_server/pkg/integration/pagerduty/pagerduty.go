@@ -2,6 +2,7 @@ package pagerduty
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 )
@@ -20,7 +21,7 @@ func New(b []byte) (*PagerDuty, error) {
 	return &p, nil
 }
 
-func (p PagerDuty) SendNotification(message string, extras map[string]interface{}) error {
+func (p PagerDuty) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
 	var req *http.Request
 	var err error
 

@@ -1,6 +1,7 @@
 package awssecurityhub
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -47,7 +48,7 @@ func New(b []byte) (*AwsSecurityHub, error) {
 	return &s, nil
 }
 
-func (a AwsSecurityHub) SendNotification(message string, extras map[string]interface{}) error {
+func (a AwsSecurityHub) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
 	nodeID, ok := extras["node_id"]
 	if !ok {
 		log.Error().Msgf("AwsSecurityHub: SendNotification: node_id not found in extras")
@@ -60,7 +61,7 @@ func (a AwsSecurityHub) SendNotification(message string, extras map[string]inter
 		return nil
 	}
 
-	resource, err := getResource(a.Resource, nodeIDStr, a.Config.AWSRegion, a.Config.AWSAccountId)
+	resource, err := getResource(ctx, a.Resource, nodeIDStr, a.Config.AWSRegion, a.Config.AWSAccountId)
 	if err != nil {
 		// if err.Err check here
 		if err.Error() == "not aws" {
@@ -117,18 +118,16 @@ func (a AwsSecurityHub) SendNotification(message string, extras map[string]inter
 	return nil
 }
 
-func getResource(scanType, nodeID, region, accountID string) ([]*securityhub.Resource, error) {
+func getResource(ctx context.Context, scanType, nodeID, region, accountID string) ([]*securityhub.Resource, error) {
 	if scanType == utils.ScanTypeDetectedNode[utils.NEO4J_VULNERABILITY_SCAN] {
-		return getResourceForVulnerability(nodeID, region, accountID)
+		return getResourceForVulnerability(ctx, nodeID, region, accountID)
 	} else if scanType == utils.ScanTypeDetectedNode[utils.NEO4J_COMPLIANCE_SCAN] {
-		return getResourceForCompliance(nodeID, region, accountID)
+		return getResourceForCompliance(ctx, nodeID, region, accountID)
 	}
 	return nil, fmt.Errorf("not aws")
 }
 
-func getResourceForVulnerability(nodeID, region, accountID string) ([]*securityhub.Resource, error) {
-	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
-
+func getResourceForVulnerability(ctx context.Context, nodeID, region, accountID string) ([]*securityhub.Resource, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -211,9 +210,7 @@ func getResourceForVulnerability(nodeID, region, accountID string) ([]*securityh
 	return nil, fmt.Errorf("not aws")
 }
 
-func getResourceForCompliance(nodeID, region, accountID string) ([]*securityhub.Resource, error) {
-	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
-
+func getResourceForCompliance(ctx context.Context, nodeID, region, accountID string) ([]*securityhub.Resource, error) {
 	driver, err := directory.Neo4jClient(ctx)
 	if err != nil {
 		log.Error().Msg(err.Error())

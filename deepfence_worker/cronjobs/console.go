@@ -42,7 +42,7 @@ func TriggerConsoleControls(msg *message.Message) error {
 
 	for _, action := range actions {
 		log.Info().Msgf("Init execute: %v", action.ID)
-		err := ctl.ApplyControl(action)
+		err := ctl.ApplyControl(namespace, action)
 		if err != nil {
 			log.Error().Msgf("Control %v failed: %v", action, err)
 		}

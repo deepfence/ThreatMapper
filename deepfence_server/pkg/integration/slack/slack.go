@@ -2,6 +2,7 @@ package slack
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -31,7 +32,7 @@ func (s Slack) FormatMessage(message []map[string]interface{}) string {
 	return entiremsg
 }
 
-func (s Slack) SendNotification(message string, extras map[string]interface{}) error {
+func (s Slack) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
 	// formatting : unmarshal into payload
 	var msg []map[string]interface{}
 	err := json.Unmarshal([]byte(message), &msg)

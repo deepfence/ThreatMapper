@@ -27,7 +27,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.285
 	github.com/deepfence/SecretScanner v0.0.0-00010101000000-000000000000
 	github.com/deepfence/ThreatMapper/deepfence_server v0.0.0-00010101000000-000000000000
-	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-20230623172029-60c652233ab8
+	github.com/deepfence/ThreatMapper/deepfence_utils v0.0.0-00010101000000-000000000000
 	github.com/deepfence/YaraHunter v0.0.0-00010101000000-000000000000
 	github.com/deepfence/agent-plugins-grpc v1.1.0
 	github.com/deepfence/package-scanner v0.0.0-00010101000000-000000000000

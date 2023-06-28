@@ -2,7 +2,6 @@ package directory
 
 import (
 	"context"
-	"errors"
 	"sync"
 
 	"github.com/redis/go-redis/v9"
@@ -27,16 +26,4 @@ func newRedisClient(endpoints DBConfigs) (*redis.Client, error) {
 
 func RedisClient(ctx context.Context) (*redis.Client, error) {
 	return getClient(ctx, &redisClientsPool, newRedisClient)
-}
-
-func GetRedisConfig(ctx context.Context) (RedisConfig, error) {
-	namespace, err := ExtractNamespace(ctx)
-	if err != nil {
-		return RedisConfig{}, err
-	}
-	endpoints, has := directory[namespace]
-	if !has {
-		return RedisConfig{}, errors.New("missing directory entry")
-	}
-	return endpoints.Redis, nil
 }
