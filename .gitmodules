@@ -26,3 +26,7 @@
 	path = deepfence_agent/plugins/yara-rules
 	url = https://github.com/deepfence/yara-rules
 	branch = main
+[submodule "deepfence_agent/plugins/fluent-bit"]
+	path = deepfence_agent/plugins/fluent-bit
+	url = https://github.com/deepfence/fluent-bit
+    branch = master

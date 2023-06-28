@@ -33,8 +33,8 @@ alpine_builder:
 	docker build --tag=$(IMAGE_REPOSITORY)/deepfence_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-alpine .
 
 .PHONY: debian_builder
-debian_builder: alpine_builder
-	docker build --build-arg DF_IMG_TAG=${DF_IMG_TAG} --build-arg IMAGE_REPOSITORY=${IMAGE_REPOSITORY} --tag=$(IMAGE_REPOSITORY)/deepfence_agent_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-debian .
+debian_builder:
+	docker build --build-arg DF_IMG_TAG=${DF_IMG_TAG} --build-arg IMAGE_REPOSITORY=${IMAGE_REPOSITORY} --tag=$(IMAGE_REPOSITORY)/deepfence_glibc_builder_ce:$(DF_IMG_TAG) -f docker_builders/Dockerfile-debian .
 
 .PHONY: bootstrap-agent-plugins
 bootstrap-agent-plugins:
@@ -89,7 +89,7 @@ graphdb:
 ui:
 	git log --format="%h" -n 1 > $(DEEPFENCE_FRONTEND_DIR)/console_version.txt && \
 	echo $(VERSION) > $(DEEPFENCE_FRONTEND_DIR)/product_version.txt && \
-	docker run -i --rm --entrypoint=bash -v $(DEEPFENCE_FRONTEND_DIR):/app node:18-bullseye-slim -c "cd /app && corepack enable && corepack prepare pnpm@7.17.1 --activate && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=true pnpm install --frozen-lockfile --prefer-offline && pnpm run build" && \
+	docker run --rm --entrypoint=bash -v $(DEEPFENCE_FRONTEND_DIR):/app node:18-bullseye-slim -c "cd /app && corepack enable && corepack prepare pnpm@7.17.1 --activate && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=true pnpm install --frozen-lockfile --prefer-offline && pnpm run build" && \
 	docker build -f $(DEEPFENCE_FRONTEND_DIR)/Dockerfile -t $(IMAGE_REPOSITORY)/deepfence_ui_ce:$(DF_IMG_TAG) $(DEEPFENCE_FRONTEND_DIR) && \
 	rm -rf $(DEEPFENCE_FRONTEND_DIR)/console_version.txt $(DEEPFENCE_FRONTEND_DIR)/product_version.txt
 
@@ -111,7 +111,7 @@ compliancescanner:
 
 .PHONY: openapi
 openapi: server
-	docker run --rm -i \
+	docker run --rm \
 	--entrypoint=/usr/local/bin/deepfence_server \
 	-v $(PWD):/app $(IMAGE_REPOSITORY)/deepfence_server_ce:$(DF_IMG_TAG) \
 	--export-api-docs-path /app/openapi.yaml
@@ -198,9 +198,7 @@ publish-graphdb:
 
 .PHONY: clean
 clean:
-	(cd $(DEEPFENCE_AGENT_DIR)/plugins && make clean)
-	(cd $(DEEPFENCE_AGENT_DIR) && make clean)
-	(cd $(ROOT_MAKEFILE_DIR)/deepfence_server && make clean)
-	(cd $(ROOT_MAKEFILE_DIR)/deepfence_worker && make clean)
-	(cd $(DEEPFENCED) && make clean && rm $(DEEPFENCE_AGENT_DIR)/deepfenced)
-	(cd $(DEEPFENCE_AGENT_DIR)/tools/apache/fluentbit/out_deepfence && make clean)
+	-(cd $(DEEPFENCE_AGENT_DIR) && make clean)
+	-(cd $(ROOT_MAKEFILE_DIR)/deepfence_server && make clean)
+	-(cd $(ROOT_MAKEFILE_DIR)/deepfence_worker && make clean)
+	-(cd $(DEEPFENCED) && make clean && rm $(DEEPFENCE_AGENT_DIR)/deepfenced)

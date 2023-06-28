@@ -37,16 +37,11 @@ RUN apt-get -y --allow-unauthenticated install skopeo podman \
     && mkdir /usr/local/bin/compliance_check && mkdir /usr/local/discovery \
     && apt update --allow-insecure-repositories && DEBIAN_FRONTEND=noninteractive apt install libhyperscan5
 
-# Installing FluentBit
-RUN wget -qO - https://packages.fluentbit.io/fluentbit.key | apt-key add - \
-    && echo "deb https://packages.fluentbit.io/debian/buster buster main " >> /etc/apt/sources.list
-RUN apt-get update --allow-insecure-repositories
-RUN apt-get install -y td-agent-bit=1.6.10 && mkdir -p /etc/td-agent-bit/
-
+RUN mkdir -p /etc/td-agent-bit/
 COPY tools/apache/fluentbit/* /etc/td-agent-bit/
 
 # Copy fluentbit plugin
-COPY tools/apache/fluentbit/out_deepfence/out_deepfence.so /opt/td-agent-bit/bin/
+COPY plugins/fluent-bit/build/bin/fluent-bit /opt/td-agent-bit/bin/
 COPY tools/apache/deepfence/df-utils/get_cloud_instance_id/getCloudInstanceId /usr/local/bin/getCloudInstanceId
 COPY etc/fenced_logrotate.conf /etc/logrotate.d/fenced_logrotate.conf
 COPY etc/certs/* /etc/filebeat/
