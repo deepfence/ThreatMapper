@@ -11,10 +11,16 @@ LABEL MAINTAINER="Deepfence Inc"
 LABEL deepfence.role=system
 
 ADD deepfence_server/cloud_controls /cloud_controls
-RUN apk add --no-cache kafkacat docker-cli openrc bash skopeo jansson-dev \
+ADD deepfence_utils/postgresql /usr/local/postgresql-migrate
+
+RUN apk add --no-cache curl kafkacat docker-cli openrc bash skopeo jansson-dev \
         libmagic libstdc++ libx11 libxrender libxext libssl1.1 ca-certificates \
         fontconfig freetype ttf-droid ttf-freefont ttf-liberation postgresql15-client
 RUN apk add hyperscan --repository=https://dl-cdn.alpinelinux.org/alpine/v3.13/community
+
+RUN curl -L "https://github.com/golang-migrate/migrate/releases/latest/download/migrate.linux-amd64.tar.gz" | tar xvz && \
+    mv migrate /usr/local/bin/migrate && \
+    chmod +x /usr/local/bin/migrate
 
 ENV DEEPFENCE_KAFKA_TOPIC_PARTITIONS=3 \
     DEEPFENCE_KAFKA_TOPIC_PARTITIONS_TASKS=3 \
