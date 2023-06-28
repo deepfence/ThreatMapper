@@ -20,40 +20,53 @@ const ListboxContext = createContext<{
 }>({
   multiple: false,
 });
-
-const buttonCva = cva(
-  [
-    'relative',
-    'disabled:cursor-not-allowed',
-    'py-[7px] px-3',
-    // border radius
-    'border rounded-[5px]',
-  ],
-  {
-    variants: {
-      color: {
-        default: [
-          cn(
-            // border
-            'border-bg-grid-border dark:border-bg-grid-border',
-            // bg styles
-            'bg-bg-card dark:bg-bg-card',
-            // placeholder styles
-            'placeholder-gray-400 disabled:placeholder-gray-500',
-            'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
-            // text styles
-            'text-text-input-value dark:text-text-input-value',
-            // disabled text color
-            'disabled:text-gray-600 dark:disabled:text-gray-600',
-          ),
-        ],
-      },
+const defaultStyle = cn(
+  // border
+  'dark:border rounded-[5px]',
+  'border-bg-grid-border dark:border-bg-grid-border',
+  // bg styles
+  'bg-bg-card dark:bg-bg-card',
+  // placeholder styles
+  'placeholder-gray-400 disabled:placeholder-gray-500',
+  'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
+  // text styles
+  'text-text-input-value dark:text-text-input-value',
+  // disabled text color
+  'disabled:text-gray-600 dark:disabled:text-gray-600',
+);
+const defaultOutlineStyle = cn(
+  'focus:visible:outline-none',
+  'bg-transparent dark:bg-transparent',
+  'dark:border-transparent dark:border-b rounded-none',
+  'dark:border-b-text-text-and-icon dark:disabled:border-b-gray-600',
+  'placeholder-gray-400 disabled:placeholder-gray-500',
+  'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
+  // text styles
+  'text-text-input-value dark:text-text-input-value',
+  // disabled text color
+  'disabled:text-gray-600 dark:disabled:text-gray-600',
+);
+const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[7px] px-3'], {
+  variants: {
+    color: {
+      default: [defaultStyle],
     },
-    defaultVariants: {
-      color: 'default',
+    variant: {
+      outline: '',
+      default: '',
     },
   },
-);
+  defaultVariants: {
+    color: 'default',
+  },
+  compoundVariants: [
+    {
+      variant: 'outline',
+      color: 'default',
+      className: defaultOutlineStyle,
+    },
+  ],
+});
 const CaretIcon = () => {
   return (
     <svg
@@ -127,6 +140,7 @@ interface ListboxProps<TType, TActualType>
     TActualType
   > {
   color?: ColorType;
+  variant?: 'outline' | 'default';
   children?: React.ReactNode;
   label?: string;
   clearAll?: React.ReactNode;
@@ -139,6 +153,7 @@ interface ListboxProps<TType, TActualType>
 }
 export function Listbox<TType, TActualType>({
   color,
+  variant,
   children,
   value,
   label,
@@ -200,11 +215,14 @@ export function Listbox<TType, TActualType>({
           <HUIListbox.Button
             id={_id}
             ref={(ele) => refs.setReference(ele)}
-            className={buttonCva({
-              color,
-            })}
+            className={cn(
+              buttonCva({
+                color,
+                variant,
+              }),
+            )}
           >
-            <span className="truncate text-start block text-p7">
+            <span className="truncate text-start block text-p4">
               {getPlaceholderValue(value, getDisplayValue, placeholder)}
             </span>
             <div

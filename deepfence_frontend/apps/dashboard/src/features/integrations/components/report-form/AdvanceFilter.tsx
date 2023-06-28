@@ -122,6 +122,7 @@ export const AdvancedFilter = ({
 
             {provider && (
               <Listbox
+                variant="outline"
                 value={maskedType}
                 name="mask[]"
                 onChange={(value) => {
@@ -141,6 +142,7 @@ export const AdvancedFilter = ({
             )}
             {provider && (
               <Listbox
+                variant="outline"
                 value={status}
                 name="status[]"
                 onChange={(value) => {

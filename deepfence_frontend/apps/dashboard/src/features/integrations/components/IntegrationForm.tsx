@@ -119,6 +119,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
 
         {notificationType === 'Compliance' || notificationType === 'CloudCompliance' ? (
           <Listbox
+            variant="outline"
             value={selectedStatus}
             name="statusFilter"
             onChange={(value) => {
@@ -127,6 +128,8 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
             placeholder="Select status"
             label="Select status"
             multiple
+            clearAll="Clear all"
+            onClearAll={() => setSelectedStatus([])}
           >
             <ListboxOption value={'Alarm'}>Alarm</ListboxOption>
             <ListboxOption value={'Info'}>Info</ListboxOption>
@@ -139,6 +142,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
           notificationType as ScanTypeEnum,
         ) ? (
           <Listbox
+            variant="outline"
             value={selectedSeverity}
             name="severityFilter"
             onChange={(value) => {
@@ -147,6 +151,8 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
             placeholder="Select severity"
             label="Select severity"
             multiple
+            clearAll="Clear all"
+            onClearAll={() => setSelectedSeverity([])}
           >
             <ListboxOption value={'Critical'}>Critical</ListboxOption>
             <ListboxOption value={'High'}>High</ListboxOption>
@@ -174,6 +180,7 @@ const NotificationType = () => {
   return (
     <div className="w-full">
       <Listbox
+        variant="outline"
         value={notificationType}
         name="_notificationType"
         onChange={(value) => {
@@ -207,6 +214,14 @@ const NotificationType = () => {
         ) : null} */}
       </Listbox>
 
+      {isCloudTrailNotification(notificationType) && <>Add Cloud trails here</>}
+
+      {isUserActivityNotification(notificationType) && (
+        <div className="mt-3">
+          <TextInputType name="interval" label="Enter interval" />
+        </div>
+      )}
+
       {notificationType &&
       !isCloudTrailNotification(notificationType) &&
       !isUserActivityNotification(notificationType) &&
@@ -219,14 +234,6 @@ const NotificationType = () => {
             <CaretDown />
           </span>
           <div className="text-h5">Advanced Filter (Optional)</div>
-        </div>
-      )}
-
-      {isCloudTrailNotification(notificationType) && <>Add Cloud trails here</>}
-
-      {isUserActivityNotification(notificationType) && (
-        <div className="mt-3">
-          <TextInputType name="interval" label="Enter interval" />
         </div>
       )}
     </div>

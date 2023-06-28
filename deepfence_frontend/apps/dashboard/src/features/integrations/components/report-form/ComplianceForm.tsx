@@ -22,6 +22,7 @@ export const ComplianceForm = ({
   return (
     <>
       <Listbox
+        variant="outline"
         label="Select Node Type"
         value={provider}
         name="nodeType"
@@ -40,6 +41,7 @@ export const ComplianceForm = ({
       </Listbox>
       {provider && (
         <Listbox
+          variant="outline"
           value={benchmarkType}
           name="severity[]"
           onChange={(value) => {

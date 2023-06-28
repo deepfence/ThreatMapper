@@ -29,14 +29,9 @@ import { integrationTypeToNameMapping } from '@/features/integrations/pages/Inte
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
 
 import { IntegrationForm, IntegrationType } from '../components/IntegrationForm';
 import { IntegrationTable } from '../components/IntegrationTable';
-
-type LoaderDataType = {
-  data: ReturnType<typeof getIntegrations>;
-};
 
 export const CLOUD_TRAIL_ALERT = 'CloudTrail Alert';
 export const USER_ACTIVITIES = 'User Activities';
@@ -54,36 +49,7 @@ const severityMap: {
   Malware: 'file_severity',
   Compliance: 'status',
 };
-const getIntegrations = async (): Promise<{
-  message?: string;
-  data?: ModelIntegrationListResp[];
-}> => {
-  const listIntegrationApi = apiWrapper({
-    fn: getIntegrationApiClient().listIntegration,
-  });
-  const integrationResponse = await listIntegrationApi();
-  if (!integrationResponse.ok) {
-    if (integrationResponse.error.response.status === 403) {
-      return {
-        message: 'You do not have enough permissions to view integrations',
-      };
-    } else {
-      return {
-        message: 'Error in getting integrations',
-      };
-    }
-  }
 
-  return {
-    data: integrationResponse.value,
-  };
-};
-
-export const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
-  return typedDefer({
-    data: getIntegrations(),
-  });
-};
 export const useListIntegrations = () => {
   return useSuspenseQuery({
     ...queries.integration.listIntegrations(),
@@ -187,7 +153,7 @@ type ActionData = {
 const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionData> => {
   const _integrationType = params.integrationType?.toString();
   const formData = await request.formData();
-
+  debugger;
   let _notificationType = formData.get('_notificationType')?.toString();
   const _actionType = formData.get('_actionType')?.toString();
 
@@ -549,5 +515,4 @@ const IntegrationAdd = () => {
 export const module = {
   element: <IntegrationAdd />,
   action,
-  loader,
 };

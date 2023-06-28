@@ -206,6 +206,7 @@ const ReportForm = () => {
       <input type="text" name="_actionType" readOnly hidden value={ActionEnumType.ADD} />
       <div className="gap-y-8 grid grid-cols-2 auto-rows-auto gap-x-8">
         <Listbox
+          variant="outline"
           label="Select Resource"
           value={resource}
           name="resource"
@@ -248,6 +249,7 @@ const ReportForm = () => {
         ) : null}
 
         <Listbox
+          variant="outline"
           label="Select Duration"
           value={duration}
           name="duration"
@@ -279,6 +281,7 @@ const ReportForm = () => {
         />
 
         <Listbox
+          variant="outline"
           label="Select Download Type"
           value={downloadType}
           name="downloadType"

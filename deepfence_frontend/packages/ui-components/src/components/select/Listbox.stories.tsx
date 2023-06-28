@@ -113,3 +113,45 @@ export const SingleSelect = {
   render: SingleSelectTemplate,
   args: {},
 };
+
+const SingleSelectOutlineTemplate: StoryFn<typeof Listbox> = () => {
+  const [selected, setSelected] = useState<string>(people[0].value);
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target as HTMLFormElement);
+        formData.get('single-select'); // should be people.value
+      }}
+    >
+      <Listbox
+        variant="outline"
+        value={selected}
+        name="single-select"
+        onChange={(item) => {
+          setSelected(item);
+        }}
+        getDisplayValue={(item) => {
+          return people.find((person) => person.value === item)?.label ?? '';
+        }}
+      >
+        {people.map((person) => {
+          return (
+            <ListboxOption key={person.value} value={person.value}>
+              {person.label}
+            </ListboxOption>
+          );
+        })}
+      </Listbox>
+      <div className="mt-2">
+        <Button type="submit">Submit</Button>
+      </div>
+    </form>
+  );
+};
+
+export const SingleSelectOutline = {
+  render: SingleSelectOutlineTemplate,
+  args: {},
+};

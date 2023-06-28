@@ -1,11 +1,9 @@
 import './input.css';
 
 import * as LabelPrimitive from '@radix-ui/react-label';
-import cx from 'classnames';
 import { cva, VariantProps } from 'cva';
 import React, { ComponentProps, forwardRef, useId, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { twMerge } from 'tailwind-merge';
 import { cn } from 'tailwind-preset';
 
 import HelperText from '@/components/input/HelperText';
@@ -110,7 +108,7 @@ const InfoIcon = () => {
 };
 const inputCva = cva(
   [
-    'df-input block w-full disabled:cursor-not-allowed',
+    'text-p4 df-input block w-full disabled:cursor-not-allowed',
     'focus:outline-none',
     'pl-1.5 pt-1.5 pb-[5px]',
     'border-b',
@@ -127,10 +125,8 @@ const inputCva = cva(
             // bg styles
             'bg-gray-50',
             // placeholder styles
-            'placeholder-gray-500 disabled:placeholder-gray-400',
-            'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
-            // text font
-            'dark:text-p4',
+            'placeholder-gray-500 disabled:placeholder-gray-600',
+            'dark:placeholder-gray-600 dark:disabled:placeholder-gray-600',
             // text styles
             'text-gray-900 dark:text-text-input-value',
             // disabled text color
@@ -152,10 +148,9 @@ const inputCva = cva(
             // bg styles
             'bg-gray-50',
             // placeholder styles
-            'placeholder-gray-500 disabled:placeholder-gray-400',
-            'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
+            'placeholder-gray-500 disabled:placeholder-gray-600',
+            'dark:placeholder-gray-600 dark:disabled:placeholder-gray-600',
             // text font
-            'dark:text-p4',
             // text styles
             'text-gray-900 dark:text-text-input-value',
             // disabled text color
@@ -218,7 +213,7 @@ interface IconProps
 export const LeftIcon = ({ icon, id, color, sizing, disabled }: IconProps) => {
   return (
     <span
-      className={cx('pointer-events-none absolute inset-y-0 left-0 flex items-center')}
+      className={cn('pointer-events-none absolute inset-y-0 left-0 flex items-center')}
       data-testid={`textinput-start-icon-${id}`}
     >
       <IconContext.Provider
@@ -272,12 +267,12 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     const [showPassword, setShowPassword] = useState(false);
 
     return (
-      <div className={twMerge('flex flex-col w-full', className)}>
+      <div className={cn('flex flex-col w-full', className)}>
         {label && (
           <div className="flex gap-2 pb-[10px] items-center">
             <LabelPrimitive.Root
               htmlFor={_id}
-              className={cx('text-p3 text-gray-900 dark:text-text-text-and-icon', {
+              className={cn('text-p3 text-gray-900 dark:text-text-text-and-icon', {
                 'dark:text-gray-600': disabled,
               })}
             >
@@ -293,7 +288,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             )}
           </div>
         )}
-        <div className={cx('relative flex items-center')}>
+        <div className={cn('relative flex items-center')}>
           {startIcon && (
             <LeftIcon
               icon={startIcon}
@@ -305,7 +300,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           )}
 
           <input
-            className={twMerge(
+            className={cn(
               inputCva({
                 color,
                 sizing,
@@ -339,7 +334,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
 
           {color === 'error' && (
             <div
-              className={cx('text-chart-red', {
+              className={cn('text-chart-red', {
                 'cursor-not-allowed': disabled,
               })}
               data-testid={`textinput-error-icon-${id}`}

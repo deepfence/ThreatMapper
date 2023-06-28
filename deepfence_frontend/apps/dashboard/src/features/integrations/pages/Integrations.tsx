@@ -20,7 +20,7 @@ import { IntegrationType } from '@/features/integrations/components/IntegrationF
 import { useGetReports } from '@/features/integrations/pages/DownloadReport';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
-import { loader, useListIntegrations } from './IntegrationAdd';
+import { useListIntegrations } from './IntegrationAdd';
 
 export const integrationTypeToNameMapping: { [key: string]: string } = {
   slack: 'Slack',
@@ -297,5 +297,4 @@ const DownloadReport = () => {
 
 export const module = {
   element: <Integrations />,
-  loader,
 };

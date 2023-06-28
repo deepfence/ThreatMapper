@@ -26,6 +26,7 @@ export const CommonForm = ({
   return (
     <>
       <Listbox
+        variant="outline"
         label="Select Node Type"
         value={provider}
         name="nodeType"
@@ -46,6 +47,7 @@ export const CommonForm = ({
         })}
       </Listbox>
       <Listbox
+        variant="outline"
         label="Select Severity"
         value={severity}
         name="severity[]"
@@ -56,6 +58,8 @@ export const CommonForm = ({
         getDisplayValue={() => {
           return 'Severity';
         }}
+        multiple
+        clearAll="Clear all"
       >
         {severities.map((resource) => {
           return (
