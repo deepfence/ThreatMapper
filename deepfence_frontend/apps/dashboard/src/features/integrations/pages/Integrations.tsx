@@ -280,7 +280,7 @@ const DownloadReport = () => {
           size="md"
           type="button"
           onClick={() => {
-            navigate('/integrations/download/report');
+            navigate('/integrations/download/report/create');
           }}
           startIcon={
             <span className="w-2 h-2 ">

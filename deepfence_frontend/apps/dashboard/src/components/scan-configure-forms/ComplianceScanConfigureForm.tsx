@@ -320,7 +320,7 @@ export const ComplianceScanConfigureForm = ({
       };
     });
   });
-  console.log(tabs);
+
   const [defaultTab, setDefaultTab] = useState('');
 
   useEffect(() => {

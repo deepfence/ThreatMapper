@@ -6,7 +6,7 @@ import {
   Transition,
 } from '@headlessui/react';
 import { cva } from 'cva';
-import { isNil } from 'lodash-es';
+import { isEmpty, isNil } from 'lodash-es';
 import { createContext, ReactNode, useContext, useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from 'tailwind-preset';
@@ -334,7 +334,7 @@ function getPlaceholderValue<T extends unknown | unknown[]>(
   getDisplayValue?: (value?: T) => string,
   defaultPlaceholder?: string,
 ) {
-  if (isNil(value)) {
+  if (isNil(value) || isEmpty(value)) {
     return (
       <span className="dark:text-gray-600 block">
         {defaultPlaceholder || 'Select...'}
