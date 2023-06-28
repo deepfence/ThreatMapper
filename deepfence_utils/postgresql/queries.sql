@@ -533,7 +533,7 @@ SELECT l.event,
        l.user_role as role,
        l.created_at
 FROM audit_log l
-ORDER BY l.created_at;
+ORDER BY l.created_at DESC;
 
 -- name: GetAuditLogsLast5Minutes :many
 SELECT l.event,
@@ -545,7 +545,7 @@ SELECT l.event,
        l.created_at
 FROM audit_log l
 WHERE l.created_at < (now() - interval '5 minutes')
-ORDER BY l.created_at;
+ORDER BY l.created_at DESC;
 
 -- name: DeleteAuditLogsOlderThan30days :one
 WITH deleted AS (
