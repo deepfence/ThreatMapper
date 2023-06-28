@@ -193,7 +193,7 @@ func (s *Scheduler) startImmediately(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	log.Info().Msg("Start immediate cronjobs")
+	log.Info().Msgf("Start immediate cronjobs for namespace %s", namespace)
 	s.enqueueTask(namespace, sdkUtils.SetUpGraphDBTask)()
 	s.enqueueTask(namespace, sdkUtils.CheckAgentUpgradeTask)()
 	s.enqueueTask(namespace, sdkUtils.SyncRegistryTask)()
@@ -208,9 +208,9 @@ func (s *Scheduler) Run() {
 }
 
 func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID, schedule postgresqlDb.Scheduler, payload map[string]string) func() {
-	log.Info().Msgf("Registering task: %s, %s", schedule.Description, schedule.CronExpr)
+	log.Info().Msgf("Registering task: %s, %s for namespace %s", schedule.Description, schedule.CronExpr, namespace)
 	return func() {
-		log.Info().Msgf("Enqueuing task: %s, %s", schedule.Description, schedule.CronExpr)
+		log.Info().Msgf("Enqueuing task: %s, %s for namespace %s", schedule.Description, schedule.CronExpr, namespace)
 		metadata := map[string]string{directory.NamespaceKey: string(namespace)}
 		message := map[string]interface{}{"action": schedule.Action, "id": schedule.ID, "payload": payload, "description": schedule.Description}
 		messageJson, _ := json.Marshal(message)
@@ -222,9 +222,9 @@ func (s *Scheduler) enqueueScheduledTask(namespace directory.NamespaceID, schedu
 }
 
 func (s *Scheduler) enqueueTask(namespace directory.NamespaceID, task string) func() {
-	log.Info().Msgf("Registering task: %s", task)
+	log.Info().Msgf("Registering task: %s for namespace %s", task, namespace)
 	return func() {
-		log.Info().Msgf("Enqueuing task: %s", task)
+		log.Info().Msgf("Enqueuing task: %s for namespace %s", task, namespace)
 		metadata := map[string]string{directory.NamespaceKey: string(namespace)}
 		err := utils.PublishNewJob(s.tasksPublisher, metadata, task, []byte(sdkUtils.GetDatetimeNow()))
 		if err != nil {

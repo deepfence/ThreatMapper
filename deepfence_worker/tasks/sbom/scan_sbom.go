@@ -93,7 +93,7 @@ func (s SbomParser) ScanSBOM(msg *message.Message) error {
 	log.Info().Msgf("message tenant id %s", string(tenantID))
 
 	rh := []kgo.RecordHeader{
-		{Key: "tenant_id", Value: []byte(tenantID)},
+		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
 	log.Info().Msgf("uuid: %s payload: %s ", msg.UUID, string(msg.Payload))

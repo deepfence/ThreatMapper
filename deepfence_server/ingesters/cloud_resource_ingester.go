@@ -29,7 +29,7 @@ func (tc *CloudResourceIngester) Ingest(
 	}
 
 	rh := []kgo.RecordHeader{
-		{Key: "tenant_id", Value: []byte(tenantID)},
+		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
 	for _, c := range cs {

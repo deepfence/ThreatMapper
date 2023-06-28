@@ -43,7 +43,7 @@ func (s SecretScan) StartSecretScan(msg *message.Message) error {
 	log.Info().Msgf("message tenant id %s", string(tenantID))
 
 	rh := []kgo.RecordHeader{
-		{Key: "tenant_id", Value: []byte(tenantID)},
+		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tenantID))

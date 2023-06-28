@@ -403,7 +403,7 @@ func (h *Handler) SendScanStatus(
 	}
 
 	rh := []kgo.RecordHeader{
-		{Key: "tenant_id", Value: []byte(tenantID)},
+		{Key: "namespace", Value: []byte(tenantID)},
 	}
 
 	cb, err := json.Marshal(status)

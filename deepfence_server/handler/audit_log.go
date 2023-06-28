@@ -127,10 +127,16 @@ func (h *Handler) AuditUserActivity(
 		CreatedAt: time.Now(),
 	}
 
-	go h.AddAuditLog(params)
+	namespace, err := directory.ExtractNamespace(req.Context())
+	if err != nil {
+		log.Error().Msg(err.Error())
+		return
+	}
+
+	go h.AddAuditLog(string(namespace), params)
 }
 
-func (h *Handler) AddAuditLog(params postgresql_db.CreateAuditLogParams) error {
+func (h *Handler) AddAuditLog(namespace string, params postgresql_db.CreateAuditLogParams) error {
 	data, err := json.Marshal(params)
 	if err != nil {
 		return err
@@ -139,6 +145,9 @@ func (h *Handler) AddAuditLog(params postgresql_db.CreateAuditLogParams) error {
 	h.IngestChan <- &kgo.Record{
 		Topic: utils.AUDIT_LOGS,
 		Value: data,
+		Headers: []kgo.RecordHeader{
+			{Key: "namespace", Value: []byte(namespace)},
+		},
 	}
 
 	return nil
