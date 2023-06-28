@@ -95,8 +95,8 @@ const getEdgeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
           ? preset.theme.extend.colors['brand-dark'].blue
           : preset.theme.extend.colors['brand-light'].blue,
       endArrow: {
-        path: G6.Arrow.triangle(4, 5, 12),
-        d: 14,
+        path: G6.Arrow.triangle(4, 5, 8),
+        d: 10,
         fill:
           theme === 'dark'
             ? preset.theme.extend.colors['brand-dark'].blue
@@ -117,8 +117,8 @@ const getEdgeStyles = ({ active, theme }: { active: boolean; theme: Mode }) => {
         ? preset.theme.extend.colors.accent.accent
         : preset.theme.extend.colors.accent.accent,
     endArrow: {
-      path: G6.Arrow.triangle(4, 5, 12),
-      d: 14,
+      path: G6.Arrow.triangle(4, 5, 8),
+      d: 10,
       fill:
         theme === 'dark'
           ? preset.theme.extend.colors.accent.accent
@@ -204,7 +204,7 @@ const getDefaultOptions = (theme: Mode): G6GraphOptionsWithoutContainer => {
     groupByTypes: false,
     defaultNode: {
       type: 'circle',
-      size: 40,
+      size: 45,
       style: {
         ...getNodeStyles({ active: false, theme }),
         'node-label': getLabelStyles({ active: false, theme }),
