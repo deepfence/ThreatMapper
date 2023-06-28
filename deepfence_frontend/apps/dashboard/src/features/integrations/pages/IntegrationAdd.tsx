@@ -1,6 +1,20 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { ActionFunctionArgs, useParams } from 'react-router-dom';
+import { Suspense, useCallback, useState } from 'react';
+import {
+  ActionFunctionArgs,
+  FetcherWithComponents,
+  useFetcher,
+  useParams,
+} from 'react-router-dom';
 import { toast } from 'sonner';
+import {
+  Button,
+  Modal,
+  SlidingModal,
+  SlidingModalCloseButton,
+  SlidingModalHeader,
+  TableSkeleton,
+} from 'ui-components';
 
 import { getIntegrationApiClient } from '@/api/api';
 import {
@@ -9,6 +23,10 @@ import {
   ModelNodeIdentifierNodeTypeEnum,
   ReportersFieldsFilters,
 } from '@/api/generated';
+import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
+import { PlusIcon } from '@/components/icons/common/Plus';
+import { integrationTypeToNameMapping } from '@/features/integrations/pages/Integrations';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
@@ -26,6 +44,7 @@ export const USER_ACTIVITIES = 'User Activities';
 export enum ActionEnumType {
   DELETE = 'delete',
   ADD = 'add',
+  CONFIRM_DELETE = 'confirm_delete',
 }
 const severityMap: {
   [key: string]: string;
@@ -160,16 +179,15 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
       break;
   }
 };
-
-const action = async ({
-  request,
-  params,
-}: ActionFunctionArgs): Promise<{
+type ActionData = {
   message?: string;
   deleteSuccess?: boolean;
-} | null> => {
+} | null;
+
+const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionData> => {
   const _integrationType = params.integrationType?.toString();
   const formData = await request.formData();
+  debugger;
   let _notificationType = formData.get('_notificationType')?.toString();
   const _actionType = formData.get('_actionType')?.toString();
 
@@ -373,19 +391,157 @@ const action = async ({
   return null;
 };
 
+const DeleteConfirmationModal = ({
+  showDialog,
+  row,
+  setShowDialog,
+  fetcher,
+  onTableAction,
+}: {
+  showDialog: boolean;
+  row: ModelIntegrationListResp | undefined;
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  fetcher: FetcherWithComponents<ActionData>;
+  onTableAction: (row: ModelIntegrationListResp, actionType: ActionEnumType) => void;
+}) => {
+  return (
+    <Modal
+      size="s"
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title={
+        !fetcher.data?.deleteSuccess ? (
+          <div className="flex gap-3 items-center dark:text-status-error">
+            <span className="h-6 w-6 shrink-0">
+              <ErrorStandardLineIcon />
+            </span>
+            Delete report
+          </div>
+        ) : undefined
+      }
+      footer={
+        !fetcher.data?.deleteSuccess ? (
+          <div className={'flex gap-x-4 justify-end'}>
+            <Button
+              size="sm"
+              onClick={() => setShowDialog(false)}
+              type="button"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              color="error"
+              onClick={(e) => {
+                e.preventDefault();
+                onTableAction(row!, ActionEnumType.CONFIRM_DELETE);
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
+        ) : undefined
+      }
+    >
+      {!fetcher.data?.deleteSuccess ? (
+        <div className="grid">
+          <span>The selected integration will be deleted.</span>
+          <br />
+          <span>Are you sure you want to delete?</span>
+          {fetcher.data?.message ? (
+            <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
+          ) : null}
+          <div className="flex items-center justify-right gap-4"></div>
+        </div>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
+    </Modal>
+  );
+};
+
+const Header = ({ title }: { title: string }) => {
+  return (
+    <SlidingModalHeader>
+      <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+        Add Integration: &nbsp;{title}
+      </div>
+    </SlidingModalHeader>
+  );
+};
+
 const IntegrationAdd = () => {
   const { integrationType } = useParams() as {
     integrationType: string;
   };
+  const [modelRow, setModelRow] = useState<ModelIntegrationListResp>();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const fetcher = useFetcher<ActionData>();
+  const [openModal, setOpenModal] = useState(false);
+
+  const params = useParams() as {
+    integrationType: string;
+  };
+
+  const onTableAction = useCallback(
+    (row: ModelIntegrationListResp, actionType: string) => {
+      if (actionType === ActionEnumType.DELETE) {
+        setModelRow(row);
+        setShowDeleteDialog(true);
+      } else if (actionType === ActionEnumType.CONFIRM_DELETE) {
+        const formData = new FormData();
+        formData.append('_actionType', ActionEnumType.DELETE);
+        formData.append('id', row.id?.toString() ?? '');
+
+        fetcher.submit(formData, {
+          method: 'post',
+        });
+      }
+    },
+    [],
+  );
 
   if (!integrationType) {
     throw new Error('Integration Type is required');
   }
 
   return (
-    <div className="grid grid-cols-[310px_1fr] gap-x-2">
-      <IntegrationForm integrationType={integrationType} />
-      <IntegrationTable />
+    <div className="m-4">
+      <Button
+        variant="outline"
+        startIcon={<PlusIcon />}
+        onClick={() => {
+          setOpenModal(true);
+        }}
+        size="sm"
+      >
+        Add new integration
+      </Button>
+      <SlidingModal
+        modal={false}
+        open={openModal}
+        onOpenChange={() => {
+          setOpenModal(false);
+        }}
+        size="l"
+      >
+        <SlidingModalCloseButton />
+        <Header title={integrationTypeToNameMapping[params.integrationType]} />
+        <IntegrationForm integrationType={integrationType} setOpenModal={setOpenModal} />
+      </SlidingModal>
+      <div className="self-start mt-2">
+        <Suspense fallback={<TableSkeleton columns={4} rows={5} />}>
+          <IntegrationTable onTableAction={onTableAction} />
+        </Suspense>
+      </div>
+      <DeleteConfirmationModal
+        showDialog={showDeleteDialog}
+        row={modelRow}
+        setShowDialog={setShowDeleteDialog}
+        onTableAction={onTableAction}
+        fetcher={fetcher}
+      />
     </div>
   );
 };

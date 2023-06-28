@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Listbox, ListboxOption, Select, SelectItem } from 'ui-components';
+import { Listbox, ListboxOption } from 'ui-components';
 
 import {
   getReportBenchmarkList,

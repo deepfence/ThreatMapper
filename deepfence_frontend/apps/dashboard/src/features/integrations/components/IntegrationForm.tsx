@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useFetcher, useParams } from 'react-router-dom';
-import { Button, Card, Radio, Select, SelectItem, TextInput } from 'ui-components';
+import { Button, Listbox, ListboxOption, Radio, TextInput } from 'ui-components';
 
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
+import { CaretDown } from '@/components/icons/common/CaretDown';
 import { ScanTypeEnum } from '@/types/common';
 
 import {
@@ -16,6 +17,7 @@ import {
 
 type IntegrationTypeProps = {
   integrationType: string;
+  setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export const IntegrationType = {
@@ -62,7 +64,6 @@ const TextInputType = ({ label, name }: { label: string; name: string }) => {
       className="w-full"
       label={label}
       type={'text'}
-      sizing="sm"
       name={name}
       placeholder={label}
     />
@@ -101,55 +102,60 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
   const [selectedStatus, setSelectedStatus] = useState([]);
 
   return (
-    <div className="flex flex-col gap-y-3">
-      <fieldset className="mt-4 mb-1">
-        <legend className="text-sm font-medium text-gray-900 dark:text-white">
-          Filters
-        </legend>
-      </fieldset>
-      <SearchableHostList scanType={API_SCAN_TYPE_MAP[notificationType]} />
+    <>
+      <div className="mt-10 flex gap-x-1 items-center dark:text-text-input-value ">
+        <span className="w-3 h-3">
+          <CaretDown />
+        </span>
+        <div className="text-h5">Advanced Filter (Optional)</div>
+      </div>
+      <div className="grid grid-cols-2 gap-y-8 gap-x-8 pt-4">
+        <SearchableHostList scanType={API_SCAN_TYPE_MAP[notificationType]} />
 
-      <SearchableContainerList scanType={API_SCAN_TYPE_MAP[notificationType]} />
-      <SearchableImageList scanType={API_SCAN_TYPE_MAP[notificationType]} />
+        <SearchableContainerList scanType={API_SCAN_TYPE_MAP[notificationType]} />
+        <SearchableImageList scanType={API_SCAN_TYPE_MAP[notificationType]} />
 
-      <SearchableClusterList />
+        <SearchableClusterList />
 
-      {notificationType === 'Compliance' || notificationType === 'CloudCompliance' ? (
-        <Select
-          value={selectedStatus}
-          name="statusFilter"
-          onChange={(value) => {
-            setSelectedStatus(value);
-          }}
-          placeholder="Select status"
-          sizing="xs"
-        >
-          <SelectItem value={'Alarm'}>Alarm</SelectItem>
-          <SelectItem value={'Info'}>Info</SelectItem>
-          <SelectItem value={'Ok'}>Ok</SelectItem>
-          <SelectItem value={'Skip'}>Skip</SelectItem>
-        </Select>
-      ) : null}
+        {notificationType === 'Compliance' || notificationType === 'CloudCompliance' ? (
+          <Listbox
+            value={selectedStatus}
+            name="statusFilter"
+            onChange={(value) => {
+              setSelectedStatus(value);
+            }}
+            placeholder="Select status"
+            label="Select status"
+            multiple
+          >
+            <ListboxOption value={'Alarm'}>Alarm</ListboxOption>
+            <ListboxOption value={'Info'}>Info</ListboxOption>
+            <ListboxOption value={'Ok'}>Ok</ListboxOption>
+            <ListboxOption value={'Skip'}>Skip</ListboxOption>
+          </Listbox>
+        ) : null}
 
-      {['Secret', 'Vulnerability', 'Malware'].includes(
-        notificationType as ScanTypeEnum,
-      ) ? (
-        <Select
-          value={selectedSeverity}
-          name="severityFilter"
-          onChange={(value) => {
-            setSelectedSeverity(value);
-          }}
-          placeholder="Select severity"
-          sizing="xs"
-        >
-          <SelectItem value={'Critical'}>Critical</SelectItem>
-          <SelectItem value={'High'}>High</SelectItem>
-          <SelectItem value={'Medium'}>Medium</SelectItem>
-          <SelectItem value={'Low'}>Low</SelectItem>
-        </Select>
-      ) : null}
-    </div>
+        {['Secret', 'Vulnerability', 'Malware'].includes(
+          notificationType as ScanTypeEnum,
+        ) ? (
+          <Listbox
+            value={selectedSeverity}
+            name="severityFilter"
+            onChange={(value) => {
+              setSelectedSeverity(value);
+            }}
+            placeholder="Select severity"
+            label="Select severity"
+            multiple
+          >
+            <ListboxOption value={'Critical'}>Critical</ListboxOption>
+            <ListboxOption value={'High'}>High</ListboxOption>
+            <ListboxOption value={'Medium'}>Medium</ListboxOption>
+            <ListboxOption value={'Low'}>Low</ListboxOption>
+          </Listbox>
+        ) : null}
+      </div>
+    </>
   );
 };
 
@@ -167,7 +173,7 @@ const NotificationType = () => {
 
   return (
     <div className="w-full">
-      <Select
+      <Listbox
         value={notificationType}
         name="_notificationType"
         onChange={(value) => {
@@ -178,12 +184,19 @@ const NotificationType = () => {
           }
         }}
         placeholder="Select notification type"
-        sizing="xs"
+        label="Select notification type"
+        getDisplayValue={(item) => {
+          return (
+            ['Vulnerability', 'Secret', 'Malware', 'Compliance'].find(
+              (person) => person === item,
+            ) ?? ''
+          );
+        }}
       >
-        <SelectItem value={'Vulnerability'}>Vulnerability</SelectItem>
-        <SelectItem value={'Secret'}>Secret</SelectItem>
-        <SelectItem value={'Malware'}>Malware</SelectItem>
-        <SelectItem value={'Compliance'}>Posture</SelectItem>
+        <ListboxOption value={'Vulnerability'}>Vulnerability</ListboxOption>
+        <ListboxOption value={'Secret'}>Secret</ListboxOption>
+        <ListboxOption value={'Malware'}>Malware</ListboxOption>
+        <ListboxOption value={'Compliance'}>Posture</ListboxOption>
 
         {/* {CloudTrailIntegration.includes(integrationType) && (
           <SelectItem value={CLOUD_TRAIL_ALERT}>CloudTrail Alert</SelectItem>
@@ -192,7 +205,7 @@ const NotificationType = () => {
         {/* {UserActivityIntegration.includes(integrationType) ? (
           <SelectItem value={USER_ACTIVITIES}>User Activities</SelectItem>
         ) : null} */}
-      </Select>
+      </Listbox>
 
       {notificationType &&
       !isCloudTrailNotification(notificationType) &&
@@ -200,7 +213,14 @@ const NotificationType = () => {
       !isTicketingIntegration(integrationType) &&
       !isArchivalIntegration(integrationType) ? (
         <AdvancedFilters notificationType={notificationType} />
-      ) : null}
+      ) : (
+        <div className="mt-10 flex gap-x-1 items-center dark:text-text-input-value ">
+          <span className="w-3 h-3 -rotate-90">
+            <CaretDown />
+          </span>
+          <div className="text-h5">Advanced Filter (Optional)</div>
+        </div>
+      )}
 
       {isCloudTrailNotification(notificationType) && <>Add Cloud trails here</>}
 
@@ -213,7 +233,10 @@ const NotificationType = () => {
   );
 };
 
-export const IntegrationForm = ({ integrationType }: IntegrationTypeProps) => {
+export const IntegrationForm = ({
+  integrationType,
+  setOpenModal,
+}: IntegrationTypeProps) => {
   const fetcher = useFetcher<{
     message: string;
   }>();
@@ -223,8 +246,8 @@ export const IntegrationForm = ({ integrationType }: IntegrationTypeProps) => {
   const [authType, setAuthType] = useState('apiToken');
 
   return (
-    <fetcher.Form method="post">
-      <Card className="w-full relative p-5 flex flex-col gap-y-4">
+    <fetcher.Form method="post" className="m-4">
+      <div className="grid grid-cols-2 relative gap-y-8 gap-x-8">
         {integrationType === IntegrationType.slack && (
           <>
             <TextInputType name="url" label="Webhook Url" />
@@ -351,20 +374,21 @@ export const IntegrationForm = ({ integrationType }: IntegrationTypeProps) => {
           value={ActionEnumType.ADD}
         />
         {data?.message && <p className="text-red-500 text-sm">{data.message}</p>}
-
-        <div className="flex mt-2 w-full">
-          <Button
-            color="primary"
-            className="w-full"
-            size="xs"
-            type="submit"
-            disabled={state !== 'idle'}
-            loading={state !== 'idle'}
-          >
-            Subscribe
-          </Button>
-        </div>
-      </Card>
+      </div>
+      <div className="mt-14 flex gap-x-2">
+        <Button size="md" color="default" type="submit">
+          Add
+        </Button>
+        <Button
+          type="button"
+          size="md"
+          color="default"
+          variant="outline"
+          onClick={() => setOpenModal(false)}
+        >
+          Cancel
+        </Button>
+      </div>
     </fetcher.Form>
   );
 };

@@ -256,11 +256,7 @@ const ReportForm = () => {
           }}
           placeholder="Select Duration"
           getDisplayValue={(item) => {
-            return (
-              Object.keys(UtilsReportFiltersScanTypeEnum).find(
-                (person) => person === item,
-              ) ?? ''
-            );
+            return Object.keys(DURATION).find((person) => person === item) ?? '';
           }}
         >
           {Object.keys(DURATION).map((resource) => {
@@ -292,7 +288,7 @@ const ReportForm = () => {
           placeholder="Download Type"
           getDisplayValue={(item) => {
             return (
-              Object.keys(UtilsReportFiltersScanTypeEnum).find(
+              Object.keys(ModelGenerateReportReqReportTypeEnum).find(
                 (person) => person === item,
               ) ?? ''
             );
@@ -344,6 +340,7 @@ const CreateReport = () => {
 
   return (
     <SlidingModal
+      modal={false}
       open={true}
       onOpenChange={() => {
         navigate(`..`);

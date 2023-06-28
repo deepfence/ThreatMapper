@@ -144,7 +144,7 @@ const DownloadReport = () => {
       setShowDeleteDialog(true);
     } else if (actionType === ActionEnumType.CONFIRM_DELETE) {
       const formData = new FormData();
-      formData.append('actionType', actionType);
+      formData.append('actionType', ActionEnumType.DELETE);
       formData.append('id', row.report_id ?? '');
 
       fetcher.submit(formData, {
