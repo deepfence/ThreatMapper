@@ -468,6 +468,5 @@ func newAuthorizationHandler() (*casbin.Enforcer, error) {
 }
 
 func IsSaasDeployment() bool {
-
 	return strings.ToLower(os.Getenv("DEEPFENCE_SAAS_DEPLOYMENT")) == "true"
 }

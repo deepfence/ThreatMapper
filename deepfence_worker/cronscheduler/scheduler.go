@@ -13,6 +13,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	postgresqlDb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	sdkUtils "github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
 	"github.com/deepfence/ThreatMapper/deepfence_worker/utils"
 	"github.com/robfig/cron/v3"
 )
@@ -57,13 +58,10 @@ func (s *Scheduler) updateScheduledJobs() {
 	ticker := time.NewTicker(15 * time.Minute)
 	defer ticker.Stop()
 
-	for {
-		select {
-		case <-ticker.C:
-			directory.ForEachNamespace(func(ctx context.Context) (string, error) {
-				return "Add scheduled jobs", s.addScheduledJobs(ctx)
-			})
-		}
+	for range ticker.C {
+		directory.ForEachNamespace(func(ctx context.Context) (string, error) {
+			return "Add scheduled jobs", s.addScheduledJobs(ctx)
+		})
 	}
 }
 
@@ -185,6 +183,11 @@ func (s *Scheduler) addJobs(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	// download updated vulnerability database
+	_, err = s.cron.AddFunc("@every 120m", vulnerability_db.DownloadDatabase)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -193,6 +196,10 @@ func (s *Scheduler) startImmediately(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	// initialize database
+	go initDatabase(ctx)
+	go initMinio()
+
 	log.Info().Msgf("Start immediate cronjobs for namespace %s", namespace)
 	s.enqueueTask(namespace, sdkUtils.SetUpGraphDBTask)()
 	s.enqueueTask(namespace, sdkUtils.CheckAgentUpgradeTask)()
@@ -200,6 +207,7 @@ func (s *Scheduler) startImmediately(ctx context.Context) error {
 	s.enqueueTask(namespace, sdkUtils.CloudComplianceTask)()
 	s.enqueueTask(namespace, sdkUtils.ReportCleanUpTask)()
 	s.enqueueTask(namespace, sdkUtils.CachePostureProviders)()
+
 	return nil
 }
 

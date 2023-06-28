@@ -14,6 +14,7 @@ import (
 	postgresqldb "github.com/deepfence/ThreatMapper/deepfence_utils/postgresql/postgresql-db"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/report"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/utils"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/vulnerability_db"
 	ingester "github.com/deepfence/ThreatMapper/deepfence_worker/ingesters"
 )
 
@@ -738,5 +739,5 @@ func (d *OpenApiDocs) AddSettingsOperations() {
 	// Database upload
 	d.AddOperation("uploadVulnerabilityDatabase", http.MethodPut, "/deepfence/database/vulnerability",
 		"Upload Vulnerability Database", "Upload Vulnerability Database for use in vulnerability scans",
-		http.StatusOK, []string{tagSettings}, bearerToken, new(DBUploadRequest), new(MessageResponse))
+		http.StatusOK, []string{tagSettings}, bearerToken, new(vulnerability_db.DBUploadRequest), new(MessageResponse))
 }

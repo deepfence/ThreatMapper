@@ -3,6 +3,7 @@ package utils
 import (
 	"archive/zip"
 	"bytes"
+	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -485,4 +486,18 @@ func GenerateHashFromString(s string) string {
 	h := fnv.New32a()
 	h.Write([]byte(s))
 	return fmt.Sprintf("%x", h.Sum32())
+}
+
+func SHA256sum(data []byte) string {
+	hash := sha256.New()
+	hash.Write(data)
+	return fmt.Sprintf("sha256:%x", hash.Sum(nil))
+}
+
+func GetEnvOrDefault(envVar string, defaultValue string) string {
+	envValue, has := os.LookupEnv(envVar)
+	if !has {
+		return defaultValue
+	}
+	return envValue
 }
