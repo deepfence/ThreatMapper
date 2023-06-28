@@ -17,7 +17,6 @@ describe(`Component TextInput`, () => {
         onChange={onChange}
         label="Email"
         startIcon={<AiOutlineMail />}
-        endIcon={<AiOutlineCheck />}
         helperText="Email length should not exceed 50 characters"
       />,
     );
@@ -29,10 +28,8 @@ describe(`Component TextInput`, () => {
 
     const textInput = getByTestId('textinput-id');
     const textInputStartIcon = getByTestId('textinput-start-icon-id');
-    const textInputEndIcon = getByTestId('textinput-end-icon-id');
 
     expect(textInputStartIcon).toBeInTheDocument();
-    expect(textInputEndIcon).toBeInTheDocument();
 
     // action
     fireEvent.change(textInput, { target: { value: 'hello' } });

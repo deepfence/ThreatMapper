@@ -254,6 +254,8 @@ export function getLookupApiClient() {
     lookupProcess: lookupApi.getProcesses.bind(lookupApi),
     lookupKubernetesClusters: lookupApi.getKubernetesClusters.bind(lookupApi),
     lookupCloudResources: lookupApi.getCloudResources.bind(lookupApi),
+    lookupCloudPostures: lookupApi.getCloudCompliances.bind(lookupApi),
+    lookupPostures: lookupApi.getCompliances.bind(lookupApi),
   };
 }
 

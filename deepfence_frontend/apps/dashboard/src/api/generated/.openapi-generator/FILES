@@ -86,6 +86,7 @@ models/ModelCloudNodeEnableDisableReq.ts
 models/ModelCloudNodeProvidersListResp.ts
 models/ModelCloudResource.ts
 models/ModelCompliance.ts
+models/ModelComplianceRule.ts
 models/ModelComplianceScanInfo.ts
 models/ModelComplianceScanResult.ts
 models/ModelComplianceScanStatusResp.ts
@@ -115,6 +116,7 @@ models/ModelKubernetesCluster.ts
 models/ModelLoginRequest.ts
 models/ModelLoginResponse.ts
 models/ModelMalware.ts
+models/ModelMalwareRule.ts
 models/ModelMalwareScanResult.ts
 models/ModelMalwareScanResultClass.ts
 models/ModelMalwareScanResultRules.ts
@@ -151,6 +153,7 @@ models/ModelScanStatusReq.ts
 models/ModelScanStatusResp.ts
 models/ModelScanTriggerResp.ts
 models/ModelSecret.ts
+models/ModelSecretRule.ts
 models/ModelSecretScanResult.ts
 models/ModelSecretScanResultRules.ts
 models/ModelSecretScanTriggerReq.ts
@@ -164,6 +167,7 @@ models/ModelUpdateUserRequest.ts
 models/ModelUser.ts
 models/ModelUserRegisterRequest.ts
 models/ModelVulnerability.ts
+models/ModelVulnerabilityRule.ts
 models/ModelVulnerabilityScanConfigLanguage.ts
 models/ModelVulnerabilityScanResult.ts
 models/ModelVulnerabilityScanTriggerReq.ts

@@ -1,0 +1,21 @@
+.dark .df-input {
+  background: linear-gradient(to bottom, transparent 95%, #489cff 95%);
+  background-size: 0% 100%;
+  background-repeat: no-repeat;
+}
+.dark .df-input:focus {
+  background: linear-gradient(to bottom, transparent 95%, #489cff 95%);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+.dark .df-input.df-error {
+  background: linear-gradient(to bottom, transparent 95%, #f55b47 95%);
+  background-size: 0% 100%;
+  background-repeat: no-repeat;
+}
+.dark .df-input.df-error:focus {
+  background: linear-gradient(to bottom, transparent 95%, #f55b47 95%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}

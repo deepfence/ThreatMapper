@@ -1,7 +1,8 @@
 import { cn } from 'tailwind-preset';
 
 import { SeverityScoreIcon } from '@/components/icons/common/SeverityScore';
-import { getColorForCVSSScore } from '@/constants/charts';
+import { getColorForCVSSScore, POSTURE_STATUS_COLORS } from '@/constants/charts';
+import { PostureSeverityType } from '@/types/common';
 
 export const SeverityBadge = ({
   severity,
@@ -25,6 +26,29 @@ export const SeverityBadge = ({
       )}
     >
       {severity}
+    </div>
+  );
+};
+
+export const PostureStatusBadge = ({
+  status,
+  className,
+}: {
+  status: PostureSeverityType;
+  className?: string;
+}) => {
+  return (
+    <div
+      className={cn(
+        'flex items-center capitalize justify-center font-semibold leading-4 text-[11px] dark:text-text-text-inverse py-0.5 max-w-[62px] min-w-[62px]',
+        'dark:bg-df-gray-500 rounded-[5px]',
+        className,
+      )}
+      style={{
+        backgroundColor: POSTURE_STATUS_COLORS[status],
+      }}
+    >
+      {status}
     </div>
   );
 };

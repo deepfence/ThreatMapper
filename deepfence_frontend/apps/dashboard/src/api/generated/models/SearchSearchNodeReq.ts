@@ -37,6 +37,12 @@ export interface SearchSearchNodeReq {
      * @type {SearchSearchFilter}
      * @memberof SearchSearchNodeReq
      */
+    extended_node_filter?: SearchSearchFilter;
+    /**
+     * 
+     * @type {SearchSearchFilter}
+     * @memberof SearchSearchNodeReq
+     */
     node_filter: SearchSearchFilter;
     /**
      * 
@@ -67,6 +73,7 @@ export function SearchSearchNodeReqFromJSONTyped(json: any, ignoreDiscriminator:
     }
     return {
         
+        'extended_node_filter': !exists(json, 'extended_node_filter') ? undefined : SearchSearchFilterFromJSON(json['extended_node_filter']),
         'node_filter': SearchSearchFilterFromJSON(json['node_filter']),
         'window': ModelFetchWindowFromJSON(json['window']),
     };
@@ -81,6 +88,7 @@ export function SearchSearchNodeReqToJSON(value?: SearchSearchNodeReq | null): a
     }
     return {
         
+        'extended_node_filter': SearchSearchFilterToJSON(value.extended_node_filter),
         'node_filter': SearchSearchFilterToJSON(value.node_filter),
         'window': ModelFetchWindowToJSON(value.window),
     };

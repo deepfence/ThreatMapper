@@ -21,12 +21,6 @@ import { exists, mapValues } from '../runtime';
 export interface IngestersSecretScanStatus {
     /**
      * 
-     * @type {Date}
-     * @memberof IngestersSecretScanStatus
-     */
-    timestamp?: Date;
-    /**
-     * 
      * @type {string}
      * @memberof IngestersSecretScanStatus
      */
@@ -64,7 +58,6 @@ export function IngestersSecretScanStatusFromJSONTyped(json: any, ignoreDiscrimi
     }
     return {
         
-        'timestamp': !exists(json, '@timestamp') ? undefined : (new Date(json['@timestamp'])),
         'scan_id': !exists(json, 'scan_id') ? undefined : json['scan_id'],
         'scan_message': !exists(json, 'scan_message') ? undefined : json['scan_message'],
         'scan_status': !exists(json, 'scan_status') ? undefined : json['scan_status'],
@@ -80,7 +73,6 @@ export function IngestersSecretScanStatusToJSON(value?: IngestersSecretScanStatu
     }
     return {
         
-        '@timestamp': value.timestamp === undefined ? undefined : (value.timestamp.toISOString()),
         'scan_id': value.scan_id,
         'scan_message': value.scan_message,
         'scan_status': value.scan_status,

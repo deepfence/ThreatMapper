@@ -1,14 +1,16 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
 
-import { getSearchApiClient } from '@/api/api';
+import { getSearchApiClient, getSecretApiClient } from '@/api/api';
 import {
   ModelNodeIdentifierNodeTypeEnum,
   ModelScanInfo,
+  ModelScanResultsReq,
   ModelSecret,
   SearchSearchNodeReq,
   SearchSearchScanReq,
 } from '@/api/generated';
 import { SecretsCountsCardData } from '@/features/secrets/components/landing/SecretsCountsCard';
+import { ScanStatusEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 
 export const secretQueries = createQueryKeys('secret', {
@@ -201,6 +203,270 @@ export const secretQueries = createQueryKeys('secret', {
         results.totalRows = page * pageSize + countsResult.value.count;
 
         return results;
+      },
+    };
+  },
+  scanResults: (filters: {
+    scanId: string;
+    page: number;
+    pageSize: number;
+    severity: string[];
+    rules: string[];
+    visibility: string[];
+    order?: {
+      sortBy: string;
+      descending: boolean;
+    };
+  }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async () => {
+        const { scanId, visibility, severity, rules, page, order, pageSize } = filters;
+        // status api
+        const statusSecretScanApi = apiWrapper({
+          fn: getSecretApiClient().statusSecretScan,
+        });
+        const statusSecretScanResponse = await statusSecretScanApi({
+          modelScanStatusReq: {
+            scan_ids: [scanId],
+            bulk_scan_id: '',
+          },
+        });
+        if (!statusSecretScanResponse.ok) {
+          if (statusSecretScanResponse.error.response.status === 400) {
+            return { message: statusSecretScanResponse.error.message };
+          }
+          throw statusSecretScanResponse.error;
+        }
+
+        if (
+          !statusSecretScanResponse ||
+          !statusSecretScanResponse.value?.statuses?.[scanId]
+        ) {
+          throw new Error('Scan status not found');
+        }
+
+        const scanStatus = statusSecretScanResponse.value?.statuses?.[scanId].status;
+
+        const isScanRunning =
+          scanStatus !== ScanStatusEnum.complete && scanStatus !== ScanStatusEnum.error;
+        const isScanError = scanStatus === ScanStatusEnum.error;
+
+        if (isScanRunning || isScanError) {
+          return {
+            scanStatusResult: statusSecretScanResponse.value.statuses[scanId],
+          };
+        }
+
+        const scanResultsReq: ModelScanResultsReq = {
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: { filter_in: {} },
+            order_filter: { order_fields: [] },
+            compare_filter: null,
+          },
+          scan_id: scanId,
+          window: {
+            offset: page * pageSize,
+            size: pageSize,
+          },
+        };
+
+        if (severity.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['cve_severity'] =
+            severity;
+        }
+
+        if (rules.length) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['name'] = rules;
+        }
+
+        if (visibility.length === 1) {
+          scanResultsReq.fields_filter.contains_filter.filter_in!['masked'] = [
+            visibility.includes('masked') ? true : false,
+          ];
+        }
+
+        if (order) {
+          scanResultsReq.fields_filter.order_filter.order_fields?.push({
+            field_name: order.sortBy,
+            descending: order.descending,
+          });
+        }
+
+        const resultSecretScanApi = apiWrapper({
+          fn: getSecretApiClient().resultSecretScan,
+        });
+        const resultSecretScanResponse = await resultSecretScanApi({
+          modelScanResultsReq: scanResultsReq,
+        });
+
+        if (!resultSecretScanResponse.ok) {
+          throw resultSecretScanResponse.error;
+        }
+
+        if (resultSecretScanResponse.value === null) {
+          // TODO: handle this case with 404 status maybe
+          throw new Error('Error getting scan results');
+        }
+        const totalSeverity = Object.values(
+          resultSecretScanResponse.value.severity_counts ?? {},
+        ).reduce((acc, value) => {
+          acc = acc + value;
+          return acc;
+        }, 0);
+
+        const resultCountSecretScanApi = apiWrapper({
+          fn: getSecretApiClient().resultCountSecretScan,
+        });
+        const resultCounts = await resultCountSecretScanApi({
+          modelScanResultsReq: {
+            ...scanResultsReq,
+            window: {
+              ...scanResultsReq.window,
+              size: 10 * scanResultsReq.window.size,
+            },
+          },
+        });
+
+        if (!resultCounts.ok) {
+          throw resultCounts.error;
+        }
+
+        return {
+          scanStatusResult: statusSecretScanResponse.value.statuses[scanId],
+          data: {
+            totalSeverity,
+            severityCounts: {
+              critical: resultSecretScanResponse.value.severity_counts?.['critical'] ?? 0,
+              high: resultSecretScanResponse.value.severity_counts?.['high'] ?? 0,
+              medium: resultSecretScanResponse.value.severity_counts?.['medium'] ?? 0,
+              low: resultSecretScanResponse.value.severity_counts?.['low'] ?? 0,
+              unknown: resultSecretScanResponse.value.severity_counts?.['unknown'] ?? 0,
+            },
+            tableData: resultSecretScanResponse.value.secrets ?? [],
+            pagination: {
+              currentPage: page,
+              totalRows: page * pageSize + resultCounts.value.count,
+            },
+          },
+        };
+      },
+    };
+  },
+  top5SecretsForScan: (filters: { scanId: string }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async () => {
+        const { scanId } = filters;
+
+        const scanResultsReq: ModelScanResultsReq = {
+          fields_filter: {
+            contains_filter: {
+              filter_in: {},
+            },
+            match_filter: { filter_in: {} },
+            order_filter: {
+              order_fields: [
+                {
+                  field_name: 'score',
+                  descending: true,
+                },
+              ],
+            },
+            compare_filter: null,
+          },
+          scan_id: scanId,
+          window: {
+            offset: 0,
+            size: 5,
+          },
+        };
+
+        const resultSecretScanApi = apiWrapper({
+          fn: getSecretApiClient().resultSecretScan,
+        });
+        const resultSecretScanResponse = await resultSecretScanApi({
+          modelScanResultsReq: scanResultsReq,
+        });
+
+        if (!resultSecretScanResponse.ok) {
+          throw resultSecretScanResponse.error;
+        }
+
+        if (resultSecretScanResponse.value === null) {
+          // TODO: handle this case with 404 status maybe
+          throw new Error('Error getting scan results');
+        }
+
+        return {
+          data: resultSecretScanResponse.value.secrets,
+        };
+      },
+    };
+  },
+  scanHistories: (filters: { nodeId: string; nodeType: string }) => {
+    const { nodeId, nodeType } = filters;
+    return {
+      queryKey: [{ filters }],
+      queryFn: async () => {
+        if (!nodeId || !nodeType) {
+          throw new Error('Scan Type, Node Type and Node Id are required');
+        }
+
+        const getScanHistory = apiWrapper({
+          fn: getSecretApiClient().listSecretScans,
+        });
+
+        const result = await getScanHistory({
+          modelScanListReq: {
+            fields_filter: {
+              contains_filter: {
+                filter_in: {},
+              },
+              match_filter: { filter_in: {} },
+              order_filter: { order_fields: [] },
+              compare_filter: null,
+            },
+            node_ids: [
+              {
+                node_id: nodeId.toString(),
+                node_type: nodeType.toString() as ModelNodeIdentifierNodeTypeEnum,
+              },
+            ],
+            window: {
+              offset: 0,
+              size: Number.MAX_SAFE_INTEGER,
+            },
+          },
+        });
+
+        if (!result.ok) {
+          console.error(result.error);
+          return {
+            error: 'Error getting scan history',
+            message: result.error.message,
+            data: [],
+          };
+        }
+
+        if (!result.value.scans_info) {
+          return {
+            data: [],
+          };
+        }
+
+        return {
+          data: result.value.scans_info?.map((res) => {
+            return {
+              updatedAt: res.updated_at,
+              scanId: res.scan_id,
+              status: res.status,
+            };
+          }),
+        };
       },
     };
   },
@@ -665,10 +931,10 @@ export const secretQueries = createQueryKeys('secret', {
           window: { offset: 0, size: 1000 },
         };
 
-        const searchVulnerabilitiesApi = apiWrapper({
+        const searchSecretsApi = apiWrapper({
           fn: getSearchApiClient().searchSecrets,
         });
-        const searchSecretsResponse = await searchVulnerabilitiesApi({
+        const searchSecretsResponse = await searchSecretsApi({
           searchSearchNodeReq: searchSecretsRequestParams,
         });
 
