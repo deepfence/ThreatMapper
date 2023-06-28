@@ -22,7 +22,6 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/apiDocs"
 	"github.com/deepfence/ThreatMapper/deepfence_server/constants/common"
 	consolediagnosis "github.com/deepfence/ThreatMapper/deepfence_server/diagnosis/console-diagnosis"
-	"github.com/deepfence/ThreatMapper/deepfence_server/handler"
 	"github.com/deepfence/ThreatMapper/deepfence_server/model"
 	"github.com/deepfence/ThreatMapper/deepfence_server/router"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
@@ -139,11 +138,6 @@ func main() {
 	})
 
 	err = initializeTelemetry()
-	if err != nil {
-		log.Fatal().Msg(err.Error())
-	}
-
-	err = initMinio()
 	if err != nil {
 		log.Fatal().Msg(err.Error())
 	}
@@ -349,14 +343,6 @@ func initializeDatabase(ctx context.Context) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = model.SetScanResultsDeletionSetting(ctx, pgClient)
-	if err != nil {
-		return nil, err
-	}
-	err = model.InitializeScheduledTasks(ctx, pgClient)
-	if err != nil {
-		return nil, err
-	}
 	return jwtSecret, nil
 }
 
@@ -477,24 +463,5 @@ func initializeTelemetry() error {
 	otel.SetTextMapPropagator(
 		propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}),
 	)
-	return nil
-}
-
-func initMinio() error {
-	ctx := directory.NewContextWithNameSpace("database")
-	mc, err := directory.MinioClient(ctx)
-	if err != nil {
-		log.Error().Msg(err.Error())
-		return err
-	}
-	if err := mc.CreatePublicBucket(ctx); err != nil {
-		log.Error().Err(err).Msgf("failed to create bucket")
-		return err
-	}
-
-	go func() {
-		handler.PeriodicDownloadDB()
-	}()
-
 	return nil
 }
