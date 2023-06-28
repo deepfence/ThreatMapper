@@ -28,29 +28,26 @@ RUN /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/turbot/steampipe/
 RUN useradd -rm -d /home/deepfence -s /bin/bash -g root -G sudo -u 1001 deepfence
 
 # Installing FluentBit
-RUN wget -qO - https://packages.fluentbit.io/fluentbit.key | apt-key add - \
-    && echo "deb https://packages.fluentbit.io/debian/buster buster main " >> /etc/apt/sources.list
-RUN apt-get update --allow-insecure-repositories
-RUN apt-get install -y td-agent-bit=1.6.10 && mkdir -p /etc/td-agent-bit/
+RUN mkdir -p /etc/td-agent-bit/
 
-COPY fluentbit/* /etc/td-agent-bit/
-COPY scope/docker/fluent-bit.conf /etc/td-agent-bit/td-agent-bit.conf
-COPY fluentbit/out_deepfence/out_deepfence.so /opt/td-agent-bit/bin/
+COPY tools/apache/scope/docker/fluent-bit.conf /etc/td-agent-bit/td-agent-bit.conf
+COPY plugins/fluent-bit/build/bin/fluent-bit /opt/td-agent-bit/bin/
 
 WORKDIR /opt/steampipe
-COPY scope/probe/kubernetes/kubeconfig /home/deepfence/.kube/config
-COPY scope/probe/kubernetes/token.sh /home/deepfence/token.sh
+COPY tools/apache/scope/probe/kubernetes/kubeconfig /home/deepfence/.kube/config
+COPY tools/apache/scope/probe/kubernetes/token.sh /home/deepfence/token.sh
 RUN chown -R deepfence /opt/ /home/deepfence /var/log /var/run/ /etc/td-agent-bit/
 
 USER deepfence
-COPY deepfence/supervisord_cluster_agent.conf /home/deepfence/supervisord-temp.conf
-COPY scope/docker/run_cluster_agent.sh /home/deepfence/
-COPY scope/docker/entrypoint.sh /home/deepfence/
+COPY tools/apache/deepfence/supervisord_cluster_agent.conf /home/deepfence/supervisord-temp.conf
+COPY tools/apache/scope/docker/run_cluster_agent.sh /home/deepfence/
+COPY tools/apache/scope/docker/entrypoint.sh /home/deepfence/
 RUN steampipe plugin install steampipe \
     && steampipe plugin install kubernetes \
     && git clone https://github.com/turbot/steampipe-mod-kubernetes-compliance.git
 
-COPY scope/docker/deepfence_exe /home/deepfence/
+COPY tools/apache/scope/docker/deepfence_exe /home/deepfence/
+COPY deepfenced /bin/deepfenced
 
 USER root
 

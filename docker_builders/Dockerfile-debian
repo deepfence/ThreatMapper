@@ -1,16 +1,17 @@
 ARG DF_IMG_TAG=latest
 ARG IMAGE_REPOSITORY=deepfenceio
-FROM $IMAGE_REPOSITORY/deepfence_builder_ce:$DF_IMG_TAG AS alpine_builder
 
-FROM golang:1.20-bullseye
+FROM golang:1.20-bookworm
 
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get install -y
 RUN apt-get -qq -y --no-install-recommends install \
     build-essential automake libtool make gcc pkg-config libssl-dev git protoc-gen-go \
     bash make git gcc libc-dev lsb-release software-properties-common libz-dev apt-utils\
     protobuf-compiler libhyperscan-dev ca-certificates libpcap-dev time file shellcheck curl \
-    libjansson-dev libmagic-dev
+    libjansson-dev libmagic-dev \
+    cmake flex bison libyaml-dev
 
 RUN cd /root  \
     && wget https://github.com/VirusTotal/yara/archive/refs/tags/v4.3.2.tar.gz \
@@ -31,7 +32,5 @@ COPY deepfence_agent/build_scripts/*.sh /home/deepfence/
 
 ARG DF_AGENT_SRC=/go/src/github.com/deepfence/deepfence_agent
 WORKDIR $DF_AGENT_SRC
-
-COPY --from=alpine_builder /lib/libpcap.a /lib
 
 ENV GOWORK=off

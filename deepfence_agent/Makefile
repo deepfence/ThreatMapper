@@ -32,20 +32,23 @@ gocode:
 
 install:
 
-agent:
+tools/apache/scope/vendor: tools/apache/scope/go.mod $(shell find ../deepfence_utils -name '*.go')
+	($(CD) tools/apache/scope && go mod tidy -v)
+	($(CD) tools/apache/scope && go mod vendor)
+
+agent: tools/apache/scope/vendor
 	($(CD) tools/apache/scope && \
-		go mod tidy -v && \
-		go mod vendor && \
 		env GOGC=off \
 		CGO_ENABLED=1 \
 		go build -buildvcs=false \
-		-ldflags "-X main.version=$GIT_COMMIT -X github.com/weaveworks/scope/probe/host.agentCommitID=$GIT_COMMIT -X github.com/weaveworks/scope/probe/host.agentBuildTime=$(shell date +"%s%d%m%y") -s -w"\
+		-ldflags "-X main.version=$GIT_COMMIT -X main.version=$(shell git rev-parse --short HEAD)  -X github.com/weaveworks/scope/probe/host.agentCommitID=$(shell git rev-parse --short HEAD) -X github.com/weaveworks/scope/probe/host.agentBuildTime=$(shell date +"%s%d%m%y") -s -w -extldflags=-static"\
 		-tags 'netgo osusergo unsafe' \
 		-o docker/deepfence_exe \
 		./prog)
 
 clean:
-	$(RM) tools/apache/deepfence/df-utils/getCloudInstanceId
-	$(RM) tools/apache/compliance_check/deepfence_compliance_check
-	$(RM) tools/apache/scope/docker/deepfence_exe
-	(cd plugins && make clean)
+	-$(RM) tools/apache/deepfence/df-utils/getCloudInstanceId
+	-$(RM) tools/apache/compliance_check/deepfence_compliance_check
+	-$(RM) tools/apache/scope/docker/deepfence_exe
+	-(cd plugins && make clean)
+	-$(RM) -rf tools/apache/scope/vendor

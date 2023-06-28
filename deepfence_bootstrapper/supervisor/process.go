@@ -91,10 +91,10 @@ func startLogging(name string, cmd *exec.Cmd) {
 		log.Error().Msgf("Cannot start logging: %v", err)
 		return
 	}
-	scanner := bufio.NewScanner(cmdReader)
 	go func() {
 		defer f.Close()
 		for {
+			scanner := bufio.NewScanner(cmdReader)
 			for scanner.Scan() {
 				m := scanner.Bytes()
 				_, err := f.Write(m)

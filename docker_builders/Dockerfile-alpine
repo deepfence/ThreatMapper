@@ -55,5 +55,7 @@ ENV PKG_CONFIG_PATH=/usr/local/include/hs/:$(PKG_CONFIG_PATH) \
     PKG_CONFIG_PATH=/usr/local/yara/lib/pkgconfig:$(PKG_CONFIG_PATH) \
     GOWORK=off
 
-RUN git clone https://github.com/the-tcpdump-group/libpcap
-RUN cd libpcap && ./autogen.sh && ./configure && make && mv ./libpcap.a /lib
+RUN mkdir /home/deepfence
+COPY deepfence_agent/build_scripts/*.sh /home/deepfence/
+
+RUN apk add cmake fts-dev openssl-dev openssl-libs-static
