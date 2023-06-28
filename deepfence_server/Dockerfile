@@ -7,16 +7,11 @@ ENV DEEPFENCE_HTTP_LISTEN_ENDPOINT=8080 \
 
 ADD deepfence_server/auth /auth
 ADD deepfence_server/cloud_controls /cloud_controls
-ADD deepfence_utils/postgresql /usr/local/postgresql-migrate
 COPY deepfence_server/entrypoint.sh /entrypoint.sh
 
 RUN apk add --no-cache --update bash curl libpcap tar kafkacat postgresql15-client
 
 RUN chmod +x /entrypoint.sh
-
-RUN curl -L "https://github.com/golang-migrate/migrate/releases/latest/download/migrate.linux-amd64.tar.gz" | tar xvz && \
-    mv migrate /usr/local/bin/migrate && \
-    chmod +x /usr/local/bin/migrate
 
 RUN cd /usr/local/share/ && \
     wget https://github.com/swagger-api/swagger-ui/archive/refs/tags/v4.15.5.tar.gz -O /usr/local/share/swagger-ui.tar.gz && \

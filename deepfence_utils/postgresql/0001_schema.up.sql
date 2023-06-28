@@ -46,7 +46,7 @@ EXECUTE PROCEDURE update_modified_column();
 CREATE TABLE role
 (
     id         SERIAL PRIMARY KEY,
-    name       character varying(32)                              NOT NULL,
+    name       character varying(32)                              NOT NULL UNIQUE,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
