@@ -27,19 +27,19 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 		respondError(&BadDecoding{err}, w)
 		return
 	}
-	user, statusCode, _, _, err := h.GetUserFromJWT(r.Context())
+	ctx := r.Context()
+	user, statusCode, _, err := h.GetUserFromJWT(ctx)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return
 	}
 	req.CreatedByUserID = user.ID
-	ctx := directory.WithGlobalContext(r.Context())
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
 		return
 	}
-	err = req.Create(r.Context(), pgClient)
+	err = req.Create(ctx, pgClient)
 	if err != nil {
 		log.Error().Msgf(err.Error())
 		respondError(&InternalServerError{err}, w)
@@ -55,7 +55,7 @@ func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 
 func (h *Handler) GetEmailConfiguration(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
@@ -83,7 +83,7 @@ func (h *Handler) GetEmailConfiguration(w http.ResponseWriter, r *http.Request) 
 
 func (h *Handler) DeleteEmailConfiguration(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
@@ -105,7 +105,7 @@ func (h *Handler) DeleteEmailConfiguration(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *Handler) GetGlobalSettings(w http.ResponseWriter, r *http.Request) {
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
@@ -120,7 +120,7 @@ func (h *Handler) GetGlobalSettings(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)

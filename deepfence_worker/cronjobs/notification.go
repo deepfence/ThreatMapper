@@ -17,12 +17,13 @@ import (
 )
 
 func SendNotifications(msg *message.Message) error {
-	postgresCtx := directory.NewGlobalContext()
-	pgClient, err := directory.PostgresClient(postgresCtx)
+	namespace := msg.Metadata.Get(directory.NamespaceKey)
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
+	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		return err
 	}
-	integrations, err := pgClient.GetIntegrations(postgresCtx)
+	integrations, err := pgClient.GetIntegrations(ctx)
 	if err != nil {
 		log.Error().Msgf("Error in getting postgresCtx", err)
 		return err
@@ -91,7 +92,7 @@ func processIntegration[T any](msg *message.Message, integrationRow postgresql_d
 			log.Error().Msgf("Error Processing for integration json marshall results: %+v", integrationRow, err)
 			return err
 		}
-		err = integrationModel.SendNotification(string(messageByte), map[string]interface{}{"node_id": common.ScanID})
+		err = integrationModel.SendNotification(ctx, string(messageByte), map[string]interface{}{"node_id": common.ScanID})
 		if err != nil {
 			log.Error().Msgf("Error Sending Notification: %+v", integrationRow, err)
 			return err

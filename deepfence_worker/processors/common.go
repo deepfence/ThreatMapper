@@ -123,9 +123,9 @@ func StopKafkaProcessors() {
 	}
 }
 
-func tenantID(rh []kgo.RecordHeader) string {
+func getNamespace(rh []kgo.RecordHeader) string {
 	for _, h := range rh {
-		if h.Key == "tenant_id" {
+		if h.Key == "namespace" {
 			return string(h.Value)
 		}
 	}
@@ -144,7 +144,7 @@ func processRecord(r *kgo.Record) {
 		}
 
 		// get tenant id from headers
-		tenant := tenantID(r.Headers)
+		tenant := getNamespace(r.Headers)
 
 		err := Process(processor, tenant, r.Value)
 		if err != nil {

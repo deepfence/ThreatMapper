@@ -2,6 +2,7 @@ package sumologic
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,7 +10,7 @@ import (
 	"time"
 )
 
-func (s SumoLogic) SendNotification(data string) error {
+func (s SumoLogic) SendNotification(ctx context.Context, data string) error {
 	// Create an HTTP client with a timeout
 	client := &http.Client{
 		Timeout: time.Second * 10,

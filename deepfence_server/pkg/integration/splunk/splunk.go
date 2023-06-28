@@ -2,6 +2,7 @@ package splunk
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -21,7 +22,7 @@ func New(b []byte) (Splunk, error) {
 	return s, nil
 }
 
-func (s Splunk) SendNotification(message string, extras map[string]interface{}) error {
+func (s Splunk) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
 	// Create an HTTP client with a timeout
 	client := &http.Client{
 		Timeout: time.Second * 10,

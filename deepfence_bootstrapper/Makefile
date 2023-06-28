@@ -5,7 +5,7 @@ all: deepfence_bootstrapper
 local: deepfence_bootstrapper
 
 prepare:
-	docker run -v $(ROOT_MAKEFILE_DIR):/go:rw deepfenceio/deepfence_builder_ce:$(DF_IMG_TAG) bash -c 'cd /go/deepfence_bootstrapper && make deepfence_bootstrapper'
+	docker run --rm -i -v $(ROOT_MAKEFILE_DIR):/go:rw deepfenceio/deepfence_builder_ce:$(DF_IMG_TAG) bash -c 'cd /go/deepfence_bootstrapper && make deepfence_bootstrapper'
 
 vendor:
 	go mod tidy -v

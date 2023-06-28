@@ -2,6 +2,7 @@ package httpendpoint
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 )
@@ -18,7 +19,7 @@ func New(b []byte) (*HTTPEndpoint, error) {
 	return &h, nil
 }
 
-func (h HTTPEndpoint) SendNotification(message string, extras map[string]interface{}) error {
+func (h HTTPEndpoint) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
 	var req *http.Request
 	var err error
 

@@ -38,7 +38,7 @@ func (h *Handler) RegisterCloudNodeAccountHandler(w http.ResponseWriter, r *http
 	cloudtrailTrails := []model.CloudNodeCloudtrailTrail{}
 	nodeId := req.NodeId
 
-	ctx := directory.NewContextWithNameSpace(directory.NonSaaSDirKey)
+	ctx := r.Context()
 
 	doRefresh := "false"
 

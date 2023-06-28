@@ -28,7 +28,7 @@ import (
 func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 	var req model.RegistryListReq
 
-	ctx := directory.NewGlobalContext()
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("%v", err)
@@ -107,7 +107,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 
 	// add registry to database
 	// before that check if registry already exists
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
@@ -198,7 +198,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// before that check if registry exists
-	ctx := directory.WithGlobalContext(r.Context())
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
@@ -377,7 +377,7 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 
 	// add registry to database
 	// before that check if registry already exists
-	ctx := directory.NewGlobalContext()
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(&InternalServerError{err}, w)
@@ -458,7 +458,7 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := directory.NewGlobalContext()
+	ctx := r.Context()
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("%v", err)

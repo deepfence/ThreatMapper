@@ -16,8 +16,7 @@ func SyncRegistry(msg *message.Message) error {
 	namespace := msg.Metadata.Get(directory.NamespaceKey)
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(namespace))
 
-	postgresCtx := directory.NewGlobalContext()
-	pgClient, err := directory.PostgresClient(postgresCtx)
+	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		log.Error().Msgf("unable to get postgres client: %v", err)
 		return nil
@@ -31,7 +30,7 @@ func SyncRegistry(msg *message.Message) error {
 		err = json.Unmarshal(msg.Payload, &rsp)
 		if err != nil {
 			log.Warn().Msgf("unable to unmarshal payload: %v, error: %v syncing all registries...", msg.Payload, err)
-			registries, err = pgClient.GetContainerRegistries(postgresCtx)
+			registries, err = pgClient.GetContainerRegistries(ctx)
 			if err != nil {
 				log.Error().Msgf("unable to get registries: %v", err)
 				return nil
@@ -39,7 +38,7 @@ func SyncRegistry(msg *message.Message) error {
 		}
 
 		if rsp.PgID != 0 {
-			r, err := pgClient.GetContainerRegistry(postgresCtx, rsp.PgID)
+			r, err := pgClient.GetContainerRegistry(ctx, rsp.PgID)
 			if err != nil {
 				log.Error().Msgf("unable to get registry: %v", err)
 				return nil
@@ -59,7 +58,7 @@ func SyncRegistry(msg *message.Message) error {
 			registries = append(registries, getContainerRegistriesRow)
 		}
 	} else {
-		registries, err = pgClient.GetContainerRegistries(postgresCtx)
+		registries, err = pgClient.GetContainerRegistries(ctx)
 		if err != nil {
 			log.Error().Msgf("unable to get registries: %v", err)
 		}
