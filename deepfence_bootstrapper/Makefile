@@ -5,13 +5,12 @@ all: deepfence_bootstrapper
 local: deepfence_bootstrapper
 
 prepare:
-	docker run --rm -i -v $(ROOT_MAKEFILE_DIR):/go:rw deepfenceio/deepfence_builder_ce:$(DF_IMG_TAG) bash -c 'cd /go/deepfence_bootstrapper && make deepfence_bootstrapper'
+	docker run --rm -i -v $(ROOT_MAKEFILE_DIR):/src:rw -v /tmp/go:/go:rw deepfenceio/deepfence_builder_ce:$(DF_IMG_TAG) bash -c 'cd /src/deepfence_bootstrapper && make deepfence_bootstrapper'
 
-vendor:
+tidy:
 	go mod tidy -v
-	go mod vendor
 
-deepfence_bootstrapper: vendor $(shell find . -name '*.go')
+deepfence_bootstrapper: tidy $(shell find . -name '*.go')
 	CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X main.Version=${VERSION} -extldflags=-static" -buildvcs=false
 	-upx ./deepfence_bootstrapper
 

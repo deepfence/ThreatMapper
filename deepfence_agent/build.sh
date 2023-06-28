@@ -2,6 +2,7 @@
 
 IMAGE_REPOSITORY=${IMAGE_REPOSITORY:-deepfenceio}
 DF_IMG_TAG=${DF_IMG_TAG:-latest}
+GIT_COMMIT=$(git rev-parse --short HEAD)
 
 building_image(){
 
@@ -24,7 +25,7 @@ building_image(){
     fi
 
     echo "Building Agent Executable"
-    docker run --rm -i -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd)/../deepfence_utils:/go/src/github.com/deepfence/deepfence_utils -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host $IMAGE_REPOSITORY/deepfence_agent_builder_ce:$DF_IMG_TAG bash -x /home/deepfence/agent-build.sh
+    docker run --rm -i -v $(pwd)/../golang_deepfence_sdk:/go/src/github.com/deepfence/golang_deepfence_sdk -v $(pwd)/../deepfence_utils:/go/src/github.com/deepfence/deepfence_utils -v $(pwd):/go/src/github.com/deepfence/deepfence_agent:rw --net=host -e GIT_COMMIT="$GIT_COMMIT" $IMAGE_REPOSITORY/deepfence_agent_builder_ce:$DF_IMG_TAG bash -x /home/deepfence/agent-build.sh
     build_result=$?
     if [ $build_result -ne 0 ]
     then
