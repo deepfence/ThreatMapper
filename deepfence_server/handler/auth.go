@@ -29,7 +29,7 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	ctx := r.Context()
+	ctx := directory.NewContextWithNameSpace(directory.FetchNamespaceFromID(""))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
@@ -125,8 +125,9 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	ctx := r.Context()
-	u, statusCode, pgClient, err := model.GetUserByEmail(ctx, strings.ToLower(loginRequest.Email))
+	loginRequest.Email = strings.ToLower(loginRequest.Email)
+	ctx := directory.NewContextWithNameSpace(directory.FetchNamespace(loginRequest.Email))
+	u, statusCode, pgClient, err := model.GetUserByEmail(ctx, loginRequest.Email)
 	if err != nil {
 		respondWithErrorCode(err, w, statusCode)
 		return

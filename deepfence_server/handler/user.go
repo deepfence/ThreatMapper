@@ -60,7 +60,8 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	ctx := r.Context()
+	registerRequest.Email = strings.ToLower(registerRequest.Email)
+	ctx := directory.NewContextWithNameSpace(directory.FetchNamespace(registerRequest.Email))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
@@ -90,7 +91,6 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		respondError(&ForbiddenError{errors.New("Cannot register. Please contact your administrator for an invite")}, w)
 		return
 	}
-	registerRequest.Email = strings.ToLower(registerRequest.Email)
 	emailDomain, _ := utils.GetEmailDomain(registerRequest.Email)
 	c := model.Company{
 		Name:        registerRequest.Company,
@@ -172,7 +172,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	ctx := r.Context()
+	ctx := directory.NewContextWithNameSpace(directory.FetchNamespaceFromID(""))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
@@ -593,12 +593,13 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
+	resetPasswordRequest.Email = strings.ToLower(resetPasswordRequest.Email)
 	if resetPasswordRequest.Email == constants.DeepfenceCommunityEmailId {
 		httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 		return
 	}
-	ctx := r.Context()
-	user, statusCode, pgClient, err := model.GetUserByEmail(ctx, strings.ToLower(resetPasswordRequest.Email))
+	ctx := directory.NewContextWithNameSpace(directory.FetchNamespace(resetPasswordRequest.Email))
+	user, statusCode, pgClient, err := model.GetUserByEmail(ctx, resetPasswordRequest.Email)
 	if errors.Is(err, model.UserNotFoundErr) {
 		httpext.JSON(w, http.StatusOK, model.MessageResponse{Message: passwordResetResponse})
 		return
@@ -663,7 +664,7 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	ctx := r.Context()
+	ctx := directory.NewContextWithNameSpace(directory.FetchNamespaceFromID(""))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)

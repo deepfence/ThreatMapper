@@ -121,6 +121,26 @@ func ForEachNamespace(applyFn func(ctx context.Context) (string, error)) {
 	}
 }
 
+func FetchNamespace(email string) NamespaceID {
+	namespaces := GetAllNamespaces()
+	if len(namespaces) == 1 && namespaces[0] == NonSaaSDirKey {
+		return NonSaaSDirKey
+	} else {
+		// TODO: Fetch namespace for SaaS tenant
+	}
+	return ""
+}
+
+func FetchNamespaceFromID(namespaceID string) NamespaceID {
+	namespaces := GetAllNamespaces()
+	if len(namespaces) == 1 && namespaces[0] == NonSaaSDirKey {
+		return NonSaaSDirKey
+	} else {
+		// TODO: Fetch namespace for SaaS tenant
+	}
+	return ""
+}
+
 func IsNonSaaSDeployment() bool {
 	namespaces := GetAllNamespaces()
 	if len(namespaces) == 1 && namespaces[0] == NonSaaSDirKey {
