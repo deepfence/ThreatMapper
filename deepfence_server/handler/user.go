@@ -24,7 +24,6 @@ import (
 
 const (
 	MaxPostRequestSize    = 1000000 // 1 MB
-	DefaultNamespace      = "default"
 	passwordResetResponse = "A password reset email will be sent if a user exists with the provided email id"
 )
 
@@ -40,6 +39,10 @@ var (
 		err:                       errors.New("Key: 'old_password' Error:incorrect old password"),
 		skipOverwriteErrorMessage: true,
 	}
+	deleteLastAdminError           = errors.New("cannot delete last active admin user")
+	passwordResetCodeNotFoundError = NotFoundError{errors.New("code not found")}
+	userInviteInvalidCodeError     = BadDecoding{errors.New("Invalid code")}
+	registrationDoneError          = ForbiddenError{errors.New("Cannot register. Please contact your administrator for an invite")}
 )
 
 func init() {
@@ -88,14 +91,14 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	}
 	users, err := pgClient.CountActiveUsers(ctx)
 	if err != nil || users > 0 {
-		respondError(&ForbiddenError{errors.New("Cannot register. Please contact your administrator for an invite")}, w)
+		respondError(&registrationDoneError, w)
 		return
 	}
 	emailDomain, _ := utils.GetEmailDomain(registerRequest.Email)
 	c := model.Company{
 		Name:        registerRequest.Company,
 		EmailDomain: emailDomain,
-		Namespace:   DefaultNamespace, //TODO: SaaS namespace
+		Namespace:   string(directory.NonSaaSDirKey), //TODO: SaaS namespace
 	}
 	company, err := c.Create(ctx, pgClient)
 	if err != nil {
@@ -173,7 +176,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	ctx := directory.NewContextWithNameSpace(directory.FetchNamespaceFromID(""))
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(registerRequest.Namespace))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
@@ -182,7 +185,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 	code, err := utils.UUIDFromString(registerRequest.Code)
 	userInvite, err := pgClient.GetUserInviteByCode(ctx, code)
 	if errors.Is(err, sql.ErrNoRows) {
-		respondError(&BadDecoding{errors.New("Invalid code")}, w)
+		respondError(&userInviteInvalidCodeError, w)
 		return
 	} else if err != nil {
 		respondError(err, w)
@@ -314,7 +317,7 @@ func (h *Handler) InviteUser(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	inviteURL := fmt.Sprintf("%s/auth/invite-accept?invite_code=%s", consoleUrl, code)
+	inviteURL := fmt.Sprintf("%s/auth/invite-accept?invite_code=%s&namespace=%s", consoleUrl, code, user.CompanyNamespace)
 	if inviteUserRequest.Action == UserInviteSendEmail {
 		emailSender, err := sendemail.NewEmailSender(ctx)
 		if errors.Is(err, sql.ErrNoRows) {
@@ -421,7 +424,7 @@ func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 	if user.Role != req.Role {
 		activeAdminUsersCount, err := pgClient.CountActiveAdminUsers(ctx)
 		if user.Role == model.AdminRole && activeAdminUsersCount < 2 {
-			respondWithErrorCode(errors.New("cannot delete last active admin user"), w, http.StatusForbidden)
+			respondWithErrorCode(deleteLastAdminError, w, http.StatusForbidden)
 			return
 		}
 		if isCurrentUser {
@@ -535,7 +538,7 @@ func (h *Handler) deleteUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 		return
 	}
 	if user.Role == model.AdminRole && activeAdminUsersCount < 2 {
-		respondWithErrorCode(errors.New("cannot delete last active admin user"), w, http.StatusForbidden)
+		respondWithErrorCode(deleteLastAdminError, w, http.StatusForbidden)
 		return
 	}
 	err = user.Delete(ctx, pgClient)
@@ -635,7 +638,7 @@ func (h *Handler) ResetPasswordRequest(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	resetPasswordURL := fmt.Sprintf("%s/auth/reset-password?code=%s", consoleUrl, resetCode)
+	resetPasswordURL := fmt.Sprintf("%s/auth/reset-password?code=%s&namespace=%s", consoleUrl, resetCode, user.CompanyNamespace)
 	err = emailSender.Send(
 		[]string{resetPasswordRequest.Email},
 		"Deepfence - Password Reset",
@@ -667,7 +670,7 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	ctx := directory.NewContextWithNameSpace(directory.FetchNamespaceFromID(""))
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(passwordResetVerifyRequest.Namespace))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
@@ -676,7 +679,7 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 	code, err := utils.UUIDFromString(passwordResetVerifyRequest.Code)
 	passwordReset, err := pgClient.GetPasswordResetByCode(ctx, code)
 	if errors.Is(err, sql.ErrNoRows) {
-		respondError(&NotFoundError{errors.New("code not found")}, w)
+		respondError(&passwordResetCodeNotFoundError, w)
 		return
 	} else if err != nil {
 		respondError(err, w)
@@ -719,7 +722,7 @@ func (h *Handler) GetApiTokens(w http.ResponseWriter, r *http.Request) {
 	for i, apiToken := range apiTokens {
 		apiTokenResponse[i] = model.ApiTokenResponse{
 			ID:              apiToken.ID,
-			ApiToken:        apiToken.ApiToken.String(),
+			ApiToken:        model.GetApiToken(user.CompanyNamespace, apiToken.ApiToken),
 			Name:            apiToken.Name,
 			CompanyID:       apiToken.CompanyID,
 			CreatedByUserID: apiToken.CreatedByUserID,
@@ -776,7 +779,7 @@ func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
 	for i, apiToken := range apiTokens {
 		apiTokenResponse[i] = model.ApiTokenResponse{
 			ID:              apiToken.ID,
-			ApiToken:        apiToken.ApiToken.String(),
+			ApiToken:        model.GetApiToken(user.CompanyNamespace, apiToken.ApiToken),
 			Name:            apiToken.Name,
 			CompanyID:       apiToken.CompanyID,
 			CreatedByUserID: apiToken.CreatedByUserID,
@@ -822,5 +825,5 @@ func (h *Handler) GetApiTokenForConsoleAgent(w http.ResponseWriter, r *http.Requ
 		respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, model.ApiAuthRequest{ApiToken: token.String()})
+	httpext.JSON(w, http.StatusOK, model.ApiAuthRequest{ApiToken: model.GetApiToken(string(directory.NonSaaSDirKey), token)})
 }

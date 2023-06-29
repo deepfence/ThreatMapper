@@ -96,7 +96,7 @@ func (h *Handler) AuditUserActivity(
 		namespace = claims[directory.NamespaceKey].(string)
 	}
 
-	if event == EVENT_AUTH && (action == ACTION_LOGIN || action == ACTION_TOKEN_AUTH) {
+	if event == EVENT_AUTH && (action == ACTION_LOGIN || action == ACTION_TOKEN_AUTH || action == ACTION_CREATE) {
 		user := resources.(*model.User)
 		userEmail = user.Email
 		userRole = user.Role

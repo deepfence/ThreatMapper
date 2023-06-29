@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"regexp"
@@ -33,6 +34,10 @@ var (
 	RefreshTokenExpiry = time.Hour * 26
 	CompanyRegex       = regexp.MustCompile("^[A-Za-z][a-zA-Z0-9-\\s@\\.#&!]+$")
 	UserNameRegex      = regexp.MustCompile("^[A-Za-z][A-Za-z .'-]+$")
+	MinNamespaceLength = 3
+	MaxNamespaceLength = 32
+	NamespaceRegex     = regexp.MustCompile(fmt.Sprintf("^[a-z][a-z0-9-]{%d,%d}$", MinNamespaceLength-1, MaxNamespaceLength-1))
+	ApiTokenRegex      = regexp.MustCompile(fmt.Sprintf("^[a-z][a-z0-9-]{%d,%d}\\|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", MinNamespaceLength-1, MaxNamespaceLength-1))
 )
 
 func init() {
@@ -54,6 +59,10 @@ type ApiTokenResponse struct {
 	CompanyID       int32     `json:"company_id"`
 	CreatedByUserID int64     `json:"created_by_user_id"`
 	CreatedAt       time.Time `json:"created_at"`
+}
+
+func GetApiToken(namespace string, apiToken uuid.UUID) string {
+	return namespace + ":" + apiToken.String()
 }
 
 type ApiToken struct {
@@ -179,7 +188,7 @@ type LoginRequest struct {
 }
 
 type ApiAuthRequest struct {
-	ApiToken string `json:"api_token" validate:"required,uuid4" required:"true"`
+	ApiToken string `json:"api_token" validate:"required,api_token" required:"true"`
 }
 
 type UserRegisterRequest struct {
@@ -193,6 +202,7 @@ type UserRegisterRequest struct {
 }
 
 type RegisterInvitedUserRequest struct {
+	Namespace           string `json:"namespace" validate:"required,namespace" required:"true"`
 	FirstName           string `json:"first_name" validate:"required,user_name,min=2,max=32" required:"true"`
 	LastName            string `json:"last_name" validate:"required,user_name,min=2,max=32" required:"true"`
 	Password            string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
@@ -217,8 +227,9 @@ type PasswordResetRequest struct {
 }
 
 type PasswordResetVerifyRequest struct {
-	Code     string `json:"code" validate:"required,uuid4" required:"true"`
-	Password string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
+	Namespace string `json:"namespace" validate:"required,namespace" required:"true"`
+	Code      string `json:"code" validate:"required,uuid4" required:"true"`
+	Password  string `json:"password" validate:"required,password,min=8,max=32" required:"true"`
 }
 
 type UserIdRequest struct {

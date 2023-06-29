@@ -46,6 +46,8 @@ var (
 		err:                       errors.New("Key: 'node_ids' Error:Nodes not found with the provided filters"),
 		skipOverwriteErrorMessage: true,
 	}
+	startScanError         = errors.New("unable to spawn any new scans with the given criteria")
+	incorrectScanTypeError = errors.New("unknown scan type")
 )
 
 func scanId(req model.NodeIdentifier) string {
@@ -291,7 +293,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 
 	cloudNodeIds, err := reporters_scan.GetCloudAccountIDs(ctx, regular)
 	if err != nil {
-		respondError(errors.New(err.Error()), w)
+		respondError(err, w)
 		return
 	}
 
@@ -344,7 +346,7 @@ func (h *Handler) StartComplianceScanHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	if len(scanIds) == 0 {
-		respondError(errors.New("unable to spawn any new scans with the given criteria"), w)
+		respondError(startScanError, w)
 		return
 	}
 
@@ -1350,7 +1352,7 @@ func getScanResults(ctx context.Context, scanId, scanType string) (model.Downloa
 		return resp, nil
 
 	default:
-		return resp, errors.New("unknown scan type")
+		return resp, incorrectScanTypeError
 	}
 }
 

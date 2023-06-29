@@ -16,6 +16,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+var (
+	parseRefreshTokenError  = errors.New("cannot parse refresh token")
+	accessTokenRevokedError = ForbiddenError{errors.New("access token is revoked")}
+	userInactiveError       = ForbiddenError{errors.New("user is not active")}
+)
+
 func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 	var apiAuthRequest model.ApiAuthRequest
 	defer r.Body.Close()
@@ -29,13 +35,18 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	ctx := directory.NewContextWithNameSpace(directory.FetchNamespaceFromID(""))
+	tokenSplit := strings.Split(apiAuthRequest.ApiToken, "|")
+	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tokenSplit[0]))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
 		respondError(err, w)
 		return
 	}
-	parsedUUID, _ := uuid.Parse(apiAuthRequest.ApiToken)
+	parsedUUID, err := uuid.Parse(tokenSplit[1])
+	if err != nil {
+		respondError(err, w)
+		return
+	}
 	apiToken := &model.ApiToken{ApiToken: parsedUUID}
 	user, err := apiToken.GetUser(ctx, pgClient)
 	if err != nil {
@@ -82,7 +93,7 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 		return nil, "", err
 	}
 	if tokenType != "refresh_token" {
-		return nil, "", errors.New("cannot parse refresh token")
+		return nil, "", parseRefreshTokenError
 	}
 	accessTokenID, err := utils.GetStringValueFromInterfaceMap(claims, "token_id")
 	if err != nil {
@@ -93,7 +104,7 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 		return nil, "", err
 	}
 	if revoked == true {
-		return nil, "", &ForbiddenError{errors.New("access token is revoked")}
+		return nil, "", &accessTokenRevokedError
 	}
 	userId, err := utils.GetInt64ValueFromInterfaceMap(claims, "user")
 	if err != nil {
@@ -104,7 +115,7 @@ func (h *Handler) parseRefreshToken(requestContext context.Context) (*model.User
 		return nil, "", err
 	}
 	if user.IsActive == false {
-		return nil, "", &ForbiddenError{errors.New("user is not active")}
+		return nil, "", &userInactiveError
 	}
 	grantType, err := utils.GetStringValueFromInterfaceMap(claims, "grant_type")
 	if err != nil {
@@ -134,7 +145,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if u.IsActive == false {
-		respondError(&ForbiddenError{errors.New("user is not active")}, w)
+		respondError(&userInactiveError, w)
 		return
 	}
 	passwordValid, err := u.CompareHashAndPassword(ctx, pgClient, loginRequest.Password)

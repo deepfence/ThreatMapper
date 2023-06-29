@@ -116,22 +116,12 @@ func ForEachNamespace(applyFn func(ctx context.Context) (string, error)) {
 	for _, ns := range namespaces {
 		msg, err = applyFn(NewContextWithNameSpace(ns))
 		if err != nil {
-			log.Error().Msg(msg + ": " + err.Error())
+			log.Error().Err(err).Msg(msg)
 		}
 	}
 }
 
 func FetchNamespace(email string) NamespaceID {
-	namespaces := GetAllNamespaces()
-	if len(namespaces) == 1 && namespaces[0] == NonSaaSDirKey {
-		return NonSaaSDirKey
-	} else {
-		// TODO: Fetch namespace for SaaS tenant
-	}
-	return ""
-}
-
-func FetchNamespaceFromID(namespaceID string) NamespaceID {
 	namespaces := GetAllNamespaces()
 	if len(namespaces) == 1 && namespaces[0] == NonSaaSDirKey {
 		return NonSaaSDirKey

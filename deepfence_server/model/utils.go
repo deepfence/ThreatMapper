@@ -16,6 +16,14 @@ func ValidateCompanyName(fl validator.FieldLevel) bool {
 	return CompanyRegex.MatchString(fl.Field().String())
 }
 
+func ValidateNamespace(fl validator.FieldLevel) bool {
+	return NamespaceRegex.MatchString(fl.Field().String())
+}
+
+func ValidateApiToken(fl validator.FieldLevel) bool {
+	return ApiTokenRegex.MatchString(fl.Field().String())
+}
+
 func ValidatePassword(fl validator.FieldLevel) bool {
 	var (
 		isUpper       bool

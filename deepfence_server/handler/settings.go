@@ -18,6 +18,15 @@ import (
 	httpext "github.com/go-playground/pkg/v5/net/http"
 )
 
+var (
+	invalidIdError = ValidatorError{
+		err: errors.New("Key: 'SettingUpdateRequest.ID' Error:invalid id"), skipOverwriteErrorMessage: true}
+	invalidUrlError = ValidatorError{
+		err: errors.New("Key: 'SettingUpdateRequest.Value' Error:invalid url"), skipOverwriteErrorMessage: true}
+	invalidIntegerError = ValidatorError{
+		err: errors.New("Key: 'SettingUpdateRequest.Value' Error:must be integer"), skipOverwriteErrorMessage: true}
+)
+
 func (h *Handler) AddEmailConfiguration(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var req model.EmailConfigurationAdd
@@ -150,8 +159,7 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if req.ID != currentSettings.ID {
-		respondError(&ValidatorError{
-			err: errors.New("Key: 'SettingUpdateRequest.ID' Error:invalid id"), skipOverwriteErrorMessage: true}, w)
+		respondError(&invalidIdError, w)
 		return
 	}
 	var value interface{}
@@ -159,16 +167,14 @@ func (h *Handler) UpdateGlobalSettings(w http.ResponseWriter, r *http.Request) {
 	case model.ConsoleURLSettingKey:
 		var parsedUrl *url.URL
 		if parsedUrl, err = url.ParseRequestURI(strings.TrimSpace(req.Value)); err != nil {
-			respondError(&ValidatorError{
-				err: errors.New("Key: 'SettingUpdateRequest.Value' Error:invalid url"), skipOverwriteErrorMessage: true}, w)
+			respondError(&invalidUrlError, w)
 			return
 		}
 		value = parsedUrl.Scheme + "://" + parsedUrl.Host
 	case model.InactiveNodesDeleteScanResultsKey:
 		value, err = strconv.ParseInt(strings.TrimSpace(req.Value), 10, 64)
 		if err != nil {
-			respondError(&ValidatorError{
-				err: errors.New("Key: 'SettingUpdateRequest.Value' Error:must be integer"), skipOverwriteErrorMessage: true}, w)
+			respondError(&invalidIntegerError, w)
 			return
 		}
 	}

@@ -109,6 +109,14 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 	if err != nil {
 		return err
 	}
+	err = dfHandler.Validator.RegisterValidation("namespace", model.ValidateNamespace)
+	if err != nil {
+		return err
+	}
+	err = dfHandler.Validator.RegisterValidation("api_token", model.ValidateApiToken)
+	if err != nil {
+		return err
+	}
 
 	r.Use(otelchi.Middleware("deepfence-server", otelchi.WithChiRoutes(r)))
 

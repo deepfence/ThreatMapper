@@ -25,6 +25,10 @@ import (
 	"github.com/samber/mo"
 )
 
+var (
+	unknownInternalServerError = InternalServerError{errors.New("something went wrong")}
+)
+
 func (h *Handler) ListRegistry(w http.ResponseWriter, r *http.Request) {
 	var req model.RegistryListReq
 
@@ -144,7 +148,7 @@ func (h *Handler) AddRegistry(w http.ResponseWriter, r *http.Request) {
 	err = registry.EncryptSecret(aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{errors.New("something went wrong")}, w)
+		respondError(&unknownInternalServerError, w)
 		return
 	}
 	req.Secret = registry.GetSecret()
@@ -257,7 +261,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 		err = registry.DecryptSecret(aes)
 		if err != nil {
 			log.Error().Msgf(err.Error())
-			respondError(&InternalServerError{errors.New("something went wrong")}, w)
+			respondError(&unknownInternalServerError, w)
 			return
 		}
 	}
@@ -273,7 +277,7 @@ func (h *Handler) UpdateRegistry(w http.ResponseWriter, r *http.Request) {
 	err = registry.EncryptSecret(aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{errors.New("something went wrong")}, w)
+		respondError(&unknownInternalServerError, w)
 		return
 	}
 	req.Secret = registry.GetSecret()
@@ -415,14 +419,14 @@ func (h *Handler) AddGoogleContainerRegistry(w http.ResponseWriter, r *http.Requ
 	err = registry.EncryptSecret(aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{errors.New("something went wrong")}, w)
+		respondError(&unknownInternalServerError, w)
 		return
 	}
 
 	err = registry.EncryptExtras(aes)
 	if err != nil {
 		log.Error().Msgf(err.Error())
-		respondError(&InternalServerError{errors.New("something went wrong")}, w)
+		respondError(&unknownInternalServerError, w)
 		return
 	}
 
