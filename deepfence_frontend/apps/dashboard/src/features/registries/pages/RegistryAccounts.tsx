@@ -5,7 +5,6 @@ import { Suspense, useCallback, useState } from 'react';
 import {
   ActionFunctionArgs,
   FetcherWithComponents,
-  generatePath,
   useFetcher,
   useParams,
 } from 'react-router-dom';
@@ -37,6 +36,7 @@ import { InProgressIcon } from '@/components/icons/registries/InProgress';
 import { StartScanIcon } from '@/components/icons/registries/StartScan';
 import { TagsIcon } from '@/components/icons/registries/Tags';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
+import { AddRegistryModal } from '@/features/registries/components/AddRegistryModal';
 import { RegistryAccountsTable } from '@/features/registries/components/RegistryAccountsTable';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { queries } from '@/queries';
@@ -243,23 +243,6 @@ const Header = () => {
       <div className="ml-2 flex items-center">
         {isFetching ? <CircleSpinner size="sm" /> : null}
       </div>
-
-      <Button
-        className="ml-auto"
-        color="default"
-        variant="flat"
-        size="sm"
-        startIcon={<PlusIcon />}
-        onClick={() => {
-          navigate(
-            generatePath('/registries/add/:account', {
-              account: encodeURIComponent(params.account),
-            }),
-          );
-        }}
-      >
-        ADD NEW REGISTRY
-      </Button>
     </div>
   );
 };
@@ -347,12 +330,25 @@ const Widgets = () => {
 const BulkActions = ({
   ids,
   onTableAction,
+  setAddRegistryModal,
 }: {
   ids: string[];
   onTableAction: (ids: string[], scanType: RegistryScanType, actionType: string) => void;
+  setAddRegistryModal: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   return (
     <>
+      <Button
+        color="default"
+        variant="flat"
+        size="sm"
+        startIcon={<PlusIcon />}
+        onClick={() => {
+          setAddRegistryModal(true);
+        }}
+      >
+        ADD NEW REGISTRY
+      </Button>
       <Dropdown
         triggerAsChild
         align={'start'}
@@ -413,6 +409,8 @@ const RegistryAccountsResults = () => {
   const [nodeIdsToScan, setNodeIdsToScan] = useState<string[]>([]);
   const fetcher = useFetcher<ActionData>();
 
+  const [addRegistryModal, setAddRegistryModal] = useState<boolean>(false);
+
   const onTableAction = useCallback(
     (id: string[], scanType: RegistryScanType, actionType: string) => {
       if (actionType === ActionEnumType.START_SCAN) {
@@ -434,7 +432,11 @@ const RegistryAccountsResults = () => {
   return (
     <div className="self-start">
       <div className="py-2 flex items-center">
-        <BulkActions ids={Object.keys(rowSelectionState)} onTableAction={onTableAction} />
+        <BulkActions
+          ids={Object.keys(rowSelectionState)}
+          onTableAction={onTableAction}
+          setAddRegistryModal={setAddRegistryModal}
+        />
         <ConfigureScanModal
           open={!!selectedScanType}
           onOpenChange={() => setSelectedScanType(undefined)}
@@ -461,6 +463,12 @@ const RegistryAccountsResults = () => {
           onTableAction={onTableAction}
         />
       )}
+      {
+        <AddRegistryModal
+          setAddRegistryModal={setAddRegistryModal}
+          open={addRegistryModal}
+        />
+      }
     </div>
   );
 };
