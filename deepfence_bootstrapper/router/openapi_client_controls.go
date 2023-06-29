@@ -124,7 +124,7 @@ func GetScannersWorkloads() int32 {
 	malware := GetMalwareScannerJobCount()
 	vuln := GetPackageScannerJobCount()
 	//TODO: Add more scanners workload
-	log.Info().Msgf("workloads = vuln: %d, secret: %d, malware: %d", secret, malware, vuln)
+	log.Info().Msgf("workloads = vuln: %d, secret: %d, malware: %d", vuln, secret, malware)
 	res = secret + malware + vuln
 	return res
 }
