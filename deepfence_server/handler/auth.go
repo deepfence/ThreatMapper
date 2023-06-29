@@ -35,7 +35,7 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	tokenSplit := strings.Split(apiAuthRequest.ApiToken, "|")
+	tokenSplit := strings.Split(apiAuthRequest.ApiToken, ":")
 	ctx := directory.NewContextWithNameSpace(directory.NamespaceID(tokenSplit[0]))
 	pgClient, err := directory.PostgresClient(ctx)
 	if err != nil {
