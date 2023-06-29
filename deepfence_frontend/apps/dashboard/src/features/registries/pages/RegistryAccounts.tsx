@@ -39,7 +39,7 @@ import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
 import { AddRegistryModal } from '@/features/registries/components/AddRegistryModal';
 import { RegistryAccountsTable } from '@/features/registries/components/RegistryAccountsTable';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { queries } from '@/queries';
+import { invalidateQueries, queries } from '@/queries';
 import {
   MalwareScanNodeTypeEnum,
   registryTypeToNameMapping,
@@ -135,6 +135,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
     throw r.error;
   }
 
+  invalidateQueries(queries.registry.listRegistryAccounts._def);
   return {
     success: true,
   };
