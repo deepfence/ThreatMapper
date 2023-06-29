@@ -5,7 +5,6 @@ import cx from 'classnames';
 import { cva, VariantProps } from 'cva';
 import React, { ComponentProps, forwardRef, useId, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { twMerge } from 'tailwind-merge';
 import { cn } from 'tailwind-preset';
 
 import HelperText from '@/components/input/HelperText';
@@ -16,10 +15,9 @@ export type SizeType = 'md';
 export type ColorType = 'default' | 'error';
 
 const PLACEHOLDER_PASSWORD = '**********';
-const ErrorIcon = () => {
+export const ErrorIcon = () => {
   return (
     <svg
-      // onClick={}
       width="24"
       height="24"
       viewBox="0 0 24 24"
@@ -124,17 +122,15 @@ const inputCva = cva(
           cn(
             // border
             'dark:border-text-text-and-icon',
-            // bg styles
-            'bg-gray-50',
             // placeholder styles
             'placeholder-gray-500 disabled:placeholder-gray-400',
-            'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
+            'dark:placeholder-df-gray-400 dark:disabled:placeholder-df-gray-500',
             // text font
             'dark:text-p4',
             // text styles
             'text-gray-900 dark:text-text-input-value',
             // disabled text color
-            'disabled:text-gray-700 dark:disabled:text-gray-600',
+            'disabled:text-gray-700 dark:disabled:text-df-gray-600',
             // focus style
             'dark:bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
             'dark:focus:border-b-accent-accent',
@@ -149,17 +145,15 @@ const inputCva = cva(
           cn(
             // border
             'dark:border-chart-red df-error',
-            // bg styles
-            'bg-gray-50',
             // placeholder styles
             'placeholder-gray-500 disabled:placeholder-gray-400',
-            'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
+            'dark:placeholder-df-gray-400 dark:disabled:placeholder-df-gray-500',
             // text font
             'dark:text-p4',
             // text styles
             'text-gray-900 dark:text-text-input-value',
             // disabled text color
-            'disabled:text-gray-700 dark:disabled:text-gray-600',
+            'disabled:text-gray-700 dark:disabled:text-df-gray-600',
             // focus style
             'dark:bg-[length:0%_100%] dark:focus:bg-[length:100%_100%]',
             'dark:focus:border-b-chart-red',
@@ -200,7 +194,7 @@ const iconContextCva = cva('', {
     sizing: {
       md: `w-4 h-4`,
     },
-    disabled: { true: 'dark:text-gray-600' },
+    disabled: { true: 'dark:text-df-gray-600' },
   },
   defaultVariants: {
     color: 'default',
@@ -272,13 +266,13 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     const [showPassword, setShowPassword] = useState(false);
 
     return (
-      <div className={twMerge('flex flex-col w-full', className)}>
+      <div className={cn('flex flex-col w-full', className)}>
         {label && (
           <div className="flex gap-2 pb-[10px] items-center">
             <LabelPrimitive.Root
               htmlFor={_id}
               className={cx('text-p3 text-gray-900 dark:text-text-text-and-icon', {
-                'dark:text-gray-600': disabled,
+                'dark:text-df-gray-600': disabled,
               })}
             >
               {required && <span>*</span>}
@@ -305,7 +299,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           )}
 
           <input
-            className={twMerge(
+            className={cn(
               inputCva({
                 color,
                 sizing,
