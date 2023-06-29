@@ -118,9 +118,9 @@ func (d *OpenApiDocs) AddGraphOperations() {
 		"Get Threat Graph", "Retrieve the full threat graph associated with the account",
 		http.StatusOK, []string{tagThreat}, bearerToken, new(ThreatFilters), new(ThreatGraph))
 
-	d.AddOperation("getVulnerabilityThreatGraph", http.MethodPost, "/deepfence/graph/threat/vulnerability",
+	d.AddOperation("getIndividualThreatGraph", http.MethodPost, "/deepfence/graph/threat/individual",
 		"Get Vulnerability Threat Graph", "Retrieve threat graph associated with vulnerabilities",
-		http.StatusOK, []string{tagThreat}, bearerToken, new(VulnerabilityThreatGraphRequest), new([]VulnerabilityThreatGraph))
+		http.StatusOK, []string{tagThreat}, bearerToken, new(IndividualThreatGraphRequest), new([]IndividualThreatGraph))
 }
 
 func (d *OpenApiDocs) AddLookupOperations() {

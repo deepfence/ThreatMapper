@@ -200,7 +200,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 				})
 				r.Route("/threat", func(r chi.Router) {
 					r.Post("/", dfHandler.GetThreatGraph)
-					r.Post("/vulnerability", dfHandler.GetVulnerabilityThreatGraph)
+					r.Post("/individual", dfHandler.GetIndividualThreatGraph)
 				})
 			})
 

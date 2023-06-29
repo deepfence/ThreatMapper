@@ -2,54 +2,81 @@ package reporters_graph
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/deepfence/ThreatMapper/deepfence_server/model"
+	"github.com/deepfence/ThreatMapper/deepfence_server/reporters"
 	"github.com/deepfence/ThreatMapper/deepfence_utils/directory"
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j/dbtype"
 )
 
-type VulnerabilityThreatGraphRequest struct {
-	GraphType string `json:"graph_type" validate:"required,oneof=most_vulnerable_attack_paths direct_internet_exposure indirect_internet_exposure" required:"true" enum:"most_vulnerable_attack_paths,direct_internet_exposure,indirect_internet_exposure"`
+type IndividualThreatGraphRequest struct {
+	GraphType string   `json:"graph_type" validate:"required,oneof=most_vulnerable_attack_paths direct_internet_exposure indirect_internet_exposure" required:"true" enum:"most_vulnerable_attack_paths,direct_internet_exposure,indirect_internet_exposure"`
+	NodeIds   []string `json:"node_ids" required:"false"`
+	IssueType string   `json:"issue_type" validate:"required,oneof=vulnerability secret malware compliance cloud_compliance" required:"true" enum:"vulnerability,secret,malware,compliance,cloud_compliance"`
 }
 
-type VulnerabilityThreatGraph struct {
+type IndividualThreatGraph struct {
 	AttackPath      [][]string    `json:"attack_path"`
 	CveAttackVector string        `json:"cve_attack_vector"`
 	CveID           []string      `json:"cve_id"`
 	Ports           []interface{} `json:"ports"`
 }
 
-func GetVulnerabilityThreatGraph(ctx context.Context, graphType string) ([]VulnerabilityThreatGraph, error) {
-	vulnerabilityThreatGraph := []VulnerabilityThreatGraph{}
+func getNeo4jCountField(v interface{}) string {
+	switch v.(type) {
+	case model.Vulnerability:
+		return "vulnerabilities_count"
+	case model.Secret:
+		return "secrets_count"
+	case model.Malware:
+		return "malwares_count"
+	case model.Compliance:
+		return "compliances_count"
+	case model.CloudCompliance:
+		return "cloud_compliances_count"
+	}
+	return "error_thread_graph_nodes"
+}
+
+func GetIndividualThreatGraph[T reporters.Cypherable](ctx context.Context, graphType string, selected_node_ids []string) ([]IndividualThreatGraph, error) {
+	individualThreatGraph := []IndividualThreatGraph{}
 
 	driver, err := directory.Neo4jClient(ctx)
 
 	if err != nil {
-		return vulnerabilityThreatGraph, err
+		return individualThreatGraph, err
 	}
 
 	session, err := driver.Session(neo4j.AccessModeRead)
 
 	if err != nil {
-		return vulnerabilityThreatGraph, err
+		return individualThreatGraph, err
 	}
 	defer session.Close()
 
 	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(60 * time.Second))
 	if err != nil {
-		return vulnerabilityThreatGraph, err
+		return individualThreatGraph, err
 	}
 	defer tx.Close()
 
-	res, err := tx.Run(`
+	var dummy T
+	query := fmt.Sprintf(`
 		MATCH (n:Node{node_id:"in-the-internet"}) -[:CONNECTS*1..3]-> (m)
-		WITH DISTINCT m.node_id as id, m.vulnerabilities_count as count
+		WITH DISTINCT m.node_id as id, m.%s as count
 		WHERE count > 0
 		RETURN id
 		ORDER BY count DESC
 		LIMIT 5
-	`, map[string]interface{}{})
+	`, getNeo4jCountField(dummy))
+
+	log.Debug().Msgf("q: %s", query)
+
+	res, err := tx.Run(query, map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
@@ -57,27 +84,45 @@ func GetVulnerabilityThreatGraph(ctx context.Context, graphType string) ([]Vulne
 	recs, err := res.Collect()
 
 	if err != nil {
-		return vulnerabilityThreatGraph, err
+		return individualThreatGraph, err
 	}
 
 	node_ids := []string{}
-	for _, rec := range recs {
-		node_ids = append(node_ids, rec.Values[0].(string))
+	if len(selected_node_ids) == 0 {
+		for _, rec := range recs {
+			node_ids = append(node_ids, rec.Values[0].(string))
+		}
+	} else {
+		for _, rec := range recs {
+			for _, s := range selected_node_ids {
+				if s == rec.Values[0].(string) {
+					node_ids = append(node_ids, s)
+				}
+			}
+		}
 	}
 
-	res, err = tx.Run(`
+	// Early return
+	if len(node_ids) == 0 {
+		return individualThreatGraph, nil
+	}
+
+	query = fmt.Sprintf(`
 		MATCH (n)
 		WHERE (n:Node OR n:Container) AND n.node_id IN $node_ids
 		WITH n
 		CALL {
 		    WITH n
-		    MATCH (n) -[:SCANNED]- () -[:DETECTED]- (v:Vulnerability)
+		    MATCH (n) -[:SCANNED]- () -[:DETECTED]- (v:%s)
 		    WITH v limit 3
 		    RETURN v
 		    ORDER by v.exploitability_score DESC
 		}
 		RETURN n.node_id, collect(v.node_id)
-	`, map[string]interface{}{"node_ids": node_ids})
+	`, dummy.NodeType())
+
+	log.Debug().Msgf("q: %s", query)
+	res, err = tx.Run(query, map[string]interface{}{"node_ids": node_ids})
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +130,7 @@ func GetVulnerabilityThreatGraph(ctx context.Context, graphType string) ([]Vulne
 	recs, err = res.Collect()
 
 	if err != nil {
-		return vulnerabilityThreatGraph, err
+		return individualThreatGraph, err
 	}
 
 	cve_ids := map[string][]string{}
@@ -108,7 +153,7 @@ func GetVulnerabilityThreatGraph(ctx context.Context, graphType string) ([]Vulne
 	recs, err = res.Collect()
 
 	if err != nil {
-		return vulnerabilityThreatGraph, err
+		return individualThreatGraph, err
 	}
 
 	attack_paths := map[string][]string{}
@@ -133,7 +178,7 @@ func GetVulnerabilityThreatGraph(ctx context.Context, graphType string) ([]Vulne
 		for port := range ports[node_id] {
 			output_ports = append(output_ports, port)
 		}
-		vulnerabilityThreatGraph = append(vulnerabilityThreatGraph, VulnerabilityThreatGraph{
+		individualThreatGraph = append(individualThreatGraph, IndividualThreatGraph{
 			AttackPath:      [][]string{attack_paths[node_id]},
 			CveAttackVector: "network",
 			CveID:           cve_ids[node_id],
@@ -141,5 +186,5 @@ func GetVulnerabilityThreatGraph(ctx context.Context, graphType string) ([]Vulne
 		})
 	}
 
-	return vulnerabilityThreatGraph, nil
+	return individualThreatGraph, nil
 }
