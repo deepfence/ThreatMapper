@@ -44,6 +44,7 @@ const MultiSelectTemplate: StoryFn<typeof Listbox> = () => {
 
   return (
     <Listbox
+      variant="underline"
       value={selected}
       label="Select your value"
       name="multiple-select"
@@ -126,7 +127,7 @@ const SingleSelectOutlineTemplate: StoryFn<typeof Listbox> = () => {
       }}
     >
       <Listbox
-        variant="outline"
+        variant="underline"
         value={selected}
         name="single-select"
         onChange={(item) => {

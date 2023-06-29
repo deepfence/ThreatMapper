@@ -1,3 +1,5 @@
+import './../input/input.css';
+
 import { autoUpdate, flip, offset, size, useFloating } from '@floating-ui/react-dom';
 import {
   Listbox as HUIListbox,
@@ -34,11 +36,17 @@ const defaultStyle = cn(
   // disabled text color
   'disabled:text-gray-600 dark:disabled:text-gray-600',
 );
-const defaultOutlineStyle = cn(
-  'focus:visible:outline-none',
+const defaultUnderlineStyle = cn(
+  'focus-visible:outline-none',
   'bg-transparent dark:bg-transparent',
   'dark:border-transparent dark:border-b rounded-none',
   'dark:border-b-text-text-and-icon dark:disabled:border-b-gray-600',
+  // active
+  'df-input',
+  'transition-[background-size] duration-[0.2s] ease-[ease]',
+  'dark:focus:bg-[length:100%_100%] dark:focus:border-b-accent-accent dark:focus:bg-no-repeat',
+  'data-[headlessui-state=open]:dark:border-b-accent-accent',
+
   'placeholder-gray-400 disabled:placeholder-gray-500',
   'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
   // text styles
@@ -52,7 +60,7 @@ const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[7px] px-3
       default: [defaultStyle],
     },
     variant: {
-      outline: '',
+      underline: '',
       default: '',
     },
   },
@@ -61,9 +69,9 @@ const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[7px] px-3
   },
   compoundVariants: [
     {
-      variant: 'outline',
+      variant: 'underline',
       color: 'default',
-      className: defaultOutlineStyle,
+      className: defaultUnderlineStyle,
     },
   ],
 });
@@ -140,7 +148,7 @@ interface ListboxProps<TType, TActualType>
     TActualType
   > {
   color?: ColorType;
-  variant?: 'outline' | 'default';
+  variant?: 'underline' | 'default';
   children?: React.ReactNode;
   label?: string;
   clearAll?: React.ReactNode;
