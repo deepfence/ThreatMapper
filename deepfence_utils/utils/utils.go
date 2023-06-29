@@ -152,7 +152,7 @@ func IsJWTExpired(token string) bool {
 	if err != nil {
 		return true
 	}
-	return parsed.Expiration().Sub(time.Now().Add(5*time.Minute)) < 0
+	return parsed.Expiration().Before(time.Now())
 }
 
 func GetInt64ValueFromInterfaceMap(claims map[string]interface{}, key string) (int64, error) {
