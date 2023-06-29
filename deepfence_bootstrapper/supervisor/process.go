@@ -17,8 +17,9 @@ import (
 )
 
 const (
-	self_id      = "self"
-	log_root_env = "${DF_INSTALL_DIR}/var/log/deepfenced/"
+	self_id                  = "self"
+	log_root_env             = "${DF_INSTALL_DIR}/var/log/deepfenced/"
+	EXIT_CODE_BASH_NOT_FOUND = 127
 )
 
 var (
@@ -110,7 +111,7 @@ func (ph *procHandler) start() error {
 	} else {
 		stop := make(chan struct{})
 		ackstop := make(chan struct{})
-		done := make(chan struct{})
+		done := make(chan bool)
 
 		go func() {
 		loop:
@@ -129,16 +130,25 @@ func (ph *procHandler) start() error {
 				go func() {
 					err = cmd.Wait()
 					if err != nil {
+						if e, is := err.(*exec.ExitError); is {
+							if e.ExitCode() == EXIT_CODE_BASH_NOT_FOUND {
+								done <- false
+							}
+						}
 						log.Error().Msgf("Done with error: %v", err)
 					}
-					done <- struct{}{}
+					done <- true
 				}()
 
 				select {
 				case <-stop:
 					cmd.Process.Signal(syscall.SIGTERM)
 					break loop
-				case <-done:
+				case restart := <-done:
+					if !restart {
+						log.Info().Msgf("%s defenitively stopped", ph.command)
+						break loop
+					}
 					log.Info().Msgf("%s restarting...", ph.command)
 					time.Sleep(time.Second * 5)
 					cmd = exec.Command("/bin/bash", "-c", ph.command)
