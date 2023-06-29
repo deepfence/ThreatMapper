@@ -37,7 +37,7 @@ var (
 	MinNamespaceLength = 3
 	MaxNamespaceLength = 32
 	NamespaceRegex     = regexp.MustCompile(fmt.Sprintf("^[a-z][a-z0-9-]{%d,%d}$", MinNamespaceLength-1, MaxNamespaceLength-1))
-	ApiTokenRegex      = regexp.MustCompile(fmt.Sprintf("^[a-z][a-z0-9-]{%d,%d}\\|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", MinNamespaceLength-1, MaxNamespaceLength-1))
+	ApiTokenRegex      = regexp.MustCompile(fmt.Sprintf("^[a-z][a-z0-9-]{%d,%d}\\:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", MinNamespaceLength-1, MaxNamespaceLength-1))
 )
 
 func init() {
