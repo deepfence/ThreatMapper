@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
@@ -12,18 +12,24 @@ export const SearchableClusterList = ({
   defaultSelectedClusters,
   valueKey = 'nodeId',
   active,
+  triggerVariant,
 }: {
   onChange?: (value: string[]) => void;
   onClearAll?: () => void;
   defaultSelectedClusters?: string[];
   valueKey?: 'nodeId' | 'nodeName';
   active?: boolean;
+  triggerVariant?: 'select' | 'button';
 }) => {
   const [searchText, setSearchText] = useState('');
 
   const [selectedClusters, setSelectedClusters] = useState<string[]>(
     defaultSelectedClusters ?? [],
   );
+
+  const isSelectVariantType = useMemo(() => {
+    return triggerVariant === 'select';
+  }, [triggerVariant]);
 
   useEffect(() => {
     setSelectedClusters(defaultSelectedClusters ?? []);
@@ -67,7 +73,14 @@ export const SearchableClusterList = ({
           isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="clusterFilter"
-        getDisplayValue={() => 'Cluster'}
+        triggerVariant={triggerVariant || 'button'}
+        label={isSelectVariantType ? 'Cluster' : undefined}
+        getDisplayValue={() =>
+          isSelectVariantType && selectedClusters.length > 0
+            ? `${selectedClusters.length} selected`
+            : null
+        }
+        placeholder="Select cluster"
         multiple
         value={selectedClusters}
         onChange={(values) => {

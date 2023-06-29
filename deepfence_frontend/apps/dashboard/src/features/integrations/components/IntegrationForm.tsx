@@ -102,24 +102,33 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
   const [selectedStatus, setSelectedStatus] = useState([]);
 
   return (
-    <>
-      <div className="mt-10 flex gap-x-1 items-center dark:text-text-input-value ">
+    <div className="col-span-2 mt-6">
+      <div className="flex gap-x-5 items-center dark:text-text-input-value ">
         <span className="w-3 h-3">
           <CaretDown />
         </span>
         <div className="text-h5">Advanced Filter (Optional)</div>
       </div>
       <div className="grid grid-cols-2 gap-y-8 gap-x-8 pt-4">
-        <SearchableHostList scanType={API_SCAN_TYPE_MAP[notificationType]} />
+        <SearchableHostList
+          scanType={API_SCAN_TYPE_MAP[notificationType]}
+          triggerVariant="select"
+        />
 
-        <SearchableContainerList scanType={API_SCAN_TYPE_MAP[notificationType]} />
-        <SearchableImageList scanType={API_SCAN_TYPE_MAP[notificationType]} />
+        <SearchableContainerList
+          scanType={API_SCAN_TYPE_MAP[notificationType]}
+          triggerVariant="select"
+        />
+        <SearchableImageList
+          scanType={API_SCAN_TYPE_MAP[notificationType]}
+          triggerVariant="select"
+        />
 
-        <SearchableClusterList />
+        <SearchableClusterList triggerVariant="select" />
 
         {notificationType === 'Compliance' || notificationType === 'CloudCompliance' ? (
           <Listbox
-            variant="outline"
+            variant="underline"
             value={selectedStatus}
             name="statusFilter"
             onChange={(value) => {
@@ -142,7 +151,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
           notificationType as ScanTypeEnum,
         ) ? (
           <Listbox
-            variant="outline"
+            variant="underline"
             value={selectedSeverity}
             name="severityFilter"
             onChange={(value) => {
@@ -161,7 +170,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
           </Listbox>
         ) : null}
       </div>
-    </>
+    </div>
   );
 };
 
@@ -178,9 +187,9 @@ const NotificationType = () => {
   }
 
   return (
-    <div className="w-full">
+    <>
       <Listbox
-        variant="outline"
+        variant="underline"
         value={notificationType}
         name="_notificationType"
         onChange={(value) => {
@@ -229,14 +238,14 @@ const NotificationType = () => {
       !isArchivalIntegration(integrationType) ? (
         <AdvancedFilters notificationType={notificationType} />
       ) : (
-        <div className="mt-10 flex gap-x-1 items-center dark:text-text-input-value ">
+        <div className="col-span-2 mt-6 flex gap-x-1 items-center dark:text-text-input-value ">
           <span className="w-3 h-3 -rotate-90">
             <CaretDown />
           </span>
           <div className="text-h5">Advanced Filter (Optional)</div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

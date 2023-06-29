@@ -26,7 +26,7 @@ export const CommonForm = ({
   return (
     <>
       <Listbox
-        variant="outline"
+        variant="underline"
         label="Select Node Type"
         value={provider}
         name="nodeType"
@@ -47,7 +47,7 @@ export const CommonForm = ({
         })}
       </Listbox>
       <Listbox
-        variant="outline"
+        variant="underline"
         label="Select Severity"
         value={severity}
         name="severity[]"

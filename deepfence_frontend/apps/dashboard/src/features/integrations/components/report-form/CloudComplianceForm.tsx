@@ -17,7 +17,7 @@ export const CloudComplianceForm = ({
   return (
     <div className="flex flex-col gap-y-4">
       <Listbox
-        variant="outline"
+        variant="underline"
         label="Select Provider"
         value={provider}
         name="nodeType"
@@ -38,7 +38,7 @@ export const CloudComplianceForm = ({
       {provider && (
         <>
           <Listbox
-            variant="outline"
+            variant="underline"
             value={benchmarkType}
             name="severity[]"
             onChange={(value) => {

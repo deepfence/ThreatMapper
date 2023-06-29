@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CircleSpinner, Combobox, ComboboxOption } from 'ui-components';
 
 import { queries } from '@/queries';
@@ -13,6 +13,7 @@ export type Props = {
   defaultSelectedImages?: string[];
   valueKey?: 'nodeId' | 'imageName';
   active?: boolean;
+  triggerVariant?: 'select' | 'button';
 };
 
 const PAGE_SIZE = 15;
@@ -23,12 +24,17 @@ export const SearchableImageList = ({
   defaultSelectedImages,
   valueKey = 'nodeId',
   active,
+  triggerVariant,
 }: Props) => {
   const [searchText, setSearchText] = useState('');
 
   const [selectedImages, setSelectedImages] = useState<string[]>(
     defaultSelectedImages ?? [],
   );
+
+  const isSelectVariantType = useMemo(() => {
+    return triggerVariant === 'select';
+  }, [triggerVariant]);
 
   useEffect(() => {
     setSelectedImages(defaultSelectedImages ?? []);
@@ -73,7 +79,14 @@ export const SearchableImageList = ({
           isFetching ? <CircleSpinner size="sm" className="w-3 h-3" /> : undefined
         }
         name="imageFilter"
-        getDisplayValue={() => 'Container Image'}
+        triggerVariant={triggerVariant || 'button'}
+        label={isSelectVariantType ? 'Host' : undefined}
+        getDisplayValue={() =>
+          isSelectVariantType && selectedImages.length > 0
+            ? `${selectedImages.length} selected`
+            : null
+        }
+        placeholder="Select container image"
         multiple
         value={selectedImages}
         onChange={(values) => {
