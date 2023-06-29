@@ -1,5 +1,19 @@
 #!/bin/bash
 
+if [[ "$DF_CLUSTER_AGENT" == "true" ]]; then
+    /home/deepfence/deepfence_exe \
+        --mode=probe \
+        --probe.kubernetes.role=cluster \
+        --probe.log.level="$PROBE_LOG_LEVEL" \
+        --probe.docker=false \
+        --probe.spy.interval=5s \
+        --probe.publish.interval=10s \
+        --probe.insecure=true \
+        --probe.token="$DEEPFENCE_KEY" \
+        "https://$MGMT_CONSOLE_URL:$MGMT_CONSOLE_PORT"
+    exit 0
+fi
+
 HOSTNAME=${SCOPE_HOSTNAME:-$(hostname)}
 PROBE_PROCESSES=${DF_ENABLE_PROCESS_REPORT:-"true"}
 PROBE_CONNECTIONS=${DF_ENABLE_CONNECTIONS_REPORT:-"true"}
