@@ -1,7 +1,6 @@
 package supervisor
 
 import (
-	"bufio"
 	"errors"
 	"io"
 	"net/http"
@@ -75,37 +74,13 @@ func NewProcHandler(name, path, command, env string, autorestart bool, cgroup st
 }
 
 func startLogging(name string, cmd *exec.Cmd) {
-	outReader, err := cmd.StdoutPipe()
-	if err != nil {
-		log.Error().Msgf("Cannot start logging: %v", err)
-		return
-	}
-	errReader, err := cmd.StderrPipe()
-	if err != nil {
-		log.Error().Msgf("Cannot start logging: %v", err)
-		return
-	}
-	cmdReader := io.MultiReader(outReader, errReader)
 	f, err := os.Create(log_root + name)
 	if err != nil {
 		log.Error().Msgf("Cannot start logging: %v", err)
 		return
 	}
-	go func() {
-		defer f.Close()
-		for {
-			scanner := bufio.NewScanner(cmdReader)
-			for scanner.Scan() {
-				m := scanner.Bytes()
-				_, err := f.Write(m)
-				if err != nil {
-					log.Error().Msgf("Error while logging: %v", err)
-					continue
-				}
-				f.Write([]byte{'\n'})
-			}
-		}
-	}()
+	cmd.Stdout = f
+	cmd.Stderr = f
 }
 
 func (ph *procHandler) start() error {
