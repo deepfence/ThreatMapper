@@ -44,6 +44,7 @@ const MultiSelectTemplate: StoryFn<typeof Listbox> = () => {
 
   return (
     <Listbox
+      variant="underline"
       value={selected}
       label="Select your value"
       name="multiple-select"
