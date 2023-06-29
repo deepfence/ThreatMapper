@@ -130,6 +130,11 @@ func (h *Handler) AuditUserActivity(
 		CreatedAt: time.Now(),
 	}
 
+	if namespace == "" {
+		log.Error().Msgf("namespace unknown in audit log: %v", params)
+		return
+	}
+
 	go h.AddAuditLog(namespace, params)
 }
 

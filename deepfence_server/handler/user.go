@@ -151,7 +151,8 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, createdUser, true)
+	user.Password = ""
+	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, user, true)
 	httpext.JSON(w, http.StatusOK, model.LoginResponse{
 		ResponseAccessToken: *accessTokenResponse,
 		OnboardingRequired:  model.IsOnboardingRequired(ctx),
@@ -237,8 +238,8 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdUser.PasswordHash = ""
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, createdUser, true)
+	user.Password = ""
+	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, user, true)
 
 	httpext.JSON(w, http.StatusOK, model.LoginResponse{
 		ResponseAccessToken: *accessTokenResponse,
@@ -448,6 +449,7 @@ func (h *Handler) updateUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 	if toLogout {
 		LogoutHandler(ctx)
 	}
+	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_UPDATE, user, true)
 	httpext.JSON(w, http.StatusOK, user)
 }
@@ -520,7 +522,7 @@ func (h *Handler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 		respondError(err, w)
 		return
 	}
-
+	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_RESET_PASSWORD, user, true)
 
 	w.WriteHeader(http.StatusNoContent)
@@ -545,6 +547,7 @@ func (h *Handler) deleteUserHandler(w http.ResponseWriter, r *http.Request, ctx 
 		LogoutHandler(ctx)
 	}
 
+	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_DELETE, user, true)
 
 	w.WriteHeader(http.StatusNoContent)
@@ -695,6 +698,7 @@ func (h *Handler) ResetPasswordVerification(w http.ResponseWriter, r *http.Reque
 		respondError(err, w)
 		return
 	}
+	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_VERIFY_PASSWORD, user, true)
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -779,6 +783,7 @@ func (h *Handler) ResetApiToken(w http.ResponseWriter, r *http.Request) {
 			CreatedAt:       apiToken.CreatedAt,
 		}
 	}
+	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_VERIFY_PASSWORD, user, true)
 	httpext.JSON(w, http.StatusOK, apiTokenResponse)
 }

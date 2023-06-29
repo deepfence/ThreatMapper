@@ -48,6 +48,7 @@ func (h *Handler) ApiAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_TOKEN_AUTH, user, true)
 
 	httpext.JSON(w, http.StatusOK, accessTokenResponse)
@@ -147,6 +148,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	u.Password = ""
 	h.AuditUserActivity(r, EVENT_AUTH, ACTION_LOGIN, u, true)
 
 	httpext.JSON(w, http.StatusOK, model.LoginResponse{
