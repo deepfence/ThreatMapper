@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -492,6 +493,29 @@ func (h *Handler) DeleteRegistry(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 
+}
+
+func (h *Handler) RefreshRegistry(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "registry_id")
+
+	pgIds, err := model.GetRegistryPgIds(r.Context(), id)
+	if err != nil {
+		log.Error().Msgf("%v", err)
+		respondError(&NotFoundError{err}, w)
+		return
+	}
+	syncErrs := []string{}
+	for _, p := range pgIds {
+		if err := h.SyncRegistry(r.Context(), int32(p)); err != nil {
+			syncErrs = append(syncErrs, err.Error())
+		}
+	}
+	if len(syncErrs) > 0 {
+		httpext.JSON(w, http.StatusInternalServerError,
+			model.MessageResponse{Message: strings.Join(syncErrs, ",")})
+	}
+	httpext.JSON(w, http.StatusOK,
+		model.MessageResponse{Message: "started sync registry"})
 }
 
 func (h *Handler) getImages(w http.ResponseWriter, r *http.Request) ([]model.ContainerImage, error) {

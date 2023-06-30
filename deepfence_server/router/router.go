@@ -413,6 +413,7 @@ func SetupRoutes(r *chi.Mux, serverPort string, jwtSecret []byte, serveOpenapiDo
 					r.Put("/", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.UpdateRegistry))
 					r.Delete("/", dfHandler.AuthHandler(ResourceRegistry, PermissionDelete, dfHandler.DeleteRegistry))
 					r.Get("/summary", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.RegistrySummary))
+					r.Post("/sync", dfHandler.AuthHandler(ResourceRegistry, PermissionWrite, dfHandler.RefreshRegistry))
 				})
 				r.Post("/images", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImages))
 				r.Post("/stubs", dfHandler.AuthHandler(ResourceRegistry, PermissionRead, dfHandler.ListImageStubs))
