@@ -30,7 +30,7 @@ export type SecretScanConfigureFormProps = {
         nodeType: SecretScanNodeTypeEnum.image;
       };
   onSuccess: (data?: { nodeType: string; bulkScanId: string }) => void;
-  onCancel: () => void;
+  onCancel?: () => void;
 };
 
 type ScanActionReturnType = {
@@ -208,7 +208,7 @@ export const SecretScanConfigureForm = ({
         <Button disabled={state !== 'idle'} loading={state !== 'idle'} type="submit">
           Start Scan
         </Button>
-        <Button type="button" variant="outline" onClick={() => onCancel()}>
+        <Button type="button" variant="outline" onClick={() => onCancel?.()}>
           Cancel
         </Button>
       </div>

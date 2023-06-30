@@ -39,7 +39,7 @@ export type ComplianceScanConfigureFormProps = {
     nodeType: ComplianceScanNodeTypeEnum;
   };
   onSuccess: (data?: { nodeType: string; bulkScanId: string }) => void;
-  onCancel: () => void;
+  onCancel?: () => void;
 };
 
 export type ScanActionReturnType = {
@@ -461,7 +461,7 @@ export const ComplianceScanConfigureForm = ({
           >
             Start Scan
           </Button>
-          <Button type="button" variant="outline" onClick={() => onCancel()}>
+          <Button type="button" variant="outline" onClick={() => onCancel?.()}>
             Cancel
           </Button>
         </div>

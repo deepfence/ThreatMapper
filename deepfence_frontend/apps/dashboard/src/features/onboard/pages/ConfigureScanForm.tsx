@@ -117,6 +117,7 @@ const ScanConfigureForm = () => {
                 );
               }
             }}
+            onCancel={() => goBack()}
           />
         )}
         {scanType === ScanTypeEnum.SecretScan && (
@@ -142,6 +143,7 @@ const ScanConfigureForm = () => {
                 );
               }
             }}
+            onCancel={() => goBack()}
           />
         )}
         {scanType === ScanTypeEnum.MalwareScan && (
@@ -167,6 +169,7 @@ const ScanConfigureForm = () => {
                 );
               }
             }}
+            onCancel={() => goBack()}
           />
         )}
         {(scanType === ScanTypeEnum.ComplianceScan ||
@@ -192,6 +195,7 @@ const ScanConfigureForm = () => {
                 );
               }
             }}
+            onCancel={() => goBack()}
           />
         )}
       </Card>
