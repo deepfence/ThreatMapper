@@ -848,4 +848,82 @@ export const searchQueries = createQueryKeys('search', {
       },
     };
   },
+  cloudResourcesWithPagination: (filters: {
+    nodeType: string;
+    page: number;
+    pageSize: number;
+    cloudRegion: string;
+    order?: {
+      sortBy: string;
+      descending: boolean;
+    };
+  }) => {
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const { nodeType, page, pageSize, cloudRegion, order } = filters;
+        const searchSearchNodeReq: SearchSearchNodeReq = {
+          node_filter: {
+            filters: {
+              compare_filter: [],
+              match_filter: {
+                filter_in: {
+                  resource_id: [nodeType], // node type filter works with resource_id key somehow
+                  cloud_region: [cloudRegion],
+                },
+              },
+              contains_filter: { filter_in: {} },
+              order_filter: { order_fields: [] },
+            },
+            in_field_filter: [],
+            window: {
+              offset: 0,
+              size: 0,
+            },
+          },
+          window: { offset: page * pageSize, size: pageSize },
+        };
+
+        if (order) {
+          searchSearchNodeReq.node_filter.filters.order_filter.order_fields?.push({
+            field_name: order.sortBy,
+            descending: order.descending,
+          });
+        }
+
+        const searchCloudResourcesApi = apiWrapper({
+          fn: getSearchApiClient().searchCloudResources,
+        });
+        const resourcesResults = await searchCloudResourcesApi({
+          searchSearchNodeReq,
+        });
+        if (!resourcesResults.ok) {
+          throw new Error(`Failed to load cloud resoures : ${nodeType}`);
+        }
+
+        const searchCloudResourcesCountApi = apiWrapper({
+          fn: getSearchApiClient().searchCloudResourcesCount,
+        });
+        const resourcesCountResults = await searchCloudResourcesCountApi({
+          searchSearchNodeReq: {
+            ...searchSearchNodeReq,
+            window: {
+              ...searchSearchNodeReq.window,
+              size: 10 * searchSearchNodeReq.window.size,
+            },
+          },
+        });
+
+        if (!resourcesCountResults.ok) {
+          throw new Error(`Failed to load cloud resoures count : ${nodeType}`);
+        }
+
+        return {
+          resources: resourcesResults.value,
+          currentPage: page,
+          totalRows: page * pageSize + resourcesCountResults.value.count,
+        };
+      },
+    };
+  },
 });

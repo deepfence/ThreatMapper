@@ -958,4 +958,44 @@ export const secretQueries = createQueryKeys('secret', {
       },
     };
   },
+  scanResultSummaryCounts: (filters: { scanId: string }) => {
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const { scanId } = filters;
+        const resultSecretScanApi = apiWrapper({
+          fn: getSecretApiClient().resultSecretScan,
+        });
+        const secretScanResults = await resultSecretScanApi({
+          modelScanResultsReq: {
+            scan_id: scanId,
+            window: {
+              offset: 0,
+              size: 1,
+            },
+            fields_filter: {
+              contains_filter: {
+                filter_in: {},
+              },
+              match_filter: {
+                filter_in: {},
+              },
+              order_filter: { order_fields: [] },
+              compare_filter: null,
+            },
+          },
+        });
+
+        if (!secretScanResults.ok) {
+          console.error(secretScanResults);
+          throw new Error("Couldn't get secret scan results");
+        }
+        return {
+          scanId,
+          timestamp: secretScanResults.value.created_at,
+          counts: secretScanResults.value.severity_counts ?? {},
+        };
+      },
+    };
+  },
 });
