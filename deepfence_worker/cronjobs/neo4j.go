@@ -504,6 +504,8 @@ func LinkNodes(msg *message.Message) error {
 	if _, err = session.Run(`
 		MATCH (n:Node)
 		WHERE not (n) <-[:HOSTS]- (:CloudRegion)
+		AND NOT n.cloud_provider IS NULL
+		AND NOT n.cloud_region IS NULL
 		WITH n LIMIT 50000
 		MERGE (cp:CloudProvider{node_id: n.cloud_provider})
 		MERGE (cr:CloudRegion{node_id: n.cloud_region})
@@ -517,6 +519,7 @@ func LinkNodes(msg *message.Message) error {
 	if _, err := session.Run(`
 		MATCH (n:KubernetesCluster)
 		WHERE not (n) <-[:HOSTS]- (:CloudProvider)
+		AND NOT n.cloud_provider IS NULL
 		MERGE (cp:CloudProvider{node_id:n.cloud_provider})
 		MERGE (cp) -[:HOSTS]-> (n)
 		SET cp.active = true, cp.pseudo = false`,
