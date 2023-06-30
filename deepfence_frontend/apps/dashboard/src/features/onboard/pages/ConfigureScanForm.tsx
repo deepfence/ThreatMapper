@@ -69,11 +69,11 @@ const ScanConfigureForm = () => {
 
   let title = '';
   if (scanType === ScanTypeEnum.VulnerabilityScan) {
-    title = 'Vulnerability';
+    title = 'vulnerability';
   } else if (scanType === ScanTypeEnum.SecretScan) {
-    title = 'Secret';
+    title = 'secret';
   } else if (scanType === ScanTypeEnum.MalwareScan) {
-    title = 'Malware';
+    title = 'malware';
   } else if (
     scanType === ScanTypeEnum.ComplianceScan ||
     scanType === ScanTypeEnum.CloudComplianceScan
@@ -84,7 +84,7 @@ const ScanConfigureForm = () => {
   return (
     <>
       <ConnectorHeader
-        title={`Configure ${title} Scan`}
+        title={`New ${title} scan`}
         description="Choose from the below options to perform your first scan."
         endComponent={
           <SelectedAccountComponent
@@ -197,8 +197,8 @@ const ScanConfigureForm = () => {
       </Card>
 
       <div className="flex">
-        <Button onClick={goBack} size="xs" className="mt-12" type="button">
-          Go Back
+        <Button onClick={goBack} className="mt-12" type="button" variant="outline">
+          Cancel
         </Button>
       </div>
     </>

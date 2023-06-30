@@ -1,18 +1,23 @@
-import { filter, find } from 'lodash-es';
-import { useEffect, useState } from 'react';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense, useEffect, useState } from 'react';
 import { memo, useMemo } from 'react';
-import { ActionFunctionArgs, generatePath, useFetcher } from 'react-router-dom';
+import {
+  ActionFunctionArgs,
+  FetcherWithComponents,
+  generatePath,
+  useFetcher,
+} from 'react-router-dom';
 import { toast } from 'sonner';
-import { Button, Checkbox, TableSkeleton, Tabs } from 'ui-components';
+import { cn } from 'tailwind-preset';
+import { Button, TableSkeleton, Tabs } from 'ui-components';
 import { CircleSpinner, createColumnHelper, Switch, Table } from 'ui-components';
 
 import { getComplianceApiClient } from '@/api/api';
 import { ModelNodeIdentifierNodeTypeEnum } from '@/api/generated';
 import { ModelCloudNodeComplianceControl } from '@/api/generated/models/ModelCloudNodeComplianceControl';
-import {
-  ActionEnumType,
-  useGetControlsList,
-} from '@/features/postures/data-component/listControlsApiLoader';
+import { TruncatedText } from '@/components/TruncatedText';
+import { ActionEnumType } from '@/features/postures/data-component/toggleControlApiAction';
+import { queries } from '@/queries';
 import { ComplianceScanNodeTypeEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 
@@ -34,6 +39,7 @@ export type ComplianceScanConfigureFormProps = {
     nodeType: ComplianceScanNodeTypeEnum;
   };
   onSuccess: (data?: { nodeType: string; bulkScanId: string }) => void;
+  onCancel: () => void;
 };
 
 export type ScanActionReturnType = {
@@ -120,8 +126,50 @@ export const scanPostureApiAction = async ({
   };
 };
 
-const hasTypeSelected = (prevTabs: TabsType[], value: string) => {
-  return find(prevTabs, ['value', value]);
+const toggleControls = ({
+  nodeId,
+  checked,
+  controlIds,
+  fetcher,
+  checkType,
+  nodeType,
+}: {
+  nodeId: string;
+  checked: boolean;
+  controlIds: string[] | undefined;
+  fetcher: FetcherWithComponents<any>;
+  checkType: string;
+  nodeType: string;
+}) => {
+  if (!controlIds) {
+    throw new Error('Control ids cannot be empty');
+  }
+  const formData = new FormData();
+  formData.append('nodeId', nodeId);
+  formData.append(
+    'actionType',
+    !checked ? ActionEnumType.DISABLE : ActionEnumType.ENABLE,
+  );
+  formData.append('enabled', checked.toString());
+  controlIds.forEach((item) => formData.append('controlIds[]', item));
+  fetcher.submit(formData, {
+    method: 'post',
+    action: generatePath('/data-component/list/controls/:nodeType/:checkType', {
+      checkType,
+      nodeType,
+    }),
+  });
+};
+const useGetControls = ({
+  checkType,
+  nodeType,
+}: {
+  checkType: string;
+  nodeType: string;
+}) => {
+  return useSuspenseQuery({
+    ...queries.posture.listControls({ checkType, nodeType }),
+  });
 };
 
 const ToggleControl = ({
@@ -131,15 +179,16 @@ const ToggleControl = ({
   nodeType,
   checkType,
   loading,
+  fetcher,
 }: {
   checked: boolean;
-  controlId: string;
+  controlId: string[];
   nodeId: string;
   nodeType: string;
   checkType: string;
   loading: boolean;
+  fetcher: FetcherWithComponents<any>;
 }) => {
-  const fetcher = useFetcher();
   if (loading) {
     return <CircleSpinner size="sm" />;
   }
@@ -148,23 +197,106 @@ const ToggleControl = ({
     <>
       <Switch
         checked={checked}
-        size="sm"
         onCheckedChange={(checked) => {
-          const formData = new FormData();
-          formData.append('nodeId', nodeId);
-          formData.append(
-            'actionType',
-            !checked ? ActionEnumType.DISABLE : ActionEnumType.ENABLE,
-          );
-          formData.append('enabled', checked.toString());
-          formData.append('controlId', controlId ?? '');
-          fetcher.submit(formData, {
-            method: 'post',
-            action: generatePath('/data-component/list/controls/:nodeType/:checkType', {
-              checkType,
-              nodeType,
-            }),
+          toggleControls({
+            checkType,
+            checked,
+            nodeType,
+            nodeId,
+            controlIds: controlId,
+            fetcher,
           });
+        }}
+      />
+    </>
+  );
+};
+const ControlTable = ({
+  nodeType,
+  selectedTab,
+  nodeIds,
+}: {
+  nodeType: string;
+  selectedTab: string;
+  nodeIds: string[];
+}) => {
+  // TODO: remove this once we have correct type from api
+  const _nodeType = useMemo(() => {
+    switch (nodeType) {
+      case ComplianceScanNodeTypeEnum.host:
+        return 'linux';
+      case ComplianceScanNodeTypeEnum.kubernetes_cluster:
+        return 'kubernetes';
+      default:
+        return nodeType;
+    }
+  }, [nodeType]);
+  const fetcher = useFetcher();
+  const [pageSize, setPageSize] = useState(10);
+  const { data, status } = useGetControls({
+    checkType: selectedTab === 'SOC2' ? 'soc_2' : selectedTab.toLowerCase(),
+    nodeType: _nodeType,
+  });
+  const isLoading = status !== 'success';
+  const columnHelper = createColumnHelper<ModelCloudNodeComplianceControl>();
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor('enabled', {
+        enableSorting: false,
+        header: () => null,
+        cell: (info) => {
+          return (
+            <ToggleControl
+              nodeId={nodeIds[0]}
+              nodeType={_nodeType}
+              loading={isLoading}
+              checkType={selectedTab.toLowerCase()}
+              checked={!!info.row.original.enabled}
+              controlId={
+                info.row.original?.control_id ? [info.row.original.control_id] : ['']
+              }
+              fetcher={fetcher}
+            />
+          );
+        },
+        maxSize: 40,
+        size: 50,
+        minSize: 60,
+      }),
+      columnHelper.accessor('category_hierarchy', {
+        id: 'category',
+        cell: (info) => <TruncatedText text={info.getValue()?.join(', ') ?? ''} />,
+        header: () => <span>Category</span>,
+        maxSize: 100,
+        size: 120,
+        minSize: 130,
+      }),
+      columnHelper.accessor('title', {
+        header: () => 'Description',
+        cell: (info) => <TruncatedText text={info.getValue() ?? ''} />,
+        maxSize: 140,
+        size: 150,
+        minSize: 160,
+      }),
+    ],
+    [selectedTab],
+  );
+  return (
+    <>
+      {data.message ? (
+        <p className="dark:text-status-error text-p7 p-3">{data.message}</p>
+      ) : null}
+      <Table
+        size="compact"
+        data={data.controls}
+        columns={columns}
+        enablePagination
+        enableColumnResizing
+        enableSorting
+        enablePageResize
+        pageSize={pageSize}
+        onPageResize={(newSize) => {
+          setPageSize(newSize);
         }}
       />
     </>
@@ -174,131 +306,84 @@ export const ControlsTable = memo(
   ({
     nodeIds,
     nodeType,
-    tabs = [],
-    defaultTab,
+    setSelectedCheckTypes,
+    selectedCheckTypes,
   }: {
     nodeIds: string[];
     nodeType: string;
-    tabs: TabsType[];
-    defaultTab: string;
+    selectedCheckTypes: string[];
+    setSelectedCheckTypes: React.Dispatch<React.SetStateAction<string[]>>;
   }) => {
-    const [selectedTab, setSelectedTab] = useState(defaultTab);
-
-    const {
-      controls: controlsList,
-      status,
-      load: fetchControls,
-      message,
-    } = useGetControlsList();
-    const isLoading = status === 'loading';
-
-    const columnHelper = createColumnHelper<ModelCloudNodeComplianceControl>();
-
-    // TODO: remove this once we have correct type from api
-    const _nodeType = useMemo(() => {
-      switch (nodeType) {
-        case ComplianceScanNodeTypeEnum.host:
-          return 'linux';
-        case ComplianceScanNodeTypeEnum.kubernetes_cluster:
-          return 'kubernetes';
-        default:
-          return nodeType;
-      }
+    const tabs = useMemo<TabsType[] | []>(() => {
+      return complianceType[nodeType as keyof typeof complianceType]?.map((value) => {
+        return {
+          label: value,
+          value: value,
+        };
+      });
     }, [nodeType]);
+    const [selectedTab, setSelectedTab] = useState(tabs[0].value);
 
-    const columns = useMemo(
-      () => [
-        columnHelper.accessor('category_hierarchy', {
-          id: 'category',
-          cell: (info) => info.getValue()?.toString(),
-          header: () => <span>Category</span>,
-          maxSize: 100,
-          size: 120,
-          minSize: 130,
-        }),
-        columnHelper.accessor('title', {
-          header: () => 'Description',
-          cell: (info) => info.renderValue(),
-          maxSize: 140,
-          size: 150,
-          minSize: 160,
-        }),
-        columnHelper.accessor('enabled', {
-          enableSorting: false,
-          header: () => 'Status',
-          cell: (info) => {
-            return (
-              <ToggleControl
-                nodeId={nodeIds[0]}
-                nodeType={_nodeType}
-                loading={isLoading}
-                checkType={selectedTab.toLowerCase()}
-                checked={!!info.row.original.enabled}
-                controlId={info.row.original.control_id ?? ''}
-              />
-            );
-          },
-          maxSize: 40,
-          size: 50,
-          minSize: 60,
-        }),
-      ],
-      [selectedTab],
-    );
-
-    useEffect(() => {
-      if (defaultTab) {
-        setSelectedTab(defaultTab);
-      }
-    }, [defaultTab]);
-
-    useEffect(() => {
-      if (selectedTab) {
-        const benchmarkType =
-          selectedTab === 'SOC2' ? 'soc_2' : selectedTab.toLowerCase();
-        fetchControls(benchmarkType, _nodeType);
-      }
-    }, [selectedTab]);
+    const isCheckTypeEnabled = useMemo(() => {
+      return selectedCheckTypes.includes(selectedTab);
+    }, [selectedTab, selectedCheckTypes]);
 
     return (
-      <div className={'text-sm font-medium mt-4 dark:text-white'}>
-        {selectedTab === '' ? (
-          <p>Please select at least one compliance type to start your scan.</p>
-        ) : (
-          <>
-            {nodeIds.length === 1 ? (
-              <Tabs
-                value={selectedTab}
-                tabs={tabs}
-                onValueChange={(v) => setSelectedTab(v)}
-              >
-                {isLoading && controlsList.length === 0 ? (
-                  <TableSkeleton
-                    columns={3}
-                    rows={10}
-                    size={'md'}
-                    className={'w-screen'}
+      <div>
+        <>
+          {nodeIds.length === 1 ? (
+            <Tabs
+              value={selectedTab}
+              tabs={tabs}
+              onValueChange={(v) => setSelectedTab(v)}
+            >
+              <>
+                <div className="mt-4">
+                  <Switch
+                    checked={isCheckTypeEnabled}
+                    onCheckedChange={(checked: boolean) => {
+                      if (checked) {
+                        selectedCheckTypes.push(selectedTab);
+                        setSelectedCheckTypes([...selectedCheckTypes]);
+                      } else {
+                        const types = selectedCheckTypes.filter((checkType) => {
+                          return checkType !== selectedTab;
+                        });
+                        setSelectedCheckTypes(types);
+                      }
+                    }}
+                    label={`Enable ${selectedTab}`}
                   />
-                ) : (
-                  <>
-                    {message ? (
-                      <p className="text-red-500 text-sm py-3">{message}</p>
-                    ) : (
-                      <Table
-                        size="sm"
-                        data={controlsList}
-                        columns={columns}
-                        enablePagination
-                        enableColumnResizing
-                        enableSorting
+                </div>
+                <div
+                  className={cn('relative mt-4', {
+                    'pointer-events-none': !isCheckTypeEnabled,
+                  })}
+                >
+                  <Suspense
+                    fallback={
+                      <TableSkeleton
+                        columns={3}
+                        rows={10}
+                        size={'compact'}
+                        className="mt-4"
                       />
-                    )}
-                  </>
-                )}
-              </Tabs>
-            ) : null}
-          </>
-        )}
+                    }
+                  >
+                    <ControlTable
+                      nodeType={nodeType}
+                      nodeIds={nodeIds}
+                      selectedTab={selectedTab}
+                    />
+                    {!isCheckTypeEnabled ? (
+                      <div className="inset-0 dark:bg-bg-left-nav/70 absolute pointer-events-none"></div>
+                    ) : null}
+                  </Suspense>
+                </div>
+              </>
+            </Tabs>
+          ) : null}
+        </>
       </div>
     );
   },
@@ -308,29 +393,16 @@ export const ComplianceScanConfigureForm = ({
   showAdvancedOptions,
   onSuccess,
   data,
+  onCancel,
 }: ComplianceScanConfigureFormProps) => {
   const fetcher = useFetcher();
   const { nodeType, nodeIds } = data;
   const { state, data: fetcherData } = fetcher;
-  const [tabs, setTabs] = useState<TabsType[] | []>(() => {
-    return complianceType[nodeType].map((value) => {
-      return {
-        label: value,
-        value: value,
-      };
+  const [selectedCheckTypes, setSelectedCheckTypes] = useState<string[]>(() => {
+    return complianceType[nodeType as keyof typeof complianceType]?.map((value) => {
+      return value;
     });
   });
-  console.log(tabs);
-  const [defaultTab, setDefaultTab] = useState('');
-
-  useEffect(() => {
-    // set selected tab by last checktype
-    if (tabs.length > 0) {
-      setDefaultTab(tabs[tabs.length - 1].value);
-    } else {
-      setDefaultTab('');
-    }
-  }, [tabs]);
 
   useEffect(() => {
     let data = undefined;
@@ -342,29 +414,10 @@ export const ComplianceScanConfigureForm = ({
     }
   }, [fetcherData, state]);
 
-  const onCheckTypeSelection = (name: string) => {
-    setTabs((prevTabs) => {
-      const found = hasTypeSelected(prevTabs, name);
-      if (found) {
-        const newType = filter(prevTabs, (tab: TabsType) => tab.value !== found.value);
-        return [...newType];
-      } else {
-        const newType = [
-          ...prevTabs,
-          {
-            label: name,
-            value: name,
-          },
-        ];
-        return newType;
-      }
-    });
-  };
-
   return (
     <>
       <fetcher.Form
-        className="flex gap-4"
+        className="flex flex-col -pt-4"
         method="post"
         action="/data-component/scan/posture"
       >
@@ -373,45 +426,46 @@ export const ComplianceScanConfigureForm = ({
           name="_checkTypes"
           readOnly
           hidden
-          value={tabs.map((tab) => tab.value)}
+          value={selectedCheckTypes}
         />
-        {complianceType[nodeType]?.map((type: string) => (
-          <Checkbox
-            label={type}
-            key={type}
-            checked={tabs.find((tab) => tab.value === type) !== undefined}
-            value={type}
-            onCheckedChange={() => {
-              onCheckTypeSelection(type);
-            }}
-          />
-        ))}
 
         <input type="text" name="_nodeIds" hidden readOnly value={nodeIds.join(',')} />
         <input type="text" name="_nodeType" readOnly hidden value={nodeType} />
 
-        <Button
-          disabled={state !== 'idle' || !tabs.length}
-          loading={state !== 'idle'}
-          size="sm"
-          color="primary"
-          type="submit"
-          className="ml-auto "
-        >
-          Start Scan
-        </Button>
+        {fetcherData?.message && (
+          <p className="text-red-500 text-sm py-3">{fetcherData.message}</p>
+        )}
+        {showAdvancedOptions && (
+          <Suspense
+            fallback={
+              <div>
+                <div className="animate-pulse dark:bg-bg-grid-default mt-4 h-4 w-14 rounded-md"></div>
+                <TableSkeleton columns={3} rows={10} size={'compact'} className="mt-8" />
+              </div>
+            }
+          >
+            <ControlsTable
+              nodeIds={data.nodeIds}
+              nodeType={nodeType}
+              setSelectedCheckTypes={setSelectedCheckTypes}
+              selectedCheckTypes={selectedCheckTypes}
+            />
+          </Suspense>
+        )}
+        <div className="flex gap-3 mt-10">
+          <Button
+            disabled={state !== 'idle'}
+            loading={state !== 'idle'}
+            size="sm"
+            type="submit"
+          >
+            Start Scan
+          </Button>
+          <Button type="button" variant="outline" onClick={() => onCancel()}>
+            Cancel
+          </Button>
+        </div>
       </fetcher.Form>
-      {fetcherData?.message && (
-        <p className="text-red-500 text-sm py-3">{fetcherData.message}</p>
-      )}
-      {showAdvancedOptions && (
-        <ControlsTable
-          nodeIds={data.nodeIds}
-          tabs={tabs}
-          defaultTab={defaultTab}
-          nodeType={nodeType}
-        />
-      )}
     </>
   );
 };

@@ -27,7 +27,7 @@ const ModalHeader: FC<{ title?: React.ReactNode }> = ({ title }) => {
   return (
     <>
       <div
-        className={cx('pt-5', {
+        className={cx({
           'pb-[32px]': !title,
           'pb-[22px]': title,
         })}
@@ -99,8 +99,6 @@ const contentCva = cva(
       'dark:bg-bg-breadcrumb-bar',
       // text
       'text-p1 dark:text-text-text-and-icon',
-      // padding
-      'px-6',
       {
         'animate-modal-slide-in': open,
         // 'animate-pop-out': !open,

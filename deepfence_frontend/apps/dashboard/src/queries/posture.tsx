@@ -4,10 +4,12 @@ import {
   getCloudComplianceApiClient,
   getCloudNodesApiClient,
   getComplianceApiClient,
+  getControlsApiClient,
   getLookupApiClient,
   getSearchApiClient,
 } from '@/api/api';
 import {
+  ModelCloudNodeControlReqCloudProviderEnum,
   ModelNodeIdentifierNodeTypeEnum,
   ModelScanResultsReq,
   SearchSearchNodeReq,
@@ -632,6 +634,55 @@ export const postureQueries = createQueryKeys('posture', {
         return {
           data: lookupCompliancesResponse.value[0],
         };
+      },
+    };
+  },
+  listControls: (filters: { nodeType: string; checkType: string }) => {
+    const { nodeType, checkType } = filters;
+    return {
+      queryKey: [{ filters }],
+      queryFn: async () => {
+        if (!nodeType || !checkType) {
+          return {
+            controls: [],
+            message: '',
+          };
+        }
+
+        const listControlsApi = apiWrapper({
+          fn: getControlsApiClient().listControls,
+        });
+        const result = await listControlsApi({
+          modelCloudNodeControlReq: {
+            cloud_provider: nodeType as ModelCloudNodeControlReqCloudProviderEnum,
+            compliance_type: checkType,
+            node_id: '',
+          },
+        });
+        if (!result.ok) {
+          if (result.error.response.status === 400) {
+            return {
+              message: result.error.message,
+              controls: [],
+            };
+          }
+          if (result.error.response.status === 403) {
+            return {
+              message: 'You do not have enough permissions to view controls',
+              controls: [],
+            };
+          }
+          throw result.error;
+        }
+
+        if (!result.value) {
+          return {
+            message: '',
+            controls: [],
+          };
+        }
+
+        return { controls: result.value.controls ?? [], message: '' };
       },
     };
   },
