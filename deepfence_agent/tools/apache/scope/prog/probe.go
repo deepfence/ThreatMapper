@@ -6,20 +6,21 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"os/signal"
+	"runtime"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/weaveworks/scope/probe/common"
 
+	"github.com/deepfence/ThreatMapper/deepfence_utils/log"
 	dfUtils "github.com/deepfence/df-utils"
 	docker_client "github.com/fsouza/go-dockerclient"
 	"github.com/hashicorp/go-metrics"
 	metrics_prom "github.com/hashicorp/go-metrics/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
-	"github.com/weaveworks/common/logging"
-	"github.com/weaveworks/common/signals"
 	"github.com/weaveworks/common/tracing"
 	"github.com/weaveworks/scope/common/hostname"
 	"github.com/weaveworks/scope/probe"
@@ -47,9 +48,9 @@ func maybeExportProfileData(flags probeFlags) {
 		go func() {
 			http.Handle("/metrics", promhttp.Handler())
 			if os.Getenv("DEBUG") == "true" {
-				log.Infof("Profiling data being exported to %s", flags.httpListen)
-				log.Infof("go tool pprof http://%s/debug/pprof/{profile,heap,block}", flags.httpListen)
-				log.Infof("Profiling endpoint %s terminated: %v", flags.httpListen, http.ListenAndServe(flags.httpListen, nil))
+				log.Info().Msgf("Profiling data being exported to %s", flags.httpListen)
+				log.Info().Msgf("go tool pprof http://%s/debug/pprof/{profile,heap,block}", flags.httpListen)
+				log.Info().Msgf("Profiling endpoint %s terminated: %v", flags.httpListen, http.ListenAndServe(flags.httpListen, nil))
 			}
 		}()
 	}
@@ -58,11 +59,11 @@ func maybeExportProfileData(flags probeFlags) {
 func checkFlagsRequiringRoot(flags probeFlags) {
 	if os.Getegid() != 0 {
 		if flags.spyProcs {
-			log.Warn("--probe.proc.spy=true, but that requires root to find everything")
+			log.Warn().Msg("--probe.proc.spy=true, but that requires root to find everything")
 		}
 
 		if flags.trackProcDeploads {
-			log.Warn("--probe.proc.track-deploads=true, but that requires root to find everything")
+			log.Warn().Msg("--probe.proc.track-deploads=true, but that requires root to find everything")
 		}
 	}
 }
@@ -73,14 +74,14 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	setLogFormatter(flags.logPrefix)
 
 	if flags.basicAuth {
-		log.Infof("Basic authentication enabled")
+		log.Info().Msgf("Basic authentication enabled")
 	} else {
-		log.Infof("Basic authentication disabled")
+		log.Info().Msgf("Basic authentication disabled")
 	}
 
 	traceCloser, err := tracing.NewFromEnv("deepfence-discovery")
 	if err != nil {
-		log.Infof("Tracing not initialized: %s", err)
+		log.Info().Msgf("Tracing not initialized: %s", err)
 	} else {
 		defer traceCloser.Close()
 	}
@@ -99,12 +100,12 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	} else {
 		sink, err := metrics_prom.NewPrometheusSink()
 		if err != nil {
-			log.Fatalf("Failed to create Prometheus metrics sink: %v", err)
+			log.Fatal().Msgf("Failed to create Prometheus metrics sink: %v", err)
 		}
 		metrics.NewGlobal(cfg, sink)
 	}
 	logCensoredArgs()
-	defer log.Info("probe exiting")
+	defer log.Info().Msg("probe exiting")
 
 	switch flags.kubernetesRole {
 	case "": // nothing special
@@ -117,7 +118,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		flags.useConntrack = false
 		flags.useEbpfConn = false
 	default:
-		log.Warnf("unrecognized --probe.kubernetes.role: %s", flags.kubernetesRole)
+		log.Warn().Msgf("unrecognized --probe.kubernetes.role: %s", flags.kubernetesRole)
 	}
 
 	checkFlagsRequiringRoot(flags)
@@ -127,7 +128,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 		probeID  = strconv.FormatInt(rand.Int63(), 16)
 		hostName = hostname.Get()
 	)
-	log.Infof("probe starting, version %s, ID %s", version, probeID)
+	log.Info().Msgf("probe starting, version %s, ID %s", version, probeID)
 
 	if flags.kubernetesEnabled {
 		// If KUBERNETES_SERVICE_HOST env is not there, get it from kube-proxy container in this host
@@ -170,28 +171,28 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	k8sClusterId, k8sClusterName, k8sVersion, nodeRole, _ := dfUtils.GetKubernetesDetails()
 	if flags.kubernetesEnabled && flags.kubernetesRole != kubernetesRoleHost {
 		if k8sClusterId == "" {
-			log.Error("could not get kubernetes_cluster_id, retrying...")
+			log.Error().Msg("could not get kubernetes_cluster_id, retrying...")
 			time.Sleep(30 * time.Second)
 			os.Exit(1)
 		}
 	}
 	err = os.Setenv(report.KubernetesClusterId, k8sClusterId)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error().Msg(err.Error())
 	}
 
 	err = os.Setenv(report.KubernetesClusterName, k8sClusterName)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error().Msg(err.Error())
 	}
 	// Set DF_KUBERNETES_VERSION, DF_KUBERNETES_NODE_ROLE
 	err = os.Setenv("DF_KUBERNETES_VERSION", k8sVersion)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error().Msg(err.Error())
 	}
 	err = os.Setenv("DF_KUBERNETES_NODE_ROLE", nodeRole)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error().Msg(err.Error())
 	}
 
 	var clients interface {
@@ -199,9 +200,9 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 	}
 	if flags.printOnStdout {
 		if len(targets) > 0 {
-			log.Warnf("Dumping to stdout only: targets %v will be ignored", targets)
+			log.Warn().Msgf("Dumping to stdout only: targets %v will be ignored", targets)
 		}
-		log.Fatal("Print on Stdout not supported")
+		log.Fatal().Msg("Print on Stdout not supported")
 	} else {
 		var multiClients *appclient.OpenapiClient
 		for {
@@ -209,10 +210,10 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 			if err == nil {
 				break
 			} else if errors.Is(err, common.ConnError) {
-				log.Warnln("Failed to authenticate. Retrying...")
+				log.Warn().Msg("Failed to authenticate. Retrying...")
 				time.Sleep(authCheckPeriod)
 			} else {
-				log.Fatalf("Fatal: %v", err)
+				log.Fatal().Msgf("Fatal: %v", err)
 			}
 		}
 		clients = multiClients
@@ -233,12 +234,13 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 				processCache = process.NewCachingWalker(process.NewWalker(flags.procRoot, false))
 				p.AddTicker(processCache)
 				p.AddReporter(process.NewReporter(processCache, hostName, process.GetDeltaTotalJiffies, flags.noCommandLineArguments, flags.trackProcDeploads))
+				log.Debug().Msg("Attached proc report")
 			}
 
 			if flags.endpointEnabled {
 				dnsSnooper, err := endpoint.NewDNSSnooper()
 				if err != nil {
-					log.Errorf("Failed to start DNS snooper: nodes for external services will be less accurate: %s", err)
+					log.Error().Msgf("Failed to start DNS snooper: nodes for external services will be less accurate: %s", err)
 				} else {
 					defer dnsSnooper.Stop()
 				}
@@ -256,6 +258,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 				})
 				defer endpointReporter.Stop()
 				p.AddReporter(endpointReporter)
+				log.Debug().Msg("Attached endpoint report")
 			}
 
 		}
@@ -265,7 +268,7 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 			// shouldn't be scoped
 			if flags.dockerBridge != "" && !flags.kubernetesEnabled {
 				if err := report.AddLocalBridge(flags.dockerBridge); err != nil {
-					log.Errorf("Docker: problem with bridge %s: %v", flags.dockerBridge, err)
+					log.Error().Msgf("Docker: problem with bridge %s: %v", flags.dockerBridge, err)
 				}
 			}
 			options := docker.RegistryOptions{
@@ -282,17 +285,19 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 					p.AddTagger(docker.NewTagger(registry, hostName, processCache))
 				}
 				p.AddReporter(docker.NewReporter(registry, hostName, probeID, p))
+				log.Debug().Msg("Attached docker report")
 			} else {
-				log.Errorf("Docker: failed to start registry: %v", err)
+				log.Error().Msgf("Docker: failed to start registry: %v", err)
 			}
 		}
 
 		if flags.criEnabled {
 			runtimeClient, imageClient, err := cri.NewCRIClient(flags.criEndpoint)
 			if err != nil {
-				log.Errorf("CRI: failed to start registry: %v", err)
+				log.Error().Msgf("CRI: failed to start registry: %v", err)
 			} else {
 				p.AddReporter(cri.NewReporter(runtimeClient, hostName, imageClient))
+				log.Debug().Msg("Attached cri report")
 			}
 		}
 
@@ -302,26 +307,43 @@ func probeMain(flags probeFlags, targets []appclient.Target) {
 				reporter := kubernetes.NewReporter(client, probeID, hostName, p, flags.kubernetesNodeName)
 				defer reporter.Stop()
 				p.AddReporter(reporter)
+				log.Debug().Msg("Attached k8s report")
 				go client.InitCNIPlugin()
 				if flags.kubernetesRole != kubernetesRoleCluster && flags.kubernetesNodeName == "" {
-					log.Warnf("No value for --probe.kubernetes.node-name, reporting all pods from every probe (which may impact performance).")
+					log.Warn().Msg("No value for --probe.kubernetes.node-name, reporting all pods from every probe (which may impact performance).")
 				}
 			} else {
-				log.Errorf("Kubernetes: failed to start client: %v", err)
-				log.Errorf("Kubernetes: make sure to run Scope inside a POD with a service account or provide valid probe.kubernetes.* flags")
+				log.Error().Msgf("Kubernetes: failed to start client: %v", err)
+				log.Error().Msgf("Kubernetes: make sure to run Scope inside a POD with a service account or provide valid probe.kubernetes.* flags")
 			}
 		}
 
 		if flags.kubernetesEnabled {
 			p.AddTagger(&kubernetes.Tagger{})
+			log.Debug().Msg("Attached k8s tagger")
 		}
 
 		maybeExportProfileData(flags)
 	}
 
 	p.Start()
-	signals.SignalHandlerLoop(
-		logging.Logrus(log.StandardLogger()),
-		p,
-	)
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
+	defer signal.Stop(sigs)
+	for {
+		select {
+		case sig := <-sigs:
+			switch sig {
+			case syscall.SIGINT, syscall.SIGTERM:
+				log.Info().Msg("=== received SIGINT/SIGTERM ===\n*** exiting")
+				return
+			case syscall.SIGQUIT:
+				buf := make([]byte, 1<<20)
+				stacklen := runtime.Stack(buf, true)
+				log.Info().Msgf("=== received SIGQUIT ===\n*** goroutine dump...\n%s\n*** end", buf[:stacklen])
+				return
+			}
+		}
+	}
 }

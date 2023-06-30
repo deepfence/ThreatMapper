@@ -111,8 +111,10 @@ func main() {
 		if enable_cluster_discovery {
 			k8sClusterId, _, _, _, _ := dfUtils.GetKubernetesDetails()
 			err = consoleClient.StartControlsWatching(k8sClusterId, true, Version)
+			log.Info().Msgf("cluster agent mode: %s", k8sClusterId)
 		} else {
 			err = consoleClient.StartControlsWatching(hostname, false, Version)
+			log.Info().Msgf("regular agent mode: %s", hostname)
 		}
 		if err == nil {
 			break
