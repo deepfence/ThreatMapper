@@ -54,7 +54,7 @@ function getChartOptions({
         },
         cursor: 'default',
         emphasis: {
-          scale: false,
+          disabled: true,
         },
         color: [
           SEVERITY_COLORS['critical'],

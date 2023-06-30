@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { HiMinus, HiPlus } from 'react-icons/hi';
 import { useFetcher, useParams } from 'react-router-dom';
 import { useEffectOnce } from 'react-use';
 import {
@@ -13,6 +12,9 @@ import {
 
 import { DetailedNodeSummary } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
+import { MinusCircleLineIcon } from '@/components/icons/common/MinusCircleLine';
+import { PlusCircleLineIcon } from '@/components/icons/common/PlusCircleLine';
+import { TruncatedText } from '@/components/TruncatedText';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import {
   TopologyLoaderData,
@@ -27,7 +29,7 @@ import {
   NodeType,
 } from '@/features/topology/utils/topology-data';
 
-export function TopologyTable() {
+export function TopologyCloudTable() {
   const { isRefreshInProgress, treeData, action, ...graphDataManagerFunctions } =
     useTableDataManager();
   const graphDataManagerFunctionsRef = useRef(graphDataManagerFunctions);
@@ -94,7 +96,13 @@ export function TopologyTable() {
                     }
                   }}
                 >
-                  {info.row.getIsExpanded() ? <HiMinus /> : <HiPlus />}
+                  <div className="w-4 h-4 shrink-0">
+                    {info.row.getIsExpanded() ? (
+                      <MinusCircleLineIcon />
+                    ) : (
+                      <PlusCircleLineIcon />
+                    )}
+                  </div>
                 </button>
               ) : null}
               {!info.row.getCanExpand() ? <span>&nbsp;&nbsp;&nbsp;</span> : null}
@@ -113,7 +121,7 @@ export function TopologyTable() {
                   }}
                   className="flex-1 shrink-0 truncate pl-2"
                 >
-                  {info.getValue()}
+                  <TruncatedText text={info.getValue() ?? ''} />
                 </DFLink>
               ) : (
                 <span className="flex-1 shrink-0 truncate pl-2">{info.getValue()}</span>
@@ -154,13 +162,17 @@ export function TopologyTable() {
   }, [treeData]);
 
   if (isRefreshInProgress && !treeData.length) {
-    return <TableSkeleton columns={2} rows={5} size="sm" />;
+    return (
+      <div className="p-4">
+        <TableSkeleton columns={2} rows={5} size="default" />
+      </div>
+    );
   }
 
   return (
-    <>
+    <div className="p-4">
       <Table
-        size="sm"
+        size="default"
         data={treeData}
         columns={columns}
         enableSorting
@@ -187,7 +199,7 @@ export function TopologyTable() {
           }}
         />
       ) : null}
-    </>
+    </div>
   );
 }
 

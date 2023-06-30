@@ -11,8 +11,13 @@ const notFoundRoute = [
   },
 ];
 
-export const router = createBrowserRouter([
-  ...privateRoutes,
-  ...publicRoutes,
-  ...notFoundRoute,
-]);
+let router: ReturnType<typeof createBrowserRouter>;
+
+// hmr is breaking if we directly export router because of circular dependancy
+// https://github.com/vitejs/vite/issues/3033
+export function getRouter() {
+  if (!router) {
+    router = createBrowserRouter([...privateRoutes, ...publicRoutes, ...notFoundRoute]);
+  }
+  return router;
+}

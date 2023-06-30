@@ -22,10 +22,10 @@ import { createPortal } from 'react-dom';
 import { useIntersection } from 'react-use';
 import { cn } from 'tailwind-preset';
 
-import { Badge, Checkbox, CircleSpinner, Separator } from '@/main';
-import { comboboxInputCva } from '@/components/select/styles';
-import { ErrorIcon } from '@/components/input/TextInput';
 import HelperText from '@/components/input/HelperText';
+import { ErrorIcon } from '@/components/input/TextInput';
+import { comboboxInputCva } from '@/components/select/styles';
+import { Badge, Checkbox, CircleSpinner, Separator } from '@/main';
 
 const ListboxContext = createContext<{
   multiple: boolean;
