@@ -32,7 +32,18 @@ type config struct {
 	KafkaTopicPartitionsTasks int32    `default:"3" split_words:"true"`
 }
 
+// build info
+var (
+	Version   string
+	Commit    string
+	BuildTime string
+)
+
 func main() {
+
+	log.Info().Msgf("\n version: %s\n commit: %s\n build-time: %s\n",
+		Version, Commit, BuildTime)
+
 	var cfg config
 	var err error
 	var wml watermill.LoggerAdapter

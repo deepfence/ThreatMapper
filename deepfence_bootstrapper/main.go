@@ -51,6 +51,7 @@ func init() {
 }
 
 func main() {
+	log.Info().Msgf("version: %s", Version)
 	log.Info().Msg("Starting bootstrapper")
 	cfg, err := config.NewIniConfig(config_file)
 	if err != nil {

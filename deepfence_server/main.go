@@ -53,6 +53,13 @@ var (
 	enable_debug          bool
 )
 
+// build info
+var (
+	Version   string
+	Commit    string
+	BuildTime string
+)
+
 type Config struct {
 	HttpListenEndpoint     string
 	InternalListenEndpoint string
@@ -69,6 +76,9 @@ func init() {
 }
 
 func main() {
+
+	log.Info().Msgf("\n version: %s\n commit: %s\n build-time: %s\n",
+		Version, Commit, BuildTime)
 
 	if enable_debug {
 		runtime.SetBlockProfileRate(1)

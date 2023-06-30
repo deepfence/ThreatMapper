@@ -1,3 +1,7 @@
+VERSION=`git describe --tags`
+GIT_COMMIT=`git rev-parse HEAD`
+BUILD_TIME=`date --utc +%FT%TZ`
+
 all: deepfence_server
 
 local: deepfence_server
@@ -11,7 +15,7 @@ vendor: go.mod $(shell find ../deepfence_utils -name '*.go')
 	go mod vendor
 
 deepfence_server: vendor $(shell find . -name '*.go')
-	go build -buildvcs=false
+	go build -buildvcs=false -ldflags="-s -w -X main.Version=${VERSION} -X main.Commit=${GIT_COMMIT} -X main.BuildTime=${BUILD_TIME}"
 
 clean:
 	-rm deepfence_server
