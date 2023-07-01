@@ -24,7 +24,7 @@ const RegistrySkeleton = () => {
         >
           <div className="flex items-center w-full relative">
             <div className="dark:bg-bg-grid-default absolute -top-[34px] left-[12px] rounded-full">
-              <div className="w-[72px] h-[72px]"></div>
+              <div className="w-[68px] h-[68px]"></div>
             </div>
             <div className="ml-[102px]">
               <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -55,7 +55,7 @@ const CardHeader = ({ registry }: { registry: RegistryResponseType }) => {
 
   return (
     <div className="flex items-center w-full relative">
-      <div className="dark:bg-bg-grid-default absolute -top-[34px] left-[12px] rounded-full p-4">
+      <div className="dark:bg-bg-grid-default absolute -top-[34px] left-[12px] rounded-full p-3">
         <RegistryLogos
           registryType={registry.type as unknown as keyof typeof RegistryType}
         />
@@ -75,22 +75,22 @@ const Registry = ({ registry }: { registry: RegistryResponseType }) => {
       <CardHeader registry={registry} />
       <div className="flex mt-6 gap-x-[48px] justify-center items-center w-[322px]">
         <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
-          Registries
           <span className="text-h1 text-gray-900 dark:text-text-input-value">
             {abbreviateNumber(registry.registries ?? 0)}
           </span>
+          Registries
         </div>
         <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
-          Images
           <span className="text-h1 text-gray-900 dark:text-text-input-value">
             {abbreviateNumber(registry.images ?? 0)}
           </span>
+          Images
         </div>
         <div className="flex flex-col justify-center text-p4 text-gray-900 dark:text-text-text-and-icon">
-          Tags
           <span className="text-h1 text-gray-900 dark:text-text-input-value">
             {abbreviateNumber(registry.tags ?? 0)}
           </span>
+          Tags
         </div>
       </div>
     </Card>

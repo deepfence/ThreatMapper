@@ -108,7 +108,7 @@ export const RegistryImageTagsTable = ({
           }
           return (
             <ActionDropdown
-              id={cell.row.original.node_id}
+              id={cell.row.original.node_id.split('<==>')[0]}
               onTableAction={onTableAction}
               trigger={
                 <button className="p-1">
@@ -184,7 +184,7 @@ export const RegistryImageTagsTable = ({
         totalRows={data.totalRows}
         pageSize={parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE))}
         pageIndex={data.currentPage}
-        getRowId={(row) => row.node_id || ''}
+        getRowId={(row) => `${row.node_id}<==>${row.docker_image_tag}` || ''}
         onRowSelectionChange={setRowSelectionState}
         onPaginationChange={(updaterOrValue) => {
           let newPageIndex = 0;
@@ -198,6 +198,14 @@ export const RegistryImageTagsTable = ({
           }
           setSearchParams((prev) => {
             prev.set('page', String(newPageIndex));
+            return prev;
+          });
+        }}
+        enablePageResize
+        onPageResize={(newSize) => {
+          setSearchParams((prev) => {
+            prev.set('size', String(newSize));
+            prev.delete('page');
             return prev;
           });
         }}

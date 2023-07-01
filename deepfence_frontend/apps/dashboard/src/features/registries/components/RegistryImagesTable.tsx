@@ -197,6 +197,14 @@ export const RegistryImagesTable = ({
             return prev;
           });
         }}
+        enablePageResize
+        onPageResize={(newSize) => {
+          setSearchParams((prev) => {
+            prev.set('size', String(newSize));
+            prev.delete('page');
+            return prev;
+          });
+        }}
       />
     </div>
   );

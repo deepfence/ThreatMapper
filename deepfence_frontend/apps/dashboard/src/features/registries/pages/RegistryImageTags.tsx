@@ -1,5 +1,4 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { capitalize } from 'lodash-es';
 import { Suspense, useCallback, useState } from 'react';
 import { generatePath, useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -436,12 +435,8 @@ const RegistryImagesTagsResults = () => {
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [searchParams] = useSearchParams();
 
-  const params = useParams() as {
-    nodeId: string;
-  };
-
   const onTableAction = useCallback(
-    (nodeIds: string[], scanType: RegistryScanType, actionType: string) => {
+    (nodeIds: string[], scanType: RegistryScanType, _: string) => {
       setNodeIdsToScan(nodeIds);
       setSelectedScanType(scanType);
     },
@@ -451,7 +446,10 @@ const RegistryImagesTagsResults = () => {
   return (
     <div className="self-start">
       <div className="py-2 flex items-center">
-        <BulkActions ids={Object.keys(rowSelectionState)} onTableAction={onTableAction} />
+        <BulkActions
+          ids={Object.keys(rowSelectionState).map((key) => key.split('<==>')[0])}
+          onTableAction={onTableAction}
+        />
         <div className="pr-2 ml-auto flex items-center gap-1">
           <Button
             className="pr-0"
