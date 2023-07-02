@@ -83,8 +83,6 @@ import { module as scheduledJobs } from '@/features/settings/pages/ScheduledJobs
 import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
-import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
-import { module as threatGraphLoader } from '@/features/threat-graph/data-components/threatGraphLoader';
 import { module as vulnerabilityTthreatGraphLoader } from '@/features/threat-graph/data-components/vulnerabilityThreatGraphLoader';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as topologyLoader } from '@/features/topology/data-components/topologyLoader';
@@ -641,16 +639,8 @@ export const privateRoutes: CustomRouteObject[] = [
         loader: searchCloudFiltersApiLoader,
       },
       {
-        path: 'threat-graph/details-modal',
-        ...threatGraphDetailModal,
-      },
-      {
         path: 'topology',
         ...topologyLoader,
-      },
-      {
-        path: 'threat-graph',
-        ...threatGraphLoader,
       },
       {
         path: 'threat-graph-vulnerability',

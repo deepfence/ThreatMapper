@@ -1,6 +1,5 @@
-import React, { useEffect, useMemo } from 'react';
-import { LoaderFunctionArgs, useFetcher } from 'react-router-dom';
-import { twMerge } from 'tailwind-merge';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import React, { Suspense, useMemo } from 'react';
 import {
   CircleSpinner,
   SlidingModal,
@@ -9,79 +8,36 @@ import {
   SlidingModalHeader,
 } from 'ui-components';
 
-import { getLookupApiClient } from '@/api/api';
 import { GraphNodeInfo, ModelCloudResource, ModelHost } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { TruncatedText } from '@/components/TruncatedText';
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
+import { queries } from '@/queries';
 import { ScanTypeEnum } from '@/types/common';
-import { apiWrapper } from '@/utils/api';
+import { abbreviateNumber } from '@/utils/number';
 import { getScanLink } from '@/utils/scan';
 
-const loader = async ({
-  request,
-}: LoaderFunctionArgs): Promise<{
-  nodeType: string;
-  nodeData: (ModelHost | ModelCloudResource)[];
-}> => {
-  const url = new URL(request.url);
-  const nodeIds = url.searchParams.getAll('nodeIds') as string[];
-  const nodeType = url.searchParams.get('nodeType')?.toString();
-  if (!nodeType) throw new Error('No nodeType');
-  if (!nodeIds?.length) {
-    return {
-      nodeType,
-      nodeData: [],
-    };
-  }
-  if (nodeType === 'host') {
-    const lookupHostApi = apiWrapper({
-      fn: getLookupApiClient().lookupHost,
-    });
-    const hostLookupResult = await lookupHostApi({
-      lookupLookupFilter: {
-        in_field_filter: [],
-        node_ids: nodeIds,
-        window: {
-          offset: 0,
-          size: nodeIds.length,
-        },
-      },
-    });
+function useLookupResources(
+  nodeType: string,
+  nodeIds: string[],
+): (ModelHost | ModelCloudResource)[] | undefined {
+  const hostQuery = useSuspenseQuery({
+    ...queries.lookup.host({ nodeIds }),
+    enabled: nodeType === 'host',
+  });
 
-    if (!hostLookupResult.ok) {
-      throw new Error('Error getting hostLookupResult');
-    }
-    return {
-      nodeType,
-      nodeData: hostLookupResult.value,
-    };
-  } else {
-    const lookupCloudResourcesApi = apiWrapper({
-      fn: getLookupApiClient().lookupCloudResources,
-    });
-    const cloudResourceLookup = await lookupCloudResourcesApi({
-      lookupLookupFilter: {
-        in_field_filter: [],
-        node_ids: nodeIds,
-        window: {
-          offset: 0,
-          size: nodeIds.length,
-        },
-      },
-    });
-    if (!cloudResourceLookup.ok) {
-      throw new Error('Error getting cloudResourceLookup');
-    }
-    return {
-      nodeType,
-      nodeData: cloudResourceLookup.value,
-    };
-  }
-};
+  const cloudResourcesQuery = useSuspenseQuery({
+    ...queries.lookup.cloudResources({ nodeIds }),
+    enabled: nodeType !== 'host',
+  });
+
+  if (nodeType === 'host') return hostQuery.data?.hostData;
+  return cloudResourcesQuery.data?.cloudResourcesData;
+}
 
 export interface DetailsModalProps {
   open: boolean;
@@ -98,113 +54,29 @@ export const DetailsModal = ({
   label,
   nodeType,
 }: DetailsModalProps) => {
-  const fetcher = useFetcher<Awaited<ReturnType<typeof loader>>>();
-
-  useEffect(() => {
-    if (!nodes) return;
-    if (!Object.keys(nodes).length) return;
-    const searchParams = new URLSearchParams();
-    Object.keys(nodes).forEach((nodeId) => {
-      searchParams.append('nodeIds', nodeId);
-    });
-    searchParams.append('nodeType', nodeType);
-    fetcher.load(`/data-component/threat-graph/details-modal?${searchParams.toString()}`);
-  }, [nodes]);
-
-  const data = useMemo(() => {
-    if (!fetcher.data) return null;
-    if (!fetcher.data.nodeData.length) return [];
-    return Object.keys(nodes ?? {}).map((nodeId) => {
-      const node = nodes![nodeId];
-      const nodeData = fetcher.data?.nodeData.find(
-        (item) => item.node_id === node.node_id,
-      );
-      const nodeType = fetcher.data?.nodeType;
-      if (nodeType === 'host') {
-        return {
-          ...node,
-          latest_vulnerability_scan_id: (nodeData as ModelHost)
-            ?.vulnerability_latest_scan_id,
-          latest_secret_scan_id: (nodeData as ModelHost)?.secret_latest_scan_id,
-          latest_malware_scan_id: (nodeData as ModelHost)?.malware_latest_scan_id,
-          latest_compliance_scan_id: (nodeData as ModelHost)?.compliance_latest_scan_id,
-          latest_cloud_compliance_scan_id: undefined,
-        };
-      }
-
-      return {
-        ...node,
-        latest_cloud_compliance_scan_id: (nodeData as ModelCloudResource)
-          ?.cloud_compliance_latest_scan_id,
-        latest_vulnerability_scan_id: undefined,
-        latest_secret_scan_id: undefined,
-        latest_malware_scan_id: undefined,
-        latest_compliance_scan_id: undefined,
-      };
-    });
-  }, [fetcher.data, nodes]);
-
   return (
-    <SlidingModal open={open} onOpenChange={onOpenChange} width="w-[min(650px,90%)]">
+    <SlidingModal open={open} onOpenChange={onOpenChange} size="m">
       <SlidingModalCloseButton />
       <SlidingModalHeader>
-        <div className="flex gap-2 items-center flex-1">
-          <div className="w-6 h-6">
+        <div className="flex gap-2 items-center dark:text-text-text-and-icon px-5 py-[22px] dark:bg-bg-breadcrumb-bar">
+          <div className="w-5 h-5 shrink-0">
             <img src={getNodeImage(nodeType)} alt={nodeType} width="100%" height="100%" />
           </div>
-          <div className="uppercase">
-            {label} ({Object.keys(nodes ?? {}).length})
+          <div className="text-h3 capitalize">
+            <TruncatedText text={label} />
           </div>
         </div>
       </SlidingModalHeader>
       <SlidingModalContent>
-        {!data ? (
-          <div className="h-full w-full flex items-center justify-center">
-            <CircleSpinner size="xl" />
-          </div>
-        ) : (
-          data.map((item) => (
-            <div key={item.node_id} className="mb-4">
-              <div className="text-sm font-semibold text-gray-500 dark:text-gray-400">
-                {item.node_id}
-              </div>
-              <div className="flex items-center justify-start gap-2 mt-2">
-                {item.vulnerability_count ? (
-                  <CountCard
-                    count={item.vulnerability_count}
-                    nodeType={nodeType}
-                    scanType={ScanTypeEnum.VulnerabilityScan}
-                    scanId={item.latest_vulnerability_scan_id}
-                  />
-                ) : null}
-                {item.secrets_count ? (
-                  <CountCard
-                    count={item.secrets_count}
-                    nodeType={nodeType}
-                    scanType={ScanTypeEnum.SecretScan}
-                    scanId={item.latest_secret_scan_id}
-                  />
-                ) : null}
-                {item.compliance_count ? (
-                  <CountCard
-                    count={item.compliance_count}
-                    nodeType={nodeType}
-                    scanType={ScanTypeEnum.ComplianceScan}
-                    scanId={item.latest_compliance_scan_id}
-                  />
-                ) : null}
-                {item.cloud_compliance_count ? (
-                  <CountCard
-                    count={item.cloud_compliance_count}
-                    nodeType={nodeType}
-                    scanType={ScanTypeEnum.CloudComplianceScan}
-                    scanId={item.latest_cloud_compliance_scan_id}
-                  />
-                ) : null}
-              </div>
+        <Suspense
+          fallback={
+            <div className="h-full w-full flex items-center justify-center">
+              <CircleSpinner size="lg" />
             </div>
-          ))
-        )}
+          }
+        >
+          <ModalContent nodeType={nodeType} nodes={nodes} />
+        </Suspense>
       </SlidingModalContent>
     </SlidingModal>
   );
@@ -233,6 +105,98 @@ const SCAN_TYPE_MAP: Record<ScanTypeEnum, { label: string; logo: () => JSX.Eleme
   },
 };
 
+const ModalContent = ({
+  nodes,
+  nodeType,
+}: {
+  nodes?: { [key: string]: GraphNodeInfo } | null;
+  nodeType: string;
+}) => {
+  const data = useLookupResources(nodeType, Object.keys(nodes ?? {}));
+  const nodesData = useMemo(() => {
+    if (!data) return null;
+    if (!data.length) return [];
+    return Object.keys(nodes ?? {}).map((nodeId) => {
+      const node = nodes![nodeId];
+      const nodeData = data.find((item) => item.node_id === node.node_id);
+      if (nodeType === 'host') {
+        return {
+          ...node,
+          latest_vulnerability_scan_id: (nodeData as ModelHost)
+            ?.vulnerability_latest_scan_id,
+          latest_secret_scan_id: (nodeData as ModelHost)?.secret_latest_scan_id,
+          latest_malware_scan_id: (nodeData as ModelHost)?.malware_latest_scan_id,
+          latest_compliance_scan_id: (nodeData as ModelHost)?.compliance_latest_scan_id,
+          latest_cloud_compliance_scan_id: undefined,
+        };
+      }
+
+      return {
+        ...node,
+        latest_cloud_compliance_scan_id: (nodeData as ModelCloudResource)
+          ?.cloud_compliance_latest_scan_id,
+        latest_vulnerability_scan_id: undefined,
+        latest_secret_scan_id: undefined,
+        latest_malware_scan_id: undefined,
+        latest_compliance_scan_id: undefined,
+      };
+    });
+  }, [data]);
+  return (
+    <div className="py-7 px-5 flex flex-col gap-5">
+      {nodesData?.map((item) => (
+        <div key={item.node_id} className="mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 shrink-0">
+              <img
+                src={getNodeImage(nodeType)}
+                alt={nodeType}
+                width="100%"
+                height="100%"
+              />
+            </div>
+            <div className="text-h5 dark:text-text-text-and-icon">{item.node_id}</div>
+          </div>
+          <div className="flex items-center justify-start gap-4 py-3">
+            {item.vulnerability_count ? (
+              <CountCard
+                count={item.vulnerability_count}
+                nodeType={nodeType}
+                scanType={ScanTypeEnum.VulnerabilityScan}
+                scanId={item.latest_vulnerability_scan_id}
+              />
+            ) : null}
+            {item.secrets_count ? (
+              <CountCard
+                count={item.secrets_count}
+                nodeType={nodeType}
+                scanType={ScanTypeEnum.SecretScan}
+                scanId={item.latest_secret_scan_id}
+              />
+            ) : null}
+            {item.compliance_count ? (
+              <CountCard
+                count={item.compliance_count}
+                nodeType={nodeType}
+                scanType={ScanTypeEnum.ComplianceScan}
+                scanId={item.latest_compliance_scan_id}
+              />
+            ) : null}
+            {item.cloud_compliance_count ? (
+              <CountCard
+                count={item.cloud_compliance_count}
+                nodeType={nodeType}
+                scanType={ScanTypeEnum.CloudComplianceScan}
+                scanId={item.latest_cloud_compliance_scan_id}
+              />
+            ) : null}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
 const CountCard = ({
   count,
   nodeType,
@@ -259,10 +223,8 @@ const CountCard = ({
         <DFLink
           to={getScanLink({ nodeType, scanType, scanId })}
           target="_blank"
-          className={twMerge(
-            'visited:text-red-700 dark:visited:text-red-400 focus:no-underline dark:focus:no-underline hover:no-underline dark:hover:no-underline active:no-underline dark:active:no-underline',
-            className,
-          )}
+          unstyled
+          className={className}
         >
           {children}
         </DFLink>
@@ -271,18 +233,14 @@ const CountCard = ({
     return <div className={className}>{children}</div>;
   };
   return (
-    <Wrapper className="w-full h-full flex-1 max-w-[30%] flex items-center justify-center flex-col bg-red-100 text-red-600 dark:bg-red-600/10 dark:text-red-400 rounded-lg py-4">
-      <div className="flex justify-center gap-2 items-center">
-        <div className="w-8 h-8 flex">
+    <Wrapper className="w-full h-full flex-1 max-w-[112px] flex flex-col gap-1.5 dark:bg-bg-card rounded-[5px] p-1.5">
+      <div className="flex gap-1.5 items-center dark:text-status-error">
+        <div className="w-[30px] h-[30px] shrink-0">
           <Logo />
         </div>
-        <div className="text-[2rem] flex items-center">{count}</div>
+        <div className="text-h1">{abbreviateNumber(count)}</div>
       </div>
-      <div>{label}</div>
+      <div className="text-p1 dark:text-text-text-and-icon">{label}</div>
     </Wrapper>
   );
-};
-
-export const module = {
-  loader,
 };

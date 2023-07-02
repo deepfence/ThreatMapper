@@ -20,7 +20,7 @@ import { queries } from '@/queries';
 
 function useLookupHost(nodeId: string) {
   return useSuspenseQuery({
-    ...queries.lookup.host({ nodeId }),
+    ...queries.lookup.host({ nodeIds: [nodeId] }),
   });
 }
 
@@ -105,7 +105,7 @@ const HostHeader = ({
     <Header
       onStartScanClick={onStartScanClick}
       nodeId={nodeId}
-      label={data.hostData.host_name}
+      label={data.hostData[0].host_name}
       nodeType="host"
       onGoBack={onGoBack}
       showBackBtn={showBackBtn}
@@ -128,50 +128,52 @@ const TabContent = ({
       {tab === 'metadata' && (
         <Metadata
           data={{
-            node_name: toTopologyMetadataString(data.hostData.node_name),
-            version: toTopologyMetadataString(data.hostData.version),
-            instance_id: toTopologyMetadataString(data.hostData.instance_id),
-            cloud_provider: toTopologyMetadataString(data.hostData.cloud_provider),
-            cloud_region: toTopologyMetadataString(data.hostData.cloud_region),
-            uptime: toTopologyMetadataString(data.hostData.uptime),
-            is_console_vm: toTopologyMetadataString(data.hostData.is_console_vm),
-            kernel_version: toTopologyMetadataString(data.hostData.kernel_version),
-            os: toTopologyMetadataString(data.hostData.os),
-            local_networks: toTopologyMetadataString(data.hostData.local_networks),
+            node_name: toTopologyMetadataString(data.hostData[0].node_name),
+            version: toTopologyMetadataString(data.hostData[0].version),
+            instance_id: toTopologyMetadataString(data.hostData[0].instance_id),
+            cloud_provider: toTopologyMetadataString(data.hostData[0].cloud_provider),
+            cloud_region: toTopologyMetadataString(data.hostData[0].cloud_region),
+            uptime: toTopologyMetadataString(data.hostData[0].uptime),
+            is_console_vm: toTopologyMetadataString(data.hostData[0].is_console_vm),
+            kernel_version: toTopologyMetadataString(data.hostData[0].kernel_version),
+            os: toTopologyMetadataString(data.hostData[0].os),
+            local_networks: toTopologyMetadataString(data.hostData[0].local_networks),
 
-            local_cidr: toTopologyMetadataString(data.hostData.local_cidr),
-            instance_type: toTopologyMetadataString(data.hostData.instance_type),
-            public_ip: toTopologyMetadataString(data.hostData.public_ip),
-            private_ip: toTopologyMetadataString(data.hostData.private_ip),
-            availability_zone: toTopologyMetadataString(data.hostData.availability_zone),
-            resource_group: toTopologyMetadataString(data.hostData.resource_group),
+            local_cidr: toTopologyMetadataString(data.hostData[0].local_cidr),
+            instance_type: toTopologyMetadataString(data.hostData[0].instance_type),
+            public_ip: toTopologyMetadataString(data.hostData[0].public_ip),
+            private_ip: toTopologyMetadataString(data.hostData[0].private_ip),
+            availability_zone: toTopologyMetadataString(
+              data.hostData[0].availability_zone,
+            ),
+            resource_group: toTopologyMetadataString(data.hostData[0].resource_group),
           }}
         />
       )}
       {tab === 'connections-and-processes' && (
         <>
           <ProcessTable
-            processes={data.hostData.processes ?? []}
+            processes={data.hostData[0].processes ?? []}
             onNodeClick={onNodeClick}
           />
           <ConnectionsTable
             type="inbound"
-            connections={data.hostData.inbound_connections ?? []}
+            connections={data.hostData[0].inbound_connections ?? []}
           />
           <ConnectionsTable
             type="outbound"
-            connections={data.hostData.outbound_connections ?? []}
+            connections={data.hostData[0].outbound_connections ?? []}
           />
         </>
       )}
       {tab === 'containers-and-images' && (
         <>
           <ContainerTable
-            containers={data?.hostData.containers ?? []}
+            containers={data?.hostData[0].containers ?? []}
             onNodeClick={onNodeClick}
           />
           <ImageTable
-            images={data?.hostData.container_images ?? []}
+            images={data?.hostData[0].container_images ?? []}
             onNodeClick={onNodeClick}
           />
         </>
@@ -179,20 +181,20 @@ const TabContent = ({
       {tab === 'scan-results' && (
         <>
           <ScanResult
-            vulnerabilityScanId={data.hostData.vulnerability_latest_scan_id}
-            secretScanId={data.hostData.secret_latest_scan_id}
-            malwareScanId={data.hostData.malware_latest_scan_id}
-            complianceScanId={data.hostData.compliance_latest_scan_id}
-            vulnerabilityScanStatus={data.hostData.vulnerability_scan_status}
-            secretScanStatus={data.hostData.secret_scan_status}
-            malwareScanStatus={data.hostData.malware_scan_status}
-            complianceScanStatus={data.hostData.compliance_scan_status}
+            vulnerabilityScanId={data.hostData[0].vulnerability_latest_scan_id}
+            secretScanId={data.hostData[0].secret_latest_scan_id}
+            malwareScanId={data.hostData[0].malware_latest_scan_id}
+            complianceScanId={data.hostData[0].compliance_latest_scan_id}
+            vulnerabilityScanStatus={data.hostData[0].vulnerability_scan_status}
+            secretScanStatus={data.hostData[0].secret_scan_status}
+            malwareScanStatus={data.hostData[0].malware_scan_status}
+            complianceScanStatus={data.hostData[0].compliance_scan_status}
           />
           <AvailabilityCharts
-            cpuUsage={data.hostData.cpu_usage}
-            cpuMax={data.hostData.cpu_max}
-            memoryUsage={data.hostData.memory_usage}
-            memoryMax={data.hostData.memory_max}
+            cpuUsage={data.hostData[0].cpu_usage}
+            cpuMax={data.hostData[0].cpu_max}
+            memoryUsage={data.hostData[0].memory_usage}
+            memoryMax={data.hostData[0].memory_max}
           />
         </>
       )}

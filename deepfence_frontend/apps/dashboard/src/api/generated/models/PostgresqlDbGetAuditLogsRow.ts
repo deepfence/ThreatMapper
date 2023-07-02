@@ -61,18 +61,6 @@ export interface PostgresqlDbGetAuditLogsRow {
      * @memberof PostgresqlDbGetAuditLogsRow
      */
     success?: boolean;
-    /**
-     * 
-     * @type {object}
-     * @memberof PostgresqlDbGetAuditLogsRow
-     */
-    user_id?: object;
-    /**
-     * 
-     * @type {number}
-     * @memberof PostgresqlDbGetAuditLogsRow
-     */
-    user_role_id?: number;
 }
 
 /**
@@ -101,8 +89,6 @@ export function PostgresqlDbGetAuditLogsRowFromJSONTyped(json: any, ignoreDiscri
         'resources': !exists(json, 'resources') ? undefined : json['resources'],
         'role': !exists(json, 'role') ? undefined : json['role'],
         'success': !exists(json, 'success') ? undefined : json['success'],
-        'user_id': !exists(json, 'user_id') ? undefined : json['user_id'],
-        'user_role_id': !exists(json, 'user_role_id') ? undefined : json['user_role_id'],
     };
 }
 
@@ -122,8 +108,6 @@ export function PostgresqlDbGetAuditLogsRowToJSON(value?: PostgresqlDbGetAuditLo
         'resources': value.resources,
         'role': value.role,
         'success': value.success,
-        'user_id': value.user_id,
-        'user_role_id': value.user_role_id,
     };
 }
 
