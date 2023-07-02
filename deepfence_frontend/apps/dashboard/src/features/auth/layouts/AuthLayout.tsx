@@ -120,4 +120,4 @@ export const AuthLayout = () => {
       </div>
     </div>
   );
-}
+};
