@@ -1,5 +1,8 @@
+import { preset } from 'tailwind-preset';
+
 import { ReactECharts } from '@/components/ReactEcharts';
 import { Mode } from '@/theme/ThemeContext';
+import { abbreviateNumber } from '@/utils/number';
 
 export const ScanResultChart = ({
   theme,
@@ -20,29 +23,32 @@ export const ScanResultChart = ({
       option={{
         backgroundColor: 'transparent',
         tooltip: {
-          trigger: 'item',
+          show: false,
         },
         legend: {
-          top: '85%',
-          left: 'center',
-          selectedMode: false,
+          show: false,
         },
         series: [
           {
-            name: 'Severity',
             type: 'pie',
-            top: '-20%',
-            bottom: '-30%',
-            radius: ['80%', '100%'],
-            center: ['50%', '70%'],
-            cursor: 'default',
-            // adjust the start angle
-            startAngle: 180,
+            radius: ['65%', '91%'],
+            itemStyle: {
+              borderWidth: 2,
+              borderColor: preset.theme.extend.colors.bg.card,
+            },
             label: {
-              show: false,
-              formatter(param) {
-                return param.name;
+              position: 'center',
+              formatter: function () {
+                return abbreviateNumber(totalValue).toString();
               },
+              fontSize: '18px',
+              color: preset.theme.extend.colors.text['input-value'],
+              fontWeight: 600,
+              fontFamily: preset.theme.extend.fontFamily.sans.join(','),
+            },
+            cursor: 'default',
+            emphasis: {
+              disabled: true,
             },
             data: [
               ...data.map((d) => ({
@@ -50,19 +56,6 @@ export const ScanResultChart = ({
                 name: d.name,
                 itemStyle: { color: d.color },
               })),
-              {
-                // make an record to fill the bottom 50%
-                value: totalValue,
-                itemStyle: {
-                  color: 'none',
-                  decal: {
-                    symbol: 'none',
-                  },
-                },
-                label: {
-                  show: false,
-                },
-              },
             ],
           },
         ],

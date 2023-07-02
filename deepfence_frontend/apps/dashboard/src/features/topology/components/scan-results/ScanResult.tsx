@@ -1,26 +1,52 @@
+import { useSuspenseQuery } from '@suspensive/react-query';
 import { isNil } from 'lodash-es';
-import { IconContext } from 'react-icons';
-import {
-  HiOutlineExclamationCircle,
-  HiOutlineSearch,
-  HiOutlineStatusOffline,
-} from 'react-icons/hi';
+import { Suspense } from 'react';
 import { generatePath } from 'react-router-dom';
+import { Card, CircleSpinner } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
+import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
+import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
 import { POSTURE_STATUS_COLORS, SEVERITY_COLORS } from '@/constants/charts';
 import { ScanResultChart } from '@/features/topology/components/scan-results/ScanResultChart';
-import { ScanSummary } from '@/features/topology/types/node-details';
+import { queries } from '@/queries';
 import { useTheme } from '@/theme/ThemeContext';
 import { ScanTypeEnum } from '@/types/common';
 import { sortBySeverity } from '@/utils/array';
 import { formatToRelativeTimeFromNow } from '@/utils/date';
+import { abbreviateNumber } from '@/utils/number';
 import {
   isNeverScanned,
   isScanComplete,
   isScanFailed,
   isScanInProgress,
 } from '@/utils/scan';
+
+function useScanResultSummaryCounts(scanId = '', type: ScanTypeEnum) {
+  return {
+    [ScanTypeEnum.VulnerabilityScan]: useSuspenseQuery({
+      ...queries.vulnerability.scanResultSummaryCounts({ scanId }),
+      enabled: type === ScanTypeEnum.VulnerabilityScan && !!scanId.length,
+    }),
+    [ScanTypeEnum.SecretScan]: useSuspenseQuery({
+      ...queries.secret.scanResultSummaryCounts({ scanId }),
+      enabled: type === ScanTypeEnum.SecretScan && !!scanId.length,
+    }),
+    [ScanTypeEnum.MalwareScan]: useSuspenseQuery({
+      ...queries.malware.scanResultSummaryCounts({ scanId }),
+      enabled: type === ScanTypeEnum.MalwareScan && !!scanId.length,
+    }),
+    [ScanTypeEnum.ComplianceScan]: useSuspenseQuery({
+      ...queries.posture.scanResultSummaryCountsCompliance({ scanId }),
+      enabled: type === ScanTypeEnum.ComplianceScan && !!scanId.length,
+    }),
+    // this following is dummy, to stop typescript from complaining
+    [ScanTypeEnum.CloudComplianceScan]: useSuspenseQuery({
+      ...queries.posture.scanResultSummaryCountsCompliance({ scanId }),
+      enabled: type === ScanTypeEnum.CloudComplianceScan && !!scanId.length,
+    }),
+  }[type];
+}
 
 const getSeriesOption = (counts: {
   [x: string]: number;
@@ -41,7 +67,7 @@ const getSeriesOption = (counts: {
       };
     }),
     'name',
-  );
+  ).reverse();
 };
 
 const ScanResultHeading = ({
@@ -68,16 +94,8 @@ const ScanResultHeading = ({
     title = 'Posture Scan';
   }
   return (
-    <div className="flex items-center gap-x-3">
-      <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-        {title}
-      </h3>
-      {timestamp ? (
-        <div className="text-gray-600 dark:text-gray-400 text-xs">
-          {formatToRelativeTimeFromNow(timestamp)}
-        </div>
-      ) : null}
-      {scanId && (
+    <div className="flex items-center px-3 py-2.5 justify-between">
+      {scanId ? (
         <DFLink
           to={
             type === ScanTypeEnum.ComplianceScan
@@ -89,150 +107,191 @@ const ScanResultHeading = ({
                   scanId,
                 })
           }
-          className="text-xs underline ml-auto"
+          className="text-h5"
+          target="_blank"
         >
-          Details
+          {title}
         </DFLink>
+      ) : (
+        <h5 className="text-h5 dark:text-text-input-value">{title}</h5>
       )}
+      {timestamp ? (
+        <div className="dark:text-text-text-and-icon text-p8">
+          {formatToRelativeTimeFromNow(timestamp)}
+        </div>
+      ) : null}
     </div>
   );
 };
 
 const ScanStatusError = () => {
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full">
-      <IconContext.Provider
-        value={{
-          className: 'dark:text-red-600 text-red-400 w-[40px] h-[40px]',
-        }}
-      >
-        <HiOutlineExclamationCircle />
-      </IconContext.Provider>
-      <p className="text-red-500 text-xs pt-2">Scan Failed</p>
+    <div className="flex items-center justify-center h-full w-full gap-2">
+      <div className="h-6 w-6 shrink-0 dark:text-status-error">
+        <ErrorStandardSolidIcon />
+      </div>
+      <p className="dark:text-text-text-and-icon text-h3">Scan failed</p>
     </div>
   );
 };
 
 const ScanStatusInProgress = () => {
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full">
-      <IconContext.Provider
-        value={{
-          className: 'dark:text-gray-600 text-gray-400 w-[40px] h-[40px]',
-        }}
-      >
-        <HiOutlineSearch />
-      </IconContext.Provider>
-      <p className="dark:text-gray-400 text-gray-400 text-xs py-3">Scan In Progress...</p>
+    <div className="flex items-center justify-center h-full w-full gap-2">
+      <CircleSpinner size="sm" />
+      <p className="dark:text-text-text-and-icon text-h3">Scan in progress</p>
     </div>
   );
 };
 
 const ScanStatusNeverScanned = () => {
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full">
-      <IconContext.Provider
-        value={{
-          className: 'dark:text-gray-600 text-gray-400 w-[40px] h-[40px]',
-        }}
-      >
-        <HiOutlineStatusOffline />
-      </IconContext.Provider>
-      <p className="dark:text-gray-400 text-gray-400 text-xs py-3">Never Scanned</p>
+    <div className="flex items-center justify-center h-full w-full gap-2">
+      <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">
+        <ErrorStandardLineIcon />
+      </div>
+      <p className="dark:text-text-text-and-icon text-h3">Never scanned</p>
     </div>
   );
 };
 
 const ScanResultComponent = ({
-  status,
-  scanSummary,
+  scanId,
+  scanStatus,
   type,
 }: {
-  status: string;
-  scanSummary?: ScanSummary | null;
+  scanId?: string;
+  scanStatus: string;
   type: ScanTypeEnum;
 }) => {
   const { mode } = useTheme();
-  const severityCounts = {
-    ...(scanSummary?.counts ?? {}),
-  };
+  const { data: scanSummary } = useScanResultSummaryCounts(scanId, type);
+
   return (
     <div>
-      <>
-        <ScanResultHeading
-          type={type}
-          scanId={
-            !isNeverScanned(status) && scanSummary?.scanId
-              ? scanSummary.scanId
-              : undefined
-          }
-          timestamp={
-            !isNeverScanned(status) && scanSummary?.timestamp
-              ? scanSummary.timestamp
-              : undefined
-          }
-        />
-        <div className="h-[150px]">
-          {isScanComplete(status) && (
-            <ScanResultChart data={getSeriesOption(severityCounts)} theme={mode} />
-          )}
-          {isScanFailed(status) && <ScanStatusError />}
-          {isNeverScanned(status) && <ScanStatusNeverScanned />}
-          {isScanInProgress(status) && <ScanStatusInProgress />}
-        </div>
-      </>
+      <ScanResultHeading
+        type={type}
+        scanId={!isNeverScanned(scanStatus) && scanId ? scanId : undefined}
+        timestamp={
+          !isNeverScanned(scanStatus) && scanSummary?.timestamp
+            ? scanSummary.timestamp
+            : undefined
+        }
+      />
+      <div className="h-[125px]">
+        {/* TODO: check below condition */}
+        {isScanComplete(scanStatus) && scanSummary && (
+          <div className="h-full w-full grid grid-cols-2 items-stretch justify-between">
+            <div className="flex items-center pl-3">
+              <div className="h-[100px] w-[100px]">
+                <ScanResultChart
+                  data={getSeriesOption(scanSummary.counts)}
+                  theme={mode}
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1 self-center min-w-[130px] ml-auto pr-4">
+              {getSeriesOption(scanSummary.counts).map((count) => {
+                return (
+                  <div className="flex gap-2 w-full items-center" key={count.name}>
+                    <div
+                      className="h-[9px] w-[9px] rounded-full shrink-0"
+                      style={{
+                        backgroundColor: count.color,
+                      }}
+                    ></div>
+                    <div className="capitalize text-p8 dark:text-text-input-value">
+                      {count.name}
+                    </div>
+                    <div className="ml-auto text-p7 dark:text-text-input-value">
+                      {abbreviateNumber(count.value)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {isScanFailed(scanStatus) && <ScanStatusError />}
+        {isNeverScanned(scanStatus) && <ScanStatusNeverScanned />}
+        {isScanInProgress(scanStatus) && <ScanStatusInProgress />}
+      </div>
+    </div>
+  );
+};
+
+const ScanCountLoading = () => {
+  return (
+    <div className="min-h-[166px] flex items-center justify-center">
+      <CircleSpinner size="md" />
     </div>
   );
 };
 
 export const ScanResult = ({
+  vulnerabilityScanId,
+  malwareScanId,
+  secretScanId,
+  complianceScanId,
   vulnerabilityScanStatus,
-  secretScanStatus,
   malwareScanStatus,
+  secretScanStatus,
   complianceScanStatus,
-  vulnerabilityScanSummary,
-  secretScanSummary,
-  malwareScanSummary,
-  complianceScanSummary,
 }: {
+  vulnerabilityScanId?: string;
+  malwareScanId?: string;
+  secretScanId?: string;
+  complianceScanId?: string;
   vulnerabilityScanStatus?: string;
-  secretScanStatus?: string;
   malwareScanStatus?: string;
+  secretScanStatus?: string;
   complianceScanStatus?: string;
-  vulnerabilityScanSummary?: ScanSummary | null;
-  secretScanSummary?: ScanSummary | null;
-  malwareScanSummary?: ScanSummary | null;
-  complianceScanSummary?: ScanSummary | null;
 }) => {
   return (
-    <div className="flex flex-col space-y-2">
+    <div className="grid grid-cols-2 gap-4">
       {!isNil(vulnerabilityScanStatus) && (
-        <ScanResultComponent
-          status={vulnerabilityScanStatus}
-          scanSummary={vulnerabilityScanSummary}
-          type={ScanTypeEnum.VulnerabilityScan}
-        />
+        <Card className="rounded-[5px]">
+          <Suspense fallback={<ScanCountLoading />}>
+            <ScanResultComponent
+              scanId={vulnerabilityScanId}
+              scanStatus={vulnerabilityScanStatus}
+              type={ScanTypeEnum.VulnerabilityScan}
+            />
+          </Suspense>
+        </Card>
       )}
       {!isNil(secretScanStatus) && (
-        <ScanResultComponent
-          status={secretScanStatus}
-          scanSummary={secretScanSummary}
-          type={ScanTypeEnum.SecretScan}
-        />
+        <Card className="rounded-[5px]">
+          <Suspense fallback={<ScanCountLoading />}>
+            <ScanResultComponent
+              scanId={secretScanId}
+              scanStatus={secretScanStatus}
+              type={ScanTypeEnum.SecretScan}
+            />
+          </Suspense>
+        </Card>
       )}
       {!isNil(malwareScanStatus) && (
-        <ScanResultComponent
-          status={malwareScanStatus}
-          scanSummary={malwareScanSummary}
-          type={ScanTypeEnum.MalwareScan}
-        />
+        <Card className="rounded-[5px]">
+          <Suspense fallback={<ScanCountLoading />}>
+            <ScanResultComponent
+              scanId={malwareScanId}
+              scanStatus={malwareScanStatus}
+              type={ScanTypeEnum.MalwareScan}
+            />
+          </Suspense>
+        </Card>
       )}
       {!isNil(complianceScanStatus) && (
-        <ScanResultComponent
-          status={complianceScanStatus}
-          scanSummary={complianceScanSummary}
-          type={ScanTypeEnum.ComplianceScan}
-        />
+        <Card className="rounded-[5px]">
+          <Suspense fallback={<ScanCountLoading />}>
+            <ScanResultComponent
+              scanId={complianceScanId}
+              scanStatus={complianceScanStatus}
+              type={ScanTypeEnum.ComplianceScan}
+            />
+          </Suspense>
+        </Card>
       )}
     </div>
   );

@@ -21,7 +21,7 @@ import {
   buildLayoutOptions,
   LayoutExecutor,
 } from '@/features/topology/utils/graph-layout';
-import { getNodeImage, nodeStyle } from '@/features/topology/utils/graph-styles';
+import { getNodeIconConfig, nodeStyle } from '@/features/topology/utils/graph-styles';
 
 export const updateGraph = (graph: G6Graph, apiDiff: ApiDiff, action: TopologyAction) => {
   const modelNodesDiff = convertApiNodesDiffToModelNodesDiff(graph, apiDiff.nodesDiff);
@@ -138,9 +138,8 @@ function processRootUpdate(graph: G6Graph, diff: EnhancedDiff['nodesDiff']) {
       x: pointAround(center_x),
       y: pointAround(center_y),
       style: nodeStyle(node, {}),
-      type: getNodeImage(node.df_data?.type ?? '', node.df_data?.label ?? '')
-        ? 'image'
-        : undefined,
+      type: 'circle',
+      icon: getNodeIconConfig(node) ?? undefined,
     });
   }
 }
@@ -193,19 +192,13 @@ function processNodeUpdate(
       for (const nodeToAdd of diff.add) {
         graph.addItem('node', {
           ...nodeToAdd,
-          style: {
-            ...nodeStyle(nodeToAdd, {}),
-          },
+          style: nodeStyle(nodeToAdd, {}),
           parent_id: itemModel.id,
           comboId: comboId,
           x: numNodesInCombo > 1 ? pointAround(center_model.x!) : center_model.x,
           y: numNodesInCombo > 1 ? pointAround(center_model.y!) : center_model.y,
-          type: getNodeImage(
-            nodeToAdd.df_data?.type ?? '',
-            nodeToAdd.df_data?.label ?? '',
-          )
-            ? 'image'
-            : undefined,
+          type: 'circle',
+          icon: getNodeIconConfig(nodeToAdd) ?? undefined,
         });
 
         graph.addItem('edge', {
@@ -226,13 +219,9 @@ function processNodeUpdate(
           x: pointAround(itemModel.x!),
           y: pointAround(itemModel.y!),
           parent_id: nodeId,
-          style: { ...nodeStyle(nodeToAdd, {}) },
-          type: getNodeImage(
-            nodeToAdd.df_data?.type ?? '',
-            nodeToAdd.df_data?.label ?? '',
-          )
-            ? 'image'
-            : undefined,
+          style: nodeStyle(nodeToAdd, {}),
+          type: 'circle',
+          icon: getNodeIconConfig(nodeToAdd) ?? undefined,
         }) as G6Node;
         graph.addItem('edge', {
           ...pseudoEdge(nodeId, nodeToAdd.id!),

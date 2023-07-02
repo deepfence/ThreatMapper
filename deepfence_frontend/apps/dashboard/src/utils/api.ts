@@ -1,7 +1,7 @@
 import { getAuthenticationApiClient } from '@/api/api';
 import { ModelResponseAccessToken, ResponseError } from '@/api/generated';
 import { queryClient } from '@/queries/client';
-import { router } from '@/routes';
+import { getRouter } from '@/routes';
 import storage from '@/utils/storage';
 import { sleep } from '@/utils/timers';
 
@@ -66,7 +66,7 @@ export function redirectToLogin() {
     existingRedirectTo ? existingRedirectTo : `${url.pathname}${url.search}`,
   );
   queryClient.clear();
-  return router.navigate(`/auth/login?${searchParams.toString()}`);
+  return getRouter().navigate(`/auth/login?${searchParams.toString()}`);
 }
 
 export async function requireLogin() {

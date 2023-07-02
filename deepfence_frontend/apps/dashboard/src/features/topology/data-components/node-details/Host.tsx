@@ -1,9 +1,7 @@
-import { useEffect, useState } from 'react';
-import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense, useState } from 'react';
 import { CircleSpinner, SlidingModalContent, Tabs } from 'ui-components';
 
-import { getLookupApiClient } from '@/api/api';
-import { ModelHost } from '@/api/generated';
 import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
 import { Header } from '@/features/topology/components/node-details/Header';
 import {
@@ -16,92 +14,34 @@ import {
   ImageTable,
   ProcessTable,
 } from '@/features/topology/components/node-details/SummaryTables';
-import {
-  getComplianceScanCounts,
-  getMalwareScanCounts,
-  getSecretScanCounts,
-  getVulnerabilityScanCounts,
-} from '@/features/topology/components/scan-results/loaderHelpers';
+import { AvailabilityCharts } from '@/features/topology/components/scan-results/AvailabilityCharts';
 import { ScanResult } from '@/features/topology/components/scan-results/ScanResult';
-import { apiWrapper } from '@/utils/api';
+import { queries } from '@/queries';
 
-export type LoaderData = {
-  hostData: ModelHost;
-  vulnerabilityScanCounts: Awaited<ReturnType<typeof getVulnerabilityScanCounts>>;
-  secretScanCounts: Awaited<ReturnType<typeof getSecretScanCounts>>;
-  malwareScanCounts: Awaited<ReturnType<typeof getMalwareScanCounts>>;
-  complianceScanCounts: Awaited<ReturnType<typeof getComplianceScanCounts>>;
-};
-
-const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
-  const nodeId = params.nodeId;
-
-  if (!nodeId) {
-    throw new Error('nodeId is required');
-  }
-
-  const lookupHostApi = apiWrapper({
-    fn: getLookupApiClient().lookupHost,
+function useLookupHost(nodeId: string) {
+  return useSuspenseQuery({
+    ...queries.lookup.host({ nodeId }),
   });
-  const lookupResult = await lookupHostApi({
-    lookupLookupFilter: {
-      node_ids: [nodeId],
-      in_field_filter: null,
-      window: {
-        offset: 0,
-        size: 1,
-      },
-    },
-  });
+}
 
-  if (!lookupResult.ok || !lookupResult.value.length) {
-    throw new Error(`Failed to load host: ${nodeId}`);
-  }
-
-  return {
-    hostData: lookupResult.value[0],
-    vulnerabilityScanCounts: await getVulnerabilityScanCounts(
-      lookupResult.value[0].vulnerability_latest_scan_id,
-    ),
-    secretScanCounts: await getSecretScanCounts(
-      lookupResult.value[0].secret_latest_scan_id,
-    ),
-    malwareScanCounts: await getMalwareScanCounts(
-      lookupResult.value[0].malware_latest_scan_id,
-    ),
-    complianceScanCounts: await getComplianceScanCounts(
-      lookupResult.value[0].compliance_latest_scan_id,
-    ),
-  };
-};
-
-export const Host = ({
-  nodeId,
-  onGoBack,
-  showBackBtn,
-  onNodeClick,
-  onStartScanClick,
-}: {
+interface HostModalProps {
   nodeId: string;
   onGoBack: () => void;
   showBackBtn: boolean;
   onNodeClick: (nodeId: string, nodeType: string) => void;
   onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
-}) => {
-  const fetcher = useFetcher<LoaderData>();
+}
+
+export const Host = (props: HostModalProps) => {
+  const { nodeId, onGoBack, showBackBtn, onNodeClick, onStartScanClick } = props;
   const [tab, setTab] = useState('metadata');
-
-  useEffect(() => {
-    fetcher.load(generatePath('/topology/node-details/host/:nodeId', { nodeId }));
-  }, [nodeId]);
-
   const tabs = [
     {
-      label: 'Metadata',
+      label: 'Overview',
       value: 'metadata',
     },
     {
-      label: 'Scan Results',
+      label: 'Monitoring',
       value: 'scan-results',
     },
     {
@@ -114,136 +54,148 @@ export const Host = ({
     },
   ];
 
-  const header = (
-    <Header
-      onStartScanClick={onStartScanClick}
-      nodeId={nodeId}
-      label={fetcher.data?.hostData?.node_name}
-      nodeType="host"
-      onGoBack={onGoBack}
-      showBackBtn={showBackBtn}
-    />
-  );
-
-  if (fetcher.state === 'loading' && !fetcher.data) {
-    return (
-      <>
-        {header}
-        <SlidingModalContent>
-          <div className="h-full flex items-center justify-center">
-            <CircleSpinner />
-          </div>
-        </SlidingModalContent>
-      </>
-    );
-  }
-
   return (
     <>
-      {header}
+      <Suspense
+        fallback={
+          <Header
+            onStartScanClick={onStartScanClick}
+            nodeId={nodeId}
+            label={nodeId}
+            nodeType="host"
+            onGoBack={onGoBack}
+            showBackBtn={showBackBtn}
+          />
+        }
+      >
+        <HostHeader {...props} />
+      </Suspense>
       <SlidingModalContent>
-        <Tabs
-          value={tab}
-          defaultValue={tab}
-          tabs={tabs}
-          onValueChange={(v) => setTab(v)}
-          variant="tab"
-        >
-          <div className="pt-6 flex flex-col gap-6">
-            {tab === 'metadata' && (
-              <Metadata
-                data={{
-                  node_name: toTopologyMetadataString(fetcher.data?.hostData?.node_name),
-                  version: toTopologyMetadataString(fetcher.data?.hostData?.version),
-                  instance_id: toTopologyMetadataString(
-                    fetcher.data?.hostData?.instance_id,
-                  ),
-                  cloud_provider: toTopologyMetadataString(
-                    fetcher.data?.hostData?.cloud_provider,
-                  ),
-                  cloud_region: toTopologyMetadataString(
-                    fetcher.data?.hostData?.cloud_region,
-                  ),
-                  uptime: toTopologyMetadataString(fetcher.data?.hostData?.uptime),
-                  is_console_vm: toTopologyMetadataString(
-                    fetcher.data?.hostData?.is_console_vm,
-                  ),
-                  kernel_version: toTopologyMetadataString(
-                    fetcher.data?.hostData?.kernel_version,
-                  ),
-                  os: toTopologyMetadataString(fetcher.data?.hostData?.os),
-                  local_networks: toTopologyMetadataString(
-                    fetcher.data?.hostData?.local_networks,
-                  ),
-
-                  local_cidr: toTopologyMetadataString(
-                    fetcher.data?.hostData?.local_cidr,
-                  ),
-                  instance_type: toTopologyMetadataString(
-                    fetcher.data?.hostData?.instance_type,
-                  ),
-                  public_ip: toTopologyMetadataString(fetcher.data?.hostData?.public_ip),
-                  private_ip: toTopologyMetadataString(
-                    fetcher.data?.hostData?.private_ip,
-                  ),
-                  availability_zone: toTopologyMetadataString(
-                    fetcher.data?.hostData?.availability_zone,
-                  ),
-                  resource_group: toTopologyMetadataString(
-                    fetcher.data?.hostData?.resource_group,
-                  ),
-                }}
-              />
-            )}
-            {tab === 'connections-and-processes' && (
-              <>
-                <ProcessTable
-                  processes={fetcher.data?.hostData.processes ?? []}
-                  onNodeClick={onNodeClick}
-                />
-                <ConnectionsTable
-                  type="inbound"
-                  connections={fetcher.data?.hostData.inbound_connections ?? []}
-                />
-                <ConnectionsTable
-                  type="outbound"
-                  connections={fetcher.data?.hostData.outbound_connections ?? []}
-                />
-              </>
-            )}
-            {tab === 'containers-and-images' && (
-              <>
-                <ContainerTable
-                  containers={fetcher.data?.hostData.containers ?? []}
-                  onNodeClick={onNodeClick}
-                />
-                <ImageTable
-                  images={fetcher.data?.hostData.container_images ?? []}
-                  onNodeClick={onNodeClick}
-                />
-              </>
-            )}
-            {tab === 'scan-results' && (
-              <ScanResult
-                vulnerabilityScanStatus={
-                  fetcher.data?.hostData?.vulnerability_scan_status
-                }
-                secretScanStatus={fetcher.data?.hostData?.secret_scan_status}
-                malwareScanStatus={fetcher.data?.hostData?.malware_scan_status}
-                complianceScanStatus={fetcher.data?.hostData?.compliance_scan_status}
-                vulnerabilityScanSummary={fetcher.data?.vulnerabilityScanCounts}
-                secretScanSummary={fetcher.data?.secretScanCounts}
-                malwareScanSummary={fetcher.data?.malwareScanCounts}
-                complianceScanSummary={fetcher.data?.complianceScanCounts}
-              />
-            )}
-          </div>
-        </Tabs>
+        <div className="dark:bg-bg-breadcrumb-bar">
+          <Tabs
+            value={tab}
+            defaultValue={tab}
+            tabs={tabs}
+            onValueChange={(v) => setTab(v)}
+          >
+            <Suspense
+              fallback={
+                <div className="min-h-[300px] flex items-center justify-center dark:bg-bg-side-panel">
+                  <CircleSpinner size="lg" />
+                </div>
+              }
+            >
+              <TabContent tab={tab} nodeId={nodeId} onNodeClick={onNodeClick} />
+            </Suspense>
+          </Tabs>
+        </div>
       </SlidingModalContent>
     </>
   );
 };
 
-export const module = {
-  loader,
+const HostHeader = ({
+  nodeId,
+  onStartScanClick,
+  onGoBack,
+  showBackBtn,
+}: HostModalProps) => {
+  const { data } = useLookupHost(nodeId);
+  return (
+    <Header
+      onStartScanClick={onStartScanClick}
+      nodeId={nodeId}
+      label={data.hostData.host_name}
+      nodeType="host"
+      onGoBack={onGoBack}
+      showBackBtn={showBackBtn}
+    />
+  );
+};
+
+const TabContent = ({
+  tab,
+  nodeId,
+  onNodeClick,
+}: {
+  tab: string;
+  nodeId: string;
+  onNodeClick: (nodeId: string, nodeType: string) => void;
+}) => {
+  const { data } = useLookupHost(nodeId);
+  return (
+    <div className="p-5 flex flex-col gap-x-4 gap-y-7 dark:bg-bg-side-panel">
+      {tab === 'metadata' && (
+        <Metadata
+          data={{
+            node_name: toTopologyMetadataString(data.hostData.node_name),
+            version: toTopologyMetadataString(data.hostData.version),
+            instance_id: toTopologyMetadataString(data.hostData.instance_id),
+            cloud_provider: toTopologyMetadataString(data.hostData.cloud_provider),
+            cloud_region: toTopologyMetadataString(data.hostData.cloud_region),
+            uptime: toTopologyMetadataString(data.hostData.uptime),
+            is_console_vm: toTopologyMetadataString(data.hostData.is_console_vm),
+            kernel_version: toTopologyMetadataString(data.hostData.kernel_version),
+            os: toTopologyMetadataString(data.hostData.os),
+            local_networks: toTopologyMetadataString(data.hostData.local_networks),
+
+            local_cidr: toTopologyMetadataString(data.hostData.local_cidr),
+            instance_type: toTopologyMetadataString(data.hostData.instance_type),
+            public_ip: toTopologyMetadataString(data.hostData.public_ip),
+            private_ip: toTopologyMetadataString(data.hostData.private_ip),
+            availability_zone: toTopologyMetadataString(data.hostData.availability_zone),
+            resource_group: toTopologyMetadataString(data.hostData.resource_group),
+          }}
+        />
+      )}
+      {tab === 'connections-and-processes' && (
+        <>
+          <ProcessTable
+            processes={data.hostData.processes ?? []}
+            onNodeClick={onNodeClick}
+          />
+          <ConnectionsTable
+            type="inbound"
+            connections={data.hostData.inbound_connections ?? []}
+          />
+          <ConnectionsTable
+            type="outbound"
+            connections={data.hostData.outbound_connections ?? []}
+          />
+        </>
+      )}
+      {tab === 'containers-and-images' && (
+        <>
+          <ContainerTable
+            containers={data?.hostData.containers ?? []}
+            onNodeClick={onNodeClick}
+          />
+          <ImageTable
+            images={data?.hostData.container_images ?? []}
+            onNodeClick={onNodeClick}
+          />
+        </>
+      )}
+      {tab === 'scan-results' && (
+        <>
+          <ScanResult
+            vulnerabilityScanId={data.hostData.vulnerability_latest_scan_id}
+            secretScanId={data.hostData.secret_latest_scan_id}
+            malwareScanId={data.hostData.malware_latest_scan_id}
+            complianceScanId={data.hostData.compliance_latest_scan_id}
+            vulnerabilityScanStatus={data.hostData.vulnerability_scan_status}
+            secretScanStatus={data.hostData.secret_scan_status}
+            malwareScanStatus={data.hostData.malware_scan_status}
+            complianceScanStatus={data.hostData.compliance_scan_status}
+          />
+          <AvailabilityCharts
+            cpuUsage={data.hostData.cpu_usage}
+            cpuMax={data.hostData.cpu_max}
+            memoryUsage={data.hostData.memory_usage}
+            memoryMax={data.hostData.memory_max}
+          />
+        </>
+      )}
+    </div>
+  );
 };

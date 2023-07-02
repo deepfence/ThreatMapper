@@ -133,3 +133,26 @@ export const COMPLIANCE_SCAN_STATUS_GROUPS: Record<
   error: ['ERROR'],
   complete: ['COMPLETE'],
 };
+
+export const SCAN_STATUS_GROUPS = [
+  {
+    label: 'Never scanned',
+    value: 'neverScanned',
+  },
+  {
+    label: 'Starting',
+    value: 'starting',
+  },
+  {
+    label: 'In progress',
+    value: 'inProgress',
+  },
+  {
+    label: 'Error',
+    value: 'error',
+  },
+  {
+    label: 'Complete',
+    value: 'complete',
+  },
+];

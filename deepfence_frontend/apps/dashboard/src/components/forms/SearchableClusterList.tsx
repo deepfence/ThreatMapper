@@ -29,6 +29,8 @@ export const SearchableClusterList = ({
     setSelectedClusters(defaultSelectedClusters ?? []);
   }, [defaultSelectedClusters]);
 
+  // TODO convert to useSuspenseInfiniteQuery, otherwise there will be problems with
+  // error handling
   const { data, isFetching, hasNextPage, fetchNextPage } = useInfiniteQuery({
     ...queries.search.clusters({
       size: PAGE_SIZE,
