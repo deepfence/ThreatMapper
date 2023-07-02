@@ -1,0 +1,4 @@
+.auth-bg {
+    background: url(/src/assets/auth-bg.png) no-repeat center center;
+    background-size: cover;
+  }

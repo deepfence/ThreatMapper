@@ -1,10 +1,9 @@
-import cx from 'classnames';
-import { ActionFunctionArgs, Link, useFetcher } from 'react-router-dom';
-import { Button, TextInput, Typography } from 'ui-components';
+import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
+import { Button, TextInput } from 'ui-components';
 
 import { getUserApiClient } from '@/api/api';
 import { ApiDocsBadRequestResponse } from '@/api/generated';
-import LogoDarkBlue from '@/assets/logo-deepfence-dark-blue.svg';
+import { DFLink } from '@/components/DFLink';
 import { apiWrapper } from '@/utils/api';
 
 export type actionReturnType = {
@@ -61,64 +60,42 @@ export const ForgotPassword = () => {
   return (
     <>
       <fetcher.Form method="post">
-        <div className="text-center">
-          <img
-            src={LogoDarkBlue}
-            alt="Deefence Logo"
-            width="55.46'"
-            height="34.74"
-            className="m-auto"
-          />
-        </div>
-        <h1
-          className={cx(
-            `${Typography.size['2xl']} ${Typography.weight.medium}`,
-            'text-center leading-6 mb-6 mt-2',
-          )}
-        >
+        <h1 className="dark:text-text-text-and-icon text-h2 text-center">
           Forgot Password
         </h1>
-        <p className={`${Typography.size.sm} mb-2.5`}>
-          Provide the email registered with your account.
+        <p className="mt-4 dark:text-text-text-and-icon text-p7">
+          Enter your email address registered with your account. We’ll send you a link to
+          reset your password
         </p>
         <TextInput
-          label="Email Address"
+          className="mt-6"
+          label="Email"
           type="email"
-          placeholder="Email"
-          sizing="sm"
+          placeholder="Enter email"
           name="email"
-          required
           color={data?.fieldErrors?.email ? 'error' : 'default'}
           helperText={data?.fieldErrors?.email}
         />
-
-        <div className="flex flex-col w-full mt-6">
+        {data?.message && <p className={`my-1.5 text-p7 text-center`}>{data.message}</p>}
+        <div className="flex flex-col w-full mt-8">
           <Button
             size="md"
-            color="primary"
-            className="w-full mb-4"
+            className="w-full"
             loading={state === 'submitting'}
             disabled={state === 'submitting'}
             type="submit"
           >
             Send Link
           </Button>
-          <Link
+          <DFLink
             to="/auth/login"
-            className={cx(
-              `${Typography.size.xs} `,
-              'bg-transparent text-center text-blue-600 dark:text-blue-500',
-            )}
+            className="mt-4 text-p4 underline dark:text-accent-accent text-center"
+            unstyled
           >
-            Back to Login
-          </Link>
+            Back to login
+          </DFLink>
         </div>
       </fetcher.Form>
-      {data?.message && (
-        <p className={`mt-1.5 ${Typography.size.sm} text-green-500 relative text-center`}>
-          {data.message}
-        </p>
-      )}
     </>
   );
 };
