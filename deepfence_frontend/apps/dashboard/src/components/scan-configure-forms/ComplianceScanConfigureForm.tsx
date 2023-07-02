@@ -454,7 +454,7 @@ export const ComplianceScanConfigureForm = ({
         )}
         <div className="flex gap-3 mt-10">
           <Button
-            disabled={state !== 'idle'}
+            disabled={selectedCheckTypes.length === 0 || state !== 'idle'}
             loading={state !== 'idle'}
             size="sm"
             type="submit"
