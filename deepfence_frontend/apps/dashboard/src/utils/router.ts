@@ -1,6 +1,7 @@
 import {
   defer as routerDefer,
   IndexRouteObject,
+  NavigateFunction,
   NonIndexRouteObject,
 } from 'react-router-dom';
 
@@ -30,3 +31,7 @@ export type CustomRouteObject =
       meta?: MetaType;
       children?: CustomRouteObject[];
     });
+
+export const historyHelper: {
+  navigate?: NavigateFunction;
+} = {};

@@ -1,46 +1,58 @@
 import '@/features/threat-graph/utils/threat-graph-custom-node';
 
-import { NodeConfig } from '@antv/g6';
-import { useEffect, useRef, useState } from 'react';
+import { IEdge, INode } from '@antv/g6';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { HiOutlineInformationCircle } from 'react-icons/hi';
-import { generatePath, useFetcher } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useMeasure } from 'react-use';
-import { CircleSpinner } from 'ui-components';
 
-import { GraphProviderThreatGraph } from '@/api/generated';
-import { ThreatGraphLoaderData } from '@/features/threat-graph/data-components/threatGraphLoader';
-import { useG6raph } from '@/features/threat-graph/hooks/useG6Graph';
+import { GraphProviderThreatGraph, GraphThreatFiltersTypeEnum } from '@/api/generated';
+import { useG6Graph } from '@/features/threat-graph/hooks/useG6Graph';
 import { ThreatGraphNodeModelConfig } from '@/features/threat-graph/utils/threat-graph-custom-node';
-import { G6GraphData } from '@/features/topology/types/graph';
+import { G6GraphData, G6Node } from '@/features/topology/types/graph';
 import { getNodeImage } from '@/features/topology/utils/graph-styles';
+import { queries } from '@/queries';
 
-export type ThreatGraphFilters = {
-  type?: string;
-  cloud_resource_only?: boolean;
-  aws_account_ids?: string[];
-  gcp_account_ids?: string[];
-  azure_account_ids?: string[];
+const setActiveState = (item: INode | IEdge, active: boolean) => {
+  if (active) {
+    item.toFront();
+    item.setState('active', true);
+  } else {
+    item.toFront();
+    item.clearStates('active');
+  }
 };
+
+function highlihgtChildrenNodes(node: G6Node, value: boolean) {
+  setActiveState(node, value);
+  node.getOutEdges().forEach((edge) => {
+    setActiveState(edge, value);
+    const target = edge.getTarget();
+    highlihgtChildrenNodes(target, value);
+  });
+}
+
+function highlihgtParentNodes(node: G6Node, value: boolean) {
+  setActiveState(node, value);
+  node.getInEdges().forEach((edge) => {
+    setActiveState(edge, value);
+    const source = edge.getSource();
+    highlihgtParentNodes(source, value);
+  });
+}
 
 export const ThreatGraphComponent = ({
   onNodeClick,
-  filters,
 }: {
   onNodeClick?: (model: ThreatGraphNodeModelConfig | undefined) => void;
-  filters?: ThreatGraphFilters;
 }) => {
   const [measureRef, { height, width }] = useMeasure<HTMLDivElement>();
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
-  const { graph } = useG6raph(container, 'threat-graph-node');
-  const { data, loading, ...graphDataFunctions } = useThreatGraphData();
-  const graphDataFunctionsRef = useRef(graphDataFunctions);
-  graphDataFunctionsRef.current = graphDataFunctions;
-
-  useEffect(() => {
-    graphDataFunctionsRef.current.getDataUpdates({ filters });
-  }, [filters]);
+  const { graph } = useG6Graph(container);
+  const { data } = useThreatGraphData();
 
   useEffect(() => {
     if (!graph || !data || isGraphEmpty(data)) return;
@@ -61,17 +73,28 @@ export const ThreatGraphComponent = ({
       const model = item?.getModel?.() as ThreatGraphNodeModelConfig | undefined;
       onNodeClick?.(model);
     });
+    graph.on('node:mouseenter', (e) => {
+      const item = e.item as G6Node;
+      if (item.getOutEdges().length) {
+        highlihgtChildrenNodes(item, true);
+      } else {
+        highlihgtParentNodes(item, true);
+      }
+    });
+    graph.on('node:mouseleave', (e) => {
+      const item = e.item as G6Node;
+      if (item.getOutEdges().length) {
+        highlihgtChildrenNodes(item, false);
+      } else {
+        highlihgtParentNodes(item, false);
+      }
+    });
   }, [graph]);
 
   return (
     <div className="h-full w-full relative select-none" ref={measureRef}>
       <div className="absolute inset-0" ref={setContainer} />
-      {loading ? (
-        <div className="absolute bottom-32 left-6 text-gray-600 dark:text-gray-400">
-          <CircleSpinner size="xl" />
-        </div>
-      ) : null}
-      {!loading && isGraphEmpty(data) ? (
+      {isGraphEmpty(data) ? (
         <div className="absolute inset-0 flex gap-2 flex-col items-center justify-center p-6 bg-white dark:bg-gray-800">
           <div>
             <IconContext.Provider
@@ -89,7 +112,7 @@ export const ThreatGraphComponent = ({
   );
 };
 
-function isGraphEmpty(data?: ThreatGraphLoaderData): boolean {
+function isGraphEmpty(data?: { [key: string]: GraphProviderThreatGraph }): boolean {
   if (!data) return true;
   return (
     !data.aws.resources?.length &&
@@ -113,7 +136,7 @@ function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6Grap
   ) {
     return g6Data;
   }
-  const nodesMap = new Map<string, ThreatGraphNodeModelConfig | NodeConfig>();
+  const nodesMap = new Map<string, ThreatGraphNodeModelConfig>();
   const edgesMap = new Map<
     string,
     {
@@ -125,9 +148,15 @@ function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6Grap
   nodesMap.set('The Internet', {
     id: 'The Internet',
     label: 'The Internet',
-    size: 30,
-    img: getNodeImage('pseudo')!,
-    type: 'image',
+    nodeType: 'pseudo',
+    count: 0,
+    issuesCount: 0,
+    icon: {
+      show: true,
+      img: getNodeImage('pseudo')!,
+      width: 40,
+      height: 40,
+    },
     nonInteractive: true,
   });
 
@@ -140,12 +169,19 @@ function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6Grap
     nodesMap.set(cloudRootId, {
       id: cloudRootId,
       label: cloudKey === 'others' ? 'private cloud' : cloudKey,
-      complianceCount: cloudObj.compliance_count,
+      issuesCount:
+        cloudObj.cloud_compliance_count +
+        cloudObj.compliance_count +
+        cloudObj.secrets_count +
+        cloudObj.vulnerability_count,
       count: 0,
       nodeType: cloudRootId,
-      secretsCount: cloudObj.secrets_count,
-      vulnerabilityCount: cloudObj.vulnerability_count,
-      img: getNodeImage('cloud_provider', cloudKey) ?? getNodeImage('cloud_provider'),
+      icon: {
+        show: true,
+        img: getNodeImage('cloud_provider', cloudKey) ?? getNodeImage('cloud_provider'),
+        width: 30,
+        height: 30,
+      },
       nonInteractive: true,
     });
     edgesMap.set(`The Internet<->${cloudRootId}`, {
@@ -178,14 +214,26 @@ function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6Grap
         if (nodesMap.has(singleGraph.id)) {
           nodesMap.set(singleGraph.id, {
             id: singleGraph.id,
-            label: singleGraph.node_type?.replaceAll('_', ' ') ?? singleGraph.label,
-            complianceCount: singleGraph.compliance_count,
-            count: singleGraph.count,
+            label: `${singleGraph.node_type?.replaceAll('_', ' ') ?? singleGraph.label}${
+              singleGraph.count ? ` (${singleGraph.count})` : ''
+            }`,
+            issuesCount:
+              singleGraph.compliance_count +
+              singleGraph.secrets_count +
+              singleGraph.vulnerability_count +
+              singleGraph.cloud_compliance_count,
             nodeType: singleGraph.node_type,
-            secretsCount: singleGraph.secrets_count,
-            vulnerabilityCount: singleGraph.vulnerability_count,
-            img: getNodeImage(singleGraph.node_type) ?? getNodeImage('cloud_provider')!,
+            icon: {
+              show: true,
+              img: getNodeImage(singleGraph.node_type) ?? getNodeImage('cloud_provider')!,
+              width: 30,
+              height: 30,
+              ...{ cursor: 'pointer' },
+            },
             nodes: singleGraph.nodes,
+            style: {
+              cursor: 'pointer',
+            },
           });
         }
       }
@@ -198,34 +246,14 @@ function getGraphData(data: { [key: string]: GraphProviderThreatGraph }): G6Grap
 }
 
 function useThreatGraphData() {
-  const fetcher = useFetcher<ThreatGraphLoaderData>();
-
-  const getDataUpdates = ({ filters }: { filters?: ThreatGraphFilters }): void => {
-    if (fetcher.state !== 'idle') return;
-    const searchParams = new URLSearchParams();
-    if (filters?.type) searchParams.set('type', filters.type ?? 'all');
-    if (filters?.cloud_resource_only) searchParams.set('cloud_resource_only', 'true');
-    if (filters?.aws_account_ids) {
-      filters?.aws_account_ids.forEach((id) => {
-        searchParams.append('aws_account_ids', id);
-      });
-    }
-    if (filters?.gcp_account_ids) {
-      filters?.gcp_account_ids.forEach((id) => {
-        searchParams.append('gcp_account_ids', id);
-      });
-    }
-    if (filters?.azure_account_ids) {
-      filters?.azure_account_ids.forEach((id) => {
-        searchParams.append('azure_account_ids', id);
-      });
-    }
-    fetcher.load(generatePath(`/data-component/threat-graph?${searchParams.toString()}`));
-  };
-
-  return {
-    data: fetcher.data,
-    getDataUpdates,
-    loading: fetcher.state !== 'idle',
-  };
+  const [searchParams] = useSearchParams();
+  return useSuspenseQuery({
+    ...queries.threat.threatGraph({
+      awsAccountIds: searchParams.getAll('aws_account_ids'),
+      gcpAccountIds: searchParams.getAll('gcp_account_ids'),
+      azureAccountIds: searchParams.getAll('azure_account_ids'),
+      cloudResourceOnly: searchParams.get('cloud_resource_only') === 'true',
+      type: (searchParams.get('type') as GraphThreatFiltersTypeEnum | undefined) ?? 'all',
+    }),
+  });
 }

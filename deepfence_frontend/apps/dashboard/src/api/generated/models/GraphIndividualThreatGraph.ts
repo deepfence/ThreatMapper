@@ -16,49 +16,49 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface GraphVulnerabilityThreatGraph
+ * @interface GraphIndividualThreatGraph
  */
-export interface GraphVulnerabilityThreatGraph {
+export interface GraphIndividualThreatGraph {
     /**
      * 
      * @type {Array<Array<string>>}
-     * @memberof GraphVulnerabilityThreatGraph
+     * @memberof GraphIndividualThreatGraph
      */
     attack_path?: Array<Array<string>> | null;
     /**
      * 
      * @type {string}
-     * @memberof GraphVulnerabilityThreatGraph
+     * @memberof GraphIndividualThreatGraph
      */
     cve_attack_vector?: string;
     /**
      * 
      * @type {Array<string>}
-     * @memberof GraphVulnerabilityThreatGraph
+     * @memberof GraphIndividualThreatGraph
      */
     cve_id?: Array<string> | null;
     /**
      * 
      * @type {Array<any>}
-     * @memberof GraphVulnerabilityThreatGraph
+     * @memberof GraphIndividualThreatGraph
      */
     ports?: Array<any> | null;
 }
 
 /**
- * Check if a given object implements the GraphVulnerabilityThreatGraph interface.
+ * Check if a given object implements the GraphIndividualThreatGraph interface.
  */
-export function instanceOfGraphVulnerabilityThreatGraph(value: object): boolean {
+export function instanceOfGraphIndividualThreatGraph(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function GraphVulnerabilityThreatGraphFromJSON(json: any): GraphVulnerabilityThreatGraph {
-    return GraphVulnerabilityThreatGraphFromJSONTyped(json, false);
+export function GraphIndividualThreatGraphFromJSON(json: any): GraphIndividualThreatGraph {
+    return GraphIndividualThreatGraphFromJSONTyped(json, false);
 }
 
-export function GraphVulnerabilityThreatGraphFromJSONTyped(json: any, ignoreDiscriminator: boolean): GraphVulnerabilityThreatGraph {
+export function GraphIndividualThreatGraphFromJSONTyped(json: any, ignoreDiscriminator: boolean): GraphIndividualThreatGraph {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -71,7 +71,7 @@ export function GraphVulnerabilityThreatGraphFromJSONTyped(json: any, ignoreDisc
     };
 }
 
-export function GraphVulnerabilityThreatGraphToJSON(value?: GraphVulnerabilityThreatGraph | null): any {
+export function GraphIndividualThreatGraphToJSON(value?: GraphIndividualThreatGraph | null): any {
     if (value === undefined) {
         return undefined;
     }

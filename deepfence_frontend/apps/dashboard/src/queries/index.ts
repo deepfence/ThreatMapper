@@ -8,6 +8,7 @@ import { postureQueries } from '@/queries/posture';
 import { registryQueries } from '@/queries/registry';
 import { searchQueries } from '@/queries/search';
 import { secretQueries } from '@/queries/secret';
+import { threatQueries } from '@/queries/threat';
 import { topologyQueries } from '@/queries/topology';
 import { vulnerabilityQueries } from '@/queries/vulnerability';
 
@@ -32,4 +33,5 @@ export const queries = mergeQueryKeys(
   postureQueries,
   topologyQueries,
   lookupQueries,
+  threatQueries,
 );
