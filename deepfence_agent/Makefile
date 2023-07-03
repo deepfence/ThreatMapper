@@ -32,7 +32,7 @@ gocode:
 
 install:
 
-tools/apache/scope/vendor: tools/apache/scope/go.mod $(shell find ../deepfence_utils -name '*.go')
+tools/apache/scope/vendor: tools/apache/scope/go.mod $(shell find ../deepfence_utils -path ../deepfence_utils/vendor -prune -o -name '*.go') $(shell find ./tools/apache/scope -path ./tools/apache/scope/vendor -prune -o -name '*.go')
 	($(CD) tools/apache/scope && go mod tidy -v)
 	($(CD) tools/apache/scope && go mod vendor)
 
