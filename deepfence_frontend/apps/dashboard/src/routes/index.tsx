@@ -16,12 +16,12 @@ const notFoundRoute = [
 export const router = createBrowserRouter([
   {
     path: '/',
-    Component: SetupGlobalNevigateComponent,
+    Component: SetupGlobalNavigateComponent,
     children: [...privateRoutes, ...publicRoutes, ...notFoundRoute],
   },
 ]);
 
-function SetupGlobalNevigateComponent() {
+function SetupGlobalNavigateComponent() {
   const navigate = useNavigate();
   useEffect(() => {
     // we store navigate function here on global object so we can use it outside of react context
