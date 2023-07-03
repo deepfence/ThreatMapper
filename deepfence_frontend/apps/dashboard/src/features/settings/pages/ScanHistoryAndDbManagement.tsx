@@ -1,7 +1,4 @@
 import { useEffect, useState } from 'react';
-import { FaHistory } from 'react-icons/fa';
-import { HiBadgeCheck, HiDatabase, HiOutlineExclamationCircle } from 'react-icons/hi';
-import { IconContext } from 'react-icons/lib';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { Button, FileInput, Listbox, ListboxOption, Modal, Radio } from 'ui-components';
 
@@ -12,6 +9,9 @@ import {
   ModelBulkDeleteScansRequest,
   ModelBulkDeleteScansRequestScanTypeEnum,
 } from '@/api/generated';
+import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { apiWrapper } from '@/utils/api';
 
 const getStatusesOrSeverityByResource = (
   resource: ModelBulkDeleteScansRequestScanTypeEnumType,
@@ -55,7 +55,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
     const scanType = formData
       .get('selectedResource')
       ?.toString() as ModelBulkDeleteScansRequestScanTypeEnumType;
-
     const modelBulkDeleteScansRequest: ModelBulkDeleteScansRequest = {
       scan_type: scanType,
       filters: {
@@ -138,22 +137,6 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
   return {};
 };
 
-const DeleteSuccess = () => {
-  return (
-    <div className="grid place-items-center p-6">
-      <IconContext.Provider
-        value={{
-          className: 'mb-3 dark:text-green-600 text-green-400 w-[70px] h-[70px]',
-        }}
-      >
-        <HiBadgeCheck />
-      </IconContext.Provider>
-      <h3 className="mb-4 font-normal text-center text-sm">
-        Selected scan history deleted successfully
-      </h3>
-    </div>
-  );
-};
 const DeleteConfirmationModal = ({
   showDialog,
   setShowDialog,
@@ -172,35 +155,26 @@ const DeleteConfirmationModal = ({
   }>();
 
   return (
-    <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      {!fetcher.data?.deleteSuccess ? (
-        <div className="grid place-items-center p-6">
-          <IconContext.Provider
-            value={{
-              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-            }}
-          >
-            <HiOutlineExclamationCircle />
-          </IconContext.Provider>
-          <h3 className="mb-4 font-normal text-center text-sm">
-            The selected resource scan history will be deleted.
-            <br />
-            <span>Are you sure you want to delete?</span>
-          </h3>
-
-          {fetcher.data?.message ? (
-            <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
-          ) : null}
-
-          <div className="flex items-center justify-right gap-4">
-            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-              No, Cancel
-            </Button>
+    <Modal
+      size="s"
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title={
+        !fetcher.data?.deleteSuccess ? (
+          <div className="flex gap-3 items-center dark:text-status-error">
+            <span className="h-6 w-6 shrink-0">
+              <ErrorStandardLineIcon />
+            </span>
+            Delete resource
+          </div>
+        ) : undefined
+      }
+      footer={
+        !fetcher.data?.deleteSuccess ? (
+          <div className={'flex gap-x-4 justify-end'}>
             <Button
-              size="xs"
-              color="danger"
-              disabled={fetcher.state !== 'idle'}
-              loading={fetcher.state !== 'idle'}
+              color="error"
+              type="button"
               onClick={() => {
                 const formData = new FormData();
                 formData.append('actionType', ActionEnumType.DELETE);
@@ -213,10 +187,23 @@ const DeleteConfirmationModal = ({
             >
               Yes, I&apos;m sure
             </Button>
+            <Button onClick={() => setShowDialog(false)} type="button" variant="outline">
+              Cancel
+            </Button>
           </div>
+        ) : undefined
+      }
+    >
+      {!fetcher.data?.deleteSuccess ? (
+        <div className="grid">
+          <span>The selected resource scan history will be deleted.</span>
+          <br />
+          <span>Are you sure you want to delete?</span>
+          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
+          <div className="flex items-center justify-right gap-4"></div>
         </div>
       ) : (
-        <DeleteSuccess />
+        <SuccessModalContent text="Sucessfully deleted" />
       )}
     </Modal>
   );
@@ -233,16 +220,7 @@ const UploadVulnerabilityDatabase = () => {
 
   return (
     <>
-      <div className="mt-6 flex gap-x-2 items-center">
-        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-          <IconContext.Provider
-            value={{
-              className: 'text-blue-600 dark:text-blue-400',
-            }}
-          >
-            <HiDatabase />
-          </IconContext.Provider>
-        </div>
+      <div className="mt-6">
         <h3 className="text-h6 dark:text-text-text-and-icon">Database Management</h3>
       </div>
 
@@ -265,7 +243,6 @@ const UploadVulnerabilityDatabase = () => {
 
       <div className="w-fit mt-4 flex gap-x-4 items-center">
         <Button
-          color="primary"
           size="sm"
           className="w-[108px]"
           type="button"
@@ -320,16 +297,7 @@ const ScanHistoryAndDbManagement = () => {
         />
       )}
       <div>
-        <div className="mt-2 flex gap-x-2 items-center">
-          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-            <IconContext.Provider
-              value={{
-                className: 'text-blue-600 dark:text-blue-400',
-              }}
-            >
-              <FaHistory />
-            </IconContext.Provider>
-          </div>
+        <div className="mt-2">
           <h3 className="text-h6 dark:text-text-text-and-icon">Scan History</h3>
         </div>
 

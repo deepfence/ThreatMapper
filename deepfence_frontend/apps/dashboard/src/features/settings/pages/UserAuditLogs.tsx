@@ -1,7 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useMemo } from 'react';
-import { HiOutlineDuplicate, HiViewList } from 'react-icons/hi';
-import { IconContext } from 'react-icons/lib';
 import {
   createColumnHelper,
   IconButton,
@@ -12,6 +10,7 @@ import {
 
 import { PostgresqlDbGetAuditLogsRow } from '@/api/generated';
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
@@ -77,8 +76,8 @@ const AuditTable = () => {
                   variant="outline"
                   onClick={() => copy(cell.row.original.resources ?? '')}
                   icon={
-                    <span>
-                      <HiOutlineDuplicate />
+                    <span className="w-3 h-3">
+                      <CopyLineIcon />
                     </span>
                   }
                 />
@@ -125,17 +124,8 @@ const AuditTable = () => {
 const UserAuditLogs = () => {
   return (
     <div className="h-full">
-      <div className="mt-2 flex gap-x-2 items-center">
-        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-          <IconContext.Provider
-            value={{
-              className: 'text-blue-600 dark:text-blue-400',
-            }}
-          >
-            <HiViewList />
-          </IconContext.Provider>
-        </div>
-        <h3 className="text-h6 dark:text-text-text-and-icon">User Audit Logs</h3>
+      <div className="mt-2">
+        <h3 className="text-h6 dark:text-text-text-and-icon">User audit logs</h3>
       </div>
       <Suspense
         fallback={

@@ -49,7 +49,7 @@ import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiL
 import { useGetCurrentUser } from '@/features/common/data-component/getUserApiLoader';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { queries } from '@/queries';
+import { invalidateQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 
 export type ActionReturnType = {
@@ -255,6 +255,7 @@ export const action = async ({
       success: true,
     };
   }
+  invalidateQueries(queries.setting.listUsers._def);
   return {
     success: false,
   };
@@ -353,9 +354,7 @@ const InviteUserModal = ({
         {data?.success && data?.successMessage ? (
           <SuccessModalContent text={data?.successMessage}>
             {data?.invite_url && (
-              <p
-                className={`mb-4 font-normal text-center text-sm text-green-500  w-[260px]`}
-              >
+              <p className={`my-4 text-p7 dark:text-status-success`}>
                 {data?.invite_url} , invite will expire after {data?.invite_expiry_hours}{' '}
                 hours
               </p>
@@ -373,6 +372,8 @@ const InviteUserModal = ({
               helperText={data?.fieldErrors?.email}
             />
             <Listbox
+              variant="underline"
+              value={_role}
               name="role"
               label={'Role'}
               placeholder="Role"
@@ -396,8 +397,8 @@ const InviteUserModal = ({
             </Listbox>
 
             {!data?.success && data?.message && (
-              <div className={`text-red-600 dark:text-red-500 text-sm`}>
-                <span>{data.message}</span>
+              <div className={`dark:text-status-error text-p7`}>
+                <span>{data?.message}</span>
               </div>
             )}
             <div className="flex items-center gap-x-2">
@@ -456,17 +457,11 @@ const EditUserModal = ({
   const role = Object.entries(ModelUpdateUserIdRequestRoleEnum).find(
     ([_, val]) => val === user.role,
   )?.[0];
-
   const [_role, _setRole] = useState('');
   const [_status, _setStatus] = useState('');
 
   return (
-    <SlidingModal
-      size="s"
-      open={showDialog}
-      onOpenChange={() => setShowDialog(false)}
-      modal={false}
-    >
+    <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
         <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
           Update user
@@ -474,7 +469,7 @@ const EditUserModal = ({
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>
-        {!data?.success && data?.message ? (
+        {!data?.success ? (
           <fetcher.Form method="post" className="flex flex-col gap-y-8 mt-4 mx-4">
             <input readOnly type="hidden" name="id" value={user?.id} />
             <input
@@ -504,6 +499,7 @@ const EditUserModal = ({
               required
             />
             <Listbox
+              variant="underline"
               value={_role}
               defaultValue={role}
               name="role"
@@ -528,6 +524,8 @@ const EditUserModal = ({
               })}
             </Listbox>
             <Listbox
+              variant="underline"
+              value={status}
               name="status"
               label={'Status'}
               placeholder="Active"
@@ -545,9 +543,11 @@ const EditUserModal = ({
               <ListboxOption value="Active">Active</ListboxOption>
               <ListboxOption value="InActive">Inactive</ListboxOption>
             </Listbox>
-            {data?.success && <span>{data.message}</span>}
+            {!data?.success && data?.message && (
+              <p className="dark:text-status-error text-p7">{data.message}</p>
+            )}
 
-            <div className="flex gap-x-2 mt-[40px]">
+            <div className="flex gap-x-2 mt-9">
               <Button type="submit">Update</Button>
               <Button
                 variant="outline"

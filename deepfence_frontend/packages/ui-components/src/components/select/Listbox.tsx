@@ -1,3 +1,5 @@
+import './../input/input.css';
+
 import { autoUpdate, flip, offset, size, useFloating } from '@floating-ui/react-dom';
 import {
   Listbox as HUIListbox,
@@ -6,54 +8,74 @@ import {
   Transition,
 } from '@headlessui/react';
 import { cva } from 'cva';
-import { isNil } from 'lodash-es';
+import { isEmpty, isNil } from 'lodash-es';
 import { createContext, ReactNode, useContext, useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from 'tailwind-preset';
 
 import HelperText from '@/components/input/HelperText';
 import { Badge, Checkbox, Separator } from '@/main';
-export type ColorType = 'default';
+export type ColorType = 'default' | 'error';
 
 const ListboxContext = createContext<{
   multiple: boolean;
 }>({
   multiple: false,
 });
+const defaultStyle = cn(
+  // border
+  'dark:border rounded-[5px]',
+  'border-bg-grid-border dark:border-bg-grid-border',
+  // bg styles
+  'bg-bg-card dark:bg-bg-card',
+  // placeholder styles
+  'placeholder-gray-400 disabled:placeholder-gray-500',
+  'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
+  // text styles
+  'text-text-input-value dark:text-text-input-value',
+  // disabled text color
+  'disabled:text-gray-600 dark:disabled:text-gray-600',
+);
+const defaultUnderlineStyle = cn(
+  'focus-visible:outline-none',
+  'bg-transparent dark:bg-transparent',
+  'dark:border-transparent dark:border-b rounded-none',
+  'dark:border-b-text-text-and-icon dark:disabled:border-b-gray-600',
+  // active
+  'df-input',
+  'transition-[background-size] duration-[0.2s] ease-[ease]',
+  'dark:focus:bg-[length:100%_100%] dark:focus:border-b-accent-accent dark:focus:bg-no-repeat',
+  'data-[headlessui-state=open]:dark:border-b-accent-accent',
 
-const buttonCva = cva(
-  [
-    'relative',
-    'disabled:cursor-not-allowed',
-    'py-[7px] px-3',
-    // border radius
-    'border rounded-[5px]',
-  ],
-  {
-    variants: {
-      color: {
-        default: [
-          cn(
-            // border
-            'border-bg-grid-border dark:border-bg-grid-border',
-            // bg styles
-            'bg-bg-card dark:bg-bg-card',
-            // placeholder styles
-            'placeholder-gray-400 disabled:placeholder-gray-500',
-            'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
-            // text styles
-            'text-text-input-value dark:text-text-input-value',
-            // disabled text color
-            'disabled:text-gray-600 dark:disabled:text-gray-600',
-          ),
-        ],
-      },
+  'placeholder-gray-400 disabled:placeholder-gray-500',
+  'dark:placeholder-gray-400 dark:disabled:placeholder-gray-500',
+  // text styles
+  'text-text-input-value dark:text-text-input-value',
+  // disabled text color
+  'disabled:text-gray-600 dark:disabled:text-gray-600',
+);
+const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[7px] px-3'], {
+  variants: {
+    color: {
+      default: [defaultStyle],
+      error: ['dark:text-chart-red'],
     },
-    defaultVariants: {
-      color: 'default',
+    variant: {
+      underline: '',
+      default: '',
     },
   },
-);
+  defaultVariants: {
+    color: 'default',
+  },
+  compoundVariants: [
+    {
+      variant: 'underline',
+      color: 'default',
+      className: defaultUnderlineStyle,
+    },
+  ],
+});
 const CaretIcon = () => {
   return (
     <svg
@@ -127,6 +149,7 @@ interface ListboxProps<TType, TActualType>
     TActualType
   > {
   color?: ColorType;
+  variant?: 'underline' | 'default';
   children?: React.ReactNode;
   label?: string;
   clearAll?: React.ReactNode;
@@ -139,6 +162,7 @@ interface ListboxProps<TType, TActualType>
 }
 export function Listbox<TType, TActualType>({
   color,
+  variant,
   children,
   value,
   label,
@@ -200,11 +224,14 @@ export function Listbox<TType, TActualType>({
           <HUIListbox.Button
             id={_id}
             ref={(ele) => refs.setReference(ele)}
-            className={buttonCva({
-              color,
-            })}
+            className={cn(
+              buttonCva({
+                color,
+                variant,
+              }),
+            )}
           >
-            <span className="truncate text-start block text-p7">
+            <span className="truncate text-start block text-p4">
               {getPlaceholderValue(value, getDisplayValue, placeholder)}
             </span>
             <div
@@ -232,6 +259,7 @@ export function Listbox<TType, TActualType>({
           )}
           <Portal>
             <Transition
+              className="pointer-events-auto"
               as={'div'}
               enter="transition ease-out duration-1200"
               enterFrom="opacity-0 -translate-y-1"
@@ -334,7 +362,7 @@ function getPlaceholderValue<T extends unknown | unknown[]>(
   getDisplayValue?: (value?: T) => string,
   defaultPlaceholder?: string,
 ) {
-  if (isNil(value)) {
+  if (isNil(value) || isEmpty(value)) {
     return (
       <span className="dark:text-gray-600 block">
         {defaultPlaceholder || 'Select...'}

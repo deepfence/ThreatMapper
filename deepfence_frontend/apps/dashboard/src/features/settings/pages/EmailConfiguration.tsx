@@ -1,13 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useState } from 'react';
-import { IconContext } from 'react-icons';
-import {
-  HiLocationMarker,
-  HiOutlineMail,
-  HiServer,
-  HiSun,
-  HiTerminal,
-} from 'react-icons/hi';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import {
   Button,
@@ -162,6 +154,7 @@ const EmailConfigurationModal = ({
             value={ActionEnumType.ADD_CONFIGURATION}
           />
           <Listbox
+            variant="underline"
             name="email_provider"
             label={'Email Provider'}
             placeholder="Email Provider"
@@ -322,14 +315,7 @@ const Configuration = () => {
           </div>
         </div>
         <div className="flex mt-2">
-          <span className="text-p7 flex items-center gap-x-1 min-w-[140px] dark:text-text-text-and-icon">
-            <IconContext.Provider
-              value={{
-                className: 'w-4 h-4',
-              }}
-            >
-              <HiServer />
-            </IconContext.Provider>
+          <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
             Email Provider
           </span>
           <span className="text-p4 dark:text-text-input-value">
@@ -337,14 +323,7 @@ const Configuration = () => {
           </span>
         </div>
         <div className="flex">
-          <span className="text-p7 flex items-center gap-x-1 min-w-[140px] dark:text-text-text-and-icon">
-            <IconContext.Provider
-              value={{
-                className: 'w-4 h-4',
-              }}
-            >
-              <HiOutlineMail />
-            </IconContext.Provider>
+          <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
             Email Id
           </span>
           <span className="text-p4 dark:text-text-input-value">
@@ -352,14 +331,7 @@ const Configuration = () => {
           </span>
         </div>
         <div className="flex">
-          <span className="text-p7 flex items-center gap-x-1 min-w-[140px] dark:text-text-text-and-icon">
-            <IconContext.Provider
-              value={{
-                className: 'w-4 h-4',
-              }}
-            >
-              <HiLocationMarker />
-            </IconContext.Provider>
+          <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
             Region
           </span>
           <span className="text-p4 dark:text-text-input-value">
@@ -367,31 +339,13 @@ const Configuration = () => {
           </span>
         </div>
         <div className="flex">
-          <span className="text-p7 flex items-center gap-x-1 min-w-[140px] dark:text-text-text-and-icon">
-            <IconContext.Provider
-              value={{
-                className: 'w-4 h-4',
-              }}
-            >
-              <HiTerminal />
-            </IconContext.Provider>
-            Port
-          </span>
+          <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">Port</span>
           <span className="text-p4 dark:text-text-input-value">
             {configuration.port || '-'}
           </span>
         </div>
         <div className="flex">
-          <span className="text-p7 flex items-center gap-x-1 min-w-[140px] dark:text-text-text-and-icon">
-            <IconContext.Provider
-              value={{
-                className: 'w-4 h-4',
-              }}
-            >
-              <HiSun />
-            </IconContext.Provider>
-            SMTP
-          </span>
+          <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">SMTP</span>
           <span className="text-p4 dark:text-text-input-value">
             {configuration.smtp || '-'}
           </span>
@@ -414,17 +368,8 @@ const Configuration = () => {
 const EmailConfiguration = () => {
   return (
     <div>
-      <div className="mt-2 flex gap-x-2 items-center">
-        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-          <IconContext.Provider
-            value={{
-              className: 'text-blue-600 dark:text-blue-400',
-            }}
-          >
-            <HiOutlineMail />
-          </IconContext.Provider>
-        </div>
-        <h3 className="text-h6 dark:text-text-text-and-icon">Email Configuration</h3>
+      <div className="mt-2">
+        <h3 className="text-h6 dark:text-text-text-and-icon">Email configurations</h3>
       </div>
       <div className="mt-2">
         <Suspense fallback={<CircleSpinner size="sm" />}>

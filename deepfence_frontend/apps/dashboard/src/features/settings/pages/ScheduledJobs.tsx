@@ -1,7 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useCallback, useMemo, useState } from 'react';
-import { IconContext } from 'react-icons';
-import { HiClock } from 'react-icons/hi';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
@@ -234,17 +232,8 @@ const ScheduledJobs = () => {
     <>
       <div className="flex justify-between">
         <div>
-          <div className="mt-2 flex gap-x-2 items-center">
-            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-              <IconContext.Provider
-                value={{
-                  className: 'text-blue-600 dark:text-blue-400',
-                }}
-              >
-                <HiClock />
-              </IconContext.Provider>
-            </div>
-            <h3 className="text-h6 dark:text-text-text-and-icon">Scheduled Jobs</h3>
+          <div className="mt-2">
+            <h3 className="text-h6 dark:text-text-text-and-icon">Scheduled jobs</h3>
           </div>
         </div>
       </div>

@@ -2,7 +2,6 @@ import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { FaPencilAlt } from 'react-icons/fa';
-import { HiGlobeAlt } from 'react-icons/hi';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import {
   Button,
@@ -250,16 +249,7 @@ const SettingTable = () => {
 const GlobalSettings = () => {
   return (
     <div className="h-full">
-      <div className="mt-2 flex gap-x-2 items-center">
-        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-          <IconContext.Provider
-            value={{
-              className: 'text-blue-600 dark:text-blue-400',
-            }}
-          >
-            <HiGlobeAlt />
-          </IconContext.Provider>
-        </div>
+      <div className="mt-2">
         <h3 className="text-h6 dark:text-text-text-and-icon">Global Settings</h3>
       </div>
       <Suspense
