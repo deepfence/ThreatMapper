@@ -64,14 +64,39 @@ func (h *Handler) GetIndividualThreatGraph(w http.ResponseWriter, r *http.Reques
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	vulnerabilityThreatGraph, err := reporters_graph.GetIndividualThreatGraph[model.Vulnerability](
-		r.Context(),
-		req.GraphType,
-		req.NodeIds)
+	var individualThreatGraph []reporters_graph.IndividualThreatGraph
+	switch req.IssueType {
+	case "vulnerability":
+		individualThreatGraph, err = reporters_graph.GetIndividualThreatGraph[model.Vulnerability](
+			r.Context(),
+			req.GraphType,
+			req.NodeIds)
+	case "secret":
+		individualThreatGraph, err = reporters_graph.GetIndividualThreatGraph[model.Secret](
+			r.Context(),
+			req.GraphType,
+			req.NodeIds)
+	case "malware":
+		individualThreatGraph, err = reporters_graph.GetIndividualThreatGraph[model.Malware](
+			r.Context(),
+			req.GraphType,
+			req.NodeIds)
+	case "compliance":
+		individualThreatGraph, err = reporters_graph.GetIndividualThreatGraph[model.Compliance](
+			r.Context(),
+			req.GraphType,
+			req.NodeIds)
+	case "cloud_compliance":
+		individualThreatGraph, err = reporters_graph.GetIndividualThreatGraph[model.CloudCompliance](
+			r.Context(),
+			req.GraphType,
+			req.NodeIds)
+	}
+
 	if err != nil {
 		log.Error().Msgf("Error GetIndividualThreatGraph: %v", err)
 		respondError(err, w)
 		return
 	}
-	httpext.JSON(w, http.StatusOK, vulnerabilityThreatGraph)
+	httpext.JSON(w, http.StatusOK, individualThreatGraph)
 }
