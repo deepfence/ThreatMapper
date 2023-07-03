@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import useLocation from 'react-use/lib/useLocation';
 
-import { getRouter } from '@/routes';
+import { router } from '@/routes';
 
 const defaultTitle = 'Deepfence';
 
@@ -9,7 +9,7 @@ export function useDocumentTitle() {
   const { pathname } = useLocation();
   useEffect(() => {
     if (pathname) {
-      const lastMatchedRoute = getRouter().state.matches.at(-1);
+      const lastMatchedRoute = router.state.matches.at(-1);
       if (lastMatchedRoute) {
         // in future we can have meta function which can utilise the
         // loader data to generate the title
