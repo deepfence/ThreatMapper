@@ -1,10 +1,10 @@
+import { useSuspenseQuery } from '@suspensive/react-query';
 import cx from 'classnames';
 import { Suspense, useCallback, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { FaPencilAlt, FaTrashAlt, FaUserPlus } from 'react-icons/fa';
+import { FaUserPlus } from 'react-icons/fa';
 import {
-  HiDotsVertical,
-  HiOutlineExclamationCircle,
+  HiCheck,
   HiOutlineEye,
   HiOutlineEyeOff,
   HiOutlineKey,
@@ -13,7 +13,8 @@ import {
   HiOutlineUser,
   HiUsers,
 } from 'react-icons/hi';
-import { ActionFunctionArgs, useFetcher, useLoaderData } from 'react-router-dom';
+import { MdCopyAll } from 'react-icons/md';
+import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 import {
@@ -21,9 +22,14 @@ import {
   createColumnHelper,
   Dropdown,
   DropdownItem,
+  IconButton,
+  Listbox,
+  ListboxOption,
   Modal,
-  Select,
-  SelectItem,
+  SlidingModal,
+  SlidingModalCloseButton,
+  SlidingModalContent,
+  SlidingModalHeader,
   Table,
   TableSkeleton,
   TextInput,
@@ -36,42 +42,15 @@ import {
   ModelUpdateUserIdRequestRoleEnum,
 } from '@/api/generated';
 import { ModelUser } from '@/api/generated/models/ModelUser';
-import { CopyToClipboard } from '@/components/CopyToClipboard';
+import { useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
+import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
 import { useGetCurrentUser } from '@/features/common/data-component/getUserApiLoader';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
-import { SettingsTab } from '@/features/settings/components/SettingsTab';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
-import { DFAwait } from '@/utils/suspense';
-
-type LoaderDataType = {
-  message?: string;
-  data?: ModelUser[];
-};
-const getUsers = async (): Promise<LoaderDataType> => {
-  const getUsers = apiWrapper({ fn: getUserApiClient().getUsers });
-  const users = await getUsers();
-
-  if (!users.ok) {
-    if (users.error.response?.status === 403) {
-      return {
-        message: 'You do not have enough permissions to view users',
-      };
-    }
-    throw users.error;
-  }
-
-  return {
-    data: users.value,
-  };
-};
-const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
-  return typedDefer({
-    data: getUsers(),
-  });
-};
 
 export type ActionReturnType = {
   message?: string;
@@ -97,6 +76,12 @@ export enum ActionEnumType {
   INVITE_USER = 'inviteUser',
   EDIT_USER = 'editUser',
 }
+
+const useListUsers = () => {
+  return useSuspenseQuery({
+    ...queries.setting.listUsers(),
+  });
+};
 
 export const action = async ({
   request,
@@ -274,7 +259,13 @@ export const action = async ({
     success: false,
   };
 };
-const ActionDropdown = ({ user }: { user: ModelUser }) => {
+const ActionDropdown = ({
+  user,
+  trigger,
+}: {
+  user: ModelUser;
+  trigger: React.ReactNode;
+}) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showEditUserForm, setShowEditUserForm] = useState(false);
 
@@ -296,47 +287,27 @@ const ActionDropdown = ({ user }: { user: ModelUser }) => {
       )}
       <Dropdown
         triggerAsChild={true}
-        align="end"
+        align="start"
         content={
           <>
             <DropdownItem
-              className="text-sm"
               onClick={() => {
                 setShowEditUserForm(true);
               }}
             >
-              <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-                <IconContext.Provider
-                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
-                >
-                  <FaPencilAlt />
-                </IconContext.Provider>
-                Edit
-              </span>
+              Edit
             </DropdownItem>
             <DropdownItem
-              className="text-sm"
               onClick={() => {
                 setShowDeleteDialog(true);
               }}
             >
-              <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
-                <IconContext.Provider
-                  value={{ className: 'text-red-700 dark:text-red-400' }}
-                >
-                  <FaTrashAlt className="text-red-500" />
-                </IconContext.Provider>
-                Delete
-              </span>
+              Delete
             </DropdownItem>
           </>
         }
       >
-        <Button size="xs" color="normal" className="hover:bg-transparent">
-          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-            <HiDotsVertical />
-          </IconContext.Provider>
-        </Button>
+        {trigger}
       </Dropdown>
     </>
   );
@@ -368,94 +339,105 @@ const InviteUserModal = ({
 }) => {
   const fetcher = useFetcher<ActionReturnType>();
   const { data, state } = fetcher;
+  const [_role, _setRole] = useState('');
 
   return (
-    <Modal
-      open={showDialog}
-      onOpenChange={() => setShowDialog(false)}
-      title="Invite User"
-    >
-      {data?.success && data?.successMessage ? (
-        <SuccessModalContent text={data?.successMessage}>
-          {data?.invite_url && (
-            <p
-              className={`mb-4 font-normal text-center text-sm text-green-500  w-[260px]`}
+    <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
+      <SlidingModalHeader>
+        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+          Invite user
+        </div>
+      </SlidingModalHeader>
+      <SlidingModalCloseButton />
+      <SlidingModalContent>
+        {data?.success && data?.successMessage ? (
+          <SuccessModalContent text={data?.successMessage}>
+            {data?.invite_url && (
+              <p
+                className={`mb-4 font-normal text-center text-sm text-green-500  w-[260px]`}
+              >
+                {data?.invite_url} , invite will expire after {data?.invite_expiry_hours}{' '}
+                hours
+              </p>
+            )}
+          </SuccessModalContent>
+        ) : (
+          <fetcher.Form method="post" className="flex flex-col gap-y-8 mt-4 mx-4">
+            <TextInput
+              label="Email"
+              type={'email'}
+              placeholder="Email"
+              name="email"
+              color={data?.fieldErrors?.email ? 'error' : 'default'}
+              required
+              helperText={data?.fieldErrors?.email}
+            />
+            <Listbox
+              name="role"
+              label={'Role'}
+              placeholder="Role"
+              helperText={data?.fieldErrors?.role}
+              onChange={(item: string) => {
+                _setRole(item);
+              }}
+              getDisplayValue={() => {
+                return Object.keys(ModelUpdateUserIdRequestRoleEnum).filter((item) => {
+                  return item === _role;
+                })[0];
+              }}
             >
-              {data?.invite_url} , invite will expire after {data?.invite_expiry_hours}{' '}
-              hours
-            </p>
-          )}
-        </SuccessModalContent>
-      ) : (
-        <fetcher.Form
-          method="post"
-          className="flex flex-col gap-y-3 mt-2 mb-8 mx-8 w-[260px]"
-        >
-          <TextInput
-            label="Email"
-            type={'email'}
-            placeholder="Email"
-            name="email"
-            color={data?.fieldErrors?.email ? 'error' : 'default'}
-            sizing="sm"
-            required
-            helperText={data?.fieldErrors?.email}
-          />
-          <Select
-            noPortal
-            name="role"
-            label={'Role'}
-            placeholder="Role"
-            sizing="xs"
-            helperText={data?.fieldErrors?.role}
-          >
-            {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
-              return (
-                <SelectItem value={role} key={role}>
-                  {role}
-                </SelectItem>
-              );
-            })}
-          </Select>
-          <div className={`text-red-600 dark:text-red-500 text-sm`}>
-            {!data?.success && data?.message && <span>{data.message}</span>}
-          </div>
-          <Button
-            color="primary"
-            size="sm"
-            type="submit"
-            name="intent"
-            value={ModelInviteUserRequestActionEnum['SendInviteEmail']}
-          >
-            Send invite via email
-          </Button>
+              {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
+                return (
+                  <ListboxOption value={role} key={role}>
+                    {role}
+                  </ListboxOption>
+                );
+              })}
+            </Listbox>
 
-          <input
-            type="text"
-            name="_actionType"
-            hidden
-            readOnly
-            value={ActionEnumType.INVITE_USER}
-          />
+            {!data?.success && data?.message && (
+              <div className={`text-red-600 dark:text-red-500 text-sm`}>
+                <span>{data.message}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-x-2">
+              <Button
+                size="sm"
+                type="submit"
+                name="intent"
+                value={ModelInviteUserRequestActionEnum['SendInviteEmail']}
+              >
+                Send invite via email
+              </Button>
 
-          <Button
-            outline
-            type="submit"
-            size="sm"
-            name="intent"
-            value={ModelInviteUserRequestActionEnum['GetInviteLink']}
-          >
-            Copy invite link
-          </Button>
-          {data?.invite_url && (
-            <p className={`mt-1.5 font-normal text-center text-sm text-green-500`}>
-              Invite URL: {data?.invite_url}, invite will expire after{' '}
-              {data?.invite_expiry_hours} hours
-            </p>
-          )}
-        </fetcher.Form>
-      )}
-    </Modal>
+              <input
+                type="text"
+                name="_actionType"
+                hidden
+                readOnly
+                value={ActionEnumType.INVITE_USER}
+              />
+
+              <Button
+                variant="outline"
+                type="submit"
+                size="sm"
+                name="intent"
+                value={ModelInviteUserRequestActionEnum['GetInviteLink']}
+              >
+                Copy invite link
+              </Button>
+            </div>
+            {data?.invite_url && (
+              <p className={`mt-1.5 font-normal text-center text-sm text-green-500`}>
+                Invite URL: {data?.invite_url}, invite will expire after{' '}
+                {data?.invite_expiry_hours} hours
+              </p>
+            )}
+          </fetcher.Form>
+        )}
+      </SlidingModalContent>
+    </SlidingModal>
   );
 };
 
@@ -475,86 +457,112 @@ const EditUserModal = ({
     ([_, val]) => val === user.role,
   )?.[0];
 
+  const [_role, _setRole] = useState('');
+  const [_status, _setStatus] = useState('');
+
   return (
-    <Modal
+    <SlidingModal
+      size="s"
       open={showDialog}
       onOpenChange={() => setShowDialog(false)}
-      title="Update User"
+      modal={false}
     >
-      {!data?.success ? (
-        <fetcher.Form
-          method="post"
-          className="flex flex-col gap-y-3 mt-2 mb-8 mx-8 w-[260px]"
-        >
-          <input readOnly type="hidden" name="id" value={user?.id} />
-          <input
-            readOnly
-            type="hidden"
-            name="_actionType"
-            value={ActionEnumType.EDIT_USER}
-          />
-          <TextInput
-            label="First Name"
-            type={'text'}
-            placeholder="First Name"
-            name="firstName"
-            color={data?.fieldErrors?.firstName ? 'error' : 'default'}
-            sizing="sm"
-            defaultValue={user?.first_name}
-            helperText={data?.fieldErrors?.firstName}
-            required
-          />
-          <TextInput
-            label="Last Name"
-            type={'text'}
-            placeholder="Last Name"
-            name="lastName"
-            sizing="sm"
-            color={data?.fieldErrors?.lastName ? 'error' : 'default'}
-            defaultValue={user?.last_name}
-            helperText={data?.fieldErrors?.lastName}
-            required
-          />
-          <Select
-            noPortal
-            defaultValue={role}
-            name="role"
-            label={'Role'}
-            placeholder="Role"
-            sizing="xs"
-            helperText={data?.fieldErrors?.role}
-          >
-            {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
-              return (
-                <SelectItem value={role} key={role}>
-                  {role}
-                </SelectItem>
-              );
-            })}
-          </Select>
-          <Select
-            noPortal
-            name="status"
-            label={'Status'}
-            placeholder="Active"
-            sizing="xs"
-            defaultValue={user?.is_active ? 'Active' : 'inActive'}
-            helperText={data?.fieldErrors?.status}
-          >
-            <SelectItem value="Active">Active</SelectItem>
-            <SelectItem value="InActive">InActive</SelectItem>
-          </Select>
-          <div className={`text-red-600 dark:text-red-500 text-sm`}>
-            {!data?.success && data?.message && <span>{data.message}</span>}
-          </div>
-          <Button color="primary" type="submit" size="sm">
-            Update
-          </Button>
-        </fetcher.Form>
-      ) : (
-        <SuccessModalContent text="User details successfully updated!" />
-      )}
-    </Modal>
+      <SlidingModalHeader>
+        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+          Update user
+        </div>
+      </SlidingModalHeader>
+      <SlidingModalCloseButton />
+      <SlidingModalContent>
+        {!data?.success && data?.message ? (
+          <fetcher.Form method="post" className="flex flex-col gap-y-8 mt-4 mx-4">
+            <input readOnly type="hidden" name="id" value={user?.id} />
+            <input
+              readOnly
+              type="hidden"
+              name="_actionType"
+              value={ActionEnumType.EDIT_USER}
+            />
+            <TextInput
+              label="First Name"
+              type={'text'}
+              placeholder="First Name"
+              name="firstName"
+              color={data?.fieldErrors?.firstName ? 'error' : 'default'}
+              defaultValue={user?.first_name}
+              helperText={data?.fieldErrors?.firstName}
+              required
+            />
+            <TextInput
+              label="Last Name"
+              type={'text'}
+              placeholder="Last Name"
+              name="lastName"
+              color={data?.fieldErrors?.lastName ? 'error' : 'default'}
+              defaultValue={user?.last_name}
+              helperText={data?.fieldErrors?.lastName}
+              required
+            />
+            <Listbox
+              value={_role}
+              defaultValue={role}
+              name="role"
+              label={'Role'}
+              placeholder="Role"
+              helperText={data?.fieldErrors?.role}
+              onChange={(item) => {
+                _setRole(item);
+              }}
+              getDisplayValue={() => {
+                return Object.keys(ModelUpdateUserIdRequestRoleEnum).filter((item) => {
+                  return item === _role;
+                })[0];
+              }}
+            >
+              {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
+                return (
+                  <ListboxOption value={role} key={role}>
+                    {role}
+                  </ListboxOption>
+                );
+              })}
+            </Listbox>
+            <Listbox
+              name="status"
+              label={'Status'}
+              placeholder="Active"
+              defaultValue={user?.is_active ? 'Active' : 'inActive'}
+              helperText={data?.fieldErrors?.status}
+              onChange={(item) => {
+                _setStatus(item);
+              }}
+              getDisplayValue={() => {
+                return ['Active', 'Inactive'].filter((item) => {
+                  return item === _status;
+                })[0];
+              }}
+            >
+              <ListboxOption value="Active">Active</ListboxOption>
+              <ListboxOption value="InActive">Inactive</ListboxOption>
+            </Listbox>
+            {data?.success && <span>{data.message}</span>}
+
+            <div className="flex gap-x-2 mt-[40px]">
+              <Button type="submit">Update</Button>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setShowDialog(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </fetcher.Form>
+        ) : (
+          <SuccessModalContent text="User details successfully updated!" />
+        )}
+      </SlidingModalContent>
+    </SlidingModal>
   );
 };
 
@@ -588,6 +596,8 @@ const APITokenComponent = () => {
   const [showApikey, setShowApiKey] = useState(false);
   const [openChangePasswordForm, setOpenChangePasswordForm] = useState(false);
 
+  const { copy, isCopied } = useCopyToClipboardState();
+
   return (
     <div className="text-gray-600 dark:text-white rounded-lg w-full">
       <ChangePasswordModal
@@ -611,26 +621,19 @@ const APITokenComponent = () => {
                   cx(
                     'font-semibold w-fit text-xs rounded-sm dark:text-gray-100 self-start',
                     {
-                      'text-green-500 dark:text-green-400': currentUserData?.is_active,
-                      'text-gray-700 dark:text-gray-400': !currentUserData?.is_active,
+                      'text-green-500 dark:text-status-success':
+                        currentUserData?.is_active,
+                      'text-gray-700 dark:text-df-gray-400': !currentUserData?.is_active,
                     },
                   ),
                 )}
               >
-                {currentUserData?.is_active ? 'Active' : 'InActive'}
+                {currentUserData?.is_active ? 'Active' : 'Inactive'}
               </span>
             </div>
-            <Button
-              color="primary"
-              size="xs"
-              className="ml-auto self-start"
-              onClick={() => setOpenChangePasswordForm(true)}
-            >
-              Change Password
-            </Button>
           </div>
           <div className="flex mt-4 mb-2">
-            <span className="text-sm text-gray-500 flex items-center gap-x-1 min-w-[140px] dark:text-gray-400">
+            <span className="text-p7 flex items-center gap-x-1 min-w-[140px] dark:text-text-text-and-icon">
               <IconContext.Provider
                 value={{
                   className: 'w-4 h-4',
@@ -640,12 +643,12 @@ const APITokenComponent = () => {
               </IconContext.Provider>
               Email
             </span>
-            <span className="text-sm dark:text-gray-100 font-semibold">
+            <span className="text-p4 dark:text-text-input-value">
               {currentUserData?.email || '-'}
             </span>
           </div>
           <div className="flex my-3">
-            <span className="text-sm text-gray-500 flex items-center gap-x-1 min-w-[140px] dark:text-gray-400">
+            <span className="text-p7 flex items-center gap-x-1 min-w-[140px] dark:text-text-text-and-icon">
               <IconContext.Provider
                 value={{
                   className: 'w-4 h-4',
@@ -655,12 +658,12 @@ const APITokenComponent = () => {
               </IconContext.Provider>
               Company
             </span>
-            <span className="text-sm dark:text-gray-100 font-semibold">
+            <span className="text-p4 dark:text-text-input-value">
               {currentUserData?.company || '-'}
             </span>
           </div>
           <div className="flex my-3">
-            <span className="text-sm text-gray-500 flex items-center gap-x-1 min-w-[140px] dark:text-gray-400">
+            <span className="text-p7 flex items-center gap-x-1 min-w-[140px] dark:text-text-text-and-icon">
               <IconContext.Provider
                 value={{
                   className: 'w-4 h-4',
@@ -670,12 +673,12 @@ const APITokenComponent = () => {
               </IconContext.Provider>
               Role
             </span>
-            <span className="text-sm dark:text-gray-100 font-semibold">
+            <span className="text-p4 dark:text-text-input-value">
               {currentUserData?.role || '-'}
             </span>
           </div>
           <div className="flex my-3">
-            <span className="text-sm text-gray-500 flex items-center gap-x-1 min-w-[140px] dark:text-gray-400">
+            <span className="text-p7 flex items-center gap-x-1 min-w-[140px] dark:text-text-text-and-icon">
               <IconContext.Provider
                 value={{
                   className: 'w-4 h-4',
@@ -685,60 +688,83 @@ const APITokenComponent = () => {
               </IconContext.Provider>
               Api key
             </span>
-            <div className="text-sm dark:text-gray-100 font-semibold flex gap-x-2">
+            <div className="text-p4 items-center dark:text-text-input-value flex gap-x-2">
               <span className="font-mono">
                 {showApikey
                   ? data?.api_token || '-'
                   : '************************************'}
               </span>
-              <div className="flex items-center ml-2">
+              <div className="flex ml-2">
                 {!showApikey ? (
-                  <IconContext.Provider
-                    value={{
-                      className: 'w-5 h-5',
+                  <IconButton
+                    icon={<HiOutlineEye />}
+                    variant="flat"
+                    onClick={() => {
+                      setShowApiKey(true);
                     }}
-                  >
-                    <HiOutlineEye
-                      className="cursor-pointer"
-                      onClick={() => {
-                        setShowApiKey(true);
-                      }}
-                    />
-                  </IconContext.Provider>
+                  />
                 ) : (
-                  <IconContext.Provider
-                    value={{
-                      className: 'w-5 h-5',
+                  <IconButton
+                    icon={<HiOutlineEyeOff />}
+                    variant="flat"
+                    onClick={() => {
+                      setShowApiKey(false);
                     }}
-                  >
-                    <HiOutlineEyeOff
-                      className="cursor-pointer"
-                      onClick={() => {
-                        setShowApiKey(false);
-                      }}
-                    />
-                  </IconContext.Provider>
+                  />
                 )}
-                <CopyToClipboard
-                  asIcon
-                  className="relative top-0 right-0 ml-4"
-                  data={data?.api_token || ''}
-                />
+                <div className="relative top-0 right-0 ml-2">
+                  {isCopied ? (
+                    <HiCheck />
+                  ) : (
+                    <IconButton
+                      icon={<MdCopyAll />}
+                      variant="flat"
+                      onClick={() => copy(data?.api_token ?? '')}
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>
+          <Button size="sm" className="" onClick={() => setOpenChangePasswordForm(true)}>
+            Change Password
+          </Button>
         </div>
       )}
     </div>
   );
 };
 
-const UserManagement = () => {
-  const [openInviteUserForm, setOpenInviteUserForm] = useState(false);
+const UsersTable = () => {
   const columnHelper = createColumnHelper<ModelUser>();
-  const loaderData = useLoaderData() as LoaderDataType;
   const columns = useMemo(() => {
     const columns = [
+      columnHelper.display({
+        id: 'actions',
+        enableSorting: false,
+        cell: (cell) => {
+          if (!cell.row.original.id) {
+            throw new Error('User id not found');
+          }
+          return (
+            <ActionDropdown
+              user={cell.row.original}
+              trigger={
+                <button className="p-1">
+                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                    <EllipsisIcon />
+                  </div>
+                </button>
+              }
+            />
+          );
+        },
+        header: () => '',
+        minSize: 20,
+        size: 20,
+        maxSize: 20,
+        enableResizing: false,
+      }),
       columnHelper.accessor('id', {
         cell: (cell) => cell.getValue(),
         header: () => 'ID',
@@ -774,99 +800,81 @@ const UserManagement = () => {
         size: 80,
         maxSize: 85,
       }),
-      columnHelper.display({
-        id: 'actions',
-        enableSorting: false,
-        cell: (cell) => {
-          if (!cell.row.original.id) {
-            throw new Error('User id not found');
-          }
-          return <ActionDropdown user={cell.row.original} />;
-        },
-        header: () => '',
-        minSize: 20,
-        size: 20,
-        maxSize: 20,
-        enableResizing: false,
-      }),
     ];
     return columns;
   }, []);
+  const { data } = useListUsers();
+  const [pageSize, setPageSize] = useState(10);
+
+  if (data.message) {
+    return <p className="dark:text-status-error text-p7">{data.message}</p>;
+  }
+  return (
+    <div className="mt-4">
+      <Table
+        pageSize={pageSize}
+        size="compact"
+        data={data.data ?? []}
+        columns={columns}
+        enableColumnResizing
+        enableSorting
+        enablePagination
+        enablePageResize
+        onPageResize={(newSize) => {
+          setPageSize(newSize);
+        }}
+      />
+    </div>
+  );
+};
+const UserManagement = () => {
+  const [openInviteUserForm, setOpenInviteUserForm] = useState(false);
 
   return (
-    <SettingsTab value="user-management">
-      <div className="h-full mt-2">
-        <APITokenComponent />
-        {openInviteUserForm && (
-          <InviteUserModal
-            showDialog={openInviteUserForm}
-            setShowDialog={setOpenInviteUserForm}
-          />
-        )}
-        <div className="mt-4">
-          <div className="flex justify-between">
-            <div>
-              <div className="mt-2 flex gap-x-2 items-center">
-                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-                  <IconContext.Provider
-                    value={{
-                      className: 'text-blue-600 dark:text-blue-400',
-                    }}
-                  >
-                    <HiUsers />
-                  </IconContext.Provider>
-                </div>
-                <h3 className="font-medium text-gray-900 dark:text-white text-base">
-                  User Accounts
-                </h3>
-              </div>
-            </div>
-            <Button
-              size="xs"
-              color="primary"
-              startIcon={<FaUserPlus />}
-              type="button"
-              className="self-start"
-              onClick={() => setOpenInviteUserForm(true)}
-            >
-              Invite User
-            </Button>
-          </div>
-          <Suspense
-            fallback={<TableSkeleton columns={6} rows={5} size={'sm'} className="mt-4" />}
-          >
-            <DFAwait resolve={loaderData.data}>
-              {(resolvedData: LoaderDataType) => {
-                const { data, message } = resolvedData;
-                const users = data ?? [];
-
-                return (
-                  <div className="mt-4">
-                    {message ? (
-                      <p className="text-red-500 text-sm">{message}</p>
-                    ) : (
-                      <Table
-                        size="sm"
-                        data={users}
-                        columns={columns}
-                        enableColumnResizing
-                        enableSorting
-                      />
-                    )}
-                  </div>
-                );
+    <div className="h-full mt-2">
+      <APITokenComponent />
+      {openInviteUserForm && (
+        <InviteUserModal
+          showDialog={openInviteUserForm}
+          setShowDialog={setOpenInviteUserForm}
+        />
+      )}
+      <div className="mt-8">
+        <div className="mt-2 flex gap-x-2 items-center">
+          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
+            <IconContext.Provider
+              value={{
+                className: 'text-blue-600 dark:text-blue-400',
               }}
-            </DFAwait>
-          </Suspense>
+            >
+              <HiUsers />
+            </IconContext.Provider>
+          </div>
+          <h3 className="text-h6 dark:text-text-text-and-icon">User Accounts</h3>
         </div>
+        <Button
+          size="sm"
+          startIcon={<FaUserPlus />}
+          type="button"
+          className="mt-2"
+          onClick={() => setOpenInviteUserForm(true)}
+        >
+          Invite User
+        </Button>
+        <Suspense
+          fallback={
+            <TableSkeleton columns={6} rows={5} size={'compact'} className="mt-2" />
+          }
+        >
+          <UsersTable />
+        </Suspense>
       </div>
-    </SettingsTab>
+    </div>
   );
 };
 
 export const module = {
   element: <UserManagement />,
-  loader,
   action,
 };
 
@@ -890,31 +898,26 @@ const DeleteConfirmationModal = ({
     });
   }, [userId, fetcher]);
   return (
-    <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      {!fetcher?.data?.success ? (
-        <div className="grid place-items-center p-6">
-          <IconContext.Provider
-            value={{
-              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-            }}
-          >
-            <HiOutlineExclamationCircle />
-          </IconContext.Provider>
-          <h3 className="mb-4 font-normal text-center text-sm">
-            Selected user will be deleted.
-            <br />
-            <span>Are you sure you want to delete?</span>
-          </h3>
-          {fetcher.data?.message && (
-            <p className="text-sm text-red-500 pt-2">{fetcher.data?.message}</p>
-          )}
-          <div className="flex items-center justify-right gap-4">
-            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-              No, Cancel
-            </Button>
+    <Modal
+      size="s"
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title={
+        !fetcher.data?.success ? (
+          <div className="flex gap-3 items-center dark:text-status-error">
+            <span className="h-6 w-6 shrink-0">
+              <ErrorStandardLineIcon />
+            </span>
+            Delete user
+          </div>
+        ) : undefined
+      }
+      footer={
+        !fetcher.data?.success ? (
+          <div className={'flex gap-x-4 justify-end'}>
             <Button
-              size="xs"
-              color="danger"
+              color="error"
+              type="submit"
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteAction();
@@ -922,10 +925,23 @@ const DeleteConfirmationModal = ({
             >
               Yes, I&apos;m sure
             </Button>
+            <Button onClick={() => setShowDialog(false)} type="button" variant="outline">
+              Cancel
+            </Button>
           </div>
+        ) : undefined
+      }
+    >
+      {!fetcher.data?.success ? (
+        <div className="grid">
+          <span>The selected user will be deleted.</span>
+          <br />
+          <span>Are you sure you want to delete?</span>
+          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
+          <div className="flex items-center justify-right gap-4"></div>
         </div>
       ) : (
-        <SuccessModalContent text="User details successfully updated!" />
+        <SuccessModalContent text="Deleted successfully" />
       )}
     </Modal>
   );

@@ -12,8 +12,6 @@ import {
   ModelBulkDeleteScansRequest,
   ModelBulkDeleteScansRequestScanTypeEnum,
 } from '@/api/generated';
-import { SettingsTab } from '@/features/settings/components/SettingsTab';
-import { apiWrapper } from '@/utils/api';
 
 const getStatusesOrSeverityByResource = (
   resource: ModelBulkDeleteScansRequestScanTypeEnumType,
@@ -245,12 +243,10 @@ const UploadVulnerabilityDatabase = () => {
             <HiDatabase />
           </IconContext.Provider>
         </div>
-        <h3 className="font-medium text-gray-900 dark:text-white text-base">
-          Database Management
-        </h3>
+        <h3 className="text-h6 dark:text-text-text-and-icon">Database Management</h3>
       </div>
 
-      <p className="mt-1 text-gray-700 dark:text-gray-100 text-sm">
+      <p className="mt-4 text-p7 dark:text-text-text-and-icon">
         You can upload affected database, and scan and check their results
       </p>
       <FileInput
@@ -312,7 +308,7 @@ const ScanHistoryAndDbManagement = () => {
   }, [selectedResource]);
 
   return (
-    <SettingsTab value="scan-history-and-db-management">
+    <>
       {showDeleteDialog && (
         <DeleteConfirmationModal
           showDialog={showDeleteDialog}
@@ -334,19 +330,17 @@ const ScanHistoryAndDbManagement = () => {
               <FaHistory />
             </IconContext.Provider>
           </div>
-          <h3 className="font-medium text-gray-900 dark:text-white text-base">
-            Scan History
-          </h3>
+          <h3 className="text-h6 dark:text-text-text-and-icon">Scan History</h3>
         </div>
 
-        <p className="mt-1 text-gray-700 dark:text-gray-100 text-sm">
+        <p className="mt-4 text-p7 dark:text-text-text-and-icon">
           Please specify the resource and duration you would like to delete from the scan
           history.
         </p>
-        <div className="mt-2 flex gap-x-16">
+        <div className="mt-2 flex gap-x-24">
           <div>
-            <h6 className="text-gray-600 dark:text-white text-base font-medium pb-2">
-              Choose Resource
+            <h6 className="text-p3 text-text-text-and-icon dark:text-text-text-and-icon pb-[10px]">
+              Choose resource
             </h6>
             <Radio
               name="severityOrStatus"
@@ -380,11 +374,8 @@ const ScanHistoryAndDbManagement = () => {
             />
           </div>
           <div className="w-[300px]">
-            <h6 className="text-gray-600 dark:text-white text-base font-medium">
-              Choose Duration
-            </h6>
             <Listbox
-              sizing="sm"
+              label="Choose duration"
               name="duration"
               placeholder="Choose Duration"
               multiple={false}
@@ -410,7 +401,6 @@ const ScanHistoryAndDbManagement = () => {
               })}
             </Listbox>
             <Button
-              color="primary"
               size="sm"
               type="button"
               className="mt-4 w-full"
@@ -422,7 +412,7 @@ const ScanHistoryAndDbManagement = () => {
         </div>
         <UploadVulnerabilityDatabase />
       </div>
-    </SettingsTab>
+    </>
   );
 };
 

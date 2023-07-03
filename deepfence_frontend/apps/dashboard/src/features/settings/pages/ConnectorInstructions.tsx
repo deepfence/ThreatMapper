@@ -265,11 +265,10 @@ const ConnectorInstructions = () => {
     connectorType: string;
   };
 
-  return (
-    <SettingsTab value="connection-instructions">
-      {connectorType ? <Instructions connectorType={connectorType} /> : <Connectors />}
-    </SettingsTab>
-  );
+  if (connectorType) {
+    return <Instructions connectorType={connectorType} />;
+  }
+  return <Connectors />;
 };
 
 export const module = {

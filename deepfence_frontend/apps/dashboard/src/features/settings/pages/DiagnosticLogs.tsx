@@ -384,18 +384,16 @@ const AgentDiagnosticLogsComponent = () => {
 };
 const DiagnosticLogs = () => {
   return (
-    <SettingsTab value="diagnostic-logs">
-      <div className="grid grid-cols-[310px_1fr] gap-x-2">
-        <div className="flex flex-col mt-2 gap-y-3">
-          <ConsoleDiagnosticLogsComponent />
-          <AgentDiagnosticLogsComponent />
-        </div>
-        <div className="flex flex-col gap-y-10">
-          <ConsoleDiagnosticLogsTable />
-          <AgentDiagnosticLogsTable />
-        </div>
+    <div className="grid grid-cols-[310px_1fr] gap-x-2">
+      <div className="flex flex-col mt-2 gap-y-3">
+        <ConsoleDiagnosticLogsComponent />
+        <AgentDiagnosticLogsComponent />
       </div>
-    </SettingsTab>
+      <div className="flex flex-col gap-y-10">
+        <ConsoleDiagnosticLogsTable />
+        <AgentDiagnosticLogsTable />
+      </div>
+    </div>
   );
 };
 
