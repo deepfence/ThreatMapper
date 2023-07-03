@@ -58,7 +58,7 @@ export const action = async ({
   }
 
   toast('Scheduled job status updated sucessfully');
-  invalidateQueries(queries.setting.getEmailConfiguration._def);
+  invalidateQueries(queries.setting.listScheduledJobs._def);
   return {
     success: true,
   };

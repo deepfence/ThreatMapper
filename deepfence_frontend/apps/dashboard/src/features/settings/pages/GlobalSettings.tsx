@@ -21,7 +21,7 @@ import { getSettingsApiClient } from '@/api/api';
 import { ModelSettingsResponse, ModelSettingUpdateRequestKeyEnum } from '@/api/generated';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { queries } from '@/queries';
+import { invalidateQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 
 type ActionReturnType = {
@@ -66,6 +66,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
     throw updateResponse.error;
   }
 
+  invalidateQueries(queries.setting.listGlobalSettings._def);
   return {
     success: true,
   };
