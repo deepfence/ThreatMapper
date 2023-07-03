@@ -7,6 +7,14 @@ import {
   ModelSummary,
 } from '@/api/generated';
 import { apiWrapper } from '@/utils/api';
+import {
+  MALWARE_SCAN_STATUS_GROUPS,
+  MalwareScanGroupedStatus,
+  SECRET_SCAN_STATUS_GROUPS,
+  SecretScanGroupedStatus,
+  VULNERABILITY_SCAN_STATUS_GROUPS,
+  VulnerabilityScanGroupedStatus,
+} from '@/utils/scan';
 
 export const registryQueries = createQueryKeys('registry', {
   registrySummary: () => {
@@ -220,19 +228,85 @@ export const registryQueries = createQueryKeys('registry', {
             size: pageSize,
           },
         };
-        if (vulnerabilityScanStatus.length) {
-          imageTagsRequest.image_filter.filter_in!['vulnerability_scan_status'] =
-            vulnerabilityScanStatus;
+
+        if (
+          vulnerabilityScanStatus.length === 1 &&
+          vulnerabilityScanStatus[0] === VulnerabilityScanGroupedStatus.neverScanned
+        ) {
+          imageTagsRequest.image_filter.filter_in = {
+            ...imageTagsRequest.image_filter.filter_in,
+            vulnerability_scan_status: [
+              ...VULNERABILITY_SCAN_STATUS_GROUPS.complete,
+              ...VULNERABILITY_SCAN_STATUS_GROUPS.error,
+              ...VULNERABILITY_SCAN_STATUS_GROUPS.inProgress,
+              ...VULNERABILITY_SCAN_STATUS_GROUPS.starting,
+            ],
+          };
+        } else if (vulnerabilityScanStatus.length) {
+          imageTagsRequest.image_filter.filter_in = {
+            ...imageTagsRequest.image_filter.filter_in,
+            vulnerability_scan_status: vulnerabilityScanStatus.reduce<string[]>(
+              (acc, value) => {
+                acc = acc.concat(
+                  ...VULNERABILITY_SCAN_STATUS_GROUPS[
+                    value as VulnerabilityScanGroupedStatus
+                  ],
+                );
+                return acc;
+              },
+              [],
+            ),
+          };
         }
 
-        if (secretScanStatus.length) {
-          imageTagsRequest.image_filter.filter_in!['secret_scan_status'] =
-            secretScanStatus;
+        if (
+          secretScanStatus.length === 1 &&
+          secretScanStatus[0] === SecretScanGroupedStatus.neverScanned
+        ) {
+          imageTagsRequest.image_filter.filter_in = {
+            ...imageTagsRequest.image_filter.filter_in,
+            secret_scan_status: [
+              ...SECRET_SCAN_STATUS_GROUPS.complete,
+              ...SECRET_SCAN_STATUS_GROUPS.error,
+              ...SECRET_SCAN_STATUS_GROUPS.inProgress,
+              ...SECRET_SCAN_STATUS_GROUPS.starting,
+            ],
+          };
+        } else if (secretScanStatus.length) {
+          imageTagsRequest.image_filter.filter_in = {
+            ...imageTagsRequest.image_filter.filter_in,
+            secret_scan_status: secretScanStatus.reduce<string[]>((acc, value) => {
+              acc = acc.concat(
+                ...SECRET_SCAN_STATUS_GROUPS[value as SecretScanGroupedStatus],
+              );
+              return acc;
+            }, []),
+          };
         }
 
-        if (malwareScanStatus.length) {
-          imageTagsRequest.image_filter.filter_in!['malware_scan_status'] =
-            malwareScanStatus;
+        if (
+          malwareScanStatus.length === 1 &&
+          malwareScanStatus[0] === MalwareScanGroupedStatus.neverScanned
+        ) {
+          imageTagsRequest.image_filter.filter_in = {
+            ...imageTagsRequest.image_filter.filter_in,
+            malware_scan_status: [
+              ...MALWARE_SCAN_STATUS_GROUPS.complete,
+              ...MALWARE_SCAN_STATUS_GROUPS.error,
+              ...MALWARE_SCAN_STATUS_GROUPS.inProgress,
+              ...MALWARE_SCAN_STATUS_GROUPS.starting,
+            ],
+          };
+        } else if (malwareScanStatus.length) {
+          imageTagsRequest.image_filter.filter_in = {
+            ...imageTagsRequest.image_filter.filter_in,
+            malware_scan_status: malwareScanStatus.reduce<string[]>((acc, value) => {
+              acc = acc.concat(
+                ...MALWARE_SCAN_STATUS_GROUPS[value as MalwareScanGroupedStatus],
+              );
+              return acc;
+            }, []),
+          };
         }
         const listImages = apiWrapper({ fn: getRegistriesApiClient().listImages });
 

@@ -38,6 +38,11 @@ import {
   SecretScanNodeTypeEnum,
   VulnerabilityScanNodeTypeEnum,
 } from '@/types/common';
+import {
+  MalwareScanGroupedStatus,
+  SecretScanGroupedStatus,
+  VulnerabilityScanGroupedStatus,
+} from '@/utils/scan';
 import { getOrderFromSearchParams, getPageFromSearchParams } from '@/utils/table';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -108,9 +113,10 @@ export const useScanResults = () => {
         sortBy: 'last_updated',
         descending: true,
       },
-      vulnerabilityScanStatus: searchParams.getAll('vulnerabilityScanStatus'),
-      secretScanStatus: searchParams.getAll('secretScanStatus'),
-      malwareScanStatus: searchParams.getAll('malwareScanStatus'),
+      vulnerabilityScanStatus:
+        searchParams.get('vulnerability_scan_status')?.split(',') ?? [],
+      secretScanStatus: searchParams.get('secret_scan_status')?.split(',') ?? [],
+      malwareScanStatus: searchParams.get('malware_scan_status')?.split(',') ?? [],
     }),
     keepPreviousData: true,
   });
@@ -174,22 +180,102 @@ const DynamicBreadcrumbs = () => {
     </>
   );
 };
+interface ImageTagFilters {
+  vulnerabilityScanStatus: Array<string>;
+  secretScanStatus: Array<string>;
+  malwareScanStatus: Array<string>;
+}
+
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   vulnerabilityScanStatus: 'Vulnerability scan status',
   secretScanStatus: 'Secet scan status',
   malwareScanStatus: 'Malware scan status',
 };
+const vulnerabilityScanStatusFilter = [
+  {
+    label: 'Never Scanned',
+    value: VulnerabilityScanGroupedStatus.neverScanned,
+  },
+  {
+    label: 'Starting',
+    value: VulnerabilityScanGroupedStatus.starting,
+  },
+  {
+    label: 'In progress',
+    value: VulnerabilityScanGroupedStatus.inProgress,
+  },
+  {
+    label: 'Complete',
+    value: VulnerabilityScanGroupedStatus.complete,
+  },
+  {
+    label: 'Error',
+    value: VulnerabilityScanGroupedStatus.error,
+  },
+];
+const secretScanStatusFilter = [
+  {
+    label: 'Never Scanned',
+    value: SecretScanGroupedStatus.neverScanned,
+  },
+  {
+    label: 'Starting',
+    value: SecretScanGroupedStatus.starting,
+  },
+  {
+    label: 'In progress',
+    value: SecretScanGroupedStatus.inProgress,
+  },
+  {
+    label: 'Complete',
+    value: SecretScanGroupedStatus.complete,
+  },
+  {
+    label: 'Error',
+    value: SecretScanGroupedStatus.error,
+  },
+];
+const malwareScanStatusFilter = [
+  {
+    label: 'Never Scanned',
+    value: MalwareScanGroupedStatus.neverScanned,
+  },
+  {
+    label: 'Starting',
+    value: MalwareScanGroupedStatus.starting,
+  },
+  {
+    label: 'In progress',
+    value: MalwareScanGroupedStatus.inProgress,
+  },
+  {
+    label: 'Complete',
+    value: MalwareScanGroupedStatus.complete,
+  },
+  {
+    label: 'Error',
+    value: MalwareScanGroupedStatus.error,
+  },
+];
+
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
     return prev + searchParams.getAll(curr).length;
   }, 0);
 };
-const Filters = () => {
+const Filters = ({
+  filters,
+  onFiltersChange,
+}: {
+  filters: ImageTagFilters;
+  onFiltersChange: (filters: ImageTagFilters) => void;
+}) => {
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const appliedFilterCount = getAppliedFiltersCount(searchParams);
   const [vulnerabilityScanStatus, setVulnerabilityScanStatus] = useState('');
   const [secretScanStatus, setSecretScanStatus] = useState('');
   const [malwareScanStatus, setMalwareScanStatus] = useState('');
-  const appliedFilterCount = getAppliedFiltersCount(searchParams);
 
   const params = useParams() as {
     nodeId: string;
@@ -206,15 +292,11 @@ const Filters = () => {
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['vulnerabilityScanStatus']}
           multiple
-          value={searchParams.getAll('vulnerabilityScanStatus')}
+          value={searchParams.get('vulnerability_scan_status')?.split(',')}
           onChange={(values) => {
-            setSearchParams((prev) => {
-              prev.delete('vulnerabilityScanStatus');
-              values.forEach((value) => {
-                prev.append('vulnerabilityScanStatus', value);
-              });
-              prev.delete('page');
-              return prev;
+            onFiltersChange({
+              ...filters,
+              vulnerabilityScanStatus: values,
             });
           }}
           onQueryChange={(query) => {
@@ -222,22 +304,22 @@ const Filters = () => {
           }}
           clearAllElement="Clear"
           onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('vulnerabilityScanStatus');
-              prev.delete('page');
-              return prev;
+            onFiltersChange({
+              vulnerabilityScanStatus: [],
+              secretScanStatus: filters.secretScanStatus,
+              malwareScanStatus: filters.malwareScanStatus,
             });
           }}
         >
-          {['complete', 'in_progress', 'not_scan', 'error']
+          {vulnerabilityScanStatusFilter
             .filter((item) => {
               if (!vulnerabilityScanStatus.length) return true;
-              return item.toLowerCase().includes(vulnerabilityScanStatus.toLowerCase());
+              return item.value.includes(vulnerabilityScanStatus.toLowerCase());
             })
             .map((item) => {
               return (
-                <ComboboxOption key={item} value={item}>
-                  {scanStatusMap.get(item)}
+                <ComboboxOption key={item.value} value={item.value}>
+                  {item.label}
                 </ComboboxOption>
               );
             })}
@@ -245,15 +327,11 @@ const Filters = () => {
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['secretScanStatus']}
           multiple
-          value={searchParams.getAll('secretScanStatus')}
+          value={searchParams.get('secretScanStatus')?.split(',')}
           onChange={(values) => {
-            setSearchParams((prev) => {
-              prev.delete('secretScanStatus');
-              values.forEach((value) => {
-                prev.append('secretScanStatus', value);
-              });
-              prev.delete('page');
-              return prev;
+            onFiltersChange({
+              ...filters,
+              secretScanStatus: values,
             });
           }}
           onQueryChange={(query) => {
@@ -261,22 +339,22 @@ const Filters = () => {
           }}
           clearAllElement="Clear"
           onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('secretScanStatus');
-              prev.delete('page');
-              return prev;
+            onFiltersChange({
+              vulnerabilityScanStatus: filters.vulnerabilityScanStatus,
+              secretScanStatus: [],
+              malwareScanStatus: filters.malwareScanStatus,
             });
           }}
         >
-          {['complete', 'in_progress', 'not_scan', 'error']
+          {secretScanStatusFilter
             .filter((item) => {
               if (!secretScanStatus.length) return true;
-              return item.toLowerCase().includes(secretScanStatus.toLowerCase());
+              return item.value.includes(secretScanStatus.toLowerCase());
             })
             .map((item) => {
               return (
-                <ComboboxOption key={item} value={item}>
-                  {scanStatusMap.get(item)}
+                <ComboboxOption key={item.value} value={item.value}>
+                  {item.label}
                 </ComboboxOption>
               );
             })}
@@ -284,15 +362,11 @@ const Filters = () => {
         <Combobox
           getDisplayValue={() => FILTER_SEARCHPARAMS['malwareScanStatus']}
           multiple
-          value={searchParams.getAll('malwareScanStatus')}
+          value={searchParams.get('malwareScanStatus')?.split(',')}
           onChange={(values) => {
-            setSearchParams((prev) => {
-              prev.delete('malwareScanStatus');
-              values.forEach((value) => {
-                prev.append('malwareScanStatus', value);
-              });
-              prev.delete('page');
-              return prev;
+            onFiltersChange({
+              ...filters,
+              malwareScanStatus: values,
             });
           }}
           onQueryChange={(query) => {
@@ -300,22 +374,22 @@ const Filters = () => {
           }}
           clearAllElement="Clear"
           onClearAll={() => {
-            setSearchParams((prev) => {
-              prev.delete('malwareScanStatus');
-              prev.delete('page');
-              return prev;
+            onFiltersChange({
+              vulnerabilityScanStatus: filters.vulnerabilityScanStatus,
+              secretScanStatus: filters.secretScanStatus,
+              malwareScanStatus: [],
             });
           }}
         >
-          {['complete', 'in_progress', 'not_scan', 'error']
+          {malwareScanStatusFilter
             .filter((item) => {
               if (!malwareScanStatus.length) return true;
-              return item.toLowerCase().includes(malwareScanStatus.toLowerCase());
+              return item.value.includes(malwareScanStatus.toLowerCase());
             })
             .map((item) => {
               return (
-                <ComboboxOption key={item} value={item}>
-                  {scanStatusMap.get(item)}
+                <ComboboxOption key={item.value} value={item.value}>
+                  {item.label}
                 </ComboboxOption>
               );
             })}
@@ -432,8 +506,15 @@ const RegistryImagesTagsResults = () => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [nodeIdsToScan, setNodeIdsToScan] = useState<string[]>([]);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [filters, setFilters] = useState<ImageTagFilters>({
+    vulnerabilityScanStatus: [],
+    secretScanStatus: [],
+    malwareScanStatus: [],
+  });
+
   const [filtersExpanded, setFiltersExpanded] = useState(false);
-  const [searchParams] = useSearchParams();
 
   const onTableAction = useCallback(
     (nodeIds: string[], scanType: RegistryScanType, _: string) => {
@@ -480,7 +561,36 @@ const RegistryImagesTagsResults = () => {
           }
         />
       </div>
-      {filtersExpanded ? <Filters /> : null}
+      {filtersExpanded ? (
+        <Filters
+          filters={filters}
+          onFiltersChange={(newFilters) => {
+            setFilters(newFilters);
+            if (newFilters.vulnerabilityScanStatus.length) {
+              searchParams.set(
+                'vulnerability_scan_status',
+                newFilters.vulnerabilityScanStatus.join(','),
+              );
+            }
+            if (newFilters.secretScanStatus.length) {
+              searchParams.set(
+                'secret_scan_status',
+                newFilters.secretScanStatus.join(','),
+              );
+            }
+            if (newFilters.malwareScanStatus.length) {
+              searchParams.set(
+                'malware_scan_status',
+                newFilters.malwareScanStatus.join(','),
+              );
+            }
+            setSearchParams((prev) => {
+              prev.set('page', String(0));
+              return prev;
+            });
+          }}
+        />
+      ) : null}
       <Suspense fallback={<TableSkeleton columns={7} rows={10} />}>
         <RegistryImageTagsTable
           onTableAction={onTableAction}
