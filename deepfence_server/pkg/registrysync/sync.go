@@ -59,7 +59,8 @@ func insertToNeo4j(ctx context.Context, images []model.IngestedContainerImage, r
 	}
 	defer session.Close()
 
-	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(30 * time.Second))
+	timeOut := time.Duration(120 * time.Second)
+	tx, err := session.BeginTransaction(neo4j.WithTxTimeout(timeOut))
 	if err != nil {
 		return err
 	}
