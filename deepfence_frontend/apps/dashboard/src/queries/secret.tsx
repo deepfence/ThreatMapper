@@ -12,6 +12,7 @@ import {
 import { SecretsCountsCardData } from '@/features/secrets/components/landing/SecretsCountsCard';
 import { ScanStatusEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
+import { SECRET_SCAN_STATUS_GROUPS, SecretScanGroupedStatus } from '@/utils/scan';
 
 export const secretQueries = createQueryKeys('secret', {
   scanList: (filters: {
@@ -21,7 +22,7 @@ export const secretQueries = createQueryKeys('secret', {
       sortBy: string;
       descending: boolean;
     };
-    status?: string[];
+    secretScanStatus?: SecretScanGroupedStatus;
     hosts?: string[];
     containers?: string[];
     images?: string[];
@@ -31,7 +32,7 @@ export const secretQueries = createQueryKeys('secret', {
     const {
       page = 1,
       nodeTypes = [],
-      status,
+      secretScanStatus,
       hosts,
       containers,
       images,
@@ -64,10 +65,6 @@ export const secretQueries = createQueryKeys('secret', {
         const scanFilters = {} as {
           status?: string[];
         };
-
-        if (status && status.length > 0) {
-          scanFilters.status = status;
-        }
 
         const nodeFilters = {
           node_type: nodeTypes,
@@ -106,6 +103,9 @@ export const secretQueries = createQueryKeys('secret', {
               order_filter: { order_fields: [] },
               contains_filter: { filter_in: { ...nodeFilters } },
               compare_filter: null,
+              not_contains_filter: {
+                filter_in: {},
+              },
             },
             in_field_filter: null,
             window: {
@@ -142,6 +142,24 @@ export const secretQueries = createQueryKeys('secret', {
               descending: true,
             },
           ];
+        }
+        if (secretScanStatus) {
+          if (secretScanStatus === SecretScanGroupedStatus.neverScanned) {
+            scanRequestParams.node_filters.filters.not_contains_filter!.filter_in = {
+              ...scanRequestParams.node_filters.filters.not_contains_filter!.filter_in,
+              secret_scan_status: [
+                ...SECRET_SCAN_STATUS_GROUPS.complete,
+                ...SECRET_SCAN_STATUS_GROUPS.error,
+                ...SECRET_SCAN_STATUS_GROUPS.inProgress,
+                ...SECRET_SCAN_STATUS_GROUPS.starting,
+              ],
+            };
+          } else {
+            scanRequestParams.node_filters.filters.contains_filter.filter_in = {
+              ...scanRequestParams.node_filters.filters.contains_filter.filter_in,
+              secret_scan_status: SECRET_SCAN_STATUS_GROUPS[secretScanStatus],
+            };
+          }
         }
         const searchSecretsScanApi = apiWrapper({
           fn: getSearchApiClient().searchSecretsScan,
