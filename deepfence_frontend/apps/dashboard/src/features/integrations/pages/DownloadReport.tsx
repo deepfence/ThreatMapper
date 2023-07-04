@@ -1,18 +1,24 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useCallback, useState } from 'react';
-import { ActionFunctionArgs, Outlet, useFetcher } from 'react-router-dom';
-import { Breadcrumb, BreadcrumbLink, Button, TableSkeleton } from 'ui-components';
+import {
+  ActionFunctionArgs,
+  FetcherWithComponents,
+  Outlet,
+  useFetcher,
+} from 'react-router-dom';
+import { Breadcrumb, BreadcrumbLink, Button, Modal, TableSkeleton } from 'ui-components';
 
 import { getReportsApiClient } from '@/api/api';
 import { UtilsReportFiltersNodeTypeEnum } from '@/api/generated';
 import { ModelExportReport } from '@/api/generated/models/ModelExportReport';
 import { DFLink } from '@/components/DFLink';
+import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { complianceType } from '@/components/scan-configure-forms/ComplianceScanConfigureForm';
 import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
-import { DeleteConfirmationModal } from '@/features/integrations/components/DeleteConfirmationModal';
 import { ReportTable } from '@/features/integrations/components/ReportsTable';
-import { queries } from '@/queries';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { invalidateAllQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 import { download } from '@/utils/download';
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -27,7 +33,7 @@ export const getReportBenchmarkList = (nodeType: string) => {
   switch (nodeType) {
     case 'Aws':
       return complianceType.aws;
-    case 'Google':
+    case 'Gcp':
       return complianceType.gcp;
     case 'Azure':
       return complianceType.azure;
@@ -104,13 +110,83 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
         };
       }
     }
-
+    invalidateAllQueries();
     return {
       deleteSuccess: true,
     };
   }
 
   return null;
+};
+
+const DeleteConfirmationModal = ({
+  showDialog,
+  row,
+  setShowDialog,
+  fetcher,
+  onTableAction,
+}: {
+  showDialog: boolean;
+  row: ModelExportReport | undefined;
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  fetcher: FetcherWithComponents<ActionData>;
+  onTableAction: (row: ModelExportReport, actionType: ActionEnumType) => void;
+}) => {
+  return (
+    <Modal
+      size="s"
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title={
+        !fetcher.data?.deleteSuccess ? (
+          <div className="flex gap-3 items-center dark:text-status-error">
+            <span className="h-6 w-6 shrink-0">
+              <ErrorStandardLineIcon />
+            </span>
+            Delete report
+          </div>
+        ) : undefined
+      }
+      footer={
+        !fetcher.data?.deleteSuccess ? (
+          <div className={'flex gap-x-4 justify-end'}>
+            <Button
+              size="sm"
+              onClick={() => setShowDialog(false)}
+              type="button"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              color="error"
+              onClick={(e) => {
+                e.preventDefault();
+                onTableAction(row!, ActionEnumType.CONFIRM_DELETE);
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
+        ) : undefined
+      }
+    >
+      {!fetcher.data?.deleteSuccess ? (
+        <div className="grid">
+          <span>The selected report will be deleted.</span>
+          <br />
+          <span>Are you sure you want to delete?</span>
+          {fetcher.data?.message ? (
+            <p className="text-red-500 text-sm pb-4">{fetcher.data?.message}</p>
+          ) : null}
+          <div className="flex items-center justify-right gap-4"></div>
+        </div>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
+    </Modal>
+  );
 };
 
 const Header = () => {
@@ -144,7 +220,7 @@ const DownloadReport = () => {
       setShowDeleteDialog(true);
     } else if (actionType === ActionEnumType.CONFIRM_DELETE) {
       const formData = new FormData();
-      formData.append('actionType', ActionEnumType.DELETE);
+      formData.append('_actionType', ActionEnumType.DELETE);
       formData.append('id', row.report_id ?? '');
 
       fetcher.submit(formData, {

@@ -210,7 +210,7 @@ const Integrations = () => {
         <ErrorBoundary
           fallback={
             <div>
-              <p className="text-red-500 text-sm">{error}</p>
+              <p className="dark:text-status-error text-p7">{error}</p>
             </div>
           }
         >
@@ -248,10 +248,38 @@ const Integrations = () => {
   );
 };
 
-const DownloadReport = () => {
-  const { navigate } = usePageNavigation();
+const ReportCount = () => {
   const { data } = useGetReports();
   const reportCount = data?.data?.length ?? 0;
+
+  return (
+    <div className="flex gap-x-2 items-center">
+      {reportCount > 0 ? (
+        <DFLink to={'/integrations/download/report'}>
+          <span className="text-h2">{reportCount}</span>
+        </DFLink>
+      ) : (
+        <span className="text-h2">0</span>
+      )}
+
+      <span className="text-p7">Reports generated</span>
+    </div>
+  );
+};
+const ReportCountSkeleton = () => {
+  return (
+    <div className="animate-pulse flex gap-x-2 items-center">
+      <div className="dark:bg-bg-grid-default rounded-md">
+        <div className="w-4 h-6"></div>
+      </div>
+      <div className="dark:bg-bg-grid-default rounded-md">
+        <div className="w-16 h-2"></div>
+      </div>
+    </div>
+  );
+};
+const DownloadReport = () => {
+  const { navigate } = usePageNavigation();
 
   return (
     <div>
@@ -262,17 +290,9 @@ const DownloadReport = () => {
             <span className="h-9 w-9 ">
               <DownloadReportIcon />
             </span>
-            <div className="flex gap-x-2 items-center">
-              {reportCount > 0 ? (
-                <DFLink to={'/integrations/download/report'}>
-                  <span className="text-h2">{reportCount}</span>
-                </DFLink>
-              ) : (
-                <span className="text-h2">0</span>
-              )}
-
-              <span className="text-p7">Reports generated</span>
-            </div>
+            <Suspense fallback={<ReportCountSkeleton />}>
+              <ReportCount />
+            </Suspense>
           </Card>
         </div>
         <Button

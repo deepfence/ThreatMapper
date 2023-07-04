@@ -153,13 +153,12 @@ type ActionData = {
 const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionData> => {
   const _integrationType = params.integrationType?.toString();
   const formData = await request.formData();
-  debugger;
   let _notificationType = formData.get('_notificationType')?.toString();
   const _actionType = formData.get('_actionType')?.toString();
 
   if (!_actionType) {
     return {
-      message: 'Action Type is required',
+      message: 'Action Type is required1',
     };
   }
 

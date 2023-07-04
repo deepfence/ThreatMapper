@@ -25,6 +25,7 @@ import { CloudComplianceForm } from '@/features/integrations/components/report-f
 import { CommonForm } from '@/features/integrations/components/report-form/CommonForm';
 import { ComplianceForm } from '@/features/integrations/components/report-form/ComplianceForm';
 import { ActionEnumType } from '@/features/integrations/pages/IntegrationAdd';
+import { invalidateAllQueries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
@@ -180,6 +181,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   }
 
   toast('Generate Report has started');
+  invalidateAllQueries();
   return {
     success: true,
   };
@@ -206,7 +208,7 @@ const ReportForm = () => {
       <input type="text" name="_actionType" readOnly hidden value={ActionEnumType.ADD} />
       <div className="gap-y-8 grid grid-cols-2 auto-rows-auto gap-x-8">
         <Listbox
-          variant="outline"
+          variant="underline"
           label="Select Resource"
           value={resource}
           name="resource"
@@ -249,14 +251,14 @@ const ReportForm = () => {
         ) : null}
 
         <Listbox
-          variant="outline"
+          variant="underline"
           label="Select Duration"
           value={duration}
           name="duration"
           onChange={(value) => {
             setDuration(value);
           }}
-          placeholder="Select Duration"
+          placeholder="Select duration"
           getDisplayValue={(item) => {
             return Object.keys(DURATION).find((person) => person === item) ?? '';
           }}
@@ -276,19 +278,19 @@ const ReportForm = () => {
           type={'text'}
           sizing="md"
           name={'interval'}
-          placeholder={'Interval'}
+          placeholder={'interval'}
           helperText="Maximum upto 180 days supported"
         />
 
         <Listbox
-          variant="outline"
+          variant="underline"
           label="Select Download Type"
           value={downloadType}
           name="downloadType"
           onChange={(value) => {
             setDownloadType(value);
           }}
-          placeholder="Download Type"
+          placeholder="Download type"
           getDisplayValue={(item) => {
             return (
               Object.keys(ModelGenerateReportReqReportTypeEnum).find(

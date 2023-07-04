@@ -33,7 +33,7 @@ export const CommonForm = ({
         onChange={(value) => {
           setProvider(value);
         }}
-        placeholder="Select Node Type"
+        placeholder="Select node type"
         getDisplayValue={(item) => {
           return Object.keys(nodeType).find((person) => person === item) ?? '';
         }}
@@ -54,7 +54,7 @@ export const CommonForm = ({
         onChange={(value) => {
           setSeverity(value);
         }}
-        placeholder="Select Severity"
+        placeholder="Select severity"
         getDisplayValue={() => {
           return 'Severity';
         }}

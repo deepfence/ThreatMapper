@@ -29,7 +29,14 @@ export const ComplianceForm = ({
         onChange={(value) => {
           setProvider(value);
         }}
-        placeholder="Select Node Type"
+        placeholder="Select node type"
+        getDisplayValue={() => {
+          return (
+            Object.keys(getReportNodeType(resource)).find((_provider) => {
+              return _provider === provider;
+            }) ?? ''
+          );
+        }}
       >
         {Object.keys(getReportNodeType(resource)).map((resource) => {
           return (
@@ -49,6 +56,13 @@ export const ComplianceForm = ({
           }}
           placeholder="Select check type"
           label="Select Check Type"
+          getDisplayValue={() => {
+            return (
+              getReportBenchmarkList(provider).find((_benchmarkType) => {
+                return _benchmarkType === benchmarkType;
+              }) ?? ''
+            );
+          }}
         >
           {getReportBenchmarkList(provider)?.map((provider) => {
             return (

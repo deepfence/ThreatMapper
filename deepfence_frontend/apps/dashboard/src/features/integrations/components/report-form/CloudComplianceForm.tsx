@@ -15,7 +15,7 @@ export const CloudComplianceForm = ({
     setBenchmarkType('');
   }, [provider]);
   return (
-    <div className="flex flex-col gap-y-4">
+    <>
       <Listbox
         variant="underline"
         label="Select Provider"
@@ -24,9 +24,16 @@ export const CloudComplianceForm = ({
         onChange={(value) => {
           setProvider(value);
         }}
+        getDisplayValue={() => {
+          return (
+            ['Aws', 'Gcp', 'Azure'].find((_provider) => {
+              return _provider === provider;
+            }) ?? ''
+          );
+        }}
         placeholder="Select Provider"
       >
-        {['Aws', 'Google', 'Azure'].map((resource) => {
+        {['Aws', 'Gcp', 'Azure'].map((resource) => {
           return (
             <ListboxOption value={resource} key={resource}>
               {resource}
@@ -46,6 +53,13 @@ export const CloudComplianceForm = ({
             }}
             placeholder="Select check type"
             label="Select Check Type"
+            getDisplayValue={() => {
+              return (
+                getReportBenchmarkList(provider).find((_benchmarkType) => {
+                  return _benchmarkType === benchmarkType;
+                }) ?? ''
+              );
+            }}
           >
             {getReportBenchmarkList(provider)?.map((provider) => {
               return (
@@ -57,6 +71,6 @@ export const CloudComplianceForm = ({
           </Listbox>
         </>
       )}
-    </div>
+    </>
   );
 };

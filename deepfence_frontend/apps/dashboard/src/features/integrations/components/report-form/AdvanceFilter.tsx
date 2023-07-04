@@ -71,6 +71,7 @@ export const AdvancedFilter = ({
           <div className="grid grid-cols-2 gap-x-8 gap-y-6 pt-4">
             {isCloudNode(nodeType as CloudNodeType) && (
               <Listbox
+                variant="underline"
                 value={selectedCloudAccounts}
                 name="accountIds[]"
                 onChange={(value) => {
@@ -91,7 +92,10 @@ export const AdvancedFilter = ({
             {nodeType === 'host' ? (
               <>
                 <div>
-                  <SearchableHostList scanType={API_SCAN_TYPE_MAP[resourceType]} />
+                  <SearchableHostList
+                    scanType={API_SCAN_TYPE_MAP[resourceType]}
+                    triggerVariant="select"
+                  />
                 </div>
               </>
             ) : null}
@@ -99,7 +103,10 @@ export const AdvancedFilter = ({
             {provider === 'ContainerImage' ? (
               <>
                 <div>
-                  <SearchableImageList scanType={API_SCAN_TYPE_MAP[resourceType]} />
+                  <SearchableImageList
+                    scanType={API_SCAN_TYPE_MAP[resourceType]}
+                    triggerVariant="select"
+                  />
                 </div>
               </>
             ) : null}
@@ -107,7 +114,10 @@ export const AdvancedFilter = ({
             {provider === 'Container' ? (
               <>
                 <div>
-                  <SearchableContainerList scanType={API_SCAN_TYPE_MAP[resourceType]} />
+                  <SearchableContainerList
+                    scanType={API_SCAN_TYPE_MAP[resourceType]}
+                    triggerVariant="select"
+                  />
                 </div>
               </>
             ) : null}
@@ -115,14 +125,14 @@ export const AdvancedFilter = ({
             {resourceType !== 'CloudCompliance' ? (
               <>
                 <div>
-                  <SearchableClusterList />
+                  <SearchableClusterList triggerVariant="select" />
                 </div>
               </>
             ) : null}
 
             {provider && (
               <Listbox
-                variant="outline"
+                variant="underline"
                 value={maskedType}
                 name="mask[]"
                 onChange={(value) => {
@@ -142,13 +152,13 @@ export const AdvancedFilter = ({
             )}
             {provider && (
               <Listbox
-                variant="outline"
+                variant="underline"
                 value={status}
                 name="status[]"
                 onChange={(value) => {
                   setStatus(value);
                 }}
-                placeholder="Select Status"
+                placeholder="Select status"
                 label="Select Status"
               >
                 {['COMPLETE', 'ERROR']?.map((provider) => {
@@ -162,14 +172,7 @@ export const AdvancedFilter = ({
             )}
           </div>
         </>
-      ) : (
-        <div className="pt-4 flex gap-x-1 items-center dark:text-text-input-value ">
-          <span className="w-3 h-3 -rotate-90">
-            <CaretDown />
-          </span>
-          <div className="text-h5">Advanced Filter (Optional)</div>
-        </div>
-      )}
+      ) : null}
     </>
   );
 };
