@@ -1,8 +1,8 @@
-import './style.css';
-
 import { Outlet } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
 import { Card } from 'ui-components';
+
+import AuthBg from '@/assets/auth-bg.png';
 
 const DeepfenceLogo = () => {
   return (
@@ -102,7 +102,13 @@ const DeepfenceLogo = () => {
 };
 export const AuthLayout = () => {
   return (
-    <div className="grid h-screen place-items-center overflow-auto auth-bg">
+    <div
+      className="grid h-screen place-items-center overflow-auto"
+      style={{
+        background: `url(${AuthBg}) no-repeat center center`,
+        backgroundSize: 'cover',
+      }}
+    >
       <div className="relative">
         <div className="h-full grid place-items-center">
           <div className="flex mt-4">
@@ -112,7 +118,7 @@ export const AuthLayout = () => {
             </span>
           </div>
           <Card
-            className={cn('w-[360px] px-14 py-12 my-4 rounded-[15px] dark:bg-bg-page')}
+            className={cn('w-[360px] px-14 py-12 my-4 rounded-[15px] dark:bg-bg-page/70')}
           >
             <Outlet />
           </Card>

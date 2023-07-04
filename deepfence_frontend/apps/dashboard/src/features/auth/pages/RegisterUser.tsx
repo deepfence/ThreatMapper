@@ -109,7 +109,7 @@ export const RegisterUser = () => {
           size="md"
           className="w-full"
           type="submit"
-          // disabled={state !== 'idle' || !eulaAccepted}
+          disabled={state !== 'idle' || !eulaAccepted}
           loading={state !== 'idle'}
         >
           Register

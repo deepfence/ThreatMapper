@@ -76,7 +76,11 @@ export const ForgotPassword = () => {
           color={data?.fieldErrors?.email ? 'error' : 'default'}
           helperText={data?.fieldErrors?.email}
         />
-        {data?.message && <p className={`my-1.5 text-p7 text-center`}>{data.message}</p>}
+        {data?.message && (
+          <p className={`my-1.5 text-p7 text-center dark:text-status-success`}>
+            {data.message}
+          </p>
+        )}
         <div className="flex flex-col w-full mt-8">
           <Button
             size="md"
