@@ -1,7 +1,5 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useMemo, useState } from 'react';
-import { IconContext } from 'react-icons';
-import { FaPencilAlt } from 'react-icons/fa';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import {
   Button,
@@ -159,11 +157,6 @@ const ActionDropdown = ({
           <>
             <DropdownItem className="text-sm" onClick={() => setOpenEditSetting(true)}>
               <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-                <IconContext.Provider
-                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
-                >
-                  <FaPencilAlt />
-                </IconContext.Provider>
                 Edit
               </span>
             </DropdownItem>
@@ -251,7 +244,7 @@ const GlobalSettings = () => {
   return (
     <div className="h-full">
       <div className="mt-2">
-        <h3 className="text-h6 dark:text-text-text-and-icon">Global Settings</h3>
+        <h3 className="text-h6 dark:text-text-input-value">Global settings</h3>
       </div>
       <Suspense
         fallback={

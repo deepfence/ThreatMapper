@@ -1,6 +1,6 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
 
-import { getSettingsApiClient, getUserApiClient } from '@/api/api';
+import { getDiagnosisApiClient, getSettingsApiClient, getUserApiClient } from '@/api/api';
 import { apiWrapper } from '@/utils/api';
 
 export const settingQueries = createQueryKeys('setting', {
@@ -130,6 +130,30 @@ export const settingQueries = createQueryKeys('setting', {
 
         return {
           data: users.value,
+        };
+      },
+    };
+  },
+  listDiagnosticLogs: () => {
+    return {
+      queryKey: ['listDiagnosticLogs'],
+      queryFn: async () => {
+        const getDiagnosticLogs = apiWrapper({
+          fn: getDiagnosisApiClient().getDiagnosticLogs,
+        });
+        const response = await getDiagnosticLogs();
+
+        if (!response.ok) {
+          if (response.error.response.status === 403) {
+            return {
+              message: 'You do not have enough permissions to view diagnostic logs',
+            };
+          }
+          throw response.error;
+        }
+
+        return {
+          data: response.value,
         };
       },
     };

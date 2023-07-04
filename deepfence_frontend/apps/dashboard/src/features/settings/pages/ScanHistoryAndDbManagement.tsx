@@ -221,10 +221,10 @@ const UploadVulnerabilityDatabase = () => {
   return (
     <>
       <div className="mt-6">
-        <h3 className="text-h6 dark:text-text-text-and-icon">Database Management</h3>
+        <h3 className="text-h6 dark:text-text-input-value">Database management</h3>
       </div>
 
-      <p className="mt-4 text-p7 dark:text-text-text-and-icon">
+      <p className="mt-4 text-p4 dark:text-text-text-and-icon">
         You can upload affected database, and scan and check their results
       </p>
       <FileInput
@@ -243,7 +243,6 @@ const UploadVulnerabilityDatabase = () => {
 
       <div className="w-fit mt-4 flex gap-x-4 items-center">
         <Button
-          size="sm"
           className="w-[108px]"
           type="button"
           loading={state !== 'idle'}
@@ -298,10 +297,10 @@ const ScanHistoryAndDbManagement = () => {
       )}
       <div>
         <div className="mt-2">
-          <h3 className="text-h6 dark:text-text-text-and-icon">Scan History</h3>
+          <h3 className="text-h6 dark:text-text-input-value">Scan History</h3>
         </div>
 
-        <p className="mt-4 text-p7 dark:text-text-text-and-icon">
+        <p className="mt-4 text-p4 dark:text-text-text-and-icon">
           Please specify the resource and duration you would like to delete from the scan
           history.
         </p>
@@ -369,7 +368,6 @@ const ScanHistoryAndDbManagement = () => {
               })}
             </Listbox>
             <Button
-              size="sm"
               type="button"
               className="mt-4 w-full"
               onClick={() => setShowDeleteDialog(true)}

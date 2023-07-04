@@ -369,7 +369,7 @@ const EmailConfiguration = () => {
   return (
     <div>
       <div className="mt-2">
-        <h3 className="text-h6 dark:text-text-text-and-icon">Email configurations</h3>
+        <h3 className="text-h6 dark:text-text-input-value">Email configurations</h3>
       </div>
       <div className="mt-2">
         <Suspense fallback={<CircleSpinner size="sm" />}>

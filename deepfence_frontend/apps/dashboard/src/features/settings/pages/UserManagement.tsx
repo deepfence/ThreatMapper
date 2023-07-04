@@ -1,19 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import cx from 'classnames';
 import { Suspense, useCallback, useMemo, useState } from 'react';
-import { IconContext } from 'react-icons';
-import { FaUserPlus } from 'react-icons/fa';
-import {
-  HiCheck,
-  HiOutlineEye,
-  HiOutlineEyeOff,
-  HiOutlineKey,
-  HiOutlineMail,
-  HiOutlineSupport,
-  HiOutlineUser,
-  HiUsers,
-} from 'react-icons/hi';
-import { MdCopyAll } from 'react-icons/md';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
@@ -43,8 +30,11 @@ import {
 } from '@/api/generated';
 import { ModelUser } from '@/api/generated/models/ModelUser';
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
+import { EyeHideSolid } from '@/components/icons/common/EyeHideSolid';
+import { EyeSolidIcon } from '@/components/icons/common/EyeSolid';
 import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
 import { useGetCurrentUser } from '@/features/common/data-component/getUserApiLoader';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
@@ -633,14 +623,7 @@ const APITokenComponent = () => {
             </div>
           </div>
           <div className="flex mt-4 mb-2">
-            <span className="text-p7 flex items-center gap-x-1 min-w-[140px] dark:text-text-text-and-icon">
-              <IconContext.Provider
-                value={{
-                  className: 'w-4 h-4',
-                }}
-              >
-                <HiOutlineMail />
-              </IconContext.Provider>
+            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
               Email
             </span>
             <span className="text-p4 dark:text-text-input-value">
@@ -648,14 +631,7 @@ const APITokenComponent = () => {
             </span>
           </div>
           <div className="flex my-3">
-            <span className="text-p7 flex items-center gap-x-1 min-w-[140px] dark:text-text-text-and-icon">
-              <IconContext.Provider
-                value={{
-                  className: 'w-4 h-4',
-                }}
-              >
-                <HiOutlineSupport />
-              </IconContext.Provider>
+            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
               Company
             </span>
             <span className="text-p4 dark:text-text-input-value">
@@ -663,14 +639,7 @@ const APITokenComponent = () => {
             </span>
           </div>
           <div className="flex my-3">
-            <span className="text-p7 flex items-center gap-x-1 min-w-[140px] dark:text-text-text-and-icon">
-              <IconContext.Provider
-                value={{
-                  className: 'w-4 h-4',
-                }}
-              >
-                <HiOutlineUser />
-              </IconContext.Provider>
+            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
               Role
             </span>
             <span className="text-p4 dark:text-text-input-value">
@@ -678,14 +647,7 @@ const APITokenComponent = () => {
             </span>
           </div>
           <div className="flex my-3">
-            <span className="text-p7 flex items-center gap-x-1 min-w-[140px] dark:text-text-text-and-icon">
-              <IconContext.Provider
-                value={{
-                  className: 'w-4 h-4',
-                }}
-              >
-                <HiOutlineKey />
-              </IconContext.Provider>
+            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
               Api key
             </span>
             <div className="text-p4 items-center dark:text-text-input-value flex gap-x-2">
@@ -697,7 +659,11 @@ const APITokenComponent = () => {
               <div className="flex ml-2">
                 {!showApikey ? (
                   <IconButton
-                    icon={<HiOutlineEye />}
+                    icon={
+                      <span className="h-4 w-4">
+                        <EyeSolidIcon />
+                      </span>
+                    }
                     variant="flat"
                     onClick={() => {
                       setShowApiKey(true);
@@ -705,7 +671,11 @@ const APITokenComponent = () => {
                   />
                 ) : (
                   <IconButton
-                    icon={<HiOutlineEyeOff />}
+                    icon={
+                      <span className="h-4 w-4">
+                        <EyeHideSolid />
+                      </span>
+                    }
                     variant="flat"
                     onClick={() => {
                       setShowApiKey(false);
@@ -714,10 +684,25 @@ const APITokenComponent = () => {
                 )}
                 <div className="relative top-0 right-0 ml-2">
                   {isCopied ? (
-                    <HiCheck />
+                    <div className="dark:text-text-text-and-icon gap-x-2 flex items-center">
+                      <IconButton
+                        icon={
+                          <span className="w-4 h-4">
+                            <CopyLineIcon />
+                          </span>
+                        }
+                        type="button"
+                        variant="flat"
+                      />{' '}
+                      copied
+                    </div>
                   ) : (
                     <IconButton
-                      icon={<MdCopyAll />}
+                      icon={
+                        <span className="w-4 h-4">
+                          <CopyLineIcon />
+                        </span>
+                      }
                       variant="flat"
                       onClick={() => copy(data?.api_token ?? '')}
                     />
@@ -726,7 +711,11 @@ const APITokenComponent = () => {
               </div>
             </div>
           </div>
-          <Button size="sm" className="" onClick={() => setOpenChangePasswordForm(true)}>
+          <Button
+            size="sm"
+            variant="flat"
+            onClick={() => setOpenChangePasswordForm(true)}
+          >
             Change Password
           </Button>
         </div>
@@ -810,7 +799,7 @@ const UsersTable = () => {
     return <p className="dark:text-status-error text-p7">{data.message}</p>;
   }
   return (
-    <div className="mt-4">
+    <div className="mt-2">
       <Table
         pageSize={pageSize}
         size="compact"
@@ -840,21 +829,13 @@ const UserManagement = () => {
         />
       )}
       <div className="mt-8">
-        <div className="mt-2 flex gap-x-2 items-center">
-          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-            <IconContext.Provider
-              value={{
-                className: 'text-blue-600 dark:text-blue-400',
-              }}
-            >
-              <HiUsers />
-            </IconContext.Provider>
-          </div>
-          <h3 className="text-h6 dark:text-text-text-and-icon">User Accounts</h3>
+        <div className="mt-2">
+          <h3 className="text-h6 dark:text-text-input-value">User accounts</h3>
         </div>
         <Button
+          variant="flat"
           size="sm"
-          startIcon={<FaUserPlus />}
+          // startIcon={<FaUserPlus />}
           type="button"
           className="mt-2"
           onClick={() => setOpenInviteUserForm(true)}

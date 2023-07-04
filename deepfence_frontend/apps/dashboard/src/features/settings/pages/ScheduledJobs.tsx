@@ -153,9 +153,9 @@ const ScheduledJobsTable = ({
       columnHelper.accessor('description', {
         cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
         header: () => 'Description',
-        minSize: 30,
-        size: 90,
-        maxSize: 100,
+        minSize: 50,
+        size: 60,
+        maxSize: 70,
       }),
       columnHelper.accessor('payload', {
         cell: (cell) => cell.row.original.payload.node_type,
@@ -181,9 +181,9 @@ const ScheduledJobsTable = ({
       columnHelper.accessor('payload', {
         cell: (cell) => <TruncatedText text={JSON.stringify(cell.getValue())} />,
         header: () => <TruncatedText text="Payload" />,
-        minSize: 30,
-        size: 30,
-        maxSize: 85,
+        minSize: 40,
+        size: 50,
+        maxSize: 60,
       }),
     ];
     return columns;
@@ -233,7 +233,7 @@ const ScheduledJobs = () => {
       <div className="flex justify-between">
         <div>
           <div className="mt-2">
-            <h3 className="text-h6 dark:text-text-text-and-icon">Scheduled jobs</h3>
+            <h3 className="text-h6 dark:text-text-input-value">Scheduled jobs</h3>
           </div>
         </div>
       </div>
