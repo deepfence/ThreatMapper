@@ -1,257 +1,153 @@
-import { useMemo, useState } from 'react';
-import { IconContext } from 'react-icons';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { useMemo } from 'react';
+import {} from 'react-icons/hi';
+import { generatePath, useParams } from 'react-router-dom';
 import {
-  HiArchive,
-  HiChevronLeft,
-  HiDotsVertical,
-  HiOutlineExclamationCircle,
-} from 'react-icons/hi';
-import {
-  ActionFunctionArgs,
-  generatePath,
-  useFetcher,
-  useParams,
-} from 'react-router-dom';
-import { toast } from 'sonner';
-import {
-  Button,
   createColumnHelper,
   Dropdown,
   DropdownItem,
-  DropdownSubMenu,
-  Modal,
+  getRowSelectionColumn,
+  RowSelectionState,
   Table,
 } from 'ui-components';
 
-import { getRegistriesApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelRegistryListResp } from '@/api/generated';
-import {
-  ConfigureScanModal,
-  ConfigureScanModalProps,
-} from '@/components/ConfigureScanModal';
+import { ModelRegistryListResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
-import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
-import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
-import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
+import { TruncatedText } from '@/components/TruncatedText';
 import {
-  MalwareScanNodeTypeEnum,
-  ScanTypeEnum,
-  SecretScanNodeTypeEnum,
-  VulnerabilityScanNodeTypeEnum,
-} from '@/types/common';
-import { apiWrapper } from '@/utils/api';
+  ActionEnumType,
+  RegistryScanType,
+} from '@/features/registries/pages/RegistryAccounts';
+import { queries } from '@/queries';
+import { ScanTypeEnum } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
 
-export type ActionReturnType = {
-  message?: string;
-  success: boolean;
-};
-
-export const action = async ({
-  request,
-}: ActionFunctionArgs): Promise<ActionReturnType> => {
-  const formData = await request.formData();
-  const id = formData.get('_nodeId')?.toString() ?? '';
-  const deleteRegistry = apiWrapper({ fn: getRegistriesApiClient().deleteRegistry });
-
-  const r = await deleteRegistry({
-    registryId: id,
+const useListRegistries = () => {
+  return useSuspenseQuery({
+    ...queries.registry.listRegistryAccounts(),
+    keepPreviousData: true,
   });
-
-  if (!r.ok) {
-    if (r.error.response.status === 400 || r.error.response.status === 404) {
-      const modelResponse: ApiDocsBadRequestResponse = await r.error.response.json();
-      return {
-        message: modelResponse.message ?? '',
-        success: false,
-      };
-    } else if (r.error.response.status === 403) {
-      return {
-        message: 'You do not have enough permissions to delete registry',
-        success: false,
-      };
-    }
-    throw r.error;
-  }
-
-  return {
-    success: true,
-  };
-};
-
-const DeleteConfirmationModal = ({
-  showDialog,
-  id,
-  setShowDialog,
-}: {
-  showDialog: boolean;
-  id: string;
-  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
-  const fetcher = useFetcher<ActionReturnType>();
-  const { state, data } = fetcher;
-
-  return (
-    <Modal open={showDialog} onOpenChange={() => setShowDialog(false)}>
-      {!fetcher.data?.success ? (
-        <div className="grid place-items-center p-6">
-          <IconContext.Provider
-            value={{
-              className: 'mb-3 dark:text-red-600 text-red-400 w-[70px] h-[70px]',
-            }}
-          >
-            <HiOutlineExclamationCircle />
-          </IconContext.Provider>
-          <h3 className="mb-4 font-normal text-center text-sm">
-            The selected accounts will be deleted.
-            <br />
-            <span>Are you sure you want to delete?</span>
-          </h3>
-          {data?.message && <p className="text-red-500 text-sm mb-4">{data.message}</p>}
-          <div className="flex items-center justify-right gap-4">
-            <Button size="xs" onClick={() => setShowDialog(false)} type="button" outline>
-              No, cancel
-            </Button>
-            <fetcher.Form method="post">
-              <input type="text" name="_nodeId" hidden readOnly value={id} />
-              <Button
-                size="xs"
-                color="danger"
-                type="submit"
-                disabled={state !== 'idle'}
-                loading={state !== 'idle'}
-              >
-                Yes, I&apos;m sure
-              </Button>
-            </fetcher.Form>
-          </div>
-        </div>
-      ) : (
-        <SuccessModalContent text="Registry account deleted sucessfully!" />
-      )}
-    </Modal>
-  );
 };
 
 const ActionDropdown = ({
   id,
+  trigger,
   setIdsToDelete,
   setShowDeleteDialog,
+  onTableAction,
 }: {
   id: string;
+  trigger: React.ReactNode;
   setIdsToDelete: React.Dispatch<React.SetStateAction<string>>;
   setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onTableAction: (id: string[], scanType: RegistryScanType, actionType: string) => void;
 }) => {
-  const [selectedScanType, setSelectedScanType] = useState<
-    | typeof ScanTypeEnum.VulnerabilityScan
-    | typeof ScanTypeEnum.SecretScan
-    | typeof ScanTypeEnum.MalwareScan
-  >();
-
   return (
-    <>
-      <ConfigureScanModal
-        open={!!selectedScanType}
-        onOpenChange={() => setSelectedScanType(undefined)}
-        scanOptions={selectedScanType ? getScanOptions(selectedScanType, id) : undefined}
-      />
-      <Dropdown
-        triggerAsChild={true}
-        align="end"
-        content={
-          <>
-            <DropdownSubMenu
-              triggerAsChild
-              content={
-                <>
-                  <DropdownItem
-                    onClick={() => setSelectedScanType(ScanTypeEnum.VulnerabilityScan)}
-                  >
-                    <div className="w-4 h-4">
-                      <VulnerabilityIcon />
-                    </div>
-                    Start Vulnerability Scan
-                  </DropdownItem>
-                  <DropdownItem
-                    onClick={() => setSelectedScanType(ScanTypeEnum.SecretScan)}
-                  >
-                    <div className="w-4 h-4">
-                      <SecretsIcon />
-                    </div>
-                    Start Secret Scan
-                  </DropdownItem>
-                  <DropdownItem
-                    onClick={() => setSelectedScanType(ScanTypeEnum.MalwareScan)}
-                  >
-                    <div className="w-4 h-4">
-                      <MalwareIcon />
-                    </div>
-                    Start Malware Scan
-                  </DropdownItem>
-                </>
-              }
-            >
-              <DropdownItem>
-                <IconContext.Provider
-                  value={{
-                    className: 'w-4 h-4',
-                  }}
-                >
-                  <HiChevronLeft />
-                </IconContext.Provider>
-                <span className="text-gray-700 dark:text-gray-400">Scan</span>
-              </DropdownItem>
-            </DropdownSubMenu>
-            {/* <DropdownItem className="text-sm">
-              <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-                <IconContext.Provider
-                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
-                >
-                  <HiPencil />
-                </IconContext.Provider>
-                Edit
-              </span>
-            </DropdownItem> */}
-            <DropdownItem
-              className="text-sm"
-              onClick={() => {
-                setIdsToDelete(id);
-                setShowDeleteDialog(true);
-              }}
-            >
-              <span className="flex items-center gap-x-2 text-red-700 dark:text-red-400">
-                <IconContext.Provider
-                  value={{ className: 'text-red-700 dark:text-red-400' }}
-                >
-                  <HiArchive />
-                </IconContext.Provider>
-                Delete
-              </span>
-            </DropdownItem>
-          </>
-        }
-      >
-        <Button size="xs" color="normal" className="hover:bg-transparent">
-          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-            <HiDotsVertical />
-          </IconContext.Provider>
-        </Button>
-      </Dropdown>
-    </>
+    <Dropdown
+      triggerAsChild={true}
+      align={'start'}
+      content={
+        <>
+          <DropdownItem
+            onClick={() =>
+              onTableAction(
+                [id],
+                ScanTypeEnum.VulnerabilityScan,
+                ActionEnumType.START_SCAN,
+              )
+            }
+          >
+            Start Vulnerability Scan
+          </DropdownItem>
+          <DropdownItem
+            onClick={() =>
+              onTableAction([id], ScanTypeEnum.SecretScan, ActionEnumType.START_SCAN)
+            }
+          >
+            Start Secret Scan
+          </DropdownItem>
+          <DropdownItem
+            onClick={() =>
+              onTableAction([id], ScanTypeEnum.MalwareScan, ActionEnumType.START_SCAN)
+            }
+          >
+            Start Malware Scan
+          </DropdownItem>
+          <DropdownItem
+            onClick={() => {
+              setIdsToDelete(id);
+              setShowDeleteDialog(true);
+            }}
+            className="dark:text-status-error dark:hover:text-[#C45268]"
+          >
+            Delete
+          </DropdownItem>
+        </>
+      }
+    >
+      {trigger}
+    </Dropdown>
   );
 };
 
-export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] }) => {
+export const RegistryAccountsTable = ({
+  rowSelectionState,
+  onTableAction,
+  setIdsToDelete,
+  setShowDeleteDialog,
+  setRowSelectionState,
+}: {
+  rowSelectionState: RowSelectionState;
+  onTableAction: (id: string[], scanType: RegistryScanType, actionType: string) => void;
+  setIdsToDelete: React.Dispatch<React.SetStateAction<string>>;
+  setShowDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
+}) => {
+  const { data } = useListRegistries();
   const { account } = useParams() as {
     account: string;
   };
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [idsToDelete, setIdsToDelete] = useState<string>('');
+  const registriesOfAccountType =
+    data?.accounts.filter((registry) => registry.registry_type === account) ?? [];
 
   const columnHelper = createColumnHelper<ModelRegistryListResp>();
   const columns = useMemo(
     () => [
+      getRowSelectionColumn(columnHelper, {
+        size: 15,
+        minSize: 15,
+        maxSize: 15,
+      }),
+      columnHelper.display({
+        id: 'actions',
+        enableSorting: false,
+        cell: (cell) => {
+          if (!cell.row.original.node_id) {
+            throw new Error('Registry Account node id not found');
+          }
+          return (
+            <ActionDropdown
+              id={cell.row.original.node_id.toString()}
+              setIdsToDelete={setIdsToDelete}
+              setShowDeleteDialog={setShowDeleteDialog}
+              onTableAction={onTableAction}
+              trigger={
+                <button className="p-1">
+                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                    <EllipsisIcon />
+                  </div>
+                </button>
+              }
+            />
+          );
+        },
+        header: () => '',
+        minSize: 20,
+        size: 20,
+        maxSize: 20,
+        enableResizing: false,
+      }),
       columnHelper.accessor('name', {
         header: () => 'Name',
         cell: (info) => (
@@ -287,85 +183,26 @@ export const RegistryAccountsTable = ({ data }: { data: ModelRegistryListResp[] 
       columnHelper.accessor('non_secret', {
         enableSorting: false,
         header: () => 'Credentials',
-        cell: (info) => <div className="truncate">{JSON.stringify(info.getValue())}</div>,
+        cell: (info) => <TruncatedText text={JSON.stringify(info.getValue())} />,
         minSize: 120,
         size: 130,
         maxSize: 140,
-      }),
-      columnHelper.display({
-        id: 'actions',
-        enableSorting: false,
-        cell: (cell) => {
-          if (!cell.row.original.node_id) {
-            throw new Error('Registry Account node id not found');
-          }
-          return (
-            <ActionDropdown
-              id={cell.row.original.node_id.toString()}
-              setIdsToDelete={setIdsToDelete}
-              setShowDeleteDialog={setShowDeleteDialog}
-            />
-          );
-        },
-        header: () => '',
-        minSize: 20,
-        size: 20,
-        maxSize: 20,
-        enableResizing: false,
       }),
     ],
     [],
   );
   return (
     <div className="self-start">
-      {showDeleteDialog && (
-        <DeleteConfirmationModal
-          showDialog={showDeleteDialog}
-          id={idsToDelete}
-          setShowDialog={setShowDeleteDialog}
-        />
-      )}
-      <Table columns={columns} data={data} enableSorting size="sm" />
+      <Table
+        getRowId={(row) => row.node_id || ''}
+        enableRowSelection
+        columns={columns}
+        data={registriesOfAccountType}
+        enableSorting
+        size="default"
+        rowSelectionState={rowSelectionState}
+        onRowSelectionChange={setRowSelectionState}
+      />
     </div>
   );
 };
-
-function getScanOptions(
-  scanType: ScanTypeEnum,
-  id: string,
-): ConfigureScanModalProps['scanOptions'] {
-  if (scanType === ScanTypeEnum.VulnerabilityScan) {
-    return {
-      showAdvancedOptions: true,
-      scanType,
-      data: {
-        nodeIds: [id],
-        nodeType: VulnerabilityScanNodeTypeEnum.registry,
-      },
-    };
-  }
-
-  if (scanType === ScanTypeEnum.SecretScan) {
-    return {
-      showAdvancedOptions: true,
-      scanType,
-      data: {
-        nodeIds: [id],
-        nodeType: SecretScanNodeTypeEnum.registry,
-      },
-    };
-  }
-
-  if (scanType === ScanTypeEnum.MalwareScan) {
-    return {
-      showAdvancedOptions: true,
-      scanType,
-      data: {
-        nodeIds: [id],
-        nodeType: MalwareScanNodeTypeEnum.registry,
-      },
-    };
-  }
-
-  throw new Error('invalid scan type');
-}

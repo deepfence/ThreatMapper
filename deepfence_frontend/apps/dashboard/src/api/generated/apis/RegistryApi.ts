@@ -19,6 +19,7 @@ import type {
   ApiDocsFailureResponse,
   ModelContainerImage,
   ModelImageStub,
+  ModelMessageResponse,
   ModelRegistryAddReq,
   ModelRegistryCountResp,
   ModelRegistryImageStubsReq,
@@ -36,6 +37,8 @@ import {
     ModelContainerImageToJSON,
     ModelImageStubFromJSON,
     ModelImageStubToJSON,
+    ModelMessageResponseFromJSON,
+    ModelMessageResponseToJSON,
     ModelRegistryAddReqFromJSON,
     ModelRegistryAddReqToJSON,
     ModelRegistryCountRespFromJSON,
@@ -88,6 +91,10 @@ export interface ListImageStubsRequest {
 
 export interface ListImagesRequest {
     modelRegistryImagesReq?: ModelRegistryImagesReq;
+}
+
+export interface SyncRegistryRequest {
+    registryId: string;
 }
 
 export interface UpdateRegistryRequest {
@@ -277,6 +284,22 @@ export interface RegistryApiInterface {
      * List Registries
      */
     listRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryListResp>>;
+
+    /**
+     * synchronize registry images
+     * @summary Sync Registry
+     * @param {string} registryId 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RegistryApiInterface
+     */
+    syncRegistryRaw(requestParameters: SyncRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>>;
+
+    /**
+     * synchronize registry images
+     * Sync Registry
+     */
+    syncRegistry(requestParameters: SyncRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse>;
 
     /**
      * Update registry
@@ -760,6 +783,46 @@ export class RegistryApi extends runtime.BaseAPI implements RegistryApiInterface
      */
     async listRegistry(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ModelRegistryListResp>> {
         const response = await this.listRegistryRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * synchronize registry images
+     * Sync Registry
+     */
+    async syncRegistryRaw(requestParameters: SyncRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelMessageResponse>> {
+        if (requestParameters.registryId === null || requestParameters.registryId === undefined) {
+            throw new runtime.RequiredError('registryId','Required parameter requestParameters.registryId was null or undefined when calling syncRegistry.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/registryaccount/{registry_id}/sync`.replace(`{${"registry_id"}}`, encodeURIComponent(String(requestParameters.registryId))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ModelMessageResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * synchronize registry images
+     * Sync Registry
+     */
+    async syncRegistry(requestParameters: SyncRegistryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelMessageResponse> {
+        const response = await this.syncRegistryRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

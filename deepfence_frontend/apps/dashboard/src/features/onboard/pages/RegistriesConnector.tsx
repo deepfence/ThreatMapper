@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { Button } from 'ui-components';
+import { Button, Card } from 'ui-components';
 
 import { RegistryConnectorForm } from '@/features/common/data-component/RegistryConnectorForm';
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -12,33 +12,28 @@ export const RegistriesConnector = () => {
 
   return (
     <div className="w-full">
-      <>
+      <Card className="p-4">
         <RegistryConnectorForm
           onSuccess={() => {
             navigate('/onboard/connectors/my-connectors');
           }}
           registryType={connectorType}
           renderButton={(state) => (
-            <div className="flex">
-              <Button onClick={goBack} size="xs" type="button">
-                Go Back
+            <div className="flex mt-4 gap-x-4">
+              <Button
+                type="submit"
+                disabled={state !== 'idle'}
+                loading={state !== 'idle'}
+              >
+                Save and go to connectors
               </Button>
-              <div className="flex items-center ml-auto">
-                <Button
-                  color="primary"
-                  size="xs"
-                  className="ml-auto"
-                  type="submit"
-                  disabled={state !== 'idle'}
-                  loading={state !== 'idle'}
-                >
-                  Save and go to connectors
-                </Button>
-              </div>
+              <Button onClick={goBack} type="button" variant="outline">
+                Cancel
+              </Button>
             </div>
           )}
         />
-      </>
+      </Card>
     </div>
   );
 };

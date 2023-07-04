@@ -30,6 +30,12 @@ export interface ModelPasswordResetVerifyRequest {
      * @type {string}
      * @memberof ModelPasswordResetVerifyRequest
      */
+    namespace: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelPasswordResetVerifyRequest
+     */
     password: string;
 }
 
@@ -39,6 +45,7 @@ export interface ModelPasswordResetVerifyRequest {
 export function instanceOfModelPasswordResetVerifyRequest(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "code" in value;
+    isInstance = isInstance && "namespace" in value;
     isInstance = isInstance && "password" in value;
 
     return isInstance;
@@ -55,6 +62,7 @@ export function ModelPasswordResetVerifyRequestFromJSONTyped(json: any, ignoreDi
     return {
         
         'code': json['code'],
+        'namespace': json['namespace'],
         'password': json['password'],
     };
 }
@@ -69,6 +77,7 @@ export function ModelPasswordResetVerifyRequestToJSON(value?: ModelPasswordReset
     return {
         
         'code': value.code,
+        'namespace': value.namespace,
         'password': value.password,
     };
 }

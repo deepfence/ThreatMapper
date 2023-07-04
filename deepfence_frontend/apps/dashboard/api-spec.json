@@ -3710,6 +3710,59 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/registryaccount/{registry_id}/sync": {
+      "post": {
+        "tags": ["Registry"],
+        "summary": "Sync Registry",
+        "description": "synchronize registry images",
+        "operationId": "syncRegistry",
+        "parameters": [
+          {
+            "name": "registry_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelMessageResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/registryaccount/{registry_type}/summary-by-type": {
       "get": {
         "tags": ["Registry"],
@@ -11502,9 +11555,13 @@
         "properties": { "email": { "type": "string" } }
       },
       "ModelPasswordResetVerifyRequest": {
-        "required": ["code", "password"],
+        "required": ["namespace", "code", "password"],
         "type": "object",
-        "properties": { "code": { "type": "string" }, "password": { "type": "string" } }
+        "properties": {
+          "code": { "type": "string" },
+          "namespace": { "type": "string" },
+          "password": { "type": "string" }
+        }
       },
       "ModelPod": {
         "required": [
@@ -11595,13 +11652,14 @@
         }
       },
       "ModelRegisterInvitedUserRequest": {
-        "required": ["first_name", "last_name", "password", "code"],
+        "required": ["namespace", "first_name", "last_name", "password", "code"],
         "type": "object",
         "properties": {
           "code": { "type": "string" },
           "first_name": { "type": "string" },
           "is_temporary_password": { "type": "boolean" },
           "last_name": { "type": "string" },
+          "namespace": { "type": "string" },
           "password": { "type": "string" }
         }
       },
@@ -11641,7 +11699,7 @@
         "required": ["registry_id", "image_filter", "window"],
         "type": "object",
         "properties": {
-          "image_filter": { "$ref": "#/components/schemas/ReportersContainsFilter" },
+          "image_filter": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
           "registry_id": { "type": "string" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
@@ -11650,7 +11708,7 @@
         "required": ["registry_id", "image_filter", "window"],
         "type": "object",
         "properties": {
-          "image_filter": { "$ref": "#/components/schemas/ReportersContainsFilter" },
+          "image_filter": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
           "registry_id": { "type": "string" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }

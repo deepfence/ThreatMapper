@@ -61,10 +61,8 @@ import { module as postureCloudDetails } from '@/features/postures/pages/Posture
 import { module as postureCloudScanResults } from '@/features/postures/pages/PostureCloudScanResults';
 import { module as postureDetails } from '@/features/postures/pages/PostureDetailModal';
 import { module as postureScanResults } from '@/features/postures/pages/PostureScanResults';
-import { module as registryConnectorLayout } from '@/features/registries/layouts/RegistryConnectorLayout';
 import { module as registries } from '@/features/registries/pages/Registries';
 import { module as registryAccounts } from '@/features/registries/pages/RegistryAccounts';
-import { module as registryAdd } from '@/features/registries/pages/RegistryAdd';
 import { module as registryImages } from '@/features/registries/pages/RegistryImages';
 import { module as registryImageTags } from '@/features/registries/pages/RegistryImageTags';
 import { module as secretRulesForScan } from '@/features/secrets/data-components/secretScanRulesApiLoader';
@@ -226,17 +224,6 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'registries/:account',
         ...registryAccounts,
         meta: { title: 'Registry Account' },
-      },
-      {
-        path: 'registries/add',
-        ...registryConnectorLayout,
-        children: [
-          {
-            path: ':account',
-            ...registryAdd,
-            meta: { title: 'Registry Add Account' },
-          },
-        ],
       },
       {
         path: 'registries/images/:account/:nodeId',

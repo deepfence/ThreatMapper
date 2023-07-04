@@ -1,9 +1,6 @@
-import { useMemo, useState } from 'react';
-import { IconContext } from 'react-icons';
-import { HiDotsVertical } from 'react-icons/hi';
+import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  Button,
   createColumnHelper,
   Dropdown,
   DropdownItem,
@@ -13,108 +10,126 @@ import {
 } from 'ui-components';
 
 import { ModelContainerImage } from '@/api/generated';
-import {
-  ConfigureScanModal,
-  ConfigureScanModalProps,
-} from '@/components/ConfigureScanModal';
+import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
-import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
-import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
-import { VulnerabilityIcon } from '@/components/sideNavigation/icons/Vulnerability';
+import { TruncatedText } from '@/components/TruncatedText';
 import {
-  MalwareScanNodeTypeEnum,
-  ScanTypeEnum,
-  SecretScanNodeTypeEnum,
-  VulnerabilityScanNodeTypeEnum,
-} from '@/types/common';
+  ActionEnumType,
+  RegistryScanType,
+} from '@/features/registries/pages/RegistryImages';
+import { useScanResults } from '@/features/registries/pages/RegistryImageTags';
+import { ScanTypeEnum } from '@/types/common';
 import { formatMilliseconds } from '@/utils/date';
 
-const PAGE_SIZE = 15;
+const DEFAULT_PAGE_SIZE = 15;
 
-const ActionDropdown = ({ ids, label }: { ids: string[]; label?: string }) => {
-  const [selectedScanType, setSelectedScanType] = useState<
-    | typeof ScanTypeEnum.VulnerabilityScan
-    | typeof ScanTypeEnum.SecretScan
-    | typeof ScanTypeEnum.MalwareScan
-  >();
-
+const ActionDropdown = ({
+  id,
+  trigger,
+  onTableAction,
+}: {
+  id: string;
+  trigger: React.ReactNode;
+  onTableAction: (
+    ids: string[],
+    scanType: RegistryScanType,
+    actionType: ActionEnumType,
+  ) => void;
+}) => {
   return (
-    <>
-      <ConfigureScanModal
-        open={!!selectedScanType}
-        onOpenChange={() => setSelectedScanType(undefined)}
-        scanOptions={selectedScanType ? getScanOptions(selectedScanType, ids) : undefined}
-      />
-      <Dropdown
-        triggerAsChild={true}
-        align="end"
-        content={
-          <>
-            <DropdownItem
-              onClick={() => setSelectedScanType(ScanTypeEnum.VulnerabilityScan)}
-            >
-              <div className="w-4 h-4">
-                <VulnerabilityIcon />
-              </div>
-              Start Vulnerability Scan
-            </DropdownItem>
-            <DropdownItem onClick={() => setSelectedScanType(ScanTypeEnum.SecretScan)}>
-              <div className="w-4 h-4">
-                <SecretsIcon />
-              </div>
-              Start Secret Scan
-            </DropdownItem>
-            <DropdownItem onClick={() => setSelectedScanType(ScanTypeEnum.MalwareScan)}>
-              <div className="w-4 h-4">
-                <MalwareIcon />
-              </div>
-              Start Malware Scan
-            </DropdownItem>
-          </>
-        }
-      >
-        <Button size="xs" color="normal" className="hover:bg-transparent">
-          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-            <HiDotsVertical />
-          </IconContext.Provider>
-          {label ? <span className="ml-2">{label}</span> : null}
-        </Button>
-      </Dropdown>
-    </>
+    <Dropdown
+      triggerAsChild={true}
+      align={'start'}
+      content={
+        <>
+          <DropdownItem
+            onClick={() =>
+              onTableAction(
+                [id],
+                ScanTypeEnum.VulnerabilityScan,
+                ActionEnumType.START_SCAN,
+              )
+            }
+          >
+            Start Vulnerability Scan
+          </DropdownItem>
+          <DropdownItem
+            onClick={() =>
+              onTableAction([id], ScanTypeEnum.SecretScan, ActionEnumType.START_SCAN)
+            }
+          >
+            Start Secret Scan
+          </DropdownItem>
+          <DropdownItem
+            onClick={() =>
+              onTableAction([id], ScanTypeEnum.MalwareScan, ActionEnumType.START_SCAN)
+            }
+          >
+            Start Malware Scan
+          </DropdownItem>
+        </>
+      }
+    >
+      {trigger}
+    </Dropdown>
   );
 };
 
 export const RegistryImageTagsTable = ({
-  data,
-  pagination: { totalRows, currentPage },
+  rowSelectionState,
+  setRowSelectionState,
+  onTableAction,
 }: {
-  data: ModelContainerImage[];
-  pagination: {
-    totalRows: number;
-    currentPage: number;
-  };
+  onTableAction: (
+    ids: string[],
+    scanType: RegistryScanType,
+    actionType: ActionEnumType,
+  ) => void;
+  rowSelectionState: RowSelectionState;
+  setRowSelectionState: React.Dispatch<React.SetStateAction<RowSelectionState>>;
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const columnHelper = createColumnHelper<ModelContainerImage>();
-  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
 
-  const [selectedScanType, setSelectedScanType] = useState<
-    | typeof ScanTypeEnum.VulnerabilityScan
-    | typeof ScanTypeEnum.SecretScan
-    | typeof ScanTypeEnum.MalwareScan
-  >();
-
+  const { data } = useScanResults();
   const columns = useMemo(
     () => [
       getRowSelectionColumn(columnHelper, {
-        size: 25,
-        minSize: 10,
-        maxSize: 25,
+        size: 15,
+        minSize: 15,
+        maxSize: 15,
+      }),
+      columnHelper.display({
+        id: 'actions',
+        enableSorting: false,
+        cell: (cell) => {
+          if (!cell.row.original.node_id) {
+            throw new Error('Registry Image node id not found');
+          }
+          return (
+            <ActionDropdown
+              id={cell.row.original.node_id.split('<==>')[0]}
+              onTableAction={onTableAction}
+              trigger={
+                <button className="p-1">
+                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                    <EllipsisIcon />
+                  </div>
+                </button>
+              }
+            />
+          );
+        },
+        header: () => '',
+        minSize: 20,
+        size: 20,
+        maxSize: 20,
+        enableResizing: false,
       }),
       columnHelper.accessor('docker_image_tag', {
-        header: () => 'Image Tags',
+        header: () => 'Image Tag',
         cell: (info) => {
-          return info.renderValue();
+          return <TruncatedText text={info.getValue()} />;
         },
         maxSize: 40,
         minSize: 20,
@@ -134,96 +149,30 @@ export const RegistryImageTagsTable = ({
         maxSize: 50,
       }),
       columnHelper.accessor('vulnerability_scan_status', {
-        header: () => 'Vulnerability Scan Status',
+        header: () => <TruncatedText text={'Vulnerability Scan Status'} />,
         cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
       }),
       columnHelper.accessor('secret_scan_status', {
-        header: () => 'Secrets Scan Status',
+        header: () => <TruncatedText text={'Secrets Scan Status'} />,
         cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
       }),
       columnHelper.accessor('malware_scan_status', {
-        header: () => 'Malware Scan Status',
+        header: () => <TruncatedText text={'Malware Scan Status'} />,
         cell: (info) => <ScanStatusBadge status={info.getValue()} />,
         maxSize: 50,
-      }),
-      columnHelper.display({
-        id: 'actions',
-        enableSorting: false,
-        cell: (cell) => {
-          return <ActionDropdown ids={[cell.row.original.node_id]} />;
-        },
-        header: () => '',
-        minSize: 20,
-        size: 20,
-        maxSize: 20,
-        enableResizing: false,
       }),
     ],
     [setSearchParams],
   );
 
-  const selectedIds = useMemo(() => {
-    return Object.keys(rowSelectionState);
-  }, [rowSelectionState]);
-
   return (
     <div className="self-start">
-      {selectedIds.length === 0 ? (
-        <div className="text-sm text-gray-400 font-medium pb-3">No rows selected</div>
-      ) : (
-        <div className="mb-1.5">
-          <Dropdown
-            triggerAsChild={true}
-            align="start"
-            content={
-              <>
-                <DropdownItem
-                  onClick={() => setSelectedScanType(ScanTypeEnum.VulnerabilityScan)}
-                >
-                  <div className="w-4 h-4">
-                    <VulnerabilityIcon />
-                  </div>
-                  Start Vulnerability Scan
-                </DropdownItem>
-                <DropdownItem
-                  onClick={() => setSelectedScanType(ScanTypeEnum.SecretScan)}
-                >
-                  <div className="w-4 h-4">
-                    <SecretsIcon />
-                  </div>
-                  Start Secret Scan
-                </DropdownItem>
-                <DropdownItem
-                  onClick={() => setSelectedScanType(ScanTypeEnum.MalwareScan)}
-                >
-                  <div className="w-4 h-4">
-                    <MalwareIcon />
-                  </div>
-                  Start Malware Scan
-                </DropdownItem>
-              </>
-            }
-          >
-            <Button size="xxs" outline color="primary">
-              Start Scan
-            </Button>
-          </Dropdown>
-        </div>
-      )}
-
-      <ConfigureScanModal
-        open={!!selectedScanType}
-        onOpenChange={() => setSelectedScanType(undefined)}
-        scanOptions={
-          selectedScanType ? getScanOptions(selectedScanType, selectedIds) : undefined
-        }
-      />
       <Table
-        size="sm"
+        size="default"
         columns={columns}
-        data={data}
+        data={data.tags}
         enableRowSelection
         rowSelectionState={rowSelectionState}
         enablePagination
@@ -232,17 +181,17 @@ export const RegistryImageTagsTable = ({
         enableColumnResizing
         enableSorting
         approximatePagination
-        totalRows={totalRows}
-        pageSize={PAGE_SIZE}
-        pageIndex={currentPage}
-        getRowId={(row) => row.node_id || ''}
+        totalRows={data.totalRows}
+        pageSize={parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE))}
+        pageIndex={data.currentPage}
+        getRowId={(row) => `${row.node_id}<==>${row.docker_image_tag}` || ''}
         onRowSelectionChange={setRowSelectionState}
         onPaginationChange={(updaterOrValue) => {
           let newPageIndex = 0;
           if (typeof updaterOrValue === 'function') {
             newPageIndex = updaterOrValue({
-              pageIndex: currentPage,
-              pageSize: PAGE_SIZE,
+              pageIndex: data.currentPage,
+              pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
             }).pageIndex;
           } else {
             newPageIndex = updaterOrValue.pageIndex;
@@ -252,47 +201,15 @@ export const RegistryImageTagsTable = ({
             return prev;
           });
         }}
+        enablePageResize
+        onPageResize={(newSize) => {
+          setSearchParams((prev) => {
+            prev.set('size', String(newSize));
+            prev.delete('page');
+            return prev;
+          });
+        }}
       />
     </div>
   );
 };
-
-function getScanOptions(
-  scanType: ScanTypeEnum,
-  nodeIds: string[],
-): ConfigureScanModalProps['scanOptions'] {
-  if (scanType === ScanTypeEnum.VulnerabilityScan) {
-    return {
-      showAdvancedOptions: nodeIds.length === 1,
-      scanType,
-      data: {
-        nodeIds,
-        nodeType: VulnerabilityScanNodeTypeEnum.imageTag,
-      },
-    };
-  }
-
-  if (scanType === ScanTypeEnum.SecretScan) {
-    return {
-      showAdvancedOptions: nodeIds.length === 1,
-      scanType,
-      data: {
-        nodeIds,
-        nodeType: SecretScanNodeTypeEnum.imageTag,
-      },
-    };
-  }
-
-  if (scanType === ScanTypeEnum.MalwareScan) {
-    return {
-      showAdvancedOptions: nodeIds.length === 1,
-      scanType,
-      data: {
-        nodeIds,
-        nodeType: MalwareScanNodeTypeEnum.imageTag,
-      },
-    };
-  }
-
-  throw new Error('invalid scan type');
-}

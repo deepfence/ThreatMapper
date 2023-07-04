@@ -119,12 +119,12 @@ export const ConnectorHeader = ({
       </div>
       <div className="flex items-center">
         <div>
-          <h1 className={`text-[32px] text-black dark:text-white`}>{title}</h1>
-          <p
-            className={`${Typography.size.base} ${Typography.weight.normal} mt-1.5 mb-4 dark:text-gray-400 text-gray-900`}
-          >
-            {description}
-          </p>
+          <h1 className={`text-h1 dark:text-text-input-value`}>{title}</h1>
+          {description && (
+            <p className={`text-p7 mt-1.5 mb-4 dark:text-white text-gray-900`}>
+              {description}
+            </p>
+          )}
         </div>
         {endComponent ? <div className="ml-auto">{endComponent}</div> : null}
       </div>
