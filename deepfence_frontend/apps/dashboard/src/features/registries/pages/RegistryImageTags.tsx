@@ -40,6 +40,7 @@ import {
 } from '@/types/common';
 import {
   MalwareScanGroupedStatus,
+  SCAN_STATUS_GROUPS,
   SecretScanGroupedStatus,
   VulnerabilityScanGroupedStatus,
 } from '@/utils/scan';
@@ -113,10 +114,15 @@ export const useScanResults = () => {
         sortBy: 'last_updated',
         descending: true,
       },
-      vulnerabilityScanStatus:
-        searchParams.get('vulnerability_scan_status')?.split(',') ?? [],
-      secretScanStatus: searchParams.get('secret_scan_status')?.split(',') ?? [],
-      malwareScanStatus: searchParams.get('malware_scan_status')?.split(',') ?? [],
+      vulnerabilityScanStatus: searchParams.get('vulnerabilityScanStatus') as
+        | VulnerabilityScanGroupedStatus
+        | undefined,
+      secretScanStatus: searchParams.get('secretScanStatus') as
+        | SecretScanGroupedStatus
+        | undefined,
+      malwareScanStatus: searchParams.get('malwareScanStatus') as
+        | MalwareScanGroupedStatus
+        | undefined,
     }),
     keepPreviousData: true,
   });
@@ -180,102 +186,26 @@ const DynamicBreadcrumbs = () => {
     </>
   );
 };
-interface ImageTagFilters {
-  vulnerabilityScanStatus: Array<string>;
-  secretScanStatus: Array<string>;
-  malwareScanStatus: Array<string>;
-}
 
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   vulnerabilityScanStatus: 'Vulnerability scan status',
-  secretScanStatus: 'Secet scan status',
+  secretScanStatus: 'Secret scan status',
   malwareScanStatus: 'Malware scan status',
 };
-const vulnerabilityScanStatusFilter = [
-  {
-    label: 'Never Scanned',
-    value: VulnerabilityScanGroupedStatus.neverScanned,
-  },
-  {
-    label: 'Starting',
-    value: VulnerabilityScanGroupedStatus.starting,
-  },
-  {
-    label: 'In progress',
-    value: VulnerabilityScanGroupedStatus.inProgress,
-  },
-  {
-    label: 'Complete',
-    value: VulnerabilityScanGroupedStatus.complete,
-  },
-  {
-    label: 'Error',
-    value: VulnerabilityScanGroupedStatus.error,
-  },
-];
-const secretScanStatusFilter = [
-  {
-    label: 'Never Scanned',
-    value: SecretScanGroupedStatus.neverScanned,
-  },
-  {
-    label: 'Starting',
-    value: SecretScanGroupedStatus.starting,
-  },
-  {
-    label: 'In progress',
-    value: SecretScanGroupedStatus.inProgress,
-  },
-  {
-    label: 'Complete',
-    value: SecretScanGroupedStatus.complete,
-  },
-  {
-    label: 'Error',
-    value: SecretScanGroupedStatus.error,
-  },
-];
-const malwareScanStatusFilter = [
-  {
-    label: 'Never Scanned',
-    value: MalwareScanGroupedStatus.neverScanned,
-  },
-  {
-    label: 'Starting',
-    value: MalwareScanGroupedStatus.starting,
-  },
-  {
-    label: 'In progress',
-    value: MalwareScanGroupedStatus.inProgress,
-  },
-  {
-    label: 'Complete',
-    value: MalwareScanGroupedStatus.complete,
-  },
-  {
-    label: 'Error',
-    value: MalwareScanGroupedStatus.error,
-  },
-];
 
 const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
   return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
     return prev + searchParams.getAll(curr).length;
   }, 0);
 };
-const Filters = ({
-  filters,
-  onFiltersChange,
-}: {
-  filters: ImageTagFilters;
-  onFiltersChange: (filters: ImageTagFilters) => void;
-}) => {
+const Filters = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
-  const [vulnerabilityScanStatus, setVulnerabilityScanStatus] = useState('');
-  const [secretScanStatus, setSecretScanStatus] = useState('');
-  const [malwareScanStatus, setMalwareScanStatus] = useState('');
+  const [vulnerabilityScanStatusSearchText, setVulnerabilityScanStatusSearchText] =
+    useState('');
+  const [secretScanStatusSearchText, setSecretScanStatusSearchText] = useState('');
+  const [malwareScanStatusSearchText, setMalwareScanStatusSearchText] = useState('');
 
   const params = useParams() as {
     nodeId: string;
@@ -290,109 +220,106 @@ const Filters = ({
     <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
       <div className="flex gap-2">
         <Combobox
+          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
+            return groupStatus.value === searchParams.get('vulnerabilityScanStatus');
+          })}
+          nullable
+          onQueryChange={(query) => {
+            setVulnerabilityScanStatusSearchText(query);
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              if (value) {
+                prev.set('vulnerabilityScanStatus', value.value);
+              } else {
+                prev.delete('vulnerabilityScanStatus');
+              }
+              prev.delete('page');
+              return prev;
+            });
+          }}
           getDisplayValue={() => FILTER_SEARCHPARAMS['vulnerabilityScanStatus']}
-          multiple
-          value={searchParams.get('vulnerability_scan_status')?.split(',')}
-          onChange={(values) => {
-            onFiltersChange({
-              ...filters,
-              vulnerabilityScanStatus: values,
-            });
-          }}
-          onQueryChange={(query) => {
-            setVulnerabilityScanStatus(query);
-          }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            onFiltersChange({
-              vulnerabilityScanStatus: [],
-              secretScanStatus: filters.secretScanStatus,
-              malwareScanStatus: filters.malwareScanStatus,
-            });
-          }}
         >
-          {vulnerabilityScanStatusFilter
-            .filter((item) => {
-              if (!vulnerabilityScanStatus.length) return true;
-              return item.value.includes(vulnerabilityScanStatus.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item.value} value={item.value}>
-                  {item.label}
-                </ComboboxOption>
-              );
-            })}
+          {SCAN_STATUS_GROUPS.filter((item) => {
+            if (!vulnerabilityScanStatusSearchText.length) return true;
+            return item.label
+              .toLowerCase()
+              .includes(vulnerabilityScanStatusSearchText.toLowerCase());
+          }).map((item) => {
+            return (
+              <ComboboxOption key={item.value} value={item}>
+                {item.label}
+              </ComboboxOption>
+            );
+          })}
         </Combobox>
         <Combobox
+          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
+            return groupStatus.value === searchParams.get('secretScanStatus');
+          })}
+          nullable
+          onQueryChange={(query) => {
+            setSecretScanStatusSearchText(query);
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              if (value) {
+                prev.set('secretScanStatus', value.value);
+              } else {
+                prev.delete('secretScanStatus');
+              }
+              prev.delete('page');
+              return prev;
+            });
+          }}
           getDisplayValue={() => FILTER_SEARCHPARAMS['secretScanStatus']}
-          multiple
-          value={searchParams.get('secretScanStatus')?.split(',')}
-          onChange={(values) => {
-            onFiltersChange({
-              ...filters,
-              secretScanStatus: values,
-            });
-          }}
-          onQueryChange={(query) => {
-            setSecretScanStatus(query);
-          }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            onFiltersChange({
-              vulnerabilityScanStatus: filters.vulnerabilityScanStatus,
-              secretScanStatus: [],
-              malwareScanStatus: filters.malwareScanStatus,
-            });
-          }}
         >
-          {secretScanStatusFilter
-            .filter((item) => {
-              if (!secretScanStatus.length) return true;
-              return item.value.includes(secretScanStatus.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item.value} value={item.value}>
-                  {item.label}
-                </ComboboxOption>
-              );
-            })}
+          {SCAN_STATUS_GROUPS.filter((item) => {
+            if (!secretScanStatusSearchText.length) return true;
+            return item.label
+              .toLowerCase()
+              .includes(secretScanStatusSearchText.toLowerCase());
+          }).map((item) => {
+            return (
+              <ComboboxOption key={item.value} value={item}>
+                {item.label}
+              </ComboboxOption>
+            );
+          })}
         </Combobox>
         <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['malwareScanStatus']}
-          multiple
-          value={searchParams.get('malwareScanStatus')?.split(',')}
-          onChange={(values) => {
-            onFiltersChange({
-              ...filters,
-              malwareScanStatus: values,
-            });
-          }}
+          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
+            return groupStatus.value === searchParams.get('malwareScanStatus');
+          })}
+          nullable
           onQueryChange={(query) => {
-            setMalwareScanStatus(query);
+            setMalwareScanStatusSearchText(query);
           }}
-          clearAllElement="Clear"
-          onClearAll={() => {
-            onFiltersChange({
-              vulnerabilityScanStatus: filters.vulnerabilityScanStatus,
-              secretScanStatus: filters.secretScanStatus,
-              malwareScanStatus: [],
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              if (value) {
+                prev.set('malwareScanStatus', value.value);
+              } else {
+                prev.delete('malwareScanStatus');
+              }
+              prev.delete('page');
+              return prev;
             });
           }}
+          getDisplayValue={() => FILTER_SEARCHPARAMS['malwareScanStatus']}
         >
-          {malwareScanStatusFilter
-            .filter((item) => {
-              if (!malwareScanStatus.length) return true;
-              return item.value.includes(malwareScanStatus.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item.value} value={item.value}>
-                  {item.label}
-                </ComboboxOption>
-              );
-            })}
+          {SCAN_STATUS_GROUPS.filter((item) => {
+            if (!malwareScanStatusSearchText.length) return true;
+            return item.label
+              .toLowerCase()
+              .includes(malwareScanStatusSearchText.toLowerCase());
+          }).map((item) => {
+            return (
+              <ComboboxOption key={item.value} value={item}>
+                {item.label}
+              </ComboboxOption>
+            );
+          })}
         </Combobox>
       </div>
 
@@ -506,13 +433,7 @@ const RegistryImagesTagsResults = () => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
   const [nodeIdsToScan, setNodeIdsToScan] = useState<string[]>([]);
 
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const [filters, setFilters] = useState<ImageTagFilters>({
-    vulnerabilityScanStatus: [],
-    secretScanStatus: [],
-    malwareScanStatus: [],
-  });
+  const [searchParams] = useSearchParams();
 
   const [filtersExpanded, setFiltersExpanded] = useState(false);
 
@@ -561,36 +482,7 @@ const RegistryImagesTagsResults = () => {
           }
         />
       </div>
-      {filtersExpanded ? (
-        <Filters
-          filters={filters}
-          onFiltersChange={(newFilters) => {
-            setFilters(newFilters);
-            if (newFilters.vulnerabilityScanStatus.length) {
-              searchParams.set(
-                'vulnerability_scan_status',
-                newFilters.vulnerabilityScanStatus.join(','),
-              );
-            }
-            if (newFilters.secretScanStatus.length) {
-              searchParams.set(
-                'secret_scan_status',
-                newFilters.secretScanStatus.join(','),
-              );
-            }
-            if (newFilters.malwareScanStatus.length) {
-              searchParams.set(
-                'malware_scan_status',
-                newFilters.malwareScanStatus.join(','),
-              );
-            }
-            setSearchParams((prev) => {
-              prev.set('page', String(0));
-              return prev;
-            });
-          }}
-        />
-      ) : null}
+      {filtersExpanded ? <Filters /> : null}
       <Suspense fallback={<TableSkeleton columns={7} rows={10} />}>
         <RegistryImageTagsTable
           onTableAction={onTableAction}

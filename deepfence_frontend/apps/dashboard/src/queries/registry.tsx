@@ -118,7 +118,16 @@ export const registryQueries = createQueryKeys('registry', {
       queryFn: async () => {
         const imageRequest = {
           image_filter: {
-            filter_in: null,
+            contains_filter: {
+              filter_in: null,
+            },
+            compare_filter: [],
+            match_filter: {
+              filter_in: {},
+            },
+            order_filter: {
+              order_fields: [],
+            },
           },
           registry_id: registryId,
           window: {
@@ -194,9 +203,9 @@ export const registryQueries = createQueryKeys('registry', {
   registryScanResults: (filters: {
     registryId: string;
     imageId: string;
-    vulnerabilityScanStatus: string[];
-    secretScanStatus: string[];
-    malwareScanStatus: string[];
+    vulnerabilityScanStatus?: VulnerabilityScanGroupedStatus;
+    secretScanStatus?: SecretScanGroupedStatus;
+    malwareScanStatus?: MalwareScanGroupedStatus;
     page?: number;
     pageSize: number;
     order?: {
@@ -218,8 +227,20 @@ export const registryQueries = createQueryKeys('registry', {
       queryFn: async () => {
         const imageTagsRequest: ModelRegistryImagesReq = {
           image_filter: {
-            filter_in: {
-              docker_image_name: [imageId],
+            compare_filter: [],
+            match_filter: {
+              filter_in: {},
+            },
+            order_filter: {
+              order_fields: [],
+            },
+            contains_filter: {
+              filter_in: {
+                docker_image_name: [imageId],
+              },
+            },
+            not_contains_filter: {
+              filter_in: {},
             },
           },
           registry_id: registryId,
@@ -229,84 +250,60 @@ export const registryQueries = createQueryKeys('registry', {
           },
         };
 
-        if (
-          vulnerabilityScanStatus.length === 1 &&
-          vulnerabilityScanStatus[0] === VulnerabilityScanGroupedStatus.neverScanned
-        ) {
-          imageTagsRequest.image_filter.filter_in = {
-            ...imageTagsRequest.image_filter.filter_in,
-            vulnerability_scan_status: [
-              ...VULNERABILITY_SCAN_STATUS_GROUPS.complete,
-              ...VULNERABILITY_SCAN_STATUS_GROUPS.error,
-              ...VULNERABILITY_SCAN_STATUS_GROUPS.inProgress,
-              ...VULNERABILITY_SCAN_STATUS_GROUPS.starting,
-            ],
-          };
-        } else if (vulnerabilityScanStatus.length) {
-          imageTagsRequest.image_filter.filter_in = {
-            ...imageTagsRequest.image_filter.filter_in,
-            vulnerability_scan_status: vulnerabilityScanStatus.reduce<string[]>(
-              (acc, value) => {
-                acc = acc.concat(
-                  ...VULNERABILITY_SCAN_STATUS_GROUPS[
-                    value as VulnerabilityScanGroupedStatus
-                  ],
-                );
-                return acc;
-              },
-              [],
-            ),
-          };
+        if (vulnerabilityScanStatus) {
+          if (vulnerabilityScanStatus === VulnerabilityScanGroupedStatus.neverScanned) {
+            imageTagsRequest.image_filter.not_contains_filter!.filter_in = {
+              ...imageTagsRequest.image_filter.not_contains_filter!.filter_in,
+              vulnerability_scan_status: [
+                ...VULNERABILITY_SCAN_STATUS_GROUPS.complete,
+                ...VULNERABILITY_SCAN_STATUS_GROUPS.error,
+                ...VULNERABILITY_SCAN_STATUS_GROUPS.inProgress,
+                ...VULNERABILITY_SCAN_STATUS_GROUPS.starting,
+              ],
+            };
+          } else {
+            imageTagsRequest.image_filter.contains_filter.filter_in = {
+              ...imageTagsRequest.image_filter.contains_filter.filter_in,
+              vulnerability_scan_status:
+                VULNERABILITY_SCAN_STATUS_GROUPS[vulnerabilityScanStatus],
+            };
+          }
         }
-
-        if (
-          secretScanStatus.length === 1 &&
-          secretScanStatus[0] === SecretScanGroupedStatus.neverScanned
-        ) {
-          imageTagsRequest.image_filter.filter_in = {
-            ...imageTagsRequest.image_filter.filter_in,
-            secret_scan_status: [
-              ...SECRET_SCAN_STATUS_GROUPS.complete,
-              ...SECRET_SCAN_STATUS_GROUPS.error,
-              ...SECRET_SCAN_STATUS_GROUPS.inProgress,
-              ...SECRET_SCAN_STATUS_GROUPS.starting,
-            ],
-          };
-        } else if (secretScanStatus.length) {
-          imageTagsRequest.image_filter.filter_in = {
-            ...imageTagsRequest.image_filter.filter_in,
-            secret_scan_status: secretScanStatus.reduce<string[]>((acc, value) => {
-              acc = acc.concat(
-                ...SECRET_SCAN_STATUS_GROUPS[value as SecretScanGroupedStatus],
-              );
-              return acc;
-            }, []),
-          };
+        if (secretScanStatus) {
+          if (secretScanStatus === SecretScanGroupedStatus.neverScanned) {
+            imageTagsRequest.image_filter.not_contains_filter!.filter_in = {
+              ...imageTagsRequest.image_filter.not_contains_filter!.filter_in,
+              secret_scan_status: [
+                ...SECRET_SCAN_STATUS_GROUPS.complete,
+                ...SECRET_SCAN_STATUS_GROUPS.error,
+                ...SECRET_SCAN_STATUS_GROUPS.inProgress,
+                ...SECRET_SCAN_STATUS_GROUPS.starting,
+              ],
+            };
+          } else {
+            imageTagsRequest.image_filter.contains_filter.filter_in = {
+              ...imageTagsRequest.image_filter.contains_filter.filter_in,
+              secret_scan_status: SECRET_SCAN_STATUS_GROUPS[secretScanStatus],
+            };
+          }
         }
-
-        if (
-          malwareScanStatus.length === 1 &&
-          malwareScanStatus[0] === MalwareScanGroupedStatus.neverScanned
-        ) {
-          imageTagsRequest.image_filter.filter_in = {
-            ...imageTagsRequest.image_filter.filter_in,
-            malware_scan_status: [
-              ...MALWARE_SCAN_STATUS_GROUPS.complete,
-              ...MALWARE_SCAN_STATUS_GROUPS.error,
-              ...MALWARE_SCAN_STATUS_GROUPS.inProgress,
-              ...MALWARE_SCAN_STATUS_GROUPS.starting,
-            ],
-          };
-        } else if (malwareScanStatus.length) {
-          imageTagsRequest.image_filter.filter_in = {
-            ...imageTagsRequest.image_filter.filter_in,
-            malware_scan_status: malwareScanStatus.reduce<string[]>((acc, value) => {
-              acc = acc.concat(
-                ...MALWARE_SCAN_STATUS_GROUPS[value as MalwareScanGroupedStatus],
-              );
-              return acc;
-            }, []),
-          };
+        if (malwareScanStatus) {
+          if (malwareScanStatus === MalwareScanGroupedStatus.neverScanned) {
+            imageTagsRequest.image_filter.not_contains_filter!.filter_in = {
+              ...imageTagsRequest.image_filter.not_contains_filter!.filter_in,
+              malware_scan_status: [
+                ...MALWARE_SCAN_STATUS_GROUPS.complete,
+                ...MALWARE_SCAN_STATUS_GROUPS.error,
+                ...MALWARE_SCAN_STATUS_GROUPS.inProgress,
+                ...MALWARE_SCAN_STATUS_GROUPS.starting,
+              ],
+            };
+          } else {
+            imageTagsRequest.image_filter.contains_filter.filter_in = {
+              ...imageTagsRequest.image_filter.contains_filter.filter_in,
+              malware_scan_status: MALWARE_SCAN_STATUS_GROUPS[malwareScanStatus],
+            };
+          }
         }
         const listImages = apiWrapper({ fn: getRegistriesApiClient().listImages });
 
