@@ -43,7 +43,7 @@ export const NodeDetailsStackedModal = ({
     useState<ConfigureScanModalProps['scanOptions']>();
   return (
     <>
-      <SlidingModal open={open} onOpenChange={onOpenChange} width="w-[min(650px,90%)]">
+      <SlidingModal open={open} onOpenChange={onOpenChange} size="l">
         <SlidingModalCloseButton />
         {lastNode.nodeType === 'host' ? (
           <Host

@@ -1,310 +1,255 @@
-import { useEffect, useMemo, useState } from 'react';
-import { FiFilter } from 'react-icons/fi';
-import { LoaderFunctionArgs, useFetcher } from 'react-router-dom';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
-  Checkbox,
+  Badge,
+  Button,
+  Combobox,
+  ComboboxOption,
   createColumnHelper,
-  IconButton,
-  Popover,
-  RowSelectionState,
   SortingState,
   Table,
   TableSkeleton,
 } from 'ui-components';
 
-import { getSearchApiClient } from '@/api/api';
-import { ModelPod, SearchSearchNodeReq } from '@/api/generated';
+import { ModelPod } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
-import { FilterHeader } from '@/components/forms/FilterHeader';
+import { FilterBadge } from '@/components/filters/FilterBadge';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
+import { FilterIcon } from '@/components/icons/common/Filter';
+import { TimesIcon } from '@/components/icons/common/Times';
+import { TruncatedText } from '@/components/TruncatedText';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
-import { apiWrapper } from '@/utils/api';
-import { getOrderFromSearchParams, getPageFromSearchParams } from '@/utils/table';
+import { queries } from '@/queries';
+import { ScanTypeEnum } from '@/types/common';
+import {
+  getOrderFromSearchParams,
+  getPageFromSearchParams,
+  useSortingState,
+} from '@/utils/table';
 
-type LoaderData = {
-  pods: ModelPod[];
-  currentPage: number;
-  totalRows: number;
-};
-const PAGE_SIZE = 20;
-const loader = async ({ request }: LoaderFunctionArgs): Promise<LoaderData> => {
-  const searchParams = new URL(request.url).searchParams;
-  const page = getPageFromSearchParams(searchParams);
-  const order = getOrderFromSearchParams(searchParams);
+const DEFAULT_PAGE_SIZE = 25;
 
-  const kubernetesStatus = searchParams.get('kubernetes_state');
-  const hosts = searchParams.get('hosts')?.split(',') ?? [];
-  const clustors = searchParams.get('clustors')?.split(',') ?? [];
-  const searchSearchNodeReq: SearchSearchNodeReq = {
-    node_filter: {
-      filters: {
-        compare_filter: null,
-        contains_filter: {
-          filter_in: {
-            active: [true],
-            ...(hosts.length ? { host_name: hosts } : {}),
-            ...(clustors.length ? { kubernetes_cluster_name: clustors } : {}),
-          },
-        },
-        match_filter: {
-          filter_in: null,
-        },
-        order_filter: {
-          order_fields: [],
-        },
-      },
-      in_field_filter: null,
-      window: {
-        offset: 0,
-        size: 0,
-      },
-    },
-    window: { offset: page * PAGE_SIZE, size: PAGE_SIZE },
-  };
-
-  if (kubernetesStatus?.length) {
-    let state = kubernetesStatus;
-    if (kubernetesStatus === 'notRunning') {
-      state = '';
-    }
-    searchSearchNodeReq.node_filter.filters.contains_filter.filter_in = {
-      ...searchSearchNodeReq.node_filter.filters.contains_filter.filter_in,
-      kubernetes_state: [state],
-    };
-  }
-
-  if (order) {
-    searchSearchNodeReq.node_filter.filters.order_filter.order_fields?.push({
-      field_name: order.sortBy,
-      descending: order.descending,
-    });
-  }
-  const searchPodsApi = apiWrapper({
-    fn: getSearchApiClient().searchPods,
-  });
-  const podsData = await searchPodsApi({
-    searchSearchNodeReq,
-  });
-  if (!podsData.ok) {
-    throw podsData.error;
-  }
-
-  const countPodsApi = apiWrapper({
-    fn: getSearchApiClient().countPods,
-  });
-  const podsDataCount = await countPodsApi({
-    searchSearchNodeReq: {
-      ...searchSearchNodeReq,
-      window: {
-        ...searchSearchNodeReq.window,
-        size: 10 * searchSearchNodeReq.window.size,
-      },
-    },
-  });
-
-  if (!podsDataCount.ok) {
-    throw podsDataCount.error;
-  }
-
-  if (podsDataCount.value === null) {
-    return {
-      pods: [],
-      currentPage: 0,
-      totalRows: 0,
-    };
-  }
-  return {
-    pods: podsData.value,
-    currentPage: page,
-    totalRows: page * PAGE_SIZE + podsDataCount.value.count,
-  };
-};
-interface IFilters {
-  kubernetesStatus: string[];
-  hosts: Array<string>;
-  clustors: Array<string>;
-}
-function Filters({
-  filters,
-  onFiltersChange,
-}: {
-  filters: IFilters;
-  onFiltersChange: (filters: IFilters) => void;
-}) {
-  const isFilterApplied = useMemo(() => {
-    return Object.values(filters).some((filter) => filter.length > 0);
-  }, [filters]);
+export const PodsTable = () => {
+  const [searchParams] = useSearchParams();
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
 
   return (
-    <div className="relative ml-auto">
-      {isFilterApplied && (
-        <span className="absolute -left-[2px] -top-[2px] inline-flex h-2 w-2 rounded-full bg-blue-400 opacity-75"></span>
-      )}
-      <Popover
-        triggerAsChild
-        content={
-          <div className="ml-auto w-[300px]">
-            <div className="dark:text-white">
-              <FilterHeader
-                onReset={() => {
-                  onFiltersChange({
-                    kubernetesStatus: [],
-                    hosts: [],
-                    clustors: [],
-                  });
-                }}
+    <div className="px-4 pb-4">
+      <div className="py-2 flex items-center">
+        <Button
+          variant="flat"
+          className="ml-auto"
+          startIcon={<FilterIcon />}
+          endIcon={
+            getAppliedFiltersCount(searchParams) > 0 ? (
+              <Badge
+                label={String(getAppliedFiltersCount(searchParams))}
+                variant="filled"
+                size="small"
+                color="blue"
               />
-              <div className="flex flex-col gap-y-6 p-4">
-                <fieldset>
-                  <legend className="text-sm font-medium">Kubernetes State</legend>
-                  <div className="flex gap-x-4 mt-1">
-                    <Checkbox
-                      label="Not Running"
-                      checked={filters.kubernetesStatus.includes('notRunning')}
-                      onCheckedChange={(state: boolean) => {
-                        if (state) {
-                          const state = filters.kubernetesStatus;
-                          if (!filters.kubernetesStatus.includes('notRunning')) {
-                            state.push('notRunning');
-                          }
-                          onFiltersChange({
-                            ...filters,
-                            kubernetesStatus: state,
-                          });
-                        } else {
-                          onFiltersChange({
-                            ...filters,
-                            kubernetesStatus: filters.kubernetesStatus.filter(
-                              (state) => state !== 'notRunning',
-                            ),
-                          });
-                        }
-                      }}
-                    />
-                    <Checkbox
-                      label="Running"
-                      checked={filters.kubernetesStatus.includes('running')}
-                      onCheckedChange={(state: boolean) => {
-                        if (state) {
-                          const state = filters.kubernetesStatus;
-                          if (!filters.kubernetesStatus.includes('running')) {
-                            state.push('running');
-                          }
-                          onFiltersChange({
-                            ...filters,
-                            kubernetesStatus: state,
-                          });
-                        } else {
-                          onFiltersChange({
-                            ...filters,
-                            kubernetesStatus: filters.kubernetesStatus.filter(
-                              (state) => state !== 'running',
-                            ),
-                          });
-                        }
-                      }}
-                    />
-                  </div>
-                </fieldset>
-                <fieldset>
-                  <SearchableHostList
-                    scanType="none"
-                    valueKey="hostName"
-                    defaultSelectedHosts={filters.hosts ?? []}
-                    onChange={(value) => {
-                      onFiltersChange({
-                        ...filters,
-                        hosts: [...value],
-                      });
-                    }}
-                  />
-                </fieldset>
-                <fieldset>
-                  <SearchableClusterList
-                    defaultSelectedClusters={filters.clustors ?? []}
-                    valueKey="clusterName"
-                    reset={!isFilterApplied}
-                    onChange={(value) => {
-                      onFiltersChange({
-                        ...filters,
-                        clustors: [...value],
-                      });
-                    }}
-                  />
-                </fieldset>
-              </div>
-            </div>
-          </div>
-        }
+            ) : null
+          }
+          size="sm"
+          onClick={() => {
+            setFiltersExpanded((prev) => !prev);
+          }}
+        >
+          Filter
+        </Button>
+      </div>
+
+      {filtersExpanded ? <Filters /> : null}
+      <Suspense
+        fallback={<TableSkeleton rows={DEFAULT_PAGE_SIZE} columns={4} size="default" />}
       >
-        <IconButton
-          size="xs"
-          outline
-          color="primary"
-          className="rounded-lg bg-transparent"
-          icon={<FiFilter />}
+        <DataTable />
+      </Suspense>
+    </div>
+  );
+};
+
+const FILTER_SEARCHPARAMS: Record<string, string> = {
+  hosts: 'Host',
+  clusters: 'Cluster',
+  kubernetesStatus: 'Kubernetes status',
+};
+
+const getAppliedFiltersCount = (searchParams: URLSearchParams) => {
+  return Object.keys(FILTER_SEARCHPARAMS).reduce((prev, curr) => {
+    return prev + searchParams.getAll(curr).length;
+  }, 0);
+};
+const KUBERNETES_STATUSES = [
+  {
+    label: 'Running',
+    value: 'Running',
+  },
+  {
+    label: 'Not Running',
+    value: 'Not Running',
+  },
+];
+function Filters() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [kubernetesStatusSearchText, setKubernetesStatusSearchText] = useState('');
+  const appliedFilterCount = getAppliedFiltersCount(searchParams);
+
+  return (
+    <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
+      <div className="flex gap-2">
+        <Combobox
+          value={KUBERNETES_STATUSES.find((status) => {
+            return status.value === searchParams.get('kubernetesStatus');
+          })}
+          nullable
+          onQueryChange={(query) => {
+            setKubernetesStatusSearchText(query);
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              if (value) {
+                prev.set('kubernetesStatus', value.value);
+              } else {
+                prev.delete('kubernetesStatus');
+              }
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          getDisplayValue={() => FILTER_SEARCHPARAMS['kubernetesStatus']}
+        >
+          {KUBERNETES_STATUSES.filter((item) => {
+            if (!kubernetesStatusSearchText.length) return true;
+            return item.label
+              .toLowerCase()
+              .includes(kubernetesStatusSearchText.toLowerCase());
+          }).map((item) => {
+            return (
+              <ComboboxOption key={item.value} value={item}>
+                {item.label}
+              </ComboboxOption>
+            );
+          })}
+        </Combobox>
+        <SearchableHostList
+          valueKey="hostName"
+          scanType={ScanTypeEnum.VulnerabilityScan}
+          defaultSelectedHosts={searchParams.getAll('hosts')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('hosts');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('hosts');
+              value.forEach((host) => {
+                prev.append('hosts', host);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
         />
-      </Popover>
+        <SearchableClusterList
+          valueKey="nodeName"
+          defaultSelectedClusters={searchParams.getAll('clusters')}
+          onClearAll={() => {
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              prev.delete('clusters');
+              value.forEach((cluster) => {
+                prev.append('clusters', cluster);
+              });
+              prev.delete('page');
+              return prev;
+            });
+          }}
+        />
+      </div>
+      {appliedFilterCount > 0 ? (
+        <div className="flex gap-2.5 mt-4 flex-wrap items-center">
+          {Array.from(searchParams)
+            .filter(([key]) => {
+              return Object.keys(FILTER_SEARCHPARAMS).includes(key);
+            })
+            .map(([key, value]) => {
+              return (
+                <FilterBadge
+                  key={`${key}-${value}`}
+                  onRemove={() => {
+                    setSearchParams((prev) => {
+                      const existingValues = prev.getAll(key);
+                      prev.delete(key);
+                      existingValues.forEach((existingValue) => {
+                        if (existingValue !== value) prev.append(key, existingValue);
+                      });
+                      prev.delete('page');
+                      return prev;
+                    });
+                  }}
+                  text={`${FILTER_SEARCHPARAMS[key]}: ${value}`}
+                />
+              );
+            })}
+          <Button
+            variant="flat"
+            color="default"
+            startIcon={<TimesIcon />}
+            onClick={() => {
+              setSearchParams((prev) => {
+                Object.keys(FILTER_SEARCHPARAMS).forEach((key) => {
+                  prev.delete(key);
+                });
+                prev.delete('page');
+                return prev;
+              });
+            }}
+            size="sm"
+          >
+            Clear all
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }
 
-export const PodsTable = () => {
-  const fetcher = useFetcher<LoaderData>();
-  const columnHelper = createColumnHelper<LoaderData['pods'][number]>();
-  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
-  const [sortState, setSortState] = useState<SortingState>([]);
-  const [page, setPage] = useState(0);
-
-  const [filters, setFilters] = useState<IFilters>({
-    kubernetesStatus: [],
-    hosts: [],
-    clustors: [],
+function useSearchPodsWithPagination() {
+  const [searchParams] = useSearchParams();
+  return useSuspenseQuery({
+    ...queries.search.podsWithPagination({
+      page: getPageFromSearchParams(searchParams),
+      pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
+      order: getOrderFromSearchParams(searchParams),
+      hosts: searchParams.getAll('hosts'),
+      clusters: searchParams.getAll('clusters'),
+      kubernetesStatus: searchParams.get('kubernetesStatus') ?? undefined,
+    }),
+    keepPreviousData: true,
   });
+}
 
-  function fetchPodsData() {
-    const searchParams = new URLSearchParams();
-    searchParams.set('page', page.toString());
-
-    if (filters.kubernetesStatus.length) {
-      if (
-        filters.kubernetesStatus.includes('notRunning') &&
-        filters.kubernetesStatus.length === 1
-      ) {
-        searchParams.set('kubernetes_state', 'notRunning');
-      } else if (
-        filters.kubernetesStatus.includes('running') &&
-        filters.kubernetesStatus.length === 1
-      ) {
-        searchParams.set('kubernetes_state', 'Running');
-      } else {
-        searchParams.delete('kubernetes_state');
-      }
-    }
-    if (filters.hosts.length) {
-      searchParams.set('hosts', filters.hosts.join(','));
-    }
-    if (filters.clustors.length) {
-      searchParams.set('clustors', filters.clustors.join(','));
-    }
-
-    if (sortState.length) {
-      searchParams.set('sortby', sortState[0].id);
-      searchParams.set('desc', String(sortState[0].desc));
-    }
-
-    fetcher.load(`/data-component/topology/table/pods?${searchParams.toString()}`);
-  }
-
-  useEffect(() => {
-    fetchPodsData();
-  }, [filters, sortState, page]);
-
+const DataTable = () => {
+  const { data } = useSearchPodsWithPagination();
+  const columnHelper = createColumnHelper<ModelPod>();
   const [clickedItem, setClickedItem] = useState<{
     nodeId: string;
     nodeType: string;
   }>();
+  const [sort, setSort] = useSortingState();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const columns = useMemo(
     () => [
@@ -328,104 +273,110 @@ export const PodsTable = () => {
                       nodeType: 'pod',
                     });
                   }}
-                  className="flex-1 shrink-0 pl-2"
                 >
-                  {info.getValue() || '-'}
+                  <TruncatedText text={info.getValue() || '-'} />
                 </DFLink>
               </button>
             </div>
           );
         },
-        header: () => 'Pod Name',
+        header: () => <TruncatedText text="Pod Name" />,
         minSize: 130,
         size: 140,
         maxSize: 145,
       }),
       columnHelper.accessor('kubernetes_cluster_name', {
         cell: (info) => {
-          return info.getValue();
+          return <TruncatedText text={info.getValue()} />;
         },
-        header: () => <span>Cluster Name</span>,
+        header: () => <TruncatedText text="Cluster Name" />,
         minSize: 80,
         size: 80,
         maxSize: 90,
       }),
       columnHelper.accessor('kubernetes_namespace', {
         cell: (info) => {
-          return info.getValue();
+          return <TruncatedText text={info.getValue()} />;
         },
-        header: () => <span>Kubernetes Namespace</span>,
+        header: () => <TruncatedText text="Kubernetes Namespace" />,
         minSize: 100,
         size: 105,
         maxSize: 110,
       }),
       columnHelper.accessor('kubernetes_state', {
         cell: (info) => {
-          return info.getValue();
+          return <TruncatedText text={info.getValue()} />;
         },
-        header: () => <span>Kubernetes State</span>,
+        header: () => <TruncatedText text="Kubernetes State" />,
         minSize: 80,
         size: 80,
         maxSize: 90,
       }),
     ],
-    [fetcher.data],
+    [],
   );
 
-  if (fetcher.state !== 'idle' && !fetcher.data) {
-    return (
-      <div className="mt-9">
-        <TableSkeleton rows={10} columns={columns.length} size="sm" />
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-2">
-      <div className="flex items-center h-9">
-        <Filters
-          filters={filters}
-          onFiltersChange={(newFilters) => {
-            setFilters(newFilters);
-            setPage(0);
-          }}
-        />
-      </div>
-      <div>
-        <Table
-          data={fetcher.data?.pods ?? []}
-          columns={columns}
-          noDataText="No pods are connected"
-          size="sm"
-          enableColumnResizing
-          enablePagination
-          manualPagination
-          enableRowSelection
-          approximatePagination
-          rowSelectionState={rowSelectionState}
-          onRowSelectionChange={setRowSelectionState}
-          getRowId={(row) => row.node_id}
-          totalRows={fetcher.data?.totalRows}
-          pageSize={PAGE_SIZE}
-          pageIndex={fetcher.data?.currentPage}
-          onPaginationChange={(updaterOrValue) => {
-            let newPageIndex = 0;
-            if (typeof updaterOrValue === 'function') {
-              newPageIndex = updaterOrValue({
-                pageIndex: fetcher.data?.currentPage ?? 0,
-                pageSize: PAGE_SIZE,
-              }).pageIndex;
+    <>
+      <Table
+        data={data.pods ?? []}
+        columns={columns}
+        noDataText="No hosts are connected"
+        size="default"
+        enableColumnResizing
+        enablePagination
+        manualPagination
+        approximatePagination
+        getRowId={(row) => row.node_id}
+        totalRows={data.totalRows}
+        pageIndex={data.currentPage}
+        onPaginationChange={(updaterOrValue) => {
+          let newPageIndex = 0;
+          if (typeof updaterOrValue === 'function') {
+            newPageIndex = updaterOrValue({
+              pageIndex: data.currentPage,
+              pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
+            }).pageIndex;
+          } else {
+            newPageIndex = updaterOrValue.pageIndex;
+          }
+          setSearchParams((prev) => {
+            prev.set('page', String(newPageIndex));
+            return prev;
+          });
+        }}
+        enableSorting
+        manualSorting
+        sortingState={sort}
+        onSortingChange={(updaterOrValue) => {
+          let newSortState: SortingState = [];
+          if (typeof updaterOrValue === 'function') {
+            newSortState = updaterOrValue(sort);
+          } else {
+            newSortState = updaterOrValue;
+          }
+          setSearchParams((prev) => {
+            if (!newSortState.length) {
+              prev.delete('sortby');
+              prev.delete('desc');
             } else {
-              newPageIndex = updaterOrValue.pageIndex;
+              prev.set('sortby', String(newSortState[0].id));
+              prev.set('desc', String(newSortState[0].desc));
             }
-            setPage(newPageIndex);
-          }}
-          enableSorting
-          manualSorting
-          sortingState={sortState}
-          onSortingChange={setSortState}
-        />
-      </div>
+            return prev;
+          });
+          setSort(newSortState);
+        }}
+        pageSize={parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE))}
+        enablePageResize
+        onPageResize={(newSize) => {
+          setSearchParams((prev) => {
+            prev.set('size', String(newSize));
+            prev.delete('page');
+            return prev;
+          });
+        }}
+      />
       {clickedItem ? (
         <NodeDetailsStackedModal
           node={clickedItem}
@@ -435,10 +386,6 @@ export const PodsTable = () => {
           }}
         />
       ) : null}
-    </div>
+    </>
   );
-};
-
-export const module = {
-  loader,
 };

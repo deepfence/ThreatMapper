@@ -1,3 +1,5 @@
+import { upperCase } from 'lodash-es';
+
 export const Metadata = ({
   data,
   title,
@@ -9,25 +11,36 @@ export const Metadata = ({
   if (!keys.length) return null;
   return (
     <div>
-      {title?.length ? (
-        <div className="font-semibold text-gray-500 dark:text-gray-400 mb-3">{title}</div>
-      ) : null}
+      {title?.length ? <div className="text-h5 dark:text-white mb-3">{title}</div> : null}
       <div className="flex flex-wrap justify-between gap-x-2 gap-y-4 max-w-full">
         {keys.map((key) => (
           <div
             key={key}
             className="flex flex-1 basis-[48%] min-w-[48%] max-w-full flex-col gap-1/2"
           >
-            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">
-              {key.replaceAll('_', ' ')}
+            <div className="text-p3  dark:text-text-text-and-icon capitalize">
+              {toTopologyMetadataKey(key)}
             </div>
-            <div className="text-gray-900 dark:text-white break-words">{data[key]}</div>
+            <div className="text-p1 dark:text-text-input-value break-words">
+              {data[key]}
+            </div>
           </div>
         ))}
       </div>
     </div>
   );
 };
+
+const UPPERCASE_WORDS = ['ip', 'id', 'cidr', 'os', 'vm'];
+function toTopologyMetadataKey(key: string) {
+  return key
+    .split('_')
+    .map((word) => {
+      if (UPPERCASE_WORDS.includes(word)) return upperCase(word);
+      return word;
+    })
+    .join(' ');
+}
 
 export function toTopologyMetadataString(
   value:

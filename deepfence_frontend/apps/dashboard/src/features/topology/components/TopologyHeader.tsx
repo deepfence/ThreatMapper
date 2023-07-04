@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from '@suspensive/react-query';
 import { ReactNode, Suspense } from 'react';
 import { generatePath, Link, useLocation, useMatches, useParams } from 'react-router-dom';
 import { cn } from 'tailwind-preset';
@@ -6,11 +7,15 @@ import { Tooltip } from 'ui-components';
 import { SearchNodeCountResp } from '@/api/generated';
 import { DFLink } from '@/components/DFLink';
 import { CloudLine } from '@/components/icons/common/CloudLine';
-import { GraphIcon } from '@/components/icons/graph';
+import { NodesLineIcon } from '@/components/icons/common/NodesLine';
+import { OrganizationLineIcon } from '@/components/icons/common/OrganizationLine';
+import { ContainerIcon } from '@/components/icons/container';
+import { HostIcon } from '@/components/icons/host';
+import { PodIcon } from '@/components/icons/pod';
 import { TableIcon } from '@/components/icons/table';
 import { TopologyViewTypes } from '@/features/topology/data-components/topologyLoader';
 import { NodeType } from '@/features/topology/utils/topology-data';
-import { DFAwait } from '@/utils/suspense';
+import { queries } from '@/queries';
 
 const SummaryTab = ({
   icon,
@@ -50,6 +55,7 @@ const SummaryTab = ({
               isActive,
           },
         )}
+        tabIndex={-1}
       >
         <div className="h-[16px] w-[16px]">{icon}</div>
         <div>
@@ -60,7 +66,16 @@ const SummaryTab = ({
   );
 };
 
-export const TopologyHeader = ({ nodeCounts }: { nodeCounts: SearchNodeCountResp }) => {
+function useNodeCounts() {
+  return useSuspenseQuery({ ...queries.topology.nodeCounts() });
+}
+
+const NodeCount = ({ type }: { type: keyof SearchNodeCountResp }) => {
+  const { data } = useNodeCounts();
+  return <>{data[type]}</>;
+};
+
+export const TopologyHeader = () => {
   return (
     <div className="flex items-center dark:text-text-text-and-icon text-p1 px-3 dark:bg-bg-breadcrumb-bar">
       <SummaryTab
@@ -69,75 +84,57 @@ export const TopologyHeader = ({ nodeCounts }: { nodeCounts: SearchNodeCountResp
         type={NodeType.cloud_provider}
         count={
           <Suspense fallback={0}>
-            <DFAwait resolve={nodeCounts}>
-              {(data: SearchNodeCountResp) => {
-                return data.cloud_provider;
-              }}
-            </DFAwait>
+            <NodeCount type="cloud_provider" />
           </Suspense>
         }
       />
       <SummaryTab
-        icon={<CloudLine />}
+        icon={<HostIcon />}
         name="Hosts"
         type={NodeType.host}
         count={
           <Suspense fallback={0}>
-            <DFAwait resolve={nodeCounts}>
-              {(data: SearchNodeCountResp) => {
-                return data.host;
-              }}
-            </DFAwait>
+            <NodeCount type="host" />
           </Suspense>
         }
       />
       <SummaryTab
-        icon={<CloudLine />}
+        icon={<NodesLineIcon />}
         name="Kubernetes Clusters"
         type={NodeType.kubernetes_cluster}
         count={
           <Suspense fallback={0}>
-            <DFAwait resolve={nodeCounts}>
-              {(data: SearchNodeCountResp) => {
-                return data.kubernetes_cluster;
-              }}
-            </DFAwait>
+            <NodeCount type="kubernetes_cluster" />
           </Suspense>
         }
       />
       <SummaryTab
-        icon={<CloudLine />}
+        icon={<ContainerIcon />}
         name="Containers"
         type={NodeType.container}
         count={
           <Suspense fallback={0}>
-            <DFAwait resolve={nodeCounts}>
-              {(data: SearchNodeCountResp) => {
-                return data.container;
-              }}
-            </DFAwait>
+            <NodeCount type="container" />
           </Suspense>
         }
       />
       <SummaryTab
-        icon={<CloudLine />}
+        icon={<PodIcon />}
         name="Pods"
         type={NodeType.pod}
         count={
           <Suspense fallback={0}>
-            <DFAwait resolve={nodeCounts}>
-              {(data: SearchNodeCountResp) => {
-                return data.pod;
-              }}
-            </DFAwait>
+            <NodeCount type="pod" />
           </Suspense>
         }
       />
+      <div className="ml-auto">
+        <ViewSwitcher />
+      </div>
     </div>
   );
 };
 
-// TODO: change this view switcher
 const ViewSwitcher = () => {
   const params = useParams();
   const location = useLocation();
@@ -145,7 +142,7 @@ const ViewSwitcher = () => {
   const type = params.viewType ?? 'cloud_provider';
   const isGraphView = location.pathname.includes('graph');
   return (
-    <div className="flex h-full">
+    <div className="flex h-full gap-3">
       <Tooltip
         content={'Graph View'}
         triggerAsChild
@@ -155,18 +152,14 @@ const ViewSwitcher = () => {
         <Link
           to={`/topology/graph/${type}`}
           type="button"
-          className={cn(
-            'flex items-center text-lg font-semibold rounded-l-lg h-full px-2 border border-blue-200 dark:border-blue-800',
-            {
-              ['text-blue-600 dark:text-blue-500']: !isGraphView,
-              ['bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-0 transition ease-in-out delay-150']:
-                isGraphView,
-            },
-          )}
+          className={cn('flex items-center', {
+            ['dark:text-text-text-and-icon']: !isGraphView,
+            ['dark:text-accent-accent']: isGraphView,
+          })}
         >
-          <div className="h-8 w-8">
-            <GraphIcon />
-          </div>
+          <button className="h-6 w-6 shrink-0" tabIndex={-1}>
+            <OrganizationLineIcon />
+          </button>
         </Link>
       </Tooltip>
       <Tooltip
@@ -178,16 +171,12 @@ const ViewSwitcher = () => {
         <Link
           to={`/topology/table/${type}`}
           type="button"
-          className={cn(
-            'flex items-center text-lg font-semibold rounded-r-lg h-full px-2 border border-blue-200 dark:border-blue-800',
-            {
-              ['text-blue-600 dark:text-blue-500']: isGraphView,
-              ['bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 border-0 transition ease-in-out delay-150']:
-                !isGraphView,
-            },
-          )}
+          className={cn('flex items-center', {
+            ['dark:text-text-text-and-icon']: isGraphView,
+            ['dark:text-accent-accent']: !isGraphView,
+          })}
         >
-          <div className="h-8 w-8">
+          <div className="h-6 w-6 shrink-0" tabIndex={-1}>
             <TableIcon />
           </div>
         </Link>

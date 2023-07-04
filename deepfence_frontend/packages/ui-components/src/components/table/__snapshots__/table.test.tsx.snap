@@ -1,4 +1,4 @@
-// Vitest Snapshot v1
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`Component Table > should render a basic table > cells with border 0 1`] = `"<td style=\\"width: 150px;\\" class=\\"text-p4 text-gray-900 dark:text-text-text-and-icon px-4 truncate min-w-0 border-b border-gray-200 dark:border-bg-grid-border h-[48px]\\">0</td>"`;
 

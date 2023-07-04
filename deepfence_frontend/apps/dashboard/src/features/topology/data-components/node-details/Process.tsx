@@ -1,132 +1,122 @@
-import { useEffect, useState } from 'react';
-import { generatePath, LoaderFunctionArgs, useFetcher } from 'react-router-dom';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense, useState } from 'react';
 import { CircleSpinner, SlidingModalContent, Tabs } from 'ui-components';
 
-import { getLookupApiClient } from '@/api/api';
-import { ModelProcess } from '@/api/generated';
 import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
 import { Header } from '@/features/topology/components/node-details/Header';
 import {
   Metadata,
   toTopologyMetadataString,
 } from '@/features/topology/components/node-details/Metadata';
-import { apiWrapper } from '@/utils/api';
+import { queries } from '@/queries';
 
-export type LoaderData = {
-  processData: ModelProcess;
-};
-
-const loader = async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
-  const nodeId = params.nodeId;
-
-  if (!nodeId) {
-    throw new Error('nodeId is required');
-  }
-  const lookupProcessApi = apiWrapper({
-    fn: getLookupApiClient().lookupProcess,
+function useLookupProcess(nodeId: string) {
+  return useSuspenseQuery({
+    ...queries.lookup.process({ nodeId }),
   });
-  const lookupResult = await lookupProcessApi({
-    lookupLookupFilter: {
-      node_ids: [nodeId],
-      in_field_filter: null,
-      window: {
-        offset: 0,
-        size: 1,
-      },
-    },
-  });
+}
 
-  if (!lookupResult.ok || !lookupResult.value.length) {
-    throw new Error(`Failed to load host: ${nodeId}`);
-  }
-
-  return {
-    processData: lookupResult.value[0],
-  };
-};
-
-export const Process = ({
-  nodeId,
-  onGoBack,
-  showBackBtn,
-  onStartScanClick,
-}: {
+interface ProcessModalProps {
   nodeId: string;
   onGoBack: () => void;
   showBackBtn: boolean;
   onNodeClick: (nodeId: string, nodeType: string) => void;
   onStartScanClick: (scanOptions: ConfigureScanModalProps['scanOptions']) => void;
-}) => {
-  const fetcher = useFetcher<LoaderData>();
-  const [tab, setTab] = useState('metadata');
+}
 
-  useEffect(() => {
-    fetcher.load(generatePath('/topology/node-details/process/:nodeId', { nodeId }));
-  }, [nodeId]);
+export const Process = (props: ProcessModalProps) => {
+  const { nodeId, onGoBack, showBackBtn, onStartScanClick, onNodeClick } = props;
+  const [tab, setTab] = useState('metadata');
 
   const tabs = [
     {
-      label: 'Metadata',
+      label: 'Overview',
       value: 'metadata',
     },
   ];
 
-  const header = (
-    <Header
-      onStartScanClick={onStartScanClick}
-      nodeId={nodeId}
-      label={fetcher.data?.processData?.node_name}
-      nodeType="process"
-      onGoBack={onGoBack}
-      showBackBtn={showBackBtn}
-    />
-  );
-
-  if (fetcher.state === 'loading' && !fetcher.data) {
-    return (
-      <>
-        {header}
-        <SlidingModalContent>
-          <div className="h-full flex items-center justify-center">
-            <CircleSpinner />
-          </div>
-        </SlidingModalContent>
-      </>
-    );
-  }
-
   return (
     <>
-      {header}
+      <Suspense
+        fallback={
+          <Header
+            onStartScanClick={onStartScanClick}
+            nodeId={nodeId}
+            label={nodeId}
+            nodeType="process"
+            onGoBack={onGoBack}
+            showBackBtn={showBackBtn}
+          />
+        }
+      >
+        <ProcessHeader {...props} />
+      </Suspense>
       <SlidingModalContent>
-        <Tabs
-          value={tab}
-          defaultValue={tab}
-          tabs={tabs}
-          onValueChange={(v) => setTab(v)}
-          variant="tab"
-        >
-          <div className="pt-6 flex flex-col gap-6">
-            {tab === 'metadata' && (
-              <Metadata
-                data={{
-                  node_name: toTopologyMetadataString(
-                    fetcher.data?.processData?.node_name,
-                  ),
-                  pid: toTopologyMetadataString(fetcher.data?.processData?.pid),
-                  ppid: toTopologyMetadataString(fetcher.data?.processData?.ppid),
-                  cmdline: toTopologyMetadataString(fetcher.data?.processData?.cmdline),
-                  threads: toTopologyMetadataString(fetcher.data?.processData?.threads),
-                }}
-              />
-            )}
-          </div>
-        </Tabs>
+        <div className="dark:bg-bg-breadcrumb-bar">
+          <Tabs
+            value={tab}
+            defaultValue={tab}
+            tabs={tabs}
+            onValueChange={(v) => setTab(v)}
+          >
+            <Suspense
+              fallback={
+                <div className="min-h-[300px] flex items-center justify-center dark:bg-bg-side-panel">
+                  <CircleSpinner size="lg" />
+                </div>
+              }
+            >
+              <TabContent tab={tab} nodeId={nodeId} onNodeClick={onNodeClick} />
+            </Suspense>
+          </Tabs>
+        </div>
       </SlidingModalContent>
     </>
   );
 };
 
-export const module = {
-  loader,
+const ProcessHeader = ({
+  nodeId,
+  onStartScanClick,
+  onGoBack,
+  showBackBtn,
+}: ProcessModalProps) => {
+  const { data } = useLookupProcess(nodeId);
+  return (
+    <Header
+      onStartScanClick={onStartScanClick}
+      nodeId={nodeId}
+      label={data?.processData?.node_name}
+      nodeType="process"
+      onGoBack={onGoBack}
+      showBackBtn={showBackBtn}
+    />
+  );
+};
+
+const TabContent = ({
+  tab,
+  nodeId,
+  onNodeClick,
+}: {
+  tab: string;
+  nodeId: string;
+  onNodeClick: (nodeId: string, nodeType: string) => void;
+}) => {
+  const { data } = useLookupProcess(nodeId);
+  return (
+    <div className="p-5 flex flex-col gap-x-4 gap-y-7 dark:bg-bg-side-panel">
+      {tab === 'metadata' && (
+        <Metadata
+          data={{
+            node_name: toTopologyMetadataString(data?.processData?.node_name),
+            pid: toTopologyMetadataString(data?.processData?.pid),
+            ppid: toTopologyMetadataString(data?.processData?.ppid),
+            cmdline: toTopologyMetadataString(data?.processData?.cmdline),
+            threads: toTopologyMetadataString(data?.processData?.threads),
+          }}
+        />
+      )}
+    </div>
+  );
 };

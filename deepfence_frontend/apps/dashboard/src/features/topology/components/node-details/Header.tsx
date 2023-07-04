@@ -1,14 +1,8 @@
-import { FaPlay } from 'react-icons/fa';
-import { HiArrowLeft } from 'react-icons/hi';
-import {
-  Button,
-  Dropdown,
-  DropdownItem,
-  IconButton,
-  SlidingModalHeader,
-} from 'ui-components';
+import { Button, Dropdown, DropdownItem, SlidingModalHeader } from 'ui-components';
 
 import { ConfigureScanModalProps } from '@/components/ConfigureScanModal';
+import { ArrowLine } from '@/components/icons/common/ArrowLine';
+import { CaretDown } from '@/components/icons/common/CaretDown';
 import { MalwareIcon } from '@/components/sideNavigation/icons/Malware';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
@@ -54,118 +48,111 @@ export const Header = ({
   const availableScans = AvailableScansForNodeType[nodeType] ?? [];
   return (
     <SlidingModalHeader>
-      <div className="flex items-center justify-between pr-8">
-        <div className="flex gap-2 items-center flex-1 max-w-full">
-          {showBackBtn && (
-            <div>
-              <IconButton onClick={onGoBack} size="xs" icon={<HiArrowLeft />} />
-            </div>
-          )}
-          <div className="w-6 h-6">
+      <div className="flex pt-5 pl-5 pr-16 pb-1.5 dark:bg-bg-breadcrumb-bar gap-4">
+        <div className="flex gap-2 text-h3 dark:text-text-text-and-icon overflow-hidden items-center">
+          {showBackBtn ? (
+            <button
+              className="h-5 w-5 shrink-0 -rotate-90 dark:text-accent-accent "
+              onClick={() => {
+                onGoBack();
+              }}
+            >
+              <ArrowLine />
+            </button>
+          ) : null}
+          <div className="w-6 h-6 shrink-0">
             <img src={getNodeImage(nodeType)} alt={nodeType} width="100%" height="100%" />
           </div>
-          <div className="truncate flex-1">
+          <div className="overflow-hidden">
             <TruncatedText text={label?.length ? label : nodeId} />
           </div>
-          {availableScans.length ? (
-            <Dropdown
-              align="end"
-              content={
-                <>
-                  {availableScans.includes(ScanTypeEnum.VulnerabilityScan) ? (
-                    <DropdownItem
-                      onClick={(e) => {
-                        e.preventDefault();
-                        onStartScanClick({
-                          data: {
-                            nodeIds: [nodeId],
-                            nodeType: nodeType as any, // TODO
-                          },
-                          showAdvancedOptions: true,
-                          scanType: ScanTypeEnum.VulnerabilityScan,
-                        });
-                      }}
-                    >
-                      <span className="h-6 w-6">
-                        <VulnerabilityIcon />
-                      </span>
-                      <span>Start Vulnerability Scan</span>
-                    </DropdownItem>
-                  ) : null}
-                  {availableScans.includes(ScanTypeEnum.SecretScan) ? (
-                    <DropdownItem
-                      onClick={(e) => {
-                        e.preventDefault();
-                        onStartScanClick({
-                          data: {
-                            nodeIds: [nodeId],
-                            nodeType: nodeType as any, // TODO
-                          },
-                          scanType: ScanTypeEnum.SecretScan,
-                          showAdvancedOptions: true,
-                        });
-                      }}
-                    >
-                      <span className="h-6 w-6">
-                        <SecretsIcon />
-                      </span>
-                      <span>Start Secret Scan</span>
-                    </DropdownItem>
-                  ) : null}
-                  {availableScans.includes(ScanTypeEnum.MalwareScan) ? (
-                    <DropdownItem
-                      onClick={(e) => {
-                        e.preventDefault();
-                        onStartScanClick({
-                          data: {
-                            nodeIds: [nodeId],
-                            nodeType: nodeType as any,
-                          },
-                          scanType: ScanTypeEnum.MalwareScan,
-                          showAdvancedOptions: true,
-                        });
-                      }}
-                    >
-                      <span className="h-6 w-6">
-                        <MalwareIcon />
-                      </span>
-                      <span>Start Malware Scan</span>
-                    </DropdownItem>
-                  ) : null}
-                  {availableScans.includes(ScanTypeEnum.ComplianceScan) ? (
-                    <DropdownItem
-                      onClick={(e) => {
-                        e.preventDefault();
-                        onStartScanClick({
-                          scanType: ScanTypeEnum.ComplianceScan,
-                          data: {
-                            nodeIds: [nodeId],
-                            nodeType: nodeType as any,
-                          },
-                          showAdvancedOptions: true,
-                        });
-                      }}
-                    >
-                      <span className="h-6 w-6">
-                        <PostureIcon />
-                      </span>
-                      <span>Start Posture Scan</span>
-                    </DropdownItem>
-                  ) : null}
-                </>
-              }
-            >
-              <Button
-                color="primary"
-                size="xs"
-                startIcon={<FaPlay />}
-                className="self-end"
-              >
-                Scan
-              </Button>
-            </Dropdown>
-          ) : null}
         </div>
+        {availableScans.length ? (
+          <Dropdown
+            align="end"
+            triggerAsChild
+            content={
+              <>
+                {availableScans.includes(ScanTypeEnum.VulnerabilityScan) ? (
+                  <DropdownItem
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onStartScanClick({
+                        data: {
+                          nodeIds: [nodeId],
+                          nodeType: nodeType as any, // TODO
+                        },
+                        showAdvancedOptions: true,
+                        scanType: ScanTypeEnum.VulnerabilityScan,
+                      });
+                    }}
+                    icon={<VulnerabilityIcon />}
+                  >
+                    Start Vulnerability Scan
+                  </DropdownItem>
+                ) : null}
+                {availableScans.includes(ScanTypeEnum.SecretScan) ? (
+                  <DropdownItem
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onStartScanClick({
+                        data: {
+                          nodeIds: [nodeId],
+                          nodeType: nodeType as any, // TODO
+                        },
+                        scanType: ScanTypeEnum.SecretScan,
+                        showAdvancedOptions: true,
+                      });
+                    }}
+                    icon={<SecretsIcon />}
+                  >
+                    Start Secret Scan
+                  </DropdownItem>
+                ) : null}
+                {availableScans.includes(ScanTypeEnum.MalwareScan) ? (
+                  <DropdownItem
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onStartScanClick({
+                        data: {
+                          nodeIds: [nodeId],
+                          nodeType: nodeType as any,
+                        },
+                        scanType: ScanTypeEnum.MalwareScan,
+                        showAdvancedOptions: true,
+                      });
+                    }}
+                    icon={<MalwareIcon />}
+                  >
+                    Start Malware Scan
+                  </DropdownItem>
+                ) : null}
+                {availableScans.includes(ScanTypeEnum.ComplianceScan) ? (
+                  <DropdownItem
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onStartScanClick({
+                        scanType: ScanTypeEnum.ComplianceScan,
+                        data: {
+                          nodeIds: [nodeId],
+                          nodeType: nodeType as any,
+                        },
+                        showAdvancedOptions: true,
+                      });
+                    }}
+                    icon={<PostureIcon />}
+                  >
+                    Start Posture Scan
+                  </DropdownItem>
+                ) : null}
+              </>
+            }
+          >
+            <Button size="md" className="ml-auto" endIcon={<CaretDown />}>
+              Scan
+            </Button>
+          </Dropdown>
+        ) : null}
       </div>
     </SlidingModalHeader>
   );

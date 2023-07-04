@@ -1,4 +1,3 @@
-import { DetailedNodeSummary } from '@/api/generated';
 import {
   G6Combo,
   G6Graph,
@@ -61,7 +60,7 @@ export const isCloudServiceNode = (
   return false;
 };
 
-export const showContextMenu = (
+export const showTooltipControls = (
   node?: {
     type?: string;
   } | null,
