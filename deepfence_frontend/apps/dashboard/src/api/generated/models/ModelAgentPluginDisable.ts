@@ -16,58 +16,50 @@ import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface ModelPasswordResetVerifyRequest
+ * @interface ModelAgentPluginDisable
  */
-export interface ModelPasswordResetVerifyRequest {
+export interface ModelAgentPluginDisable {
     /**
      * 
      * @type {string}
-     * @memberof ModelPasswordResetVerifyRequest
+     * @memberof ModelAgentPluginDisable
      */
-    code: string;
+    node_id: string;
     /**
      * 
      * @type {string}
-     * @memberof ModelPasswordResetVerifyRequest
+     * @memberof ModelAgentPluginDisable
      */
-    namespace: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof ModelPasswordResetVerifyRequest
-     */
-    password: string;
+    plugin_name: string;
 }
 
 /**
- * Check if a given object implements the ModelPasswordResetVerifyRequest interface.
+ * Check if a given object implements the ModelAgentPluginDisable interface.
  */
-export function instanceOfModelPasswordResetVerifyRequest(value: object): boolean {
+export function instanceOfModelAgentPluginDisable(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "code" in value;
-    isInstance = isInstance && "namespace" in value;
-    isInstance = isInstance && "password" in value;
+    isInstance = isInstance && "node_id" in value;
+    isInstance = isInstance && "plugin_name" in value;
 
     return isInstance;
 }
 
-export function ModelPasswordResetVerifyRequestFromJSON(json: any): ModelPasswordResetVerifyRequest {
-    return ModelPasswordResetVerifyRequestFromJSONTyped(json, false);
+export function ModelAgentPluginDisableFromJSON(json: any): ModelAgentPluginDisable {
+    return ModelAgentPluginDisableFromJSONTyped(json, false);
 }
 
-export function ModelPasswordResetVerifyRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelPasswordResetVerifyRequest {
+export function ModelAgentPluginDisableFromJSONTyped(json: any, ignoreDiscriminator: boolean): ModelAgentPluginDisable {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'code': json['code'],
-        'namespace': json['namespace'],
-        'password': json['password'],
+        'node_id': json['node_id'],
+        'plugin_name': json['plugin_name'],
     };
 }
 
-export function ModelPasswordResetVerifyRequestToJSON(value?: ModelPasswordResetVerifyRequest | null): any {
+export function ModelAgentPluginDisableToJSON(value?: ModelAgentPluginDisable | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -76,9 +68,8 @@ export function ModelPasswordResetVerifyRequestToJSON(value?: ModelPasswordReset
     }
     return {
         
-        'code': value.code,
-        'namespace': value.namespace,
-        'password': value.password,
+        'node_id': value.node_id,
+        'plugin_name': value.plugin_name,
     };
 }
 

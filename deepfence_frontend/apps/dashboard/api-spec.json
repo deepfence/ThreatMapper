@@ -482,6 +482,96 @@
         "security": [{ "bearer_token": [] }]
       }
     },
+    "/deepfence/controls/agent-plugins/disable": {
+      "post": {
+        "tags": ["Controls"],
+        "summary": "Schedule new agent plugin version disabling",
+        "description": "Schedule agent plugin disable",
+        "operationId": "disableAgentPlugin",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelAgentPluginDisable" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/controls/agent-plugins/enable": {
+      "post": {
+        "tags": ["Controls"],
+        "summary": "Schedule new agent plugin version enabling",
+        "description": "Schedule agent plugin enable",
+        "operationId": "enableAgentPlugin",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ModelAgentPluginEnable" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
     "/deepfence/controls/agent-upgrade": {
       "post": {
         "tags": ["Controls"],
@@ -730,7 +820,9 @@
         "requestBody": {
           "content": {
             "multipart/form-data": {
-              "schema": { "$ref": "#/components/schemas/FormDataModelDBUploadRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/FormDataVulnerabilityDbDBUploadRequest"
+              }
             }
           }
         },
@@ -1217,17 +1309,17 @@
         "security": [{ "bearer_token": [] }]
       }
     },
-    "/deepfence/graph/threat/vulnerability": {
+    "/deepfence/graph/threat/individual": {
       "post": {
         "tags": ["Threat"],
         "summary": "Get Vulnerability Threat Graph",
         "description": "Retrieve threat graph associated with vulnerabilities",
-        "operationId": "getVulnerabilityThreatGraph",
+        "operationId": "getIndividualThreatGraph",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GraphVulnerabilityThreatGraphRequest"
+                "$ref": "#/components/schemas/GraphIndividualThreatGraphRequest"
               }
             }
           }
@@ -1239,9 +1331,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/GraphVulnerabilityThreatGraph"
-                  }
+                  "items": { "$ref": "#/components/schemas/GraphIndividualThreatGraph" }
                 }
               }
             }
@@ -1846,7 +1936,14 @@
           }
         },
         "responses": {
-          "200": { "description": "OK" },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ControlsAgentBeat" }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -3580,6 +3677,59 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ModelSummary" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsBadRequestResponse" }
+              }
+            }
+          },
+          "401": { "description": "Unauthorized" },
+          "403": { "description": "Forbidden" },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiDocsFailureResponse" }
+              }
+            }
+          }
+        },
+        "security": [{ "bearer_token": [] }]
+      }
+    },
+    "/deepfence/registryaccount/{registry_id}/sync": {
+      "post": {
+        "tags": ["Registry"],
+        "summary": "Sync Registry",
+        "description": "synchronize registry images",
+        "operationId": "syncRegistry",
+        "parameters": [
+          {
+            "name": "registry_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ModelMessageResponse" }
               }
             }
           },
@@ -9546,6 +9696,11 @@
         }
       },
       "ControlsActionID": { "type": "integer" },
+      "ControlsAgentBeat": {
+        "required": ["beatrate"],
+        "type": "object",
+        "properties": { "beatrate": { "type": "integer" } }
+      },
       "ControlsAgentControls": {
         "required": ["beatrate", "commands"],
         "type": "object",
@@ -9648,13 +9803,6 @@
           "node_type": { "enum": ["host", "cluster"], "type": "string" }
         }
       },
-      "FormDataModelDBUploadRequest": {
-        "required": ["database"],
-        "type": "object",
-        "properties": {
-          "database": { "$ref": "#/components/schemas/FormDataMultipartFile" }
-        }
-      },
       "FormDataModelRegistryGCRAddReq": {
         "required": ["name", "registry_url", "service_account_json"],
         "type": "object",
@@ -9665,6 +9813,13 @@
         }
       },
       "FormDataMultipartFile": { "type": "string", "format": "binary", "nullable": true },
+      "FormDataVulnerabilityDbDBUploadRequest": {
+        "required": ["database"],
+        "type": "object",
+        "properties": {
+          "database": { "$ref": "#/components/schemas/FormDataMultipartFile" }
+        }
+      },
       "GraphCloudProviderFilter": {
         "required": ["account_ids"],
         "type": "object",
@@ -9674,6 +9829,44 @@
             "items": { "type": "string" },
             "nullable": true
           }
+        }
+      },
+      "GraphIndividualThreatGraph": {
+        "type": "object",
+        "properties": {
+          "attack_path": {
+            "type": "array",
+            "items": { "type": "array", "items": { "type": "string" } },
+            "nullable": true
+          },
+          "cve_attack_vector": { "type": "string" },
+          "cve_id": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "ports": { "type": "array", "items": {}, "nullable": true }
+        }
+      },
+      "GraphIndividualThreatGraphRequest": {
+        "required": ["graph_type", "issue_type"],
+        "type": "object",
+        "properties": {
+          "graph_type": {
+            "enum": [
+              "most_vulnerable_attack_paths",
+              "direct_internet_exposure",
+              "indirect_internet_exposure"
+            ],
+            "type": "string"
+          },
+          "issue_type": {
+            "enum": [
+              "vulnerability",
+              "secret",
+              "malware",
+              "compliance",
+              "cloud_compliance"
+            ],
+            "type": "string"
+          },
+          "node_ids": { "type": "array", "items": { "type": "string" }, "nullable": true }
         }
       },
       "GraphNodeInfo": {
@@ -9830,33 +10023,6 @@
             "nullable": true
           },
           "skip_connections": { "type": "boolean" }
-        }
-      },
-      "GraphVulnerabilityThreatGraph": {
-        "type": "object",
-        "properties": {
-          "attack_path": {
-            "type": "array",
-            "items": { "type": "array", "items": { "type": "string" } },
-            "nullable": true
-          },
-          "cve_attack_vector": { "type": "string" },
-          "cve_id": { "type": "array", "items": { "type": "string" }, "nullable": true },
-          "ports": { "type": "array", "items": {}, "nullable": true }
-        }
-      },
-      "GraphVulnerabilityThreatGraphRequest": {
-        "required": ["graph_type"],
-        "type": "object",
-        "properties": {
-          "graph_type": {
-            "enum": [
-              "most_vulnerable_attack_paths",
-              "direct_internet_exposure",
-              "indirect_internet_exposure"
-            ],
-            "type": "string"
-          }
         }
       },
       "IngestersCloudCompliance": {
@@ -10208,6 +10374,9 @@
           "cve_overall_score": { "type": "number" },
           "cve_severity": { "type": "string" },
           "exploit_poc": { "type": "string" },
+          "exploitability_score": { "type": "integer" },
+          "has_live_connection": { "type": "boolean" },
+          "init_exploitability_score": { "type": "integer" },
           "parsed_attack_vector": { "type": "string" },
           "scan_id": { "type": "string" },
           "urls": { "type": "array", "items": { "type": "string" }, "nullable": true }
@@ -10244,6 +10413,23 @@
         "properties": {
           "available_workload": { "type": "integer" },
           "node_id": { "type": "string" }
+        }
+      },
+      "ModelAgentPluginDisable": {
+        "required": ["plugin_name", "node_id"],
+        "type": "object",
+        "properties": {
+          "node_id": { "type": "string" },
+          "plugin_name": { "type": "string" }
+        }
+      },
+      "ModelAgentPluginEnable": {
+        "required": ["plugin_name", "version", "node_id"],
+        "type": "object",
+        "properties": {
+          "node_id": { "type": "string" },
+          "plugin_name": { "type": "string" },
+          "version": { "type": "string" }
         }
       },
       "ModelAgentUpgrade": {
@@ -11369,9 +11555,13 @@
         "properties": { "email": { "type": "string" } }
       },
       "ModelPasswordResetVerifyRequest": {
-        "required": ["code", "password"],
+        "required": ["namespace", "code", "password"],
         "type": "object",
-        "properties": { "code": { "type": "string" }, "password": { "type": "string" } }
+        "properties": {
+          "code": { "type": "string" },
+          "namespace": { "type": "string" },
+          "password": { "type": "string" }
+        }
       },
       "ModelPod": {
         "required": [
@@ -11462,13 +11652,14 @@
         }
       },
       "ModelRegisterInvitedUserRequest": {
-        "required": ["first_name", "last_name", "password", "code"],
+        "required": ["namespace", "first_name", "last_name", "password", "code"],
         "type": "object",
         "properties": {
           "code": { "type": "string" },
           "first_name": { "type": "string" },
           "is_temporary_password": { "type": "boolean" },
           "last_name": { "type": "string" },
+          "namespace": { "type": "string" },
           "password": { "type": "string" }
         }
       },
@@ -11508,7 +11699,7 @@
         "required": ["registry_id", "image_filter", "window"],
         "type": "object",
         "properties": {
-          "image_filter": { "$ref": "#/components/schemas/ReportersContainsFilter" },
+          "image_filter": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
           "registry_id": { "type": "string" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
@@ -11517,7 +11708,7 @@
         "required": ["registry_id", "image_filter", "window"],
         "type": "object",
         "properties": {
-          "image_filter": { "$ref": "#/components/schemas/ReportersContainsFilter" },
+          "image_filter": { "$ref": "#/components/schemas/ReportersFieldsFilters" },
           "registry_id": { "type": "string" },
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
@@ -12180,9 +12371,7 @@
           "event": { "type": "string" },
           "resources": { "type": "string" },
           "role": { "type": "string" },
-          "success": { "type": "boolean" },
-          "user_id": { "$ref": "#/components/schemas/SqlNullInt32" },
-          "user_role_id": { "type": "integer" }
+          "success": { "type": "boolean" }
         }
       },
       "PostgresqlDbScheduler": {
@@ -12432,7 +12621,6 @@
           "window": { "$ref": "#/components/schemas/ModelFetchWindow" }
         }
       },
-      "SqlNullInt32": { "type": "object" },
       "SqlNullTime": { "type": "object" },
       "UtilsAdvancedReportFilters": {
         "type": "object",
