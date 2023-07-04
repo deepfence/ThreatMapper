@@ -50,15 +50,15 @@ type RegistryIDPathReq struct {
 }
 
 type RegistryImagesReq struct {
-	RegistryId  string                   `json:"registry_id" validate:"required" required:"true"`
-	ImageFilter reporters.ContainsFilter `json:"image_filter" required:"true"`
-	Window      FetchWindow              `json:"window" required:"true"`
+	RegistryId  string                  `json:"registry_id" validate:"required" required:"true"`
+	ImageFilter reporters.FieldsFilters `json:"image_filter" required:"true"`
+	Window      FetchWindow             `json:"window" required:"true"`
 }
 
 type RegistryImageStubsReq struct {
-	RegistryId  string                   `json:"registry_id" validate:"required" required:"true"`
-	ImageFilter reporters.ContainsFilter `json:"image_filter" required:"true"`
-	Window      FetchWindow              `json:"window" required:"true"`
+	RegistryId  string                  `json:"registry_id" validate:"required" required:"true"`
+	ImageFilter reporters.FieldsFilters `json:"image_filter" required:"true"`
+	Window      FetchWindow             `json:"window" required:"true"`
 }
 
 type RegistryCountResp struct {
@@ -290,7 +290,7 @@ func (i *ImageStub) AddTags(tags ...string) ImageStub {
 	return *i
 }
 
-func ListImageStubs(ctx context.Context, registryId string, filter reporters.ContainsFilter, fw FetchWindow) ([]ImageStub, error) {
+func ListImageStubs(ctx context.Context, registryId string, filter reporters.FieldsFilters, fw FetchWindow) ([]ImageStub, error) {
 
 	images := []ImageStub{}
 
@@ -315,7 +315,7 @@ func ListImageStubs(ctx context.Context, registryId string, filter reporters.Con
 
 	query := `
 	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub)
-	` + reporters.ContainsFilter2CypherWhereConditions("l", filter, true) + `
+	` + reporters.ParseFieldFilters2CypherWhereConditions("l", mo.Some(filter), true) + `
 	WITH distinct l.docker_image_name as name, l.tags as tags, l.node_id as id
 	RETURN name, tags, id
 	ORDER BY name
@@ -350,7 +350,7 @@ func ListImageStubs(ctx context.Context, registryId string, filter reporters.Con
 	return images, nil
 }
 
-func ListImages(ctx context.Context, registryId string, filter reporters.ContainsFilter, fw FetchWindow) ([]ContainerImage, error) {
+func ListImages(ctx context.Context, registryId string, filter reporters.FieldsFilters, fw FetchWindow) ([]ContainerImage, error) {
 
 	res := []ContainerImage{}
 
@@ -375,7 +375,7 @@ func ListImages(ctx context.Context, registryId string, filter reporters.Contain
 
 	query := `
 	MATCH (n:RegistryAccount{node_id: $id}) -[:HOSTS]-> (l:ImageStub) <-[:IS]- (m:ContainerImage)
-	` + reporters.ContainsFilter2CypherWhereConditions("l", filter, true) + `
+	` + reporters.ParseFieldFilters2CypherWhereConditions("l", mo.Some(filter), true) + `
 	RETURN l, m
 	` + fw.FetchWindow2CypherQuery()
 	log.Info().Msgf("query: %v", query)
