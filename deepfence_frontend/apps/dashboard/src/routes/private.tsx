@@ -82,20 +82,8 @@ import { module as scheduledJobs } from '@/features/settings/pages/ScheduledJobs
 import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
-import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
-import { module as threatGraphLoader } from '@/features/threat-graph/data-components/threatGraphLoader';
 import { module as vulnerabilityTthreatGraphLoader } from '@/features/threat-graph/data-components/vulnerabilityThreatGraphLoader';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
-import { module as nodeDetailsCloudService } from '@/features/topology/data-components/node-details/CloudService';
-import { module as nodeDetailsContainer } from '@/features/topology/data-components/node-details/Container';
-import { module as nodeDetailsContainerImage } from '@/features/topology/data-components/node-details/ContainerImage';
-import { module as nodeDetailsHost } from '@/features/topology/data-components/node-details/Host';
-import { module as nodeDetailsPod } from '@/features/topology/data-components/node-details/Pod';
-import { module as nodeDetailsProcess } from '@/features/topology/data-components/node-details/Process';
-import { module as topologyTableContainers } from '@/features/topology/data-components/tables/ContainersTable';
-import { module as topologyTableHosts } from '@/features/topology/data-components/tables/HostsTable';
-import { module as topologyTableKunernetesCluster } from '@/features/topology/data-components/tables/KubernetesTable';
-import { module as topologyTablePods } from '@/features/topology/data-components/tables/PodsTable';
 import { module as topologyLoader } from '@/features/topology/data-components/topologyLoader';
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
 import { module as topologyTable } from '@/features/topology/pages/Table';
@@ -219,35 +207,6 @@ export const privateRoutes: CustomRouteObject[] = [
             path: 'graph/:viewType?',
             ...topologyGraph,
             meta: { title: 'Cloud Topology' },
-          },
-          {
-            path: 'node-details',
-            children: [
-              {
-                path: 'host/:nodeId',
-                ...nodeDetailsHost,
-              },
-              {
-                path: 'container/:nodeId',
-                ...nodeDetailsContainer,
-              },
-              {
-                path: 'process/:nodeId',
-                ...nodeDetailsProcess,
-              },
-              {
-                path: 'container_image/:nodeId',
-                ...nodeDetailsContainerImage,
-              },
-              {
-                path: 'pod/:nodeId',
-                ...nodeDetailsPod,
-              },
-              {
-                path: 'cloud-service/:nodeType',
-                ...nodeDetailsCloudService,
-              },
-            ],
           },
         ],
       },
@@ -675,32 +634,8 @@ export const privateRoutes: CustomRouteObject[] = [
         loader: searchCloudFiltersApiLoader,
       },
       {
-        path: 'threat-graph/details-modal',
-        ...threatGraphDetailModal,
-      },
-      {
         path: 'topology',
         ...topologyLoader,
-      },
-      {
-        path: 'topology/table/hosts',
-        ...topologyTableHosts,
-      },
-      {
-        path: 'topology/table/kubernetesCluster',
-        ...topologyTableKunernetesCluster,
-      },
-      {
-        path: 'topology/table/containers',
-        ...topologyTableContainers,
-      },
-      {
-        path: 'topology/table/pods',
-        ...topologyTablePods,
-      },
-      {
-        path: 'threat-graph',
-        ...threatGraphLoader,
       },
       {
         path: 'threat-graph-vulnerability',

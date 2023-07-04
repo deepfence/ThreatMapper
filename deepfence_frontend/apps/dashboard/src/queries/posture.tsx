@@ -635,4 +635,44 @@ export const postureQueries = createQueryKeys('posture', {
       },
     };
   },
+  scanResultSummaryCountsCompliance: (filters: { scanId: string }) => {
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const { scanId } = filters;
+        const resultComplianceScanApi = apiWrapper({
+          fn: getComplianceApiClient().resultComplianceScan,
+        });
+        const complianceScanResults = await resultComplianceScanApi({
+          modelScanResultsReq: {
+            scan_id: scanId,
+            window: {
+              offset: 0,
+              size: 1,
+            },
+            fields_filter: {
+              contains_filter: {
+                filter_in: {},
+              },
+              match_filter: {
+                filter_in: {},
+              },
+              order_filter: { order_fields: [] },
+              compare_filter: null,
+            },
+          },
+        });
+
+        if (!complianceScanResults.ok) {
+          console.error(complianceScanResults);
+          throw new Error("Couldn't get compliance scan results");
+        }
+        return {
+          scanId,
+          timestamp: complianceScanResults.value.created_at,
+          counts: complianceScanResults.value.status_counts ?? {},
+        };
+      },
+    };
+  },
 });

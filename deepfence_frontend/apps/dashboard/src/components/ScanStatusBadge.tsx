@@ -7,6 +7,7 @@ import {
   NotStartedIcon,
   SuccessIcon,
 } from '@/components/icons/common/ScanStatuses';
+import { TruncatedText } from '@/components/TruncatedText';
 import {
   isNeverScanned,
   isScanComplete,
@@ -28,7 +29,7 @@ export const ScanStatusBadge = ({
     className,
   );
 
-  const iconWrapper = cn('w-[18px] h-[18px]');
+  const iconWrapper = cn('w-[18px] h-[18px] shrink-0');
 
   const scanStatus = capitalize(status.replaceAll('_', ' '));
 
@@ -39,7 +40,7 @@ export const ScanStatusBadge = ({
           <SuccessIcon />
         </span>
 
-        {!justIcon ? scanStatus : null}
+        {!justIcon ? <TruncatedText text={scanStatus} /> : null}
       </div>
     );
   } else if (isScanFailed(status)) {
@@ -48,7 +49,7 @@ export const ScanStatusBadge = ({
         <span className={iconWrapper}>
           <ErrorIcon />
         </span>
-        {!justIcon ? scanStatus : null}
+        {!justIcon ? <TruncatedText text={scanStatus} /> : null}
       </div>
     );
   } else if (isNeverScanned(status)) {
@@ -57,7 +58,7 @@ export const ScanStatusBadge = ({
         <span className={iconWrapper}>
           <NotStartedIcon />
         </span>
-        Never Scanned
+        <TruncatedText text={'Never Scanned'} />
       </div>
     );
   } else if (isScanInProgress(status)) {
@@ -66,7 +67,7 @@ export const ScanStatusBadge = ({
         <span className={iconWrapper}>
           <CircleSpinner size="sm" />
         </span>
-        {!justIcon ? scanStatus : null}
+        {!justIcon ? <TruncatedText text={scanStatus} /> : null}
       </div>
     );
   }

@@ -18,6 +18,7 @@ import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
   ApiDocsGraphResult,
+  ControlsAgentBeat,
   GraphTopologyFilters,
   IngestersReportIngestionData,
   ReportRawReport,
@@ -29,6 +30,8 @@ import {
     ApiDocsFailureResponseToJSON,
     ApiDocsGraphResultFromJSON,
     ApiDocsGraphResultToJSON,
+    ControlsAgentBeatFromJSON,
+    ControlsAgentBeatToJSON,
     GraphTopologyFiltersFromJSON,
     GraphTopologyFiltersToJSON,
     IngestersReportIngestionDataFromJSON,
@@ -160,13 +163,13 @@ export interface TopologyApiInterface {
      * @throws {RequiredError}
      * @memberof TopologyApiInterface
      */
-    ingestAgentReportRaw(requestParameters: IngestAgentReportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+    ingestAgentReportRaw(requestParameters: IngestAgentReportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ControlsAgentBeat>>;
 
     /**
      * Ingest data reported by one Agent
      * Ingest Topology Data
      */
-    ingestAgentReport(requestParameters: IngestAgentReportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+    ingestAgentReport(requestParameters: IngestAgentReportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsAgentBeat>;
 
     /**
      * Ingest data reported by one Agent
@@ -390,7 +393,7 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
      * Ingest data reported by one Agent
      * Ingest Topology Data
      */
-    async ingestAgentReportRaw(requestParameters: IngestAgentReportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async ingestAgentReportRaw(requestParameters: IngestAgentReportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ControlsAgentBeat>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -413,15 +416,16 @@ export class TopologyApi extends runtime.BaseAPI implements TopologyApiInterface
             body: ReportRawReportToJSON(requestParameters.reportRawReport),
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => ControlsAgentBeatFromJSON(jsonValue));
     }
 
     /**
      * Ingest data reported by one Agent
      * Ingest Topology Data
      */
-    async ingestAgentReport(requestParameters: IngestAgentReportRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.ingestAgentReportRaw(requestParameters, initOverrides);
+    async ingestAgentReport(requestParameters: IngestAgentReportRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ControlsAgentBeat> {
+        const response = await this.ingestAgentReportRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**

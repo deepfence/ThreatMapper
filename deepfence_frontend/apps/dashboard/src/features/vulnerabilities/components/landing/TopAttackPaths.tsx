@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react';
 import { Card } from 'ui-components';
 
-import { GraphVulnerabilityThreatGraphRequestGraphTypeEnum } from '@/api/generated';
+import { GraphIndividualThreatGraphRequestGraphTypeEnum } from '@/api/generated';
 import { ThreatGraphIcon } from '@/components/sideNavigation/icons/ThreatGraph';
 import { VulnerabilityThreatGraphComponent } from '@/features/threat-graph/components/VulnerabilityThreatGraph';
 import { CardHeader } from '@/features/vulnerabilities/components/landing/CardHeader';
 
 export const TopAttackPaths = () => {
-  const [attackPathType] = useState<GraphVulnerabilityThreatGraphRequestGraphTypeEnum>(
-    GraphVulnerabilityThreatGraphRequestGraphTypeEnum.MostVulnerableAttackPaths,
+  const [attackPathType] = useState<GraphIndividualThreatGraphRequestGraphTypeEnum>(
+    GraphIndividualThreatGraphRequestGraphTypeEnum.MostVulnerableAttackPaths,
   );
 
   const filters = useMemo(() => {
@@ -37,20 +37,20 @@ export const TopAttackPaths = () => {
             {
               label: 'Most vulnerable attack paths',
               value:
-                GraphVulnerabilityThreatGraphRequestGraphTypeEnum.MostVulnerableAttackPaths,
+                GraphIndividualThreatGraphRequestGraphTypeEnum.MostVulnerableAttackPaths,
             },
             {
               label: 'Paths with direct internet exposure',
               value:
-                GraphVulnerabilityThreatGraphRequestGraphTypeEnum.DirectInternetExposure,
+                GraphIndividualThreatGraphRequestGraphTypeEnum.DirectInternetExposure,
             },
             {
               label: 'Paths with indirect internet exposure',
               value:
-                GraphVulnerabilityThreatGraphRequestGraphTypeEnum.IndirectInternetExposure,
+                GraphIndividualThreatGraphRequestGraphTypeEnum.IndirectInternetExposure,
             },
           ]}
-          onValueChange={(value: GraphVulnerabilityThreatGraphRequestGraphTypeEnum) => {
+          onValueChange={(value: GraphIndividualThreatGraphRequestGraphTypeEnum) => {
             setAttackPathType(value);
           }}
         /> */}

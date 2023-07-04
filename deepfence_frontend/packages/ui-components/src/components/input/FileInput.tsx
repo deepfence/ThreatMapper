@@ -49,6 +49,25 @@ export interface TextInputProps
   onChoosen?: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
+const InfoIcon = () => {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M6 11C3.2385 11 1 8.761 1 6C1 3.2385 3.2385 1 6 1C8.761 1 11 3.2385 11 6C11 8.761 8.761 11 6 11ZM5.9651 2.25C6.3516 2.25 6.6651 2.5635 6.6651 2.95C6.6651 3.3365 6.3516 3.65 5.9651 3.65C5.5786 3.65 5.2651 3.3365 5.2651 2.95C5.2651 2.5635 5.5786 2.25 5.9651 2.25ZM6 0C2.6865 0 0 2.6865 0 6C0 9.3135 2.6865 12 6 12C9.3135 12 12 9.3135 12 6C12 2.6865 9.3135 0 6 0ZM7.5 8.5H6.5V4.5H5C4.724 4.5 4.5 4.724 4.5 5C4.5 5.276 4.724 5.5 5 5.5H5.5V8.5H4.5C4.224 8.5 4 8.7235 4 9C4 9.2765 4.224 9.5 4.5 9.5H7.5C7.7765 9.5 8 9.2765 8 9C8 8.7235 7.7765 8.5 7.5 8.5Z"
+        fill="#489CFF"
+      />
+    </svg>
+  );
+};
+
 export const FileInput = forwardRef<HTMLInputElement, TextInputProps>(
   (
     { sizing, label, helperText, hint, className = '', required, id, onChoosen, ...rest },
@@ -71,13 +90,7 @@ export const FileInput = forwardRef<HTMLInputElement, TextInputProps>(
             {!!hint?.length && (
               <Tooltip content={hint} triggerAsChild>
                 <button type="button" tabIndex={-1}>
-                  <IconContext.Provider
-                    value={{
-                      className: 'text-gray-600 dark:text-df-gray-200 h-4 w-4',
-                    }}
-                  >
-                    <HiOutlineInformationCircle />
-                  </IconContext.Provider>
+                  <InfoIcon />
                 </button>
               </Tooltip>
             )}

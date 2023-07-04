@@ -9,29 +9,67 @@ import { HarborRegistryIcon } from './Harbor';
 import { JfrogRegistryIcon } from './Jfrog';
 import { QuayRegistryIcon } from './Quay';
 
+const iconDimension = 'w-[40px] h-[40px]';
+
 export const RegistryLogos = ({
   registryType,
 }: {
   registryType: keyof typeof RegistryType;
 }) => {
   if (registryType === RegistryType.azure_container_registry) {
-    return <AzureRegistryIcon />;
+    return (
+      <div className={iconDimension}>
+        <AzureRegistryIcon />
+      </div>
+    );
   } else if (registryType === RegistryType.docker_hub) {
-    return <DockerRegistryIcon />;
+    return (
+      <div className={iconDimension}>
+        <DockerRegistryIcon />
+      </div>
+    );
   } else if (registryType === RegistryType.docker_private_registry) {
-    return <DockerRegistryIcon />;
+    return (
+      <div className={iconDimension}>
+        <DockerRegistryIcon />
+      </div>
+    );
   } else if (registryType === RegistryType.ecr) {
-    return <AmazonECRRegistryIcon />;
+    return (
+      <div className={iconDimension}>
+        <AmazonECRRegistryIcon />
+      </div>
+    );
   } else if (registryType === RegistryType.gitlab) {
-    return <GitlabRegistryIcon />;
+    return (
+      <div className={iconDimension}>
+        <GitlabRegistryIcon />
+      </div>
+    );
   } else if (registryType === RegistryType.google_container_registry) {
-    return <GoogleRegistryIcon />;
+    return (
+      <div className={iconDimension}>
+        <GoogleRegistryIcon />
+      </div>
+    );
   } else if (registryType === RegistryType.harbor) {
-    return <HarborRegistryIcon />;
+    return (
+      <div className={iconDimension}>
+        <HarborRegistryIcon />
+      </div>
+    );
   } else if (registryType === RegistryType.jfrog_container_registry) {
-    return <JfrogRegistryIcon />;
+    return (
+      <div className={iconDimension}>
+        <JfrogRegistryIcon />
+      </div>
+    );
   } else if (registryType === RegistryType.quay) {
-    return <QuayRegistryIcon />;
+    return (
+      <div className={iconDimension}>
+        <QuayRegistryIcon />
+      </div>
+    );
   }
   return null;
 };

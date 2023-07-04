@@ -17,32 +17,32 @@ import * as runtime from '../runtime';
 import type {
   ApiDocsBadRequestResponse,
   ApiDocsFailureResponse,
+  GraphIndividualThreatGraph,
+  GraphIndividualThreatGraphRequest,
   GraphProviderThreatGraph,
   GraphThreatFilters,
-  GraphVulnerabilityThreatGraph,
-  GraphVulnerabilityThreatGraphRequest,
 } from '../models';
 import {
     ApiDocsBadRequestResponseFromJSON,
     ApiDocsBadRequestResponseToJSON,
     ApiDocsFailureResponseFromJSON,
     ApiDocsFailureResponseToJSON,
+    GraphIndividualThreatGraphFromJSON,
+    GraphIndividualThreatGraphToJSON,
+    GraphIndividualThreatGraphRequestFromJSON,
+    GraphIndividualThreatGraphRequestToJSON,
     GraphProviderThreatGraphFromJSON,
     GraphProviderThreatGraphToJSON,
     GraphThreatFiltersFromJSON,
     GraphThreatFiltersToJSON,
-    GraphVulnerabilityThreatGraphFromJSON,
-    GraphVulnerabilityThreatGraphToJSON,
-    GraphVulnerabilityThreatGraphRequestFromJSON,
-    GraphVulnerabilityThreatGraphRequestToJSON,
 } from '../models';
+
+export interface GetIndividualThreatGraphRequest {
+    graphIndividualThreatGraphRequest?: GraphIndividualThreatGraphRequest;
+}
 
 export interface GetThreatGraphRequest {
     graphThreatFilters?: GraphThreatFilters;
-}
-
-export interface GetVulnerabilityThreatGraphRequest {
-    graphVulnerabilityThreatGraphRequest?: GraphVulnerabilityThreatGraphRequest;
 }
 
 /**
@@ -52,6 +52,22 @@ export interface GetVulnerabilityThreatGraphRequest {
  * @interface ThreatApiInterface
  */
 export interface ThreatApiInterface {
+    /**
+     * Retrieve threat graph associated with vulnerabilities
+     * @summary Get Vulnerability Threat Graph
+     * @param {GraphIndividualThreatGraphRequest} [graphIndividualThreatGraphRequest] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ThreatApiInterface
+     */
+    getIndividualThreatGraphRaw(requestParameters: GetIndividualThreatGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<GraphIndividualThreatGraph>>>;
+
+    /**
+     * Retrieve threat graph associated with vulnerabilities
+     * Get Vulnerability Threat Graph
+     */
+    getIndividualThreatGraph(requestParameters: GetIndividualThreatGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<GraphIndividualThreatGraph>>;
+
     /**
      * Retrieve the full threat graph associated with the account
      * @summary Get Threat Graph
@@ -68,28 +84,51 @@ export interface ThreatApiInterface {
      */
     getThreatGraph(requestParameters: GetThreatGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: GraphProviderThreatGraph; }>;
 
-    /**
-     * Retrieve threat graph associated with vulnerabilities
-     * @summary Get Vulnerability Threat Graph
-     * @param {GraphVulnerabilityThreatGraphRequest} [graphVulnerabilityThreatGraphRequest] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof ThreatApiInterface
-     */
-    getVulnerabilityThreatGraphRaw(requestParameters: GetVulnerabilityThreatGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<GraphVulnerabilityThreatGraph>>>;
-
-    /**
-     * Retrieve threat graph associated with vulnerabilities
-     * Get Vulnerability Threat Graph
-     */
-    getVulnerabilityThreatGraph(requestParameters: GetVulnerabilityThreatGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<GraphVulnerabilityThreatGraph>>;
-
 }
 
 /**
  * 
  */
 export class ThreatApi extends runtime.BaseAPI implements ThreatApiInterface {
+
+    /**
+     * Retrieve threat graph associated with vulnerabilities
+     * Get Vulnerability Threat Graph
+     */
+    async getIndividualThreatGraphRaw(requestParameters: GetIndividualThreatGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<GraphIndividualThreatGraph>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/graph/threat/individual`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: GraphIndividualThreatGraphRequestToJSON(requestParameters.graphIndividualThreatGraphRequest),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(GraphIndividualThreatGraphFromJSON));
+    }
+
+    /**
+     * Retrieve threat graph associated with vulnerabilities
+     * Get Vulnerability Threat Graph
+     */
+    async getIndividualThreatGraph(requestParameters: GetIndividualThreatGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<GraphIndividualThreatGraph>> {
+        const response = await this.getIndividualThreatGraphRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Retrieve the full threat graph associated with the account
@@ -127,45 +166,6 @@ export class ThreatApi extends runtime.BaseAPI implements ThreatApiInterface {
      */
     async getThreatGraph(requestParameters: GetThreatGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: GraphProviderThreatGraph; }> {
         const response = await this.getThreatGraphRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Retrieve threat graph associated with vulnerabilities
-     * Get Vulnerability Threat Graph
-     */
-    async getVulnerabilityThreatGraphRaw(requestParameters: GetVulnerabilityThreatGraphRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<GraphVulnerabilityThreatGraph>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer_token", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        const response = await this.request({
-            path: `/deepfence/graph/threat/vulnerability`,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: GraphVulnerabilityThreatGraphRequestToJSON(requestParameters.graphVulnerabilityThreatGraphRequest),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(GraphVulnerabilityThreatGraphFromJSON));
-    }
-
-    /**
-     * Retrieve threat graph associated with vulnerabilities
-     * Get Vulnerability Threat Graph
-     */
-    async getVulnerabilityThreatGraph(requestParameters: GetVulnerabilityThreatGraphRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<GraphVulnerabilityThreatGraph>> {
-        const response = await this.getVulnerabilityThreatGraphRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

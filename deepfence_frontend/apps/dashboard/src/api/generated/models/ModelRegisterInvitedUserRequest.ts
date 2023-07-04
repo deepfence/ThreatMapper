@@ -48,6 +48,12 @@ export interface ModelRegisterInvitedUserRequest {
      * @type {string}
      * @memberof ModelRegisterInvitedUserRequest
      */
+    namespace: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ModelRegisterInvitedUserRequest
+     */
     password: string;
 }
 
@@ -59,6 +65,7 @@ export function instanceOfModelRegisterInvitedUserRequest(value: object): boolea
     isInstance = isInstance && "code" in value;
     isInstance = isInstance && "first_name" in value;
     isInstance = isInstance && "last_name" in value;
+    isInstance = isInstance && "namespace" in value;
     isInstance = isInstance && "password" in value;
 
     return isInstance;
@@ -78,6 +85,7 @@ export function ModelRegisterInvitedUserRequestFromJSONTyped(json: any, ignoreDi
         'first_name': json['first_name'],
         'is_temporary_password': !exists(json, 'is_temporary_password') ? undefined : json['is_temporary_password'],
         'last_name': json['last_name'],
+        'namespace': json['namespace'],
         'password': json['password'],
     };
 }
@@ -95,6 +103,7 @@ export function ModelRegisterInvitedUserRequestToJSON(value?: ModelRegisterInvit
         'first_name': value.first_name,
         'is_temporary_password': value.is_temporary_password,
         'last_name': value.last_name,
+        'namespace': value.namespace,
         'password': value.password,
     };
 }
