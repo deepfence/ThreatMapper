@@ -56,7 +56,11 @@ import { invalidateAllQueries, queries } from '@/queries';
 import { ComplianceScanNodeTypeEnum, ScanTypeEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 import { formatPercentage } from '@/utils/number';
-import { isScanComplete } from '@/utils/scan';
+import {
+  ComplianceScanGroupedStatus,
+  isScanComplete,
+  SCAN_STATUS_GROUPS,
+} from '@/utils/scan';
 import {
   getOrderFromSearchParams,
   getPageFromSearchParams,
@@ -155,12 +159,17 @@ const usePostureAccounts = () => {
       pageSize: parseInt(searchParams.get('size') ?? String(DEFAULT_PAGE_SIZE)),
       order: getOrderFromSearchParams(searchParams),
       status: searchParams.getAll('status'),
+      complianceScanStatus: searchParams.get('complianceScanStatus') as
+        | ComplianceScanGroupedStatus
+        | undefined,
       nodeType,
     }),
     keepPreviousData: true,
   });
 };
+
 const FILTER_SEARCHPARAMS: Record<string, string> = {
+  complianceScanStatus: 'Posture scan status',
   status: 'Status',
 };
 
@@ -173,7 +182,8 @@ const Filters = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [status, setStatus] = useState('');
-
+  const [complianceScanStatusSearchText, setComplianceScanStatusSearchText] =
+    useState('');
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
   return (
     <div className="px-4 py-2.5 mb-4 border dark:border-bg-hover-3 rounded-[5px] overflow-hidden dark:bg-bg-left-nav">
@@ -216,6 +226,40 @@ const Filters = () => {
                 </ComboboxOption>
               );
             })}
+        </Combobox>
+        <Combobox
+          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
+            return groupStatus.value === searchParams.get('complianceScanStatus');
+          })}
+          nullable
+          onQueryChange={(query) => {
+            setComplianceScanStatusSearchText(query);
+          }}
+          onChange={(value) => {
+            setSearchParams((prev) => {
+              if (value) {
+                prev.set('complianceScanStatus', value.value);
+              } else {
+                prev.delete('complianceScanStatus');
+              }
+              prev.delete('page');
+              return prev;
+            });
+          }}
+          getDisplayValue={() => FILTER_SEARCHPARAMS['complianceScanStatus']}
+        >
+          {SCAN_STATUS_GROUPS.filter((item) => {
+            if (!complianceScanStatusSearchText.length) return true;
+            return item.label
+              .toLowerCase()
+              .includes(complianceScanStatusSearchText.toLowerCase());
+          }).map((item) => {
+            return (
+              <ComboboxOption key={item.value} value={item}>
+                {item.label}
+              </ComboboxOption>
+            );
+          })}
         </Combobox>
       </div>
       {appliedFilterCount > 0 ? (
