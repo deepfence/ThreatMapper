@@ -55,7 +55,12 @@ import { queries } from '@/queries';
 import { ScanTypeEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
-import { isNeverScanned, isScanComplete } from '@/utils/scan';
+import {
+  isNeverScanned,
+  isScanComplete,
+  SCAN_STATUS_GROUPS,
+  SecretScanGroupedStatus,
+} from '@/utils/scan';
 import { getOrderFromSearchParams, useSortingState } from '@/utils/table';
 
 export interface FocusableElement {
@@ -309,7 +314,7 @@ const ActionDropdown = ({
 
 const FILTER_SEARCHPARAMS: Record<string, string> = {
   nodeType: 'Node Type',
-  statuses: 'Status',
+  secretScanStatus: 'Secret scan status',
   containerImages: 'Container image',
   containers: 'Container',
   hosts: 'Host',
@@ -325,7 +330,7 @@ const Filters = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [nodeType, setNodeType] = useState('');
-  const [statuses, setStatuses] = useState('');
+  const [secretScanStatusSearchText, setSecretScanStatusSearchText] = useState('');
 
   const appliedFilterCount = getAppliedFiltersCount(searchParams);
   return (
@@ -371,43 +376,38 @@ const Filters = () => {
             })}
         </Combobox>
         <Combobox
-          getDisplayValue={() => FILTER_SEARCHPARAMS['statuses']}
-          multiple
-          value={searchParams.getAll('statuses')}
-          onChange={(values) => {
-            setSearchParams((prev) => {
-              prev.delete('statuses');
-              values.forEach((value) => {
-                prev.append('statuses', value);
-              });
-              prev.delete('page');
-              return prev;
-            });
-          }}
+          value={SCAN_STATUS_GROUPS.find((groupStatus) => {
+            return groupStatus.value === searchParams.get('secretScanStatus');
+          })}
+          nullable
           onQueryChange={(query) => {
-            setStatuses(query);
+            setSecretScanStatusSearchText(query);
           }}
-          clearAllElement="Clear"
-          onClearAll={() => {
+          onChange={(value) => {
             setSearchParams((prev) => {
-              prev.delete('statuses');
+              if (value) {
+                prev.set('secretScanStatus', value.value);
+              } else {
+                prev.delete('secretScanStatus');
+              }
               prev.delete('page');
               return prev;
             });
           }}
+          getDisplayValue={() => FILTER_SEARCHPARAMS['secretScanStatus']}
         >
-          {['complete', 'in progress', 'error']
-            .filter((item) => {
-              if (!statuses.length) return true;
-              return item.includes(statuses.toLowerCase());
-            })
-            .map((item) => {
-              return (
-                <ComboboxOption key={item} value={item}>
-                  {capitalize(item)}
-                </ComboboxOption>
-              );
-            })}
+          {SCAN_STATUS_GROUPS.filter((item) => {
+            if (!secretScanStatusSearchText.length) return true;
+            return item.label
+              .toLowerCase()
+              .includes(secretScanStatusSearchText.toLowerCase());
+          }).map((item) => {
+            return (
+              <ComboboxOption key={item.value} value={item}>
+                {item.label}
+              </ComboboxOption>
+            );
+          })}
         </Combobox>
 
         <SearchableImageList
@@ -556,7 +556,9 @@ const ScansTable = () => {
         : ['container_image', 'container', 'host'],
       page: parseInt(searchParams.get('page') ?? '0', 10),
       order: getOrderFromSearchParams(searchParams),
-      status: searchParams.getAll('statuses').map((status) => status.toUpperCase()),
+      secretScanStatus: searchParams.get('secretScanStatus') as
+        | SecretScanGroupedStatus
+        | undefined,
     }),
     keepPreviousData: true,
   });

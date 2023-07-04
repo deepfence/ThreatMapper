@@ -14,6 +14,8 @@ import {
 } from '@/api/generated';
 import { ScanStatusEnum, ScanTypeEnum } from '@/types/common';
 import { apiWrapper } from '@/utils/api';
+import { ComplianceScanGroupedStatus } from '@/utils/scan';
+import { COMPLIANCE_SCAN_STATUS_GROUPS } from '@/utils/scan';
 
 export const postureQueries = createQueryKeys('posture', {
   postureSummary: () => {
@@ -38,13 +40,14 @@ export const postureQueries = createQueryKeys('posture', {
     page?: number;
     pageSize: number;
     status: string[];
+    complianceScanStatus?: ComplianceScanGroupedStatus;
     nodeType: string;
     order?: {
       sortBy: string;
       descending: boolean;
     };
   }) => {
-    const { page = 1, pageSize, status, order, nodeType } = filters;
+    const { page = 1, pageSize, complianceScanStatus, status, order, nodeType } = filters;
     return {
       queryKey: [{ filters }],
       queryFn: async () => {
@@ -68,6 +71,7 @@ export const postureQueries = createQueryKeys('posture', {
           },
           window: { offset: page * pageSize, size: pageSize },
         };
+
         if (status && status.length) {
           if (status.length === 1) {
             if (status[0] === 'active') {
@@ -80,6 +84,24 @@ export const postureQueries = createQueryKeys('posture', {
           }
         }
 
+        if (complianceScanStatus) {
+          if (complianceScanStatus === ComplianceScanGroupedStatus.neverScanned) {
+            searchReq.node_filter.filters.not_contains_filter!.filter_in = {
+              ...searchReq.node_filter.filters.not_contains_filter!.filter_in,
+              compliance_scan_status: [
+                ...COMPLIANCE_SCAN_STATUS_GROUPS.complete,
+                ...COMPLIANCE_SCAN_STATUS_GROUPS.error,
+                ...COMPLIANCE_SCAN_STATUS_GROUPS.inProgress,
+                ...COMPLIANCE_SCAN_STATUS_GROUPS.starting,
+              ],
+            };
+          } else {
+            searchReq.node_filter.filters.contains_filter.filter_in = {
+              ...searchReq.node_filter.filters.contains_filter.filter_in,
+              compliance_scan_status: COMPLIANCE_SCAN_STATUS_GROUPS[complianceScanStatus],
+            };
+          }
+        }
         if (order) {
           searchReq.node_filter.filters.order_filter.order_fields = [
             {
