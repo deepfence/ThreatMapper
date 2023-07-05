@@ -116,10 +116,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
 
   return (
     <div className="col-span-2 mt-6">
-      <div className="flex gap-x-5 items-center dark:text-text-input-value ">
-        <span className="w-3 h-3">
-          <CaretDown />
-        </span>
+      <div className="flex dark:text-text-input-value ">
         <div className="text-h5">Advanced Filter (Optional)</div>
       </div>
       <div className="grid grid-cols-2 gap-y-8 gap-x-8 pt-4">
@@ -255,14 +252,7 @@ const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string
       !isTicketingIntegration(integrationType) &&
       !isArchivalIntegration(integrationType) ? (
         <AdvancedFilters notificationType={notificationType} />
-      ) : (
-        <div className="col-span-2 mt-6 flex gap-x-1 items-center dark:text-text-input-value ">
-          <span className="w-3 h-3 -rotate-90">
-            <CaretDown />
-          </span>
-          <div className="text-h5">Advanced Filter (Optional)</div>
-        </div>
-      )}
+      ) : null}
     </>
   );
 };
@@ -451,6 +441,7 @@ export const IntegrationForm = ({
               color={fieldErrors?.aws_region ? 'error' : 'default'}
             />
             <SearchableCloudAccountsList
+              triggerVariant="select"
               defaultSelectedAccounts={awsAccounts}
               cloudProvider="aws"
               onClearAll={() => {
