@@ -29,10 +29,6 @@ func (h *Handler) DeleteReport(w http.ResponseWriter, r *http.Request) {
 		respondError(&ValidatorError{err: err}, w)
 		return
 	}
-	if err := h.Validator.Struct(req); err != nil {
-		respondError(&ValidatorError{err: err}, w)
-		return
-	}
 
 	driver, err := directory.Neo4jClient(r.Context())
 	if err != nil {
@@ -242,6 +238,10 @@ func (h *Handler) GenerateReport(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error().Msg(err.Error())
 		respondError(&BadDecoding{err}, w)
+		return
+	}
+	if err := h.Validator.Struct(req); err != nil {
+		respondError(&ValidatorError{err: err}, w)
 		return
 	}
 
