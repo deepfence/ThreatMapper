@@ -20,16 +20,80 @@ func New(b []byte) (*Slack, error) {
 	return &s, nil
 }
 
-func (s Slack) FormatMessage(message []map[string]interface{}) string {
-	entiremsg := "*" + s.Resource + "*\n\n"
+func (s Slack) FormatMessage(message []map[string]interface{}) []map[string]interface{} {
+	cardAttachments := []map[string]interface{}{}
+
 	for k, v := range message {
-		entiremsg = entiremsg + fmt.Sprintf("_#%d_\n", k+1)
-		for key, val := range v {
-			entiremsg += fmt.Sprintf("*%s*: %v\n", key, val)
+		attachmentColor := "#36a64f" // Default color (green)
+
+		switch s.Resource {
+		case "Malware":
+			fileSeverity, ok := v["file_severity"].(string)
+			if ok {
+				if fileSeverity == "high" {
+					attachmentColor = "#ff0000" // Red color for high severity
+				} else if fileSeverity == "medium" {
+					attachmentColor = "#ffcc00" // Orange color for medium severity
+				} else if fileSeverity == "low" {
+					attachmentColor = "#008000" // Dark green color for low severity
+				}
+			}
+		case "Secret":
+			level, ok := v["level"].(string)
+			if ok {
+				if level == "high" {
+					attachmentColor = "#ff0000" // Red color for high level
+				} else if level == "medium" {
+					attachmentColor = "#ffcc00" // Orange color for medium level
+				} else if level == "low" {
+					attachmentColor = "#008000" // Dark green color for low level
+				}
+			}
+		case "Vulnerability":
+			cveSeverity, ok := v["cve_severity"].(string)
+			if ok {
+				if cveSeverity == "high" {
+					attachmentColor = "#ff0000" // Red color for high CVE severity
+				} else if cveSeverity == "medium" {
+					attachmentColor = "#ffcc00" // Orange color for medium CVE severity
+				} else if cveSeverity == "low" {
+					attachmentColor = "#008000" // Dark green color for low CVE severity
+				}
+			}
+		default:
+			attachmentColor = "#808080" // Grey color for unknown type
 		}
-		entiremsg = entiremsg + "\n"
+
+		cardAttachments = append(cardAttachments, map[string]interface{}{
+			"color": attachmentColor,
+			"blocks": []map[string]interface{}{
+				{
+					"type": "section",
+					"fields": []map[string]interface{}{
+						{
+							"type": "mrkdwn",
+							"text": fmt.Sprintf("*#%d*", k+1),
+						},
+					},
+				},
+			},
+		})
+
+		for key, val := range v {
+			cardAttachments[len(cardAttachments)-1]["blocks"] = append(cardAttachments[len(cardAttachments)-1]["blocks"].([]map[string]interface{}), map[string]interface{}{
+				"type": "section",
+				"fields": []map[string]interface{}{
+					{
+						"type": "mrkdwn",
+						"text": fmt.Sprintf("*%s*: %v", key, val),
+					},
+				},
+			})
+		}
 	}
-	return entiremsg
+
+	// cardJSON, _ := json.Marshal(card)
+	return cardAttachments
 }
 
 func (s Slack) SendNotification(ctx context.Context, message string, extras map[string]interface{}) error {
@@ -40,8 +104,9 @@ func (s Slack) SendNotification(ctx context.Context, message string, extras map[
 		return err
 	}
 	m := s.FormatMessage(msg)
-	payload := Payload{
-		Text: m,
+	payload := map[string]interface{}{
+		"text":        s.Resource,
+		"attachments": m,
 	}
 
 	payloadBytes, err := json.Marshal(payload)
