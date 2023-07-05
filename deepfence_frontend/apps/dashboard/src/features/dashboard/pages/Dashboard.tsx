@@ -6,7 +6,7 @@ import { TopRisksRuntimeDummy } from '@/features/dashboard/components/TopRisksRu
 
 const Dashboard = () => {
   return (
-    <div className="overflow-auto p-4 grid grid-cols-4 gap-x-5 gap-y-4">
+    <div className="overflow-auto p-4 grid grid-cols-4 gap-4">
       <div className="col-span-4">
         <NodeCounts />
       </div>
