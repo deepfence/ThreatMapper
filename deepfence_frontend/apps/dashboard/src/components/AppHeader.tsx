@@ -54,7 +54,7 @@ export function AppHeader() {
                       action: '/data-component/auth/logout',
                     });
                   }}
-                  className="text-red-700 dark:text-red-500"
+                  className="text-red-700 dark:text-text-input-value"
                 >
                   Logout
                 </DropdownItem>

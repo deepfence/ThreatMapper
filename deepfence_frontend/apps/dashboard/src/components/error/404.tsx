@@ -38,7 +38,7 @@ export const FourZeroFour = () => {
         <div className="pt-[64px] h-screen">
           <PageNotFoundComponent />
         </div>
-        <OnboardAppHeader showGotoDashboard={false} />
+        <OnboardAppHeader />
       </div>
     );
   }

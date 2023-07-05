@@ -2,10 +2,8 @@ import cx from 'classnames';
 import { useRef } from 'react';
 import { useState } from 'react';
 import { useMemo } from 'react';
-import { IconContext } from 'react-icons';
-import { HiOutlineArrowCircleRight } from 'react-icons/hi';
 import { generatePath } from 'react-router-dom';
-import { Button, Card, Tabs, Typography } from 'ui-components';
+import { Button, Card, Tabs } from 'ui-components';
 
 import LogoAws from '@/assets/logo-aws.svg';
 import LogoAwsWhite from '@/assets/logo-aws-white.svg';
@@ -22,6 +20,7 @@ import LogoLinux from '@/assets/logo-linux.svg';
 import LogoQuay from '@/assets/logo-quay.svg';
 import LogoRegistryConnector from '@/assets/logo-registry-connector.svg';
 import { ACCOUNT_CONNECTOR } from '@/components/hosts-connector/NoConnectors';
+import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { connectorLayoutTabs } from '@/features/onboard/layouts/ConnectorsLayout';
 import { useTheme } from '@/theme/ThemeContext';
 import { RegistryType } from '@/types/common';
@@ -48,7 +47,7 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
       <button
         className={cx(
           'text-sm text-left flex items-center w-full gap-5',
-          'border-b dark:border-gray-700 border-gray-200 h-[72px] dark:text-gray-300 dark:bg-transparent',
+          'border-b dark:border-bg-grid-border border-gray-200 h-[72px]  dark:hover:text-text-input-value dark:bg-transparent',
         )}
         onClick={handleSelection}
       >
@@ -56,14 +55,9 @@ const CardConnect = ({ label, path, icon }: CardConnectProps) => {
           <img src={icon} alt="Cloud Connector" />
         </div>
         <div className="whitespace-nowrap overflow-hidden text-ellipsis">{label}</div>
-        <IconContext.Provider
-          value={{
-            className: 'ml-auto text-blue-700 dark:text-blue-500',
-            size: '18px',
-          }}
-        >
-          <HiOutlineArrowCircleRight />
-        </IconContext.Provider>
+        <span className="w-6 h-6 ml-auto">
+          <ArrowLine className="rotate-90" />
+        </span>
       </button>
     </div>
   );
@@ -98,29 +92,17 @@ const Cloud = () => {
           height="28"
           className="pr-2"
         />
-        <span
-          className={`${Typography.size['2xl']} ${Typography.weight.medium} leading-[29px] dark:text-gray-50`}
-        >
-          Cloud
-        </span>
+        <span className="dark:text-text-text-and-icon text-h2">Cloud</span>
       </div>
       <div className="mb-4">
-        <p
-          className={`px-6 ${Typography.size.sm} ${Typography.weight.normal} leading-6 text-gray-700 dark:text-gray-400 min-h-[110px]`}
-        >
+        <p className={`px-6 text-p4 dark:text-text-text-and-icon min-h-[110px]`}>
           Connect an AWS, GCP, or Azure cloud account to check for compliance
           misconfigurations.
         </p>
-        <div className="flex flex-col">
+        <div className="flex flex-col dark:text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div
-                key={connector.label}
-                className={cx(
-                  'hover:bg-[linear-gradient(270deg,_#EBF5FF_-0.07%,_#FFFFFF_100%)]',
-                  'dark:hover:bg-[linear-gradient(270deg,_#1c2431_-0.07%,_#1f2937_100%)]',
-                )}
-              >
+              <div key={connector.label} className="dark:hover:bg-bg-hover-2">
                 <CardConnect {...connector} />
               </div>
             );
@@ -159,29 +141,17 @@ const Host = () => {
           height="28"
           className="pr-2"
         />
-        <span
-          className={`${Typography.size['2xl']} ${Typography.weight.medium} leading-[29px] dark:text-gray-50`}
-        >
-          Host
-        </span>
+        <span className="dark:text-text-text-and-icon text-h2">Host</span>
       </div>
       <div className="mb-4">
-        <p
-          className={`px-6 ${Typography.size.sm} ${Typography.weight.normal} leading-6 text-gray-700 dark:text-gray-400 min-h-[110px]`}
-        >
+        <p className={`px-6 text-p4 dark:text-text-text-and-icon min-h-[110px]`}>
           Connect a K8s cluster, Docker container, or Linux host to check for
           vulnerabilities, secrets, malware, and compliance misconfigurations.
         </p>
-        <div className="flex flex-col">
+        <div className="flex flex-col dark:text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div
-                key={connector.label}
-                className={cx(
-                  'hover:bg-[linear-gradient(270deg,_#EBF5FF_-0.07%,_#FFFFFF_100%)]',
-                  'dark:hover:bg-[linear-gradient(270deg,_#1c2431_-0.07%,_#1f2937_100%)]',
-                )}
-              >
+              <div key={connector.label} className="dark:hover:bg-bg-hover-2">
                 <CardConnect {...connector} />
               </div>
             );
@@ -267,40 +237,24 @@ const Registries = () => {
           height="28"
           className="pr-2"
         />
-        <span
-          className={`${Typography.size['2xl']} ${Typography.weight.medium} leading-[29px] dark:text-gray-50`}
-        >
-          Registry
-        </span>
+        <span className="dark:text-text-text-and-icon text-h2">Registry</span>
       </div>
       <div className="mb-4">
-        <p
-          className={`px-6 ${Typography.size.sm} ${Typography.weight.normal} leading-6 text-gray-700 dark:text-gray-400 min-h-[110px]`}
-        >
+        <p className="px-6 text-p4 dark:text-text-text-and-icon min-h-[110px]">
           Connect a registry to scan images for vulnerabilities.
           <br></br>
           &nbsp;
         </p>
-        <div className="flex flex-col">
+        <div className="flex flex-col dark:text-text-text-and-icon">
           {connectors.map((connector) => {
             return (
-              <div
-                key={connector.path}
-                className={cx(
-                  'hover:bg-[linear-gradient(270deg,_#EBF5FF_-0.07%,_#FFFFFF_100%)]',
-                  'dark:hover:bg-[linear-gradient(270deg,_#1c2431_-0.07%,_#1f2937_100%)]',
-                )}
-              >
+              <div key={connector.path} className="dark:hover:bg-bg-hover-2">
                 <CardConnect {...connector} />
               </div>
             );
           })}
           {!showAll ? (
-            <Button
-              size="sm"
-              onClick={onShowAll}
-              className="bg-transparent hover:bg-transparent ml-3 mt-2"
-            >
+            <Button size="sm" onClick={onShowAll} className="ml-3 mt-2">
               +6 more
             </Button>
           ) : null}
