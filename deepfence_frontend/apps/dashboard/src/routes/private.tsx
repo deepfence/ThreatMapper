@@ -434,7 +434,7 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Most Exploitable Malwares' },
         children: [
           {
-            path: ':secretId',
+            path: ':malwareId',
             ...malwareDetails,
             meta: { title: 'Most Exploitable Malware Details' },
           },

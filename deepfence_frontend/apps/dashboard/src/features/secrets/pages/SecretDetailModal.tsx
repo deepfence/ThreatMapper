@@ -13,7 +13,7 @@ import {
 import { ModelSecret } from '@/api/generated/models/ModelSecret';
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
-import { CveCVSSScore, SeverityBadge } from '@/components/SeverityBadge';
+import { SeverityBadge } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
 import { queries } from '@/queries';
 import { usePageNavigation } from '@/utils/usePageNavigation';
@@ -21,22 +21,22 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 function useGetSecretDetails() {
   const { secretId } = useParams();
   return useSuspenseQuery({
-    ...queries.secret.secret({
-      id: secretId ?? '',
+    ...queries.lookup.secrets({
+      secretIds: [secretId ?? ''],
     }),
   });
 }
 
 const Header = () => {
   const {
-    data: { data },
+    data: { data: secrets },
   } = useGetSecretDetails();
-
+  const data = secrets.length ? secrets[0] : undefined;
   const { copy, isCopied } = useCopyToClipboardState();
 
   return (
     <SlidingModalHeader>
-      <div className="pt-5 px-5 dark:bg-[linear-gradient(to_bottom,_#15253e_96px,_transparent_0)]">
+      <div className="pt-5 px-5 pb-4 dark:bg-bg-breadcrumb-bar">
         <div className="flex items-center gap-2 dark:text-text-text-and-icon">
           <div className="h-4 w-4 shrink-0">
             <SecretsIcon />
@@ -45,18 +45,6 @@ const Header = () => {
         </div>
         <div className="mt-[18px] flex">
           <div className="px-4 flex flex-col gap-2">
-            <div className="dark:bg-bg-left-nav p-2 rounded flex flex-col gap-1">
-              <div className="text-p9 dark:text-text-text-and-icon whitespace-nowrap">
-                Severity score
-              </div>
-              <div>
-                <CveCVSSScore
-                  score={data?.score ?? 0}
-                  className="text-h1"
-                  iconClassName="h-9 w-9"
-                />
-              </div>
-            </div>
             <div>
               <SeverityBadge
                 className="w-full max-w-none"
@@ -78,14 +66,6 @@ const Header = () => {
                 {isCopied ? 'Copied JSON' : 'Copy JSON'}
               </Button>
             </div>
-            <div
-              className="mt-7 text-sm leading-5 dark:text-text-text-and-icon max-h-64 overflow-y-auto"
-              style={{
-                wordBreak: 'break-word',
-              }}
-            >
-              {data?.full_filename ?? '-'}
-            </div>
           </div>
         </div>
       </div>
@@ -93,12 +73,16 @@ const Header = () => {
   );
 };
 
+function processLabel(labelKey: string) {
+  return labelKey.replaceAll('_', ' ').replaceAll('id', 'ID');
+}
+
 const DetailsComponent = () => {
   const {
-    data: { data: secret },
+    data: { data: secrets },
   } = useGetSecretDetails();
 
-  if (!secret) {
+  if (!secrets.length) {
     return (
       <div className="flex items-center p-4 justify-center">
         <h3 className="text-p1">No details found</h3>
@@ -106,7 +90,9 @@ const DetailsComponent = () => {
     );
   }
 
-  const omitFields: (keyof ModelSecret)[] = ['name', 'full_filename', 'level', 'score'];
+  const secret = secrets[0];
+
+  const omitFields: (keyof ModelSecret)[] = ['name', 'level', 'score'];
 
   return (
     <div className="flex flex-wrap gap-y-[30px] gap-x-[14px]">
@@ -116,13 +102,23 @@ const DetailsComponent = () => {
           return true;
         })
         .map((key) => {
-          const label = key.replaceAll('_', ' ');
+          const label = processLabel(key);
           const value = (secret ?? {})[key as keyof ModelSecret];
+          let valueAsStr = '-';
+          if (Array.isArray(value)) {
+            valueAsStr = value.length ? value.join(', ') : '-';
+          } else if (typeof value === 'string') {
+            valueAsStr = value?.length ? value : '-';
+          } else {
+            valueAsStr = String(value);
+          }
           return (
             <div key={key} className="flex flex-col grow basis-[45%] max-w-full gap-1">
-              <div className="text-p3 dark:text-text-text-and-icon">{label}</div>
-              <div className="text-p1 dark:text-text-input-value">
-                {String(value).length ? String(value) : '-'}
+              <div className="text-p3 dark:text-text-text-and-icon first-letter:capitalize">
+                {label}
+              </div>
+              <div className="text-p1 dark:text-text-input-value break-words">
+                {valueAsStr}
               </div>
             </div>
           );
