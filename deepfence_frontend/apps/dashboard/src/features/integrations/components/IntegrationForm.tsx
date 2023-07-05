@@ -7,7 +7,6 @@ import { SearchableClusterList } from '@/components/forms/SearchableClusterList'
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
 import { SearchableImageList } from '@/components/forms/SearchableImageList';
-import { CaretDown } from '@/components/icons/common/CaretDown';
 import { ScanTypeEnum } from '@/types/common';
 
 import {
@@ -328,7 +327,7 @@ export const IntegrationForm = ({
               color={fieldErrors?.url ? 'error' : 'default'}
             />
             <TextInputType
-              name="authorizationKey"
+              name="auth_header"
               label="Authorization key"
               helperText={fieldErrors?.auth_key}
               color={fieldErrors?.auth_key ? 'error' : 'default'}
@@ -561,7 +560,9 @@ export const IntegrationForm = ({
           hidden
           value={ActionEnumType.ADD}
         />
-        {data?.message && <p className="text-red-500 text-sm">{data.message}</p>}
+        {data?.message && (
+          <p className="dark:text-status-error text-p7">{data.message}</p>
+        )}
       </div>
       <div className="mt-14 flex gap-x-2">
         <Button size="md" color="default" type="submit">

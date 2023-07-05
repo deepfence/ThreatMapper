@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActionFunctionArgs, Form } from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   Button,
@@ -14,6 +14,7 @@ import {
 
 import { getReportsApiClient } from '@/api/api';
 import {
+  ApiDocsBadRequestResponse,
   ModelGenerateReportReqDurationEnum,
   ModelGenerateReportReqReportTypeEnum,
   UtilsReportFiltersNodeTypeEnum,
@@ -41,6 +42,7 @@ export const DURATION: { [k: string]: ModelGenerateReportReqDurationEnum } = {
 export type ActionData = {
   message?: string;
   success?: boolean;
+  fieldErrors?: Record<string, string>;
 } | null;
 const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   const formData = await request.formData();
@@ -173,9 +175,11 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionData> => {
   });
   if (!r.ok) {
     if (r.error.response.status === 400) {
+      const modelResponse: ApiDocsBadRequestResponse = await r.error.response.json();
       return {
-        message: r.error.message || 'Error in adding integrations',
         success: false,
+        message: modelResponse.message ?? '',
+        fieldErrors: modelResponse.error_fields ?? {},
       };
     }
   }
@@ -203,11 +207,18 @@ const ReportForm = () => {
   const [deadNodes, setIncludeDeadNodes] = useState(false);
 
   const { navigate } = usePageNavigation();
+
+  const fetcher = useFetcher<ActionData>();
+  const { data } = fetcher;
+  const fieldErrors = data?.fieldErrors ?? {};
+
   return (
-    <Form method="post" className="m-4">
+    <fetcher.Form method="post" className="m-4">
       <input type="text" name="_actionType" readOnly hidden value={ActionEnumType.ADD} />
       <div className="gap-y-8 grid grid-cols-2 auto-rows-auto gap-x-8">
         <Listbox
+          helperText={fieldErrors?.scan_type}
+          color={fieldErrors?.scan_type ? 'error' : 'default'}
           variant="underline"
           label="Select Resource"
           value={resource}
@@ -247,7 +258,12 @@ const ReportForm = () => {
         ) : null}
 
         {resource !== 'CloudCompliance' && resource !== 'Compliance' ? (
-          <CommonForm setProvider={setProvider} resource={resource} provider={provider} />
+          <CommonForm
+            setProvider={setProvider}
+            resource={resource}
+            provider={provider}
+            fieldErrors={fieldErrors}
+          />
         ) : null}
 
         <Listbox
@@ -283,6 +299,8 @@ const ReportForm = () => {
         />
 
         <Listbox
+          helperText={fieldErrors?.report_type}
+          color={fieldErrors?.report_type ? 'error' : 'default'}
           variant="underline"
           label="Select Download Type"
           value={downloadType}
@@ -337,7 +355,7 @@ const ReportForm = () => {
           Cancel
         </Button>
       </div>
-    </Form>
+    </fetcher.Form>
   );
 };
 const CreateReport = () => {

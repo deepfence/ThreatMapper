@@ -8,10 +8,12 @@ export const CommonForm = ({
   setProvider,
   resource,
   provider,
+  fieldErrors,
 }: {
   setProvider: React.Dispatch<React.SetStateAction<string>>;
   resource: string;
   provider: string;
+  fieldErrors: Record<string, string>;
 }) => {
   const [severity, setSeverity] = useState<string[]>([]);
 
@@ -26,6 +28,8 @@ export const CommonForm = ({
   return (
     <>
       <Listbox
+        helperText={fieldErrors?.node_type}
+        color={fieldErrors?.node_type ? 'error' : 'default'}
         variant="underline"
         label="Select Node Type"
         value={provider}

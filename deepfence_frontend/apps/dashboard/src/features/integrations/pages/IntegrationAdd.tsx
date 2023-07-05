@@ -78,7 +78,7 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
     case IntegrationType.httpEndpoint:
       return {
         url: formBody.apiUrl,
-        auth_key: formBody.authorizationKey,
+        auth_header: formBody.authorizationKey,
       };
     case IntegrationType.email:
       return {
@@ -174,21 +174,6 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
   }
 
   if (_actionType === ActionEnumType.ADD) {
-    if (!_integrationType) {
-      console.warn('Integration Type is required');
-      return {
-        message: 'Integration Type is required',
-      };
-    }
-    if (!_notificationType) {
-      return {
-        message: 'Notification Type is required',
-        fieldErrors: {
-          _notificationType: 'Notification Type is required',
-        },
-      };
-    }
-
     if (_notificationType === 'CloudTrail Alert') {
       _notificationType = 'CloudTrailAlert';
     } else if (_notificationType === 'User Activities') {
@@ -298,8 +283,8 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       const filters = _filters.fields_filters.contains_filter.filter_in;
       const newFilter = {
         ...filters,
-        [severityMap[_notificationType] || 'severity']: severityFilter.map((severity) =>
-          severity.toLowerCase(),
+        [severityMap[_notificationType ?? ''] || 'severity']: severityFilter.map(
+          (severity) => severity.toLowerCase(),
         ),
       };
       _filters.fields_filters.contains_filter.filter_in = newFilter;

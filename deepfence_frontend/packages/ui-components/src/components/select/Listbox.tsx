@@ -15,7 +15,7 @@ import { cn } from 'tailwind-preset';
 
 import HelperText from '@/components/input/HelperText';
 import { Badge, Checkbox, Separator } from '@/main';
-export type ColorType = 'default';
+export type ColorType = 'default' | 'error';
 
 const ListboxContext = createContext<{
   multiple: boolean;
@@ -58,6 +58,7 @@ const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[7px] px-3
   variants: {
     color: {
       default: [defaultStyle],
+      error: '',
     },
     variant: {
       underline: '',
@@ -72,6 +73,14 @@ const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[7px] px-3
       variant: 'underline',
       color: 'default',
       className: defaultUnderlineStyle,
+    },
+    {
+      variant: 'underline',
+      color: 'error',
+      className: cn(
+        defaultUnderlineStyle,
+        'df-error data-[headlessui-state=open]:dark:border-b-[#f55b47] dark:focus:border-b-[#f55b47] dark:border-b-[#f55b47]',
+      ),
     },
   ],
 });
