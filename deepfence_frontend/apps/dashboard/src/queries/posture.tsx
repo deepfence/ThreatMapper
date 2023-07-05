@@ -396,47 +396,6 @@ export const postureQueries = createQueryKeys('posture', {
       },
     };
   },
-  posture: (filters: { id: string }) => {
-    const { id } = filters;
-    return {
-      queryKey: [filters],
-      queryFn: async () => {
-        const searchCompliancesApi = apiWrapper({
-          fn: getLookupApiClient().lookupPostures,
-        });
-        const searchCompliancesResponse = await searchCompliancesApi({
-          lookupLookupFilter: {
-            in_field_filter: [],
-            node_ids: [id],
-            window: {
-              offset: 0,
-              size: 1,
-            },
-          },
-        });
-        if (!searchCompliancesResponse.ok) {
-          console.error(searchCompliancesResponse.error);
-          return {
-            data: undefined,
-            message: 'Error getting the compliance details',
-          };
-        }
-
-        if (
-          searchCompliancesResponse.value === null ||
-          searchCompliancesResponse.value.length === 0
-        ) {
-          return {
-            data: undefined,
-            message: 'Error finding the compliance details',
-          };
-        }
-        return {
-          data: searchCompliancesResponse.value[0],
-        };
-      },
-    };
-  },
   postureCloudScanResults: (filters: {
     scanId: string;
     page?: number;
@@ -614,47 +573,6 @@ export const postureQueries = createQueryKeys('posture', {
               totalRows: page * pageSize + resultCounts.value.count,
             },
           },
-        };
-      },
-    };
-  },
-  postureClouds: (filters: { complianceId: string }) => {
-    const { complianceId } = filters;
-    return {
-      queryKey: [filters],
-      queryFn: async () => {
-        const lookupCloudCompliancesApi = apiWrapper({
-          fn: getLookupApiClient().lookupCloudPostures,
-        });
-        const lookupCompliancesResponse = await lookupCloudCompliancesApi({
-          lookupLookupFilter: {
-            in_field_filter: [],
-            node_ids: [complianceId],
-            window: {
-              offset: 0,
-              size: 1,
-            },
-          },
-        });
-        if (!lookupCompliancesResponse.ok) {
-          console.error(lookupCompliancesResponse.error);
-          return {
-            data: undefined,
-            message: 'Error getting the compliance details',
-          };
-        }
-
-        if (
-          lookupCompliancesResponse.value === null ||
-          lookupCompliancesResponse.value.length === 0
-        ) {
-          return {
-            data: undefined,
-            message: 'Error finding the compliance details',
-          };
-        }
-        return {
-          data: lookupCompliancesResponse.value[0],
         };
       },
     };
