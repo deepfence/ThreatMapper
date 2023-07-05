@@ -18,6 +18,7 @@ import {
 
 import { getIntegrationApiClient } from '@/api/api';
 import {
+  ApiDocsBadRequestResponse,
   ModelIntegrationListResp,
   ModelNodeIdentifier,
   ModelNodeIdentifierNodeTypeEnum,
@@ -27,7 +28,7 @@ import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLi
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { integrationTypeToNameMapping } from '@/features/integrations/pages/Integrations';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { queries } from '@/queries';
+import { invalidateAllQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 
 import { IntegrationForm, IntegrationType } from '../components/IntegrationForm';
@@ -104,12 +105,21 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
         url: formBody.url,
         auth_header: formBody.authKey,
       };
-    case IntegrationType.awsSecurityHub:
+    case IntegrationType.awsSecurityHub: {
+      const selectedAccountsLength = Number(formData.get('selectedCloudAccountsLength'));
+      const accounts = [];
+      if (selectedAccountsLength > 0) {
+        for (let i = 0; i < selectedAccountsLength; i++) {
+          accounts.push(formData.get(`cloudAccountsFilter[${i}]`) as string);
+        }
+      }
       return {
         aws_access_key: formBody.accessKey,
         aws_secret_key: formBody.secretKey,
         aws_region: formBody.region,
+        aws_account_ids: accounts,
       };
+    }
     case IntegrationType.jira: {
       const authTypeRadio = formBody.authTypeRadio;
       if (authTypeRadio === 'apiToken') {
@@ -148,6 +158,7 @@ const getConfigBodyNotificationType = (formData: FormData, integrationType: stri
 type ActionData = {
   message?: string;
   deleteSuccess?: boolean;
+  fieldErrors?: Record<string, string>;
 } | null;
 
 const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionData> => {
@@ -164,6 +175,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
 
   if (_actionType === ActionEnumType.ADD) {
     if (!_integrationType) {
+      console.warn('Integration Type is required');
       return {
         message: 'Integration Type is required',
       };
@@ -171,6 +183,9 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
     if (!_notificationType) {
       return {
         message: 'Notification Type is required',
+        fieldErrors: {
+          _notificationType: 'Notification Type is required',
+        },
       };
     }
 
@@ -302,7 +317,6 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
     }
 
     _filters.node_ids = nodeIds;
-
     const addIntegrationApi = apiWrapper({
       fn: getIntegrationApiClient().addIntegration,
     });
@@ -316,8 +330,10 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
     });
     if (!r.ok) {
       if (r.error.response.status === 400) {
+        const modelResponse: ApiDocsBadRequestResponse = await r.error.response.json();
         return {
-          message: r.error.message ?? '',
+          message: modelResponse.message ?? '',
+          fieldErrors: modelResponse.error_fields ?? {},
         };
       } else if (r.error.response.status === 403) {
         return {
@@ -352,6 +368,8 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       deleteSuccess: true,
     };
   }
+
+  invalidateAllQueries();
 
   return null;
 };

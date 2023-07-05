@@ -15,6 +15,7 @@ import { SlackIcon } from '@/components/icons/integration/Slack';
 import { SplunkIcon } from '@/components/icons/integration/Splunk';
 import { SumoLogicIcon } from '@/components/icons/integration/SumoLogic';
 import { TeamsIcon } from '@/components/icons/integration/Teams';
+import { AmazonECRRegistryIcon } from '@/components/icons/registries/AmazonEcr';
 import { IntegrationsIcon } from '@/components/sideNavigation/icons/Integrations';
 import { IntegrationType } from '@/features/integrations/components/IntegrationForm';
 import { useGetReports } from '@/features/integrations/pages/DownloadReport';
@@ -107,12 +108,12 @@ const IntegrationsData = [
         icon: <GoogleChronicleIcon />,
         path: '/integrations/seim/add/googlechronicle',
       },
-      // {
-      //   name: integrationTypeToNameMapping[IntegrationType.awsSecurityHub],
-      //   id: IntegrationType.awsSecurityHub,
-      //   icon: <img src={AwsSecurityHub} alt="AwsSecurityHub Logo" />,
-      //   path: '/integrations/seim/add/aws_security_hub',
-      // },
+      {
+        name: integrationTypeToNameMapping[IntegrationType.awsSecurityHub],
+        id: IntegrationType.awsSecurityHub,
+        icon: <AmazonECRRegistryIcon />,
+        path: '/integrations/seim/add/aws_security_hub',
+      },
     ],
   },
   {

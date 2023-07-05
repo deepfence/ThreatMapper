@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useFetcher, useParams } from 'react-router-dom';
 import { Button, Listbox, ListboxOption, Radio, TextInput } from 'ui-components';
 
+import { SearchableCloudAccountsList } from '@/components/forms/SearchableCloudAccountsList';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableContainerList } from '@/components/forms/SearchableContainerList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
@@ -58,7 +59,17 @@ export const IntegrationType = {
 //   IntegrationType.awsSecurityHub,
 // ];
 
-const TextInputType = ({ label, name }: { label: string; name: string }) => {
+const TextInputType = ({
+  label,
+  name,
+  helperText,
+  color,
+}: {
+  label: string;
+  name: string;
+  helperText: string;
+  color: 'error' | 'default';
+}) => {
   return (
     <TextInput
       className="w-full"
@@ -66,6 +77,8 @@ const TextInputType = ({ label, name }: { label: string; name: string }) => {
       type={'text'}
       name={name}
       placeholder={label}
+      helperText={helperText}
+      color={color}
     />
   );
 };
@@ -174,7 +187,7 @@ const AdvancedFilters = ({ notificationType }: { notificationType: string }) => 
   );
 };
 
-const NotificationType = () => {
+const NotificationType = ({ fieldErrors }: { fieldErrors?: Record<string, string> }) => {
   const [notificationType, setNotificationType] = useState<ScanTypeEnum | string>('');
 
   const { integrationType } = useParams() as {
@@ -227,7 +240,12 @@ const NotificationType = () => {
 
       {isUserActivityNotification(notificationType) && (
         <div className="mt-3">
-          <TextInputType name="interval" label="Enter interval" />
+          <TextInputType
+            name="interval"
+            label="Enter interval"
+            helperText={fieldErrors?.interval ?? ''}
+            color={fieldErrors?.interval ? 'error' : 'default'}
+          />
         </div>
       )}
 
@@ -255,92 +273,204 @@ export const IntegrationForm = ({
 }: IntegrationTypeProps) => {
   const fetcher = useFetcher<{
     message: string;
+    fieldErrors?: Record<string, string>;
   }>();
-  const { state, data } = fetcher;
+  const { data } = fetcher;
+  const fieldErrors = data?.fieldErrors ?? {};
 
   // for jira
   const [authType, setAuthType] = useState('apiToken');
 
+  // for aws security hub
+  const [awsAccounts, setAccounts] = useState<string[]>([]);
+
   return (
-    <fetcher.Form method="post" className="m-4">
+    <fetcher.Form method="post" className="m-4 overflow-y-auto">
       <div className="grid grid-cols-2 relative gap-y-8 gap-x-8">
         {integrationType === IntegrationType.slack && (
           <>
-            <TextInputType name="url" label="Webhook Url" />
-            <TextInputType name="channelName" label="Channel Name" />
+            <TextInputType
+              name="url"
+              label="Webhook Url"
+              helperText={fieldErrors?.webhook_url}
+              color={fieldErrors?.webhook_url ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="channelName"
+              label="Channel Name"
+              helperText={fieldErrors?.channel}
+              color={fieldErrors?.channel ? 'error' : 'default'}
+            />
           </>
         )}
         {integrationType === IntegrationType.pagerDuty && (
           <>
-            <TextInputType name="integrationKey" label="Integration key" />
-            <TextInputType name="apiKey" label="Api key" />
+            <TextInputType
+              name="integrationKey"
+              label="Integration key"
+              helperText={fieldErrors?.service_key}
+              color={fieldErrors?.service_key ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="apiKey"
+              label="Api key"
+              helperText={fieldErrors?.api_key}
+              color={fieldErrors?.api_key ? 'error' : 'default'}
+            />
           </>
         )}
         {integrationType === IntegrationType.email && (
           <>
-            <TextInputType name="email" label="Email id" />
+            <TextInputType
+              name="email"
+              label="Email id"
+              helperText={fieldErrors?.email_id}
+              color={fieldErrors?.email_id ? 'error' : 'default'}
+            />
           </>
         )}
         {integrationType === IntegrationType.httpEndpoint && (
           <>
-            <TextInputType name="apiUrl" label="API url" />
-            <TextInputType name="authorizationKey" label="Authorization key" />
+            <TextInputType
+              name="apiUrl"
+              label="API url"
+              helperText={fieldErrors?.url}
+              color={fieldErrors?.url ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="authorizationKey"
+              label="Authorization key"
+              helperText={fieldErrors?.auth_key}
+              color={fieldErrors?.auth_key ? 'error' : 'default'}
+            />
           </>
         )}
         {integrationType === IntegrationType.microsoftTeams && (
           <>
-            <TextInputType name="url" label="Webhook Url" />
+            <TextInputType
+              name="url"
+              label="Webhook Url"
+              helperText={fieldErrors?.webhook_url}
+              color={fieldErrors?.webhook_url ? 'error' : 'default'}
+            />
           </>
         )}
 
         {integrationType === IntegrationType.splunk && (
           <>
-            <TextInputType name="url" label="Endpoint Url" />
-            <TextInputType name="token" label="Receiver Token" />
+            <TextInputType
+              name="url"
+              label="Endpoint Url"
+              helperText={fieldErrors?.url}
+              color={fieldErrors?.url ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="token"
+              label="Receiver Token"
+              helperText={fieldErrors?.token}
+              color={fieldErrors?.token ? 'error' : 'default'}
+            />
           </>
         )}
 
         {integrationType === IntegrationType.sumoLogic && (
           <>
-            <TextInputType name="url" label="Endpoint Url" />
+            <TextInputType
+              name="url"
+              label="Endpoint Url"
+              helperText={fieldErrors?.url}
+              color={fieldErrors?.url ? 'error' : 'default'}
+            />
           </>
         )}
 
         {integrationType === IntegrationType.elasticsearch && (
           <>
-            <TextInputType name="url" label="Endpoint Url" />
-            <TextInputType name="index" label="Index" />
-            <TextInputType name="docType" label="Doc Type" />
-            <TextInputType name="authKey" label="Auth Key" />
+            <TextInputType
+              name="url"
+              label="Endpoint Url"
+              helperText={fieldErrors?.url}
+              color={fieldErrors?.url ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="index"
+              label="Index"
+              helperText={fieldErrors?.index}
+              color={fieldErrors?.index ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="docType"
+              label="Doc Type"
+              helperText={fieldErrors?.doc_type}
+              color={fieldErrors?.doc_type ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="authKey"
+              label="Auth Key"
+              helperText={fieldErrors?.auth_key}
+              color={fieldErrors?.auth_key ? 'error' : 'default'}
+            />
           </>
         )}
 
         {integrationType === IntegrationType.googleChronicle && (
           <>
-            <TextInputType name="url" label="Api Url" />
-            <TextInputType name="authKey" label="Auth Key" />
-          </>
-        )}
-
-        {integrationType === IntegrationType.httpEndpoint && (
-          <>
-            <TextInputType name="accessKey" label="Access Key" />
-            <TextInputType name="secretKey" label="Secret Key" />
-            <TextInputType name="region" label="Region" />
+            <TextInputType
+              name="url"
+              label="Api Url"
+              helperText={fieldErrors?.url}
+              color={fieldErrors?.url ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="authKey"
+              label="Auth Key"
+              helperText={fieldErrors?.auth_key}
+              color={fieldErrors?.auth_key ? 'error' : 'default'}
+            />
           </>
         )}
 
         {integrationType === IntegrationType.awsSecurityHub && (
           <>
-            <TextInputType name="accessKey" label="Access Key" />
-            <TextInputType name="secretKey" label="Secret Key" />
-            <TextInputType name="region" label="Region" />
+            <TextInputType
+              name="accessKey"
+              label="Access Key"
+              helperText={fieldErrors?.aws_access_key}
+              color={fieldErrors?.aws_access_key ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="secretKey"
+              label="Secret Key"
+              helperText={fieldErrors?.aws_secret_key}
+              color={fieldErrors?.aws_secret_key ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="region"
+              label="Region"
+              helperText={fieldErrors?.aws_region}
+              color={fieldErrors?.aws_region ? 'error' : 'default'}
+            />
+            <SearchableCloudAccountsList
+              defaultSelectedAccounts={awsAccounts}
+              cloudProvider="aws"
+              onClearAll={() => {
+                setAccounts([]);
+              }}
+              onChange={(value) => {
+                setAccounts(value);
+              }}
+            />
           </>
         )}
 
         {integrationType === IntegrationType.jira && (
           <>
-            <TextInputType name="url" label="Endpoint Url" />
+            <TextInputType
+              name="url"
+              label="Endpoint Url"
+              helperText={fieldErrors?.url}
+              color={fieldErrors?.url ? 'error' : 'default'}
+            />
             <Radio
               name="authTypeRadio"
               direction="row"
@@ -362,21 +492,72 @@ export const IntegrationForm = ({
             <TextInputType
               name="authType"
               label={authType === 'password' ? 'Password' : 'Token'}
+              helperText={
+                authType === 'password' ? fieldErrors?.password : fieldErrors?.api_token
+              }
+              color={
+                fieldErrors?.password || fieldErrors?.api_token ? 'error' : 'default'
+              }
             />
-            <TextInputType name="email" label="Email" />
-            <TextInputType name="accessKey" label="Project Key" />
-            <TextInputType name="task" label="Task Name" />
-            <TextInputType name="assigne" label="Assigne" />
+            <TextInputType
+              name="email"
+              label="Email"
+              helperText={fieldErrors?.username}
+              color={fieldErrors?.username ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="accessKey"
+              label="Project Key"
+              helperText={fieldErrors?.jira_project_key}
+              color={fieldErrors?.jira_project_key ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="task"
+              label="Task Name"
+              helperText={fieldErrors?.issue_type}
+              color={fieldErrors?.issue_type ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="assigne"
+              label="Assigne"
+              helperText={fieldErrors?.jira_assignee}
+              color={fieldErrors?.jira_assignee ? 'error' : 'default'}
+            />
           </>
         )}
 
         {integrationType === IntegrationType.s3 && (
           <>
-            <TextInputType name="name" label="Bucket Name" />
-            <TextInputType name="folder" label={'Folder'} />
-            <TextInputType name="accessKey" label="Access Key" />
-            <TextInputType name="secretKey" label="Secret Key" />
-            <TextInputType name="region" label="Region" />
+            <TextInputType
+              name="name"
+              label="Bucket Name"
+              helperText={fieldErrors?.s3_bucket_name}
+              color={fieldErrors?.s3_bucket_name ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="folder"
+              label={'Folder'}
+              helperText={fieldErrors?.aws_access_key}
+              color={fieldErrors?.s3_folaws_access_keyder_name ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="accessKey"
+              label="Access Key"
+              helperText={fieldErrors?.jira_assignee}
+              color={fieldErrors?.jira_assignee ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="secretKey"
+              label="Secret Key"
+              helperText={fieldErrors?.aws_secret_key}
+              color={fieldErrors?.aws_secret_key ? 'error' : 'default'}
+            />
+            <TextInputType
+              name="region"
+              label="Region"
+              helperText={fieldErrors?.aws_region}
+              color={fieldErrors?.aws_region ? 'error' : 'default'}
+            />
           </>
         )}
 
