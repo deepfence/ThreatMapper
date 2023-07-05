@@ -325,7 +325,7 @@ const ReportForm = () => {
 
       <div className="mt-14 flex gap-x-2">
         <Button size="md" color="default" type="submit">
-          Create Report
+          Create
         </Button>
         <Button
           type="button"
