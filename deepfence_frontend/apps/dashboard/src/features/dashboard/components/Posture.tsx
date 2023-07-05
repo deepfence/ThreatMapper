@@ -1,125 +1,88 @@
-import cx from 'classnames';
+import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense } from 'react';
-import { HiOutlineChevronRight } from 'react-icons/hi';
-import { useLoaderData } from 'react-router-dom';
-import { Card, Separator } from 'ui-components';
+import { Card, CircleSpinner } from 'ui-components';
 
-import { LinkButton } from '@/components/LinkButton';
+import { ModelPostureProvider } from '@/api/generated';
+import { ComplianceIconByPercent, PostureLogos } from '@/components/icons/posture';
 import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
-import { getPostureLogo } from '@/constants/logos';
-import { DashboardLoaderData } from '@/features/dashboard/pages/Dashboard';
+import { getColorForCompliancePercent } from '@/constants/charts';
+import { CardHeader } from '@/features/dashboard/components/CardHeader';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
-import { useTheme } from '@/theme/ThemeContext';
-import { abbreviateNumber, formatPercentage } from '@/utils/number';
-import { DFAwait } from '@/utils/suspense';
+import { queries } from '@/queries';
+import { formatPercentage } from '@/utils/number';
 
-export const PostureStatSkeleton = () => {
+function usePostureSummary() {
+  return useSuspenseQuery({
+    ...queries.posture.postureSummary(),
+  });
+}
+
+export const Posture = () => {
   return (
-    <div className={cx('flex flex-col py-4 gap-1 dark:border-gray-700')}>
-      <div className="bg-gray-200 dark:bg-gray-600 h-6 animate-pulse w-2/3" />
-      <div className="flex items-center gap-x-4">
-        <div className="w-10 h-10 mr-2 bg-gray-200 dark:bg-gray-600 animate-pulse rounded-full" />
-        <div className="flex gap-x-6">
-          {[1, 2].map((k) => (
-            <div key={k} className="flex flex-col gap-1">
-              <span className="h-7 bg-gray-200 dark:bg-gray-600 animate-pulse w-8" />
-              <span className="h-4 bg-gray-200 dark:bg-gray-600 animate-pulse w-16" />
+    <Card className="rounded-[5px] flex flex-col h-full">
+      <CardHeader icon={<PostureIcon />} title="Posture" link="/posture" />
+      <div className="flex-1">
+        <Suspense
+          fallback={
+            <div className="flex h-full w-full items-center justify-center">
+              <CircleSpinner size="md" />
             </div>
-          ))}
-        </div>
+          }
+        >
+          <PostureCardContent />
+        </Suspense>
       </div>
+    </Card>
+  );
+};
+
+const PostureCardContent = () => {
+  const { data } = usePostureSummary();
+
+  return (
+    <div className="h-full w-full grid grid-cols-3 p-4 gap-4">
+      {data.providers?.map((provider) => {
+        return <PostureCardItem key={provider.name} provider={provider} />;
+      })}
     </div>
   );
 };
 
-export const Posture = () => {
-  const loaderData = useLoaderData() as DashboardLoaderData;
-  const { mode } = useTheme();
+const PostureCardItem = ({ provider }: { provider: ModelPostureProvider }) => {
+  const isScanned = provider.scan_count && provider.scan_count >= 0;
   return (
-    <Card className="p-2">
-      <div className="flex flex-row items-center gap-2 pb-2">
-        <div className="w-5 h-5 text-blue-700 dark:text-blue-300">
-          <PostureIcon />
-        </div>
-        <h4 className="text-base font-medium">Posture</h4>
-        <div className="flex ml-auto">
-          <LinkButton to={'/posture'} sizing="xs">
-            <>
-              Go to Posture Dashboard&nbsp;
-              <HiOutlineChevronRight />
-            </>
-          </LinkButton>
+    <div className="dark:bg-bg-side-panel rounded-[5px] flex" key={provider.name}>
+      <div className="flex items-center justify-center p-3">
+        <div className="h-[60px] w-[60px] shrink-0 dark:bg-bg-breadcrumb-bar rounded-full flex items-center justify-center">
+          <PostureLogos name={provider.name ?? ''} />
         </div>
       </div>
-      <Separator />
-      <div className="px-4">
-        <Suspense
-          fallback={
-            <div className="grid grid-cols-2 gap-4">
-              {[1, 2, 3, 4, 5, 6].map((idx) => {
-                return <PostureStatSkeleton key={idx} />;
-              })}
-            </div>
-          }
+      <div className="flex flex-col gap-1">
+        <div className="py-2 text-t5 uppercase dark:text-text-input-value">
+          {providersToNameMapping[provider.name ?? '']}
+        </div>
+        <div
+          className="flex items-center gap-2"
+          style={{
+            color: getColorForCompliancePercent(
+              isScanned ? provider.compliance_percentage : null,
+            ),
+          }}
         >
-          <DFAwait resolve={loaderData.cloudProviders}>
-            {(data: DashboardLoaderData['cloudProviders']) => {
-              return (
-                <>
-                  <div className="grid grid-cols-2 gap-4">
-                    {data.providers?.slice(0, 6).map((provider) => {
-                      const providerName = provider.name ?? '';
-                      const { icon } = getPostureLogo(providerName, mode);
-                      return (
-                        <div
-                          key={providerName}
-                          className={cx('flex flex-col py-4 gap-1 dark:border-gray-700')}
-                        >
-                          <h4 className="text-gray-500 dark:text-gray-400 text-sm font-normal">
-                            {providersToNameMapping[providerName]}
-                          </h4>
-                          <div className="flex items-center gap-x-4">
-                            <div className="flex items-center basis-10 shrink-0 mr-2">
-                              <img src={icon} alt="logo" />
-                            </div>
-                            <div className="flex gap-x-6">
-                              <div className="flex flex-col gap-1">
-                                <span className="text-2xl text-gray-900 dark:text-gray-200 font-light">
-                                  {abbreviateNumber(provider.node_count ?? 0)}
-                                </span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  Accounts
-                                </span>
-                              </div>
-                              <div className="flex flex-col gap-1">
-                                <span className="text-2xl text-gray-900 dark:text-gray-200 font-light">
-                                  {formatPercentage(provider.compliance_percentage ?? 0, {
-                                    maximumFractionDigits: 1,
-                                  })}
-                                </span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  Compliance
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {(data.providers?.length ?? 0) > 6 && (
-                    <div className="flex justify-center mt-4">
-                      <LinkButton to={'/posture'} sizing="xs">
-                        +{(data.providers?.length ?? 0) - 6} More
-                      </LinkButton>
-                    </div>
-                  )}
-                </>
-              );
-            }}
-          </DFAwait>
-        </Suspense>
+          <div className="h-7 w-7 shrink-0">
+            <ComplianceIconByPercent
+              percent={isScanned ? provider.compliance_percentage : null}
+            />
+          </div>
+          <div className="text-h1">
+            {isScanned
+              ? `${formatPercentage(provider.compliance_percentage ?? 0, {
+                  maximumFractionDigits: 1,
+                })}`
+              : '-'}
+          </div>
+        </div>
       </div>
-    </Card>
+    </div>
   );
 };

@@ -50,10 +50,7 @@ import { module as malwareScanSumary } from '@/features/onboard/pages/MalwareSca
 import { module as scanInProgress } from '@/features/onboard/pages/ScanInProgress';
 import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanSummary';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
-import {
-  listControlsApiLoader,
-  toggleControlApiAction,
-} from '@/features/postures/data-component/listControlsApiLoader';
+import { toggleControlApiAction } from '@/features/postures/data-component/toggleControlApiAction';
 import { module as postureConnectorLayout } from '@/features/postures/layouts/PostureConnectorLayout';
 import { module as postureAddAccounts } from '@/features/postures/pages/AccountAdd';
 import { module as postureAccounts } from '@/features/postures/pages/Accounts';
@@ -626,7 +623,6 @@ export const privateRoutes: CustomRouteObject[] = [
       },
       {
         path: 'list/controls/:nodeType/:checkType',
-        loader: listControlsApiLoader,
         action: toggleControlApiAction,
       },
       {

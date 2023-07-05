@@ -115,9 +115,11 @@ const CardSectionIcon = ({ provider }: { provider: ModelPostureProvider }) => {
       </span>
       <div
         style={{
-          color: getColorForCompliancePercent(12),
+          color: getColorForCompliancePercent(provider.compliance_percentage),
         }}
-        className="my-1.5"
+        className={cn('my-1.5', {
+          'h-6 w-6 shrink-0': isScanned,
+        })}
       >
         {isScanned ? (
           <ComplianceIconByPercent percent={provider.compliance_percentage ?? 0} />
