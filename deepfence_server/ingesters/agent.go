@@ -690,6 +690,16 @@ func (nc *neo4jIngester) PushToDBSeq(batches ReportIngestionData, session neo4j.
 		UNWIND $batch as row
 		MATCH (n:Node{node_id: row.source})
 		MATCH (m:Node{node_id: row.destination})
+		MATCH (n)-[r:CONNECTS]->(m)
+		DELETE r`,
+		map[string]interface{}{"batch": batches.Endpoint_edges_batch}); err != nil {
+		return err
+	}
+
+	if _, err := tx.Run(`
+		UNWIND $batch as row
+		MATCH (n:Node{node_id: row.source})
+		MATCH (m:Node{node_id: row.destination})
 		MERGE (n)-[r:CONNECTS]->(m)
 		WITH n, r, m, row.pids as rpids
 		UNWIND rpids as pids
