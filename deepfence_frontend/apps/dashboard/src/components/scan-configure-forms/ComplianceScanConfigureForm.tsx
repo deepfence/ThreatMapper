@@ -461,9 +461,11 @@ export const ComplianceScanConfigureForm = ({
           >
             Start Scan
           </Button>
-          <Button type="button" variant="outline" onClick={() => onCancel?.()}>
-            Cancel
-          </Button>
+          {onCancel ? (
+            <Button type="button" variant="outline" onClick={() => onCancel?.()}>
+              Cancel
+            </Button>
+          ) : null}
         </div>
       </fetcher.Form>
     </>

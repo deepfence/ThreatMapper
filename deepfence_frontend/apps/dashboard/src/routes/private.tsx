@@ -35,10 +35,7 @@ import {
   ConnectorsLayout,
   connectorsLoader,
 } from '@/features/onboard/layouts/ConnectorsLayout';
-import {
-  OnboardLayout,
-  rootOnboardLoader,
-} from '@/features/onboard/layouts/OnboardLayout';
+import { OnboardLayout } from '@/features/onboard/layouts/OnboardLayout';
 import { module as chooseScan } from '@/features/onboard/pages/ChooseScan';
 import { module as complianceScanSummary } from '@/features/onboard/pages/ComplianceScanSummary';
 import { module as configureScanForm } from '@/features/onboard/pages/ConfigureScanForm';
@@ -97,10 +94,15 @@ import { CustomRouteObject } from '@/utils/router';
 export const privateRoutes: CustomRouteObject[] = [
   {
     path: '/onboard',
+    id: 'onboard',
     errorElement: <FiveZeroZero />,
     element: <OnboardLayout />,
-    loader: rootOnboardLoader,
+    loader: authenticatedRootLoader,
     children: [
+      {
+        index: true,
+        loader: () => redirect('/onboard/connectors', 302),
+      },
       {
         path: 'connectors',
         element: <ConnectorsLayout />,

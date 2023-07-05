@@ -31,7 +31,7 @@ const DeepfenceLogo = () => {
 
 export const OnboardAppHeader = () => {
   const fetcher = useFetcher();
-  const { email } = (useRouteLoaderData('root') as { email: string }) ?? {
+  const { email } = (useRouteLoaderData('onboard') as { email: string }) ?? {
     email: '',
   };
   const logout = () => {

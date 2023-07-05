@@ -4,6 +4,7 @@ import { QueryKey } from '@tanstack/react-query';
 import { queryClient } from '@/queries/client';
 import { lookupQueries } from '@/queries/lookup';
 import { malwareQueries } from '@/queries/malware';
+import { onboardQueries } from '@/queries/onboard';
 import { postureQueries } from '@/queries/posture';
 import { registryQueries } from '@/queries/registry';
 import { searchQueries } from '@/queries/search';
@@ -32,4 +33,5 @@ export const queries = mergeQueryKeys(
   postureQueries,
   lookupQueries,
   threatQueries,
+  onboardQueries,
 );
