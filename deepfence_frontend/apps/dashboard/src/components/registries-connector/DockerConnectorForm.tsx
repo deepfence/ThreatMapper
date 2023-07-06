@@ -21,7 +21,7 @@ sample request body
 export const DockerConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormProps) => {
   return (
     <>
-      <div className="text-p2 dark:text-text-input-value">
+      <div className="text-p7 dark:text-text-input-value">
         Connect to your Docker Registry by{' '}
         <DFLink
           href={`https://registry.terraform.io/modules/deepfence/cloud-scanner/gcp/latest/examples/single-project#usage`}

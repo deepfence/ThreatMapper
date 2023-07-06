@@ -42,7 +42,7 @@ export const OnboardAppHeader = () => {
   };
 
   return (
-    <div className="bg-white dark:bg-bg-page isolate h-[54px] fixed top-0 w-full">
+    <div className="bg-white dark:bg-bg-left-nav border-b dark:border-bg-top-header isolate h-[54px] fixed top-0 w-full">
       <div className="h-full flex items-center mx-16">
         <div className="mr-auto flex items-center">
           <span className="h-9 w-9 mr-3">

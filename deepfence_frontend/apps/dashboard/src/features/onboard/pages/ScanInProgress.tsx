@@ -153,6 +153,7 @@ const ScanStatus = () => {
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('node_type', {
+        enableSorting: true,
         cell: (info) => {
           return (
             <span className="capitalize">{info.getValue()?.replaceAll('_', ' ')}</span>
@@ -163,6 +164,7 @@ const ScanStatus = () => {
         size: 70,
       }),
       columnHelper.accessor('node_id', {
+        enableSorting: true,
         cell: (info) => <TruncatedText text={info.getValue()} />,
         header: () => 'Name',
         minSize: 125,
@@ -172,6 +174,7 @@ const ScanStatus = () => {
 
     columns.push(
       columnHelper.accessor((row) => row.status, {
+        enableSorting: true,
         id: 'status',
         minSize: 50,
         size: 70,
@@ -310,6 +313,7 @@ const ScanStatus = () => {
         <section className="mt-4 flex justify-center ">
           <div className="max-w-[900px]">
             <Table
+              enableSorting
               size="default"
               data={data.data ?? []}
               columns={columns}

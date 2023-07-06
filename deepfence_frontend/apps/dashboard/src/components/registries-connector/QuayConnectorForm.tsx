@@ -22,7 +22,7 @@ sample json
 export const QuayConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormProps) => {
   return (
     <>
-      <div className="text-p2 dark:text-text-input-value">
+      <div className="text-p4 dark:text-text-input-value">
         Using Certificate based Docker client Authentication? A custom certificate is
         configured by creating a directory under /etc/docker/certs.d on Deepfence console
         machine, using the same name as the registry&apos;s hostname provided above. All

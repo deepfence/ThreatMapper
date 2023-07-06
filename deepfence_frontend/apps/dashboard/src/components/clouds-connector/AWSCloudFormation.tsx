@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { HiArrowNarrowRight, HiViewGridAdd } from 'react-icons/hi';
 import { Link } from 'react-router-dom';
-import { Select, SelectItem, Step, Stepper, Typography } from 'ui-components';
+import { Listbox, ListboxOption, Step, Stepper } from 'ui-components';
+
+import { DFLink } from '@/components/DFLink';
+import { ArrowLine } from '@/components/icons/common/ArrowLine';
+import { InfoIcon } from '@/components/icons/common/Info';
 
 const AWS_REGIONS = [
   'us-east-1',
@@ -36,8 +39,15 @@ export const AWSCloudFormation = () => {
   return (
     <div className="w-full sm:w-1/2">
       <Stepper>
-        <Step indicator={<HiViewGridAdd />} title="Cloud Formation">
-          <div className={`${Typography.size.sm} dark:text-gray-200`}>
+        <Step
+          indicator={
+            <span className="w-4 h-4">
+              <InfoIcon />
+            </span>
+          }
+          title="Cloud Formation"
+        >
+          <div className="text-p7 dark:text-text-text-and-icon">
             Connect to your AWS Cloud Account via Cloud Formation. Find out more
             information by{' '}
             <Link to="/" className="text-blue-600 dark:text-blue-500">
@@ -48,50 +58,53 @@ export const AWSCloudFormation = () => {
         </Step>
         <Step indicator="1" title="Region Selection">
           <div className="w-1/2">
-            <Select
+            <Listbox
               value={region}
               name="region"
               onChange={(value) => {
                 setRegion(value);
               }}
               placeholder="Select a region"
-              sizing="xs"
+              getDisplayValue={() => {
+                return region;
+              }}
             >
               {AWS_REGIONS.map((region) => (
-                <SelectItem value={region} key={region} />
+                <ListboxOption value={region} key={region}>
+                  {region}
+                </ListboxOption>
               ))}
-            </Select>
+            </Listbox>
           </div>
         </Step>
         <Step indicator="2" title="Deploy">
-          <div className={`${Typography.size.sm} dark:text-gray-200`}>
+          <div className="text-p7 dark:text-text-text-and-icon">
             <p>
               Deploy all modules for Deepfence Posture Scanner for a single account. For
               information on AWS Organizations and account types, see AWS docs.
             </p>
-            <p className={`${Typography.size.sm} text-blue-600 dark:text-blue-500 mt-2`}>
-              <a
+            <p>
+              <DFLink
                 href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/create/review?templateURL=https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template&stackName=Deepfence-Cloud-Scanner`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center"
               >
                 Deploy on one AWS account
-                <HiArrowNarrowRight className="pl-1" />
-              </a>
+              </DFLink>
             </p>
-            <p className={`mt-2 ${Typography.size.sm} text-blue-600 dark:text-blue-500`}>
-              <a
+            <p className="mt-4">
+              <DFLink
                 href={`https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacksets/create`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center"
               >
-                Deploy on multiple AWS accounts <HiArrowNarrowRight className="pl-1" />
-              </a>
+                Deploy on multiple AWS accounts
+              </DFLink>
             </p>
-            <p className="mt-4 underline">
-              <a
+            <p className="mt-2 underline">
+              <DFLink
                 href={
                   'https://deepfence-public.s3.amazonaws.com/cloud-scanner/deepfence-cloud-scanner.template'
                 }
@@ -99,7 +112,7 @@ export const AWSCloudFormation = () => {
                 rel="noreferrer"
               >
                 You can refer the template from here.
-              </a>
+              </DFLink>
             </p>
           </div>
         </Step>

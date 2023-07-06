@@ -1,6 +1,5 @@
 import { cva, VariantProps } from 'cva';
 import { ComponentProps, forwardRef, useId } from 'react';
-import { IconContext } from 'react-icons';
 import { cn } from 'tailwind-preset';
 
 import { Loader } from '@/components/button/Button';
@@ -214,15 +213,13 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         {...props}
       >
         {icon && !loading && (
-          <IconContext.Provider
-            value={{
-              className: iconCva({
-                size,
-              }),
-            }}
+          <span
+            className={iconCva({
+              size,
+            })}
           >
             {icon}
-          </IconContext.Provider>
+          </span>
         )}
         {loading && (
           <div className="flex justify-center">

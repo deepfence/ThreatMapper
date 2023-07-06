@@ -1,17 +1,18 @@
-import cx from 'classnames';
-import { memo, useEffect, useMemo, useState } from 'react';
-import { HiViewGridAdd } from 'react-icons/hi';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Card,
-  Select,
-  SelectItem,
+  IconButton,
+  Listbox,
+  ListboxOption,
   Step,
   Stepper,
   TextInput,
-  Typography,
 } from 'ui-components';
 
-import { CopyToClipboard } from '@/components/CopyToClipboard';
+import { useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { DFLink } from '@/components/DFLink';
+import { CopyLineIcon } from '@/components/icons/common/CopyLine';
+import { InfoIcon } from '@/components/icons/common/Info';
 import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
 import { containsWhiteSpace } from '@/utils/validator';
 
@@ -139,7 +140,6 @@ ${sockCommand}="${_socketPath}" \\
           <TextInput
             label="Enter Cluster Name"
             type={'text'}
-            sizing="sm"
             name="clusterName"
             onChange={onClusterNameChange}
             value={clusterName}
@@ -149,7 +149,6 @@ ${sockCommand}="${_socketPath}" \\
           <TextInput
             label="Enter Namespace"
             type={'text'}
-            sizing="sm"
             name="namespace"
             onChange={onNamespaceChange}
             value={namespace}
@@ -158,41 +157,108 @@ ${sockCommand}="${_socketPath}" \\
       </div>
       <div className="grid grid-cols-2 mb-4">
         <div className="max-w-sm">
-          <Select
+          <Listbox
             value={containerRuntime}
-            name="region"
+            name="runtime"
             onChange={(value) => {
               setContainerRuntime(value);
               setSocketPath(socketMap[value].path || '');
             }}
             label="Select Container Runtime"
-            sizing="xs"
+            getDisplayValue={() => {
+              return containerRuntime;
+            }}
           >
             {containerRuntimeDropdown.map((runtime) => (
-              <SelectItem value={runtime.name} key={runtime.name} />
+              <ListboxOption value={runtime.name} key={runtime.name}>
+                {runtime.name}
+              </ListboxOption>
             ))}
-          </Select>
+          </Listbox>
         </div>
         <div className="max-w-sm">
           <TextInput
             label="Enter Socket Path"
             type={'text'}
-            sizing="sm"
             name="socketPath"
             value={socketPath}
             onChange={onSocketPathChange}
           />
         </div>
       </div>
-      <div className={`text-red-600 dark:text-red-500 ${Typography.size.sm}`}>
+      <div className="text-red-600 dark:text-status-error text-p7">
         {error && <span>{error}</span>}
       </div>
     </div>
   );
 };
 
+const FirstCommand = () => {
+  const { copy, isCopied } = useCopyToClipboardState();
+  return (
+    <div className="relative flex items-center">
+      <pre className="h-fit text-p7 dark:text-text-text-and-icon">
+        helm repo add deepfence
+        https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
+      </pre>
+      <div className="flex items-center ml-auto self-start">
+        {isCopied ? 'copied' : null}
+        <IconButton
+          className="dark:focus:outline-none"
+          icon={<CopyLineIcon />}
+          variant="flat"
+          onClick={() => {
+            copy(
+              'helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper',
+            );
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+const SecondCommand = () => {
+  const { copy, isCopied } = useCopyToClipboardState();
+  return (
+    <div className="relative flex items-center">
+      <pre className="h-fit text-p7 dark:text-text-text-and-icon">helm repo update</pre>
+      <div className="flex items-center ml-auto self-start">
+        {isCopied ? 'copied' : null}
+        <IconButton
+          className="dark:focus:outline-none"
+          icon={<CopyLineIcon />}
+          variant="flat"
+          onClick={() => {
+            copy('helm repo update');
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+const ThirdCommand = ({ command }: { command: string }) => {
+  const { copy, isCopied } = useCopyToClipboardState();
+  return (
+    <div className="relative flex items-center">
+      <pre className="h-fit text-p7 dark:text-text-text-and-icon">{command}</pre>
+      <div className="flex items-center ml-auto self-start">
+        {isCopied ? 'copied' : null}
+        <IconButton
+          className="dark:focus:outline-none"
+          icon={<CopyLineIcon />}
+          variant="flat"
+          onClick={() => {
+            copy(command);
+          }}
+        />
+      </div>
+    </div>
+  );
+};
 export const K8ConnectorForm = () => {
   const { status, data } = useGetApiToken();
+
   const dfApiKey =
     status !== 'idle'
       ? '---DEEPFENCE-API-KEY---'
@@ -218,79 +284,46 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
   return (
     <div className="w-full">
       <Stepper>
-        <Step indicator={<HiViewGridAdd />} title="Connect Kubernetes Cluster">
-          <div className={`${Typography.size.sm} dark:text-gray-200`}>
+        <Step
+          indicator={
+            <span className="w-4 h-4">
+              <InfoIcon />
+            </span>
+          }
+          title="Connect Kubernetes Cluster"
+        >
+          <div className="text-p7 dark:text-text-text-and-icon">
             Connect via Kubernetes Scanner. Find out more information by{' '}
-            <a
+            <DFLink
               href={`https://docs.deepfence.io/threatstryker/docs/sensors/kubernetes`}
               target="_blank"
               rel="noreferrer"
-              className="text-blue-600 dark:text-blue-500 mt-2"
+              className="mt-2"
             >
               reading our documentation
-            </a>
+            </DFLink>
             .
           </div>
         </Step>
         <Step indicator="1" title="Enter Information">
           <div>
-            <p className={`mb-2.5 ${Typography.size.sm} dark:text-gray-200`}>
-              Enter cluster information:
+            <p className="mb-2.5 text-p7 dark:text-text-text-and-icon">
+              Fill the following details:
             </p>
-            <Card className="w-full relative ">
+            <Card className="w-full relative">
               <InformationForm setInstruction={setInstruction} dfApiKey={dfApiKey} />
             </Card>
           </div>
         </Step>
         <Step indicator="2" title="Copy Code">
-          <div className={`${Typography.size.sm} dark:text-gray-400`}>
+          <div className="text-p7 dark:text-text-text-and-icon">
             <p className="mb-2.5">
               Copy the following commands and paste them into your shell.
             </p>
-            <Card className="w-full relative">
-              <div className="relative">
-                <pre
-                  className={cx(
-                    'pl-4 pt-4',
-                    'h-fit',
-                    `${Typography.weight.normal} ${Typography.size.xs} `,
-                  )}
-                >
-                  helm repo add deepfence
-                  https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
-                </pre>
-                <CopyToClipboard
-                  data={
-                    'helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper'
-                  }
-                  className="top-4"
-                  asIcon
-                />
-              </div>
-              <div className="relative">
-                <pre
-                  className={cx(
-                    'pl-4',
-                    'h-fit',
-                    `${Typography.weight.normal} ${Typography.size.xs} `,
-                  )}
-                >
-                  helm repo update
-                </pre>
-                <CopyToClipboard data={'helm repo update'} className="top-0" asIcon />
-              </div>
-              <div className="relative">
-                <pre
-                  className={cx(
-                    'pl-4',
-                    'h-fit',
-                    `${Typography.weight.normal} ${Typography.size.xs} `,
-                  )}
-                >
-                  {instruction}
-                </pre>
-                <CopyToClipboard data={instruction} className="top-0" asIcon />
-              </div>
+            <Card className="w-full relative p-4">
+              <FirstCommand />
+              <SecondCommand />
+              <ThirdCommand command={instruction} />
             </Card>
           </div>
         </Step>

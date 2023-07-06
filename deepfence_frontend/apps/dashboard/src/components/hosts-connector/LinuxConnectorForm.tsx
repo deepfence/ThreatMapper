@@ -1,12 +1,15 @@
-import cx from 'classnames';
-import { HiViewGridAdd } from 'react-icons/hi';
-import { Card, Step, Stepper, Typography } from 'ui-components';
+import { Card, IconButton, Step, Stepper } from 'ui-components';
 
-import { CopyToClipboard } from '@/components/CopyToClipboard';
+import { useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { DFLink } from '@/components/DFLink';
+import { CopyLineIcon } from '@/components/icons/common/CopyLine';
+import { InfoIcon } from '@/components/icons/common/Info';
 import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
 
 export const LinuxConnectorForm = () => {
   const { status, data } = useGetApiToken();
+  const { copy, isCopied } = useCopyToClipboardState();
+
   const dfApiKey =
     status !== 'idle'
       ? '---DEEPFENCE-API-KEY---'
@@ -14,8 +17,7 @@ export const LinuxConnectorForm = () => {
       ? '---DEEPFENCE-API-KEY---'
       : data?.api_token;
 
-  const code = `
-docker run -dit \\
+  const code = `docker run -dit \\
 --cpus=".2" \\
 --name=deepfence-agent \\
 --restart on-failure \\
@@ -33,36 +35,45 @@ deepfenceio/deepfence_agent_ce:latest`;
 
   return (
     <Stepper>
-      <Step indicator={<HiViewGridAdd />} title="Connect Linux VM">
-        <div className={`${Typography.size.sm} dark:text-gray-200`}>
+      <Step
+        indicator={
+          <span className="w-4 h-4">
+            <InfoIcon />
+          </span>
+        }
+        title="Connect Linux VM"
+      >
+        <div className="text-p7 dark:text-text-text-and-icon">
           Connect to Linux VM. Find out more information by{' '}
-          <a
+          <DFLink
             href={`https://docs.deepfence.io/docs/threatmapper/sensors/linux-host/`}
             target="_blank"
             rel="noreferrer"
-            className="text-blue-600 dark:text-blue-500 mt-2"
+            className="mt-2"
           >
             reading our documentation
-          </a>
+          </DFLink>
           .
         </div>
       </Step>
       <Step indicator="1" title="Deploy">
-        <div className={`${Typography.size.sm} dark:text-gray-400`}>
+        <div className="text-p7 dark:text-text-text-and-icon">
           <p className="mb-2.5">
             Copy the following commands and paste them into your shell.
           </p>
-          <Card className="w-full relative ">
-            <pre
-              className={cx(
-                'pl-4 pt-4',
-                'h-fit',
-                `${Typography.weight.normal} ${Typography.size.xs} `,
-              )}
-            >
-              {code}
-            </pre>
-            <CopyToClipboard data={code} asIcon />
+          <Card className="w-full relative flex p-4">
+            <pre className="h-fit text-p7 dark:text-text-text-and-icon">{code}</pre>
+            <div className="flex items-center ml-auto self-start">
+              {isCopied ? 'copied' : null}
+              <IconButton
+                className="dark:focus:outline-none"
+                icon={<CopyLineIcon />}
+                variant="flat"
+                onClick={() => {
+                  copy(code);
+                }}
+              />
+            </div>
           </Card>
         </div>
       </Step>

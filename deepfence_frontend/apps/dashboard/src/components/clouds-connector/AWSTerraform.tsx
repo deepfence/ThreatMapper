@@ -1,10 +1,97 @@
-import cx from 'classnames';
 import { memo } from 'react';
-import { HiViewGridAdd } from 'react-icons/hi';
-import { Card, Step, Stepper, Typography } from 'ui-components';
+import { Card, IconButton, Step, Stepper } from 'ui-components';
 
-import { CopyToClipboard } from '@/components/CopyToClipboard';
+import { useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { DFLink } from '@/components/DFLink';
+import { CopyLineIcon } from '@/components/icons/common/CopyLine';
+import { InfoIcon } from '@/components/icons/common/Info';
 import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
+
+const FirstCommand = ({ command }: { command: string }) => {
+  const { copy, isCopied } = useCopyToClipboardState();
+
+  return (
+    <div className="text-p7 dark:text-text-text-and-icon">
+      <p className="mb-2.5">
+        Copy the following code and paste it into a .tf file on your local machine:
+      </p>
+      <Card className="w-full relative flex p-4 items-center">
+        <pre className="h-fit text-p7 dark:text-text-text-and-icon">{command}</pre>
+        <div className="flex items-center ml-auto self-start">
+          {isCopied ? 'copied' : null}
+          <IconButton
+            className="dark:focus:outline-none"
+            icon={<CopyLineIcon />}
+            variant="flat"
+            onClick={() => {
+              copy(command);
+            }}
+          />
+        </div>
+      </Card>
+    </div>
+  );
+};
+const SecondCommand = () => {
+  const { copy, isCopied } = useCopyToClipboardState();
+
+  return (
+    <div className="flex items-center">
+      <pre className="h-fit text-p7 dark:text-text-text-and-icon">terraform init</pre>
+      <div className="flex items-center ml-auto self-start">
+        {isCopied ? 'copied' : null}
+        <IconButton
+          className="dark:focus:outline-none"
+          icon={<CopyLineIcon />}
+          variant="flat"
+          onClick={() => {
+            copy('terraform init');
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+const ThirdCommand = () => {
+  const { copy, isCopied } = useCopyToClipboardState();
+
+  return (
+    <div className="flex items-center">
+      <pre className="h-fit text-p7 dark:text-text-text-and-icon">terraform plan</pre>
+      <div className="flex items-center ml-auto self-start">
+        {isCopied ? 'copied' : null}
+        <IconButton
+          className="dark:focus:outline-none"
+          icon={<CopyLineIcon />}
+          variant="flat"
+          onClick={() => {
+            copy('terraform plan');
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+const FourthCommand = () => {
+  const { copy, isCopied } = useCopyToClipboardState();
+
+  return (
+    <div className="flex items-center">
+      <pre className="h-fit text-p7 dark:text-text-text-and-icon">terraform apply</pre>
+      <div className="flex items-center ml-auto self-start">
+        {isCopied ? 'copied' : null}
+        <IconButton
+          className="dark:focus:outline-none"
+          icon={<CopyLineIcon />}
+          variant="flat"
+          onClick={() => {
+            copy('terraform apply');
+          }}
+        />
+      </div>
+    </div>
+  );
+};
 
 export const AWSTerraform = memo(() => {
   const { status, data } = useGetApiToken();
@@ -36,80 +123,39 @@ variable "image" {
   return (
     <div className="w-full sm:w-1/2">
       <Stepper>
-        <Step indicator={<HiViewGridAdd />} title="Teraform">
-          <div className={`${Typography.size.sm} dark:text-gray-200`}>
+        <Step
+          indicator={
+            <span className="w-4 h-4">
+              <InfoIcon />
+            </span>
+          }
+          title="Teraform"
+        >
+          <div className="text-p7 dark:text-text-text-and-icon">
             Connect to your AWS Cloud Account via Teraform. Find out more information by{' '}
-            <a
+            <DFLink
               href={`https://registry.terraform.io/modules/deepfence/cloud-scanner/aws/latest/examples/single-account-ecs#usag`}
               target="_blank"
               rel="noreferrer"
-              className="text-blue-700 dark:text-blue-500 mt-2"
+              className="mt-2"
             >
               reading our documentation
-            </a>
+            </DFLink>
             .
           </div>
         </Step>
-        <Step indicator="1" title="Region Selection">
-          <div>
-            <p className={`mb-2.5 ${Typography.size.sm} dark:text-gray-200`}>
-              Copy the following code and paste it into a .tf file on your local machine:
-            </p>
-            <Card className="w-full relative ">
-              <pre
-                className={cx(
-                  'p-4 overflow-auto',
-                  `${Typography.weight.normal} ${Typography.size.xs} `,
-                )}
-              >
-                {code}
-              </pre>
-              <CopyToClipboard data={code} asIcon />
-            </Card>
-          </div>
+        <Step indicator="1" title="Copy Code">
+          <FirstCommand command={code} />
         </Step>
         <Step indicator="2" title="Deploy">
-          <div className={`${Typography.size.sm} dark:text-gray-400`}>
+          <div className="text-p7 dark:text-text-text-and-icon">
             <p className="mb-2.5">
               Copy the following commands and paste them into your shell.
             </p>
-            <Card className="w-full relative">
-              <div className="relative">
-                <pre
-                  className={cx(
-                    'pl-4 pt-4',
-                    'h-fit',
-                    `${Typography.weight.normal} ${Typography.size.xs} `,
-                  )}
-                >
-                  terraform init
-                </pre>
-                <CopyToClipboard data={'terraform init'} className="top-4" asIcon />
-              </div>
-              <div className="relative">
-                <pre
-                  className={cx(
-                    'px-4',
-                    'h-fit',
-                    `${Typography.weight.normal} ${Typography.size.xs} `,
-                  )}
-                >
-                  terraform plan
-                </pre>
-                <CopyToClipboard data={'terraform plan'} className="top-0" asIcon />
-              </div>
-              <div className="relative">
-                <pre
-                  className={cx(
-                    'px-4',
-                    'h-fit',
-                    `${Typography.weight.normal} ${Typography.size.xs} `,
-                  )}
-                >
-                  terraform apply
-                </pre>
-                <CopyToClipboard data={'terraform apply'} className="top-0" asIcon />
-              </div>
+            <Card className="w-full relative flex flex-col p-4">
+              <SecondCommand />
+              <ThirdCommand />
+              <FourthCommand />
             </Card>
           </div>
         </Step>
