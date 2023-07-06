@@ -37,7 +37,10 @@ func SearchCountHandler[T reporters.CypherableAndCategorizable](w http.ResponseW
 		Filters:       req.NodeFilter.Filters,
 	}
 
-	dummy_ext_ff := reporters_search.SearchFilter{}
+	dummy_ext_ff := reporters_search.SearchFilter{
+		InFieldFilter: []string{dummy.GetJsonCategory()},
+		Filters:       req.ExtendedNodeFilter.Filters,
+	}
 
 	entries, err := reporters_search.SearchReport[T](r.Context(), dummy_ff, dummy_ext_ff, req.Window)
 	if err != nil {
