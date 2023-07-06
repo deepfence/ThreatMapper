@@ -1,213 +1,173 @@
-import cx from 'classnames';
-import { Suspense } from 'react';
-import { useLoaderData, useNavigate } from 'react-router-dom';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { ReactNode, Suspense } from 'react';
 import { Card } from 'ui-components';
 
+import { SearchNodeCountResp } from '@/api/generated';
+import { DFLink } from '@/components/DFLink';
+import { BlocksGroupLineIcon } from '@/components/icons/common/BlocksGroupLine';
+import { CloudLine } from '@/components/icons/common/CloudLine';
+import { NodesLineIcon } from '@/components/icons/common/NodesLine';
+import { ContainerIcon } from '@/components/icons/container';
+import { HostIcon } from '@/components/icons/host';
+import { ImageIcon } from '@/components/icons/image';
+import { NamespaceIcon } from '@/components/icons/namespace';
+import { PodIcon } from '@/components/icons/pod';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
-import { getNodesIcon } from '@/constants/logos';
-import { DashboardLoaderData } from '@/features/dashboard/pages/Dashboard';
+import { CardHeader } from '@/features/dashboard/components/CardHeader';
+import { queries } from '@/queries';
 import { abbreviateNumber } from '@/utils/number';
-import { DFAwait } from '@/utils/suspense';
 
-const ColorClasses: Record<
-  keyof DashboardLoaderData['nodeCounts'] | 'registries',
-  string
-> = {
-  cloud_provider: 'text-blue-500 dark:text-blue-300',
-  container: 'text-yellow-500 dark:text-yellow-300',
-  host: 'text-green-500 dark:text-green-300',
-  kubernetes_cluster: 'text-indigo-500 dark:text-indigo-300',
-  pod: 'text-purple-500 dark:text-purple-300',
-  container_image: 'text-orange-500 dark:text-orange-300',
-  namespace: 'text-emerald-500 dark:text-emerald-300',
-  registries: 'text-teal-500 dark:text-teal-300',
-};
+function useNodeCounts() {
+  return {
+    nodeCountQueryRes: useSuspenseQuery({
+      ...queries.search.nodeCounts(),
+    }),
+    registrySummaryQueryRes: useSuspenseQuery({
+      ...queries.registry.registrySummary(),
+    }),
+  };
+}
 
-const CountWithIcon = ({
-  count,
-  Icon,
-  label,
-  type,
-  link,
-}: {
-  count: string;
-  Icon: () => JSX.Element;
-  label: string;
-  type: keyof DashboardLoaderData['nodeCounts'] | 'registries';
-  link?: string;
-}) => {
-  const navigate = useNavigate();
-  return (
-    <button
-      onClick={(e) => {
-        e.preventDefault();
-        if (link) navigate(link);
-      }}
-      className="py-2 flex-1 flex flex-col cursor-pointer hover:bg-gray-50 hover:dark:bg-gray-700/20 pl-2 justify-center"
-    >
-      <div
-        className={cx('w-full border-r dark:border-gray-700 pr-4 ', {
-          'border-none': type === 'container_image',
-        })}
-      >
-        <div className="font-light flex text-gray-700 dark:text-white items-center">
-          <div className={cx('w-10 h-10 p-1 cursor-pointer', ColorClasses[type])}>
-            <Icon />
-          </div>
-          <span className="pl-1 text-3xl">{count}</span>
-        </div>
-        <div className="text-sm flex items-center text-gray-500 dark:text-gray-400 pl-1">
-          {label}
-        </div>
-      </div>
-    </button>
-  );
-};
-
-const CountWithIconSkeleton = () => {
-  return (
-    <div className="py-2 flex-1 flex flex-col h-full cursor-pointer hover:bg-gray-50 hover:dark:bg-gray-700/20 pl-2 justify-center">
-      <div className={cx('pr-4')}>
-        <div className="font-light flex text-gray-700 dark:text-white items-center">
-          <div
-            className={cx(
-              'w-9 h-9 m-1 cursor-pointer bg-gray-200 dark:bg-gray-600 animate-pulse rounded-full',
-            )}
-          />
-          <span className="pl-1 h-9 my-1 w-9 bg-gray-200 dark:bg-gray-600 animate-pulse" />
-        </div>
-        <div className="h-3 flex bg-gray-200 dark:bg-gray-600 animate-pulse pl-1" />
-      </div>
-    </div>
-  );
-};
+const ITEMS: Array<{
+  title: string;
+  icon: ReactNode;
+  key: keyof SearchNodeCountResp | 'registry';
+  link: string;
+}> = [
+  {
+    title: 'Cloud providers',
+    icon: <CloudLine />,
+    key: 'cloud_provider',
+    link: '/topology/graph/cloud_provider',
+  },
+  {
+    title: 'Hosts',
+    icon: <HostIcon />,
+    key: 'host',
+    link: '/topology/graph/host',
+  },
+  {
+    title: 'Clusters',
+    icon: <NodesLineIcon />,
+    key: 'kubernetes_cluster',
+    link: '/topology/graph/kubernetes_cluster',
+  },
+  {
+    title: 'Pods',
+    icon: <PodIcon />,
+    key: 'pod',
+    link: '/topology/graph/pod',
+  },
+  {
+    title: 'Containers',
+    icon: <ContainerIcon />,
+    key: 'container',
+    link: '/topology/graph/container',
+  },
+  {
+    title: 'Namespaces',
+    icon: <NamespaceIcon />,
+    key: 'namespace',
+    link: '/topology/graph/kubernetes_cluster',
+  },
+  {
+    title: 'Container Images',
+    icon: <ImageIcon />,
+    key: 'container_image',
+    link: '/registries',
+  },
+  {
+    title: 'Registries',
+    icon: <RegistryIcon />,
+    key: 'registry',
+    link: '/registries',
+  },
+];
 
 export const NodeCounts = () => {
-  const loaderData = useLoaderData() as DashboardLoaderData;
   return (
-    <div className="m-2">
-      <Card className="flex gap-2 flex-wrap justify-center">
-        <Suspense fallback={<CountWithIconSkeleton />}>
-          <DFAwait resolve={loaderData.nodeCounts}>
-            {(nodeCounts: DashboardLoaderData['nodeCounts']) => {
-              return (
-                <CountWithIcon
-                  count={abbreviateNumber(nodeCounts.cloud_provider)}
-                  Icon={getNodesIcon('cloud_provider')}
-                  label="Cloud Providers"
-                  type="cloud_provider"
-                  link="/topology/graph/cloud_provider"
-                />
-              );
-            }}
-          </DFAwait>
+    <Card className="rounded-[5px]">
+      <CardHeader icon={<BlocksGroupLineIcon />} title="Inventory" />
+      <div className="py-5 px-10 flex items-center justify-between flex-wrap gap-6">
+        <Suspense
+          fallback={ITEMS.map((item) => {
+            return <CountCardSkeleton {...item} key={item.key} />;
+          })}
+        >
+          <NodeCountList />
         </Suspense>
-        <Suspense fallback={<CountWithIconSkeleton />}>
-          <DFAwait resolve={loaderData.nodeCounts}>
-            {(nodeCounts: DashboardLoaderData['nodeCounts']) => {
-              return (
-                <CountWithIcon
-                  count={abbreviateNumber(nodeCounts.host)}
-                  Icon={getNodesIcon('host')}
-                  label="Hosts"
-                  type="host"
-                  link="/topology/graph/host"
-                />
-              );
-            }}
-          </DFAwait>
-        </Suspense>
-        <Suspense fallback={<CountWithIconSkeleton />}>
-          <DFAwait resolve={loaderData.nodeCounts}>
-            {(nodeCounts: DashboardLoaderData['nodeCounts']) => {
-              return (
-                <CountWithIcon
-                  count={abbreviateNumber(nodeCounts.kubernetes_cluster)}
-                  Icon={getNodesIcon('kubernetes_cluster')}
-                  label="Kubernetes Clusters"
-                  type="kubernetes_cluster"
-                  link="/topology/graph/kubernetes_cluster"
-                />
-              );
-            }}
-          </DFAwait>
-        </Suspense>
-        <Suspense fallback={<CountWithIconSkeleton />}>
-          <DFAwait resolve={loaderData.nodeCounts}>
-            {(nodeCounts: DashboardLoaderData['nodeCounts']) => {
-              return (
-                <CountWithIcon
-                  count={abbreviateNumber(nodeCounts.pod)}
-                  Icon={getNodesIcon('pod')}
-                  label="Pods"
-                  type="pod"
-                  link="/topology/graph/pod"
-                />
-              );
-            }}
-          </DFAwait>
-        </Suspense>
-        <Suspense fallback={<CountWithIconSkeleton />}>
-          <DFAwait resolve={loaderData.nodeCounts}>
-            {(nodeCounts: DashboardLoaderData['nodeCounts']) => {
-              return (
-                <CountWithIcon
-                  count={abbreviateNumber(nodeCounts.namespace)}
-                  Icon={getNodesIcon('namespace')}
-                  label="Namespaces"
-                  type="namespace"
-                  link="/topology/graph"
-                />
-              );
-            }}
-          </DFAwait>
-        </Suspense>
-        <Suspense fallback={<CountWithIconSkeleton />}>
-          <DFAwait resolve={loaderData.nodeCounts}>
-            {(nodeCounts: DashboardLoaderData['nodeCounts']) => {
-              return (
-                <CountWithIcon
-                  count={abbreviateNumber(nodeCounts.container)}
-                  Icon={getNodesIcon('container')}
-                  label="Containers"
-                  type="container"
-                  link="/topology/graph/container"
-                />
-              );
-            }}
-          </DFAwait>
-        </Suspense>
-        <Suspense fallback={<CountWithIconSkeleton />}>
-          <DFAwait resolve={loaderData.nodeCounts}>
-            {(nodeCounts: DashboardLoaderData['nodeCounts']) => {
-              return (
-                <CountWithIcon
-                  count={abbreviateNumber(nodeCounts.container_image)}
-                  Icon={getNodesIcon('container_image')}
-                  label="Container Images"
-                  type="container_image"
-                  link="/topology/graph"
-                />
-              );
-            }}
-          </DFAwait>
-        </Suspense>
-        <Suspense fallback={<CountWithIconSkeleton />}>
-          <DFAwait resolve={loaderData.registries}>
-            {(registries: DashboardLoaderData['registries']) => {
-              return (
-                <CountWithIcon
-                  count={abbreviateNumber(registries)}
-                  Icon={RegistryIcon}
-                  label="Container Registries"
-                  type="registries"
-                  link="/registries"
-                />
-              );
-            }}
-          </DFAwait>
-        </Suspense>
-      </Card>
-    </div>
+      </div>
+    </Card>
+  );
+};
+
+const NodeCountList = () => {
+  const {
+    nodeCountQueryRes: { data: nodeCountsData },
+    registrySummaryQueryRes: { data: registrySummaryData },
+  } = useNodeCounts();
+
+  return (
+    <>
+      {ITEMS.map((data) => {
+        return (
+          <CountCard
+            key={data.title}
+            title={data.title}
+            count={
+              data.key === 'registry'
+                ? registrySummaryData.reduce((prev, curr) => {
+                    return prev + (curr.registries ?? 0);
+                  }, 0)
+                : nodeCountsData[data.key]
+            }
+            icon={data.icon}
+            link={data.link}
+          />
+        );
+      })}
+    </>
+  );
+};
+
+const CountCard = ({
+  title,
+  icon,
+  count,
+  link,
+}: {
+  title: string;
+  icon: ReactNode;
+  count: number;
+  link: string;
+}) => {
+  return (
+    <DFLink to={link} unstyled className="flex flex-col gap-1 cursor-pointer">
+      <div className="text-p1 dark:text-text-text-and-icon">{title}</div>
+      <div className="flex gap-3 items-center">
+        <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">{icon}</div>
+        <div className="text-h1 dark:text-accent-accent">{abbreviateNumber(count)}</div>
+      </div>
+    </DFLink>
+  );
+};
+
+const CountCardSkeleton = ({
+  title,
+  icon,
+  link,
+}: {
+  title: string;
+  icon: ReactNode;
+  link: string;
+}) => {
+  return (
+    <DFLink to={link} unstyled className="flex flex-col gap-1 cursor-pointer">
+      <div className="text-p1 dark:text-text-text-and-icon">{title}</div>
+      <div className="flex gap-3 items-center">
+        <div className="h-6 w-6 shrink-0 dark:text-text-text-and-icon">{icon}</div>
+        <div className="h-8 w-12 dark:bg-accent-accent/30 rounded" />
+      </div>
+    </DFLink>
   );
 };

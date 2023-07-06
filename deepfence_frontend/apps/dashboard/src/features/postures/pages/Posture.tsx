@@ -115,9 +115,11 @@ const CardSectionIcon = ({ provider }: { provider: ModelPostureProvider }) => {
       </span>
       <div
         style={{
-          color: getColorForCompliancePercent(12),
+          color: getColorForCompliancePercent(provider.compliance_percentage),
         }}
-        className="my-1.5"
+        className={cn('my-1.5', {
+          'h-6 w-6 shrink-0': isScanned,
+        })}
       >
         {isScanned ? (
           <ComplianceIconByPercent percent={provider.compliance_percentage ?? 0} />
@@ -233,7 +235,7 @@ const Posture = () => {
       <div className="mx-4 mt-10 mb-10 flex gap-x-[20px] gap-y-[42px] flex-wrap">
         <Suspense fallback={<CardSkeleton />}>
           <PostureCloudList />
-          <Separator className="dark:bg-bg-grid-border" />
+          <Separator className="dark:bg-bg-grid-border h-px w-full" />
           <PosturenNonCloudList />
         </Suspense>
       </div>

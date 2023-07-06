@@ -19,12 +19,12 @@ import {
     ModelFetchWindowFromJSONTyped,
     ModelFetchWindowToJSON,
 } from './ModelFetchWindow';
-import type { ReportersContainsFilter } from './ReportersContainsFilter';
+import type { ReportersFieldsFilters } from './ReportersFieldsFilters';
 import {
-    ReportersContainsFilterFromJSON,
-    ReportersContainsFilterFromJSONTyped,
-    ReportersContainsFilterToJSON,
-} from './ReportersContainsFilter';
+    ReportersFieldsFiltersFromJSON,
+    ReportersFieldsFiltersFromJSONTyped,
+    ReportersFieldsFiltersToJSON,
+} from './ReportersFieldsFilters';
 
 /**
  * 
@@ -34,10 +34,10 @@ import {
 export interface ModelRegistryImagesReq {
     /**
      * 
-     * @type {ReportersContainsFilter}
+     * @type {ReportersFieldsFilters}
      * @memberof ModelRegistryImagesReq
      */
-    image_filter: ReportersContainsFilter;
+    image_filter: ReportersFieldsFilters;
     /**
      * 
      * @type {string}
@@ -74,7 +74,7 @@ export function ModelRegistryImagesReqFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         
-        'image_filter': ReportersContainsFilterFromJSON(json['image_filter']),
+        'image_filter': ReportersFieldsFiltersFromJSON(json['image_filter']),
         'registry_id': json['registry_id'],
         'window': ModelFetchWindowFromJSON(json['window']),
     };
@@ -89,7 +89,7 @@ export function ModelRegistryImagesReqToJSON(value?: ModelRegistryImagesReq | nu
     }
     return {
         
-        'image_filter': ReportersContainsFilterToJSON(value.image_filter),
+        'image_filter': ReportersFieldsFiltersToJSON(value.image_filter),
         'registry_id': value.registry_id,
         'window': ModelFetchWindowToJSON(value.window),
     };

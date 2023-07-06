@@ -19,6 +19,8 @@ import type {
   ApiDocsFailureResponse,
   ControlsAgentControls,
   ModelAgentId,
+  ModelAgentPluginDisable,
+  ModelAgentPluginEnable,
   ModelAgentUpgrade,
   ModelCloudNodeControlReq,
   ModelCloudNodeControlResp,
@@ -34,6 +36,10 @@ import {
     ControlsAgentControlsToJSON,
     ModelAgentIdFromJSON,
     ModelAgentIdToJSON,
+    ModelAgentPluginDisableFromJSON,
+    ModelAgentPluginDisableToJSON,
+    ModelAgentPluginEnableFromJSON,
+    ModelAgentPluginEnableToJSON,
     ModelAgentUpgradeFromJSON,
     ModelAgentUpgradeToJSON,
     ModelCloudNodeControlReqFromJSON,
@@ -46,8 +52,16 @@ import {
     ModelInitAgentReqToJSON,
 } from '../models';
 
+export interface DisableAgentPluginRequest {
+    modelAgentPluginDisable?: ModelAgentPluginDisable;
+}
+
 export interface DisableCloudNodeControlsRequest {
     modelCloudNodeEnableDisableReq?: ModelCloudNodeEnableDisableReq;
+}
+
+export interface EnableAgentPluginRequest {
+    modelAgentPluginEnable?: ModelAgentPluginEnable;
 }
 
 export interface EnableCloudNodeControlsRequest {
@@ -82,6 +96,22 @@ export interface UpgradeAgentVersionRequest {
  */
 export interface ControlsApiInterface {
     /**
+     * Schedule agent plugin disable
+     * @summary Schedule new agent plugin version disabling
+     * @param {ModelAgentPluginDisable} [modelAgentPluginDisable] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ControlsApiInterface
+     */
+    disableAgentPluginRaw(requestParameters: DisableAgentPluginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Schedule agent plugin disable
+     * Schedule new agent plugin version disabling
+     */
+    disableAgentPlugin(requestParameters: DisableAgentPluginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
      * Disable controls for a cloud node
      * @summary Disable Cloud Node Controls
      * @param {ModelCloudNodeEnableDisableReq} [modelCloudNodeEnableDisableReq] 
@@ -96,6 +126,22 @@ export interface ControlsApiInterface {
      * Disable Cloud Node Controls
      */
     disableCloudNodeControls(requestParameters: DisableCloudNodeControlsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Schedule agent plugin enable
+     * @summary Schedule new agent plugin version enabling
+     * @param {ModelAgentPluginEnable} [modelAgentPluginEnable] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ControlsApiInterface
+     */
+    enableAgentPluginRaw(requestParameters: EnableAgentPluginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Schedule agent plugin enable
+     * Schedule new agent plugin version enabling
+     */
+    enableAgentPlugin(requestParameters: EnableAgentPluginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Enable controls for a cloud node
@@ -201,6 +247,44 @@ export interface ControlsApiInterface {
 export class ControlsApi extends runtime.BaseAPI implements ControlsApiInterface {
 
     /**
+     * Schedule agent plugin disable
+     * Schedule new agent plugin version disabling
+     */
+    async disableAgentPluginRaw(requestParameters: DisableAgentPluginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/controls/agent-plugins/disable`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelAgentPluginDisableToJSON(requestParameters.modelAgentPluginDisable),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Schedule agent plugin disable
+     * Schedule new agent plugin version disabling
+     */
+    async disableAgentPlugin(requestParameters: DisableAgentPluginRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.disableAgentPluginRaw(requestParameters, initOverrides);
+    }
+
+    /**
      * Disable controls for a cloud node
      * Disable Cloud Node Controls
      */
@@ -236,6 +320,44 @@ export class ControlsApi extends runtime.BaseAPI implements ControlsApiInterface
      */
     async disableCloudNodeControls(requestParameters: DisableCloudNodeControlsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.disableCloudNodeControlsRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Schedule agent plugin enable
+     * Schedule new agent plugin version enabling
+     */
+    async enableAgentPluginRaw(requestParameters: EnableAgentPluginRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer_token", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        const response = await this.request({
+            path: `/deepfence/controls/agent-plugins/enable`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ModelAgentPluginEnableToJSON(requestParameters.modelAgentPluginEnable),
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Schedule agent plugin enable
+     * Schedule new agent plugin version enabling
+     */
+    async enableAgentPlugin(requestParameters: EnableAgentPluginRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.enableAgentPluginRaw(requestParameters, initOverrides);
     }
 
     /**

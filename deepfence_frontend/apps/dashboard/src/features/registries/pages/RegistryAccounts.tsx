@@ -1,11 +1,11 @@
-import { Suspense } from 'react';
-import { IconContext } from 'react-icons';
-import { FaAngleDoubleUp, FaImages, FaPlus, FaTags } from 'react-icons/fa';
-import { HiChevronRight } from 'react-icons/hi';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { useIsFetching } from '@tanstack/react-query';
+import { isEmpty } from 'lodash-es';
+import { Suspense, useCallback, useState } from 'react';
 import {
-  generatePath,
-  LoaderFunctionArgs,
-  useLoaderData,
+  ActionFunctionArgs,
+  FetcherWithComponents,
+  useFetcher,
   useParams,
 } from 'react-router-dom';
 import {
@@ -14,296 +14,476 @@ import {
   Button,
   Card,
   CircleSpinner,
+  Dropdown,
+  DropdownItem,
+  Modal,
+  RowSelectionState,
   TableSkeleton,
 } from 'ui-components';
 
 import { getRegistriesApiClient } from '@/api/api';
-import { ApiDocsBadRequestResponse, ModelRegistryListResp } from '@/api/generated';
-import { ModelSummary } from '@/api/generated/models/ModelSummary';
-import LogoDocker from '@/assets/logo-docker.svg';
+import { ApiDocsBadRequestResponse, ModelSummary } from '@/api/generated';
+import {
+  ConfigureScanModal,
+  ConfigureScanModalProps,
+} from '@/components/ConfigureScanModal';
 import { DFLink } from '@/components/DFLink';
+import { CaretDown } from '@/components/icons/common/CaretDown';
+import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
+import { PlusIcon } from '@/components/icons/common/Plus';
+import { ImageIcon } from '@/components/icons/image';
+import { InProgressIcon } from '@/components/icons/registries/InProgress';
+import { StartScanIcon } from '@/components/icons/registries/StartScan';
+import { TagsIcon } from '@/components/icons/registries/Tags';
 import { RegistryIcon } from '@/components/sideNavigation/icons/Registry';
+import { AddRegistryModal } from '@/features/registries/components/AddRegistryModal';
 import { RegistryAccountsTable } from '@/features/registries/components/RegistryAccountsTable';
-import { action } from '@/features/registries/components/RegistryAccountsTable';
-import { Mode, useTheme } from '@/theme/ThemeContext';
-import { registryTypeToNameMapping } from '@/types/common';
+import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { invalidateQueries, queries } from '@/queries';
+import {
+  MalwareScanNodeTypeEnum,
+  registryTypeToNameMapping,
+  ScanTypeEnum,
+  SecretScanNodeTypeEnum,
+  VulnerabilityScanNodeTypeEnum,
+} from '@/types/common';
 import { apiWrapper } from '@/utils/api';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
-import { DFAwait } from '@/utils/suspense';
+import { abbreviateNumber } from '@/utils/number';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
-type LoaderDataTypeForAccounts = {
-  error?: string;
+export enum ActionEnumType {
+  DELETE = 'delete',
+  START_SCAN = 'start_scan',
+}
+type ActionData = {
+  action: ActionEnumType;
+  success: boolean;
   message?: string;
-  accounts: Awaited<ReturnType<typeof getRegistryAccounts>>;
+} | null;
+
+type ActionReturnType = {
+  message?: string;
+  success: boolean;
 };
 
-type LoaderDataTypeForSummary = {
-  error?: string;
-  message?: string;
-  summary: Awaited<ReturnType<typeof getRegistrySummaryByType>>;
-};
+export type RegistryScanType =
+  | typeof ScanTypeEnum.VulnerabilityScan
+  | typeof ScanTypeEnum.SecretScan
+  | typeof ScanTypeEnum.MalwareScan;
 
-type LoaderDataType = LoaderDataTypeForAccounts & LoaderDataTypeForSummary;
-
-async function getRegistrySummaryByType(accountType: string): Promise<{
-  summary: ModelSummary;
-  message?: string;
-}> {
-  const getRegistrySummaryByType = apiWrapper({
-    fn: getRegistriesApiClient().getRegistrySummaryByType,
-  });
-  const registrySummary = await getRegistrySummaryByType({
-    registryType: accountType,
-  });
-
-  if (!registrySummary.ok) {
-    if (registrySummary.error.response.status === 400) {
-      const modelResponse: ApiDocsBadRequestResponse =
-        await registrySummary.error.response.json();
-      return {
-        message: modelResponse.message,
-        summary: {},
-      };
-    }
-    throw registrySummary.error;
+function getScanOptions(
+  scanType: ScanTypeEnum,
+  ids: string[],
+): ConfigureScanModalProps['scanOptions'] {
+  if (scanType === ScanTypeEnum.VulnerabilityScan) {
+    return {
+      showAdvancedOptions: true,
+      scanType,
+      data: {
+        nodeIds: ids,
+        nodeType: VulnerabilityScanNodeTypeEnum.registry,
+      },
+    };
   }
 
-  return {
-    summary: registrySummary.value,
-  };
+  if (scanType === ScanTypeEnum.SecretScan) {
+    return {
+      showAdvancedOptions: true,
+      scanType,
+      data: {
+        nodeIds: ids,
+        nodeType: SecretScanNodeTypeEnum.registry,
+      },
+    };
+  }
+
+  if (scanType === ScanTypeEnum.MalwareScan) {
+    return {
+      showAdvancedOptions: true,
+      scanType,
+      data: {
+        nodeIds: ids,
+        nodeType: MalwareScanNodeTypeEnum.registry,
+      },
+    };
+  }
+
+  throw new Error('invalid scan type');
 }
 
-async function getRegistryAccounts(): Promise<{
-  accounts: ModelRegistryListResp[];
-  message?: string;
-}> {
-  const listRegistries = apiWrapper({ fn: getRegistriesApiClient().listRegistries });
+const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType> => {
+  const formData = await request.formData();
+  const id = formData.get('nodeIds')?.toString() ?? '';
+  const deleteRegistry = apiWrapper({ fn: getRegistriesApiClient().deleteRegistry });
+  const r = await deleteRegistry({
+    registryId: id,
+  });
 
-  const listAccounts = await listRegistries();
-
-  if (!listAccounts.ok) {
-    if (listAccounts.error.response.status === 400) {
-      const modelResponse: ApiDocsBadRequestResponse =
-        await listAccounts.error.response.json();
+  if (!r.ok) {
+    if (r.error.response.status === 400 || r.error.response.status === 404) {
+      const modelResponse: ApiDocsBadRequestResponse = await r.error.response.json();
       return {
-        message: modelResponse.message,
-        accounts: [],
+        message: modelResponse.message ?? '',
+        success: false,
+      };
+    } else if (r.error.response.status === 403) {
+      return {
+        message: 'You do not have enough permissions to delete registry',
+        success: false,
       };
     }
-    throw listAccounts.error;
+    throw r.error;
   }
 
+  invalidateQueries(queries.registry.listRegistryAccounts._def);
   return {
-    accounts: listAccounts.value,
+    success: true,
   };
-}
-
-const loader = async ({
-  params,
-}: LoaderFunctionArgs): Promise<TypedDeferredData<LoaderDataType>> => {
-  const account = params?.account;
-
-  if (!account) {
-    throw new Error('Registry Account is required');
-  }
-  return typedDefer({
-    summary: getRegistrySummaryByType(account),
-    accounts: getRegistryAccounts(),
+};
+const useCounts = () => {
+  const params = useParams() as {
+    account: string;
+  };
+  return useSuspenseQuery({
+    ...queries.registry.registrySummaryByType({
+      registryType: params.account,
+    }),
+    keepPreviousData: true,
   });
 };
-
-const HeaderComponent = ({ nodeType }: { nodeType: string }) => {
-  const { navigate } = usePageNavigation();
+const DeleteConfirmationModal = ({
+  id,
+  showDialog,
+  setShowDialog,
+  fetcher,
+  onTableAction,
+}: {
+  showDialog: boolean;
+  id: string;
+  setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
+  onTableAction: (id: string[], scanType: RegistryScanType, actionType: string) => void;
+  fetcher: FetcherWithComponents<ActionData>;
+}) => {
   return (
-    <div className="flex p-1 pl-2 w-full items-center shadow bg-white dark:bg-gray-800">
-      <Breadcrumb separator={<HiChevronRight />} transparent>
-        <BreadcrumbLink>
-          <DFLink to={'/registries'}>Registries</DFLink>
+    <Modal
+      size="s"
+      open={showDialog}
+      onOpenChange={() => setShowDialog(false)}
+      title={
+        !fetcher.data?.success ? (
+          <div className="flex gap-3 items-center dark:text-status-error">
+            <span className="h-6 w-6 shrink-0">
+              <ErrorStandardLineIcon />
+            </span>
+            Delete registry
+          </div>
+        ) : undefined
+      }
+      footer={
+        !fetcher.data?.success ? (
+          <div className={'flex gap-x-4 justify-end'}>
+            <Button
+              size="sm"
+              onClick={() => setShowDialog(false)}
+              type="button"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              color="error"
+              onClick={(e) => {
+                e.preventDefault();
+                onTableAction([id], '' as RegistryScanType, ActionEnumType.DELETE);
+              }}
+            >
+              Yes, I&apos;m sure
+            </Button>
+          </div>
+        ) : undefined
+      }
+    >
+      {!fetcher.data?.success ? (
+        <div className="grid">
+          <span>The selected registry will be deleted.</span>
+          <br />
+          <span>Are you sure you want to delete?</span>
+          {fetcher.data?.message && <p className="">{fetcher.data?.message}</p>}
+          <div className="flex items-center justify-right gap-4"></div>
+        </div>
+      ) : (
+        <SuccessModalContent text="Deleted successfully!" />
+      )}
+    </Modal>
+  );
+};
+
+const Header = () => {
+  const { navigate } = usePageNavigation();
+  const params = useParams() as {
+    account: string;
+  };
+  const isFetching = useIsFetching({
+    queryKey: queries.registry.listRegistryAccounts._def,
+  });
+  return (
+    <div className="flex pl-6 pr-4 py-2 w-full items-center bg-white dark:bg-bg-breadcrumb-bar">
+      <Breadcrumb>
+        <BreadcrumbLink asChild icon={<RegistryIcon />} isLink>
+          <DFLink to={'/registries'} unstyled>
+            Registries
+          </DFLink>
         </BreadcrumbLink>
         <BreadcrumbLink>
           <span className="inherit cursor-auto">
-            {registryTypeToNameMapping[nodeType]}
+            {registryTypeToNameMapping[params.account]}
           </span>
         </BreadcrumbLink>
       </Breadcrumb>
-      <div className="ml-auto flex items-center gap-x-4">
-        <Button
-          outline
-          color="primary"
-          size="xs"
-          startIcon={<FaPlus />}
-          onClick={() => {
-            navigate(
-              generatePath('/registries/add/:account', {
-                account: encodeURIComponent(nodeType),
-              }),
-            );
-          }}
-        >
-          Add Registry
-        </Button>
+      <div className="ml-2 flex items-center">
+        {isFetching ? <CircleSpinner size="sm" /> : null}
       </div>
     </div>
   );
 };
 
-const NoRegistryFound = () => {
+const CountWidget = () => {
+  const { data } = useCounts();
+
+  if (isEmpty(data.summary)) {
+    return (
+      <div className="w-full text-md text-gray-900 dark:text-text-white">No data</div>
+    );
+  }
+
+  const {
+    images = 0,
+    tags = 0,
+    scans_in_progress = 0,
+    registries = 0,
+  } = data.summary as ModelSummary;
+
   return (
-    <div className="flex flex-col items-center justify-center mt-40">
-      <img src={LogoDocker} alt="empty registry" />
-      <span className="text-2xl font-medium text-gray-700 dark:text-white">
-        No Registry Accounts
-      </span>
-      <span className="text-sm text-gray-500 dark:text-gray-400">
-        Add a registry account to get started
-      </span>
+    <div className="grid grid-cols-12 px-6 items-center w-full">
+      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8">
+          <RegistryIcon />
+        </div>
+
+        <div className="flex flex-col items-start">
+          <span className="text-h1 dark:text-text-input">
+            {abbreviateNumber(registries)}
+          </span>
+          <span className="text-p1">Total registries</span>
+        </div>
+      </div>
+      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8">
+          <ImageIcon />
+        </div>
+
+        <div className="flex flex-col items-start">
+          <span className="text-h1 dark:text-text-input">{abbreviateNumber(images)}</span>
+          <span className="text-p1">Total images</span>
+        </div>
+      </div>
+      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8">
+          <TagsIcon />
+        </div>
+
+        <div className="flex flex-col items-start">
+          <span className="text-h1 dark:text-text-input">{abbreviateNumber(tags)}</span>
+          <span className="text-p1">Total tags</span>
+        </div>
+      </div>
+      <div className="col-span-3 flex items-center dark:text-text-text-and-icon gap-x-3 justify-center">
+        <div className="w-8 h-8">
+          <InProgressIcon />
+        </div>
+
+        <div className="flex flex-col items-start">
+          <span className="text-h1 dark:text-text-input">
+            {abbreviateNumber(scans_in_progress)}
+          </span>
+          <span className="text-p1">In Progress</span>
+        </div>
+      </div>
     </div>
   );
 };
-
-const RegistrySummaryComponent = ({ theme }: { theme: Mode }) => {
-  const loaderData = useLoaderData() as LoaderDataType['summary'];
+const Widgets = () => {
   return (
-    <div className="flex flex-col gap-y-2">
-      <Card className="p-4 grid grid-flow-row-dense gap-y-8">
-        <Suspense
-          fallback={
-            <div className="min-h-[300px] flex items-center justify-center">
-              <CircleSpinner size="md" />
-            </div>
-          }
-        >
-          <DFAwait resolve={loaderData.summary}>
-            {(resolvedData: LoaderDataType['summary']) => {
-              const { message, summary } = resolvedData;
-
-              if (message) {
-                return (
-                  <div className="w-full text-md text-gray-900 dark:text-text-white">
-                    No data
-                  </div>
-                );
+    <Card className="min-h-[140px] px-4 py-1.5 flex">
+      <Suspense
+        fallback={
+          <div className="flex m-auto items-center min-h-[100px]">
+            <CircleSpinner size="md" />
+          </div>
+        }
+      >
+        <CountWidget />
+      </Suspense>
+    </Card>
+  );
+};
+const BulkActions = ({
+  ids,
+  onTableAction,
+  setAddRegistryModal,
+}: {
+  ids: string[];
+  onTableAction: (ids: string[], scanType: RegistryScanType, actionType: string) => void;
+  setAddRegistryModal: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  return (
+    <>
+      <Button
+        color="default"
+        variant="flat"
+        size="sm"
+        startIcon={<PlusIcon />}
+        onClick={() => {
+          setAddRegistryModal(true);
+        }}
+      >
+        ADD NEW REGISTRY
+      </Button>
+      <Dropdown
+        triggerAsChild
+        align={'start'}
+        disabled={!ids.length}
+        content={
+          <>
+            <DropdownItem
+              onClick={() =>
+                onTableAction(
+                  ids,
+                  ScanTypeEnum.VulnerabilityScan,
+                  ActionEnumType.START_SCAN,
+                )
               }
-              const {
-                images = 0,
-                tags = 0,
-                scans_in_progress = 0,
-                registries = 0,
-              } = summary;
+            >
+              Start Vulnerability Scan
+            </DropdownItem>
+            <DropdownItem
+              onClick={() =>
+                onTableAction(ids, ScanTypeEnum.SecretScan, ActionEnumType.START_SCAN)
+              }
+            >
+              Start Secret Scan
+            </DropdownItem>
+            <DropdownItem
+              onClick={() =>
+                onTableAction(ids, ScanTypeEnum.MalwareScan, ActionEnumType.START_SCAN)
+              }
+            >
+              Start Malware Scan
+            </DropdownItem>
+          </>
+        }
+      >
+        <Button
+          color="default"
+          variant="flat"
+          size="sm"
+          startIcon={<StartScanIcon />}
+          endIcon={<CaretDown />}
+          disabled={!ids.length}
+        >
+          Start scan
+        </Button>
+      </Dropdown>
+    </>
+  );
+};
+const RegistryAccountsResults = () => {
+  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>({});
+  const [selectedScanType, setSelectedScanType] = useState<
+    | typeof ScanTypeEnum.VulnerabilityScan
+    | typeof ScanTypeEnum.SecretScan
+    | typeof ScanTypeEnum.MalwareScan
+  >();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [idsToDelete, setIdsToDelete] = useState<string>('');
+  const [nodeIdsToScan, setNodeIdsToScan] = useState<string[]>([]);
+  const fetcher = useFetcher<ActionData>();
 
-              return (
-                <>
-                  <div className="grid grid-flow-col-dense gap-x-4">
-                    <div className="bg-gray-100 dark:bg-gray-500/10 rounded-lg flex items-center justify-center">
-                      <div className="w-14 h-14 text-blue-500 dark:text-blue-400">
-                        <RegistryIcon />
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="text-md font-semibold text-gray-900 dark:text-gray-200 tracking-wider">
-                        Registries
-                      </h4>
-                      <div className="mt-2">
-                        <span className="text-2xl font-light text-gray-900 dark:text-gray-200">
-                          {registries.toString()}
-                        </span>
-                        <h5 className="text-xs text-gray-500 dark:text-gray-200 mb-2">
-                          Total count
-                        </h5>
-                      </div>
-                    </div>
-                  </div>
+  const [addRegistryModal, setAddRegistryModal] = useState<boolean>(false);
 
-                  <div className="flex gap-x-4 justify-center items-center">
-                    <div className="gap-x-2 flex flex-col justify-center">
-                      <div className="pr-4 flex items-center gap-x-2">
-                        <IconContext.Provider
-                          value={{
-                            className: 'h-4 w-4 text-teal-500 dark:text-teal-400',
-                          }}
-                        >
-                          <FaImages />
-                        </IconContext.Provider>
-                        <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
-                          {images.toString()}
-                        </span>
-                      </div>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
-                        Total Images
-                      </span>
-                    </div>
-                    <div className="gap-x-2 flex flex-col justify-center">
-                      <div className="pr-4 flex items-center gap-x-2">
-                        <IconContext.Provider
-                          value={{
-                            className: 'h-4 w-4 text-indigo-600 dark:text-indigo-400',
-                          }}
-                        >
-                          <FaTags />
-                        </IconContext.Provider>
-                        <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
-                          {tags}
-                        </span>
-                      </div>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
-                        Total Tags
-                      </span>
-                    </div>
-                    <div className="gap-x-2 flex flex-col justify-center">
-                      <div className="pr-4 flex items-center gap-x-2">
-                        <IconContext.Provider
-                          value={{
-                            className: 'h-4 w-4 text-indigo-600 dark:text-indigo-400',
-                          }}
-                        >
-                          <FaAngleDoubleUp />
-                        </IconContext.Provider>
-                        <span className="text-lg text-gray-900 dark:text-gray-200 font-light">
-                          {scans_in_progress.toString()}
-                        </span>
-                      </div>
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
-                        In Progress
-                      </span>
-                    </div>
-                  </div>
-                </>
-              );
-            }}
-          </DFAwait>
-        </Suspense>
-      </Card>
+  const onTableAction = useCallback(
+    (id: string[], scanType: RegistryScanType, actionType: string) => {
+      if (actionType === ActionEnumType.START_SCAN) {
+        setNodeIdsToScan(id);
+        setSelectedScanType(scanType);
+        return;
+      }
+      const formData = new FormData();
+      formData.append('actionType', actionType);
+      formData.append('nodeIds', id[0]);
+
+      fetcher.submit(formData, {
+        method: 'post',
+      });
+    },
+    [fetcher],
+  );
+
+  return (
+    <div className="self-start">
+      <div className="py-2 flex items-center">
+        <BulkActions
+          ids={Object.keys(rowSelectionState)}
+          onTableAction={onTableAction}
+          setAddRegistryModal={setAddRegistryModal}
+        />
+        <ConfigureScanModal
+          open={!!selectedScanType}
+          onOpenChange={() => setSelectedScanType(undefined)}
+          scanOptions={
+            selectedScanType ? getScanOptions(selectedScanType, nodeIdsToScan) : undefined
+          }
+        />
+      </div>
+      <Suspense fallback={<TableSkeleton columns={7} rows={10} />}>
+        <RegistryAccountsTable
+          onTableAction={onTableAction}
+          setShowDeleteDialog={setShowDeleteDialog}
+          setIdsToDelete={setIdsToDelete}
+          rowSelectionState={rowSelectionState}
+          setRowSelectionState={setRowSelectionState}
+        />
+      </Suspense>
+      {showDeleteDialog && (
+        <DeleteConfirmationModal
+          showDialog={showDeleteDialog}
+          id={idsToDelete}
+          setShowDialog={setShowDeleteDialog}
+          fetcher={fetcher}
+          onTableAction={onTableAction}
+        />
+      )}
+      {
+        <AddRegistryModal
+          setAddRegistryModal={setAddRegistryModal}
+          open={addRegistryModal}
+        />
+      }
     </div>
   );
 };
 
 const RegistryAccounts = () => {
-  const { mode } = useTheme();
-  const params = useParams() as {
-    account: string;
-  };
-  const loaderData = useLoaderData() as LoaderDataType['accounts'];
-
   return (
     <>
-      <HeaderComponent nodeType={params.account} />
-      <div className="grid grid-cols-[400px_1fr] p-2 gap-x-2">
-        <RegistrySummaryComponent theme={mode} />
-        <Suspense fallback={<TableSkeleton columns={3} rows={15} size={'md'} />}>
-          <DFAwait resolve={loaderData?.accounts}>
-            {(resolvedData: LoaderDataType['accounts']) => {
-              const registriesOfAccountType =
-                resolvedData?.accounts.filter(
-                  (registry) => registry.registry_type === params.account,
-                ) ?? [];
-              if (registriesOfAccountType.length === 0) {
-                return <NoRegistryFound />;
-              }
-              return <RegistryAccountsTable data={registriesOfAccountType} />;
-            }}
-          </DFAwait>
-        </Suspense>
+      <Header />
+      <div className="p-4">
+        <Widgets />
+      </div>
+
+      <div className="px-4 pb-4">
+        <RegistryAccountsResults />
       </div>
     </>
   );
@@ -311,6 +491,5 @@ const RegistryAccounts = () => {
 
 export const module = {
   action,
-  loader,
   element: <RegistryAccounts />,
 };

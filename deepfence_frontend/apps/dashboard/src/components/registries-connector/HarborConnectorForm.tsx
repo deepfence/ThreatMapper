@@ -23,97 +23,72 @@ sample json
 export const HarborConnectorForm = ({ errorMessage, fieldErrors }: RegistryFormProps) => {
   return (
     <>
-      <Stepper>
-        <Step indicator={<HiViewGridAdd />} title="Harbor Container Registry">
-          <div className={`${Typography.size.sm} dark:text-gray-200`}>
-            Using Certificate based Docker client Authentication? A custom certificate is
-            configured by creating a directory under /etc/docker/certs.d on Deepfence
-            console machine, using the same name as the registry&apos;s hostname provided
-            above. All *.crt files are added to this directory as CA roots &nbsp;
-            <DFLink
-              href={`https://docs.docker.com/engine/security/certificates/`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              reading our documentation
-            </DFLink>
-            .
-          </div>
-        </Step>
-        <Step indicator="1" title="Enter Information">
-          <Card className="w-full relative p-5 mt-2 flex flex-col gap-y-4">
-            <TextInput
-              className="w-3/4 min-[200px] max-w-xs"
-              label="Registry Name"
-              type={'text'}
-              sizing="sm"
-              name="name"
-              placeholder="Registry Name"
-              color={fieldErrors?.['name'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['name']}
-            />
-            <TextInput
-              className="w-3/4 min-[200px] max-w-xs"
-              label="Registry URL"
-              type={'text'}
-              sizing="sm"
-              name="non_secret.harbor_registry_url"
-              placeholder="Registry URL"
-              color={fieldErrors?.['harbor_registry_url'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['harbor_registry_url']}
-            />
-            <TextInput
-              className="w-3/4 min-[200px] max-w-xs"
-              label="Project Name"
-              type={'text'}
-              sizing="sm"
-              name="non_secret.harbor_project_name"
-              placeholder="Project Name"
-              color={fieldErrors?.['harbor_project_name'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['harbor_project_name']}
-            />
-            <TextInput
-              className="w-3/4 min-[200px] max-w-xs"
-              label="Username"
-              type={'text'}
-              sizing="sm"
-              name="non_secret.harbor_username"
-              placeholder="Username"
-              color={fieldErrors?.['harbor_username'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['harbor_username']}
-            />
-            <TextInput
-              className="w-3/4 min-[200px] max-w-xs"
-              label="Password"
-              type={'password'}
-              sizing="sm"
-              name="secret.harbor_password"
-              placeholder="••••••••"
-              color={fieldErrors?.['harbor_password'] ? 'error' : 'default'}
-              helperText={fieldErrors?.['harbor_password']}
-            />
-            <div className="text-xs">
-              <div className="text-sm">
-                Using Certificate based Docker client Authentication?
-              </div>
-              <div>
-                A custom certificate is configured by creating a directory under
-                /etc/docker/certs.d on Deepfence console machine, using the same name as
-                the registry&apos;s hostname provided above. All *.crt files are added to
-                this directory as CA roots.{' '}
-                <DFLink
-                  href="https://docs.docker.com/engine/security/certificates/"
-                  target="_blank"
-                >
-                  https://docs.docker.com/engine/security/certificates/
-                </DFLink>{' '}
-              </div>
-              <div className="mt-2">Supported Versions: 1.8.2 and above</div>
-            </div>
-            {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
-          </Card>
-        </Step>
-      </Stepper>
+      <div className="text-p2 dark:text-text-input-value">
+        Using Certificate based Docker client Authentication? A custom certificate is
+        configured by creating a directory under /etc/docker/certs.d on Deepfence console
+        machine, using the same name as the registry&apos;s hostname provided above. All
+        *.crt files are added to this directory as CA roots &nbsp;
+        <DFLink
+          href={`https://docs.docker.com/engine/security/certificates/`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          reading our documentation
+        </DFLink>
+        .
+      </div>
+      <p className="mt-6 text-p1 dark:text-text-input-value">Enter Information</p>
+      <div className="w-full relative p-4 mt-2 flex flex-col gap-y-8">
+        <TextInput
+          className="w-3/4 min-[200px] max-w-xs"
+          label="Registry Name"
+          type={'text'}
+          name="name"
+          placeholder="Registry Name"
+          color={fieldErrors?.['name'] ? 'error' : 'default'}
+          helperText={fieldErrors?.['name']}
+        />
+        <TextInput
+          className="w-3/4 min-[200px] max-w-xs"
+          label="Registry URL"
+          type={'text'}
+          name="non_secret.harbor_registry_url"
+          placeholder="Registry URL"
+          color={fieldErrors?.['harbor_registry_url'] ? 'error' : 'default'}
+          helperText={fieldErrors?.['harbor_registry_url']}
+        />
+        <TextInput
+          className="w-3/4 min-[200px] max-w-xs"
+          label="Project Name"
+          type={'text'}
+          name="non_secret.harbor_project_name"
+          placeholder="Project Name"
+          color={fieldErrors?.['harbor_project_name'] ? 'error' : 'default'}
+          helperText={fieldErrors?.['harbor_project_name']}
+        />
+        <TextInput
+          className="w-3/4 min-[200px] max-w-xs"
+          label="Username"
+          type={'text'}
+          name="non_secret.harbor_username"
+          placeholder="Username"
+          color={fieldErrors?.['harbor_username'] ? 'error' : 'default'}
+          helperText={fieldErrors?.['harbor_username']}
+        />
+        <TextInput
+          className="w-3/4 min-[200px] max-w-xs"
+          label="Password"
+          type={'password'}
+          name="secret.harbor_password"
+          placeholder="••••••••"
+          color={fieldErrors?.['harbor_password'] ? 'error' : 'default'}
+          helperText={fieldErrors?.['harbor_password']}
+        />
+        <div className="mt-2 text-p7 dark:text-text-input-value">
+          Supported Versions: 1.8.2 and above
+        </div>
+        {errorMessage && <p className="dark:text-status-error text-p7">{errorMessage}</p>}
+      </div>
     </>
   );
 };

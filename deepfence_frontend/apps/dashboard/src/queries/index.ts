@@ -9,7 +9,7 @@ import { registryQueries } from '@/queries/registry';
 import { searchQueries } from '@/queries/search';
 import { secretQueries } from '@/queries/secret';
 import { settingQueries } from '@/queries/setting';
-import { topologyQueries } from '@/queries/topology';
+import { threatQueries } from '@/queries/threat';
 import { vulnerabilityQueries } from '@/queries/vulnerability';
 
 export function invalidateQueries(queryKey: QueryKey) {
@@ -31,7 +31,7 @@ export const queries = mergeQueryKeys(
   malwareQueries,
   registryQueries,
   postureQueries,
-  topologyQueries,
   lookupQueries,
   settingQueries,
+  threatQueries,
 );

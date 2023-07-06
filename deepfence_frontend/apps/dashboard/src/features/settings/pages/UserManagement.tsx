@@ -312,13 +312,19 @@ const ChangePasswordModal = ({
   setShowDialog: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   return (
-    <Modal
-      open={showDialog}
-      onOpenChange={() => setShowDialog(false)}
-      title="Change Password"
-    >
-      <ChangePassword />
-    </Modal>
+    <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
+      <SlidingModalHeader>
+        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+          Change Password
+        </div>
+      </SlidingModalHeader>
+      <SlidingModalCloseButton />
+      <SlidingModalContent>
+        <div className="mx-4 px-10">
+          <ChangePassword onCancel={() => setShowDialog(false)} />
+        </div>
+      </SlidingModalContent>
+    </SlidingModal>
   );
 };
 const InviteUserModal = ({

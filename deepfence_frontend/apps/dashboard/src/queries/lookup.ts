@@ -4,17 +4,17 @@ import { getLookupApiClient } from '@/api/api';
 import { apiWrapper } from '@/utils/api';
 
 export const lookupQueries = createQueryKeys('lookup', {
-  host: (params: { nodeId: string }) => {
+  host: (params: { nodeIds: string[] }) => {
     return {
       queryKey: [params],
       queryFn: async () => {
-        const { nodeId } = params;
+        const { nodeIds: nodeIds } = params;
         const lookupHostApi = apiWrapper({
           fn: getLookupApiClient().lookupHost,
         });
         const lookupResult = await lookupHostApi({
           lookupLookupFilter: {
-            node_ids: [nodeId],
+            node_ids: nodeIds,
             in_field_filter: null,
             window: {
               offset: 0,
@@ -24,11 +24,11 @@ export const lookupQueries = createQueryKeys('lookup', {
         });
 
         if (!lookupResult.ok || !lookupResult.value.length) {
-          throw new Error(`Failed to load host: ${nodeId}`);
+          throw new Error(`Failed to load host: ${nodeIds}`);
         }
 
         return {
-          hostData: lookupResult.value[0],
+          hostData: lookupResult.value,
         };
       },
     };
@@ -144,6 +144,35 @@ export const lookupQueries = createQueryKeys('lookup', {
 
         return {
           podData: lookupResult.value[0],
+        };
+      },
+    };
+  },
+  cloudResources: (params: { nodeIds: string[] }) => {
+    return {
+      queryKey: [params],
+      queryFn: async () => {
+        const { nodeIds } = params;
+        const lookupCloudResources = apiWrapper({
+          fn: getLookupApiClient().lookupCloudResources,
+        });
+        const lookupResult = await lookupCloudResources({
+          lookupLookupFilter: {
+            node_ids: nodeIds,
+            in_field_filter: null,
+            window: {
+              offset: 0,
+              size: 1,
+            },
+          },
+        });
+
+        if (!lookupResult.ok || !lookupResult.value.length) {
+          throw new Error(`Failed to load host: ${nodeIds}`);
+        }
+
+        return {
+          cloudResourcesData: lookupResult.value,
         };
       },
     };

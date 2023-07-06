@@ -1,5 +1,11 @@
-import { Modal } from 'ui-components';
+import {
+  SlidingModal,
+  SlidingModalCloseButton,
+  SlidingModalContent,
+  SlidingModalHeader,
+} from 'ui-components';
 
+import { ScanRadarIcon } from '@/components/icons/common/ScanRadar';
 import {
   ComplianceScanConfigureForm,
   ComplianceScanConfigureFormProps,
@@ -44,7 +50,20 @@ export interface ConfigureScanModalProps {
       }
   );
 }
-
+const Header = ({ title }: { title: string }) => {
+  return (
+    <SlidingModalHeader>
+      <span className="flex w-full dark:bg-bg-breadcrumb-bar h-[64px] dark:text-text-text-and-icon">
+        <span className="px-4 text-h3 inline-flex items-center gap-x-2">
+          <span className="w-4 h-4 ">
+            <ScanRadarIcon />
+          </span>
+          New {title}
+        </span>
+      </span>
+    </SlidingModalHeader>
+  );
+};
 export const ConfigureScanModal = ({
   open,
   onOpenChange,
@@ -54,51 +73,59 @@ export const ConfigureScanModal = ({
   let title = '';
 
   if (scanOptions.scanType === ScanTypeEnum.VulnerabilityScan) {
-    title = `Configure vulnerability scan`;
+    title = `vulnerability scan`;
   } else if (scanOptions.scanType === ScanTypeEnum.SecretScan) {
-    title = `Configure secret scan`;
+    title = `secret scan`;
   } else if (scanOptions.scanType === ScanTypeEnum.MalwareScan) {
-    title = `Configure malware scan`;
+    title = `malware scan`;
   } else if (
     scanOptions.scanType === ScanTypeEnum.ComplianceScan ||
     scanOptions.scanType === ScanTypeEnum.CloudComplianceScan
   ) {
-    title = `Configure posture scan`;
+    title = `posture scan`;
   }
 
   return (
-    <Modal open={open} title={title} onOpenChange={onOpenChange}>
-      <div className="p-6">
-        {scanOptions.scanType === ScanTypeEnum.VulnerabilityScan && (
-          <VulnerabilityScanConfigureForm
-            showAdvancedOptions={scanOptions.showAdvancedOptions}
-            data={scanOptions.data}
-            onSuccess={() => onOpenChange(false)}
-          />
-        )}
-        {scanOptions.scanType === ScanTypeEnum.SecretScan && (
-          <SecretScanConfigureForm
-            showAdvancedOptions={scanOptions.showAdvancedOptions}
-            data={scanOptions.data}
-            onSuccess={() => onOpenChange(false)}
-          />
-        )}
-        {scanOptions.scanType === ScanTypeEnum.MalwareScan && (
-          <MalwareScanConfigureForm
-            showAdvancedOptions={scanOptions.showAdvancedOptions}
-            data={scanOptions.data}
-            onSuccess={() => onOpenChange(false)}
-          />
-        )}
-        {(scanOptions.scanType === ScanTypeEnum.ComplianceScan ||
-          scanOptions.scanType === ScanTypeEnum.CloudComplianceScan) && (
-          <ComplianceScanConfigureForm
-            showAdvancedOptions={scanOptions.showAdvancedOptions}
-            data={scanOptions.data}
-            onSuccess={() => onOpenChange(false)}
-          />
-        )}
-      </div>
-    </Modal>
+    <SlidingModal open={open} onOpenChange={onOpenChange} size="l">
+      <Header title={title} />
+      <SlidingModalCloseButton />
+      <SlidingModalContent>
+        <div className="p-4">
+          {scanOptions.scanType === ScanTypeEnum.VulnerabilityScan && (
+            <VulnerabilityScanConfigureForm
+              showAdvancedOptions={scanOptions.showAdvancedOptions}
+              data={scanOptions.data}
+              onSuccess={() => onOpenChange(false)}
+              onCancel={() => onOpenChange(false)}
+            />
+          )}
+          {scanOptions.scanType === ScanTypeEnum.SecretScan && (
+            <SecretScanConfigureForm
+              showAdvancedOptions={scanOptions.showAdvancedOptions}
+              data={scanOptions.data}
+              onSuccess={() => onOpenChange(false)}
+              onCancel={() => onOpenChange(false)}
+            />
+          )}
+          {scanOptions.scanType === ScanTypeEnum.MalwareScan && (
+            <MalwareScanConfigureForm
+              showAdvancedOptions={scanOptions.showAdvancedOptions}
+              data={scanOptions.data}
+              onSuccess={() => onOpenChange(false)}
+              onCancel={() => onOpenChange(false)}
+            />
+          )}
+          {(scanOptions.scanType === ScanTypeEnum.ComplianceScan ||
+            scanOptions.scanType === ScanTypeEnum.CloudComplianceScan) && (
+            <ComplianceScanConfigureForm
+              showAdvancedOptions={scanOptions.showAdvancedOptions}
+              data={scanOptions.data}
+              onSuccess={() => onOpenChange(false)}
+              onCancel={() => onOpenChange(false)}
+            />
+          )}
+        </div>
+      </SlidingModalContent>
+    </SlidingModal>
   );
 };

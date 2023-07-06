@@ -67,7 +67,7 @@ const SummaryTab = ({
 };
 
 function useNodeCounts() {
-  return useSuspenseQuery({ ...queries.topology.nodeCounts() });
+  return useSuspenseQuery({ ...queries.search.nodeCounts() });
 }
 
 const NodeCount = ({ type }: { type: keyof SearchNodeCountResp }) => {

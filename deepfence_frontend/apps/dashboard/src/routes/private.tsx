@@ -49,10 +49,7 @@ import { module as malwareScanSumary } from '@/features/onboard/pages/MalwareSca
 import { module as scanInProgress } from '@/features/onboard/pages/ScanInProgress';
 import { module as secretScanSumary } from '@/features/onboard/pages/SecretScanSummary';
 import { module as vulnerabilityScanSumary } from '@/features/onboard/pages/VulnerabilityScanSummary';
-import {
-  listControlsApiLoader,
-  toggleControlApiAction,
-} from '@/features/postures/data-component/listControlsApiLoader';
+import { toggleControlApiAction } from '@/features/postures/data-component/toggleControlApiAction';
 import { module as postureConnectorLayout } from '@/features/postures/layouts/PostureConnectorLayout';
 import { module as postureAddAccounts } from '@/features/postures/pages/AccountAdd';
 import { module as postureAccounts } from '@/features/postures/pages/Accounts';
@@ -61,10 +58,8 @@ import { module as postureCloudDetails } from '@/features/postures/pages/Posture
 import { module as postureCloudScanResults } from '@/features/postures/pages/PostureCloudScanResults';
 import { module as postureDetails } from '@/features/postures/pages/PostureDetailModal';
 import { module as postureScanResults } from '@/features/postures/pages/PostureScanResults';
-import { module as registryConnectorLayout } from '@/features/registries/layouts/RegistryConnectorLayout';
 import { module as registries } from '@/features/registries/pages/Registries';
 import { module as registryAccounts } from '@/features/registries/pages/RegistryAccounts';
-import { module as registryAdd } from '@/features/registries/pages/RegistryAdd';
 import { module as registryImages } from '@/features/registries/pages/RegistryImages';
 import { module as registryImageTags } from '@/features/registries/pages/RegistryImageTags';
 import { module as secretRulesForScan } from '@/features/secrets/data-components/secretScanRulesApiLoader';
@@ -83,8 +78,6 @@ import { module as scheduledJobs } from '@/features/settings/pages/ScheduledJobs
 import { module as settings } from '@/features/settings/pages/Settings';
 import { module as userAuditLogs } from '@/features/settings/pages/UserAuditLogs';
 import { module as userManagement } from '@/features/settings/pages/UserManagement';
-import { module as threatGraphDetailModal } from '@/features/threat-graph/data-components/DetailsModal';
-import { module as threatGraphLoader } from '@/features/threat-graph/data-components/threatGraphLoader';
 import { module as vulnerabilityTthreatGraphLoader } from '@/features/threat-graph/data-components/vulnerabilityThreatGraphLoader';
 import { module as threatGraph } from '@/features/threat-graph/pages/ThreatGraph';
 import { module as topologyLoader } from '@/features/topology/data-components/topologyLoader';
@@ -228,17 +221,6 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'registries/:account',
         ...registryAccounts,
         meta: { title: 'Registry Account' },
-      },
-      {
-        path: 'registries/add',
-        ...registryConnectorLayout,
-        children: [
-          {
-            path: ':account',
-            ...registryAdd,
-            meta: { title: 'Registry Add Account' },
-          },
-        ],
       },
       {
         path: 'registries/images/:account/:nodeId',
@@ -633,7 +615,6 @@ export const privateRoutes: CustomRouteObject[] = [
       },
       {
         path: 'list/controls/:nodeType/:checkType',
-        loader: listControlsApiLoader,
         action: toggleControlApiAction,
       },
       {
@@ -641,16 +622,8 @@ export const privateRoutes: CustomRouteObject[] = [
         loader: searchCloudFiltersApiLoader,
       },
       {
-        path: 'threat-graph/details-modal',
-        ...threatGraphDetailModal,
-      },
-      {
         path: 'topology',
         ...topologyLoader,
-      },
-      {
-        path: 'threat-graph',
-        ...threatGraphLoader,
       },
       {
         path: 'threat-graph-vulnerability',

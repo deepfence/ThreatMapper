@@ -331,6 +331,85 @@ export const searchQueries = createQueryKeys('search', {
       },
     };
   },
+  cloudAccounts: (filters: {
+    searchText?: string;
+    size: number;
+    active?: boolean;
+    cloudProvider?: string;
+  }) => {
+    return {
+      queryKey: [{ filters }],
+      queryFn: async ({
+        pageParam = 0,
+      }): Promise<{
+        accounts: {
+          nodeId: string;
+          nodeName: string;
+        }[];
+      }> => {
+        const { searchText, size, active, cloudProvider } = filters;
+        const matchFilter = { filter_in: {} };
+        if (searchText?.length) {
+          matchFilter.filter_in = {
+            node_name: [searchText],
+          };
+        }
+        const searchSearchNodeReq = {
+          node_filter: {
+            filters: {
+              contains_filter: {
+                filter_in: {
+                  ...(active !== undefined && { active: [active === true] }),
+                  ...(cloudProvider !== undefined && { cloud_provider: [cloudProvider] }),
+                },
+              },
+              order_filter: {
+                order_fields: [
+                  {
+                    field_name: 'node_name',
+                    descending: false,
+                  },
+                ],
+              },
+              match_filter: matchFilter,
+              compare_filter: null,
+            },
+            in_field_filter: null,
+            window: {
+              offset: 0,
+              size: 0,
+            },
+          },
+          window: {
+            offset: pageParam,
+            size,
+          },
+        };
+        const searchCloudAccountsApi = apiWrapper({
+          fn: getSearchApiClient().searchCloudAccounts,
+        });
+        const searchCloudAccountsResponse = await searchCloudAccountsApi({
+          searchSearchNodeReq,
+        });
+        if (!searchCloudAccountsResponse.ok) {
+          throw searchCloudAccountsResponse.error;
+        }
+        if (searchCloudAccountsResponse.value === null) {
+          return {
+            accounts: [],
+          };
+        }
+        return {
+          accounts: searchCloudAccountsResponse.value.map((res) => {
+            return {
+              nodeId: res.node_id ?? '',
+              nodeName: res.node_name ?? '',
+            };
+          }),
+        };
+      },
+    };
+  },
   hostsWithPagination: (filters: {
     page: number;
     pageSize: number;
@@ -923,6 +1002,22 @@ export const searchQueries = createQueryKeys('search', {
           currentPage: page,
           totalRows: page * pageSize + resourcesCountResults.value.count,
         };
+      },
+    };
+  },
+  nodeCounts: () => {
+    return {
+      queryKey: ['nodeCounts'],
+      queryFn: async () => {
+        const getNodeCountsApi = apiWrapper({
+          fn: getSearchApiClient().getNodeCounts,
+        });
+        const nodeCounts = await getNodeCountsApi();
+
+        if (!nodeCounts.ok) {
+          throw new Error('Node counts failed');
+        }
+        return nodeCounts.value;
       },
     };
   },
