@@ -15,7 +15,6 @@ export const ChangePassword = ({ onCancel }: { onCancel: () => void }) => {
   return (
     <fetcher.Form method="post" className="flex flex-col gap-y-8 mt-4 mx-4">
       <TextInput
-        className="mt-8"
         label="Old Password"
         type={'password'}
         placeholder="Old Password"
