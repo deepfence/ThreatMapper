@@ -230,7 +230,7 @@ const UploadVulnerabilityDatabase = () => {
       <FileInput
         className="mt-2 min-[200px] max-w-xs"
         label="Please select a file to upload"
-        sizing="sm"
+        sizing="md"
         accept="application/tar+gzip"
         onChoosen={(e) => {
           const file = e.target.files?.[0];
@@ -273,7 +273,7 @@ const ScanHistoryAndDbManagement = () => {
   const [selectedResource, setSelectedResource] = useState<string>(
     ModelBulkDeleteScansRequestScanTypeEnumType.Vulnerability,
   );
-  const [duration, setDuration] = useState(1);
+  const [duration, setDuration] = useState<number>(DURATION['Last 1 Day']);
 
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -344,8 +344,6 @@ const ScanHistoryAndDbManagement = () => {
             <Listbox
               label="Choose duration"
               name="duration"
-              placeholder="Choose Duration"
-              multiple={false}
               value={duration}
               onChange={(value) => {
                 setDuration(value);

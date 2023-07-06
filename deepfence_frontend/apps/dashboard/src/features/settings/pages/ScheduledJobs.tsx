@@ -194,7 +194,7 @@ const ScheduledJobsTable = ({
         <p className="dark:text-status-error text-p7">{data.message}</p>
       ) : (
         <Table
-          size="compact"
+          size="default"
           data={data.data ?? []}
           columns={columns}
           enableColumnResizing
@@ -239,7 +239,7 @@ const ScheduledJobs = () => {
       </div>
       <Suspense
         fallback={
-          <TableSkeleton columns={8} rows={5} size={'compact'} className="mt-4" />
+          <TableSkeleton columns={8} rows={5} size={'default'} className="mt-4" />
         }
       >
         <ScheduledJobsTable onTableAction={onTableAction} />

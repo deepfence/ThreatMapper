@@ -35,12 +35,14 @@ import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { EyeHideSolid } from '@/components/icons/common/EyeHideSolid';
 import { EyeSolidIcon } from '@/components/icons/common/EyeSolid';
+import { PlusIcon } from '@/components/icons/common/Plus';
 import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
 import { useGetCurrentUser } from '@/features/common/data-component/getUserApiLoader';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
+const DEFAULT_PAGE_SIZE = 10;
 
 export type ActionReturnType = {
   message?: string;
@@ -292,6 +294,7 @@ const ActionDropdown = ({
               onClick={() => {
                 setShowDeleteDialog(true);
               }}
+              className="dark:text-status-error dark:hover:text-[#C45268]"
             >
               Delete
             </DropdownItem>
@@ -320,9 +323,7 @@ const ChangePasswordModal = ({
       </SlidingModalHeader>
       <SlidingModalCloseButton />
       <SlidingModalContent>
-        <div className="mx-4 px-10">
-          <ChangePassword onCancel={() => setShowDialog(false)} />
-        </div>
+        <ChangePassword onCancel={() => setShowDialog(false)} />
       </SlidingModalContent>
     </SlidingModal>
   );
@@ -453,8 +454,8 @@ const EditUserModal = ({
   const role = Object.entries(ModelUpdateUserIdRequestRoleEnum).find(
     ([_, val]) => val === user.role,
   )?.[0];
-  const [_role, _setRole] = useState('');
-  const [_status, _setStatus] = useState('');
+  const [_role, _setRole] = useState(role);
+  const [_status, _setStatus] = useState(() => (user.is_active ? 'Active' : 'Inactive'));
 
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
@@ -497,7 +498,7 @@ const EditUserModal = ({
             <Listbox
               variant="underline"
               value={_role}
-              defaultValue={role}
+              defaultValue={_role}
               name="role"
               label={'Role'}
               placeholder="Role"
@@ -506,9 +507,11 @@ const EditUserModal = ({
                 _setRole(item);
               }}
               getDisplayValue={() => {
-                return Object.keys(ModelUpdateUserIdRequestRoleEnum).filter((item) => {
-                  return item === _role;
-                })[0];
+                return (
+                  Object.keys(ModelUpdateUserIdRequestRoleEnum).find((item) => {
+                    return item === _role;
+                  }) ?? ''
+                );
               }}
             >
               {Object.keys(ModelUpdateUserIdRequestRoleEnum).map((role) => {
@@ -521,11 +524,11 @@ const EditUserModal = ({
             </Listbox>
             <Listbox
               variant="underline"
-              value={status}
+              value={_status}
               name="status"
               label={'Status'}
               placeholder="Active"
-              defaultValue={user?.is_active ? 'Active' : 'inActive'}
+              defaultValue={_status}
               helperText={data?.fieldErrors?.status}
               onChange={(item) => {
                 _setStatus(item);
@@ -537,7 +540,7 @@ const EditUserModal = ({
               }}
             >
               <ListboxOption value="Active">Active</ListboxOption>
-              <ListboxOption value="InActive">Inactive</ListboxOption>
+              <ListboxOption value="Inactive">Inactive</ListboxOption>
             </Listbox>
             {!data?.success && data?.message && (
               <p className="dark:text-status-error text-p7">{data.message}</p>
@@ -799,7 +802,7 @@ const UsersTable = () => {
     return columns;
   }, []);
   const { data } = useListUsers();
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   if (data.message) {
     return <p className="dark:text-status-error text-p7">{data.message}</p>;
@@ -808,7 +811,7 @@ const UsersTable = () => {
     <div className="mt-2">
       <Table
         pageSize={pageSize}
-        size="compact"
+        size="default"
         data={data.data ?? []}
         columns={columns}
         enableColumnResizing
@@ -841,7 +844,7 @@ const UserManagement = () => {
         <Button
           variant="flat"
           size="sm"
-          // startIcon={<FaUserPlus />}
+          startIcon={<PlusIcon />}
           type="button"
           className="mt-2"
           onClick={() => setOpenInviteUserForm(true)}
@@ -850,7 +853,12 @@ const UserManagement = () => {
         </Button>
         <Suspense
           fallback={
-            <TableSkeleton columns={6} rows={5} size={'compact'} className="mt-2" />
+            <TableSkeleton
+              columns={6}
+              rows={DEFAULT_PAGE_SIZE}
+              size={'default'}
+              className="mt-2"
+            />
           }
         >
           <UsersTable />

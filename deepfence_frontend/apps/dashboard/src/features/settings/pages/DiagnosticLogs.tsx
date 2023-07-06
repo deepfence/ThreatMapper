@@ -26,6 +26,7 @@ import { invalidateQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 
+const DEFAULT_PAGE_SIZE = 10;
 const ACTION_TYPE = {
   CONSOLE_LOGS: 'consoleLogs',
   AGENT_LOGS: 'agentLogs',
@@ -127,7 +128,7 @@ const useGetLogs = () => {
 const ConsoleDiagnosticLogsTable = () => {
   const columnHelper = createColumnHelper<DiagnosisDiagnosticLogsLink>();
   const { data } = useGetLogs();
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('label', {
@@ -183,7 +184,7 @@ const ConsoleDiagnosticLogsTable = () => {
   }
   return (
     <Table
-      size="compact"
+      size="default"
       data={consoleLogs}
       columns={columns}
       enablePagination
@@ -201,7 +202,7 @@ const AgentDiagnosticLogsTable = () => {
   const { data: _logs, message } = data;
   const agentLogs = _logs?.agent_logs ?? [];
 
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('label', {
@@ -258,7 +259,7 @@ const AgentDiagnosticLogsTable = () => {
   return (
     <>
       <Table
-        size="compact"
+        size="default"
         data={agentLogs}
         columns={columns}
         enablePagination
@@ -283,7 +284,13 @@ const ConsoleDiagnosticLogsComponent = () => {
         hidden
         value={ACTION_TYPE.CONSOLE_LOGS}
       />
-      <Button variant="flat">Generate console diagnostics logs</Button>
+      <Button
+        variant="flat"
+        disabled={fetcher.state !== 'idle'}
+        loading={fetcher.state !== 'idle'}
+      >
+        Generate console diagnostics logs
+      </Button>
     </fetcher.Form>
   );
 };
@@ -325,14 +332,22 @@ const AgentDiagnosticsLogsModal = ({
             />
             <SearchableHostList scanType="none" active={true} />
             <SearchableClusterList active={true} />
-            <Button
-              className="text-center mt-6 w-full"
-              type="submit"
-              disabled={fetcher.state !== 'idle'}
-              loading={fetcher.state !== 'idle'}
-            >
-              Generate
-            </Button>
+            <div className="flex gap-x-2 mt-8">
+              <Button
+                type="submit"
+                disabled={fetcher.state !== 'idle'}
+                loading={fetcher.state !== 'idle'}
+              >
+                Generate
+              </Button>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setShowDialog(false)}
+              >
+                Cancel
+              </Button>
+            </div>
           </fetcher.Form>
         </div>
       </SlidingModalContent>
@@ -364,7 +379,11 @@ const DiagnosticLogs = () => {
         <h6 className="text-h5 dark:text-text-input-value">Console diagnostic logs</h6>
         <div className="mt-2 flex flex-col gap-y-2">
           <ConsoleDiagnosticLogsComponent />
-          <Suspense fallback={<TableSkeleton columns={4} rows={5} size={'compact'} />}>
+          <Suspense
+            fallback={
+              <TableSkeleton columns={4} rows={DEFAULT_PAGE_SIZE} size={'default'} />
+            }
+          >
             <ConsoleDiagnosticLogsTable />
           </Suspense>
         </div>
@@ -373,7 +392,11 @@ const DiagnosticLogs = () => {
         <h6 className="text-h5 dark:text-text-input-value">Agent diagnostic logs</h6>
         <div className="mt-2 gap-y-2 flex flex-col ">
           <AgentDiagnosticLogsComponent />
-          <Suspense fallback={<TableSkeleton columns={4} rows={5} size={'compact'} />}>
+          <Suspense
+            fallback={
+              <TableSkeleton columns={4} rows={DEFAULT_PAGE_SIZE} size={'default'} />
+            }
+          >
             <AgentDiagnosticLogsTable />
           </Suspense>
         </div>

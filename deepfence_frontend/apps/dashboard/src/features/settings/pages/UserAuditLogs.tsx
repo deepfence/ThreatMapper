@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
-import { Suspense, useMemo } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import {
   createColumnHelper,
   IconButton,
@@ -15,6 +16,8 @@ import { TruncatedText } from '@/components/TruncatedText';
 import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
 
+const DEFAULT_PAGE_SIZE = 10;
+
 const useUserActivityLogs = () => {
   return useSuspenseQuery({
     ...queries.setting.listUserActivityLogs(),
@@ -24,7 +27,8 @@ const useUserActivityLogs = () => {
 const AuditTable = () => {
   const columnHelper = createColumnHelper<PostgresqlDbGetAuditLogsRow>();
 
-  const { copy } = useCopyToClipboardState();
+  const { copy, isCopied } = useCopyToClipboardState();
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const { data } = useUserActivityLogs();
   const columns = useMemo(() => {
@@ -103,18 +107,27 @@ const AuditTable = () => {
     return columns;
   }, []);
 
+  useEffect(() => {
+    if (isCopied) {
+      toast.message('Text copied');
+    }
+  }, [isCopied]);
+
   return (
     <div className="mt-2">
       {data.message ? (
         <p className="text-red-500 text-sm">{data.message}</p>
       ) : (
         <Table
-          size="compact"
+          size="default"
           data={data.data || []}
           columns={columns}
           enablePagination
-          pageSize={30}
-          enableColumnResizing
+          pageSize={pageSize}
+          enablePageResize
+          onPageResize={(newSize) => {
+            setPageSize(newSize);
+          }}
           enableSorting
         />
       )}
@@ -129,7 +142,12 @@ const UserAuditLogs = () => {
       </div>
       <Suspense
         fallback={
-          <TableSkeleton columns={7} rows={5} size={'compact'} className="mt-4" />
+          <TableSkeleton
+            columns={7}
+            rows={DEFAULT_PAGE_SIZE}
+            size={'default'}
+            className="mt-4"
+          />
         }
       >
         <AuditTable />

@@ -22,6 +22,7 @@ import { SuccessModalContent } from '@/features/settings/components/SuccessModal
 import { invalidateQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 
+const DEFAULT_PAGE_SIZE = 10;
 type ActionReturnType = {
   message?: string;
   success: boolean;
@@ -217,14 +218,14 @@ const SettingTable = () => {
     return columns;
   }, []);
   const { data } = useGlobalSettings();
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   return (
     <div className="mt-2">
       {data.message ? (
         <p className="dark:text-status-error text-sm">{data.message}</p>
       ) : (
         <Table
-          size="compact"
+          size="default"
           pageSize={pageSize}
           data={data.data ?? []}
           columns={columns}
@@ -248,7 +249,12 @@ const GlobalSettings = () => {
       </div>
       <Suspense
         fallback={
-          <TableSkeleton columns={3} rows={3} size={'compact'} className="mt-4" />
+          <TableSkeleton
+            columns={3}
+            rows={DEFAULT_PAGE_SIZE}
+            size={'default'}
+            className="mt-4"
+          />
         }
       >
         <SettingTable />

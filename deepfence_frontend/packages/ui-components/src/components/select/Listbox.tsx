@@ -362,7 +362,7 @@ function getPlaceholderValue<T extends unknown | unknown[]>(
   getDisplayValue?: (value?: T) => string,
   defaultPlaceholder?: string,
 ) {
-  if (isNil(value) || isEmpty(value)) {
+  if (isNil(value) || (typeof value === 'string' && isEmpty(value))) {
     return (
       <span className="dark:text-gray-600 block">
         {defaultPlaceholder || 'Select...'}
