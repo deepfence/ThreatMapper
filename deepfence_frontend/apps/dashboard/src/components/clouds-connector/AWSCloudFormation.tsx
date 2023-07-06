@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Listbox, ListboxOption, Step, Stepper } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
-import { ArrowLine } from '@/components/icons/common/ArrowLine';
 import { InfoIcon } from '@/components/icons/common/Info';
 
 const AWS_REGIONS = [
