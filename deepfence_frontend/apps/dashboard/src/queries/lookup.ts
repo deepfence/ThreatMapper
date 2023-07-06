@@ -177,4 +177,144 @@ export const lookupQueries = createQueryKeys('lookup', {
       },
     };
   },
+  vulnerabilities: (filters: { cveIds: string[] }) => {
+    const { cveIds } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const lookupVulnerabilities = apiWrapper({
+          fn: getLookupApiClient().lookupVulnerabilities,
+        });
+        const lookupVulnerabilitiesResponse = await lookupVulnerabilities({
+          lookupLookupFilter: {
+            node_ids: cveIds,
+            in_field_filter: [],
+            window: {
+              offset: 0,
+              size: cveIds.length,
+            },
+          },
+        });
+        if (!lookupVulnerabilitiesResponse.ok) {
+          throw lookupVulnerabilitiesResponse.error;
+        }
+
+        return {
+          data: lookupVulnerabilitiesResponse.value,
+        };
+      },
+    };
+  },
+  secrets: (filters: { secretIds: string[] }) => {
+    const { secretIds } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const lookupSecrets = apiWrapper({
+          fn: getLookupApiClient().lookupSecrets,
+        });
+        const lookupSecretsResponse = await lookupSecrets({
+          lookupLookupFilter: {
+            node_ids: secretIds,
+            in_field_filter: [],
+            window: {
+              offset: 0,
+              size: secretIds.length,
+            },
+          },
+        });
+        if (!lookupSecretsResponse.ok) {
+          throw lookupSecretsResponse.error;
+        }
+
+        return {
+          data: lookupSecretsResponse.value,
+        };
+      },
+    };
+  },
+  malwares: (filters: { malwareIds: string[] }) => {
+    const { malwareIds } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const lookupMalwares = apiWrapper({
+          fn: getLookupApiClient().lookupMalwares,
+        });
+        const lookupMalwaresResponse = await lookupMalwares({
+          lookupLookupFilter: {
+            node_ids: malwareIds,
+            in_field_filter: [],
+            window: {
+              offset: 0,
+              size: malwareIds.length,
+            },
+          },
+        });
+        if (!lookupMalwaresResponse.ok) {
+          throw lookupMalwaresResponse.error;
+        }
+
+        return {
+          data: lookupMalwaresResponse.value,
+        };
+      },
+    };
+  },
+  compliances: (filters: { complianceIds: string[] }) => {
+    const { complianceIds } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const lookupCompliances = apiWrapper({
+          fn: getLookupApiClient().lookupCompliances,
+        });
+        const lookupCompliancesResponse = await lookupCompliances({
+          lookupLookupFilter: {
+            node_ids: complianceIds,
+            in_field_filter: [],
+            window: {
+              offset: 0,
+              size: complianceIds.length,
+            },
+          },
+        });
+        if (!lookupCompliancesResponse.ok) {
+          throw lookupCompliancesResponse.error;
+        }
+
+        return {
+          data: lookupCompliancesResponse.value,
+        };
+      },
+    };
+  },
+  cloudCompliances: (filters: { cloudComplianceIds: string[] }) => {
+    const { cloudComplianceIds } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const lookupCloudCompliances = apiWrapper({
+          fn: getLookupApiClient().lookupCloudCompliances,
+        });
+        const lookupCloudCompliancesResponse = await lookupCloudCompliances({
+          lookupLookupFilter: {
+            node_ids: cloudComplianceIds,
+            in_field_filter: [],
+            window: {
+              offset: 0,
+              size: cloudComplianceIds.length,
+            },
+          },
+        });
+        if (!lookupCloudCompliancesResponse.ok) {
+          throw lookupCloudCompliancesResponse.error;
+        }
+
+        return {
+          data: lookupCloudCompliancesResponse.value,
+        };
+      },
+    };
+  },
 });

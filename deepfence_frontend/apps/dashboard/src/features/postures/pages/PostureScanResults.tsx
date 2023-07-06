@@ -1027,7 +1027,7 @@ const PostureTable = ({
         cell: (info) => (
           <DFLink
             to={{
-              pathname: `./${info.getValue()}`,
+              pathname: `./${encodeURIComponent(info.getValue())}`,
               search: searchParams.toString(),
             }}
             className="flex items-center gap-x-[6px]"
@@ -1037,7 +1037,9 @@ const PostureTable = ({
                 <PostureIcon />
               </div>
             </div>
-            <TruncatedText text={info.row.original.node_id} />
+            <TruncatedText
+              text={info.row.original.test_number ?? info.row.original.node_id}
+            />
           </DFLink>
         ),
         header: () => 'ID',

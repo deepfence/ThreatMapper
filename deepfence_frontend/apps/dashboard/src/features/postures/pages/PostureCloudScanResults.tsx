@@ -1070,7 +1070,9 @@ const CloudPostureTable = ({
                   <PostureIcon />
                 </div>
               </div>
-              <TruncatedText text={info.row.original.node_id} />
+              <TruncatedText
+                text={info.row.original.control_id ?? info.row.original.node_id}
+              />
             </DFLink>
           );
         },

@@ -256,6 +256,11 @@ export function getLookupApiClient() {
     lookupCloudResources: lookupApi.getCloudResources.bind(lookupApi),
     lookupCloudPostures: lookupApi.getCloudCompliances.bind(lookupApi),
     lookupPostures: lookupApi.getCompliances.bind(lookupApi),
+    lookupVulnerabilities: lookupApi.getVulnerabilities.bind(lookupApi),
+    lookupSecrets: lookupApi.getSecrets.bind(lookupApi),
+    lookupMalwares: lookupApi.getMalwares.bind(lookupApi),
+    lookupCompliances: lookupApi.getCompliances.bind(lookupApi),
+    lookupCloudCompliances: lookupApi.getCloudCompliances.bind(lookupApi),
   };
 }
 
