@@ -17,7 +17,7 @@ import {
 import { LinkButton } from '@/components/LinkButton';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { IconMapForNodeType } from '@/features/onboard/components/IconMapForNodeType';
-import { statusScanApiFunctionMap } from '@/features/onboard/pages/ScanInProgress';
+import { statusScanApiFunctionMap } from '@/queries/onboard';
 import { apiWrapper } from '@/utils/api';
 import { typedDefer, TypedDeferredData } from '@/utils/router';
 import { DFAwait } from '@/utils/suspense';

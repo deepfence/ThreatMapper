@@ -78,7 +78,7 @@ export const ConnectorHeader = ({
                 ['dark:text-text-link']: isScanRoutePath(),
               })}
             >
-              Scan Infrastructure
+              Scan infrastructure
             </span>
           </BreadcrumbLink>
           <BreadcrumbLink>
@@ -97,7 +97,7 @@ export const ConnectorHeader = ({
                 ['dark:text-text-link']: isViewScanSummaryRoutePath(),
               })}
             >
-              View Scan Results
+              View scan results
             </span>
           </BreadcrumbLink>
         </Breadcrumb>

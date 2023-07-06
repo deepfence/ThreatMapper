@@ -2,13 +2,26 @@ import { createQueryKeys } from '@lukemorales/query-key-factory';
 import { startCase } from 'lodash-es';
 
 import {
+  getCloudComplianceApiClient,
   getCloudNodesApiClient,
+  getComplianceApiClient,
+  getMalwareApiClient,
   getRegistriesApiClient,
+  getSecretApiClient,
   getTopologyApiClient,
+  getVulnerabilityApiClient,
 } from '@/api/api';
 import { OnboardConnectionNode } from '@/features/onboard/pages/connectors/MyConnectors';
 import { apiWrapper } from '@/utils/api';
 import { getRegistryDisplayId } from '@/utils/registry';
+
+export const statusScanApiFunctionMap = {
+  vulnerability: getVulnerabilityApiClient().statusVulnerabilityScan,
+  secret: getSecretApiClient().statusSecretScan,
+  malware: getMalwareApiClient().statusMalwareScan,
+  compliance: getComplianceApiClient().statusComplianceScan,
+  cloudCompliance: getCloudComplianceApiClient().statusCloudComplianceScan,
+};
 
 export const onboardQueries = createQueryKeys('onboard', {
   listConnectors: () => {
@@ -187,7 +200,7 @@ export const onboardQueries = createQueryKeys('onboard', {
             count: registriesResults.value.length,
             connections: registriesResults.value.map((registry) => ({
               id: `registry-${registry.id}`,
-              urlId: `${registry.id ?? ''}`,
+              urlId: `${registry.node_id ?? ''}`,
               urlType: 'registry',
               accountType: startCase(registry.registry_type ?? 'Registry'),
               connectionMethod: 'Registry',
@@ -198,6 +211,57 @@ export const onboardQueries = createQueryKeys('onboard', {
         }
 
         return data;
+      },
+    };
+  },
+  scanStatus: (filters: {
+    nodeType: string;
+    bulkScanId: string;
+    scanType: keyof typeof statusScanApiFunctionMap;
+  }) => {
+    const { nodeType, bulkScanId, scanType: _scanType } = filters;
+    let scanType = _scanType;
+    return {
+      queryKey: ['scanStatus'],
+      queryFn: async () => {
+        // TODO: Backend wants compliance status api for cloud to use cloud-compliance api
+        if (scanType === 'compliance' && nodeType === 'cloud_account') {
+          scanType = 'cloudCompliance';
+        }
+
+        const statusScanApi = apiWrapper({
+          fn: statusScanApiFunctionMap[scanType],
+        });
+        const statusResponse = await statusScanApi({
+          modelScanStatusReq: {
+            scan_ids: [],
+            bulk_scan_id: bulkScanId,
+          },
+        });
+        if (!statusResponse.ok) {
+          return {
+            message: statusResponse.error.message,
+            data: [],
+          };
+        }
+
+        if (statusResponse.value === null) {
+          return {
+            data: [],
+          };
+        }
+        if (
+          statusResponse.value.statuses &&
+          Array.isArray(statusResponse.value.statuses)
+        ) {
+          return {
+            data: statusResponse.value.statuses,
+          };
+        }
+
+        return {
+          data: Object.values(statusResponse.value.statuses ?? {}),
+        };
       },
     };
   },

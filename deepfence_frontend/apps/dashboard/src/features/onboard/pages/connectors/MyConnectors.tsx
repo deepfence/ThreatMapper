@@ -73,7 +73,7 @@ function MyConnectors() {
       <div className="h-full dark:text-white">
         <Suspense
           fallback={
-            <TableSkeleton rows={4} columns={5} size="compact" className="mt-8" />
+            <TableSkeleton rows={4} columns={10} size="default" className="mt-8" />
           }
         >
           <MyConnectorsTable />
@@ -243,7 +243,7 @@ function MyConnectorsTable() {
     <>
       <RefreshButton />
       <Table
-        size="compact"
+        size="default"
         data={data}
         noDataText="No connectors found"
         columns={columns}
