@@ -19,6 +19,7 @@ import (
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/s3"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/slack"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/splunk"
+	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/sumologic"
 	"github.com/deepfence/ThreatMapper/deepfence_server/pkg/integration/teams"
 )
 
@@ -47,6 +48,8 @@ func GetIntegration(integrationType string, b []byte) (Integration, error) {
 		return email.New(b)
 	case constants.Jira:
 		return jira.New(b)
+	case constants.SumoLogic:
+		return sumologic.New(b)
 	default:
 		return nil, errors.New("invalid integration type")
 	}
