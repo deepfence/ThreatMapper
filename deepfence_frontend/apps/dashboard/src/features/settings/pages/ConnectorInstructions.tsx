@@ -1,6 +1,6 @@
 import cx from 'classnames';
 import { startCase } from 'lodash-es';
-import { HiCode, HiOutlineArrowCircleRight, HiOutlineArrowLeft } from 'react-icons/hi';
+import { HiOutlineArrowCircleRight, HiOutlineArrowLeft } from 'react-icons/hi';
 import { IconContext } from 'react-icons/lib';
 import { generatePath, useParams } from 'react-router-dom';
 import { Card } from 'ui-components';
@@ -233,18 +233,9 @@ const Instructions = ({ connectorType }: { connectorType: string }) => {
 const Connectors = () => {
   return (
     <div className="max-w-[900px]">
-      <div className="mt-2 flex gap-x-2 items-center">
-        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-          <IconContext.Provider
-            value={{
-              className: 'text-blue-600 dark:text-blue-400',
-            }}
-          >
-            <HiCode />
-          </IconContext.Provider>
-        </div>
+      <div className="mt-2">
         <h3 className="font-medium text-gray-900 dark:text-white text-base">
-          Connection Instructions
+          Connection instructions
         </h3>
       </div>
       <div className="h-full dark:text-white mt-4">
@@ -265,11 +256,10 @@ const ConnectorInstructions = () => {
     connectorType: string;
   };
 
-  return (
-    <SettingsTab value="connection-instructions">
-      {connectorType ? <Instructions connectorType={connectorType} /> : <Connectors />}
-    </SettingsTab>
-  );
+  if (connectorType) {
+    return <Instructions connectorType={connectorType} />;
+  }
+  return <Connectors />;
 };
 
 export const module = {

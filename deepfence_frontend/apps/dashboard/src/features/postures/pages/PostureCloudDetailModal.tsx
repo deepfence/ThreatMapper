@@ -22,15 +22,16 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 function useGetComplianceDetails() {
   const { complianceId } = useParams();
   return useSuspenseQuery({
-    ...queries.posture.postureClouds({
-      complianceId: complianceId ?? '',
+    ...queries.lookup.cloudCompliances({
+      cloudComplianceIds: [complianceId ?? ''],
     }),
   });
 }
 const Header = () => {
   const {
-    data: { data },
+    data: { data: cloudPostures },
   } = useGetComplianceDetails();
+  const data = cloudPostures.length ? cloudPostures[0] : undefined;
 
   const { copy, isCopied } = useCopyToClipboardState();
 
@@ -67,18 +68,24 @@ const Header = () => {
   );
 };
 
+function processLabel(labelKey: string) {
+  return labelKey.replaceAll('_', ' ').replaceAll('id', 'ID');
+}
+
 const DetailsComponent = () => {
   const {
-    data: { data: posture },
+    data: { data: cloudPostures },
   } = useGetComplianceDetails();
 
-  if (!posture) {
+  if (!cloudPostures.length) {
     return (
       <div className="flex items-center p-4 justify-center">
         <h3 className="text-p1">No details found</h3>
       </div>
     );
   }
+
+  const cloudPosture = cloudPostures[0];
 
   const omitFields: (keyof ModelCloudCompliance)[] = [
     'description',
@@ -95,21 +102,31 @@ const DetailsComponent = () => {
           wordBreak: 'break-word',
         }}
       >
-        {posture?.description ?? '-'}
+        {cloudPosture?.description ?? '-'}
       </div>
-      {Object.keys(posture ?? {})
+      {Object.keys(cloudPosture ?? {})
         .filter((key) => {
           if (omitFields.includes(key as keyof ModelCloudCompliance)) return false;
           return true;
         })
         .map((key) => {
-          const label = key.replaceAll('_', ' ');
-          const value = (posture ?? {})[key as keyof ModelCloudCompliance];
+          const label = processLabel(key);
+          const value = (cloudPosture ?? {})[key as keyof ModelCloudCompliance];
+          let valueAsStr = '-';
+          if (Array.isArray(value)) {
+            valueAsStr = value.length ? value.join(', ') : '-';
+          } else if (typeof value === 'string') {
+            valueAsStr = value?.length ? value : '-';
+          } else {
+            valueAsStr = String(value);
+          }
           return (
             <div key={key} className="flex flex-col grow basis-[45%] max-w-full gap-1">
-              <div className="text-p3 dark:text-text-text-and-icon">{label}</div>
-              <div className="text-p1 dark:text-text-input-value">
-                {String(value).length ? String(value) : '-'}
+              <div className="text-p3 dark:text-text-text-and-icon first-letter:capitalize">
+                {label}
+              </div>
+              <div className="text-p1 dark:text-text-input-value break-words">
+                {valueAsStr}
               </div>
             </div>
           );

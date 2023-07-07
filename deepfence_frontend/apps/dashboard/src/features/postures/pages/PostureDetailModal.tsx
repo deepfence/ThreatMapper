@@ -22,17 +22,17 @@ import { usePageNavigation } from '@/utils/usePageNavigation';
 function useGetComplianceDetails() {
   const { complianceId } = useParams();
   return useSuspenseQuery({
-    ...queries.posture.posture({
-      id: complianceId ?? '',
+    ...queries.lookup.compliances({
+      complianceIds: [complianceId ?? ''],
     }),
   });
 }
 
 const Header = () => {
   const {
-    data: { data },
+    data: { data: postures },
   } = useGetComplianceDetails();
-
+  const data = postures.length ? postures[0] : undefined;
   const { copy, isCopied } = useCopyToClipboardState();
 
   return (
@@ -69,18 +69,23 @@ const Header = () => {
   );
 };
 
+function processLabel(labelKey: string) {
+  return labelKey.replaceAll('_', ' ').replaceAll('id', 'ID');
+}
+
 const DetailsComponent = () => {
   const {
-    data: { data: posture },
+    data: { data: postures },
   } = useGetComplianceDetails();
 
-  if (!posture) {
+  if (!postures.length) {
     return (
       <div className="flex items-center p-4 justify-center">
         <h3 className="text-p1">No details found</h3>
       </div>
     );
   }
+  const posture = postures[0];
 
   const omitFields: (keyof ModelCompliance)[] = ['test_number', 'status', 'description'];
 
@@ -100,14 +105,22 @@ const DetailsComponent = () => {
           return true;
         })
         .map((key) => {
-          const label = key.replaceAll('_', ' ');
+          const label = processLabel(key);
           const value = (posture ?? {})[key as keyof ModelCompliance];
+          let valueAsStr = '-';
+          if (Array.isArray(value)) {
+            valueAsStr = value.length ? value.join(', ') : '-';
+          } else if (typeof value === 'string') {
+            valueAsStr = value?.length ? value : '-';
+          } else {
+            valueAsStr = String(value);
+          }
           return (
             <div key={key} className="flex flex-col grow basis-[45%] max-w-full gap-1">
-              <div className="text-p3 dark:text-text-text-and-icon">{label}</div>
-              <div className="text-p1 dark:text-text-input-value">
-                {String(value).length ? String(value) : '-'}
+              <div className="text-p3 dark:text-text-text-and-icon first-letter:capitalize">
+                {label}
               </div>
+              <div className="text-p1 dark:text-text-input-value">{valueAsStr}</div>
             </div>
           );
         })}

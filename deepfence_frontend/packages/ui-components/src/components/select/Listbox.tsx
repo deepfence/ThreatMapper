@@ -267,6 +267,7 @@ export function Listbox<TType, TActualType>({
           )}
           <Portal>
             <Transition
+              className="pointer-events-auto"
               as={'div'}
               enter="transition ease-out duration-1200"
               enterFrom="opacity-0 -translate-y-1"
@@ -369,7 +370,7 @@ function getPlaceholderValue<T extends unknown | unknown[]>(
   getDisplayValue?: (value?: T) => string,
   defaultPlaceholder?: string,
 ) {
-  if (isNil(value) || isEmpty(value)) {
+  if (isNil(value) || (typeof value === 'string' && isEmpty(value))) {
     return (
       <span className="dark:text-gray-600 block">
         {defaultPlaceholder || 'Select...'}

@@ -903,7 +903,7 @@ const SecretTable = ({
         cell: (info) => (
           <DFLink
             to={{
-              pathname: `./${info.getValue()}`,
+              pathname: `./${encodeURIComponent(info.row.original.node_id)}`,
               search: searchParams.toString(),
             }}
             className="flex items-center gap-x-[6px]"
@@ -1244,7 +1244,7 @@ const Top5Widget = () => {
               <td className="w-[70%] px-0 pt-0 pb-2">
                 <DFLink
                   to={{
-                    pathname: `./${secret.node_id}`,
+                    pathname: `./${encodeURIComponent(secret.node_id)}`,
                     search: searchParams.toString(),
                   }}
                   className="flex items-center gap-3"

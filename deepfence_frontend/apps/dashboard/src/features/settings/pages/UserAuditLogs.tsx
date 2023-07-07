@@ -1,106 +1,96 @@
-import { Suspense, useMemo } from 'react';
-import { HiViewList } from 'react-icons/hi';
-import { IconContext } from 'react-icons/lib';
-import { useLoaderData } from 'react-router-dom';
-import { createColumnHelper, Table, TableSkeleton } from 'ui-components';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import {
+  createColumnHelper,
+  IconButton,
+  Table,
+  TableSkeleton,
+  Tooltip,
+} from 'ui-components';
 
-import { getSettingsApiClient } from '@/api/api';
 import { PostgresqlDbGetAuditLogsRow } from '@/api/generated';
-import { CopyToClipboard } from '@/components/CopyToClipboard';
-import { SettingsTab } from '@/features/settings/components/SettingsTab';
-import { apiWrapper } from '@/utils/api';
+import { useCopyToClipboardState } from '@/components/CopyToClipboard';
+import { CopyLineIcon } from '@/components/icons/common/CopyLine';
+import { TruncatedText } from '@/components/TruncatedText';
+import { queries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
-import { DFAwait } from '@/utils/suspense';
 
-type LoaderDataType = {
-  message?: string;
-  data?: PostgresqlDbGetAuditLogsRow[];
-};
-const getData = async (): Promise<LoaderDataType> => {
-  const userApi = apiWrapper({
-    fn: getSettingsApiClient().getUserActivityLogs,
-  });
-  const userResponse = await userApi();
-  if (!userResponse.ok) {
-    if (userResponse.error.response.status === 400) {
-      return {
-        message: userResponse.error.message,
-      };
-    } else if (userResponse.error.response.status === 403) {
-      return {
-        message: 'You do not have enough permissions to view user audit logs',
-      };
-    }
-    throw userResponse.error;
-  }
+const DEFAULT_PAGE_SIZE = 10;
 
-  return {
-    data: userResponse.value,
-  };
-};
-const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
-  return typedDefer({
-    data: getData(),
+const useUserActivityLogs = () => {
+  return useSuspenseQuery({
+    ...queries.setting.listUserActivityLogs(),
+    keepPreviousData: true,
   });
 };
-
-const UserAuditLogs = () => {
+const AuditTable = () => {
   const columnHelper = createColumnHelper<PostgresqlDbGetAuditLogsRow>();
-  const loaderData = useLoaderData() as LoaderDataType;
+
+  const { copy, isCopied } = useCopyToClipboardState();
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
+  const { data } = useUserActivityLogs();
   const columns = useMemo(() => {
     const columns = [
       columnHelper.accessor('created_at', {
-        cell: (cell) => formatMilliseconds(cell.getValue() || ''),
-        header: () => 'Timestamp',
+        cell: (cell) => (
+          <TruncatedText text={formatMilliseconds(cell.getValue() || '')} />
+        ),
+        header: () => <TruncatedText text={'Timestamp'} />,
         minSize: 30,
         size: 35,
-        maxSize: 85,
+        maxSize: 40,
       }),
       columnHelper.accessor('event', {
         cell: (cell) => cell.getValue(),
         header: () => 'Event',
         minSize: 30,
         size: 30,
-        maxSize: 85,
+        maxSize: 40,
       }),
       columnHelper.accessor('action', {
-        cell: (cell) => cell.getValue(),
-        header: () => 'Action',
+        cell: (cell) => <TruncatedText text={cell.getValue() ?? ''} />,
+        header: () => <TruncatedText text={'Action'} />,
         minSize: 20,
-        size: 20,
-        maxSize: 85,
+        size: 25,
+        maxSize: 30,
       }),
       columnHelper.accessor('email', {
         cell: (cell) => cell.getValue(),
         header: () => 'User Email',
         minSize: 30,
         size: 50,
-        maxSize: 85,
+        maxSize: 60,
       }),
       columnHelper.accessor('role', {
         cell: (cell) => cell.getValue(),
-        header: () => 'User Role',
+        header: () => <TruncatedText text={'User Role'} />,
         minSize: 30,
         size: 30,
-        maxSize: 85,
+        maxSize: 35,
       }),
       columnHelper.accessor('resources', {
         cell: (cell) => {
           return (
-            <div className="relative truncate">
-              <span className="mr-6">
-                <CopyToClipboard
-                  data={String(cell.getValue())}
-                  className="top-0 left-0"
-                  asIcon
+            <div className="flex gap-x-2 items-center">
+              <Tooltip placement="right" content={'Copy'} triggerAsChild>
+                <IconButton
+                  size="sm"
+                  variant="outline"
+                  onClick={() => copy(cell.row.original.resources ?? '')}
+                  icon={
+                    <span className="w-3 h-3">
+                      <CopyLineIcon />
+                    </span>
+                  }
                 />
-              </span>
-              {cell.getValue()}
+              </Tooltip>
+              <TruncatedText text={cell.getValue() ?? ''} />
             </div>
           );
         },
-        header: () => 'Resources',
+        header: () => <TruncatedText text={'Resources'} />,
         minSize: 50,
         size: 80,
         maxSize: 85,
@@ -111,63 +101,61 @@ const UserAuditLogs = () => {
         header: () => 'Success',
         minSize: 30,
         size: 30,
-        maxSize: 85,
+        maxSize: 40,
       }),
     ];
     return columns;
   }, []);
 
-  return (
-    <SettingsTab value="user-audit-logs">
-      <div className="h-full">
-        <div className="mt-2 flex gap-x-2 items-center">
-          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-            <IconContext.Provider
-              value={{
-                className: 'text-blue-600 dark:text-blue-400',
-              }}
-            >
-              <HiViewList />
-            </IconContext.Provider>
-          </div>
-          <h3 className="font-medium text-gray-900 dark:text-white text-base">
-            User Audit Logs
-          </h3>
-        </div>
-        <Suspense
-          fallback={<TableSkeleton columns={7} rows={5} size={'sm'} className="mt-4" />}
-        >
-          <DFAwait resolve={loaderData.data}>
-            {(resolvedData: LoaderDataType) => {
-              const { data, message } = resolvedData;
-              const logs = data ?? [];
+  useEffect(() => {
+    if (isCopied) {
+      toast.message('Text copied');
+    }
+  }, [isCopied]);
 
-              return (
-                <div className="mt-4">
-                  {message ? (
-                    <p className="text-red-500 text-sm">{message}</p>
-                  ) : (
-                    <Table
-                      size="sm"
-                      data={logs}
-                      columns={columns}
-                      enablePagination
-                      pageSize={30}
-                      enableColumnResizing
-                      enableSorting
-                    />
-                  )}
-                </div>
-              );
-            }}
-          </DFAwait>
-        </Suspense>
+  return (
+    <div className="mt-2">
+      {data.message ? (
+        <p className="text-red-500 text-sm">{data.message}</p>
+      ) : (
+        <Table
+          size="default"
+          data={data.data || []}
+          columns={columns}
+          enablePagination
+          pageSize={pageSize}
+          enablePageResize
+          onPageResize={(newSize) => {
+            setPageSize(newSize);
+          }}
+          enableSorting
+        />
+      )}
+    </div>
+  );
+};
+const UserAuditLogs = () => {
+  return (
+    <div className="h-full">
+      <div className="mt-2">
+        <h3 className="text-h6 dark:text-text-input-value">User audit logs</h3>
       </div>
-    </SettingsTab>
+      <Suspense
+        fallback={
+          <TableSkeleton
+            columns={7}
+            rows={DEFAULT_PAGE_SIZE}
+            size={'default'}
+            className="mt-4"
+          />
+        }
+      >
+        <AuditTable />
+      </Suspense>
+    </div>
   );
 };
 
 export const module = {
   element: <UserAuditLogs />,
-  loader,
 };
