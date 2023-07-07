@@ -487,7 +487,6 @@ const IntegrationAdd = () => {
         Add new integration
       </Button>
       <SlidingModal
-        modal={false}
         open={openModal}
         onOpenChange={() => {
           setOpenModal(false);

@@ -363,7 +363,6 @@ const CreateReport = () => {
 
   return (
     <SlidingModal
-      modal={false}
       open={true}
       onOpenChange={() => {
         navigate(`..`);

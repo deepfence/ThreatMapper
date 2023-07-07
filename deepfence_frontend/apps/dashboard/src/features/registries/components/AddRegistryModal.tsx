@@ -38,7 +38,6 @@ export const AddRegistryModal = ({
   return (
     <>
       <SlidingModal
-        modal={false}
         open={open}
         onOpenChange={() => {
           setAddRegistryModal(false);
