@@ -1,8 +1,6 @@
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { cva, VariantProps } from 'cva';
 import { ChangeEvent, ComponentProps, forwardRef, useId } from 'react';
-import { IconContext } from 'react-icons';
-import { HiOutlineInformationCircle } from 'react-icons/hi';
 import { cn } from 'tailwind-preset';
 
 import HelperText from '@/components/input/HelperText';

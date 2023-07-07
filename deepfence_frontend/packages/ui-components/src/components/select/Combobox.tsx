@@ -289,6 +289,7 @@ export function Combobox<TValue, TTag extends ElementType = typeof DEFAULT_COMBO
               )}
               <Portal>
                 <Transition
+                  className="pointer-events-auto"
                   as={'div'}
                   enter="transition ease-out duration-1200"
                   enterFrom="opacity-0 -translate-y-1"
