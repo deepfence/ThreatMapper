@@ -1637,8 +1637,16 @@ class ESConn:
         return update_success_count
 
     @staticmethod
-    def get_mapping(index=None, doc_type=None):
-        return EL_CLIENT.indices.get_mapping(index, doc_type)
+    def get_mapping(index):
+        return EL_CLIENT.indices.get_mapping(index=index)
+
+    @staticmethod
+    def create_index(index):
+        return EL_CLIENT.indices.create(index=index)
+
+    @staticmethod
+    def put_mapping(index, mapping):
+        return EL_CLIENT.indices.put_mapping(index=index, body=mapping)
 
     @staticmethod
     def health(**kwargs):

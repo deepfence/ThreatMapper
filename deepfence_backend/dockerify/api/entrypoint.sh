@@ -41,6 +41,7 @@ flask db upgrade
 # Intialize
 mkdir -p /data
 flask initialize
+flask migrate-sbom-es-index
 
 mkdir -p /tmp/flask-external /tmp/flask-internal
 

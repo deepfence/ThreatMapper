@@ -77,7 +77,6 @@ func addCVE(cve dfCveStruct, acrossImages bool) {
 	maskedCVELock.Lock()
 	defer maskedCVELock.Unlock()
 	nodes, found := maskedCVE[cve.Cve_id]
-	log.Errorf("it is coming from add cve: %+v", cve)
 	if !found {
 		nodes = make(map[string]string)
 		if !acrossImages {
@@ -142,10 +141,6 @@ func startMaskCVE(ctx context.Context, client *elastic.Client, mchan chan MaskDo
 			case "unmask":
 				removeCVE(cveStruct)
 			}
-
-			maskedCVELock.RLock()
-			log.Infof("masked cve's: %s", printJSON(maskedCVE))
-			maskedCVELock.RUnlock()
 		}
 	}
 }
@@ -157,7 +152,6 @@ func processCVE(cve []byte, bulkp *elastic.BulkProcessor) {
 		log.Errorf("error unmarshal cve: %s", err)
 		return
 	}
-	log.Errorf("process %+v", cve)
 	cveStruct.Timestamp = getCurrentTime()
 	if cveStruct.Cve_severity != "critical" && cveStruct.Cve_severity != "high" && cveStruct.Cve_severity != "medium" {
 		cveStruct.Cve_severity = "low"

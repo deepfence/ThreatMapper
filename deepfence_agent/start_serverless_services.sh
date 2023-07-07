@@ -82,7 +82,7 @@ launch_deepfenced() {
     if [ "$FEATURE" == "appsec" ]; then
         # In k8s, if agent pod restarts these files are not cleared
         rm -rf /var/log/fenced/* 2>/dev/null
-        mkdir -p /var/log/fenced/compliance /var/log/fenced/compliance-scan-logs 2>/dev/null
+        mkdir -p /var/log/fenced/secret-scan-log /var/log/fenced/secret-scan /var/log/fenced/malware-scan /var/log/fenced/malware-scan-log /var/log/fenced/compliance /var/log/fenced/compliance-scan-logs 2>/dev/null
         launch_system_services
         if [[ -z "${SCOPE_HOSTNAME}" ]]; then
             SCOPE_HOSTNAME="$(hostname)"
