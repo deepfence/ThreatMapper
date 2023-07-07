@@ -561,7 +561,13 @@ const EditUserModal = ({
             )}
 
             <div className="flex gap-x-2 mt-9">
-              <Button type="submit">Update</Button>
+              <Button
+                type="submit"
+                loading={fetcher.state !== 'idle'}
+                disabled={fetcher.state !== 'idle'}
+              >
+                Update
+              </Button>
               <Button
                 variant="outline"
                 type="button"
@@ -929,6 +935,8 @@ const DeleteConfirmationModal = ({
             <Button
               color="error"
               type="submit"
+              loading={fetcher.state !== 'idle'}
+              disabled={fetcher.state !== 'idle'}
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteAction();

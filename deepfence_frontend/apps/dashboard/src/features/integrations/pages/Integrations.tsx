@@ -2,7 +2,6 @@ import { Suspense, useState } from 'react';
 import { Button, Card, Separator } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
-import { ErrorBoundary } from '@/components/error/ErrorBoundary';
 import { DownloadReportIcon } from '@/components/icons/integration/DownloadReport';
 import { ElasticsearchIcon } from '@/components/icons/integration/Elasticsearch';
 import { EmailIcon } from '@/components/icons/integration/Email';
@@ -208,42 +207,34 @@ const Integrations = () => {
         </span>
       </div>
       <div className="m-4 p-2 gap-y-6 flex flex-col">
-        <ErrorBoundary
-          fallback={
-            <div>
-              <p className="dark:text-status-error text-p7">{error}</p>
-            </div>
-          }
-        >
-          {IntegrationsData.map((integration) => {
-            return (
-              <section key={integration.name} className="flex flex-col">
-                <h2 className="uppercase text-t3 dark:text-text-input-value">
-                  {integration.name}
-                </h2>
-                <div className="mt-2 flex flex-wrap gap-4">
-                  {integration?.types?.map((type) => {
-                    return (
-                      <Card
-                        key={type.name}
-                        className="p-3 flex flex-col shrink-0 min-w-[208px]"
-                      >
-                        <div className="flex items-center gap-x-6">
-                          <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
-                            <span className="h-9 w-9">{type.icon}</span>
-                          </div>
-                          <Type setError={setError} type={type} />
+        {IntegrationsData.map((integration) => {
+          return (
+            <section key={integration.name} className="flex flex-col">
+              <h2 className="uppercase text-t3 dark:text-text-input-value">
+                {integration.name}
+              </h2>
+              <div className="mt-2 flex flex-wrap gap-4">
+                {integration?.types?.map((type) => {
+                  return (
+                    <Card
+                      key={type.name}
+                      className="p-3 flex flex-col shrink-0 min-w-[208px]"
+                    >
+                      <div className="flex items-center gap-x-6">
+                        <div className="dark:bg-bg-grid-default rounded-full p-3 flex justify-center items-center">
+                          <span className="h-9 w-9">{type.icon}</span>
                         </div>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </section>
-            );
-          })}
-          <Separator className="dark:bg-bg-grid-border h-px w-full" />
-          <DownloadReport />
-        </ErrorBoundary>
+                        <Type setError={setError} type={type} />
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
+        <Separator className="dark:bg-bg-grid-border h-px w-full" />
+        <DownloadReport />
       </div>
     </>
   );
