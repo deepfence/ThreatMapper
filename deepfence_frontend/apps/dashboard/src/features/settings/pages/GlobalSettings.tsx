@@ -19,7 +19,7 @@ import { getSettingsApiClient } from '@/api/api';
 import { ModelSettingsResponse, ModelSettingUpdateRequestKeyEnum } from '@/api/generated';
 import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { invalidateQueries, queries } from '@/queries';
+import { invalidateAllQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -65,7 +65,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
     throw updateResponse.error;
   }
 
-  invalidateQueries(queries.setting.listGlobalSettings._def);
+  invalidateAllQueries();
   return {
     success: true,
   };

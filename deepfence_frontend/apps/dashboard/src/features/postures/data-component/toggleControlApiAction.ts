@@ -2,7 +2,7 @@ import { ActionFunctionArgs } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { getControlsApiClient } from '@/api/api';
-import { invalidateQueries, queries } from '@/queries';
+import { invalidateAllQueries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 
 export enum ActionEnumType {
@@ -46,7 +46,7 @@ export const toggleControlApiAction = async ({
     toast.success(
       `${actionType === ActionEnumType.DISABLE ? 'Disabled' : 'Enabled'}  successfully`,
     );
-    invalidateQueries(queries.posture.listControls._def);
+    invalidateAllQueries();
   }
 
   return null;

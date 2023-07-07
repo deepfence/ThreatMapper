@@ -7,8 +7,7 @@ import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { TruncatedText } from '@/components/TruncatedText';
 import { useGetReports } from '@/features/integrations/pages/DownloadReport';
-import { invalidateQueries } from '@/queries';
-import { queries } from '@/queries';
+import { invalidateAllQueries } from '@/queries';
 import { formatMilliseconds } from '@/utils/date';
 
 enum ActionEnumType {
@@ -60,7 +59,7 @@ export const ReportTable = ({
   };
 
   useInterval(() => {
-    invalidateQueries(queries.integration.getReports._def);
+    invalidateAllQueries();
   }, 15000);
 
   const columnHelper = createColumnHelper<ModelExportReport>();

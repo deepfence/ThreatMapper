@@ -327,6 +327,7 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       }
     }
     toast('Integration added successfully');
+    invalidateAllQueries();
   } else if (_actionType === ActionEnumType.DELETE) {
     const id = formData.get('id')?.toString();
     if (!id) {
@@ -349,12 +350,11 @@ const action = async ({ request, params }: ActionFunctionArgs): Promise<ActionDa
       }
     }
     toast('Integration deleted successfully');
+    invalidateAllQueries();
     return {
       deleteSuccess: true,
     };
   }
-
-  invalidateAllQueries();
 
   return null;
 };

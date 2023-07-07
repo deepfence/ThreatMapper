@@ -22,7 +22,7 @@ import {
 import { DFLink } from '@/components/DFLink';
 import { SearchableClusterList } from '@/components/forms/SearchableClusterList';
 import { SearchableHostList } from '@/components/forms/SearchableHostList';
-import { invalidateQueries, queries } from '@/queries';
+import { invalidateAllQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 import { formatMilliseconds } from '@/utils/date';
 
@@ -116,7 +116,7 @@ const action = async ({ request }: ActionFunctionArgs): Promise<string | null> =
   }
 
   toast('You have successfully generated the logs');
-  invalidateQueries(queries.setting.listDiagnosticLogs._def);
+  invalidateAllQueries();
   return null;
 };
 
