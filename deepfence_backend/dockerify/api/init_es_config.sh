@@ -229,7 +229,8 @@ add_index() {
           "@timestamp": {
             "type": "date"
           },
-          "artifacts": {
+          "sbom": {
+            "type": "object",
             "enabled": false
           },
           "scan_id": {

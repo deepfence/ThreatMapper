@@ -22,7 +22,8 @@ ENV KAFKA_BROKER_ID=1 \
     KAFKA_CONTROLLER_LISTENER_NAMES='CONTROLLER' \
     KAFKA_LOG_DIRS='/data/kafka' \
     KAFKA_LOG_RETENTION_MS=86400000 \
-    KAFKA_LOG_RETENTION_BYTES=-1
+    KAFKA_LOG_RETENTION_BYTES=-1 \
+    KAFKA_MESSAGE_MAX_BYTES=52428800
 
 COPY kafka_update_run.sh /home/appuser/kafka_update_run.sh
 CMD ["bash","-c", "/home/appuser/kafka_update_run.sh" ]
