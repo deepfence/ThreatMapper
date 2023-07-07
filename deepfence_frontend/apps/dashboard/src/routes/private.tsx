@@ -9,7 +9,6 @@ import { module as logoutAction } from '@/features/auth/data-components/logoutAc
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
 import { action as downloadScanAction } from '@/features/common/data-component/downloadScanAction';
 import { getApiTokenApiLoader } from '@/features/common/data-component/getApiTokenApiLoader';
-import { getUserApiLoader } from '@/features/common/data-component/getUserApiLoader';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
 import { searchCloudAccountsApiLoader } from '@/features/common/data-component/searchCloudAccountsApiLoader';
@@ -626,10 +625,6 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'auth/apiToken',
         loader: getApiTokenApiLoader,
-      },
-      {
-        path: 'auth/user',
-        loader: getUserApiLoader,
       },
       {
         path: 'scan/download',

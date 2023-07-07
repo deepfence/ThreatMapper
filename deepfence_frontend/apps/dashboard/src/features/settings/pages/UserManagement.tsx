@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { twMerge } from 'tailwind-merge';
 import {
   Button,
+  CircleSpinner,
   createColumnHelper,
   Dropdown,
   DropdownItem,
@@ -36,8 +37,6 @@ import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLi
 import { EyeHideSolid } from '@/components/icons/common/EyeHideSolid';
 import { EyeSolidIcon } from '@/components/icons/common/EyeSolid';
 import { PlusIcon } from '@/components/icons/common/Plus';
-import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
-import { useGetCurrentUser } from '@/features/common/data-component/getUserApiLoader';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
 import { invalidateQueries, queries } from '@/queries';
@@ -72,6 +71,21 @@ export enum ActionEnumType {
 const useListUsers = () => {
   return useSuspenseQuery({
     ...queries.setting.listUsers(),
+    keepPreviousData: true,
+  });
+};
+
+const useGetCurrentUser = () => {
+  return useSuspenseQuery({
+    ...queries.auth.currentUser(),
+    keepPreviousData: true,
+  });
+};
+
+const useGetApiToken = () => {
+  return useSuspenseQuery({
+    ...queries.auth.apiToken(),
+    keepPreviousData: true,
   });
 };
 
@@ -588,14 +602,139 @@ const APITokenSkeletonComponent = () => {
     </div>
   );
 };
-const APITokenComponent = () => {
-  const { data } = useGetApiToken();
-  const { status: currentUserStatus = 'dummy', data: currentUserData } =
-    useGetCurrentUser();
+const ApiToken = () => {
   const [showApikey, setShowApiKey] = useState(false);
-  const [openChangePasswordForm, setOpenChangePasswordForm] = useState(false);
-
+  const { data } = useGetApiToken();
   const { copy, isCopied } = useCopyToClipboardState();
+
+  return (
+    <>
+      <span className="font-mono">
+        {showApikey
+          ? data?.apiToken?.api_token || '-'
+          : '************************************'}
+      </span>
+      <div className="flex ml-2">
+        {!showApikey ? (
+          <IconButton
+            icon={
+              <span className="h-4 w-4">
+                <EyeSolidIcon />
+              </span>
+            }
+            variant="flat"
+            onClick={() => {
+              setShowApiKey(true);
+            }}
+          />
+        ) : (
+          <IconButton
+            icon={
+              <span className="h-4 w-4">
+                <EyeHideSolid />
+              </span>
+            }
+            variant="flat"
+            onClick={() => {
+              setShowApiKey(false);
+            }}
+          />
+        )}
+        <div className="relative top-0 right-0 ml-2">
+          {isCopied ? (
+            <div className="dark:text-text-text-and-icon gap-x-2 flex items-center">
+              <IconButton
+                icon={
+                  <span className="w-4 h-4">
+                    <CopyLineIcon />
+                  </span>
+                }
+                type="button"
+                variant="flat"
+              />{' '}
+              copied
+            </div>
+          ) : (
+            <IconButton
+              icon={
+                <span className="w-4 h-4">
+                  <CopyLineIcon />
+                </span>
+              }
+              variant="flat"
+              onClick={() => copy(data?.apiToken?.api_token ?? '')}
+            />
+          )}
+        </div>
+      </div>
+    </>
+  );
+};
+const CurrentUserInfo = ({
+  setOpenChangePasswordForm,
+}: {
+  setOpenChangePasswordForm: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const { data: user } = useGetCurrentUser();
+  const currentUser = user.user;
+  return (
+    <div>
+      <div className="flex">
+        <div className="flex flex-col">
+          <span className="text-2xl dark:text-gray-100 font-semibold">
+            {`${currentUser?.first_name || ''} ${currentUser?.last_name || ''}`}
+          </span>
+          <span
+            className={twMerge(
+              cx('font-semibold w-fit text-xs rounded-sm dark:text-gray-100 self-start', {
+                'text-green-500 dark:text-status-success': currentUser?.is_active,
+                'text-gray-700 dark:text-df-gray-400': !currentUser?.is_active,
+              }),
+            )}
+          >
+            {currentUser?.is_active ? 'Active' : 'Inactive'}
+          </span>
+        </div>
+      </div>
+      <div className="flex mt-4 mb-2">
+        <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">Email</span>
+        <span className="text-p4 dark:text-text-input-value">
+          {currentUser?.email || '-'}
+        </span>
+      </div>
+      <div className="flex my-3">
+        <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
+          Company
+        </span>
+        <span className="text-p4 dark:text-text-input-value">
+          {currentUser?.company || '-'}
+        </span>
+      </div>
+      <div className="flex my-3">
+        <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">Role</span>
+        <span className="text-p4 dark:text-text-input-value">
+          {currentUser?.role || '-'}
+        </span>
+      </div>
+      <div className="flex my-3">
+        <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
+          Api key
+        </span>
+        <div className="text-p4 items-center dark:text-text-input-value flex gap-x-2">
+          <Suspense fallback={<CircleSpinner size="sm" />}>
+            <ApiToken />
+          </Suspense>
+        </div>
+      </div>
+      <Button size="sm" variant="flat" onClick={() => setOpenChangePasswordForm(true)}>
+        Change Password
+      </Button>
+    </div>
+  );
+};
+
+const APITokenComponent = () => {
+  const [openChangePasswordForm, setOpenChangePasswordForm] = useState(false);
 
   return (
     <div className="text-gray-600 dark:text-white rounded-lg w-full">
@@ -603,132 +742,9 @@ const APITokenComponent = () => {
         showDialog={openChangePasswordForm}
         setShowDialog={setOpenChangePasswordForm}
       />
-
-      {currentUserStatus !== 'idle' && !data ? (
-        <APITokenSkeletonComponent />
-      ) : (
-        <div>
-          <div className="flex">
-            <div className="flex flex-col">
-              <span className="text-2xl dark:text-gray-100 font-semibold">
-                {`${currentUserData?.first_name || ''} ${
-                  currentUserData?.last_name || ''
-                }`}
-              </span>
-              <span
-                className={twMerge(
-                  cx(
-                    'font-semibold w-fit text-xs rounded-sm dark:text-gray-100 self-start',
-                    {
-                      'text-green-500 dark:text-status-success':
-                        currentUserData?.is_active,
-                      'text-gray-700 dark:text-df-gray-400': !currentUserData?.is_active,
-                    },
-                  ),
-                )}
-              >
-                {currentUserData?.is_active ? 'Active' : 'Inactive'}
-              </span>
-            </div>
-          </div>
-          <div className="flex mt-4 mb-2">
-            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-              Email
-            </span>
-            <span className="text-p4 dark:text-text-input-value">
-              {currentUserData?.email || '-'}
-            </span>
-          </div>
-          <div className="flex my-3">
-            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-              Company
-            </span>
-            <span className="text-p4 dark:text-text-input-value">
-              {currentUserData?.company || '-'}
-            </span>
-          </div>
-          <div className="flex my-3">
-            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-              Role
-            </span>
-            <span className="text-p4 dark:text-text-input-value">
-              {currentUserData?.role || '-'}
-            </span>
-          </div>
-          <div className="flex my-3">
-            <span className="text-p7 min-w-[140px] dark:text-text-text-and-icon">
-              Api key
-            </span>
-            <div className="text-p4 items-center dark:text-text-input-value flex gap-x-2">
-              <span className="font-mono">
-                {showApikey
-                  ? data?.api_token || '-'
-                  : '************************************'}
-              </span>
-              <div className="flex ml-2">
-                {!showApikey ? (
-                  <IconButton
-                    icon={
-                      <span className="h-4 w-4">
-                        <EyeSolidIcon />
-                      </span>
-                    }
-                    variant="flat"
-                    onClick={() => {
-                      setShowApiKey(true);
-                    }}
-                  />
-                ) : (
-                  <IconButton
-                    icon={
-                      <span className="h-4 w-4">
-                        <EyeHideSolid />
-                      </span>
-                    }
-                    variant="flat"
-                    onClick={() => {
-                      setShowApiKey(false);
-                    }}
-                  />
-                )}
-                <div className="relative top-0 right-0 ml-2">
-                  {isCopied ? (
-                    <div className="dark:text-text-text-and-icon gap-x-2 flex items-center">
-                      <IconButton
-                        icon={
-                          <span className="w-4 h-4">
-                            <CopyLineIcon />
-                          </span>
-                        }
-                        type="button"
-                        variant="flat"
-                      />{' '}
-                      copied
-                    </div>
-                  ) : (
-                    <IconButton
-                      icon={
-                        <span className="w-4 h-4">
-                          <CopyLineIcon />
-                        </span>
-                      }
-                      variant="flat"
-                      onClick={() => copy(data?.api_token ?? '')}
-                    />
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-          <Button
-            size="sm"
-            variant="flat"
-            onClick={() => setOpenChangePasswordForm(true)}
-          >
-            Change Password
-          </Button>
-        </div>
-      )}
+      <Suspense fallback={<APITokenSkeletonComponent />}>
+        <CurrentUserInfo setOpenChangePasswordForm={setOpenChangePasswordForm} />
+      </Suspense>
     </div>
   );
 };
