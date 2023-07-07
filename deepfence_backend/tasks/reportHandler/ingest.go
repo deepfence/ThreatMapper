@@ -111,7 +111,7 @@ func afterBulkPush(
 				i.Index, i.Error.Reason, i.Error)
 		}
 	}
-	log.Debugf("number of docs sent to es -> successful: %d failed: %d",
+	log.Infof("number of docs sent to es -> successful: %d failed: %d",
 		len(response.Succeeded()), len(response.Failed()))
 	publishElasticSearch.WithLabelValues("success").Add(float64(len(response.Succeeded())))
 	for _, i := range response.Succeeded() {
