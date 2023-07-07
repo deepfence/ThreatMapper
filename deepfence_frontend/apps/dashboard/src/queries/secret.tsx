@@ -488,66 +488,6 @@ export const secretQueries = createQueryKeys('secret', {
       },
     };
   },
-  secret: (filters: { id: string }) => {
-    const { id } = filters;
-    return {
-      queryKey: [filters],
-      queryFn: async () => {
-        const searchSecretsApi = apiWrapper({
-          fn: getSearchApiClient().searchSecrets,
-        });
-        const searchSecretsResponse = await searchSecretsApi({
-          searchSearchNodeReq: {
-            node_filter: {
-              filters: {
-                contains_filter: {
-                  filter_in: {
-                    node_id: [id],
-                  },
-                },
-                order_filter: {
-                  order_fields: [],
-                },
-                match_filter: {
-                  filter_in: {},
-                },
-                compare_filter: null,
-              },
-              in_field_filter: null,
-              window: {
-                offset: 0,
-                size: 0,
-              },
-            },
-            window: {
-              offset: 0,
-              size: 1,
-            },
-          },
-        });
-        if (!searchSecretsResponse.ok) {
-          console.error(searchSecretsResponse.error);
-          return {
-            data: undefined,
-            message: 'Error getting the Secret details',
-          };
-        }
-
-        if (
-          searchSecretsResponse.value === null ||
-          searchSecretsResponse.value.length === 0
-        ) {
-          return {
-            data: undefined,
-            message: 'Error finding the Secret details',
-          };
-        }
-        return {
-          data: searchSecretsResponse.value[0],
-        };
-      },
-    };
-  },
   top5SecretAssets: (filters: { nodeType: 'image' | 'host' | 'container' }) => {
     const { nodeType } = filters;
     return {

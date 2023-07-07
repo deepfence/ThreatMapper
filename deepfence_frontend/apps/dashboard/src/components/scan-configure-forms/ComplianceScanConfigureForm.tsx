@@ -169,6 +169,7 @@ const useGetControls = ({
 }) => {
   return useSuspenseQuery({
     ...queries.posture.listControls({ checkType, nodeType }),
+    keepPreviousData: true,
   });
 };
 
@@ -178,7 +179,6 @@ const ToggleControl = ({
   nodeId,
   nodeType,
   checkType,
-  loading,
   fetcher,
 }: {
   checked: boolean;
@@ -186,13 +186,12 @@ const ToggleControl = ({
   nodeId: string;
   nodeType: string;
   checkType: string;
-  loading: boolean;
   fetcher: FetcherWithComponents<any>;
 }) => {
-  if (loading) {
+  // TODO: should show loader indicator here
+  if (fetcher.state !== 'idle') {
     return <CircleSpinner size="sm" />;
   }
-
   return (
     <>
       <Switch
@@ -233,11 +232,10 @@ const ControlTable = ({
   }, [nodeType]);
   const fetcher = useFetcher();
   const [pageSize, setPageSize] = useState(10);
-  const { data, status } = useGetControls({
+  const { data } = useGetControls({
     checkType: selectedTab === 'SOC2' ? 'soc_2' : selectedTab.toLowerCase(),
     nodeType: _nodeType,
   });
-  const isLoading = status !== 'success';
   const columnHelper = createColumnHelper<ModelCloudNodeComplianceControl>();
   const columns = useMemo(
     () => [
@@ -249,7 +247,6 @@ const ControlTable = ({
             <ToggleControl
               nodeId={nodeIds[0]}
               nodeType={_nodeType}
-              loading={isLoading}
               checkType={selectedTab.toLowerCase()}
               checked={!!info.row.original.enabled}
               controlId={

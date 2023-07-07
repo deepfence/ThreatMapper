@@ -9,7 +9,6 @@ import { module as logoutAction } from '@/features/auth/data-components/logoutAc
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
 import { action as downloadScanAction } from '@/features/common/data-component/downloadScanAction';
 import { getApiTokenApiLoader } from '@/features/common/data-component/getApiTokenApiLoader';
-import { getUserApiLoader } from '@/features/common/data-component/getUserApiLoader';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
 import { searchCloudAccountsApiLoader } from '@/features/common/data-component/searchCloudAccountsApiLoader';
@@ -81,7 +80,6 @@ import { module as topologyLoader } from '@/features/topology/data-components/to
 import { module as topologyGraph } from '@/features/topology/pages/Graph';
 import { module as topologyTable } from '@/features/topology/pages/Table';
 import { module as topology } from '@/features/topology/pages/Topology';
-import { sbomApiLoader } from '@/features/vulnerabilities/api/sbomApiLoader';
 import { module as mostExploitableVulnerabilities } from '@/features/vulnerabilities/pages/MostExploitableVulnerabilities';
 import { module as runtimeBom } from '@/features/vulnerabilities/pages/RuntimeBom';
 import { module as uniqueVulnerabilities } from '@/features/vulnerabilities/pages/UniqueVulnerabilities';
@@ -436,7 +434,7 @@ export const privateRoutes: CustomRouteObject[] = [
         meta: { title: 'Most Exploitable Malwares' },
         children: [
           {
-            path: ':secretId',
+            path: ':malwareId',
             ...malwareDetails,
             meta: { title: 'Most Exploitable Malware Details' },
           },
@@ -551,15 +549,6 @@ export const privateRoutes: CustomRouteObject[] = [
     path: '/data-component',
     children: [
       {
-        path: 'vulnerability',
-        children: [
-          {
-            path: 'sbom/:scanId',
-            loader: sbomApiLoader,
-          },
-        ],
-      },
-      {
         path: 'scan-history/:scanType/:nodeType/:nodeId',
         loader: scanHistoryApiLoader,
       },
@@ -638,10 +627,6 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'auth/apiToken',
         loader: getApiTokenApiLoader,
-      },
-      {
-        path: 'auth/user',
-        loader: getUserApiLoader,
       },
       {
         path: 'scan/download',

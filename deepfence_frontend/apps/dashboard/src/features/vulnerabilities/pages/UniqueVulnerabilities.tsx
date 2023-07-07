@@ -188,7 +188,7 @@ const UniqueTable = () => {
         cell: (info) => (
           <DFLink
             to={{
-              pathname: `./${info.getValue()}`,
+              pathname: `./${encodeURIComponent(info.row.original.node_id)}`,
               search: `?${searchParams.toString()}`,
             }}
             className="flex items-center gap-x-2"
@@ -265,17 +265,6 @@ const UniqueTable = () => {
         minSize: 60,
         size: 60,
         maxSize: 70,
-      }),
-      columnHelper.accessor('resources', {
-        enableSorting: false,
-        enableResizing: true,
-        cell: (info) => {
-          return <TruncatedText text={info.getValue()?.join(', ') ?? ''} />;
-        },
-        header: () => <TruncatedText text="Affected Resources" />,
-        minSize: 180,
-        size: 180,
-        maxSize: 190,
       }),
       columnHelper.accessor('cve_description', {
         enableSorting: false,

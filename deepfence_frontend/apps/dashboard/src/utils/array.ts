@@ -20,17 +20,18 @@ export const sortBySeverity = <O extends Record<string, any>, S = keyof O>(
     [k in AllSeverityType]: number;
   } = {
     critical: 100,
-    alarm: 99,
-    high: 98,
-    medium: 97,
-    warn: 96,
-    low: 95,
-    note: 94,
-    info: 93,
-    ok: 92,
-    pass: 91,
-    skip: 90,
-    unknown: 89,
+    alarm: 95,
+    high: 90,
+    medium: 85,
+    warn: 80,
+    low: 75,
+    note: 70,
+    info: 65,
+    delete: 64,
+    ok: 60,
+    pass: 55,
+    skip: 50,
+    unknown: 45,
   };
 
   return sortBy(list, [

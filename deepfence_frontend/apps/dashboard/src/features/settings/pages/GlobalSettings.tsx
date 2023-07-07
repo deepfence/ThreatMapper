@@ -1,14 +1,15 @@
+import { useSuspenseQuery } from '@suspensive/react-query';
 import { Suspense, useMemo, useState } from 'react';
-import { IconContext } from 'react-icons';
-import { FaPencilAlt } from 'react-icons/fa';
-import { HiDotsVertical, HiGlobeAlt } from 'react-icons/hi';
-import { ActionFunctionArgs, useFetcher, useLoaderData } from 'react-router-dom';
+import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import {
   Button,
   createColumnHelper,
   Dropdown,
   DropdownItem,
-  Modal,
+  SlidingModal,
+  SlidingModalCloseButton,
+  SlidingModalContent,
+  SlidingModalHeader,
   Table,
   TableSkeleton,
   TextInput,
@@ -16,17 +17,12 @@ import {
 
 import { getSettingsApiClient } from '@/api/api';
 import { ModelSettingsResponse, ModelSettingUpdateRequestKeyEnum } from '@/api/generated';
-import { SettingsTab } from '@/features/settings/components/SettingsTab';
+import { EllipsisIcon } from '@/components/icons/common/Ellipsis';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
+import { invalidateQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
-import { typedDefer, TypedDeferredData } from '@/utils/router';
-import { DFAwait } from '@/utils/suspense';
 
-type LoaderDataType = {
-  message?: string;
-  data?: ModelSettingsResponse[];
-};
-
+const DEFAULT_PAGE_SIZE = 10;
 type ActionReturnType = {
   message?: string;
   success: boolean;
@@ -34,7 +30,12 @@ type ActionReturnType = {
     value?: string;
   };
 };
-
+const useGlobalSettings = () => {
+  return useSuspenseQuery({
+    ...queries.setting.listGlobalSettings(),
+    keepPreviousData: true,
+  });
+};
 const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType> => {
   const formData = await request.formData();
   const body = Object.fromEntries(formData);
@@ -64,38 +65,10 @@ const action = async ({ request }: ActionFunctionArgs): Promise<ActionReturnType
     throw updateResponse.error;
   }
 
+  invalidateQueries(queries.setting.listGlobalSettings._def);
   return {
     success: true,
   };
-};
-
-const getData = async (): Promise<LoaderDataType> => {
-  const settingsApi = apiWrapper({
-    fn: getSettingsApiClient().getSettings,
-  });
-  const settingsResponse = await settingsApi();
-  if (!settingsResponse.ok) {
-    if (settingsResponse.error.response.status === 400) {
-      return {
-        message: settingsResponse.error.message,
-      };
-    } else if (settingsResponse.error.response.status === 403) {
-      return {
-        message: 'You do not have enough permissions to view settings',
-      };
-    }
-    throw settingsResponse.error;
-  }
-
-  return {
-    data: settingsResponse.value,
-  };
-};
-
-const loader = async (): Promise<TypedDeferredData<LoaderDataType>> => {
-  return typedDefer({
-    data: getData(),
-  });
 };
 
 const EditGlobalSettingModal = ({
@@ -111,51 +84,64 @@ const EditGlobalSettingModal = ({
   const { data, state } = fetcher;
 
   return (
-    <Modal
-      open={showDialog}
-      onOpenChange={() => setShowDialog(false)}
-      title="Update Setting"
-    >
-      {!data?.success ? (
-        <fetcher.Form
-          method="post"
-          className="flex flex-col gap-y-3 pt-2 pb-6 mx-8 w-[260px]"
-        >
-          <TextInput type="hidden" className="hidden" name="id" value={setting?.id} />
-          <TextInput type="hidden" className="hidden" name="key" value={setting?.key} />
-          <TextInput
-            label={setting?.label}
-            type={'text'}
-            placeholder={setting?.key}
-            name="value"
-            color={data?.fieldErrors?.value ? 'error' : 'default'}
-            sizing="sm"
-            defaultValue={setting?.value}
-            helperText={data?.fieldErrors?.value}
-            required
-          />
-          <div className={`text-red-600 dark:text-red-500 text-sm`}>
-            {!data?.success && data?.message && <span>{data.message}</span>}
-          </div>
-          <Button
-            color="primary"
-            className=" pl-3"
-            type="submit"
-            size="sm"
-            disabled={state !== 'idle'}
-            loading={state !== 'idle'}
-          >
-            Update
-          </Button>
-        </fetcher.Form>
-      ) : (
-        <SuccessModalContent text="Global Settings successfully updated!" />
-      )}
-    </Modal>
+    <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
+      <SlidingModalHeader>
+        <div className="text-h3 dark:text-text-text-and-icon py-4 px-4 dark:bg-bg-breadcrumb-bar">
+          Update setting
+        </div>
+      </SlidingModalHeader>
+      <SlidingModalCloseButton />
+      <SlidingModalContent>
+        {!data?.success ? (
+          <fetcher.Form method="post" className="flex flex-col gap-y-8 mt-2 mx-4">
+            <TextInput type="hidden" className="hidden" name="id" value={setting?.id} />
+            <TextInput type="hidden" className="hidden" name="key" value={setting?.key} />
+            <TextInput
+              label={setting?.label}
+              type={'text'}
+              placeholder={setting?.key}
+              name="value"
+              color={data?.fieldErrors?.value ? 'error' : 'default'}
+              defaultValue={setting?.value}
+              helperText={data?.fieldErrors?.value}
+              required
+            />
+            <div className={`text-red-600 dark:text-status-error text-p7`}>
+              {!data?.success && data?.message && <span>{data.message}</span>}
+            </div>
+            <div className="flex gap-x-2">
+              <Button
+                type="submit"
+                size="sm"
+                disabled={state !== 'idle'}
+                loading={state !== 'idle'}
+              >
+                Update
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowDialog(false)}
+                type="button"
+              >
+                Cancel
+              </Button>
+            </div>
+          </fetcher.Form>
+        ) : (
+          <SuccessModalContent text="Global Settings successfully updated!" />
+        )}
+      </SlidingModalContent>
+    </SlidingModal>
   );
 };
 
-const ActionDropdown = ({ setting }: { setting: ModelSettingsResponse }) => {
+const ActionDropdown = ({
+  setting,
+  trigger,
+}: {
+  setting: ModelSettingsResponse;
+  trigger: React.ReactNode;
+}) => {
   const [openEditSetting, setOpenEditSetting] = useState(false);
 
   return (
@@ -167,36 +153,53 @@ const ActionDropdown = ({ setting }: { setting: ModelSettingsResponse }) => {
       />
       <Dropdown
         triggerAsChild={true}
-        align="end"
+        align="start"
         content={
           <>
             <DropdownItem className="text-sm" onClick={() => setOpenEditSetting(true)}>
               <span className="flex items-center gap-x-2 text-gray-700 dark:text-gray-400">
-                <IconContext.Provider
-                  value={{ className: 'text-gray-700 dark:text-gray-400' }}
-                >
-                  <FaPencilAlt />
-                </IconContext.Provider>
                 Edit
               </span>
             </DropdownItem>
           </>
         }
       >
-        <Button size="xs" color="normal" className="hover:bg-transparent">
-          <IconContext.Provider value={{ className: 'text-gray-700 dark:text-gray-400' }}>
-            <HiDotsVertical />
-          </IconContext.Provider>
-        </Button>
+        {trigger}
       </Dropdown>
     </>
   );
 };
-const GlobalSettings = () => {
+const SettingTable = () => {
   const columnHelper = createColumnHelper<ModelSettingsResponse>();
-  const loaderData = useLoaderData() as LoaderDataType;
+
   const columns = useMemo(() => {
     const columns = [
+      columnHelper.display({
+        id: 'actions',
+        enableSorting: false,
+        cell: (cell) => {
+          if (!cell.row.original.id) {
+            throw new Error('Settings not found');
+          }
+          return (
+            <ActionDropdown
+              setting={cell.row.original}
+              trigger={
+                <button className="p-1">
+                  <div className="h-[16px] w-[16px] dark:text-text-text-and-icon rotate-90">
+                    <EllipsisIcon />
+                  </div>
+                </button>
+              }
+            />
+          );
+        },
+        header: () => '',
+        minSize: 15,
+        size: 15,
+        maxSize: 15,
+        enableResizing: false,
+      }),
       columnHelper.accessor('label', {
         cell: (cell) => cell.getValue(),
         header: () => 'Setting',
@@ -211,76 +214,56 @@ const GlobalSettings = () => {
         size: 80,
         maxSize: 85,
       }),
-
-      columnHelper.display({
-        id: 'actions',
-        enableSorting: false,
-        cell: (cell) => {
-          if (!cell.row.original.id) {
-            throw new Error('Settings not found');
-          }
-          return <ActionDropdown setting={cell.row.original} />;
-        },
-        header: () => '',
-        minSize: 20,
-        size: 20,
-        maxSize: 20,
-        enableResizing: false,
-      }),
     ];
     return columns;
   }, []);
-
+  const { data } = useGlobalSettings();
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   return (
-    <SettingsTab value="global-settings">
-      <div className="h-full">
-        <div className="mt-2 flex gap-x-2 items-center">
-          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 bg-opacity-75 dark:bg-opacity-50 flex items-center justify-center rounded-sm">
-            <IconContext.Provider
-              value={{
-                className: 'text-blue-600 dark:text-blue-400',
-              }}
-            >
-              <HiGlobeAlt />
-            </IconContext.Provider>
-          </div>
-          <h3 className="font-medium text-gray-900 dark:text-white text-base">
-            Global Settings
-          </h3>
-        </div>
-        <Suspense
-          fallback={<TableSkeleton columns={3} rows={3} size={'sm'} className="mt-4" />}
-        >
-          <DFAwait resolve={loaderData.data}>
-            {(resolvedData: LoaderDataType) => {
-              const { data, message } = resolvedData;
-              const settings = data ?? [];
-
-              return (
-                <div className="mt-4">
-                  {message ? (
-                    <p className="text-red-500 text-sm">{message}</p>
-                  ) : (
-                    <Table
-                      size="sm"
-                      data={settings}
-                      columns={columns}
-                      enableColumnResizing
-                      enableSorting
-                    />
-                  )}
-                </div>
-              );
-            }}
-          </DFAwait>
-        </Suspense>
+    <div className="mt-2">
+      {data.message ? (
+        <p className="dark:text-status-error text-sm">{data.message}</p>
+      ) : (
+        <Table
+          size="default"
+          pageSize={pageSize}
+          data={data.data ?? []}
+          columns={columns}
+          enableColumnResizing
+          enableSorting
+          enablePagination
+          enablePageResize
+          onPageResize={(newSize) => {
+            setPageSize(newSize);
+          }}
+        />
+      )}
+    </div>
+  );
+};
+const GlobalSettings = () => {
+  return (
+    <div className="h-full">
+      <div className="mt-2">
+        <h3 className="text-h6 dark:text-text-input-value">Global settings</h3>
       </div>
-    </SettingsTab>
+      <Suspense
+        fallback={
+          <TableSkeleton
+            columns={3}
+            rows={DEFAULT_PAGE_SIZE}
+            size={'default'}
+            className="mt-4"
+          />
+        }
+      >
+        <SettingTable />
+      </Suspense>
+    </div>
   );
 };
 
 export const module = {
   element: <GlobalSettings />,
-  loader,
   action,
 };

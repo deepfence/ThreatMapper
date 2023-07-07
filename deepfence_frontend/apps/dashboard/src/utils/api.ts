@@ -66,7 +66,7 @@ export function redirectToLogin() {
     existingRedirectTo ? existingRedirectTo : `${url.pathname}${url.search}`,
   );
   queryClient.clear();
-  return historyHelper.navigate?.(`/auth/login?${searchParams.toString()}`);
+  return historyHelper.navigate(`/auth/login?${searchParams.toString()}`);
 }
 
 export async function requireLogin() {
