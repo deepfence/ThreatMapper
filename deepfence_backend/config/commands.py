@@ -61,7 +61,7 @@ def reset_password(email, password):
     print("Password successfully changed")
 
 
-@click.command("migrate_sbom_es_index")
+@click.command("migrate-sbom-es-index")
 def migrate_sbom_es_index():
     try:
         try:

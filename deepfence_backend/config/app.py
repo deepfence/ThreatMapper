@@ -100,6 +100,7 @@ def register_error_handlers(app):
 def register_commands(app):
     app.cli.add_command(commands.initialize)
     app.cli.add_command(commands.reset_password)
+    app.cli.add_command(commands.migrate_sbom_es_index)
 
 
 def configure_jwt():
