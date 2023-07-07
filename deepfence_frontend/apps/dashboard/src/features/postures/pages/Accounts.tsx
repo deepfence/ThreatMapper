@@ -487,19 +487,15 @@ const BulkActions = ({
   disabled: boolean;
 }) => {
   return (
-    <>
-      <Form>
-        <Button
-          color="default"
-          variant="flat"
-          size="sm"
-          disabled={disabled}
-          onClick={onClick}
-        >
-          Start scan
-        </Button>
-      </Form>
-    </>
+    <Button
+      color="default"
+      variant="flat"
+      size="sm"
+      disabled={disabled}
+      onClick={onClick}
+    >
+      Start scan
+    </Button>
   );
 };
 
