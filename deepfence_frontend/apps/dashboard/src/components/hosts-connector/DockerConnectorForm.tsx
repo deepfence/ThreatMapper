@@ -1,21 +1,31 @@
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense } from 'react';
 import { Card, IconButton, Step, Stepper } from 'ui-components';
 
 import { useCopyToClipboardState } from '@/components/CopyToClipboard';
 import { DFLink } from '@/components/DFLink';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { InfoIcon } from '@/components/icons/common/Info';
-import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
+import { queries } from '@/queries';
 
-export const DockerConnectorForm = () => {
-  const { status, data } = useGetApiToken();
+const useGetApiToken = () => {
+  return useSuspenseQuery({
+    ...queries.auth.apiToken(),
+    keepPreviousData: true,
+  });
+};
+const PLACEHOLDER_API_KEY = '---DEEPFENCE-API-KEY--';
+
+const Command = () => {
   const { copy, isCopied } = useCopyToClipboardState();
-
+  const { status, data } = useGetApiToken();
+  const apiToken = data?.apiToken?.api_token;
   const dfApiKey =
-    status !== 'idle'
-      ? '---DEEPFENCE-API-KEY---'
-      : data?.api_token === undefined
-      ? '---DEEPFENCE-API-KEY---'
-      : data?.api_token;
+    status !== 'success'
+      ? PLACEHOLDER_API_KEY
+      : apiToken === undefined
+      ? PLACEHOLDER_API_KEY
+      : apiToken;
 
   const code = `docker run -dit \\
 --cpus=".2" \\
@@ -34,6 +44,52 @@ export const DockerConnectorForm = () => {
 -e DEEPFENCE_KEY="${dfApiKey}" \\
 deepfenceio/deepfence_agent_ce:latest`;
 
+  return (
+    <>
+      <pre className="h-fit text-p7 dark:text-text-text-and-icon">{code}</pre>
+      <div className="flex items-center ml-auto self-start">
+        {isCopied ? 'copied' : null}
+        <IconButton
+          className="dark:focus:outline-none"
+          icon={<CopyLineIcon />}
+          variant="flat"
+          onClick={() => {
+            copy(code);
+          }}
+        />
+      </div>
+    </>
+  );
+};
+
+const Skeleton = () => {
+  return (
+    <>
+      <div className="animate-pulse flex flex-col gap-y-2">
+        <div className="h-2 w-[130px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[110px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[150px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[140px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[100px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[100px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[135px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[320px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[160px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[380px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[340px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[290px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[200px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[190px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[240px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[200px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[400px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[260px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+      </div>
+    </>
+  );
+};
+
+export const DockerConnectorForm = () => {
   return (
     <Stepper>
       <Step
@@ -63,18 +119,9 @@ deepfenceio/deepfence_agent_ce:latest`;
             Copy the following commands and paste them into your shell.
           </p>
           <Card className="w-full relative flex p-4">
-            <pre className="h-fit text-p7 dark:text-text-text-and-icon">{code}</pre>
-            <div className="flex items-center ml-auto self-start">
-              {isCopied ? 'copied' : null}
-              <IconButton
-                className="dark:focus:outline-none"
-                icon={<CopyLineIcon />}
-                variant="flat"
-                onClick={() => {
-                  copy(code);
-                }}
-              />
-            </div>
+            <Suspense fallback={<Skeleton />}>
+              <Command />
+            </Suspense>
           </Card>
         </div>
       </Step>

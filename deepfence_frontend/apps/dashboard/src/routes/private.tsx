@@ -8,7 +8,6 @@ import { scanVulnerabilityApiAction } from '@/components/scan-configure-forms/Vu
 import { module as logoutAction } from '@/features/auth/data-components/logoutAction';
 import { authenticatedRootLoader } from '@/features/common/data-component/authenticatedRoot/authenticatedRootLoader';
 import { action as downloadScanAction } from '@/features/common/data-component/downloadScanAction';
-import { getApiTokenApiLoader } from '@/features/common/data-component/getApiTokenApiLoader';
 import { registryConnectorActionApi } from '@/features/common/data-component/RegistryConnectorForm';
 import { scanHistoryApiLoader } from '@/features/common/data-component/scanHistoryApiLoader';
 import { searchCloudAccountsApiLoader } from '@/features/common/data-component/searchCloudAccountsApiLoader';
@@ -623,10 +622,6 @@ export const privateRoutes: CustomRouteObject[] = [
       {
         path: 'auth/logout',
         ...logoutAction,
-      },
-      {
-        path: 'auth/apiToken',
-        loader: getApiTokenApiLoader,
       },
       {
         path: 'scan/download',

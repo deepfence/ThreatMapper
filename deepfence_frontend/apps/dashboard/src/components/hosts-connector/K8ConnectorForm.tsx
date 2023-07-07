@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useSuspenseQuery } from '@suspensive/react-query';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import {
   Card,
   IconButton,
@@ -13,8 +14,17 @@ import { useCopyToClipboardState } from '@/components/CopyToClipboard';
 import { DFLink } from '@/components/DFLink';
 import { CopyLineIcon } from '@/components/icons/common/CopyLine';
 import { InfoIcon } from '@/components/icons/common/Info';
-import { useGetApiToken } from '@/features/common/data-component/getApiTokenApiLoader';
+import { queries } from '@/queries';
 import { containsWhiteSpace } from '@/utils/validator';
+
+const useGetApiToken = () => {
+  return useSuspenseQuery({
+    ...queries.auth.apiToken(),
+    keepPreviousData: true,
+  });
+};
+
+const PLACEHOLDER_API_KEY = '---DEEPFENCE-API-KEY--';
 
 const containerRuntimeDropdown = [
   {
@@ -238,10 +248,21 @@ const SecondCommand = () => {
 };
 
 const ThirdCommand = ({ command }: { command: string }) => {
+  const { status, data } = useGetApiToken();
+  const apiToken = data?.apiToken?.api_token;
+  const dfApiKey =
+    status !== 'success'
+      ? PLACEHOLDER_API_KEY
+      : apiToken === undefined
+      ? PLACEHOLDER_API_KEY
+      : apiToken;
+
   const { copy, isCopied } = useCopyToClipboardState();
   return (
     <div className="relative flex items-center">
-      <pre className="h-fit text-p7 dark:text-text-text-and-icon">{command}</pre>
+      <pre className="h-fit text-p7 dark:text-text-text-and-icon">
+        {command.replace(PLACEHOLDER_API_KEY, dfApiKey)}
+      </pre>
       <div className="flex items-center ml-auto self-start">
         {isCopied ? 'copied' : null}
         <IconButton
@@ -249,30 +270,42 @@ const ThirdCommand = ({ command }: { command: string }) => {
           icon={<CopyLineIcon />}
           variant="flat"
           onClick={() => {
-            copy(command);
+            copy(command.replace(PLACEHOLDER_API_KEY, dfApiKey));
           }}
         />
       </div>
     </div>
   );
 };
+const Skeleton = () => {
+  return (
+    <>
+      <div className="animate-pulse flex flex-col gap-y-2">
+        <div className="h-2 w-[384px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[350px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[420px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+
+        <div className="h-2 w-[200px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[300px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[280px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[380px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[370px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[360px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[480px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[200px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="h-2 w-[180px] bg-gray-200 dark:bg-gray-700 rounded"></div>
+      </div>
+    </>
+  );
+};
 export const K8ConnectorForm = () => {
-  const { status, data } = useGetApiToken();
-
-  const dfApiKey =
-    status !== 'idle'
-      ? '---DEEPFENCE-API-KEY---'
-      : data?.api_token === undefined
-      ? '---DEEPFENCE-API-KEY---'
-      : data?.api_token;
-
   const [instruction, setInstruction] =
     useState(`helm repo add deepfence https://deepfence-helm-charts.s3.amazonaws.com/threatmapper
 helm repo update
 
 helm install deepfence-agent deepfence/deepfence-agent \\
 --set managementConsoleUrl=${window.location.host ?? '---CONSOLE-IP---'} \\
---set deepfenceKey=${dfApiKey} \\
+--set deepfenceKey=${PLACEHOLDER_API_KEY} \\
 --set image.tag=${''} \\
 --set image.clusterAgentImageTag=${''} \\
 --set clusterName=${defaultCluster} \\
@@ -311,7 +344,10 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
               Fill the following details:
             </p>
             <Card className="w-full relative">
-              <InformationForm setInstruction={setInstruction} dfApiKey={dfApiKey} />
+              <InformationForm
+                setInstruction={setInstruction}
+                dfApiKey={PLACEHOLDER_API_KEY}
+              />
             </Card>
           </div>
         </Step>
@@ -323,7 +359,9 @@ ${socketMap.containerd.command}="${defaultSocketPath}" \\
             <Card className="w-full relative p-4">
               <FirstCommand />
               <SecondCommand />
-              <ThirdCommand command={instruction} />
+              <Suspense fallback={<Skeleton />}>
+                <ThirdCommand command={instruction} />
+              </Suspense>
             </Card>
           </div>
         </Step>
