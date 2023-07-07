@@ -1,5 +1,5 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
-import { startCase } from 'lodash-es';
+import { groupBy, isEmpty, startCase } from 'lodash-es';
 
 import {
   getCloudComplianceApiClient,
@@ -11,17 +11,79 @@ import {
   getTopologyApiClient,
   getVulnerabilityApiClient,
 } from '@/api/api';
+import {
+  ModelCloudComplianceScanResult,
+  ModelComplianceScanInfo,
+  ModelComplianceScanResult,
+  ModelMalwareScanResult,
+  ModelScanInfo,
+  ModelSecretScanResult,
+  ModelVulnerabilityScanResult,
+  ResponseError,
+} from '@/api/generated';
 import { OnboardConnectionNode } from '@/features/onboard/pages/connectors/MyConnectors';
+import { getAccountName } from '@/features/onboard/utils/summary';
+import {
+  MalwareSeverityType,
+  PostureSeverityType,
+  ScanTypeEnum,
+  SecretSeverityType,
+  VulnerabilitySeverityType,
+} from '@/types/common';
 import { apiWrapper } from '@/utils/api';
 import { getRegistryDisplayId } from '@/utils/registry';
 
 export const statusScanApiFunctionMap = {
-  vulnerability: getVulnerabilityApiClient().statusVulnerabilityScan,
-  secret: getSecretApiClient().statusSecretScan,
-  malware: getMalwareApiClient().statusMalwareScan,
-  compliance: getComplianceApiClient().statusComplianceScan,
-  cloudCompliance: getCloudComplianceApiClient().statusCloudComplianceScan,
+  [ScanTypeEnum.VulnerabilityScan]: getVulnerabilityApiClient().statusVulnerabilityScan,
+  [ScanTypeEnum.SecretScan]: getSecretApiClient().statusSecretScan,
+  [ScanTypeEnum.MalwareScan]: getMalwareApiClient().statusMalwareScan,
+  [ScanTypeEnum.ComplianceScan]: getComplianceApiClient().statusComplianceScan,
+  [ScanTypeEnum.CloudComplianceScan]:
+    getCloudComplianceApiClient().statusCloudComplianceScan,
 };
+
+const getComplianceSummary = (
+  data: ModelCloudComplianceScanResult | ModelComplianceScanResult,
+) => {
+  return {
+    benchmarkType: data.benchmark_type?.join(', ') ?? 'unknown',
+    accountName: data.node_name,
+    accountType: data.node_type,
+    compliancePercentage: data.compliance_percentage,
+    total: Object.keys(data.status_counts ?? {}).reduce((acc, severity) => {
+      acc = acc + (data.status_counts?.[severity] ?? 0);
+      return acc;
+    }, 0),
+    ...((data.status_counts ?? {}) as Record<PostureSeverityType, number>),
+  };
+};
+
+async function getScanStatus(
+  bulkScanId: string,
+  scanType: ScanTypeEnum,
+): Promise<Array<ModelScanInfo | ModelComplianceScanInfo>> {
+  const statusScanApi = apiWrapper({
+    fn: statusScanApiFunctionMap[scanType],
+  });
+  const statusScanResponse = await statusScanApi({
+    modelScanStatusReq: {
+      scan_ids: [],
+      bulk_scan_id: bulkScanId,
+    },
+  });
+  if (!statusScanResponse.ok) {
+    throw statusScanResponse.error;
+  }
+
+  if (
+    statusScanResponse.value.statuses &&
+    Array.isArray(statusScanResponse.value.statuses)
+  ) {
+    return statusScanResponse.value.statuses;
+  }
+
+  return Object.values(statusScanResponse.value.statuses ?? {});
+}
 
 export const onboardQueries = createQueryKeys('onboard', {
   listConnectors: () => {
@@ -215,18 +277,17 @@ export const onboardQueries = createQueryKeys('onboard', {
     };
   },
   scanStatus: (filters: {
-    nodeType: string;
     bulkScanId: string;
     scanType: keyof typeof statusScanApiFunctionMap;
   }) => {
-    const { nodeType, bulkScanId, scanType: _scanType } = filters;
+    const { bulkScanId, scanType: _scanType } = filters;
     let scanType = _scanType;
     return {
       queryKey: ['scanStatus'],
       queryFn: async () => {
         // TODO: Backend wants compliance status api for cloud to use cloud-compliance api
-        if (scanType === 'compliance' && nodeType === 'cloud_account') {
-          scanType = 'cloudCompliance';
+        if (scanType === ScanTypeEnum.CloudComplianceScan) {
+          scanType = ScanTypeEnum.CloudComplianceScan;
         }
 
         const statusScanApi = apiWrapper({
@@ -262,6 +323,454 @@ export const onboardQueries = createQueryKeys('onboard', {
         return {
           data: Object.values(statusResponse.value.statuses ?? {}),
         };
+      },
+    };
+  },
+  vulnerabilityScanSummary: (filters: {
+    bulkScanId: string;
+    scanType: keyof typeof statusScanApiFunctionMap;
+  }) => {
+    const { bulkScanId, scanType } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const statuses = await getScanStatus(bulkScanId, scanType);
+        const scanIds =
+          statuses
+            ?.filter((status) => status?.status === 'COMPLETE')
+            .map((status) => status.scan_id) ?? [];
+
+        const bulkRequest = scanIds.map((scanId) => {
+          const resultVulnerabilityScanApi = apiWrapper({
+            fn: getVulnerabilityApiClient().resultVulnerabilityScan,
+          });
+          return resultVulnerabilityScanApi({
+            modelScanResultsReq: {
+              fields_filter: {
+                contains_filter: {
+                  filter_in: {},
+                },
+                order_filter: {
+                  order_fields: [],
+                },
+                match_filter: {
+                  filter_in: {},
+                },
+                compare_filter: null,
+              },
+              scan_id: scanId,
+              window: {
+                offset: 0,
+                size: 1000000,
+              },
+            },
+          });
+        });
+        const responses = await Promise.all(bulkRequest);
+
+        const initial: {
+          err: ResponseError[];
+          accNonEmpty: ModelVulnerabilityScanResult[];
+          accEmpty: ModelVulnerabilityScanResult[];
+        } = {
+          err: [],
+          accNonEmpty: [],
+          accEmpty: [],
+        };
+        responses.forEach((response) => {
+          if (!response.ok) {
+            return initial.err.push(response.error);
+          } else {
+            if (isEmpty(response.value.severity_counts)) {
+              initial.accEmpty.push(response.value);
+            } else {
+              initial.accNonEmpty.push(response.value);
+            }
+          }
+        });
+        const resultData = initial.accNonEmpty.map((response) => {
+          return {
+            accountName: getAccountName(response),
+            accountType: response.node_type,
+            total: Object.keys(response.severity_counts ?? {}).reduce((acc, severity) => {
+              acc = acc + (response.severity_counts?.[severity] ?? 0);
+              return acc;
+            }, 0),
+            ...(response.severity_counts as Record<VulnerabilitySeverityType, number>),
+          };
+        });
+        const resultWithEmptySeverityAtEnd = resultData.concat(
+          initial.accEmpty.map((response) => {
+            return {
+              accountName: getAccountName(response),
+              accountType: response.node_type,
+              total: Object.keys(response.severity_counts ?? {}).reduce(
+                (acc, severity) => {
+                  acc = acc + (response.severity_counts?.[severity] ?? 0);
+                  return acc;
+                },
+                0,
+              ),
+              ...(response.severity_counts as Record<VulnerabilitySeverityType, number>),
+            };
+          }),
+        );
+        return resultWithEmptySeverityAtEnd;
+      },
+    };
+  },
+  secretScanSummary: (filters: {
+    bulkScanId: string;
+    scanType: keyof typeof statusScanApiFunctionMap;
+  }) => {
+    const { bulkScanId, scanType } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const statuses = await getScanStatus(bulkScanId, scanType);
+        const scanIds =
+          statuses
+            ?.filter((status) => status?.status === 'COMPLETE')
+            .map((status) => status.scan_id) ?? [];
+
+        const bulkRequest = scanIds.map((scanId) => {
+          const resultSecretScanApi = apiWrapper({
+            fn: getSecretApiClient().resultSecretScan,
+          });
+          return resultSecretScanApi({
+            modelScanResultsReq: {
+              fields_filter: {
+                contains_filter: {
+                  filter_in: {},
+                },
+                order_filter: {
+                  order_fields: [],
+                },
+                match_filter: {
+                  filter_in: {},
+                },
+                compare_filter: null,
+              },
+              scan_id: scanId,
+              window: {
+                offset: 0,
+                size: 1000000,
+              },
+            },
+          });
+        });
+        const responses = await Promise.all(bulkRequest);
+
+        const initial: {
+          err: ResponseError[];
+          accNonEmpty: ModelSecretScanResult[];
+          accEmpty: ModelSecretScanResult[];
+        } = {
+          err: [],
+          accNonEmpty: [],
+          accEmpty: [],
+        };
+        responses.forEach((response) => {
+          if (!response.ok) {
+            return initial.err.push(response.error);
+          } else {
+            if (isEmpty(response.value.severity_counts)) {
+              initial.accEmpty.push(response.value);
+            } else {
+              initial.accNonEmpty.push(response.value);
+            }
+          }
+        });
+        const resultData = initial.accNonEmpty.map((response) => {
+          return {
+            accountName: getAccountName(response),
+            accountType: response.node_type,
+            total: Object.keys(response.severity_counts ?? {}).reduce((acc, severity) => {
+              acc = acc + (response.severity_counts?.[severity] ?? 0);
+              return acc;
+            }, 0),
+            ...(response.severity_counts as Record<SecretSeverityType, number>),
+          };
+        });
+        const resultWithEmptySeverityAtEnd = resultData.concat(
+          initial.accEmpty.map((response) => {
+            return {
+              accountName: getAccountName(response),
+              accountType: response.node_type,
+              total: Object.keys(response.severity_counts ?? {}).reduce(
+                (acc, severity) => {
+                  acc = acc + (response.severity_counts?.[severity] ?? 0);
+                  return acc;
+                },
+                0,
+              ),
+              ...(response.severity_counts as Record<SecretSeverityType, number>),
+            };
+          }),
+        );
+        return resultWithEmptySeverityAtEnd;
+      },
+    };
+  },
+  malwareScanSummary: (filters: { bulkScanId: string; scanType: ScanTypeEnum }) => {
+    const { bulkScanId, scanType } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const statuses = await getScanStatus(bulkScanId, scanType);
+        const scanIds =
+          statuses
+            ?.filter((status) => status?.status === 'COMPLETE')
+            .map((status) => status.scan_id) ?? [];
+
+        const bulkRequest = scanIds.map((scanId) => {
+          const resultMalwareScanApi = apiWrapper({
+            fn: getMalwareApiClient().resultMalwareScan,
+          });
+          return resultMalwareScanApi({
+            modelScanResultsReq: {
+              fields_filter: {
+                contains_filter: {
+                  filter_in: {},
+                },
+                order_filter: {
+                  order_fields: [],
+                },
+                match_filter: {
+                  filter_in: {},
+                },
+                compare_filter: null,
+              },
+              scan_id: scanId,
+              window: {
+                offset: 0,
+                size: 1000000,
+              },
+            },
+          });
+        });
+        const responses = await Promise.all(bulkRequest);
+
+        const initial: {
+          err: ResponseError[];
+          accNonEmpty: ModelMalwareScanResult[];
+          accEmpty: ModelMalwareScanResult[];
+        } = {
+          err: [],
+          accNonEmpty: [],
+          accEmpty: [],
+        };
+        responses.forEach((response) => {
+          if (!response.ok) {
+            return initial.err.push(response.error);
+          } else {
+            if (isEmpty(response.value.severity_counts)) {
+              initial.accEmpty.push(response.value);
+            } else {
+              initial.accNonEmpty.push(response.value);
+            }
+          }
+        });
+        const resultData = initial.accNonEmpty.map((response) => {
+          return {
+            accountName: getAccountName(response),
+            accountType: response.node_type,
+            total: Object.keys(response.severity_counts ?? {}).reduce((acc, severity) => {
+              acc = acc + (response.severity_counts?.[severity] ?? 0);
+              return acc;
+            }, 0),
+            ...(response.severity_counts as Record<MalwareSeverityType, number>),
+          };
+        });
+        const resultWithEmptySeverityAtEnd = resultData.concat(
+          initial.accEmpty.map((response) => {
+            return {
+              accountName: getAccountName(response),
+              accountType: response.node_type,
+              total: Object.keys(response.severity_counts ?? {}).reduce(
+                (acc, severity) => {
+                  acc = acc + (response.severity_counts?.[severity] ?? 0);
+                  return acc;
+                },
+                0,
+              ),
+              ...(response.severity_counts as Record<MalwareSeverityType, number>),
+            };
+          }),
+        );
+        return resultWithEmptySeverityAtEnd;
+      },
+    };
+  },
+  complianceScanSummary: (filters: { bulkScanId: string }) => {
+    const { bulkScanId } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const statuses = await getScanStatus(bulkScanId, ScanTypeEnum.ComplianceScan);
+        const scanIds =
+          statuses
+            ?.filter((status) => status?.status === 'COMPLETE')
+            .map((status) => status.scan_id) ?? [];
+
+        const bulkRequest = scanIds.map((scanId) => {
+          const resultComplianceScanApi = apiWrapper({
+            fn: getComplianceApiClient().resultComplianceScan,
+          });
+          return resultComplianceScanApi({
+            modelScanResultsReq: {
+              fields_filter: {
+                contains_filter: {
+                  filter_in: {},
+                },
+                order_filter: {
+                  order_fields: [],
+                },
+                match_filter: {
+                  filter_in: {},
+                },
+                compare_filter: null,
+              },
+              scan_id: scanId,
+              window: {
+                offset: 0,
+                size: 1000000,
+              },
+            },
+          });
+        });
+        const responses = await Promise.all(bulkRequest);
+        const initial: {
+          err: ResponseError[];
+          accNonEmpty: ModelComplianceScanResult[];
+          accEmpty: ModelComplianceScanResult[];
+        } = {
+          err: [],
+          accNonEmpty: [],
+          accEmpty: [],
+        };
+
+        responses.forEach((response) => {
+          if (!response.ok) {
+            return initial.err.push(response.error);
+          } else {
+            if (
+              isEmpty(
+                response.value.status_counts || response.value.status_counts === null,
+              )
+            ) {
+              initial.accEmpty.push(response.value);
+            } else {
+              initial.accNonEmpty.push(response.value);
+            }
+          }
+        });
+
+        let groupedNonEmptySeverityData = groupBy(initial.accNonEmpty, 'node_id');
+        if (groupedNonEmptySeverityData.length) {
+          groupedNonEmptySeverityData = {};
+        }
+        const resultNonEmptySeverityData = initial.accNonEmpty.reduce<
+          ReturnType<typeof getComplianceSummary>[]
+        >((acc, current) => {
+          acc.push(getComplianceSummary(current));
+          return acc;
+        }, []);
+
+        const resulEmptySeverityData = initial.accEmpty.reduce<
+          ReturnType<typeof getComplianceSummary>[]
+        >((acc, current) => {
+          acc.push(getComplianceSummary(current));
+          return acc;
+        }, []);
+
+        const resultWithEmptySeverityAtEnd =
+          resultNonEmptySeverityData.concat(resulEmptySeverityData);
+
+        return resultWithEmptySeverityAtEnd;
+      },
+    };
+  },
+  cloudComplianceScanSummary: (filters: { bulkScanId: string }) => {
+    const { bulkScanId } = filters;
+    return {
+      queryKey: [filters],
+      queryFn: async () => {
+        const statuses = await getScanStatus(
+          bulkScanId,
+          ScanTypeEnum.CloudComplianceScan,
+        );
+        const scanIds =
+          statuses
+            ?.filter((status) => status?.status === 'COMPLETE')
+            .map((status) => status.scan_id) ?? [];
+
+        const bulkRequest = scanIds.map((scanId) => {
+          const resultCloudComplianceScanApi = apiWrapper({
+            fn: getCloudComplianceApiClient().resultCloudComplianceScan,
+          });
+          return resultCloudComplianceScanApi({
+            modelScanResultsReq: {
+              fields_filter: {
+                contains_filter: {
+                  filter_in: {},
+                },
+                order_filter: {
+                  order_fields: [],
+                },
+                match_filter: {
+                  filter_in: {},
+                },
+                compare_filter: null,
+              },
+              scan_id: scanId,
+              window: {
+                offset: 0,
+                size: 1000000,
+              },
+            },
+          });
+        });
+        const responses = await Promise.all(bulkRequest);
+        const initial: {
+          err: ResponseError[];
+          accNonEmpty: ModelCloudComplianceScanResult[];
+          accEmpty: ModelCloudComplianceScanResult[];
+        } = {
+          err: [],
+          accNonEmpty: [],
+          accEmpty: [],
+        };
+        responses.forEach((response) => {
+          if (!response.ok) {
+            return initial.err.push(response.error);
+          } else {
+            if (isEmpty(response.value.status_counts)) {
+              initial.accEmpty.push(response.value);
+            } else {
+              initial.accNonEmpty.push(response.value);
+            }
+          }
+        });
+
+        const resultNonEmptySeverityData = initial.accNonEmpty.reduce<
+          ReturnType<typeof getComplianceSummary>[]
+        >((acc, current) => {
+          acc.push(getComplianceSummary(current));
+          return acc;
+        }, []);
+
+        const resulEmptySeverityData = initial.accEmpty.reduce<
+          ReturnType<typeof getComplianceSummary>[]
+        >((acc, current) => {
+          acc.push(getComplianceSummary(current));
+          return acc;
+        }, []);
+
+        const resultWithEmptySeverityAtEnd =
+          resultNonEmptySeverityData.concat(resulEmptySeverityData);
+
+        return resultWithEmptySeverityAtEnd;
       },
     };
   },

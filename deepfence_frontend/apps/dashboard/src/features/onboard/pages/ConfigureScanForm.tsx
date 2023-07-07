@@ -80,7 +80,6 @@ const ScanConfigureForm = () => {
   ) {
     title = 'posture';
   }
-
   return (
     <>
       <ConnectorHeader
@@ -110,7 +109,7 @@ const ScanConfigureForm = () => {
                     '/onboard/scan/view-summary/running/:nodeType/:scanType/:bulkScanId',
                     {
                       nodeType,
-                      scanType: 'vulnerability',
+                      scanType: ScanTypeEnum.VulnerabilityScan,
                       bulkScanId,
                     },
                   ),
@@ -135,7 +134,7 @@ const ScanConfigureForm = () => {
                     '/onboard/scan/view-summary/running/:nodeType/:scanType/:bulkScanId',
                     {
                       nodeType,
-                      scanType: 'secret',
+                      scanType: ScanTypeEnum.SecretScan,
                       bulkScanId,
                     },
                   ),
@@ -160,7 +159,7 @@ const ScanConfigureForm = () => {
                     '/onboard/scan/view-summary/running/:nodeType/:scanType/:bulkScanId',
                     {
                       nodeType,
-                      scanType: 'malware',
+                      scanType: ScanTypeEnum.MalwareScan,
                       bulkScanId,
                     },
                   ),

@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { uniq } from 'lodash-es';
 import { Suspense, useMemo, useState } from 'react';
-import { generatePath, useParams, useRevalidator } from 'react-router-dom';
+import { generatePath, useParams } from 'react-router-dom';
 import { useInterval } from 'react-use';
 import {
   Button,
@@ -22,7 +22,7 @@ import { ScanStatusBadge } from '@/components/ScanStatusBadge';
 import { TruncatedText } from '@/components/TruncatedText';
 import { ConnectorHeader } from '@/features/onboard/components/ConnectorHeader';
 import { invalidateAllQueries, queries } from '@/queries';
-import { statusScanApiFunctionMap } from '@/queries/onboard';
+import { ScanTypeEnum } from '@/types/common';
 import { usePageNavigation } from '@/utils/usePageNavigation';
 
 type TableDataType = ModelComplianceScanInfo | ModelScanInfo;
@@ -34,32 +34,39 @@ type TextProps = {
 };
 
 type ConfigProps = {
-  vulnerability: TextProps;
-  secret: TextProps;
-  malware: TextProps;
-  compliance: TextProps;
+  [ScanTypeEnum.VulnerabilityScan]: TextProps;
+  [ScanTypeEnum.SecretScan]: TextProps;
+  [ScanTypeEnum.MalwareScan]: TextProps;
+  [ScanTypeEnum.ComplianceScan]: TextProps;
+  [ScanTypeEnum.CloudComplianceScan]: TextProps;
   alert: TextProps;
 };
 
 const configMap: ConfigProps = {
-  vulnerability: {
+  [ScanTypeEnum.VulnerabilityScan]: {
     scanningText: 'Your Vulnerability Scan is currently running...',
     headerText: 'Vulnerability Scan',
     subHeaderText:
       'Vulnerability Scan has been initiated, it will be completed in few moments.',
   },
-  secret: {
+  [ScanTypeEnum.SecretScan]: {
     scanningText: 'Your Secret Scan is currently running...',
     headerText: 'Secret Scan',
     subHeaderText: 'Secret Scan has been initiated, it will be completed in few moments.',
   },
-  malware: {
+  [ScanTypeEnum.MalwareScan]: {
     scanningText: 'Your Malware Scan is currently running...',
     headerText: 'Malware Scan',
     subHeaderText:
       'Malware Scan has been initiated, it will be completed in few moments.',
   },
-  compliance: {
+  [ScanTypeEnum.ComplianceScan]: {
+    scanningText: 'Your Posture Scan is currently running...',
+    headerText: 'Posture Scan',
+    subHeaderText:
+      'Posture Scan has been initiated, it will be completed in few moments.',
+  },
+  [ScanTypeEnum.CloudComplianceScan]: {
     scanningText: 'Your Posture Scan is currently running...',
     headerText: 'Posture Scan',
     subHeaderText:
@@ -75,12 +82,10 @@ const configMap: ConfigProps = {
 
 const useScanInProgress = () => {
   const params = useParams();
-  const nodeType = params?.nodeType ?? '';
   const bulkScanId = params?.bulkScanId ?? '';
-  const scanType = params?.scanType as keyof typeof statusScanApiFunctionMap;
+  const scanType = params?.scanType as ScanTypeEnum;
   return useSuspenseQuery({
     ...queries.onboard.scanStatus({
-      nodeType,
       bulkScanId,
       scanType,
     }),
