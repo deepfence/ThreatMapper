@@ -155,7 +155,7 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.Password = ""
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, user, true)
+	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, &user, true)
 	httpext.JSON(w, http.StatusOK, model.LoginResponse{
 		ResponseAccessToken: *accessTokenResponse,
 		OnboardingRequired:  model.IsOnboardingRequired(ctx),
@@ -242,7 +242,7 @@ func (h *Handler) RegisterInvitedUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.Password = ""
-	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, user, true)
+	h.AuditUserActivity(r, EVENT_AUTH, ACTION_CREATE, &user, true)
 
 	httpext.JSON(w, http.StatusOK, model.LoginResponse{
 		ResponseAccessToken: *accessTokenResponse,
