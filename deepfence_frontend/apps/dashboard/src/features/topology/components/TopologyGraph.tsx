@@ -1,6 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { IconContext } from 'react-icons';
-import { HiOutlineInformationCircle } from 'react-icons/hi';
 import { useFetcher, useParams } from 'react-router-dom';
 import { useDebounce, useEffectOnce, useHoverDirty, useMeasure } from 'react-use';
 import { toast } from 'sonner';
@@ -9,6 +7,7 @@ import { CircleSpinner } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
 import { DetailsLineIcon } from '@/components/icons/common/DetailsLine';
+import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
 import { ResizeUpIcon } from '@/components/icons/common/ResizeUp';
 import { NodeDetailsStackedModal } from '@/features/topology/components/NodeDetailsStackedModal';
 import {
@@ -22,7 +21,6 @@ import {
   itemExpands,
   itemHasDetails,
   nodeToFront,
-  showTooltipControls,
 } from '@/features/topology/utils/expand-collapse';
 import { onNodeHover } from '@/features/topology/utils/graph-styles';
 import { updateGraph } from '@/features/topology/utils/graph-update';
@@ -307,12 +305,8 @@ const GraphTooltip = ({
 const NoData = () => {
   return (
     <div className="h-full flex gap-2 flex-col items-center justify-center p-6">
-      <div>
-        <IconContext.Provider
-          value={{ className: 'text-[3rem] text-blue-600 dark:text-blue-400' }}
-        >
-          <HiOutlineInformationCircle />
-        </IconContext.Provider>
+      <div className="w-8 h-8 text-blue-600 dark:text-status-info">
+        <ErrorStandardSolidIcon />
       </div>
       <div className="text-gray-600 dark:text-gray-400 text-lg text-center">
         No data to display, please{' '}

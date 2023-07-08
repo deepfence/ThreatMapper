@@ -3,12 +3,11 @@ import '@/features/threat-graph/utils/threat-graph-custom-node';
 import { IEdge, INode } from '@antv/g6';
 import { useSuspenseQuery } from '@suspensive/react-query';
 import { useEffect, useState } from 'react';
-import { IconContext } from 'react-icons';
-import { HiOutlineInformationCircle } from 'react-icons/hi';
 import { useSearchParams } from 'react-router-dom';
 import { useMeasure } from 'react-use';
 
 import { GraphProviderThreatGraph, GraphThreatFiltersTypeEnum } from '@/api/generated';
+import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
 import { useG6Graph } from '@/features/threat-graph/hooks/useG6Graph';
 import { ThreatGraphNodeModelConfig } from '@/features/threat-graph/utils/threat-graph-custom-node';
 import { G6GraphData, G6Node } from '@/features/topology/types/graph';
@@ -96,12 +95,8 @@ export const ThreatGraphComponent = ({
       <div className="absolute inset-0" ref={setContainer} />
       {isGraphEmpty(data) ? (
         <div className="absolute inset-0 flex gap-2 flex-col items-center justify-center p-6 bg-white dark:bg-gray-800">
-          <div>
-            <IconContext.Provider
-              value={{ className: 'text-[3rem] text-blue-600 dark:text-blue-400' }}
-            >
-              <HiOutlineInformationCircle />
-            </IconContext.Provider>
+          <div className="w-8 h-8 text-blue-600 dark:text-status-info">
+            <ErrorStandardSolidIcon />
           </div>
           <div className="text-gray-600 dark:text-gray-400 text-lg text-center">
             No attack paths found, please run some scans to discover attack paths.

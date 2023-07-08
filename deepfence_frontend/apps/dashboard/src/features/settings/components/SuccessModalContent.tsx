@@ -1,5 +1,4 @@
-import { IconContext } from 'react-icons';
-import { HiOutlineCheckCircle } from 'react-icons/hi';
+import { CheckCircleLineIcon } from '@/components/icons/common/CheckCircleLine';
 
 export const SuccessModalContent = ({
   text,
@@ -10,13 +9,9 @@ export const SuccessModalContent = ({
 }) => {
   return (
     <div className="grid place-items-center p-6">
-      <IconContext.Provider
-        value={{
-          className: 'mb-3 dark:text-green-600 text-green-400 w-[70px] h-[70px]',
-        }}
-      >
-        <HiOutlineCheckCircle />
-      </IconContext.Provider>
+      <span className="mb-3 dark:text-status-success text-green-400 w-[70px] h-[70px]">
+        <CheckCircleLineIcon />
+      </span>
       {text && <h3 className="mb-4 font-normal text-center text-sm">{text}</h3>}
       {children}
     </div>
