@@ -248,7 +248,7 @@ export const action = async ({
   }
   invalidateAllQueries();
   return {
-    success: false,
+    success: true,
   };
 };
 const ActionDropdown = ({
@@ -455,7 +455,7 @@ const EditUserModal = ({
   )?.[0];
   const [_role, _setRole] = useState(role);
   const [_status, _setStatus] = useState(() => (user.is_active ? 'Active' : 'Inactive'));
-
+  console.log('data', data);
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
