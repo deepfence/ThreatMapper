@@ -269,7 +269,7 @@ export function getThreatGraphApiClient() {
 
   return {
     getThreatGraph: threatGraphApi.getThreatGraph.bind(threatGraphApi),
-    getVulnerabilityThreatGraph:
+    getIndividualThreatGraph:
       threatGraphApi.getIndividualThreatGraph.bind(threatGraphApi),
   };
 }

@@ -1,13 +1,15 @@
-import { Breadcrumb, BreadcrumbLink } from 'ui-components';
+import { Breadcrumb, BreadcrumbLink, Card } from 'ui-components';
 
+import { ErrorStandardLineIcon } from '@/components/icons/common/ErrorStandardLine';
 import { SeverityLegend } from '@/components/SeverityBadge';
 import { SecretsIcon } from '@/components/sideNavigation/icons/Secrets';
+import { ThreatGraphIcon } from '@/components/sideNavigation/icons/ThreatGraph';
+import { CardHeader } from '@/features/secrets/components/landing/CardHeader';
 import {
   MostExploitableSecretsCountsCard,
   UniqueSecretsCountsCard,
 } from '@/features/secrets/components/landing/SecretsCountsCard';
 import { TopNSecretCard } from '@/features/secrets/components/landing/TopNSecretCard';
-import { TopAttackPaths } from '@/features/vulnerabilities/components/landing/TopAttackPaths';
 
 const Secret = () => {
   return (
@@ -38,7 +40,19 @@ const Secret = () => {
           <MostExploitableSecretsCountsCard />
         </div>
         <div className="col-span-6">
-          <TopAttackPaths />
+          <Card className="rounded min-h-[450px] flex flex-col">
+            <CardHeader
+              icon={<ThreatGraphIcon />}
+              title={'Top Attack Paths'}
+              path={'/threatgraph'}
+            />
+            <div className="flex-1 flex gap-2 items-center justify-center p-6 dark:text-text-text-and-icon">
+              <div className="h-6 w-6 shrink-0">
+                <ErrorStandardLineIcon />
+              </div>
+              <div className="text-h3">Coming soon.</div>
+            </div>
+          </Card>
         </div>
         <div className="col-span-4">
           <TopNSecretCard type="container" />

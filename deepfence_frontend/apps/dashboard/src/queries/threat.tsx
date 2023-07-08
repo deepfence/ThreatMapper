@@ -1,7 +1,11 @@
 import { createQueryKeys } from '@lukemorales/query-key-factory';
 
 import { getThreatGraphApiClient } from '@/api/api';
-import { GraphThreatFiltersTypeEnum } from '@/api/generated';
+import {
+  GraphIndividualThreatGraphRequestGraphTypeEnum,
+  GraphIndividualThreatGraphRequestIssueTypeEnum,
+  GraphThreatFiltersTypeEnum,
+} from '@/api/generated';
 import { apiWrapper } from '@/utils/api';
 
 export const threatQueries = createQueryKeys('threat', {
@@ -39,6 +43,39 @@ export const threatQueries = createQueryKeys('threat', {
         }
 
         return threatGraph.value;
+      },
+    };
+  },
+  individualThreatGraph: (params: {
+    graphType?: GraphIndividualThreatGraphRequestGraphTypeEnum;
+    issueType: GraphIndividualThreatGraphRequestIssueTypeEnum;
+    nodeIds?: string[];
+  }) => {
+    return {
+      queryKey: [params],
+      queryFn: async () => {
+        const {
+          graphType = GraphIndividualThreatGraphRequestGraphTypeEnum.MostVulnerableAttackPaths,
+          issueType,
+          nodeIds,
+        } = params;
+        const getIndividualThreatGraph = apiWrapper({
+          fn: getThreatGraphApiClient().getIndividualThreatGraph,
+        });
+
+        const getVulnerabilityThreatGraphResponse = await getIndividualThreatGraph({
+          graphIndividualThreatGraphRequest: {
+            graph_type: graphType,
+            issue_type: issueType,
+            node_ids: nodeIds,
+          },
+        });
+
+        if (!getVulnerabilityThreatGraphResponse.ok) {
+          throw getVulnerabilityThreatGraphResponse.error;
+        }
+
+        return getVulnerabilityThreatGraphResponse.value;
       },
     };
   },

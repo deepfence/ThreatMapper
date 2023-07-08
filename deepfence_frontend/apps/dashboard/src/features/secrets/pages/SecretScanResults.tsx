@@ -1303,6 +1303,12 @@ const Widgets = () => {
       </Card>
       <Card className="px-4 py-1.5 flex flex-col">
         <div className="text-h6 dark:text-text-input-value py-1">Top attack paths</div>
+        <div className="flex-1 flex gap-2 items-center justify-center p-6 dark:text-text-text-and-icon">
+          <div className="h-6 w-6 shrink-0">
+            <ErrorStandardLineIcon />
+          </div>
+          <div className="text-h3">Coming soon.</div>
+        </div>
       </Card>
     </div>
   );
