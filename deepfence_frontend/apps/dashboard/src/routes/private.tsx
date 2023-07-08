@@ -19,6 +19,7 @@ import { searchContainersApiLoader } from '@/features/common/data-component/sear
 import { RootLayout } from '@/features/common/RootLayout';
 import { module as dashboard } from '@/features/dashboard/pages/Dashboard';
 import { module as integrationsLayout } from '@/features/integrations/layouts/IntegrationsLayout';
+import { module as createReport } from '@/features/integrations/pages/CreateReport';
 import { module as downloadReport } from '@/features/integrations/pages/DownloadReport';
 import { module as addIntegration } from '@/features/integrations/pages/IntegrationAdd';
 import { module as integrations } from '@/features/integrations/pages/Integrations';
@@ -288,6 +289,13 @@ export const privateRoutes: CustomRouteObject[] = [
         path: 'integrations/download/report',
         ...downloadReport,
         meta: { title: 'Download Report' },
+        children: [
+          {
+            path: 'create',
+            ...createReport,
+            meta: { title: 'Create Report' },
+          },
+        ],
       },
       // vulnerability
       {

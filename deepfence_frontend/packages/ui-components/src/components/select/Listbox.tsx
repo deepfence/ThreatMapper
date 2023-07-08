@@ -58,7 +58,7 @@ const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[7px] px-3
   variants: {
     color: {
       default: [defaultStyle],
-      error: ['dark:text-chart-red'],
+      error: '',
     },
     variant: {
       underline: '',
@@ -73,6 +73,14 @@ const buttonCva = cva(['relative', 'disabled:cursor-not-allowed', 'py-[7px] px-3
       variant: 'underline',
       color: 'default',
       className: defaultUnderlineStyle,
+    },
+    {
+      variant: 'underline',
+      color: 'error',
+      className: cn(
+        defaultUnderlineStyle,
+        'df-error data-[headlessui-state=open]:dark:border-b-[#f55b47] dark:focus:border-b-[#f55b47] dark:border-b-[#f55b47]',
+      ),
     },
   ],
 });
@@ -115,24 +123,7 @@ const CaretIcon = () => {
     </svg>
   );
 };
-const ClearAllIcon = () => {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M12 23C5.92487 23 1 18.0751 1 12C1 5.92487 5.92487 1 12 1C18.0751 1 23 5.92487 23 12C23 14.9174 21.8411 17.7153 19.7782 19.7782C17.7153 21.8411 14.9174 23 12 23ZM12 2.375C6.68426 2.375 2.375 6.68426 2.375 12C2.375 17.3157 6.68426 21.625 12 21.625C17.3157 21.625 21.625 17.3157 21.625 12C21.625 6.68426 17.3157 2.375 12 2.375ZM13.1069 12L16.4481 8.65875C16.6817 8.38598 16.666 7.97937 16.4121 7.72543C16.1581 7.47148 15.7515 7.45578 15.4788 7.68937L12.1375 10.9963L8.77563 7.63438C8.50285 7.40078 8.09624 7.41648 7.8423 7.67043C7.58836 7.92437 7.57265 8.33098 7.80625 8.60375L11.1613 12L7.875 15.245C7.6788 15.413 7.59334 15.6768 7.65376 15.928C7.71417 16.1791 7.91026 16.3752 8.1614 16.4356C8.41254 16.496 8.67636 16.4106 8.84438 16.2144L12.1238 12.935L15.3825 16.1938C15.6553 16.4273 16.0619 16.4116 16.3158 16.1577C16.5698 15.9038 16.5855 15.4971 16.3519 15.2244L13.1069 12Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-};
+
 const SelectArrow = () => {
   return (
     <span className={cn('pointer-events-none flex items-center')}>
@@ -310,7 +301,6 @@ export function Listbox<TType, TActualType>({
                         }}
                         className="flex gap-1.5 dark:text-accent-accent items-center text-p6"
                       >
-                        <ClearAllIcon />
                         {clearAll}
                       </button>
                     </div>
@@ -362,7 +352,11 @@ function getPlaceholderValue<T extends unknown | unknown[]>(
   getDisplayValue?: (value?: T) => string,
   defaultPlaceholder?: string,
 ) {
-  if (isNil(value) || (typeof value === 'string' && isEmpty(value))) {
+  if (
+    isNil(value) ||
+    (typeof value === 'string' && isEmpty(value)) ||
+    (Array.isArray(value) && value.length === 0)
+  ) {
     return (
       <span className="dark:text-gray-600 block">
         {defaultPlaceholder || 'Select...'}

@@ -56,7 +56,7 @@ export const GoogleCRConnectorForm = ({
           className="w-3/4 min-[200px] max-w-xs"
           label="Select your file"
           hint="Please enable Cloud Resource Manager API and Container Registry API in Google Cloud"
-          sizing="sm"
+          sizing="md"
           name="service_account_json"
           helperText={fieldErrors?.['service_account_json']}
         />

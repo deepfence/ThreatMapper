@@ -1,5 +1,6 @@
 import { useSuspenseQuery } from '@suspensive/react-query';
 import cx from 'classnames';
+import { capitalize } from 'lodash-es';
 import { Suspense, useCallback, useMemo, useState } from 'react';
 import { ActionFunctionArgs, useFetcher } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -39,7 +40,7 @@ import { EyeSolidIcon } from '@/components/icons/common/EyeSolid';
 import { PlusIcon } from '@/components/icons/common/Plus';
 import { ChangePassword } from '@/features/settings/components/ChangePassword';
 import { SuccessModalContent } from '@/features/settings/components/SuccessModalContent';
-import { invalidateQueries, queries } from '@/queries';
+import { invalidateAllQueries, queries } from '@/queries';
 import { apiWrapper } from '@/utils/api';
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -125,10 +126,6 @@ export const action = async ({
       }
       throw deleteResponse.error;
     }
-
-    return {
-      success: true,
-    };
   } else if (_actionType === ActionEnumType.CHANGE_PASSWORD) {
     // add console_url which is the origin of request
     formData.append('consoleUrl', window.location.origin);
@@ -169,10 +166,6 @@ export const action = async ({
       }
       throw updateResponse.error;
     }
-
-    return {
-      success: true,
-    };
   } else if (_actionType === ActionEnumType.INVITE_USER) {
     const body = Object.fromEntries(formData);
     const role = body.role as keyof typeof ModelUpdateUserIdRequestRoleEnum;
@@ -212,10 +205,6 @@ export const action = async ({
     } else if (body.intent === ModelInviteUserRequestActionEnum.SendInviteEmail) {
       return { successMessage: 'User invite sent successfully', success: true };
     }
-
-    return {
-      success: true,
-    };
   } else if (_actionType === ActionEnumType.EDIT_USER) {
     const body = Object.fromEntries(formData);
 
@@ -256,14 +245,10 @@ export const action = async ({
       }
       throw updateResponse.error;
     }
-
-    return {
-      success: true,
-    };
   }
-  invalidateQueries(queries.setting.listUsers._def);
+  invalidateAllQueries();
   return {
-    success: false,
+    success: true,
   };
 };
 const ActionDropdown = ({
@@ -470,7 +455,7 @@ const EditUserModal = ({
   )?.[0];
   const [_role, _setRole] = useState(role);
   const [_status, _setStatus] = useState(() => (user.is_active ? 'Active' : 'Inactive'));
-
+  console.log('data', data);
   return (
     <SlidingModal size="s" open={showDialog} onOpenChange={() => setShowDialog(false)}>
       <SlidingModalHeader>
@@ -561,7 +546,13 @@ const EditUserModal = ({
             )}
 
             <div className="flex gap-x-2 mt-9">
-              <Button type="submit">Update</Button>
+              <Button
+                type="submit"
+                loading={fetcher.state !== 'idle'}
+                disabled={fetcher.state !== 'idle'}
+              >
+                Update
+              </Button>
               <Button
                 variant="outline"
                 type="button"
@@ -774,9 +765,9 @@ const UsersTable = () => {
           );
         },
         header: () => '',
-        minSize: 20,
-        size: 20,
-        maxSize: 20,
+        minSize: 25,
+        size: 25,
+        maxSize: 25,
         enableResizing: false,
       }),
       columnHelper.accessor('id', {
@@ -808,11 +799,18 @@ const UsersTable = () => {
         maxSize: 85,
       }),
       columnHelper.accessor('role', {
-        cell: (cell) => cell.getValue(),
+        cell: (cell) => capitalize(cell.getValue()),
         header: () => 'Role',
-        minSize: 30,
-        size: 80,
-        maxSize: 85,
+        minSize: 60,
+        size: 60,
+        maxSize: 70,
+      }),
+      columnHelper.accessor('is_active', {
+        cell: (cell) => capitalize(cell.getValue() + ''),
+        header: () => 'Active',
+        minSize: 60,
+        size: 60,
+        maxSize: 70,
       }),
     ];
     return columns;
@@ -929,6 +927,8 @@ const DeleteConfirmationModal = ({
             <Button
               color="error"
               type="submit"
+              loading={fetcher.state !== 'idle'}
+              disabled={fetcher.state !== 'idle'}
               onClick={(e) => {
                 e.preventDefault();
                 onDeleteAction();
