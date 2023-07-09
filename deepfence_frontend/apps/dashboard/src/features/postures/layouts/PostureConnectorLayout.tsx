@@ -1,9 +1,8 @@
-import { startCase } from 'lodash-es';
-import { HiChevronRight } from 'react-icons/hi';
 import { generatePath, Outlet, useParams } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbLink } from 'ui-components';
 
 import { DFLink } from '@/components/DFLink';
+import { PostureIcon } from '@/components/sideNavigation/icons/Posture';
 import { providersToNameMapping } from '@/features/postures/pages/Posture';
 
 const PostureConnectorLayout = () => {
@@ -13,22 +12,25 @@ const PostureConnectorLayout = () => {
 
   return (
     <>
-      <div className="flex p-2  w-full items-center shadow bg-white dark:bg-gray-800">
-        <Breadcrumb separator={<HiChevronRight />} transparent>
-          <BreadcrumbLink>
-            <DFLink to="/posture">Posture</DFLink>
+      <div className="flex pl-6 py-2 w-full bg-white dark:bg-bg-breadcrumb-bar">
+        <Breadcrumb>
+          <BreadcrumbLink icon={<PostureIcon />} asChild isLink>
+            <DFLink to="/posture" unstyled>
+              Posture
+            </DFLink>
           </BreadcrumbLink>
-          <BreadcrumbLink>
+          <BreadcrumbLink icon={<PostureIcon />} asChild isLink>
             <DFLink
               to={generatePath('/posture/accounts/:nodeType', {
-                nodeType: params.account,
+                nodeType: encodeURIComponent(params.account),
               })}
+              unstyled
             >
               {providersToNameMapping[params.account]}
             </DFLink>
           </BreadcrumbLink>
 
-          <BreadcrumbLink>
+          <BreadcrumbLink icon={<PostureIcon />}>
             <span className="inherit cursor-auto">New</span>
           </BreadcrumbLink>
         </Breadcrumb>

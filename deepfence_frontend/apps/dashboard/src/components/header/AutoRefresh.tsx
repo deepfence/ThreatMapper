@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { HiRefresh } from 'react-icons/hi';
 import { useRevalidator } from 'react-router-dom';
 import { useInterval } from 'react-use';
+import { cn } from 'tailwind-preset';
 import { Dropdown, DropdownItem } from 'ui-components';
 
 import { CaretDown } from '@/components/icons/common/CaretDown';
+import { RereshIcon } from '@/components/icons/common/Refresh';
 import { queryClient } from '@/queries/client';
 
 // function that converts seconds to human friendly time
@@ -50,7 +51,7 @@ export const AutoRefresh = () => {
   return (
     <div className="flex items-stretch text-gray-500 dark:text-text-text-and-icon">
       <button
-        className="w-4 h-full flex items-center justify-center"
+        className="flex items-center justify-center"
         title="Refresh now"
         onClick={() => {
           if (state === 'idle') {
@@ -62,13 +63,13 @@ export const AutoRefresh = () => {
           }
         }}
       >
-        <HiRefresh
-          size="1.25rem"
-          className={`dark:text-text-input-value ${spinning ? 'animate-spin' : ''}`}
-          style={{
-            animationDirection: 'reverse',
-          }}
-        />
+        <span
+          className={cn('w-4 h-4 dark:text-text-text-and-icon', {
+            'animate-spin direction-reverse': spinning,
+          })}
+        >
+          <RereshIcon />
+        </span>
       </button>
       <Dropdown
         align="end"

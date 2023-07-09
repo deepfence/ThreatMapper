@@ -23,14 +23,14 @@ const AccountAdd = () => {
       {ACCOUNT_CONNECTOR.DOCKER === account && <DockerConnectorForm />}
       {ACCOUNT_CONNECTOR.KUBERNETES === account && <K8ConnectorForm />}
       {ACCOUNT_CONNECTOR.LINUX === account && <LinuxConnectorForm />}
-      {ACCOUNT_CONNECTOR.AWS === account && (
+      {account.startsWith(ACCOUNT_CONNECTOR.AWS) && (
         <div className="flex gap-x-2 flex-col sm:flex-row flex-1">
           <AWSCloudFormation />
           <AWSTerraform />
         </div>
       )}
       {ACCOUNT_CONNECTOR.AZURE === account && <AzureConnectorForm />}
-      {ACCOUNT_CONNECTOR.GCP === account && <GCPConnectorForm />}
+      {account.startsWith(ACCOUNT_CONNECTOR.GCP) && <GCPConnectorForm />}
     </>
   );
 };

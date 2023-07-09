@@ -1,13 +1,13 @@
 import cx from 'classnames';
-import { IconContext } from 'react-icons';
-import { HiOutlineExclamationCircle } from 'react-icons/hi';
+import { Tooltip } from 'ui-components';
 
+import { ErrorStandardSolidIcon } from '@/components/icons/common/ErrorStandardSolid';
 import { ScanTypeEnum } from '@/types/common';
 
 export const ScanStatusInProgress = ({ LogoIcon }: { LogoIcon: () => JSX.Element }) => {
   return (
     <div className={cx('flex flex-col items-center justify-center mt-40')}>
-      <div className="bg-red-100 dark:bg-red-500/10 rounded-lg flex items-center justify-center p-4">
+      <div className="bg-red-100 dark:bg-status-success rounded-lg flex items-center justify-center p-4">
         <div className="w-14 h-14 text-red-500 dark:text-red-400">
           <LogoIcon />
         </div>
@@ -24,21 +24,24 @@ export const ScanStatusInProgress = ({ LogoIcon }: { LogoIcon: () => JSX.Element
 
 export const ScanStatusInError = ({ errorMessage }: { errorMessage: string }) => {
   return (
-    <div className={cx('flex flex-col items-center justify-center mt-40')}>
-      <div className="bg-red-100 dark:bg-red-500/10 rounded-lg flex items-center justify-center p-4">
-        <IconContext.Provider
-          value={{
-            className: 'dark:text-gray-600 text-gray-400 w-[70px] h-[70px]',
-          }}
-        >
-          <HiOutlineExclamationCircle />
-        </IconContext.Provider>
+    <div className={cx('flex items-center justify-center mt-40 gap-x-4')}>
+      {errorMessage ? (
+        <Tooltip content={<span>{errorMessage}</span>}>
+          <div className="w-6 h-6 dark:text-status-error  rounded-full">
+            <ErrorStandardSolidIcon />
+          </div>
+        </Tooltip>
+      ) : (
+        <div className="w-6 h-6 dark:text-status-error  rounded-full">
+          <ErrorStandardSolidIcon />
+        </div>
+      )}
+
+      <div className="flex flex-col text-h3 dark:text-text-text-and-icon">
+        Scan failed.
+        <br />
+        You can run the scan again.
       </div>
-      <span className="text-2xl font-medium text-red-500/80">Scan Error</span>
-      <p className="text-red-500 py-2 px-4 overflow-auto text-sm">{errorMessage}</p>
-      <span className="text-sm text-gray-500 dark:text-gray-400">
-        Please check deepfence console logs for more details.
-      </span>
     </div>
   );
 };
